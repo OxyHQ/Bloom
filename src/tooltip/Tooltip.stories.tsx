@@ -8,7 +8,8 @@ import { Text } from '../typography';
 
 const meta: Meta = {
   component: Tooltip,
-  title: 'Base/Tooltip',
+  id: 'base-tooltip',
+  title: 'Components/Overlays/Tooltip',
 };
 
 export default meta;

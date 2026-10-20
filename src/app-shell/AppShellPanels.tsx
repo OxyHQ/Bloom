@@ -1,4 +1,4 @@
-import { ScrollArea } from '../layout/ScrollArea';
+import type { ScrollAreaProps } from '../layout/types';
 /**
  * `AppShellPanel` and `AppShellPanels` — the surfaces a `panels` shell frames.
  *
@@ -26,7 +26,7 @@ import { ScrollArea } from '../layout/ScrollArea';
  * a map — with no "room" subtraction anywhere.
  *
  * Resizable dividers are owned by `AppShellPanelLayout`, which reuses
- * `AiChatResizeHandle` for pointer capture, native gestures and arrow keys.
+ * `ResizeHandle` for pointer capture, native gestures and arrow keys.
  * This legacy surface delegates modular layout to that shared owner.
  */
 import React, { Children, isValidElement, useId } from 'react';
@@ -91,6 +91,7 @@ export function createAppShellPanels(
   ContentPanel: ContentPanelComponent,
   BloomColorScope: ColorScopeComponent,
   PanelLayoutView: React.ComponentType<PanelLayoutViewProps>,
+  ScrollArea: React.ComponentType<ScrollAreaProps>,
 ) {
   /** The page veil while the reveal drawer is open — pressing it is the shell's job. */
   function RevealVeil() {
@@ -217,6 +218,8 @@ export function createAppShellPanels(
     appearance = 'separated',
     collapseBelow,
     show,
+    widths,
+    onWidthsChange,
     testID,
   }: AppShellPanelsProps) {
     const region = useRegion();
@@ -266,6 +269,8 @@ export function createAppShellPanels(
                 appearance,
                 collapseBelow,
                 activePanel: show,
+                widths,
+                onWidthsChange,
                 flow: 'bounded',
                 gap,
               }}

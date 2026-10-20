@@ -15,7 +15,8 @@ const meta: Meta<typeof FunnelChartCard> = {
     defaultRange: { control: 'text' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Funnel Chart',
+  id: 'charts-funnel-chart',
+  title: 'Components/Charts/Funnel Chart',
   component: FunnelChartCard,
 };
 

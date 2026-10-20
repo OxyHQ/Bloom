@@ -6,7 +6,8 @@ import { useTheme } from '../theme/use-theme';
 import { Markdown } from './index';
 
 const meta: Meta<typeof Markdown> = {
-  title: 'Agents/Markdown',
+  id: 'agents-markdown',
+  title: 'Components/Data Display/Markdown',
   component: Markdown,
   argTypes: {
     size: { control: 'inline-radio', options: ['sm', 'md'] },

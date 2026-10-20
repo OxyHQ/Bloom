@@ -372,6 +372,13 @@ const SUBPATHS = /** @type {const} */ ([
  * if you remove a fork delete the entry here and re-run the script.
  */
 const WEB_FORKED_SUBPATHS = new Set([
+  './wizard',
+  './settings-modal',
+  './settings-modal/modal',
+  './queue-panel',
+  './chat-screen',
+  './music-library',
+  './screen',
   './layout',
   './viewport',
   './collapsible',
@@ -731,6 +738,9 @@ const WEB_BARREL_EXTRAS = {
 };
 
 /** Every `src/**\/index.ts` that has an `index.web.ts` beside it, `src`-relative. */
+// Lean public entries share the same generated platform retargeting as index barrels.
+const WEB_NON_INDEX_BARRELS = new Set(['settings-modal/modal.ts']);
+
 function discoverWebBarrels() {
   /** @type {string[]} */
   const found = [];
@@ -751,7 +761,7 @@ function discoverWebBarrels() {
   for (const [name, source] of SUBPATHS) {
     if (
       WEB_FORKED_SUBPATHS.has(name) &&
-      /(?:^|\/)index\.ts$/.test(source) &&
+      (/(?:^|\/)index\.ts$/.test(source) || WEB_NON_INDEX_BARRELS.has(source)) &&
       !found.includes(source)
     ) {
       found.push(source);

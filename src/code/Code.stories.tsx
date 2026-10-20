@@ -7,7 +7,8 @@ import { Text } from '../typography';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Base/Code',
+  id: 'base-code',
+  title: 'Components/Data Display/Code',
 };
 
 export default meta;

@@ -8,7 +8,8 @@ import { useTheme } from '../theme/use-theme';
 import { Textarea } from './index';
 
 const meta: Meta<typeof Textarea> = {
-  title: 'Base/Textarea',
+  id: 'base-textarea',
+  title: 'Components/Inputs/Textarea',
   component: Textarea,
 };
 

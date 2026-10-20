@@ -11,7 +11,8 @@ import { VehiclePicker } from './VehiclePicker';
 import type { VehicleKind, VehicleOption } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Freight/VehiclePicker',
+  id: 'blocks-freight-vehiclepicker',
+  title: 'Patterns/Freight/Vehicle Picker',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -363,21 +363,7 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason:
         'the switch row draws its own label ("Dark mode") as both visible text and accessible name, inside the toggle\u2019s own menu.',
     },
-    questionnaire: {
-      verdict: 'adaptation',
-      reason:
-        'a FORM whose multi-select answers are hand-written `role="checkbox"` rows instead of `Checkbox`, so a `Field` can neither name nor disable them. Not closed here: the rows carry their own card chrome and selection model, so it is a redesign of the answer control rather than an import.',
-    },
-    'listing-editor': {
-      verdict: 'adaptation',
-      reason:
-        'the property-type, offering and address-precision pickers are hand-written `radiogroup`s over cards, for the same reason and with the same cost as `questionnaire`.',
-    },
-    'listing-actions': {
-      verdict: 'adaptation',
-      reason:
-        'the mortgage calculator\u2019s term picker is a hand-written `radiogroup`; it sits beside `TextFieldInput`s that DO read the contract, so one form has two association models.',
-    },
+
     'note-card': {
       verdict: 'does-not-apply',
       reason:
@@ -388,16 +374,7 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason:
         'the raw `TextInput` is a DOCUMENT TITLE — it draws no box, no label and no hint, because the words are the document rather than a value being collected. A `Field` around it would put a form label above a heading.',
     },
-    'vehicle-picker': {
-      verdict: 'adaptation',
-      reason:
-        'a hand-written `radiogroup` over `listing-editor`\u2019s selectable cards \u2014 it REUSES that family\u2019s card rather than writing a third one, so it inherits the same gap for the same reason: a `Field` can neither name nor disable the group.',
-    },
-    'shipment-request': {
-      verdict: 'adaptation',
-      reason:
-        'the load KIND is the same hand-written `radiogroup` over `listing-editor`\u2019s cards. The rest of the form is worse than that, not better: its `TextField`, `Textarea`, `Switch` and `SegmentedControl` all read the contract, so one form has two association models.',
-    },
+
     'carrier-quote': {
       verdict: 'does-not-apply',
       reason: SELECTION_ROW,
@@ -446,41 +423,6 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       verdict: 'does-not-apply',
       reason:
         'the VALUE belongs to React Native\u2019s `TextInput`, which reconciles `value`/`defaultValue` itself; the only local state is the character count, which is why it is kept for the uncontrolled case alone.',
-    },
-    'input-otp': {
-      verdict: 'adaptation',
-      reason:
-        'reconciles `value`/`defaultValue` by hand (`const controlled = value !== undefined`) because it also CLEANS and pads the string to `length`, which the shared hook does not do.',
-    },
-    'chat-list': {
-      verdict: 'adaptation',
-      reason:
-        'the folder tabs reconcile `value`/`defaultValue` with their own `useState` seeded from the default, so a controlled caller\u2019s later change to `value` is honoured but the callback and the internal state can disagree.',
-    },
-    'chart-cards': {
-      verdict: 'adaptation',
-      reason:
-        'a card\u2019s range selector reconciles `range`/`defaultRange` by hand, in three cards, each with its own copy.',
-    },
-    'creator-studio': {
-      verdict: 'adaptation',
-      reason:
-        'the streams chart\u2019s metric picker keeps its own state seeded from `defaultMetric` instead of the shared hook.',
-    },
-    'queue-panel': {
-      verdict: 'adaptation',
-      reason:
-        'the panel\u2019s tab keeps its own state seeded from `defaultTab` instead of the shared hook.',
-    },
-    'track-list': {
-      verdict: 'adaptation',
-      reason:
-        'the selection set keeps its own state seeded from `defaultSelectedIds` instead of the shared hook, which matters more here because the value is an ARRAY and identity decides whether a caller\u2019s update lands.',
-    },
-    questionnaire: {
-      verdict: 'adaptation',
-      reason:
-        'the step and the answers are each reconciled by hand, which is two copies of the rule in one family.',
     },
   },
 };

@@ -11,7 +11,8 @@ import { MenuItemRow } from './MenuItemRow';
 import type { MenuItemOptionGroup, MenuItemRowProps } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Food/MenuItem',
+  id: 'blocks-food-menuitem',
+  title: 'Patterns/Food/Menu Item',
   parameters: { layout: 'fullscreen' },
 };
 

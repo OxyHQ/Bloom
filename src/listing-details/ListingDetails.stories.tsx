@@ -47,7 +47,8 @@ import type {
 } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Stays/Listing Details',
+  id: 'blocks-stays-listing-details',
+  title: 'Patterns/Stays/Listing Details',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, type MutableRefObject } fr
 import { Platform } from 'react-native';
 import { useReducedMotion, useSharedValue } from 'react-native-reanimated';
 import { animateMotion } from '../motion/recipes';
-import { useScrollRestoration } from '../scroll';
+import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
 import type { ScrollRestorationTarget } from '../scroll/types';
 import type { ScreenContextValue } from './context';
 import type { ScreenViewportValue, ScreenHostValue } from './context';
@@ -29,6 +29,8 @@ export function useScreenViewportBinding(
   );
   const web = Platform.OS === 'web';
   const restoring = useRef(false);
+  const active = useRef(screen.active);
+  active.current = screen.active;
   const reducedMotion = useReducedMotion();
   useEffect(() => {
     if (!enabled || !web || !screen.active || typeof window === 'undefined') return;
@@ -73,6 +75,7 @@ export function useScreenViewportBinding(
       metrics,
       active: screen.active,
       scrollTo(options) {
+        if (!active.current) return;
         if (web) {
           const target = documentFlow ? window : (scrollRef.current as HTMLElement | null);
           target?.scrollTo({
@@ -96,21 +99,23 @@ export function useScreenViewportBinding(
 }
 
 /** Optional adapter sidecar: an ordinary Screen does not require a router/provider. */
-export function ScreenViewportRestoration({
-  target,
-  active,
-  restoring,
-}: {
-  target: ScrollRestorationTarget;
-  active: boolean;
-  restoring: MutableRefObject<boolean>;
-}) {
-  const binding = useScrollRestoration(target, { enabled: active });
-  useLayoutEffect(() => {
-    restoring.current = binding.restorePending;
-    return () => {
-      restoring.current = false;
-    };
-  }, [restoring, binding.restorePending]);
-  return null;
+export function createScreenViewportRestoration(useScrollRestoration: typeof UseScrollRestoration) {
+  return function ScreenViewportRestoration({
+    target,
+    active,
+    restoring,
+  }: {
+    target: ScrollRestorationTarget;
+    active: boolean;
+    restoring: MutableRefObject<boolean>;
+  }) {
+    const binding = useScrollRestoration(target, { enabled: active });
+    useLayoutEffect(() => {
+      restoring.current = binding.restorePending;
+      return () => {
+        restoring.current = false;
+      };
+    }, [restoring, binding.restorePending]);
+    return null;
+  };
 }

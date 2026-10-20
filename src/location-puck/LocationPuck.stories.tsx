@@ -6,7 +6,8 @@ import { Text } from '../typography';
 import { LocationPuck } from './LocationPuck';
 
 const meta: Meta<typeof LocationPuck> = {
-  title: 'Blocks/Maps/LocationPuck',
+  id: 'blocks-maps-locationpuck',
+  title: 'Components/Maps/Location Puck',
   component: LocationPuck,
   parameters: { layout: 'fullscreen' },
 };

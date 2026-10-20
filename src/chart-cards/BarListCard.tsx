@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import {
@@ -163,7 +164,10 @@ export function BarListCard({
   const lists: readonly BarListTab[] = tabs ?? [
     { id: 'list', label: title ?? chartText.titles.breakdown, items: items ?? [] },
   ];
-  const [selectedId, setSelectedId] = useState<string>(defaultTab ?? lists[0]?.id ?? 'list');
+  const [selectedId, setSelectedId] = useControllableState({
+    defaultValue: defaultTab ?? lists[0]?.id ?? 'list',
+    onChange: onTabChange,
+  });
   const single = lists.length === 1 && !tabs;
   const current = lists.find((l) => l.id === selectedId) ?? lists[0];
 
@@ -228,7 +232,6 @@ export function BarListCard({
             value={current?.id ?? ''}
             onChange={(id) => {
               setSelectedId(id);
-              onTabChange?.(id);
             }}
             testID={testID ? `${testID}-tabs` : undefined}
           />

@@ -1,3 +1,4 @@
+import { isScrollLocked } from './scroll-lock';
 import { type ComponentRef, useContext, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -147,7 +148,7 @@ export function ScrollAreaBar({
     };
     let anchor = 0;
     const down = (event: PointerEvent) => {
-      if (event.button !== 0) return;
+      if (event.button !== 0 || isScrollLocked(scroller)) return;
       event.preventDefault();
       // The bar's drag is the bar's: a pan gesture further up (the bottom sheet's) would take the
       // pointer's capture from the bar on the same press and drag the sheet instead.
@@ -160,7 +161,8 @@ export function ScrollAreaBar({
       setGrabbed(true);
     };
     const move = (event: PointerEvent) => {
-      if (trackEl.hasPointerCapture(event.pointerId)) scrollTo(coordinate(event) - anchor);
+      if (!isScrollLocked(scroller) && trackEl.hasPointerCapture(event.pointerId))
+        scrollTo(coordinate(event) - anchor);
     };
     const up = (event: PointerEvent) => {
       if (trackEl.hasPointerCapture(event.pointerId))

@@ -17,7 +17,8 @@ const meta: Meta<typeof AuthCard> = {
     switchHref: { control: 'text' },
     forgotPasswordHref: { control: 'text' },
   },
-  title: 'Blocks/Auth Card',
+  id: 'blocks-auth-card',
+  title: 'Patterns/Account/Auth Card',
   component: AuthCard,
 };
 

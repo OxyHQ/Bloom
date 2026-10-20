@@ -10,7 +10,8 @@ import { WizardProgress } from './WizardProgress';
 import type { WizardStep } from './types';
 
 const meta: Meta = {
-  title: 'Base/Wizard',
+  id: 'base-wizard',
+  title: 'Patterns/Forms/Wizard',
 };
 
 export default meta;

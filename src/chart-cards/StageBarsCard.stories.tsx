@@ -24,7 +24,8 @@ const meta: Meta<typeof StageBarsCard> = {
     defaultRange: { control: 'text' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Stage Bars',
+  id: 'charts-stage-bars',
+  title: 'Components/Charts/Stage Bars',
   component: StageBarsCard,
 };
 

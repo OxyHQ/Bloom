@@ -12,7 +12,8 @@ import { MapPriceMarker } from './MapPriceMarker';
 import { MapSearchAreaButton } from './MapSearchAreaButton';
 
 const meta: Meta<typeof MapPriceMarker> = {
-  title: 'Blocks/Stays/Map Marker',
+  id: 'blocks-stays-map-marker',
+  title: 'Components/Maps/Map Marker',
   component: MapPriceMarker,
 };
 

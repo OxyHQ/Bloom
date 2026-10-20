@@ -27,3 +27,8 @@ export { ScrollBar } from './ScrollBar';
 export type { ScrollAreaProps, ScrollAreaScrollbar, ScrollBarProps } from './types';
 export { useAnimatedScrollMetricsBinding } from './use-animated-scroll-metrics-binding';
 export type { AnimatedScrollMetricsBindingOptions } from './use-animated-scroll-metrics-binding';
+
+export { ResizeHandle } from './ResizeHandle';
+export type { ResizeHandleProps } from './types';
+export { ScrollSurface } from './ScrollSurface';
+export type { ScrollSurfaceProps } from './types';

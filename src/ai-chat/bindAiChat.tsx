@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
+import { AiChatCodePanel as AiChatCodePanelBase } from './AiChatCodePanel';
+import { AiChatThread as AiChatThreadBase } from './AiChatContainer';
+import type { AiChatCodePanelProps, AiChatThreadHandle, AiChatThreadProps } from './types';
 
 import { AiChatContainerBase } from './AiChatContainer';
+import { AiChatShellBase } from './AiChatShell';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { AiChatGalleryPanelBase } from './AiChatGalleryPanelBase';
 import { AiChatImageGenerationBase } from './AiChatImageGenerationBase';
@@ -13,6 +17,7 @@ import type {
   AiChatGalleryPanelProps,
   AiChatImageGenerationProps,
   AiChatUserMessageProps,
+  AiChatShellProps,
 } from './types';
 
 /**
@@ -21,6 +26,29 @@ import type {
  * never per render, so the component identities are stable.
  */
 export function bindAiChat(platform: AiChatPlatform) {
+  function AiChatCodePanel(props: AiChatCodePanelProps) {
+    return (
+      <AiChatPlatformContext.Provider value={platform}>
+        <AiChatCodePanelBase {...props} />
+      </AiChatPlatformContext.Provider>
+    );
+  }
+  const AiChatThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(
+    function AiChatThread(props, ref) {
+      return (
+        <AiChatPlatformContext.Provider value={platform}>
+          <AiChatThreadBase {...props} ref={ref} />
+        </AiChatPlatformContext.Provider>
+      );
+    },
+  );
+  function AiChatShell(props: AiChatShellProps) {
+    return (
+      <AiChatPlatformContext.Provider value={platform}>
+        <AiChatShellBase {...props} />
+      </AiChatPlatformContext.Provider>
+    );
+  }
   function AiChatFeedbackRow(props: AiChatFeedbackRowProps) {
     return (
       <AiChatPlatformContext.Provider value={platform}>
@@ -76,6 +104,9 @@ export function bindAiChat(platform: AiChatPlatform) {
   AiChatContainer.displayName = 'AiChatContainer';
 
   return {
+    AiChatCodePanel,
+    AiChatThread,
+    AiChatShell,
     AiChatFeedbackRow,
     AiChatUserMessage,
     AiChatAssistantMessage,

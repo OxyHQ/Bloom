@@ -17,7 +17,8 @@ const meta: Meta<typeof BottomSheet> = {
     scrollable: { control: 'boolean' },
     manualActivation: { control: 'boolean' },
   },
-  title: 'Base/Bottom Sheet',
+  id: 'base-bottom-sheet',
+  title: 'Components/Overlays/Bottom Sheet',
   component: BottomSheet,
 };
 

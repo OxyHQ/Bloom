@@ -248,6 +248,8 @@ export interface ComposerDockProps {
 }
 
 export interface ComposerPanelProps extends ComposerPermissionProps, ComposerDockProps {
+  /** Show the microphone control. Default true; hide when the host has no voice integration. */
+  showVoice?: boolean;
   /** Controlled draft. */
   value?: string;
   /** Initial draft when uncontrolled. */
@@ -415,6 +417,8 @@ export interface ComposerPillLabels {
 }
 
 export interface ComposerPillProps extends ComposerPermissionProps, ComposerDockProps {
+  /** Show the microphone control. Default true; hide when the host has no voice integration. */
+  showVoice?: boolean;
   /** Controlled field value. */
   value?: string;
   /** Initial value when uncontrolled. */

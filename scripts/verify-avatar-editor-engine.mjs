@@ -25,7 +25,7 @@ try {
       report.failedAssets.push(r.url());
   });
   await page.goto(
-    'http://localhost:6006/iframe.html?id=application-agent-avatar-characters--editor&viewMode=story',
+    'http://localhost:6006/iframe.html?id=agents-agent-avatar-characters--editor&viewMode=story',
   );
   await page.waitForSelector(
     '[data-testid="universal-avatar-preview"] canvas[data-avatar-engine="new"]',
@@ -193,7 +193,7 @@ try {
   );
   report.cases.push({ name: 'preset-change-keeps-shared-engine' });
   await page.goto(
-    'http://localhost:6006/iframe.html?id=application-agent-creator--basic&viewMode=story',
+    'http://localhost:6006/iframe.html?id=agents-agent-creator--basic&viewMode=story',
   );
   await page.waitForFunction(
     () => {

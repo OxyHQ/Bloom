@@ -19,7 +19,8 @@ import { groupMailByDay } from './shared';
 import type { MailAction, MailSummary, MailSwipeActions } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Mail/Mail List',
+  id: 'blocks-mail-mail-list',
+  title: 'Patterns/Mail/Mail List',
 };
 
 export default meta;

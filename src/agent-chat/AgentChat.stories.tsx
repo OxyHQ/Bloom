@@ -33,7 +33,8 @@ const meta: Meta = {
   },
   component: AgentChat,
   parameters: { controls: { disable: true } },
-  title: 'Agents/Agent Chat',
+  id: 'agents-agent-chat',
+  title: 'Patterns/Agents/Agent Chat',
 };
 
 export default meta;
@@ -296,7 +297,7 @@ export const Demo: Story = {
   },
 };
 
-/** A settled conversation with history: hover a reply for its actions, scroll to frost the header. */
+/** A settled conversation with history: hover a reply for its actions, scroll to reveal the header scrim. */
 export const Conversation: Story = {
   parameters: { controls: { disable: true } },
   render: () => (

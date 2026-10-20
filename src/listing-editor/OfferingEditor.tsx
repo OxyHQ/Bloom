@@ -1,3 +1,5 @@
+import { FieldConstraintScope } from '../field/FieldConstraintScope';
+import { useFieldMembership } from '../field/membership';
 import React, { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -14,7 +16,7 @@ import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { LISTING_EDITOR_MESSAGES } from './messages';
-import { resolveSelectionPaint, SelectionCard } from './SelectionCard';
+import { resolveSelectionPaint, SelectionCard } from '../card/SelectionCard';
 import type {
   ListingEditorIcon,
   OfferingEditorProps,
@@ -91,7 +93,7 @@ function OfferingEditorComponent({
   depositOptions = [0, 1, 2, 3],
   errors = {},
   labels: labelsProp,
-  disabled = false,
+  disabled: disabledProp = false,
   style,
   testID,
 }: OfferingEditorProps) {
@@ -99,6 +101,12 @@ function OfferingEditorComponent({
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
   const labels = useMemo(() => ({ ...messages.offering, ...labelsProp }), [messages, labelsProp]);
+  const field = useFieldMembership({
+    accessibilityLabel: labelsProp?.group,
+    disabled: disabledProp,
+    invalid: !!errors.kinds,
+  });
+  const disabled = field.disabled;
   const [width, setWidth] = useState(0);
   const wide = width >= 480;
   const tid = (suffix: string) => (testID ? `${testID}-${suffix}` : undefined);
@@ -267,40 +275,54 @@ function OfferingEditorComponent({
     ),
   };
 
+  // The group is the field's member and takes its id, name and error; the cards
+  // and the detail fields under them are its parts, which keep their own names
+  // and freeze with the field (`field/FieldConstraintScope.tsx`).
   return (
-    <View testID={testID} style={style} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
-      <View role="group" accessibilityLabel={labels.group} style={{ gap: 12 }}>
-        {kinds.map((kind) => {
-          const selected = value.kinds.includes(kind);
-          return (
-            <SelectionCard
-              key={kind}
-              selection="multiple"
-              selected={selected}
-              onPress={() => onValueChange(toggleOfferingKind(value, kind))}
-              title={labels[kind].title}
-              description={labels[kind].description}
-              icon={ICONS[kind]}
-              compact={width > 0 && width < 400}
-              disabled={disabled}
-              testID={tid(kind)}
-            >
-              {selected ? fields[kind]() : null}
-            </SelectionCard>
-          );
-        })}
-      </View>
-      {errors.kinds ? (
-        <Text
-          variant="body-2-regular"
-          accessibilityLiveRegion="polite"
-          testID={tid('kinds-error')}
-          style={{ color: paint.error, marginTop: 8 }}
+    <FieldConstraintScope>
+      <View testID={testID} style={style} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+        <View
+          role="group"
+          nativeID={field.nativeID}
+          aria-describedby={field.describedBy}
+          aria-invalid={field.invalid || undefined}
+          aria-disabled={disabled || undefined}
+          aria-required={field.required || undefined}
+          accessibilityLabel={field.accessibilityLabel ?? labels.group}
+          style={{ gap: 12 }}
         >
-          {errors.kinds}
-        </Text>
-      ) : null}
-    </View>
+          {kinds.map((kind) => {
+            const selected = value.kinds.includes(kind);
+            return (
+              <SelectionCard
+                key={kind}
+                selection="multiple"
+                selected={selected}
+                onPress={() => onValueChange(toggleOfferingKind(value, kind))}
+                title={labels[kind].title}
+                description={labels[kind].description}
+                icon={ICONS[kind]}
+                compact={width > 0 && width < 400}
+                disabled={disabled}
+                testID={tid(kind)}
+              >
+                {selected ? fields[kind]() : null}
+              </SelectionCard>
+            );
+          })}
+        </View>
+        {errors.kinds ? (
+          <Text
+            variant="body-2-regular"
+            accessibilityLiveRegion="polite"
+            testID={tid('kinds-error')}
+            style={{ color: paint.error, marginTop: 8 }}
+          >
+            {errors.kinds}
+          </Text>
+        ) : null}
+      </View>
+    </FieldConstraintScope>
   );
 }
 

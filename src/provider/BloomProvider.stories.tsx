@@ -33,7 +33,8 @@ import type { ImageResolver } from '../image-resolver';
  * claim: an app with no Bloom root at all loses the theme too.
  */
 const meta: Meta = {
-  title: 'Foundations/Bloom Provider',
+  id: 'foundations-bloom-provider',
+  title: 'Composition/Provider',
 };
 
 export default meta;

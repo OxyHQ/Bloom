@@ -13,7 +13,8 @@ import { MapListingPreview } from './MapListingPreview';
 import { MapPriceMarker } from './MapPriceMarker';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Map',
+  id: 'blocks-housing-map',
+  title: 'Patterns/Housing/Map',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -35,7 +35,8 @@ provideExpoVideo({ VideoView: StoryExpoVideoView });
 const PLAYER = { playing: true, play: () => {}, pause: () => {} };
 
 const meta: Meta<typeof VideoView> = {
-  title: 'Base/Video View',
+  id: 'base-video-view',
+  title: 'Components/Media/Video View',
   component: VideoView,
   parameters: { controls: { disable: true } },
 };

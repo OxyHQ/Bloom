@@ -281,3 +281,9 @@ removes the edge while retaining the solid backing.
   <MailThread messages={messages} />
 </ContentPanel>
 ```
+
+When a filled panel contains `Screen` or a list that owns its scrolling, pass
+`scrollable={false}`. `fill` still bounds the surface and its content; the web
+wrapper does not become another scroll container. AppShell's compositor sets
+this automatically for its panel surfaces, as it does for floating Dialog
+surfaces. Standalone filled panels retain their existing scrolling default.

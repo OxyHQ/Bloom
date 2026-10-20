@@ -10,7 +10,8 @@ import { LeadScoreCard } from './LeadScoreCard';
 import type { LeadScoreFactor } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/CRM/LeadScore',
+  id: 'blocks-crm-leadscore',
+  title: 'Patterns/CRM/Lead Score',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

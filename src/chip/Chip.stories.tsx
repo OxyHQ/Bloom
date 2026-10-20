@@ -9,7 +9,8 @@ import type { AccentFill, AccentTone } from '../theme/accent-colors';
 import { Chip, ChipRow, type ChipHue } from './index';
 
 const meta: Meta<typeof Chip> = {
-  title: 'Base/Chip',
+  id: 'base-chip',
+  title: 'Components/Data Display/Chip',
   component: Chip,
 };
 

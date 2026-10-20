@@ -52,7 +52,7 @@ try {
       await page.close();
     }
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await page.goto(`${base}/iframe.html?id=blocks-ai-chat--empty-navigation-focus&viewMode=story`);
+  await page.goto(`${base}/iframe.html?id=agents-ai-chat--empty-navigation-focus&viewMode=story`);
   const opener = page.getByRole('button', { name: 'Open empty navigation' });
   await opener.waitFor({ timeout: 120000 });
   await opener.focus();

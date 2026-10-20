@@ -12,7 +12,8 @@ import { CartPanel } from './CartPanel';
 import type { CartLineEntry, CartTipOption } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Food/CartPanel',
+  id: 'blocks-food-cartpanel',
+  title: 'Patterns/Food/Cart Panel',
   parameters: { layout: 'fullscreen' },
 };
 

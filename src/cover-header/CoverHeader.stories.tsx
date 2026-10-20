@@ -12,7 +12,8 @@ const meta: Meta<typeof CoverHeader> = {
     coverHeight: { control: 'number' },
     overlap: { control: 'number' },
   },
-  title: 'Base/Cover Header',
+  id: 'base-cover-header',
+  title: 'Composition/Layout/Cover Header',
   component: CoverHeader,
 };
 

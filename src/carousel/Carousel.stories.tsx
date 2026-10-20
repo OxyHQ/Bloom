@@ -18,7 +18,8 @@ const meta: Meta<typeof Carousel> = {
     previousLabel: { control: 'text' },
     nextLabel: { control: 'text' },
   },
-  title: 'Base/Carousel',
+  id: 'base-carousel',
+  title: 'Components/Media/Carousel',
   component: Carousel,
 };
 

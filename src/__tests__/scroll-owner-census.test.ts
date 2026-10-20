@@ -7,7 +7,7 @@ const exceptions = new Set([
   'layout/ScrollViewport.tsx', // shared plain/animated primitive
   'sidebar/SidebarScrollArea.tsx', // existing owner + ScrollBar
   'bottom-sheet/BottomSheetBase.tsx', // gesture-coordinated owner + ScrollBar
-  'screen/ScreenScrollView.tsx', // screen-coordinated owner + ScrollBar
+  'screen/ScreenScrollViewBase.tsx', // screen-coordinated owner + ScrollBar
   'carousel/Carousel.tsx', // discrete pages, navigated by arrows/dots
   'listing-card/ListingCard.tsx', // discrete image pager
   'zoomable-media-gallery/ZoomableMediaGalleryBase.tsx', // zoom-locked image pager

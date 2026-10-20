@@ -7,7 +7,8 @@ import { Badge } from '../badge';
 import { Chip } from '../chip';
 
 const meta = {
-  title: 'Foundations/Appearance',
+  id: 'foundations-appearance',
+  title: 'Composition/Scope/Bloom Scope',
   component: BloomScope,
   args: { size: 'md', tone: 'accent' },
   argTypes: {

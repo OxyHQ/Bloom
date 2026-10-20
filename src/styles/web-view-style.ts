@@ -89,10 +89,14 @@ export const WEB_OVERFLOW_CLIP = 'clip' as ViewStyle['overflow'];
  * Safari still needs them for `backdrop-filter` and `mask-image`.
  */
 export interface WebCssStyle extends ViewStyle {
+  /** CSS containment for responsive descendants; RNW forwards these properties. */
+  containerType?: 'normal' | 'size' | 'inline-size' | 'scroll-state';
+  containerName?: string;
   cornerShape?: 'round' | 'squircle';
   /** CSS `animation` shorthand. Bloom's web forks self-inject the `@keyframes`. */
   animation?: string;
   animationDelay?: string;
+  transitionBehavior?: 'normal' | 'allow-discrete';
   transitionProperty?: string;
   transitionDuration?: string;
   transitionTimingFunction?: string;

@@ -15,7 +15,8 @@ const meta: Meta<typeof ScatterChartCard> = {
     defaultRange: { control: 'text' },
     tiles: { control: 'boolean' },
   },
-  title: 'Charts/Scatter Chart',
+  id: 'charts-scatter-chart',
+  title: 'Components/Charts/Scatter Chart',
   component: ScatterChartCard,
 };
 

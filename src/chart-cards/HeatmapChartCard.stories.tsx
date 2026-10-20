@@ -17,7 +17,8 @@ const meta: Meta<typeof HeatmapChartCard> = {
     defaultRange: { control: 'text' },
     columnLabelEvery: { control: 'number' },
   },
-  title: 'Charts/Heatmap Chart',
+  id: 'charts-heatmap-chart',
+  title: 'Components/Charts/Heatmap Chart',
   component: HeatmapChartCard,
 };
 

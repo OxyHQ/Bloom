@@ -12,7 +12,8 @@ const meta: Meta<typeof BloomScope> = {
   argTypes: {
     size: { control: 'select', options: ['sm', 'md'] },
   },
-  title: 'Foundations/Control Size',
+  id: 'foundations-control-size',
+  title: 'Composition/Scope/Control Size',
   component: BloomScope,
 };
 

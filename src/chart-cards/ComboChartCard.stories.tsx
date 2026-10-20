@@ -17,7 +17,8 @@ const meta: Meta<typeof ComboChartCard> = {
     headlineFrom: { control: 'select', options: ['bar', 'line'] },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Combo Chart',
+  id: 'charts-combo-chart',
+  title: 'Components/Charts/Combo Chart',
   component: ComboChartCard,
 };
 

@@ -15,7 +15,8 @@ const meta: Meta<typeof SankeyChartCard> = {
     linkColor: { control: 'select', options: ['source', 'target'] },
     height: { control: 'number' },
   },
-  title: 'Charts/Sankey Chart',
+  id: 'charts-sankey-chart',
+  title: 'Components/Charts/Sankey Chart',
   component: SankeyChartCard,
 };
 

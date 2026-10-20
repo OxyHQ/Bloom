@@ -214,25 +214,21 @@ underneath) and nothing else: `header` (chrome spanning it), `scroll`,
   its own `minWidth`. Flexbox sums the min-clamped bases first, so a narrow group
   shrinks the SIZED panel before the flexible one gives up its minimum — a map
   beside a results list stays a map.
-- **`resizable`** puts the grip (`AiChatResizeHandle`: pointer capture on web, a
+- **`resizable`** puts the shared `ResizeHandle` (pointer capture on web, a
   `PanResponder` on native, arrow keys ±16) on the panel's end edge, centred in
   the gap. A drag starts from the width the panel is DRAWN at and is clamped to
   `minWidth`/`maxWidth`; `onWidthChange` reports where it settled.
 - **`collapseBelow`** — a width of the group's OWN box, so a sidebar or an aside
   beside it counts — below which exactly ONE panel renders: the one `show` names,
-  else the first. The others unmount. No window width anywhere.
+  else the first. Mounted inline content is retained, inert and hidden from accessibility. Set `keepMounted` on a panel to mount it even while initially hidden.
+- **Controlled sizes.** Pass `widths` and `onWidthsChange` to the group using panel IDs as keys. These delegate to `panelLayout`'s existing size contract; `onWidthChange` on an individual panel also reports the settled width.
 - **`useAppShellPanel()`** inside a panel returns `{ id, alone, framed }`.
   `alone` is true while the group is collapsed (or has one panel): a panel shows
   its own way to the other one — a Map / List toggle — exactly then.
 - **`hideBelow`** on a trailing panel (a message's details) drops it below the
   group width it needs.
 
-What a group knows about its panels is their POSITION, never their props: each
-direct child is handed its index and the count (`Children.toArray`, so a
-conditional `{open && <AppShellPanel …/>}` is fine). That is how the first panel
-is the default `show`, a panel after the first draws the divider before itself,
-and a group of one is `alone`. No effects, no registration, no measuring of
-siblings.
+The JSX group translates its direct panel children into the same descriptors used by `AppShell.panelLayout`. IDs, sizing, responsive selection, retention and dividers share one engine. Conditional panel children remain supported.
 
 ### Scroll ownership
 
@@ -422,11 +418,53 @@ overlapping another, and no console error.
 ## Layout
 
 - `lg` and up: the rail sits in flow; the content column is centred, max `contentMaxWidth` (1300), header then content 16 apart.
-- Below `lg` the header shows a menu button, and `drawer` picks how the rail arrives:
+- Below `lg` the header shows a menu button. `drawer="overlay"` is the default; dashboard and feed also take `drawer="reveal"`:
   - `overlay` — a drawer over the page on a 40% black backdrop (portaled through `OverlayRoot`, so it ranks with every other overlay).
   - `reveal` — the rail waits flat beneath the page; the page slides 272 toward the end edge (right in LTR, left in RTL) and rounds to 32 while the rail scales in from 0.94 (325ms). Pressing the page closes it.
 - `drawerOpen` / `onDrawerOpenChange` control it.
 - `sidebar={{ variant: 'rail', … }}` keeps the 80px navigation rail in flow from `sm` instead of `lg`; below `sm` the menu button opens the drawer, which always shows the full panel.
+
+Web reveal writes its target once and uses one CSS transition recipe for the
+page, rail, chrome and veil (325ms, `cubic-bezier(0.42, 0, 0.58, 1)`), without
+JavaScript work on each animation frame. Native retains UI-thread timing.
+Reduced motion uses zero duration on both platforms. Closed reveal navigation
+is hidden from accessibility and inert to keyboard focus on web.
+Reveal uses the shared compact-panel interaction contract: initial focus, Tab
+containment and focus restoration on web; keyboard dismissal and Android back
+on native. Escape and back yield to overlays above the navigation. The displaced
+page and its bars are inert while navigation is open; its closing veil remains
+interactive. Dashboard and feed share this frame and their ordinary body layout.
+
+### A complete domain sidebar
+
+`AppShellSidebarProps` extends the ordinary Sidebar configuration with `width`
+and `render`. `width` is the expanded region width; finite numbers clamp to zero,
+and omitted or nonfinite values fall back to the selected size's metrics. The
+same resolved width drives CSS capacity, native geometry, and the reveal rail
+and page displacement. The ordinary medium geometry stays 260px expanded with
+a 272px reveal displacement; custom widths replace that expanded measurement.
+
+`render` receives the resolved Sidebar props, including its `variant`, collapse
+state, `mobile`, `onClose`, style and navigation callbacks. An explicit width also
+enables Sidebar's fluid measurement so its content follows the region. Return a complete
+domain sidebar, without nesting it inside another Sidebar:
+
+```tsx
+<AppShell
+  sidebar={{
+    variant: 'panel', collapsed: false, collapseDisabled: true,
+    render: props => <ConversationSidebar {...props} conversations={conversations}
+      activeId={activeId} onSelect={setActiveId} />,
+  }}
+  panelLayout={workspacePanels}
+/>
+```
+
+Use Sidebar `content` for destinations inside its existing scroller. Use the
+shell's `sidebar.render` slot when the domain component already owns the whole
+Sidebar. Store durable conversation/search state in the host when it is shared
+across desktop and compact presentations. The shell remains the sole owner of
+navigation geometry and reveal motion.
 
 ## Aside
 
@@ -559,7 +597,7 @@ That is supported: after any switch the shell lays out exactly as a fresh mount 
 The page scrolls the **document**, like a [`ContentPanel`](/docs/bloom/main/content-panel) page — not a scroll view inside the frame. The shell is at least one viewport tall and grows with its content; the in-flow sidebar is `position: sticky`, so it stays put while the page moves under it. That is what makes scroll restoration, the mobile address bar collapsing, anchor links and `window.scrollTo` behave as they do on any web page.
 
 - Nothing between the shell and the document may become a scroll container: a parent with `height: 100%` plus `overflow: hidden` (or `auto`) around `AppShell` pins the sidebar to a box that never scrolls. Mount it straight under the app root.
-- `reveal` clips the sliding page with `overflow: clip`, not `hidden`, for the same reason — and so the 272px slide never adds a horizontal scrollbar. The waiting rail is `position: fixed`.
+- Compact `reveal` clips the sliding page with `overflow: clip`, not `hidden`, for the same reason — and so the 272px slide never adds a horizontal scrollbar. The waiting rail is `position: fixed`. The stable feed wrapper returns to visible overflow on desktop, allowing document decks to extend horizontally.
 - `scroll="container"` restores the old behaviour — the shell fills its parent and the page scrolls inside its own `ScrollView` — for a shell embedded in a bounded box rather than owning the page.
 
 Native has no document: `document` behaves as `container` there, and `fixed` works the same as on web.
@@ -764,7 +802,7 @@ the same layout draws the same frame there as on the web. The sidebar spans the 
 owns the vertical gutter, which still supplies the panel mask and header inset.
 The social template uses an 8px gutter, matching the compact framed layout.
 
-A feed can use `drawer="reveal"` on compact screens: the page slides aside to reveal the same sidebar, as in AI Chat. Its document scroll and desktop column layout remain unchanged. Put `AppShellMenuButton` in a custom header’s `leading` slot; it hides automatically when navigation is in flow.
+Dashboard and feed take `drawer="reveal"` on compact screens (the default is the portaled `overlay` drawer): the page slides aside and rounds its corners to expose the sidebar. While it is open the drawer is modal: focus moves in and Tab stays inside, Escape, Android back and the VoiceOver escape gesture close it, and the page and its veil leave the accessibility tree. Feed keeps the same page wrapper and content subtree when navigation crosses between compact and desktop; the desktop navigation stays in the body row. Put `AppShellMenuButton` in a custom header’s `leading` slot; it hides automatically when navigation is in flow. Shells without navigation do not acquire a sidebar or drawer.
 
 
 The `bottomBar` slot publishes its measured footprint through the shared bottom-edge registry. Measurement includes the slot’s safe-area padding; embedded bars must not add that inset again. Native feeds and separately positioned FABs can read `useBottomEdgeInset()` without importing the navigation component. Claims combine by maximum, not addition, and disappear when the slot unmounts. The slot never reads its own claim to size itself; repeated equal layout measurements do not trigger another height callback.
@@ -856,12 +894,49 @@ expanded panel fills the available region, overriding its ordinary maximum width
 `appearance="joined"` draws a shared surface and separators; `separated` draws individual
 surfaces. Appearance is a structural choice: keep it stable to preserve mounted content.
 
+For a three-column workspace, keep navigation in `sidebar` and give the secondary
+content panel a `floating` presentation. Below `floating.below` (the shell width), its
+inline track releases its space and the main conversation stays visible. Opening
+the secondary panel uses Bloom's floating side sheet, including its animation, modal
+focus, Escape/Back, backdrop dismissal and close control:
+
+```tsx
+{
+  id: 'context', width: 410, minWidth: 320, maxWidth: 560,
+  floating: {
+    below: 'xl', open: contextOpen, onOpenChange: setContextOpen,
+    label: contextTitle,
+  },
+  content: <ContextScreen />,
+}
+```
+
+`floating.open` controls only the compact surface. On desktop the descriptor uses
+its ordinary inline visibility; `visible: false` hides both presentations.
+`activePanel` continues to select collapsed tracks, so it does not replace the
+conversation when opening this dialog. `useAppShellPanel().presentation` is
+`'floating'` inside the floating surface. Keep the route's same `Screen` and
+`PageHeader`: the host composes dismissal into its header actions, while the
+surface owns focus, Escape/Back and the animated exit. No second modal header or
+scroll wrapper is added. Each surface has its own Screen scope; bounded panels
+use their own viewport, and their header and bottom bar read that viewport's
+metrics. The descriptor retains panel navigation history across presentation changes. Content moves between inline and modal hosts
+at the breakpoint; keep component-local edits that must survive that move in the
+workspace's state. Hidden inline tracks retain content; closed Dialogs follow the
+normal Dialog unmount lifecycle.
+
 `resizable` adds Bloom's existing pointer, native pan and keyboard grip. In split mode
 resizing transfers room to the next visible panel, preserving their combined width.
 Use `widths` and `onWidthsChange` for controlled sizes; descriptor `width` is the resting
 size. `onWidthChange` on a descriptor also reports changes. The feed envelope uses
 resting widths, so resizing cannot move navigation. `gap` defaults to the shell gutter
 (or a hairline for joined panels).
+
+During a pointer/native drag, Bloom previews geometry directly, without a React
+render or a controlled-state callback for each movement. `onWidthsChange`,
+`onHeightsChange`, `onWidthChange` and `onHeightChange` report the committed sizes
+when the gesture ends. Keyboard nudges report immediately. Both adjacent limits
+apply throughout the preview; a Deck updates its document scroll extent as it grows.
 
 `mode="deck"` keeps track widths. On web, horizontal decks use the **document's
 horizontal scrollbar** by default; the navigation stays sticky at the inline-start
@@ -895,8 +970,13 @@ A descriptor with `visible: false` releases its track and retains previously mou
 content, inert and hidden from accessibility. `keepMounted: true` also mounts it
 when initially hidden, useful for the one permanent host router. Keep descriptors
 and their IDs stable when routes select different groups of panels. Semantic
-visibility changes release obsolete tracks immediately, so outgoing deck columns
-cannot add their widths to the incoming layout.
+visibility changes animate the outgoing track toward zero while its opacity fades;
+it becomes inert and inaccessible immediately. CSS discrete display transitions
+remove its box at the end. Entering tracks start at zero with `@starting-style`.
+The track width, gaps and reading envelope transition together. Previously the
+semantic visibility path disabled transitions to avoid obsolete Deck columns
+adding their full widths to an incoming envelope; retaining full outgoing widths
+would reintroduce that overflow, so exits must shrink with the envelope.
 
 Use `scroll="panel"` for Bloom-owned vertical scrolling and restoration; leave it as
 `content` for a map, virtualized list or route that owns its scroll. Never wrap an
@@ -986,7 +1066,7 @@ changing orientation and demonstrates height resizing. **Modular Vertical Docume
 shows a short summary above a long activity section sharing the page scroll.
 Responsive and expanded-panel exits use CSS discrete display transitions on web;
 native retains the previous measured height through its shared exit animation.
-Explicit semantic visibility releases the track immediately. Reduced motion settles
+Explicit semantic visibility uses the same shared exit. Reduced motion settles
 immediately, without timers or app-owned transition state.
 
 The web compiler emits rules from the descriptors, not from measured viewport

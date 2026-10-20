@@ -12,7 +12,10 @@ import {
   type PanelRouteDefinition,
 } from './index';
 
-const meta: Meta = { title: 'Navigation/Panel Routing' };
+const meta: Meta = {
+  id: 'navigation-panel-routing',
+  title: 'Composition/Navigation/Panel Routing',
+};
 export default meta;
 type Story = StoryObj;
 

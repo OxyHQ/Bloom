@@ -8,7 +8,8 @@ import { SortablePhotoGrid } from './SortablePhotoGrid';
 import type { SortablePhoto } from './types';
 
 const meta: Meta = {
-  title: 'Base/Sortable Photo Grid',
+  id: 'base-sortable-photo-grid',
+  title: 'Components/Media/Sortable Photo Grid',
 };
 
 export default meta;

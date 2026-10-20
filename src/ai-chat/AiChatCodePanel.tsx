@@ -16,20 +16,20 @@ import { ROW_RADIUS, useAiChatPalette, useAiChatWebCss, type AiChatPalette } fro
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
 import type { AiChatCodePanelProps, AiChatPanelAction, AiChatPanelTab } from './types';
-import { dataHook } from '../styles/data-hook';
-import { ScrollArea } from '../layout/ScrollArea';
+import { useAiChatPlatform } from './context';
+import { PageHeader } from '../page-header';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
 
-/**
- * The header row both right-hand panels share: the `PillTabList` (blue
- * pills, 20px glyphs) on the left and the panel actions on the right, at least 30 tall.
- */
+/** Shared PageHeader slots for the code and gallery screens. */
 export function PanelHeader({
+  title,
   tabs,
   value,
   onValueChange,
   label,
   children,
 }: {
+  title: string;
   tabs: ReadonlyArray<AiChatPanelTab>;
   value: string;
   onValueChange: (value: string) => void;
@@ -37,39 +37,26 @@ export function PanelHeader({
   children: React.ReactNode;
 }) {
   return (
-    <View
-      style={{
-        width: '100%',
-        minHeight: 30,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
-    >
-      <View accessibilityLabel={label} style={{ flexShrink: 1, minWidth: 0 }}>
-        <Tabs variant="pill" value={value} onValueChange={onValueChange}>
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              label={tab.label}
-              leadingIcon={tab.icon}
-            />
-          ))}
-        </Tabs>
-      </View>
-      <View
-        style={{
-          flexShrink: 0,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          paddingRight: 1,
-        }}
-      >
-        {children}
-      </View>
-    </View>
+    <PageHeader
+      safeArea={false}
+      titleAlign="start"
+      title={title}
+      accessory={
+        <View accessibilityLabel={label} style={{ flexShrink: 1, minWidth: 0 }}>
+          <Tabs variant="pill" value={value} onValueChange={onValueChange}>
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                label={tab.label}
+                leadingIcon={tab.icon}
+              />
+            ))}
+          </Tabs>
+        </View>
+      }
+      actions={<ButtonGroup>{children}</ButtonGroup>}
+    />
   );
 }
 
@@ -145,6 +132,7 @@ export function AiChatCodePanel({
   style,
   testID,
 }: AiChatCodePanelProps) {
+  const { Screen, ScreenScrollView } = useAiChatPlatform();
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const { messages } = useMessages(AI_CHAT_MESSAGES);
@@ -179,172 +167,183 @@ export function AiChatCodePanel({
           height: '100%',
           flexShrink: 0,
           flexDirection: 'column',
-          gap: 10,
           overflow: 'hidden',
-          paddingTop: 8,
         },
         style,
       ]}
     >
-      <PanelHeader
-        tabs={tabs}
-        value={shown}
-        onValueChange={(next) => setCurrent(next as 'changes' | 'browser')}
-        label={l.tabs}
+      <Screen
+        scroll="auto"
+        documentScroll={false}
+        contentClearance={0}
+        header={
+          <PanelHeader
+            title={messages.code}
+            tabs={tabs}
+            value={shown}
+            onValueChange={(next) => setCurrent(next as 'changes' | 'browser')}
+            label={l.tabs}
+          >
+            {actions.map((action) => (
+              <ButtonGroupItem
+                key={action.key}
+                iconOnly
+                leadingIcon={(iconProps) => <action.icon {...iconProps} />}
+                accessibilityLabel={action.label}
+                onPress={action.onPress}
+              />
+            ))}
+          </PanelHeader>
+        }
       >
-        {actions.map((action) => (
-          <GlyphAction
-            key={action.key}
-            icon={action.icon}
-            label={action.label}
-            onPress={action.onPress}
-            palette={palette}
-          />
-        ))}
-      </PanelHeader>
-
-      {shown === 'changes' ? (
-        <>
-          {changeCount !== undefined || changedFiles.length > 0 ? (
-            <View style={{ width: '100%', flexDirection: 'column' }}>
-              {changeCount !== undefined ? (
-                <View
-                  style={{
-                    width: '100%',
-                    justifyContent: 'center',
-                    borderTopLeftRadius: ROW_RADIUS,
-                    borderTopRightRadius: ROW_RADIUS,
-                    borderLeftWidth: 1,
-                    borderRightWidth: 1,
-                    borderTopWidth: 1,
-                    borderColor: palette.secondary,
-                    paddingLeft: 10,
-                    paddingRight: 10,
-                    paddingTop: 6,
-                    paddingBottom: 14,
-                  }}
-                >
-                  <View
-                    style={{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 6 }}
-                  >
+        <ScreenScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 12 }}>
+          {shown === 'changes' ? (
+            <>
+              {changeCount !== undefined || changedFiles.length > 0 ? (
+                <View style={{ width: '100%', flexDirection: 'column' }}>
+                  {changeCount !== undefined ? (
                     <View
                       style={{
-                        minWidth: 0,
-                        flex: 1,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      <Text
-                        variant="body-2-medium"
-                        numberOfLines={1}
-                        style={{ color: palette.textSecondary }}
-                      >
-                        {l.uncommitted(changeCount)}
-                      </Text>
-                      {additions !== undefined ? (
-                        <Text
-                          variant="body-regular"
-                          style={{ color: palette.addition }}
-                        >{`+${additions}`}</Text>
-                      ) : null}
-                      {deletions !== undefined ? (
-                        <Text
-                          variant="body-regular"
-                          style={{ color: palette.deletion }}
-                        >{`-${deletions}`}</Text>
-                      ) : null}
-                    </View>
-                    {onUndo ? (
-                      <GlyphAction
-                        icon={RiCornerUpLeftLine}
-                        label={l.undo}
-                        onPress={onUndo}
-                        palette={palette}
-                        hover={false}
-                      />
-                    ) : null}
-                  </View>
-                </View>
-              ) : null}
-              {changedFiles.map((file, index) => (
-                <View
-                  key={`${file.path}-${index}`}
-                  style={{
-                    zIndex: 10,
-                    marginTop: index === 0 && changeCount !== undefined ? -7 : index === 0 ? 0 : 4,
-                    width: '100%',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderRadius: ROW_RADIUS,
-                    backgroundColor: palette.secondary,
-                    paddingTop: 4,
-                    paddingBottom: 4,
-                    paddingRight: 5,
-                    paddingLeft: 6,
-                  }}
-                >
-                  <View
-                    style={{
-                      minWidth: 0,
-                      flexShrink: 1,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    {file.icon ? <View style={{ flexShrink: 0 }}>{file.icon}</View> : null}
-                    <Text
-                      variant="body-regular"
-                      numberOfLines={1}
-                      style={{ flexShrink: 1, color: palette.text }}
-                    >
-                      {file.path}
-                      {file.additions !== undefined ? (
-                        <Text style={{ color: palette.addition }}>{` +${file.additions}`}</Text>
-                      ) : null}
-                    </Text>
-                  </View>
-                  {file.status ? (
-                    <View
-                      style={{
-                        flexShrink: 0,
-                        alignItems: 'center',
+                        width: '100%',
                         justifyContent: 'center',
-                        borderRadius: 4,
-                        backgroundColor: palette.tertiary,
-                        paddingLeft: 4,
-                        paddingRight: 4,
-                        paddingTop: 1,
-                        paddingBottom: 1,
+                        borderTopLeftRadius: ROW_RADIUS,
+                        borderTopRightRadius: ROW_RADIUS,
+                        borderLeftWidth: 1,
+                        borderRightWidth: 1,
+                        borderTopWidth: 1,
+                        borderColor: palette.secondary,
+                        paddingLeft: 10,
+                        paddingRight: 10,
+                        paddingTop: 6,
+                        paddingBottom: 14,
                       }}
                     >
-                      <Text
-                        variant="caption-1-medium"
-                        numberOfLines={1}
-                        style={{ color: palette.textSecondary }}
+                      <View
+                        style={{
+                          width: '100%',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
                       >
-                        {file.status}
-                      </Text>
+                        <View
+                          style={{
+                            minWidth: 0,
+                            flex: 1,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 6,
+                          }}
+                        >
+                          <Text
+                            variant="body-2-medium"
+                            numberOfLines={1}
+                            style={{ color: palette.textSecondary }}
+                          >
+                            {l.uncommitted(changeCount)}
+                          </Text>
+                          {additions !== undefined ? (
+                            <Text
+                              variant="body-regular"
+                              style={{ color: palette.addition }}
+                            >{`+${additions}`}</Text>
+                          ) : null}
+                          {deletions !== undefined ? (
+                            <Text
+                              variant="body-regular"
+                              style={{ color: palette.deletion }}
+                            >{`-${deletions}`}</Text>
+                          ) : null}
+                        </View>
+                        {onUndo ? (
+                          <GlyphAction
+                            icon={RiCornerUpLeftLine}
+                            label={l.undo}
+                            onPress={onUndo}
+                            palette={palette}
+                            hover={false}
+                          />
+                        ) : null}
+                      </View>
                     </View>
                   ) : null}
+                  {changedFiles.map((file, index) => (
+                    <View
+                      key={`${file.path}-${index}`}
+                      style={{
+                        zIndex: 10,
+                        marginTop:
+                          index === 0 && changeCount !== undefined ? -7 : index === 0 ? 0 : 4,
+                        width: '100%',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        borderRadius: ROW_RADIUS,
+                        backgroundColor: palette.secondary,
+                        paddingTop: 4,
+                        paddingBottom: 4,
+                        paddingRight: 5,
+                        paddingLeft: 6,
+                      }}
+                    >
+                      <View
+                        style={{
+                          minWidth: 0,
+                          flexShrink: 1,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 4,
+                        }}
+                      >
+                        {file.icon ? <View style={{ flexShrink: 0 }}>{file.icon}</View> : null}
+                        <Text
+                          variant="body-regular"
+                          numberOfLines={1}
+                          style={{ flexShrink: 1, color: palette.text }}
+                        >
+                          {file.path}
+                          {file.additions !== undefined ? (
+                            <Text style={{ color: palette.addition }}>{` +${file.additions}`}</Text>
+                          ) : null}
+                        </Text>
+                      </View>
+                      {file.status ? (
+                        <View
+                          style={{
+                            flexShrink: 0,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 4,
+                            backgroundColor: palette.tertiary,
+                            paddingLeft: 4,
+                            paddingRight: 4,
+                            paddingTop: 1,
+                            paddingBottom: 1,
+                          }}
+                        >
+                          <Text
+                            variant="caption-1-medium"
+                            numberOfLines={1}
+                            style={{ color: palette.textSecondary }}
+                          >
+                            {file.status}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
-          ) : null}
-          <View style={{ paddingTop: 3 }} />
-          <ScrollArea
-            style={{ minHeight: 0, width: '100%', flex: 1 }}
-            contentContainerStyle={{ paddingLeft: 6 }}
-          >
-            <CodeLines code={code} language={language} size="md" wrap />
-          </ScrollArea>
-        </>
-      ) : (
-        (browser ?? <PanelPlaceholder label={l.browserPreview} palette={palette} />)
-      )}
+              ) : null}
+              <View style={{ paddingTop: 3 }} />
+              <View style={{ width: '100%', paddingLeft: 6 }}>
+                <CodeLines code={code} language={language} size="md" wrap />
+              </View>
+            </>
+          ) : (
+            (browser ?? <PanelPlaceholder label={l.browserPreview} palette={palette} />)
+          )}
+        </ScreenScrollView>
+      </Screen>
     </View>
   );
 }

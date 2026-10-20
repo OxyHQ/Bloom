@@ -1,3 +1,8 @@
+import { FieldConstraintScope } from '../field/FieldConstraintScope';
+import { useFieldMembership } from '../field/membership';
+import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
+import { DISABLED_OPACITY } from '../styles/tokens';
+import { useControllableState } from '../hooks/use-controllable-state';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
@@ -341,19 +346,33 @@ function CheckboxRow({
   const { hovered, onHoverIn, onHoverOut } = useHover();
   const { pressed, onPressIn, onPressOut } = usePressed();
   const name = typeof option.label === 'string' ? option.label : option.value;
+  const field = useFieldMembership({ label: name, labelPlacement: 'adjacent' });
+  const activate = () => {
+    if (!field.disabled) onChange(!checked);
+  };
+  const keyboard = useChoiceSpaceKey(field.disabled, activate);
   return (
     <Pressable
+      {...keyboard}
+      disabled={field.disabled}
+      aria-disabled={field.disabled || undefined}
+      aria-invalid={field.invalid || undefined}
+      aria-describedby={field.describedBy}
       {...dataSet({ bloomQuestionnaireRow: 'check', bloomCheckboxFocusable: '' })}
       testID={testID}
       role="checkbox"
       aria-checked={checked}
-      accessibilityLabel={name}
-      onPress={() => onChange(!checked)}
+      accessibilityState={{ checked, disabled: field.disabled }}
+      accessibilityLabel={field.accessibilityLabel}
+      onPress={activate}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
-      style={rowStyle(palette, pressed ? 'pressed' : hovered ? 'hover' : 'rest')}
+      style={[
+        rowStyle(palette, pressed ? 'pressed' : hovered ? 'hover' : 'rest'),
+        { opacity: field.disabled ? DISABLED_OPACITY : 1 },
+      ]}
     >
       <OptionText label={option.label} description={option.description} palette={palette} />
       <View
@@ -396,16 +415,24 @@ function PickRow({
   const { hovered, onHoverIn, onHoverOut } = useHover();
   const { pressed, onPressIn, onPressOut } = usePressed();
   const name = typeof option.label === 'string' ? option.label : option.value;
+  const field = useFieldMembership({ label: name, labelPlacement: 'adjacent' });
+  const activate = () => {
+    if (!field.disabled) onPick();
+  };
   return (
     <Pressable
+      disabled={field.disabled}
+      aria-disabled={field.disabled || undefined}
+      aria-invalid={field.invalid || undefined}
+      aria-describedby={field.describedBy}
       {...dataSet({ bloomQuestionnaireRow: 'pick' })}
       testID={testID}
       role="button"
       aria-pressed={selected}
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled: field.disabled }}
       aria-keyshortcuts={index < 9 ? String(index + 1) : undefined}
-      accessibilityLabel={name}
-      onPress={onPick}
+      accessibilityLabel={field.accessibilityLabel}
+      onPress={activate}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       onHoverIn={onHoverIn}
@@ -435,14 +462,25 @@ function OtherToggle({
   testID?: string;
 }) {
   const { hovered, onHoverIn, onHoverOut } = useHover();
+  const field = useFieldMembership({ label: label, labelPlacement: 'adjacent' });
+  const activate = () => {
+    if (!field.disabled) onChange(!checked);
+  };
+  const keyboard = useChoiceSpaceKey(field.disabled, activate);
   return (
     <Pressable
+      {...keyboard}
+      disabled={field.disabled}
+      aria-disabled={field.disabled || undefined}
+      aria-invalid={field.invalid || undefined}
+      aria-describedby={field.describedBy}
       {...dataSet({ bloomQuestionnaireToggle: '', bloomCheckboxFocusable: '' })}
       testID={testID}
       role="checkbox"
       aria-checked={checked}
-      accessibilityLabel={label}
-      onPress={() => onChange(!checked)}
+      accessibilityState={{ checked, disabled: field.disabled }}
+      accessibilityLabel={field.accessibilityLabel}
+      onPress={activate}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       hitSlop={14}
@@ -494,6 +532,7 @@ function OtherRow({
   testID?: string;
 }) {
   const { hovered, onHoverIn, onHoverOut } = useHover();
+  const field = useFieldMembership({ label, labelPlacement: 'adjacent' });
   const [focused, setFocused] = useState(false);
   const lifted = focused || (mode === 'single' && selected);
   const state: RowState = lifted ? 'selected' : hovered ? 'hover' : 'rest';
@@ -515,7 +554,10 @@ function OtherRow({
       {...dataSet({ bloomQuestionnaireRow: 'other' })}
       testID={testID}
       // A press on the row itself lands in the field.
-      onPress={() => inputRef.current?.focus()}
+      disabled={field.disabled}
+      onPress={() => {
+        if (!field.disabled) inputRef.current?.focus();
+      }}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       accessible={false}
@@ -528,14 +570,22 @@ function OtherRow({
           {...dataSet({ bloomQuestionnaireInput: '' })}
           ref={inputRef}
           testID={testID ? `${testID}-input` : undefined}
-          accessibilityLabel={label}
+          accessibilityLabel={field.accessibilityLabel}
+          aria-disabled={field.disabled || undefined}
+          aria-invalid={field.invalid || undefined}
+          aria-describedby={field.describedBy}
+          editable={!field.disabled}
           placeholder={placeholder}
           placeholderTextColor={palette.textTertiary}
           value={draft}
-          onChangeText={onDraftChange}
+          onChangeText={(text) => {
+            if (!field.disabled) onDraftChange(text);
+          }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          onSubmitEditing={onSubmit}
+          onSubmitEditing={() => {
+            if (!field.disabled) onSubmit();
+          }}
           submitBehavior="submit"
           returnKeyType="next"
           style={inputStyle}
@@ -578,6 +628,7 @@ function StepPill({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
+  const field = useFieldMembership();
   const reducedMotion = useReducedMotion();
   const { hovered, onHoverIn, onHoverOut } = useHover();
   const hover = useSharedValue(0);
@@ -594,10 +645,14 @@ function StepPill({
       {...dataSet({ bloomQuestionnairePill: '' })}
       testID={testID}
       role="button"
+      disabled={field.disabled}
+      aria-disabled={field.disabled || undefined}
       aria-pressed={selected}
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled: field.disabled }}
       accessibilityLabel={label}
-      onPress={onPress}
+      onPress={() => {
+        if (!field.disabled) onPress();
+      }}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       onLayout={onLayout}
@@ -846,6 +901,7 @@ function QuestionnaireComponent({
   style,
   testID,
 }: QuestionnaireProps) {
+  const field = useFieldMembership();
   const common = useCommonMessages();
   const { messages } = useMessages(QUESTIONNAIRE_MESSAGES);
   const theme = useTheme();
@@ -882,11 +938,18 @@ function QuestionnaireComponent({
     adoptStyleSheet(CHECKBOX_GLYPH_STYLE_ID, CHECKBOX_GLYPH_CSS);
   }, []);
 
-  const [stepState, setStepState] = useState(() => clamp(defaultStep, 0, lastIndex));
-  const step = clamp(stepProp ?? stepState, 0, lastIndex);
+  const [stepState, setStep] = useControllableState({
+    value: stepProp,
+    defaultValue: clamp(defaultStep, 0, lastIndex),
+    onChange: onStepChange,
+  });
+  const step = clamp(stepState, 0, lastIndex);
 
-  const [answersState, setAnswersState] = useState<QuestionnaireAnswers>(defaultAnswers ?? {});
-  const answers = answersProp ?? answersState;
+  const [answers, setAnswers] = useControllableState<QuestionnaireAnswers>({
+    value: answersProp,
+    defaultValue: defaultAnswers ?? {},
+    onChange: onAnswersChange,
+  });
   // The freshest answers, for a scheduled advance and chained updates in one tick.
   const answersRef = useRef(answers);
   answersRef.current = answers;
@@ -968,7 +1031,10 @@ function QuestionnaireComponent({
       advanceTimer.current = null;
     }
   }, []);
-  useEffect(() => clearAdvance, [step, clearAdvance]);
+  useEffect(() => {
+    if (field.disabled) clearAdvance();
+    return clearAdvance;
+  }, [step, field.disabled, clearAdvance]);
 
   if (!question) return null;
 
@@ -976,21 +1042,22 @@ function QuestionnaireComponent({
   const isLast = step === lastIndex;
 
   const commitAnswers = (next: QuestionnaireAnswers) => {
+    if (field.disabled) return answersRef.current;
     answersRef.current = next;
-    if (answersProp === undefined) setAnswersState(next);
-    onAnswersChange?.(next);
+    setAnswers(next);
     return next;
   };
 
   const goTo = (index: number) => {
+    if (field.disabled) return;
     const target = clamp(index, 0, lastIndex);
     if (target === step) return;
     clearAdvance();
-    if (stepProp === undefined) setStepState(target);
-    onStepChange?.(target);
+    setStep(target);
   };
 
   const finish = (latest: QuestionnaireAnswers) => {
+    if (field.disabled) return;
     if (isLast) onComplete?.(latest);
     else goTo(step + 1);
   };
@@ -1128,7 +1195,7 @@ function QuestionnaireComponent({
   // and, on web, is the browser's KeyboardEvent.
   const onKeyDown = (event: KeyDownEvent) => {
     const { key, metaKey, ctrlKey, altKey } = event.nativeEvent;
-    if (mode !== 'single' || metaKey || ctrlKey || altKey) return;
+    if (field.disabled || mode !== 'single' || metaKey || ctrlKey || altKey) return;
     // A DOM node on web, the only platform this handler is attached on.
     const target = event.target as { tagName?: string } | undefined;
     if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return;
@@ -1174,111 +1241,122 @@ function QuestionnaireComponent({
       ref={rootRef}
       testID={testID}
       role="group"
-      aria-labelledby={headingId}
-      accessibilityLabel={question.question}
+      nativeID={field.nativeID}
+      aria-labelledby={field.accessibilityLabel ? undefined : headingId}
+      accessibilityLabel={field.accessibilityLabel ?? question.question}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
+      aria-disabled={field.disabled || undefined}
+      aria-required={field.required || undefined}
       {...(IS_WEB ? { onKeyDown } : {})}
       style={[cardStyle, style, { backgroundColor: 'transparent', ...material.vars }]}
     >
       <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
-      <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-        <Animated.View
-          style={[
-            {
-              position: 'relative',
-              overflow: 'hidden',
-              marginLeft: -CARD_PADDING,
-              marginRight: -CARD_PADDING,
-              marginTop: -VIEWPORT_INSET,
-              marginBottom: -VIEWPORT_INSET,
-              paddingLeft: CARD_PADDING,
-              paddingRight: CARD_PADDING,
-              paddingTop: VIEWPORT_INSET,
-              paddingBottom: VIEWPORT_INSET,
-            },
-            viewportStyle,
-          ]}
-        >
-          {leaving && leavingQuestion ? (
-            <SlidingPanel
-              key={`exit-${leaving.key}`}
-              role="exit"
-              direction={direction}
-              animate={!reducedMotion}
-              onExited={clearLeaving}
-            >
-              {renderQuestion(leavingQuestion, false)}
-            </SlidingPanel>
-          ) : null}
-          <SlidingPanel
-            key={`enter-${question.id}`}
-            role="enter"
-            direction={direction}
-            animate={Boolean(leaving) && !reducedMotion}
-            onLayout={onPanelLayout}
-            panelRef={panelRef}
+      {/* The card is the field's member and takes its id, name and error; the
+          answers, pills and buttons are its parts, which freeze with the field
+          but do not repeat the error (`field/FieldConstraintScope.tsx`). */}
+      <FieldConstraintScope>
+        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
+          <Animated.View
+            style={[
+              {
+                position: 'relative',
+                overflow: 'hidden',
+                marginLeft: -CARD_PADDING,
+                marginRight: -CARD_PADDING,
+                marginTop: -VIEWPORT_INSET,
+                marginBottom: -VIEWPORT_INSET,
+                paddingLeft: CARD_PADDING,
+                paddingRight: CARD_PADDING,
+                paddingTop: VIEWPORT_INSET,
+                paddingBottom: VIEWPORT_INSET,
+              },
+              viewportStyle,
+            ]}
           >
-            {renderQuestion(question, true)}
-          </SlidingPanel>
-        </Animated.View>
+            {leaving && leavingQuestion ? (
+              <SlidingPanel
+                key={`exit-${leaving.key}`}
+                role="exit"
+                direction={direction}
+                animate={!reducedMotion}
+                onExited={clearLeaving}
+              >
+                {renderQuestion(leavingQuestion, false)}
+              </SlidingPanel>
+            ) : null}
+            <SlidingPanel
+              key={`enter-${question.id}`}
+              role="enter"
+              direction={direction}
+              animate={Boolean(leaving) && !reducedMotion}
+              onLayout={onPanelLayout}
+              panelRef={panelRef}
+            >
+              {renderQuestion(question, true)}
+            </SlidingPanel>
+          </Animated.View>
 
-        {onDismiss ? (
-          <CloseButton
-            size="xs"
-            accessibilityLabel={text.dismiss}
-            onPress={onDismiss}
-            style={{ position: 'absolute', top: CARD_PADDING, right: CARD_PADDING }}
-            testID={testID ? `${testID}-dismiss` : undefined}
-          />
-        ) : null}
+          {onDismiss ? (
+            <CloseButton
+              size="xs"
+              accessibilityLabel={text.dismiss}
+              onPress={onDismiss}
+              style={{ position: 'absolute', top: CARD_PADDING, right: CARD_PADDING }}
+              testID={testID ? `${testID}-dismiss` : undefined}
+            />
+          ) : null}
 
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: 16,
-            paddingTop: 2,
-          }}
-        >
-          <StepPills
-            questions={questions}
-            step={step}
-            onSelect={goTo}
-            label={text.steps}
-            palette={palette}
-            testID={testID ? `${testID}-step` : undefined}
-          />
           <View
             style={{
               flexDirection: 'row',
-              flexShrink: 0,
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              gap: 8,
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 16,
+              paddingTop: 2,
             }}
           >
-            <Button
-              size="sm"
-              disabled={step === 0}
-              onPress={() => goTo(step - 1)}
-              testID={testID ? `${testID}-previous` : undefined}
-              appearance="subtle"
-              tone="neutral"
+            <StepPills
+              questions={questions}
+              step={step}
+              onSelect={goTo}
+              label={text.steps}
+              palette={palette}
+              testID={testID ? `${testID}-step` : undefined}
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                flexShrink: 0,
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 8,
+              }}
             >
-              {text.previous}
-            </Button>
-            <Button
-              size="sm"
-              onPress={() => finish(answersRef.current)}
-              testID={testID ? `${testID}-next` : undefined}
-              appearance="solid"
-              tone="accent"
-            >
-              {isLast ? text.complete : text.next}
-            </Button>
+              <Button
+                size="sm"
+                disabled={field.disabled || step === 0}
+                onPress={() => goTo(step - 1)}
+                testID={testID ? `${testID}-previous` : undefined}
+                appearance="subtle"
+                tone="neutral"
+              >
+                {text.previous}
+              </Button>
+              <Button
+                size="sm"
+                disabled={field.disabled}
+                onPress={() => finish(answersRef.current)}
+                testID={testID ? `${testID}-next` : undefined}
+                appearance="solid"
+                tone="accent"
+              >
+                {isLast ? text.complete : text.next}
+              </Button>
+            </View>
           </View>
-        </View>
-      </SurfaceLevelProvider>
+        </SurfaceLevelProvider>
+      </FieldConstraintScope>
     </View>
   );
 }

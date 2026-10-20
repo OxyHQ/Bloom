@@ -174,7 +174,7 @@ interface ModelPickerProvider {
 
 ## State
 
-Everything is controllable and works uncontrolled: `value`/`defaultValue`, `permission`/`defaultPermission`, `model`/`defaultModel`, `effort`/`defaultEffort`, `voiceState`/`defaultVoiceState`. Enter submits on web (Shift+Enter breaks the line; IME composition is respected) unless `busy`; on native the send button submits. An uncontrolled draft clears after submit.
+Everything is controllable and works uncontrolled: `value`/`defaultValue`, `permission`/`defaultPermission`, `model`/`defaultModel`, `effort`/`defaultEffort`, `voiceState`/`defaultVoiceState`. Enter submits on web (Shift+Enter breaks the line; IME composition is respected) unless `busy`; on native the send button submits. Both ComposerPanel and ComposerPill clear an uncontrolled draft after calling `onSubmit`. With `value` supplied, the host owns clearing; wrappers forward that controlled state rather than keep a second draft. Attachments remain host-owned, and a synchronous submit error leaves the draft intact.
 
 ## Colours
 

@@ -41,7 +41,8 @@ import { useChatScreenPaint } from './shared';
 import type { ChatBackgroundVariant, ChatInfoAction, ChatMember, ChatPinnedMessage } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Chat/Chat Screen',
+  id: 'blocks-chat-chat-screen',
+  title: 'Patterns/Chat/Chat Screen',
 };
 
 export default meta;
@@ -114,6 +115,7 @@ function Surface({ children, padded = true }: { children: React.ReactNode; padde
     <View
       style={{
         flex: 1,
+        width: '100%',
         padding: padded ? 20 : 0,
         gap: 20,
         backgroundColor: theme.colors.background,
@@ -784,6 +786,7 @@ export const SplitLayoutPanes: Story = {
       <Surface padded={false}>
         <View style={{ height: 620 }}>
           <ChatSplitLayout
+            testID="split"
             listWidth={width}
             onListWidthChange={setWidth}
             list={<ConversationListStub />}

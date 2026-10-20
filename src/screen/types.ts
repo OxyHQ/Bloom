@@ -19,6 +19,8 @@ export interface ScreenProps extends ViewProps {
   /** Web document flow: bind window scrolling automatically, reserve chrome clearance, and keep chrome sticky within this column. Explicit list bindings take priority. */
   documentScroll?: boolean;
   bottomBar?: ReactNode;
+  /** Navigation hides by default; a chat composer stays visible while typing. */
+  bottomBarKeyboardBehavior?: 'hide' | 'visible';
   /** Standalone action; with navigation use BottomBar.action instead. */
   primaryAction?: ReactNode;
   /** Initial footprint before layout; include any safe area in custom values. */
@@ -39,6 +41,8 @@ export interface ScreenScrollOptions {
 export interface ScreenScrollViewProps
   extends Omit<ScrollViewProps, 'onScroll'>,
     ScreenScrollOptions {
+  /** Observes the existing screen viewport on both platforms; creates no scroll owner. */
+  onScroll?: ScrollViewProps['onScroll'];
   /** Utilities for the content container, resolved by Bloom's own interop. */
   contentContainerClassName?: string;
   /**
@@ -69,4 +73,10 @@ export interface ScreenPagerProps<Item> {
   ref?: Ref<ScreenPagerHandle>;
   style?: StyleProp<ViewStyle>;
   testID?: string;
+}
+
+/** Platform bindings used by shared implementations that render screen chrome. */
+export interface ScreenComponents {
+  Screen: typeof import('./Screen').Screen;
+  ScreenScrollView: typeof import('./ScreenScrollView').ScreenScrollView;
 }

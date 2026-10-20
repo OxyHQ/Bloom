@@ -12,7 +12,8 @@ import { MapLayerPicker } from './MapLayerPicker';
 import type { MapLayerOption, MapOverlayOption } from './types';
 
 const meta: Meta<typeof MapControls> = {
-  title: 'Blocks/Maps/MapControls',
+  id: 'blocks-maps-mapcontrols',
+  title: 'Components/Maps/Map Controls',
   component: MapControls,
   parameters: { layout: 'fullscreen' },
 };

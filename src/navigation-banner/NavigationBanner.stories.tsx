@@ -10,7 +10,8 @@ import { SpeedLimitPill } from './SpeedLimitPill';
 import type { NavigationLane } from './types';
 
 const meta: Meta<typeof NavigationBanner> = {
-  title: 'Blocks/Maps/NavigationBanner',
+  id: 'blocks-maps-navigationbanner',
+  title: 'Components/Maps/Navigation Banner',
   component: NavigationBanner,
   parameters: { layout: 'fullscreen' },
 };

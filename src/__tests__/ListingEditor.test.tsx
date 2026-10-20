@@ -50,7 +50,7 @@ import type { AddressPrecision, OfferingValue } from '../listing-editor';
 import type { PropertyType } from '../stay-filters';
 import { pricePerArea, sanitizeAmount, toggleOfferingKind } from '../listing-editor/OfferingEditor';
 import { propertyTypeColumns } from '../listing-editor/PropertyTypeSelector';
-import { resolveSelectionPaint } from '../listing-editor/SelectionCard';
+import { resolveSelectionPaint } from '../card/SelectionCard';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';

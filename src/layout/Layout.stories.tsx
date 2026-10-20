@@ -35,7 +35,8 @@ function LayoutDemo({ inset = 24 }: { inset?: number }) {
   );
 }
 const meta = {
-  title: 'Foundations/Layout',
+  id: 'foundations-layout',
+  title: 'Composition/Layout/Primitives',
   component: LayoutDemo,
   args: { inset: 24 },
   argTypes: { inset: { control: { type: 'range', min: 0, max: 48 } } },

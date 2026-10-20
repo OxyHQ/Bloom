@@ -8,7 +8,8 @@ import { RiMailFill } from '../icons/remix/RiMailFill';
 import { Notification } from './index';
 
 const meta: Meta<typeof Notification> = {
-  title: 'Base/Notification',
+  id: 'base-notification',
+  title: 'Components/Feedback/Notification',
   component: Notification,
 };
 

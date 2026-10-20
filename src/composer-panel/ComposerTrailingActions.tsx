@@ -19,6 +19,7 @@ interface ComposerTrailingActionsProps {
   labels: { voice: string; transcribing: string; send: string; stop: string };
   /** Drawn behind the mic inside its own box (the pill's frosted chip). */
   micBackdrop?: ReactNode;
+  showVoice?: boolean;
 }
 
 /**
@@ -41,6 +42,7 @@ export function ComposerTrailingActions({
   emptyAction,
   labels,
   micBackdrop,
+  showVoice = true,
 }: ComposerTrailingActionsProps) {
   const mic = (
     <MicButton
@@ -53,7 +55,7 @@ export function ComposerTrailingActions({
   );
   return (
     <>
-      {micBackdrop ? (
+      {!showVoice ? null : micBackdrop ? (
         <View style={{ position: 'relative' }}>
           {micBackdrop}
           {mic}

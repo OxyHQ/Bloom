@@ -8,7 +8,8 @@ import { MapScaleBar } from './MapScaleBar';
 import type { MapScale } from './types';
 
 const meta: Meta<typeof MapAttribution> = {
-  title: 'Blocks/Maps/MapAttribution',
+  id: 'blocks-maps-mapattribution',
+  title: 'Components/Maps/Map Attribution',
   component: MapAttribution,
   parameters: { layout: 'fullscreen' },
 };

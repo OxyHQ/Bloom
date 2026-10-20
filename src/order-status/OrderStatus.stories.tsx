@@ -11,7 +11,8 @@ import { OrderStatusTimeline } from './OrderStatusTimeline';
 import type { OrderStatusStep } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Commerce/OrderStatus',
+  id: 'blocks-commerce-orderstatus',
+  title: 'Patterns/Commerce/Order Status',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -17,7 +17,8 @@ const meta: Meta<typeof EarningsChartCard> = {
     activeColor: { control: 'text' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Earnings Chart',
+  id: 'charts-earnings-chart',
+  title: 'Components/Charts/Earnings Chart',
   component: EarningsChartCard,
 };
 

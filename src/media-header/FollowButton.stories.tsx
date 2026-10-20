@@ -24,7 +24,8 @@ function InteractiveButton(props: FollowButtonProps) {
 }
 
 const meta = {
-  title: 'Base/Follow Button',
+  id: 'base-follow-button',
+  title: 'Components/Actions/Follow Button',
   component: FollowButton,
   parameters: { layout: 'padded' },
   args: {

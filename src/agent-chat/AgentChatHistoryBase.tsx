@@ -703,7 +703,8 @@ export function AgentChatHistoryBase({
   labels,
   style,
   testID,
-}: AgentChatHistoryProps) {
+  framed = true,
+}: AgentChatHistoryProps & { framed?: boolean }) {
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const { messages } = useMessages(AGENT_CHAT_MESSAGES);
@@ -726,14 +727,14 @@ export function AgentChatHistoryBase({
   const exportLabel = l.exportCount(count);
 
   const rail: WebCssStyle = {
-    width: RAIL_WIDTH,
+    width: framed ? RAIL_WIDTH : '100%',
     height: '100%',
     flexShrink: 0,
     flexDirection: 'column',
     gap: 24,
     overflow: 'hidden',
-    borderRadius: CARD_RADIUS,
-    backgroundColor: palette.chatSurface,
+    borderRadius: framed ? CARD_RADIUS : undefined,
+    backgroundColor: framed ? palette.chatSurface : undefined,
     padding: 12,
   };
 
@@ -761,10 +762,8 @@ export function AgentChatHistoryBase({
       </HoverRow>
 
       <ScrollArea
-        {...dataHook('bloomAgentChatScrollHidden')}
         style={{ flex: 1, minHeight: 0 }}
         contentContainerStyle={{ flexDirection: 'column', gap: 4 }}
-        showsVerticalScrollIndicator={false}
       >
         <Text
           variant="body-2-medium"

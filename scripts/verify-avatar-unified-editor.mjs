@@ -53,7 +53,7 @@ try {
     });
   });
   await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/iframe.html?id=application-agent-avatar-characters--editor&viewMode=story`,
+    `${process.argv[2] || 'http://localhost:6006'}/iframe.html?id=agents-agent-avatar-characters--editor&viewMode=story`,
   );
   const settle = async (expected = {}) => {
     await page.locator('[data-testid="universal-avatar-preview"]').scrollIntoViewIfNeeded();

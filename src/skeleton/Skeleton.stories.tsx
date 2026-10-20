@@ -6,7 +6,8 @@ import * as Skeleton from './index';
 
 const meta: Meta = {
   component: Skeleton.Box,
-  title: 'Base/Skeleton',
+  id: 'base-skeleton',
+  title: 'Components/Feedback/Skeleton',
 };
 
 export default meta;

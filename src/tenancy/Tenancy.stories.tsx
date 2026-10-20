@@ -21,7 +21,8 @@ import { TenancyTimeline } from './TenancyTimeline';
 import type { MaintenanceStage, RentPayment, TenancyDocument, TenancyTimelineEvent } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Tenancy',
+  id: 'blocks-housing-tenancy',
+  title: 'Patterns/Housing/Tenancy',
   parameters: { layout: 'fullscreen' },
 };
 

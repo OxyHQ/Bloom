@@ -1,3 +1,4 @@
+import { Screen, ScreenScrollView } from '../screen/index.web';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover/index.web';
 import {
   Select,
@@ -12,6 +13,8 @@ import { AgentCreatorBase } from './AgentCreatorBase';
 import { AgentCreatorContext } from './context';
 import type { AgentCreatorProps } from './types';
 const bindings = {
+  Screen,
+  ScreenScrollView,
   Select,
   SelectTrigger,
   SelectValue,

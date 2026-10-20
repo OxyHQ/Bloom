@@ -13,7 +13,8 @@ import { cardNumberIsWellFormed, cardExpiryIsWellFormed } from './shared';
 import type { CardFormValue, CardScheme } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Payments/CardForm',
+  id: 'blocks-payments-cardform',
+  title: 'Patterns/Payments/Card Form',
   parameters: { layout: 'fullscreen' },
 };
 

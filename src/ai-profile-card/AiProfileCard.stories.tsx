@@ -26,7 +26,8 @@ const meta: Meta<typeof AiProfileCard> = {
     animateIn: { control: 'boolean' },
     activeCell: { control: 'number' },
   },
-  title: 'Agents/AI Profile Card',
+  id: 'agents-ai-profile-card',
+  title: 'Components/Agents/AI Profile Card',
   component: AiProfileCard,
 };
 

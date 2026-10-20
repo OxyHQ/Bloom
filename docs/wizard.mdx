@@ -12,6 +12,7 @@ parts only show where the user is and move them along.
 
 ```tsx
 import { WizardFooter, WizardProgress } from '@oxy.so/bloom/wizard';
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 
 const steps = [
   { title: 'Property type' },
@@ -24,19 +25,23 @@ function Flow() {
   const [step, setStep] = useState(0);
   const last = step === steps.length - 1;
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}>
+    <Screen
+      scroll="auto"
+      bottomBar={
+        <WizardFooter
+          onBack={step > 0 ? () => setStep(step - 1) : undefined}
+          onNext={last ? publish : () => setStep(step + 1)}
+          nextLabel={last ? 'Publish' : 'Next'}
+          nextDisabled={!canContinue}
+          loading={publishing}
+        />
+      }
+    >
+      <ScreenScrollView contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}>
         <WizardProgress steps={steps} current={step} />
         {renderStep(step)}
-      </ScrollView>
-      <WizardFooter
-        onBack={step > 0 ? () => setStep(step - 1) : undefined}
-        onNext={last ? publish : () => setStep(step + 1)}
-        nextLabel={last ? 'Publish' : 'Next'}
-        nextDisabled={!canContinue}
-        loading={publishing}
-      />
-    </View>
+      </ScreenScrollView>
+    </Screen>
   );
 }
 ```
@@ -77,8 +82,8 @@ step and it disappears; Next stays right). Next is a primary `Button` at
 `large`; `loading` is the Button's own loading state and keeps its width.
 An optional `status` line ("Draft saved") sits between them from 480 wide.
 
-**Sticky.** On web the bar is `position: sticky; bottom: 0`, so inside a
-scrolling page it stays on screen while the step scrolls. Native has no sticky
-positioning — render the footer AFTER the `ScrollView`, outside it, as above,
-and it stays put by placement. Pass `sticky={false}` for a footer inside a card
-or a dialog.
+**Shared footer composition.** `WizardFooter` delegates placement, safe-area handling and occupied bottom edges to `PageFooter`. In `Screen.bottomBar`, Screen positions and measures it and reserves the exact footprint for the step's scroller; it creates no second sticky layer or clearance claim.
+
+Outside that slot, `sticky` defaults to true: PageFooter keeps it in normal flow and pins it to the bottom of its scroll container on web, above occupied app navigation. Native keeps it in flow, so place it after the scroller. `sticky={false}` uses normal flow on both platforms, including inside a card or dialog. Flow placement already reserves the footer's height; do not add `usePageFooterInset()` padding for it.
+
+The shared footer adds native bottom safe area when no navigation edge already occupies it. The wizard retains its opaque background, top hairline, 16px vertical padding, 24px sides (16px below 480), underlined Back, status and Next controls. Web container queries handle the 480px density change without React updates on each resize pixel.

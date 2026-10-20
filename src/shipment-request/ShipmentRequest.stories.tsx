@@ -24,7 +24,8 @@ import { ShipmentRequestForm } from './ShipmentRequestForm';
 import type { ShipmentAccess, ShipmentExtra, ShipmentLoad, ShipmentTimeWindow } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Freight/ShipmentRequest',
+  id: 'blocks-freight-shipmentrequest',
+  title: 'Patterns/Freight/Shipment Request',
   parameters: { layout: 'fullscreen' },
 };
 

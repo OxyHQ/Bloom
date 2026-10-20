@@ -6,7 +6,9 @@ several agents talk in one place; for a single assistant use
 [`AgentChat`](./agent-chat.mdx) or [`AiChat`](./ai-chat.mdx) (see
 [Building AI interfaces](./ai-overview.mdx)).
 
-The conversation header centers a 56px agent avatar above a 28px name capsule.
+The shared `PageHeader` centers an `AgentProfile`: a 56px agent avatar above a
+28px name capsule. The identity sets the header height; navigation and actions
+use Bloom's floating `ButtonGroup` islands.
 Press it to edit the active agent, or choose participants in a group chat. Long
 names truncate within the available header width; navigation and conversation
 actions keep their own hit areas on narrow screens.
@@ -15,11 +17,11 @@ actions keep their own hit areas on narrow screens.
 import { MultiAgentChat } from '@oxy.so/bloom/multi-agent-chat';
 
 <MultiAgentChat
-  onRespond={async (agent, messages, signal) => {
+  onRespond={async (agent, messages, signal, request) => {
     const response = await fetch('/api/agents/respond', {
       method: 'POST', signal,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ agent, messages }),
+      body: JSON.stringify({ agent, messages, ...request }),
     });
     if (!response.ok) throw new Error('Agent response failed');
     return (await response.json()).text;
@@ -37,8 +39,9 @@ edits for host persistence. `storageKey` defaults to `bloom:multi-agent-chat` on
 web; set it to `null` to disable browser storage. Native keeps session state until
 the host stores the workspace. Invalid stored data falls back to the initial demo.
 
-`defaultEditorId` initially opens an agent's editor on desktop. The compact editor
-uses a side surface. `voices` and `onPreviewVoice` connect a native speech provider;
+`defaultEditorId` initially opens an agent's editor on desktop. On compact
+layouts the editor becomes the selected panel; its back action returns to the
+conversation. `voices` and `onPreviewVoice` connect a native speech provider;
 web can use device speech. `onCopy` supplies native clipboard integration; the
 default native fallback opens the share sheet.
 
@@ -46,9 +49,33 @@ Marketplace plugin choices are workspace demo configuration. They do not authori
 or connect external accounts. Supply real integrations through the host.
 
 The React Native layout and state are shared across platforms. Thin bindings pick
-Bloom's existing web/native Dialog, ComposerPanel and AgentCreator implementations.
+Bloom's existing web/native AppShell, Dialog, ComposerPanel and AgentCreator implementations.
 Layout utilities require the consumer NativeWind/Tailwind source scanning described
 in `docs/styles.mdx`. Theme colours come from Bloom's provider.
+
+The workspace uses the shared `AppShell panelLayout` with stable navigation,
+conversation and editor/context panels. `hideBelow`, minimum widths, retained
+visibility and resizing resolve in the shared panel engine against the shell
+container. Compact navigation and editor actions select their panel, and the
+shared header's back action returns to the conversation. They do not create
+private overlay drawers or swipe handlers.
+
+The conversation declares `Screen scroll="auto"`: its PageHeader is `header`,
+its ComposerPanel sits in `bottomBar` through PageFooter, and its transcript
+uses ScreenScrollView. The shell owns the panel surface and available region;
+Screen owns the viewport, measured chrome clearance and scroll metrics.
+`bottomBarKeyboardBehavior="visible"` keeps the native composer available
+while its keyboard is open. The
+header's central AgentProfile retains its avatar reference for the measured
+journey. Avoid fixed header heights, another panel frame, a second scroll
+container or independent safe-area padding.
+
+Panel IDs remain stable while selecting conversations or opening the editor.
+The engine retains previously presented panels and their editor/draft state,
+and makes hidden content inert, inaccessible and inactive. Per-conversation
+request, stop and draft state remain in the workspace. Modal agent picking,
+marketplace and settings continue through Bloom Dialog and its overlay stack;
+they are distinct from the workspace's compact panel navigation.
 
 Group creation and the first group message move the avatar artwork between
 measured positions with the source timings. Web renders the decorative journey
@@ -56,13 +83,20 @@ through a portal; native uses a local absolute overlay that does not intercept
 touches. The preview publishes its exact committed drawing command stream to an internal
 observer. The journey retains that frame and renders it through the same shared
 SVG renderer, preserving the departing face and pose without restarting motion.
-Reduced motion skips the flights and snaps the editor rail into place. Missing
+Reduced motion skips the flights and uses the panel engine’s reduced-motion transition. Missing
 or unmounted measurements cancel the decoration without delaying responses.
 Reply actions appear on mouse hover or keyboard focus and remain visible on touch.
 
 `providers` replaces the demo model catalogue in the shared `ComposerPanel`.
-Its model picker, stop action, permission picker and attachments retain the
-composer family’s current behavior. The workspace uses the active Bloom locale;
+`composerProps` accepts that family's model, permission, effort, attachment,
+voice, label and keyboard APIs; the workspace owns drafts, submit and stop.
+Each `onRespond` call receives a fourth argument with `model`, `permission`,
+`effort` and `attachments`, captured when the turn is sent and shared by all
+participants. Existing three-argument handlers continue to work. Choices must
+be applied by the host's request handler. Attachment-only turns pass empty text.
+Attachment menus and microphone controls appear when their host handlers are
+provided; `showVoice` can override microphone visibility.
+The workspace uses the active Bloom locale;
 its application copy is registered with the shared message catalogue.
 
 Marketplace links use the `marketplace` URL parameter on web. A recognized item
@@ -82,3 +116,7 @@ on port 6006. Set `BLOOM_PLAYWRIGHT_MODULE` if Playwright is installed elsewhere
 The search width has one animation owner per platform: CSS on web and Reanimated
 on native. Combining them restarts the CSS transition every frame and doubles
 the observed opening time.
+
+Conversation turns and the composer share a centered 768px maximum reading
+width. The panel keeps its own full layout track; narrow viewports use the
+available width. The shared internal chat layout style supplies this measure.

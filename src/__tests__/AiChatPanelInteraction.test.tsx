@@ -4,7 +4,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { View } from 'react-native';
-import { usePanelInteraction } from '../ai-chat/use-panel-interaction';
+import { usePanelInteraction } from '../app-shell/use-panel-interaction';
 import {
   acquireOverlayRank,
   registerOverlayRank,

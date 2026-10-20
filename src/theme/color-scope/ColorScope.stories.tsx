@@ -79,7 +79,8 @@ function ExactScopeFixture({ placement = 'end' }: { placement?: 'end' | 'bottom'
   );
 }
 const meta = {
-  title: 'Foundations/Color Scope',
+  id: 'foundations-color-scope',
+  title: 'Composition/Scope/Color Scope',
   component: ExactScopeFixture,
 } satisfies Meta<typeof ExactScopeFixture>;
 export default meta;

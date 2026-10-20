@@ -8,7 +8,8 @@ import { Text } from '../typography';
 import { LyricsPreviewCard, LyricsView, type LyricLine } from './index';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Lyrics',
+  id: 'blocks-music-lyrics',
+  title: 'Patterns/Music/Lyrics',
 };
 
 export default meta;

@@ -14,7 +14,8 @@ const meta: Meta<typeof FileUpload> = {
     maxBytes: { control: 'number' },
     disabled: { control: 'boolean' },
   },
-  title: 'Base/File Upload',
+  id: 'base-file-upload',
+  title: 'Components/Inputs/File Upload',
   component: FileUpload,
 };
 

@@ -79,6 +79,7 @@ export function ComposerPanelBase({
   voiceState,
   defaultVoiceState = 'idle',
   onVoiceStateChange,
+  showVoice,
   attachments,
   onRemoveAttachment,
   onAttachmentRetry,
@@ -326,6 +327,7 @@ export function ComposerPanelBase({
               ) : null}
               <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <ComposerTrailingActions
+                  showVoice={showVoice}
                   palette={palette}
                   voice={voice}
                   onVoiceChange={setVoice}

@@ -9,7 +9,8 @@ import { LinkPreviewCard } from '../link-preview';
 import { Text } from '../typography/Typography';
 
 const meta: Meta<typeof Surface> = {
-  title: 'Base/Surface',
+  id: 'base-surface',
+  title: 'Components/Surfaces/Surface',
   component: Surface,
   parameters: { layout: 'fullscreen' },
 };

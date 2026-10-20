@@ -9,7 +9,8 @@ import { RiPushpinLine } from '../icons/remix/RiPushpinLine';
 import { ConversationSidebar, type ConversationSidebarItem } from './index';
 
 const meta: Meta = {
-  title: 'Agents/Conversation Sidebar',
+  id: 'agents-conversation-sidebar',
+  title: 'Patterns/Agents/Conversation Sidebar',
   parameters: { controls: { disable: true } },
 };
 export default meta;

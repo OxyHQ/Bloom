@@ -9,7 +9,8 @@ import { WebSearch } from './index';
 import type { WebSearchStep } from './types';
 
 const meta: Meta<typeof WebSearch> = {
-  title: 'Blocks/Web Search',
+  id: 'blocks-web-search',
+  title: 'Patterns/Search/Web Search',
   component: WebSearch,
 };
 

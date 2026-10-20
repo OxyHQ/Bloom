@@ -10,3 +10,6 @@ export type {
   CardTitleProps,
   CardDescriptionProps,
 } from './types';
+
+export { SelectionCard } from './SelectionCard';
+export type { SelectionCardProps } from './types';

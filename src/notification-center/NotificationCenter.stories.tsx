@@ -13,7 +13,8 @@ import { NotificationCenter } from './index';
 import type { NotificationCenterItem } from './types';
 
 const meta: Meta<typeof NotificationCenter> = {
-  title: 'Blocks/Notification Center',
+  id: 'blocks-notification-center',
+  title: 'Patterns/Account/Notification Center',
   component: NotificationCenter,
   // The demo data is exported for the AppShell stories; it is not a story.
   excludeStories: /^DEMO_/,

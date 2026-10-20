@@ -19,7 +19,8 @@ import { WriteReviewPrompt } from './WriteReviewPrompt';
 import type { PlaceReviewCardProps } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Place Reviews',
+  id: 'blocks-housing-place-reviews',
+  title: 'Patterns/Housing/Place Reviews',
   parameters: { layout: 'fullscreen' },
 };
 

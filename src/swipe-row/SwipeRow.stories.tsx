@@ -17,7 +17,8 @@ import type { SwipeRowActions } from './types';
  * events, so a mouse drag is the same gesture a thumb makes.
  */
 const meta: Meta = {
-  title: 'Base/Swipe Row',
+  id: 'base-swipe-row',
+  title: 'Components/Actions/Swipe Row',
 };
 
 export default meta;

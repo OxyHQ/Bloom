@@ -2,7 +2,8 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { GroupedSection, GroupedSectionItem, GroupedSectionCollapse } from './index';
 const meta: Meta<typeof GroupedSection> = {
-  title: 'Base/Grouped Section',
+  id: 'base-grouped-section',
+  title: 'Components/Data Display/Grouped Section',
   component: GroupedSection,
 };
 export default meta;

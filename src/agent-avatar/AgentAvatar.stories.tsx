@@ -14,7 +14,8 @@ import {
 } from './catalog-ids';
 
 const meta: Meta<typeof AgentAvatar> = {
-  title: 'Agents/Agent Avatar',
+  id: 'agents-agent-avatar',
+  title: 'Components/Agents/Agent Avatar',
   component: AgentAvatar,
   args: { character: { preset: 'blue_beret' }, size: 96 },
 };

@@ -9,7 +9,8 @@ import { TaskList } from './index';
 import type { TaskListTask } from './types';
 
 const meta: Meta<typeof TaskList> = {
-  title: 'Blocks/Task List',
+  id: 'blocks-task-list',
+  title: 'Patterns/Productivity/Task List',
   component: TaskList,
 };
 

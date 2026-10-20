@@ -8,7 +8,8 @@ import { DeliverySlotPicker } from './DeliverySlotPicker';
 import type { DeliveryAsapOption, DeliveryDay, DeliveryWindow } from './types';
 
 const meta: Meta<typeof DeliverySlotPicker> = {
-  title: 'Blocks/Checkout/DeliverySlot',
+  id: 'blocks-checkout-deliveryslot',
+  title: 'Patterns/Checkout/Delivery Slot',
   component: DeliverySlotPicker,
   parameters: { layout: 'fullscreen' },
 };

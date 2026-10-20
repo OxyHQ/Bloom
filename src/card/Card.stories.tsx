@@ -31,7 +31,8 @@ const meta: Meta<typeof Card> = {
     border: { control: 'select', options: ['none', 'hairline', 'thin'] },
     disabled: { control: 'boolean' },
   },
-  title: 'Base/Card',
+  id: 'base-card',
+  title: 'Components/Surfaces/Card',
   component: Card,
 };
 

@@ -48,6 +48,13 @@ A section with no rows is not drawn. With no now-playing track and both lists em
 
 `variant="panel"` (the web default) is a rounded-8 surface `width` wide (360) with a hairline, in the same surface colours as a menu. `variant="sheet"` (the native default) is flat and full width. Give either a height — the list scrolls inside it.
 
+Both variants compose a bounded `Screen` and `ScreenScrollView`. The tabs and
+close action use `PageHeader`; the list owns its viewport and scroll metrics,
+with the shared scrollbar at the panel edge. Queue scrolling does not drive the
+enclosing page's navigation motion. Sheet mode keeps the host surface and does
+not add another panel material. Reordering suspends this same viewport while a
+drag is active.
+
 ## Rows
 
 Each row is 56 tall: a 40px cover, the title (`body-medium`) over the artists (`caption-1-regular`, with the explicit badge when `explicit`), and the track's `meta` string — a duration in the queue, a "when" in the history. The cover and text are one button named "Play *title*"; the controls sit beside it, never inside it.

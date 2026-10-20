@@ -1,3 +1,5 @@
+import { useFieldMembership } from '../field/membership';
+import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import React, { useEffect, useMemo, type ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { BloomImage } from '../image';
@@ -164,7 +166,7 @@ export interface SelectChipProps {
 
 export function SelectChip({
   selected,
-  disabled = false,
+  disabled: disabledProp = false,
   onPress,
   accessibilityLabel,
   shape,
@@ -172,6 +174,12 @@ export function SelectChip({
   style,
   testID,
 }: SelectChipProps) {
+  const field = useFieldMembership({ disabled: disabledProp, accessibilityLabel });
+  const disabled = field.disabled;
+  const activate = () => {
+    if (!disabled && !selected) onPress?.();
+  };
+  const keyboard = useChoiceSpaceKey(disabled, activate);
   const palette = useActionPalette();
   useFocusSheet();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
@@ -198,6 +206,9 @@ export function SelectChip({
 
   return (
     <Pressable
+      {...keyboard}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
       {...webDataSet({ bloomBookingFocus: '' })}
       accessibilityRole="radio"
       accessibilityLabel={accessibilityLabel}
@@ -205,7 +216,7 @@ export function SelectChip({
       aria-checked={selected}
       aria-disabled={disabled || undefined}
       disabled={disabled}
-      onPress={onPress}
+      onPress={activate}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       onPressIn={onPressIn}

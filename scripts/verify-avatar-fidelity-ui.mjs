@@ -17,7 +17,7 @@ try {
   });
   await page.setViewport({ width: 1400, height: 900, deviceScaleFactor: 1 });
   await page.goto(
-    'http://localhost:6006/iframe.html?id=application-agent-avatar-new-engine--fidelity&viewMode=story',
+    'http://localhost:6006/iframe.html?id=agents-agent-avatar-new-engine--fidelity&viewMode=story',
   );
   await page.waitForFunction(() => window.__avatarFidelity?.stats().frames > 0, { timeout: 60000 });
   await mkdir('.local/avatar-fidelity', { recursive: true });

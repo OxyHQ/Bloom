@@ -1,3 +1,5 @@
+import { FieldConstraintScope } from '../field/FieldConstraintScope';
+import { useFieldMembership } from '../field/membership';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 
@@ -107,6 +109,10 @@ function MortgageCalculatorComponent({
   const { messages } = useMessages(LISTING_ACTIONS_MESSAGES);
   const palette = useActionPalette();
   const labels = useMemo(() => ({ ...messages.mortgage, ...labelsProp }), [messages, labelsProp]);
+  // The CALCULATOR is the field's member, not one of its inputs: a `Field`
+  // around it names the whole estimate, and its label is stacked above it the
+  // way the title is, so the field's wins.
+  const field = useFieldMembership({ label: labels.title });
   const tones = useMemo(() => resolveDonutTones(palette.theme), [palette.theme]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
@@ -198,6 +204,7 @@ function MortgageCalculatorComponent({
         <TextFieldLabel>{`${labels.term} (${labels.years})`}</TextFieldLabel>
         <View
           accessibilityLabel={labels.term}
+          aria-disabled={field.disabled || undefined}
           role="radiogroup"
           testID={id('terms')}
           style={{ flexDirection: 'row', gap: 8 }}
@@ -344,11 +351,24 @@ function MortgageCalculatorComponent({
       >
         {labels.title}
       </Text>
+      {/* The group carries the field's id, name and error; the four inputs, the
+          slider and the term chips inside it are its parts, which keep their
+          own names and freeze with the field (`field/FieldConstraintScope.tsx`). */}
       <View
+        role="group"
+        accessibilityLabel={field.accessibilityLabel}
+        nativeID={field.nativeID}
+        aria-describedby={field.describedBy}
+        aria-disabled={field.disabled || undefined}
+        aria-invalid={field.invalid || undefined}
+        aria-required={field.required || undefined}
+        testID={id('group')}
         style={split ? { flexDirection: 'row', gap: 32, alignItems: 'flex-start' } : { gap: 24 }}
       >
-        {inputs}
-        {output}
+        <FieldConstraintScope>
+          {inputs}
+          {output}
+        </FieldConstraintScope>
       </View>
     </ActionCardShell>
   );

@@ -301,6 +301,16 @@ fixed `width` (default `380`) with a left hairline; `variant="screen"` is the
 mobile full page with no frame of its own. Nothing else differs, so a responsive
 app swaps the variant and not the composition.
 
+The default scrolling composition is a bounded `Screen` with `PageHeader` and
+`ScreenScrollView`. The panel owns its scroll metrics and scrollbar; its scroll
+does not move the enclosing conversation or its navigation chrome. Pane and
+screen variants retain their existing surface and dividing-edge behavior.
+
+`scrollable={false}` keeps the explicit content-flow mode: the header and body
+grow with their parent, without adding a viewport or requiring a bounded height.
+That mode isolates its screen scope and metrics, so descendant controls do not
+claim the enclosing page's chrome or follow its scroll offset.
+
 | prop                                                    | decides                                             |
 | -------------------------------------------------------- | --------------------------------------------------- |
 | `title`, `onClose`, `closeLabel`, `headerActions`         | the title bar                                       |
@@ -379,27 +389,20 @@ rewords them.
 | prop                                               | decides                                              |
 | ---------------------------------------------------- | ---------------------------------------------------- |
 | `list`, `children`, `info`                           | the three panes                                      |
-| `pane`                                               | which ONE a narrow layout builds. Default `'conversation'` |
+| `pane`                                               | which pane a narrow layout shows. Default `'conversation'` |
 | `listWidth` / `defaultListWidth`, `onListWidthChange`| the resizable pane (default `340`)                   |
 | `minWidth`, `maxWidth`                               | `280` … `480`                                        |
 | `infoWidth`                                          | default `380`                                        |
 | `resizable`, `resizeLabel`                           | the drag grip                                        |
 | `breakpoint`, `compact`                              | when one pane replaces three. Default `900`          |
 
-**The compact layout RENDERS one pane, it does not hide two.** A hidden pane is
-still mounted, still subscribed, still measuring, and on web still in the tab
-order; on a phone that is three screens' worth of work to show one. Asking for
-`pane="info"` with no `info` node falls back to the conversation rather than
-rendering an empty screen.
+`ChatSplitLayout` adapts its list, conversation and optional info slots to `AppShellPanels` and `AppShellPanel`. It uses an unframed bounded region with plain tracks and a shared hairline between them; it does not add another material or scroll viewport. Each pane's content owns scrolling, normally with `Screen` and `ScreenScrollView`.
 
-Compact is MEASURED from the layout, not from the window — this frame is
-regularly mounted inside something narrower than the screen. The first render has
-no measurement, so it is seeded from the window and corrected on the next frame.
+The panel compositor resolves responsiveness from its container. `compact={true}` selects one pane; `compact={false}` disables the breakpoint rule, while the shared minimum-width rule still protects tracks that cannot fit. Asking for `pane="info"` without an info node selects the conversation.
 
-The grip is `ai-chat`'s `AiChatResizeHandle`: the same pointer-capture drag,
-arrow-key nudging and hover grip the AI shell uses, rather than a second
-implementation of the same ninety lines. It reports a DELTA, so the width is
-rebased on every drag start and cannot drift.
+All inline panes stay mounted across selection and breakpoint changes, preserving drafts and scroll positions. Hidden tracks are inert and hidden from assistive technology. Their `Screen` receives the panel's inactive state, so hidden content does not publish scroll updates or chrome.
+
+The shared divider handles pointer capture, keyboard resizing, RTL and reduced motion. Web previews update CSS without rendering the conversation on every movement. `onListWidthChange` reports the settled width after a pointer gesture or keyboard resize; `listWidth` remains controlled when supplied.
 
 ## Tokens
 

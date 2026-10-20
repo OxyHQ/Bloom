@@ -40,8 +40,6 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
   id: string;
   /** Explicit semantic visibility, independent of responsive eligibility. */
   visible?: boolean;
-  /** Mount even when initially hidden (for persistent host routers). */
-  keepMounted?: boolean;
   content?: ReactNode;
   /** Host controls composed into the route Screen's existing PageHeader actions. */
   headerActions?: ReactNode;

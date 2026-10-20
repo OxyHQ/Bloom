@@ -33,6 +33,8 @@ import type { AgentChatMessageProps } from './types';
 import { writeClipboardText } from '../hooks/clipboard';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
+import { useTheme } from '../theme/use-theme';
 
 /**
  * `AgentMessage`: one turn of the transcript.
@@ -260,6 +262,8 @@ export function AgentChatMessage({
   style,
   testID,
 }: AgentChatMessageProps) {
+  const theme = useTheme();
+  const parentFill = useSurfaceFill();
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const reducedMotion = useReducedMotion();
@@ -283,7 +287,7 @@ export function AgentChatMessage({
       alignSelf: 'flex-end',
       maxWidth: '75%',
       borderRadius: 16,
-      backgroundColor: palette.card,
+      backgroundColor: surfaceFillOn(theme, parentFill ?? palette.chatSurface),
       paddingLeft: 12,
       paddingRight: 12,
       paddingTop: 11,

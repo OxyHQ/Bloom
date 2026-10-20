@@ -14,7 +14,8 @@ import { PageFooter, PageFooterProvider, usePageFooterInset } from './index';
 import type { PageFooterProps } from './types';
 
 const meta: Meta<typeof PageFooter> = {
-  title: 'Blocks/Page Footer',
+  id: 'blocks-page-footer',
+  title: 'Composition/Layout/Page Footer',
   component: PageFooter,
   args: { safeArea: false, scrim: 'always' },
   argTypes: { scrim: { control: 'select', options: ['always', 'none'] } },

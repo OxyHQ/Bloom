@@ -21,7 +21,8 @@ import { NoteEditorToolbar } from './NoteEditorToolbar';
 import type { NoteEditorAction, NoteSaveState } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Notes/Note Editor',
+  id: 'blocks-notes-note-editor',
+  title: 'Patterns/Notes/Note Editor',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

@@ -5,7 +5,6 @@ import {
   panelEnvelope,
   resolvePanelAxis,
   eligiblePanels,
-  panelForAxis,
   DEFAULT_PANEL_WIDTH,
 } from './panel-layout';
 import type { AppShellPanelLayout } from './panel-layout-types';
@@ -15,6 +14,8 @@ export const PanelCssLayoutContext = createContext<{
   layout: AppShellPanelLayout;
   gap: number;
 } | null>(null);
+export const panelSizeProperty = (scope: string, index: number) => `--${scope}-panel-size-${index}`;
+export const panelGrowProperty = (scope: string, index: number) => `--${scope}-panel-grow-${index}`;
 export const panelCssScope = (id: string) => `bloom-panels-${id.replace(/[^a-zA-Z0-9_-]/g, '')}`;
 
 /** Compile descriptor rules, never viewport measurements. The browser chooses each range. */
@@ -30,12 +31,16 @@ export function panelLayoutCss(
   const row = `${group} [data-bloom-panel-row="${scope}"]`;
   const item = (index: number) =>
     `${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index="${index}"]`;
+  const liveSize = (index: number, fallback: string) =>
+    `var(${panelSizeProperty(scope, index)}, ${fallback})`;
   const deck = layout.mode === 'deck';
   const document = layout.flow === 'document' && !deck;
   const pageDeck = deck && layout.horizontalScroll !== 'contained';
   const thresholds = new Set<number>([0]);
-  for (const panel of layout.panels)
+  for (const panel of layout.panels) {
     if (panel.hideBelow !== undefined) thresholds.add(breakpointPx(panel.hideBelow));
+    if (panel.floating) thresholds.add(breakpointPx(panel.floating.below));
+  }
   if (layout.collapseBelow !== undefined) thresholds.add(breakpointPx(layout.collapseBelow));
   if (typeof layout.axis === 'object')
     for (const name of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
@@ -43,7 +48,10 @@ export function panelLayoutCss(
   let css = `${root} [data-bloom-reading-envelope="${scope}"]{width:var(--bloom-reading-envelope)!important;flex-grow:0!important;flex-basis:auto!important;max-width:var(--bloom-reading-envelope)!important;interpolate-size:allow-keywords}
 ${root} [data-bloom-reading-content="${scope}"]{width:100%!important;flex-basis:100%!important;max-width:100%!important;flex-grow:1!important}
 ${row}{gap:0!important}
-${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{transition-property:flex-basis,flex-grow,max-width,max-height,margin-inline-start,margin-top,opacity,display;transition-behavior:allow-discrete;transition-duration:380ms;transition-timing-function:cubic-bezier(.4,0,.2,1)}
+${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{interpolate-size:allow-keywords;transition-property:width,height,flex-basis,flex-grow,min-width,min-height,max-width,max-height,margin-inline-start,margin-top,opacity,display;transition-behavior:allow-discrete;transition-duration:380ms;transition-timing-function:cubic-bezier(.4,0,.2,1)}
+${group}[data-bloom-panel-resizing] [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:has(${group}[data-bloom-panel-resizing]) [data-bloom-reading-envelope="${scope}"]{transition:none!important}
+${group}[data-bloom-panel-resizing]{user-select:none;cursor:col-resize}
+${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
 @media(prefers-reduced-motion:reduce){${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{transition:none}}
 `;
   if (pageDeck)
@@ -73,13 +81,10 @@ ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{transition-
       `${item(index)}{--bloom-panel-visible:0;flex:0 0 0px!important;display:none!important;width:0!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;opacity:0!important;margin:0!important;overflow:hidden!important;pointer-events:none!important}\n`;
     for (let index = 0; index < layout.panels.length; index++) {
       const p = layout.panels[index]!;
+      rules += `${item(index)}{--bloom-panel-floating:${p.floating && lower < breakpointPx(p.floating.below) ? 1 : 0}}\n`;
       const position = shown.findIndex((x) => x.id === p.id);
       if (position < 0) {
         rules += hidden(index);
-        // A route-owned visibility change must release its track immediately.
-        // Keeping obsolete deck columns in flex flow during an exit would add
-        // their widths to the entering route's envelope.
-        if (p.visible === false) rules += `${item(index)}{transition:none!important}`;
         continue;
       }
       const dim = vertical ? (heights[p.id] ?? p.height) : (widths[p.id] ?? p.width);
@@ -107,7 +112,8 @@ ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{transition-
           : flexible && dim !== undefined
             ? 0
             : (p.span ?? 1);
-      rules += `${item(index)}{--bloom-panel-visible:1;display:flex!important;flex:${grow} ${deck || natural ? 0 : 1} ${basis}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : `${dim ?? DEFAULT_PANEL_WIDTH}px`) : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+      rules += `${item(index)}{--bloom-panel-visible:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+      rules += `@starting-style{${item(index)}{flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;opacity:0!important;margin-inline-start:0!important;margin-top:0!important}}\n`;
     }
     if (pageDeck && !vertical) {
       const trackWidths = shown.map((panel) =>
@@ -119,11 +125,13 @@ ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{transition-
           ),
         ),
       );
-      const declaredWidth =
-        trackWidths.reduce((sum, value) => sum + value, 0) + Math.max(0, shown.length - 1) * gap;
+      const declaredWidth = trackWidths
+        .map((value, index) => liveSize(layout.panels.indexOf(shown[index]!), `${value}px`))
+        .concat(`${Math.max(0, shown.length - 1) * gap}px`)
+        .join(' + ');
       const deckWidth = layout.expandedPanel
         ? 'var(--bloom-deck-viewport)'
-        : `max(var(--bloom-deck-viewport), calc(${declaredWidth}px + var(--bloom-frame-end)))`;
+        : `max(var(--bloom-deck-viewport), calc(${declaredWidth} + var(--bloom-frame-end)))`;
       rules += `${root} [data-bloom-shell-frame="${scope}"]{overflow:visible!important;padding-inline:0!important;--bloom-deck-viewport:calc(100cqw - var(--bloom-nav-width) - var(--bloom-nav-gap))}
 ${root} [data-bloom-reading-envelope="${scope}"]{width:${deckWidth}!important;min-width:0!important;max-width:none!important;flex:0 0 auto!important;padding-inline-start:0!important;padding-inline-end:var(--bloom-frame-end)!important}
 ${root} [data-bloom-reading-envelope="${scope}"]{min-width:0!important}

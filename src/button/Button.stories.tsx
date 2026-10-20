@@ -11,7 +11,8 @@ import { BloomScope } from '../appearance';
 import { RiAddLine, RiArrowRightLine } from '../icons/remix';
 
 const meta = {
-  title: 'Base/Button',
+  id: 'base-button',
+  title: 'Components/Actions/Button',
   component: Button,
   parameters: {
     controls: {

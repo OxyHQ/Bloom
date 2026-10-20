@@ -14,7 +14,8 @@ import { MailThread } from './MailThread';
 import type { MailAddress, MailThreadMessage } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Mail/Mail Thread',
+  id: 'blocks-mail-mail-thread',
+  title: 'Patterns/Mail/Mail Thread',
 };
 
 export default meta;

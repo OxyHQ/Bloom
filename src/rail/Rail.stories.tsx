@@ -19,7 +19,8 @@ import type { RailItem } from './types';
  * enough to show the rail staying pinned while the content beside it scrolls.
  */
 const meta: Meta<typeof Rail> = {
-  title: 'Base/Rail',
+  id: 'base-rail',
+  title: 'Composition/Navigation/Rail',
   component: Rail,
   parameters: { layout: 'fullscreen' },
 };

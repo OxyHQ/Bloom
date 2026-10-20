@@ -8,7 +8,11 @@ import { PageFooter } from '../page-footer';
 import { PageHeader } from '../page-header';
 import { AppShell, AppShellPanel } from '../app-shell';
 
-const meta: Meta<typeof Screen> = { title: 'Foundations/Screen', component: Screen };
+const meta: Meta<typeof Screen> = {
+  id: 'foundations-screen',
+  title: 'Composition/Layout/Screen',
+  component: Screen,
+};
 export default meta;
 type Story = StoryObj<typeof Screen>;
 export const ContinuousContent: Story = {

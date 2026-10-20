@@ -20,7 +20,8 @@ import { ViewingScheduler } from './ViewingScheduler';
 import type { ApplicationItem, ExchangeMode, KeyFact, ViewingMode, ViewingSlot } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Listing Actions',
+  id: 'blocks-housing-listing-actions',
+  title: 'Patterns/Housing/Listing Actions',
   parameters: { layout: 'fullscreen' },
 };
 

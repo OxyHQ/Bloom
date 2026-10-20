@@ -169,7 +169,9 @@ describe('AppShell drawer labels', () => {
           sidebar={{ items: NAV }}
         />,
       );
-      expect(screen.getByTestId('shell-veil').props.accessibilityLabel).toBe('إغلاق التنقل');
+      expect(
+        screen.getByTestId('shell-veil', { includeHiddenElements: true }).props.accessibilityLabel,
+      ).toBe('إغلاق التنقل');
     },
   );
 });

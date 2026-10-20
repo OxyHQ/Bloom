@@ -13,7 +13,8 @@ const meta: Meta = {
     disabled: { control: 'boolean' },
   },
   component: Field,
-  title: 'Base/Field',
+  id: 'base-field',
+  title: 'Composition/Fields/Field',
 };
 
 export default meta;

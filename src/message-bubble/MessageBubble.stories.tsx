@@ -18,7 +18,8 @@ import { UnreadSeparator } from './UnreadSeparator';
 import type { MessageListItem, MessageReaction } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Chat/Message Bubble',
+  id: 'blocks-chat-message-bubble',
+  title: 'Components/Chat/Message Bubble',
 };
 
 export default meta;

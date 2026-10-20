@@ -8,7 +8,8 @@ import { RiNotificationLine as BellIcon, RiKey2Line as KeyIcon } from '../icons/
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
 
 const meta: Meta<typeof Badge> = {
-  title: 'Base/Badge',
+  id: 'base-badge',
+  title: 'Components/Data Display/Badge',
   component: Badge,
 };
 

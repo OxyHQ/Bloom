@@ -12,7 +12,8 @@ const meta: Meta<typeof IconCircle> = {
   argTypes: {
     size: { control: 'select', options: ['xs', 'sm', 'md', 'lg', '2xs', 'xl', '2xl', '3xl'] },
   },
-  title: 'Base/Icon Circle',
+  id: 'base-icon-circle',
+  title: 'Components/Data Display/Icon Circle',
   component: IconCircle,
 };
 

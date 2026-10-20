@@ -18,7 +18,8 @@ const meta: Meta = {
   },
   component: Command,
   parameters: { controls: { disable: true } },
-  title: 'Base/Command',
+  id: 'base-command',
+  title: 'Components/Overlays/Command',
 };
 
 export default meta;

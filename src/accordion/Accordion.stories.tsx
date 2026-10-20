@@ -9,7 +9,8 @@ const meta: Meta<typeof Accordion> = {
   argTypes: {
     type: { control: 'select', options: ['single', 'multiple'] },
   },
-  title: 'Base/Accordion',
+  id: 'base-accordion',
+  title: 'Components/Data Display/Accordion',
   component: Accordion,
 };
 

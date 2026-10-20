@@ -9,7 +9,8 @@ import { PlaceListCard } from './PlaceListCard';
 import type { PlaceListPlace } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Maps/PlaceList',
+  id: 'blocks-maps-placelist',
+  title: 'Patterns/Maps/Place List',
   parameters: { layout: 'fullscreen' },
 };
 

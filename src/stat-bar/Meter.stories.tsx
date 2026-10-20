@@ -10,7 +10,8 @@ import { MeterRing } from './MeterRing';
 import { resolveMeterColors } from './shared';
 
 const meta: Meta<typeof Meter> = {
-  title: 'Base/Meter',
+  id: 'base-meter',
+  title: 'Components/Feedback/Meter',
   component: Meter,
 };
 

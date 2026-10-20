@@ -6,7 +6,8 @@ import { AVATAR_PRESETS, assetUrl, type AvatarPreset } from '../runtime/avatar/c
 import { AvatarMotionReview } from './AvatarMotionReview';
 
 const meta = {
-  title: 'Agents/Agent Avatar/New Engine',
+  id: 'agents-agent-avatar-new-engine',
+  title: 'Labs/Avatar Runtime',
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
 } satisfies Meta;
 export default meta;
@@ -105,7 +106,7 @@ function FidelityLab() {
         de piezas.
       </p>
       <p>
-        <a href="?path=/story/application-agent-avatar-new-engine--motion-review" target="_top">
+        <a href="?path=/story/agents-agent-avatar-new-engine--motion-review" target="_top">
           Revisar los movimientos originales de los ocho modelos, fotograma a fotograma
         </a>
       </p>

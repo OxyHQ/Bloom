@@ -19,7 +19,7 @@ try {
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   page.on('pageerror', (e) => report.errors.push(e.message));
   await page.goto(
-    'http://localhost:6006/iframe.html?id=application-agent-avatar-characters--editor&viewMode=story',
+    'http://localhost:6006/iframe.html?id=agents-agent-avatar-characters--editor&viewMode=story',
   );
   await page.waitForSelector('[data-testid="universal-avatar-config"]', { timeout: 90000 });
   const saved = () =>

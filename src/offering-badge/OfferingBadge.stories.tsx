@@ -9,7 +9,8 @@ import { Text } from '../typography';
 import { OfferingBadge } from './OfferingBadge';
 
 const meta: Meta<typeof OfferingBadge> = {
-  title: 'Base/Offering Badge',
+  id: 'base-offering-badge',
+  title: 'Components/Feedback/Offering Badge',
   component: OfferingBadge,
   args: { offering: 'long_term_rent', size: 'md', variant: 'tinted' },
   argTypes: {

@@ -25,7 +25,7 @@ try {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(
-    `${process.env.STORYBOOK_URL ?? 'http://localhost:6008'}/iframe.html?id=system-composition--dense-feed&viewMode=story`,
+    `${process.env.STORYBOOK_URL ?? 'http://localhost:6008'}/iframe.html?id=foundations-composition--dense-feed&viewMode=story`,
     { waitUntil: 'networkidle0' },
   );
   await page.waitForSelector('[data-testid="dense-post-99"]');

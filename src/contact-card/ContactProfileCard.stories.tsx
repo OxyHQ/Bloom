@@ -13,7 +13,8 @@ import { ContactProfileCard } from './ContactProfileCard';
 import type { ContactProfileCardProps } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/CRM/ContactProfileCard',
+  id: 'blocks-crm-contactprofilecard',
+  title: 'Patterns/CRM/Contact Profile Card',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

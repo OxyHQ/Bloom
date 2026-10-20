@@ -26,13 +26,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { PanelHeader, PanelPlaceholder } from './AiChatCodePanel';
 import { SurfaceAction } from './AiChatControls';
-import {
-  primaryHoverOver,
-  ROW_RADIUS,
-  useAiChatPalette,
-  useAiChatWebCss,
-  type AiChatPalette,
-} from './shared';
+import { ROW_RADIUS, useAiChatPalette, useAiChatWebCss, type AiChatPalette } from './shared';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
@@ -45,7 +39,8 @@ import type {
 } from './types';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
-import { ScrollArea } from '../layout/ScrollArea';
+import { useAiChatPlatform } from './context';
+import { ButtonGroupItem } from '../button-group';
 
 const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_QUINT_CSS = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -397,6 +392,7 @@ export function AiChatGalleryPanelBase({
   style,
   testID,
 }: AiChatGalleryPanelProps) {
+  const { Screen, ScreenScrollView } = useAiChatPlatform();
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const reducedMotion = useReducedMotion();
@@ -567,57 +563,62 @@ export function AiChatGalleryPanelBase({
           height: '100%',
           flexShrink: 0,
           flexDirection: 'column',
-          gap: 10,
           overflow: 'hidden',
-          paddingTop: 8,
         },
         style,
       ]}
     >
-      <PanelHeader
-        tabs={tabs}
-        value={shown}
-        onValueChange={(next) => setCurrent(next as 'gallery' | 'styles')}
-        label={l.tabs}
-      >
-        {actions.map((action) => (
-          <SurfaceAction
-            key={action.key}
-            label={action.label}
-            onPress={action.onPress}
-            padding={2}
-            radius={6}
-            background="transparent"
-            hoverBackground={primaryHoverOver(palette, palette.full)}
-            palette={palette}
-            glyph={(color) => <action.icon width={18} height={18} fill={color} />}
-          />
-        ))}
-      </PanelHeader>
-
-      {shown === 'gallery' ? (
-        <ScrollArea ref={scrollRef} style={{ minHeight: 0, width: '100%', flex: 1 }}>
-          <View
-            ref={contentRef}
-            onLayout={rebaseline}
-            style={{ flexDirection: 'column', gap: GAP }}
+      <Screen
+        scroll="auto"
+        documentScroll={false}
+        contentClearance={0}
+        header={
+          <PanelHeader
+            title={l.gallery}
+            tabs={tabs}
+            value={shown}
+            onValueChange={(next) => setCurrent(next as 'gallery' | 'styles')}
+            label={l.tabs}
           >
-            {expanded ? renderTile(expanded, true) : null}
-            <View style={{ flexDirection: 'row', gap: GAP }}>
-              {visibleColumns.map((column, index) => (
-                <View
-                  key={index}
-                  style={{ minWidth: 0, flex: 1, flexDirection: 'column', gap: GAP }}
-                >
-                  {column.map((generation) => renderTile(generation, false))}
-                </View>
-              ))}
+            {actions.map((action) => (
+              <ButtonGroupItem
+                key={action.key}
+                iconOnly
+                accessibilityLabel={action.label}
+                onPress={action.onPress}
+                leadingIcon={(iconProps) => <action.icon {...iconProps} />}
+              />
+            ))}
+          </PanelHeader>
+        }
+      >
+        <ScreenScrollView
+          ref={scrollRef}
+          contentContainerStyle={{ paddingTop: 10, paddingBottom: 12 }}
+        >
+          {shown === 'gallery' ? (
+            <View
+              ref={contentRef}
+              onLayout={rebaseline}
+              style={{ flexDirection: 'column', gap: GAP }}
+            >
+              {expanded ? renderTile(expanded, true) : null}
+              <View style={{ flexDirection: 'row', gap: GAP }}>
+                {visibleColumns.map((column, index) => (
+                  <View
+                    key={index}
+                    style={{ minWidth: 0, flex: 1, flexDirection: 'column', gap: GAP }}
+                  >
+                    {column.map((generation) => renderTile(generation, false))}
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
-        </ScrollArea>
-      ) : (
-        (stylePresets ?? <PanelPlaceholder label={l.stylePresets} palette={palette} />)
-      )}
+          ) : (
+            (stylePresets ?? <PanelPlaceholder label={l.stylePresets} palette={palette} />)
+          )}
+        </ScreenScrollView>
+      </Screen>
     </View>
   );
 }

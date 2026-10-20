@@ -16,7 +16,8 @@ const meta: Meta<typeof TokensChartCard> = {
     activeColor: { control: 'text' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Tokens Chart',
+  id: 'charts-tokens-chart',
+  title: 'Components/Charts/Tokens Chart',
   component: TokensChartCard,
 };
 

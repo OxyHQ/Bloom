@@ -16,7 +16,8 @@ import { useTheme } from '../theme';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Foundations/Image Aspect Ratio Cache',
+  id: 'foundations-image-aspect-ratio-cache',
+  title: 'Composition/Images/Aspect Ratio Cache',
 };
 
 export default meta;

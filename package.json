@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.0.1",
+  "version": "15.1.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -293,6 +293,11 @@
       "react-native": {
         "types": "./lib/typescript/module/screen/index.d.ts",
         "default": "./src/screen/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/screen/index.web.d.ts",
+        "import": "./lib/module/screen/index.web.js",
+        "require": "./lib/commonjs/screen/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/screen/index.d.ts",
@@ -999,6 +1004,11 @@
         "types": "./lib/typescript/module/settings-modal/index.d.ts",
         "default": "./src/settings-modal/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/settings-modal/index.web.d.ts",
+        "import": "./lib/module/settings-modal/index.web.js",
+        "require": "./lib/commonjs/settings-modal/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/settings-modal/index.d.ts",
         "default": "./lib/module/settings-modal/index.js"
@@ -1026,6 +1036,11 @@
       "react-native": {
         "types": "./lib/typescript/module/settings-modal/modal.d.ts",
         "default": "./src/settings-modal/modal.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/settings-modal/modal.web.d.ts",
+        "import": "./lib/module/settings-modal/modal.web.js",
+        "require": "./lib/commonjs/settings-modal/modal.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/settings-modal/modal.d.ts",
@@ -2351,6 +2366,11 @@
         "types": "./lib/typescript/module/chat-screen/index.d.ts",
         "default": "./src/chat-screen/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/chat-screen/index.web.d.ts",
+        "import": "./lib/module/chat-screen/index.web.js",
+        "require": "./lib/commonjs/chat-screen/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/chat-screen/index.d.ts",
         "default": "./lib/module/chat-screen/index.js"
@@ -2468,6 +2488,11 @@
         "types": "./lib/typescript/module/queue-panel/index.d.ts",
         "default": "./src/queue-panel/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/queue-panel/index.web.d.ts",
+        "import": "./lib/module/queue-panel/index.web.js",
+        "require": "./lib/commonjs/queue-panel/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/queue-panel/index.d.ts",
         "default": "./lib/module/queue-panel/index.js"
@@ -2495,6 +2520,11 @@
       "react-native": {
         "types": "./lib/typescript/module/music-library/index.d.ts",
         "default": "./src/music-library/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/music-library/index.web.d.ts",
+        "import": "./lib/module/music-library/index.web.js",
+        "require": "./lib/commonjs/music-library/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/music-library/index.d.ts",
@@ -3195,6 +3225,11 @@
       "react-native": {
         "types": "./lib/typescript/module/wizard/index.d.ts",
         "default": "./src/wizard/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/wizard/index.web.d.ts",
+        "import": "./lib/module/wizard/index.web.js",
+        "require": "./lib/commonjs/wizard/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/wizard/index.d.ts",

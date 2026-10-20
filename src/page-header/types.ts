@@ -75,7 +75,7 @@ export type PageHeaderScrim = 'auto' | 'always' | 'none';
 export type PageHeaderTitleReveal = 'auto' | 'always' | 'onScroll' | 'onDock';
 
 export interface PageHeaderProps {
-  /** A string renders as the heading; a node renders as-is (and owns its own semantics). */
+  /** A string renders as the heading; a node renders as-is and determines the header's height, including when centered. Nodes own their accessible semantics. */
   title?: ReactNode;
   /** A string renders as a secondary line under the title; a node renders as-is. */
   subtitle?: ReactNode;
@@ -114,6 +114,10 @@ export interface PageHeaderProps {
    * grouping yourself — the header never infers it by reading children.
    */
   actions?: ReactNode;
+  /** Full-width chrome below the title/actions row, for tabs or a toolbar.
+   * Its measured height joins Screen's header clearance and scroll effects.
+   */
+  accessory?: ReactNode;
 
   /** `presentation="bar"` only. Default `auto`. */
   border?: PageHeaderBorder;

@@ -15,7 +15,8 @@ const meta: Meta<typeof StepsCard> = {
     activeColor: { control: 'text' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Steps',
+  id: 'charts-steps',
+  title: 'Components/Charts/Steps',
   component: StepsCard,
 };
 

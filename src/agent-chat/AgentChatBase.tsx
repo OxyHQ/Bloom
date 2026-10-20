@@ -1,19 +1,13 @@
-import { ScrollArea } from '../layout/ScrollArea';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PageFooter } from '../page-footer';
+import { useAgentChatPlatform } from './context';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { ComponentRef } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  View,
-  useWindowDimensions,
-  type LayoutChangeEvent,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import { Pressable, type ScrollView, View } from 'react-native';
 
 import { AgentThinking } from '../agent-thinking';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useMessages } from '../locale/messages';
+import { PageHeader } from '../page-header';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { AgentChatActionsBase } from './AgentChatActionsBase';
@@ -22,33 +16,24 @@ import { AgentChatHistoryBase } from './AgentChatHistoryBase';
 import { AgentChatMessage } from './AgentChatMessage';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import {
-  CARD_RADIUS,
   COLUMN_MAX_WIDTH,
-  HEADER_HEIGHT,
   HISTORY_BREAKPOINT,
+  RAIL_WIDTH,
   useAgentChatPalette,
   useAgentChatWebCss,
   type AgentChatPalette,
 } from './shared';
 import type { AgentChatMessageData, AgentChatProps } from './types';
-import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
- * `AgentChat` — the chat workspace, without the app shell around it and
- * without its transport.
+ * `AgentChat` — a modular conversation/history workspace without its transport.
  *
  *   workspace  row, gap 12: the chat card (flex 1) and the history rail
  *   card       radius 24, background-secondary, clipped
- *   header     overlaid (absolute, z 10), 48 tall, px 16 / pt 7, gap 8:
- *              `headerLeading`, the title (headline-medium, truncated) and the
- *              actions pushed right. A 1px bottom rule is always present but
- *              transparent; once the transcript is scrolled AND the title
- *              actually reaches the message column (measured, +16px buffer), the
- *              rule shows (separator-border) and the band frosts over (white /
- *              black 20%, 20px backdrop blur)
- *   transcript flex 1, scrolls; the column is max 768, px 16, pt 72, pb 24,
+ *   header     PageHeader with floating action islands; a custom identity determines its height
+ *   transcript flex 1, scrolls; the column is max 768, px 16, pt 16, pb 24,
  *              gap 20 — centred vertically while empty
  *   empty      centred, gap 16: title-2-medium heading + body-regular
  *              text-secondary line (gap 4), then wrapping suggestion pills
@@ -64,7 +49,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
  * `/api/chat` is a prop here: messages, status, threads and every action are
  * the consumer's. What the
  * component still owns is interaction state — the composer text (uncontrolled
- * by default), the scroll-under / clash measurement, and scrolling to the
+ * by default) and scrolling to the
  * newest message.
  *
  * Left out, as app shell rather than chat: the dashboard sidebar and its
@@ -75,10 +60,12 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 function SuggestionPill({
   text,
   onPress,
+  disabled,
   palette,
 }: {
   text: string;
   onPress: () => void;
+  disabled?: boolean;
   palette: AgentChatPalette;
 }) {
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
@@ -98,6 +85,8 @@ function SuggestionPill({
       accessibilityRole="button"
       accessibilityLabel={text}
       onPress={onPress}
+      disabled={disabled}
+      aria-disabled={disabled}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       style={style}
@@ -114,12 +103,14 @@ function EmptyState({
   description,
   suggestions,
   onPick,
+  disabled,
   palette,
 }: {
   title: string;
   description: string;
   suggestions: ReadonlyArray<string>;
   onPick: (text: string) => void;
+  disabled?: boolean;
   palette: AgentChatPalette;
 }) {
   return (
@@ -144,6 +135,7 @@ function EmptyState({
               key={suggestion}
               text={suggestion}
               onPress={() => onPick(suggestion)}
+              disabled={disabled}
               palette={palette}
             />
           ))}
@@ -167,6 +159,7 @@ function transcriptOf(
 }
 
 export function AgentChatBase({
+  disabled = false,
   messages,
   status = 'ready',
   error,
@@ -181,6 +174,9 @@ export function AgentChatBase({
   suggestions: suggestionsProp,
   emptyState,
   headerLeading,
+  headerIdentity,
+  headerTitleAlign,
+  composerProps,
   onShare,
   onExport,
   onCopyMessage,
@@ -207,7 +203,7 @@ export function AgentChatBase({
   const { messages: catalog } = useMessages(AGENT_CHAT_MESSAGES);
   const l = useMemo(() => ({ ...catalog.chat, ...labels }), [catalog, labels]);
   const suggestions = suggestionsProp ?? catalog.chat.suggestions;
-  const { width: windowWidth } = useWindowDimensions();
+  const { Screen, ScreenScrollView, AppShell } = useAgentChatPlatform();
   const [input, setInput] = useControllableState<string>({
     value,
     defaultValue: '',
@@ -215,6 +211,7 @@ export function AgentChatBase({
   });
 
   const busy = status === 'submitted' || status === 'streaming';
+  const blocked = disabled || composerProps?.disabled === true;
   const showError = error ?? status === 'error';
   const last = messages[messages.length - 1];
   const streamedText = last && last.role !== 'user' ? last.text : '';
@@ -223,24 +220,6 @@ export function AgentChatBase({
 
   const headerTitle =
     title ?? threads?.find((thread) => thread.id === activeThreadId)?.title ?? l.newChat;
-
-  // --- Scroll-under + clash (geometry, not a breakpoint) --------------------
-  const [scrolledUnder, setScrolledUnder] = useState(false);
-  const [titleRight, setTitleRight] = useState(0);
-  const [columnLeft, setColumnLeft] = useState(Number.POSITIVE_INFINITY);
-  const canClash = titleRight + 16 > columnLeft;
-  const frosted = scrolledUnder && canClash;
-
-  const onTitleLayout = useCallback((event: LayoutChangeEvent) => {
-    const { x, width } = event.nativeEvent.layout;
-    setTitleRight(x + width);
-  }, []);
-  const onColumnLayout = useCallback((event: LayoutChangeEvent) => {
-    setColumnLeft(event.nativeEvent.layout.x);
-  }, []);
-  const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    setScrolledUnder(event.nativeEvent.contentOffset.y > 0);
-  }, []);
 
   // --- Follow the newest message --------------------------------------------
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
@@ -265,197 +244,198 @@ export function AgentChatBase({
   const submit = useCallback(
     (text: string) => {
       const trimmed = text.trim();
-      if (!trimmed || busy) return;
+      if ((!trimmed && !composerProps?.attachments?.length) || busy || blocked) return;
       onSubmit?.(trimmed);
       setInput('');
     },
-    [busy, onSubmit, setInput],
+    [busy, blocked, onSubmit, setInput, composerProps?.attachments?.length],
   );
 
-  const railVisible = showHistory ?? (threads !== undefined && windowWidth >= HISTORY_BREAKPOINT);
   const empty = messages.length === 0;
 
-  const header: WebCssStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    height: HEADER_HEIGHT,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingLeft: 16,
-    paddingRight: 16,
-    paddingTop: 7,
-    borderBottomWidth: 1,
-    borderBottomColor: frosted ? palette.separator : 'transparent',
-    backgroundColor: frosted ? palette.frost : 'transparent',
-    ...(frosted && IS_WEB
-      ? { backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
-      : null),
-  };
-
   return (
-    <View
+    <AppShell
       testID={testID}
-      style={[
-        { flex: 1, minHeight: 0, minWidth: 0, flexDirection: 'row', gap: 12, overflow: 'hidden' },
-        style,
-      ]}
-    >
-      <View
-        style={{
-          position: 'relative',
-          flex: 1,
-          minWidth: 0,
-          height: '100%',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          borderRadius: CARD_RADIUS,
-          backgroundColor: palette.chatSurface,
-        }}
-      >
-        <View
-          {...dataHook('bloomAgentChatHeader')}
-          testID={testID ? `${testID}-header` : undefined}
-          style={header}
-        >
-          {headerLeading}
-          <View onLayout={onTitleLayout} style={{ minWidth: 0, flexShrink: 1 }}>
-            <Text variant="headline-medium" numberOfLines={1} style={{ color: palette.text }}>
-              {headerTitle}
-            </Text>
-          </View>
-          <AgentChatActionsBase
-            testID={testID ? `${testID}-actions` : undefined}
-            style={{ marginLeft: 'auto' }}
-            transcript={transcript}
-            onShare={onShare}
-            onExport={onExport}
-            onToggleUnread={
-              onToggleUnread && activeThreadId ? () => onToggleUnread(activeThreadId) : undefined
-            }
-            onDelete={
-              onDeleteThread && activeThreadId ? () => onDeleteThread(activeThreadId) : undefined
-            }
-            disabled={empty}
-            labels={actionsLabels}
-          />
-        </View>
-
-        {empty && emptyState ? (
-          <View style={{ flex: 1, minHeight: 0 }}>{emptyState}</View>
-        ) : (
-          <>
-            <ScrollArea
-              ref={scrollRef}
-              testID={testID ? `${testID}-transcript` : undefined}
-              style={{ flex: 1, minHeight: 0 }}
-              contentContainerStyle={{ flexGrow: 1 }}
-              onScroll={onScroll}
-              scrollEventThrottle={16}
-              onContentSizeChange={onContentSizeChange}
-            >
-              <View
-                onLayout={onColumnLayout}
-                style={{
-                  width: '100%',
-                  maxWidth: COLUMN_MAX_WIDTH,
-                  alignSelf: 'center',
-                  flexDirection: 'column',
-                  gap: 20,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  paddingTop: 72,
-                  paddingBottom: 24,
-                  ...(empty ? { flexGrow: 1, justifyContent: 'center' } : null),
-                }}
+      variant="dashboard"
+      gutter={0}
+      safeArea={false}
+      contentMaxWidth="none"
+      style={style}
+      panelLayout={{
+        mode: 'split',
+        flow: 'bounded',
+        gap: 12,
+        activePanel: 'conversation',
+        panels: [
+          {
+            id: 'conversation',
+            minWidth: 280,
+            scroll: 'content',
+            content: (
+              <Screen
+                bottomBarKeyboardBehavior="visible"
+                scroll="auto"
+                contentClearance={0}
+                header={
+                  <PageHeader
+                    testID={testID ? `${testID}-header` : undefined}
+                    title={headerIdentity ?? headerTitle}
+                    titleAlign={headerTitleAlign ?? (headerIdentity ? 'center' : 'start')}
+                    leading={headerLeading}
+                    sticky={false}
+                    safeArea={false}
+                    actions={
+                      <AgentChatActionsBase
+                        testID={testID ? `${testID}-actions` : undefined}
+                        transcript={transcript}
+                        onShare={onShare}
+                        onExport={onExport}
+                        onToggleUnread={
+                          onToggleUnread && activeThreadId
+                            ? () => onToggleUnread(activeThreadId)
+                            : undefined
+                        }
+                        onDelete={
+                          onDeleteThread && activeThreadId
+                            ? () => onDeleteThread(activeThreadId)
+                            : undefined
+                        }
+                        disabled={empty}
+                        labels={actionsLabels}
+                      />
+                    }
+                  />
+                }
+                bottomBar={
+                  empty && emptyState ? undefined : (
+                    <PageFooter safeArea={false} scrim="auto">
+                      <View
+                        style={{ width: '100%', maxWidth: COLUMN_MAX_WIDTH, alignSelf: 'center' }}
+                      >
+                        <AgentChatComposerBase
+                          testID={testID ? `${testID}-composer` : undefined}
+                          value={input}
+                          onValueChange={setInput}
+                          onSubmit={submit}
+                          onStop={onStop}
+                          onAttach={onAttach}
+                          busy={busy}
+                          disabled={blocked}
+                          model={model}
+                          provider={provider}
+                          messageCount={messages.length}
+                          labels={composerLabels}
+                          composerProps={composerProps}
+                        />
+                      </View>
+                    </PageFooter>
+                  )
+                }
               >
-                {empty ? (
-                  <EmptyState
-                    title={l.emptyTitle}
-                    description={l.emptyDescription}
-                    suggestions={suggestions}
-                    onPick={submit}
-                    palette={palette}
-                  />
+                {empty && emptyState ? (
+                  emptyState
                 ) : (
-                  messages.map((message, index) => (
-                    <AgentChatMessage
-                      key={message.id}
-                      role={message.role}
-                      text={message.text}
-                      at={message.at}
-                      agent={message.agent}
-                      reasoning={message.reasoning}
-                      toolCalls={message.toolCalls}
-                      markdown={message.markdown}
-                      onLinkPress={onLinkPress}
-                      streaming={busy && index === messages.length - 1}
-                      onCopy={onCopyMessage}
-                      onReadAloud={onReadAloud}
-                      labels={messageLabels}
-                    />
-                  ))
-                )}
-
-                {showThinking ? (
-                  <AgentThinking
-                    variant="wave"
-                    label={l.thinking}
-                    style={{ paddingLeft: 4, paddingRight: 4 }}
-                  />
-                ) : null}
-
-                {showError ? (
-                  <Text
-                    variant="body-regular"
-                    role="alert"
-                    style={{ paddingLeft: 4, paddingRight: 4, color: palette.textTertiary }}
+                  <ScreenScrollView
+                    ref={scrollRef}
+                    testID={testID ? `${testID}-transcript` : undefined}
+                    style={{ flex: 1, minHeight: 0 }}
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    scrollEventThrottle={16}
+                    onContentSizeChange={onContentSizeChange}
                   >
-                    {l.error}
-                  </Text>
-                ) : null}
-              </View>
-            </ScrollArea>
+                    <View
+                      style={{
+                        width: '100%',
+                        maxWidth: COLUMN_MAX_WIDTH,
+                        alignSelf: 'center',
+                        flexDirection: 'column',
+                        gap: 20,
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                        paddingTop: 16,
+                        paddingBottom: 24,
+                        ...(empty ? { flexGrow: 1, justifyContent: 'center' } : null),
+                      }}
+                    >
+                      {empty ? (
+                        <EmptyState
+                          title={l.emptyTitle}
+                          description={l.emptyDescription}
+                          suggestions={suggestions}
+                          onPick={submit}
+                          disabled={busy || blocked}
+                          palette={palette}
+                        />
+                      ) : (
+                        messages.map((message, index) => (
+                          <AgentChatMessage
+                            key={message.id}
+                            role={message.role}
+                            text={message.text}
+                            at={message.at}
+                            agent={message.agent}
+                            reasoning={message.reasoning}
+                            toolCalls={message.toolCalls}
+                            markdown={message.markdown}
+                            onLinkPress={onLinkPress}
+                            streaming={busy && index === messages.length - 1}
+                            onCopy={onCopyMessage}
+                            onReadAloud={onReadAloud}
+                            labels={messageLabels}
+                          />
+                        ))
+                      )}
 
-            <View style={{ flexShrink: 0, paddingLeft: 12, paddingRight: 12, paddingBottom: 12 }}>
-              <View style={{ width: '100%', maxWidth: COLUMN_MAX_WIDTH, alignSelf: 'center' }}>
-                <AgentChatComposerBase
-                  testID={testID ? `${testID}-composer` : undefined}
-                  value={input}
-                  onValueChange={setInput}
-                  onSubmit={submit}
-                  onStop={onStop}
-                  onAttach={onAttach}
-                  busy={busy}
-                  model={model}
-                  provider={provider}
-                  messageCount={messages.length}
-                  labels={composerLabels}
-                />
-              </View>
-            </View>
-          </>
-        )}
-      </View>
+                      {showThinking ? (
+                        <AgentThinking
+                          variant="wave"
+                          label={l.thinking}
+                          style={{ paddingLeft: 4, paddingRight: 4 }}
+                        />
+                      ) : null}
 
-      {railVisible && threads ? (
-        <AgentChatHistoryBase
-          testID={testID ? `${testID}-history` : undefined}
-          {...historyProps}
-          threads={threads}
-          activeId={activeThreadId}
-          onSelect={onSelectThread}
-          onNewChat={onNewChat}
-          onRename={onRenameThread}
-          onToggleUnread={onToggleUnread}
-          onDelete={onDeleteThread}
-          onExport={onExport}
-          disabled={busy}
-        />
-      ) : null}
-    </View>
+                      {showError ? (
+                        <Text
+                          variant="body-regular"
+                          role="alert"
+                          style={{ paddingLeft: 4, paddingRight: 4, color: palette.textTertiary }}
+                        >
+                          {l.error}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </ScreenScrollView>
+                )}
+              </Screen>
+            ),
+          },
+          {
+            id: 'history',
+            width: RAIL_WIDTH,
+            minWidth: RAIL_WIDTH,
+            maxWidth: RAIL_WIDTH,
+            visible: threads !== undefined && showHistory !== false,
+            hideBelow: showHistory ? undefined : HISTORY_BREAKPOINT,
+            scroll: 'content',
+            content: threads ? (
+              <AgentChatHistoryBase
+                framed={false}
+                testID={testID ? `${testID}-history` : undefined}
+                {...historyProps}
+                threads={threads}
+                activeId={activeThreadId}
+                onSelect={onSelectThread}
+                onNewChat={onNewChat}
+                onRename={onRenameThread}
+                onToggleUnread={onToggleUnread}
+                onDelete={onDeleteThread}
+                onExport={onExport}
+                disabled={busy}
+              />
+            ) : null,
+          },
+        ],
+      }}
+    />
   );
 }

@@ -7,7 +7,8 @@ import { VendorCard } from './VendorCard';
 import type { VendorCardProps } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Food/VendorCard',
+  id: 'blocks-food-vendorcard',
+  title: 'Patterns/Food/Vendor Card',
   parameters: { layout: 'fullscreen' },
 };
 

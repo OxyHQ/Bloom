@@ -27,7 +27,8 @@ import type { ScreenFocusEffect, ScrollRouterAdapter } from './types';
  * genuinely router-agnostic.
  */
 const meta: Meta = {
-  title: 'Foundations/Scroll Restoration',
+  id: 'foundations-scroll-restoration',
+  title: 'Composition/Scrolling/Restoration',
 };
 
 export default meta;

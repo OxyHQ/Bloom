@@ -37,6 +37,8 @@ export function useOptionalAppShell(): AppShellContextValue | null {
 
 /** What a panel knows about itself — see `useAppShellPanel`. */
 export interface AppShellPanelValue {
+  /** The current host surface. Dialog owns focus, dismissal and its own chrome. */
+  presentation?: 'inline' | 'floating';
   /** Root modular panels retain hidden content; use this to suspend background work. */
   visible?: boolean;
   active?: boolean;

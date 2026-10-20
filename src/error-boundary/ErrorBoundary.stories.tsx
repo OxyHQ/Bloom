@@ -6,7 +6,8 @@ import { ErrorBoundary, PanelErrorBoundary } from './index';
 import { Text } from '../typography';
 
 const meta: Meta<typeof ErrorBoundary> = {
-  title: 'Base/Error Boundary',
+  id: 'base-error-boundary',
+  title: 'Components/Feedback/Error Boundary',
   component: ErrorBoundary,
 };
 

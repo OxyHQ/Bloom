@@ -7,7 +7,8 @@ import { RiUserLine } from '../icons/remix/RiUserLine';
 import { RiVerifiedBadgeLine } from '../icons/remix/RiVerifiedBadgeLine';
 
 const meta: Meta<typeof Avatar> = {
-  title: 'Base/Avatar',
+  id: 'base-avatar',
+  title: 'Components/Data Display/Avatar',
   component: Avatar,
   argTypes: {
     uri: { control: 'text' },

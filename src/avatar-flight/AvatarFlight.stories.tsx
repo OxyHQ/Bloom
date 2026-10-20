@@ -20,7 +20,8 @@ import {
 } from './index';
 
 const meta: Meta = {
-  title: 'Agents/Avatar Flight',
+  id: 'agents-avatar-flight',
+  title: 'Composition/Motion/Avatar Flight',
   parameters: { controls: { disable: true } },
 };
 export default meta;

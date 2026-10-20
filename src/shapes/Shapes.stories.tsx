@@ -7,7 +7,8 @@ import { Border } from './Border';
 import { surfaceStyle } from './surface-style';
 
 const meta = {
-  title: 'Base/Shapes',
+  id: 'base-shapes',
+  title: 'Foundations/Shapes',
   component: Border,
   args: { size: 64, width: 2, colors: '#ff0000' },
 } satisfies Meta<typeof Border>;

@@ -11,7 +11,8 @@ import { LibraryPanel } from './LibraryPanel';
 import type { LibraryEntry, LibraryFilter, LibrarySort, LibraryView } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Library',
+  id: 'blocks-music-library',
+  title: 'Patterns/Music/Library',
 };
 
 export default meta;
@@ -175,6 +176,7 @@ function Page({ children, row = true }: { children: React.ReactNode; row?: boole
   return (
     <View
       style={{
+        width: '100%',
         flexDirection: row ? 'row' : 'column',
         flexWrap: 'wrap',
         gap: 16,

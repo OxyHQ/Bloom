@@ -1,20 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiUploadLine } from '../icons/remix/RiUploadLine';
 import { useMessages } from '../locale/messages';
-import { IconAction } from './AgentChatControls';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { useAgentChatPlatform } from './context';
-import {
-  ACTION_SIZE,
-  CONFIRM_MS,
-  DENSE_ROW_CLASS,
-  SMALL_MENU_STYLE,
-  useAgentChatPalette,
-  useAgentChatWebCss,
-} from './shared';
+import { CONFIRM_MS, DENSE_ROW_CLASS, SMALL_MENU_STYLE, useAgentChatWebCss } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatActionsProps } from './types';
 import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
@@ -24,12 +16,8 @@ import { IS_WEB } from '../styles/platform';
  * `AgentChatActions`: the controls in the top right of the
  * chat surface — share the open chat, and a menu of what applies to it.
  *
- *   row      gap 2 (`gap-0.5`)
- *   button   28 circle, 18px glyph, icon-secondary → icon-primary on a
- *            background-primary-hover fill (also while its menu is open);
- *            disabled at the disabled opacity
- *   menu     `bottom end`, 190 wide, p 8; rows px 8 / py 6 (32 tall),
- *            body-medium; "Delete chat" in text-error-primary
+ * Share and menu use ButtonGroup's shared surface and trigger contract.
+ * Menu rows retain the conversation actions provided by the host.
  */
 
 async function defaultShare(transcript: string): Promise<void | 'copied'> {
@@ -56,7 +44,6 @@ export function AgentChatActionsBase({
   testID,
 }: AgentChatActionsProps) {
   useAgentChatWebCss();
-  const palette = useAgentChatPalette();
   const { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } =
     useAgentChatPlatform();
   const { messages } = useMessages(AGENT_CHAT_MESSAGES);
@@ -80,41 +67,24 @@ export function AgentChatActionsBase({
     }
   }, [onShare, transcript]);
 
-  const buttonProps = {
-    size: ACTION_SIZE,
-    color: palette.iconSecondary,
-    hoverColor: palette.iconPrimary,
-    hoverBackground: palette.chatHover,
-    palette,
-    disabled,
-  };
-
   return (
-    <View
-      testID={testID}
-      style={[{ flexDirection: 'row', alignItems: 'center', gap: 2, flexShrink: 0 }, style]}
-    >
-      <IconAction
-        {...buttonProps}
+    <ButtonGroup testID={testID} accessibilityLabel={l.more} style={style}>
+      <ButtonGroupItem
         testID={testID ? `${testID}-share` : undefined}
-        label={shared ? l.shared : l.share}
+        iconOnly
+        leadingIcon={shared ? RiCheckLine : RiUploadLine}
+        accessibilityLabel={shared ? l.shared : l.share}
+        disabled={disabled}
         onPress={share}
-        icon={(color) =>
-          shared ? (
-            <RiCheckLine width={18} height={18} fill={color} />
-          ) : (
-            <RiUploadLine width={18} height={18} fill={color} />
-          )
-        }
       />
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger asChild disabled={disabled} label={l.more}>
-          <IconAction
-            {...buttonProps}
+          <ButtonGroupItem
             testID={testID ? `${testID}-more` : undefined}
-            label={l.more}
-            active={menuOpen}
-            icon={(color) => <RiMoreFill width={18} height={18} fill={color} />}
+            iconOnly
+            leadingIcon={RiMoreFill}
+            accessibilityLabel={l.more}
+            disabled={disabled}
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent label={l.more} side="bottom" align="end" style={SMALL_MENU_STYLE}>
@@ -135,6 +105,6 @@ export function AgentChatActionsBase({
           ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
-    </View>
+    </ButtonGroup>
   );
 }

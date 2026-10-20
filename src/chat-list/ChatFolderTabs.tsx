@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import { ScrollArea } from '../layout/ScrollArea';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -57,14 +58,12 @@ function ChatFolderTabsComponent({
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
   const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
-  const [inner, setInner] = useState(defaultValue ?? folders[0]?.key ?? '');
+  const [selected, select] = useControllableState({
+    value,
+    defaultValue: defaultValue ?? folders[0]?.key ?? '',
+    onChange: onValueChange,
+  });
   const [hovered, setHovered] = useState<string | null>(null);
-  const selected = value ?? inner;
-
-  const select = (key: string) => {
-    if (value === undefined) setInner(key);
-    onValueChange?.(key);
-  };
 
   return (
     <View

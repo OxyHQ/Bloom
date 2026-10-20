@@ -16,7 +16,8 @@ const meta: Meta<typeof Item> = {
     role: { control: 'select', options: ['checkbox', 'menuitem', 'radio', 'option', 'listitem'] },
     expanded: { control: 'boolean' },
   },
-  title: 'Base/Item',
+  id: 'base-item',
+  title: 'Components/Data Display/Item',
   component: Item,
 };
 

@@ -1,3 +1,4 @@
+import { useFieldMembership } from '../field/membership';
 import React, { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -23,7 +24,7 @@ import {
   SELECTION_CARD_RADIUS,
   useSelectionCardCss,
   type SelectionPaint,
-} from './SelectionCard';
+} from '../card/SelectionCard';
 import type { PropertyType, PropertyTypeOption, PropertyTypeSelectorProps } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
 
@@ -83,12 +84,18 @@ export function PropertyTypeSelector<T extends string = PropertyType>({
   columns: columnsProp,
   accessibilityLabel: accessibilityLabelProp,
   error,
-  disabled = false,
+  disabled: disabledProp = false,
   style,
   testID,
 }: PropertyTypeSelectorProps<T>) {
   const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
-  const accessibilityLabel = accessibilityLabelProp ?? messages.propertyType;
+  const field = useFieldMembership({
+    accessibilityLabel: accessibilityLabelProp,
+    disabled: disabledProp,
+    invalid: !!error,
+  });
+  const disabled = field.disabled;
+  const accessibilityLabel = field.accessibilityLabel ?? messages.propertyType;
   const localizedDefaults = useMemo(() => propertyTypeOptions(messages.propertyTypes), [messages]);
   const theme = useTheme();
   useSelectionCardCss();
@@ -107,6 +114,10 @@ export function PropertyTypeSelector<T extends string = PropertyType>({
     >
       <View
         role="radiogroup"
+        nativeID={field.nativeID}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
+        aria-required={field.required || undefined}
         accessibilityLabel={accessibilityLabel}
         aria-disabled={disabled || undefined}
         style={{ flexDirection: 'row', flexWrap: 'wrap', gap }}

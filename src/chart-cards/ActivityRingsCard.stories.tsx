@@ -11,7 +11,8 @@ const meta: Meta<typeof ActivityRingsCard> = {
     height: { control: 'number' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Activity Rings',
+  id: 'charts-activity-rings',
+  title: 'Components/Charts/Activity Rings',
   component: ActivityRingsCard,
 };
 

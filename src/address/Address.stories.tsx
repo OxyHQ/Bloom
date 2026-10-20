@@ -13,7 +13,8 @@ import { AddressRow } from './AddressRow';
 import type { AddressListSection } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Commerce/Address',
+  id: 'blocks-commerce-address',
+  title: 'Patterns/Commerce/Address',
   parameters: { layout: 'fullscreen' },
 };
 

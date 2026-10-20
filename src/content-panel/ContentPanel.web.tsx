@@ -179,6 +179,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   framed,
   framedFrom = 768,
   fill = false,
+  scrollable = fill,
   surfaceClassName,
   surfaceStyle,
   surfaceColor,
@@ -269,7 +270,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // surface is what the frame and the mask are drawn to, and a scrolling
   // surface would scroll the edge with it.
   const fillSurface = fill ? 'min-h-0' : '';
-  const fillContent = fill ? 'min-h-0 web:[overflow-y:auto]' : '';
+  const fillContent = fill ? (scrollable ? 'min-h-0 web:[overflow-y:auto]' : 'min-h-0') : '';
   // `overlaySizing="panel"`: the surface becomes a single-cell CSS Grid so the
   // overlays and the content wrapper below can all be placed in that ONE cell
   // (`web:[grid-area:1/1]`) and each fill it exactly — `minmax(0,1fr)` (not

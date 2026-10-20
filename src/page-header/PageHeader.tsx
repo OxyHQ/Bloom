@@ -1,5 +1,7 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
-import { memo, useContext, useEffect, useMemo, useState } from 'react';
+import { memo, useContext, useEffect, useInsertionEffect, useMemo, useRef, useState } from 'react';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { dataHook } from '../styles/data-hook';
 import {
   Platform,
   StyleSheet,
@@ -42,6 +44,7 @@ import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
+import { useDirectionProps } from '../hooks/use-is-rtl';
 
 /**
  * `PageHeader`: a screen's top chrome.
@@ -114,6 +117,28 @@ const DEFAULT_THRESHOLD = 20;
  */
 const MIN_CENTERED_TITLE_WIDTH = 96;
 
+/** Container queries own continuous web width changes; React only measures content. */
+const PAGE_HEADER_LAYOUT_CSS = `
+[data-bloom-page-header-bar], [data-bloom-page-header-accessory] {
+  --bloom-page-header-inset: ${INSET_COMPACT}px;
+  padding-left: var(--bloom-page-header-inset) !important;
+  padding-right: var(--bloom-page-header-inset) !important;
+}
+@container bloom-page-header (min-width: ${BREAKPOINTS.sm}px) {
+  [data-bloom-page-header-bar], [data-bloom-page-header-accessory] { --bloom-page-header-inset: ${INSET_WIDE}px; }
+}
+[data-bloom-page-header-start="center"] {
+  inset-inline-start: var(--bloom-page-header-inset) !important;
+}
+[data-bloom-page-header-end] {
+  inset-inline-end: var(--bloom-page-header-inset) !important;
+}
+[data-bloom-page-header-center] {
+  margin-left: clamp(0px, calc(var(--bloom-page-header-side-width, 0px) + ${ROW_GAP}px), max(0px, calc(50% - ${MIN_CENTERED_TITLE_WIDTH / 2}px))) !important;
+  margin-right: clamp(0px, calc(var(--bloom-page-header-side-width, 0px) + ${ROW_GAP}px), max(0px, calc(50% - ${MIN_CENTERED_TITLE_WIDTH / 2}px))) !important;
+}
+`;
+
 /** 44pt touch target from a 36pt capsule. Only for an island that stands alone. */
 const CAPSULE_HIT_SLOP = { top: 4, bottom: 4, left: 4, right: 4 } as const;
 
@@ -134,6 +159,7 @@ function PageHeaderComponent({
   backLabel: backLabelProp,
   leading,
   actions: screenActions,
+  accessory,
   border = 'auto',
   transparent = false,
   scrim = 'auto',
@@ -146,6 +172,7 @@ function PageHeaderComponent({
   testID,
 }: PageHeaderProps) {
   const common = useCommonMessages();
+  const directionProps = useDirectionProps();
   const backLabel = backLabelProp ?? common.back;
   const isWeb = Platform.OS === 'web';
   const floating = presentation === 'floating';
@@ -155,21 +182,28 @@ function PageHeaderComponent({
   const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_INSETS);
   const padTop = (safeArea ?? !isWeb) ? insets.top : 0;
 
-  // The header sizes itself against its CONTAINER, not the window: a desktop
-  // split view puts a 380px panel next to a 1200px one, and a window-derived
-  // inset gives the narrow panel the wide padding. The window is only the seed
-  // for the first frame, before `onLayout` has reported.
+  // Web container queries own width, including during divider drags. Native
+  // measures its own box; the window is its first-render seed only.
   const windowWidth = useWindowDimensions().width;
   const [measuredWidth, setMeasuredWidth] = useState(0);
   const [measuredHeight, setMeasuredHeight] = useState(0);
+  const lastHeight = useRef(0);
   const width = measuredWidth || windowWidth;
   const height = measuredHeight || padTop + BAR_HEIGHT;
   const sideInset = width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
 
   const onContainerLayout = (e: LayoutChangeEvent) => {
-    setMeasuredWidth(e.nativeEvent.layout.width);
-    setMeasuredHeight(e.nativeEvent.layout.height);
+    if (!isWeb) setMeasuredWidth(e.nativeEvent.layout.width);
+    const nextHeight = e.nativeEvent.layout.height;
+    if (lastHeight.current !== nextHeight) {
+      lastHeight.current = nextHeight;
+      setMeasuredHeight(nextHeight);
+    }
   };
+
+  useInsertionEffect(() => {
+    if (isWeb) adoptStyleSheet('bloom-page-header-layout', PAGE_HEADER_LAYOUT_CSS);
+  }, [isWeb]);
 
   // An overlaying header occupies no layout, so it declares what it covers and
   // the content reads it back. Measured rather than computed: a second title
@@ -209,7 +243,7 @@ function PageHeaderComponent({
   const host = useContext(ScreenHostContext);
   const hostActions = positionedByScreen ? host.headerActions : undefined;
   const navigation = positionedByScreen ? host.navigation : undefined;
-  const onBack = navigation ? (navigation.canGoBack ? navigation.back : undefined) : screenOnBack;
+  const onBack = screenOnBack ?? (navigation?.canGoBack ? navigation.back : undefined);
   const actions = hostActions ? (
     <>
       {screenActions}
@@ -370,8 +404,28 @@ function PageHeaderComponent({
   const hasEnd = actions != null;
   const startWidth = hasStart ? startMeasure : 0;
   const endWidth = hasEnd ? endMeasure : 0;
-  const onStartLayout = (e: LayoutChangeEvent) => setStartMeasure(e.nativeEvent.layout.width);
-  const onEndLayout = (e: LayoutChangeEvent) => setEndMeasure(e.nativeEvent.layout.width);
+  const measuredSides = useRef({ start: 0, end: 0 });
+  const onStartLayout = (e: LayoutChangeEvent) => {
+    const next = e.nativeEvent.layout.width;
+    if (measuredSides.current.start !== next) {
+      measuredSides.current.start = next;
+      setStartMeasure(next);
+    }
+  };
+  const onEndLayout = (e: LayoutChangeEvent) => {
+    const next = e.nativeEvent.layout.width;
+    if (measuredSides.current.end !== next) {
+      measuredSides.current.end = next;
+      setEndMeasure(next);
+    }
+  };
+  const webLayout: WebCssStyle | null = isWeb
+    ? {
+        containerType: 'inline-size',
+        containerName: 'bloom-page-header',
+        '--bloom-page-header-side-width': `${Math.max(startWidth, endWidth)}px`,
+      }
+    : null;
   const centerInset = Math.min(
     Math.max(startWidth, endWidth) + ROW_GAP,
     Math.max(0, (width - 2 * sideInset - MIN_CENTERED_TITLE_WIDTH) / 2),
@@ -456,7 +510,6 @@ function PageHeaderComponent({
           leadingIcon={RiArrowLeftLine}
           accessibilityLabel={backLabel}
           onPress={onBack}
-          disabled={navigation ? !navigation.canGoBack : undefined}
           hitSlop={CAPSULE_HIT_SLOP}
           testID={testID ? `${testID}-back` : undefined}
         />
@@ -470,7 +523,6 @@ function PageHeaderComponent({
         icon={RiArrowLeftLine}
         accessibilityLabel={backLabel}
         onPress={onBack}
-        disabled={navigation ? !navigation.canGoBack : undefined}
         testID={testID ? `${testID}-back` : undefined}
       />
     )
@@ -548,11 +600,14 @@ function PageHeaderComponent({
 
   return (
     <View
+      {...directionProps}
+      {...dataHook('bloomPageHeader')}
       testID={testID}
       onLayout={onContainerLayout}
       style={[
         [
           styles.container,
+          webLayout,
           { paddingTop: padTop },
           overlay
             ? [
@@ -583,15 +638,22 @@ function PageHeaderComponent({
         />
       ) : null}
       <View
+        {...dataHook('bloomPageHeaderBar')}
         style={[
-          [styles.bar, { paddingLeft: sideInset, paddingRight: sideInset }],
+          [styles.bar, !isWeb && { paddingLeft: sideInset, paddingRight: sideInset }],
           pointerEventsStyle(floating ? 'box-none' : undefined),
         ]}
         testID={testID ? `${testID}-bar` : undefined}
       >
         <View
+          {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
           style={[
-            [styles.start, !centered && styles.startFill],
+            [
+              styles.start,
+              centered
+                ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: sideInset } : {}) }
+                : styles.startFill,
+            ],
             pointerEventsStyle(floating ? 'box-none' : undefined),
           ]}
           onLayout={centered ? onStartLayout : undefined}
@@ -601,15 +663,11 @@ function PageHeaderComponent({
           {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
           {centered ? null : titleBlock}
         </View>
-        {centered ? <View style={[styles.spacer, pointerEventsStyle('none')]} /> : null}
-        {actionsSlot}
         {centered && titleBlock ? (
           <View
+            {...dataHook('bloomPageHeaderCenter')}
             style={[
-              [
-                styles.centerSlot,
-                { left: sideInset + centerInset, right: sideInset + centerInset },
-              ],
+              [styles.centerSlot, !isWeb && { marginLeft: centerInset, marginRight: centerInset }],
               pointerEventsStyle('box-none'),
             ]}
             testID={testID ? `${testID}-center` : undefined}
@@ -617,7 +675,32 @@ function PageHeaderComponent({
             {titleBlock}
           </View>
         ) : null}
+        {centered ? (
+          <View
+            {...dataHook('bloomPageHeaderEnd')}
+            style={[
+              { position: 'absolute', ...(!isWeb ? { insetInlineEnd: sideInset } : {}) },
+              pointerEventsStyle('box-none'),
+            ]}
+          >
+            {actionsSlot}
+          </View>
+        ) : (
+          actionsSlot
+        )}
       </View>
+      {accessory ? (
+        <View
+          {...dataHook('bloomPageHeaderAccessory')}
+          testID={testID ? `${testID}-accessory` : undefined}
+          style={[
+            { minWidth: 0, paddingBottom: 8 },
+            !isWeb ? { paddingLeft: sideInset, paddingRight: sideInset } : undefined,
+          ]}
+        >
+          {accessory}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -663,9 +746,6 @@ const styles = StyleSheet.create({
   startFill: {
     flex: 1,
   },
-  spacer: {
-    flex: 1,
-  },
   titleBlock: {
     minWidth: 0,
     paddingLeft: TITLE_PADDING,
@@ -679,10 +759,9 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
   },
   centerSlot: {
-    position: 'absolute',
+    flex: 1,
+    minWidth: 0,
     alignItems: 'center',
-    top: 0,
-    bottom: 0,
     justifyContent: 'center',
   },
   actions: {

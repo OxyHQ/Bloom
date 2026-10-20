@@ -33,7 +33,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Blocks/Chat/Composer',
+  id: 'blocks-chat-composer',
+  title: 'Components/Inputs/Chat Composer',
 };
 
 export default meta;

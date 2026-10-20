@@ -9,7 +9,8 @@ import { Questionnaire } from './index';
 import type { QuestionnaireAnswers, QuestionnaireQuestion } from './types';
 
 const meta: Meta<typeof Questionnaire> = {
-  title: 'Agents/Questionnaire',
+  id: 'agents-questionnaire',
+  title: 'Patterns/Forms/Questionnaire',
   component: Questionnaire,
   decorators: [
     (Story) => (

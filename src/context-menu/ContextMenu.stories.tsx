@@ -21,7 +21,8 @@ import {
 const meta: Meta = {
   component: ContextMenu,
   parameters: { controls: { disable: true } },
-  title: 'Base/Context Menu',
+  id: 'base-context-menu',
+  title: 'Components/Overlays/Context Menu',
 };
 
 export default meta;

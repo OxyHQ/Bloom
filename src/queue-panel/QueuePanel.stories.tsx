@@ -11,7 +11,8 @@ import { moveQueueItem } from './shared';
 import type { QueuePanelTab, QueueSection, QueueTrack } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Queue Panel',
+  id: 'blocks-music-queue-panel',
+  title: 'Patterns/Music/Queue Panel',
 };
 
 export default meta;

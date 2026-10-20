@@ -22,7 +22,7 @@ import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
 />
 ```
 
-Router-agnostic: the back button renders when `onBack` is set. Pass `router.back`, your app's safe-back helper, or omit it on a root screen (`router.canGoBack() ? router.back : undefined`).
+Router-agnostic: the back button renders when `onBack` is set. Pass `router.back`, your app's safe-back helper, or omit it on a root screen (`router.canGoBack() ? router.back : undefined`). An explicit `onBack` takes priority over the panel navigation adapter and remains enabled at the panel's history root; without one, the header uses panel Back only when that history can go back.
 
 ## The default is floating
 
@@ -118,6 +118,18 @@ The scrim sizes to its parent, so the parent carries the height — extend it AB
 | `scrollThreshold` | `20` | The offset over which the scroll-linked paint arrives. Over a hero, use the hero height minus the bar. |
 | `sticky` | `true` | Web, `placement="inline"`: `position: sticky; top: 0`. No effect on native or on an overlay. |
 | `safeArea` | native `true`, web `false` | Pads the top by the safe-area inset (read from `SafeAreaInsetsContext`; no provider → 0). |
+
+A centered `title` may be a composed identity, such as `AgentProfile` with an
+avatar and name. Its content participates in layout and sets the header height.
+The measured navigation and action widths reserve symmetric space on either
+side; callers do not need an absolute wrapper or a fixed header height. Node
+titles own their accessible semantics.
+
+Web widths stay in CSS: a container query chooses 16px/24px side insets and
+`clamp()` preserves the centered title's 96px floor. Resizing a panel does not
+copy every new width into React state. Only changed side-content measurements
+and actual header-height changes update React; native retains its measured
+container-width geometry.
 
 ## Look
 
@@ -313,3 +325,10 @@ section does not hide the title by itself. Without a content-heading relationshi
 the header remains visible, including static dialogs and caller-owned scrollers.
 `always`, `onScroll`, and `onDock` remain explicit overrides. When both an offset
 and a docking target exist, the explicit heading offset takes precedence.
+
+### Accessory chrome
+
+Use `accessory` for tabs or a toolbar beneath the title/actions row. It spans the
+header width and participates in the same height measurement, Screen clearance
+and scroll scrim. This keeps actions and host dismissal in their own row on
+narrow panels without clipping the tabs or measuring breakpoints in the consumer.

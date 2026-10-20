@@ -18,7 +18,8 @@ const meta: Meta<typeof RevenueChartCard> = {
     previousColor: { control: 'text' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Revenue & Orders',
+  id: 'charts-revenue-orders',
+  title: 'Components/Charts/Revenue & Orders',
   component: RevenueChartCard,
 };
 

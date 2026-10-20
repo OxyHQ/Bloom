@@ -36,7 +36,8 @@ import type {
 } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Creator Studio',
+  id: 'blocks-music-creator-studio',
+  title: 'Patterns/Music/Creator Studio',
   parameters: { layout: 'fullscreen' },
 };
 

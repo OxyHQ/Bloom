@@ -1,10 +1,12 @@
+import { FieldConstraintScope } from '../field/FieldConstraintScope';
+import { useFieldMembership } from '../field/membership';
 import React, { useMemo } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { Chip } from '../chip';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
-import { resolveSelectionPaint, SelectionCard } from '../listing-editor/SelectionCard';
+import { resolveSelectionPaint, SelectionCard } from '../card/SelectionCard';
 import { useMessages } from '../locale/messages';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
@@ -51,14 +53,19 @@ export function VehiclePicker<T extends string = VehicleKind>({
   options: optionsProp,
   title,
   description,
-  disabled = false,
+  disabled: disabledProp = false,
   labels: labelOverrides,
   accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: VehiclePickerProps<T>) {
   const { messages } = useMessages(VEHICLE_PICKER_MESSAGES);
-  const accessibilityLabel = accessibilityLabelProp ?? messages.vehicle;
+  const field = useFieldMembership({
+    accessibilityLabel: accessibilityLabelProp,
+    disabled: disabledProp,
+  });
+  const disabled = field.disabled;
+  const accessibilityLabel = field.accessibilityLabel ?? messages.vehicle;
   const options = useMemo(
     () =>
       optionsProp ?? (builtInVehicleOptions(messages) as unknown as readonly VehicleOption<T>[]),
@@ -106,104 +113,115 @@ export function VehiclePicker<T extends string = VehicleKind>({
       ) : null}
 
       <View
+        aria-disabled={disabled || undefined}
         role="radiogroup"
+        nativeID={field.nativeID}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
+        aria-required={field.required || undefined}
         accessibilityLabel={accessibilityLabel}
         style={{ gap: VEHICLE_PICKER_GEOMETRY.gap }}
       >
-        {options.map((option) => {
-          const blocked = disabled || option.disabled === true;
-          const reason =
-            option.disabled === true ? (option.unavailableReason ?? labels.unavailable) : undefined;
-          const chips = option.fits ?? [];
-          const hasDetail =
-            chips.length > 0 || option.priceFrom !== undefined || reason !== undefined;
-          const icon =
-            option.icon ?? VEHICLE_ICON[option.value as unknown as VehicleKind] ?? undefined;
+        {/* The group is the field's member; the cards are its parts, and keep
+            their own names and ids (`field/FieldConstraintScope.tsx`). */}
+        <FieldConstraintScope>
+          {options.map((option) => {
+            const blocked = disabled || option.disabled === true;
+            const reason =
+              option.disabled === true
+                ? (option.unavailableReason ?? labels.unavailable)
+                : undefined;
+            const chips = option.fits ?? [];
+            const hasDetail =
+              chips.length > 0 || option.priceFrom !== undefined || reason !== undefined;
+            const icon =
+              option.icon ?? VEHICLE_ICON[option.value as unknown as VehicleKind] ?? undefined;
 
-          return (
-            <SelectionCard
-              key={option.value}
-              selection="single"
-              selected={value === option.value}
-              // A disabled card never reaches this, and the card itself stops
-              // re-reporting a choice already made.
-              onPress={() => {
-                if (value !== option.value) onValueChange(option.value);
-              }}
-              title={option.label}
-              description={option.capacity}
-              icon={icon}
-              compact={compact}
-              disabled={blocked}
-              // The name carries the capacity and the reason, because both are
-              // drawn as separate lines that no name computation would reach.
-              accessibilityLabel={vehicleOptionName(option, { from: labels.from, reason })}
-              testID={id(option.value)}
-            >
-              {hasDetail ? (
-                <View style={{ gap: VEHICLE_PICKER_GEOMETRY.chipGap }}>
-                  {chips.length > 0 ? (
-                    <View
-                      role="group"
-                      accessibilityLabel={labels.fits(option.label)}
-                      testID={id(`${option.value}-fits`)}
-                      style={{
-                        flexDirection: 'row',
-                        flexWrap: 'wrap',
-                        gap: VEHICLE_PICKER_GEOMETRY.chipGap,
-                      }}
-                    >
-                      {chips.map((fit) => (
-                        <Chip key={fit} size="md" variant="outlined">
-                          {fit}
-                        </Chip>
-                      ))}
-                    </View>
-                  ) : null}
-
-                  {option.priceFrom !== undefined ? (
-                    <View
-                      testID={id(`${option.value}-price`)}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'baseline',
-                        justifyContent: 'space-between',
-                        gap: 12,
-                      }}
-                    >
-                      <Text variant="body-regular" style={{ color: paint.textSecondary }}>
-                        {labels.from}
-                      </Text>
-                      <Text
-                        variant="body-semibold"
-                        style={[{ color: paint.text, textAlign: 'right' }, TABULAR]}
+            return (
+              <SelectionCard
+                key={option.value}
+                selection="single"
+                selected={value === option.value}
+                // A disabled card never reaches this, and the card itself stops
+                // re-reporting a choice already made.
+                onPress={() => {
+                  if (value !== option.value) onValueChange(option.value);
+                }}
+                title={option.label}
+                description={option.capacity}
+                icon={icon}
+                compact={compact}
+                disabled={blocked}
+                // The name carries the capacity and the reason, because both are
+                // drawn as separate lines that no name computation would reach.
+                accessibilityLabel={vehicleOptionName(option, { from: labels.from, reason })}
+                testID={id(option.value)}
+              >
+                {hasDetail ? (
+                  <View style={{ gap: VEHICLE_PICKER_GEOMETRY.chipGap }}>
+                    {chips.length > 0 ? (
+                      <View
+                        role="group"
+                        accessibilityLabel={labels.fits(option.label)}
+                        testID={id(`${option.value}-fits`)}
+                        style={{
+                          flexDirection: 'row',
+                          flexWrap: 'wrap',
+                          gap: VEHICLE_PICKER_GEOMETRY.chipGap,
+                        }}
                       >
-                        {option.priceFrom}
-                      </Text>
-                    </View>
-                  ) : null}
-
-                  {reason ? (
-                    <View
-                      testID={id(`${option.value}-reason`)}
-                      style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}
-                    >
-                      <View style={{ paddingTop: 1 }}>
-                        <RiErrorWarningLine width={16} height={16} fill={warning.foreground} />
+                        {chips.map((fit) => (
+                          <Chip key={fit} size="md" variant="outlined">
+                            {fit}
+                          </Chip>
+                        ))}
                       </View>
-                      <Text
-                        variant="body-2-regular"
-                        style={{ flex: 1, minWidth: 0, color: warning.foreground }}
+                    ) : null}
+
+                    {option.priceFrom !== undefined ? (
+                      <View
+                        testID={id(`${option.value}-price`)}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'baseline',
+                          justifyContent: 'space-between',
+                          gap: 12,
+                        }}
                       >
-                        {reason}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
-              ) : null}
-            </SelectionCard>
-          );
-        })}
+                        <Text variant="body-regular" style={{ color: paint.textSecondary }}>
+                          {labels.from}
+                        </Text>
+                        <Text
+                          variant="body-semibold"
+                          style={[{ color: paint.text, textAlign: 'right' }, TABULAR]}
+                        >
+                          {option.priceFrom}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {reason ? (
+                      <View
+                        testID={id(`${option.value}-reason`)}
+                        style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}
+                      >
+                        <View style={{ paddingTop: 1 }}>
+                          <RiErrorWarningLine width={16} height={16} fill={warning.foreground} />
+                        </View>
+                        <Text
+                          variant="body-2-regular"
+                          style={{ flex: 1, minWidth: 0, color: warning.foreground }}
+                        >
+                          {reason}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
+              </SelectionCard>
+            );
+          })}
+        </FieldConstraintScope>
       </View>
     </View>
   );

@@ -6,7 +6,11 @@ import { ContentPanel } from '../content-panel';
 import { Text } from '../typography';
 import { SurfaceFade } from './index';
 
-const meta: Meta<typeof SurfaceFade> = { title: 'Base/Surface Fade', component: SurfaceFade };
+const meta: Meta<typeof SurfaceFade> = {
+  id: 'base-surface-fade',
+  title: 'Components/Surfaces/Surface Fade',
+  component: SurfaceFade,
+};
 export default meta;
 type Story = StoryObj<typeof SurfaceFade>;
 

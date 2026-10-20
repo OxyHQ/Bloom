@@ -46,7 +46,8 @@ const meta: Meta<typeof DataTable> = {
     minWidth: { control: 'number' },
     layout: { control: 'select', options: ['inset', 'table'] },
   },
-  title: 'Blocks/Data Table',
+  id: 'blocks-data-table',
+  title: 'Components/Data Display/Data Table',
   component: DataTable,
 };
 

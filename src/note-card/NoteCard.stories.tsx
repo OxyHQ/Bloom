@@ -11,7 +11,8 @@ import { NoteCardSkeleton } from './NoteCardSkeleton';
 import type { NoteCardProps } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Notes/Note Card',
+  id: 'blocks-notes-note-card',
+  title: 'Patterns/Notes/Note Card',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

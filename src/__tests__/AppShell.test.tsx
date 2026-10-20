@@ -143,10 +143,10 @@ describe('AppShell', () => {
         <ReactNative.Text>Feed content</ReactNative.Text>
       </AppShell>,
     );
-    expect(screen.getByTestId('feed-reveal-page')).toBeTruthy();
-    expect(screen.getByText('Feed content')).toBeTruthy();
+    expect(screen.getByTestId('feed-reveal-page', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('Feed content', { includeHiddenElements: true })).toBeTruthy();
     expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
-    fireEvent.press(screen.getByTestId('feed-veil'));
+    fireEvent.press(screen.getByTestId('feed-veil', { includeHiddenElements: true }));
     expect(onDrawerOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -164,17 +164,19 @@ describe('AppShell', () => {
           bottomBar={<ReactNative.Text>Navigation</ReactNative.Text>}
         />,
       );
-      const host = screen.getByTestId('shell-reveal-bars');
+      const host = screen.getByTestId('shell-reveal-bars', { includeHiddenElements: true });
       expect(resolvedStyle(host.props.style)).toMatchObject({
         transform: [{ translateX: 272 }],
         top: 0,
         bottom: 0,
       });
       expect(host.props.pointerEvents).toBe('none');
-      expect(resolvedStyle(screen.getByTestId('shell-bottom-bar').props.style).position).toBe(
-        'absolute',
-      );
-      fireEvent.press(screen.getByTestId('shell-veil'));
+      expect(
+        resolvedStyle(
+          screen.getByTestId('shell-bottom-bar', { includeHiddenElements: true }).props.style,
+        ).position,
+      ).toBe('absolute');
+      fireEvent.press(screen.getByTestId('shell-veil', { includeHiddenElements: true }));
     },
   );
 
@@ -192,7 +194,7 @@ describe('AppShell', () => {
       />,
     );
     expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
-    fireEvent.press(screen.getByTestId('shell-veil'));
+    fireEvent.press(screen.getByTestId('shell-veil', { includeHiddenElements: true }));
     expect(onDrawerOpenChange).toHaveBeenCalledWith(false);
   });
 });
@@ -293,6 +295,15 @@ function hostParent(node: { parent: unknown }) {
   let n = node.parent as { type: unknown; parent: unknown; props: Record<string, unknown> } | null;
   while (n && typeof n.type !== 'string') n = n.parent as typeof n;
   return n;
+}
+
+/** The padding of the row that frames `node`: its nearest host ancestor laid out as a row. */
+function framePadding(node: { parent: unknown }): number {
+  for (let n = hostParent(node); n; n = hostParent(n)) {
+    const style = resolvedStyle(n.props.style);
+    if (style.flexDirection === 'row') return (style.padding as number | undefined) ?? 0;
+  }
+  return 0;
 }
 
 describe('AppShell without a title', () => {
@@ -1362,12 +1373,13 @@ describe('AppShell panels: the frame', () => {
           </AppShellPanel>
         </AppShell>,
       );
-      expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({
-        paddingLeft: outer,
-        paddingRight: outer,
-        paddingTop: outer,
-        paddingBottom: outer,
-      });
+      // The reveal shell keeps its page host mounted across widths, so the
+      // gutter frames the region's row rather than the page: measure the box
+      // around the region, which is the frame either way.
+      expect([
+        width,
+        framePadding(screen.getByTestId('shell-content', { includeHiddenElements: true })),
+      ]).toEqual([width, outer]);
       screen.unmount();
     }
   });
@@ -1822,17 +1834,28 @@ describe('AppShell native safe-area frame', () => {
         paddingInlineEnd: 7,
         paddingBottom: 0,
       });
-      expect(resolvedStyle(view.getByTestId('safe-bottom-bar').props.style).paddingBottom).toBe(34);
+      expect(
+        resolvedStyle(
+          view.getByTestId('safe-bottom-bar', { includeHiddenElements: true }).props.style,
+        ).paddingBottom,
+      ).toBe(34);
       expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({
         paddingTop: 12,
         paddingBottom: 46,
       });
-      expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
+      expect(
+        view.getByTestId('device-insets', { includeHiddenElements: true }).props.children,
+      ).toBe(JSON.stringify(insets));
       if (variant === 'dashboard') {
-        fireEvent(view.getByTestId('safe-bottom-bar'), 'layout', {
+        fireEvent(view.getByTestId('safe-bottom-bar', { includeHiddenElements: true }), 'layout', {
           nativeEvent: { layout: { height: 100 } },
         });
-        expect(resolvedStyle(view.getByTestId('safe-page').props.style).paddingBottom).toBe(112);
+        // The page reserves exactly the bar: a compact reveal page lays out as
+        // the overlay one does, with no reveal-only gutter of its own.
+        expect(
+          resolvedStyle(view.getByTestId('safe-page', { includeHiddenElements: true }).props.style)
+            .paddingBottom,
+        ).toBe(100);
       }
     },
   );
@@ -1851,7 +1874,9 @@ describe('AppShell native safe-area frame', () => {
     );
     expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style).paddingBottom).toBe(34);
     expect(resolvedStyle(view.getByTestId('safe-top-bar').props.style).paddingTop).toBe(0);
-    expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
+    expect(view.getByTestId('device-insets', { includeHiddenElements: true }).props.children).toBe(
+      JSON.stringify(insets),
+    );
   });
 
   it('portaled overlay navigation uses original top, bottom and landscape insets', () => {
@@ -1931,20 +1956,23 @@ describe('AppShell full-width and explicit reveal gutters', () => {
           <ReactNative.Text>Page</ReactNative.Text>
         </AppShell>,
       );
-      expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({
-        padding: 0,
-        paddingTop: 0,
-      });
+      // No gutter frames the row. At desktop the navigation is in flow and the
+      // page keeps the dashboard's own 12 top inset, as the overlay shell does.
+      expect(framePadding(view.getByTestId('flush-page', { includeHiddenElements: true }))).toBe(0);
+      const page = resolvedStyle(view.getByTestId('flush-page').props.style);
+      expect(page.padding ?? 0).toBe(0);
+      if (width < 1024) expect(page.paddingTop ?? 0).toBe(0);
       if (width < 1024) {
         fireEvent(view.getByTestId('flush-bottom-bar'), 'layout', {
           nativeEvent: { layout: { height: 80 } },
         });
-        expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({
-          paddingLeft: 0,
-          paddingRight: 0,
-          paddingTop: 0,
-          paddingBottom: 80,
-        });
+        const reserved = resolvedStyle(view.getByTestId('flush-page').props.style);
+        expect([
+          reserved.paddingLeft ?? 0,
+          reserved.paddingRight ?? 0,
+          reserved.paddingTop ?? 0,
+        ]).toEqual([0, 0, 0]);
+        expect(reserved.paddingBottom).toBe(80);
         expect(
           resolvedStyle(
             view.getByTestId('flush-navigation-drawer', { includeHiddenElements: true }).props
@@ -1980,7 +2008,7 @@ it('overlay bottom navigation leaves a zero-gutter mobile page at full height', 
     nativeEvent: { layout: { height: 140 } },
   });
   const page = resolvedStyle(view.getByTestId('overlay-frame-page').props.style);
-  expect(page.padding).toBe(0);
+  expect(page.padding ?? 0).toBe(0);
   expect(page.paddingBottom ?? 0).toBe(0);
   expect(resolvedStyle(view.getByTestId('overlay-frame-bottom-bar').props.style)).toMatchObject({
     position: 'absolute',

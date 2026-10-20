@@ -97,21 +97,25 @@ describe('lean entries stay lean', () => {
     'tooltip/',
     'empty-state/',
   ];
-  const PAGE_FILES = [
-    'SettingsStorage.tsx',
-    'SettingsTools.tsx',
-    'SettingsPlanCard.tsx',
-    'SettingsArt.tsx',
-    'index.ts',
-  ].map((file) => `settings-modal/${file}`);
+  const pageFiles = (suffix: string) =>
+    [
+      'SettingsStorage.tsx',
+      'SettingsTools.tsx',
+      'SettingsPlanCard.tsx',
+      'SettingsArt.tsx',
+      `index${suffix}.ts`,
+    ].map((file) => `settings-modal/${file}`);
 
   it.each(['native', 'web'] as const)(
     'settings-modal/modal links the dialog and rows, not its pages or fields (%s)',
     (platform) => {
-      const modal = graph('settings-modal/modal.ts', platform);
-      expect(modal.has('settings-modal/SettingsModal.tsx')).toBe(true);
+      // Each platform's own entry: `modal.web.ts` binds the web Screen fork.
+      const suffix = platform === 'web' ? '.web' : '';
+      const modal = graph(`settings-modal/modal${suffix}.ts`, platform);
+      expect(modal.has(`settings-modal/SettingsModal${suffix}.tsx`)).toBe(true);
+      expect(modal.has('settings-modal/SettingsModalBase.tsx')).toBe(true);
       expect(modal.has('settings-modal/SettingsRows.tsx')).toBe(true);
-      for (const file of [...PAGE_FILES, 'settings-modal/SettingsFields.tsx']) {
+      for (const file of [...pageFiles(suffix), 'settings-modal/SettingsFields.tsx']) {
         expect(modal.has(file)).toBe(false);
       }
       for (const family of [...PAGE_ONLY_FAMILIES, 'date-picker/', 'popover/', 'text-field/']) {
@@ -120,11 +124,11 @@ describe('lean entries stay lean', () => {
       const avoided = report(
         `settings-modal/modal (${platform})`,
         modal,
-        graph('settings-modal/index.ts', platform),
+        graph(`settings-modal/index${suffix}.ts`, platform),
       );
       // The control: the full entry DOES reach what the lean one must not, so
       // the assertions above can fail.
-      expect(avoided).toEqual(expect.arrayContaining(PAGE_FILES));
+      expect(avoided).toEqual(expect.arrayContaining(pageFiles(suffix)));
       for (const family of ['select/', 'file-upload/']) {
         expect(avoided.some((file) => file.startsWith(family))).toBe(true);
       }
@@ -134,9 +138,14 @@ describe('lean entries stay lean', () => {
   it.each(['native', 'web'] as const)(
     'settings-modal/fields links the fields, not the dialog or its pages (%s)',
     (platform) => {
+      const suffix = platform === 'web' ? '.web' : '';
       const fields = graph('settings-modal/fields.ts', platform);
       expect(fields.has('settings-modal/SettingsFields.tsx')).toBe(true);
-      for (const file of [...PAGE_FILES, 'settings-modal/SettingsModal.tsx']) {
+      for (const file of [
+        ...pageFiles(suffix),
+        `settings-modal/SettingsModal${suffix}.tsx`,
+        'settings-modal/SettingsModalBase.tsx',
+      ]) {
         expect(fields.has(file)).toBe(false);
       }
       for (const family of PAGE_ONLY_FAMILIES) {
@@ -188,10 +197,8 @@ describe('lean entries stay lean', () => {
   );
 
   it('the panels still draw the same grip', () => {
-    expect(graph('app-shell/AppShellPanelLayout.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(
-      true,
-    );
-    expect(graph('ai-chat/AiChatShell.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(true);
+    expect(graph('app-shell/AppShellPanelLayout.tsx').has('layout/ResizeHandle.tsx')).toBe(true);
+    expect(graph('ai-chat/AiChatShell.tsx').has('layout/ResizeHandle.tsx')).toBe(true);
   });
 });
 

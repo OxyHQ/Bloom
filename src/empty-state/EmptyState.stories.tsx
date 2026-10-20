@@ -15,7 +15,8 @@ import { Text } from '../typography';
 import { EmptyState } from './EmptyState';
 
 const meta: Meta<typeof EmptyState> = {
-  title: 'Base/Empty State',
+  id: 'base-empty-state',
+  title: 'Components/Feedback/Empty State',
   component: EmptyState,
   parameters: { layout: 'fullscreen' },
 };

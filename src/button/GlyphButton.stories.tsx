@@ -15,7 +15,8 @@ import {
 } from '../icons/remix';
 
 const meta: Meta<typeof GlyphButton> = {
-  title: 'Base/GlyphButton',
+  id: 'base-glyphbutton',
+  title: 'Components/Actions/Glyph Button',
   component: GlyphButton,
   args: {
     accessibilityLabel: 'More options',

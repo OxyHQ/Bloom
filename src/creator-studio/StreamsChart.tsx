@@ -1,4 +1,5 @@
-import React, { useCallback, useId, useMemo, useState } from 'react';
+import { useControllableState } from '../hooks/use-controllable-state';
+import React, { useCallback, useId, useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, {
   Circle,
@@ -84,8 +85,11 @@ export function StreamsChart({
   const palette = useChartCardSurfacePalette(style);
   const tones = useChartTones();
 
-  const [ownMetric, setOwnMetric] = useState(defaultMetric ?? metrics[0]?.id);
-  const metricId = controlledMetric ?? ownMetric;
+  const [metricId, setMetric] = useControllableState<string>({
+    value: controlledMetric,
+    defaultValue: defaultMetric ?? metrics[0]?.id ?? '',
+    onChange: onMetricChange,
+  });
   const metricIndex = Math.max(
     0,
     metrics.findIndex((m) => m.id === metricId),
@@ -100,10 +104,9 @@ export function StreamsChart({
   const selectMetric = useCallback(
     (id: string) => {
       setActiveIndex(null);
-      if (controlledMetric === undefined) setOwnMetric(id);
-      onMetricChange?.(id);
+      setMetric(id);
     },
-    [controlledMetric, onMetricChange, setActiveIndex],
+    [setMetric, setActiveIndex],
   );
 
   const values = useMemo(() => data.map((d) => d.value), [data]);

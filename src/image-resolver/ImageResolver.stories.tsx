@@ -10,7 +10,8 @@ import { Card } from '../card';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Foundations/Image Resolver',
+  id: 'foundations-image-resolver',
+  title: 'Composition/Images/Image Resolver',
 };
 
 export default meta;

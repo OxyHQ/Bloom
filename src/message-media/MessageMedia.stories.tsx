@@ -22,7 +22,8 @@ import { resolveBubbleColor, MESSAGE_MEDIA_RADIUS } from './shared';
 import type { MessageTone, VoicePlaybackRate } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Chat/Message Media',
+  id: 'blocks-chat-message-media',
+  title: 'Components/Chat/Message Media',
 };
 
 export default meta;

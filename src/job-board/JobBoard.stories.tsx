@@ -11,7 +11,8 @@ import { JobCard } from './JobCard';
 import type { JobBoardBand, JobOffer } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Fulfilment/JobBoard',
+  id: 'blocks-fulfilment-jobboard',
+  title: 'Patterns/Fulfilment/Job Board',
   parameters: { layout: 'fullscreen' },
 };
 

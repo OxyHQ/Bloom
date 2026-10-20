@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react-native';
 import type { Workspace } from '../data';
+import type { MultiAgentChatRequest } from '../types';
 import { useReplies } from '../use-replies';
 
 function fixture() {
@@ -32,8 +33,14 @@ describe('multi-agent reply lifecycle', () => {
     const onRespond = jest.fn(async (agent) => `Response ${agent.name}`);
     const { result } = renderHook(() => useReplies(current, update, onRespond));
     let task!: Promise<void>;
+    const request: MultiAgentChatRequest = {
+      model: 'test/model',
+      permission: 'plan',
+      effort: 3,
+      attachments: [],
+    };
     act(() => {
-      task = result.current.send('Question', 'group');
+      task = result.current.send('Question', 'group', 0, undefined, request);
     });
     current.current = { ...current.current, activeId: 'other' };
     await act(async () => {
@@ -41,6 +48,20 @@ describe('multi-agent reply lifecycle', () => {
       await task;
     });
     expect(onRespond.mock.calls.map((args) => args[0].id)).toEqual(['a', 'b']);
+    expect(onRespond).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ id: 'a' }),
+      expect.any(Array),
+      expect.any(AbortSignal),
+      request,
+    );
+    expect(onRespond).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ id: 'b' }),
+      expect.any(Array),
+      expect.any(AbortSignal),
+      request,
+    );
     expect(current.current.chats[0]!.messages.map((m) => m.text)).toEqual([
       'Question',
       'Response a',

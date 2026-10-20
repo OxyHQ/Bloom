@@ -10,7 +10,8 @@ import { OutlineNav } from './OutlineNav';
 import type { OutlineHeading } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Notes/Outline Nav',
+  id: 'blocks-notes-outline-nav',
+  title: 'Patterns/Notes/Outline Nav',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

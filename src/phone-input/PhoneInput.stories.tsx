@@ -11,7 +11,8 @@ import { COUNTRIES, CountryFlag, PhoneInput, type Country } from './index';
 
 const meta: Meta = {
   component: PhoneInput,
-  title: 'Base/Input/Phone',
+  id: 'base-input-phone',
+  title: 'Components/Inputs/Phone Input',
 };
 
 export default meta;

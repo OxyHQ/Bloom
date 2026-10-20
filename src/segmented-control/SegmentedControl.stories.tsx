@@ -9,7 +9,8 @@ import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
   component: SegmentedControl,
-  title: 'Base/Segmented Control',
+  id: 'base-segmented-control',
+  title: 'Components/Navigation/Segmented Control',
 };
 
 export default meta;

@@ -8,7 +8,8 @@ import { Button } from '../button';
 import { Text } from '../typography';
 
 const meta: Meta<typeof Search> = {
-  title: 'Base/Search',
+  id: 'base-search',
+  title: 'Components/Inputs/Search',
   component: Search,
 };
 

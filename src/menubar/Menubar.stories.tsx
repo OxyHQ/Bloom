@@ -28,7 +28,8 @@ const meta: Meta = {
   },
   component: Menubar,
   parameters: { controls: { disable: true } },
-  title: 'Base/Menubar',
+  id: 'base-menubar',
+  title: 'Components/Navigation/Menubar',
 };
 
 export default meta;

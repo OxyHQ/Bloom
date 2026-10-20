@@ -9,6 +9,30 @@ Start with [Compose application layouts](/docs/bloom/main/compose-layouts) for t
 
 # Layout
 
+## Shared resize and nested scroll primitives
+
+`ResizeHandle` is exported from `@oxy.so/bloom/layout`. Its separator orientation
+chooses the resize axis; `onResizeStart`, `onResize` and `onResizeEnd` describe a
+drag, while `onNudge` receives keyboard movement. AppShell's panel engine owns
+constraints, RTL geometry and committing widths. Use AppShellPanels for ordinary
+resizable panels. `AiChatResizeHandle` remains a deprecated alias to the same
+primitive.
+
+On web the grip uses pointer capture and CSS variables for its pointer position;
+movement does not require a React update or a new bounds read on every event.
+Focus-visible and reduced-motion behavior live in its shared stylesheet.
+
+`ScrollSurface` combines ScrollArea, its own scroll-metrics scope and the shared
+header EdgeScrim. `fadeBottom` adds the lower edge, and `surface` chooses the
+backing color. `className` lays out the viewport's outer host;
+`contentClassName` styles its content. It requires bounded dimensions. Its
+scroller never updates an enclosing Screen's scroll metrics. Edge opacity uses
+shared values rather than per-scroll React state. Use Screen for a complete
+panel with header/footer/restoration; use ScrollSurface for a nested region.
+
+The legacy `chatId` prop has no effect and is deprecated. Persistent scroll
+position belongs to the Screen/restoration contract.
+
 The questions every floating surface and every piece of scroll-linked chrome has
 to answer, answered once for all of them.
 

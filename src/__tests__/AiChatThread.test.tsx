@@ -20,7 +20,28 @@ jest.mock('react-native', () => {
   return { ...actual, ScrollView };
 });
 
+// ScreenScrollView delegates native work to Animated.ScrollView. Preserve the
+// imperative native mock and execute each composed scroll handler here.
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual('../../__mocks__/react-native-reanimated');
+  const ScrollView = jest.requireMock('react-native').ScrollView;
+  return {
+    ...actual,
+    __esModule: true,
+    default: { ...actual.default, ScrollView },
+    useAnimatedScrollHandler:
+      (handlers: { onScroll?: (event: unknown) => void }) =>
+      (event: { nativeEvent?: Record<string, unknown> }) => {
+        const nativeEvent = event.nativeEvent ?? event;
+        handlers.onScroll?.({ contentSize: { width: 0, height: 0 }, ...nativeEvent });
+      },
+  };
+});
+
 import { Text } from 'react-native';
+import { Screen, ScreenScrollView } from '../screen';
+import { PageHeader } from '../page-header';
+import { PageFooter } from '../page-footer';
 import {
   AiChatContainer,
   AiChatThread,
@@ -48,7 +69,11 @@ function renderIn(ui: React.ReactElement) {
 
 /** The thread's own `ScrollView` props, which is where every signal arrives. */
 function scroller(api: ReturnType<typeof renderIn>): ScrollProps {
-  return api.getByTestId('thread').props as unknown as ScrollProps;
+  const props = api.getByTestId('thread').props;
+  return {
+    ...props,
+    contentContainerStyle: resolvedStyle(props.contentContainerStyle),
+  } as ScrollProps;
 }
 
 /** A viewport 400 tall holding 1000 of content, with the reader at `offset`. */
@@ -188,10 +213,12 @@ describe('AiChatThread follow', () => {
     expect(scrollToEnd).toHaveBeenCalledTimes(2);
   });
 
-  it('attaches no scroll listener when nothing is listening', () => {
+  it('tracks viewport position for follow/resize without requiring a host observer', () => {
     const api = renderIn(<AiChatThread testID="thread">turns</AiChatThread>);
-    expect(scroller(api).onScroll).toBeUndefined();
-    expect(scroller(api).scrollEventThrottle).toBeUndefined();
+    expect(api.UNSAFE_getByType(ScreenScrollView).props.onScroll).toBeDefined();
+    // Internal following and shared header/footer metrics both need position.
+    expect(scroller(api).onScroll).toBeDefined();
+    expect(scroller(api).scrollEventThrottle).toBe(16);
   });
 });
 
@@ -303,10 +330,10 @@ describe('AiChatContainer floatingChrome', () => {
   /** The container measuring its chrome: header block `top` tall, footer `bottom`. */
   function measure(api: ReturnType<typeof renderIn>, top: number, bottom: number) {
     act(() => {
-      (api.getByTestId('chat-chrome-top').props.onLayout as (e: unknown) => void)({
+      (api.getByTestId('chat-header').props.onLayout as (e: unknown) => void)({
         nativeEvent: { layout: { height: top } },
       });
-      (api.getByTestId('chat-chrome-bottom').props.onLayout as (e: unknown) => void)({
+      (api.getByTestId('chat-bottom').props.onLayout as (e: unknown) => void)({
         nativeEvent: { layout: { height: bottom } },
       });
     });
@@ -326,8 +353,8 @@ describe('AiChatContainer floatingChrome', () => {
 
   it('floats the header and the footer absolutely over the transcript, passing touches through', () => {
     const api = floating();
-    const top = api.getByTestId('chat-chrome-top');
-    const bottom = api.getByTestId('chat-chrome-bottom');
+    const top = api.getByTestId('chat-header');
+    const bottom = api.getByTestId('chat-bottom');
     expect(resolvedStyle(top.props.style)).toMatchObject({
       position: 'absolute',
       top: 0,
@@ -350,113 +377,102 @@ describe('AiChatContainer floatingChrome', () => {
     expect(resolvedStyle(api.getByTestId('thread').props.style).flex).toBe(1);
   });
 
-  it('pads the thread content by the measured chrome, so the resting turns clear it', () => {
+  it('lets Screen reserve measured chrome while the thread keeps its own padding', () => {
     const api = floating();
     measure(api, 60, 100);
     const content = scroller(api).contentContainerStyle;
-    expect(content.paddingTop).toBe(76); // header block + the thread's own 16
-    expect(content.paddingBottom).toBe(100);
-    expect(scroller(api).scrollIndicatorInsets).toEqual({ top: 60, bottom: 100 });
-    // And the scroll is listened to, so the edges can fade.
-    expect(scroller(api).onScroll).toBeDefined();
+    expect(content.paddingTop).toBe(16);
+    expect(content.paddingBottom).toBe(12);
+    // Overlay headers reserve no top clearance. Screen owns the footer inset.
+    expect(resolvedStyle(api.getByTestId('chat-content').props.style)).toMatchObject({
+      paddingTop: 0,
+      paddingBottom: 100,
+    });
+    expect(api.UNSAFE_getByType(Screen).props.headerPlacement).toBe('overlay');
   });
 
-  it('fades the header in only while the transcript runs under it, and never walls off the composer', () => {
+  it('delegates scroll-linked edge paint to PageHeader and PageFooter', () => {
     const api = floating();
     measure(api, 60, 100);
     settle(api, 1000, 600);
-    // 1000 content, 400 viewport: range 600. Scrolled at all: the header fades.
-    scrollTo_(api, 600, 1000);
-    expect(api.getByTestId('chat-fade-top', HIDDEN)).toBeTruthy();
     scrollTo_(api, 300, 1000);
-    expect(api.getByTestId('chat-fade-top', HIDDEN)).toBeTruthy();
-    // At the top: nothing under the header.
-    scrollTo_(api, 0, 1000);
+    expect(api.UNSAFE_getByType(Screen).props.header.type).toBe(PageHeader);
+    expect(api.UNSAFE_getByType(Screen).props.bottomBar.type).toBe(PageFooter);
+    expect(api.UNSAFE_getByType(Screen).props.bottomBar.props.scrim).toBe('auto');
+    // The shared primitive owns its full ramp, including the 55% tail. A
+    // second chat fade used to squeeze that ramp into the final tenth.
     expect(api.queryByTestId('chat-fade-top', HIDDEN)).toBeNull();
-    // The transcript passes behind the composer in sight: no band, anywhere.
+    expect(api.queryByTestId('chat-fade-top-surface', HIDDEN)).toBeNull();
     expect(api.queryByTestId('chat-fade-bottom', HIDDEN)).toBeNull();
   });
 
-  it('draws the page-header scrim over the whole header and its tail, as PageHeader does', () => {
+  it('uses the shared scrim when the containing host supplies the surface', () => {
+    const api = floating({ surface: false });
+    measure(api, 60, 100);
+    expect(api.UNSAFE_getByType(Screen).props.header.props.scrimColor).toBeUndefined();
+    expect(resolvedStyle(api.getByTestId('chat').props.style).backgroundColor).toBe('transparent');
+  });
+
+  it('holds the reader still when chrome resizes its viewport, and follows real turns', () => {
     const api = floating();
     measure(api, 60, 100);
     settle(api, 1000, 600);
-    scrollTo_(api, 300, 1000);
-    const fade = resolvedStyle(api.getByTestId('chat-fade-top', HIDDEN).props.style);
-    // The block plus its tail below, as one ramp: 60 + round(60 * 0.55).
-    expect(fade.height).toBe(93);
-    // No solid slab inside it: that put the whole fade into the last tenth of the height.
-    expect(api.queryByTestId('chat-fade-top-surface', HIDDEN)).toBeNull();
-  });
-
-  it('still fades without a surface of its own, into the lighter chat tone rather than the host fill', () => {
-    const api = floating({ surface: false });
-    measure(api, 60, 100);
-    settle(api, 1000, 300);
-    scrollTo_(api, 300, 1000);
-    expect(api.queryByTestId('chat-fade-top', HIDDEN)).not.toBeNull();
-  });
-
-  it('holds the reader still when only the chrome resizes, and follows real turns as before', () => {
-    const api = floating();
-    measure(api, 60, 100);
-    settle(api, 1000, 600); // at the end
-    // The composer grows by 40: the content grows by exactly that.
+    // Screen reserves chrome outside the native list. A growing composer
+    // shrinks its viewport without adding another 40px to the transcript.
     measure(api, 60, 140);
-    act(() => scroller(api).onContentSizeChange(0, 1040));
+    act(() => scroller(api).onLayout({ nativeEvent: { layout: { height: 360 } } }));
     expect(scrollToEnd).toHaveBeenCalledWith({ animated: false });
     expect(scrollToEnd).not.toHaveBeenCalledWith({ animated: true });
 
-    // Mid-thread, the header block growing by 20 is absorbed into the offset.
     scrollToEnd.mockClear();
-    scrollTo_(api, 300, 1040);
-    measure(api, 80, 140);
-    act(() => scroller(api).onContentSizeChange(0, 1060));
-    expect(scrollTo).toHaveBeenCalledWith({ y: 320, animated: false });
+    scrollTo_(api, 300, 1000);
+    measure(api, 60, 160);
+    act(() => scroller(api).onLayout({ nativeEvent: { layout: { height: 340 } } }));
+    expect(scrollTo).not.toHaveBeenCalled();
     expect(scrollToEnd).not.toHaveBeenCalled();
 
-    // A new turn is still a growth the thread follows, smoothly.
     act(() => scroller(api).onContentSizeChange(0, 1300));
     expect(scrollToEnd).toHaveBeenCalledWith({ animated: true });
   });
 
-  it('hands custom children the insets, and nothing outside it', () => {
+  it('adapts Screen clearances for custom children in either container mode', () => {
     let seen: AiChatChromeInsets | null | undefined;
     function Probe() {
       seen = useAiChatChromeInsets();
       return null;
     }
     const api = renderIn(
-      <AiChatContainer testID="chat" floatingChrome title="t" composer={null}>
+      <AiChatContainer testID="chat" floatingChrome title="t" composer={<Text>composer</Text>}>
         <Probe />
       </AiChatContainer>,
     );
     measure(api, 48, 90);
-    expect(seen).toEqual({ top: 48, bottom: 90 });
+    expect(seen).toEqual({ top: 0, bottom: 90 });
 
     renderIn(
       <AiChatContainer title="t" composer={null}>
         <Probe />
       </AiChatContainer>,
     );
-    expect(seen).toBeNull();
+    expect(seen).toEqual({ top: 56, bottom: 0 });
   });
 });
 
 describe('AiChatContainer without floatingChrome', () => {
-  it('stacks as before: no floating blocks, and the thread pads, listens and scrolls exactly as alone', () => {
+  it('reserves its Screen header while keeping the same thread and own padding', () => {
     const api = renderIn(
       <AiChatContainer testID="chat" title="coding scenario" composer={<Text>composer</Text>}>
         <AiChatThread testID="thread">turns</AiChatThread>
       </AiChatContainer>,
     );
-    expect(api.queryByTestId('chat-chrome-top')).toBeNull();
-    expect(api.queryByTestId('chat-chrome-bottom')).toBeNull();
+    expect(api.getByTestId('chat-header')).toBeTruthy();
+    expect(api.getByTestId('chat-bottom')).toBeTruthy();
+    expect(api.UNSAFE_getByType(Screen).props.headerPlacement).toBe('inset');
     const content = scroller(api).contentContainerStyle;
     expect(content.paddingTop).toBe(16);
-    expect('paddingBottom' in content).toBe(false);
+    expect(content.paddingBottom).toBe(12);
     expect(scroller(api).scrollIndicatorInsets).toBeUndefined();
-    expect(scroller(api).onScroll).toBeUndefined();
+    expect(api.UNSAFE_getByType(ScreenScrollView).props.onScroll).toBeDefined();
 
     const alone = renderIn(<AiChatThread testID="thread">turns</AiChatThread>);
     expect(scroller(alone).contentContainerStyle).toEqual(content);

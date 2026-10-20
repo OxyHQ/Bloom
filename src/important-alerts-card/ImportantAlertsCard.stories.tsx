@@ -18,7 +18,8 @@ const meta: Meta<typeof ImportantAlertsCard> = {
     rangeLabel: { control: 'text' },
     height: { control: 'number' },
   },
-  title: 'Blocks/Important Alerts',
+  id: 'blocks-important-alerts',
+  title: 'Components/Feedback/Important Alerts',
   component: ImportantAlertsCard,
 };
 

@@ -12,7 +12,8 @@ import { CheckoutSummaryRow } from './CheckoutSummaryRow';
 import type { CheckoutSummaryProps } from './types';
 
 const meta: Meta<typeof CheckoutSummary> = {
-  title: 'Blocks/Checkout/CheckoutSummary',
+  id: 'blocks-checkout-checkoutsummary',
+  title: 'Patterns/Checkout/Checkout Summary',
   component: CheckoutSummary,
   parameters: { layout: 'fullscreen' },
 };

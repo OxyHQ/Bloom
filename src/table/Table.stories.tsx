@@ -14,7 +14,8 @@ import {
 } from './index';
 
 const meta: Meta<typeof Table> = {
-  title: 'Base/Table',
+  id: 'base-table',
+  title: 'Components/Data Display/Table',
   component: Table,
 };
 

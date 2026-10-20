@@ -273,7 +273,7 @@ try {
     });
     await ui.setViewport({ width: 1400, height: 900, deviceScaleFactor: 1 });
     await ui.goto(
-      `${process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6006'}/iframe.html?id=application-agent-avatar-new-engine--fidelity&viewMode=story`,
+      `${process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6006'}/iframe.html?id=agents-agent-avatar-new-engine--fidelity&viewMode=story`,
     );
     await ui.waitForFunction(() => window.__avatarFidelity?.stats().frames > 0, {
       timeout: 60000,

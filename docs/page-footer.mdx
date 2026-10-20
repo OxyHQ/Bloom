@@ -54,6 +54,14 @@ controls let pointer events pass through. The gradient has no motion, including
 when reduced motion is enabled. `scrim="none"` removes it; `scrimColor` overrides
 the inherited opaque surface color. `style` and `testID` address the outer host.
 
+### Screen footer slot
+
+Prefer composing page controls in `Screen.bottomBar`. Screen owns placement and measures the footer's actual footprint, including safe-area padding. PageFooter renders its controls and scrim in that slot without adding another absolute/sticky owner or publishing a second local clearance claim.
+
+`contentContainerStyle` styles the controls row. Override padding with the matching longhands (`paddingTop`, `paddingBottom`, `paddingLeft`, `paddingRight`); `style` continues to address the outer host. Web container queries resolve the shared 16/24px side inset without rendering on each width change. Native retains row measurement.
+
+### Position outside Screen
+
 The default `position="absolute"` anchors this page chrome inside a bounded parent.
 Place it beside the scroller, never inside its scrolling content.
 
@@ -67,7 +75,9 @@ follow its ancestor frames, and horizontal scrolling updates the viewport
 coordinate without rendering again for unchanged bounds. Native keeps the
 existing absolute positioning within its bounded screen.
 
-Both positions publish the same measured `usePageFooterInset()` clearance.
+`position="inline"` keeps the footer in normal flow. `position="sticky"` also reserves its natural height, while pinning to the scroll container's bottom on web above the occupied bottom edge. Native sticky falls back to inline. Render these footers after the scroller; their in-flow footprint needs no extra scroll padding and publishes no `usePageFooterInset()` claim. Native safe-area defaults still apply. `WizardFooter` uses these positions while retaining its workflow controls.
+
+Absolute and document positions publish the same measured `usePageFooterInset()` clearance.
 Wrap the page and footer in `PageFooterProvider` and use that value as bottom
 padding, instead of a guessed spacer. A purchase
 summary with price and booking controls belongs to `ActionBar`, which has a

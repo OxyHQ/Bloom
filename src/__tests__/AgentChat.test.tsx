@@ -1,5 +1,5 @@
 import React from 'react';
-import { DISABLED_OPACITY } from '../styles/tokens';
+import * as Native from 'react-native';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 // The shared mocks stub neither `useFrameCallback` nor the SVG blur filter the
@@ -221,31 +221,22 @@ describe('AgentChatMessage', () => {
 });
 
 describe('AgentChatComposer', () => {
-  it('is a 52px full pill with 36px controls', () => {
-    const { getByTestId, getByLabelText } = renderIn(<AgentChatComposer testID="c" />);
-    let pill = getByLabelText('Add attachment');
-    while (pill && resolvedStyle(pill.props.style)?.height !== 52) pill = pill.parent!;
-    expect(resolvedStyle(pill.props.style)).toMatchObject({
-      height: 52,
-      padding: 8,
-      gap: 10,
-      borderRadius: 9999,
-    });
-    expect(resolvedStyle(getByTestId('c-send').props.style)).toMatchObject({
-      width: 36,
-      height: 36,
-      opacity: DISABLED_OPACITY,
-    });
+  it('uses the shared multiline pill and hides attachment/voice controls without integrations', () => {
+    const { getByTestId, queryByLabelText } = renderIn(<AgentChatComposer testID="c" />);
+    expect(getByTestId('c-pill-input').props.multiline).toBe(true);
+    expect(queryByLabelText('Add attachment')).toBeNull();
+    expect(queryByLabelText('Voice input')).toBeNull();
   });
 
   it('enables send once there is text, submits it and clears when uncontrolled', () => {
     const onSubmit = jest.fn();
-    const { getByTestId } = renderIn(<AgentChatComposer testID="c" onSubmit={onSubmit} />);
-    fireEvent.changeText(getByTestId('c-field'), 'Hello');
-    expect(resolvedStyle(getByTestId('c-send').props.style).opacity).toBe(1);
-    pressHost(getByTestId('c-send'));
+    const { getByTestId, getByLabelText } = renderIn(
+      <AgentChatComposer testID="c" onSubmit={onSubmit} />,
+    );
+    fireEvent.changeText(getByTestId('c-pill-input'), 'Hello');
+    pressHost(getByLabelText('Send message'));
     expect(onSubmit).toHaveBeenCalledWith('Hello');
-    expect(getByTestId('c-field').props.value).toBe('');
+    expect(getByTestId('c-pill-input').props.value).toBe('');
   });
 
   it('swaps send for stop while busy', () => {
@@ -253,7 +244,7 @@ describe('AgentChatComposer', () => {
     const { getByLabelText, queryByTestId } = renderIn(
       <AgentChatComposer testID="c" busy onStop={onStop} />,
     );
-    expect(queryByTestId('c-send')).toBeNull();
+    expect(queryByTestId('c-pill-send')).toBeNull();
     pressHost(getByLabelText('Stop generating'));
     expect(onStop).toHaveBeenCalled();
   });
@@ -264,7 +255,7 @@ describe('AgentChatComposer', () => {
     );
     expect(getByText('OpenAI')).toBeTruthy();
     expect(getByText('4 messages')).toBeTruthy();
-    expect(getByLabelText('Answering with openai/gpt-5-nano')).toBeTruthy();
+    expect(getByText('gpt-5-nano')).toBeTruthy();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
         <AgentChatComposer />
@@ -287,9 +278,8 @@ describe('AgentChatActions', () => {
     expect(onShare).toHaveBeenCalledWith('You: hi');
     expect(getByLabelText('Transcript copied')).toBeTruthy();
     expect(resolvedStyle(getByTestId('a-share').props.style)).toMatchObject({
-      width: 28,
-      height: 28,
-      borderRadius: 9999,
+      width: 34,
+      height: 34,
     });
 
     rerender(
@@ -298,7 +288,7 @@ describe('AgentChatActions', () => {
       </BloomThemeProvider>,
     );
     expect(getByTestId('a-share').props.accessibilityState).toMatchObject({ disabled: true });
-    expect(resolvedStyle(getByTestId('a-more').props.style).opacity).toBe(DISABLED_OPACITY);
+    expect(getByTestId('a-more').props.accessibilityState).toMatchObject({ disabled: true });
   });
 });
 
@@ -407,7 +397,7 @@ describe('AgentChat', () => {
 
   it('trims the composer text, refuses while busy, and titles the header from the active thread', () => {
     const onSubmit = jest.fn();
-    const { getByTestId, rerender } = renderIn(
+    const { getByTestId, getByLabelText, rerender } = renderIn(
       <AgentChat
         testID="chat"
         messages={MESSAGES}
@@ -418,10 +408,10 @@ describe('AgentChat', () => {
       />,
     );
     expect(within(getByTestId('chat-header')).getByText('Names')).toBeTruthy();
-    fireEvent.changeText(getByTestId('chat-composer-field'), '  more please ');
-    pressHost(getByTestId('chat-composer-send'));
+    fireEvent.changeText(getByTestId('chat-composer-pill-input'), '  more please ');
+    pressHost(getByLabelText('Send message'));
     expect(onSubmit).toHaveBeenCalledWith('more please');
-    expect(getByTestId('chat-composer-field').props.value).toBe('');
+    expect(getByTestId('chat-composer-pill-input').props.value).toBe('');
 
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -432,7 +422,13 @@ describe('AgentChat', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it('hides the rail without threads, and disables it mid-stream', () => {
+  it('hides the rail without threads, and disables it mid-stream in a wide panel layout', () => {
+    const dimensions = jest.spyOn(Native, 'useWindowDimensions').mockReturnValue({
+      width: 1440,
+      height: 900,
+      scale: 1,
+      fontScale: 1,
+    });
     const { queryByTestId, getByTestId, rerender } = renderIn(
       <AgentChat testID="chat" messages={MESSAGES} />,
     );
@@ -451,6 +447,7 @@ describe('AgentChat', () => {
     expect(getByTestId('chat-history-new').props.accessibilityState).toMatchObject({
       disabled: true,
     });
+    dimensions.mockRestore();
   });
 
   it('replaces the whole card body with `emptyState`', () => {

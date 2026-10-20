@@ -156,8 +156,8 @@ export function EmotionPicker({
   }, [visible]);
   useTrackEvents(
     ref,
-    (x, y) => {
-      target.value += (Math.abs(x) > Math.abs(y) ? x : y) * 0.2;
+    (delta) => {
+      target.value += delta * 0.2;
     },
     undefined,
     setFocused,

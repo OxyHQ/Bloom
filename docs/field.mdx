@@ -97,6 +97,12 @@ A field with ONE control gives it the field's id and describes the error BY that
 
 `multiple` makes the field a `role="group"` labelled by its own label and described by its own hint, and publishes no control id. Each control keeps its own id and its own name.
 
+### A composite is ONE control
+
+`MortgageCalculator`, `VehiclePicker`, `ShipmentLoadPicker`, `OfferingEditor` and `Questionnaire` hold several controls but join an ordinary field as one: their root (the group) takes the field's id, its name and its error, and every part inside — the cards, the inputs, the steppers — sees only the field's `disabled`, `invalid` and `required`. So the field's id is on one node, its error is read once, the inputs keep their own names ("Property price", not the field's), and the parts still freeze with a disabled field. No `multiple` is needed around them.
+
+Inside Bloom, a composite gets this by wrapping its parts in `FieldConstraintScope` (`src/field/FieldConstraintScope.tsx`, internal — not exported). Without it each part that reads the field takes the id and the error for itself, and every `TextFieldInput` inside announces the field's label — `multiple` does not prevent that last one, because the label text still travels.
+
 ## Floating labels are an alternative, not a layer
 
 `<TextFieldInput floatingLabel>` inside a `Field label="…"` shows the same words above the box and inside it. The ids and the described-by still travel, so the error is still announced — but pick one of the two labels.

@@ -343,7 +343,8 @@ function NoteDemo({ store, id, label }: { store: EditorStore; id: string; label:
 }
 
 const meta: Meta<typeof EditorDemo> = {
-  title: 'Editor/BlockEditor',
+  id: 'editor-blockeditor',
+  title: 'Patterns/Productivity/Block Editor',
   component: EditorDemo,
   parameters: { layout: 'fullscreen' },
 };

@@ -447,6 +447,7 @@ export function ComposerPillBase({
   voiceState,
   defaultVoiceState = 'idle',
   onVoiceStateChange,
+  showVoice,
   attachments,
   onRemoveAttachment,
   onAttachmentRetry,
@@ -577,7 +578,8 @@ export function ComposerPillBase({
   const submit = useCallback(() => {
     if (disabled || busy) return;
     onSubmit?.(text);
-  }, [disabled, busy, onSubmit, text]);
+    if (value === undefined) setText('');
+  }, [disabled, busy, onSubmit, text, value, setText]);
 
   const onKeyPress = useCallback(
     (event: TextInputKeyPressEvent) => {
@@ -830,6 +832,7 @@ export function ComposerPillBase({
           }}
         >
           <ComposerTrailingActions
+            showVoice={showVoice}
             palette={controlPalette}
             voice={voice}
             onVoiceChange={setVoice}

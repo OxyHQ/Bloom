@@ -5,7 +5,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PressableScale } from './index';
 
 const meta: Meta<typeof PressableScale> = {
-  title: 'Base/Pressable Scale',
+  id: 'base-pressable-scale',
+  title: 'Composition/Motion/Pressable Scale',
   component: PressableScale,
   argTypes: {
     targetScale: { control: { type: 'number', min: 0.8, max: 1, step: 0.01 } },

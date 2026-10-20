@@ -23,7 +23,8 @@ import {
 
 const meta: Meta = {
   component: Select,
-  title: 'Base/Select',
+  id: 'base-select',
+  title: 'Components/Inputs/Select',
 };
 
 export default meta;

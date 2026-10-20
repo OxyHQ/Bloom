@@ -19,7 +19,8 @@ import { PlaceCard } from './PlaceCard';
 import type { PlaceAction, PlaceCardProps } from './types';
 
 const meta: Meta<typeof PlaceCard> = {
-  title: 'Blocks/Maps/PlaceCard',
+  id: 'blocks-maps-placecard',
+  title: 'Patterns/Maps/Place Card',
   component: PlaceCard,
   parameters: { layout: 'fullscreen' },
 };

@@ -14,7 +14,8 @@ const meta: Meta<typeof Divider> = {
     vertical: { control: 'boolean' },
     spacing: { control: 'number' },
   },
-  title: 'Base/Divider',
+  id: 'base-divider',
+  title: 'Components/Surfaces/Divider',
   component: Divider,
 };
 

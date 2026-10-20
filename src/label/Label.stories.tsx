@@ -11,7 +11,8 @@ const meta: Meta<typeof Label> = {
     disabled: { control: 'boolean' },
     size: { control: 'select', options: ['xs', 'sm', 'md'] },
   },
-  title: 'Base/Label',
+  id: 'base-label',
+  title: 'Composition/Fields/Label',
   component: Label,
 };
 

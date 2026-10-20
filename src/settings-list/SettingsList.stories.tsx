@@ -7,7 +7,8 @@ import { SettingsListGroup, SettingsListItem, SettingsListDivider } from './Sett
 
 const meta: Meta = {
   component: SettingsListItem,
-  title: 'Base/Settings List',
+  id: 'base-settings-list',
+  title: 'Patterns/Account/Settings List',
 };
 
 export default meta;
