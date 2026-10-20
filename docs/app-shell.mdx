@@ -939,6 +939,10 @@ cannot fit, only `activePanel` (or the first eligible panel) is shown. A sole co
 expanded panel fills the available region, overriding its ordinary maximum width.
 `appearance="joined"` draws a shared surface and separators; `separated` draws individual
 surfaces. Appearance is a structural choice: keep it stable to preserve mounted content.
+An individual panel can use `chrome="none"` with `surfaceClassName` for a flat custom
+fill while retaining the same framing, clipping and scroll owner. `surfaceColor`
+publishes that fill to descendant chrome, following `ContentPanel`'s contract.
+For a transparent panel that inherits its enclosing surface, use `appearance="plain"`.
 
 For a three-column workspace, keep navigation in `sidebar` and give the secondary
 content panel a `floating` presentation. Below `floating.below` (the shell width), its

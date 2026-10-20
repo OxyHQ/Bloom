@@ -1,4 +1,5 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
+import { StyledView } from '../styles/styled-primitives';
 import { memo, useContext, useEffect, useInsertionEffect, useMemo, useRef, useState } from 'react';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { dataHook } from '../styles/data-hook';
@@ -127,6 +128,10 @@ const PAGE_HEADER_LAYOUT_CSS = `
 @container bloom-page-header (min-width: ${BREAKPOINTS.sm}px) {
   [data-bloom-page-header-bar], [data-bloom-page-header-accessory] { --bloom-page-header-inset: ${INSET_WIDE}px; }
 }
+[data-bloom-page-header-density="compact"] > [data-bloom-page-header-bar],
+[data-bloom-page-header-density="compact"] > [data-bloom-page-header-accessory] {
+  --bloom-page-header-inset: 12px;
+}
 [data-bloom-page-header-start="center"] {
   inset-inline-start: var(--bloom-page-header-inset) !important;
 }
@@ -155,6 +160,7 @@ function PageHeaderComponent({
   tone = 'default',
   presentation = 'floating',
   placement = 'inline',
+  density = 'default',
   onBack: screenOnBack,
   backLabel: backLabelProp,
   leading,
@@ -189,8 +195,9 @@ function PageHeaderComponent({
   const [measuredHeight, setMeasuredHeight] = useState(0);
   const lastHeight = useRef(0);
   const width = measuredWidth || windowWidth;
-  const height = measuredHeight || padTop + BAR_HEIGHT;
-  const sideInset = width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
+  const compact = density === 'compact';
+  const height = measuredHeight || padTop + (compact ? 32 : BAR_HEIGHT);
+  const sideInset = compact ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
 
   const onContainerLayout = (e: LayoutChangeEvent) => {
     if (!isWeb) setMeasuredWidth(e.nativeEvent.layout.width);
@@ -602,6 +609,7 @@ function PageHeaderComponent({
     <View
       {...directionProps}
       {...dataHook('bloomPageHeader')}
+      {...dataHook('bloomPageHeaderDensity', density)}
       testID={testID}
       onLayout={onContainerLayout}
       style={[
@@ -637,8 +645,9 @@ function PageHeaderComponent({
           ]}
         />
       ) : null}
-      <View
+      <StyledView
         {...dataHook('bloomPageHeaderBar')}
+        className={compact ? 'min-h-8 py-0' : 'min-h-14 py-2'}
         style={[
           [styles.bar, !isWeb && { paddingLeft: sideInset, paddingRight: sideInset }],
           pointerEventsStyle(floating ? 'box-none' : undefined),
@@ -688,7 +697,7 @@ function PageHeaderComponent({
         ) : (
           actionsSlot
         )}
-      </View>
+      </StyledView>
       {accessory ? (
         <View
           {...dataHook('bloomPageHeaderAccessory')}
@@ -730,12 +739,9 @@ const styles = StyleSheet.create({
     height: 1,
   },
   bar: {
-    minHeight: BAR_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
     gap: ROW_GAP,
-    paddingTop: 8,
-    paddingBottom: 8,
   },
   start: {
     flexDirection: 'row',

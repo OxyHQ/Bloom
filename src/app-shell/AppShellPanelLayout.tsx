@@ -512,6 +512,8 @@ export function createPanelLayoutView(
         <ContentPanel
           appearance={panel.appearance}
           chrome={panel.chrome}
+          surfaceClassName={panel.surfaceClassName}
+          surfaceColor={panel.surfaceColor}
           framed={cssScope && cssFraming ? true : framed}
           maskColor={region?.maskColor}
           errorBoundary={panel.errorBoundary}
