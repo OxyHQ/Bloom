@@ -33,6 +33,7 @@ import {
 import { useScreenWindowBinding } from './use-screen-window-scroll';
 import type { ScreenProps } from './types';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
+import { getScreenKeyboardComponents } from './keyboard-components';
 
 export function createScreen(
   ScrollBar: ComponentType<ScrollBarProps>,
@@ -86,6 +87,7 @@ export function createScreen(
       [incomingHost, parentScreen],
     );
     const ownsViewport = scroll === 'auto';
+    const reservesChrome = ownsViewport || scroll === 'none';
     const ownWebViewport = ownsViewport && Platform.OS === 'web';
     const restoration = useOptionalScrollRestorationContext();
     const region = useAppShellRegion();
@@ -132,8 +134,9 @@ export function createScreen(
         hide.remove();
       };
     }, []);
+    const keyboardFollow = Platform.OS !== 'web' && bottomBarKeyboardBehavior === 'follow';
     const hasBottom =
-      (!keyboardVisible || bottomBarKeyboardBehavior === 'visible') &&
+      (!keyboardVisible || bottomBarKeyboardBehavior !== 'hide') &&
       Boolean(bottomBar || primaryAction || host.bottomBar);
     // The app's own bottom navigation (an `AppShell` bottom bar) already owns the
     // bottom edge. This screen's bar stacks ON it, never under it, and the content
@@ -163,7 +166,10 @@ export function createScreen(
         collapseProgress,
         collapseTarget,
         activeScrollerId,
-        contentInsetsHandled: document || ownsViewport,
+        contentInsetsHandled: document || reservesChrome,
+        bottomInsetHandled: scroll === 'none' || ((document || ownsViewport) && !keyboardFollow),
+        keyboardFollow,
+        keyboardFooterHeight: hasBottom ? bottom : 0,
         documentScroll: document,
         topInset: reservedTop,
         bottomInset:
@@ -190,9 +196,12 @@ export function createScreen(
         inheritedNavigation?.bottomInset,
         document,
         ownsViewport,
+        reservesChrome,
+        scroll,
         reservedTop,
         keyboardVisible,
         navigationEdge,
+        keyboardFollow,
       ],
     );
     useScreenWindowBinding(value, { active: document && !ownsViewport });
@@ -259,8 +268,10 @@ export function createScreen(
           {primaryAction}
         </View>
       ) : null);
+    const Footer = keyboardFollow ? getScreenKeyboardComponents().KeyboardStickyView : View;
     const bottomNode = hasBottom ? (
-      <View
+      <Footer
+        {...(keyboardFollow ? { enabled: active } : {})}
         testID={testID ? `${testID}-bottom` : undefined}
         pointerEvents="box-none"
         onLayout={(event) => setBottom(event.nativeEvent.layout.height)}
@@ -277,7 +288,7 @@ export function createScreen(
               }
             : {
                 position: 'absolute',
-                bottom: navigationEdge,
+                bottom: keyboardFollow ? 0 : navigationEdge,
                 left: 0,
                 right: 0,
                 zIndex: Z_INDEX.floating,
@@ -294,7 +305,7 @@ export function createScreen(
             localBottom
           )}
         </ScreenFooterContext.Provider>
-      </View>
+      </Footer>
     ) : null;
     return (
       <ScreenHostContext.Provider value={host}>
@@ -367,8 +378,12 @@ export function createScreen(
                               flexBasis: 0,
                               minHeight: 0,
                               minWidth: 0,
-                              ...(ownsViewport && !ownWebViewport
-                                ? { paddingTop: reservedTop, paddingBottom: reservedBottom }
+                              ...((ownsViewport && !ownWebViewport) || scroll === 'none'
+                                ? {
+                                    paddingTop: reservedTop,
+                                    paddingBottom:
+                                      keyboardFollow && scroll !== 'none' ? 0 : reservedBottom,
+                                  }
                                 : {}),
                             }
                       }

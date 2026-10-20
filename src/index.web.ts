@@ -189,6 +189,7 @@ export {
   ScrollArea,
   ResizeHandle,
   ScrollSurface,
+  Toolbar,
   useScrollOffset,
   ScreenScope,
   HeaderDockProvider,
@@ -202,6 +203,7 @@ export type {
   ScrollAreaProps,
   ResizeHandleProps,
   ScrollSurfaceProps,
+  ToolbarProps,
 } from './layout/index.web';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabSize } from './fab/index.web';

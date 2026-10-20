@@ -52,6 +52,14 @@ The Screen's PageHeader composes them with its existing actions in one header.
 
 ## Explicit content-owned scrolling
 
+Use `scroll="none"` for a bounded canvas such as a board or map. Screen reserves
+its measured header and footer around the content on both platforms and adds no
+scroll viewport. The canvas can own independent column scrollers without another
+vertical owner around them. No application height measurement or inset arithmetic
+is required. `scroll="content"` remains the explicit-list compatibility mode
+whose list binds `useScreenScroll`; it does not reserve chrome around arbitrary
+non-scrolling children.
+
 `Screen` owns a continuous page canvas. It paints the containing surface fill,
 so a Screen inside an AppShell panel matches that panel in light and dark mode.
 Standalone Screens use the page fill. `header` and `bottomBar` overlay the content;
@@ -185,6 +193,19 @@ writer; an explicitly isolated modal keeps its own navigation scope. During rest
 offsets update the header but do not trigger a new collapse. On native, showing
 the keyboard hides bottom chrome and releases its reserved content footprint;
 hiding it restores the previous footprint.
+
+For an editor or form, set `bottomBarKeyboardBehavior="follow"` and render the
+actual toolbar in `bottomBar`. On native, Screen moves that toolbar with the
+keyboard and its `ScreenScrollView` keeps the focused input above it. Bloom
+measures the toolbar (including expanded controls) and coordinates focus offsets,
+keyboard space and content padding once. Applications supply no toolbar-height
+state, absolute positioning or keyboard scroll wrapper. Inactive screens disable
+both behaviors. Web keeps the existing Screen viewport.
+
+This opt-in native behavior requires `react-native-keyboard-controller` and its
+app-root `KeyboardProvider`; the ordinary Screen does not require the optional
+peer. `visible` merely preserves a footer's position while typing; `follow`
+supplies the keyboard motion and focused-input scrolling together.
 
 AppShell establishes `navigationScope="shared"`. Route Screens use the default
 `inherit`: their local header offset is independent, while the focused list owns

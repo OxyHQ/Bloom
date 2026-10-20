@@ -7,6 +7,8 @@ export { ProjectBoard } from './ProjectBoard.web';
 export { BoardDragHandle } from './BoardGesture';
 export type {
   BoardColumn,
+  ProjectBoardLane,
+  GroupedProjectBoardProps,
   BoardDragHandleProps,
   BoardMove,
   ControlledProjectBoardProps,

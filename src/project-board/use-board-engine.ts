@@ -1,3 +1,4 @@
+import type { AppShellPanelViewport } from '../app-shell/panel-layout-types';
 import {
   useCallback,
   useEffect,
@@ -45,8 +46,7 @@ export interface BoardEngine<Item> {
   columnRects: RefObject<Record<string, BoardRect>>;
   itemRects: RefObject<Record<string, BoardRect>>;
   boardNode: RefObject<ComponentRef<typeof View> | null>;
-  scrollView: RefObject<ComponentRef<typeof ScrollView> | null>;
-  scrollX: RefObject<number>;
+  viewport: RefObject<AppShellPanelViewport | null>;
   columnScrolls: RefObject<Record<string, ComponentRef<typeof ScrollView> | null>>;
   columnScrollY: RefObject<Record<string, number>>;
   measure: () => void;
@@ -89,9 +89,8 @@ export function useBoardEngine<Item>({
   const itemNodes = useRef<Record<string, ComponentRef<typeof View> | null>>({});
   const columnRects = useRef<Record<string, BoardRect>>({});
   const itemRects = useRef<Record<string, BoardRect>>({});
-  const scrollView = useRef<ComponentRef<typeof ScrollView>>(null);
+  const viewport = useRef<AppShellPanelViewport>(null);
   const columnScrolls = useRef<Record<string, ComponentRef<typeof ScrollView> | null>>({});
-  const scrollX = useRef(0);
   const columnScrollY = useRef<Record<string, number>>({});
   const boardNode = useRef<ComponentRef<typeof View>>(null);
   const boardRect = useRef<BoardRect | null>(null);
@@ -276,8 +275,7 @@ export function useBoardEngine<Item>({
         setTarget(next);
       const board = boardRect.current;
       if (board && (x < board.x + 32 || x > board.x + board.width - 32)) {
-        scrollX.current = Math.max(0, scrollX.current + (x < board.x + 32 ? -12 : 12));
-        scrollView.current?.scrollTo({ x: scrollX.current, animated: false });
+        viewport.current?.scrollBy({ x: x < board.x + 32 ? -12 : 12 });
       }
       const rect = next && columnRects.current[next.columnId];
       if (next && rect && (y < rect.y + 56 || y > rect.y + rect.height - 32)) {
@@ -489,8 +487,7 @@ export function useBoardEngine<Item>({
     columnRects,
     itemRects,
     boardNode,
-    scrollView,
-    scrollX,
+    viewport,
     columnScrolls,
     columnScrollY,
     measure,

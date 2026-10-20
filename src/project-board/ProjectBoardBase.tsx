@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, useWindowDimensions, type View, type ViewStyle } from 'react-native';
+import { Platform } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { Avatar } from '../avatar';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
@@ -38,6 +38,7 @@ import type {
   ProjectBoardProps,
   ProjectBoardTemplateProps,
   ControlledProjectBoardProps,
+  GroupedProjectBoardProps,
   ProjectColumn,
   ProjectMember,
   ProjectTicket,
@@ -128,10 +129,87 @@ function TicketCard({
 }
 
 export function ProjectBoardBase<Item>(props: ProjectBoardProps<Item>) {
+  if ('lanes' in props) return <GroupedProjectBoard {...props} />;
   return 'columns' in props ? (
     <ControlledProjectBoard {...props} />
   ) : (
     <TicketProjectBoard {...props} />
+  );
+}
+
+function GroupedProjectBoard<Item>({
+  lanes,
+  onLaneCollapsedChange,
+  renderLaneHeader,
+  renderLaneActions,
+  renderColumnFooter,
+  onMove,
+  onColumnOrderChange,
+  style,
+  className,
+  testID = 'project-board',
+  ...props
+}: GroupedProjectBoardProps<Item>) {
+  const { Screen, ScreenScrollView, Accordion, AccordionItem, AccordionTrigger, AccordionContent } =
+    useProjectBoardPlatform();
+  const [viewportHeight, setViewportHeight] = useState(0);
+  return (
+    <StyledView
+      style={[{ flex: 1, minHeight: 0, minWidth: 0 }, style]}
+      className={className}
+      testID={testID}
+      onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
+    >
+      <Screen scroll="auto">
+        <ScreenScrollView>
+          <Accordion
+            type="multiple"
+            value={lanes.filter((lane) => !lane.collapsed).map((lane) => lane.id)}
+            onValueChange={(value) => {
+              const expanded = new Set(Array.isArray(value) ? value : value ? [value] : []);
+              for (const lane of lanes) {
+                const collapsed = !expanded.has(lane.id);
+                if (collapsed !== !!lane.collapsed) onLaneCollapsedChange(lane.id, collapsed);
+              }
+            }}
+          >
+            {lanes.map((lane) => (
+              <AccordionItem key={lane.id} value={lane.id}>
+                <StyledView className="flex-row items-center">
+                  <AccordionTrigger style={{ flex: 1 }}>
+                    {renderLaneHeader?.(lane) ?? lane.title}
+                  </AccordionTrigger>
+                  {renderLaneActions?.(lane)}
+                </StyledView>
+                <AccordionContent contentClassName="p-0">
+                  <StyledView style={{ height: viewportHeight, minWidth: 0 }}>
+                    {viewportHeight > 0 && (
+                      <ControlledProjectBoard
+                        {...props}
+                        variant="embedded"
+                        columns={lane.columns}
+                        testID={`${testID}-lane-${lane.id}`}
+                        renderColumnFooter={
+                          renderColumnFooter
+                            ? (column) => renderColumnFooter(column, lane)
+                            : undefined
+                        }
+                        onMove={onMove ? (move) => onMove(move, lane.id) : undefined}
+                        onColumnOrderChange={
+                          onColumnOrderChange
+                            ? (order) => onColumnOrderChange(order, lane.id)
+                            : undefined
+                        }
+                      />
+                    )}
+                  </StyledView>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </ScreenScrollView>
+      </Screen>
+    </StyledView>
   );
 }
 
@@ -169,7 +247,6 @@ function TicketProjectBoard({
   const { Button, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } =
     useProjectBoardPlatform();
   const reducedMotion = useReducedMotion();
-  const { width } = useWindowDimensions();
   const [columns, setColumns] = useState(() => cloneColumns(initialColumns));
   const columnsRef = useRef(columns);
   columnsRef.current = columns;
@@ -239,8 +316,7 @@ function TicketProjectBoard({
       );
     },
   });
-  const visibleColumns = engine.renderedColumns;
-  const { scrollView, columnScrolls, measure } = engine;
+  const { viewport, columnScrolls, measure } = engine;
   const openDetail = useCallback(
     (id: string) => {
       if (engine.suppressOpen()) return;
@@ -270,18 +346,6 @@ function TicketProjectBoard({
     column.tickets.some((ticket) => ticket.id === detailId),
   );
   const detailTicket = detailColumn?.tickets.find((ticket) => ticket.id === detailId);
-  const [availableWidth, setAvailableWidth] = useState(width);
-  const columnWidth =
-    fillColumns && width > 1440
-      ? Math.max(
-          273,
-          (availableWidth -
-            (width >= 640 ? 24 : 12) -
-            (width >= 1024 ? 28 : width >= 640 ? 24 : 12) -
-            8 * (visibleColumns.length - 1)) /
-            Math.max(1, visibleColumns.length),
-        )
-      : 273;
 
   function addTicket(draft: NewProjectTicket) {
     const sequence = nextTicket.current++;
@@ -307,11 +371,7 @@ function TicketProjectBoard({
     );
     setSequence(nextTicket.current);
     requestAnimationFrame(() => {
-      const index = visibleColumns.findIndex((column) => column.id === draft.columnId);
-      scrollView.current?.scrollTo({
-        x: Math.max(0, index * (columnWidth + 8)),
-        animated: !reducedMotion,
-      });
+      viewport.current?.reveal(draft.columnId);
       columnScrolls.current[draft.columnId]?.scrollTo({
         y: 0,
         animated: !reducedMotion,
@@ -350,7 +410,7 @@ function TicketProjectBoard({
         </Breadcrumb>
         <SourceView className="flex w-full flex-wrap items-end justify-between gap-2">
           <SourceView className="flex min-w-0 items-center gap-1.5">
-            {onMenuClick && width < 1024 && (
+            {onMenuClick && (
               <Button
                 appearance="plain"
                 iconOnly
@@ -408,54 +468,64 @@ function TicketProjectBoard({
         columns={engineColumns}
         getItemId={getTicketId}
         getItemLabel={getTicketLabel}
-        columnWidth={columnWidth}
-        onWidthChange={setAvailableWidth}
+        columnWidth={273}
+        fillColumns={fillColumns}
+        onColumnOrderChange={(order) => {
+          const reordered = columnsRef.current
+            .filter((column) => order.includes(column.id))
+            .sort((left, right) => order.indexOf(left.id) - order.indexOf(right.id));
+          commit(
+            columnsRef.current.map((column) =>
+              order.includes(column.id) ? (reordered.shift() ?? column) : column,
+            ),
+          );
+        }}
         onItemPress={(ticket) => openDetail(ticket.id)}
         itemAccessibilityLabel={(ticket) => m.openTicket(ticket.code, ticket.title)}
         testID={testID}
         renderCard={(ticket) => <TicketCard ticket={ticket} members={members} />}
         renderEmptyColumn={() => <ProjectBoardEmptyState />}
         renderColumnHeader={(column) => (
-          <StyledView className="flex h-5 shrink-0 flex-row items-center justify-between px-3">
-            <StyledView className="flex min-w-0 flex-row items-center gap-1.5">
-              <Text variant="body-medium">{column.title}</Text>
-              <Text variant="body-medium" style={{ color: colors.textSecondary }}>
-                {column.items.length}/{columns.find((source) => source.id === column.id)?.limit}
-              </Text>
-            </StyledView>
-            <StyledView className="flex flex-row items-center gap-1">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <StyledPressable
-                    accessibilityLabel={`${m.actions}: ${column.title}`}
-                    className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                  >
-                    <RiMoreLine className="size-5" />
-                  </StyledPressable>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent label={`${m.actions}: ${column.title}`}>
-                  <DropdownMenuItem onPress={() => setCreate({ columnId: column.id })}>
-                    {m.addTicket}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onPress={() => {
-                      setSort('title');
-                      commit(sortColumns(columnsRef.current, 'title'));
-                    }}
-                  >
-                    {m.sortTitle}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <StyledPressable
-                accessibilityRole="button"
-                accessibilityLabel={m.addTicketTo(column.title)}
-                onPress={() => setCreate({ columnId: column.id })}
-                className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-              >
-                <RiAddLine width={20} height={20} fill={colors.icon} />
-              </StyledPressable>
-            </StyledView>
+          <StyledView className="flex min-w-0 flex-row items-center gap-1.5">
+            <Text variant="body-medium">{column.title}</Text>
+            <Text variant="body-medium" style={{ color: colors.textSecondary }}>
+              {column.items.length}/{columns.find((source) => source.id === column.id)?.limit}
+            </Text>
+          </StyledView>
+        )}
+        renderColumnActions={(column) => (
+          <StyledView className="flex flex-row items-center gap-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <StyledPressable
+                  accessibilityLabel={`${m.actions}: ${column.title}`}
+                  className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                >
+                  <RiMoreLine className="size-5" />
+                </StyledPressable>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent label={`${m.actions}: ${column.title}`}>
+                <DropdownMenuItem onPress={() => setCreate({ columnId: column.id })}>
+                  {m.addTicket}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onPress={() => {
+                    setSort('title');
+                    commit(sortColumns(columnsRef.current, 'title'));
+                  }}
+                >
+                  {m.sortTitle}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <StyledPressable
+              accessibilityRole="button"
+              accessibilityLabel={m.addTicketTo(column.title)}
+              onPress={() => setCreate({ columnId: column.id })}
+              className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            >
+              <RiAddLine width={20} height={20} fill={colors.icon} />
+            </StyledPressable>
           </StyledView>
         )}
       />

@@ -404,3 +404,19 @@ Settings pages compose `Screen` with a header slot and `ScreenScrollView`.
 Header material, sticky placement and scrolling follow the same contract as app
 pages, including compact section navigation. Overlay screen scopes isolate
 metrics, header actions and route restoration from the underlying page.
+
+## Toolbars
+
+`Toolbar` composes a horizontal `ScrollArea` for its children and a fixed
+`actions` slot. As the container narrows, tools remain reachable by scrolling and
+the primary action remains visible. An optional `accessory` renders a secondary
+row below both. Use it in `PageHeader.accessory`; Screen measures the entire
+header, including wrapped summaries, without a consumer height calculation.
+
+```tsx
+<Toolbar actions={<Button onPress={create}>New</Button>} accessory={<Text>{summary}</Text>}>
+  <Search value={query} onChangeText={setQuery} />
+  <FilterMenu />
+  <SortMenu />
+</Toolbar>
+```

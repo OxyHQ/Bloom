@@ -155,6 +155,10 @@ Two columns side by side are two panels as **siblings**:
 ```
 
 A screen picks one panel per column; the sections inside it are plain views.
+For an intentional inline work area with its own columns, compose
+`AppShellPanels scope="local"` instead of nesting `ContentPanel` directly.
+The compositor establishes a bounded frame and bottom-edge scope; the ordinary
+nesting guard remains active within each of its panels.
 
 ## The panel says what colour it is, so chrome does not have to guess
 

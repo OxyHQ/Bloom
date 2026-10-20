@@ -108,7 +108,9 @@ export function BoardGesture({
   return (
     <StyledView ref={node} style={[{ minWidth: 0 }, style]} className={className}>
       <GestureDetector gesture={gesture} touchAction="none">
-        {children}
+        <StyledView collapsable={false} style={{ minWidth: 0 }}>
+          {children}
+        </StyledView>
       </GestureDetector>
     </StyledView>
   );

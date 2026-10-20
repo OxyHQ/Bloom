@@ -35,6 +35,7 @@ import { useScreenScroll } from './use-screen-scroll';
 import { useScreenWindowScroll } from './use-screen-window-scroll';
 import type { ScreenScrollViewProps } from './types';
 import type { RefComponent } from '../styles/native-refs';
+import { getScreenKeyboardComponents } from './keyboard-components';
 
 export function createScreenScrollView(ScrollBar: React.ComponentType<ScrollBarProps>) {
   type InnerProps = ScreenScrollViewProps & {
@@ -91,6 +92,7 @@ export function createScreenScrollView(ScrollBar: React.ComponentType<ScrollBarP
     ...props
   }: InnerProps) {
     const viewport = useScreenViewport();
+    const screen = useScreen();
     const activeRef = useRef(active !== false);
     activeRef.current = active !== false;
     const localRef = useRef<ScrollViewRef | null>(null);
@@ -153,9 +155,19 @@ export function createScreenScrollView(ScrollBar: React.ComponentType<ScrollBarP
             paddingBottom: scroll.contentInsets.bottom + paddingEdge(contentStyle, 'paddingBottom'),
           },
         ];
+    const ScrollContainer = screen.keyboardFollow
+      ? getScreenKeyboardComponents().KeyboardAwareScrollView
+      : Animated.ScrollView;
     const content = (
-      <Animated.ScrollView
+      <ScrollContainer
         {...props}
+        {...(screen.keyboardFollow
+          ? {
+              enabled: active !== false,
+              bottomOffset: screen.keyboardFooterHeight ?? 0,
+              extraKeyboardSpace: screen.keyboardFooterHeight ?? 0,
+            }
+          : {})}
         ref={(node) => {
           localRef.current = node;
           if (viewport?.kind === 'native' && viewport.scrollRef)
@@ -182,7 +194,7 @@ export function createScreenScrollView(ScrollBar: React.ComponentType<ScrollBarP
         ) : (
           children
         )}
-      </Animated.ScrollView>
+      </ScrollContainer>
     );
     return Platform.OS === 'web' ? (
       <View style={[{ flexGrow: 1, flexShrink: 1, minHeight: 0, minWidth: 0 }, style]}>

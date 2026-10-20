@@ -47,6 +47,7 @@ jest.mock('react-native', () => {
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Field } from '../field';
+import { PageHeaderTitleInput } from '../page-header';
 import { CustomColorPicker } from '../agent-creator/CustomColorPicker';
 import { SelectionCard } from '../card';
 import { CardFormNumber } from '../card-form';
@@ -123,6 +124,16 @@ const viewInert = (props: Props) => props['aria-disabled'] === true;
 const inputInert = (props: Props) => props.editable === false;
 
 const SUBJECTS: Subject[] = [
+  {
+    name: 'page-header',
+    render: (p) => <PageHeaderTitleInput label="Title" testID={TID} {...p} />,
+    ownNameProp: 'accessibilityLabel',
+    isInert: inputInert,
+    node: 'textInput',
+    describedBy: true,
+    invalid: true,
+    id: true,
+  },
   {
     name: 'agent-creator',
     render: (p) => <CustomColorPicker value="#ff0000" onChange={() => {}} {...p} />,

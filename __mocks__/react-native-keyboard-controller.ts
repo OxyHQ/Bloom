@@ -8,3 +8,10 @@ export const useKeyboardHandler = jest.fn();
 // RN <Modal> (see `bottom-sheet/BottomSheet.tsx`, `SheetKeyboardSync`).
 export const KeyboardProvider = ({ children }: { children?: React.ReactNode }) =>
   React.createElement('KeyboardProvider', null, children);
+
+export const KeyboardAwareScrollView = React.forwardRef(
+  ({ children, ...props }: Record<string, unknown>, ref: React.ForwardedRef<unknown>) =>
+    React.createElement('KeyboardAwareScrollView', { ...props, ref }, children as React.ReactNode),
+);
+export const KeyboardStickyView = ({ children, ...props }: Record<string, unknown>) =>
+  React.createElement('KeyboardStickyView', props, children as React.ReactNode);

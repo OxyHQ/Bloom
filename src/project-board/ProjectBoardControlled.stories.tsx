@@ -71,6 +71,7 @@ function ControlledBoard() {
 const meta: Meta<typeof ControlledBoard> = {
   title: 'Patterns/Productivity/Controlled Board',
   component: ControlledBoard,
+  parameters: { layout: 'fullscreen' },
 };
 export default meta;
 type Story = StoryObj<typeof ControlledBoard>;

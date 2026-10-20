@@ -108,6 +108,7 @@ describe('the field contract', () => {
       'listing-actions',
       'listing-editor',
       'mail-compose',
+      'page-header',
       'payment-method',
       'phone-input',
       'place-picker',

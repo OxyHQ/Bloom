@@ -147,3 +147,24 @@ it('read-only and callback-free boards render inert handles without intercepting
   expect(host.textContent).toContain('Footer To do');
   expect(host.textContent).toContain('Empty column');
 });
+
+it('retains the original whole-card gesture target while previewing another column', () => {
+  mount({
+    onMove: jest.fn(),
+    dragMode: 'card',
+    renderCard: (item) => <span>{item.name}</span>,
+  });
+  const source = host.querySelector<HTMLElement>(
+    '[data-bloom-board-column="todo"] [data-bloom-board-item="a"] [role="button"]',
+  )!;
+  key(source, ' ');
+  key(document.body, 'ArrowRight');
+  expect(source.isConnected).toBe(true);
+  expect(
+    host.querySelector(
+      '[data-bloom-board-column="todo"] [data-bloom-board-item="a"] [role="button"]',
+    ),
+  ).toBe(source);
+  key(document.body, 'Escape');
+  expect(source.isConnected).toBe(true);
+});

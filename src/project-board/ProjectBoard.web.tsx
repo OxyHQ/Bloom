@@ -1,4 +1,5 @@
-import { ScreenScrollView } from '../screen/index.web';
+import * as Accordion from '../accordion/index.web';
+import { Screen, ScreenScrollView } from '../screen/index.web';
 import { Button, CloseButton } from '../button/index.web';
 import { AppShellPanels } from '../app-shell/index.web';
 import { Dialog } from '../dialog/index.web';
@@ -13,6 +14,8 @@ import { ProjectBoardPlatformContext } from './context';
 import type { ProjectBoardProps } from './types';
 
 const platform = {
+  ...Accordion,
+  Screen,
   AppShellPanels,
   ScreenScrollView,
   Tooltip,

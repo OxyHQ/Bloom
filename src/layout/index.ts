@@ -32,3 +32,6 @@ export { ResizeHandle } from './ResizeHandle';
 export type { ResizeHandleProps } from './types';
 export { ScrollSurface } from './ScrollSurface';
 export type { ScrollSurfaceProps } from './types';
+
+export { Toolbar } from './Toolbar';
+export type { ToolbarProps } from './types';

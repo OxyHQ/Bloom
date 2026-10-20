@@ -11,3 +11,6 @@ export type {
   PageHeaderTitleAlign,
   PageHeaderTitleReveal,
 } from './types';
+
+export { PageHeaderTitleInput } from './PageHeaderTitleInput';
+export type { PageHeaderTitleInputProps } from './types';

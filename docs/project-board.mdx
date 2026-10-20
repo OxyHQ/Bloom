@@ -40,15 +40,44 @@ import { ProjectBoard, BoardDragHandle } from '@oxy.so/bloom/project-board';
 The board never copies or mutates records. A drop requests `onMove`; the caller
 updates `columns` after accepting the move. Data changes from collaboration,
 optimistic updates and rollback render immediately. `renderEmptyColumn` supplies
-optional empty content, `columnWidth` defaults to 280, and `columnStyle` customizes
-the column frame. The board owns one horizontal Bloom `ScrollArea`; columns grow
-with their content and the page owns vertical scrolling.
+optional empty content, `columnWidth` defaults to 273, and `columnStyle` customizes
+the column frame. The board uses the existing `AppShellPanels` deck and its viewport. Provide a
+parent with bounded height: both modes fill it and each column uses the existing
+`ScreenScrollView`. Use `variant="grouped"` for subgroups: Bloom owns the outer
+Screen viewport, ordinary vertical scrolling, collapsible lane headers and each
+bounded board. Consumers pass data and callbacks; they do not measure heights or
+wrap the board in another scroller.
+
+```tsx
+<ProjectBoard
+  variant="grouped"
+  lanes={subgroups.map((group) => ({
+    id: group.id,
+    title: group.name,
+    columns: group.columns,
+    collapsed: group.collapsed,
+  }))}
+  getItemId={(record) => record.id}
+  renderCard={renderRecord}
+  renderLaneHeader={(lane) => <GroupLabel name={lane.title} />}
+  renderLaneActions={(lane) => <GroupMenu groupId={lane.id} />}
+  renderColumnFooter={(column, lane) => <AddRecord groupId={column.id} subgroupId={lane.id} />}
+  onLaneCollapsedChange={setGroupCollapsed}
+  onMove={(move, laneId) => updateRecordGroup(move, laneId)}
+/>
+```
+
+`renderLaneHeader` supplies content inside Bloom's collapse trigger; independent
+menus belong in `renderLaneActions`. Moves and column-order callbacks identify the
+lane, and the footer receives its full lane descriptor. Repeated record or column
+IDs in different lanes remain independent. Lane expansion is controlled, and
+scrolling does not snap between groups.
 
 `ProjectBoard` uses one canvas in its ticket and controlled modes: the original
 columns and card material, interaction controller, Gesture Handler recognizer,
 measured presence animation and Reanimated landing overlay. `variant="embedded"`
-removes the template header and bounded column scroll, preserving the existing
-column/card appearance. Render slots supply product-owned content without
+hides the template header while preserving the existing panel deck, PageHeader,
+column scrolling, card material and layout behavior from the ticket board. Render slots supply product-owned content without
 converting records into tickets. There is no separate board component or HTML
 drag engine.
 Mouse movement activates after five pixels; native touch activates after 180 ms.
@@ -78,10 +107,13 @@ when persisting.
 destination column and an optional `beforeItemId` insertion anchor. Set
 `allowReorder={false}` when rows use a product-defined sort; same-column moves then
 produce neither a reordered preview nor a callback. `onMove` remains a request:
-only updates to the controlled `columns` persist it. Columns grow with content;
-the composition owns horizontal scrolling, and its containing page owns vertical
-scrolling. The ticket template also registers its existing vertical column
-scrollers for edge auto-scroll.
+only updates to the controlled `columns` persist it. The existing panel-deck viewport owns horizontal scrolling. Both modes register
+their `ScreenScrollView` column scrollers for edge auto-scroll. The
+viewport also reveals newly created tickets without consumer width arithmetic.
+`fillColumns` shares spare room through the deck. Optional `onColumnOrderChange`
+enables controlled column reordering; omit it when the product does not persist
+column order. `renderColumnHeader` supplies the PageHeader title content and
+`renderColumnActions` supplies its actions.
 
 ## Ticket template
 

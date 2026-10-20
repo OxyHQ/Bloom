@@ -70,3 +70,14 @@ export interface ScrollSurfaceProps extends ScrollAreaProps {
   /** @deprecated No effect. Use Screen restoration for persistent scroll position. */
   chatId?: string;
 }
+
+/** A responsive command row: tools scroll while primary actions stay reachable. */
+export interface ToolbarProps {
+  children?: React.ReactNode;
+  actions?: React.ReactNode;
+  /** A summary or secondary row below the tools. */
+  accessory?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  className?: string;
+  testID?: string;
+}

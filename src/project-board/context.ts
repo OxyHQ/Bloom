@@ -1,3 +1,9 @@
+import type {
+  AccordionProps,
+  AccordionItemProps,
+  AccordionTriggerProps,
+  AccordionContentProps,
+} from '../accordion/types';
 import { createContext, useContext, type ComponentType, type ReactNode } from 'react';
 import type * as NativeButton from '../button';
 import type * as NativeDialog from '../dialog';
@@ -5,9 +11,14 @@ import type * as NativeMenu from '../dropdown-menu';
 import type * as NativeSelect from '../select';
 import type * as NativeTooltip from '../tooltip';
 import type { AppShellPanels } from '../app-shell';
-import type { ScreenScrollView } from '../screen';
+import type { Screen, ScreenScrollView } from '../screen';
 
 export interface ProjectBoardPlatform {
+  Screen: typeof Screen;
+  Accordion: ComponentType<AccordionProps>;
+  AccordionItem: ComponentType<AccordionItemProps>;
+  AccordionTrigger: ComponentType<AccordionTriggerProps>;
+  AccordionContent: ComponentType<AccordionContentProps>;
   AppShellPanels: typeof AppShellPanels;
   ScreenScrollView: typeof ScreenScrollView;
   Tooltip: typeof NativeTooltip.Tooltip;

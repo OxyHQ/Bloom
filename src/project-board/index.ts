@@ -2,6 +2,8 @@ export { ProjectBoard } from './ProjectBoard';
 export { BoardDragHandle } from './BoardGesture';
 export type {
   BoardColumn,
+  ProjectBoardLane,
+  GroupedProjectBoardProps,
   BoardDragHandleProps,
   BoardMove,
   ControlledProjectBoardProps,

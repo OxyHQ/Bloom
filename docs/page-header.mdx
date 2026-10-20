@@ -337,3 +337,15 @@ Use `accessory` for tabs or a toolbar beneath the title/actions row. It spans th
 header width and participates in the same height measurement, Screen clearance
 and scroll scrim. This keeps actions and host dismissal in their own row on
 narrow panels without clipping the tabs or measuring breakpoints in the consumer.
+
+### Editable title
+
+Use `PageHeaderTitleInput` in the `title` slot when the page name is editable.
+It uses the heading typography with no field shell; `label` names the input for
+assistive technology. Value, blur handling and persistence remain controlled by
+the app. `editable={false}` or `disabled` makes it read-only. If it is placed in a
+`Field`, the field's name, description, invalid and disabled state are inherited.
+
+```tsx
+<PageHeader title={<PageHeaderTitleInput label="Page title" value={title} onChangeText={setTitle} onBlur={saveTitle} />} />
+```

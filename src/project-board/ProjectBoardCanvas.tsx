@@ -1,5 +1,5 @@
-import { useWindowDimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
+import { PageHeader } from '../page-header';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
@@ -21,7 +21,6 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
 type CanvasProps<Item> = Omit<ControlledProjectBoardProps<Item>, 'variant'> & {
   engine: BoardEngine<Item>;
   variant: 'template' | 'embedded';
-  onWidthChange?: (width: number) => void;
   onItemPress?: (item: Item) => void;
   itemAccessibilityLabel?: (item: Item) => string;
 };
@@ -30,23 +29,23 @@ type CanvasProps<Item> = Omit<ControlledProjectBoardProps<Item>, 'variant'> & {
 export function ProjectBoardCanvas<Item>({
   engine,
   variant,
-  columnWidth = 280,
+  columnWidth = 273,
   columnStyle,
   style,
   className,
   accessibilityLabel,
   testID = 'project-board',
   dragMode = 'card',
-  onWidthChange,
+  fillColumns = true,
+  onColumnOrderChange,
   onItemPress,
   itemAccessibilityLabel,
   ...props
 }: CanvasProps<Item>) {
   const { colors } = useTheme();
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
-  const { Portal, ScrollArea } = useProjectBoardPlatform();
+  const { Portal, AppShellPanels, ScreenScrollView } = useProjectBoardPlatform();
   const directionProps = useDirectionProps();
-  const { width } = useWindowDimensions();
   const template = variant === 'template';
   const overlayColumn = props.columns.find(
     (column) => column.id === engine.active?.origin.fromColumnId,
@@ -120,7 +119,7 @@ export function ProjectBoardCanvas<Item>({
                 }}
                 {...{ dataSet: { 'bloom-board-item': itemId } }}
               >
-                {dragMode === 'card' && present && engine.canMove ? (
+                {dragMode === 'card' && (present || retained) && engine.canMove ? (
                   <StyledPressable
                     nativeID={binding.nativeID}
                     accessibilityRole="button"
@@ -191,74 +190,60 @@ export function ProjectBoardCanvas<Item>({
     <StyledView
       {...directionProps}
       ref={engine.boardNode}
-      onLayout={(event) => {
-        onWidthChange?.(event.nativeEvent.layout.width);
-        engine.measure();
-      }}
-      className={cx(
-        template && '-mx-3 min-h-0 flex-1 overflow-hidden sm:-mx-6 lg:-me-7',
-        className,
-      )}
-      style={[
-        { minWidth: 0 },
-        template && {
-          marginLeft: width >= 640 ? -24 : -12,
-          marginRight: width >= 1024 ? -28 : width >= 640 ? -24 : -12,
-        },
-        style,
-      ]}
+      onLayout={engine.measure}
+      className={cx('min-h-0 flex-1', className)}
+      style={[{ minWidth: 0 }, style]}
+      accessibilityLabel={accessibilityLabel ?? m.board}
       testID={template ? undefined : testID}
     >
-      <ScrollArea
-        ref={engine.scrollView}
-        horizontal
-        style={template ? { flex: 1 } : { minWidth: 0 }}
-        contentContainerStyle={
-          template
-            ? {
-                gap: 8,
-                paddingLeft: width >= 640 ? 24 : 12,
-                paddingRight: width >= 1024 ? 28 : width >= 640 ? 24 : 12,
-              }
-            : { gap: 8, alignItems: 'flex-start', paddingBottom: 12 }
-        }
-        showsHorizontalScrollIndicator
-        accessibilityLabel={accessibilityLabel ?? m.columns}
-        onScroll={(event) => {
-          engine.scrollX.current = event.nativeEvent.contentOffset.x;
-          engine.measure();
-        }}
-        scrollEventThrottle={16}
-        testID={`${testID}-scroller`}
-      >
-        {engine.renderedColumns.map((column) => {
-          const isDropTarget = engine.over?.columnId === column.id;
-          return (
-            <StyledView
-              key={column.id}
-              ref={(node) => {
-                engine.columnNodes.current[column.id] = node;
-              }}
-              onLayout={engine.measure}
-              accessibilityLabel={column.title}
-              {...{ dataSet: { 'bloom-board-column': column.id } }}
-              testID={`${testID}-column-${column.id}`}
-              className={cx(
-                'relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2-5xl bg-background-secondary-default pt-3',
-                template && 'h-full',
-                'ring-2 ring-inset ring-transparent transition-[box-shadow,background-color] duration-150 ease-out',
-                isDropTarget && 'bg-background-secondary-hover ring-border-button-hover',
-              )}
-              style={[{ width: columnWidth, minHeight: template ? 300 : 80 }, columnStyle]}
-            >
-              {props.renderColumnHeader ? (
-                props.renderColumnHeader(column, { isDropTarget })
-              ) : (
-                <Text style={{ color: colors.text, fontWeight: '600' }}>{column.title}</Text>
-              )}
-              <StyledView className={template ? 'relative min-h-0 flex-1' : undefined}>
-                {template ? (
-                  <ScrollArea
+      <AppShellPanels
+        scope={template ? 'region' : 'local'}
+        testID={`${testID}-panels`}
+        layout={{
+          mode: 'deck',
+          gap: 8,
+          viewportRef: engine.viewport,
+          onViewportScroll: engine.measure,
+          onPanelOrderChange: !props.readOnly ? onColumnOrderChange : undefined,
+          panels: engine.renderedColumns.map((column) => ({
+            id: column.id,
+            testID: `${testID}-column-${column.id}`,
+            width: columnWidth,
+            minWidth: columnWidth,
+            span: fillColumns ? 1 : 0,
+            reorderable: !props.readOnly && !!onColumnOrderChange,
+            reorderLabel: column.title,
+            header: (
+              <PageHeader
+                safeArea={false}
+                scrim="none"
+                title={
+                  props.renderColumnHeader ? (
+                    props.renderColumnHeader(column, {
+                      isDropTarget: engine.over?.columnId === column.id,
+                    })
+                  ) : (
+                    <Text variant="body-medium">{column.title}</Text>
+                  )
+                }
+                actions={props.renderColumnActions?.(column)}
+              />
+            ),
+            content: (
+              <StyledView
+                ref={(node) => {
+                  engine.columnNodes.current[column.id] = node;
+                }}
+                onLayout={engine.measure}
+                {...{ dataSet: { 'bloom-board-column': column.id } }}
+                className={cx(
+                  'min-h-0 min-w-0 flex-1',
+                  engine.over?.columnId === column.id && 'bg-background-secondary-hover',
+                )}
+                style={columnStyle}
+              >
+                <StyledView className="relative min-h-0 flex-1">
+                  <ScreenScrollView
                     ref={(node) => {
                       engine.columnScrolls.current[column.id] = node;
                     }}
@@ -272,19 +257,15 @@ export function ProjectBoardCanvas<Item>({
                     scrollEventThrottle={16}
                   >
                     {columnBody(column)}
-                  </ScrollArea>
-                ) : (
-                  <StyledView style={{ paddingHorizontal: 6, paddingTop: 8 }}>
-                    {columnBody(column)}
-                  </StyledView>
-                )}
-                {column.items.length === 0 ? props.renderEmptyColumn?.(column) : null}
+                    {props.renderColumnFooter?.(column)}
+                  </ScreenScrollView>
+                  {column.items.length === 0 ? props.renderEmptyColumn?.(column) : null}
+                </StyledView>
               </StyledView>
-              {props.renderColumnFooter?.(column)}
-            </StyledView>
-          );
-        })}
-      </ScrollArea>
+            ),
+          })),
+        }}
+      />
       {engine.active?.pointer && overlayColumn && (
         <BoardOverlay Portal={Portal} style={engine.overlayStyle} testID={`${testID}-drag-overlay`}>
           <ProjectBoardCardSurface overlay wholeCardDrag={dragMode === 'card'}>

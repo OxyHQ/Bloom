@@ -1,5 +1,6 @@
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { Platform, Text, StyleSheet } from 'react-native';
+import { StyledView } from '../../styles/styled-primitives';
 import { GestureDetector } from 'react-native-gesture-handler';
 import type { MockGesture } from '../../../__mocks__/react-native-gesture-handler';
 import { BoardDragContext, BoardDragHandle, type BoardDragBinding } from '../BoardGesture';
@@ -77,4 +78,14 @@ it('puts flex sizing on the outer handle container and removes gesture controls 
   const disabled = setup({ enabled: false });
   expect(disabled.screen.queryByRole('button', { name: 'Move Alpha' })).toBeNull();
   expect(disabled.screen.getByText('Alpha')).toBeTruthy();
+});
+
+it('attaches the recognizer to a neutral host so web pointer capture survives leaving the accessible button', () => {
+  const { screen } = setup();
+  const host = screen.UNSAFE_getByType(GestureDetector).props.children;
+  expect(host.type).toBe(StyledView);
+  expect(host.props.collapsable).toBe(false);
+  expect(host.props.accessibilityRole).toBeUndefined();
+  expect(host.props.role).toBeUndefined();
+  expect(screen.getByLabelText('Move Alpha').props.accessibilityRole).toBe('button');
 });
