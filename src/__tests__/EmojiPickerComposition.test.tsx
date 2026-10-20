@@ -1,4 +1,4 @@
-import React from 'react';
+import { FlatList } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { EmojiPicker } from '../chat-composer/EmojiPicker';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -9,7 +9,7 @@ const groups = [{ key: 'people', label: 'People', emojis: ['👍', '👋', '👏
 it('fits complete cells to the container and updates row chunking when it narrows', () => {
   const screen = render(
     <BloomThemeProvider fonts={false}>
-      <EmojiPicker groups={groups} columns="auto" scrollable={false} testID="picker" />
+      <EmojiPicker groups={groups} columns="auto" testID="picker" />
     </BloomThemeProvider>,
   );
   const cell = screen.getByTestId('picker-emoji-👍');
@@ -25,9 +25,8 @@ it('fits complete cells to the container and updates row chunking when it narrow
     [0, 5],
   ] as const) {
     resize(width);
-    // The flow body contains one heading followed by the exact same chunked rows
-    // the bounded FlatList consumes; the cell target stays intact at every width.
-    expect(screen.getByTestId('picker-grid').children).toHaveLength(rows + 1);
+    // Exact measured row offsets keep virtualization and category jumps aligned.
+    expect(screen.UNSAFE_getByType(FlatList).props.data).toHaveLength(rows + 1);
     expect(resolvedStyle(screen.getByTestId('picker-emoji-👍').props.style).width).toBe(44);
   }
 });
@@ -47,4 +46,15 @@ it('selects a tone-modified emoji on the first native press', () => {
   );
   fireEvent.press(screen.getByTestId('picker-emoji-👍'));
   expect(choose).toHaveBeenCalledWith('👍🏽');
+});
+
+it('uses intrinsic wrapping in auto flow before any layout callback', () => {
+  const screen = render(
+    <BloomThemeProvider fonts={false}>
+      <EmojiPicker groups={groups} columns="auto" scrollable={false} testID="picker" />
+    </BloomThemeProvider>,
+  );
+  expect(screen.getByTestId('picker-body').props.onLayout).toBeUndefined();
+  expect(screen.getByTestId('picker-grid').children).toHaveLength(2);
+  expect(screen.queryAllByTestId(/^picker-emoji-/)).toHaveLength(5);
 });

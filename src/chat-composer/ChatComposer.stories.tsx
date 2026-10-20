@@ -31,9 +31,11 @@ import { RiTimerLine } from '../icons/remix/RiTimerLine';
 import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { Surface } from '../surface';
+import { Surface as BloomSurface } from '../surface';
 import { ScrollArea } from '../layout';
 import { BloomScope } from '../appearance';
+import { Dialog, useDialogControl } from '../dialog';
+import { Button } from '../button';
 
 const meta: Meta = {
   id: 'blocks-chat-composer',
@@ -765,7 +767,7 @@ export const EmojiInSurface: Story = {
     return (
       <BothModes width={390}>
         <BloomScope size="md">
-          <Surface style={{ padding: 16 }}>
+          <BloomSurface style={{ padding: 16 }}>
             <ScrollArea style={{ maxHeight: 440 }}>
               <EmojiPicker
                 embedded
@@ -776,9 +778,42 @@ export const EmojiInSurface: Story = {
               />
               <Caption>{picked}</Caption>
             </ScrollArea>
-          </Surface>
+          </BloomSurface>
         </BloomScope>
       </BothModes>
+    );
+  },
+};
+
+/** The dialog is the sole vertical scroll owner, including custom tabs. */
+export const EmojiInDialog: Story = {
+  render: function EmojiInDialog() {
+    const control = useDialogControl();
+    const [picked, setPicked] = useState('');
+    return (
+      <BloomScope size="md">
+        <Button onPress={() => control.open()}>Choose icon</Button>
+        <Text>{picked}</Text>
+        <Dialog
+          control={control}
+          label="Choose icon"
+          title="Choose icon"
+          placement={{ base: 'bottom', md: 'center' }}
+          maxWidth={672}
+        >
+          <EmojiPicker
+            embedded
+            scrollable={false}
+            columns="auto"
+            groups={EMOJI}
+            testID="dialog-emoji"
+            onSelectEmoji={(emoji) => {
+              setPicked(emoji);
+              control.close();
+            }}
+          />
+        </Dialog>
+      </BloomScope>
     );
   },
 };

@@ -950,8 +950,22 @@ describe('EmojiPicker', () => {
   it.each(['light', 'dark'] as const)('uses the enclosing material in embedded %s mode', (mode) => {
     mount(<EmojiPicker groups={groups} embedded scrollable={false} testID="e" />, mode);
     expect(byTestId('e').style.paddingLeft).toBe('0px');
-    expect(byTestId('e').getAttribute('data-bloom-surface')).toBeNull();
+    expect(byTestId('e').classList.contains('bloom-surface')).toBe(false);
+    mount(<EmojiPicker groups={groups} scrollable={false} testID="e" />, mode);
+    expect(byTestId('e').classList.contains('bloom-surface')).toBe(true);
     expect(byTestId('e-search').getAttribute('aria-label')).toBe('Search emoji');
+  });
+
+  it('navigates flow categories with the shared Tabs keyboard behavior', () => {
+    mount(<EmojiPicker groups={groups} scrollable={false} testID="e" />);
+    act(() => byTestId('e-category-smileys').focus());
+    act(() =>
+      byTestId('e-category-smileys').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      ),
+    );
+    expect(document.activeElement).toBe(byTestId('e-category-people'));
+    expect(cells()).toEqual(['e-emoji-👍']);
   });
 
   it('adapts mounted cells to coarse-pointer targets', () => {

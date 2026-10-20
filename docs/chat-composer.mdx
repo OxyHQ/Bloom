@@ -287,8 +287,10 @@ when not searching. `height` applies only to the bounded body (including custom
 tabs); flow mode sizes all contents intrinsically. Do not add a second vertical
 ScrollView around a bounded picker.
 
-`columns` defaults to 8. `"auto"` fits complete cells to the picker's measured
-content width, including responsive parent and input-device changes. Invalid
+`columns` defaults to 8. `"auto"` fits complete cells to the available content width. Flow uses intrinsic
+wrapping immediately, so opening a dialog never waits for an initial width
+measurement; bounded virtualization measures width to calculate exact row
+offsets. Both respond to parent and input-device changes. Invalid
 numeric column counts are clamped to at least one. `size` inherits BloomScope,
 then normal `md`; glyph cells use shared Button geometry (xs24, sm32, md36,
 lg44), with a 44px target floor for native/coarse pointers. An explicit size

@@ -116,6 +116,7 @@ export function createEmojiPicker({
     const cellSize = Math.max(BUTTON_GEOMETRY[size].height, touch ? 44 : 0);
     const glyphSize = BUTTON_GEOMETRY[size].iconSize + 2;
     const [bodyWidth, setBodyWidth] = useState(0);
+    const autoFlow = !scrollable && columns === 'auto';
     const columnCount =
       columns === 'auto'
         ? Math.max(1, Math.floor(bodyWidth / cellSize))
@@ -187,8 +188,10 @@ export function createEmojiPicker({
           key: `h-${group.key}`,
           label: group.label,
         });
-        chunk(group.emojis, columnCount).forEach((entries, i) =>
-          built.push({ kind: 'emojis', key: `${group.key}-${i}`, entries }),
+        chunk(group.emojis, autoFlow ? Math.max(1, group.emojis.length) : columnCount).forEach(
+          (entries, i) => {
+            built.push({ kind: 'emojis', key: `${group.key}-${i}`, entries });
+          },
         );
       }
       const rowHeights = built.map((row) => (row.kind === 'header' ? HEADER_HEIGHT : cellSize));
@@ -205,6 +208,7 @@ export function createEmojiPicker({
         headerIndex: index,
       };
     }, [
+      autoFlow,
       columnCount,
       cellSize,
       category,
@@ -254,7 +258,13 @@ export function createEmojiPicker({
           );
         }
         return (
-          <View style={{ flexDirection: 'row', height: cellSize }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: autoFlow ? 'wrap' : undefined,
+              height: autoFlow ? undefined : cellSize,
+            }}
+          >
             {item.entries.map((entry, i) => {
               const base = emojiChar(entry);
               const char = applySkinTone(base, tone);
@@ -292,7 +302,7 @@ export function createEmojiPicker({
           </View>
         );
       },
-      [cellSize, glyphSize, onSelectEmoji, palette.textSecondary, testID, tone],
+      [autoFlow, cellSize, glyphSize, onSelectEmoji, palette.textSecondary, testID, tone],
     );
 
     const panel: WebCssStyle = {
@@ -382,7 +392,7 @@ export function createEmojiPicker({
                       <Button
                         appearance="plain"
                         tone="neutral"
-                        key={index}
+                        key={swatch}
                         accessibilityLabel={
                           skinToneLabel?.(index) ?? `${labels.skinTone} ${index + 1}`
                         }
@@ -420,10 +430,14 @@ export function createEmojiPicker({
               </Tabs>
               <View
                 testID={testID ? `${testID}-body` : undefined}
-                onLayout={(event) => {
-                  const width = event.nativeEvent.layout.width;
-                  setBodyWidth(Number.isFinite(width) ? Math.max(0, width) : 0);
-                }}
+                onLayout={
+                  autoFlow
+                    ? undefined
+                    : (event) => {
+                        const width = event.nativeEvent.layout.width;
+                        setBodyWidth(Number.isFinite(width) ? Math.max(0, width) : 0);
+                      }
+                }
               >
                 {rows.length === 0 ? (
                   <View
