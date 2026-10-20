@@ -1,3 +1,4 @@
+import { useTouchInput } from '../styles/pointer';
 import { BloomScope } from '../appearance';
 import { useMenuDensity } from '../floating/use-menu-density';
 import { useCollapsibleVisibility } from '../collapsible/context';
@@ -151,6 +152,7 @@ export function SelectTrigger({
 }: SelectTriggerProps) {
   const { control, size, disabled: rootDisabled } = useSelectContext();
   const palette = useMenuPalette();
+  const touch = useTouchInput();
   // The trigger IS the select's control, so it takes the enclosing `Field`'s id,
   // name, description and invalid state — and the field's `disabled` on top of
   // the two it already combines. A `Popover` trigger deliberately does not do
@@ -172,6 +174,7 @@ export function SelectTrigger({
       className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[size], className)}
       style={[
         {
+          ...(touch ? { minHeight: 44 } : null),
           borderRadius: borderRadius.full,
           backgroundColor: isDisabled ? t.disabledBackground : t.background,
           borderColor: t.border,

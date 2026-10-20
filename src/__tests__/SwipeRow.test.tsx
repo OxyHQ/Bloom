@@ -316,17 +316,21 @@ describe('SwipeRow thresholds', () => {
 // ---------------------------------------------------------------------------
 
 describe('useSwipeAvailable', () => {
+  let pointerCoarse = false;
   let listeners: ((event: MediaQueryListEvent) => void)[] = [];
 
   // jsdom ships no `matchMedia` at all, so it is ASSIGNED rather than spied —
   // which is also why every other suite in this repo sees `useSwipeAvailable()`
   // answer `false` and gets the hover affordance.
   function stubPointer(coarse: boolean) {
+    pointerCoarse = coarse;
     listeners = [];
     (window as { matchMedia?: unknown }).matchMedia = (query: string) => {
       expect(query).toBe('(pointer: coarse)');
       return {
-        matches: coarse,
+        get matches() {
+          return pointerCoarse;
+        },
         media: query,
         addEventListener: (_: string, fn: (event: MediaQueryListEvent) => void) =>
           listeners.push(fn),
@@ -368,7 +372,10 @@ describe('useSwipeAvailable', () => {
     mount(<Probe />);
     expect(byTestId('probe').textContent).toBe('false');
     expect(listeners.length).toBe(1);
-    act(() => listeners[0]?.({ matches: true } as MediaQueryListEvent));
+    act(() => {
+      pointerCoarse = true;
+      listeners[0]?.({ matches: true } as MediaQueryListEvent);
+    });
     expect(byTestId('probe').textContent).toBe('true');
   });
 

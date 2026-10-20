@@ -1,3 +1,4 @@
+import { useTouchInput } from '../styles/pointer';
 import { BloomScope } from '../appearance';
 import { useMenuDensity } from '../floating/use-menu-density';
 import { useCollapsibleVisibility } from '../collapsible/context';
@@ -265,6 +266,7 @@ export function SelectTrigger({
 }: SelectTriggerProps) {
   const ctx = useSelectContext();
   const palette = useMenuPalette();
+  const touch = useTouchInput();
   // The trigger IS the select's control — see the native fork.
   const membership = useFieldMembership({
     accessibilityLabel: label,
@@ -278,6 +280,7 @@ export function SelectTrigger({
 
   const t = palette.trigger;
   const fieldStyle: WebCssStyle = {
+    ...(touch ? { minHeight: 44 } : null),
     borderRadius: borderRadius.full,
     '--bloom-select-bg': isDisabled ? t.disabledBackground : t.background,
     '--bloom-select-bg-hover': t.hoverBackground,

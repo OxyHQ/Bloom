@@ -198,3 +198,43 @@ it('keeps Select to one listbox scroller after the shared floating viewport chan
   expect(document.querySelectorAll('[data-bloom-scroll-area]')).toHaveLength(1);
   expect(document.querySelector('[role="option"]')?.textContent).toBe('One');
 });
+
+it('updates mounted action and Item targets when the primary pointer changes', () => {
+  const previous = window.matchMedia;
+  let coarse = false;
+  const listeners = new Set<() => void>();
+  window.matchMedia = jest.fn(() => ({
+    get matches() {
+      return coarse;
+    },
+    media: '(pointer: coarse)',
+    onchange: null,
+    addEventListener: (_: string, listener: () => void) => listeners.add(listener),
+    removeEventListener: (_: string, listener: () => void) => listeners.delete(listener),
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => true,
+  })) as typeof window.matchMedia;
+  try {
+    mount(
+      <>
+        <PopoverItem title="Action" testID="adaptive-action" onPress={() => {}} />
+        <Item title="Item" testID="adaptive-item" onPress={() => {}} />
+      </>,
+    );
+    expect(getComputedStyle(node('adaptive-item')).minHeight).toBe('36px');
+    act(() => {
+      coarse = true;
+      listeners.forEach((listener) => listener());
+    });
+    expect(getComputedStyle(node('adaptive-action')).minHeight).toBe('44px');
+    expect(getComputedStyle(node('adaptive-item')).minHeight).toBe('44px');
+    act(() => {
+      coarse = false;
+      listeners.forEach((listener) => listener());
+    });
+    expect(getComputedStyle(node('adaptive-item')).minHeight).toBe('36px');
+  } finally {
+    window.matchMedia = previous;
+  }
+});

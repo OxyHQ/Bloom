@@ -1,12 +1,11 @@
-import { Platform } from 'react-native';
 import { useBloomAppearance, type BloomSize } from '../appearance';
 import { MENU_GEOMETRY, CONTROL_LABEL_TYPE } from '../appearance/control-geometry';
-import { IS_WEB_TOUCH_DEVICE } from '../styles/pointer';
+import { useTouchInput } from '../styles/pointer';
 
 /** Geometry only. BloomScope remains the sole source of size; paint stays on Surface. */
 export function useMenuDensity(size?: BloomSize) {
   const resolved = useBloomAppearance({ size }, { size: 'md', tone: 'neutral' });
-  return resolveMenuDensity(resolved.size, Platform.OS !== 'web' || IS_WEB_TOUCH_DEVICE);
+  return resolveMenuDensity(resolved.size, useTouchInput());
 }
 export function resolveMenuDensity(size: BloomSize, touch: boolean) {
   const geometry = MENU_GEOMETRY[size];

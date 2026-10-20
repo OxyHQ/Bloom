@@ -10,11 +10,11 @@
  * - A HOVER wash only makes sense with a hovering pointer, so it is suppressed
  *   ON touch web, matching native, which has no hover at all (`SubtleHover`).
  *
- * Resolved once at module load: a pointer type does not change under a running
- * app in any way worth a subscription, and both consumers need the answer during
- * render rather than after an effect.
+ * These existing animation flags are snapshots. Geometry and swipe availability
+ * use useTouchInput below, which tracks changes in attached input devices.
  */
 import { Platform } from 'react-native';
+import { useSyncExternalStore } from 'react';
 
 export const IS_WEB_TOUCH_DEVICE =
   Platform.OS === 'web' &&
@@ -31,3 +31,30 @@ export const IS_WEB_TOUCH_DEVICE =
  * constant). Both are applied together inside `usePressAnimation`.
  */
 export const SUPPORTS_PRESS_SCALE = Platform.OS !== 'web' || IS_WEB_TOUCH_DEVICE;
+
+function coarsePointerQuery() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+  try {
+    return window.matchMedia('(pointer: coarse)');
+  } catch {
+    return undefined;
+  }
+}
+function readCoarsePointer() {
+  return coarsePointerQuery()?.matches ?? false;
+}
+function subscribeCoarsePointer(notify: () => void) {
+  const query = coarsePointerQuery();
+  if (!query) return () => {};
+  if (typeof query.addEventListener === 'function') {
+    query.addEventListener('change', notify);
+    return () => query.removeEventListener('change', notify);
+  }
+  query.addListener(notify);
+  return () => query.removeListener(notify);
+}
+/** Geometry and swipe affordances react when a mounted app changes input device. */
+export function useTouchInput() {
+  const coarse = useSyncExternalStore(subscribeCoarsePointer, readCoarsePointer, () => false);
+  return Platform.OS !== 'web' || coarse;
+}

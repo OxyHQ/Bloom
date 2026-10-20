@@ -127,8 +127,13 @@ export type StyledPressableProps = Omit<StyledPressableBase, 'role'> &
  * measured node (a flyout's scroll box, a select option) a compile error while
  * the runtime forwarded it fine.
  */
-export const StyledView: ComponentType<ViewProps & { ref?: Ref<ComponentRef<typeof View>> }> =
-  styled(View as StyleTarget<ViewStyle>, { className: 'style' });
+export const StyledView: ComponentType<
+  Omit<ViewProps, 'role'> & {
+    /** Web-only listbox semantics; RN's Role type does not include this role. */
+    role?: ViewProps['role'] | 'listbox';
+    ref?: Ref<ComponentRef<typeof View>>;
+  }
+> = styled(View as StyleTarget<ViewStyle>, { className: 'style' });
 
 export const StyledText: ComponentType<TextProps & { ref?: Ref<ComponentRef<typeof Text>> }> =
   styled(Text as StyleTarget<TextStyle>, { className: 'style' });

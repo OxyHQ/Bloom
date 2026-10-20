@@ -1,7 +1,7 @@
 import { useBloomAppearance } from '../appearance';
 import { ITEM_GEOMETRY, CONTROL_LABEL_TYPE } from '../appearance/control-geometry';
 import { TYPE_SCALE } from '../typography/scale';
-import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
+import { useTouchInput } from '../styles/pointer';
 import React, { memo, useMemo } from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
@@ -65,8 +65,8 @@ const ItemComponent = function Item({
     ? DENSITY[density]
     : { paddingVertical: geometry.paddingVertical, minHeight: geometry.height };
   const interactive = Boolean(onPress || onLongPress);
-  const touchHeight =
-    interactive && SUPPORTS_PRESS_SCALE ? Math.max(44, cfg.minHeight) : cfg.minHeight;
+  const touch = useTouchInput();
+  const touchHeight = interactive && touch ? Math.max(44, cfg.minHeight) : cfg.minHeight;
 
   const containerStyle = useMemo((): ViewStyle => {
     // Precedence, loudest first. Hover and the keyboard's cursor paint ONLY a
