@@ -29,6 +29,47 @@ side insets without vertical padding. Larger controls, text and accessories grow
 the header naturally; its measured height continues to own content clearance.
 The default retains its 56pt minimum, 8pt vertical padding and responsive side insets.
 
+## Actions that adapt to their container
+
+`actions` accepts either its existing `ReactNode` or a render function receiving
+`PageHeaderActionsState`: `{ compact: boolean }`. Compact means the header's own
+width is below `BREAKPOINTS.sm` (640px), including a narrow panel in a wide window.
+It is independent of `density` and inherited control size: normal app controls
+still use `md`.
+
+```tsx
+<PageHeader
+  title={<Breadcrumb overflow="collapse">…</Breadcrumb>}
+  actions={({ compact }) => (
+    <>
+      {!compact && <Button key="favorite" iconOnly icon={RiStarLine} accessibilityLabel="Favorite" />}
+      <Button
+        key="share"
+        iconOnly={compact}
+        icon={compact ? RiShare2Line : undefined}
+        accessibilityLabel="Share"
+        onPress={openShareDialog}
+      >
+        {!compact ? 'Share' : undefined}
+      </Button>
+    </>
+  )}
+/>
+```
+
+Use compact mode to shorten a label or omit a secondary action already available
+in an action menu. Keep accessible names, component types and keys stable: the
+function resolves inside the same actions slot, so an action's open dialog and
+edited state can survive a width change. Do not return separate compact/full
+component trees or mount two copies. Header-supplied host actions remain alongside
+the resolved screen actions.
+
+On web, the existing header `onLayout` stores only the compact boolean and updates
+it when crossing the boundary; continuous container resizing does not publish
+pixel widths to React. Before the first web measurement, actions use the compact
+form. Native reuses the header's existing width measurement and window seed.
+Static node actions retain their existing behavior.
+
 ## The default is floating
 
 The header is no longer a strip. The back button sits in its own translucent capsule, the actions you declared as a group share one island, the title floats between them, and the whole thing ends in a soft vertical gradient rather than a hairline. Content passes under it.

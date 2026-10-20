@@ -312,15 +312,13 @@ export type DialogProps = React.PropsWithChildren<{
    */
   header?: DialogHeaderConfig;
   /**
-   * Open-INTENT seed for a freshly-mounted placement branch, distinct from the
-   * controlled `open` prop. It ONLY seeds a branch's initial visible state on
-   * mount — it never switches the dialog into controlled close semantics, so
-   * the imperative `control.close()` still owns the exit animation and fires
-   * `onClose` post-exit (no synchronous-`onClose` entry leak). Set by the
-   * surface stack so a responsive `Dialog` that swaps its inner component across
-   * a breakpoint (centered card ↔ bottom sheet on resize) re-mounts the new
-   * branch ALREADY OPEN instead of blank. Ignored when the controlled `open`
-   * prop is provided (that path seeds itself).
+   * Open-intent seed for the initial presentation, distinct from controlled
+   * `open`. It never switches to controlled close semantics: imperative
+   * `control.close()` still owns exit and post-exit `onClose`.
+   * Responsive placement remains stable through this opening and its exit;
+   * a later opening resolves the current viewport. This seed does not reopen
+   * a dismissed responsive dialog when a breakpoint changes.
+   * Ignored when the controlled `open` prop is provided.
    */
   startOpen?: boolean;
   /**

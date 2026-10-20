@@ -230,3 +230,13 @@ The floating base owns scrolling and the Bloom scrollbar, including flyouts.
 An optional `maxHeight` on Content lowers its viewport ceiling; every panel is
 bounded by the window. Do not add a consumer scroll container around menu rows.
 Surface paint and panel/row radii are unchanged.
+
+### Navigation rows
+
+`DropdownMenuItem`, `ContextMenuItem` and `MenubarItem` share `href?: string`.
+Web rows render a real anchor with menu-item semantics. With `onPress`, only an
+ordinary unmodified activation is intercepted for a router; modified clicks keep
+the browser's new-tab/window behavior and leave the menu open. Disabled rows have
+no destination. Enter follows the anchor's native activation; Space uses the shared
+menu keyboard engine. Native rows open `href` through `Linking` when no callback is
+supplied. Use the row directly, rather than nesting a link inside another action.

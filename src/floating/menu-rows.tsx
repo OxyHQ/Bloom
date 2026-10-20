@@ -1,4 +1,5 @@
-import { Platform } from 'react-native';
+import { Linking, Platform, type GestureResponderEvent } from 'react-native';
+import { isPlainLinkActivation } from '../hooks/link-activation';
 import { useMenuDensity } from './use-menu-density';
 /**
  * The menu ROW vocabulary — ONE implementation, published by all three menu
@@ -123,6 +124,7 @@ function IndicatorGutter({
 export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuRowParts {
   function MenuItem({
     children,
+    href,
     onPress,
     disabled = false,
     leading,
@@ -139,14 +141,23 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const surface = useMenuSurface();
     const { title, body } = splitChildren(children);
 
-    const handlePress = useCallback(() => {
-      onPress?.();
-      if (!keepOpen) surface.close();
-    }, [onPress, keepOpen, surface]);
+    const handlePress = useCallback(
+      (event: GestureResponderEvent) => {
+        if (href != null && Platform.OS === 'web') {
+          if (!isPlainLinkActivation(event)) return;
+          if (onPress) event.preventDefault();
+        }
+        if (onPress) onPress();
+        else if (href != null && Platform.OS !== 'web') void Linking.openURL(href);
+        if (!keepOpen) surface.close();
+      },
+      [href, onPress, keepOpen, surface],
+    );
 
     return (
       <MenuRowShell
         role="menuitem"
+        href={href}
         disabled={disabled}
         destructive={tone === 'danger' || (tone === undefined && variant === 'destructive')}
         inset={inset}

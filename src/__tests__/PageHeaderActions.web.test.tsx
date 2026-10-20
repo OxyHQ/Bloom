@@ -1,0 +1,119 @@
+/** @jest-environment jsdom */
+import React, { act, useEffect } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+jest.mock('react-native', () => ({
+  ...jest.requireActual('react-native-web'),
+  useWindowDimensions: () => ({ width: 1600, height: 900, scale: 1, fontScale: 1 }),
+}));
+import { PageHeader } from '../page-header';
+import { Button } from '../button/index.web';
+import { Dialog, useDialogControl } from '../dialog/index.web';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { resetOverlayStack } from '../overlay/stack';
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+let root: Root;
+let container: HTMLDivElement;
+beforeEach(() => {
+  jest.useFakeTimers();
+  resetOverlayStack();
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+});
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+  resetOverlayStack();
+  jest.useRealTimers();
+});
+function flush() {
+  for (let i = 0; i < 5; i++) act(() => jest.advanceTimersByTime(100));
+}
+function mount(children: React.ReactNode) {
+  act(() => root.render(<BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>));
+  flush();
+}
+function headerLayout(width: number) {
+  const header = document.querySelector('[data-testid="header"]') as HTMLElement & {
+    __reactLayoutHandler?: (event: {
+      nativeEvent: { layout: { x: number; y: number; width: number; height: number } };
+    }) => void;
+  };
+  expect(typeof header.__reactLayoutHandler).toBe('function');
+  act(() =>
+    header.__reactLayoutHandler?.({ nativeEvent: { layout: { x: 0, y: 0, width, height: 56 } } }),
+  );
+  flush();
+}
+
+it('uses its own 639/640 boundary and does not publish each resized pixel', () => {
+  const actions = jest.fn(({ compact }: { compact: boolean }) => (
+    <span>{compact ? 'Compact' : 'Full'}</span>
+  ));
+  mount(<PageHeader testID="header" title="Page" actions={actions} />);
+  expect(actions.mock.calls[actions.mock.calls.length - 1]?.[0]).toEqual({ compact: true });
+  headerLayout(639);
+  actions.mockClear();
+  headerLayout(638);
+  headerLayout(400);
+  expect(actions).not.toHaveBeenCalled();
+  headerLayout(640);
+  expect(actions).toHaveBeenCalledTimes(1);
+  expect(actions).toHaveBeenLastCalledWith({ compact: false });
+  headerLayout(641);
+  headerLayout(1000);
+  expect(actions).toHaveBeenCalledTimes(1);
+  headerLayout(639);
+  expect(actions).toHaveBeenCalledTimes(2);
+  expect(actions).toHaveBeenLastCalledWith({ compact: true });
+});
+
+it('preserves an open action dialog and its edited input across compact transitions', () => {
+  const mounted = jest.fn();
+  const unmounted = jest.fn();
+  function ShareAction({ compact }: { compact: boolean }) {
+    const dialog = useDialogControl();
+    useEffect(() => {
+      mounted();
+      return unmounted;
+    }, []);
+    return (
+      <>
+        <Button onPress={() => dialog.open()} accessibilityLabel="Share page">
+          {compact ? 'Share icon' : 'Share page'}
+        </Button>
+        <Dialog control={dialog} title="Sharing">
+          <input aria-label="Recipient" defaultValue="" />
+        </Dialog>
+      </>
+    );
+  }
+  mount(
+    <PageHeader
+      testID="header"
+      title="Page"
+      actions={({ compact }) => (
+        <>
+          {!compact && <Button key="favorite">Favorite</Button>}
+          <ShareAction key="share" compact={compact} />
+        </>
+      )}
+    />,
+  );
+  headerLayout(1000);
+  const button = document.querySelector('[aria-label="Share page"]') as HTMLElement;
+  act(() => button.click());
+  flush();
+  const dialog = document.querySelector('[role="dialog"]');
+  const input = document.querySelector('[aria-label="Recipient"]') as HTMLInputElement;
+  expect(dialog).not.toBeNull();
+  input.value = 'person@example.test';
+  headerLayout(320);
+  headerLayout(640);
+  expect(document.querySelector('[role="dialog"]')).toBe(dialog);
+  expect(document.querySelector('[aria-label="Recipient"]')).toBe(input);
+  expect(input.value).toBe('person@example.test');
+  expect(mounted).toHaveBeenCalledTimes(1);
+  expect(unmounted).not.toHaveBeenCalled();
+});

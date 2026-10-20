@@ -520,3 +520,20 @@ describe('automatic title reveal', () => {
     expect(opacity(screen.getByTestId('auto-dock-title-block'))).toBe(1);
   });
 });
+
+it('adapts native actions to the measured panel width rather than the window seed', () => {
+  setWidth(1000);
+  const actions = jest.fn(({ compact }: { compact: boolean }) => (
+    <ReactNative.Text>{compact ? 'Compact' : 'Full'}</ReactNative.Text>
+  ));
+  const screen = renderBar({ title: 'Page', actions });
+  expect(actions).toHaveBeenLastCalledWith({ compact: false });
+  fireEvent(screen.getByTestId('h'), 'layout', {
+    nativeEvent: { layout: { width: 639, height: 56 } },
+  });
+  expect(actions).toHaveBeenLastCalledWith({ compact: true });
+  fireEvent(screen.getByTestId('h'), 'layout', {
+    nativeEvent: { layout: { width: 640, height: 56 } },
+  });
+  expect(actions).toHaveBeenLastCalledWith({ compact: false });
+});

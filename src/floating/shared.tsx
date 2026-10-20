@@ -33,7 +33,7 @@ import { useMenuDensity } from './use-menu-density';
  * DOM, so a layout class and a visual class cannot land in different places.
  */
 import type React from 'react';
-import { Platform, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 
 import {
   StyledPressable,
@@ -112,6 +112,7 @@ export function splitChildren(children: React.ReactNode): {
 export type MenuRowRole = 'menuitem' | 'checkbox' | 'radio' | 'button';
 
 export interface MenuRowShellProps {
+  href?: string;
   role: MenuRowRole;
   /** `aria-checked`, for the two roles that have a checked state. */
   checked?: boolean;
@@ -145,7 +146,7 @@ export interface MenuRowShellProps {
   trailing?: React.ReactNode;
   /** A plain-string child, rendered as the row's own label. */
   title?: string;
-  onPress: () => void;
+  onPress: (event: GestureResponderEvent) => void;
   accessibilityLabel?: string;
   className?: string;
   style?: StyleProp<ViewStyle>;
@@ -174,6 +175,7 @@ function safeMatches(
  * a platform with no pointer at all.
  */
 export function MenuRowShell({
+  href,
   role,
   checked,
   expanded,
@@ -224,6 +226,7 @@ export function MenuRowShell({
 
   return (
     <StyledPressable
+      {...(Platform.OS === 'web' && href != null && !disabled ? { href } : {})}
       role={
         Platform.OS === 'web' && (role === 'checkbox' || role === 'radio')
           ? `menuitem${role}`
@@ -232,7 +235,7 @@ export function MenuRowShell({
       // `radio` and `checkbox` are roles BOTH platforms have, so they travel on
       // `accessibilityRole` as well. `menuitem` has no React Native counterpart,
       // so the row announces itself as a button there — which is what `Item` did.
-      accessibilityRole={role === 'menuitem' ? 'button' : role}
+      accessibilityRole={href != null ? 'link' : role === 'menuitem' ? 'button' : role}
       accessibilityLabel={accessibilityLabel ?? title}
       // One spelling, both platforms: react-native-web reads only `aria-*` and
       // React Native folds these two back into `accessibilityState`. The disabled

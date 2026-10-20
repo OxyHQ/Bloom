@@ -1,10 +1,11 @@
 import React from 'react';
-import { I18nManager, Text, View } from 'react-native';
+import { I18nManager, Linking, Text, View } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
-import { borderRadius } from '../styles/tokens';
+import { DropdownMenuItem } from '../dropdown-menu';
+import { MenuSurfaceProvider } from '../floating/context';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -51,16 +52,16 @@ describe('Breadcrumb', () => {
         </BreadcrumbItem>
       </Breadcrumb>,
     );
-    expect(getByTestId('link').props.role).toBe('link');
+    expect(getByTestId('link').props.accessibilityRole).toBe('link');
     expect(getByTestId('link').props.accessibilityLabel).toBe('Home');
     const button = getByTestId('button');
-    expect(button.props.role).toBe('button');
+    expect(button.props.accessibilityRole).toBe('button');
     expect(button.props.accessibilityLabel).toBe('Projects');
     pressHost(button);
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it('uses the geometry: 12/16 medium label, 2×4 padding, −4 margin, pill', () => {
+  it('uses normal md 14/20 labels and a 44pt native target', () => {
     const { getByTestId, getByText } = renderWithTheme(
       <BreadcrumbItem onPress={() => {}} testID="item">
         Projects
@@ -70,17 +71,13 @@ describe('Breadcrumb', () => {
       gap: 6,
       paddingLeft: 4,
       paddingRight: 4,
-      paddingTop: 2,
-      paddingBottom: 2,
-      marginLeft: -4,
-      marginRight: -4,
-      borderRadius: borderRadius.full,
+      paddingTop: 0,
+      paddingBottom: 0,
+      minHeight: 44,
     });
     expect(resolvedStyle(getByText('Projects').props.style)).toMatchObject({
-      fontSize: 12,
-      lineHeight: 16,
-      letterSpacing: 0.15,
-      fontWeight: '500',
+      fontSize: 14,
+      lineHeight: 20,
     });
   });
 
@@ -161,4 +158,85 @@ describe('Breadcrumb', () => {
       expect(nodes[0]!.props.style?.width).toBeUndefined();
     });
   });
+});
+
+it('opens a native href through Linking while a router callback takes precedence', () => {
+  const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+  const navigate = jest.fn();
+  try {
+    const ui = renderWithTheme(
+      <Breadcrumb>
+        <BreadcrumbItem href="https://example.test/home" testID="native-link">
+          Home
+        </BreadcrumbItem>
+        <BreadcrumbItem href="https://example.test/page" onPress={navigate} testID="native-router">
+          Page
+        </BreadcrumbItem>
+      </Breadcrumb>,
+    );
+    pressHost(ui.getByTestId('native-link'));
+    expect(open).toHaveBeenCalledWith('https://example.test/home');
+    pressHost(ui.getByTestId('native-router'));
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(open).toHaveBeenCalledTimes(1);
+  } finally {
+    open.mockRestore();
+  }
+});
+
+it('measures each explicit item size and reserves current space when native layout changes', () => {
+  const ui = renderWithTheme(
+    <Breadcrumb overflow="collapse" testID="trail">
+      <BreadcrumbItem size="lg" href="#home">
+        Home
+      </BreadcrumbItem>
+      <BreadcrumbItem current>Current</BreadcrumbItem>
+    </Breadcrumb>,
+  );
+  const measure = ui.getByTestId('trail-measure-0', { includeHiddenElements: true });
+  const label = measure.findAll(
+    (node) => typeof node.type === 'string' && node.props.children === 'Home' && node.props.style,
+  )[0]!;
+  expect(resolvedStyle(label.props.style)).toMatchObject({ fontSize: 16, lineHeight: 22 });
+  fireEvent(measure, 'layout', { nativeEvent: { layout: { width: 60 } } });
+  fireEvent(ui.getByTestId('trail-measure-1', { includeHiddenElements: true }), 'layout', {
+    nativeEvent: { layout: { width: 90 } },
+  });
+  fireEvent(ui.getByTestId('trail'), 'layout', { nativeEvent: { layout: { width: 300 } } });
+  expect(ui.queryByTestId('trail-overflow')).toBeNull();
+  fireEvent(ui.getByTestId('trail'), 'layout', { nativeEvent: { layout: { width: 80 } } });
+  expect(ui.getByTestId('trail-overflow')).toBeTruthy();
+});
+
+it('uses the same native URL dispatch and dismissal for a hidden-ancestor menu row', () => {
+  const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+  const close = jest.fn();
+  const navigate = jest.fn();
+  try {
+    const ui = renderWithTheme(
+      <MenuSurfaceProvider value={{ close, presentation: 'sheet' }}>
+        <DropdownMenuItem href="https://example.test/home" testID="link">
+          Home
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          href="https://example.test/page"
+          onPress={navigate}
+          keepOpen
+          testID="router"
+        >
+          Page
+        </DropdownMenuItem>
+      </MenuSurfaceProvider>,
+    );
+    expect(ui.getByTestId('link').props.accessibilityRole).toBe('link');
+    pressHost(ui.getByTestId('link'));
+    expect(open).toHaveBeenCalledWith('https://example.test/home');
+    expect(close).toHaveBeenCalledTimes(1);
+    pressHost(ui.getByTestId('router'));
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
+  } finally {
+    open.mockRestore();
+  }
 });

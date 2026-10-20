@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.8.1",
+  "version": "15.8.2",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -506,6 +506,11 @@
       "react-native": {
         "types": "./lib/typescript/module/breadcrumb/index.d.ts",
         "default": "./src/breadcrumb/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/breadcrumb/index.web.d.ts",
+        "import": "./lib/module/breadcrumb/index.web.js",
+        "require": "./lib/commonjs/breadcrumb/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/breadcrumb/index.d.ts",

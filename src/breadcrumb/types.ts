@@ -1,9 +1,16 @@
+import type { BloomSize } from '../appearance/types';
 import type { ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { ButtonIconComponent } from '../button/types';
 
 export interface BreadcrumbProps {
+  /** Explicit size, nearest BloomScope, then normal md. */
+  size?: BloomSize;
+  /** Scroll by default. Collapse keeps the final item visible and menus hidden ancestors. Custom-node labels fall back to scroll. */
+  overflow?: 'scroll' | 'collapse';
+  /** Accessible name for the hidden-ancestor menu. Defaults to localized "Show more". */
+  overflowLabel?: string;
   /** `BreadcrumbItem` children. Chevron separators are inserted between them. */
   children: ReactNode;
   /**
@@ -20,9 +27,11 @@ export interface BreadcrumbProps {
 }
 
 export interface BreadcrumbItemProps {
+  /** Explicit size overrides the enclosing Breadcrumb/BloomScope. */
+  size?: BloomSize;
   /** The label. */
   children?: ReactNode;
-  /** Leading icon component (16px), coloured with the item. */
+  /** Leading icon component (14/16/16/20px at xs/sm/md/lg), coloured with the item. */
   icon?: ButtonIconComponent;
   /**
    * A node before the icon and label, 6px from them — e.g. a 20px `Avatar` for
@@ -31,7 +40,7 @@ export interface BreadcrumbItemProps {
   leading?: ReactNode;
   /**
    * Makes the item a link. On web it renders a real `<a href>`; with `onPress`
-   * as well, the default navigation is prevented and `onPress` runs instead
+   * as well, ordinary unmodified navigation is prevented and `onPress` runs instead
    * (router links). On native, pressing opens the URL unless `onPress` is set.
    */
   href?: string;

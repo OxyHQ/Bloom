@@ -252,7 +252,7 @@ describe('native centred Dialog: startOpen and dismissOnBackdrop', () => {
     expect(getByText('Wide body')).toBeTruthy();
   });
 
-  it('the centred branch a breakpoint crossing mounts opens when startOpen is set', () => {
+  it('keeps the initial bottom renderer and content through a responsive breakpoint while open', () => {
     setViewportWidth(375);
     // A fresh element per render: an identical one would bail out of the update.
     const tree = () => (
@@ -268,12 +268,14 @@ describe('native centred Dialog: startOpen and dismissOnBackdrop', () => {
     );
     const screen = render(tree());
     // The bottom branch already honoured `startOpen`.
-    expect(screen.getByText('Crossing body')).toBeTruthy();
+    const body = screen.getByText('Crossing body');
+    expect(body).toBeTruthy();
     setViewportWidth(1024);
     screen.rerender(tree());
     expect(screen.getByText('Crossing body')).toBeTruthy();
-    // It is the centred card now: the bottom sheet's handle is gone.
-    expect(screen.UNSAFE_queryByProps({ detached: true })).not.toBeNull();
+    expect(screen.getByText('Crossing body')).toBe(body);
+    // Responsive placement is resolved for the next opening, not mid-edit.
+    expect(screen.UNSAFE_queryByProps({ detached: true })).toBeNull();
   });
 
   describe('backdrop and Android Back', () => {
@@ -468,4 +470,47 @@ describe('DialogAction loading', () => {
     });
     expect(onPublish).toHaveBeenCalledTimes(1);
   });
+});
+
+it('keeps a native imperative session through resize and chooses the new placement after complete close', () => {
+  jest.useFakeTimers();
+  const width = jest.spyOn(ReactNative, 'useWindowDimensions');
+  width.mockReturnValue({ width: 1000, height: 800, scale: 1, fontScale: 1 });
+  let control!: ReturnType<typeof useDialogControl>;
+  const closed = jest.fn();
+  const tree = () => (
+    <BloomThemeProvider>
+      <Harness>
+        {(c) => {
+          control = c;
+          return (
+            <Dialog control={c} placement={{ base: 'bottom', md: 'center' }} onClose={closed}>
+              <Text>Native draft</Text>
+            </Dialog>
+          );
+        }}
+      </Harness>
+    </BloomThemeProvider>
+  );
+  try {
+    const screen = render(tree());
+    act(() => control.open());
+    const draft = screen.getByText('Native draft');
+    width.mockReturnValue({ width: 320, height: 800, scale: 1, fontScale: 1 });
+    screen.rerender(tree());
+    expect(screen.getByText('Native draft')).toBe(draft);
+    expect(screen.UNSAFE_queryByProps({ detached: true })).not.toBeNull();
+    const callback = jest.fn();
+    act(() => control.close(callback));
+    act(() => jest.runOnlyPendingTimers());
+    expect(closed).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Native draft')).toBeNull();
+    act(() => control.open());
+    expect(screen.getByText('Native draft')).toBeTruthy();
+    expect(screen.UNSAFE_queryByProps({ detached: true })).toBeNull();
+  } finally {
+    width.mockRestore();
+    jest.useRealTimers();
+  }
 });
