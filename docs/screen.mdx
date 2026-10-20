@@ -216,6 +216,12 @@ app-root `KeyboardProvider`; the ordinary Screen does not require the optional
 peer. `visible` merely preserves a footer's position while typing; `follow`
 supplies the keyboard motion and focused-input scrolling together.
 
+The native entry points supply that optional integration to the shared Screen
+factories. The web entry points supply no keyboard adapter, so importing Screen
+on web does not add the native keyboard package to the bundle. A runtime platform
+check alone cannot provide this boundary: a literal `require` in shared code
+still makes the package reachable to a bundler, even when the branch never runs.
+
 AppShell establishes `navigationScope="shared"`. Route Screens use the default
 `inherit`: their local header offset is independent, while the focused list owns
 the shared navigation progress. Set every retained route's `active` explicitly;

@@ -1,7 +1,7 @@
 import type { ComponentRef, ComponentType, RefAttributes } from 'react';
 import type { ScrollView, ScrollViewProps, ViewProps } from 'react-native';
 
-interface ScreenKeyboardComponents {
+export interface ScreenKeyboardComponents {
   KeyboardAwareScrollView: ComponentType<
     ScrollViewProps &
       RefAttributes<ComponentRef<typeof ScrollView>> & {

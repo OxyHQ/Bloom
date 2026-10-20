@@ -38,22 +38,6 @@ export function BloomImage({
   ...rest
 }: BloomImageProps) {
   const ExpoImage = loadExpoImage();
-  const sourceIdentity = JSON.stringify(rest.source);
-  const lifecycle = useRef({ key: sourceIdentity, revision: 0, mounted: true, probe: 0 });
-  if (lifecycle.current.key !== sourceIdentity) {
-    lifecycle.current.key = sourceIdentity;
-    lifecycle.current.revision += 1;
-  }
-  const sourceRevision = lifecycle.current.revision;
-  const current = () => lifecycle.current.mounted && lifecycle.current.revision === sourceRevision;
-  useEffect(() => {
-    lifecycle.current.mounted = true;
-    return () => {
-      lifecycle.current.mounted = false;
-      lifecycle.current.probe += 1;
-    };
-  }, []);
-
   if (ExpoImage) {
     return (
       <ExpoImage
@@ -69,6 +53,44 @@ export function BloomImage({
       />
     );
   }
+
+  return (
+    <FallbackImage
+      {...rest}
+      contentFit={contentFit}
+      transition={transition}
+      onLoad={onLoad}
+      onError={onError}
+    />
+  );
+}
+
+/**
+ * Only the RN/RNW renderer needs lifecycle state for asynchronous dimension probes.
+ * Keep this component mounted when callbacks change so the image node stays stable.
+ */
+function FallbackImage({
+  contentFit = 'cover',
+  transition,
+  onLoad,
+  onError,
+  ...rest
+}: BloomImageProps) {
+  const sourceIdentity = JSON.stringify(rest.source);
+  const lifecycle = useRef({ key: sourceIdentity, revision: 0, mounted: true, probe: 0 });
+  if (lifecycle.current.key !== sourceIdentity) {
+    lifecycle.current.key = sourceIdentity;
+    lifecycle.current.revision += 1;
+  }
+  const sourceRevision = lifecycle.current.revision;
+  const current = () => lifecycle.current.mounted && lifecycle.current.revision === sourceRevision;
+  useEffect(() => {
+    lifecycle.current.mounted = true;
+    return () => {
+      lifecycle.current.mounted = false;
+      lifecycle.current.probe += 1;
+    };
+  }, []);
 
   const { source, ...nativeRest } = rest;
   return (
