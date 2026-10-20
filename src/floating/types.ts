@@ -269,6 +269,8 @@ export interface OverlaySurfaceProps extends FloatingPositionProps {
 // ---------------------------------------------------------------------------
 
 export interface MenuRowProps {
+  /** Real anchor on web; native opens the URL unless onPress handles navigation. */
+  href?: string;
   /**
    * Row content. A plain string is rendered as the row's own title — so it
    * picks up the destructive and disabled colours — while element children are

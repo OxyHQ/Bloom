@@ -6,65 +6,64 @@ order: 27
 
 # Breadcrumb
 
-A trail of ancestor pages. Compose `BreadcrumbItem`s inside `Breadcrumb`; the chevron separators are inserted between them. Colours come from the theme-tinted neutral ramp every button-like control paints from (`src/button/shared.ts`).
+Compose `BreadcrumbItem`s inside the existing `Breadcrumb`. Normal app sizing is `md`, inherited from `BloomScope`; an explicit size wins. Interactive items use Bloom Button, and overflow uses the shared DropdownMenu engine. The trail adds no painted panel: foreground follows its actual Surface backing, while Button and the menu own their material and focus treatment. See [UI architecture](./ui-architecture.mdx).
 
 ```tsx
 import { Breadcrumb, BreadcrumbItem } from '@oxy.so/bloom/breadcrumb';
 
-<Breadcrumb>
+<Breadcrumb overflow="collapse">
   <BreadcrumbItem icon={HomeIcon} href="/">Home</BreadcrumbItem>
-  <BreadcrumbItem onPress={openProjects}>Projects</BreadcrumbItem>
+  <BreadcrumbItem href="/projects" onPress={openProjects}>Projects</BreadcrumbItem>
   <BreadcrumbItem current>Board</BreadcrumbItem>
 </Breadcrumb>
 ```
 
-## Items
+## Sizing and overflow
 
-An item is a **link** with `href`, a **button** with `onPress`, and a plain label otherwise; `current` marks the active page.
+| Size | Label font / line height | Desktop target | Icon |
+|---|---|---|---|
+| `xs` | 12 / 16 | 24 | 14 |
+| `sm` | 13 / 18 | 26 | 16 |
+| `md` (normal) | 14 / 20 | 28 | 16 |
+| `lg` | 16 / 22 | 32 | 20 |
 
-| | |
-|---|---|
-| label | `caption-1-medium` (Inter 12/16 500, tracking 0.15) |
-| icon | 16, coloured with the label, gap 6 |
-| link / button | padding 2 × 4, margin-x −4 (the text stays aligned with the trail), full pill |
-| rest | text-tertiary — neutral-400 light, neutral-600 dark |
-| hover | text-secondary (neutral-500) on a neutral-100 pill (dark: neutral-700 at 60%), 150ms |
-| focus | 2px accent-500 ring, no offset (`:focus-visible`) |
-| current | text-secondary, not interactive |
-| separator | 12×12 chevron, 1.5 stroke, text-tertiary, gap 10 |
+Native and coarse-pointer targets have a 44-point minimum, including when the pointer changes while mounted. Text retains the app scale. Labels and icons have a 6-point gap and 4-point horizontal inset. The 12-point chevron has a 4-point gap on each side (`xs`: 2).
 
-The list scrolls horizontally, with no scrollbar, when it outgrows its container. Bloom uses a full pill, like every other pressable, rather than a 6px corner.
+`overflow="scroll"` remains the default: the shared horizontal ScrollArea owns overflow and hides its scrollbar. `overflow="collapse"` is intended for bounded header slots, including `PageHeader.title`. It measures its own available width and the labels, preserves the final item, and fits the nearest ancestors. Older ancestors appear in the existing DropdownMenu, named by localized “Show more” or `overflowLabel`. Put the current page last. Before measurement the current page is already visible.
 
-### Right-to-left and custom separators
+The final label truncates to its available width; it keeps its full accessible name. Below 100 points, decorative separators yield space to the current label while the overflow target retains its size. Parents must still allocate enough width for an overflow target and some current text. Header actions remain the header's responsibility.
 
-The chevron points the READING direction. In a right-to-left layout (`<html dir="rtl">` on web, `I18nManager.isRTL` natively) the row mirrors, and the chevron flips with it (`scaleX(-1)`, read from `useIsRtl()`) so it still points from each crumb to the next. The landmark also carries `dir` on web, so react-native-web resolves logical keys against it.
+Collapse accepts direct `BreadcrumbItem` children with string/number labels. Opaque custom label nodes fall back to scroll, so controls and effects inside custom labels are never mounted a second time for measurement. `leading` is a passive visual slot (for example an avatar or emoji), not another action. Measurement honors each item's size and lives inside a hidden, inert, clipped boundary; very long labels cannot enlarge the page, and visible focus rings are outside that boundary.
 
-`separator` replaces the chevron with any node — a `"/"`, a dot, an icon. It is hidden from assistive tech like the chevron, and rendered as given: a custom glyph that has a direction is the caller's to mirror.
+## Items and navigation
+
+An item with `href` is a real link; an item with only `onPress` is a button. Without either it is static text. `current` is noninteractive and carries `aria-current="page"` on web.
+
+On web, `href` plus `onPress` routes only an ordinary unmodified activation through the callback. Ctrl, Meta, Shift, Alt and middle-click retain browser behavior, as does the link context menu. This also applies to hidden ancestors. On native, a link without `onPress` opens through `Linking`; a callback takes precedence.
+
+The landmark is named by localized “Breadcrumb” or `accessibilityLabel`. Separators are hidden from assistive technology. Overflow uses the menu's existing arrow navigation, Enter/Space activation, Escape dismissal and focus restoration. Labels without destinations remain disabled in that menu.
+
+## Right-to-left and custom separators
+
+The landmark carries the reading direction. The default chevron mirrors once in RTL (`<html dir="rtl">` on web, `I18nManager.isRTL` natively). A custom `separator` is rendered as supplied; its owner decides whether it should mirror.
 
 ```tsx
 <Breadcrumb separator={<Text variant="caption-1-medium">/</Text>}>…</Breadcrumb>
 ```
 
-### `href` and routers
-
-On web an `href` item is a real `<a href>`, so middle-click and "open in new tab" work. Pass `onPress` too and the browser's navigation is prevented so the router can navigate instead. On native, an `href` item without `onPress` opens the URL with `Linking`.
-
-## Accessibility
-
-`Breadcrumb` is a `navigation` landmark named `"Breadcrumb"` (override with `accessibilityLabel`) wrapping a list; the separators are hidden from assistive tech. A link or button is named by its string label, or by `accessibilityLabel` when the label is not a string. The current item carries `aria-current="page"` on web.
-
-The default landmark name is localised via `BloomProvider locale`.
-
 ## Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `Breadcrumb.accessibilityLabel?` | `string` | `'Breadcrumb'` | Names the landmark. |
-| `Breadcrumb.separator?` | `ReactNode` | direction-aware chevron | Replaces the chevron between items; hidden from assistive tech. |
-| `BreadcrumbItem.href?` | `string` | — | Makes the item a link. |
-| `BreadcrumbItem.onPress?` | `() => void` | — | Makes the item a button (or routes an `href`). |
-| `BreadcrumbItem.current?` | `boolean` | `false` | The active page. |
-| `BreadcrumbItem.icon?` | `BloomIconComponent` | — | Leading 16px icon. |
-| `BreadcrumbItem.leading?` | `ReactNode` | — | A node before the icon and label, gap 6 — the dashboard trail's 20px `Avatar` (`<BreadcrumbItem leading={<Avatar size="xs" color="blue" initials="B" />} href="#">Design team</BreadcrumbItem>`). Not recoloured on hover. |
-| `BreadcrumbItem.accessibilityLabel?` | `string` | string `children` | Accessible name. |
+| `Breadcrumb.size?` / `BreadcrumbItem.size?` | `xs \| sm \| md \| lg` | scope, then `md` | Family proportions; an item can override the trail. |
+| `Breadcrumb.overflow?` | `scroll \| collapse` | `scroll` | Scroll the trail or menu hidden ancestors. |
+| `Breadcrumb.overflowLabel?` | `string` | localized “Show more” | Names the overflow button and menu. |
+| `Breadcrumb.accessibilityLabel?` | `string` | localized “Breadcrumb” | Names the landmark. |
+| `Breadcrumb.separator?` | `ReactNode` | direction-aware chevron | Replaces the decorative separator. |
+| `BreadcrumbItem.href?` | `string` | — | Link destination. |
+| `BreadcrumbItem.onPress?` | `() => void` | — | Action or router callback. |
+| `BreadcrumbItem.current?` | `boolean` | `false` | Noninteractive active page; place it last. |
+| `BreadcrumbItem.icon?` | `BloomIconComponent` | — | Leading icon, sized with the item. |
+| `BreadcrumbItem.leading?` | `ReactNode` | — | Passive visual before icon and label, gap 6. |
+| `BreadcrumbItem.accessibilityLabel?` | `string` | text label | Full accessible name. |
 | `BreadcrumbItem.style?` / `textStyle?` | style | — | Overrides. |

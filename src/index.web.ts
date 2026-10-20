@@ -210,7 +210,7 @@ export type { FabProps, FabSize } from './fab/index.web';
 export { FrostedIconButton } from './frosted-icon-button/index.web';
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './frosted-icon-button/index.web';
 export * from './divider';
-export * from './breadcrumb';
+export * from './breadcrumb/index.web';
 export * from './pagination';
 export * from './agent-limits-card';
 export * from './usage-card';
