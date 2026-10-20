@@ -541,7 +541,7 @@ describe('clipboard ownership', () => {
           ) : editable === 'textarea' ? (
             <textarea data-testid="field" />
           ) : (
-            <div data-testid="field" tabIndex={0} />
+            <div data-testid="field" tabIndex={-1} />
           )}
         </EditorSurface>,
       );
