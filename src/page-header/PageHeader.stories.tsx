@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { ContentPanel } from '../content-panel/index.web';
 import { HeaderDockProvider, StickySection } from '../layout';
 import { Tabs, TabsTrigger } from '../tabs';
@@ -18,6 +19,9 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PageHeader, PageHeaderTitleInput } from './index';
 import { Toolbar } from '../layout';
+import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
+import { Popover, PopoverTrigger, PopoverContent } from '../popover';
+import { TextFieldInput } from '../text-field';
 
 const meta: Meta<typeof PageHeader> = {
   id: 'blocks-page-header',
@@ -664,3 +668,53 @@ function EditableWorkspaceHeader() {
 
 /** Narrow the canvas: tools scroll, while the primary action remains visible. */
 export const EditableWorkspace: Story = { render: () => <EditableWorkspaceHeader /> };
+
+export const Navigation: Story = {
+  render: () => {
+    const [title, setTitle] = useState('Project notes');
+    return (
+      <Page>
+        <Popover>
+          <PageHeader
+            presentation="navigation"
+            title={
+              <Breadcrumb overflow="collapse" separator="/">
+                <BreadcrumbItem href="#workspace">Workspace</BreadcrumbItem>
+                <BreadcrumbItem href="#projects">Projects</BreadcrumbItem>
+                <BreadcrumbItem current trigger={<PopoverTrigger asChild />}>
+                  {title}
+                </BreadcrumbItem>
+              </Breadcrumb>
+            }
+            actions={({ compact }) => (
+              <>
+                <Button
+                  appearance="plain"
+                  tone="neutral"
+                  iconOnly={compact}
+                  icon={compact ? RiShare2Line : undefined}
+                  accessibilityLabel="Share"
+                  onPress={back}
+                >
+                  {compact ? undefined : 'Share'}
+                </Button>
+                <Button
+                  appearance="plain"
+                  tone="neutral"
+                  iconOnly
+                  icon={RiMore2Line}
+                  accessibilityLabel="Actions"
+                  onPress={back}
+                />
+              </>
+            )}
+          />
+          <PopoverContent label="Page details">
+            <TextFieldInput label="Title" value={title} onChangeText={setTitle} />
+          </PopoverContent>
+        </Popover>
+        <Rows count={5} />
+      </Page>
+    );
+  },
+};

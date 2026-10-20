@@ -234,7 +234,7 @@ State colours 150ms; the mic ↔ send cross-fade 220ms; the recording dot pulses
 `SuggestionList` — `kind`, `suggestions` (each may carry `verified`), `activeIndex`, `onSelectSuggestion`, `onActiveIndexChange`, `header`, `maxHeight` (232), `loading`, `showEmpty`, `emptyLabel`.
 `VoiceRecorder` — `state`, `seconds`, `duration`, `amplitudes`, `playing`, `onPlayToggle`, `onCancel`, `onDelete`, `onSend`, `onLock`, `slideToCancel`, `labels`.
 `AttachmentMenu` — `open`/`defaultOpen`/`onOpenChange`, `items`, `layout`, `columns`, `onSelect`, `recent`, `label`.
-`EmojiPicker` — `groups`, `onSelectEmoji`, `activeGroup`, `query`, `filter`, `frequentlyUsed`, `skinTone`, `columns` (8), `height` (288), `tabs`, `activeTab`, `labels`.
+`EmojiPicker` — `groups`, `onSelectEmoji`, `activeGroup`, `query`, `filter`, `frequentlyUsed`, `skinTone`, `columns` (8), `height` (288), `embedded` (false), `scrollable` (true), `tabs`, `activeTab`, `labels`.
 `ReactionPicker` — `emojis`, `selected`, `onSelectEmoji`, `onMorePress`, `moreLabel`, `size`, `surface`, `emojiLabel`.
 `MessageContextMenu` — `items`, `onSelect`, `reactions`, `selectedReaction`, `onSelectReaction`, `onMoreReactions`, `open`/`defaultOpen`/`onOpenChange`, `label`.
 
@@ -269,3 +269,32 @@ The line floor and cap follow a numeric `inputStyle.lineHeight` (20px by default
 On web, all composers remeasure when the editable field changes width, including
 an initially narrow document footer, so a wrapped placeholder or draft can
 shrink without another edit. Height-only changes do not trigger remeasurement.
+
+
+### Emoji picker inside an existing dialog
+
+The default picker keeps its surface and virtualized list. Inside a `Dialog`
+that already owns material and vertical overflow, compose the same picker with
+`embedded` and `scrollable={false}`:
+
+```tsx
+<Dialog control={control} header={{ title: 'Page icon' }}>
+  <EmojiPicker
+    embedded
+    scrollable={false}
+    groups={emojiGroups}
+    onSelectEmoji={saveIcon}
+  />
+</Dialog>
+```
+
+`embedded` uses the parent's actual surface backing and adds no material or
+panel padding. Flow mode uses the same emoji cells, search, tones and selection
+callbacks; rows wrap to the available width without consumer measurements.
+The category bar selects a section in flow mode rather than scrolling an
+internal list. Search still spans every group. `height` and `columns` apply to
+the default virtualized list only; custom tabs and empty states take their
+natural height in flow mode. Extra tab content must also delegate scrolling to
+the dialog. This makes the dialog the single scroll owner at short viewport
+heights and while the keyboard is open. Flow mode renders its current section
+without virtualization; keep the default list for large standalone catalogs.

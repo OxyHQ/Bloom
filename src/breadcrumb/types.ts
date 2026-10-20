@@ -1,8 +1,8 @@
 import type { BloomSize } from '../appearance/types';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-import type { ButtonIconComponent } from '../button/types';
+import type { ButtonIconComponent, ButtonProps } from '../button/types';
 
 export interface BreadcrumbProps {
   /** Explicit size, nearest BloomScope, then normal md. */
@@ -14,7 +14,7 @@ export interface BreadcrumbProps {
   /** `BreadcrumbItem` children. Chevron separators are inserted between them. */
   children: ReactNode;
   /**
-   * Replaces the chevron between items — e.g. `"/"` as a `Text`, or an icon.
+   * Replaces the chevron between items — e.g. `"/"` directly, a `Text`, or an icon.
    * Hidden from assistive technology. The default chevron points the reading
    * direction (it mirrors in a right-to-left layout); a custom separator is
    * rendered as given.
@@ -26,7 +26,10 @@ export interface BreadcrumbProps {
   testID?: string;
 }
 
-export interface BreadcrumbItemProps {
+export interface BreadcrumbItemProps
+  extends Pick<ButtonProps, 'disabled' | 'aria-expanded' | 'aria-haspopup'> {
+  /** Wraps the existing Button, e.g. <PopoverTrigger asChild />. Keep this item a direct child for collapse fitting. */
+  trigger?: ReactElement<{ children?: ReactNode; asChild?: boolean; style?: StyleProp<ViewStyle> }>;
   /** Explicit size overrides the enclosing Breadcrumb/BloomScope. */
   size?: BloomSize;
   /** The label. */
@@ -46,7 +49,7 @@ export interface BreadcrumbItemProps {
   href?: string;
   /** Makes the item a button. */
   onPress?: () => void;
-  /** The active page: not interactive, darker text, `aria-current="page"`. */
+  /** The active page: darker text and aria-current. A label unless onPress, href or trigger supplies an action. */
   current?: boolean;
   /** Accessible name; defaults to a string `children`. */
   accessibilityLabel?: string;

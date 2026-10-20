@@ -12,6 +12,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PageHeader } from '../page-header';
+import { Button } from '../button';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { HeaderDockProvider, useHeaderDockContext } from '../layout/header-dock';
@@ -536,4 +537,20 @@ it('adapts native actions to the measured panel width rather than the window see
     nativeEvent: { layout: { width: 640, height: 56 } },
   });
   expect(actions).toHaveBeenLastCalledWith({ compact: false });
+});
+
+it('keeps navigation chrome compact and native actions touch-sized', () => {
+  const screen = renderHeader({
+    presentation: 'navigation',
+    title: 'Page',
+    actions: <Button testID="navigation-action">Share</Button>,
+  });
+  expect(resolvedStyle(screen.getByTestId('h-bar').props.style).minHeight).toBe(44);
+  expect(resolvedStyle(screen.getByTestId('h-bar').props.style)).toMatchObject({
+    paddingLeft: 12,
+    paddingRight: 12,
+    gap: 2,
+  });
+  expect(resolvedStyle(screen.getByTestId('h-actions').props.style).gap).toBe(2);
+  expect(resolvedStyle(screen.getByTestId('navigation-action').props.style).height).toBe(44);
 });

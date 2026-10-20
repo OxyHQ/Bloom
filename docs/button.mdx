@@ -201,3 +201,19 @@ ordinary joined actions; selected items retain their selection surface.
 PageHeader's Back button uses it inside its existing island as well, so grouped
 and standalone neutral outline icons have the same foreground in light and
 dark themes. Plain text and link actions keep their existing emphasis.
+
+
+## Contextual navigation density
+
+`density="compact"` or the nearest `BloomScope controlDensity="compact"`
+selects the compact action recipe without changing `size`: xs/sm/md/lg remain
+24/26/28/32pt on desktop, with matching 12/13/14/16pt label text. Native and
+coarse-pointer compact actions use a 44pt minimum; a mounted web action follows
+pointer changes. Explicit `density="default"` restores the ordinary button
+recipe. Geometry is shared by web/native implementations, while appearance,
+Surface material, tone, disabled/loading state and focus remain unchanged.
+
+PageHeader's navigation presentation supplies this local environment. Overlays
+and independent ScreenScopes reset density to default while retaining size,
+tone and panel radius; form controls inside an opened dialog are not navigation
+actions. A scope inside the overlay may deliberately opt in again.

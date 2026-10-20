@@ -1,3 +1,4 @@
+import { BloomScope } from '../appearance/BloomScope';
 import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
 import { ScreenContext, ScreenNavigationContext } from '../screen/context';
 /**
@@ -57,7 +58,9 @@ export function ScreenScope({
               <BottomEdgeProvider inherit={inheritBottomEdge}>
                 {/* null means no scroller has claimed this scope yet. */}
                 <ScrollMetricsContext.Provider value={null}>
-                  <ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider>
+                  <ScrollOffsetProvider value={null}>
+                    <BloomScope controlDensity="default">{children}</BloomScope>
+                  </ScrollOffsetProvider>
                 </ScrollMetricsContext.Provider>
               </BottomEdgeProvider>
             </TopEdgeProvider>

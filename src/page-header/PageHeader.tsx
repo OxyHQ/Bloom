@@ -96,6 +96,7 @@ import { useDirectionProps } from '../hooks/use-is-rtl';
  */
 
 const BAR_HEIGHT = 56;
+const NAVIGATION_HEIGHT = 44;
 const INSET_COMPACT = 16;
 const INSET_WIDE = 24;
 const START_GAP = 6;
@@ -128,6 +129,8 @@ const PAGE_HEADER_LAYOUT_CSS = `
 @container bloom-page-header (min-width: ${BREAKPOINTS.sm}px) {
   [data-bloom-page-header-bar], [data-bloom-page-header-accessory] { --bloom-page-header-inset: ${INSET_WIDE}px; }
 }
+[data-bloom-page-header-presentation="navigation"] > [data-bloom-page-header-bar],
+[data-bloom-page-header-presentation="navigation"] > [data-bloom-page-header-accessory],
 [data-bloom-page-header-density="compact"] > [data-bloom-page-header-bar],
 [data-bloom-page-header-density="compact"] > [data-bloom-page-header-accessory] {
   --bloom-page-header-inset: 12px;
@@ -182,6 +185,8 @@ function PageHeaderComponent({
   const backLabel = backLabelProp ?? common.back;
   const isWeb = Platform.OS === 'web';
   const floating = presentation === 'floating';
+  const navigationPresentation = presentation === 'navigation';
+  const actionGap = navigationPresentation ? 2 : floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP;
   const overlay = placement === 'overlay';
   const theme = useTheme();
   const surfaceFill = useSurfaceFill() ?? theme.colors.background;
@@ -200,8 +205,11 @@ function PageHeaderComponent({
   const [actionsCompact, setActionsCompact] = useState(isWeb || width < BREAKPOINTS.sm);
   const lastActionsCompact = useRef(actionsCompact);
   const compact = density === 'compact';
-  const height = measuredHeight || padTop + (compact ? 32 : BAR_HEIGHT);
-  const sideInset = compact ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
+  const height =
+    measuredHeight ||
+    padTop + (navigationPresentation ? NAVIGATION_HEIGHT : compact ? 32 : BAR_HEIGHT);
+  const sideInset =
+    compact || navigationPresentation ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
 
   const onContainerLayout = (e: LayoutChangeEvent) => {
     const nextWidth = e.nativeEvent.layout.width;
@@ -270,7 +278,7 @@ function PageHeaderComponent({
       {resolvedActions}
       <View
         testID={testID ? `${testID}-host-actions` : undefined}
-        style={[styles.actions, { gap: floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP }]}
+        style={[styles.actions, { gap: actionGap }]}
       >
         {hostActions}
       </View>
@@ -462,6 +470,7 @@ function PageHeaderComponent({
         style={[
           [
             styles.titleBlock,
+            navigationPresentation && { paddingLeft: 0, paddingRight: 0 },
             centered ? styles.titleBlockCentered : styles.titleBlockStart,
             titleStyle,
           ],
@@ -473,7 +482,7 @@ function PageHeaderComponent({
           <Title
             role="heading"
             aria-level={headingLevel}
-            variant="headline-medium"
+            variant={navigationPresentation ? 'body-medium' : 'headline-medium'}
             numberOfLines={1}
             style={{
               color: tone === 'onImage' ? '#FFFFFF' : theme.colors.text,
@@ -537,7 +546,7 @@ function PageHeaderComponent({
       </BlurIsland>
     ) : (
       <Button
-        appearance="outline"
+        appearance={navigationPresentation ? 'plain' : 'outline'}
         material="shared"
         tone="neutral"
         size="md"
@@ -609,7 +618,7 @@ function PageHeaderComponent({
   const actionsSlot = actions ? (
     <View
       style={[
-        [styles.actions, { gap: floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP }],
+        [styles.actions, { gap: actionGap }],
         pointerEventsStyle(floating ? 'box-none' : undefined),
       ]}
       onLayout={centered ? onEndLayout : undefined}
@@ -624,6 +633,7 @@ function PageHeaderComponent({
       {...directionProps}
       {...dataHook('bloomPageHeader')}
       {...dataHook('bloomPageHeaderDensity', density)}
+      {...dataHook('bloomPageHeaderPresentation', presentation)}
       testID={testID}
       onLayout={onContainerLayout}
       style={[
@@ -659,59 +669,68 @@ function PageHeaderComponent({
           ]}
         />
       ) : null}
-      <StyledView
-        {...dataHook('bloomPageHeaderBar')}
-        className={compact ? 'min-h-8 py-0' : 'min-h-14 py-2'}
-        style={[
-          [styles.bar, !isWeb && { paddingLeft: sideInset, paddingRight: sideInset }],
-          pointerEventsStyle(floating ? 'box-none' : undefined),
-        ]}
-        testID={testID ? `${testID}-bar` : undefined}
-      >
-        <View
-          {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
+      <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
+        <StyledView
+          {...dataHook('bloomPageHeaderBar')}
+          className={navigationPresentation ? 'py-0' : compact ? 'min-h-8 py-0' : 'min-h-14 py-2'}
           style={[
             [
-              styles.start,
-              centered
-                ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: sideInset } : {}) }
-                : styles.startFill,
+              styles.bar,
+              navigationPresentation && { gap: 2, minHeight: NAVIGATION_HEIGHT },
+              !isWeb && { paddingLeft: sideInset, paddingRight: sideInset },
             ],
             pointerEventsStyle(floating ? 'box-none' : undefined),
           ]}
-          onLayout={centered ? onStartLayout : undefined}
-          testID={testID ? `${testID}-start` : undefined}
+          testID={testID ? `${testID}-bar` : undefined}
         >
-          {backButton}
-          {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
-          {centered ? null : titleBlock}
-        </View>
-        {centered && titleBlock ? (
           <View
-            {...dataHook('bloomPageHeaderCenter')}
+            {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
             style={[
-              [styles.centerSlot, !isWeb && { marginLeft: centerInset, marginRight: centerInset }],
-              pointerEventsStyle('box-none'),
+              [
+                styles.start,
+                centered
+                  ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: sideInset } : {}) }
+                  : styles.startFill,
+              ],
+              pointerEventsStyle(floating ? 'box-none' : undefined),
             ]}
-            testID={testID ? `${testID}-center` : undefined}
+            onLayout={centered ? onStartLayout : undefined}
+            testID={testID ? `${testID}-start` : undefined}
           >
-            {titleBlock}
+            {backButton}
+            {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+            {centered ? null : titleBlock}
           </View>
-        ) : null}
-        {centered ? (
-          <View
-            {...dataHook('bloomPageHeaderEnd')}
-            style={[
-              { position: 'absolute', ...(!isWeb ? { insetInlineEnd: sideInset } : {}) },
-              pointerEventsStyle('box-none'),
-            ]}
-          >
-            {actionsSlot}
-          </View>
-        ) : (
-          actionsSlot
-        )}
-      </StyledView>
+          {centered && titleBlock ? (
+            <View
+              {...dataHook('bloomPageHeaderCenter')}
+              style={[
+                [
+                  styles.centerSlot,
+                  !isWeb && { marginLeft: centerInset, marginRight: centerInset },
+                ],
+                pointerEventsStyle('box-none'),
+              ]}
+              testID={testID ? `${testID}-center` : undefined}
+            >
+              {titleBlock}
+            </View>
+          ) : null}
+          {centered ? (
+            <View
+              {...dataHook('bloomPageHeaderEnd')}
+              style={[
+                { position: 'absolute', ...(!isWeb ? { insetInlineEnd: sideInset } : {}) },
+                pointerEventsStyle('box-none'),
+              ]}
+            >
+              {actionsSlot}
+            </View>
+          ) : (
+            actionsSlot
+          )}
+        </StyledView>
+      </BloomScope>
       {accessory ? (
         <View
           {...dataHook('bloomPageHeaderAccessory')}

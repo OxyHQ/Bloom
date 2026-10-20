@@ -425,9 +425,17 @@ export interface EmojiPickerProps extends PartProps {
   skinTone?: number;
   defaultSkinTone?: number;
   onSkinToneChange?: (tone: number) => void;
-  /** Columns in the grid. Default `8`. */
+  /** Reuse the enclosing surface and its palette instead of painting another panel. */
+  embedded?: boolean;
+  /**
+   * Default true: a bounded virtualized list owns scrolling. False: content
+   * wraps in the parent's scroll owner and category tabs select a section.
+   * Search still spans all groups; custom tabs also take their natural height.
+   */
+  scrollable?: boolean;
+  /** Columns in the virtualized grid. Default `8`; flow mode wraps to available width. */
   columns?: number;
-  /** Height of the scrolling body. Default `288`. */
+  /** Height of the virtualized body. Default `288`; ignored when scrollable is false. */
   height?: number;
   /** Extra top-level tabs (stickers, GIFs). */
   tabs?: ReadonlyArray<EmojiPickerTab>;

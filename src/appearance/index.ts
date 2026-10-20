@@ -7,4 +7,5 @@ export type {
   BloomAppearance,
   BloomAppearanceProps,
   BloomScopeProps,
+  BloomControlDensity,
 } from './types';

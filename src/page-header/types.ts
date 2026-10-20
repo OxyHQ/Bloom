@@ -17,8 +17,11 @@ export type PageHeaderTitleAlign = 'start' | 'center';
  * hairline separator and a scroll-linked shadow. It is still the right shape
  * for a dense tool screen, a split-pane sidebar header or anywhere the chrome
  * must not be mistaken for content; it is no longer the default.
+ *
+ * `navigation` is a 44pt minimum row with 12pt insets and 2pt action gaps.
+ * It supplies compact Button density without changing inherited app size.
  */
-export type PageHeaderPresentation = 'floating' | 'bar';
+export type PageHeaderPresentation = 'floating' | 'bar' | 'navigation';
 
 /**
  * Who reserves the space the header occupies.

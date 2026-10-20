@@ -1,4 +1,9 @@
-import type { BloomAppearance, BloomTone, BloomSize } from '../appearance/types';
+import type {
+  BloomAppearance,
+  BloomTone,
+  BloomSize,
+  BloomControlDensity,
+} from '../appearance/types';
 import type { BloomIconRenderer } from '../icons/render-icon';
 import type { AriaAttributes, ReactNode } from 'react';
 import type {
@@ -55,6 +60,8 @@ export interface ButtonProps {
   disabled?: boolean;
 
   size?: ButtonSize;
+  /** Explicit override of the nearest BloomScope's contextual action geometry. */
+  density?: BloomControlDensity;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
 

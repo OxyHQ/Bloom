@@ -7,6 +7,8 @@ jest.mock('react-native', () => ({
 }));
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb/index.web';
 import { BloomScope } from '../appearance';
+import { Popover, PopoverTrigger, PopoverContent } from '../popover/index.web';
+import type { ViewRef } from '../styles/native-refs';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import {
   DropdownMenu,
@@ -350,4 +352,108 @@ it('mirrors the default separator exactly once in an RTL landmark', () => {
   } finally {
     document.documentElement.dir = '';
   }
+});
+
+it('composes the current Button with a popover without breaking collapse or duplicating a trigger', () => {
+  const ref = React.createRef<ViewRef>();
+  const onPress = jest.fn();
+  mount(
+    <Popover>
+      <Breadcrumb overflow="collapse" separator="/" testID="trail">
+        <BreadcrumbItem href="#parent">Parent</BreadcrumbItem>
+        <BreadcrumbItem
+          current
+          ref={ref}
+          onPress={onPress}
+          trigger={<PopoverTrigger asChild />}
+          testID="edit-current"
+        >
+          Current page
+        </BreadcrumbItem>
+      </Breadcrumb>
+      <PopoverContent label="Page details">
+        <input aria-label="Page title" />
+      </PopoverContent>
+    </Popover>,
+  );
+  const button = node('edit-current');
+  expect(button.tagName).toBe('BUTTON');
+  expect(ref.current).toBe(button);
+  expect(button.getAttribute('aria-current')).toBe('page');
+  expect(button.getAttribute('aria-expanded')).toBe('false');
+  expect(button.getAttribute('aria-haspopup')).toBe('dialog');
+  expect(node('trail-overflow')).toBeTruthy();
+  expect(document.querySelectorAll('[data-testid="edit-current"]')).toHaveLength(1);
+  expect(node('trail-measure-1').querySelector('button,input,[tabindex]')).toBeNull();
+  act(() => button.focus());
+  click(button);
+  for (let i = 0; i < 8; i++) act(() => jest.advanceTimersByTime(50));
+  expect(onPress).toHaveBeenCalledTimes(1);
+  expect(button.getAttribute('aria-expanded')).toBe('true');
+  expect(document.querySelector('[aria-label="Page title"]')).not.toBeNull();
+  act(() =>
+    document.documentElement.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    ),
+  );
+  for (let i = 0; i < 8; i++) act(() => jest.advanceTimersByTime(50));
+  expect(button.getAttribute('aria-expanded')).toBe('false');
+  expect(document.activeElement).toBe(button);
+});
+
+it('keeps disabled current triggers closed and current labels non-interactive', () => {
+  const press = jest.fn();
+  mount(
+    <Popover>
+      <Breadcrumb separator="/">
+        <BreadcrumbItem
+          current
+          disabled
+          onPress={press}
+          trigger={<PopoverTrigger asChild />}
+          testID="disabled-current"
+        >
+          Current
+        </BreadcrumbItem>
+        <BreadcrumbItem current testID="label-current">
+          Label
+        </BreadcrumbItem>
+      </Breadcrumb>
+      <PopoverContent label="Page details">Details</PopoverContent>
+    </Popover>,
+  );
+  click(node('disabled-current'));
+  expect(press).not.toHaveBeenCalled();
+  expect(node('disabled-current').getAttribute('aria-expanded')).toBe('false');
+  expect(node('label-current').tagName).toBe('LI');
+  expect(node('label-current').getAttribute('aria-current')).toBe('page');
+  expect(container.textContent).toContain('/');
+});
+
+it('keeps ancestor popup actions reachable and preserves disabled hidden links', () => {
+  mount(
+    <Popover>
+      <Breadcrumb overflow="collapse" testID="ancestor-trigger-trail">
+        <BreadcrumbItem trigger={<PopoverTrigger asChild />} testID="ancestor-popup">
+          Parent
+        </BreadcrumbItem>
+        <BreadcrumbItem current>Current</BreadcrumbItem>
+      </Breadcrumb>
+      <PopoverContent label="Ancestor details">Details</PopoverContent>
+    </Popover>,
+  );
+  expect(document.querySelector('[data-testid="ancestor-trigger-trail-overflow"]')).toBeNull();
+  expect(node('ancestor-popup').tagName).toBe('BUTTON');
+  mount(
+    <Breadcrumb overflow="collapse" testID="disabled-trail">
+      <BreadcrumbItem href="#disabled-ancestor" disabled>
+        Disabled parent
+      </BreadcrumbItem>
+      <BreadcrumbItem current>Current</BreadcrumbItem>
+    </Breadcrumb>,
+  );
+  click(node('disabled-trail-overflow'));
+  for (let i = 0; i < 6; i++) act(() => jest.advanceTimersByTime(50));
+  expect(document.querySelector('[role="menuitem"]')?.getAttribute('aria-disabled')).toBe('true');
+  expect(document.querySelector('[href="#disabled-ancestor"]')).toBeNull();
 });
