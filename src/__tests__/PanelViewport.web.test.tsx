@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { AppShellPanels } from '../app-shell/index.web';
 import type { AppShellPanelViewport } from '../app-shell';
+import { panelLayoutCss } from '../app-shell/panel-layout-css';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
@@ -124,3 +125,50 @@ it.each(['contained', 'document'] as const)(
     expect(scroll).not.toHaveBeenCalled();
   },
 );
+
+it('enables entry motion only after the initial tracks have computed final styles', () => {
+  const reads: boolean[] = [];
+  const computedStyle = jest.mocked(window.getComputedStyle).getMockImplementation();
+  if (!computedStyle) throw new Error('Missing computed-style adapter');
+  jest.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+    if (element.hasAttribute('data-bloom-panel-index')) {
+      const group = element.closest('[data-bloom-panel-group]');
+      reads.push(group?.hasAttribute('data-bloom-panel-ready') ?? false);
+    }
+    return computedStyle(element, pseudo);
+  });
+  const renderPanels = (extra: boolean) => (
+    <BloomThemeProvider>
+      <AppShellPanels
+        testID="entry-panels"
+        layout={{
+          transition: 'exit-before-enter',
+          panels: [{ id: 'main', width: 620 }, ...(extra ? [{ id: 'added', width: 390 }] : [])],
+        }}
+      />
+    </BloomThemeProvider>
+  );
+  act(() => root.render(renderPanels(false)));
+  const group = host.querySelector('[data-bloom-panel-group]');
+  const main = host.querySelector('[data-testid="entry-panels-main"]');
+  expect(reads[0]).toBe(false);
+  expect(group?.getAttribute('data-bloom-panel-ready')).toBe('true');
+  reads.length = 0;
+  act(() => root.render(renderPanels(true)));
+  expect(host.querySelector('[data-testid="entry-panels-main"]')).toBe(main);
+  expect(reads.length).toBeGreaterThan(0);
+  expect(reads.every(Boolean)).toBe(true);
+  const scope = group?.getAttribute('data-bloom-panel-group');
+  if (!scope) throw new Error('Missing CSS panel group');
+  const css = panelLayoutCss(scope, { panels: [{ id: 'main' }, { id: 'added' }] }, 8);
+  const entries = [...css.matchAll(/@starting-style\{([^{}]+)\{/g)];
+  expect(entries).toHaveLength(2);
+  for (const [, selector] of entries) {
+    expect(selector).toContain('[data-bloom-panel-ready]');
+    expect(selector).toContain(':not([data-bloom-panel-ordering])');
+  }
+  const added = host.querySelector('[data-testid="entry-panels-added"]');
+  expect(added?.matches(entries[1]?.[1] ?? '')).toBe(true);
+  group?.removeAttribute('data-bloom-panel-ready');
+  expect(added?.matches(entries[1]?.[1] ?? '')).toBe(false);
+});
