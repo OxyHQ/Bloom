@@ -271,3 +271,19 @@ it('touch hold opens related navigation and suppresses the primary release click
   expect(document.querySelector('[role="menu"]')).not.toBeNull();
   expect(document.querySelector('[aria-label="Page name"]')).toBeNull();
 });
+
+it('returns from the primary popup to ArrowDown navigation after Escape', () => {
+  mount(fixture());
+  act(() => control().click());
+  advance();
+  const input = document.querySelector('[aria-label="Page name"]') as HTMLInputElement;
+  act(() => input.focus());
+  key(input, 'Escape');
+  advance();
+  expect(document.querySelector('[aria-label="Page name"]')).toBeNull();
+  expect(document.activeElement).toBe(control());
+  key(control(), 'ArrowDown');
+  advance();
+  expect(document.querySelector('[role="menu"]')).not.toBeNull();
+  expect(document.activeElement?.getAttribute('role')).toBe('menuitem');
+});
