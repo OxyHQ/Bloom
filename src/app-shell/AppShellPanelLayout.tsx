@@ -818,6 +818,12 @@ export function createPanelLayoutView(
             floating: style?.getPropertyValue('--bloom-panel-floating').trim() === '1',
           };
         });
+        // The first computed-style read establishes the visible tracks at their
+        // final geometry. Only later insertions/display changes get an entry
+        // transition; animating the initial tree also scales already-sized media.
+        // Reuse this visibility read instead of adding a frame, timer or measure.
+        if (!root.hasAttribute('data-bloom-panel-ready'))
+          root.setAttribute('data-bloom-panel-ready', 'true');
         setCssState((previous) =>
           previous.vertical === (axis === 'vertical') &&
           JSON.stringify(previous.tracks) === JSON.stringify(next)

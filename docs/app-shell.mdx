@@ -1025,6 +1025,8 @@ bounded/document switches. Web geometry uses CSS flex and container queries,
 with compositor-owned CSS transitions and reduced-motion rules. Native uses
 Reanimated for the same ordered layout phases. The root reading envelope also transitions when changing layouts;
 no app resize hook or measured-width interpolation is required.
+The initial panel tree renders at its final size and scale on both platforms;
+entry motion starts with subsequent insertions or visibility changes.
 `transition="exit-before-enter"` orders semantic panel changes: outgoing panels
 fade and recede first, frame and track geometry then move together, and incoming
 panels reveal after reaching their usable width. The default `simultaneous`

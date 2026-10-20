@@ -265,6 +265,9 @@ offset when the owner changes.
 
 ### Transitions and ordering
 
+The initial panel tree paints at its final geometry on both platforms. Entry
+motion applies to later insertions and visibility changes, not the first screen.
+
 `transition: 'exit-before-enter'` lets outgoing panels fade/recede before track
 geometry changes, then reveals incoming content at its usable width. The reverse
 follows the same policy. Default `simultaneous` changes those phases together.
