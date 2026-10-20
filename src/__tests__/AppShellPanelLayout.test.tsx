@@ -4,6 +4,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { AppShell, useAppShellPanel, usePanelNavigation } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { useBloomTheme } from '../theme';
 import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { resolvedStyle } from './support/rendered-style';
 import { Screen } from '../screen';
@@ -258,4 +259,43 @@ it('composes descriptor footer chrome into the retained route Screen', () => {
   tree.rerender(ui(false));
   expect(tree.queryByTestId('route-screen-bottom')).toBeNull();
   expect(mounts).toHaveBeenCalledTimes(1);
+});
+
+describe('a screen colour preset', () => {
+  function Preset({ testID }: { testID: string }) {
+    return <Native.Text testID={testID}>{useBloomTheme().colorPreset}</Native.Text>;
+  }
+  const ui = (mode: 'split' | 'deck') => (
+    <AppShell
+      sidebar={{ render: () => <Preset testID="sidebar" /> }}
+      panelLayout={{
+        mode,
+        panels: [
+          {
+            id: 'main',
+            width: 620,
+            content: (
+              <Screen colorPreset="rose">
+                <Preset testID="main" />
+              </Screen>
+            ),
+          },
+          { id: 'side', width: 350, content: <Preset testID="side" /> },
+        ],
+      }}
+    />
+  );
+
+  it('themes the whole shell, not only the panel that claimed it', () => {
+    const tree = render(ui('split'), { wrapper });
+    for (const id of ['sidebar', 'main', 'side'])
+      expect(tree.getByTestId(id).props.children).toBe('rose');
+  });
+
+  it('themes only its own column in a deck', () => {
+    const tree = render(ui('deck'), { wrapper });
+    expect(tree.getByTestId('main').props.children).toBe('rose');
+    expect(tree.getByTestId('side').props.children).toBe('teal');
+    expect(tree.getByTestId('sidebar').props.children).toBe('teal');
+  });
 });
