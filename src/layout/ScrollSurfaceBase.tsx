@@ -90,15 +90,18 @@ function ScrollSurfaceEdge({
   bottom?: boolean;
 }) {
   const metrics = useScrollMetricsValue();
+  const viewportHeight = metrics?.viewportHeight;
+  const contentHeight = metrics?.contentHeight;
+  const scrollY = metrics?.scrollY;
   // EdgeScrim accepts an opaque color; preserve a caller's alpha on the layer.
   const parsed = parseRgba(color);
   const opaqueColor = parsed ? `rgb(${parsed.r}, ${parsed.g}, ${parsed.b})` : color;
   const alpha = parsed?.a ?? 1;
   const style = useAnimatedStyle(() => {
-    const viewport = metrics?.viewportHeight.value ?? 0;
-    const content = metrics?.contentHeight.value ?? -1;
+    const viewport = viewportHeight?.value ?? 0;
+    const content = contentHeight?.value ?? -1;
     const range = Math.max(0, content - viewport);
-    const offset = Math.max(0, Math.min(metrics?.scrollY.value ?? 0, range));
+    const offset = Math.max(0, Math.min(scrollY?.value ?? 0, range));
     const distance = bottom ? range - offset : offset;
     return {
       opacity:
@@ -106,7 +109,7 @@ function ScrollSurfaceEdge({
           ? Math.min(1, distance / Math.max(1, height)) * alpha
           : 0,
     };
-  }, [metrics, bottom, height, alpha]);
+  }, [viewportHeight, contentHeight, scrollY, bottom, height, alpha]);
   return (
     <Animated.View
       testID={testID}
