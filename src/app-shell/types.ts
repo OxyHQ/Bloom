@@ -463,6 +463,11 @@ export interface AppShellPanelProps {
 
 /** Several panels side by side, laid out and collapsed by the shell's rules. */
 export interface AppShellPanelsProps {
+  /** Embedded descriptor composition, using the same renderer as AppShell.panelLayout.
+   * Defaults to bounded flow and contained horizontal scrolling.
+   * Supply either layout or JSX children.
+   */
+  layout?: AppShellPanelLayout;
   /** `AppShellPanel` elements; conditional ones (`{open && <AppShellPanel …/>}`) are fine. */
   children?: ReactNode;
   /**

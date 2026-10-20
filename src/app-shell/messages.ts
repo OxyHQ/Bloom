@@ -12,6 +12,11 @@ export interface AppShellMessages {
   closeNavigation: string;
   /** A resizable panel's draggable divider (`AppShellPanel resizable`). */
   resizePanes: string;
+  reorderPanel: (label: string) => string;
+  reorderHint: string;
+  movePanelBefore: string;
+  movePanelAfter: string;
+  panelMoved: (label: string, position: number, total: number) => string;
   /** `NotificationBell`'s trigger and popover. */
   notifications: string;
   /** `ProOfferCard`'s region. */
@@ -23,6 +28,13 @@ export const APP_SHELL_MESSAGES: MessageCatalog<AppShellMessages> =
     openNavigation: 'Open navigation',
     closeNavigation: 'Close navigation',
     resizePanes: 'Resize panes',
+    reorderPanel: (label) => `Reorder ${label}`,
+    reorderHint:
+      'Drag to reorder, or use arrow keys. Home and End move to the first and last position.',
+    movePanelBefore: 'Move before',
+    movePanelAfter: 'Move after',
+    panelMoved: (label, position, total) => `${label}, position ${position} of ${total}`,
+
     notifications: 'Notifications',
     proOffer: 'Pro offer',
   });

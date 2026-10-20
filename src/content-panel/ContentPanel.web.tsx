@@ -55,9 +55,9 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * consumer has nothing else positioned right above/below the panel for that
  * halo to land on. A bounded-shell consumer might — the whole reason for
  * `overlaySizing="panel"` is that something IS placed right outside the panel
- * — so panel mode clips the shadow flush to the box (`inset(0)`, zero bleed)
- * rather than merely resizing the box and leaving a smaller bleed that could
- * still reach a close sibling.
+ * — so bounded panels clip their actual rounded content. They do not paint a
+ * page-colored inverse corner mask: when panels overlap, their corners must
+ * reveal the surface underneath, rather than an assumed page background.
  *
  * Framing is tri-state via the `framed` prop:
  *
@@ -293,6 +293,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     contentBase,
     fillContent,
     boundToPanel ? 'web:[grid-area:1/1]' : '',
+    boundToPanel && !scrollable ? 'web:overflow-clip' : '',
     contentClassName,
   ]
     .filter(Boolean)
@@ -373,7 +374,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. Not
             rendered when never-framed; `max-md:hidden` (display:none <md) when
             responsive, so the breakpoint is decided in CSS, not by remounting. */}
-        {showOverlays && (
+        {showOverlays && !boundToPanel && (
           <StyledView
             key="bleed-mask"
             testID="content-panel-bleed-mask"

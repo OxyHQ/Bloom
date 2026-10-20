@@ -72,13 +72,13 @@ export function shellLayoutCss(scope: string, options: Options) {
     for (const key of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
       if (layout.axis[key]) thresholds.add(BREAKPOINTS[key]);
   const ranges = [...thresholds].sort((a, b) => a - b);
-  let css = `${frame}{padding-block-start:var(--bloom-frame-top)!important;padding-block-end:var(--bloom-frame-bottom)!important;padding-inline-start:var(--bloom-frame-start)!important;padding-inline-end:var(--bloom-frame-end)!important;gap:var(--bloom-nav-gap)!important}
+  let css = `${frame}{padding-block-start:var(--bloom-frame-top)!important;padding-block-end:var(--bloom-frame-bottom)!important;padding-inline-start:var(--bloom-frame-alignment, var(--bloom-frame-start))!important;padding-inline-end:var(--bloom-frame-end)!important;gap:var(--bloom-nav-gap)!important;transition:padding-inline-start 380ms cubic-bezier(.4,0,.2,1)}
 ${root} [data-bloom-reading-envelope="${scope}"]{padding-block:var(--bloom-body-gutter)!important}
 ${root} [data-bloom-shell-nav="${scope}"]{display:var(--bloom-nav-display)!important;width:var(--bloom-nav-width)!important;flex-shrink:0;transition:width 380ms cubic-bezier(.4,0,.2,1)}
 ${root} [data-bloom-shell-nav="${scope}"] [data-bloom-shell-nav-mode="panel"]{display:var(--bloom-panel-nav-display)!important}
 ${root} [data-bloom-shell-nav="${scope}"] [data-bloom-shell-nav-mode="rail"]{display:var(--bloom-rail-nav-display)!important}
 ${root} [data-bloom-shell-nav="${scope}"] [data-bloom-shell-nav-mode] > *{width:100%!important}
-@media(prefers-reduced-motion:reduce){${root} [data-bloom-shell-nav="${scope}"]{transition:none}}
+@media(prefers-reduced-motion:reduce){${frame},${root} [data-bloom-shell-nav="${scope}"]{transition:none}}
 `;
   for (let index = 0; index < ranges.length; index++) {
     const width = ranges[index]!;
@@ -110,8 +110,16 @@ ${root} [data-bloom-shell-nav="${scope}"] [data-bloom-shell-nav-mode] > *{width:
     const rowGap = !inFlow ? 0 : sidebar?.surface === 'docked' ? outer : navigationGap;
     const force = sidebar?.collapsed ?? (options.userCollapsed ? true : undefined);
     const baseCollapsed = force ?? false;
+    // A centered flex row loses all free space as soon as Deck overflows it.
+    // Express that alignment as a length so the browser can interpolate the
+    // same frame in both directions, including RTL, without measured FLIP boxes.
+    const alignmentEnvelope =
+      layout.mode === 'deck' ? '100cqw' : `${panelEnvelope(layout, width, gap)}px`;
+    const alignment = aligned
+      ? `max(var(--bloom-frame-start), calc((100cqw - var(--bloom-nav-width) - var(--bloom-nav-gap) - ${alignmentEnvelope} - var(--bloom-frame-end) + var(--bloom-frame-start)) / 2))`
+      : 'var(--bloom-frame-start)';
     const state = (collapsed: boolean, capacity: boolean) =>
-      `${frame}{--bloom-nav-mode:${mode};--bloom-nav-collapsed:${collapsed ? 1 : 0};--bloom-nav-capacity:${capacity ? 1 : 0};--bloom-framed:${framed ? 1 : 0};--bloom-small:${width >= BREAKPOINTS.sm ? 1 : 0};--bloom-nav-display:${inFlow ? 'flex' : 'none'};--bloom-panel-nav-display:${mode === 'panel' ? 'flex' : 'none'};--bloom-rail-nav-display:${mode === 'rail' ? 'flex' : 'none'};--bloom-nav-width:${!inFlow ? 0 : mode === 'rail' ? railWidth : collapsed ? geometry.collapsedWidth : metrics.expanded}px;--bloom-frame-top:${flush ? 0 : outer}px;--bloom-frame-bottom:${flush ? 0 : outer}px;--bloom-frame-start:${flush ? 0 : outer}px;--bloom-frame-end:${outer}px;--bloom-body-gutter:${flush ? outer : 0}px;--bloom-nav-gap:${rowGap}px;justify-content:${aligned ? 'safe center' : 'flex-start'}!important}`;
+      `${frame}{--bloom-nav-mode:${mode};--bloom-nav-collapsed:${collapsed ? 1 : 0};--bloom-nav-capacity:${capacity ? 1 : 0};--bloom-framed:${framed ? 1 : 0};--bloom-small:${width >= BREAKPOINTS.sm ? 1 : 0};--bloom-nav-display:${inFlow ? 'flex' : 'none'};--bloom-panel-nav-display:${mode === 'panel' ? 'flex' : 'none'};--bloom-rail-nav-display:${mode === 'rail' ? 'flex' : 'none'};--bloom-nav-width:${!inFlow ? 0 : mode === 'rail' ? railWidth : collapsed ? geometry.collapsedWidth : metrics.expanded}px;--bloom-frame-top:${flush ? 0 : outer}px;--bloom-frame-bottom:${flush ? 0 : outer}px;--bloom-frame-start:${flush ? 0 : outer}px;--bloom-frame-end:${outer}px;--bloom-body-gutter:${flush ? outer : 0}px;--bloom-nav-gap:${rowGap}px; --bloom-frame-alignment:${alignment};justify-content:flex-start!important}`;
     const query = `(min-width:${width}px)${upper === undefined ? '' : ` and (width < ${upper}px)`}`;
     let rules = state(baseCollapsed, false);
     if (!framed)

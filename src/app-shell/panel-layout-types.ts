@@ -1,5 +1,5 @@
 import type { ScrollRestorationPersistence } from '../scroll/types';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { Breakpoint } from '../styles/breakpoints';
 export type PanelAxis = 'horizontal' | 'vertical';
 export type ResponsivePanelAxis =
@@ -38,18 +38,26 @@ export interface PanelNavigationOptions {
 }
 export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'children' | 'id'> {
   id: string;
+  /** Opt in to the layout's controlled reordering. Fixed and hidden panel slots stay in place. */
+  reorderable?: boolean;
+  /** Human-readable panel name used by the reorder handle and announcements. */
+  reorderLabel?: string;
   /** Explicit semantic visibility, independent of responsive eligibility. */
   visible?: boolean;
   content?: ReactNode;
   /** Host controls composed into the route Screen's existing PageHeader actions. */
   headerActions?: ReactNode;
+  /** Panel footer composed below the route Screen bottom bar, measured and pinned by that Screen. */
+  bottomBar?: ReactNode;
   /** Horizontal document layout: follows the page until its bottom fits, then sticks. */
   sticky?: boolean;
   height?: number;
   minHeight?: number;
   maxHeight?: number;
   onHeightChange?: (height: number) => void;
-  /** Weight of a flexible track; default 1. */
+  /** Weight of a flexible track; default 1 in split layouts.
+   * In a deck, an explicit positive span shares spare room without shrinking the width basis.
+   */
   span?: number;
   navigation?: PanelNavigationOptions;
 }
@@ -59,9 +67,23 @@ export interface PanelRevealRequest {
   /** Change this key to reveal the same panel again. */
   requestKey: string | number;
 }
+/** The compositor's scroll owner, independent of DOM and native ScrollView handles. */
+export interface AppShellPanelViewport {
+  getOffset(): { x: number; y: number };
+  measure(): Promise<{ x: number; y: number; width: number; height: number } | null>;
+  scrollBy(offset: { x?: number; y?: number }): void;
+  reveal(id: string): void;
+}
 export interface AppShellPanelLayout {
   panels: readonly AppShellPanelDefinition[];
+  /** Access the existing viewport for domain gestures, without nesting another scroller. */
+  viewportRef?: Ref<AppShellPanelViewport>;
+  onViewportScroll?: (offset: { x: number; y: number }) => void;
+  /** Commit a full ID permutation after a handle drag or keyboard move. The host applies this order. */
+  onPanelOrderChange?: (ids: readonly string[]) => void;
   mode?: 'split' | 'deck';
+  /** Fade outgoing panels before moving tracks, then reveal incoming content at its settled width. */
+  transition?: 'simultaneous' | 'exit-before-enter';
   /** Web horizontal decks use the document scrollbar by default. Native remains native-scrolling. */
   horizontalScroll?: 'document' | 'contained';
   /** Web document Deck: edge action revealed by hover/focus only at the logical scroll end. */

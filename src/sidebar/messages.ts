@@ -25,6 +25,7 @@ export interface SidebarMessages {
   noResults: string;
   /** Names the mode switcher's radio group. */
   mode: string;
+  switchMode: (label: string) => string;
   /** The plan card's action. */
   upgrade: string;
   /** The account menu's section heading, its two actions and its name. */
@@ -62,6 +63,7 @@ export const SIDEBAR_MESSAGES: MessageCatalog<SidebarMessages> = defineMessages<
     clearSearch: 'Clear navigation search',
     noResults: 'No results',
     mode: 'Mode',
+    switchMode: (label) => `Switch to ${label}`,
     upgrade: 'Upgrade',
     usersWithAccess: 'Users with access',
     addUser: 'Add user',

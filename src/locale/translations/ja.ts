@@ -233,6 +233,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `${label}に切り替え`,
   sidebar: 'サイドバー',
   collapse: 'サイドバーを折りたたむ',
   expand: 'サイドバーを展開',
@@ -2154,6 +2155,11 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `${label}を並べ替え`,
+  reorderHint: 'ドラッグまたは矢印キーで並べ替えます。HomeとEndで先頭と末尾に移動します。',
+  movePanelBefore: '前に移動',
+  movePanelAfter: '後ろに移動',
+  panelMoved: (label, position, total) => `${label}、${total}件中${position}番目`,
   openNavigation: 'ナビゲーションを開く',
   closeNavigation: 'ナビゲーションを閉じる',
   resizePanes: 'ペインのサイズを変更',

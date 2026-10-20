@@ -240,3 +240,72 @@ it('declares and releases its color recipe on its own host without replacing con
   tree.unmount();
   expect(release).toHaveBeenCalledTimes(2);
 });
+
+it('pins document footer chrome above the framed panel bottom inset', () => {
+  const tree = render(
+    wrap(<Screen scroll="auto" testID="framed-footer" bottomBar={<View />} />, 'document'),
+  );
+  expect(resolvedStyle(tree.getByTestId('framed-footer-bottom').props.style)).toMatchObject({
+    position: 'sticky',
+    bottom: 8,
+  });
+});
+
+it('stacks host and route footers once and clears their combined measured height', () => {
+  const tree = render(
+    wrap(
+      <ScreenHostContext.Provider
+        value={{ active: true, kind: 'element', bottomBar: <View testID="host-footer" /> }}
+      >
+        <Screen scroll="auto" testID="footer-route" bottomBar={<View testID="route-footer" />}>
+          <Screen scroll="auto" testID="nested-route">
+            <View />
+          </Screen>
+        </Screen>
+      </ScreenHostContext.Provider>,
+    ),
+  );
+  expect(tree.getAllByTestId('host-footer')).toHaveLength(1);
+  expect(tree.getByTestId('route-footer')).toBeTruthy();
+  expect(tree.queryByTestId('nested-route-bottom')).toBeNull();
+  fireEvent(tree.getByTestId('footer-route-bottom'), 'layout', {
+    nativeEvent: { layout: { height: 140 } },
+  });
+  expect(resolvedStyle(tree.getByTestId('footer-route-scroll-content').props.style)).toMatchObject({
+    paddingBottom: 156,
+  });
+});
+
+it('does not grow primary action height when the host footer is measured', () => {
+  const tree = render(
+    wrap(
+      <ScreenHostContext.Provider value={{ active: true, kind: 'element', bottomBar: <View /> }}>
+        <Screen
+          scroll="auto"
+          testID="action-route"
+          primaryAction={<View testID="local-action" />}
+        />
+      </ScreenHostContext.Provider>,
+    ),
+  );
+  const actionParent = () => tree.getByTestId('local-action').parent!;
+  const initialHeight = resolvedStyle(actionParent().props.style).minHeight;
+  fireEvent(tree.getByTestId('action-route-bottom'), 'layout', {
+    nativeEvent: { layout: { height: 140 } },
+  });
+  expect(resolvedStyle(actionParent().props.style).minHeight).toBe(initialHeight);
+});
+
+it('contains only its vertical scroll edge so horizontal workspace gestures can chain', () => {
+  const tree = render(
+    wrap(
+      <Screen scroll="auto" testID="axis-owner">
+        <View />
+      </Screen>,
+    ),
+  );
+  const style = resolvedStyle(tree.getByTestId('axis-owner-viewport').props.style);
+  expect(style.overscrollBehaviorY).toBe('contain');
+  expect(style.overscrollBehavior).toBeUndefined();
+  expect(style.overscrollBehaviorX).toBeUndefined();
+});

@@ -250,6 +250,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `Passer à ${label}`,
   sidebar: 'Barre latérale',
   collapse: 'Réduire la barre latérale',
   expand: 'Développer la barre latérale',
@@ -2244,6 +2245,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `Réorganiser ${label}`,
+  reorderHint:
+    'Faites glisser pour réorganiser ou utilisez les flèches. Début et Fin déplacent à la première et à la dernière position.',
+  movePanelBefore: 'Déplacer avant',
+  movePanelAfter: 'Déplacer après',
+  panelMoved: (label, position, total) => `${label}, position ${position} sur ${total}`,
   openNavigation: 'Ouvrir la navigation',
   closeNavigation: 'Fermer la navigation',
   resizePanes: 'Redimensionner les panneaux',

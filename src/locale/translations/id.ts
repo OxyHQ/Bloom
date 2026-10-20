@@ -237,6 +237,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `Beralih ke ${label}`,
   sidebar: 'Bilah sisi',
   collapse: 'Ciutkan bilah sisi',
   expand: 'Luaskan bilah sisi',
@@ -2198,6 +2199,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `Urutkan ulang ${label}`,
+  reorderHint:
+    'Seret untuk mengurutkan ulang atau gunakan tombol panah. Home dan End memindahkan ke posisi pertama dan terakhir.',
+  movePanelBefore: 'Pindahkan sebelum',
+  movePanelAfter: 'Pindahkan sesudah',
+  panelMoved: (label, position, total) => `${label}, posisi ${position} dari ${total}`,
   openNavigation: 'Buka navigasi',
   closeNavigation: 'Tutup navigasi',
   resizePanes: 'Ubah ukuran panel',

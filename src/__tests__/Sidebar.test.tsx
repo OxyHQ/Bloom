@@ -309,6 +309,45 @@ const MODES: SidebarMode[] = [
 ];
 
 describe('SidebarModeSwitcher', () => {
+  it('composes a 28px FrostedIconButton toggle with stable name and second-mode icon', () => {
+    const onValueChange = jest.fn();
+    const props = {
+      modes: MODES,
+      onValueChange,
+      presentation: 'toggle' as const,
+      accessibilityLabel: 'Computer mode',
+      testID: 'compact',
+    };
+    const screen = renderIn(<SidebarModeSwitcher {...props} value="search" />);
+    const button = screen.getByTestId('compact');
+    expect(button.props['aria-pressed']).toBe(false);
+    expect(button.props.accessibilityLabel).toBe('Computer mode');
+    expect(resolvedStyle(button.props.style)).toMatchObject({ width: 28, height: 28 });
+    pressHost(button);
+    expect(onValueChange).toHaveBeenLastCalledWith('computer');
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <SidebarModeSwitcher {...props} value="computer" />
+      </BloomThemeProvider>,
+    );
+    expect(screen.getByTestId('compact').props['aria-pressed']).toBe(true);
+    expect(screen.getByTestId('compact').props.accessibilityLabel).toBe('Computer mode');
+    pressHost(screen.getByTestId('compact'));
+    expect(onValueChange).toHaveBeenLastCalledWith('search');
+  });
+  it('keeps the segmented control when toggle presentation has more than two modes', () => {
+    const screen = renderIn(
+      <SidebarModeSwitcher
+        modes={[...MODES, { key: 'home', label: 'Home', icon: RiHomeLine }]}
+        presentation="toggle"
+        value="search"
+        onValueChange={() => {}}
+        testID="modes"
+      />,
+    );
+    expect(screen.getByTestId('modes').props.role).toBe('radiogroup');
+  });
+
   it('is a named radio group: one checked radio per mode, pressing reports its key', () => {
     const onValueChange = jest.fn();
     const screen = renderIn(

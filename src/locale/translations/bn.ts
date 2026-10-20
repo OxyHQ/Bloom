@@ -236,6 +236,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `${label}-এ যান`,
   sidebar: 'সাইডবার',
   collapse: 'সাইডবার সংকুচিত করুন',
   expand: 'সাইডবার প্রসারিত করুন',
@@ -2134,6 +2135,11 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `${label} পুনর্বিন্যাস করুন`,
+  reorderHint: 'পুনর্বিন্যাস করতে টানুন বা তীর কী ব্যবহার করুন। Home এবং End প্রথম ও শেষ অবস্থানে নিয়ে যায়।',
+  movePanelBefore: 'আগে সরান',
+  movePanelAfter: 'পরে সরান',
+  panelMoved: (label, position, total) => `${label}, ${total}-এর মধ্যে অবস্থান ${position}`,
   openNavigation: 'নেভিগেশন খুলুন',
   closeNavigation: 'নেভিগেশন বন্ধ করুন',
   resizePanes: 'প্যানের আকার বদলান',

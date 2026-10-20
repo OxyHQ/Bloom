@@ -1011,6 +1011,49 @@ bounded/document switches. Web geometry uses CSS flex and container queries,
 with NativeWind transitions and reduced-motion rules. Native uses Bloom's shared
 motion recipe. The root reading envelope also transitions when changing layouts;
 no app resize hook or measured-width interpolation is required.
+`transition="exit-before-enter"` orders semantic panel changes: outgoing panels
+fade and recede first, frame and track geometry then move together, and incoming
+panels reveal after reaching their usable width. The default `simultaneous`
+retains overlapping transitions. Both directions and reduced motion use the same
+compositor; no application timers or alternate page copies are needed. Centered frame
+alignment interpolates with the panel widths when the reading envelope becomes an
+overflowing workspace, in either direction and in RTL. Keep the same panel ID and
+content mounted to retain the reading surface; a mode change does not require
+routing to another page.
+
+A mounted `Screen scroll="auto"` transfers its last live vertical offset when its
+host changes between document and bounded scrolling. This happens before paint,
+independently of route restoration, and inactive retained screens never write to
+the new owner. The browser may clamp the offset if the content becomes shorter.
+Panel descriptors can declare `bottomBar` for shared panel chrome (an account
+prompt, connection state, or workspace controls). The first route `Screen`
+composes it below its local bottom bar or primary action and measures their
+combined footprint once. Nested Screens do not repeat the host footer. This
+requires route content to use `Screen`; it never inserts another scroll owner or
+Screen around the router outlet. Add/remove the footer without remounting the route.
+
+Document Screen footers also stay above the host's bottom frame and reserved
+chrome, rather than painting underneath its rounded mask.
+
+For controlled panel order, set `onPanelOrderChange(ids)` on the layout and
+`reorderable: true` on movable descriptors. The callback receives every panel ID;
+fixed and hidden descriptor slots keep their indices. `reorderLabel` names each
+panel for the localized grip and announcement. Bloom composes the grip into the
+route Screen header actions. Pointer/touch dragging uses the same Pan gesture and
+order model on native and web. Native continuous translation stays in Reanimated
+shared-value worklets. Keyboard arrows, Home and End reorder on web; native
+accessibility actions move before/after. Escape or a cancelled gesture restores
+positions without committing, and edge dragging scrolls the actual group owner.
+The callback captured at gesture start receives the result, allowing account or
+workspace guards to reject a stale gesture.
+
+Reordering moves the keyed hosts in actual logical/DOM order. A move is distinct
+from an entrance: its mutation boundary preserves descendant scroller state and
+commits resting geometry before paint, avoiding entry animations or virtualizer
+remeasurement at zero width. It uses no timer, alternate content copy, or CSS-only
+visual order. Bounded content panels clip their real rounded content; their
+corners reveal overlapping panels instead of painting a page-colored corner mask.
+Document-flow panels retain their viewport bleed masks.
 
 A descriptor with `visible: false` releases its track and retains previously mounted
 content, inert and hidden from accessibility. `keepMounted: true` also mounts it

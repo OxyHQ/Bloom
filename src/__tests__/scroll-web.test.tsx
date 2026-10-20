@@ -25,6 +25,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 import { ScrollRestorationProvider, useScrollRestoration } from '../scroll/index.web';
+import { recordScrollOwnerHandoff } from '../scroll/owner-handoff';
 import type {
   ScreenFocusEffect,
   ScrollRestorationBinding,
@@ -265,6 +266,24 @@ describe('web scroll-restoration hook', () => {
 
   afterEach(() => {
     harness.teardown();
+  });
+
+  it('uses a live owner handoff ahead of an unseen or older restoration scope', () => {
+    const node = new FakeScrollNode();
+    node.growTo(FULL_CONTENT_HEIGHT);
+    const content = unseenContent();
+    recordScrollOwnerHandoff(node.el, 250);
+    harness.show({ node, content });
+    act(() => frames.flushOneFrame());
+    expect(node.scrollTop).toBe(250);
+    harness.show({ node, content, focused: false });
+    recordScrollOwnerHandoff(node.el, 420);
+    harness.show({ node, content });
+    act(() => frames.flushOneFrame());
+    expect(node.scrollTop).toBe(420);
+    // The transfer is consumed once: a later navigation restores its own store.
+    harness.show({ node, content: unseenContent() });
+    expect(node.scrollTop).toBe(0);
   });
 
   it('resets an unseen screen to the top instead of leaving it where the last one was', () => {

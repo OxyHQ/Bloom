@@ -10,6 +10,7 @@
 
 /** `index` rounded and clamped into `0..count-1`; `0` for an empty list. */
 function clampIndex(index: number, count: number): number {
+  'worklet';
   if (count <= 0) return 0;
   return Math.min(count - 1, Math.max(0, Math.round(index)));
 }
@@ -24,6 +25,7 @@ function clampIndex(index: number, count: number): number {
  * unchanged.
  */
 export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
+  'worklet';
   const next = list.slice();
   if (list.length === 0 || from < 0 || from >= list.length) return next;
   const target = clampIndex(to, list.length);

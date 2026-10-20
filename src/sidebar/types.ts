@@ -80,6 +80,8 @@ export interface SidebarMode {
 }
 
 export interface SidebarModeSwitcherProps {
+  /** A compact switch for two modes; its icon is the second mode and checked means selected. */
+  presentation?: 'segmented' | 'toggle';
   modes: ReadonlyArray<SidebarMode>;
   /** Key of the selected mode. */
   value: string;
@@ -414,6 +416,8 @@ export interface SidebarProps {
    * control of icon + label rows. Rendered when given; see `SidebarModeSwitcher`.
    */
   modes?: ReadonlyArray<SidebarMode>;
+  /** Compact two-mode switch, or the default labeled segmented control. */
+  modesPresentation?: SidebarModeSwitcherProps['presentation'];
   /** Key of the selected mode. */
   mode?: string;
   onModeChange?: (key: string) => void;

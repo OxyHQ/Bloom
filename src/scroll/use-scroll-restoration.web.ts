@@ -43,6 +43,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useScrollRestorationContext } from './context';
 import { createScroller, resolveScrollTarget } from './scrollable.web';
 import { deriveScrollKey } from './store';
+import { takeScrollOwnerHandoff } from './owner-handoff';
 import type {
   ScrollRestorationBinding,
   ScrollRestorationTarget,
@@ -168,6 +169,12 @@ export function useScrollRestoration(
             ? null
             : window
           : resolveScrollEventTarget(resolved);
+
+      // Changing layout owners is not a navigation arrival. A mounted Screen
+      // transfers its live position before paint; seed this receiving scope so
+      // a fresh panel store cannot reset it, or replay an older document offset.
+      const handedOff = element ? takeScrollOwnerHandoff(element) : undefined;
+      if (handedOff !== undefined) store.save(scrollKey, handedOff);
 
       // The last offset the live scroll listener observed for this session.
       // This — not a cleanup-time `getOffset()` — is what we persist at the

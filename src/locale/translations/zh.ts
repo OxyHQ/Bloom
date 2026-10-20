@@ -233,6 +233,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `切换到${label}`,
   sidebar: '侧边栏',
   collapse: '收起侧边栏',
   expand: '展开侧边栏',
@@ -2101,6 +2102,11 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `重新排列${label}`,
+  reorderHint: '拖动或使用方向键重新排列。Home 和 End 键移到首位和末位。',
+  movePanelBefore: '向前移动',
+  movePanelAfter: '向后移动',
+  panelMoved: (label, position, total) => `${label}，第${position}项，共${total}项`,
   openNavigation: '打开导航',
   closeNavigation: '关闭导航',
   resizePanes: '调整窗格大小',

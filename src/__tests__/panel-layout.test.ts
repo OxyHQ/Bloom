@@ -8,6 +8,31 @@ const feed: AppShellPanelLayout = {
   ],
 };
 describe('modular panel tracks', () => {
+  it('fills spare deck room only for opted-in spans and preserves overflow and width limits', () => {
+    const layout: AppShellPanelLayout = {
+      mode: 'deck',
+      panels: [
+        { id: 'fixed', width: 300 },
+        { id: 'first', width: 273, minWidth: 273, maxWidth: 350, span: 1 },
+        { id: 'second', width: 273, minWidth: 273, span: 2 },
+      ],
+    };
+    const expanded = resolvePanelTracks(layout, 1200, 1200, 8);
+    expect(expanded[0]?.width).toBe(300);
+    expect(expanded[1]?.width).toBe(350);
+    expect(expanded[2]?.width).toBeCloseTo(534);
+    expect(resolvePanelTracks(layout, 700, 700, 8).map((track) => track.width)).toEqual([
+      300, 273, 273,
+    ]);
+    expect(
+      resolvePanelTracks(
+        { ...layout, panels: layout.panels.map((panel) => ({ ...panel, span: 0 })) },
+        1200,
+        1200,
+        8,
+      ).map((track) => track.width),
+    ).toEqual([300, 273, 273]);
+  });
   it('keeps the envelope while expanding and checks eligibility against the shell', () => {
     expect(panelEnvelope(feed, 1200, 0)).toBe(970);
     expect(panelEnvelope({ ...feed, expandedPanel: 'main' }, 1200, 0)).toBe(970);

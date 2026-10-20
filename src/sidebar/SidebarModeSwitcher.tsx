@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { SEGMENTED_THUMB_EASE_BEZIER, SEGMENTED_THUMB_MS } from '../button/shared';
+import { FrostedIconButton } from '../frosted-icon-button/FrostedIconButton';
 import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
@@ -150,7 +151,37 @@ function ModeRow({
   );
 }
 
-const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
+function CompactModeToggle({
+  modes,
+  value,
+  onValueChange,
+  accessibilityLabel,
+  collapsed,
+  style,
+  testID,
+}: SidebarModeSwitcherProps) {
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
+  const [first, second] = modes;
+  if (!first || !second) return null;
+  const selected = value === second.key;
+  const next = selected ? first : second;
+  const title = messages.switchMode(next.label);
+  return (
+    <FrostedIconButton
+      icon={second.icon}
+      size={28}
+      checked={selected}
+      onCheckedChange={() => onValueChange(next.key)}
+      accessibilityLabel={accessibilityLabel ?? messages.mode}
+      accessibilityHint={title}
+      title={title}
+      testID={testID}
+      style={[{ alignSelf: collapsed ? 'center' : 'flex-start' }, style]}
+    />
+  );
+}
+
+const SegmentedModeSwitcher: React.FC<SidebarModeSwitcherProps> = ({
   modes,
   value,
   onValueChange,
@@ -259,5 +290,13 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
   );
 };
 
-export const SidebarModeSwitcher = memo(SidebarModeSwitcherComponent);
+export const SidebarModeSwitcher = memo(function SidebarModeSwitcher(
+  props: SidebarModeSwitcherProps,
+) {
+  return props.presentation === 'toggle' && props.modes.length === 2 ? (
+    <CompactModeToggle {...props} />
+  ) : (
+    <SegmentedModeSwitcher {...props} />
+  );
+});
 SidebarModeSwitcher.displayName = 'SidebarModeSwitcher';

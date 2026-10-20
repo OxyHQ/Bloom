@@ -241,6 +241,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `Zu ${label} wechseln`,
   sidebar: 'Seitenleiste',
   collapse: 'Seitenleiste einklappen',
   expand: 'Seitenleiste ausklappen',
@@ -2241,6 +2242,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `${label} neu anordnen`,
+  reorderHint:
+    'Zum Neuordnen ziehen oder die Pfeiltasten verwenden. Pos1 und Ende verschieben an die erste und letzte Position.',
+  movePanelBefore: 'Nach vorne verschieben',
+  movePanelAfter: 'Nach hinten verschieben',
+  panelMoved: (label, position, total) => `${label}, Position ${position} von ${total}`,
   openNavigation: 'Navigation öffnen',
   closeNavigation: 'Navigation schließen',
   resizePanes: 'Bereichsgröße ändern',

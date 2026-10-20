@@ -72,6 +72,23 @@ function nameOf(name: ts.PropertyName): string | null {
   return null;
 }
 
+/** CSSOM scroll coordinates use physical `left`; they are not style insets. */
+function isScrollOptions(node: ts.ObjectLiteralExpression): boolean {
+  let argument: ts.Node = node;
+  while (
+    ts.isConditionalExpression(argument.parent) ||
+    ts.isParenthesizedExpression(argument.parent)
+  )
+    argument = argument.parent;
+  const call = argument.parent;
+  return (
+    ts.isCallExpression(call) &&
+    call.arguments.some((value) => value === argument) &&
+    ts.isPropertyAccessExpression(call.expression) &&
+    /^(scrollBy|scrollTo)$/.test(call.expression.name.text)
+  );
+}
+
 /** Every offense in one source text. Exported shape kept tiny so the self-test can feed it strings. */
 function scan(file: string, text: string): string[] {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -91,6 +108,7 @@ function scan(file: string, text: string): string[] {
         }
       }
       for (const [a, b] of PAIRS) {
+        if (a === 'left' && isScrollOptions(node)) continue;
         const va = values.get(a);
         const vb = values.get(b);
         if ((va === undefined) !== (vb === undefined))
@@ -163,6 +181,11 @@ describe('page-frame families carry no physical edge', () => {
   });
 
   it.each([
+    ['CSSOM scroll offsets', `window.scrollBy({ left: delta, behavior: 'instant' });`],
+    [
+      'conditional CSSOM scroll offsets',
+      `owner.scrollBy(vertical ? { top: delta } : { left: delta });`,
+    ],
     ['a symmetric pair', `const s = { paddingLeft: 8, paddingRight: 8, left: 0, right: 0 };`],
     [
       'logical insets',

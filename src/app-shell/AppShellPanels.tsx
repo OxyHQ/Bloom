@@ -29,7 +29,8 @@ import type { ScrollAreaProps } from '../layout/types';
  * `ResizeHandle` for pointer capture, native gestures and arrow keys.
  * This legacy surface delegates modular layout to that shared owner.
  */
-import React, { Children, isValidElement, useId } from 'react';
+import type React from 'react';
+import { Children, isValidElement, useId } from 'react';
 import { Platform, View, type ViewStyle } from 'react-native';
 
 import type { ContentPanelProps } from '../content-panel/types';
@@ -214,6 +215,7 @@ export function createAppShellPanels(
 
   /** The JSX family is an adapter: one renderer owns group geometry, chrome and scroll. */
   function AppShellPanels({
+    layout,
     children,
     appearance = 'separated',
     collapseBelow,
@@ -241,7 +243,9 @@ export function createAppShellPanels(
           content,
         };
       });
-    const gap = appearance === 'joined' || !region.framed ? 1 : region.gutter;
+    const gap =
+      layout?.gap ??
+      ((layout?.appearance ?? appearance) === 'joined' || !region.framed ? 1 : region.gutter);
     const box =
       region.flow === 'document'
         ? {
@@ -272,7 +276,9 @@ export function createAppShellPanels(
                 widths,
                 onWidthsChange,
                 flow: 'bounded',
+                horizontalScroll: 'contained',
                 gap,
+                ...layout,
               }}
               shellWidth={width}
               gap={gap}

@@ -253,6 +253,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `Переключиться на ${label}`,
   sidebar: 'Боковая панель',
   collapse: 'Свернуть боковую панель',
   expand: 'Развернуть боковую панель',
@@ -2477,6 +2478,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `Изменить порядок: ${label}`,
+  reorderHint:
+    'Перетащите для изменения порядка или используйте стрелки. Home и End перемещают в начало и конец.',
+  movePanelBefore: 'Переместить раньше',
+  movePanelAfter: 'Переместить позже',
+  panelMoved: (label, position, total) => `${label}, позиция ${position} из ${total}`,
   openNavigation: 'Открыть навигацию',
   closeNavigation: 'Закрыть навигацию',
   resizePanes: 'Изменить размер панелей',

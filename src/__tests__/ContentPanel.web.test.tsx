@@ -67,26 +67,19 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     expect(surface).toContain('web:[grid-template-rows:minmax(0,1fr)]');
   });
 
-  it('places the bleed-mask, border-frame and content wrapper in the same grid cell, sized to the panel', () => {
+  it('places the border and rounded content in the same grid cell without a page-colored mask', () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed overlaySizing="panel">
         <Text>content</Text>
       </ContentPanel>,
     );
     const tree = toJSON();
-    for (const id of [
-      'content-panel-bleed-mask',
-      'content-panel-border-frame',
-      'content-panel-content',
-    ]) {
+    for (const id of ['content-panel-border-frame', 'content-panel-content']) {
       const classes = classesFor(tree, id);
       expect(classes).toContain('web:[grid-area:1/1]');
       expect(classes).not.toContain('web:sticky');
     }
-    const mask = classesFor(tree, 'content-panel-bleed-mask');
-    expect(mask).toContain('h-full');
-    expect(mask).not.toContain('h-[calc(100dvh-16px)]');
-    expect(mask).not.toContain('margin-bottom:calc(-100dvh');
+    expect(findHost(tree, 'content-panel-bleed-mask')).toBeNull();
   });
 
   it('still hides the overlays below the responsive framedFrom breakpoint', () => {
@@ -95,7 +88,7 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
         <Text>content</Text>
       </ContentPanel>,
     );
-    expect(classesFor(toJSON(), 'content-panel-bleed-mask')).toContain('max-sm:hidden');
+    expect(classesFor(toJSON(), 'content-panel-border-frame')).toContain('max-sm:hidden');
   });
 
   it('never hides the overlays when framed is always-on (true), panel mode included', () => {
@@ -104,20 +97,19 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
         <Text>content</Text>
       </ContentPanel>,
     );
-    const mask = classesFor(toJSON(), 'content-panel-bleed-mask');
-    expect(mask).not.toContain('hidden');
+    const border = classesFor(toJSON(), 'content-panel-border-frame');
+    expect(border).not.toContain('hidden');
   });
 
-  it('clips the bleed-mask shadow flush to the box in panel mode (no escape bleed onto a close sibling)', () => {
+  it('clips actual bounded content, leaving rounded corners transparent over neighboring panels', () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed overlaySizing="panel">
         <Text>content</Text>
       </ContentPanel>,
     );
     const tree = toJSON();
-    const mask = classesFor(tree, 'content-panel-bleed-mask');
-    expect(mask).toContain('web:[clip-path:inset(0)]');
-    expect(mask).not.toContain('web:[clip-path:inset(-12px)]');
+    expect(findHost(tree, 'content-panel-bleed-mask')).toBeNull();
+    expect(classesFor(tree, 'content-panel-content')).toContain('web:overflow-clip');
     const border = classesFor(tree, 'content-panel-border-frame');
     expect(border).toContain('border');
     expect(border).toContain('border-border');
@@ -142,7 +134,7 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     );
     const tree = toJSON();
     expect(findHost(tree, 'content-panel-border-frame')).toBeNull();
-    expect(findHost(tree, 'content-panel-bleed-mask')).not.toBeNull();
+    expect(findHost(tree, 'content-panel-bleed-mask')).toBeNull();
   });
 });
 
@@ -225,9 +217,7 @@ describe('ContentPanel.web overlayInset', () => {
         <Text>content</Text>
       </ContentPanel>,
     );
-    const mask = resolvedStyle(findHost(toJSON(), 'content-panel-bleed-mask')?.props.style);
-    expect(mask.top).toBeUndefined();
-    expect(mask.height).toBeUndefined();
+    expect(findHost(toJSON(), 'content-panel-bleed-mask')).toBeNull();
   });
 });
 

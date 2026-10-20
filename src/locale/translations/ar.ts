@@ -252,6 +252,7 @@ const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
 };
 
 const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  switchMode: (label) => `التبديل إلى ${label}`,
   sidebar: 'الشريط الجانبي',
   collapse: 'طي الشريط الجانبي',
   expand: 'توسيع الشريط الجانبي',
@@ -2508,6 +2509,12 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
 };
 
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  reorderPanel: (label) => `إعادة ترتيب ${label}`,
+  reorderHint:
+    'اسحب لإعادة الترتيب أو استخدم مفاتيح الأسهم. ينقل Home وEnd إلى الموضع الأول والأخير.',
+  movePanelBefore: 'نقل إلى السابق',
+  movePanelAfter: 'نقل إلى التالي',
+  panelMoved: (label, position, total) => `${label}، الموضع ${position} من ${total}`,
   openNavigation: 'فتح التنقل',
   closeNavigation: 'إغلاق التنقل',
   resizePanes: 'تغيير حجم الأجزاء',

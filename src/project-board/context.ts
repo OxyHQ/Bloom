@@ -4,8 +4,12 @@ import type * as NativeDialog from '../dialog';
 import type * as NativeMenu from '../dropdown-menu';
 import type * as NativeSelect from '../select';
 import type * as NativeTooltip from '../tooltip';
+import type { AppShellPanels } from '../app-shell';
+import type { ScreenScrollView } from '../screen';
 
 export interface ProjectBoardPlatform {
+  AppShellPanels: typeof AppShellPanels;
+  ScreenScrollView: typeof ScreenScrollView;
   Tooltip: typeof NativeTooltip.Tooltip;
   TooltipTrigger: typeof NativeTooltip.TooltipTrigger;
   TooltipContent: typeof NativeTooltip.TooltipContent;
