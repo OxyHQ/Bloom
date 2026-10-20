@@ -270,6 +270,13 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   manage: 'Управление',
   accountMenu: 'Меню аккаунта',
   teamMenu: (team) => `Меню ${team}`,
+  expandRow: (label) => `Развернуть ${label}`,
+  collapseRow: (label) => `Свернуть ${label}`,
+  moveUp: 'Переместить вверх',
+  moveDown: 'Переместить вниз',
+  moveIn: 'Переместить внутрь строки выше',
+  moveOut: 'Вынести из родителя',
+  moved: (label) => `${label} перемещено`,
 };
 
 const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {

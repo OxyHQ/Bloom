@@ -23,6 +23,11 @@ export interface SidebarAvatar {
   source?: string;
   initials?: string;
   color?: SidebarAvatarColor;
+  /**
+   * `circle` (the default) is a person; `squircle` is a team, a workspace or an
+   * organisation, so the two read apart in the same menu.
+   */
+  shape?: 'circle' | 'squircle';
 }
 
 /** A navigation row. Rows without `href` / `onPress` are decoration only. */
@@ -46,11 +51,19 @@ export interface SidebarNavItem {
   /** Secondary touch action. Also expose it through a keyboard-accessible menu. */
   onLongPress?: () => void;
   /**
-   * Web: a keyboard shortcut, e.g. `⌥⌃1` or `Ctrl+Shift+H`. Shown on hover and
+   * Web: a keyboard shortcut, e.g. `⌥⌃1`, `Ctrl+Shift+H` or `Mod+K` (⌘ on
+   * Apple platforms, Ctrl elsewhere — drawn that way too). Shown on hover and
    * BOUND by the sidebar — pressing it does what pressing the row does. Don't
    * bind it again in the app.
    */
   shortcut?: string;
+  /**
+   * Who binds `shortcut`. `sidebar` (the default): the sidebar does, while it
+   * is mounted, and not while typing in a field. `app`: the app's own keymap
+   * already does — a key that must work from inside an editor, or with the
+   * navigation in a closed drawer — and the row only shows the hint.
+   */
+  shortcutBinding?: 'sidebar' | 'app';
 }
 
 /** One mode of a {@link SidebarModeSwitcherProps.modes} switcher. */
@@ -195,13 +208,23 @@ export type SidebarSurface = 'card' | 'plain' | 'docked';
  */
 export type SidebarSize = 'sm' | 'md' | 'lg';
 
-/** A row in the team menu. */
+/** A row in the team or account menu. */
 export interface SidebarMenuItem {
   key: string;
   label: string;
-  icon: SidebarIcon;
+  /** The glyph before the label. */
+  icon?: SidebarIcon;
+  /**
+   * An avatar before the label, in place of `icon`: a row that IS a workspace
+   * or a person (a switcher's choices).
+   */
+  avatar?: SidebarAvatar;
+  /** A second line under the label ("Personal", "Admin"). */
+  description?: string;
   badge?: string | number;
   selected?: boolean;
+  /** `destructive` paints the row in the danger role: sign out, leave. Defaults to `neutral`. */
+  tone?: 'neutral' | 'destructive';
   href?: string;
   onPress?: () => void;
 }
@@ -212,6 +235,11 @@ export interface SidebarMenuGroup {
   id: string;
   /** Section label above the rows ("Company"). */
   label?: string;
+  /**
+   * `single` makes the group a choice of one — the workspaces to switch
+   * between: the rows are radios and the `selected` one carries a check.
+   */
+  selection?: 'single';
   items: SidebarMenuItem[];
 }
 
@@ -269,7 +297,18 @@ export interface SidebarLogoViewProps {
 /** The account switcher at the top of the rail and the menu it opens. */
 export interface SidebarAccount {
   name: string;
+  /**
+   * A second line: the email or handle. The card form (`teamPlacement="header"`
+   * puts the account at the foot) draws it under the name, and the menu heads
+   * with the avatar, name and this line in that form.
+   */
+  email?: string;
   avatar?: SidebarAvatar;
+  /**
+   * Rows after "Users with access" and before the add/manage actions: the
+   * account's own pages, legal links, sign out.
+   */
+  groups?: SidebarMenuGroup[];
   /** "Users with access". */
   users?: SidebarAccountUser[];
   usersLabel?: string;
@@ -281,9 +320,26 @@ export interface SidebarAccount {
   menuLabel?: string;
 }
 
+/**
+ * How an identity menu's trigger is drawn:
+ *
+ * - `switcher` the header's trigger: avatar, name and an up/down chevron, a
+ *   hover pill drawn outside its box; the menu opens top-aligned
+ * - `card`     the foot's card: a filled, rounded row with the avatar, name and
+ *   second line, and a chevron chip; the menu opens bottom-aligned
+ */
+export type SidebarIdentityForm = 'switcher' | 'card';
+
 export interface SidebarTeamMenuProps {
   team: SidebarTeam;
+  /** Defaults to `card`; a `Sidebar` with `teamPlacement="header"` draws `switcher`. */
+  form?: SidebarIdentityForm;
   collapsed?: boolean;
+  /** Switcher form: suppresses the hover pill until the pointer next leaves (set after expanding). */
+  suppressHover?: boolean;
+  onHoverSuppressionEnd?: () => void;
+  /** Switcher form: background of the 32px avatar (the flat mobile variant repaints it). */
+  avatarBackground?: string;
   /** Repaints the expanded card (the flat mobile variant). */
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -291,12 +347,16 @@ export interface SidebarTeamMenuProps {
 
 export interface SidebarUserMenuProps {
   account: SidebarAccount;
+  /** Defaults to `switcher`; a `Sidebar` with `teamPlacement="header"` draws `card`. */
+  form?: SidebarIdentityForm;
   collapsed?: boolean;
   /** Suppresses the hover pill until the pointer next leaves (set after expanding). */
   suppressHover?: boolean;
   onHoverSuppressionEnd?: () => void;
   /** Background of the 32px avatar (the flat mobile variant repaints it). */
   avatarBackground?: string;
+  /** Repaints the card form (a `plain` panel sits it on the panel colour). */
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
@@ -428,6 +488,14 @@ export interface SidebarProps {
   logo?: SidebarLogo;
   account?: SidebarAccount;
   team?: SidebarTeam;
+  /**
+   * Which identity leads. `footer` (the default): the account switcher heads
+   * the panel and the team is the card at its foot — a product whose person
+   * comes first. `header`: the team (the workspace you are in) is the switcher
+   * at the top and the account becomes the card at the foot — a workspace app,
+   * where changing workspace is the first thing in the panel.
+   */
+  teamPlacement?: 'header' | 'footer';
 
   /**
    * Labelled sections under the primary rows: each lists its own rows directly
@@ -446,6 +514,14 @@ export interface SidebarProps {
   // Method form keeps an existing `(item, folder: SidebarTreeFolder) => …`
   // handler assignable now that `folder` can be absent.
   onTreeItemPress?(item: SidebarTreeItem, folder?: SidebarTreeFolder): void;
+  /**
+   * A `draggable` tree row was dropped. Enables dragging: on web the row is
+   * an HTML drag source; on touch a long press lifts it and it follows the
+   * finger. Native also offers the moves as accessibility actions and web as
+   * Alt+Shift+Arrow keys on the focused row. The sidebar only reports where
+   * the row landed; the app moves it (and re-renders the tree).
+   */
+  onTreeItemDrop?(drop: SidebarTreeDrop): void;
   /** The plan card at the foot of the rail, in place of the team card. */
   plan?: SidebarPlan;
 
@@ -453,19 +529,80 @@ export interface SidebarProps {
   testID?: string;
 }
 
-/** A row of a tree section, directly under its label or inside a folder. */
+/** A row of a tree section, directly under its label, inside a folder or under another row. */
 export interface SidebarTreeItem {
   /** Secondary controls beside the row, never nested inside its press target. */
   actions?: ReactNode;
+  /**
+   * `hover`: on a pointer device the actions show while the row is hovered or
+   * holds focus (a page tree's add and more buttons); touch always draws them.
+   * Defaults to `always`.
+   */
+  actionsVisibility?: 'always' | 'hover';
   /** Warm navigation data on hover/touch and before selection. */
   onPrefetch?: () => void;
+  /** Secondary touch action. On a `draggable` row it fires when a lifted row is let go where it was. */
   onLongPress?: () => void;
+  /** An action row ("Browse teamspaces"): called on press, before `onTreeItemPress`. */
+  onPress?: () => void;
   key: string;
   label: string;
+  /** A glyph before the label, in the row's icon colour. */
+  icon?: SidebarIcon;
+  /**
+   * Anything else before the label in place of `icon` — an emoji, an image — in
+   * the same 20px box.
+   */
+  leading?: ReactNode;
   /** A short chip at the row's end (the right in LTR), e.g. a relative time (`34m`, `now`). */
   meta?: string;
   /** Link target (a real anchor on web). */
   href?: string;
+  /**
+   * Draws the row selected whatever `selectedTreeItem` says — the same page
+   * listed in two sections (a favourite and its place) under two keys.
+   */
+  selected?: boolean;
+  /**
+   * Rows under this one, one indent deeper, to any depth (pages in pages). The
+   * row gains a disclosure; its state is `open` / `defaultOpen` /
+   * `onOpenChange`.
+   */
+  items?: ReadonlyArray<SidebarTreeItem>;
+  /** Draws the disclosure with no `items` too (a page with nothing in it yet). */
+  expandable?: boolean;
+  /** Under an open row that has no `items` ("No pages inside"). */
+  emptyLabel?: string;
+  /** Controlled disclosure. */
+  open?: boolean;
+  /** Open on first render. */
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** The row can be dragged (`onTreeItemDrop` on the sidebar). */
+  draggable?: boolean;
+  /** Rows may be dropped INSIDE this one. Defaults to true. */
+  droppable?: boolean;
+  /**
+   * `false`: nothing lands before or after this row — a container among
+   * containers (a teamspace's row, whose neighbours are teamspaces, not pages):
+   * a row dropped on it goes inside. Defaults to true.
+   */
+  dropBeside?: boolean;
+}
+
+/**
+ * Where a dragged tree row landed: `before` or `after` `target` (as its
+ * sibling), or `inside` it (as its last child). With no `target` the row was
+ * dropped on the section's label: `inside` the section, after its last row.
+ */
+export interface SidebarTreeDrop {
+  item: SidebarTreeItem;
+  /** The section the row was dragged from. */
+  from: SidebarTree;
+  target?: SidebarTreeItem;
+  position: 'before' | 'inside' | 'after';
+  /** The section it landed in. */
+  section: SidebarTree;
 }
 
 export interface SidebarTreeFolder {
@@ -496,6 +633,27 @@ export interface SidebarTree {
   items?: ReadonlyArray<SidebarTreeItem>;
   /** Expandable folders, for collections the user made (saved folders). */
   folders?: ReadonlyArray<SidebarTreeFolder>;
+  /** `hover` reveals `actions` on hover or focus on a pointer device, as a row's can. */
+  actionsVisibility?: 'always' | 'hover';
+  /**
+   * The label becomes a disclosure that shows and hides the section's rows;
+   * its state is `open` / `defaultOpen` (true) / `onOpenChange`.
+   */
+  collapsible?: boolean;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** The rows are loading: a quiet "Loading…" line stands in for them. */
+  loading?: boolean;
+  /** The rows failed to load: this message, announced as an alert, stands in for them. */
+  error?: string;
+  /** Shown when the section has no rows. Without it an empty section is not drawn. */
+  emptyLabel?: string;
+  /**
+   * `false`: nothing can be dropped into this section (a read-only list that is
+   * shared with you). Defaults to true when the sidebar takes drops.
+   */
+  droppable?: boolean;
 }
 
 export interface SidebarFolderProps {

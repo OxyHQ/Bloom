@@ -45,6 +45,8 @@ export interface SidebarPalette {
     rowHover: string;
     countBackground: string;
     countForeground: string;
+    /** A destructive row's label and glyph: the menus' own danger role. */
+    destructive: string;
   };
   avatar: Record<SidebarAvatarColor, { background: string; foreground: string }>;
   avatarFlat: string;
@@ -97,6 +99,7 @@ export function resolveSidebarPalette(theme: Theme): SidebarPalette {
       rowHover: c.backgroundTertiary,
       countBackground: c.backgroundTertiary,
       countForeground: c.textSecondary,
+      destructive: c.errorSubtleForeground,
     },
     avatar: {
       neutral: { background: c.backgroundTertiary, foreground: c.textSecondary },

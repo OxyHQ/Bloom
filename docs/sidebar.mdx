@@ -80,6 +80,65 @@ The sidebar does not create a composer or any other application-specific UI.
 
 The logo leads the header beside the collapse (or close) control; `account`, if given too, moves to its own row under it. Collapsed, the mark sits above the expand control. `variant="rail"` shows the mark only, centred above the items.
 
+## Team first: a workspace app
+
+By default the account switcher heads the panel and the team is the card at its
+foot — a product whose person comes first. A workspace app, where the space you
+are in leads, sets `teamPlacement="header"`: the team becomes the switcher at
+the top (avatar, name, up/down chevron) and the account the card at the foot
+(avatar, name and `email`).
+
+```tsx
+<Sidebar
+  teamPlacement="header"
+  team={{
+    name: workspace.name,
+    avatar: { source: workspace.avatar, initials: 'A', shape: 'squircle' },
+    groups: [
+      {
+        id: 'workspaces',
+        label: 'Your workspaces',
+        selection: 'single',
+        items: workspaces.map((w) => ({
+          key: w.id,
+          label: w.name,
+          description: w.isPersonal ? 'Personal' : roleLabel(w.role),
+          avatar: { source: w.avatar, initials: w.name[0], shape: 'squircle' },
+          selected: w.id === workspace.id,
+          onPress: () => switchTo(w.id),
+        })),
+      },
+      { id: 'create', items: [{ key: 'new', label: 'Create workspace', icon: RiAddLine, onPress: create }] },
+    ],
+  }}
+  account={{
+    name: user.name,
+    email: user.email,
+    avatar: { source: user.avatar },
+    groups: [
+      { id: 'me', items: [{ key: 'settings', label: 'Settings', icon: RiSettings3Line, onPress: openSettings }] },
+      { id: 'out', items: [{ key: 'out', label: 'Sign out', icon: RiLogoutBoxRLine, tone: 'destructive', onPress: signOut }] },
+    ],
+  }}
+/>
+```
+
+- Both menus take the same rows (`SidebarMenuItem`): an `icon` or an `avatar`
+  (20px) before the label, an optional `description` under it
+  (caption-1-regular, secondary), a `badge`, and `tone: 'destructive'` for sign
+  out or leave, in the menus' danger role.
+- A `selection: 'single'` group is a choice of one: a radiogroup its label
+  names, rows that are radios, and a 20px check on the `selected` one instead of
+  a fill.
+- `avatar.shape: 'squircle'` draws a team or workspace with `Avatar`'s squircle,
+  image and initials alike, so it reads apart from the round people beside it.
+- `account.groups` sit after "Users with access" and before the add / manage
+  actions. Opened from the card, the account menu heads with the account
+  itself, as the team menu always does.
+- `SidebarTeamMenu` and `SidebarUserMenu` take `form="switcher" | "card"` on
+  their own; the switcher opens top-aligned beside the rail, the card
+  bottom-aligned.
+
 ## Modes
 
 ```tsx
@@ -172,6 +231,109 @@ its label, before any folders: use them when the section IS the list. Keep
 - Quick search filters direct rows by their label and folders as above. Collapsed, every section hides, as the single tree did.
 - `plan` replaces the team card: radius 12, background-tertiary (the panel colour on a `plain` surface), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
 
+### A page tree: nested rows, icons and states
+
+A row's own `items` nest it to any depth — pages in pages. The row gains a
+disclosure (a chevron that turns 90° open, named "Expand Roadmap" / "Collapse
+Roadmap"), its state `open` / `defaultOpen` / `onOpenChange`; children ease
+open and shut and are only mounted while shown, so a large closed branch costs
+nothing. `expandable` draws the disclosure with no `items` yet, and
+`emptyLabel` says what an open, empty row holds ("No pages inside").
+
+```tsx
+<Sidebar
+  tree={[
+    {
+      key: 'private',
+      label: 'Private',
+      collapsible: true,
+      open: privateOpen,
+      onOpenChange: setPrivateOpen,
+      actions: <AddPageButton />,
+      actionsVisibility: 'hover',
+      emptyLabel: 'No pages yet',
+      loading: pages.isPending,
+      error: pages.error ? 'Could not load your pages' : undefined,
+      items: pages.map(function row(page): SidebarTreeItem {
+        return {
+          key: page.id,
+          label: page.title,
+          leading: <PageIcon page={page} />,
+          href: `/p/${page.id}`,
+          items: page.children.map(row),
+          expandable: true,
+          emptyLabel: 'No pages inside',
+          open: expanded.has(page.id),
+          onOpenChange: (open) => toggle(page.id, open),
+          actions: <PageRowActions page={page} />,
+          actionsVisibility: 'hover',
+          draggable: canEdit,
+        };
+      }),
+    },
+  ]}
+  selectedTreeItem={pageId}
+  onTreeItemPress={(item) => router.push(item.href!)}
+  onTreeItemDrop={movePage}
+/>
+```
+
+- Each level starts 16 further in. In a section where any row nests, every row
+  keeps the disclosure's 20px lane, so labels align whether or not a row has
+  children.
+- `icon` (a Bloom glyph, in the row's icon colour) or `leading` (anything — an
+  emoji, an image) sits in a 20px box before the label, gap 8.
+- `onPress` makes a row an action ("Browse teamspaces"); it runs before
+  `onTreeItemPress`.
+- `actionsVisibility: 'hover'` — on a row or a section — shows the actions on a
+  pointer device only while the row is hovered or holds focus, the way a page
+  tree's add and more buttons appear; touch always draws them.
+- Quick search keeps a row whose label matches with everything under it, and a
+  row with matching descendants with only those, held open while the query is
+  set.
+- A `collapsible` section's label becomes its disclosure (16px chevron after
+  it). `loading` ("Loading…"), `error` (an alert, in the danger role) and
+  `emptyLabel` stand in for its rows; a section with no rows and none of these
+  is not drawn.
+
+### Moving rows
+
+`onTreeItemDrop` turns dragging on for the rows marked `draggable`. The sidebar
+reports where a row landed and the app moves it:
+
+```ts
+interface SidebarTreeDrop {
+  item: SidebarTreeItem;        // the row moved
+  from: SidebarTree;            // its section
+  target?: SidebarTreeItem;     // absent: dropped on the section's label
+  position: 'before' | 'inside' | 'after';
+  section: SidebarTree;         // where it landed
+}
+```
+
+- **Web:** a draggable row is an HTML drag source and every row a target: the
+  top quarter is before it, the bottom quarter after it, the middle inside it
+  (halves when the row is not `droppable`). A 2px accent line marks before /
+  after and a 2px accent outline inside; a section's label takes a row inside
+  the section. The browser scrolls the viewport near its edges.
+- **Touch:** a long press (350ms) lifts the row, which follows the finger; a
+  tap still opens it and a swipe still scrolls. The finger is hit-tested against
+  the rows' frames, read once when the drag starts, and the viewport scrolls
+  while the finger rests near its top or bottom. A lifted row let go where it
+  was fires its `onLongPress` instead of moving.
+- **Keyboard and screen readers:** the focused row answers Alt+Shift+↑ / ↓
+  (past a sibling), → (inside the row above) and ← (out of its parent, after
+  it) on web; native offers the same as accessibility actions. A move is
+  announced ("Roadmap moved").
+- The rules hold in every path: a row never lands on itself or inside its own
+  descendants, nothing lands in a section with `droppable: false` (a list
+  shared with you), nothing lands inside a row with `droppable: false`, and
+  nothing lands beside a row with `dropBeside: false` — a container among
+  containers (a teamspace's row): anywhere on it is inside.
+  Drags span sections, so keys must be unique across the tree: a page listed
+  twice (a favourite, and its place) takes two keys, and `selected: true` on
+  each copy marks both while it is open. Folders' rows do not move.
+
 ## Surface and size: the app's identity
 
 Two apps with the same rows should not look like the same app. That difference is two props, not a fork of this component.
@@ -241,6 +403,12 @@ app**; the label is the single source.
 - Modifiers are `⌘ ⌃ ⌥ ⇧` glyphs or `Cmd`/`Ctrl`/`Alt`/`Option`/`Shift` words joined
   with `+`; every modifier must match exactly. Digits and letters match by
   physical key, so `⌥1` works on a Mac, where Option+1 types `¡`.
+- `Mod` is the platform's command modifier — ⌘ on Apple platforms, Ctrl
+  elsewhere — bound AND drawn that way: `Mod+K` reads `⌘K` on a Mac and
+  `Ctrl+K` on Windows (`Mod+Shift+P`: `⌘⇧P` / `Ctrl+Shift+P`).
+- `shortcutBinding: 'app'` leaves the binding to the app's own keymap and
+  only draws the hint: for a key that must work from inside an editor, where
+  the sidebar never acts, or while the navigation sits in a closed drawer.
 - Keys typed into an input, a textarea or editable content are ignored.
 - One action per key press, however many sidebars render the navigation (in
   flow and in a drawer, or the rail): the first to act marks the event handled,
@@ -256,7 +424,7 @@ The sidebar's default names and words ("Sidebar", "Quick Search", "No results", 
 
 ## Menus
 
-Both menus are `Popover`s: beside the rail (team bottom-aligned, account top-aligned) and below the trigger under `sm`. On native, `Popover` presents as a bottom sheet. `Popover`'s own motion runs here.
+Both menus are `Popover`s: beside the rail (the card bottom-aligned, the switcher top-aligned — whichever identity each is) and below the trigger under `sm`. On native, `Popover` presents as a bottom sheet. `Popover`'s own motion runs here.
 
 ## Colour
 

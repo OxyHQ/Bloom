@@ -254,6 +254,13 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   manage: 'Yönet',
   accountMenu: 'Hesap menüsü',
   teamMenu: (team) => `${team} menüsü`,
+  expandRow: (label) => `${label} öğesini genişlet`,
+  collapseRow: (label) => `${label} öğesini daralt`,
+  moveUp: 'Yukarı taşı',
+  moveDown: 'Aşağı taşı',
+  moveIn: 'Üstteki satırın içine taşı',
+  moveOut: 'Üst öğeden çıkar',
+  moved: (label) => `${label} taşındı`,
 };
 
 const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {

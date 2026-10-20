@@ -14,6 +14,7 @@ import { borderRadius } from '../styles/tokens';
 import { Collapsible, useInSidebar, useSidebarCollapseProgress, useSidebarWebCss } from './parts';
 import type { SidebarItemProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { displayShortcut } from './shortcuts';
 
 /**
  * A sidebar nav item.
@@ -206,7 +207,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
             numberOfLines={1}
             style={{ color: palette.textTertiary, opacity: hovered ? 1 : 0 }}
           >
-            {shortcut}
+            {displayShortcut(shortcut)}
           </Text>
         </Collapsible>
       ) : null}

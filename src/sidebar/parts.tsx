@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import type React from 'react';
+import { createContext, useContext, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -142,6 +143,13 @@ ${SEL}[data-bloom-sidebar="offset"]:focus-visible {
 ${SEL}[data-bloom-sidebar="inset"]:focus-visible {
   box-shadow: inset 0 0 0 2px var(--bloom-sidebar-ring);
 }
+/* A row's "hover" actions: on a pointer that hovers they show with the row's
+   hover or focus; touch always draws them. */
+@media (hover: hover) {
+  [data-bloom-sidebar-row="hover"] > [data-bloom-sidebar-row-actions] { opacity: 0; transition: opacity 150ms ease; }
+  [data-bloom-sidebar-row="hover"]:hover > [data-bloom-sidebar-row-actions],
+  [data-bloom-sidebar-row="hover"]:focus-within > [data-bloom-sidebar-row-actions] { opacity: 1; }
+}
 [data-bloom-sidebar-scroll] { scrollbar-width: none; }
 [data-bloom-sidebar-scroll]::-webkit-scrollbar { display: none; }
 `;
@@ -190,7 +198,11 @@ const AVATAR_TYPE = {
   md: { size: 32, fontSize: 16, lineHeight: 22 },
 } as const;
 
-/** An image, or initials on a tinted disc. */
+/**
+ * An image, or initials on a tinted disc. A `squircle` avatar (a team, a
+ * workspace) takes `Avatar`'s squircle silhouette, the same on every platform,
+ * for its image and its initials alike.
+ */
 export function SidebarAvatarView({
   avatar,
   size,
@@ -203,10 +215,34 @@ export function SidebarAvatarView({
   background?: string;
 }) {
   const geometry = AVATAR_TYPE[size];
-  if (avatar?.source) {
-    return <Avatar source={avatar.source} size={geometry.size} style={{ flexShrink: 0 }} />;
-  }
   const tint = palette.avatar[avatar?.color ?? 'neutral'];
+  const initials = (
+    <Text
+      style={{
+        fontSize: geometry.fontSize,
+        lineHeight: geometry.lineHeight,
+        fontWeight: '600',
+        color: tint.foreground,
+        textAlign: 'center',
+      }}
+    >
+      {avatar?.initials ?? ''}
+    </Text>
+  );
+  if (avatar?.source || avatar?.shape === 'squircle') {
+    return (
+      <Avatar
+        source={avatar.source}
+        shape={avatar.shape ?? 'circle'}
+        size={geometry.size}
+        // An image that fails falls back to the initials, on the same tint.
+        {...(avatar.initials || avatar.shape === 'squircle'
+          ? { placeholderColor: background ?? tint.background, placeholderIcon: initials }
+          : null)}
+        style={{ flexShrink: 0 }}
+      />
+    );
+  }
   return (
     <View
       style={{
@@ -220,17 +256,7 @@ export function SidebarAvatarView({
         backgroundColor: background ?? tint.background,
       }}
     >
-      <Text
-        style={{
-          fontSize: geometry.fontSize,
-          lineHeight: geometry.lineHeight,
-          fontWeight: '600',
-          color: tint.foreground,
-          textAlign: 'center',
-        }}
-      >
-        {avatar?.initials ?? ''}
-      </Text>
+      {initials}
     </View>
   );
 }

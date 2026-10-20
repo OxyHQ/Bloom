@@ -250,6 +250,13 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   manage: '管理',
   accountMenu: '账户菜单',
   teamMenu: (team) => `${team}菜单`,
+  expandRow: (label) => `展开${label}`,
+  collapseRow: (label) => `折叠${label}`,
+  moveUp: '上移',
+  moveDown: '下移',
+  moveIn: '移到上一行内',
+  moveOut: '移出父级',
+  moved: (label) => `已移动${label}`,
 };
 
 const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {

@@ -29,6 +29,7 @@ import type { SidebarMode, SidebarModeSwitcherProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { displayShortcut } from './shortcuts';
 
 /**
  * `SidebarModeSwitcher`: a vertical segmented control for the modes a sidebar
@@ -141,7 +142,7 @@ function ModeRow({
             numberOfLines={1}
             style={{ color: palette.textTertiary, paddingInlineEnd: 12, opacity: hovered ? 1 : 0 }}
           >
-            {mode.shortcut}
+            {displayShortcut(mode.shortcut)}
           </Text>
         </Collapsible>
       ) : null}
