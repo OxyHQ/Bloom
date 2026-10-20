@@ -1,9 +1,21 @@
-import React from 'react';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { Text, Pressable, ScrollView } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Sidebar } from '../sidebar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { SidebarProps } from '../sidebar/types';
+
+jest.mock('react-native-reanimated', () => {
+  const base = jest.requireActual('../../__mocks__/react-native-reanimated');
+  return {
+    ...base,
+    __esModule: true,
+    useAnimatedScrollHandler:
+      (listeners: { onScroll?: (event: NativeScrollEvent) => void }) =>
+      (event: NativeSyntheticEvent<NativeScrollEvent>) =>
+        listeners.onScroll?.(event.nativeEvent),
+  };
+});
 
 function view(props: SidebarProps) {
   return (
