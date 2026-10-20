@@ -45,12 +45,18 @@ export const View = createComponent('View');
 export const Text = createComponent('Text');
 export const Image = createComponent('Image') as ReturnType<typeof createComponent> & {
   getSize: (uri: string, success?: (width: number, height: number) => void) => void;
+  getSizeWithHeaders: (
+    uri: string,
+    headers: Record<string, string>,
+    success?: (width: number, height: number) => void,
+  ) => void;
 };
 // Deliberately never calls back: nothing in this environment can know an
 // image's intrinsic size, and inventing one would make a suite assert a layout
 // that only the mock produces. Callers must stay correct while the size is
 // still unknown, which is the state this models.
 Image.getSize = () => {};
+Image.getSizeWithHeaders = () => {};
 export const Pressable = createComponent('Pressable');
 export const TouchableOpacity = createComponent('TouchableOpacity');
 export const TextInput = createComponent('TextInput');

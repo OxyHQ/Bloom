@@ -166,3 +166,8 @@ native source or event target, then falls back to the image loader's cached
 The fallback checks source revision, mount state and the current probe before
 reporting results, and invalidates a pending probe when loading fails. This
 prevents an old URL or unmounted image from changing a new crop.
+
+That lifecycle state belongs to the RN/RNW fallback renderer. Native Expo images
+use their own load dimensions directly and allocate no fallback probe hooks or
+source serialization. Changing callbacks or recycling a source keeps the fallback
+image node mounted.
