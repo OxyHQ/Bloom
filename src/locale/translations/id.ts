@@ -2866,6 +2866,16 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    reposition: 'Ubah posisi',
+    instruction:
+      'Seret untuk mengubah posisi. Gunakan tombol panah untuk bergerak, Shift untuk langkah lebih besar, Enter untuk menyimpan, atau Escape untuk membatalkan.',
+    saveError: 'Posisi sampul tidak dapat disimpan. Coba lagi.',
+    moveUp: 'Geser gambar ke atas',
+    moveDown: 'Geser gambar ke bawah',
+    moveLeft: 'Geser gambar ke kiri',
+    moveRight: 'Geser gambar ke kanan',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

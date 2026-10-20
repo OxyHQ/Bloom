@@ -3258,6 +3258,16 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 };
 
 const translations: Translations = {
+  COVER_HEADER_MESSAGES: {
+    reposition: 'تغيير الموضع',
+    instruction:
+      'اسحب لتغيير الموضع. استخدم الأسهم للتحريك وShift لخطوات أكبر وEnter للحفظ وEscape للإلغاء.',
+    saveError: 'تعذر حفظ موضع الغلاف. حاول مجددًا.',
+    moveUp: 'تحريك الصورة لأعلى',
+    moveDown: 'تحريك الصورة لأسفل',
+    moveLeft: 'تحريك الصورة لليسار',
+    moveRight: 'تحريك الصورة لليمين',
+  },
   MULTI_AGENT_CHAT_MESSAGES,
   AGENT_REPLY_MESSAGES,
   PROJECT_BOARD_MESSAGES: {

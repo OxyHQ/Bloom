@@ -54,3 +54,26 @@ export const WithoutPhoto: Story = {
   args: { coverHeight: 170, overlap: 45 },
   render: (args) => <Profile {...args} />,
 };
+
+function EditablePageCover() {
+  const [position, setPosition] = React.useState({ x: 0.5, y: 0.5 });
+  return (
+    <CoverHeader
+      coverSource={COVER}
+      coverHeight={280}
+      overlap={40}
+      coverPosition={position}
+      repositionable
+      repositionAxes="vertical"
+      onCoverPositionCommit={async (next) => {
+        setPosition(next);
+      }}
+      testID="editable-cover"
+      contentStyle={{ paddingHorizontal: 32 }}
+    >
+      <Avatar source={AVATAR} size={80} />
+      <Text variant="title-2-medium">Team workspace</Text>
+    </CoverHeader>
+  );
+}
+export const EditablePage: Story = { render: () => <EditablePageCover /> };
