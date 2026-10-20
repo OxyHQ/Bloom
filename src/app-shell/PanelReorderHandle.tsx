@@ -77,7 +77,7 @@ export function PanelReorderHandle({
     [start, update, finish, pointer],
   );
   return (
-    <GestureDetector gesture={gesture}>
+    <GestureDetector gesture={gesture} touchAction="none">
       <View collapsable={false}>
         <StyledPressable
           role="button"

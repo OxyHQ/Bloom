@@ -62,6 +62,9 @@ const DECISIONS: Record<string, readonly string[]> = {
   // sidebar that scroll vertically. Native-only (never mounted on web); pan-y
   // is what they would need there.
   'app-shell/AppShellEngine.tsx': ['pan-y', 'pan-y'],
+  // Dedicated header grip, outside scrolling content. Panels reorder on either
+  // compositor axis; the drag owns panning only inside this small handle.
+  'app-shell/PanelReorderHandle.tsx': ['none'],
   // Rotary drag — both axes are the gesture, and the dial says `touch-none`.
   'agent-creator/EmotionPicker.tsx': ['default'],
   // 2-D saturation/value field, then a hue rail that takes its value on

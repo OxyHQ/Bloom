@@ -161,7 +161,7 @@ export function usePanelReorder({
             dragged || reducedMotion ? shift.delta : withTiming(shift.delta, { duration: 150 });
       }
     },
-    [reducedMotion],
+    [nativeModel, pointer, nativeScrollDelta, nativeTarget, nativeMotion, reducedMotion],
   );
   const hosts = useRef(new Map<string, PanelReorderHost>());
   const register = useCallback((id: string, host: PanelReorderHost) => {
@@ -335,7 +335,7 @@ export function usePanelReorder({
     (point, previous) => {
       if (point && !previous) runOnJS(update)(point.x, point.y);
     },
-    [update],
+    [nativeBounds, pointer, update],
   );
   const start = useCallback(
     async (id: string, x: number, y: number) => {
