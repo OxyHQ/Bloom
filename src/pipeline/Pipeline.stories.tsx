@@ -13,7 +13,8 @@ import { PipelineColumn } from './PipelineColumn';
 import type { DealCardProps, PipelineStage } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/CRM/Pipeline',
+  id: 'blocks-crm-pipeline',
+  title: 'Patterns/CRM/Pipeline',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

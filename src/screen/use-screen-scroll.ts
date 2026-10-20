@@ -62,7 +62,7 @@ export function useScreenScroll({
     },
     [screen, metrics, active, id, previousY, reducedMotion, hasRestoration, record, restoring],
   );
-  const onScroll = useComposedEventHandler([ownHandler, handler]);
+  const onScroll = useComposedEventHandler([ownHandler, active ? handler : null]);
   return {
     onScroll,
     scrollerId: id,

@@ -4,7 +4,7 @@ import { useMessages, formatMessage } from '../locale/messages';
 import { demoReply, type Conversation, type Message, type Workspace } from './data';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 import { streamReply, waitForReply } from './stream-reply';
-import type { MultiAgentChatProps } from './types';
+import type { MultiAgentChatProps, MultiAgentChatRequest } from './types';
 
 let sequence = 0;
 export function chatId(prefix: string) {
@@ -53,9 +53,15 @@ export function useReplies(
     [],
   );
   const send = useCallback(
-    async (text: string, id: string, arrivalMs = 0, draft?: Conversation) => {
+    async (
+      text: string,
+      id: string,
+      arrivalMs = 0,
+      draft?: Conversation,
+      request: MultiAgentChatRequest = { permission: 'bypass', effort: 1, attachments: [] },
+    ) => {
       const chat = current.current.chats.find((c) => c.id === id) ?? draft;
-      if (!chat || !text.trim() || jobs.current.has(id)) return;
+      if (!chat || (!text.trim() && !request.attachments.length) || jobs.current.has(id)) return;
       const participants = chat.agentIds.flatMap(
         (agentId) => current.current.agents.find((agent) => agent.id === agentId) ?? [],
       );
@@ -99,7 +105,7 @@ export function useReplies(
           try {
             const [response] = await Promise.all([
               onRespond
-                ? onRespond(agent, history, controller.signal)
+                ? onRespond(agent, history, controller.signal, request)
                 : Promise.resolve(
                     demoReply(agent, history.filter((m) => m.role === 'user').length - 1),
                   ),

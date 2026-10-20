@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import { boundedLabelSlot } from './svg-text';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -278,15 +279,17 @@ export function ScatterChartCard({
     [series, palettes],
   );
 
-  const [own, setOwn] = useState<ScatterActivePoint | null>(null);
-  const active = controlled !== undefined ? controlled : own;
+  const [active, setSelection] = useControllableState<ScatterActivePoint | null>({
+    value: controlled,
+    defaultValue: null,
+    onChange: onActivePointChange,
+  });
   const setActive = useCallback(
     (point: ScatterActivePoint | null) => {
       if (samePoint(point, active)) return;
-      if (controlled === undefined) setOwn(point);
-      onActivePointChange?.(point);
+      setSelection(point);
     },
-    [active, controlled, onActivePointChange],
+    [active, setSelection],
   );
 
   const allPoints = useMemo(() => series.flatMap((s) => s.points), [series]);

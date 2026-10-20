@@ -30,7 +30,8 @@ import type {
  */
 const meta: Meta = {
   component: ZoomableMediaGallery,
-  title: 'Base/Zoomable Media Gallery',
+  id: 'base-zoomable-media-gallery',
+  title: 'Components/Media/Zoomable Media Gallery',
 };
 
 export default meta;

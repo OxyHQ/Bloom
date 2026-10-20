@@ -15,7 +15,8 @@ const meta: Meta<typeof ContentPanel> = {
     maskColor: { control: 'text' },
     overlaySizing: { control: 'select', options: ['viewport', 'panel'] },
   },
-  title: 'Base/Content Panel',
+  id: 'base-content-panel',
+  title: 'Composition/Layout/Content Panel',
   component: ContentPanel,
 };
 

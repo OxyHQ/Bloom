@@ -13,7 +13,8 @@ import {
 } from './index';
 
 const meta: Meta<typeof SocialButton> = {
-  title: 'Base/Social Button',
+  id: 'base-social-button',
+  title: 'Components/Actions/Social Button',
   component: SocialButton,
 };
 

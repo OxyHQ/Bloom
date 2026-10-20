@@ -20,7 +20,8 @@ import type { ContactSection, MemberListItem, PersonSummary } from './types';
  */
 
 const meta: Meta = {
-  title: 'Blocks/Chat/People',
+  id: 'blocks-chat-people',
+  title: 'Patterns/Chat/People',
   parameters: { layout: 'fullscreen' },
 };
 

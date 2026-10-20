@@ -37,6 +37,7 @@ export function eligiblePanels(layout: AppShellPanelLayout, shellWidth: number) 
   return layout.panels.filter(
     (panel) =>
       panel.visible !== false &&
+      (!panel.floating || shellWidth >= breakpointPx(panel.floating.below)) &&
       (panel.hideBelow === undefined || shellWidth >= breakpointPx(panel.hideBelow)),
   );
 }
@@ -63,6 +64,8 @@ export interface ResolvedPanelTrack {
   width: number;
   visible: boolean;
   gap: number;
+  /** Responsive presentation, independent of its open intent. */
+  floating?: boolean;
 }
 export function resolvePanelTracks(
   layout: AppShellPanelLayout,
@@ -136,6 +139,7 @@ export function resolvePanelTracks(
       width: index < 0 ? 0 : sizes[index]!,
       visible: index >= 0,
       gap: index > 0 ? gap : 0,
+      ...(panel.floating ? { floating: shellWidth < breakpointPx(panel.floating.below) } : {}),
     };
   });
 }

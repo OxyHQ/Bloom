@@ -1,3 +1,4 @@
+import { useFieldMembership } from '../field/membership';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 
@@ -107,6 +108,7 @@ function MortgageCalculatorComponent({
   const { messages } = useMessages(LISTING_ACTIONS_MESSAGES);
   const palette = useActionPalette();
   const labels = useMemo(() => ({ ...messages.mortgage, ...labelsProp }), [messages, labelsProp]);
+  const field = useFieldMembership({ label: labels.term });
   const tones = useMemo(() => resolveDonutTones(palette.theme), [palette.theme]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
@@ -197,7 +199,12 @@ function MortgageCalculatorComponent({
       <View>
         <TextFieldLabel>{`${labels.term} (${labels.years})`}</TextFieldLabel>
         <View
-          accessibilityLabel={labels.term}
+          accessibilityLabel={field.accessibilityLabel}
+          nativeID={field.nativeID}
+          aria-describedby={field.describedBy}
+          aria-disabled={field.disabled || undefined}
+          aria-invalid={field.invalid || undefined}
+          aria-required={field.required || undefined}
           role="radiogroup"
           testID={id('terms')}
           style={{ flexDirection: 'row', gap: 8 }}

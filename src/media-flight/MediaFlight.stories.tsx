@@ -26,7 +26,8 @@ import type { MediaSurfaceContent, MeasuredRect } from './types';
  */
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Base/Media Flight',
+  id: 'base-media-flight',
+  title: 'Composition/Motion/Media Flight',
 };
 
 export default meta;

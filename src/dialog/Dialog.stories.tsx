@@ -30,7 +30,8 @@ const meta: Meta<typeof Dialog> = {
     containerClassName: { control: 'text' },
     label: { control: 'text' },
   },
-  title: 'Base/Dialog',
+  id: 'base-dialog',
+  title: 'Components/Overlays/Dialog',
   component: Dialog,
 };
 

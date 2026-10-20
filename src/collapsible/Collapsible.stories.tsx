@@ -16,7 +16,8 @@ import {
 } from '../select';
 
 export default {
-  title: 'Base/Collapsible',
+  id: 'base-collapsible',
+  title: 'Components/Data Display/Collapsible',
   component: Collapsible,
 } satisfies Meta<typeof Collapsible>;
 type Story = StoryObj<typeof Collapsible>;

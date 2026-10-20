@@ -188,10 +188,8 @@ describe('lean entries stay lean', () => {
   );
 
   it('the panels still draw the same grip', () => {
-    expect(graph('app-shell/AppShellPanelLayout.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(
-      true,
-    );
-    expect(graph('ai-chat/AiChatShell.tsx').has('ai-chat/AiChatResizeHandle.tsx')).toBe(true);
+    expect(graph('app-shell/AppShellPanelLayout.tsx').has('layout/ResizeHandle.tsx')).toBe(true);
+    expect(graph('ai-chat/AiChatShell.tsx').has('layout/ResizeHandle.tsx')).toBe(true);
   });
 });
 

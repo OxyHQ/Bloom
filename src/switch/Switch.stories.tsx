@@ -7,7 +7,8 @@ import { Switch } from './index';
 import { Text } from '../typography';
 
 const meta: Meta<typeof Switch> = {
-  title: 'Base/Switch',
+  id: 'base-switch',
+  title: 'Components/Inputs/Switch',
   component: Switch,
 };
 

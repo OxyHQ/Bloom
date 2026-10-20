@@ -490,7 +490,7 @@ export interface ChatSplitLayoutProps {
 
   /** Controlled list-pane width. */
   listWidth?: number;
-  /** Reported while the grip is dragged and when it is released. */
+  /** Reports the width when pointer resizing settles or a keyboard resize completes. */
   onListWidthChange?: (width: number) => void;
   /** Uncontrolled starting width. Default `340`. */
   defaultListWidth?: number;
@@ -507,7 +507,7 @@ export interface ChatSplitLayoutProps {
 
   /** Below this width the layout shows one pane. Default `900`. */
   breakpoint?: number;
-  /** Forces the one-pane layout. Default: measured, seeded from the window. */
+  /** True selects one pane; false disables breakpoint collapse. Shared panel minimum widths still apply. Default: responsive to the group container. */
   compact?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;

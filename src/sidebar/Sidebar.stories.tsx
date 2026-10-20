@@ -61,7 +61,8 @@ import type {
 } from './types';
 
 const meta: Meta<typeof Sidebar> = {
-  title: 'Blocks/Sidebar',
+  id: 'blocks-sidebar',
+  title: 'Composition/Navigation/Sidebar',
   component: Sidebar,
   // The demo data is exported for the AppShell stories; it is not a story.
   excludeStories: /^DEMO_/,

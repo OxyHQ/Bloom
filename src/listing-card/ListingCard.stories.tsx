@@ -12,7 +12,8 @@ import { WishlistCard } from './WishlistCard';
 import type { ListingCardProps } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Stays/Listing Card',
+  id: 'blocks-stays-listing-card',
+  title: 'Patterns/Stays/Listing Card',
   parameters: { layout: 'fullscreen' },
 };
 

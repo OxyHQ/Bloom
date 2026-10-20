@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import {
@@ -226,12 +227,15 @@ export function InputOtp({
   const groupName = membership.accessibilityLabel ?? messages.oneTimeCode;
 
   const inputsRef = useRef<Array<ComponentRef<typeof TextInput> | null>>([]);
-  const [internal, setInternal] = useState(() => clean(defaultValue, length, type));
+  const [rawCode, setCode] = useControllableState({
+    value,
+    defaultValue: clean(defaultValue, length, type),
+    onChange,
+  });
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const controlled = value !== undefined;
-  const code = clean(controlled ? value : internal, length, type);
+  const code = clean(rawCode, length, type);
   const boxName = type === 'alphanumeric' ? messages.characterOf : messages.digitOf;
 
   const commit = useCallback(
@@ -239,11 +243,10 @@ export function InputOtp({
       // `next` is already cleaned per character (a cleared box is a space
       // placeholder, which `clean` drops along with anything else).
       const cleaned = clean(next, length, type);
-      if (!controlled) setInternal(cleaned);
-      onChange?.(cleaned);
+      setCode(cleaned);
       if (cleaned.length === length) onComplete?.(cleaned);
     },
-    [controlled, length, type, onChange, onComplete],
+    [setCode, length, type, onComplete],
   );
 
   const focusBox = useCallback(

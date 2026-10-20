@@ -25,7 +25,8 @@ const meta: Meta<typeof CalendarView> = {
     locale: { control: 'text' },
     gmtLabel: { control: 'text' },
   },
-  title: 'Blocks/Calendar',
+  id: 'blocks-calendar',
+  title: 'Patterns/Productivity/Calendar',
   component: CalendarView,
   parameters: { layout: 'fullscreen' },
 };

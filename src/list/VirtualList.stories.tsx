@@ -8,7 +8,8 @@ import { Divider } from '../divider';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Base/Virtual List',
+  id: 'base-virtual-list',
+  title: 'Composition/Scrolling/Virtual List',
 };
 
 export default meta;

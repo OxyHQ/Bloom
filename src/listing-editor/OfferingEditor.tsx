@@ -1,3 +1,4 @@
+import { useFieldMembership } from '../field/membership';
 import React, { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -14,7 +15,7 @@ import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { LISTING_EDITOR_MESSAGES } from './messages';
-import { resolveSelectionPaint, SelectionCard } from './SelectionCard';
+import { resolveSelectionPaint, SelectionCard } from '../card/SelectionCard';
 import type {
   ListingEditorIcon,
   OfferingEditorProps,
@@ -91,7 +92,7 @@ function OfferingEditorComponent({
   depositOptions = [0, 1, 2, 3],
   errors = {},
   labels: labelsProp,
-  disabled = false,
+  disabled: disabledProp = false,
   style,
   testID,
 }: OfferingEditorProps) {
@@ -99,6 +100,12 @@ function OfferingEditorComponent({
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
   const labels = useMemo(() => ({ ...messages.offering, ...labelsProp }), [messages, labelsProp]);
+  const field = useFieldMembership({
+    accessibilityLabel: labelsProp?.group,
+    disabled: disabledProp,
+    invalid: !!errors.kinds,
+  });
+  const disabled = field.disabled;
   const [width, setWidth] = useState(0);
   const wide = width >= 480;
   const tid = (suffix: string) => (testID ? `${testID}-${suffix}` : undefined);
@@ -269,7 +276,16 @@ function OfferingEditorComponent({
 
   return (
     <View testID={testID} style={style} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
-      <View role="group" accessibilityLabel={labels.group} style={{ gap: 12 }}>
+      <View
+        role="group"
+        nativeID={field.nativeID}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
+        aria-disabled={disabled || undefined}
+        aria-required={field.required || undefined}
+        accessibilityLabel={field.accessibilityLabel ?? labels.group}
+        style={{ gap: 12 }}
+      >
         {kinds.map((kind) => {
           const selected = value.kinds.includes(kind);
           return (

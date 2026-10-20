@@ -1,0 +1,373 @@
+import { useControllableState } from '../hooks/use-controllable-state';
+import { PageHeader } from '../page-header';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { parseRgba } from '../theme/color-utils';
+import React, { memo, useCallback, useMemo, useState } from 'react';
+import { AccessibilityInfo, View } from 'react-native';
+
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { StyleSheet } from 'react-native';
+import {
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
+import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { RiPlayListAddLine } from '../icons/remix/RiPlayListAddLine';
+import { Tabs, TabsTrigger } from '../tabs';
+import { useTheme } from '../theme/use-theme';
+import { Text } from '../typography';
+import { QueueIconButton } from './QueueIconButton';
+import { QueuePanelRow, useQueuePanelCss } from './QueuePanelRow';
+import { QueueReorderList } from './QueueReorderList';
+import { RecentlyPlayedList } from './RecentlyPlayedList';
+import { queuePanelLabels, queuePlayName, resolveQueuePanelPaint } from './shared';
+import type { QueuePanelLabels, QueuePanelProps, QueuePanelTab } from './types';
+import { useMessages } from '../locale/messages';
+import { useCommonMessages } from '../locale/common-messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { QUEUE_PANEL_MESSAGES } from './messages';
+import { IS_WEB } from '../styles/platform';
+
+/**
+ * The play queue.
+ *
+ *   header    Queue / Recently played tabs · close button
+ *   Now playing       the loaded track: accent title, now-playing bars
+ *   Next in queue     tracks the listener added · "Clear queue"
+ *   Next from: <ctx>  what follows from the playing album or playlist
+ *
+ * `panel` (web default): a rounded-8 surface of `width` (360) with a hairline,
+ * in the menu surface colours, filling its parent's height. `sheet` (native
+ * default): flat and full width, for the inside of a `BottomSheet`.
+ *
+ * Every list is a prop and every change is a callback — the panel reorders,
+ * removes and clears nothing itself. Rows are 56 tall; see `QueueReorderList`
+ * for the three ways a row moves.
+ */
+
+function SectionHeading({
+  children,
+  action,
+  color,
+}: {
+  children: string;
+  action?: React.ReactNode;
+  color: string;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        minHeight: 32,
+        paddingLeft: 8,
+        paddingRight: 4,
+        marginTop: 16,
+        marginBottom: 4,
+      }}
+    >
+      <Text role="heading" variant="headline-semibold" numberOfLines={1} style={{ flex: 1, color }}>
+        {children}
+      </Text>
+      {action}
+    </View>
+  );
+}
+
+export function createQueuePanel({
+  Screen,
+  ScreenScrollView,
+  Button,
+}: {
+  Screen: typeof import('../screen')['Screen'];
+  ScreenScrollView: typeof import('../screen')['ScreenScrollView'];
+  Button: typeof import('../button')['Button'];
+}) {
+  function QueuePanelComponent({
+    nowPlaying,
+    playing = true,
+    queue = [],
+    context = [],
+    contextName,
+    recentlyPlayed = [],
+    tab: tabProp,
+    defaultTab = 'queue',
+    onTabChange,
+    onReorder,
+    onRemove,
+    onPlay,
+    onClearQueue,
+    onClose,
+    variant = IS_WEB ? 'panel' : 'sheet',
+    width = 360,
+    labels: labelsProp,
+    style,
+    testID,
+  }: QueuePanelProps) {
+    const { messages } = useMessages(QUEUE_PANEL_MESSAGES);
+    const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
+    const common = useCommonMessages();
+    const theme = useTheme();
+    useQueuePanelCss();
+    const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
+    const labels: QueuePanelLabels = useMemo(
+      () => ({ ...queuePanelLabels(messages, controls, common), ...labelsProp }),
+      [messages, controls, common, labelsProp],
+    );
+
+    const [tab, setTab] = useControllableState<QueuePanelTab>({
+      value: tabProp,
+      defaultValue: defaultTab,
+      onChange: onTabChange,
+    });
+    const selectTab = useCallback(
+      (value: string) => {
+        const next = value as QueuePanelTab;
+        setTab(next);
+      },
+      [setTab],
+    );
+
+    const [dragActive, setDragActive] = useState(false);
+    const [announcement, setAnnouncement] = useState('');
+    const announce = useCallback((message: string) => {
+      if (IS_WEB) setAnnouncement(message);
+      else AccessibilityInfo.announceForAccessibility(message);
+    }, []);
+
+    const playFromSection = useMemo(
+      () =>
+        onPlay
+          ? (section: 'queue' | 'context', index: number, track: (typeof queue)[number]) =>
+              onPlay(section, index, track)
+          : undefined,
+      [onPlay],
+    );
+
+    const parentFill = useSurfaceFill();
+    const parentLevel = useSurfaceLevelValue();
+    const isPanel = variant === 'panel';
+    const background =
+      StyleSheet.flatten(style)?.backgroundColor ?? (isPanel ? paint.surface : undefined);
+    const publishedFill =
+      typeof background === 'string' &&
+      background !== 'transparent' &&
+      parseRgba(background)?.a !== 0
+        ? resolveSurfaceMaterial({ fill: background, parentFill, paint: isPanel }).publishedFill
+        : undefined;
+    const empty = !nowPlaying && queue.length === 0 && context.length === 0;
+
+    const content = (
+      // The panel is a surface: children step off IT, not off the page. A tab
+      // strip inside used to paint its rail `neutral-800` — the panel's own fill
+      // (`styles/surface-levels.ts`).
+      <View
+        testID={testID}
+        style={[
+          isPanel
+            ? {
+                width,
+                maxWidth: '100%',
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: paint.border,
+                backgroundColor: paint.surface,
+                overflow: 'hidden',
+              }
+            : { width: '100%' },
+          { flexDirection: 'column', minHeight: 0 },
+          style,
+          surfaceFillVars(publishedFill),
+          isPanel && publishedFill ? { backgroundColor: 'transparent' } : null,
+        ]}
+      >
+        {isPanel && publishedFill ? (
+          <SurfacePaint
+            fill={background as string}
+            radius={StyleSheet.flatten(style)?.borderRadius ?? 8}
+          />
+        ) : null}
+        <Screen
+          scroll="auto"
+          documentScroll={false}
+          navigationScope="isolated"
+          contentClearance={0}
+          header={
+            <PageHeader
+              safeArea={false}
+              sticky={false}
+              title={
+                <Tabs
+                  value={tab}
+                  onValueChange={selectTab}
+                  testID={testID ? `${testID}-tabs` : undefined}
+                >
+                  <TabsTrigger value="queue" label={labels.queueTab} />
+                  <TabsTrigger value="recent" label={labels.recentTab} />
+                </Tabs>
+              }
+              actions={
+                onClose ? (
+                  <QueueIconButton
+                    icon={RiCloseLine}
+                    accessibilityLabel={labels.close}
+                    onPress={onClose}
+                    testID={testID ? `${testID}-close` : undefined}
+                  />
+                ) : undefined
+              }
+            />
+          }
+        >
+          <ScreenScrollView
+            style={{ flex: 1, minHeight: 0 }}
+            contentContainerStyle={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 16 }}
+            scrollEnabled={!dragActive}
+            testID={testID ? `${testID}-scroll` : undefined}
+          >
+            {tab === 'recent' ? (
+              <RecentlyPlayedList
+                items={recentlyPlayed}
+                currentId={nowPlaying?.id}
+                playing={playing}
+                labels={{ play: labelsProp?.play, emptyRecent: labels.emptyRecent }}
+                onPlay={onPlay ? (index, track) => onPlay('recent', index, track) : undefined}
+                style={{ marginTop: 8 }}
+                testID={testID ? `${testID}-recent` : undefined}
+              />
+            ) : empty ? (
+              <View
+                style={{
+                  alignItems: 'center',
+                  paddingTop: 40,
+                  paddingBottom: 24,
+                  paddingLeft: 16,
+                  paddingRight: 16,
+                  gap: 8,
+                }}
+              >
+                <RiPlayListAddLine width={32} height={32} fill={paint.textSecondary} />
+                <Text
+                  variant="headline-semibold"
+                  style={{ color: paint.text, textAlign: 'center' }}
+                >
+                  {labels.emptyQueue}
+                </Text>
+                <Text
+                  variant="body-regular"
+                  style={{ color: paint.textSecondary, textAlign: 'center' }}
+                >
+                  {labels.emptyQueueHint}
+                </Text>
+              </View>
+            ) : (
+              <>
+                {nowPlaying ? (
+                  <>
+                    <SectionHeading color={paint.text}>{labels.nowPlaying}</SectionHeading>
+                    <QueuePanelRow
+                      track={nowPlaying}
+                      current
+                      playing={playing}
+                      accessibilityLabel={queuePlayName(
+                        labelsProp?.play,
+                        nowPlaying.title,
+                        controls,
+                      )}
+                      onPress={onPlay ? () => onPlay('now', 0, nowPlaying) : undefined}
+                      testID={testID ? `${testID}-now` : undefined}
+                    />
+                  </>
+                ) : null}
+                {queue.length > 0 ? (
+                  <>
+                    <SectionHeading
+                      color={paint.text}
+                      action={
+                        onClearQueue ? (
+                          <Button
+                            size="sm"
+                            onPress={onClearQueue}
+                            testID={testID ? `${testID}-clear` : undefined}
+                            tone="accent"
+                            appearance="plain"
+                          >
+                            {labels.clearQueue}
+                          </Button>
+                        ) : undefined
+                      }
+                    >
+                      {labels.nextInQueue}
+                    </SectionHeading>
+                    <QueueReorderList
+                      customPlay={labelsProp?.play}
+                      section="queue"
+                      tracks={queue}
+                      labels={labels}
+                      onReorder={onReorder}
+                      onRemove={onRemove}
+                      onPlay={playFromSection}
+                      onDragActiveChange={setDragActive}
+                      onAnnounce={announce}
+                      removeButton={isPanel}
+                      testID={testID ? `${testID}-queue` : undefined}
+                    />
+                  </>
+                ) : null}
+                {context.length > 0 ? (
+                  <>
+                    <SectionHeading color={paint.text}>
+                      {contextName ? labels.nextFrom(contextName) : labels.nextUp}
+                    </SectionHeading>
+                    <QueueReorderList
+                      customPlay={labelsProp?.play}
+                      section="context"
+                      tracks={context}
+                      labels={labels}
+                      onReorder={onReorder}
+                      onRemove={onRemove}
+                      onPlay={playFromSection}
+                      onDragActiveChange={setDragActive}
+                      onAnnounce={announce}
+                      removeButton={isPanel}
+                      testID={testID ? `${testID}-context` : undefined}
+                    />
+                  </>
+                ) : null}
+              </>
+            )}
+          </ScreenScrollView>
+
+          {IS_WEB ? (
+            <View
+              accessibilityLiveRegion="polite"
+              style={{
+                position: 'absolute',
+                width: 1,
+                height: 1,
+                overflow: 'hidden',
+                opacity: 0,
+              }}
+              testID={testID ? `${testID}-announcer` : undefined}
+            >
+              <Text>{announcement}</Text>
+            </View>
+          ) : null}
+        </Screen>
+      </View>
+    );
+    return publishedFill ? (
+      <SurfaceLevelProvider level={isPanel ? 1 : parentLevel} fill={publishedFill}>
+        {content}
+      </SurfaceLevelProvider>
+    ) : (
+      content
+    );
+  }
+
+  const QueuePanel = memo(QueuePanelComponent);
+  QueuePanel.displayName = 'QueuePanel';
+  return QueuePanel;
+}

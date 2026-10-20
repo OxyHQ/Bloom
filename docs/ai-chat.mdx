@@ -1,21 +1,24 @@
 ---
 title: AiChat
-description: The AI chat workspace — shell with drawers and a resizable panel, chat container, animated thread turns, image generation frame, code and gallery panels.
+description: The AI chat workspace — modular AppShell panels, shared Screen chrome, animated thread turns, image generation, code and gallery panels.
 order: 101
 ---
 
 # AiChat
 
-`AiChat` is the chat *workspace*: a shell with a sidebar and a resizable side panel, the chat card, the thread and image generation. For a ready-made transcript + composer + history rail without that shell, use [`AgentChat`](./agent-chat.mdx); [Building AI interfaces](./ai-overview.mdx) says which to choose. The shell and container publish their actual base fills without adding a material rim to the workspace; transparent layouts inherit their enclosing surface and arbitrary background slots remain caller-owned.
+`AiChat` composes an AI workspace with navigation, conversation and context panels, the thread and image generation. `AppShell panelLayout` owns the frame and responsive panel layout; the exported `AiChatShell` adapts its existing props to that API. For a ready-made transcript + composer + history rail, use [`AgentChat`](./agent-chat.mdx); [Building AI interfaces](./ai-overview.mdx) says which to choose. The shell and container publish their actual base fills without adding a material rim to the workspace; transparent layouts inherit their enclosing surface and arbitrary background slots remain caller-owned.
+
+The AI Chat template declares AppShell panelLayout directly; AiChatShell is a
+compatibility adapter for existing consumers, with no second panel API.
 
 The pieces of the AI chat and AI image generation screens. Everything is data and callbacks — no model, transport or storage. The full screens are composed in Storybook under `Templates/AI Chat` and `Templates/AI Image Generation`.
 
 | Export | What it is |
 | --- | --- |
-| `AiChatShell` | The page frame: sidebar, chat container, resizable right panel, and the phone / tablet drawers |
+| `AiChatShell` | Compatibility adapter to AppShell navigation, conversation and resizable context panels |
 | `AiChatMobileHeader` | The in-container header below `xl` (menu button, title, panel button), wired to the shell |
 | `AiChatHeader` | A header with a title node of yours centred between the shell's menu and panel buttons, at every width |
-| `AiChatResizeHandle` | The grip on the chat's right edge |
+| `AiChatResizeHandle` | Shared accessible resize separator, also used by AppShell panelLayout |
 | `AiChatContainer` | The chat card: breadcrumb header, thread, composer slot, `AgentThinking` while working |
 | `AiChatThread` | The bottom-anchored, self-following scroll of turns — with the follow, upward pagination and `ref` a host with history needs |
 | `AiChatUserMessage` / `AiChatAssistantMessage` | The turns, with the staggered blur-in |
@@ -28,59 +31,156 @@ The pieces of the AI chat and AI image generation screens. Everything is data an
 It composes Bloom's own families: `Sidebar` (with `tree` and `plan`), `ComposerPill` + `ComposerStatusBar` inside `ComposerLoader`, `CodeBlock` / `CodeLines`, `AgentProgress`, `AgentThinking`, `Tabs` (pill), `Breadcrumb`, `Tooltip`, `Button`.
 
 ```tsx
-import { AiChatShell, AiChatContainer, AiChatMobileHeader, AiChatThread, AiChatUserMessage, AiChatAssistantMessage, AiChatCodePanel } from '@oxy.so/bloom/ai-chat';
+import { AppShell } from '@oxy.so/bloom/app-shell';
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { PageFooter } from '@oxy.so/bloom/page-footer';
+import { ComposerPill } from '@oxy.so/bloom/composer-panel';
+import { AiChatUserMessage, AiChatAssistantMessage, AiChatCodePanel } from '@oxy.so/bloom/ai-chat';
 
-<AiChatShell
-  sidebar={<Sidebar {...rail} />}
-  sidebarCollapsed={railOnly}
-  mobileSidebar={<Sidebar {...rail} mobile flat />}
-  panelLabel="Code"
-  panel={(width) => <AiChatCodePanel width={width} code={file} language="tsx" />}>
-  <AiChatContainer
-    project="vibl coding project"
-    title="coding scenario"
-    header={<AiChatMobileHeader title="Agentic chat" />}
-    working={working}
-    background={<YourOwnField />}
-    composer={
-      <ComposerLoader active={working}>
-        <ComposerPill surface={false} frosted={working} busy={working} disabled={working} onStop={stop} />
-      </ComposerLoader>
-    }>
-    <AiChatThread>
-      <AiChatUserMessage>update our colour tokens for dark mode</AiChatUserMessage>
-      <AiChatAssistantMessage>Done — the tokens are wired.</AiChatAssistantMessage>
-    </AiChatThread>
-  </AiChatContainer>
-</AiChatShell>
+<AppShell contentMaxWidth="none" panelLayout={{
+  mode: 'split', flow: 'bounded', activePanel,
+  panels: [
+    { id: 'navigation', width: 260, hideBelow: 1024, content: navigation },
+    { id: 'conversation', minWidth: 320, content: (
+      <Screen scroll="auto" bottomBarKeyboardBehavior="visible"
+        header={<PageHeader title={conversationName} actions={conversationActions} />}
+        bottomBar={<PageFooter><ComposerPill value={draft} onValueChange={setDraft}
+          busy={working} onSubmit={send} onStop={stop} /></PageFooter>}
+      >
+        <ScreenScrollView>
+          <AiChatUserMessage>update our colour tokens for dark mode</AiChatUserMessage>
+          <AiChatAssistantMessage>Done — the tokens are wired.</AiChatAssistantMessage>
+        </ScreenScrollView>
+      </Screen>
+    ) },
+    { id: 'context', width: 410, minWidth: 320, maxWidth: 560,
+      hideBelow: 1280, content: <AiChatCodePanel width="100%" code={file} language="tsx" /> },
+  ],
+}} />
 ```
 
-Give the shell a sized parent — it fills it.
+Give AppShell a sized parent for a bounded workspace. Select compact panels
+through `activePanel`; their header back actions return to conversation.
+Existing AiChatShell integrations can retain their sidebar/panel props through
+the compatibility adapter.
 
 ## Shell
 
-- **lg and up** (1024): the floating `sidebar` in flow, 16 from the workspace, inside a 12px frame on background-full.
-- **xl and up** (1280): the `panel` 12 right of the chat at its width (410, dragged within 320–560). The grip is a 20px strip straddling the chat's edge; hovering it reveals a 15×25 grip (radius 4, border, background-primary, shadow-xs, three 1×13 icon-quaternary lines) that follows the pointer along the edge and stays while dragging. Dragging right widens the chat. With keyboard focus, ←/→ nudge by 16.
-- **below xl** the panel is a right drawer — min(410, 100% − 12) wide, background-full, p 12, shadow-sidebar, a 40-tall header with the panel name and a close button — over a 40% black backdrop, sliding 300ms. `panel` receives `'100%'` there.
-- **below lg** the `mobileSidebar` rests under the workspace (272 wide, py 12 / pl 6). Opening it slides the whole workspace 272 right and rounds it to 32 while the sidebar scales from 94% and fades in (325ms `cubic-bezier(0.42, 0, 0.58, 1)`); a 10% black / 5% white veil over the workspace closes it. Opening one drawer closes the other.
-- **The nav drawer swipes** — dragging in from the left edge opens it and dragging the open drawer back closes it, the drawer following the finger and settling on release by distance (halfway) or by a flick (0.3 px/ms), whichever the release says first. `navSwipeEnabled` (default **`true`**) turns it off: a drawer that cannot be swiped has one way to open on touch, which is what a host migrating off `expo-router`'s `Drawer` loses, so it is on unless a host says otherwise.
+New compositions declare the workspace through `AppShell panelLayout`. Keep stable
+IDs for `navigation`, `conversation` and `context`, and let the shell resolve
+`hideBelow`, panel minima and resizing against its measured container. A split
+with enough room shows all eligible panels; compact layouts show `activePanel`.
+A menu or context action selects that panel. Its PageHeader back action selects
+`conversation` again. Navigation and context are full panel destinations on a
+small screen, with the same surfaces, bounds and accessibility as other panels.
 
-  It is armed only where there IS a drawer — below `lg`, and only with a `mobileSidebar`. An opening drag has to start within **24px of the left edge**, travel 12px, and be **twice as horizontal as vertical** before it is claimed: a vertical drag stays the thread's scroll and a horizontal drag anywhere but the edge stays the content's, so a carousel or a scrolling code block inside the chat keeps its gestures. Once the drawer is open the closing drag may start anywhere, because the veil is over all of it by then. On **web only a real touch** is claimed — a mouse drag from the edge is left alone so a selection that starts there survives — and nothing sets `touch-action`, which would have taken horizontal panning away from every scroller inside the workspace.
-- `navOpen` / `panelOpen` are controllable. Reduced motion snaps: the drag itself still tracks the finger 1:1 (it is direct manipulation, not an animation), and only the settle at the end of it jumps rather than travels.
-- **A collapsible rail** — `sidebarCollapsed` publishes the state while the sidebar owns its width and transition. `sidebarWidth` and `collapsedSidebarWidth` are explicit column overrides only; omit them for a Bloom `Sidebar` so its FAB, insets and collapse animation determine the actual width. The shell does not clip that sidebar into a fixed 56px lane.
-- **`background` and `surface`** — `background` is any node, drawn above the shell's own background-full and below the sidebar, workspace and drawers; it is never interactive. The workspace paints background-full too, so pass `surface={false}` with it (that drops both) or the layer is covered exactly where the chat sits. When the layer belongs to the chat rather than the page, put it on `AiChatContainer` instead, which is the nearer slot and needs no opt-out.
-- **`scroll`** — what scrolls the page, `AppShell`'s contract. `container` (the default) fills the parent and the conversation scrolls inside the card. **`document`** (web) grows the page and lets the browser scroll it — the page's scrollbar, scroll restoration, the mobile address bar collapsing and `window.scrollTo` behave as on any page. See [Document scroll](#document-scroll). Native has no document and treats it as `container`.
-- **Native safe area** — Opt in with `<AiChatShell safeArea>` to add all four device insets to the shell frame and drawer content. The default remains off, and web geometry is unchanged. Inner `PageHeader` components use `safeArea={false}`; `BottomBar` automatically excludes the bottom inset already supplied by the shell. Device insets remain available to portaled dialogs. Screens do not need their own safe-area padding.
+The conversation declares its own chrome and viewport:
 
-- **What the shell publishes** — `useAiChatShell()` returns the shell's state to any descendant: `compact`, `navCollapsed`, `sidebarCollapsed`, `hasNav` / `hasPanel`, `documentScroll`, `openNav` / `closeNav` / `openPanel`, and **`navPresented`**.
+```tsx
+<AppShell gutter={12} contentMaxWidth="none" panelLayout={{
+  mode: 'split', flow: 'bounded', activePanel,
+  panels: [
+    { id: 'navigation', width: 260, hideBelow: 1024, content: navigation },
+    { id: 'conversation', minWidth: 320, scroll: 'content', content: (
+      <Screen scroll="auto" bottomBarKeyboardBehavior="visible"
+        header={<PageHeader title={conversationName} actions={conversationActions} />}
+        bottomBar={<PageFooter><ComposerPill {...composer} /></PageFooter>}
+      >
+        <ScreenScrollView>{turns}</ScreenScrollView>
+      </Screen>
+    ) },
+    { id: 'context', width: 410, minWidth: 320, maxWidth: 560,
+      hideBelow: 1280, resizable: true, scroll: 'content', content: context },
+  ],
+}} />
+```
 
-  Below `lg` a closed drawer stays **mounted** — it is translated offscreen, not removed. The shell takes it out of reach itself: while closed, the nav drawer and the panel drawer are `aria-hidden` and `pointerEvents="none"`, `inert` on web (so their controls leave the tab order too) and hidden from VoiceOver/TalkBack on native. The veil over the workspace is inside the same gate, and it is never a Tab stop — react-native-web's `Pressable` writes `tabIndex` 0 over `focusable={false}`, so the veil takes `tabIndex={-1}`. A host does not wrap `mobileSidebar` in a gate of its own; `navPresented` is there for anything else that has to know whether the nav is on screen.
+The shell supplies panel framing and independent scopes. Content declares
+`Screen scroll="auto"`, `header` and `bottomBar`; `ScreenScrollView` reuses the
+existing web viewport. Native retains its list. Do not wrap descriptor content
+in another `AppShellPanel`, paint another frame, or put an existing list inside
+`scroll="panel"`. Host controls shared by a panel's routes belong in descriptor
+`headerActions`, which PageHeader composes with the route's own actions.
 
-  An open nav drawer owns the keyboard the way the panel drawer does: on web focus moves to its first control, Tab and Shift+Tab stay inside it, Escape closes it — also from a text field in it — and focus returns to whatever opened it (the menu button); Android back closes it. Portaled menus and dialogs above it take all of that first.
+`AiChatShell` preserves `sidebar`, `mobileSidebar`, `panel`, width and controlled
+open props as adapters. `navOpen` / `panelOpen` select navigation / context in
+compact layouts; closing returns to conversation. `panel` receives the width
+selected by the shared engine. Resize limits remain 320–560px by default, with
+410px as the resting context width. `sidebarCollapsed` and explicit sidebar
+width overrides remain host preferences. `navSwipeEnabled` is retained for API
+compatibility; the shell no longer installs a private swipe recognizer.
+
+Hidden panels retain their mounted content and state after first presentation.
+The shared engine makes them inert, inaccessible and inactive. Keep descriptor
+IDs and the content tree stable: resizing, selecting another compact panel or
+switching flow must not create another copy of the conversation or editor.
+`useAppShellPanel()` exposes actual `visible` and `active` state so background
+scroll writers and observers can suspend themselves.
+
+`useAiChatShell()` remains the compatibility context for `AiChatHeader` and
+`AiChatMobileHeader`: `openNav`, `closeNav`, `openPanel`, `navPresented`,
+`compact`, `navCollapsed`, `sidebarCollapsed`, `hasNav`, `hasPanel` and
+`documentScroll`. Its selection follows the modular panels. These helpers do
+not create drawers, backdrops or a second layout engine. Compact selected
+panels retain the shared interaction hook for focus entry/containment, Escape,
+Android back and opener restoration.
+Both header helpers compose PageHeader and its floating button islands; a
+centered avatar/name node participates in the header's measured height.
+
+`scroll="container"` maps to a bounded panel layout. `scroll="document"` maps
+to document flow on web, while native keeps native scrolling. Shared Screen
+chrome and viewport APIs should own new routes; the container/thread adapters
+below preserve their public composition and transport-free behavior. Native
+`safeArea` remains an opt-in for all four device edges at the shell; inner PageHeaders use
+`safeArea={false}` when the shell already owns those edges.
+
+`background` stays a decorative layer below the workspace. `surface={false}`
+allows the enclosing host's paint to show through; a chat-specific background
+belongs on its container. Preserve the actual parent fill when composing
+transparent or custom backgrounds.
+
+### Recorded hazards from the retired shell
+
+The previous centered identity header had a 48px minimum, 12px horizontal/top
+padding and 40px side slots. PageHeader now measures its central title in flow
+with a 56px minimum, so larger avatars and system fonts grow the row.
+
+The previous private layout used a 12px outer frame, navigation at 1024px with
+a 16px workspace gap, and context at 1280px with a 12px gap. Its 20px separator
+strip revealed a 15×25px grip (radius 4, three 1×13px lines); keyboard nudges
+were 16px. The shared panel engine now owns resizing and keyboard behavior.
+
+The former context drawer measured `min(410px, 100% - 12px)`, had 12px padding,
+a 40px header and a 40% black backdrop, and travelled for 300ms. The former
+navigation drawer was 272px wide (12px vertical padding, 6px start padding):
+it moved the workspace 272px, rounded it to 32px, scaled navigation from 94%
+and settled over 325ms with `cubic-bezier(0.42, 0, 0.58, 1)`. The close veil
+was 10% black / 5% white. These are retired geometry measurements, not
+parameters to reproduce in a panel adapter.
+
+The retired swipe recognizer admitted only one real web touch from the first
+24px, after 12px travel and a horizontal:vertical ratio of at least 2; halfway
+travel or 0.3px/ms settled it open. It never claimed mouse selection, vertical
+scrolling, diagonals, a pinch or a horizontal gesture that began inside the
+conversation, and did not set `touch-action`. Preserve those content gestures
+by leaving the adapter free of shell-owned swipe handlers. Reduced motion
+belonged to settling, not direct finger tracking.
+
+A hidden mounted subtree needs more than opacity or pointer events: remove it
+from the accessibility tree and the web tab order. The former veil needed
+`tabIndex={-1}` because RNW Pressable overwrites `focusable={false}` with a Tab
+stop. Compact panels have no veil. Actual modal surfaces still need their own
+focus entry, Tab containment, Escape/Android-back ordering and opener restoration;
+portaled menus/dialogs above them must receive dismissal first.
 
 ## Container and thread
 
-Radius 24 on background-secondary: the breadcrumb header (px 16 / pt 16, share and more glyphs 8 apart, deepening to black / white on hover), the thread, then the footer (px 10 / pt 12 / pb 10, gap 10) with `AgentThinking` (infinity) while `working` and the `composer`.
+AiChatContainer adapts its props to Screen. PageHeader renders its optional
+breadcrumb and real actions; PageFooter contains AgentThinking (infinity) while
+`working` and the `composer`. AppShell supplies the panel frame, corners and
+surface. The container declares no second card radius or private header/footer
+positioning. Its background slot remains decorative and cannot intercept input.
 
 `project` is **optional**: a chat that belongs to nothing draws its own crumb alone, with no folder glyph and no empty crumb.
 
@@ -98,58 +198,85 @@ The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is 
 | `onStartReached` | `() => void` | — | The reader came near the **top**. A chat pages upward, so this — not `onEndReached` — is its pagination signal. Once per approach; it re-arms when the reader leaves the zone. |
 | `onStartReachedThreshold` | `number` | `300` | How near the top, px. |
 | `maintainStartPosition` | `boolean` | `false` | The growth that answers an `onStartReached` is added to the offset, so a page landing **above** the reader does not move the turn they are on. Inert without `onStartReached` — the thread only anchors growth it asked for. |
-| `onScroll` / `scrollEventThrottle` | | `16` | The raw event. Nothing is attached at all unless something is listening. |
+| `onScroll` / `scrollEventThrottle` | | `16` | The thread observer receives the raw event when requested. Screen keeps its own shared chrome and restoration metrics. |
 | `ref` | `AiChatThreadHandle` | — | `scrollToEnd({ animated })`, `scrollToOffset({ offset, animated })`, `getScrollView()`. |
 
-**Not there:** virtualization and `scrollToIndex`. The thread is a `ScrollView`, so a long history is fully mounted, and a host jumping to a cursor measures that turn's row (`onLayout`) and calls `scrollToOffset`. `maintainStartPosition` is the web-safe half of React Native's `maintainVisibleContentPosition`, which react-native-web ignores.
+**Not there:** virtualization and `scrollToIndex`. The thread uses ScreenScrollView, so a long history is fully mounted, and a host jumping to a cursor measures that turn's row (`onLayout`) and calls `scrollToOffset`. `maintainStartPosition` is the web-safe half of React Native's `maintainVisibleContentPosition`, which react-native-web ignores.
 
 **Hazard (web):** react-native-web gives every view `min-height: 0`, so the usual `flexGrow: 1` + `justifyContent: 'flex-end'` content container stays the viewport's height and its children overflow it instead of scrolling — and `onContentSizeChange` never sees the growth. The thread floors its container at `minHeight: '100%'` on web instead.
 
-### Floating chrome
+### Screen chrome and compatibility insets
 
-`<AiChatContainer floatingChrome>` keeps every part and changes the geometry: the conversation fills the **whole card** and scrolls **behind** the header and **behind** the composer. Use it when the transcript is the screen — a full-height chat where two opaque bands would each take a strip of it, or where a `background` layer should run edge to edge under everything. Leave it off (the default, and what the AI Chat template uses) for the stacked layout above.
+Both container modes use Screen's header and bottomBar slots. The default
+reserves measured header clearance; `floatingChrome` sets
+`headerPlacement="overlay"`, allowing content to extend underneath the header.
+PageHeader and PageFooter own their shared scrims. The thread keeps its own
+16px top, 12px bottom and horizontal padding, while Screen reserves chrome
+once at the viewport owner. Native does not add footer height to the list's
+content a second time. Chat Screens set `bottomBarKeyboardBehavior="visible"`
+so focusing the native prompt keeps the composer visible above the keyboard.
 
-| Layer | Geometry |
-|---|---|
-| card | unchanged: radius 24, background-secondary, clipped; with `surface={false}` it is not a card: no radius or fill of its own, the host's shape and fill apply; `background` still fills it under everything |
-| `children` | fill the card's full height — nothing is in flow above or below them |
-| header block | the `header` slot (`AiChatMobileHeader`) + the breadcrumb row, absolute at the top, transparent — no band of its own |
-| footer block | `AgentThinking` + `composer`, absolute at the bottom, px 10 / pt 12 / pb 10, gap 10 — **no band of its own**: the transcript passes behind the composer and stays in sight around it |
-| top fade | the page-header edge scrim over the whole header and its tail (header height + 55%), solid at the top and nothing at the bottom, exactly as `PageHeader`'s own scrim; fades in over the first **16px** scrolled (the gap it closes) |
+`useAiChatChromeInsets()` adapts Screen's current clearances for custom children.
+Overlay headers report zero top clearance. A growing composer resizes the
+viewport: a reader at its end stays at the end without an animated follow;
+a reader midway keeps their offset. An ordinary new turn retains the thread's
+follow behavior. ScreenScrollView forwards the same imperative handle to the
+native list or existing web viewport, avoiding a second scroller.
 
-Both blocks are `pointerEvents="box-none"`, so the transcript under their empty space still scrolls and takes clicks. The fade is decorative (hidden from assistive tech) and exists **only while turns are actually under the header**. Nothing is painted behind the composer: its own card is what covers the turns under it, as the conversation slides past on either side.
-
-**Insets.** The container measures both blocks (`onLayout`) and hands the heights to its children through context. An `AiChatThread` pads its **content** by them — pt = header block + 16, pb = footer block — and sets matching iOS `scrollIndicatorInsets`, so at rest the first and last turns sit exactly where the stacked layout puts them relative to the chrome, and in motion pass under it. The `ScrollView` stays the only scroller; `autoFollow`, `followThreshold`, `onStartReached`, `maintainStartPosition` and the ref work unchanged. A resize that is **exactly** the chrome's (the composer growing, `AgentThinking` appearing, the header measuring in on mount) is not a new turn: a reader at the end stays at the end without an animated follow, and a reader mid-thread keeps their turn in place. Any other child reads the same numbers from `useAiChatChromeInsets()` (`{ top, bottom }`, or `null` outside a floating container) to keep an empty state or a scroller of its own clear of the chrome.
-
-**Why a fade, not a frost.** `AgentChat` frosts its overlaid header (white/black 20%, a 20px backdrop blur on web) once the transcript reaches it. Here the chrome has no band, and a frosted rectangle is one: it ends at its own bottom edge, and that edge is a line across the transcript. A one-colour opacity ramp is identical on native and web and needs no blur.
-
-**Limits.** The fade is background-secondary — the tone of the chat card — also with `surface={false}`, so a header over a host's darker fill (a dark sheet) reads as a lighter band, not a dark slab. Over an opaque `background` layer the fade is the card surface, not the layer.
+Compact navigation and context panels retain an interaction adapter for focus,
+Escape and Android back. While the selected panel is alone, focus enters it,
+Tab/Shift+Tab stay inside, and dismissal restores the opener when possible.
+This adapter supplies no layout, width, backdrop or swipe gesture. Portaled
+menus and dialogs still take dismissal priority.
 
 ### Document scroll
 
-Under `<AiChatShell scroll="document">` (web) the **document** is the scroller, the way every framed Oxy web page scrolls. The chat keeps every part; what moves is the page.
+Under `<AiChatShell scroll="document">`, AppShell uses document flow on web.
+Screen and PageHeader/PageFooter supply the shared sticky chrome; the
+conversation grows the page, and ScreenScrollView reuses the document owner.
+Native continues using its native viewport. The shell supplies the panel's
+framing instead of adding a second ContentPanel inside AiChatContainer.
 
-| Part | Geometry |
-|---|---|
-| shell | at least one screen (`100dvh`) and grows with the chat; `overflow: clip`, never `hidden`, so it is not a scroll container |
-| sidebar, panel | sticky rails, `top: 12`, one screen tall less the gutter above and below |
-| drawers, backdrop, shell `background` | `position: fixed`, so they cover the screen, not the page |
-| card | a [`ContentPanel`](/docs/bloom/main/content-panel), `framed` at the shell's gutter (`overlayInset` 12, `maskColor` the shell's background-full, background-secondary as its surface, `chrome="none"` — the template's card has no edge): its sticky mask and radius keep the card framed at the screen's edges while the conversation scrolls under them, as on any framed Oxy web page. It grows with the conversation, one screen tall at the least; the chrome always floats (`floatingChrome` is implied) |
-| header block | sticky in the flow at `top: 12`, with the same fade while turns run under it |
-| footer block | sticky in the flow at `bottom: 12`, no band — the conversation passes behind the composer |
-| container `background` | a screen-sized layer with the panel's geometry, under the turns: a wallpaper stays put while the conversation moves over it |
-| conversation | one stacking layer (`zIndex: 0`) under the header and the composer: a turn's own z-indexes (a search log, a progress card, a date header) never climb over the chrome |
-| thread | a plain view, no scroller: bottom-anchored, px 16 / pt 16, turns 12 apart |
+Thread following, upward pagination and the ref continue through the shared
+owner. A host can inspect that owner with `useScreenViewport()` rather than
+assuming window scroll or creating another restoration binding. A hidden panel
+must not save or reset scroll state. Retained panel IDs and route keys keep
+restoration scoped to the correct conversation and destination.
 
-The thread keeps its props and its handle. It follows through the window, opens at its newest turn (the page is shared with whatever route was on it before), fires `onStartReached` near the top and holds a landed page still. Offsets stay in **the thread's own frame**: `0` is the thread's top, so a row's `onLayout` y is still a `scrollToOffset` target, and `contentSize` runs to the **end of the page**, so `contentSize − offset − viewport` is still the distance left to scroll. `getScrollView()` returns `null`. The browser's scroll anchoring is off inside the thread — it would move the page for growth the thread already accounts for, and only in some browsers.
+The host must allow document growth: an ancestor scroll container changes
+which element owns the page. Expo/RNW resets such as `html, body { height: 100%;
+overflow: hidden }` or an absolutely positioned web Stack screen can pin the
+page to one viewport. Document hosts use flow-preserving routes and explicit
+scroll restoration. Bounded hosts keep the root height chain instead; do not
+apply document-height overrides to an embedded bounded workspace.
 
-At rest the chrome is in the flow and covers nothing, so `useAiChatChromeInsets()` is `{ top: 0, bottom: 0 }`.
+### Recorded container hazards
 
-**The host's part.** Nothing between the shell and the document may be a scroll container:
+The retired container had a 24px card radius and private breadcrumb spacing
+(16px horizontal/top, 8px action gap), footer spacing (10px horizontal/bottom,
+12px top, 10px gap), and independent absolute chrome. Its 16px scroll ramp
+covered the full header plus a 55% tail: a 60px header produced a 93px ramp.
+Compressing the ramp into the final tenth made the fade read as a slab. These
+measurements remain recorded; PageHeader now owns that ramp directly.
 
-- Expo / react-native-web inject `html, body { height: 100%; overflow: hidden }` and `#root { height: 100% }`. Override them with unlayered rules — `height: auto`, `min-height: 100%` (`100vh` on `#root`) and `overflow: visible` on **both** axes (one clipped axis promotes the other to `auto`).
-- `expo-router`'s `Stack` renders each web screen absolutely positioned, which pins the page to one screen: on web, host the routes with `Slot`, or a `Navigator` that renders the focused screen in the flow.
-- Every route shares the one window scroll, so a page that is not a chat should open at the top (or where the reader left it): `useScrollRestoration('window')` from [`scroll`](/docs/bloom/main/scroll).
+The former AgentChat frosting was a white/black 20% wash with 20px backdrop
+blur. It made a rectangular band. Scrims must use the actual painted parent
+fill; fixed background-secondary over a darker host also made a lighter band.
+Custom background slots do not reveal their painted pixel color to the theme.
+
+The old inset contract put `header + 16px` and footer heights into list
+padding and iOS indicator insets. Reapplying those values under Screen would
+reserve chrome twice. A 40px composer growth or 20px header growth is geometry,
+not a new message: never turn it into an animated follow. Native now reports
+the reduced viewport rather than another 40px of message content.
+
+The former document wrapper used `100dvh`, a 12px sticky gutter, `overflow:
+clip` and its own framed ContentPanel with `overlayInset=12`. Clipped backdrop
+input and nested clipping/scroll containers can invalidate an otherwise green
+markup check. A conversation must remain below shared chrome even if a turn
+contains its own z-index. Thread row offsets and host cursor-jump offsets must
+refer to the same viewport coordinate space; browser scroll anchoring must not
+also compensate growth already handled by `maintainStartPosition`.
 
 ## Turns
 
@@ -220,7 +347,12 @@ Semantic tokens resolved onto Bloom's ramps (`ai-chat/shared.ts`): background-fu
 
 ### Custom chat header
 
-`AiChatHeader` is a header whose title is a node of yours, centred — the conversation's participants (an `AgentProfile`), say, when they are its title. It is at least 48 tall with px 12 / pt 12 and shows at every width. On a compact shell the same menu and panel buttons as `AiChatMobileHeader` sit either side of the title, each side keeping 40px so it stays centred; outside an `AiChatShell` it is the title alone. `AiChatMobileHeader` remains the string-titled header below `xl`.
+`AiChatHeader` composes PageHeader with a centered title node, such as an
+AgentProfile identifying the conversation. It shows at every width; the title
+is in flow and determines the row's height above the shared 56px minimum.
+Measured action widths reserve room for the navigation and context islands.
+Outside AiChatShell it renders its title alone. AiChatMobileHeader is the
+string-titled compatibility header for compact shell layouts.
 
 `AiChatContainer` can receive a `header` such as Bloom's `PageHeader` with the
 application's real actions. Omit `title` and `project` to omit its breadcrumb;
@@ -239,20 +371,24 @@ never presents a preview or a style editor that does not exist.
 
 ### Language
 
-Every default name and label (the feedback row, the panels, the default panel actions and `panelLabel`, the shell's drawer buttons, the image countdown) is localised via `BloomProvider locale`; each `labels` key still wins.
+Every default name and label (the feedback row, the panels, the default panel actions and `panelLabel`, the shell's panel navigation buttons, the image countdown) is localised via `BloomProvider locale`; each `labels` key still wins.
 
 ### Panel keyboard ownership
 
-An open `AiChatShell` panel closes on Escape (web) or Android back — on web
-also with the caret in one of its text fields, whose keydowns react-native-web
-never lets bubble (`overlay/modal-keyboard.ts`). Controlled
-hosts keep `panelOpen` in sync through `onPanelOpenChange`; removing their
-`panel` closes the desktop rail. At compact widths the drawer moves web focus
-inside, cycles Tab/Shift+Tab, and returns focus to its opener when closed.
-Portaled menus/dialogs take priority over shell dismissal and focus containment.
-Native uses the shared accessibility-focus hook on entry; automatic native
-return to an arbitrary caller's opener is not available without a trigger ref.
-No device-runtime verification is implied by the Android back-handler tests.
+Compact workspace panels are destinations selected by their header controls.
+Their PageHeader back action returns to the conversation; retained hidden
+tracks leave the accessibility tree and web tab order through AppShell. A
+compact panel has no backdrop; its retained interaction adapter owns focus
+entry, Tab containment, Escape and Android back while it is selected alone. Controlled
+hosts keep `navOpen` / `panelOpen` synchronized through their change callbacks.
+
+The interaction contract also applies to actual modal surfaces:
+Escape/Android back must yield to a portaled menu or dialog above it, fields
+need `overlay/modal-keyboard.ts` because RNW can stop their keydown propagation,
+and focus returns to the opener when supported. Native accessibility focus on
+entry does not imply automatic return to an arbitrary opener without its trigger
+ref. These hazards remain recorded for modal consumers; hook-only Android tests
+do not establish behavior of the modular workspace or verify a device runtime.
 
 `AiChatContainer.actions` composes real menu triggers or other chat actions in
 the breadcrumb action row, replacing the default share/more controls. Use it
@@ -287,3 +423,7 @@ when the column resizes. Use the same padding longhands as the base style:
 
 The default half-column limit, 16px radius and 6px end-edge bleed are unchanged.
 The end-edge bleed follows the inherited direction on both platforms.
+
+Conversation turns and the composer share a centered 768px maximum reading
+width. The panel keeps its own full layout track; narrow viewports use the
+available width. The shared internal chat layout style supplies this measure.

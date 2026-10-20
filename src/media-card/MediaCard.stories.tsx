@@ -25,7 +25,8 @@ import { SongCard } from './SongCard';
 import type { MediaCardMenuItem, MediaCardSize } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Media Cards',
+  id: 'blocks-music-media-cards',
+  title: 'Patterns/Music/Media Cards',
   parameters: { layout: 'fullscreen' },
 };
 

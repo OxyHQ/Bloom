@@ -28,7 +28,8 @@ import type {
 } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Listing Editor',
+  id: 'blocks-housing-listing-editor',
+  title: 'Patterns/Housing/Listing Editor',
   parameters: { layout: 'fullscreen' },
 };
 

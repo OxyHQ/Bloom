@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
+import { useControllableState } from '../../hooks/use-controllable-state';
+import { useCallback, useRef } from 'react';
 
 /**
  * The hovered / pressed category (or slice, stage, node…) of a chart card:
@@ -12,19 +13,20 @@ export function useActiveIndex(
   controlled: number | null | undefined,
   onChange: ((index: number | null) => void) | undefined,
 ): [number | null, (index: number | null) => void] {
-  const [own, setOwn] = useState<number | null>(null);
-  const isControlled = controlled !== undefined;
-  const value = isControlled ? controlled : own;
+  const [value, setValue] = useControllableState<number | null>({
+    value: controlled,
+    defaultValue: null,
+    onChange,
+  });
   const lastRef = useRef(value);
   lastRef.current = value;
   const set = useCallback(
     (index: number | null) => {
       if (index === lastRef.current) return;
       lastRef.current = index;
-      if (!isControlled) setOwn(index);
-      onChange?.(index);
+      setValue(index);
     },
-    [isControlled, onChange],
+    [setValue],
   );
   return [value !== null && value >= 0 && value < count ? value : null, set];
 }

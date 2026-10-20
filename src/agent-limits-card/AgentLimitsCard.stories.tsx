@@ -11,7 +11,8 @@ const meta: Meta<typeof AgentLimitsCard> = {
     expanded: { control: 'boolean' },
     defaultExpanded: { control: 'boolean' },
   },
-  title: 'Agents/Agent Limits',
+  id: 'agents-agent-limits',
+  title: 'Components/Agents/Agent Limits',
   component: AgentLimitsCard,
 };
 

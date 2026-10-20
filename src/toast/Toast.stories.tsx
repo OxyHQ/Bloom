@@ -36,7 +36,8 @@ import type { ToasterProps } from './types';
  * only a browser can judge the geometry.)
  */
 const meta: Meta = {
-  title: 'Base/Toast',
+  id: 'base-toast',
+  title: 'Components/Feedback/Toast',
 };
 
 export default meta;

@@ -26,7 +26,7 @@ function Wrapped() {
   );
 }
 
-const meta: Meta = { title: 'Editor/RichTextInput' };
+const meta: Meta = { id: 'editor-richtextinput', title: 'Components/Inputs/Rich Text Input' };
 export default meta;
 export const RawInput: StoryObj = { render: () => <Raw /> };
 export const Controlled: StoryObj = { render: () => <Wrapped /> };

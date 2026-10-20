@@ -8,6 +8,7 @@ import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from '../avatar';
+import { AgentProfile } from '../agent-reply';
 import { Badge } from '../badge';
 import { Button } from '../button';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
@@ -18,7 +19,8 @@ import { Text } from '../typography';
 import { PageHeader } from './index';
 
 const meta: Meta<typeof PageHeader> = {
-  title: 'Blocks/Page Header',
+  id: 'blocks-page-header',
+  title: 'Composition/Layout/Page Header',
   component: PageHeader,
   parameters: { layout: 'fullscreen' },
 };
@@ -28,6 +30,27 @@ export default meta;
 type Story = StoryObj<typeof PageHeader>;
 
 const back = () => {};
+
+/** A composed identity sets the header height without a fixed-height wrapper. */
+export const CenteredAgentIdentity: Story = {
+  render: () => (
+    <Page inset>
+      <PageHeader
+        testID="header"
+        titleAlign="center"
+        onBack={back}
+        title={
+          <AgentProfile
+            agents={[{ id: 'planner', name: 'Product planner', avatar: { preset: 'blue_beret' } }]}
+            onPress={back}
+          />
+        }
+        actions={<PageActions />}
+      />
+      <Rows count={5} />
+    </Page>
+  ),
+};
 
 const HERO = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200';
 

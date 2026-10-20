@@ -21,7 +21,7 @@ try {
     if (/GL_INVALID|GL_OUT_OF_MEMORY/.test(m.text())) report.errors.push(m.text());
   });
   await page.goto(
-    'http://localhost:6006/iframe.html?id=application-agent-avatar-characters--shape-proportions&viewMode=story',
+    'http://localhost:6006/iframe.html?id=agents-agent-avatar-characters--shape-proportions&viewMode=story',
   );
   await page.waitForSelector('[data-testid="shape-proportions-circle"] canvas', {
     timeout: 120000,

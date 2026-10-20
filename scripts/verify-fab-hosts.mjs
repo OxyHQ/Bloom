@@ -14,7 +14,7 @@ try {
   const page = await browser.newPage();
   for (const [story, width, selector] of [
     ['base-fab--default', 900, '[aria-label="Compose"]'],
-    ['navigation-bottombar--default', 900, '[aria-label="Create"]'],
+    ['base-bottom-bar--default', 900, '[aria-label="Create"]'],
     ['templates-social--light-olive', 900, '[data-testid="sidebar-primary-action"]'],
     ['templates-social--light-olive', 390, '[aria-label="New post"]'],
   ]) {
@@ -51,7 +51,7 @@ try {
       state.foreground,
       'The icon must follow the action foreground in every host',
     );
-    if (story === 'navigation-bottombar--default' || width === 390) {
+    if (story === 'base-bottom-bar--default' || width === 390) {
       const offset = await page.$eval(selector, (node) => {
         const action = node.getBoundingClientRect();
         const navigation =

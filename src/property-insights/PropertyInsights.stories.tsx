@@ -60,7 +60,8 @@ import type {
 } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Property Insights',
+  id: 'blocks-housing-property-insights',
+  title: 'Patterns/Housing/Property Insights',
   parameters: { layout: 'fullscreen' },
 };
 

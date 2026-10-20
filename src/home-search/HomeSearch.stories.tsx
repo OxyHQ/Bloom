@@ -39,7 +39,8 @@ import {
 import type { HomeSearchMode, MoveInValue } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Home Search',
+  id: 'blocks-housing-home-search',
+  title: 'Patterns/Housing/Home Search',
 };
 
 export default meta;

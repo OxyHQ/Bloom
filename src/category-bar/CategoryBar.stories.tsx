@@ -34,7 +34,8 @@ import { CategoryBar } from './CategoryBar';
 import type { CategoryBarItem } from './types';
 
 const meta: Meta<typeof CategoryBar> = {
-  title: 'Blocks/Stays/Category Bar',
+  id: 'blocks-stays-category-bar',
+  title: 'Components/Navigation/Category Bar',
   component: CategoryBar,
 };
 

@@ -6,7 +6,8 @@ import { ProgressiveBlur } from './index';
 import { Text } from '../typography';
 
 const meta: Meta<typeof ProgressiveBlur> = {
-  title: 'Base/Progressive Blur',
+  id: 'base-progressive-blur',
+  title: 'Components/Surfaces/Progressive Blur',
   component: ProgressiveBlur,
 };
 

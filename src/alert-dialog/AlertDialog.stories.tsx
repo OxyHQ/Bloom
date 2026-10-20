@@ -19,7 +19,8 @@ const meta: Meta<typeof AlertDialog> = {
     dismissible: { control: 'boolean' },
   },
   component: AlertDialog,
-  title: 'Base/Alert Dialog',
+  id: 'base-alert-dialog',
+  title: 'Components/Overlays/Alert Dialog',
 };
 
 export default meta;

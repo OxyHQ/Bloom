@@ -30,7 +30,8 @@ const meta: Meta<typeof CompositionBar> = {
     selectedKey: { control: 'text' },
     hintLabel: { control: 'text' },
   },
-  title: 'Charts/Composition Bar',
+  id: 'charts-composition-bar',
+  title: 'Components/Charts/Composition Bar',
   component: CompositionBar,
 };
 

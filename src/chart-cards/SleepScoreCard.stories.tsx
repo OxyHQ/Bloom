@@ -11,7 +11,8 @@ const meta: Meta<typeof SleepScoreCard> = {
     height: { control: 'number' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Sleep Score',
+  id: 'charts-sleep-score',
+  title: 'Components/Charts/Sleep Score',
   component: SleepScoreCard,
 };
 

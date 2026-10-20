@@ -20,7 +20,8 @@ const meta: Meta<typeof RadialChartCard> = {
     tiles: { control: 'boolean' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Radial Chart',
+  id: 'charts-radial-chart',
+  title: 'Components/Charts/Radial Chart',
   component: RadialChartCard,
 };
 

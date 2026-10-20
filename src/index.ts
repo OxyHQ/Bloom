@@ -182,6 +182,8 @@ export {
   useScrollMetricsBinding,
   useAnimatedScrollMetricsBinding,
   ScrollArea,
+  ResizeHandle,
+  ScrollSurface,
   useScrollOffset,
   ScreenScope,
   HeaderDockProvider,
@@ -193,6 +195,8 @@ export type {
   ScrollMetricsBindingOptions,
   AnimatedScrollMetricsBindingOptions,
   ScrollAreaProps,
+  ResizeHandleProps,
+  ScrollSurfaceProps,
 } from './layout';
 export { Fab } from './fab';
 export type { FabProps, FabSize } from './fab';

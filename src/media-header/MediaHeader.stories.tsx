@@ -32,7 +32,8 @@ import type { DownloadState, MediaViewMode, PopularTrack } from './types';
 import { useMediaHeaderScroll } from './use-media-header-scroll';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Media Headers',
+  id: 'blocks-music-media-headers',
+  title: 'Patterns/Music/Media Headers',
   parameters: { layout: 'fullscreen' },
 };
 

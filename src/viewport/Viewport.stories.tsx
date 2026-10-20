@@ -5,7 +5,11 @@ import { ViewportProvider, useViewportBinding, useInView } from './index';
 import { RatingBar } from '../rating';
 import { Text } from '../typography';
 
-export default { title: 'Foundations/Viewport', component: ViewportProvider } satisfies Meta;
+export default {
+  id: 'foundations-viewport',
+  title: 'Composition/Layout/Viewport',
+  component: ViewportProvider,
+} satisfies Meta;
 type Story = StoryObj;
 function Histogram() {
   const { inView, targetProps } = useInView({ threshold: 1, once: true });

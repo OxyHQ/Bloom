@@ -202,13 +202,13 @@ The contracts are worth nothing if they only work in the screen they were built 
 
 What that instrument cannot see is written at the top of the file: no paint, no layer order, no hit testing, no focus. Those have their own scripts in `scripts/verify-*.mjs`.
 
-## What is not done
+## Adoption and remaining work
 
-This page describes contracts that exist and are gated, and the [adoption matrix](/docs/adoption-matrix) measures where they are read. What is still open, named rather than implied:
+The [adoption matrix](/docs/adoption-matrix) derives four family-level contracts from source. The previously named Field and controlled-state adaptations now read the shared contracts: selectable domain cards and questionnaire answers inherit Field constraints, and their state uses `useControllableState`. Input OTP still normalizes its value at the component boundary.
 
-- **Three families hand-roll the semantics of a grouped choice.** `questionnaire`, `listing-editor` and `listing-actions` write `role="radiogroup"`/`role="checkbox"` over their own cards instead of composing `RadioGroup`/`Checkbox`, so a `Field` can neither name nor disable them. Each is a redesign of an answer control rather than an import, which is why it is recorded instead of rushed. The matrix names them and the gate keeps the list from growing.
-- **Seven families reconcile a controlled/uncontrolled pair by hand** rather than through `useControllableState`. The matrix names them too; `input-otp` has a reason (it cleans and pads the string), the rest do not.
-- **State-family naming is not unified.** `value`/`defaultValue`/`onValueChange`, `checked`/`onCheckedChange` and `open`/`onOpenChange` are used consistently by the families that have them, but no sweep has been made to rename the exceptions (`onChangeText` among them, which is a React Native contract worth keeping).
-- **`BloomProvider` still imports the Expo Router adapter directly.** Decoupling the core from the router is listed in #145 §8 and is not in this change.
-- **No adaptive overflow.** Actions that do not fit are not collapsed into a menu. #145 says explicitly that this is not required for the first header, and nothing here does it.
-- **iOS and Android are not device-verified for any of this.** The instruments used are `tsc`, the jest suites and a real Chrome; a native run is not among them.
+The [composition audit](/docs/composition-audit) records the broader review: scroll ownership, panel geometry, platform bindings, reusable primitives and Storybook organization. A family importing a contract is evidence of adoption, not proof that every interaction or every child is correct.
+
+- **State names retain their meaning.** `value`, `checked`, `open` and React Native's `onChangeText` remain distinct public contracts. Sharing the reconciliation hook does not require renaming them.
+- **Custom choice groups need a separate keyboard review.** Field constraints and single-choice activation do not establish the complete arrow-key and roving-focus behavior of a RadioGroup.
+- **No adaptive action overflow.** Headers do not automatically collapse excess actions into a menu.
+- **Native device coverage remains outstanding.** The current composition audit includes TypeScript and browser inspection; it does not claim iOS or Android device validation.

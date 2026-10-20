@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -173,8 +174,11 @@ export function HeatmapChartCard({
   const cols = columns.length;
   const labelEvery = columnLabelEvery ?? Math.max(1, Math.ceil(cols / 12));
 
-  const [own, setOwn] = useState<HeatmapCell | null>(null);
-  const rawActive = controlled !== undefined ? controlled : own;
+  const [rawActive, setSelection] = useControllableState<HeatmapCell | null>({
+    value: controlled,
+    defaultValue: null,
+    onChange: onActiveCellChange,
+  });
   const active =
     rawActive && rawActive.row < rows.length && rawActive.col < cols ? rawActive : null;
   const activeRef = useRef(active);
@@ -183,10 +187,9 @@ export function HeatmapChartCard({
     (cell: HeatmapCell | null) => {
       if (sameCell(cell, activeRef.current)) return;
       activeRef.current = cell;
-      if (controlled === undefined) setOwn(cell);
-      onActiveCellChange?.(cell);
+      setSelection(cell);
     },
-    [controlled, onActiveCellChange],
+    [setSelection],
   );
 
   const hovering = active !== null;

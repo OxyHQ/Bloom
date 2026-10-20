@@ -22,7 +22,8 @@ const meta: Meta<typeof Checkbox> = {
       options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
     },
   },
-  title: 'Base/Checkbox',
+  id: 'base-checkbox',
+  title: 'Components/Inputs/Checkbox',
   component: Checkbox,
 };
 

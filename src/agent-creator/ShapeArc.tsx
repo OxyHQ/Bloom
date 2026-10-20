@@ -181,7 +181,7 @@ export function ShapeArc({
     });
   useTrackEvents(
     ref,
-    (x, y) => move(target.value + (Math.abs(x) > Math.abs(y) ? x * sign : y) / 110),
+    (delta) => move(target.value + (delta * sign) / 110),
     (key) => {
       const step =
         key === 'ArrowRight'

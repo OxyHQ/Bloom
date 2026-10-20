@@ -26,7 +26,8 @@ import type {
 } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Player',
+  id: 'blocks-music-player',
+  title: 'Patterns/Music/Player',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -1,8 +1,9 @@
+import { useFieldMembership } from '../field/membership';
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { useContainerWidth } from '../hooks/use-container-width';
-import { resolveSelectionPaint, SelectionCard } from '../listing-editor/SelectionCard';
+import { resolveSelectionPaint, SelectionCard } from '../card/SelectionCard';
 import { useMessages } from '../locale/messages';
 import {
   SegmentedControl,
@@ -66,7 +67,7 @@ function ShipmentLoadPickerComponent({
   maxQuantity = 20,
   errors = {},
   labels: labelOverrides,
-  disabled = false,
+  disabled: disabledProp = false,
   style,
   testID,
 }: ShipmentLoadPickerProps) {
@@ -79,6 +80,12 @@ function ShipmentLoadPickerComponent({
     () => ({ ...SHIPMENT_LOAD_LABELS, ...messages.load, ...labelOverrides }),
     [messages, labelOverrides],
   );
+  const field = useFieldMembership({
+    accessibilityLabel: labelOverrides?.kind,
+    disabled: disabledProp,
+    invalid: !!errors.kind,
+  });
+  const disabled = field.disabled;
   const { width, onLayout } = useContainerWidth();
   const wide = width === null || width >= SHIPMENT_REQUEST_GEOMETRY.narrowWidth;
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
@@ -95,7 +102,12 @@ function ShipmentLoadPickerComponent({
         <TextFieldLabel>{labels.kind}</TextFieldLabel>
         <View
           role="radiogroup"
-          accessibilityLabel={labels.kind}
+          nativeID={field.nativeID}
+          aria-describedby={field.describedBy}
+          aria-invalid={field.invalid || undefined}
+          aria-disabled={disabled || undefined}
+          aria-required={field.required || undefined}
+          accessibilityLabel={field.accessibilityLabel ?? labels.kind}
           style={{ gap: 12 }}
           testID={id('kind')}
         >

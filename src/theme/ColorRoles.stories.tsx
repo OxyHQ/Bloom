@@ -25,7 +25,8 @@ import {
 type PreviewArgs = { preset: AppColorName; direction: 'roles' | 'single-accent' };
 const presets = ['cobalt', 'jade', 'olive', 'lagoon'] as const;
 const meta: Meta<PreviewArgs> = {
-  title: 'Foundations/Color roles in context',
+  id: 'foundations-color-roles-in-context',
+  title: 'Foundations/Color Roles',
   parameters: { layout: 'fullscreen' },
   args: { preset: 'cobalt', direction: 'roles' },
   argTypes: {

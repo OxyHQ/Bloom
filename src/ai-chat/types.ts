@@ -350,7 +350,7 @@ export interface AiChatContainerProps {
   onMore?: () => void;
   /** Custom breadcrumb actions, replacing the default share/more controls. */
   actions?: ReactNode;
-  /** Rendered above the breadcrumb — the shell's `AiChatMobileHeader`. */
+  /** Replaces the shared PageHeader; the route owns its title and actions. */
   header?: ReactNode;
   /** The thread — usually an `AiChatThread`. */
   children: ReactNode;
@@ -478,11 +478,11 @@ export interface AiChatShellProps {
   sidebarCollapsed?: boolean;
   /** Optional collapsed column width override. Omit to let the sidebar size and animate itself. */
   collapsedSidebarWidth?: number;
-  /** The flat sidebar revealed under the workspace below `lg`. Default: none (no nav drawer). */
+  /** Navigation content for integrations without an in-flow sidebar. */
   mobileSidebar?: ReactNode;
   /** The chat container. */
   children: ReactNode;
-  /** The right panel. Receives its current width (`'100%'` in the phone drawer). */
+  /** Context content fills its AppShell track; receives '100%'. */
   panel?: (width: number | '100%') => ReactNode;
   /** The panel's name in the drawer header and its buttons ("Gallery"). `'Code'` in English. */
   panelLabel?: string;
@@ -495,18 +495,7 @@ export interface AiChatShellProps {
   /** Controlled nav drawer (below `lg`). */
   navOpen?: boolean;
   onNavOpenChange?: (open: boolean) => void;
-  /**
-   * Open the nav drawer by dragging in from the left edge, and close it by
-   * dragging the open drawer back. Default `true` — a drawer that cannot be
-   * swiped is a drawer with no way to open it on touch but the one button.
-   *
-   * It is armed only where there is a drawer to open: below `lg`, and only
-   * with a `mobileSidebar`. An opening drag has to start within 24px of the
-   * left edge and be clearly horizontal before it is claimed, so a vertical
-   * scroll and a horizontal drag in the middle of the screen both stay with
-   * the content. Turn it off for a host whose own content wants the left edge
-   * below `lg`.
-   */
+  /** @deprecated Panel selection uses AppShell; root gestures stay with the content scroller. */
   navSwipeEnabled?: boolean;
   /** Controlled panel drawer (below `xl`). */
   panelOpen?: boolean;
@@ -573,18 +562,5 @@ export interface AiChatMobileHeaderProps {
   testID?: string;
 }
 
-export interface AiChatResizeHandleProps {
-  /** Separator orientation; horizontal separators resize panel heights. */
-  orientation?: 'vertical' | 'horizontal';
-  /** Pointer went down on the grip. */
-  onResizeStart?: () => void;
-  /** Distance along the resize axis from the drag start, px. */
-  onResize: (dx: number) => void;
-  onResizeEnd?: () => void;
-  /** Names the separator. `'Resize panels'` in English. */
-  label?: string;
-  /** Keyboard nudge (web: ←/→ move by 16). */
-  onNudge?: (dx: number) => void;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
+/** @deprecated Use ResizeHandleProps from @oxy.so/bloom/layout. */
+export type AiChatResizeHandleProps = import('../layout/types').ResizeHandleProps;

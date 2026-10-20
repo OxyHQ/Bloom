@@ -1,10 +1,11 @@
-import React, { memo, useContext, useEffect, useId, useState } from 'react';
+import React, { memo, useContext, useEffect, useId, useInsertionEffect, useState } from 'react';
 import {
   Platform,
   StyleSheet,
   View,
   useWindowDimensions,
   type LayoutChangeEvent,
+  type ViewStyle,
 } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
@@ -13,6 +14,9 @@ import { BloomScope } from '../appearance';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from '../page-header/EdgeScrim';
 import { BREAKPOINTS } from '../styles/breakpoints';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { dataHook } from '../styles/data-hook';
+import { WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
@@ -23,6 +27,16 @@ import { useDocumentAnchor } from './use-document-anchor';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 
 const BAR_HEIGHT = 56;
+const FOOTER_LAYOUT_CSS = `
+[data-bloom-page-footer] { --bloom-page-footer-inset: 16px; }
+@container bloom-page-footer (min-width: ${BREAKPOINTS.sm}px) {
+  [data-bloom-page-footer-row] { --bloom-page-footer-inset: 24px; }
+}
+`;
+const FOOTER_WEB_LAYOUT: WebCssStyle = {
+  containerType: 'inline-size',
+  containerName: 'bloom-page-footer',
+};
 
 /** Page-local controls floating over a bounded scroller, above app navigation. */
 function PageFooterComponent({
@@ -34,13 +48,18 @@ function PageFooterComponent({
   scrim = 'always',
   scrimColor,
   scrollThreshold = 20,
+  contentContainerStyle,
   style,
   testID,
 }: PageFooterProps) {
   const theme = useTheme();
+  useInsertionEffect(() => {
+    if (Platform.OS === 'web') adoptStyleSheet('bloom-page-footer-layout', FOOTER_LAYOUT_CSS);
+  }, []);
   const screen = useScreenContext();
   const footerScreen = useContext(ScreenFooterContext);
   const positionedByScreen = screen != null && screen === footerScreen;
+  const inFlow = position === 'inline' || position === 'sticky';
   const documentAnchor = useDocumentAnchor(!positionedByScreen && position === 'document');
   const metrics = useScrollMetricsValue();
   const threshold = Math.max(1, Number.isFinite(scrollThreshold) ? scrollThreshold : 20);
@@ -52,28 +71,34 @@ function PageFooterComponent({
   );
   const fill = useSurfaceFill() ?? theme.colors.background;
   const occupied = useBottomEdgeInset();
-  const rawBottom = bottomInset ?? occupied;
+  const rawBottom = position === 'inline' ? 0 : (bottomInset ?? occupied);
   const bottom = Number.isFinite(rawBottom) ? Math.max(0, rawBottom) : 0;
   const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS);
   const padBottom = (safeArea ?? Platform.OS !== 'web') && bottom === 0 ? (insets?.bottom ?? 0) : 0;
   const windowWidth = useWindowDimensions().width;
-  const [width, setWidth] = useState<number | null>(null);
+  const [wide, setWide] = useState(windowWidth >= BREAKPOINTS.sm);
   // Measure the row, not the outer box: a safe-area change can then update the
   // published clearance immediately rather than waiting for another onLayout.
   const [rowHeight, setRowHeight] = useState(BAR_HEIGHT);
   const height = rowHeight + padBottom;
-  const sideInset = (width ?? windowWidth) >= BREAKPOINTS.sm ? 24 : 16;
+  const sideInset =
+    Platform.OS === 'web'
+      ? ('var(--bloom-page-footer-inset, 16px)' as ViewStyle['paddingLeft'])
+      : wide
+        ? 24
+        : 16;
   const store = useContext(PageFooterContext);
   const id = useId();
   useEffect(() => {
-    if (positionedByScreen) return;
+    if (positionedByScreen || inFlow) return;
     store?.claim(id, height + bottom);
     return () => store?.release(id);
-  }, [store, id, height, bottom, positionedByScreen]);
+  }, [store, id, height, bottom, positionedByScreen, inFlow]);
 
   const onLayout = (event: LayoutChangeEvent) => {
     const layout = event.nativeEvent.layout;
-    if (Number.isFinite(layout.width)) setWidth(Math.max(0, layout.width));
+    if (Platform.OS !== 'web' && Number.isFinite(layout.width))
+      setWide(layout.width >= BREAKPOINTS.sm);
     if (Number.isFinite(layout.height)) setRowHeight(Math.max(0, layout.height));
   };
 
@@ -90,11 +115,25 @@ function PageFooterComponent({
       ) : null}
       <View
         testID={testID}
+        {...dataHook('bloomPageFooter')}
         pointerEvents="box-none"
         style={[
           styles.container,
-          positionedByScreen
-            ? { position: 'relative', left: undefined, right: undefined, paddingBottom: padBottom }
+          Platform.OS === 'web' ? FOOTER_WEB_LAYOUT : undefined,
+          positionedByScreen || inFlow
+            ? {
+                position:
+                  !positionedByScreen && position === 'sticky' && Platform.OS === 'web'
+                    ? WEB_POSITION_STICKY
+                    : 'relative',
+                left: undefined,
+                right: undefined,
+                bottom:
+                  !positionedByScreen && position === 'sticky' && Platform.OS === 'web'
+                    ? bottom
+                    : undefined,
+                paddingBottom: padBottom,
+              }
             : { bottom, paddingBottom: padBottom },
           documentAnchor.style,
           style,
@@ -115,8 +154,13 @@ function PageFooterComponent({
         ) : null}
         <View
           onLayout={onLayout}
+          {...dataHook('bloomPageFooterRow')}
           pointerEvents="box-none"
-          style={[styles.row, { paddingLeft: sideInset, paddingRight: sideInset }]}
+          style={[
+            styles.row,
+            { paddingLeft: sideInset, paddingRight: sideInset },
+            contentContainerStyle,
+          ]}
           testID={testID ? `${testID}-row` : undefined}
         >
           <BloomScope>

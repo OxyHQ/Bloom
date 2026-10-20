@@ -9,7 +9,8 @@ import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
   component: Slider,
-  title: 'Base/Slider',
+  id: 'base-slider',
+  title: 'Components/Inputs/Slider',
 };
 
 export default meta;

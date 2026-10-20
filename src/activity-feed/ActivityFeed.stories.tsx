@@ -11,7 +11,8 @@ import { ACTIVITY_FEED_KINDS } from './constants';
 import type { ActivityFeedEntry, ActivityFeedKind } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/CRM/ActivityFeed',
+  id: 'blocks-crm-activityfeed',
+  title: 'Patterns/CRM/Activity Feed',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

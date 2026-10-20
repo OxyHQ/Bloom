@@ -58,9 +58,9 @@ export interface WizardFooterProps {
   /** A short line between the actions ("Saved a minute ago"). Hidden below 480 wide. */
   status?: string;
   /**
-   * Pins the bar to the bottom of its scroll container on web
-   * (`position: sticky`). Native has no sticky positioning: render the footer
-   * after the `ScrollView`, outside it, and it stays put. Default `true`.
+   * PageFooter sticky positioning on web; inline placement on native.
+   * False keeps normal flow on both platforms. Screen.bottomBar owns placement
+   * when the footer is used in that slot. Default true.
    */
   sticky?: boolean;
   style?: StyleProp<ViewStyle>;

@@ -27,6 +27,31 @@ A header belongs to its screen. A panel containing that screen does not add
 another header. Scrolling belongs to one owner; an indicator observes that owner
 without introducing another scroll container.
 
+### Interaction follows the same ownership
+
+Navigation opens through `useAppShell()` or `AppShellMenuButton`, including when
+the page supplies its own PageHeader. A conversation list is shell navigation;
+it does not replace the conversation with another compact content panel.
+The default compact drawer reveals navigation beneath a displaced, rounded page.
+Use `drawer="overlay"` when an overlay is appropriate for the application.
+
+Opening, hiding and expanding retained panels uses the shell's transition.
+Direct resizing follows the gesture immediately: CSS variables on web and shared
+values on native update the existing tracks. React state and the controlled size
+callbacks commit the resting sizes at release; keyboard nudges commit immediately.
+Neither the application nor a chat adapter supplies its own resize animation.
+
+`active={false}` is a constraint on a retained Screen. Its scroller does not
+publish scroll observations, trigger pagination, or execute imperative scrolling
+against the visible document. Geometry observations describe the actual viewport,
+not a content wrapper whose height increases as messages arrive.
+
+Explicit navigation actions keep their intent: a PageHeader `onBack` overrides
+an inferred panel-history action. Composer variants share the same draft
+contract: uncontrolled drafts clear after submission; controlled drafts remain
+owned by the host. Disabled restrictions combine across adapters rather than
+being replaced by a nested default.
+
 ## A reusable screen
 
 This complete component can be a document route, a Deck column, or the body of
@@ -102,6 +127,36 @@ change callbacks persist user resizing. `hideBelow`, `collapseBelow` and
 layout through shared CSS/container-query rules on web; applications do not
 measure the window and calculate column positions themselves. See
 [AppShell](/docs/bloom/main/app-shell) for exact sizing and collapse semantics.
+
+For a three-column chat, the sidebar stays in the shell's navigation slot. The
+right panel can declare `floating: { below: 'xl', open, onOpenChange, label }`.
+Below that width it opens in Bloom's floating side sheet while the conversation stays
+in place. Use the sheet's `open` state for this action; `activePanel` selects
+between compact content tracks. Keep edited data in the workspace so it survives
+moving the secondary panel between its inline and modal hosts. The same
+`Screen` declares its `PageHeader` and `bottomBar` in both presentations. The host
+adds dismissal to that header; the surface owns focus and transition, without
+adding its own scrolling wrapper. Use `ScreenScrollView` for content so chrome,
+restoration and the one overlay scrollbar follow the actual panel viewport.
+Editor, code and gallery panels use this same contract. Bounded web viewports
+contain overscroll so a wheel at their edge does not move the document behind them.
+
+### Compose navigation as one Sidebar
+
+Dashboard and feed compact navigation defaults to `drawer="reveal"`: the page
+moves aside and rounds its corners while navigation waits beneath it. Choose
+`drawer="overlay"` explicitly for the overlay form. Feed retains the same
+content subtree across desktop/compact changes.
+Desktop navigation retains its normal Sidebar surface; reveal displacement and
+corner rounding apply only below the navigation breakpoint.
+
+Pass ordinary Sidebar props through `sidebar`. When a domain component already
+renders a full Sidebar, use `sidebar.render(resolvedProps)` rather than place it
+inside Sidebar `content`; that slot is for destinations in the existing
+scroller. `AppShellSidebarProps.width` optionally sets the expanded region width
+and is shared by CSS, native capacity and reveal geometry. Render callbacks
+receive the resolved mobile/collapse/dismissal props. A shell without navigation
+adds no sidebar or drawer.
 
 ### Choose scrolling explicitly
 

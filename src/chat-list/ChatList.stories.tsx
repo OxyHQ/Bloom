@@ -27,7 +27,8 @@ import type {
 } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Chat/Chat List',
+  id: 'blocks-chat-chat-list',
+  title: 'Patterns/Chat/Chat List',
 };
 
 export default meta;

@@ -12,6 +12,7 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
+  useDerivedValue,
   useReducedMotion,
   useSharedValue,
   withTiming,
@@ -21,9 +22,9 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
-import { Sidebar } from '../sidebar';
+import { SidebarSlot } from './SidebarSlot';
 import { animateMotion } from '../motion/recipes';
-import { useSidebarMetrics } from '../sidebar/metrics';
+import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import {
   WEB_OVERFLOW_CLIP,
@@ -52,6 +53,7 @@ import type { AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
+import { usePanelInteraction } from './use-panel-interaction';
 
 /**
  * The page frame — one engine, four shapes (`variant`).
@@ -92,7 +94,6 @@ import { useCssShellLayout } from './shell-layout-css';
 
 const REVEAL_EASE = Easing.bezier(0.42, 0, 0.58, 1);
 const REVEAL_MS = 325;
-const REVEAL_OFFSET = 272;
 
 /**
  * The page's scroller. `document`: a plain box, the page grows the document.
@@ -150,7 +151,7 @@ export function createAppShellEngine() {
     navigationGap,
     asideGap,
     sidebar,
-    drawer = 'overlay',
+    drawer = D.drawer,
     title,
     breadcrumb,
     actions,
@@ -227,7 +228,8 @@ export function createAppShellEngine() {
         : panelFrom !== undefined || nativeNavVariant === 'rail'
           ? 'sm'
           : 'lg');
-    const sidebarMetrics = useSidebarMetrics(sidebar?.size);
+    const sidebarMetrics = useAppShellSidebarMetrics(sidebar);
+    const revealOffset = sidebarMetrics.expanded + 12;
     const [userCollapsed, setUserCollapsed] = useState(sidebar?.defaultCollapsed ?? false);
     const cssShell = useCssShellLayout(cssScope, {
       sidebar,
@@ -274,8 +276,7 @@ export function createAppShellEngine() {
     // The drawer always opens the full panel, whatever the in-flow variant.
     const drawerSidebar = sidebar ? { ...sidebar, variant: 'panel' as const } : undefined;
 
-    // A feed may reveal its navigation while compact; its desktop column layout
-    // remains on the normal path below.
+    // Reveal keeps its page host mounted across compact/desktop changes.
     const drawerStyle = variant === 'dashboard' || variant === 'feed' ? drawer : 'overlay';
     const centred = variant === 'feed' || variant === 'focus';
     const canvas = variant === 'canvas';
@@ -400,17 +401,10 @@ export function createAppShellEngine() {
     const drawerAvailable = hasNav && !wide;
     const isOpen = open && drawerAvailable;
 
-    useEffect(() => {
-      if (Platform.OS !== 'web' || !isOpen || drawerStyle !== 'reveal') return;
-      const dismiss = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          setOpen(false);
-        }
-      };
-      document.addEventListener('keydown', dismiss);
-      return () => document.removeEventListener('keydown', dismiss);
-    }, [isOpen, drawerStyle, setOpen]);
+    const revealInteractionOpen = isOpen && drawerStyle === 'reveal';
+    const revealDrawerRef = usePanelInteraction(revealInteractionOpen, revealInteractionOpen, () =>
+      setOpen(false),
+    );
 
     const revealAvailable = drawerStyle === 'reveal' && drawerAvailable;
     const feedRevealAvailable = variant === 'feed' && revealAvailable;
@@ -444,7 +438,8 @@ export function createAppShellEngine() {
      */
     const opener = useRef<HTMLElement | null>(null);
     useEffect(() => {
-      if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+      if (drawerStyle === 'reveal' || Platform.OS !== 'web' || typeof document === 'undefined')
+        return;
       if (isOpen) {
         opener.current = document.activeElement as HTMLElement | null;
         return;
@@ -453,7 +448,7 @@ export function createAppShellEngine() {
       opener.current = null;
       if (previous && typeof previous.focus === 'function' && document.contains(previous))
         previous.focus();
-    }, [isOpen]);
+    }, [isOpen, drawerStyle]);
 
     const background = theme.colors.background;
 
@@ -826,235 +821,145 @@ export function createAppShellEngine() {
 
     // ---- the reveal drawer (dashboard's whole-page slide) -------------------
     const reveal = useSharedValue(isOpen ? 1 : 0);
+    // Crossing to desktop immediately restores its ordinary layout, including
+    // while a native compact reveal was still settling.
+    const revealAmount = useDerivedValue(
+      () => (revealAvailable ? reveal.value : 0),
+      [revealAvailable, reveal],
+    );
     useEffect(() => {
       const target = isOpen && drawerStyle === 'reveal' ? 1 : 0;
-      reveal.value = reducedMotion
-        ? target
-        : withTiming(target, { duration: REVEAL_MS, easing: REVEAL_EASE });
+      // The browser interpolates web frames; native keeps its UI-thread timing.
+      reveal.value =
+        Platform.OS === 'web' || reducedMotion
+          ? target
+          : withTiming(target, { duration: REVEAL_MS, easing: REVEAL_EASE });
     }, [isOpen, drawerStyle, reducedMotion, reveal]);
+    // Clip immediately on open; release overflow after the closing transition.
+    // A bounded Deck still owns document horizontal scrolling while at rest.
+    const revealTransition: WebCssStyle | null =
+      Platform.OS === 'web'
+        ? {
+            transitionProperty:
+              'transform, border-radius, opacity, padding-top, padding-bottom, top, bottom, overflow',
+            transitionDuration: `${Array(7)
+              .fill(!revealAvailable || reducedMotion ? '0ms' : `${REVEAL_MS}ms`)
+              .join(
+                ',',
+              )},${!revealAvailable || isOpen || reducedMotion ? '0ms' : `${REVEAL_MS}ms`}`,
+            transitionTimingFunction: `${Array(7).fill('cubic-bezier(0.42, 0, 0.58, 1)').join(',')},steps(1,end)`,
+            transitionBehavior: 'allow-discrete',
+          }
+        : null;
     const feedPageStyle = useAnimatedStyle(
       () => ({
         transform:
-          reveal.value === 0 ? [] : [{ translateX: dir * (REVEAL_OFFSET + 12) * reveal.value }],
+          revealAmount.value === 0
+            ? []
+            : [{ translateX: dir * (revealOffset + 12) * revealAmount.value }],
       }),
-      [reveal, dir],
+      [revealAmount, dir, revealOffset],
     );
 
     const feedChromeTransition: WebCssStyle =
       Platform.OS === 'web'
         ? {
-            '--bloom-panel-inset-duration': reducedMotion ? '0ms' : `${REVEAL_MS}ms`,
+            '--bloom-panel-inset-duration':
+              !revealAvailable || reducedMotion ? '0ms' : `${REVEAL_MS}ms`,
           }
         : {};
     const feedInsetsStyle = useAnimatedStyle(
       () => ({
-        paddingTop: 12 * reveal.value,
-        paddingBottom: 12 * reveal.value,
+        paddingTop: 12 * revealAmount.value,
+        paddingBottom: 12 * revealAmount.value,
       }),
-      [reveal],
+      [revealAmount],
     );
     const feedBarsStyle = useAnimatedStyle(
       () => ({
-        top: 12 * reveal.value,
-        bottom: 12 * reveal.value,
-        borderRadius: 28 * reveal.value,
+        top: 12 * revealAmount.value,
+        bottom: 12 * revealAmount.value,
+        borderRadius: 28 * revealAmount.value,
       }),
-      [reveal],
+      [revealAmount],
     );
 
     const railStyle = useAnimatedStyle(
       () => ({
-        opacity: reveal.value,
-        transform: [{ scale: 0.94 + 0.06 * reveal.value }],
+        opacity: revealAmount.value,
+        transform: [{ scale: 0.94 + 0.06 * revealAmount.value }],
       }),
-      [reveal],
+      [revealAmount],
     );
     const pageStyle = useAnimatedStyle(
       () => ({
-        transform: reveal.value === 0 ? [] : [{ translateX: dir * REVEAL_OFFSET * reveal.value }],
-        borderRadius: 32 * reveal.value,
+        transform:
+          revealAmount.value === 0 ? [] : [{ translateX: dir * revealOffset * revealAmount.value }],
+        borderRadius: 32 * revealAmount.value,
       }),
-      [reveal, dir],
+      [revealAmount, dir, revealOffset],
     );
-    const veilStyle = useAnimatedStyle(() => ({ opacity: reveal.value }), [reveal]);
+    const veilStyle = useAnimatedStyle(() => ({ opacity: revealAmount.value }), [revealAmount]);
 
-    if (drawerStyle === 'reveal' && variant === 'dashboard') {
-      return safeFrame(
-        <AppShellProvider value={shell}>
+    // A DOCKED nav is flush to the window: it takes the shell's whole height and
+    // its own hairline is the separator, so the shell gives up its start and
+    // vertical padding around that column rather than framing it like a card
+    // (`dockedNav`, above).
+    const navRegion =
+      cssScope && hasNav && flowSidebar ? (
+        <View
+          testID={testID ? `${testID}-navigation` : undefined}
+          {...{ dataSet: { bloomShellNav: cssScope } }}
+          style={[
+            {
+              flexShrink: 0,
+              '--bloom-nav-overlay-surface': navigationChrome.surface,
+              '--bloom-nav-overlay-border': navigationChrome.border,
+              '--bloom-nav-overlay-shadow': navigationChrome.shadow,
+            } as WebCssStyle,
+            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+          ]}
+        >
           <View
-            {...dirProps}
-            {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
-            testID={testID}
-            onLayout={onLayout}
-            style={[
-              frame,
-              doc ? { overflow: WEB_OVERFLOW_CLIP } : null,
-              { flexDirection: 'row', backgroundColor: background },
-              style,
-            ]}
+            {...{ dataSet: { bloomShellNavMode: 'panel' } }}
+            aria-hidden={cssShell?.mode !== 'panel'}
+            {...(cssShell?.mode !== 'panel' ? { inert: true } : {})}
+            style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
           >
-            {navInFlow && flowSidebar ? (
-              <View
-                style={[
-                  flowSidebar.surface === 'docked'
-                    ? { flexShrink: 0 }
-                    : {
-                        paddingTop: revealGutter,
-                        paddingBottom: revealGutter,
-                        paddingInlineStart: revealGutter,
-                        flexShrink: 0,
-                      },
-                  doc ? stickyRail(0) : null,
-                ]}
-              >
-                {safeNavigation(<Sidebar {...flowSidebar} />)}
-              </View>
-            ) : null}
-            {drawerAvailable && drawerSidebar ? (
-              <View
-                testID={testID ? `${testID}-navigation-drawer` : undefined}
-                aria-hidden={!isOpen}
-                pointerEvents={isOpen ? 'auto' : 'none'}
-                // Fixed on web in document mode: the rail waits beneath the VIEWPORT,
-                // wherever the page is scrolled to.
-                style={{
-                  position: doc ? WEB_POSITION_FIXED : 'absolute',
-                  top: 0,
-                  bottom: 0,
-                  insetInlineStart: 0,
-                  width: 272,
-                  paddingTop: revealGutter,
-                  paddingBottom: revealGutter + navigationBottomInset,
-                  paddingInlineStart: revealGutter / 2,
-                }}
-              >
-                <Animated.View
-                  style={[{ height: '100%', width: 260, transformOrigin: railOrigin }, railStyle]}
-                >
-                  <Sidebar
-                    {...drawerSidebar}
-                    mobile
-                    surface="plain"
-                    onClose={() => setOpen(false)}
-                  />
-                </Animated.View>
-              </View>
-            ) : null}
-            <Animated.View
-              style={[
-                {
-                  flex: 1,
-                  minWidth: 0,
-                  flexDirection: 'row',
-                  overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden',
-                  backgroundColor: background,
-                },
-                wide ? null : pageStyle,
-              ]}
-            >
-              {/*
-              Basis 0 and shrink 1: with only `flexGrow` the column's basis is its
-              content's max-content width (react-native-web defaults `flexShrink`
-              to 0), so one long unwrapped line of text pushed the page past a
-              phone's edge in document mode.
-            */}
-              <Scroller
-                mode={mode}
-                testID={testID ? `${testID}-page` : undefined}
-                style={{ ...flexFill, minWidth: 0 }}
-                // `padding: 12` is a SHORTHAND, and react-native-web ranks its CSS
-                // shorthand against `padding-bottom` by sheet order rather than by
-                // the array's — so the reserve is spelled in longhands instead of
-                // layered over the shorthand, and only when there is one.
-                contentStyle={
-                  panelHost
-                    ? {
-                        paddingLeft: regionOuter,
-                        paddingRight: regionOuter,
-                        paddingTop: regionOuter,
-                        paddingBottom: regionOuter,
-                      }
-                    : pageReserve
-                      ? {
-                          paddingLeft: revealGutter,
-                          paddingRight: revealGutter,
-                          paddingTop: revealTopGutter,
-                          paddingBottom: revealGutter + pageReserve,
-                        }
-                      : { padding: revealGutter, paddingTop: revealTopGutter }
-                }
-              >
-                {column}
-              </Scroller>
-              {asideColumn(
-                panelHost
-                  ? {
-                      paddingTop: regionOuter,
-                      paddingBottom: regionOuter,
-                      paddingInlineEnd: regionOuter,
-                    }
-                  : {
-                      paddingTop: revealTopGutter,
-                      paddingBottom: revealGutter,
-                      paddingInlineEnd: revealGutter,
-                    },
-              )}
-              {!wide ? (
-                <Animated.View
-                  pointerEvents={isOpen ? 'auto' : 'none'}
-                  style={[
-                    {
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                    },
-                    veilStyle,
-                  ]}
-                >
-                  <Pressable
-                    role="button"
-                    accessibilityLabel={drawerCloseLabel}
-                    focusable={isOpen}
-                    onPress={() => setOpen(false)}
-                    style={{
-                      flex: 1,
-                      backgroundColor: theme.isDark
-                        ? 'rgba(255, 255, 255, 0.05)'
-                        : 'rgba(0, 0, 0, 0.1)',
-                    }}
-                    testID={testID ? `${testID}-veil` : undefined}
-                  />
-                </Animated.View>
-              ) : null}
-            </Animated.View>
-            {overlay}
-            {drawerAvailable ? (
-              <Animated.View
-                testID={testID ? `${testID}-reveal-bars` : undefined}
-                pointerEvents={isOpen ? 'none' : 'box-none'}
-                style={[
-                  {
-                    position: doc ? WEB_POSITION_FIXED : 'absolute',
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    overflow: 'hidden',
-                  },
-                  pageStyle,
-                ]}
-              >
-                {bars}
-              </Animated.View>
-            ) : (
-              bars
-            )}
+            {safeNavigation(<SidebarSlot {...flowSidebar} variant="panel" />)}
           </View>
-        </AppShellProvider>,
-      );
-    }
+          <View
+            {...{ dataSet: { bloomShellNavMode: 'rail' } }}
+            aria-hidden={cssShell?.mode !== 'rail'}
+            {...(cssShell?.mode !== 'rail' ? { inert: true } : {})}
+            style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
+          >
+            {safeNavigation(<SidebarSlot {...flowSidebar} variant="rail" />)}
+          </View>
+        </View>
+      ) : navInFlow && flowSidebar ? (
+        <View
+          testID={testID ? `${testID}-navigation` : undefined}
+          onLayout={
+            Platform.OS === 'web'
+              ? undefined
+              : (event) => setMeasuredNavigationWidth(event.nativeEvent.layout.width)
+          }
+          style={[
+            { flexShrink: 0 },
+            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+            !doc && canvas && !dockedNav
+              ? {
+                  paddingTop: gutter,
+                  paddingBottom: gutter,
+                  paddingInlineStart: gutter,
+                }
+              : null,
+          ]}
+        >
+          {safeNavigation(<SidebarSlot {...flowSidebar} />)}
+        </View>
+      ) : null;
 
     // ---- the page region, per variant ---------------------------------------
     /** `feed` / `focus`: a fixed reading column, centred in what the nav leaves. */
@@ -1215,66 +1120,6 @@ export function createAppShellEngine() {
 
     const body = canvas ? canvasBody : centred ? centredBody : dashboardBody;
 
-    // A DOCKED nav is flush to the window: it takes the shell's whole height and
-    // its own hairline is the separator, so the shell gives up its start and
-    // vertical padding around that column rather than framing it like a card
-    // (`dockedNav`, above).
-    const navRegion =
-      cssScope && hasNav && flowSidebar ? (
-        <View
-          testID={testID ? `${testID}-navigation` : undefined}
-          {...{ dataSet: { bloomShellNav: cssScope } }}
-          style={[
-            {
-              flexShrink: 0,
-              '--bloom-nav-overlay-surface': navigationChrome.surface,
-              '--bloom-nav-overlay-border': navigationChrome.border,
-              '--bloom-nav-overlay-shadow': navigationChrome.shadow,
-            } as WebCssStyle,
-            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
-          ]}
-        >
-          <View
-            {...{ dataSet: { bloomShellNavMode: 'panel' } }}
-            aria-hidden={cssShell?.mode !== 'panel'}
-            {...(cssShell?.mode !== 'panel' ? { inert: true } : {})}
-            style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
-          >
-            {safeNavigation(<Sidebar {...flowSidebar} variant="panel" />)}
-          </View>
-          <View
-            {...{ dataSet: { bloomShellNavMode: 'rail' } }}
-            aria-hidden={cssShell?.mode !== 'rail'}
-            {...(cssShell?.mode !== 'rail' ? { inert: true } : {})}
-            style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
-          >
-            {safeNavigation(<Sidebar {...flowSidebar} variant="rail" />)}
-          </View>
-        </View>
-      ) : navInFlow && flowSidebar ? (
-        <View
-          testID={testID ? `${testID}-navigation` : undefined}
-          onLayout={
-            Platform.OS === 'web'
-              ? undefined
-              : (event) => setMeasuredNavigationWidth(event.nativeEvent.layout.width)
-          }
-          style={[
-            { flexShrink: 0 },
-            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
-            !doc && canvas && !dockedNav
-              ? {
-                  paddingTop: gutter,
-                  paddingBottom: gutter,
-                  paddingInlineStart: gutter,
-                }
-              : null,
-          ]}
-        >
-          {safeNavigation(<Sidebar {...flowSidebar} />)}
-        </View>
-      ) : null;
-
     const drawerRegion =
       drawerAvailable && isOpen && drawerSidebar ? (
         <Portal>
@@ -1306,7 +1151,7 @@ export function createAppShellEngine() {
               }}
             >
               <View pointerEvents="auto" style={{ height: '100%' }}>
-                <Sidebar {...drawerSidebar} mobile onClose={() => setOpen(false)} />
+                <SidebarSlot {...drawerSidebar} mobile onClose={() => setOpen(false)} />
               </View>
             </View>
           </OverlayRoot>
@@ -1350,74 +1195,98 @@ export function createAppShellEngine() {
       backgroundColor: background,
     };
 
-    if (variant === 'feed' && drawerStyle === 'reveal' && drawerAvailable) {
+    if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
       return safeFrame(
         <AppShellProvider value={shell}>
           <View
             {...dirProps}
-            {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
             testID={testID}
             onLayout={onLayout}
             style={[
               frame,
+              revealTransition,
               {
-                overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden',
+                overflow:
+                  Platform.OS === 'web' ? (isOpen ? WEB_OVERFLOW_CLIP : 'visible') : 'hidden',
                 backgroundColor: background,
               },
               style,
             ]}
           >
-            <View
-              testID={testID ? `${testID}-navigation-drawer` : undefined}
-              aria-hidden={!isOpen}
-              pointerEvents={isOpen ? 'auto' : 'none'}
-              style={{
-                position: doc ? WEB_POSITION_FIXED : 'absolute',
-                top: 0,
-                bottom: 0,
-                insetInlineStart: 0,
-                width: 272,
-                paddingTop: revealGutter,
-                paddingBottom: revealGutter + navigationBottomInset,
-                paddingInlineStart: revealGutter / 2,
-              }}
-            >
-              <Animated.View
-                style={[{ height: '100%', width: 260, transformOrigin: railOrigin }, railStyle]}
+            {drawerAvailable && drawerSidebar ? (
+              <View
+                ref={revealDrawerRef}
+                tabIndex={-1}
+                testID={testID ? `${testID}-navigation-drawer` : undefined}
+                aria-hidden={!isOpen}
+                accessibilityViewIsModal={isOpen}
+                accessibilityElementsHidden={!isOpen}
+                importantForAccessibility={isOpen ? 'auto' : 'no-hide-descendants'}
+                {...(Platform.OS === 'web' && !isOpen ? { inert: true } : {})}
+                pointerEvents={isOpen ? 'auto' : 'none'}
+                style={{
+                  position: doc ? WEB_POSITION_FIXED : 'absolute',
+                  top: 0,
+                  bottom: 0,
+                  insetInlineStart: 0,
+                  width: revealOffset,
+                  paddingTop: revealGutter,
+                  paddingBottom: revealGutter + navigationBottomInset,
+                  paddingInlineStart: revealGutter / 2,
+                }}
               >
-                {drawerSidebar && (
-                  <Sidebar
-                    {...drawerSidebar}
-                    mobile
-                    surface="plain"
-                    onClose={() => setOpen(false)}
-                  />
-                )}
-              </Animated.View>
-            </View>
+                <Animated.View
+                  style={[
+                    { height: '100%', width: sidebarMetrics.expanded, transformOrigin: railOrigin },
+                    revealTransition,
+                    railStyle,
+                  ]}
+                >
+                  {drawerSidebar && (
+                    <SidebarSlot
+                      {...drawerSidebar}
+                      mobile
+                      surface="plain"
+                      onClose={() => setOpen(false)}
+                    />
+                  )}
+                </Animated.View>
+              </View>
+            ) : null}
             <Animated.View
               testID={testID ? `${testID}-reveal-page` : undefined}
               style={[
                 {
                   flexGrow: 1,
                   minWidth: 0,
-                  overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden',
+                  overflow:
+                    Platform.OS === 'web' ? (isOpen ? WEB_OVERFLOW_CLIP : 'visible') : 'hidden',
                   backgroundColor: background,
                 },
+                revealTransition,
                 feedChromeTransition,
-                feedPageStyle,
-                feedInsetsStyle,
+                variant === 'feed' ? feedPageStyle : pageStyle,
+                variant === 'feed' ? feedInsetsStyle : null,
               ]}
             >
-              {topBarNode}
-              <StyledView className={doc ? undefined : 'flex-1 min-h-0'}>
-                <View
-                  {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
-                  style={[rowStyle, { flexGrow: 1, minWidth: 0 }]}
-                >
-                  {body}
-                </View>
-              </StyledView>
+              <View
+                aria-hidden={isOpen}
+                accessibilityElementsHidden={isOpen}
+                importantForAccessibility={isOpen ? 'no-hide-descendants' : 'auto'}
+                {...(Platform.OS === 'web' && isOpen ? { inert: true } : {})}
+                style={{ flexGrow: 1, minHeight: 0, minWidth: 0 }}
+              >
+                {topBarNode}
+                <StyledView className={doc ? undefined : 'flex-1 min-h-0'}>
+                  <View
+                    {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
+                    style={[rowStyle, { flexGrow: 1, minWidth: 0 }]}
+                  >
+                    {navRegion}
+                    {body}
+                  </View>
+                </StyledView>
+              </View>
               <Animated.View
                 pointerEvents={isOpen ? 'auto' : 'none'}
                 style={[
@@ -1428,6 +1297,7 @@ export function createAppShellEngine() {
                     right: 0,
                     bottom: 0,
                   },
+                  revealTransition,
                   veilStyle,
                 ]}
               >
@@ -1435,6 +1305,8 @@ export function createAppShellEngine() {
                   role="button"
                   accessibilityLabel={drawerCloseLabel}
                   focusable={isOpen}
+                  tabIndex={isOpen ? 0 : -1}
+                  aria-hidden={!isOpen}
                   onPress={() => setOpen(false)}
                   testID={testID ? `${testID}-veil` : undefined}
                   style={{ flex: 1 }}
@@ -1444,6 +1316,10 @@ export function createAppShellEngine() {
             <Animated.View
               pointerEvents={isOpen ? 'none' : 'box-none'}
               testID={testID ? `${testID}-reveal-bars` : undefined}
+              aria-hidden={isOpen}
+              accessibilityElementsHidden={isOpen}
+              importantForAccessibility={isOpen ? 'no-hide-descendants' : 'auto'}
+              {...(Platform.OS === 'web' && isOpen ? { inert: true } : {})}
               style={[
                 {
                   position: doc ? WEB_POSITION_FIXED : 'absolute',
@@ -1451,8 +1327,9 @@ export function createAppShellEngine() {
                   right: 0,
                   overflow: 'hidden',
                 },
-                feedPageStyle,
-                feedBarsStyle,
+                revealTransition,
+                variant === 'feed' ? feedPageStyle : pageStyle,
+                variant === 'feed' ? feedBarsStyle : { top: 0, bottom: 0 },
               ]}
             >
               {bars}

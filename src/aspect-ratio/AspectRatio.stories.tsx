@@ -10,7 +10,8 @@ const meta: Meta<typeof AspectRatio> = {
   argTypes: {
     ratio: { control: 'number' },
   },
-  title: 'Base/Aspect Ratio',
+  id: 'base-aspect-ratio',
+  title: 'Components/Media/Aspect Ratio',
   component: AspectRatio,
 };
 

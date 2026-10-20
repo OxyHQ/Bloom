@@ -2,10 +2,11 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 export interface PageFooterProps {
-  /** Absolute inside a bounded frame (default), or pinned to the document
-   * viewport while aligned to this footer's in-flow column on web. Native
-   * always uses absolute positioning inside its bounded frame. */
-  position?: 'absolute' | 'document';
+  /** Absolute inside a bounded frame (default), document-anchored on web,
+   * in normal flow (`inline`), or in flow pinned to the scroll container's
+   * bottom on web (`sticky`). Native sticky falls back to inline placement.
+   * A Screen bottomBar slot owns placement for every position. */
+  position?: 'absolute' | 'document' | 'inline' | 'sticky';
   /** Optional content before the actions, for example a selection summary. */
   children?: ReactNode;
   /** Controls grouped by the caller; inherits the surrounding Bloom size. */
@@ -31,6 +32,8 @@ export interface PageFooterProps {
   scrollThreshold?: number;
   /** Opaque gradient color; defaults to the containing surface's fill. */
   scrimColor?: string;
+  /** Layout of the controls row; use matching padding longhands to override its insets. */
+  contentContainerStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

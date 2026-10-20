@@ -16,7 +16,8 @@ const meta: Meta<typeof Admonition> = {
   argTypes: {
     type: { control: 'select', options: ['info', 'tip', 'warning', 'error', 'apology'] },
   },
-  title: 'Base/Admonition',
+  id: 'base-admonition',
+  title: 'Components/Feedback/Admonition',
   component: Admonition,
 };
 

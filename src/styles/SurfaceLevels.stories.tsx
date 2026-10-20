@@ -24,7 +24,8 @@ import {
  * thing on screen rather than a number in a test.
  */
 const meta: Meta = {
-  title: 'Base/Surface Levels',
+  id: 'base-surface-levels',
+  title: 'Foundations/Surface Levels',
   parameters: { layout: 'fullscreen' },
 };
 export default meta;

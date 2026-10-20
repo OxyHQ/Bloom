@@ -18,7 +18,8 @@ import { TrackRowSkeleton } from './TrackRowSkeleton';
 import type { Episode, Track, TrackMenuItem } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Track List',
+  id: 'blocks-music-track-list',
+  title: 'Patterns/Music/Track List',
   parameters: { layout: 'fullscreen' },
 };
 

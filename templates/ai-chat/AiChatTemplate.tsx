@@ -19,18 +19,20 @@ import {
   AiChatImageGeneration,
   AiChatLinkChip,
   AiChatMessageLine,
-  AiChatMobileHeader,
-  AiChatShell,
   AiChatStrong,
   AiChatThread,
   AiChatUserMessage,
   type AiChatGeneration,
 } from '../../src/ai-chat';
+import { AppShell } from '../../src/app-shell/index.web';
+import { useAppShell } from '../../src/app-shell/hooks';
+import { PageHeader } from '../../src/page-header';
+import { ButtonGroup, ButtonGroupItem } from '../../src/button-group/index.web';
 import { CodeBlock } from '../../src/code';
 import { ComposerLoader } from '../../src/composer-loader';
 import { ComposerPill, ComposerStatusBar } from '../../src/composer-panel';
-import { RiCodeSLine, RiGalleryLine } from '../../src/icons/remix';
-import { Sidebar } from '../../src/sidebar';
+import { RiCodeSLine, RiGalleryLine, RiMenuLine } from '../../src/icons/remix';
+
 import { TEMPLATE_FRAME } from '../shared/dashboard';
 import {
   ACCOUNT,
@@ -331,7 +333,8 @@ function Thread({
  */
 export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatScenario }) {
   const [scenario, setScenario] = useState<AiChatScenario>(defaultScenario);
-  const [navOpen, setNavOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState('conversation');
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [working, setWorking] = useState(false);
   const [stopped, setStopped] = useState(false);
   const [generated, setGenerated] = useState<AiChatGeneration[]>([]);
@@ -357,7 +360,8 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
     if ((SCENARIOS as ReadonlyArray<string>).includes(key)) {
       setScenario(key as AiChatScenario);
       setStopped(false);
-      setNavOpen(false);
+      setActivePanel('conversation');
+      setDrawerOpen(false);
     }
   };
 
@@ -374,91 +378,176 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
 
   return (
     <View style={TEMPLATE_FRAME}>
-      <AiChatShell
-        sidebar={<Sidebar {...sidebarProps} />}
-        mobileSidebar={<Sidebar {...sidebarProps} mobile surface="plain" />}
-        navOpen={navOpen}
-        onNavOpenChange={setNavOpen}
-        panelLabel={image ? 'Gallery' : 'Code'}
-        panelIcon={image ? RiGalleryLine : RiCodeSLine}
-        panel={(width) =>
-          image ? (
-            <AiChatGalleryPanel
-              width={width}
-              generations={GALLERY_WALL}
-              generated={generated}
-              style={width === '100%' ? { minHeight: 0, flex: 1, height: undefined } : undefined}
-            />
-          ) : (
-            <AiChatCodePanel
-              width={width}
-              code={PANEL_CODE}
-              language="tsx"
-              changeCount={12}
-              additions={156}
-              deletions={23}
-              changedFiles={[
-                {
-                  path: 'bloom/app/components/button.tsx',
-                  additions: 74,
-                  status: 'New',
-                  icon: <ReactLogo />,
-                },
-              ]}
-              style={width === '100%' ? { minHeight: 0, flex: 1, height: undefined } : undefined}
-            />
-          )
-        }
-      >
-        <AiChatContainer
-          project="vibl coding project"
-          title={
-            scenario === 'image-generation'
-              ? 'image generation'
-              : scenario === 'coding-scenario'
-                ? 'coding scenario'
-                : 'landing page design'
-          }
-          header={<AiChatMobileHeader title={image ? 'Image generation' : 'Agentic chat'} />}
-          working={working}
-          composer={
-            <>
-              <ComposerLoader active={working}>
-                {/*
+      <AppShell
+        variant="dashboard"
+        header={null}
+        contentMaxWidth="none"
+        scroll="fixed"
+        panels
+        sidebar={sidebarProps}
+        drawerOpen={drawerOpen}
+        onDrawerOpenChange={setDrawerOpen}
+        testID="ai-chat-template-shell"
+        panelLayout={{
+          mode: 'split',
+          flow: 'bounded',
+          activePanel,
+          panels: [
+            {
+              id: 'conversation',
+              minWidth: 320,
+              resizable: true,
+              headerActions: (
+                <ButtonGroup>
+                  <ButtonGroupItem
+                    iconOnly
+                    leadingIcon={image ? RiGalleryLine : RiCodeSLine}
+                    accessibilityLabel={image ? 'Open gallery' : 'Open code'}
+                    onPress={() => setActivePanel('context')}
+                  />
+                </ButtonGroup>
+              ),
+              content: (
+                <AiChatContainer
+                  header={
+                    <TemplateChatHeader
+                      title={
+                        scenario === 'image-generation'
+                          ? 'Image generation'
+                          : scenario === 'coding-scenario'
+                            ? 'Coding scenario'
+                            : 'Landing page design'
+                      }
+                    />
+                  }
+                  project="vibl coding project"
+                  title={
+                    scenario === 'image-generation'
+                      ? 'image generation'
+                      : scenario === 'coding-scenario'
+                        ? 'coding scenario'
+                        : 'landing page design'
+                  }
+                  working={working}
+                  composer={
+                    <>
+                      <ComposerLoader active={working}>
+                        {/*
                   `busy` + `onStop` is the turn-in-flight contract: send becomes
                   the stop disc, and it answers even with the rest of the
                   composer locked (`disabled`).
                 */}
-                <ComposerPill
-                  surface={false}
-                  frosted={working}
-                  models={MODELS}
-                  defaultModel="oxy/fable-5"
-                  disabled={working}
-                  busy={working}
-                  onStop={() => setStopped(true)}
-                />
-              </ComposerLoader>
-              <View style={{ paddingLeft: 6, paddingRight: 6 }}>
-                <ComposerStatusBar
-                  branch="Main"
-                  folders={LOCAL_FOLDERS}
-                  mode="Agent"
-                  context={57}
-                />
-              </View>
-            </>
-          }
-        >
-          <Thread
-            key={scenario}
-            scenario={scenario}
-            stopped={stopped}
-            onImageGenerated={onImageGenerated}
-            onWorkingChange={setWorking}
-          />
-        </AiChatContainer>
-      </AiChatShell>
+                        <ComposerPill
+                          surface={false}
+                          frosted={working}
+                          models={MODELS}
+                          defaultModel="oxy/fable-5"
+                          disabled={working}
+                          busy={working}
+                          onStop={() => setStopped(true)}
+                        />
+                      </ComposerLoader>
+                      <View style={{ paddingLeft: 6, paddingRight: 6 }}>
+                        <ComposerStatusBar
+                          branch="Main"
+                          folders={LOCAL_FOLDERS}
+                          mode="Agent"
+                          context={57}
+                        />
+                      </View>
+                    </>
+                  }
+                >
+                  <Thread
+                    key={scenario}
+                    scenario={scenario}
+                    stopped={stopped}
+                    onImageGenerated={onImageGenerated}
+                    onWorkingChange={setWorking}
+                  />
+                </AiChatContainer>
+              ),
+            },
+            {
+              id: 'context',
+              width: 410,
+              minWidth: 320,
+              maxWidth: 560,
+              floating: {
+                below: 'xl',
+                open: activePanel === 'context',
+                onOpenChange: (open) => setActivePanel(open ? 'context' : 'conversation'),
+                label: image ? 'Gallery' : 'Code',
+              },
+              content: (
+                <>
+                  {image ? (
+                    <AiChatGalleryPanel
+                      width="100%"
+                      generations={GALLERY_WALL}
+                      generated={generated}
+                      style={{
+                        minHeight: 0,
+                        flex: 1,
+                        height: '100%',
+                        backgroundColor: 'transparent',
+                        borderRadius: 0,
+                      }}
+                    />
+                  ) : (
+                    <AiChatCodePanel
+                      width="100%"
+                      code={PANEL_CODE}
+                      language="tsx"
+                      changeCount={12}
+                      additions={156}
+                      deletions={23}
+                      changedFiles={[
+                        {
+                          path: 'bloom/app/components/button.tsx',
+                          additions: 74,
+                          status: 'New',
+                          icon: <ReactLogo />,
+                        },
+                      ]}
+                      style={{
+                        minHeight: 0,
+                        flex: 1,
+                        height: '100%',
+                        backgroundColor: 'transparent',
+                        borderRadius: 0,
+                      }}
+                    />
+                  )}
+                </>
+              ),
+            },
+          ],
+        }}
+      />
     </View>
+  );
+}
+
+function TemplateChatHeader({ title }: { title: string }) {
+  const shell = useAppShell();
+  return (
+    <PageHeader
+      title={title}
+      safeArea={false}
+      leading={
+        shell.drawerAvailable ? (
+          <ButtonGroup>
+            <ButtonGroupItem
+              iconOnly
+              leadingIcon={RiMenuLine}
+              accessibilityLabel="Open navigation"
+              aria-expanded={shell.drawerOpen}
+              onPress={shell.toggleDrawer}
+            />
+          </ButtonGroup>
+        ) : undefined
+      }
+    />
   );
 }

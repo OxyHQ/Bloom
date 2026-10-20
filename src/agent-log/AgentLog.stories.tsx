@@ -19,7 +19,8 @@ import {
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Agents/Agent Log',
+  id: 'agents-agent-log',
+  title: 'Components/Agents/Agent Log',
 };
 
 export default meta;

@@ -23,7 +23,8 @@ const meta: Meta<typeof DatePicker> = {
     defaultOpen: { control: 'boolean' },
     locale: { control: 'text' },
   },
-  title: 'Base/Date Picker',
+  id: 'base-date-picker',
+  title: 'Components/Inputs/Date Picker',
   component: DatePicker,
 };
 

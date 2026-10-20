@@ -269,6 +269,11 @@ export interface AgentChatComposerLabels {
 }
 
 export interface AgentChatComposerProps {
+  /** Shared pill API: attachments, models, permissions, voice and keyboard integration. */
+  composerProps?: Omit<
+    import('../composer-panel/types').ComposerPillProps,
+    'value' | 'defaultValue' | 'onValueChange' | 'onSubmit' | 'onStop' | 'busy'
+  >;
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
@@ -277,7 +282,7 @@ export interface AgentChatComposerProps {
   onStop?: () => void;
   /** Shows the stop disc and lights the `ComposerLoader` band. */
   busy?: boolean;
-  /** Pressing the paperclip. The disc is always drawn. */
+  /** Enables the shared add menu's attachment action. */
   onAttach?: () => void;
   /** Model id, e.g. `"openai/gpt-5-nano"` — shown as `gpt-5-nano` with a sparkle. */
   model?: string | null;
@@ -308,6 +313,8 @@ export interface AgentChatLabels {
 }
 
 export interface AgentChatProps {
+  /** Blocks draft editing and submission; stopping an active turn remains available. */
+  disabled?: boolean;
   messages: ReadonlyArray<AgentChatMessageData>;
   /** Default `'ready'`. `submitted`/`streaming` are "busy". */
   status?: AgentChatStatus;
@@ -319,7 +326,7 @@ export interface AgentChatProps {
   /** Composer text, controlled. Uncontrolled when omitted (cleared on submit). */
   value?: string;
   onValueChange?: (value: string) => void;
-  /** A trimmed, non-empty message while not busy — from the composer or a suggestion. */
+  /** A trimmed message while not busy; attachment-only turns may pass empty text. */
   onSubmit?: (text: string) => void;
   onStop?: () => void;
   onAttach?: () => void;
@@ -333,6 +340,12 @@ export interface AgentChatProps {
 
   /** Leading header slot — a phone nav toggle mounts here. */
   headerLeading?: ReactNode;
+  /** Avatar/name composition in PageHeader's title slot. Owns its accessible semantics. */
+  headerIdentity?: ReactNode;
+  /** Defaults to center when headerIdentity is supplied, otherwise start. */
+  headerTitleAlign?: import('../page-header/types').PageHeaderTitleAlign;
+  /** Shared ComposerPill integrations; draft, submit and generation state are owned by AgentChat. */
+  composerProps?: AgentChatComposerProps['composerProps'];
 
   // Actions (header, right)
   onShare?: AgentChatActionsProps['onShare'];

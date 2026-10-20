@@ -12,7 +12,8 @@ const meta: Meta<typeof MostActiveDaysCard> = {
     headline: { control: 'number' },
     suffix: { control: 'text' },
   },
-  title: 'Charts/Most Active Days',
+  id: 'charts-most-active-days',
+  title: 'Components/Charts/Most Active Days',
   component: MostActiveDaysCard,
 };
 

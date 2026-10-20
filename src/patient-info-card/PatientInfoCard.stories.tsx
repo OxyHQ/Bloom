@@ -10,7 +10,8 @@ import { PatientInfoCard } from './index';
 import type { PatientInfoCardDetail } from './types';
 
 const meta: Meta<typeof PatientInfoCard> = {
-  title: 'Blocks/Patient Info',
+  id: 'blocks-patient-info',
+  title: 'Patterns/Healthcare/Patient Info',
   component: PatientInfoCard,
 };
 

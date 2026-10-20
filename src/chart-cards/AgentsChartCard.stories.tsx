@@ -20,7 +20,8 @@ const meta: Meta<typeof AgentsChartCard> = {
     activeColor: { control: 'text' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Agents Chart',
+  id: 'charts-agents-chart',
+  title: 'Components/Charts/Agents Chart',
   component: AgentsChartCard,
 };
 

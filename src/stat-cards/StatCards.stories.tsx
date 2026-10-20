@@ -14,7 +14,8 @@ import { StatCard, StatCards } from './index';
 import type { StatCardsItem } from './types';
 
 const meta: Meta<typeof StatCards> = {
-  title: 'Blocks/Stat Cards',
+  id: 'blocks-stat-cards',
+  title: 'Components/Charts/Stat Cards',
   component: StatCards,
 };
 

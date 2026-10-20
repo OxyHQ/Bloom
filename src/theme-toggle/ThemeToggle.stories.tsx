@@ -6,7 +6,8 @@ import { useTheme } from '../theme/use-theme';
 import { ThemeToggle } from './index';
 
 const meta: Meta<typeof ThemeToggle> = {
-  title: 'Blocks/Theme Toggle',
+  id: 'blocks-theme-toggle',
+  title: 'Components/Actions/Theme Toggle',
   component: ThemeToggle,
 };
 

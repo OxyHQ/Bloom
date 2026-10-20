@@ -38,7 +38,8 @@ const meta: Meta<typeof ActivityHeatmap> = {
     cellSize: { control: 'number' },
     gap: { control: 'number' },
   },
-  title: 'Charts/Activity Heatmap',
+  id: 'charts-activity-heatmap',
+  title: 'Components/Charts/Activity Heatmap',
   component: ActivityHeatmap,
 };
 

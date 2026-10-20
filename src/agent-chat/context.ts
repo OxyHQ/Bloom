@@ -1,6 +1,9 @@
+import type { ScreenComponents } from '../screen/types';
 import { createContext, useContext, type ComponentType } from 'react';
 
 import type { ComposerLoaderProps } from '../composer-loader';
+import type { AppShellProps } from '../app-shell/types';
+import type { ComposerPillProps } from '../composer-panel/types';
 import type {
   DropdownMenuContentProps,
   DropdownMenuItemProps,
@@ -12,14 +15,16 @@ import type {
  * The web-forked families agent-chat renders, injected by each platform
  * binding (`AgentChat.tsx` / `AgentChat.web.tsx`).
  *
- * `composer-loader` and `dropdown-menu` both ship a `.web` fork, and a relative
+ * `app-shell`, `composer-loader`, `composer-panel` and `dropdown-menu` ship `.web` forks, and a relative
  * import from a neutral file resolves to the NATIVE file under any bundler that
  * reads `package.json#exports` rather than Metro's platform extensions. So the
  * shared implementation never names them: each binding names its platform's
  * files and hands them down through this context.
  */
-export interface AgentChatPlatform {
+export interface AgentChatPlatform extends ScreenComponents {
+  AppShell: ComponentType<AppShellProps>;
   ComposerLoader: ComponentType<ComposerLoaderProps>;
+  ComposerPill: ComponentType<ComposerPillProps>;
   DropdownMenu: ComponentType<DropdownMenuProps>;
   DropdownMenuTrigger: ComponentType<DropdownMenuTriggerProps>;
   DropdownMenuContent: ComponentType<DropdownMenuContentProps>;

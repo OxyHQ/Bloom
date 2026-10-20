@@ -16,7 +16,8 @@ import {
 } from './index';
 
 const meta: Meta = {
-  title: 'Base/Input',
+  id: 'base-input',
+  title: 'Components/Inputs/Text Field',
   component: TextFieldInput,
 };
 

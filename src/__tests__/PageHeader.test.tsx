@@ -158,9 +158,9 @@ describe('PageHeader', () => {
     });
     // 16 side inset + 82 (wider side) + 8 gap.
     expect(resolvedStyle(screen.getByTestId('h-center').props.style)).toMatchObject({
-      position: 'absolute',
-      left: 106,
-      right: 106,
+      flex: 1,
+      marginLeft: 90,
+      marginRight: 90,
     });
     expect(screen.queryByTestId('h-title')).toBeTruthy();
   });
@@ -186,8 +186,8 @@ describe('PageHeader', () => {
       });
     });
     const slot = resolvedStyle(screen.getByTestId('h-center').props.style);
-    const left = slot.left as number;
-    const right = slot.right as number;
+    const left = 16 + (slot.marginLeft as number);
+    const right = 16 + (slot.marginRight as number);
     expect(320 - left - right).toBeGreaterThanOrEqual(96);
   });
 
@@ -213,13 +213,13 @@ describe('PageHeader', () => {
         nativeEvent: { layout: { x: 0, y: 0, width: 120, height: 36 } },
       });
     });
-    expect(resolvedStyle(screen.getByTestId('h-center').props.style).left).toBe(16 + 120 + 8);
+    expect(resolvedStyle(screen.getByTestId('h-center').props.style).marginLeft).toBe(120 + 8);
     screen.rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
         <PageHeader testID="h" presentation="bar" title="Messages" titleAlign="center" />
       </BloomThemeProvider>,
     );
-    expect(resolvedStyle(screen.getByTestId('h-center').props.style).left).toBe(16 + 0 + 8);
+    expect(resolvedStyle(screen.getByTestId('h-center').props.style).marginLeft).toBe(8);
   });
 
   it('border: auto is hidden at rest, always is drawn, none never', () => {

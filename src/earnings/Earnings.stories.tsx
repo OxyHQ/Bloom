@@ -12,7 +12,8 @@ import { EarningsSummary } from './EarningsSummary';
 import type { EarningsPeriod } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Fulfilment/Earnings',
+  id: 'blocks-fulfilment-earnings',
+  title: 'Patterns/Fulfilment/Earnings',
   parameters: { layout: 'fullscreen' },
 };
 

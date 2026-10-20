@@ -6,7 +6,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Pagination } from './index';
 
 const meta: Meta<typeof Pagination> = {
-  title: 'Base/Pagination',
+  id: 'base-pagination',
+  title: 'Components/Navigation/Pagination',
   component: Pagination,
 };
 

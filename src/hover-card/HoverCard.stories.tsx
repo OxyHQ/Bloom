@@ -10,7 +10,8 @@ import { UserHoverCard } from '../user-hover-card';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './index';
 
 const meta: Meta = {
-  title: 'Base/Hover Card',
+  id: 'base-hover-card',
+  title: 'Components/Overlays/Hover Card',
 };
 
 export default meta;

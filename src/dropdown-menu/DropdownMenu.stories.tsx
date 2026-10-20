@@ -36,7 +36,8 @@ const meta: Meta = {
   },
   component: DropdownMenu,
   parameters: { controls: { disable: true } },
-  title: 'Base/Dropdown',
+  id: 'base-dropdown',
+  title: 'Components/Overlays/Dropdown',
 };
 
 export default meta;

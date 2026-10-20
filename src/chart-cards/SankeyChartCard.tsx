@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Platform,
@@ -175,15 +176,17 @@ export function SankeyChartCard({
   const headline = selected?.headline ?? headlineProp;
   const delta = selected?.delta ?? deltaProp;
 
-  const [own, setOwn] = useState<SankeyActiveItem | null>(null);
-  const active = controlled !== undefined ? controlled : own;
+  const [active, setSelection] = useControllableState<SankeyActiveItem | null>({
+    value: controlled,
+    defaultValue: null,
+    onChange: onActiveItemChange,
+  });
   const setActive = useCallback(
     (item: SankeyActiveItem | null) => {
       if (sameItem(item, active)) return;
-      if (controlled === undefined) setOwn(item);
-      onActiveItemChange?.(item);
+      setSelection(item);
     },
-    [active, controlled, onActiveItemChange],
+    [active, setSelection],
   );
 
   const neutral = useMemo<ChartSeriesTone>(() => {

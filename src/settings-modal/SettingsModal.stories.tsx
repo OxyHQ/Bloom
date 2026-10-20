@@ -54,7 +54,8 @@ import type {
 } from './types';
 
 const meta: Meta<typeof SettingsModal> = {
-  title: 'Blocks/Settings Modal',
+  id: 'blocks-settings-modal',
+  title: 'Patterns/Account/Settings Modal',
   component: SettingsModal,
   parameters: { layout: 'fullscreen' },
 };

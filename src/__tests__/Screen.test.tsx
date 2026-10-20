@@ -187,6 +187,39 @@ it('removes bottom chrome and its reserved footprint while the keyboard is visib
   }
 });
 
+it('retains a composer and its footprint while the native keyboard is visible', () => {
+  const handlers: Record<string, () => void> = {};
+  const originalOS = Platform.OS;
+  const originalListener = Keyboard.addListener;
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+  Keyboard.addListener = (name, callback) => {
+    handlers[name] = callback as () => void;
+    return { remove: jest.fn() } as unknown as ReturnType<typeof Keyboard.addListener>;
+  };
+  try {
+    const tree = render(
+      wrap(
+        <Screen
+          bottomBar={<View testID="composer" />}
+          bottomBarHeight={96}
+          bottomBarKeyboardBehavior="visible"
+        >
+          <ScreenScrollView testID="scroll" />
+        </Screen>,
+      ),
+    );
+    act(() => handlers.keyboardDidShow?.());
+    expect(tree.getByTestId('composer')).toBeTruthy();
+    expect(
+      resolvedStyle(tree.getByTestId('scroll').props.contentContainerStyle).paddingBottom,
+    ).toBe(112);
+    tree.unmount();
+  } finally {
+    Keyboard.addListener = originalListener;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS });
+  }
+});
+
 it('inherits shell navigation motion while keeping route offsets local and modal motion isolated', () => {
   const states: Record<string, ScreenContextValue> = {};
   function Probe({ id }: { id: string }) {

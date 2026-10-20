@@ -9,7 +9,8 @@ import { PriceSummaryLine } from './PriceSummaryLine';
 import type { PriceLine } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Commerce/PriceBreakdown',
+  id: 'blocks-commerce-pricebreakdown',
+  title: 'Patterns/Commerce/Price Breakdown',
   parameters: { layout: 'fullscreen' },
 };
 

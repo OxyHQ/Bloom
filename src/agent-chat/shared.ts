@@ -81,16 +81,9 @@ export function useAgentChatPalette(): AgentChatPalette {
 export const CARD_RADIUS = 24;
 /** `rounded-2lg` — rail rows. */
 export const ROW_RADIUS = 10;
-/** `max-w-3xl` — the message column and the composer. */
-export const COLUMN_MAX_WIDTH = 768;
+export { CHAT_CONTENT_MAX_WIDTH as COLUMN_MAX_WIDTH } from '../styles/chat-layout';
 /** `w-[260px]` — the history rail. */
 export const RAIL_WIDTH = 260;
-/** `h-12` — the overlaid header. */
-export const HEADER_HEIGHT = 48;
-/** `h-[52px]` — the composer pill. */
-export const COMPOSER_HEIGHT = 52;
-/** `size-9` — composer discs. */
-export const COMPOSER_CONTROL = 36;
 /** `size-7` — header and message action buttons. */
 export const ACTION_SIZE = 28;
 /** `w-[190px] p-2` — the chat and row menus. */
@@ -174,7 +167,6 @@ const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
  *   trigger on hover or keyboard focus (`group-hover/row`,
  *   `group-has-[:focus-visible]/slot`);
  * - the rail list's hidden scrollbar (`[scrollbar-width:none]`);
- * - the header's border/frost transition.
  */
 export const AGENT_CHAT_WEB_CSS = `
 [data-bloom-agent-chat-control] {
@@ -217,18 +209,12 @@ export const AGENT_CHAT_WEB_CSS = `
 }
 [data-bloom-agent-chat-scroll-hidden] { scrollbar-width: none; }
 [data-bloom-agent-chat-scroll-hidden]::-webkit-scrollbar { display: none; }
-[data-bloom-agent-chat-header] {
-  transition: background-color ${TRANSITION_MS}ms ${EASE}, border-color ${TRANSITION_MS}ms ${EASE};
-}
-[data-bloom-agent-chat-field]::placeholder { color: var(--bloom-agent-chat-placeholder); }
-[data-bloom-agent-chat-field]:focus { outline: none; }
 @media (prefers-reduced-motion: reduce) {
   [data-bloom-agent-chat-control],
   [data-bloom-agent-chat-actions],
   [data-bloom-agent-chat-thread],
   [data-bloom-agent-chat-age],
-  [data-bloom-agent-chat-row-menu],
-  [data-bloom-agent-chat-header] { transition: none; }
+  [data-bloom-agent-chat-row-menu] { transition: none; }
 }
 `;
 

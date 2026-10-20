@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  *
- * A closed drawer stays mounted offscreen, so on web it has to leave the tab
+ * A presented panel stays mounted when hidden, so on web it has to leave the tab
  * order as well as the accessibility tree: `inert` while closed, nothing once
  * open. Rendered through react-native-web so the attribute is the real DOM one.
  */
@@ -12,7 +12,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => {
   // Narrower than `lg`, before the first `Dimensions.get` caches it.
   Object.defineProperty(document.documentElement, 'clientWidth', {
-    value: 800,
+    value: 400,
     configurable: true,
   });
   Object.defineProperty(document.documentElement, 'clientHeight', {
@@ -34,7 +34,7 @@ jest.mock('react-native-reanimated', () => {
 
 import { Pressable, Text, TextInput, View } from 'react-native';
 
-import { AiChatShell } from '../ai-chat';
+import { AiChatShell } from '../ai-chat/index.web';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resetOverlayStack } from '../overlay/stack';
 
@@ -77,25 +77,26 @@ function render(navOpen: boolean, onNavOpenChange: (open: boolean) => void = () 
     );
   });
   const row = container.querySelector('[data-testid="row"]');
-  if (!row) throw new Error('the drawer did not render');
+  if (!row && navOpen) throw new Error('the navigation panel did not render');
   return row;
 }
 
-describe('AiChatShell closed drawer (web)', () => {
-  it('makes the closed nav drawer inert and hidden', () => {
-    const drawer = render(false).closest('[inert]');
+describe('AiChatShell retained panel (web)', () => {
+  it('makes retained navigation inert and hidden after closing', () => {
+    render(true);
+    const drawer = render(false)!.closest('[inert]');
     expect(drawer).not.toBeNull();
     expect(drawer?.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('lifts both once the drawer opens', () => {
-    const row = render(true);
+  it('lifts both once navigation is selected', () => {
+    const row = render(true)!;
     expect(row.closest('[inert]')).toBeNull();
     expect(row.closest('[aria-hidden="true"]')).toBeNull();
   });
 });
 
-describe('AiChatShell nav drawer keyboard (web)', () => {
+describe('AiChatShell compact panel keyboard (web)', () => {
   let opener: HTMLButtonElement;
   beforeEach(() => {
     jest.useFakeTimers();
@@ -109,7 +110,7 @@ describe('AiChatShell nav drawer keyboard (web)', () => {
   });
 
   const byTestId = (id: string) => container.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
-  const veil = () => container.querySelector<HTMLElement>('[aria-label="Close navigation"]')!;
+  const closeVeil = () => container.querySelector<HTMLElement>('[aria-label="Close navigation"]')!;
   function press(key: string, init: KeyboardEventInit = {}) {
     const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
     act(() => {
@@ -119,17 +120,33 @@ describe('AiChatShell nav drawer keyboard (web)', () => {
     return event;
   }
 
-  it("keeps the closed drawer's veil out of the tab order and the accessibility tree", () => {
+  it('retains hidden navigation controls outside the tab order and accessibility tree', () => {
+    render(true);
+    const row = byTestId('row');
     render(false);
-    expect(veil().getAttribute('tabindex')).toBe('-1');
-    expect(veil().closest('[inert]')).not.toBeNull();
-    expect(veil().closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(byTestId('row')).toBe(row);
+    expect(row.closest('[inert]')).not.toBeNull();
+    expect(row.closest('[aria-hidden="true"]')).not.toBeNull();
+    // RNW Pressable once retained a Tab stop despite focusable=false.
+    // The shared reveal veil remains mounted but must leave the tab order.
+    expect(closeVeil().tabIndex).toBe(-1);
+    expect(closeVeil().closest('[aria-hidden="true"]')).not.toBeNull();
   });
 
-  it("is never a Tab stop while open either: Escape and the drawer's rows are the way out", () => {
-    render(true);
-    expect(veil().getAttribute('tabindex')).toBe('-1');
-    expect(veil().closest('[inert]')).toBeNull();
+  it('uses the shared closing veil while the conversation is inert', () => {
+    const change = jest.fn();
+    render(false, change);
+    render(true, change);
+    expect(closeVeil()).not.toBeNull();
+    expect(closeVeil().closest('[inert]')).toBeNull();
+    const conversation = byTestId('ai-chat-shell-panels-conversation');
+    expect(conversation.closest('[inert]')).not.toBeNull();
+    expect(conversation.closest('[aria-hidden="true"]')).not.toBeNull();
+    act(() => closeVeil().dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(change).toHaveBeenLastCalledWith(false);
+    render(false, change);
+    expect(conversation.closest('[inert]')).toBeNull();
+    expect(closeVeil().tabIndex).toBe(-1);
   });
 
   it('moves focus in on open, keeps Tab inside, and hands it back on close', () => {
@@ -153,6 +170,7 @@ describe('AiChatShell nav drawer keyboard (web)', () => {
     render(false, change);
     opener.focus();
     render(true, change);
+    act(() => byTestId('row').focus());
     press('Escape');
     expect(change).toHaveBeenLastCalledWith(false);
     expect(change).toHaveBeenCalledTimes(1);
@@ -214,7 +232,7 @@ describe('focusable shell panel owners', () => {
     opener.remove();
   });
 
-  it('makes the detail drawer a programmatic focus destination without a new Tab stop', () => {
+  it('makes the context panel a programmatic focus destination without a new Tab stop', () => {
     act(() =>
       root.render(
         <BloomThemeProvider mode="light">
@@ -230,7 +248,10 @@ describe('focusable shell panel owners', () => {
         </BloomThemeProvider>,
       ),
     );
-    const panel = container.querySelector<HTMLElement>('[role="dialog"][aria-label="Details"]')!;
+    const track = container.querySelector<HTMLElement>(
+      '[data-testid="ai-chat-shell-panels-context"]',
+    )!;
+    const panel = track.querySelector<HTMLElement>('[tabindex="-1"]')!;
     expect(panel.tabIndex).toBe(-1);
     act(() => panel.focus());
     expect(document.activeElement).toBe(panel);

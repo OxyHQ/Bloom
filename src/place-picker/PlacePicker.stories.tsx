@@ -10,7 +10,8 @@ import { PlacePicker } from './PlacePicker';
 import type { PlacePickerOption, PlacePickerStatus } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Places/Place Picker',
+  id: 'blocks-places-place-picker',
+  title: 'Patterns/Places/Place Picker',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

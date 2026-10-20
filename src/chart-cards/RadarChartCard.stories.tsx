@@ -25,7 +25,8 @@ const meta: Meta<typeof RadarChartCard> = {
     legend: { control: 'select', options: ['bottom', 'top', 'overlay'] },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Radar Chart',
+  id: 'charts-radar-chart',
+  title: 'Components/Charts/Radar Chart',
   component: RadarChartCard,
 };
 

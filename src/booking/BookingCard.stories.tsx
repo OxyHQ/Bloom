@@ -15,7 +15,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Blocks/Stays/Booking',
+  id: 'blocks-stays-booking',
+  title: 'Patterns/Stays/Booking',
 };
 
 export default meta;

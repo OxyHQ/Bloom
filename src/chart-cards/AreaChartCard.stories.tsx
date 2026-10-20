@@ -17,7 +17,8 @@ const meta: Meta<typeof AreaChartCard> = {
     tiles: { control: 'boolean' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Area Chart',
+  id: 'charts-area-chart',
+  title: 'Components/Charts/Area Chart',
   component: AreaChartCard,
 };
 

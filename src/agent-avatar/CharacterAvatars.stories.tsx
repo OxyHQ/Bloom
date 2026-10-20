@@ -26,7 +26,8 @@ const characters = [
   ['lime_headphones', 'Iggy'],
 ] as const;
 const meta = {
-  title: 'Agents/Agent Avatar/Characters',
+  id: 'agents-agent-avatar-characters',
+  title: 'Components/Agents/Agent Avatar/Characters',
   parameters: { layout: 'padded' },
 } satisfies Meta;
 export default meta;

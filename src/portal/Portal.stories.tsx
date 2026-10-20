@@ -10,7 +10,8 @@ import { OverlayRoot } from '../overlay';
 import { useTheme } from '../theme';
 
 const meta: Meta = {
-  title: 'Foundations/Portal',
+  id: 'foundations-portal',
+  title: 'Composition/Overlays/Portal',
 };
 
 export default meta;

@@ -64,8 +64,10 @@ export function shellLayoutCss(scope: string, options: Options) {
   const thresholds = new Set([0, BREAKPOINTS.sm, breakpointPx(navFrom), BREAKPOINTS.md]);
   if (panelFrom !== undefined) thresholds.add(breakpointPx(panelFrom));
   if (options.framedFrom !== undefined) thresholds.add(breakpointPx(options.framedFrom));
-  for (const panel of layout.panels)
+  for (const panel of layout.panels) {
     if (panel.hideBelow !== undefined) thresholds.add(breakpointPx(panel.hideBelow));
+    if (panel.floating) thresholds.add(breakpointPx(panel.floating.below));
+  }
   if (typeof layout.axis === 'object')
     for (const key of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
       if (layout.axis[key]) thresholds.add(BREAKPOINTS[key]);

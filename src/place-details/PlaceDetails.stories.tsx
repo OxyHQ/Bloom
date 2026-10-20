@@ -43,7 +43,8 @@ import type {
 } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Maps/PlaceDetails',
+  id: 'blocks-maps-placedetails',
+  title: 'Patterns/Maps/Place Details',
   parameters: { layout: 'fullscreen' },
 };
 

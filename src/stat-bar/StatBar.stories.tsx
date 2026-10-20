@@ -32,7 +32,8 @@ function Demo() {
 }
 
 const meta: Meta<typeof StatBar> = {
-  title: 'Charts/Stat Bar',
+  id: 'charts-stat-bar',
+  title: 'Components/Charts/Stat Bar',
   component: StatBar,
 };
 

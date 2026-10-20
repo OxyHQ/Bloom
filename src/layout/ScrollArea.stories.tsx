@@ -5,7 +5,8 @@ import { ScrollArea } from './ScrollArea';
 import type { ScrollAreaScrollbar } from './types';
 
 const meta: Meta<typeof ScrollArea> = {
-  title: 'Base/Scroll Area',
+  id: 'base-scroll-area',
+  title: 'Composition/Scrolling/Scroll Area',
   component: ScrollArea,
   args: { scrollbar: 'scroll', size: 'sm' },
   argTypes: {

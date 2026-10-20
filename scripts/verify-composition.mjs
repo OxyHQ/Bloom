@@ -24,7 +24,7 @@ try {
       page.on('pageerror', (error) => errors.push(error.message));
       await page.setViewport({ width, height: 1000 });
       await page.goto(
-        `${base}/iframe.html?id=system-composition--connected&viewMode=story&globals=theme:${mode}`,
+        `${base}/iframe.html?id=foundations-composition--connected&viewMode=story&globals=theme:${mode}`,
         { waitUntil: 'networkidle0' },
       );
       await page.waitForSelector('[data-testid="composition-inherited"]');

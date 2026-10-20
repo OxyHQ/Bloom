@@ -11,7 +11,8 @@ import { TransitLineBadge } from './TransitLineBadge';
 import type { DirectionsLeg, DirectionsMode, DirectionsRoute } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Maps/Directions',
+  id: 'blocks-maps-directions',
+  title: 'Patterns/Maps/Directions',
   parameters: { layout: 'fullscreen' },
 };
 

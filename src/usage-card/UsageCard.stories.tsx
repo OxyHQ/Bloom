@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { UsageCard } from './index';
-const meta: Meta<typeof UsageCard> = { title: 'Data/Usage Card', component: UsageCard };
+const meta: Meta<typeof UsageCard> = {
+  id: 'data-usage-card',
+  title: 'Patterns/Account/Usage Card',
+  component: UsageCard,
+};
 export default meta;
 type Story = StoryObj<typeof UsageCard>;
 export const Storage: Story = {

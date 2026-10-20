@@ -10,6 +10,8 @@ import type { AppShellBreakpoint } from './types';
  * already knows the shape it is drawing.
  */
 export const APP_SHELL_DEFAULTS = {
+  /** Compact navigation waits beneath the displaced page; overlay is explicit. */
+  drawer: 'reveal',
   /**
    * `dashboard`: the cap on the content column. The dashboard column is
    * FLUID — it fills the page region and stops growing here — so this is a

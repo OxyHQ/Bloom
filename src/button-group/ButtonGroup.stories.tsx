@@ -14,7 +14,8 @@ const meta: Meta<typeof ButtonGroup> = {
     size: { control: 'select', options: ['sm', 'md'] },
     dividers: { control: 'boolean' },
   },
-  title: 'Base/Button Group',
+  id: 'base-button-group',
+  title: 'Components/Actions/Button Group',
   component: ButtonGroup,
 };
 

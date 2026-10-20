@@ -17,7 +17,8 @@ import { useTheme } from '../theme';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Foundations/Hooks',
+  id: 'foundations-hooks',
+  title: 'Composition/Hooks',
 };
 
 export default meta;

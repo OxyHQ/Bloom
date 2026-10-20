@@ -15,7 +15,8 @@ const meta: Meta = {
   },
   component: InputGroup,
   parameters: { controls: { disable: true } },
-  title: 'Base/Input Group',
+  id: 'base-input-group',
+  title: 'Composition/Fields/Input Group',
 };
 
 export default meta;

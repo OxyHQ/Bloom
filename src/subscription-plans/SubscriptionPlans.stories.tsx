@@ -2,7 +2,8 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SubscriptionPlans } from './index';
 const meta: Meta<typeof SubscriptionPlans> = {
-  title: 'Commerce/Subscription Plans',
+  id: 'commerce-subscription-plans',
+  title: 'Patterns/Commerce/Subscription Plans',
   component: SubscriptionPlans,
 };
 export default meta;

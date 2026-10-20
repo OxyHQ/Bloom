@@ -17,7 +17,8 @@ const meta: Meta<typeof LineChartCard> = {
     activeColor: { control: 'text' },
     activeIndex: { control: 'number' },
   },
-  title: 'Charts/Line Chart',
+  id: 'charts-line-chart',
+  title: 'Components/Charts/Line Chart',
   component: LineChartCard,
 };
 

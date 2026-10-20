@@ -529,23 +529,26 @@ describe('AiChatContainer host slots', () => {
     );
     expect(resolvedStyle(bare.getByTestId('chat').props.style).backgroundColor).toBe('transparent');
     // Not a card, so no radius of its own: the host's shape (a sheet, a panel) rounds it.
-    expect(resolvedStyle(bare.getByTestId('chat').props.style).borderRadius).toBe(0);
-    expect(resolvedStyle(painted.getByTestId('chat').props.style).borderRadius).toBe(24);
+    expect(resolvedStyle(bare.getByTestId('chat').props.style).borderRadius).toBeUndefined();
+    // The containing AppShell panel supplies corners for either surface mode.
+    expect(resolvedStyle(painted.getByTestId('chat').props.style).borderRadius).toBeUndefined();
   });
 });
 
 describe('AiChatShell', () => {
-  it('shows the mobile header below xl and opens the panel drawer from it', () => {
-    const { getByLabelText, getByText } = renderIn(
+  it('selects the context panel from the mobile header and returns with back', () => {
+    const { getByLabelText, getByText, queryByText } = renderIn(
       <AiChatShell sidebar={null} panel={() => null} panelLabel="Code">
         <AiChatMobileHeader title="Agentic chat" />
       </AiChatShell>,
     );
-    // The test renderer's window is 750 wide: compact, and the sidebar is a drawer.
+    // Context remains a retained panel, selected using AppShell's width rules.
     expect(getByText('Agentic chat')).toBeTruthy();
-    const open = getByLabelText('Open code');
-    fireEvent.press(open);
+    pressHost(getByLabelText('Open code'));
     expect(getByText('Code')).toBeTruthy();
+    expect(queryByText('Agentic chat')).toBeNull();
+    pressHost(getByLabelText('Back'));
+    expect(getByText('Agentic chat')).toBeTruthy();
   });
 
   it("centres a header's own title node between the shell's buttons", () => {
@@ -562,7 +565,7 @@ describe('AiChatShell', () => {
       </AiChatShell>,
     );
     expect(getByText('Alia + Sindi')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('header').props.style)).toMatchObject({ minHeight: 48 });
+    expect(resolvedStyle(getByTestId('header-bar').props.style)).toMatchObject({ minHeight: 56 });
     expect(getByLabelText('Open navigation')).toBeTruthy();
     fireEvent.press(getByLabelText('Open code'));
     expect(getByText('Code')).toBeTruthy();
@@ -578,21 +581,21 @@ describe('AiChatShell', () => {
     expect(queryByLabelText('Open navigation')).toBeNull();
   });
 
-  it('lets the mobile header and the panel drawer header grow with the system font', () => {
+  it('lets conversation and context PageHeaders grow with the system font', () => {
     const { getByText, getByLabelText, getByTestId } = renderIn(
       <AiChatShell sidebar={null} panel={() => null} panelLabel="Code">
         <AiChatMobileHeader testID="header" title="Agentic chat" />
       </AiChatShell>,
     );
-    expect(resolvedStyle(getByTestId('header').props.style)).toMatchObject({ minHeight: 48 });
+    expect(resolvedStyle(getByTestId('header-bar').props.style)).toMatchObject({ minHeight: 56 });
     expect(resolvedStyle(getByTestId('header').props.style).height).toBeUndefined();
     fireEvent.press(getByLabelText('Open code'));
-    let drawerHeader = getByText('Code').parent;
-    while (drawerHeader && resolvedStyle(drawerHeader.props.style).flexDirection !== 'row')
-      drawerHeader = drawerHeader.parent;
-    if (!drawerHeader) throw new Error('no drawer header row');
-    expect(resolvedStyle(drawerHeader.props.style)).toMatchObject({ minHeight: 40 });
-    expect(resolvedStyle(drawerHeader.props.style).height).toBeUndefined();
+    let contextHeader = getByText('Code').parent;
+    while (contextHeader && resolvedStyle(contextHeader.props.style).minHeight === undefined)
+      contextHeader = contextHeader.parent;
+    if (!contextHeader) throw new Error('no context PageHeader row');
+    expect(resolvedStyle(contextHeader.props.style)).toMatchObject({ minHeight: 56 });
+    expect(resolvedStyle(contextHeader.props.style).height).toBeUndefined();
   });
 
   it('names the resize separator', () => {
@@ -600,10 +603,8 @@ describe('AiChatShell', () => {
     expect(getByLabelText('Resize panels').props.role).toBe('separator');
   });
 
-  it('narrows the in-flow sidebar to a rail, and takes a width', () => {
-    // The test renderer's window is 750 wide — below `lg`, where the sidebar is
-    // a drawer — so the in-flow column is asserted through the collapsed state
-    // the shell publishes instead.
+  it('preserves the collapsed sidebar preference in its compatibility context', () => {
+    // The context preserves the host preference while AppShell owns track sizing.
     const seen: Array<{ collapsed: boolean; presented: boolean }> = [];
     function Probe() {
       const shell = useAiChatShell();
@@ -618,13 +619,17 @@ describe('AiChatShell', () => {
     expect(seen[0]).toEqual({ collapsed: true, presented: false });
   });
 
-  it('reports the nav as presented only while the drawer is open', () => {
+  it('reports navigation presentation while opening and closing the shared drawer', () => {
     let openNav = () => {};
+    let closeNav = () => {};
     const seen: boolean[] = [];
     function Probe() {
       const shell = useAiChatShell();
       seen.push(!!shell?.navPresented);
-      if (shell) openNav = shell.openNav;
+      if (shell) {
+        openNav = shell.openNav;
+        closeNav = shell.closeNav;
+      }
       return null;
     }
     renderIn(
@@ -635,6 +640,8 @@ describe('AiChatShell', () => {
     expect(seen[seen.length - 1]).toBe(false);
     act(() => openNav());
     expect(seen[seen.length - 1]).toBe(true);
+    act(() => closeNav());
+    expect(seen[seen.length - 1]).toBe(false);
   });
 
   it('renders nothing for the mobile header outside a shell', () => {
@@ -692,7 +699,7 @@ describe('AiChatContainer application header', () => {
 
 describe('AiChatShell sidebar width ownership', () => {
   it.each([undefined, 72])(
-    'lets the sidebar own its collapsed width unless overridden (%s)',
+    'uses the shared sidebar region width with an explicit collapsed override (%s)',
     (width) => {
       const dimensions = jest
         .spyOn(Native, 'useWindowDimensions')
@@ -707,13 +714,16 @@ describe('AiChatShell sidebar width ownership', () => {
             <Text>Chat</Text>
           </AiChatShell>,
         );
-        let column = getByTestId('sized-sidebar').parent;
-        while (column && StyleSheet.flatten(column.props.style)?.zIndex !== 10)
-          column = column.parent;
-        expect(column).not.toBeNull();
-        const style = StyleSheet.flatten(column!.props.style);
-        expect(style.width).toBe(width);
-        expect(style.overflow).not.toBe('hidden');
+        const navigation = getByTestId('ai-chat-shell-navigation');
+        const sizedRegions = navigation.findAll(
+          (node) =>
+            typeof node.type === 'string' &&
+            resolvedStyle(node.props.style).width === (width ?? 80),
+        );
+        // The compatibility adapter's complete sidebar receives the width
+        // through the shared slot, without creating a navigation panel.
+        expect(sizedRegions).toHaveLength(1);
+        expect(resolvedStyle(getByTestId('sized-sidebar').props.style).width).toBe(66);
       } finally {
         dimensions.mockRestore();
       }
@@ -747,7 +757,7 @@ describe('AiChatShell safe area ownership', () => {
     return <Text testID="inset-reader">{JSON.stringify({ original, bottom })}</Text>;
   }
   it.each(['ios', 'android'] as const)(
-    'adds all native edges to the frame and drawers while preserving modal insets on %s',
+    'owns native safe-area edges once while preserving descendant insets on %s',
     (os) => {
       Native.Platform.OS = os;
       const tree = renderIn(
@@ -757,33 +767,29 @@ describe('AiChatShell safe area ownership', () => {
             safeArea
             testID="safe-shell"
             navOpen
-            mobileSidebar={<Text>Navigation</Text>}
+            mobileSidebar={<Reader />}
             panelOpen
             panel={() => <Text>Panel</Text>}
           >
-            <Reader />
+            <Text>Conversation</Text>
           </AiChatShell>
         </SafeAreaInsetsContext.Provider>,
       );
-      expect(resolvedStyle(tree.getByTestId('safe-shell').props.style)).toMatchObject({
-        paddingTop: 59,
-        paddingRight: 36,
-        paddingBottom: 46,
-        paddingLeft: 28,
-      });
+      const styles = tree.UNSAFE_getAllByType(View).map((node) => resolvedStyle(node.props.style));
+      expect(styles).toContainEqual(
+        expect.objectContaining({
+          paddingTop: 47,
+          paddingRight: 24,
+          paddingBottom: 34,
+          paddingLeft: 16,
+        }),
+      );
       expect(tree.getByTestId('inset-reader').props.children).toBe(
         JSON.stringify({ original: insets, bottom: 34 }),
       );
-      const styles = tree.UNSAFE_getAllByType(View).map((node) => resolvedStyle(node.props.style));
-      expect(styles).toContainEqual(
-        expect.objectContaining({ width: 272, left: 16, paddingTop: 59, paddingBottom: 46 }),
-      );
-      expect(resolvedStyle(tree.getByLabelText('Code').props.style)).toMatchObject({
-        right: 24,
-        paddingTop: 59,
-        paddingBottom: 46,
-        position: 'absolute',
-      });
+      // Shared panel framing supplies its own gutter; the retired 272px drawer
+      // must not add safe-area padding a second time.
+      expect(styles.some((style) => style.width === 272)).toBe(false);
     },
   );
   it.each(['ios', 'web'] as const)('preserves default geometry and web behavior on %s', (os) => {
@@ -798,7 +804,7 @@ describe('AiChatShell safe area ownership', () => {
       </SafeAreaInsetsContext.Provider>,
     );
     const style = resolvedStyle(tree.getByTestId('safe-shell').props.style);
-    expect(style.padding).toBe(12);
+    expect(style.padding).toBe(0);
     expect(style.paddingTop).toBeUndefined();
     expect(tree.getByTestId('inset-reader').props.children).toBe(
       JSON.stringify({ original: insets, bottom: 9 }),

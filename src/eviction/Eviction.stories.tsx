@@ -14,7 +14,8 @@ import { EvictionTimeline } from './EvictionTimeline';
 import type { EvictionEvent, EvictionReportCardProps, EvictionStatus } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Eviction',
+  id: 'blocks-housing-eviction',
+  title: 'Patterns/Housing/Eviction',
   parameters: { layout: 'fullscreen' },
 };
 

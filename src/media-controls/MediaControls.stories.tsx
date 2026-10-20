@@ -12,7 +12,8 @@ import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
-  title: 'Base/Media Controls',
+  id: 'base-media-controls',
+  title: 'Components/Media/Media Controls',
 };
 
 export default meta;

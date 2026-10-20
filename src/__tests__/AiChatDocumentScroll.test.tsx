@@ -5,17 +5,12 @@
  * platform that has one. Rendered through react-native-web into a real
  * document, because every claim here is about CSS and the window:
  *
- * - **Nothing in the frame is a scroll container.** The shell grows with the
- *   page and clips with `overflow: clip`; the sidebar and the panel are sticky
- *   rails one screen tall.
- * - **The chat's chrome is pinned in the flow.** The header and the composer
- *   are sticky at the screen's gutter, and the card is a `ContentPanel`, whose
- *   sticky mask and edge keep the card framed at the screen's edges.
- * - **The thread has no scroller of its own.** It follows through the window,
- *   in its own frame: offset 0 is the thread's top, and the content runs to the
- *   end of the page.
- * - **`container` is untouched.** Without the prop the thread is still a
- *   `ScrollView`.
+ * - **Document flow** uses AppShell tracks and the existing document owner;
+ *   no nested overflow viewport may capture the conversation's scroll.
+ * - **Shared Screen chrome** stays sticky while turns remain in one stacking
+ *   context below it, including descendants carrying their own z-index.
+ * - **One imperative owner** answers the thread handle and scroll observer in
+ *   the same coordinate space. Bounded mode reuses Screen's local viewport.
  */
 import React from 'react';
 import { act } from 'react';
@@ -58,6 +53,12 @@ beforeEach(() => {
   scrollTo.mockClear();
   window.scrollTo = scrollTo as unknown as typeof window.scrollTo;
   Object.defineProperty(window, 'scrollY', { value: 0, configurable: true, writable: true });
+  Object.defineProperty(document, 'scrollingElement', {
+    value: document.documentElement,
+    configurable: true,
+  });
+  document.documentElement.scrollTop = 0;
+  Object.defineProperty(window, 'innerHeight', { value: 900, configurable: true });
   Object.defineProperty(document.documentElement, 'scrollHeight', {
     value: 2400,
     configurable: true,
@@ -112,12 +113,11 @@ const style = (node: Element) => getComputedStyle(node);
 describe('AiChatShell scroll="document"', () => {
   it('grows the page instead of scrolling inside it, and pins the sidebar and the panel', () => {
     mount({ scroll: 'document' });
-    // The sidebar's column and the panel's rail: sticky, one screen tall.
-    for (const id of ['sidebar', 'panel']) {
-      const rail = byTestId(id).parentElement as HTMLElement;
-      expect(style(rail).position).toBe('sticky');
-      expect(rail.style.height || style(rail).height).toContain('100dvh');
-    }
+    // AppShell owns the navigation region and context track. Navigation is
+    // shared shell chrome; it is not a second workspace panel.
+    expect(style(byTestId('ai-chat-shell-navigation')).position).toBe('sticky');
+    expect(style(byTestId('ai-chat-shell-panels-context')).position).toBe('sticky');
+    expect(byTestId('sidebar').closest('[data-testid="ai-chat-shell-navigation"]')).not.toBeNull();
     // No scroll container between the chat and the document.
     let node: HTMLElement | null = byTestId('thread');
     while (node && node !== container) {
@@ -128,13 +128,11 @@ describe('AiChatShell scroll="document"', () => {
 
   it('pins the header and the composer to the screen, on a ContentPanel card', () => {
     mount({ scroll: 'document' });
-    expect(style(byTestId('chat-chrome-top')).position).toBe('sticky');
-    expect(style(byTestId('chat-chrome-bottom')).position).toBe('sticky');
-    // The panel's own sticky mask and edge, pinned at the shell's gutter.
-    const mask = byTestId('content-panel-bleed-mask');
-    expect(mask.style.top || style(mask).top).toBe('12px');
-    // No edge: the template's card is a surface, not a bordered panel.
-    expect(container.querySelector('[data-testid="content-panel-border-frame"]')).toBeNull();
+    expect(style(byTestId('chat-header')).position).toBe('sticky');
+    expect(style(byTestId('chat-bottom')).position).toBe('sticky');
+    const track = byTestId('ai-chat-shell-panels-conversation');
+    // The panel provides the only frame; AiChatContainer contributes a Screen.
+    expect(track.querySelectorAll('[data-testid="content-panel-surface"]')).toHaveLength(1);
     expect(byTestId('chat').closest('[data-testid="content-panel-content"]')).not.toBeNull();
   });
 
@@ -143,26 +141,35 @@ describe('AiChatShell scroll="document"', () => {
     // if the conversation were not its own stacking context, the highest of
     // them would climb over the header and the composer.
     mount({ scroll: 'document' });
-    const layer = byTestId('thread').parentElement as HTMLElement;
-    expect(style(layer).zIndex).toBe('0');
-    expect(Number(style(byTestId('chat-chrome-top')).zIndex)).toBeGreaterThan(0);
-    expect(Number(style(byTestId('chat-chrome-bottom')).zIndex)).toBeGreaterThan(0);
+    let layer = byTestId('thread').parentElement;
+    let isolated = false;
+    while (layer && layer !== byTestId('chat')) {
+      if (style(layer).zIndex === '0' || style(layer).isolation === 'isolate') isolated = true;
+      layer = layer.parentElement;
+    }
+    expect(isolated).toBe(true);
+    expect(Number(style(byTestId('chat-header')).zIndex)).toBeGreaterThan(0);
+    expect(Number(style(byTestId('chat-bottom')).zIndex)).toBeGreaterThan(0);
   });
 
-  it('drives the window from the thread handle, in the thread’s own frame', () => {
+  it('drives the same document owner through the thread handle', () => {
     const ref = React.createRef<AiChatThreadHandle>();
     mount({ scroll: 'document', threadRef: ref });
-    const top = byTestId('thread').getBoundingClientRect().top;
 
     act(() => ref.current?.scrollToEnd({ animated: false }));
     expect(scrollTo).toHaveBeenLastCalledWith({ top: 2400, behavior: 'auto' });
 
     act(() => ref.current?.scrollToOffset({ offset: 120, animated: true }));
-    expect(scrollTo).toHaveBeenLastCalledWith({ top: top + 120, behavior: 'smooth' });
-    expect(ref.current?.getScrollView()).toBeNull();
+    expect(scrollTo).toHaveBeenLastCalledWith({ top: 120, behavior: 'smooth' });
+    expect(ref.current?.getScrollView()).toBeTruthy();
+    expect(
+      (
+        ref.current?.getScrollView() as unknown as { getScrollableNode(): Element }
+      ).getScrollableNode(),
+    ).toBe(document.documentElement);
   });
 
-  it('reports the window to onScroll, measured from the thread’s top to the end of the page', () => {
+  it('reports offsets and extent in the document owner’s coordinate space', () => {
     jest.useFakeTimers();
     try {
       const onScroll = jest.fn();
@@ -174,13 +181,14 @@ describe('AiChatShell scroll="document"', () => {
       onScroll.mockClear();
 
       window.scrollY = 300;
+      document.documentElement.scrollTop = 300;
       act(() => {
         window.dispatchEvent(new Event('scroll'));
         jest.advanceTimersByTime(50);
       });
       const { nativeEvent } = onScroll.mock.calls[onScroll.mock.calls.length - 1][0];
-      expect(nativeEvent.contentOffset.y).toBe(300 - top);
-      expect(nativeEvent.contentSize.height).toBe(2400 - top);
+      expect(nativeEvent.contentOffset.y).toBe(300);
+      expect(nativeEvent.contentSize.height).toBe(2400);
       expect(nativeEvent.layoutMeasurement.height).toBe(window.innerHeight);
     } finally {
       jest.useRealTimers();
@@ -189,9 +197,21 @@ describe('AiChatShell scroll="document"', () => {
 });
 
 describe('AiChatShell scroll="container"', () => {
-  it('keeps the thread a scroller of its own', () => {
-    mount({});
-    expect(byTestId('thread')).not.toBeNull();
-    expect(container.querySelector('[data-testid="content-panel-surface"]')).toBeNull();
+  it('reuses the Screen element viewport without adding a second thread scroller', () => {
+    const ref = React.createRef<AiChatThreadHandle>();
+    mount({ threadRef: ref });
+    const viewport = byTestId('chat-viewport');
+    expect(style(viewport).overflowY).toBe('auto');
+    expect(style(byTestId('thread')).overflowY).not.toBe('auto');
+    expect(
+      (
+        ref.current?.getScrollView() as unknown as { getScrollableNode(): Element }
+      ).getScrollableNode(),
+    ).toBe(viewport);
+    expect(
+      byTestId('ai-chat-shell-panels-conversation').querySelectorAll(
+        '[data-testid="content-panel-surface"]',
+      ),
+    ).toHaveLength(1);
   });
 });

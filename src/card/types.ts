@@ -1,3 +1,6 @@
+import type { ReactNode } from 'react';
+import type { BloomIconComponent } from '../icons/icon-component';
+import type { WebCssStyle } from '../styles/web-view-style';
 import type { CornerCurve } from '../shapes/corner-types';
 import type { BloomAppearance, BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle, ViewProps } from 'react-native';
@@ -94,4 +97,26 @@ export interface CardDescriptionProps {
   children?: React.ReactNode;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
+}
+
+export interface SelectionCardProps {
+  /** `multiple` is a `checkbox`, `single` a `radio`. */
+  selection: 'multiple' | 'single';
+  selected: boolean;
+  onPress: () => void;
+  title: string;
+  description?: string;
+  icon?: BloomIconComponent;
+  indicator?: 'check' | 'radio';
+  media?: ReactNode;
+  compact?: boolean;
+  disabled?: boolean;
+  invalid?: boolean;
+  nativeID?: string;
+  describedBy?: string;
+  className?: string;
+  children?: ReactNode;
+  accessibilityLabel?: string;
+  style?: WebCssStyle;
+  testID?: string;
 }

@@ -21,7 +21,8 @@ import type { CallHistorySection, CallPipCorner, GroupCallParticipant } from './
  */
 
 const meta: Meta = {
-  title: 'Blocks/Chat/Calls',
+  id: 'blocks-chat-calls',
+  title: 'Patterns/Chat/Calls',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -6,6 +6,7 @@ import { Button } from '../button';
 import { CodeBlock } from '../code';
 import { ComposerLoader } from '../composer-loader';
 import { ComposerPill, ComposerStatusBar } from '../composer-panel';
+import { ResizeHandle as LayoutResizeHandle } from '../layout';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiPencilLine } from '../icons/remix/RiPencilLine';
 import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
@@ -24,7 +25,6 @@ import {
   AiChatImageGeneration,
   AiChatLinkChip,
   AiChatMessageLine,
-  AiChatResizeHandle,
   AiChatStrong,
   AiChatThread,
   AiChatUserMessage,
@@ -33,7 +33,8 @@ import type { AiChatGeneration } from './types';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Agents/AI Chat',
+  id: 'agents-ai-chat',
+  title: 'Patterns/Agents/AI Chat',
 };
 
 export default meta;
@@ -373,7 +374,7 @@ export const ResizeHandle: Story = {
             backgroundColor: colors.backgroundSecondary,
           }}
         >
-          <AiChatResizeHandle onResize={setDx} onResizeEnd={() => {}} />
+          <LayoutResizeHandle onResize={setDx} onResizeEnd={() => {}} />
         </View>
       </View>
     );

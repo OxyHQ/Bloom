@@ -9,7 +9,8 @@ const meta: Meta<typeof Kbd> = {
   argTypes: {
     size: { control: 'select', options: ['sm', 'md'] },
   },
-  title: 'Base/Kbd',
+  id: 'base-kbd',
+  title: 'Components/Data Display/Kbd',
   component: Kbd,
 };
 

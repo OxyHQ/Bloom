@@ -1,6 +1,6 @@
 import type { ScrollHandlerProcessed } from 'react-native-reanimated';
 import type { ComponentRef, Ref, RefObject } from 'react';
-import type { ScrollView, ScrollViewProps } from 'react-native';
+import type { ScrollView, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
 
 /**
  * When the scrollbar is drawn:
@@ -42,4 +42,31 @@ export interface ScrollBarProps {
   horizontal?: boolean;
   /** Room kept free at the track's ends, for chrome that floats over the scroller. */
   insets?: { start?: number; end?: number };
+}
+
+export interface ResizeHandleProps {
+  /** Separator orientation; horizontal separators resize panel heights. */
+  orientation?: 'vertical' | 'horizontal';
+  /** Pointer went down on the grip. */
+  onResizeStart?: () => void;
+  /** Distance along the resize axis from the drag start, px. */
+  onResize: (dx: number) => void;
+  onResizeEnd?: () => void;
+  /** Names the separator. `'Resize panels'` in English. */
+  label?: string;
+  /** Keyboard nudge (web: ←/→ move by 16). */
+  onNudge?: (dx: number) => void;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+/** A self-contained scroll viewport with shared scroll-edge effects. */
+export interface ScrollSurfaceProps extends ScrollAreaProps {
+  contentClassName?: string;
+  surface?: 'primary' | 'secondary' | 'full';
+  scrollRef?: Ref<ComponentRef<typeof ScrollView>>;
+  label?: string;
+  fadeBottom?: boolean;
+  /** @deprecated No effect. Use Screen restoration for persistent scroll position. */
+  chatId?: string;
 }

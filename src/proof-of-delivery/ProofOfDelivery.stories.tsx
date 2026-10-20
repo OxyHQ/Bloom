@@ -10,7 +10,8 @@ import { SignaturePad } from './SignaturePad';
 import type { ProofOfDeliveryResult, ProofOfDeliveryValue, SignatureValue } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Fulfilment/ProofOfDelivery',
+  id: 'blocks-fulfilment-proofofdelivery',
+  title: 'Patterns/Fulfilment/Proof Of Delivery',
   parameters: { layout: 'fullscreen' },
 };
 

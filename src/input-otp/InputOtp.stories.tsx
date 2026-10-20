@@ -19,7 +19,8 @@ const meta: Meta<typeof InputOtp> = {
     groupEvery: { control: 'number' },
     autoFocus: { control: 'boolean' },
   },
-  title: 'Base/Input OTP',
+  id: 'base-input-otp',
+  title: 'Components/Inputs/Input OTP',
   component: InputOtp,
 };
 

@@ -167,7 +167,7 @@ export type {
   SurfacePromptOptions,
 } from './surfaces/index.web';
 export * from './appearance';
-export * from './screen';
+export * from './screen/index.web';
 export * from './bottom-bar/index.web';
 export * from './button/index.web';
 export { Surface } from './surface/index.web';
@@ -187,6 +187,8 @@ export {
   useScrollMetricsBinding,
   useAnimatedScrollMetricsBinding,
   ScrollArea,
+  ResizeHandle,
+  ScrollSurface,
   useScrollOffset,
   ScreenScope,
   HeaderDockProvider,
@@ -198,6 +200,8 @@ export type {
   ScrollMetricsBindingOptions,
   AnimatedScrollMetricsBindingOptions,
   ScrollAreaProps,
+  ResizeHandleProps,
+  ScrollSurfaceProps,
 } from './layout/index.web';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabSize } from './fab/index.web';
@@ -244,7 +248,7 @@ export * from './page-header';
 export * from './page-footer';
 export * from './notification-center';
 export * from './theme-toggle';
-export * from './settings-modal';
+export * from './settings-modal/index.web';
 export * from './auth-card';
 export * from './agent-thinking';
 export * from './agent-reply';
@@ -527,7 +531,7 @@ export {
   PinnedMessageBar,
   resolveChatScreenPaint,
   ScrollToBottomButton,
-} from './chat-screen';
+} from './chat-screen/index.web';
 export type {
   ChatBackgroundProps,
   ChatBackgroundPatternImage,
@@ -552,7 +556,7 @@ export type {
   JumpToMentionButtonProps,
   PinnedMessageBarProps,
   ScrollToBottomButtonProps,
-} from './chat-screen';
+} from './chat-screen/index.web';
 export {
   AttachmentMenu,
   ATTACHMENT_MENU_ITEMS,
@@ -919,7 +923,7 @@ export {
   queueDragShift,
   queueDragTarget,
   RecentlyPlayedList,
-} from './queue-panel';
+} from './queue-panel/index.web';
 export type {
   QueuePanelLabels,
   QueuePanelProps,
@@ -929,7 +933,7 @@ export type {
   QueueSection,
   QueueTrack,
   RecentlyPlayedListProps,
-} from './queue-panel';
+} from './queue-panel/index.web';
 export {
   activeLyricIndex,
   LyricsPreviewCard,
@@ -955,7 +959,7 @@ export {
   SearchResultTabs,
   sortLibraryItems,
   TopResultCard,
-} from './music-library';
+} from './music-library/index.web';
 export type {
   BrowseGridProps,
   BrowseTile,
@@ -977,7 +981,7 @@ export type {
   SearchResultTabsProps,
   TopResultCardProps,
   TopResultKind,
-} from './music-library';
+} from './music-library/index.web';
 export {
   ConnectBanner,
   DevicePicker,
@@ -1969,8 +1973,8 @@ export type {
   SignatureValue,
 } from './proof-of-delivery';
 
-export { WizardFooter, WizardProgress } from './wizard';
-export type { WizardFooterProps, WizardProgressProps, WizardStep } from './wizard';
+export { WizardFooter, WizardProgress } from './wizard/index.web';
+export type { WizardFooterProps, WizardProgressProps, WizardStep } from './wizard/index.web';
 export { SortablePhotoGrid } from './sortable-media';
 export type {
   SortablePhoto,

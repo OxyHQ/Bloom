@@ -60,7 +60,8 @@ function DemoFollowButton({ initial = false }: { initial?: boolean }) {
 }
 
 const meta: Meta<typeof UserHoverCard> = {
-  title: 'Blocks/User Hover Card',
+  id: 'blocks-user-hover-card',
+  title: 'Components/Data Display/User Hover Card',
   component: UserHoverCard,
   argTypes: {
     verified: { control: 'boolean' },

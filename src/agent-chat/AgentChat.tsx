@@ -1,4 +1,7 @@
+import { Screen, ScreenScrollView } from '../screen/index';
+import { AppShell } from '../app-shell';
 import { ComposerLoader } from '../composer-loader';
+import { ComposerPill } from '../composer-panel';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +18,11 @@ import { bindAgentChat } from './bindAgentChat';
  * forked families.
  */
 const parts = bindAgentChat({
+  Screen,
+  ScreenScrollView,
+  AppShell,
   ComposerLoader,
+  ComposerPill,
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,

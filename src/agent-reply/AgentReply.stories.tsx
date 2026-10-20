@@ -14,7 +14,7 @@ import {
   type AgentReplyAgent,
 } from './index';
 
-const meta: Meta = { title: 'Agents/Agent Reply' };
+const meta: Meta = { id: 'agents-agent-reply', title: 'Components/Agents/Agent Reply' };
 export default meta;
 
 const TEAM: AgentReplyAgent[] = [

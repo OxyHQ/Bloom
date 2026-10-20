@@ -9,7 +9,8 @@ import { PaymentStatusBar } from './PaymentStatusBar';
 import { PaymentStatusBlock } from './PaymentStatusBlock';
 
 const meta: Meta = {
-  title: 'Blocks/Payments/PaymentStatus',
+  id: 'blocks-payments-paymentstatus',
+  title: 'Patterns/Payments/Payment Status',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -9,7 +9,8 @@ import { RouteStops } from './RouteStops';
 import type { RouteStop } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Commerce/RouteStops',
+  id: 'blocks-commerce-routestops',
+  title: 'Patterns/Commerce/Route Stops',
   parameters: { layout: 'fullscreen' },
 };
 

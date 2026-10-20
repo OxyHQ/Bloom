@@ -13,7 +13,8 @@ const meta: Meta<typeof ConnectionDots> = {
     dotSize: { control: 'number' },
     reducedMotion: { control: 'boolean' },
   },
-  title: 'Base/Connection Dots',
+  id: 'base-connection-dots',
+  title: 'Components/Feedback/Connection Dots',
   component: ConnectionDots,
 };
 

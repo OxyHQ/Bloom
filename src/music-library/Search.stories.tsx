@@ -13,7 +13,8 @@ import { TopResultCard } from './TopResultCard';
 import type { BrowseTile, RecentSearchEntry, SearchResultTab } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Search',
+  id: 'blocks-music-search',
+  title: 'Patterns/Music/Search',
 };
 
 export default meta;

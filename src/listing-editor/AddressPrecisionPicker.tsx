@@ -1,3 +1,4 @@
+import { useFieldMembership } from '../field/membership';
 import React, { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -8,7 +9,7 @@ import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { LISTING_EDITOR_MESSAGES, type ListingEditorMessages } from './messages';
-import { resolveSelectionPaint, SelectionCard } from './SelectionCard';
+import { resolveSelectionPaint, SelectionCard } from '../card/SelectionCard';
 import type {
   AddressPrecision,
   AddressPrecisionOption,
@@ -170,7 +171,7 @@ function AddressPrecisionPickerComponent({
   options: optionsProp,
   footnote: footnoteProp,
   accessibilityLabel: accessibilityLabelProp,
-  disabled = false,
+  disabled: disabledProp = false,
   style,
   testID,
 }: AddressPrecisionPickerProps) {
@@ -179,7 +180,12 @@ function AddressPrecisionPickerComponent({
   const options = optionsProp ?? localizedOptions;
   // `undefined` only: `null` still hides the footnote.
   const footnote = footnoteProp === undefined ? messages.addressPrecisionFootnote : footnoteProp;
-  const accessibilityLabel = accessibilityLabelProp ?? messages.addressPrecisionLabel;
+  const field = useFieldMembership({
+    accessibilityLabel: accessibilityLabelProp,
+    disabled: disabledProp,
+  });
+  const disabled = field.disabled;
+  const accessibilityLabel = field.accessibilityLabel ?? messages.addressPrecisionLabel;
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
   const [width, setWidth] = useState(0);
@@ -194,6 +200,10 @@ function AddressPrecisionPickerComponent({
     >
       <View
         role="radiogroup"
+        nativeID={field.nativeID}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
+        aria-required={field.required || undefined}
         accessibilityLabel={accessibilityLabel}
         aria-disabled={disabled || undefined}
         style={{

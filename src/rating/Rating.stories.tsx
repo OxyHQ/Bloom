@@ -9,7 +9,8 @@ import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
-  title: 'Base/Rating',
+  id: 'base-rating',
+  title: 'Components/Inputs/Rating',
 };
 
 export default meta;

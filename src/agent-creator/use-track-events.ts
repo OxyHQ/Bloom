@@ -1,10 +1,10 @@
 import { type ComponentRef, useEffect, type RefObject } from 'react';
 import { Platform, type View } from 'react-native';
 
-/** Extra browser inputs use the same state and geometry as native gestures. */
+/** Horizontal browser input uses the track; ordinary vertical wheel stays with Screen. */
 export function useTrackEvents(
   ref: RefObject<ComponentRef<typeof View> | null>,
-  onWheel: ((deltaX: number, deltaY: number) => void) | undefined,
+  onWheel: ((delta: number) => void) | undefined,
   onKey?: (key: string, shiftKey: boolean) => boolean,
   onFocus?: (focused: boolean) => void,
 ) {
@@ -13,11 +13,18 @@ export function useTrackEvents(
     const element = ref.current as unknown as HTMLElement | null;
     if (!element?.addEventListener) return;
     const wheel = (event: WheelEvent) => {
-      if (event.ctrlKey || !onWheel) return;
+      if (event.defaultPrevented || event.ctrlKey || !onWheel) return;
+      const delta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.shiftKey
+            ? event.deltaY
+            : 0;
+      if (delta === 0) return;
       event.preventDefault();
       event.stopPropagation();
       const multiplier = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 120 : 1;
-      onWheel(event.deltaX * multiplier, event.deltaY * multiplier);
+      onWheel(delta * multiplier);
     };
     const key = (event: KeyboardEvent) => {
       if (onKey?.(event.key, event.shiftKey)) event.preventDefault();

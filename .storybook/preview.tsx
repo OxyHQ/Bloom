@@ -110,31 +110,65 @@ const preview: Preview = {
       /**
        * The catalogue taxonomy:
        *
-       *   Foundations   not a component you place — colour, tokens, type, fonts,
-       *                 icons, motion, and the plumbing families (portal, scroll…)
-       *   Base          the everyday building blocks, alphabetical
-       *   Blocks        larger assemblies, ready to drop in
-       *   Charts        data cards for dashboards
-       *   Templates     complete screens composed from the above (`templates/`, unpublished)
+       * Foundations: design vocabulary and tokens.
+       * Composition: contracts shared by fields, screens, navigation and overlays.
+       * Components: reusable controls and content, grouped by purpose.
+       * Patterns: complete workflows assembled from those components.
+       * Templates: full applications in `templates/`, unpublished.
+       * Labs: development diagnostics, separate from the consumer catalogue.
+       *
+       * Titles describe navigation; explicit meta.id keeps existing URLs stable.
+       * Classification and contribution rules: .storybook/CATALOG.md.
        */
       storySort: {
         order: [
-          'Introduction',
           'Foundations',
           [
             'Color',
+            'Color Roles',
             'Color System Playground',
+            'Design Tokens',
             'Typography',
             'Fonts',
             'Icons',
-            'Design Tokens',
+            'Shapes',
+            'Surface Levels',
             'Motion',
           ],
-          'Base',
-          'Blocks',
-          'Agents',
-          'Charts',
+          'Composition',
+          [
+            'Overview',
+            'Provider',
+            'Scope',
+            'Fields',
+            'Layout',
+            ['App Shell', 'Screen', 'Content Panel', 'Page Header', 'Page Footer'],
+            'Navigation',
+            'Scrolling',
+            'Overlays',
+            'Motion',
+            'Images',
+            'Hooks',
+          ],
+          'Components',
+          [
+            'Actions',
+            'Inputs',
+            'Navigation',
+            'Data Display',
+            'Feedback',
+            'Surfaces',
+            'Overlays',
+            'Media',
+            'Chat',
+            'Agents',
+            'Maps',
+            'Charts',
+          ],
+          'Patterns',
+          ['Account', 'Forms', 'Chat', 'Agents', 'Productivity', '*'],
           'Templates',
+          'Labs',
         ],
         method: 'alphabetical',
       },

@@ -1,4 +1,7 @@
+import { Screen, ScreenScrollView } from '../screen/index.web';
+import { AppShell } from '../app-shell/index.web';
 import { ComposerLoader } from '../composer-loader/index.web';
+import { ComposerPill } from '../composer-panel/index.web';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +18,11 @@ import { bindAgentChat } from './bindAgentChat';
  * relative specifiers.
  */
 const parts = bindAgentChat({
+  Screen,
+  ScreenScrollView,
+  AppShell,
   ComposerLoader,
+  ComposerPill,
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,

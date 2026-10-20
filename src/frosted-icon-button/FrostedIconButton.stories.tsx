@@ -7,7 +7,8 @@ import * as Icons from '../icons';
 import { BloomImage } from '../image';
 
 const meta: Meta<typeof FrostedIconButton> = {
-  title: 'Base/Frosted Icon Button',
+  id: 'base-frosted-icon-button',
+  title: 'Components/Actions/Frosted Icon Button',
   component: FrostedIconButton,
   args: {
     accessibilityLabel: 'Back',

@@ -10,7 +10,8 @@ import { Shelf } from './Shelf';
 import { ShelfSkeleton } from './ShelfSkeleton';
 
 const meta: Meta = {
-  title: 'Blocks/Music/Shelf',
+  id: 'blocks-music-shelf',
+  title: 'Patterns/Music/Shelf',
 };
 
 export default meta;

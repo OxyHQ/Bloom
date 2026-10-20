@@ -42,7 +42,8 @@ import type {
 } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Stays/Stay Filters',
+  id: 'blocks-stays-stay-filters',
+  title: 'Patterns/Stays/Stay Filters',
 };
 
 export default meta;

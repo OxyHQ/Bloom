@@ -1,10 +1,11 @@
+import { useFieldMembership } from '../field/membership';
 import React, { useMemo } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { Chip } from '../chip';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
-import { resolveSelectionPaint, SelectionCard } from '../listing-editor/SelectionCard';
+import { resolveSelectionPaint, SelectionCard } from '../card/SelectionCard';
 import { useMessages } from '../locale/messages';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
@@ -51,14 +52,19 @@ export function VehiclePicker<T extends string = VehicleKind>({
   options: optionsProp,
   title,
   description,
-  disabled = false,
+  disabled: disabledProp = false,
   labels: labelOverrides,
   accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: VehiclePickerProps<T>) {
   const { messages } = useMessages(VEHICLE_PICKER_MESSAGES);
-  const accessibilityLabel = accessibilityLabelProp ?? messages.vehicle;
+  const field = useFieldMembership({
+    accessibilityLabel: accessibilityLabelProp,
+    disabled: disabledProp,
+  });
+  const disabled = field.disabled;
+  const accessibilityLabel = field.accessibilityLabel ?? messages.vehicle;
   const options = useMemo(
     () =>
       optionsProp ?? (builtInVehicleOptions(messages) as unknown as readonly VehicleOption<T>[]),
@@ -106,7 +112,12 @@ export function VehiclePicker<T extends string = VehicleKind>({
       ) : null}
 
       <View
+        aria-disabled={disabled || undefined}
         role="radiogroup"
+        nativeID={field.nativeID}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
+        aria-required={field.required || undefined}
         accessibilityLabel={accessibilityLabel}
         style={{ gap: VEHICLE_PICKER_GEOMETRY.gap }}
       >

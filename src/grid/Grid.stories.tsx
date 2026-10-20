@@ -8,7 +8,8 @@ import { useTheme } from '../theme';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Base/Grid',
+  id: 'base-grid',
+  title: 'Composition/Layout/Grid',
 };
 
 export default meta;

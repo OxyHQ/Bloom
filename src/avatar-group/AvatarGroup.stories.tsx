@@ -40,7 +40,8 @@ const WITH_PHOTOS: AvatarGroupItem[] = [
 ];
 
 const meta: Meta<typeof AvatarGroup> = {
-  title: 'Base/Avatar Group',
+  id: 'base-avatar-group',
+  title: 'Components/Data Display/Avatar Group',
   component: AvatarGroup,
   argTypes: {
     layout: { control: 'select', options: ['stack', 'row', 'cluster'] },

@@ -5,7 +5,8 @@ import { BottomBar } from './BottomBar.web';
 import { Fab } from '../fab/index.web';
 import * as Icons from '../icons';
 const meta: Meta<typeof BottomBar> = {
-  title: 'Base/Bottom Bar',
+  id: 'base-bottom-bar',
+  title: 'Composition/Navigation/Bottom Bar',
   component: BottomBar,
   args: { value: 'home', actionBehavior: 'hide', actionPlacement: 'auto' },
   argTypes: {

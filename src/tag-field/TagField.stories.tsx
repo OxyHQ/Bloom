@@ -13,7 +13,8 @@ import { TagField } from './TagField';
 import type { TagSuggestion } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Notes/Tag Field',
+  id: 'blocks-notes-tag-field',
+  title: 'Patterns/Notes/Tag Field',
   parameters: { layout: 'fullscreen', bleed: true },
 };
 

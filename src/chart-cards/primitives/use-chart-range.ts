@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useControllableState } from '../../hooks/use-controllable-state';
 
 /** One selectable period of a chart card's pill. */
 export interface ChartRangeOption {
@@ -27,14 +27,10 @@ export function useChartRange<T extends object>(
   selectedId: string | undefined;
   select: (id: string) => void;
 } {
-  const [selectedId, setSelectedId] = useState<string | undefined>(defaultId);
+  const [selectedId, select] = useControllableState<string>({
+    defaultValue: defaultId ?? '',
+    onChange,
+  });
   const selected = ranges?.find((r) => r.id === selectedId) ?? ranges?.[0];
-  const select = useCallback(
-    (id: string) => {
-      setSelectedId(id);
-      onChange?.(id);
-    },
-    [onChange],
-  );
   return { selected, selectedId: selected?.id, select };
 }

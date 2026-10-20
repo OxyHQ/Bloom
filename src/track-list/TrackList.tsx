@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import React, { type ComponentRef, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { dragShift, dragTarget } from '../hooks/list-reorder';
 import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
@@ -100,15 +101,14 @@ export function TrackList({
   const canReorder = reorderable && onReorder !== undefined;
 
   // --- selection -----------------------------------------------------------
-  const [innerSelected, setInnerSelected] = useState<string[]>(defaultSelectedIds ?? []);
-  const selected = selectedIds ?? innerSelected;
+  const [selected, commit] = useControllableState<string[]>({
+    value: selectedIds,
+    defaultValue: defaultSelectedIds ?? [],
+    onChange: onSelectionChange,
+  });
   const selectedSet = useMemo(() => new Set(selected), [selected]);
   const anchor = useRef<string | null>(null);
   const order = useMemo(() => tracks.map((track) => track.id), [tracks]);
-  const commit = (next: string[]) => {
-    if (selectedIds === undefined) setInnerSelected(next);
-    onSelectionChange?.(next);
-  };
 
   // --- focus ---------------------------------------------------------------
   const [focusIndexRaw, setFocusIndex] = useState(0);

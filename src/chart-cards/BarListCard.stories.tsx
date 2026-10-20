@@ -15,7 +15,8 @@ const meta: Meta<typeof BarListCard> = {
     limit: { control: 'number' },
     defaultTab: { control: 'text' },
   },
-  title: 'Charts/Bar List',
+  id: 'charts-bar-list',
+  title: 'Components/Charts/Bar List',
   component: BarListCard,
 };
 

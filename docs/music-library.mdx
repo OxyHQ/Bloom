@@ -67,6 +67,8 @@ Colours come from the theme in light and dark: surfaces are the page background 
 | `labels` | every string, merged over the defaults — English ones below, localised via `BloomProvider locale` (nested `filter`, `sort`, `view`, `kind`) |
 | `emptyState` | replaces "Nothing here yet" |
 
+**Panel composition.** Both the full panel and the 72px rail own a bounded `Screen` and `ScreenScrollView`. Give the panel a height or a bounded flex parent; its list scrolls independently of the surrounding page. The full panel uses `PageHeader` for its title, actions, filters and search toolbar, so they stay outside the list viewport. Scroll metrics and navigation motion stay local to the panel; the shared scrollbar follows its own viewport edge.
+
 **Controlled or not, per value.** Filter, Downloaded, sort, view and query each follow their prop when it is set and keep their own state when it is not; the change callback fires in both cases. So `sort="alphabetical"` alone pins the sort while the chips stay interactive.
 
 **Order.** Pinned entries always lead, in the current sort among themselves. `recents` and `recently-added` put entries without the timestamp last; `alphabetical` ignores case and accents; `creator` sorts by `creator`, else `subtitle`, then title. The sort is stable.

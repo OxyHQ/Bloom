@@ -7,7 +7,8 @@ import { Radio, RadioCard, RadioGroup, RadioChip } from './index';
 import { useTheme } from '../theme/use-theme';
 
 const meta: Meta<typeof RadioGroup> = {
-  title: 'Base/Radio',
+  id: 'base-radio',
+  title: 'Components/Inputs/Radio',
   component: RadioGroup,
 };
 

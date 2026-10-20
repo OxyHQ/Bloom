@@ -26,7 +26,8 @@ import {
 import type { DestinationSuggestion, GuestCounts, StaySearchSegment } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Stays/Stay Search',
+  id: 'blocks-stays-stay-search',
+  title: 'Patterns/Stays/Stay Search',
 };
 
 export default meta;

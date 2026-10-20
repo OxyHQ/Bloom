@@ -13,7 +13,8 @@ const meta: Meta<typeof LinkPreviewCard> = {
     siteName: { control: 'text' },
     coverFill: { control: 'boolean' },
   },
-  title: 'Blocks/Link Preview Card',
+  id: 'blocks-link-preview-card',
+  title: 'Components/Data Display/Link Preview Card',
   component: LinkPreviewCard,
 };
 

@@ -1,5 +1,4 @@
 import { hairlineOn, surfaceTextOn } from '../styles/surface-levels';
-import { useCallback, useState } from 'react';
 
 import { resolveButtonRamps } from '../button/shared';
 import { parseRgb } from '../theme/color-utils';
@@ -183,27 +182,6 @@ export function browseTilePaint(
   }
   const darker = darkenUntilContrast(color, TILE_LIGHT_TEXT, AA_TEXT_CONTRAST);
   return { background: darker?.color ?? '#000000', text: TILE_LIGHT_TEXT };
-}
-
-// ---------------------------------------------------------------------------
-//  Controlled-or-uncontrolled state
-// ---------------------------------------------------------------------------
-
-export function useControllable<T>(
-  value: T | undefined,
-  initial: T,
-  onChange: ((next: T) => void) | undefined,
-): [T, (next: T) => void] {
-  const [inner, setInner] = useState<T>(initial);
-  const controlled = value !== undefined;
-  const set = useCallback(
-    (next: T) => {
-      if (!controlled) setInner(next);
-      onChange?.(next);
-    },
-    [controlled, onChange],
-  );
-  return [controlled ? (value as T) : inner, set];
 }
 
 // ---------------------------------------------------------------------------

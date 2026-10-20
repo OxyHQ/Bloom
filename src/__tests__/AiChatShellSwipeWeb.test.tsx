@@ -1,27 +1,6 @@
-/**
- * @jest-environment jsdom
- *
- * The nav drawer's edge swipe on the platform where `PanResponder` is not
- * `PanResponder` — react-native-web's responder system over real DOM events.
- *
- * `AiChatShellSwipe.test.tsx` pins the claim's arithmetic under the native
- * preset. Two things about it exist ONLY here, behind `IS_WEB`, and the native
- * suite cannot reach either:
- *
- * - **A mouse drag is never claimed.** react-native-web turns mouse events
- *   into fake touches (`createResponderEvent`), so without the check a drag
- *   from the left edge of a window narrower than `lg` would open the drawer
- *   and cancel whatever selection it started. The discriminator is the DOM
- *   event type the touch was made from.
- * - **The events arrive at all.** The gesture is spread onto the shell's root
- *   `View`; on web that means react-native-web registered the node with its
- *   ResponderSystem, which listens on `document`. This renders the real thing
- *   and dispatches real `touchstart`/`touchmove`/`touchend`, so a fork that
- *   silently stopped being wired up would fail here rather than in someone's
- *   browser.
- *
- * The window is made narrower than `lg` by way of `documentElement.clientWidth`,
- * which is what react-native-web's `Dimensions` measures.
+/** @jest-environment jsdom */
+/** Real RNW events: the AppShell adapter must not take gestures from text or scrollers.
+ * The removed chat-specific responder's measured thresholds are archived in docs/ai-chat.mdx.
  */
 import React from 'react';
 import { act } from 'react';
@@ -145,13 +124,13 @@ function drag(target: HTMLElement, kind: 'touch' | 'mouse', from: Point, to: Poi
 }
 
 describe('AiChatShell nav swipe on web', () => {
-  it('opens the drawer on a touch drag in from the left edge', () => {
+  it('leaves a touch drag at the edge with the existing scroll owner', () => {
     const onNavOpenChange = jest.fn();
     const shell = mount(onNavOpenChange);
 
     drag(shell, 'touch', { x: 6, y: 400 }, { x: 240, y: 404 });
 
-    expect(onNavOpenChange).toHaveBeenCalledWith(true);
+    expect(onNavOpenChange).not.toHaveBeenCalled();
   });
 
   it('ignores a mouse drag along the same path, so a selection at the edge survives', () => {

@@ -42,6 +42,14 @@ const { messages, status, sendMessage, stop } = useChat({ transport });
 
 Give it a sized parent — it fills it (`flex: 1`); a 12px page frame on `background-full` is a good default.
 
+The workspace uses `AppShell panelLayout` with stable `conversation` and `history`
+panels. Its conversation declares `Screen scroll="auto"`, with `PageHeader` in
+`header`, the shared composer in `bottomBar` through `PageFooter`, and
+`ScreenScrollView` for the transcript. The shell supplies panel framing and the
+local viewport; header/footer clearances and scroll state belong to Screen.
+History visibility resolves against the shell container, retaining its mounted
+state when it becomes hidden. Standalone `AgentChatHistory` retains its own frame.
+
 ## Data, not transport
 
 Bloom wires none of the AI SDK (`useChat`), `localStorage`, or a `/api/chat` route into this component. Everything it needs from them is a prop:
@@ -51,19 +59,22 @@ Bloom wires none of the AI SDK (`useChat`), `localStorage`, or a `/api/chat` rou
 - **`threads`** — `{ id, title, updatedAt, unread? }`, in the order you want them listed. Ordering, persistence, title derivation and "reading a chat marks it read" are the consumer's.
 - **Every action** — `onSubmit` (trimmed, non-empty), `onStop`, `onAttach`, `onShare`, `onExport`, `onCopyMessage`, `onReadAloud`, and the thread callbacks.
 
-What the component still owns is interaction state: the composer text (uncontrolled unless you pass `value`), the menus, inline rename, the "Copied" confirmations, the scroll-under measurement, and following the newest message.
+What the component still owns is interaction state: the composer text (uncontrolled unless you pass `value`), the menus, inline rename, the "Copied" confirmations, following the newest message.
 
 ## Anatomy
 
 ### Header
 
-Overlaid on the transcript (absolute, 48 tall, `px 16 / pt 7`), so text scrolls under it up to the card's own rounded top instead of being cut at a header edge. `headerLeading` (e.g. a nav toggle), the title (`headline-medium`, truncated — the active thread's title unless `title` is given), and `AgentChatActions` pushed right.
-
-The 1px bottom rule is always there but transparent, so appearing never shifts anything. It shows — `separator-border`, with the band frosting to white/black 20% behind a 20px backdrop blur (web) — only when **both** the transcript is scrolled **and** the title actually reaches the message column (measured, with a 16px buffer). On a wide card the column sits well clear of a short title, and a rule would be drawing a line under nothing.
+`PageHeader` renders the title and floating action islands above the transcript.
+`headerLeading` accepts navigation controls. The title defaults to the active
+thread's title; `title` overrides it. `headerIdentity` accepts an avatar/name
+composition such as `AgentProfile` and defaults to centered alignment;
+`headerTitleAlign` can override that alignment. The composed identity determines
+header height. `AgentChatActions` uses the shared `ButtonGroup` and menu trigger.
 
 ### Transcript
 
-A column max 768 wide, `px 16 / pt 72 / pb 24`, 20px between turns. While empty it centres the empty state: `title-2-medium` heading, a `body-regular` line and wrapping suggestion pills (`suggestions`, three by default; `[]` hides them). `emptyState` replaces the **whole card body** — transcript and composer — which is where an "Add an API key" notice would go.
+A column max 768 wide, `px 16 / pt 16 / pb 24`, 20px between turns. While empty it centres the empty state: `title-2-medium` heading, a `body-regular` line and wrapping suggestion pills (`suggestions`, three by default; `[]` hides them). `emptyState` replaces the **whole card body** — transcript and composer — which is where an "Add an API key" notice would go.
 
 While busy and the last reply has no text yet, `AgentThinking` (wave, "Thinking") sits under the transcript: reasoning models stream nothing visible first, so the indicator stays up until a word exists. `error` (default `status === 'error'`) adds the `role="alert"` line.
 
@@ -75,26 +86,31 @@ While busy and the last reply has no text yet, `AgentThinking` (wave, "Thinking"
 
 ### AgentChatComposer
 
-A 52px full pill, `p 8`, 10px gap: the attachment disc, the single-line field (`body-regular`, "Ask me anything"), the model (sparkle + short model id, max 13ch, name hidden below 640 wide) and send / stop. Send is `bg-button-primary` on a 36px disc — no drop shadow, 40% while the field is empty. Below it, a 26px status row: provider (∞, `"Not configured"` without one) and the message count.
-
-While `busy` the pill turns transparent so `ComposerLoader`'s own surface and light band show through it.
+Uses `ComposerPill` inside `ComposerLoader`: a multiline, growing prompt with
+Bloom's shared send, stop, keyboard and model controls. The provider and message
+count remain in the status row. Uncontrolled drafts clear through ComposerPill after sending; AgentChat owns and clears its controlled workspace draft.
+`composerProps` exposes the shared pill API for model selection, attachments,
+voice, permissions, labels and keyboard integration; the chat owns draft and
+turn state. Add attachment and voice controls appear when host handlers exist.
+The workspace `disabled` prop and `composerProps.disabled` combine as restrictions: either blocks editing, Enter, send and suggestion submission. Stop stays reachable while busy and disabled. Enter sends; Shift+Enter inserts
+a line break, and IME composition does not submit.
 
 ### AgentChatHistory
 
-260 wide, radius 24, `p 12`, 24px between "New chat", the list and the footer.
+260 wide, `p 12`, 24px between "New chat", the list and the footer. The workspace shell owns its surface and corners; the standalone history supplies its own frame.
 
 - **Threads** — radius 10; the active row, a row whose menu is open, and a hovered row share the `background-secondary-hover` fill, so hovering previews selecting. Unread rows carry a 6px dot and primary text. A 28px trailing slot holds the compact age (`now`, `34m`, `5h`, `3d`; `formatAge`) and, stacked on it, the `⋮` trigger — the age steps aside on hover or keyboard focus, never both at once. The menu offers Rename (inline field; Enter or blur commits the trimmed title, Escape cancels), Mark as unread and Delete, each shown only when its callback is set.
 - **Footer** — a 1px `separator-border` rule, the account trigger (`account`: avatar + name) and the 24px export disc (`onExport`; disabled with no threads). The account menu opens upward: "Usage left" (`usage`) expands in place to measured rows and "Upgrade" (`onUpgrade`), then `accountItems`, a divider and "Log out" (`onLogOut`).
 
 ## Platforms
 
-`composer-loader` and `dropdown-menu` are web-forked, so `agent-chat` is too: `AgentChat.web.tsx` binds the web `ComposerLoader` (DOM `<svg>` on CSS keyframes) and `DropdownMenu` (anchored `FloatingPanel`); `AgentChat.tsx` binds the native ones (react-native-svg loader, menus as sheets). The implementation is shared and receives them through context — so a web bundler that resolves `package.json#exports` rather than platform extensions still reaches the web pieces.
+`app-shell`, `composer-loader`, `composer-panel` and `dropdown-menu` are web-forked, so `agent-chat` is too: `AgentChat.web.tsx` binds the web `AppShell`, `ComposerLoader` (DOM `<svg>` on CSS keyframes) , `ComposerPill` and `DropdownMenu` (anchored `FloatingPanel`); `AgentChat.tsx` binds the native ones (react-native-svg loader, menus as sheets). The implementation is shared and receives them through context — so a web bundler that resolves `package.json#exports` rather than platform extensions still reaches the web pieces.
 
 On **native**:
 
 - There is no hover, so the assistant action row simply shows (except while streaming), and a thread row's `⋮` trigger is transparent over the age — pressing the slot still opens the menu, as expected on touch.
 - Copy and read aloud render only when `onCopyMessage` / `onReadAloud` are given (web defaults to `navigator.clipboard` and `speechSynthesis`). Share defaults to the Web Share sheet or the clipboard on web and does nothing on native without `onShare`.
-- The header frost is a 20% wash without the backdrop blur, and message lines animate without the blur.
+- Header materials follow PageHeader; message lines animate without the blur.
 
 ## Language
 
@@ -105,6 +121,6 @@ Every default string — names, placeholders, the empty state and its suggestion
 - **Pill rule** — the header, message and row-menu icon buttons are circles, per Bloom's full-radius rule for button-like controls. Rows, cards and the model chip keep a smaller corner radius.
 - **No press scale** anywhere; hover is colour only.
 - **No native `title` tooltips** on icon buttons — the accessible names are kept, the browser tooltip is not.
-- **App shell left out** — a sidebar navigation with its phone drawer, plan/upgrade prompts and a setup notice aren't included. Use `headerLeading`, your own layout, and `emptyState`.
+- **App navigation left out** — a sidebar navigation with its phone drawer, plan/upgrade prompts and a setup notice aren't included. Use `headerLeading`, your own layout, and `emptyState`.
 - **No markdown or code rendering** — replies render as plain paragraphs.
-- **The rail's visibility** — it shows when `threads` is given and the window is at least 1280 wide, or as `showHistory` says.
+- **The rail's visibility** — it shows when `threads` is given and the shell container is at least 1280px wide, or as `showHistory` says. The modular layout keeps only the conversation when the panels’ minimum widths cannot fit.

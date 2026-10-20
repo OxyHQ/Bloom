@@ -32,7 +32,8 @@ import { Text } from '../typography';
 
 const meta: Meta = {
   component: Popover,
-  title: 'Base/Popover',
+  id: 'base-popover',
+  title: 'Components/Overlays/Popover',
 };
 
 export default meta;

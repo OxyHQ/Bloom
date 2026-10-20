@@ -1,3 +1,5 @@
+import { surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
+import { useTheme } from '../theme/use-theme';
 import React, { Children, isValidElement, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 
@@ -70,6 +72,8 @@ export function AiChatUserMessageBase({
   bubbleStyle,
   testID,
 }: AiChatUserMessageProps) {
+  const theme = useTheme();
+  const parentFill = useSurfaceFill();
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const [column, setColumn] = useState(0);
@@ -91,7 +95,7 @@ export function AiChatUserMessageBase({
             maxWidth: column > 0 ? column / 2 + 6 : '50%',
             flexDirection: 'column',
             borderRadius: CARD_RADIUS,
-            backgroundColor: palette.primary,
+            backgroundColor: surfaceFillOn(theme, parentFill ?? palette.secondary),
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: 11,

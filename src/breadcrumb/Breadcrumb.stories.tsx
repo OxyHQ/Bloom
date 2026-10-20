@@ -6,7 +6,8 @@ import { Breadcrumb, BreadcrumbItem } from './index';
 import { RiHome5Line as HomeIcon, RiSettings3Line, RiUserLine } from '../icons/remix';
 
 const meta: Meta<typeof Breadcrumb> = {
-  title: 'Base/Breadcrumb',
+  id: 'base-breadcrumb',
+  title: 'Components/Navigation/Breadcrumb',
   component: Breadcrumb,
 };
 

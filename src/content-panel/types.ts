@@ -84,6 +84,10 @@ export interface ContentPanelProps {
    * fills the panel and scrolls within it.
    */
   fill?: boolean;
+  /** Whether the filled web content wrapper owns scrolling. Defaults to `fill`.
+   * Set false when a Screen or list inside owns the viewport, as with Dialog.
+   */
+  scrollable?: boolean;
   /** Override the surface background utility (defaults to `bg-card`). */
   surfaceClassName?: string;
   surfaceStyle?: StyleProp<ViewStyle>;

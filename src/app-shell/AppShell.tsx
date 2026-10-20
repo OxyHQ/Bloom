@@ -8,9 +8,10 @@ import React, {
 } from 'react';
 import { Platform, View, useWindowDimensions } from 'react-native';
 import { BREAKPOINTS } from '../styles/breakpoints';
-import { Screen, ScreenScrollView, useScreen } from '../screen';
-import { Sidebar } from '../sidebar';
-import { useSidebarMetrics } from '../sidebar/metrics';
+import { useScreen } from '../screen/context';
+import type { ScreenComponents } from '../screen/types';
+import { SidebarSlot } from './SidebarSlot';
+import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { APP_SHELL_DEFAULTS } from './constants';
 import { useTheme } from '../theme/use-theme';
 import { PageHeader } from '../page-header';
@@ -45,6 +46,7 @@ export function resolveNavigationPlacement(
 export function createAppShell(
   BottomBar: ComponentType<BottomBarProps>,
   Fab: ComponentType<FabProps>,
+  { Screen, ScreenScrollView }: ScreenComponents,
   PanelLayoutView?: ComponentType<PanelLayoutViewProps>,
 ) {
   const AppShellEngine = createAppShellEngine();
@@ -94,7 +96,7 @@ export function createAppShell(
     const width = containerWidth ?? windowWidth;
     const { colors } = useTheme();
     const placement = resolveNavigationPlacement(width, navigationPlacement);
-    const sidebarMetrics = useSidebarMetrics(sidebar?.size);
+    const sidebarMetrics = useAppShellSidebarMetrics(sidebar);
     const [userCollapsed, setUserCollapsed] = useState(sidebar?.defaultCollapsed ?? false);
     const navigationPadding = APP_SHELL_DEFAULTS.dashboardGutter;
     const contentPadding = APP_SHELL_DEFAULTS.gutter;
@@ -176,7 +178,7 @@ export function createAppShell(
             }}
           >
             {(shownPlacement) => (
-              <Sidebar
+              <SidebarSlot
                 {...(navigation ? { showSearch: false, showThemeToggle: false } : {})}
                 {...sidebar}
                 variant={shownPlacement === 'rail' ? 'rail' : 'panel'}

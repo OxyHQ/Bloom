@@ -189,7 +189,8 @@ function SystemDemo({
   );
 }
 const meta: Meta<typeof SystemDemo> = {
-  title: 'Templates/Coherent system',
+  id: 'templates-coherent-system',
+  title: 'Templates/Coherent System',
   component: SystemDemo,
   parameters: { layout: 'fullscreen' },
   args: {

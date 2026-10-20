@@ -10,9 +10,10 @@ export {
   AiChatGalleryPanel,
   AiChatImageGeneration,
   AiChatUserMessage,
+  AiChatShell,
 } from './AiChat.web';
-export { AiChatCodePanel } from './AiChatCodePanel';
-export { AiChatThread } from './AiChatContainer';
+export { AiChatCodePanel } from './AiChat.web';
+export { AiChatThread } from './AiChat.web';
 export {
   AiChatBullet,
   AiChatBulletList,
@@ -21,7 +22,7 @@ export {
   AiChatStrong,
 } from './AiChatMessages';
 export { AiChatResizeHandle } from './AiChatResizeHandle';
-export { AiChatHeader, AiChatMobileHeader, AiChatShell } from './AiChatShell';
+export { AiChatHeader, AiChatMobileHeader } from './AiChatShell';
 export { useAiChatChromeInsets, useAiChatShell } from './context';
 export type { AiChatChromeInsets, AiChatShellState } from './context';
 export type {

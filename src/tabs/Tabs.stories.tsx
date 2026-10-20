@@ -9,7 +9,8 @@ import { RiChat3Line, RiHome5Line, RiSettings3Line } from '../icons/remix';
 
 const meta: Meta = {
   component: Tabs,
-  title: 'Base/Tabs',
+  id: 'base-tabs',
+  title: 'Components/Navigation/Tabs',
 };
 
 export default meta;

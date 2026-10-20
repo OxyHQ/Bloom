@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { ScrollArea } from '../layout';
@@ -123,18 +124,20 @@ export function ContributionsGrid({
   const reducedMotion = useReducedMotion();
   const [width, setWidth] = useState(0);
 
-  const [own, setOwn] = useState<number | null>(null);
-  const active = controlled !== undefined ? controlled : own;
+  const [active, setSelection] = useControllableState<number | null>({
+    value: controlled,
+    defaultValue: null,
+    onChange: onActiveCellChange,
+  });
   const activeRef = useRef(active);
   activeRef.current = active;
   const setActive = useCallback(
     (index: number | null) => {
       if (index === activeRef.current) return;
       activeRef.current = index;
-      if (controlled === undefined) setOwn(index);
-      onActiveCellChange?.(index);
+      setSelection(index);
     },
-    [controlled, onActiveCellChange],
+    [setSelection],
   );
   // The tooltip stays on the last cell while it animates out.
   const [anchorIndex, setAnchorIndex] = useState<number | null>(active);

@@ -1,0 +1,83 @@
+---
+title: Composition audit
+description: Shared ownership, adoption changes and remaining boundaries across Bloom's component families.
+order: 4
+---
+
+# Composition audit
+
+Review date: 2026-10-19. The source census covers **226 families**, of which **223 are published**. The [generated adoption matrix](/docs/adoption-matrix) measures four contracts; the review below also follows panel geometry, scrolling, chrome and platform entry points.
+
+## Ownership model
+
+| Responsibility | Shared owner | Consumer responsibility |
+| --- | --- | --- |
+| Application navigation and responsive frame | AppShell | Supply navigation and route content |
+| Panel geometry, visibility, retention and resizing | AppShellPanels / panel layout engine | Declare panel slots, bounds and controlled state |
+| Scroll viewport, activity, restoration and chrome clearance | Screen | Choose one scroll owner and mark retained routes active |
+| Scroll content or virtualized content | ScreenScrollView / VirtualList | Supply content and reading-column width |
+| Header and footer geometry | PageHeader / PageFooter | Supply identity, actions and accessories |
+| Overlay stacking, modality and isolated screen scope | Overlay / Dialog / BottomSheet | Supply presentation and dismissal behavior |
+| Nested scroll surface and indicators | ScrollSurface / ScrollArea / ScrollBar | Supply bounded dimensions and content |
+| Control appearance | BloomScope | Override size/tone only where intended |
+| Form constraints and association | Field / useFieldMembership | Supply visible labels and domain validation |
+| Controlled and uncontrolled state | useControllableState | Keep domain normalization and equality at the component boundary |
+
+These owners cooperate through scoped contracts. Domain state, visual defaults and constraints remain separate: selecting an answer must not change a sibling's state, while disabling a Field must constrain every answer control it contains.
+
+## Changes made
+
+### Panels and scroll ownership
+
+- QueuePanel, LibraryPanel and scrollable ChatInfoPanel now compose Screen, PageHeader and ScreenScrollView. Their headers read their own viewport and their scrollbars sit on that viewport's edge. Non-scrollable ChatInfoPanel keeps normal flow and an isolated screen/metrics scope.
+- ChatSplitLayout delegates its list/conversation/info slots to AppShellPanels. The shared engine owns responsive geometry, RTL, retention and resize previews. The public chat props remain an adapter; there is no second pointer/measurement implementation.
+- Nested Screens inherit inactive ancestors even when navigation is isolated. A nested Screen cannot claim the outer panel's host metrics, header actions or color recipe. Dialogs establish their own ScreenScope.
+- ScreenScrollView's `scrollEnabled` constrains the actual web scroll owner, including document mode. Locks are reference counted; scrollbar gestures respect them. Programmatic restoration remains available.
+- ScrollSurface uses scoped scroll metrics and the existing EdgeScrim. It no longer sets React state on every scroll or maintains a second blur implementation.
+- WizardFooter delegates placement and safe-area handling to PageFooter. Inline and sticky positions share the footer contract; Screen.bottomBar remains the positioning owner when used. Responsive web insets use container queries instead of measuring width on every pixel.
+- Reading-column width belongs to content. Header/footer clearance pads that content; it does not inset the scrollbar track.
+
+Web scroll viewports use CSS containment, so their host must have a usable width and bounded height. Library and chat Storybook hosts now declare their width explicitly instead of relying on content to give a shrink-wrapped parent its dimensions.
+
+### Platform bindings
+
+Vite's platform resolution could conceal a packaging defect: a shared implementation importing the bare ScrollBar module can reach the native no-op from a published browser entry. Screen and ScreenScrollView now bind platform components explicitly. Screen's restoration sidecar also receives the platform hook.
+
+AppShell, AgentChat, MultiAgentChat, AgentCreator, AI Chat, SettingsModal and the migrated panel families pass the same platform-bound Screen components through their factories or contexts. Standalone AI chat threads and code panels receive their platform context too. The export generator owns the new browser barrels, including the lean SettingsModal entry.
+
+### Shared primitives and state
+
+- **ResizeHandle** lives in `layout`. AppShell and ChatSplitLayout use the same grip and resize engine. `AiChatResizeHandle` remains a deprecated alias, preserving existing consumers.
+- **SelectionCard** lives in `card`, with generic icon and selection props. Property, offering, vehicle and shipment choices use that implementation. The selectable header and editable detail fields remain separate interactive elements.
+- SelectionCard, domain choice groups, listing action choices and questionnaire answers inherit Field constraints and associations. Questionnaire callbacks and delayed progression also respect disabled state.
+- Chat folder tabs, OTP, questionnaire, chart ranges and selections, track selection, QueuePanel and LibraryPanel use `useControllableState`. Domain equality checks, input normalization and same-tick answer references stay at their existing boundaries.
+
+The matrix currently reports **no named adaptations** for its four source contracts. This means the previously classified gaps have been migrated. It does **not** establish complete keyboard behavior, visual correctness, every child control's membership, or scroll/chrome adoption throughout all 226 families.
+
+### Storybook
+
+The catalogue has six roots: Foundations, Composition, Components, Patterns, Templates and Labs. Existing story IDs remain stable while titles describe reusable purpose. Components, domain workflows and full application templates have separate locations. The [catalogue guide](../../.storybook/CATALOG.md) records the taxonomy and baseline counts.
+
+SelectionCard has a generic example and a Field composition example showing the same disabled constraint across a card, a vehicle choice and questionnaire answers.
+
+## Remaining boundaries
+
+| Area | Concrete next review |
+| --- | --- |
+| Custom choice groups | Arrow keys, roving focus and group semantics need a per-control review. Reading Field does not provide a complete RadioGroup keyboard model. |
+| Domain dependencies | Cart and other content-only patterns should stay content-only. Extract shared photo/thumbnail/price helpers when their contracts are truly domain independent; a cart's vendor, tips and promotions remain domain data. |
+| Platform import graph | The Screen paths above now bind explicitly. Other neutral families that directly import forked controls still warrant a package-graph review; Storybook resolving `.web` is insufficient evidence. |
+| Header action overflow | Automatic collapse of excess actions into a menu is not implemented. |
+| Native rendering | Device behavior, gesture interaction and platform accessibility need iOS/Android review. Browser inspection cannot establish them. |
+
+## Review evidence
+
+TypeScript, targeted formatting, generated exports/matrix and live browser inspection accompany this change. Browser inspection covers selected panel, selection and chat stories, including real viewport dimensions; absence of a JavaScript error alone is insufficient. No Jest suite or native device run is claimed by this audit. Storybook remains on its existing port 6006.
+
+Observed in the live browser:
+
+- ChatSplitLayout at a 1,280 px browser width: list/conversation/info tracks measured 340/526/380 px. ArrowRight on the separator changed the first two to 356/510 px.
+- At 700 px, only the conversation remained visible; the other two panels were inert and hidden. The same info viewport DOM node survived the return to desktop width.
+- QueuePanel's viewport measured 718 px with 788 px of content and reached scroll offset 70. Its scrollbar track was 2 px from the viewport's top, bottom and end edges.
+- SelectionCard's Field example disabled the card, both vehicle options and all questionnaire checkboxes. Re-enabling the Field allowed Space to select the card.
+- LibraryPanel, ChatSplitLayout, QueuePanel, SelectionCard, WizardFooter and the AI/multiagent templates rendered without page errors in the inspected stories. This is a sample, not a claim that all 1,580 stories have been exercised.

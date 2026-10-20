@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useMemo, type ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import React, { memo, useEffect, useMemo } from 'react';
+import { StyledPressable as Pressable, StyledView as View } from '../styles/styled-primitives';
 
 import { resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -11,14 +11,15 @@ import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import type { ListingEditorIcon } from './types';
+import type { SelectionCardProps } from './types';
+import { useFieldMembership } from '../field/membership';
+import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
 
 /**
- * The large selectable card the listing editor's pickers are built from.
- * Internal: `OfferingEditor` uses it as a checkbox, `AddressPrecisionPicker`
- * as a radio.
+ * A selectable card for settings, plans, properties, vehicles and other choices.
+ * The pressable header owns selection; detail fields remain outside the control.
  *
  *   card       radius 16, 1px neutral-200 border (dark neutral-700), the card
  *              colour as fill in light (none in dark);
@@ -43,7 +44,7 @@ import { IS_WEB } from '../styles/platform';
 
 export const SELECTION_CARD_RADIUS = 16;
 
-const STYLE_ID = 'bloom-listing-editor-card-web-css';
+const STYLE_ID = 'bloom-selection-card-web-css';
 const HEAD = '[data-bloom-selection-card-head]';
 const CSS = `
 ${HEAD} {
@@ -133,24 +134,6 @@ export function CheckCircle({
   );
 }
 
-export interface SelectionCardProps {
-  /** `multiple` is a `checkbox`, `single` a `radio`. */
-  selection: 'multiple' | 'single';
-  selected: boolean;
-  onPress: () => void;
-  title: string;
-  description?: string;
-  icon?: ListingEditorIcon;
-  indicator?: 'check' | 'radio';
-  media?: ReactNode;
-  compact?: boolean;
-  disabled?: boolean;
-  children?: ReactNode;
-  accessibilityLabel?: string;
-  style?: WebCssStyle;
-  testID?: string;
-}
-
 function SelectionCardComponent({
   selection,
   selected,
@@ -161,12 +144,30 @@ function SelectionCardComponent({
   indicator = selection === 'single' ? 'radio' : 'check',
   media,
   compact = false,
-  disabled = false,
+  disabled: disabledProp = false,
+  invalid,
+  nativeID,
+  describedBy,
+  className,
   children,
   accessibilityLabel,
   style,
   testID,
 }: SelectionCardProps) {
+  const field = useFieldMembership({
+    disabled: disabledProp,
+    invalid,
+    nativeID,
+    describedBy,
+    accessibilityLabel,
+    label: title,
+    labelPlacement: 'adjacent',
+  });
+  const disabled = field.disabled;
+  const activate = () => {
+    if (!disabled && (selection === 'multiple' || !selected)) onPress();
+  };
+  const keyboard = useChoiceSpaceKey(disabled, activate);
   const theme = useTheme();
   useSelectionCardCss();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
@@ -182,7 +183,13 @@ function SelectionCardComponent({
     borderRadius: SELECTION_CARD_RADIUS,
     backgroundColor: paint.fill,
     borderWidth,
-    borderColor: selected ? paint.borderSelected : highlighted ? paint.borderHover : paint.border,
+    borderColor: field.invalid
+      ? paint.error
+      : selected
+        ? paint.borderSelected
+        : highlighted
+          ? paint.borderHover
+          : paint.border,
     opacity: disabled ? DISABLED_OPACITY : 1,
     ...(IS_WEB
       ? { transitionProperty: 'border-color, background-color', transitionDuration: '120ms' }
@@ -269,7 +276,11 @@ function SelectionCardComponent({
     accessibilityState: { checked: selected, disabled },
     'aria-disabled': disabled || undefined,
     disabled,
-    onPress,
+    ...keyboard,
+    nativeID: field.nativeID,
+    'aria-describedby': field.describedBy,
+    'aria-invalid': field.invalid || undefined,
+    onPress: activate,
     onPressIn,
     onPressOut,
     onHoverIn,
@@ -280,11 +291,11 @@ function SelectionCardComponent({
   };
 
   return (
-    <View testID={testID} style={cardStyle}>
+    <View testID={testID} className={className} style={cardStyle}>
       {selection === 'multiple' ? (
         <Pressable
           role="checkbox"
-          accessibilityLabel={accessibilityLabel ?? title}
+          accessibilityLabel={field.accessibilityLabel}
           aria-checked={selected}
           {...headProps}
         >
@@ -293,7 +304,7 @@ function SelectionCardComponent({
       ) : (
         <Pressable
           role="radio"
-          accessibilityLabel={accessibilityLabel ?? title}
+          accessibilityLabel={field.accessibilityLabel}
           aria-checked={selected}
           {...headProps}
         >

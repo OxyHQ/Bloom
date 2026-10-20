@@ -12,7 +12,8 @@ import { MailRecipientField } from './MailRecipientField';
 import type { MailRecipient, MailRecipientSuggestion } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Mail/Mail Compose',
+  id: 'blocks-mail-mail-compose',
+  title: 'Patterns/Mail/Mail Compose',
 };
 
 export default meta;

@@ -9,7 +9,7 @@ jest.mock('../hooks/use-accessibility-focus', () => ({
 }));
 import { BackHandler } from 'react-native';
 import { render } from '@testing-library/react-native';
-import { usePanelInteraction } from '../ai-chat/use-panel-interaction';
+import { usePanelInteraction } from '../app-shell/use-panel-interaction';
 import {
   acquireOverlayRank,
   registerOverlayRank,

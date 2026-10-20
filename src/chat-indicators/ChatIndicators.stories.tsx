@@ -15,7 +15,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Base/Chat Indicators',
+  id: 'base-chat-indicators',
+  title: 'Components/Chat/Chat Indicators',
 };
 
 export default meta;

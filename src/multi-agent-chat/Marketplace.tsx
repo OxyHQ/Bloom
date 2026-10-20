@@ -37,7 +37,7 @@ import {
 import { MARKETPLACE_LOGOS } from './marketplace-logos';
 import { MarketplaceSettings } from './MarketplaceSettings';
 import { MULTI_AGENT_CHAT_MESSAGES, type MultiAgentChatMessages } from './messages';
-import { ScrollSurface } from '../layout/ScrollSurface';
+import { useChatComponents } from './context';
 const cx = (...classes: (string | false | undefined)[]) => classes.filter(Boolean).join(' ');
 const focus = 'outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring';
 type View = 'discover' | 'plugin' | 'bot' | 'installed';
@@ -186,6 +186,7 @@ export function Marketplace({
   defaultPage?: 'general' | 'marketplace';
 }) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
+  const { ScrollSurface } = useChatComponents();
 
   const [query, setQuery] = useState('');
   const [view, setView] = useState<View>('discover');

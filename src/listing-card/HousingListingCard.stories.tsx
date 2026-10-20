@@ -9,7 +9,8 @@ import { ListingCardGrid } from './ListingCardGrid';
 import type { ListingCardProps, ListingFact } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Housing/Listing Card',
+  id: 'blocks-housing-listing-card',
+  title: 'Patterns/Housing/Listing Card',
   parameters: { layout: 'fullscreen' },
 };
 

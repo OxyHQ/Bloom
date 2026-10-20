@@ -23,7 +23,8 @@ import { useConnectionStatusToasts } from './shared';
  */
 const meta: Meta = {
   parameters: { controls: { disable: true } },
-  title: 'Base/Connection Status Toasts',
+  id: 'base-connection-status-toasts',
+  title: 'Components/Feedback/Connection Status Toasts',
 };
 
 export default meta;

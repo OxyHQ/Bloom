@@ -6,7 +6,8 @@ import { RecentHiresCard } from './index';
 import type { RecentHire } from './types';
 
 const meta: Meta<typeof RecentHiresCard> = {
-  title: 'Blocks/Recent Hires Card',
+  id: 'blocks-recent-hires-card',
+  title: 'Patterns/People/Recent Hires Card',
   component: RecentHiresCard,
 };
 

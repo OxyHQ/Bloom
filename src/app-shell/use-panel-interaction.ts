@@ -6,8 +6,7 @@ import { hasActiveOverlays } from '../overlay/stack';
 import type { ViewRef } from '../styles/native-refs';
 
 /**
- * Interaction only: the shell continues to own the drawer's layout and motion.
- * Used by both shell drawers — the panel and the navigation.
+ * Interaction only for a selected compact panel. AppShell owns its layout and motion.
  *
  *   open    Escape (web) and back (Android) close it
  *   modal   it covers the workspace: focus moves in on open, Tab is kept

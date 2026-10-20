@@ -6,6 +6,41 @@ order: 20
 
 # Card
 
+## SelectionCard
+
+`SelectionCard` is a generic choice surface exported from `@oxy.so/bloom/card`.
+It accepts `selection="single"` (radio) or `selection="multiple"` (checkbox),
+`selected`, `onPress`, `title`, and optional description, icon, media and detail
+content. Property, vehicle, shipment and offering choices share this base.
+
+```tsx
+import { SelectionCard } from '@oxy.so/bloom/card';
+import { Field } from '@oxy.so/bloom/field';
+
+<Field label="Delivery preferences" multiple disabled={saving}>
+  <SelectionCard
+    selection="multiple"
+    title="Contact me before arrival"
+    selected={contactBeforeArrival}
+    onPress={() => setContactBeforeArrival((current) => !current)}
+  />
+</Field>
+```
+
+The visible title names each choice; an explicit `accessibilityLabel` wins.
+Field disabled/invalid state combines with the card's own constraints, and its
+descriptions and IDs follow the shared membership contract. An already selected
+single choice does not toggle off. Space activates enabled choices on web.
+Grouping, selection state and group keyboard navigation belong to the enclosing
+choice control.
+
+`children` renders below the selectable header, outside its pressable element.
+Use that slot for associated fields without nesting one control inside another.
+`className` lays out the outer card. `compact` is content density, independent of
+BloomScope's control size.
+
+## Card surface
+
 `Card` is the answer to "what is a card made of". One component owns the `card`
 background role, the border colour and width, the elevation and the corner
 rung — and the platform split those imply, since a shadow is a `box-shadow` on

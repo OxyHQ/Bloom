@@ -8,7 +8,8 @@ import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
-  title: 'Base/Stepper',
+  id: 'base-stepper',
+  title: 'Components/Navigation/Stepper',
 };
 
 export default meta;

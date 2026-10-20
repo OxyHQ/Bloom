@@ -13,7 +13,8 @@ import { PaymentMethodRow } from './PaymentMethodRow';
 import type { PaymentMethodEntry } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Payments/PaymentMethod',
+  id: 'blocks-payments-paymentmethod',
+  title: 'Patterns/Payments/Payment Method',
   parameters: { layout: 'fullscreen' },
 };
 

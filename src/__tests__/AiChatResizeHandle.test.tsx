@@ -31,9 +31,13 @@ describe('shared separator orientations', () => {
     fireEvent(grip, 'keyDown', { nativeEvent: { key: 'ArrowRight' } });
     expect(onNudge.mock.calls.map((call) => call[0])).toEqual([16, -16]);
     const target = {
+      style: { setProperty: jest.fn() },
+      setAttribute: jest.fn(),
+      removeAttribute: jest.fn(),
       setPointerCapture: jest.fn(),
+      releasePointerCapture: jest.fn(),
       hasPointerCapture: () => true,
-      getBoundingClientRect: () => ({ left: 0, top: 0 }),
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 300, height: 20 }),
     };
     fireEvent(grip, 'pointerDown', {
       preventDefault: jest.fn(),

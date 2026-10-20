@@ -42,7 +42,8 @@ const meta: Meta<typeof AppShell> = {
     navigationAlign: { control: 'select', options: ['edge', 'content'] },
     contentMaxWidth: { control: 'number' },
   },
-  title: 'Blocks/App Shell',
+  id: 'blocks-app-shell',
+  title: 'Composition/Layout/App Shell',
   parameters: { layout: 'fullscreen' },
   component: AppShell,
 };

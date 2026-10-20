@@ -17,7 +17,8 @@ import {
 } from './index';
 
 const meta: Meta = {
-  title: 'Agents/Overview',
+  id: 'agents-overview',
+  title: 'Patterns/Agents/Agent Conversation',
   parameters: { layout: 'fullscreen' },
 };
 export default meta;

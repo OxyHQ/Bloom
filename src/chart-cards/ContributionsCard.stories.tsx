@@ -22,7 +22,8 @@ const meta: Meta<typeof ContributionsCard> = {
     animateIn: { control: 'boolean' },
     activeCell: { control: 'number' },
   },
-  title: 'Charts/Contributions Card',
+  id: 'charts-contributions-card',
+  title: 'Components/Charts/Contributions Card',
   component: ContributionsCard,
 };
 

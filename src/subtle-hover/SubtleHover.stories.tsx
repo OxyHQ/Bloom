@@ -8,7 +8,8 @@ import { StyledPressable } from '../styles/styled-primitives';
 import { SubtleHover } from './index';
 
 const meta: Meta<typeof SubtleHover> = {
-  title: 'Base/Subtle Hover',
+  id: 'base-subtle-hover',
+  title: 'Composition/Motion/Subtle Hover',
   component: SubtleHover,
 };
 

@@ -7,7 +7,8 @@ import { AgentThinking } from './index';
 import type { AgentThinkingTone, AgentThinkingVariant } from './types';
 
 const meta: Meta<typeof AgentThinking> = {
-  title: 'Agents/Agent Thinking',
+  id: 'agents-agent-thinking',
+  title: 'Components/Agents/Agent Thinking',
   component: AgentThinking,
   args: { variant: 'wave', label: 'Thinking', shimmer: true, showTimer: true },
   argTypes: {

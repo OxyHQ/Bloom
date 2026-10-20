@@ -11,7 +11,8 @@ import { OrderConfirmation } from './OrderConfirmation';
 import type { OrderConfirmationFact } from './types';
 
 const meta: Meta<typeof OrderConfirmation> = {
-  title: 'Blocks/Checkout/OrderConfirmation',
+  id: 'blocks-checkout-orderconfirmation',
+  title: 'Patterns/Checkout/Order Confirmation',
   component: OrderConfirmation,
   parameters: { layout: 'fullscreen' },
 };

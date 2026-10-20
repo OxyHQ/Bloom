@@ -204,7 +204,7 @@ export function AvatarMotionReview() {
         </div>
       </div>
       <p>
-        <a href="?path=/story/application-agent-avatar-new-engine--fidelity" target="_top">
+        <a href="?path=/story/agents-agent-avatar-new-engine--fidelity" target="_top">
           Volver a la prueba de muchos avatares
         </a>
       </p>

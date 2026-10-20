@@ -13,7 +13,8 @@ const meta: Meta<typeof Announcement> = {
     closeLabel: { control: 'text' },
     introDelay: { control: 'number' },
   },
-  title: 'Base/Announcement',
+  id: 'base-announcement',
+  title: 'Components/Feedback/Announcement',
   component: Announcement,
 };
 

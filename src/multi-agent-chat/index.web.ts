@@ -10,4 +10,4 @@ export type {
   Workspace as MultiAgentChatWorkspace,
 } from './data';
 export { MultiAgentChat } from './MultiAgentChat.web';
-export type { MultiAgentChatProps } from './types';
+export type { MultiAgentChatProps, MultiAgentChatRequest } from './types';

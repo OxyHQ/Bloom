@@ -1,3 +1,4 @@
+import { Screen, ScreenScrollView } from '../screen';
 import { createAppShell } from './AppShell';
 import { BottomBar } from '../bottom-bar';
 import { Fab } from '../fab';
@@ -7,18 +8,27 @@ import { createAppShellPanels } from './AppShellPanels';
 import { createPanelLayoutView } from './AppShellPanelLayout';
 import { ScrollArea, ScrollBar } from '../layout';
 import { useScrollRestoration } from '../scroll';
+import { Dialog } from '../dialog';
 const PanelLayoutView = createPanelLayoutView(
   ContentPanel,
   BloomColorScope,
   ScrollArea,
   ScrollBar,
   useScrollRestoration,
+  Dialog,
+  Screen,
 );
-export const AppShell = createAppShell(BottomBar, Fab, PanelLayoutView);
+export const AppShell = createAppShell(
+  BottomBar,
+  Fab,
+  { Screen, ScreenScrollView },
+  PanelLayoutView,
+);
 export const { AppShellPanel, AppShellPanels } = createAppShellPanels(
   ContentPanel,
   BloomColorScope,
   PanelLayoutView,
+  ScrollArea,
 );
 export { AppShellHeader } from './AppShellHeader';
 export { AppShellMenuButton } from './AppShellMenuButton';
@@ -41,6 +51,7 @@ export { NotificationBell } from './NotificationBell';
 export { ProOfferCard } from './ProOfferCard';
 
 export type {
+  AppShellSidebarProps,
   AppShellNavigationPlacement,
   AppShellNavigationItem,
   AppShellBarVisibility,

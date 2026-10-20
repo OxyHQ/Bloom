@@ -7,7 +7,8 @@ import { Text } from '../typography';
 import { useTheme } from '../theme';
 
 const meta: Meta<typeof Fill> = {
-  title: 'Base/Fill',
+  id: 'base-fill',
+  title: 'Components/Surfaces/Fill',
   component: Fill,
 };
 

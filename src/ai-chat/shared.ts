@@ -241,14 +241,6 @@ export const AI_CHAT_WEB_CSS = `
   opacity: 1;
   filter: blur(0px);
 }
-[data-bloom-ai-chat-grip] [data-bloom-ai-chat-grip-pill] {
-  opacity: 0;
-  transition: opacity ${TRANSITION_MS}ms ease;
-}
-[data-bloom-ai-chat-grip]:hover [data-bloom-ai-chat-grip-pill],
-[data-bloom-ai-chat-grip-pill="dragging"] { opacity: 1; }
-[data-bloom-ai-chat-grip] { cursor: col-resize; touch-action: none; outline: none; }
-[data-bloom-ai-chat-grip][aria-orientation="horizontal"] { cursor: row-resize; }
 [data-bloom-ai-chat-dragging="on"] { cursor: col-resize; user-select: none; }
 @media (hover: hover) {
   [data-bloom-ai-chat-turn] [data-bloom-ai-chat-turn-actions] {
@@ -273,7 +265,6 @@ export const AI_CHAT_WEB_CSS = `
   [data-bloom-ai-chat-control],
   [data-bloom-ai-chat-tile] [data-bloom-ai-chat-scrim],
   [data-bloom-ai-chat-tile-image],
-  [data-bloom-ai-chat-grip] [data-bloom-ai-chat-grip-pill],
   [data-bloom-ai-chat-turn] [data-bloom-ai-chat-turn-actions] { transition: none; }
   [data-bloom-ai-chat-flap] { animation-duration: 1ms; animation-delay: 0ms; }
 }

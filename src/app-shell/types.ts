@@ -18,6 +18,14 @@ import type { AppShellPanelLayout } from './panel-layout-types';
  */
 export type AppShellDrawer = 'overlay' | 'reveal';
 
+/** AppShell owns the region; this slot can render a complete domain Sidebar. */
+export interface AppShellSidebarProps extends Omit<SidebarProps, 'mobile' | 'onClose'> {
+  /** Expanded region width. Finite values clamp to zero; omitted uses the size's metrics. */
+  width?: number;
+  /** Receives the shell's resolved variant, collapse, mobile and dismissal props. */
+  render?: (props: SidebarProps) => ReactNode;
+}
+
 /**
  * The layout SHAPE, all drawn by the same engine — the same nav, the same
  * drawer, the same pinned regions, the same slots.
@@ -84,9 +92,9 @@ export interface AppShellEngineProps {
    * `variant: 'rail'`); below it, the same props drive the drawer (`mobile`,
    * and `flat` for `reveal`), always as the panel.
    */
-  sidebar?: Omit<SidebarProps, 'mobile' | 'onClose'>;
+  sidebar?: AppShellSidebarProps;
   /**
-   * How the rail arrives below `navFrom`. `reveal` slides the WHOLE page
+   * Default `reveal`: how the rail arrives below `navFrom`. It slides the WHOLE page
    * sideways for dashboard and compact feed layouts. Feed desktop columns
    * retain their normal layout. Other variants use the overlay drawer.
    */
@@ -355,7 +363,7 @@ export interface AppShellNavigationProps {
    * external: the child list owns scrolling; avoids nested virtualized lists. */
   scroll?: AppShellScroll | 'auto' | 'external';
   /** Sidebar configuration, including card (detached, default) or docked surface. Also applies with navigation. */
-  sidebar?: Omit<SidebarProps, 'mobile' | 'onClose'>;
+  sidebar?: AppShellSidebarProps;
   primaryAction?: import('../fab/types').FabProps;
   title?: string;
   breadcrumb?: ReactNode;
@@ -381,6 +389,8 @@ export interface AppShellPanelProps {
   /** Names the panel for `AppShellPanels`' `show` and `useAppShellPanel()`. */
   id?: string;
   children?: ReactNode;
+  /** Mount inline content even before it becomes visible; hidden content stays inactive. Floating sheets retain their surface lifecycle. */
+  keepMounted?: boolean;
   /** Chrome that spans the panel above its content (a page header, a toolbar). */
   header?: ReactNode;
   /**
@@ -406,6 +416,17 @@ export interface AppShellPanelProps {
   resizeLabel?: string;
   /** In `AppShellPanels`: the group width (its own box) this panel needs; below it, it is not drawn. */
   hideBelow?: AppShellBreakpoint;
+  /** In a panel group: below this width, present this panel as a floating side sheet.
+   * The other tracks remain in place. `open` controls only the compact sheet;
+   * Descriptors also use `visible` to hide both presentations.
+   */
+  floating?: {
+    below: AppShellBreakpoint;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    label: string;
+    width?: number;
+  };
   /** `ContentPanel`'s: `plain` keeps layout and clipping without painting a surface. */
   appearance?: ContentPanelProps['appearance'];
   /** `ContentPanel`'s edge while framed. */
@@ -437,5 +458,8 @@ export interface AppShellPanelsProps {
   collapseBelow?: AppShellBreakpoint;
   /** The `id` of the panel shown alone while collapsed. */
   show?: string;
+  /** Controlled resting widths, shared by pointer and keyboard resizing. */
+  widths?: AppShellPanelLayout['widths'];
+  onWidthsChange?: AppShellPanelLayout['onWidthsChange'];
   testID?: string;
 }

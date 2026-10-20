@@ -8,6 +8,11 @@ Start with [Compose application layouts](/docs/bloom/main/compose-layouts) for t
 
 # Screen
 
+Retained inactive screens suspend scroll observers and pagination. Their viewport
+handles ignore imperative scrolling while inactive, including calls held by a
+background chat as new messages arrive. `ScreenScrollView.onLayout` on web reports
+the enclosing Screen's viewport, rather than the growing transcript wrapper.
+
 ## Declarative screens in any host
 
 A route declares its own chrome once. The shell supplies the surface and available
@@ -233,3 +238,36 @@ A modular shell in document flow restores the shared document once, using the
 outer route adapter. Its Screen instances read that owner without competing
 restoration writes. Bounded Deck columns restore their own element and history;
 a standalone document Screen remains its own restoration owner.
+
+A composer passed through `bottomBar` sets
+`bottomBarKeyboardBehavior="visible"`, so typing keeps the composer and its
+measured clearance present. The default `hide` retains navigation's keyboard
+behavior. `ScreenScrollView onScroll` observes the existing viewport on web and
+native; it never creates another scrolling container.
+
+The bounded viewport contains overscroll and draws its single overlay scrollbar
+at the viewport edge. Header/footer clearance pads the content; it does not
+shorten or inset the scrollbar track. Keep reading-column width and content
+padding inside `ScreenScrollView.contentContainerStyle`, so they do not move
+the viewport, header or scrollbar inward.
+
+### Nested activity and viewport constraints
+
+A nested Screen inherits the inactivity of its ancestor. `navigationScope="isolated"`
+separates navigation progress; it does not reactivate hidden content. The first
+Screen consumes its panel host. Nested Screens own their metrics and chrome,
+without claiming the outer host's color recipe or actions. Dialog's ScreenScope
+provides a fresh boundary for modal content.
+
+`ScreenScrollView scrollEnabled={false}` constrains user scrolling on the actual
+web viewport, including document mode and scrollbar dragging. Multiple constraints
+share a reference-counted lock, so one unmount does not unlock another owner.
+Programmatic scrolling and restoration remain available.
+
+Bounded web viewports use CSS size containment. Give their host a usable width
+and height; a parent that depends only on contained content for its intrinsic
+dimensions can collapse. Put max-width on the reading content, not that viewport.
+
+Screen's browser entry explicitly binds the browser ScrollBar, color scope and
+restoration hook. Shared factories receive these bindings instead of relying on
+a bundler to resolve bare relative imports to `.web` files.

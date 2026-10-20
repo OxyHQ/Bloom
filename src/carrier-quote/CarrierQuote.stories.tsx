@@ -15,7 +15,8 @@ import { CarrierQuoteList } from './CarrierQuoteList';
 import type { CarrierQuote } from './types';
 
 const meta: Meta = {
-  title: 'Blocks/Freight/CarrierQuote',
+  id: 'blocks-freight-carrierquote',
+  title: 'Patterns/Freight/Carrier Quote',
   parameters: { layout: 'fullscreen' },
 };
 
