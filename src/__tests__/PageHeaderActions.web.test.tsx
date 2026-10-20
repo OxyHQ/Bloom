@@ -56,7 +56,10 @@ it('uses its own 639/640 boundary and does not publish each resized pixel', () =
     <span>{compact ? 'Compact' : 'Full'}</span>
   ));
   mount(<PageHeader testID="header" title="Page" actions={actions} />);
-  expect(actions.mock.calls[actions.mock.calls.length - 1]?.[0]).toEqual({ compact: true });
+  expect(actions.mock.calls[actions.mock.calls.length - 1]?.[0]).toEqual({
+    compact: true,
+    spacious: false,
+  });
   headerLayout(639);
   actions.mockClear();
   headerLayout(638);
@@ -64,13 +67,13 @@ it('uses its own 639/640 boundary and does not publish each resized pixel', () =
   expect(actions).not.toHaveBeenCalled();
   headerLayout(640);
   expect(actions).toHaveBeenCalledTimes(1);
-  expect(actions).toHaveBeenLastCalledWith({ compact: false });
+  expect(actions).toHaveBeenLastCalledWith({ compact: false, spacious: false });
   headerLayout(641);
   headerLayout(1000);
   expect(actions).toHaveBeenCalledTimes(1);
   headerLayout(639);
   expect(actions).toHaveBeenCalledTimes(2);
-  expect(actions).toHaveBeenLastCalledWith({ compact: true });
+  expect(actions).toHaveBeenLastCalledWith({ compact: true, spacious: false });
 });
 
 it('preserves an open action dialog and its edited input across compact transitions', () => {
@@ -193,4 +196,20 @@ it('expands mounted navigation actions for a coarse pointer while retaining norm
   } finally {
     window.matchMedia = previous;
   }
+});
+
+it('publishes spacious only across its own 1279/1280 threshold', () => {
+  const actions = jest.fn(() => <span>Actions</span>);
+  mount(<PageHeader testID="header" title="Page" actions={actions} />);
+  headerLayout(1279);
+  actions.mockClear();
+  headerLayout(1278);
+  expect(actions).not.toHaveBeenCalled();
+  headerLayout(1280);
+  expect(actions).toHaveBeenLastCalledWith({ compact: false, spacious: true });
+  actions.mockClear();
+  headerLayout(1600);
+  expect(actions).not.toHaveBeenCalled();
+  headerLayout(1279);
+  expect(actions).toHaveBeenLastCalledWith({ compact: false, spacious: false });
 });

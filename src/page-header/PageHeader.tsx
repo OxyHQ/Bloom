@@ -204,6 +204,8 @@ function PageHeaderComponent({
   // resizing stays in CSS; React sees only a crossing of the action breakpoint.
   const [actionsCompact, setActionsCompact] = useState(isWeb || width < BREAKPOINTS.sm);
   const lastActionsCompact = useRef(actionsCompact);
+  const [actionsSpacious, setActionsSpacious] = useState(!isWeb && width >= BREAKPOINTS.xl);
+  const lastActionsSpacious = useRef(actionsSpacious);
   const compact = density === 'compact';
   const height =
     measuredHeight ||
@@ -218,6 +220,11 @@ function PageHeaderComponent({
     if (lastActionsCompact.current !== nextCompact) {
       lastActionsCompact.current = nextCompact;
       setActionsCompact(nextCompact);
+    }
+    const nextSpacious = nextWidth >= BREAKPOINTS.xl;
+    if (lastActionsSpacious.current !== nextSpacious) {
+      lastActionsSpacious.current = nextSpacious;
+      setActionsSpacious(nextSpacious);
     }
     const nextHeight = e.nativeEvent.layout.height;
     if (lastHeight.current !== nextHeight) {
@@ -271,7 +278,7 @@ function PageHeaderComponent({
   const onBack = screenOnBack ?? (navigation?.canGoBack ? navigation.back : undefined);
   const resolvedActions =
     typeof screenActions === 'function'
-      ? screenActions({ compact: actionsCompact })
+      ? screenActions({ compact: actionsCompact, spacious: actionsSpacious })
       : screenActions;
   const actions = hostActions ? (
     <>

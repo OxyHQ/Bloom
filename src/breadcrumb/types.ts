@@ -27,10 +27,22 @@ export interface BreadcrumbProps {
   testID?: string;
 }
 
+export interface BreadcrumbHoverMenu {
+  /** Render callback receives the real menu state so data queries can remain lazy. */
+  content: ReactNode | ((state: { open: boolean }) => ReactNode);
+  label?: string;
+  /** Preferred menu width, fitted to its viewport. Default 240. */
+  width?: number;
+  openDelay?: number;
+  closeDelay?: number;
+}
+
 export interface BreadcrumbItemProps
   extends Pick<ButtonProps, 'disabled' | 'aria-expanded' | 'aria-haspopup'> {
   /** Wraps the existing Button, e.g. <PopoverTrigger asChild />. Keep this item a direct child for collapse fitting. */
   trigger?: ReactElement<OverlayTriggerProps>;
+  /** Related navigation on hover/focus or native long press, without replacing the primary action. */
+  hoverMenu?: BreadcrumbHoverMenu;
   /** Explicit size overrides the enclosing Breadcrumb/BloomScope. */
   size?: BloomSize;
   /** The label. */

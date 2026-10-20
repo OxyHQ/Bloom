@@ -29,15 +29,21 @@ import React, {
   Fragment,
   isValidElement,
   useRef,
+  useContext,
+  useEffect,
 } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { mergeRefs } from '../hooks/merge-refs';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
-import type { TriggerHandleProps } from './types';
+import type { OverlayTriggerProps, TriggerHandleProps } from './types';
+import { PrimaryTriggerStateContext } from './context';
 
 export interface TriggerSlotProps {
+  /** Optional independent press wrapper around the merged control, never another control. */
+  pressTrigger?: React.ReactElement<OverlayTriggerProps>;
+  onPrimaryOpenChange?: (open: boolean) => void;
   /** Render the single child as the trigger instead of wrapping it. */
   asChild?: boolean;
   children?: React.ReactNode;
@@ -132,6 +138,8 @@ function cloneTrigger(children: React.ReactNode, handle: TriggerHandleProps): Re
 
 export function TriggerSlot({
   asChild = false,
+  pressTrigger,
+  onPrimaryOpenChange,
   children,
   handle,
   anchorRef,
@@ -144,9 +152,20 @@ export function TriggerSlot({
   // rather than in each of the four native forks, and any family added later
   // gets it by construction. Native-only inside the hook; on web the browser
   // owns focus.
+  const reportPrimary = useContext(PrimaryTriggerStateContext);
+  const expanded = handle['aria-expanded'] === true;
+  useEffect(() => {
+    reportPrimary?.(expanded);
+  }, [reportPrimary, expanded]);
+  useEffect(() => () => reportPrimary?.(false), [reportPrimary]);
   const ownRef = useRef<ComponentRef<typeof View> | null>(null);
   useRestoreAccessibilityFocus(handle['aria-expanded'] === true, ownRef);
 
+  const control = asChild ? (
+    cloneTrigger(children, handle)
+  ) : (
+    <StyledPressable {...handle}>{children}</StyledPressable>
+  );
   return (
     <StyledView
       ref={mergeRefs([ownRef, anchorRef])}
@@ -155,10 +174,16 @@ export function TriggerSlot({
       style={[styles.wrap, style]}
       testID={testID}
     >
-      {asChild ? (
-        cloneTrigger(children, handle)
+      {pressTrigger ? (
+        <PrimaryTriggerStateContext.Provider value={onPrimaryOpenChange ?? null}>
+          {cloneElement(pressTrigger, {
+            asChild: true,
+            style: [{ minWidth: 0, alignSelf: 'stretch' }, pressTrigger.props.style],
+            children: control,
+          })}
+        </PrimaryTriggerStateContext.Provider>
       ) : (
-        <StyledPressable {...handle}>{children}</StyledPressable>
+        control
       )}
     </StyledView>
   );

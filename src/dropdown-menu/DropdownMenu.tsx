@@ -14,7 +14,7 @@ import { BloomScope } from '../appearance';
  * The rows come from `floating/menu-rows`, the same set `ContextMenu` and
  * `Menubar` publish under their own prefixes.
  */
-import React, { useMemo, useRef, type ComponentRef } from 'react';
+import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
@@ -38,6 +38,7 @@ export function DropdownMenu({
   open,
   defaultOpen = false,
   onOpenChange,
+  activation = 'click',
 }: DropdownMenuProps) {
   const [isOpen, setOpen] = useControllableState<boolean>({
     value: open,
@@ -45,7 +46,24 @@ export function DropdownMenu({
     onChange: onOpenChange,
   });
   const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
-  const value = useMemo(() => ({ open: isOpen, setOpen, anchorRef }), [isOpen, setOpen]);
+  const primaryOpen = useRef(false);
+  const setMenuOpen = useCallback(
+    (next: boolean) => {
+      if (!next || !primaryOpen.current) setOpen(next);
+    },
+    [setOpen],
+  );
+  const onPrimaryOpenChange = useCallback(
+    (next: boolean) => {
+      primaryOpen.current = next;
+      if (next) setOpen(false);
+    },
+    [setOpen],
+  );
+  const value = useMemo(
+    () => ({ open: isOpen, setOpen: setMenuOpen, anchorRef, activation, onPrimaryOpenChange }),
+    [isOpen, setMenuOpen, activation, onPrimaryOpenChange],
+  );
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
 }
@@ -58,21 +76,29 @@ export function DropdownMenuTrigger({
   className,
   style,
   testID,
+  pressTrigger,
 }: DropdownMenuTriggerProps) {
   const menu = useDropdownMenu();
+  const primaryAction =
+    pressTrigger != null ||
+    (React.isValidElement<{ onPress?: unknown; href?: string }>(children) &&
+      (children.props.onPress != null || children.props.href != null));
 
   return (
     <TriggerSlot
       asChild={asChild}
+      pressTrigger={pressTrigger}
+      onPrimaryOpenChange={menu.onPrimaryOpenChange}
       anchorRef={menu.anchorRef}
       className={className}
       style={style}
       testID={testID}
       handle={{
-        onPress: () => menu.setOpen(true),
+        onPress: () => menu.setOpen(menu.activation !== 'hover' || !primaryAction),
+        onLongPress: menu.activation === 'hover' ? () => menu.setOpen(true) : undefined,
         disabled,
         accessibilityLabel: label,
-        accessibilityRole: 'button',
+        accessibilityRole: menu.activation === 'hover' && asChild ? undefined : 'button',
         'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
       }}

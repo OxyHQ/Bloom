@@ -79,6 +79,8 @@ export type PageHeaderTitleReveal = 'auto' | 'always' | 'onScroll' | 'onDock';
 
 /** Presentation of actions inside the header's own container; unrelated to control size. */
 export interface PageHeaderActionsState {
+  /** Header container is at least the xl breakpoint (1280pt); room for secondary metadata. */
+  spacious: boolean;
   /** True below Bloom's sm container breakpoint (640px), including initial web layout. */
   compact: boolean;
 }

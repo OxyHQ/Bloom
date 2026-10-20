@@ -99,3 +99,40 @@ by a navigation-only overflow row:
 The consumer owns permissions and persistence. The Popover owns its focus,
 placement, dismissal, scroll and material. `separator` accepts a text string
 or node; the default remains the directional chevron.
+
+
+## Related navigation on hover
+
+`hoverMenu` adds a navigation menu to the same Button. Pointer intent opens after
+400ms; leaving both trigger and menu closes after 150ms. ArrowDown/ArrowUp enter
+the menu, whose existing keyboard and focus-return behavior stays intact. Touch and native
+use long press. A primary `trigger` still handles click/Enter, and its open
+surface suppresses the hover menu until it closes. Without a primary action,
+press also opens the menu.
+
+```tsx
+<Popover>
+  <Breadcrumb overflow="collapse">
+    <BreadcrumbItem href="/projects">Projects</BreadcrumbItem>
+    <BreadcrumbItem
+      current
+      trigger={<PopoverTrigger asChild />}
+      hoverMenu={{
+        label: 'Related pages',
+        width: 240,
+        content: ({ open }) => <RelatedPages enabled={open} />,
+      }}
+    >
+      Project notes
+    </BreadcrumbItem>
+  </Breadcrumb>
+  <PopoverContent label="Page details">…</PopoverContent>
+</Popover>
+```
+
+The consumer supplies data and navigation through `DropdownMenuItem` (with
+`href` and `current` for the selected destination). `content` can be a node or
+render callback receiving the menu's single open state; enable lazy queries only
+when open. Hidden measurements render only labels, never menus or query owners.
+An ancestor with `hoverMenu` and a navigation href can still collapse into the
+standard overflow menu. `openDelay` and `closeDelay` are optional overrides.

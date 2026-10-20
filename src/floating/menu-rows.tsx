@@ -124,6 +124,7 @@ function IndicatorGutter({
 export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuRowParts {
   function MenuItem({
     children,
+    current,
     href,
     onPress,
     disabled = false,
@@ -157,6 +158,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     return (
       <MenuRowShell
         role="menuitem"
+        current={current}
         href={href}
         disabled={disabled}
         destructive={tone === 'danger' || (tone === undefined && variant === 'destructive')}

@@ -56,9 +56,10 @@ Button `density` overrides its nearest scope.
 ## Actions that adapt to their container
 
 `actions` accepts either its existing `ReactNode` or a render function receiving
-`PageHeaderActionsState`: `{ compact: boolean }`. Compact means the header's own
+`PageHeaderActionsState`: `{ compact: boolean; spacious: boolean }`. Compact means the header's own
 width is below `BREAKPOINTS.sm` (640px), including a narrow panel in a wide window.
-It is independent of `density` and inherited control size: normal app controls
+`spacious` means the header container is at least `BREAKPOINTS.xl` (1280px), suitable
+for optional activity metadata before the actions. Both are independent of `density` and inherited control size: normal app controls
 still use `md`.
 
 ```tsx
@@ -88,8 +89,8 @@ edited state can survive a width change. Do not return separate compact/full
 component trees or mount two copies. Header-supplied host actions remain alongside
 the resolved screen actions.
 
-On web, the existing header `onLayout` stores only the compact boolean and updates
-it when crossing the boundary; continuous container resizing does not publish
+On web, the existing header `onLayout` stores only these tier booleans and updates
+them when crossing their boundaries; continuous container resizing does not publish
 pixel widths to React. Before the first web measurement, actions use the compact
 form. Native reuses the header's existing width measurement and window seed.
 Static node actions retain their existing behavior.

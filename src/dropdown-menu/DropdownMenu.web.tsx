@@ -32,12 +32,18 @@ import type {
   DropdownMenuTriggerProps,
 } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useHoverIntent } from '../hover-card/use-hover-intent';
+import { HOVER_CARD_OPEN_DELAY, HOVER_CARD_CLOSE_DELAY } from '../hover-card/constants';
+import { useHoverMenuTrigger, useHoverMenuPanel } from './use-hover-menu';
 
 export function DropdownMenu({
   children,
   open,
   defaultOpen = false,
   onOpenChange,
+  activation = 'click',
+  openDelay = HOVER_CARD_OPEN_DELAY,
+  closeDelay = HOVER_CARD_CLOSE_DELAY,
 }: DropdownMenuProps) {
   const [isOpen, setOpen] = useControllableState<boolean>({
     value: open,
@@ -46,9 +52,54 @@ export function DropdownMenu({
   });
   const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
   const focusIntent = useMenuFocusIntent();
+  const panelRef = useRef<ComponentRef<typeof View> | null>(null);
+  const intent = useHoverIntent(isOpen, setOpen, openDelay, closeDelay);
+  const suppressed = useRef(false);
+  const primaryOpen = useRef(false);
+  const setMenuOpen = useCallback(
+    (next: boolean) => {
+      if (next && primaryOpen.current) return;
+      intent.hold();
+      suppressed.current = !next;
+      setOpen(next);
+    },
+    [intent, setOpen],
+  );
+  const onPrimaryOpenChange = useCallback(
+    (next: boolean) => {
+      primaryOpen.current = next;
+      if (next) setMenuOpen(false);
+    },
+    [setMenuOpen],
+  );
+  const hover = useMemo(
+    () => ({
+      enter: () => {
+        if (primaryOpen.current) return;
+        suppressed.current = false;
+        intent.show();
+      },
+      show: () => {
+        if (!suppressed.current && !primaryOpen.current) intent.show();
+      },
+      hide: intent.hide,
+      hold: intent.hold,
+      dismiss: () => setMenuOpen(false),
+    }),
+    [intent, setMenuOpen],
+  );
   const value = useMemo(
-    () => ({ open: isOpen, setOpen, anchorRef, focusIntent }),
-    [isOpen, setOpen, focusIntent],
+    () => ({
+      open: isOpen,
+      setOpen: setMenuOpen,
+      anchorRef,
+      panelRef,
+      focusIntent,
+      activation,
+      hover,
+      onPrimaryOpenChange,
+    }),
+    [isOpen, setMenuOpen, focusIntent, activation, hover, onPrimaryOpenChange],
   );
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
@@ -62,20 +113,31 @@ export function DropdownMenuTrigger({
   className,
   style,
   testID,
+  pressTrigger,
 }: DropdownMenuTriggerProps) {
   const menu = useDropdownMenu();
+  const blocked =
+    disabled === true ||
+    (React.isValidElement<{ disabled?: boolean }>(children) && children.props.disabled === true);
+  const primaryAction =
+    pressTrigger != null ||
+    (React.isValidElement<{ onPress?: unknown; href?: string }>(children) &&
+      (children.props.onPress != null || children.props.href != null));
+  useHoverMenuTrigger(menu, blocked, primaryAction);
   // Web: Enter/Space/ArrowDown open into the first row, ArrowUp into the last,
   // and focus comes back here when the menu closes (`floating/menu-keyboard.ts`).
   useMenuTriggerKeys(menu.anchorRef, {
     open: menu.open,
     setOpen: menu.setOpen,
-    disabled,
+    disabled: blocked,
     intent: menu.focusIntent,
   });
 
   return (
     <TriggerSlot
       asChild={asChild}
+      pressTrigger={pressTrigger}
+      onPrimaryOpenChange={menu.onPrimaryOpenChange}
       anchorRef={menu.anchorRef}
       className={className}
       style={style}
@@ -84,10 +146,12 @@ export function DropdownMenuTrigger({
         // A dropdown trigger TOGGLES: pressing an open menu's trigger closes it
         // rather than reopening it, which is what a pointer user expects and
         // what the native sheet gets for free from its backdrop.
-        onPress: () => menu.setOpen(!menu.open),
-        disabled,
+        onPress: () =>
+          menu.setOpen(menu.activation === 'hover' && primaryAction ? false : !menu.open),
+        onLongPress: menu.activation === 'hover' ? () => menu.setOpen(true) : undefined,
+        disabled: blocked,
         accessibilityLabel: label,
-        accessibilityRole: 'button',
+        accessibilityRole: menu.activation === 'hover' && asChild ? undefined : 'button',
         'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
       }}
@@ -125,13 +189,30 @@ export function DropdownMenuContent({
   // Arrows, Home/End, Space and Tab inside the open menu, and the keyboard
   // open's landing row (`floating/menu-keyboard.ts`).
   const [panel, setPanel] = useState<ComponentRef<typeof View> | null>(null);
+  const attachPanel = useCallback(
+    (node: ComponentRef<typeof View> | null) => {
+      if (menu.panelRef) menu.panelRef.current = node;
+      setPanel(node);
+    },
+    [menu.panelRef],
+  );
+  useHoverMenuPanel(menu, hostElement(panel));
   useMenuPanelKeys(hostElement(panel), { open: menu.open, onTab: close, intent: menu.focusIntent });
 
   return (
     <BloomScope size={size}>
       <FloatingPanel
         maxHeight={maxHeight}
-        panelRef={setPanel}
+        modal={menu.activation === 'hover' ? false : undefined}
+        onPointerEnter={menu.activation === 'hover' ? menu.hover?.hold : undefined}
+        onPointerLeave={
+          menu.activation === 'hover'
+            ? () => {
+                if (!hostElement(panel)?.contains(document.activeElement)) menu.hover?.hide();
+              }
+            : undefined
+        }
+        panelRef={attachPanel}
         open={menu.open}
         anchor={anchor}
         role="menu"

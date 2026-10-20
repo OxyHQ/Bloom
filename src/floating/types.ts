@@ -269,6 +269,8 @@ export interface OverlaySurfaceProps extends FloatingPositionProps {
 // ---------------------------------------------------------------------------
 
 export interface MenuRowProps {
+  /** Current navigation destination: shared selection paint and aria-current="page". */
+  current?: boolean;
   /** Real anchor on web; native opens the URL unless onPress handles navigation. */
   href?: string;
   /**

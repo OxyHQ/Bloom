@@ -138,6 +138,7 @@ export interface MenuRowShellProps {
    * the current choice of a radio or checkbox row.
    */
   selected?: boolean;
+  current?: boolean;
   /** Indent to line up with the rows that carry an indicator. */
   inset?: boolean;
   /** This row carries an out-of-flow indicator at the named edge. */
@@ -183,6 +184,7 @@ export function MenuRowShell({
   disabled,
   destructive = false,
   selected = false,
+  current = false,
   inset = false,
   gutter,
   leading,
@@ -202,7 +204,7 @@ export function MenuRowShell({
   const density = useMenuDensity();
   // `MENU_ITEM_INTERACTIVE` + `MENU_ITEM_ACTIVE`: hover, keyboard focus
   // and the current selection all paint the same `dropdown-item-hover-background`.
-  const highlighted = !disabled && (hovered || pressed || focused || selected);
+  const highlighted = !disabled && (hovered || pressed || focused || selected || current);
 
   const rowClass = cx(
     ROW_CLASS,
@@ -241,6 +243,7 @@ export function MenuRowShell({
       // React Native folds these two back into `accessibilityState`. The disabled
       // half travels on the `disabled` prop, which both platforms map.
       {...(checked == null ? {} : { 'aria-checked': checked })}
+      {...(current ? { 'aria-current': 'page' as const } : {})}
       {...(expanded == null ? {} : { 'aria-expanded': expanded })}
       {...(hasPopup == null ? {} : { 'aria-haspopup': hasPopup })}
       disabled={disabled}

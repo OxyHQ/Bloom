@@ -14,8 +14,18 @@ import type {
   OverlayTriggerProps,
 } from '../floating/types';
 
-export type DropdownMenuProps = React.PropsWithChildren<OverlayOpenProps>;
-export type DropdownMenuTriggerProps = OverlayTriggerProps;
+export type DropdownMenuProps = React.PropsWithChildren<
+  OverlayOpenProps & {
+    /** Hover/focus previews preserve the trigger's primary click; arrows enter the menu. Native uses long press. */
+    activation?: 'click' | 'hover';
+    openDelay?: number;
+    closeDelay?: number;
+  }
+>;
+export type DropdownMenuTriggerProps = OverlayTriggerProps & {
+  /** An independent primary press surface, composed around the same control after menu handlers. */
+  pressTrigger?: React.ReactElement<OverlayTriggerProps>;
+};
 export type DropdownMenuContentProps = OverlaySurfaceProps;
 
 // The row props are the SHARED menu-row shapes under this family's part names.

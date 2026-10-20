@@ -1,4 +1,5 @@
-import React, {
+import type React from 'react';
+import {
   Children,
   cloneElement,
   forwardRef,
@@ -28,7 +29,7 @@ import { RiMoreLine } from '../icons/remix/RiMoreLine';
 import { BREADCRUMB_MESSAGES } from './messages';
 import { collapsedAncestorCount } from './shared';
 import type { MemoRefComponent, ViewRef } from '../styles/native-refs';
-import type { BreadcrumbItemProps, BreadcrumbProps } from './types';
+import type { BreadcrumbHoverMenu, BreadcrumbItemProps, BreadcrumbProps } from './types';
 
 type Dependencies = Pick<
   typeof Dropdown,
@@ -124,6 +125,43 @@ export function createBreadcrumb({
     );
   }
 
+  function HoverNavigation({
+    children,
+    config,
+    trigger,
+  }: {
+    children: React.ReactElement;
+    config: BreadcrumbHoverMenu;
+    trigger: BreadcrumbItemProps['trigger'];
+  }) {
+    // Controlled here: the lazy content and menu read the same open value.
+    const [open, setOpen] = useState(false);
+    return (
+      <DropdownMenu
+        activation="hover"
+        open={open}
+        onOpenChange={setOpen}
+        openDelay={config.openDelay}
+        closeDelay={config.closeDelay}
+      >
+        <DropdownMenuTrigger
+          asChild
+          pressTrigger={trigger}
+          style={{ minWidth: 0, alignSelf: 'stretch' }}
+        >
+          {children}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          label={config.label}
+          minWidth={config.width ?? 240}
+          maxWidth={config.width ?? 240}
+        >
+          {typeof config.content === 'function' ? config.content({ open }) : config.content}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   const BreadcrumbItem: MemoRefComponent<BreadcrumbItemProps> = memo(
     forwardRef<ViewRef, BreadcrumbItemProps>(function BreadcrumbItem(item, ref) {
       const {
@@ -138,6 +176,7 @@ export function createBreadcrumb({
         testID,
         disabled,
         trigger,
+        hoverMenu,
         'aria-expanded': expanded,
         'aria-haspopup': hasPopup,
       } = item;
@@ -159,7 +198,7 @@ export function createBreadcrumb({
         paddingLeft: 4,
         paddingRight: 4,
       };
-      if (href == null && onPress == null && trigger == null) {
+      if (href == null && onPress == null && trigger == null && hoverMenu == null) {
         return (
           <View
             ref={ref}
@@ -224,13 +263,19 @@ export function createBreadcrumb({
       );
       return (
         <View role="listitem" style={{ minWidth: 0, flexShrink: 1 }}>
-          {trigger
-            ? cloneElement(trigger, {
-                asChild: true,
-                style: [{ minWidth: 0, alignSelf: 'stretch' }, trigger.props.style],
-                children: control,
-              })
-            : control}
+          {hoverMenu ? (
+            <HoverNavigation config={hoverMenu} trigger={trigger}>
+              {control}
+            </HoverNavigation>
+          ) : trigger ? (
+            cloneElement(trigger, {
+              asChild: true,
+              style: [{ minWidth: 0, alignSelf: 'stretch' }, trigger.props.style],
+              children: control,
+            })
+          ) : (
+            control
+          )}
         </View>
       );
     }),

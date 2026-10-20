@@ -5,4 +5,4 @@
 
 export { Breadcrumb, BreadcrumbItem } from './Breadcrumb.web';
 
-export type { BreadcrumbProps, BreadcrumbItemProps } from './types';
+export type { BreadcrumbProps, BreadcrumbItemProps, BreadcrumbHoverMenu } from './types';
