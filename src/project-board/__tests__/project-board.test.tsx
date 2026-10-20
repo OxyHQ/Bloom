@@ -142,7 +142,9 @@ describe('ProjectBoard interactions', () => {
     const surfaces = screen.getAllByTestId('content-panel-surface');
     expect(surfaces).toHaveLength(columns.length);
     for (const surface of surfaces) {
-      expect(classNamesOn(surface.props.style).join(' ')).toContain('bg-background-secondary-default');
+      expect(classNamesOn(surface.props.style).join(' ')).toContain(
+        'bg-background-secondary-default',
+      );
       expect(classNamesOn(surface.props.style).join(' ')).toContain('ring-transparent');
       expect(resolvedStyle(surface.props.style).boxShadow).toBeUndefined();
       expect(resolvedStyle(surface.props.style).borderRadius).toBe(20);
