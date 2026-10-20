@@ -1,3 +1,4 @@
+import { useTooltipSize } from './use-tooltip-size';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import {
@@ -143,12 +144,13 @@ export function TooltipTrigger({ children }: { children: React.ReactNode }) {
 export function TooltipContent({
   children,
   label,
-  size = 'sm',
+  size: sizeProp,
 }: {
   children: React.ReactNode;
   label: string;
   size?: TooltipSize;
 }) {
+  const size = useTooltipSize(sizeProp);
   const parentFill = useSurfaceFill();
   const palette = useMenuPalette();
   const publishedFill = resolveSurfaceMaterial({

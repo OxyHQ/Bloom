@@ -11,6 +11,7 @@ import { View } from 'react-native';
 import { useMenuPalette } from '../floating/menu-palette';
 import { Text, TYPE_SCALE } from '../typography';
 import { TOOLTIP_SIZES, type TooltipSize } from './constants';
+import { useTooltipSize } from './use-tooltip-size';
 
 type ContentComponent = React.ComponentType<{
   children: React.ReactNode;
@@ -21,12 +22,13 @@ type ContentComponent = React.ComponentType<{
 export function createTextBubble(Content: ContentComponent) {
   return function TextBubble({
     children,
-    size = 'sm',
+    size: sizeProp,
   }: {
     children: React.ReactNode;
-    /** `sm` (default) → 12px Caption 1/Medium, `md` → 14px Body 1/Medium. */
+    /** Explicit size overrides BloomScope. Standalone sm uses 12px; md uses 14px. */
     size?: TooltipSize;
   }) {
+    const size = useTooltipSize(sizeProp);
     const palette = useMenuPalette();
     const type = TOOLTIP_SIZES[size];
     const c = Children.toArray(children);

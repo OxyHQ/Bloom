@@ -86,3 +86,7 @@ through `onOpenChange(false)`. Closing the overlay is not ending the session —
   and `PortalOutlet`, as for every Bloom overlay.
 - It has no backdrop: it covers the whole surface, so there is nothing to dim.
   Reduced motion removes the fade.
+
+## Inherited size
+
+`VoiceControls` resolves an explicit `size`, then the nearest `BloomScope`, then its standalone `lg` default. Its supported `sm`/`md`/`lg` recipes are unchanged; an inherited `xs` uses `sm`. This control-size inheritance does not change the decorative wave's independent sizing or semantic button tones.

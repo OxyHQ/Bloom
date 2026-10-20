@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -62,12 +63,17 @@ function ContactRowComponent(props: ContactRowProps) {
     actionDoneLabel: actionDoneLabelProp,
     onPress,
     disabled = false,
-    size = 'md',
+    size: sizeProp,
     horizontalInset = 10,
     style,
     textStyle,
     testID,
   } = props;
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize === 'lg' ? 'md' : inheritedSize;
   const theme = useTheme();
   const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const actionLabel = actionLabelProp ?? messages.add;
