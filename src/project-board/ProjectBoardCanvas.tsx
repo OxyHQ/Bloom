@@ -1,3 +1,4 @@
+import { BloomScope } from '../appearance';
 import Animated from 'react-native-reanimated';
 import { PageHeader } from '../page-header';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -196,76 +197,86 @@ export function ProjectBoardCanvas<Item>({
       accessibilityLabel={accessibilityLabel ?? m.board}
       testID={template ? undefined : testID}
     >
-      <AppShellPanels
-        scope={template ? 'region' : 'local'}
-        testID={`${testID}-panels`}
-        layout={{
-          mode: 'deck',
-          gap: 8,
-          viewportRef: engine.viewport,
-          onViewportScroll: engine.measure,
-          onPanelOrderChange: !props.readOnly ? onColumnOrderChange : undefined,
-          panels: engine.renderedColumns.map((column) => ({
-            id: column.id,
-            testID: `${testID}-column-${column.id}`,
-            width: columnWidth,
-            minWidth: columnWidth,
-            span: fillColumns ? 1 : 0,
-            reorderable: !props.readOnly && !!onColumnOrderChange,
-            reorderLabel: column.title,
-            header: (
-              <PageHeader
-                safeArea={false}
-                scrim="none"
-                title={
-                  props.renderColumnHeader ? (
-                    props.renderColumnHeader(column, {
-                      isDropTarget: engine.over?.columnId === column.id,
-                    })
-                  ) : (
-                    <Text variant="body-medium">{column.title}</Text>
-                  )
-                }
-                actions={props.renderColumnActions?.(column)}
-              />
-            ),
-            content: (
-              <StyledView
-                ref={(node) => {
-                  engine.columnNodes.current[column.id] = node;
-                }}
-                onLayout={engine.measure}
-                {...{ dataSet: { 'bloom-board-column': column.id } }}
-                className={cx(
-                  'min-h-0 min-w-0 flex-1',
-                  engine.over?.columnId === column.id && 'bg-background-secondary-hover',
-                )}
-                style={columnStyle}
-              >
-                <StyledView className="relative min-h-0 flex-1">
-                  <ScreenScrollView
-                    ref={(node) => {
-                      engine.columnScrolls.current[column.id] = node;
-                    }}
-                    style={{ flex: 1 }}
-                    contentContainerStyle={{ paddingHorizontal: 6, paddingTop: 8 }}
-                    accessibilityLabel={column.title}
-                    onScroll={(event) => {
-                      engine.columnScrollY.current[column.id] = event.nativeEvent.contentOffset.y;
-                      engine.measure();
-                    }}
-                    scrollEventThrottle={16}
-                  >
-                    {columnBody(column)}
-                    {props.renderColumnFooter?.(column)}
-                  </ScreenScrollView>
-                  {column.items.length === 0 ? props.renderEmptyColumn?.(column) : null}
+      <BloomScope panelRadius={20}>
+        <AppShellPanels
+          scope={template ? 'region' : 'local'}
+          testID={`${testID}-panels`}
+          layout={{
+            mode: 'deck',
+            gap: 8,
+            viewportRef: engine.viewport,
+            onViewportScroll: engine.measure,
+            onPanelOrderChange: !props.readOnly ? onColumnOrderChange : undefined,
+            panels: engine.renderedColumns.map((column) => ({
+              id: column.id,
+              testID: `${testID}-column-${column.id}`,
+              width: columnWidth,
+              minWidth: columnWidth,
+              span: fillColumns ? 1 : 0,
+              reorderable: !props.readOnly && !!onColumnOrderChange,
+              reorderLabel: column.title,
+              chrome: 'none',
+              surfaceColor:
+                engine.over?.columnId === column.id
+                  ? colors.backgroundTertiary
+                  : colors.backgroundSecondary,
+              surfaceClassName: cx(
+                'bg-background-secondary-default ring-2 ring-inset ring-transparent transition-[box-shadow,background-color] duration-150 ease-out',
+                engine.over?.columnId === column.id &&
+                  'bg-background-secondary-hover ring-border-button-hover',
+              ),
+              header: (
+                <PageHeader
+                  density="compact"
+                  safeArea={false}
+                  scrim="none"
+                  title={
+                    props.renderColumnHeader ? (
+                      props.renderColumnHeader(column, {
+                        isDropTarget: engine.over?.columnId === column.id,
+                      })
+                    ) : (
+                      <Text variant="body-medium">{column.title}</Text>
+                    )
+                  }
+                  actions={props.renderColumnActions?.(column)}
+                />
+              ),
+              content: (
+                <StyledView
+                  ref={(node) => {
+                    engine.columnNodes.current[column.id] = node;
+                  }}
+                  onLayout={engine.measure}
+                  {...{ dataSet: { 'bloom-board-column': column.id } }}
+                  className="min-h-0 min-w-0 flex-1"
+                  style={columnStyle}
+                >
+                  <StyledView className="relative min-h-0 flex-1">
+                    <ScreenScrollView
+                      ref={(node) => {
+                        engine.columnScrolls.current[column.id] = node;
+                      }}
+                      style={{ flex: 1 }}
+                      contentContainerStyle={{ paddingHorizontal: 6, paddingTop: 8 }}
+                      accessibilityLabel={column.title}
+                      onScroll={(event) => {
+                        engine.columnScrollY.current[column.id] = event.nativeEvent.contentOffset.y;
+                        engine.measure();
+                      }}
+                      scrollEventThrottle={16}
+                    >
+                      {columnBody(column)}
+                      {props.renderColumnFooter?.(column)}
+                    </ScreenScrollView>
+                    {column.items.length === 0 ? props.renderEmptyColumn?.(column) : null}
+                  </StyledView>
                 </StyledView>
-              </StyledView>
-            ),
-          })),
-        }}
-      />
+              ),
+            })),
+          }}
+        />
+      </BloomScope>
       {engine.active?.pointer && overlayColumn && (
         <BoardOverlay Portal={Portal} style={engine.overlayStyle} testID={`${testID}-drag-overlay`}>
           <ProjectBoardCardSurface overlay wholeCardDrag={dragMode === 'card'}>
