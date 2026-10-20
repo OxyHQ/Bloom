@@ -9,6 +9,7 @@ import { styled } from 'react-native-css';
 import { useFieldMembership } from '../field/membership';
 import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography/scale';
+import { IS_WEB } from '../styles/platform';
 import type { PageHeaderTitleInputProps } from './types';
 
 const TextInput: React.ComponentType<TextInputProps> = styled(
@@ -22,6 +23,9 @@ export function PageHeaderTitleInput({
   nativeID,
   editable = true,
   disabled = false,
+  multiline = true,
+  numberOfLines = 1,
+  scrollEnabled = false,
   style,
   ...props
 }: PageHeaderTitleInputProps) {
@@ -36,6 +40,9 @@ export function PageHeaderTitleInput({
   return (
     <TextInput
       {...props}
+      multiline={multiline}
+      numberOfLines={numberOfLines}
+      scrollEnabled={scrollEnabled}
       nativeID={field.nativeID}
       accessibilityLabel={field.accessibilityLabel}
       aria-describedby={field.describedBy}
@@ -47,6 +54,15 @@ export function PageHeaderTitleInput({
       style={[
         TYPE_SCALE['title-1-bold'],
         { color: colors.text, minWidth: 0, padding: 0, borderWidth: 0 },
+        // Native multiline inputs grow intrinsically. Web's default textarea
+        // reserves two rows and then scrolls unless field sizing owns its height.
+        multiline && { minHeight: TYPE_SCALE['title-1-bold'].lineHeight, textAlignVertical: 'top' },
+        IS_WEB && multiline
+          ? ({ fieldSizing: 'content', resize: 'none', overflow: 'hidden' } as TextStyle & {
+              fieldSizing: 'content';
+              resize: 'none';
+            })
+          : undefined,
         style,
       ]}
     />

@@ -341,7 +341,10 @@ narrow panels without clipping the tabs or measuring breakpoints in the consumer
 ### Editable title
 
 Use `PageHeaderTitleInput` in the `title` slot when the page name is editable.
-It uses the heading typography with no field shell; `label` names the input for
+It uses the heading typography with no field shell and wraps/grows with its content
+from a single line by default (`multiline={false}` opts out). Web uses
+`field-sizing: content`; native uses the intrinsic multiline input height.
+Caller `style` remains last, so explicit bounds are respected; `label` names the input for
 assistive technology. Value, blur handling and persistence remain controlled by
 the app. `editable={false}` or `disabled` makes it read-only. If it is placed in a
 `Field`, the field's name, description, invalid and disabled state are inherited.

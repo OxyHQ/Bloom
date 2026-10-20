@@ -173,6 +173,10 @@ export interface PageHeaderProps {
 
 /** Plain editable heading for PageHeader.title; persistence belongs to the caller. */
 export interface PageHeaderTitleInputProps extends TextInputProps {
+  /** Wrap and grow with the title (default true); false uses a single-line input. */
+  multiline?: boolean;
+  /** Minimum native line count / fallback web rows. Default 1. */
+  numberOfLines?: number;
   label: string;
   'aria-describedby'?: string;
   disabled?: boolean;
