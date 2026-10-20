@@ -28,7 +28,7 @@ An `icon` without children makes a square action. Labelled actions use `leadingI
 
 The pressable is the parent's layout child: `className` and `style` are applied there, without an extra wrapper. Web styles flatten RN style arrays and register their interaction CSS using constructed stylesheets. `asChild` composes an existing web link; disabled state guards the composed handler.
 
-`CloseButton` remains a semantic dismiss control with a required accessible name and sizes `xs | sm | md | lg`. Its optional `className` lands on the dismiss pressable, so positioning utilities work on both platforms. `onPress` receives the press event, and `stopPropagation` (default false) keeps the press from also activating a pressable parent, as on `Button`: the dismiss X on a pressable card.
+`CloseButton` remains a semantic dismiss control with a required accessible name and sizes `2xs | xs | sm | md | lg` (18/20/24/32/44px discs). On coarse-pointer web it reserves a real minimum 44×44px pressable while preserving the selected disc and glyph sizes; the target reacts to input-device changes and explicit styles may grow it but cannot shrink it below 44px. Desktop geometry and native `hitSlop` remain unchanged. Its optional `className` lands on the dismiss pressable, so positioning utilities work on both platforms. `onPress` receives the press event, and `stopPropagation` (default false) keeps the press from also activating a pressable parent, as on `Button`: the dismiss X on a pressable card.
 
 See [Component contract](./appearance.mdx) for inheritance and [Migration](./coherent-system-migration.mdx) for the clean API cut.
 

@@ -4,6 +4,7 @@
  */
 import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { CloseButton } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -43,4 +44,11 @@ describe('CloseButton stopPropagation', () => {
     expect(getByTestId('close').props.accessibilityState).toMatchObject({ disabled: true });
     expect(onPress).not.toHaveBeenCalled();
   });
+});
+
+it('preserves native disc geometry and existing hit slop', () => {
+  const { getByTestId } = renderClose({ size: 'md' });
+  const close = getByTestId('close');
+  expect(StyleSheet.flatten(close.props.style)).toMatchObject({ width: 32, height: 32 });
+  expect(close.props.hitSlop).toEqual({ top: 10, bottom: 10, left: 10, right: 10 });
 });
