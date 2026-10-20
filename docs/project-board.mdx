@@ -1,5 +1,54 @@
 # Project Board
 
+## Controlled composition
+
+`Board<Item>` composes arbitrary records into caller-controlled columns. Use it
+when a product owns its properties, grouping, permissions and persistence:
+
+```tsx
+import { Board } from '@oxy.so/bloom/project-board';
+
+<Board
+  columns={groups.map((group) => ({
+    id: group.id,
+    title: group.name,
+    items: group.records,
+  }))}
+  getItemId={(record) => record.id}
+  renderCard={(record, column, { isDragging }) => (
+    <RecordCard record={record} groupId={column.id} dragging={isDragging} />
+  )}
+  renderColumnHeader={(column) => <GroupHeader name={column.title} />}
+  renderColumnFooter={(column) => <AddRecord groupId={column.id} />}
+  onMove={({ itemId, fromColumnId, toColumnId }) =>
+    updateRecordGroup(itemId, fromColumnId, toColumnId)
+  }
+  readOnly={!canEdit}
+/>
+```
+
+The board never copies or mutates records. A drop requests `onMove`; the caller
+updates `columns` after accepting the move. Data changes from collaboration,
+optimistic updates and rollback render immediately. `renderEmptyColumn` supplies
+optional empty content, `columnWidth` defaults to 280, and `columnStyle` customizes
+the column frame. The board owns one horizontal Bloom `ScrollArea`; columns grow
+with their content and the page owns vertical scrolling.
+
+Web pointer dragging is scoped to one mounted board. Same-column, external and
+sibling-board drops are ignored, and permissions and source membership are checked
+again at drop time. A whole-card Pressable remains draggable, while nested buttons,
+inputs and other interactive controls keep their input behavior. Custom interactive
+regions can opt out with `data-bloom-board-no-drag` on their DOM wrapper.
+
+Provide an accessible move action in the card slot on every platform; it is the
+keyboard, screen-reader and native touch alternative to pointer dragging. Native
+composition leaves touch gestures to its scroll container and card actions.
+`readOnly` disables pointer moves; the caller must also disable mutation actions
+it supplies in slots and enforce authorization when persisting. `Board` moves
+records between groups; order within a group remains the product's sort order.
+
+## Ticket template
+
 A shared project board for web, iOS and Android. It keeps the original five-column ticket layout, compact member avatars, priority/project chips, sort/filter/display menus, empty-column illustration, create-more flow and ticket detail panel.
 
 ```tsx
