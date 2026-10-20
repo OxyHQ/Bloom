@@ -75,7 +75,10 @@ the end of a container, an empty one included.
   what is under them; Return at the end of an open one writes inside.
 - **Markdown**: typed (`# `, `- `, `1. `, `[] `, `> `, `**bold**`…) and pasted —
   several lines pasted become blocks, prefixes included, code fences one code
-  block; selected blocks copy as Markdown.
+  block; selected blocks copy as Markdown. On web, a whole-block selection
+  receives keyboard focus without scrolling. Copy/cut belongs to that surface;
+  another editor, an external field or a field inside a custom renderer keeps
+  its own clipboard behavior. A cut still obeys `confirmRemove` and undo.
 - **Pasting HTML** (web): a page, Google Docs, Word or another editor pastes
   as blocks — headings, nested lists, to-dos (checkboxes, `[x]`), quotes,
   code with its language, dividers, tables (when the schema has them),

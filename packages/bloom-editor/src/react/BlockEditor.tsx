@@ -458,8 +458,38 @@ export function EditorSurface({
   // Copying and cutting selected blocks (web): as Markdown, which pasting
   // turns back into blocks — in this editor or any other.
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
+    const node = root.current as unknown as HTMLElement | null;
+    if (Platform.OS !== 'web' || !node?.addEventListener) return;
+    // A whole-block selection has its own keyboard focus, just as text has
+    // its input. This also gives browser copy/cut events a concrete owner.
+    let previous = ui.get().selectedBlocks;
+    const focusSelection = () => {
+      const selected = ui.get().selectedBlocks;
+      if (selected === previous) return;
+      previous = selected;
+      if (selected.length > 0) node.focus({ preventScroll: true });
+    };
+    if (previous.length > 0) node.focus({ preventScroll: true });
+    const stop = ui.subscribe(focusSelection);
+    return () => {
+      stop();
+    };
+  }, [ui]);
+
+  useEffect(() => {
+    const node = root.current as unknown as HTMLElement | null;
+    if (Platform.OS !== 'web' || !node?.addEventListener) return;
     const onCopy = (cut: boolean) => (event: ClipboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      // A nested editor or a field in a custom renderer owns its own text.
+      // Retained selections in other editors never intercept this event.
+      if (
+        event.defaultPrevented ||
+        target?.closest?.('[data-bloom-editor-surface]') !== node ||
+        target.closest('input, textarea, [contenteditable="true"]') ||
+        node.ownerDocument.activeElement?.closest('[data-bloom-editor-surface]') !== node
+      )
+        return;
       const selected = ui.get().selectedBlocks;
       if (selected.length === 0 || !event.clipboardData) return;
       const ids = selected.filter((id) => !selected.includes(store.doc.blocks[id]?.parent ?? ''));
@@ -469,17 +499,21 @@ export function EditorSurface({
     };
     const copy = onCopy(false);
     const cut = onCopy(true);
-    document.addEventListener('copy', copy);
-    document.addEventListener('cut', cut);
+    node.addEventListener('copy', copy);
+    node.addEventListener('cut', cut);
     return () => {
-      document.removeEventListener('copy', copy);
-      document.removeEventListener('cut', cut);
+      node.removeEventListener('copy', copy);
+      node.removeEventListener('cut', cut);
     };
   }, [requestRemove, store, ui]);
 
   return (
     <EditorContext.Provider value={value}>
-      <View ref={root} style={[styles.editor, style]}>
+      <View
+        ref={root}
+        {...(Platform.OS === 'web' ? { tabIndex: -1, dataSet: { bloomEditorSurface: '' } } : {})}
+        style={[styles.editor, style]}
+      >
         {children}
         <BlockMenu />
         <CodeLanguageMenu />
