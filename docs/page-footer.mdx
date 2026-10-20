@@ -60,6 +60,15 @@ Prefer composing page controls in `Screen.bottomBar`. Screen owns placement and 
 
 `contentContainerStyle` styles the controls row. Override padding with the matching longhands (`paddingTop`, `paddingBottom`, `paddingLeft`, `paddingRight`); `style` continues to address the outer host. Web container queries resolve the shared 16/24px side inset without rendering on each width change. Native retains row measurement.
 
+### Persistent panel footer
+
+Use descriptor `bottomBar` for panel-wide content such as a sign-in prompt that
+persists across routes. The first route Screen stacks it below its own bottomBar,
+measures both and keeps them inside that panel’s width and framed bottom inset.
+This works with document and bounded hosts. Do not add an outer Screen just to
+hold this footer: nested Screens intentionally establish separate scroll owners.
+AppShell’s application navigation bottomBar remains a separate occupied edge.
+
 ### Position outside Screen
 
 The default `position="absolute"` anchors this page chrome inside a bounded parent.

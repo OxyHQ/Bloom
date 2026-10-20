@@ -4,6 +4,10 @@ description: Every breaking change between @oxy.so/bloom 10.x and 11.0.0 — App
 order: 0
 ---
 
+For new layouts, use the current [composition guide](/docs/bloom/main/compose-layouts).
+This page records the 11.0 migration; the JSX panel API remains supported, while
+`panelLayout` and embedded `AppShellPanels layout` expose the descriptor compositor.
+
 # Migrating to 11.0
 
 Bloom follows its clean-cut rule: no `@deprecated` aliases, no shims. A symbol that was removed or renamed is simply gone, and the build tells you. 11.0 has one change: the shell's layout model. See [AppShell → Panels](/docs/bloom/main/app-shell#panels).

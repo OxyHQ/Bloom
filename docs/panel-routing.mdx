@@ -15,6 +15,7 @@ router. No browser history, global router or DOM link handler is replaced.
 import { PanelRouterProvider, PanelRouteSlot } from '@oxy.so/bloom/panel-routing';
 
 const routes = [
+  { path: '/explore', component: ExploreScreen },
   { path: '/p/[id]', component: PostScreen },
   { path: '/[username]', component: ProfileScreen, layouts: [ProfileLayout] },
   { path: '/[username]/replies', component: RepliesScreen, layouts: [ProfileLayout] },
@@ -55,10 +56,18 @@ atomic history movement, including controlled histories. Import
 `@oxy.so/bloom/app-shell/hooks` entry when only the controller is needed;
 this keeps shell rendering and sidebar code out of route-only imports.
 
+The main application route can remain `content: <RouteSlot />` without panel
+`navigation`. Independent histories in extra columns do not replace that route.
+Keep its descriptor ID and React position stable when changing layouts. Persistent
+`headerActions` and `bottomBar` belong on the descriptor and are composed by the
+first route Screen, rather than an outer Screen wrapper.
+
 Use `usePanelScrollContainer<HTMLElement>()` from `app-shell/hooks` to bind virtualized
 lists to an existing bounded panel viewport. It returns a stable ref, or null
 for document flow/outside a panel. Do not introduce another scroll container.
 The panel owns restoration, so nested lists must disable their own window
-restoration. App-specific scroll, reselect or color contexts should also be
+restoration. Suspend virtualizer observation and pagination while
+`useAppShellPanel().active` or `useScreenViewport()?.active` is false; a retained
+background route must not act on the foreground document. App-specific scroll, reselect or color contexts should also be
 scoped to the panel if their consumers can navigate independently. Document
 metadata and browser navigation controls continue to belong to the main route.

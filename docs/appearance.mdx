@@ -44,7 +44,7 @@ Explicit props win over the nearest scope, which wins over the family's defaults
 `BloomScope panelRadius={28}` sets the shared corner radius for `Card radius="panel"`, message cards, and `Sidebar surface="card"`
 and framed `ContentPanel` surfaces. The default is 28; any finite non-negative number
 is accepted, including zero. Nested scopes inherit it independently of size and tone.
-The surface, its material, the content clip and web frame/mask all use that radius.
+The surface, material, bounded content clip and document frame/bleed-mask all use that radius. Bounded panels clip their own rounded box instead of painting page-colored corners over adjacent panels.
 Plain/docked sidebars and unframed panels remain square. Control corners are unchanged.
 
 ```tsx
@@ -53,6 +53,12 @@ Plain/docked sidebars and unframed panels remain square. Control corners are unc
   <ContentPanel framed>{children}</ContentPanel>
 </BloomScope>
 ```
+
+Panel `appearance="plain"` inherits the enclosing fill. A flat painted panel
+uses `chrome="none"` with its custom `surfaceClassName` and matching resolved
+`surfaceColor`. Group `appearance="joined"`/`"separated"` is a separate structural
+choice. `PageHeader density="compact"` controls header padding and minimum height,
+not BloomScope control size. See [ContentPanel](/docs/bloom/main/content-panel).
 
 ## Actions and icons
 

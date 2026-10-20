@@ -22,7 +22,7 @@
 
 Components, hooks and design tokens published as `@oxy.so/bloom` through component subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
-Styling is NativeWind classes throughout. There are no colour props and no wrapper components to theme a button, because a second way to set a colour is a second thing that can disagree.
+Static styling uses NativeWind classes and shared semantic tokens. Dynamic geometry and resolved surface fills use the corresponding component APIs. AppShell and Screen own panel layout, scroll viewports and chrome; applications supply content and controlled state rather than a second layout engine.
 
 </td>
 <td valign="top" width="50%">
@@ -154,6 +154,12 @@ role-generation and colour-policy pipeline.
 </tr>
 </table>
 
+## Compose an application
+
+Use `AppShell.panelLayout` for application regions and `AppShellPanels layout` for an embedded workspace (`scope="local"` inside a page panel). Stable panel IDs preserve screen identity through mode changes, resizing and reordering. Each route declares one `Screen` with its `PageHeader`, body and optional `bottomBar`; `ScreenScrollView` follows that host’s scroll owner. Native and web share these contracts, with document scrolling and CSS framing specific to web.
+
+Start with [Compose application layouts](./docs/compose-layouts.mdx), then [panel routing](./docs/panel-routing.mdx), [Screen](./docs/screen.mdx) and [scroll restoration](./docs/scroll.mdx). The guide covers fixed main columns, ordered transitions, accessible reordering, viewport access and platform boundaries.
+
 ## Components
 
 Bloom publishes each component family through a subpath export. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
@@ -162,13 +168,13 @@ Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/
 
 | Group | Exports |
 |---|---|
-| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `control-surface`, `hooks` |
-| App shell and navigation | `app-shell`, `page-header`, `sidebar`, `rail`, `breadcrumb`, `pagination`, `tabs`, `tab-bar`, `layout`, `content-panel` |
+| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `appearance`, `hooks` |
+| App shell and navigation | `app-shell`, `panel-routing`, `screen`, `page-header`, `page-footer`, `sidebar`, `rail`, `breadcrumb`, `pagination`, `tabs`, `tab-bar`, `layout`, `content-panel` |
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `teleport`, `surfaces`, `settings-modal` |
 | Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
 | Forms | `text-field`, `textarea`, `phone-input`, `input-otp`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `date-picker`, `file-upload`, `auth-card`, `stepper`, `rating`, `wizard` |
 | Layout and lists | `grid`, `list`, `scroll`, `settings-list`, `card`, `cover-header`, `accordion`, `aspect-ratio`, `divider`, `item`, `carousel` |
-| Data and charts | `table`, `data-table`, `chart-cards`, `stat-cards`, `calendar`, `composition-bar`, `stat-bar`, `activity-heatmap`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card` |
+| Data and charts | `table`, `data-table`, `project-board`, `chart-cards`, `stat-cards`, `calendar`, `composition-bar`, `stat-bar`, `activity-heatmap`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card` |
 | Music and media | `media-card`, `media-controls`, `media-header`, `media-player`, `media-shelf`, `track-list`, `queue-panel`, `lyrics`, `music-library`, `creator-studio`, `sortable-media` |
 | Housing | `home-search`, `listing-actions`, `listing-editor`, `offering-badge`, `place-reviews`, `property-insights`, `tenancy`, `eviction` |
 | Stays and booking | `listing-card`, `listing-details`, `stay-search`, `stay-filters`, `booking`, `category-bar`, `map-marker` |
@@ -178,7 +184,7 @@ Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/
 | Feedback | `toast`, `notification`, `notification-center`, `announcement`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
 | Motion and assets | `motion`, `animated-check`, `icon-circle`, `radio-indicator`, `icons`, `typography`, `fonts` |
 
-`tabs`, `scroll` and `tab-bar` each ship an `/expo-router` variant for apps on Expo Router.
+`tabs`, `scroll`, `tab-bar` and `panel-routing` each ship an `/expo-router` variant for apps on Expo Router.
 
 ## Documentation
 

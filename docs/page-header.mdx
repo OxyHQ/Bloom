@@ -73,7 +73,7 @@ It is an opacity ramp of one flat colour, not a blur of varying intensity. `back
 
 `scrim="auto"` fades it in over `[0, scrollThreshold]`, so it appears when content starts passing under. `"always"` paints it at rest — for a header born over a photograph. `"none"` removes it and leaves legibility to the islands alone.
 
-**The colour is the PAGE's, and the header cannot read it.** The ramp's job is to fade content into the surface it is leaving, so its colour has to be that surface — `theme.colors.background` by default. A screen that paints its own background (a tinted section, a brand panel, a dark surface inside a light app) hands it over with `scrimColor`; without it the ramp is a wash of the wrong hue rather than a fade. Pass an **opaque** colour: the alpha belongs to the ramp, and a colour carrying its own would multiply with it.
+**The colour follows the containing surface.** The ramp inherits the fill published by ContentPanel/SurfaceLevelProvider, falling back to the page background. A custom background unknown to that context must publish its resolved fill (for a panel, `surfaceColor`) or explicitly pass `scrimColor`. Pass an **opaque** colour: the alpha belongs to the ramp, and a colour carrying its own would multiply with it.
 
 **The islands protect themselves; the title does not.** An island carries its own material and is legible over both ends of the backdrop range (measured, in [Blur](/docs/blur)). A title is bare text on whatever is behind it, and with `scrim="auto"` there is nothing behind it until the page scrolls. So a header that sits over a photograph **at rest** needs a declared heading relationship or a choice that keeps its title readable:
 
@@ -110,16 +110,17 @@ The scrim sizes to its parent, so the parent carries the height — extend it AB
 | `titleAlign` | `'start'` | `'center'` centres the title on the container whatever the two sides hold. |
 | `headingLevel` | `1` | |
 | `titleReveal` | `'auto'` | Follows a declared heading offset or registered docking section; otherwise remains visible. Explicit modes override it. |
+| `density` | `'default'` | `'compact'` uses a 32pt minimum, zero vertical padding and 12pt side insets; measured content may grow. |
 | `presentation` | `'floating'` | `'bar'` for the flat strip. |
 | `placement` | `'inline'` | `'overlay'` positions the header over the content and claims the top edge. |
 | `onBack` / `backLabel` | — / `"Back"` | `backLabel` is the button's accessible name — localise it. |
 | `leading` | — | After the back capsule, before the title (an avatar, a logo). |
 | `actions` | — | End of the bar. Floating: wrapped in a blur `BloomScope`. |
 | `scrim` | `'auto'` | `presentation="floating"` only. `auto` \| `always` \| `none`. |
-| `scrimColor` | `theme.colors.background` | The opaque colour the edge effect fades from. Pass it when the screen paints a background the theme does not know about. |
+| `scrimColor` | Inherited surface fill | The opaque colour the edge effect fades from. Pass it when the screen paints a background the theme does not know about. |
 | `border` | `'auto'` | `presentation="bar"` only. `auto` fades the separator in with scroll; `always`; `none`. |
 | `transparent` | `false` | `presentation="bar"` only: background and shadow fade in with scroll. It no longer hides the title. |
-| `scrollY` | — | A Reanimated `SharedValue<number>`. Omitted, the header reads its `Screen` offset, then `ScrollOffsetProvider`, then `window.scrollY` on web. |
+| `scrollY` | — | A Reanimated `SharedValue<number>`. Omitted, reads HeaderDock, ScrollMetrics, Screen, ScrollOffsetProvider, then the web window fallback. |
 | `scrollThreshold` | `20` | The offset over which the scroll-linked paint arrives. Over a hero, use the hero height minus the bar. |
 | `sticky` | `true` | Web, `placement="inline"`: `position: sticky; top: 0`. No effect on native or on an overlay. |
 | `safeArea` | native `true`, web `false` | Pads the top by the safe-area inset (read from `SafeAreaInsetsContext`; no provider → 0). |
@@ -138,7 +139,7 @@ container-width geometry.
 
 ## Look
 
-- Bar min-height 56; side inset 16 below `sm`, 24 from `sm` — measured against the header's **container**, not the window, so a narrow desktop panel gets the narrow inset.
+- Default minimum height 56; compact minimum 32. Default side inset 16 below `sm`, 24 from `sm`; compact inset 12 — measured against the header's **container**, not the window, so a narrow desktop panel gets the narrow inset.
 - Islands are 36 tall (a 34 control plus the hairline), 8 apart. The back capsule carries 4px of hit slop on every side, which makes it a 44pt target with nothing beside it to steal from. **A grouped item is 34 × 34 with no slop** — items in a group are adjacent, and slop on one overlaps its neighbour. Where the 44pt floor matters for every action, give each one its own island instead of grouping them.
 - Island material: the shared Surface body, sheen and rim. Default fills use 90% opacity; the web blur shows through. See [Blur](/docs/blur).
 - Title `headline-medium` text-primary, subtitle `body-2-regular` secondary. Both truncate to one line.
@@ -168,7 +169,7 @@ function Screen() {
 
 `BloomProvider` already mounts `TopEdgeProvider`. The height is **measured**, not computed from a constant plus the insets — a subtitle, an enlarged font and a notch all move it, and a computed height fails silently, with content starting a few points under the islands as if that were the design.
 
-The claim registers in an effect, so a reader mounted in the same commit sees `0` on its first render. The header narrows that to one frame by claiming its resting height (safe area + 56) immediately.
+The claim registers in an effect, so a reader mounted in the same commit sees `0` on its first render. The header narrows that to one frame by claiming its resting height (safe area + 56 by default, or + 32 for compact density) immediately.
 
 Apply the safe area **once**: the header pads itself by `insets.top` on native, and the content's padding comes from the claim, which already includes it. Do not add `insets.top` again in the scroll container.
 
@@ -177,11 +178,13 @@ Apply the safe area **once**: the header pads itself by `insets.top` on native, 
 Everything scroll-linked interpolates over `[0, scrollThreshold]` of the resolved offset. The header resolves it in this order:
 
 1. the `scrollY` prop,
-2. the enclosing `Screen` offset,
-3. the nearest `ScrollOffsetProvider` (`@oxy.so/bloom/layout`),
-4. `window.scrollY` — **web only**.
+2. the enclosing `HeaderDockProvider` offset,
+3. the nearest `ScrollMetricsProvider` offset,
+4. the enclosing `Screen` offset,
+5. the nearest `ScrollOffsetProvider` (`@oxy.so/bloom/layout`),
+6. `window.scrollY` — **web only**.
 
-On native with none of the three, the header stays at rest.
+On native without one of these owners, the header stays at rest.
 
 ```tsx
 import { ScrollOffsetProvider } from '@oxy.so/bloom/layout';
@@ -212,7 +215,7 @@ The context is what makes a desktop panel work: `window.scrollY` never moves ins
 
 ## Platform notes
 
-- **Web.** Shared Surface CSS uses backdrop blur and SVG displacement at the rim, with a 90%-opaque body and sheen. Without filter support, the body and decorative rim remain.
+- **Web.** Shared Surface CSS uses one backdrop blur with a 90%-opaque body, sheen and rim. There is no SVG displacement; without backdrop-filter support, the body and decorative rim remain.
 - **iOS and Android.** Shared SurfacePaint draws the body, sheen and rim without refraction or inline blur. Outer shadows remain unclipped.
 
 ![The floating header over a list, light](./page-header-islands.png)

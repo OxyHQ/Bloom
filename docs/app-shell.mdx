@@ -1022,8 +1022,8 @@ deck track defaults to 360px.
 `flow="document"` selects document **vertical** scrolling for split layouts on web.
 The viewport host and keyed content survive split/deck, expanded/compact and
 bounded/document switches. Web geometry uses CSS flex and container queries,
-with NativeWind transitions and reduced-motion rules. Native uses Bloom's shared
-motion recipe. The root reading envelope also transitions when changing layouts;
+with compositor-owned CSS transitions and reduced-motion rules. Native uses
+Reanimated for the same ordered layout phases. The root reading envelope also transitions when changing layouts;
 no app resize hook or measured-width interpolation is required.
 `transition="exit-before-enter"` orders semantic panel changes: outgoing panels
 fade and recede first, frame and track geometry then move together, and incoming
@@ -1090,6 +1090,24 @@ returns the stable ref to that existing viewport for a virtualizer or scroll lis
 `null` means document/outside. Do not add a second scroller or a second restoration
 owner around a virtualized list using this ref.
 
+### Embedded layouts and viewport access
+
+`AppShellPanels layout={layout}` accepts the same descriptor contract without
+creating another shell; it defaults to bounded flow and contained horizontal
+scrolling. Use it for workspace columns in the application content region, or
+set `scope="local"` for an explicitly bounded workspace inside a page panel.
+Positive deck `span` shares spare width above each track’s width basis; omitted
+span keeps fixed-width columns.
+
+Pass `viewportRef` (a React ref to `AppShellPanelViewport`) to access `getOffset`,
+async `measure`, relative `scrollBy`, and imperative `reveal(id)` on the existing
+owner. `onViewportScroll` observes that owner only when supplied. Native and
+contained layouts expose their viewport; a web document Deck exposes the document.
+Do not add another horizontal ScrollView around this group. The imperative
+handle operates on laid-out panels; transient `revealPanel` coordinates insertion
+transitions specifically for document Decks. See the complete
+[viewport contract and examples](/docs/bloom/main/compose-layouts#viewport-access-and-platform-boundaries).
+
 ### Independent panel navigation
 
 ```tsx
@@ -1108,7 +1126,7 @@ const panel = {
 Both header and content can call `usePanelNavigation()`. Shared link adapters can call
 `useOptionalPanelNavigation()` to use a panel history when present and fall back to their
 host router outside a panel. The controller exposes `entry`,
-`entries`, `index`, `push`, `replace`, `back`, `forward`, `canGoBack`, and `canGoForward`.
+`entries`, `index`, `push`, `replace`, `go`, `back`, `forward`, `canGoBack`, and `canGoForward`.
 Each panel owns a memory history and a separate restoration store; entry keys are
 namespaced by panel ID. `scroll="panel"` binds the actual viewport to this adapter,
 so back/forward restores that viewport. Hidden panels cannot write scroll offsets.

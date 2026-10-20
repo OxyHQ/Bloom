@@ -56,10 +56,17 @@ being replaced by a nested default.
 ## Embedded workspaces use the same compositor
 
 Use `AppShellPanels layout={...}` for a board or workspace inside an existing
-screen. It accepts the same descriptors as `AppShell.panelLayout`, defaults to
+screen’s work area. It accepts the same descriptors as `AppShell.panelLayout`, defaults to
 bounded panels and contained horizontal scrolling, and does not create another
 application shell. Project Board uses this path for its columns; its template uses
 AppShell for the sidebar, drawer and page insets.
+
+The default `scope="region"` inherits the application region and rejects nested
+page frames. For a bounded workspace inside an existing page panel, explicitly
+use `scope="local"`: it establishes its own frame, bottom-edge scope and containing
+fill. Direct ContentPanel nesting remains invalid inside each local panel.
+Controlled ProjectBoard embedded/grouped variants establish this local scope
+internally; consumers do not wrap them in another shell.
 
 In a deck, `width` is the resting basis and `minWidth` protects usable content.
 An explicit positive `span` shares spare room between columns without squeezing
@@ -81,6 +88,30 @@ dynamic geometry through CSS on web and Yoga/Reanimated on native. Do not mirror
 scroll offsets or gesture positions into React state on every frame. Subscribe to
 viewport observations only when domain behavior needs them; ordinary scrolling
 and panel motion already have an owner.
+
+### Viewport access and platform boundaries
+
+| API | Purpose | Boundary |
+| --- | --- | --- |
+| `viewportRef.current?.getOffset()` | Read the current horizontal owner’s offset | Document on supported web Decks; contained viewport otherwise |
+| `viewportRef.current?.measure()` | Async screen-coordinate rectangle, or null before mount | Shared native/web contract |
+| `viewportRef.current?.scrollBy({ x, y })` | Relative imperative scrolling for domain gestures | Uses the existing owner; does not create a scroller |
+| `viewportRef.current?.reveal(id)` | Reveal an already laid-out panel with nearest scrolling | Shared native/web; call after content exists |
+| `revealPanel: { id, requestKey }` | Reveal a panel after a transient insertion action settles | Horizontal web document Deck only |
+| `activePanel` | Select the panel shown when tracks cannot fit | Does not request horizontal scrolling |
+
+The imperative viewport handle and the declarative reveal request are distinct:
+the request coordinates document-Deck insertion transitions; the handle exposes
+the current owner for component gestures. Keep reveal requests out of persisted
+workspace state. Native and contained layouts use the handle when their product
+interaction needs explicit reveal. `onViewportScroll` is optional, and an omitted
+observer does not attach an empty web scroll listener.
+
+The compositor shares descriptors, sizing constraints, order, gesture state and
+accessibility actions across platforms. Web container queries, document scrolling,
+CSS scroll timelines and viewport bleed masks have platform-specific implementations
+or fallbacks. Native uses Yoga, ScrollView and Reanimated; shared APIs do not
+establish identical pixels or physical-device verification.
 
 ## A reusable screen
 
@@ -169,7 +200,103 @@ adds dismissal to that header; the surface owns focus and transition, without
 adding its own scrolling wrapper. Use `ScreenScrollView` for content so chrome,
 restoration and the one overlay scrollbar follow the actual panel viewport.
 Editor, code and gallery panels use this same contract. Bounded web viewports
-contain overscroll so a wheel at their edge does not move the document behind them.
+contain vertical overscroll; horizontal gestures can still reach the Deck’s
+horizontal scroll owner.
+
+### Preserve the current page when entering Deck
+
+A product can reserve its first panel for the current application route and allow
+customization only in the extra panels. This is application policy, not a fixed
+Bloom rule. Keep the main descriptor ID and its content element in the same slot:
+
+```tsx
+import type { ReactNode } from 'react';
+import { AppShell } from '@oxy.so/bloom/app-shell';
+import type { AppShellPanelDefinition } from '@oxy.so/bloom/app-shell';
+
+type WorkspaceProps = {
+  deck: boolean;
+  route: ReactNode;
+  context: ReactNode;
+  extraPanels: readonly AppShellPanelDefinition[];
+  onExtraOrderChange: (ids: readonly string[]) => void;
+};
+
+export function PageWorkspace({
+  deck, route, context, extraPanels, onExtraOrderChange,
+}: WorkspaceProps) {
+  return (
+    <AppShell
+      variant="feed"
+      header={null}
+      scroll="page"
+      panelLayout={{
+        mode: deck ? 'deck' : 'split',
+        flow: deck ? 'bounded' : 'document',
+        horizontalScroll: 'document',
+        transition: 'exit-before-enter',
+        activePanel: 'main',
+        onPanelOrderChange: (ids) => {
+          const customizable = new Set(extraPanels.map((panel) => panel.id));
+          onExtraOrderChange(ids.filter((id) => customizable.has(id)));
+        },
+        panels: [
+          { id: 'main', width: deck ? 390 : 620, resizable: false, reorderable: false, content: route },
+          { id: 'context', width: 350, visible: !deck, reorderable: false, content: context },
+          ...extraPanels.map((panel) => ({
+            ...panel, visible: deck && panel.visible !== false, reorderable: true,
+          })),
+        ],
+      }}
+    />
+  );
+}
+```
+
+`extraPanels` must have unique IDs distinct from `main` and `context`; the parent
+applies the accepted permutation and supplies their usable widths and labels.
+The main route has no independent panel history in this example. Extra panels
+can supply `navigation` independently. A Sidebar mode control changes `deck`
+without navigating to a replacement route or mounting a second shell. The Screen
+inside `route` uses `scroll="auto"`, allowing Bloom to transfer its current reading
+offset when the owner changes.
+
+### Transitions and ordering
+
+`transition: 'exit-before-enter'` lets outgoing panels fade/recede before track
+geometry changes, then reveals incoming content at its usable width. The reverse
+follows the same policy. Default `simultaneous` changes those phases together.
+Reduced motion settles immediately; applications supply no transition timers,
+window measurements or duplicate page animations.
+
+Set `reorderable: true` and a localized `reorderLabel` on movable descriptors,
+then apply the full ID permutation from `onPanelOrderChange`. Fixed and hidden
+slots retain their positions. Handles support pointer/native pan, keyboard
+arrows and Home/End, plus native accessibility move actions. The compositor
+scrolls its actual horizontal owner at an edge, preserves panel content identity
+and reading offsets, and commits after the drag lands. Reordering does not replay
+a panel entrance; DOM order follows the accepted visual order for accessibility.
+
+Persist only accepted order. Capture the current account/workspace generation in
+the callback and reject stale callbacks after switching accounts; a gesture uses
+the callback from its start. The host can reject a move by leaving descriptors
+unchanged. Resize controls, panel order and ticket/card domain movement are
+separate operations. See [Motion](/docs/bloom/main/motion).
+
+### Flat surfaces and persistent chrome
+
+`appearance: 'joined' | 'separated'` describes the group. For an individual
+painted panel without raised chrome, use `chrome: 'none'`, `surfaceClassName`
+and the matching resolved `surfaceColor`. `appearance: 'plain'` instead leaves
+the panel transparent and inherits its enclosing fill. Use `BloomScope panelRadius`
+for local corner geometry. Bounded panels clip their actual rounded surface, so
+dragging them does not paint page-colored corners over their neighbors.
+
+A panel-wide sign-in prompt or status footer belongs in descriptor `bottomBar`.
+The first route Screen composes it below its own bottom bar and measures the
+combined clearance inside the panel. Do not wrap the route in another Screen to
+add this footer. For compact column headings, use `PageHeader density="compact"`;
+its 32pt minimum and 12pt side insets still grow for larger controls and text.
 
 ### Compose navigation as one Sidebar
 
@@ -194,19 +321,21 @@ adds no sidebar or drawer.
 | --- | --- | --- |
 | Normal page or multiple document panels | `flow: 'document'`, Screen `scroll="auto"` | Document vertical axis |
 | Horizontal Deck | `mode: 'deck'`, `flow: 'bounded'`, `horizontalScroll: 'document'` | Document horizontal axis; each Screen owns its column's vertical axis |
-| Embedded bounded workspace | `flow: 'bounded'`; opt into `horizontalScroll: 'contained'` if needed | Bounded Screen viewport; contained horizontal axis only when requested |
+| Embedded bounded workspace | `AppShellPanels layout` defaults to bounded/contained; `scope="local"` inside a page panel | Group horizontal viewport; column vertical viewports |
 
 For Deck, give panels resting widths, for example `width: 390`. Keep the shell
 mounted when switching workspace configurations. The shell owns vertical gutters
 and the last panel's trailing gap. Web hosts must allow document overflow and
 provide `height: 100%` through `html`, `body` and the application root; using
 `100vh` for bounded children can include a classic scrollbar's height and create
-unwanted vertical overflow. Native retains native scrolling behavior.
+unwanted vertical overflow. Native uses its contained ScrollView owner; it does not have document scrolling.
 
 Selection is state; revealing a panel is an explicit action. Persist `activePanel`
 when needed, but keep `revealPanel: { id, requestKey }` transient. Use a new string
 or number `requestKey` after actions such as adding a column; Bloom reveals it
-once when eligible. Restoring a workspace or entering Deck never scrolls to the
+once when eligible and after the owning compositor’s insertion/geometry
+transitions settle. Obsolete requests cancel; reduced-motion layouts resolve
+without an artificial delay. Restoring a workspace or entering Deck never scrolls to the
 last selected panel. To select and reveal, update both fields. In 13.0 this replaces
 12.2's implicit reveal on selection changes, preventing account hydration from
 moving the whole page to the last column. Native/contained/vertical layouts retain
@@ -217,6 +346,40 @@ second ScrollView around it. Virtualizers bind to `useScreenViewport()` or the
 panel's existing container; they retain virtualization rather than being wrapped
 in a nonvirtualized scroller. [Screen](/docs/bloom/main/screen) documents native
 list bindings, pagination and inset ownership.
+
+## A bounded canvas inside a page
+
+Use `Screen scroll="none"` when the body is a bounded board, map or other canvas
+with its own independent scrollers. Screen reserves its measured header/footer
+without creating another vertical viewport. `scroll="content"` is the explicit
+list-binding mode; it does not reserve chrome around arbitrary canvas children.
+
+```tsx
+import type { AppShellPanelDefinition } from '@oxy.so/bloom/app-shell';
+import { AppShellPanels } from '@oxy.so/bloom/app-shell';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { Screen } from '@oxy.so/bloom/screen';
+
+export function CanvasPage({ panels }: { panels: readonly AppShellPanelDefinition[] }) {
+  return (
+    <Screen scroll="none" header={<PageHeader title="Workspace" />}>
+      <AppShellPanels scope="local" layout={{ mode: 'deck', panels }} />
+    </Screen>
+  );
+}
+```
+
+The host must provide bounded space. Panel content can use its own Screen and
+ScreenScrollView; the local group isolates those owners from the page’s chrome.
+For a controlled board, render `ProjectBoard variant="embedded"` in this Screen
+instead: it already supplies that canvas, gesture engine and local composition.
+Use `variant="grouped"` for controlled lanes with the board’s own outer vertical
+viewport. Do not recreate column measurements or lane heights in the consumer.
+
+Header accessories can compose `Toolbar` for horizontally reachable tools with
+a fixed actions slot. Editable titles use `PageHeaderTitleInput`; both grow
+inside the same measured PageHeader. See [PageHeader](/docs/bloom/main/page-header),
+[Layout](/docs/bloom/main/layout) and [Project Board](/docs/bloom/main/project-board).
 
 ## Independent routes, one header
 

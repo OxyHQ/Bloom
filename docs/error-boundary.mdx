@@ -99,7 +99,7 @@ The default fallback scrolls when space is short and clears the inherited occupi
 bottom edge. Set `bottomInset={0}` when its parent already reserves that space.
 An explicit `bottomInset` takes precedence over the inherited occupancy.
 
-`AppShellPanel errorBoundary` isolates one panel: `true` for the default recovery,
+`AppShellPanel errorBoundary` (also accepted on a panel descriptor) isolates one panel: `true` for the default recovery,
 or the same options as `PanelErrorBoundary` (give `resetKey` the route when the
 panel outlives it). Shell navigation and the healthy panels beside it stay mounted.
 It is opt-in, like `ContentPanel errorBoundary` (the same recovery for a bare

@@ -28,15 +28,17 @@ already. A Vite/SPA consumer mounts it directly with its own adapter.
 hooks, so a value built inside a component changes the hook identity every
 render.
 
-## The key is CONTENT, not the navigation entry
+## Global adapter keys and independent panel histories
 
-An offset is stored against the content's identity (route name plus sorted
+The global router adapter stores an offset against the content's identity (route name plus sorted
 params) and the caller's optional `key` — deliberately **not** against the
 history entry.
 
 So content the user has already seen restores however they arrived at it, and
 only unseen content opens at the top. The accepted trade-off: the same content
-open in two live entries shares one offset.
+open in two live entries shares one offset. Independent panel histories are the
+exception: each panel includes its history entry in the key so Back/Forward
+restore that particular visit, without sharing offsets with another column.
 
 `contentId` comes from the adapter via `useRoute()`, never `usePathname()` —
 `usePathname` reads the globally focused route, so a background screen would
@@ -68,6 +70,20 @@ flag.
   mounted, and handed back on `pagehide` — so an app that unmounts it does not
   leave the browser's own restoration disabled.
 
+
+## Layout changes are not navigation
+
+Changing a retained Screen from document flow to a bounded column transfers its
+live reading offset to the new owner; changing back transfers the latest offset.
+This handoff belongs to Screen and does not need an application scroll listener,
+remount, snapshot reload or compensating scroll write. A new route or accepted
+workspace snapshot still follows the restoration rules above.
+
+Horizontal panel visibility is separate. `activePanel` selects compact content;
+`revealPanel` requests a transient document-Deck reveal after layout settles.
+`viewportRef` accesses the compositor’s existing horizontal owner for domain
+interactions. Neither request is a vertical restoration snapshot. See
+[Compose application layouts](/docs/bloom/main/compose-layouts).
 
 ## Persist an opt-in workspace
 

@@ -8,6 +8,19 @@ order: 4
 
 Review date: 2026-10-19. The source census covers **226 families**, of which **223 are published**. The [generated adoption matrix](/docs/adoption-matrix) measures four contracts; the review below also follows panel geometry, scrolling, chrome and platform entry points.
 
+This page preserves the evidence from the earlier composition audit; its counts
+and measurements are historical, not a release-wide validation report. Current
+layout contracts and platform limits live in
+[Compose application layouts](/docs/bloom/main/compose-layouts).
+
+The subsequent compositor work adds shared root/embedded descriptor layouts,
+ordered mode transitions, retained Screen scroll-owner handoff, panel footer
+composition, accessible reordering and viewport access. Project Board adopts that
+owner while retaining flat surface tokens and compact measured headers. Bounded
+panels clip their real rounded surface; document panels retain viewport framing.
+The source-generated adoption matrix covers its four original contracts and
+does not independently certify these layout behaviors or native device paint.
+
 ## Ownership model
 
 | Responsibility | Shared owner | Consumer responsibility |
@@ -52,7 +65,7 @@ AppShell, AgentChat, MultiAgentChat, AgentCreator, AI Chat, SettingsModal and th
 - SelectionCard, domain choice groups, listing action choices and questionnaire answers inherit Field constraints and associations. Questionnaire callbacks and delayed progression also respect disabled state.
 - Chat folder tabs, OTP, questionnaire, chart ranges and selections, track selection, QueuePanel and LibraryPanel use `useControllableState`. Domain equality checks, input normalization and same-tick answer references stay at their existing boundaries.
 
-The matrix currently reports **no named adaptations** for its four source contracts. This means the previously classified gaps have been migrated. It does **not** establish complete keyboard behavior, visual correctness, every child control's membership, or scroll/chrome adoption throughout all 226 families.
+At that audit, the matrix reported **no named adaptations** for its four source contracts. This means the previously classified gaps have been migrated. It does **not** establish complete keyboard behavior, visual correctness, every child control's membership, or scroll/chrome adoption throughout all 226 families.
 
 ### Storybook
 

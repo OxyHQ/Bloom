@@ -53,12 +53,12 @@ Bloom's existing web/native AppShell, Dialog, ComposerPanel and AgentCreator imp
 Layout utilities require the consumer NativeWind/Tailwind source scanning described
 in `docs/styles.mdx`. Theme colours come from Bloom's provider.
 
-The workspace uses the shared `AppShell panelLayout` with stable navigation,
-conversation and editor/context panels. `hideBelow`, minimum widths, retained
-visibility and resizing resolve in the shared panel engine against the shell
-container. Compact navigation and editor actions select their panel, and the
-shared header's back action returns to the conversation. They do not create
-private overlay drawers or swipe handlers.
+The workspace uses AppShell’s `sidebar` navigation and stable `conversation`
+and `editor` descriptors. Minimum widths, retained visibility and resizing resolve
+in the shared compositor against the shell container. Compact navigation opens
+the shared reveal drawer; the editor opens through its floating panel state below
+its breakpoint. Dismissing either leaves the conversation mounted. The workspace
+does not create private drawers, swipe handlers or a replacement conversation.
 
 The conversation declares `Screen scroll="auto"`: its PageHeader is `header`,
 its ComposerPanel sits in `bottomBar` through PageFooter, and its transcript
