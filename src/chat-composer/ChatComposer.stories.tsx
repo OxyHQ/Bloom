@@ -31,6 +31,9 @@ import { RiTimerLine } from '../icons/remix/RiTimerLine';
 import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { Surface } from '../surface';
+import { ScrollArea } from '../layout';
+import { BloomScope } from '../appearance';
 
 const meta: Meta = {
   id: 'blocks-chat-composer',
@@ -750,6 +753,31 @@ export const Reactions: Story = {
     return (
       <BothModes width={390}>
         <Demo />
+      </BothModes>
+    );
+  },
+};
+
+/** An existing dialog/panel owns material and vertical scrolling. */
+export const EmojiInSurface: Story = {
+  render: function EmojiInSurface() {
+    const [picked, setPicked] = useState('');
+    return (
+      <BothModes width={390}>
+        <BloomScope size="md">
+          <Surface style={{ padding: 16 }}>
+            <ScrollArea style={{ maxHeight: 440 }}>
+              <EmojiPicker
+                embedded
+                scrollable={false}
+                columns="auto"
+                groups={EMOJI}
+                onSelectEmoji={setPicked}
+              />
+              <Caption>{picked}</Caption>
+            </ScrollArea>
+          </Surface>
+        </BloomScope>
       </BothModes>
     );
   },

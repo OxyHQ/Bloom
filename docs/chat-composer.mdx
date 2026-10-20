@@ -173,7 +173,7 @@ interface EmojiGroup {
 
 The object form is what the built-in search matches on. A dataset of **bare glyphs still renders** — it just only matches a pasted glyph, which is the honest behaviour rather than a silent one. Pass `filter={false}` to hand searching to the app entirely and supply pre-filtered `groups`.
 
-The grid is a `FlatList` on **both** platforms, over pre-chunked rows rather than single emoji, with exact `getItemLayout` offsets. A few thousand entries is the normal case: at eight columns that is a few hundred rows of which a dozen are mounted, and the exact offsets are what let a category tab jump straight to its header instead of estimating. The active category follows a TAP, not the scroll position — tracking the scroll would need viewability callbacks whose thresholds differ per platform.
+By default the grid is a `FlatList` on **both** platforms, over pre-chunked rows rather than single emoji, with exact `getItemLayout` offsets. A few thousand entries is the normal case: at eight columns that is a few hundred rows of which a dozen are mounted, and the exact offsets are what let a category tab jump straight to its header instead of estimating. The active category follows a TAP, not the scroll position — tracking the scroll would need viewability callbacks whose thresholds differ per platform.
 
 `skinTone` (0–5) applies a Fitzpatrick modifier through `applySkinTone`, which only modifies an emoji whose base accepts one and never splices a modifier into a ZWJ sequence — that renders a stray colour square beside the glyph. `tabs` adds top-level siblings to "Emoji" (stickers, GIFs) whose `content` replaces the body.
 
@@ -234,7 +234,7 @@ State colours 150ms; the mic ↔ send cross-fade 220ms; the recording dot pulses
 `SuggestionList` — `kind`, `suggestions` (each may carry `verified`), `activeIndex`, `onSelectSuggestion`, `onActiveIndexChange`, `header`, `maxHeight` (232), `loading`, `showEmpty`, `emptyLabel`.
 `VoiceRecorder` — `state`, `seconds`, `duration`, `amplitudes`, `playing`, `onPlayToggle`, `onCancel`, `onDelete`, `onSend`, `onLock`, `slideToCancel`, `labels`.
 `AttachmentMenu` — `open`/`defaultOpen`/`onOpenChange`, `items`, `layout`, `columns`, `onSelect`, `recent`, `label`.
-`EmojiPicker` — `groups`, `onSelectEmoji`, `activeGroup`, `query`, `filter`, `frequentlyUsed`, `skinTone`, `columns` (8), `height` (288), `tabs`, `activeTab`, `labels`.
+`EmojiPicker` — `size`, `embedded`, `scrollable`, `skinToneLabel`, `groups`, `onSelectEmoji`, `activeGroup`, `query`, `filter`, `frequentlyUsed`, `skinTone`, `columns` (8), `height` (288), `tabs`, `activeTab`, `labels`.
 `ReactionPicker` — `emojis`, `selected`, `onSelectEmoji`, `onMorePress`, `moreLabel`, `size`, `surface`, `emojiLabel`.
 `MessageContextMenu` — `items`, `onSelect`, `reactions`, `selectedReaction`, `onSelectReaction`, `onMoreReactions`, `open`/`defaultOpen`/`onOpenChange`, `label`.
 
@@ -269,3 +269,34 @@ The line floor and cap follow a numeric `inputStyle.lineHeight` (20px by default
 On web, all composers remeasure when the editable field changes width, including
 an initially narrow document footer, so a wrapped placeholder or draft can
 shrink without another edit. Height-only changes do not trigger remeasurement.
+
+
+## Embedding the complete emoji picker
+
+Use `EmojiPicker embedded scrollable={false} columns="auto"` inside an existing
+Dialog body. The Dialog owns vertical overflow and Surface paint. Embedded mode
+uses that actual backing for contrast and removes the picker's own material and
+outer padding; controls still use their shared Bloom components. Without
+`embedded`, the picker continues to paint its own Surface.
+
+`scrollable` defaults to `true`: a bounded virtualized list with shared ScrollBar,
+exact row offsets, and category tabs that jump to each group. In flow mode
+(`false`), the same row/cell renderer shows the selected category; search spans
+all supplied categories, and frequently used entries remain a leading section
+when not searching. `height` applies only to the bounded body (including custom
+tabs); flow mode sizes all contents intrinsically. Do not add a second vertical
+ScrollView around a bounded picker.
+
+`columns` defaults to 8. `"auto"` fits complete cells to the picker's measured
+content width, including responsive parent and input-device changes. Invalid
+numeric column counts are clamped to at least one. `size` inherits BloomScope,
+then normal `md`; glyph cells use shared Button geometry (xs24, sm32, md36,
+lg44), with a 44px target floor for native/coarse pointers. An explicit size
+wins. Search, tabs and action controls are actual Bloom components.
+
+The application supplies localized group names, keywords, optional `labels` and
+`skinToneLabel(index)` (0–5); Bloom owns search, category navigation, modifier
+application and selection. `tabs` adds custom bodies without replacing the
+emoji renderer. Custom tab content in flow mode shares the enclosing scroll
+owner. Skin-tone buttons expose pressed state and category/top-level tabs use
+Bloom Tabs' keyboard and focus behavior.

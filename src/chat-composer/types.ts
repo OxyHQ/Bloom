@@ -1,3 +1,4 @@
+import type { BloomSize } from '../appearance/types';
 import type { ComponentRef, ReactNode, RefObject } from 'react';
 import type { StyleProp, TextInput, TextStyle, ViewStyle } from 'react-native';
 
@@ -406,7 +407,7 @@ export interface EmojiPickerLabels {
 export interface EmojiPickerProps extends PartProps {
   groups: ReadonlyArray<EmojiGroup>;
   onSelectEmoji?: (emoji: string) => void;
-  /** Scrolls to, and highlights, this category. Works controlled. */
+  /** Scrolls to a category, or selects its contents in flow mode. Works controlled. */
   activeGroup?: string;
   defaultActiveGroup?: string;
   onActiveGroupChange?: (key: string) => void;
@@ -425,9 +426,17 @@ export interface EmojiPickerProps extends PartProps {
   skinTone?: number;
   defaultSkinTone?: number;
   onSkinToneChange?: (tone: number) => void;
-  /** Columns in the grid. Default `8`. */
-  columns?: number;
-  /** Height of the scrolling body. Default `288`. */
+  /** Accessible name for each tone, index 0–5. */
+  skinToneLabel?: (tone: number) => string;
+  /** Inherits BloomScope, then md. */
+  size?: BloomSize;
+  /** Use the enclosing Surface backing instead of painting another panel. */
+  embedded?: boolean;
+  /** Default true: virtualized bounded body. False: flow inside an existing scroll owner. */
+  scrollable?: boolean;
+  /** Columns in the grid. Default 8. Auto fits whole cells to the available width. */
+  columns?: number | 'auto';
+  /** Height of the scrolling body only; ignored in flow mode. Default `288`. */
   height?: number;
   /** Extra top-level tabs (stickers, GIFs). */
   tabs?: ReadonlyArray<EmojiPickerTab>;
