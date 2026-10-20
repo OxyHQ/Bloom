@@ -378,6 +378,10 @@ it('composes the current Button with a popover without breaking collapse or dupl
   );
   const button = node('edit-current');
   expect(button.tagName).toBe('BUTTON');
+  const fittedItem = button.closest('[role="listitem"]')?.parentElement;
+  expect(fittedItem).not.toBeNull();
+  expect(getComputedStyle(fittedItem!).flexShrink).toBe('1');
+  expect(getComputedStyle(fittedItem!).flexGrow).toBe('0');
   expect(ref.current).toBe(button);
   expect(button.getAttribute('aria-current')).toBe('page');
   expect(button.getAttribute('aria-expanded')).toBe('false');

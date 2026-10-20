@@ -361,7 +361,10 @@ export function createBreadcrumb({
               <View
                 style={{
                   minWidth: 0,
-                  ...(index === items.length - hidden - 1 ? { flex: 1 } : { flexShrink: 0 }),
+                  // The current control may shrink, but never grows into an
+                  // empty action-sized hit area. Its trigger anchors to the label.
+                  flexShrink: index === items.length - hidden - 1 ? 1 : 0,
+                  flexGrow: 0,
                 }}
               >
                 {item}

@@ -3,6 +3,7 @@ import type { ReactElement, ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { ButtonIconComponent, ButtonProps } from '../button/types';
+import type { OverlayTriggerProps } from '../floating/types';
 
 export interface BreadcrumbProps {
   /** Explicit size, nearest BloomScope, then normal md. */
@@ -29,7 +30,7 @@ export interface BreadcrumbProps {
 export interface BreadcrumbItemProps
   extends Pick<ButtonProps, 'disabled' | 'aria-expanded' | 'aria-haspopup'> {
   /** Wraps the existing Button, e.g. <PopoverTrigger asChild />. Keep this item a direct child for collapse fitting. */
-  trigger?: ReactElement<{ children?: ReactNode; asChild?: boolean; style?: StyleProp<ViewStyle> }>;
+  trigger?: ReactElement<OverlayTriggerProps>;
   /** Explicit size overrides the enclosing Breadcrumb/BloomScope. */
   size?: BloomSize;
   /** The label. */
