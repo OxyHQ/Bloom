@@ -202,19 +202,16 @@ it('keeps Select to one listbox scroller after the shared floating viewport chan
 it('updates mounted action and Item targets when the primary pointer changes', () => {
   const previous = window.matchMedia;
   let coarse = false;
-  const listeners = new Set<() => void>();
-  window.matchMedia = jest.fn(() => ({
+  const query: MediaQueryList = new (class extends EventTarget {
     get matches() {
       return coarse;
-    },
-    media: '(pointer: coarse)',
-    onchange: null,
-    addEventListener: (_: string, listener: () => void) => listeners.add(listener),
-    removeEventListener: (_: string, listener: () => void) => listeners.delete(listener),
-    addListener: () => {},
-    removeListener: () => {},
-    dispatchEvent: () => true,
-  })) as typeof window.matchMedia;
+    }
+    media = '(pointer: coarse)';
+    onchange: MediaQueryList['onchange'] = null;
+    addListener() {}
+    removeListener() {}
+  })();
+  window.matchMedia = () => query;
   try {
     mount(
       <>
@@ -225,13 +222,13 @@ it('updates mounted action and Item targets when the primary pointer changes', (
     expect(getComputedStyle(node('adaptive-item')).minHeight).toBe('36px');
     act(() => {
       coarse = true;
-      listeners.forEach((listener) => listener());
+      query.dispatchEvent(new Event('change'));
     });
     expect(getComputedStyle(node('adaptive-action')).minHeight).toBe('44px');
     expect(getComputedStyle(node('adaptive-item')).minHeight).toBe('44px');
     act(() => {
       coarse = false;
-      listeners.forEach((listener) => listener());
+      query.dispatchEvent(new Event('change'));
     });
     expect(getComputedStyle(node('adaptive-item')).minHeight).toBe('36px');
   } finally {
