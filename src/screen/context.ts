@@ -57,6 +57,8 @@ export interface ScreenHostValue {
   active: boolean;
   restoresDocument?: boolean;
   headerActions?: ReactNode;
+  /** Panel chrome appended once below the route Screen footer. */
+  bottomBar?: ReactNode;
   claimColorPreset?: (preset: AppColorName) => () => void;
   navigation?: { canGoBack: boolean; canGoForward: boolean; back(): void; forward(): void };
   kind?: ScreenViewportValue['kind'];

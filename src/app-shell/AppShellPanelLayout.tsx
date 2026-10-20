@@ -262,7 +262,8 @@ export function createPanelLayoutView(
     const floatingOpen = !!track.floating && !!panel.floating?.open && panel.visible !== false;
     const sticky = !!panel.sticky && document && !vertical;
     const parent = React.useContext(ScreenContext);
-    const active = (track.visible || floatingOpen) && (parent?.active ?? true);
+    const active =
+      panel.visible !== false && (track.visible || floatingOpen) && (parent?.active ?? true);
     const screenRef = useRef<unknown>(null);
     const scrollY = useSharedValue(0);
     const contentHeight = useSharedValue(-1);
@@ -295,6 +296,7 @@ export function createPanelLayoutView(
           | 'document'
           | 'element',
         scrollRef: screenRef,
+        bottomBar: panel.bottomBar,
         headerActions: track.floating ? (
           <>
             {panel.headerActions}
@@ -306,7 +308,15 @@ export function createPanelLayoutView(
         claimColorPreset,
         metrics,
       }),
-      [active, document, metrics, panel.headerActions, claimColorPreset, track.floating],
+      [
+        active,
+        document,
+        metrics,
+        panel.headerActions,
+        panel.bottomBar,
+        claimColorPreset,
+        track.floating,
+      ],
     );
     const mounted = useRef(false);
     if (track.visible || floatingOpen || panel.keepMounted) mounted.current = true;
@@ -485,7 +495,13 @@ export function createPanelLayoutView(
           >
             {mounted.current && !track.floating ? (
               <AppShellPanelContext.Provider
-                value={{ id: panel.id, alone, framed, visible: track.visible, active }}
+                value={{
+                  id: panel.id,
+                  alone,
+                  framed,
+                  visible: panel.visible !== false && track.visible,
+                  active,
+                }}
               >
                 {/* A viewport mask may bleed past its own surface by a pixel. Bound
                 that paint to this track so zero-gap neighbors keep their border.

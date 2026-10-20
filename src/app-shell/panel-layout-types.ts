@@ -43,6 +43,8 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
   content?: ReactNode;
   /** Host controls composed into the route Screen's existing PageHeader actions. */
   headerActions?: ReactNode;
+  /** Panel footer composed below the route Screen bottom bar, measured and pinned by that Screen. */
+  bottomBar?: ReactNode;
   /** Horizontal document layout: follows the page until its bottom fits, then sticks. */
   sticky?: boolean;
   height?: number;
@@ -62,6 +64,8 @@ export interface PanelRevealRequest {
 export interface AppShellPanelLayout {
   panels: readonly AppShellPanelDefinition[];
   mode?: 'split' | 'deck';
+  /** Web: fade outgoing panels before moving tracks, then reveal incoming content at its settled width. */
+  transition?: 'simultaneous' | 'exit-before-enter';
   /** Web horizontal decks use the document scrollbar by default. Native remains native-scrolling. */
   horizontalScroll?: 'document' | 'contained';
   /** Web document Deck: edge action revealed by hover/focus only at the logical scroll end. */

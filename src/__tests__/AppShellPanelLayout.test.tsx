@@ -6,6 +6,7 @@ import type { AppShellPanelLayout } from '../app-shell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { resolvedStyle } from './support/rendered-style';
+import { Screen } from '../screen';
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BloomThemeProvider mode="light" colorPreset="teal">
     {children}
@@ -222,4 +223,39 @@ describe('root modular panels', () => {
     fireEvent.press(screen.getByTestId('push'));
     expect(screen.getByText('detail')).toBeTruthy();
   });
+});
+
+it('composes descriptor footer chrome into the retained route Screen', () => {
+  const mounts = jest.fn();
+  function Route() {
+    useEffect(mounts, []);
+    return (
+      <Screen scroll="auto" testID="route-screen">
+        <Native.View />
+      </Screen>
+    );
+  }
+  const ui = (footer: boolean, deck = false) => (
+    <AppShell
+      panelLayout={{
+        mode: deck ? 'deck' : 'split',
+        panels: [
+          {
+            id: 'main',
+            width: 620,
+            bottomBar: footer ? <Native.View testID="panel-footer" /> : undefined,
+            content: <Route />,
+          },
+        ],
+      }}
+    />
+  );
+  const tree = render(ui(true), { wrapper });
+  expect(tree.getByTestId('route-screen-bottom')).toBeTruthy();
+  expect(tree.getAllByTestId('panel-footer')).toHaveLength(1);
+  tree.rerender(ui(true, true));
+  expect(tree.getAllByTestId('panel-footer')).toHaveLength(1);
+  tree.rerender(ui(false));
+  expect(tree.queryByTestId('route-screen-bottom')).toBeNull();
+  expect(mounts).toHaveBeenCalledTimes(1);
 });

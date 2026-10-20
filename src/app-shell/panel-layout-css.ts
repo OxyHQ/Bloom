@@ -34,6 +34,23 @@ export function panelLayoutCss(
   const liveSize = (index: number, fallback: string) =>
     `var(${panelSizeProperty(scope, index)}, ${fallback})`;
   const deck = layout.mode === 'deck';
+  const ordered = layout.transition === 'exit-before-enter';
+  const geometryDelay = ordered ? 150 : 0;
+  const geometryProperties = [
+    'width',
+    'height',
+    'flex-basis',
+    'flex-grow',
+    'min-width',
+    'min-height',
+    'max-width',
+    'max-height',
+    'margin-inline-start',
+    'margin-top',
+  ];
+  const geometryTransitions = geometryProperties
+    .map((property) => `${property} 380ms cubic-bezier(.4,0,.2,1) ${geometryDelay}ms`)
+    .join(',');
   const document = layout.flow === 'document' && !deck;
   const pageDeck = deck && layout.horizontalScroll !== 'contained';
   const thresholds = new Set<number>([0]);
@@ -45,14 +62,20 @@ export function panelLayoutCss(
   if (typeof layout.axis === 'object')
     for (const name of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
       if (layout.axis[name]) thresholds.add(BREAKPOINTS[name]);
-  let css = `${root} [data-bloom-reading-envelope="${scope}"]{width:var(--bloom-reading-envelope)!important;flex-grow:0!important;flex-basis:auto!important;max-width:var(--bloom-reading-envelope)!important;interpolate-size:allow-keywords}
+  // Both envelope constraints interpolate as lengths. Switching max-width from
+  // `none` to the reading width clamps an exiting workspace immediately, making
+  // its surviving track shrink before it grows while outgoing tracks fade.
+  const readingWidth =
+    'min(var(--bloom-reading-envelope), max(0px, calc(100cqw - var(--bloom-nav-width, 0px) - var(--bloom-nav-gap, 0px) - var(--bloom-frame-start, 0px) - var(--bloom-frame-end, 0px))))';
+  let css = `${root} [data-bloom-reading-envelope="${scope}"]{width:${readingWidth}!important;flex-grow:0!important;flex-shrink:0!important;flex-basis:auto!important;max-width:${readingWidth}!important;interpolate-size:allow-keywords;transition:width 380ms cubic-bezier(.4,0,.2,1) ${geometryDelay}ms,max-width 380ms cubic-bezier(.4,0,.2,1) ${geometryDelay}ms}
+${root} [data-bloom-shell-frame="${scope}"]{transition-delay:${geometryDelay}ms!important}
 ${root} [data-bloom-reading-content="${scope}"]{width:100%!important;flex-basis:100%!important;max-width:100%!important;flex-grow:1!important}
 ${row}{gap:0!important}
-${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{interpolate-size:allow-keywords;transition-property:width,height,flex-basis,flex-grow,min-width,min-height,max-width,max-height,margin-inline-start,margin-top,opacity,display;transition-behavior:allow-discrete;transition-duration:380ms;transition-timing-function:cubic-bezier(.4,0,.2,1)}
+${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{interpolate-size:allow-keywords;transition:${geometryTransitions},opacity ${ordered ? 150 : 380}ms cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms),scale 150ms ease var(--bloom-panel-fade-delay,0ms),display 380ms allow-discrete ${geometryDelay}ms;transition-behavior:allow-discrete}
 ${group}[data-bloom-panel-resizing] [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:has(${group}[data-bloom-panel-resizing]) [data-bloom-reading-envelope="${scope}"]{transition:none!important}
 ${group}[data-bloom-panel-resizing]{user-select:none;cursor:col-resize}
 ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
-@media(prefers-reduced-motion:reduce){${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{transition:none}}
+@media(prefers-reduced-motion:reduce){${root} [data-bloom-reading-envelope="${scope}"],${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{transition:none}}
 `;
   if (pageDeck)
     css += `:root:has(${root}){container-type:scroll-state;container-name:bloom-document-scroll}\n`;
@@ -78,7 +101,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
     const envelope = deck ? '100%' : `${panelEnvelope(layout, lower, gap)}px`;
     let rules = `${root} [data-bloom-reading-envelope="${scope}"]{--bloom-reading-envelope:${envelope}}\n${row}{flex-direction:${vertical ? 'column' : 'row'}!important;--bloom-panel-axis:${axis}}\n`;
     const hidden = (index: number) =>
-      `${item(index)}{--bloom-panel-visible:0;flex:0 0 0px!important;display:none!important;width:0!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;opacity:0!important;margin:0!important;overflow:hidden!important;pointer-events:none!important}\n`;
+      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:0!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;opacity:0!important;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n`;
     for (let index = 0; index < layout.panels.length; index++) {
       const p = layout.panels[index]!;
       rules += `${item(index)}{--bloom-panel-floating:${p.floating && lower < breakpointPx(p.floating.below) ? 1 : 0}}\n`;
@@ -91,20 +114,17 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
       const min = vertical ? p.minHeight : p.minWidth;
       const max = vertical ? p.maxHeight : p.maxWidth;
       const natural = vertical && document;
-      const basis =
-        pageDeck && !vertical
+      const basis = forced
+        ? natural
           ? 'auto'
-          : forced
-            ? natural
+          : '100%'
+        : dim !== undefined
+          ? `${dim}px`
+          : deck
+            ? `${DEFAULT_PANEL_WIDTH}px`
+            : natural
               ? 'auto'
-              : '100%'
-            : dim !== undefined
-              ? `${dim}px`
-              : deck
-                ? `${DEFAULT_PANEL_WIDTH}px`
-                : natural
-                  ? 'auto'
-                  : '0px';
+              : '0px';
       const grow = forced
         ? 1
         : deck || natural
@@ -112,8 +132,8 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
           : flexible && dim !== undefined
             ? 0
             : (p.span ?? 1);
-      rules += `${item(index)}{--bloom-panel-visible:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
-      rules += `@starting-style{${item(index)}{flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;opacity:0!important;margin-inline-start:0!important;margin-top:0!important}}\n`;
+      rules += `${item(index)}{--bloom-panel-visible:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+      rules += `@starting-style{${item(index)}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;opacity:0!important;margin-inline-start:0!important;margin-top:0!important}}\n`;
     }
     if (pageDeck && !vertical) {
       const trackWidths = shown.map((panel) =>
@@ -133,7 +153,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
         ? 'var(--bloom-deck-viewport)'
         : `max(var(--bloom-deck-viewport), calc(${declaredWidth} + var(--bloom-frame-end)))`;
       rules += `${root} [data-bloom-shell-frame="${scope}"]{overflow:visible!important;padding-inline:0!important;--bloom-deck-viewport:calc(100cqw - var(--bloom-nav-width) - var(--bloom-nav-gap))}
-${root} [data-bloom-reading-envelope="${scope}"]{width:${deckWidth}!important;min-width:0!important;max-width:none!important;flex:0 0 auto!important;padding-inline-start:0!important;padding-inline-end:var(--bloom-frame-end)!important}
+${root} [data-bloom-reading-envelope="${scope}"]{width:${deckWidth}!important;min-width:0!important;max-width:${deckWidth}!important;flex:0 0 auto!important;padding-inline-start:0!important;padding-inline-end:var(--bloom-frame-end)!important}
 ${root} [data-bloom-reading-envelope="${scope}"]{min-width:0!important}
 ${root} [data-bloom-shell-nav="${scope}"]{position:sticky!important;inset-inline-start:0;top:0;z-index:200;background-color:inherit}
 ${root} [data-bloom-shell-nav="${scope}"]{isolation:isolate}

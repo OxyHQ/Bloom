@@ -787,3 +787,65 @@ export const ModularVerticalDocument: Story = {
     />
   ),
 };
+
+/** One route and scroll owner survive a reading layout becoming a workspace. */
+function ContinuousWorkspaceDemo() {
+  const [deck, setDeck] = useState(false);
+  return (
+    <AppShell
+      testID="continuous-workspace"
+      variant="feed"
+      navigationAlign="content"
+      gutter={8}
+      sidebar={{ items: DEMO_NAV, surface: 'plain' }}
+      panelLayout={{
+        mode: deck ? 'deck' : 'split',
+        flow: deck ? 'bounded' : 'document',
+        transition: 'exit-before-enter',
+        gap: deck ? 8 : 0,
+        panels: [
+          {
+            id: 'main',
+            width: deck ? 390 : 620,
+            bottomBar: (
+              <View style={{ padding: 16 }}>
+                <Text>Panel footer stays with this page</Text>
+              </View>
+            ),
+            content: (
+              <Screen
+                scroll="auto"
+                testID="continuous-screen"
+                header={
+                  <PageHeader
+                    title="Reading workspace"
+                    actions={
+                      <Button testID="continuous-toggle" onPress={() => setDeck((value) => !value)}>
+                        {deck ? 'Reading layout' : 'Workspace layout'}
+                      </Button>
+                    }
+                  />
+                }
+              >
+                <ScreenScrollView contentContainerStyle={{ padding: 20, gap: 24 }}>
+                  {Array.from({ length: 40 }, (_, index) => (
+                    <Text key={index}>Reading item {index + 1}</Text>
+                  ))}
+                </ScreenScrollView>
+              </Screen>
+            ),
+          },
+          { id: 'context', width: 350, visible: !deck, content: <WorkspacePanel id="context" /> },
+          ...['activity', 'saved', 'notes'].map((id) => ({
+            id,
+            width: 390,
+            visible: deck,
+            scroll: 'panel' as const,
+            content: <WorkspacePanel id={id} />,
+          })),
+        ],
+      }}
+    />
+  );
+}
+export const ContinuousWorkspace: Story = { render: () => <ContinuousWorkspaceDemo /> };

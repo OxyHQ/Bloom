@@ -2,7 +2,8 @@ import type { ComponentType } from 'react';
 import type { ScrollBarProps } from '../layout/types';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Keyboard, Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
@@ -133,7 +134,7 @@ export function createScreen(
     }, []);
     const hasBottom =
       (!keyboardVisible || bottomBarKeyboardBehavior === 'visible') &&
-      Boolean(bottomBar || primaryAction);
+      Boolean(bottomBar || primaryAction || host.bottomBar);
     // The app's own bottom navigation (an `AppShell` bottom bar) already owns the
     // bottom edge. This screen's bar stacks ON it, never under it, and the content
     // clears both.
@@ -241,6 +242,23 @@ export function createScreen(
         <ScreenHeaderContext.Provider value={value}>{header}</ScreenHeaderContext.Provider>
       </View>
     ) : null;
+    const localBottom =
+      bottomBar ??
+      (primaryAction ? (
+        <View
+          pointerEvents="box-none"
+          style={{
+            alignItems: 'flex-end',
+            paddingHorizontal: 16,
+            paddingBottom: windowEdgeGap(insets?.bottom ?? 0),
+            minHeight: host.bottomBar
+              ? (bottomBarHeight ?? 58 + windowEdgeGap(insets?.bottom ?? 0))
+              : bottom,
+          }}
+        >
+          {primaryAction}
+        </View>
+      ) : null);
     const bottomNode = hasBottom ? (
       <View
         testID={testID ? `${testID}-bottom` : undefined}
@@ -250,7 +268,10 @@ export function createScreen(
           document
             ? {
                 position: WEB_POSITION_STICKY,
-                bottom: navigationEdge,
+                bottom: Math.max(
+                  navigationEdge,
+                  (region?.viewportInset.bottom ?? 0) + (region?.bottomReserve ?? 0),
+                ),
                 zIndex: Z_INDEX.floating,
                 marginTop: -bottom,
               }
@@ -264,18 +285,13 @@ export function createScreen(
         }
       >
         <ScreenFooterContext.Provider value={value}>
-          {bottomBar ?? (
-            <View
-              pointerEvents="box-none"
-              style={{
-                alignItems: 'flex-end',
-                paddingHorizontal: 16,
-                paddingBottom: windowEdgeGap(insets?.bottom ?? 0),
-                minHeight: bottom,
-              }}
-            >
-              {primaryAction}
+          {host.bottomBar ? (
+            <View>
+              {localBottom}
+              {host.bottomBar}
             </View>
+          ) : (
+            localBottom
           )}
         </ScreenFooterContext.Provider>
       </View>
@@ -375,7 +391,7 @@ export function createScreen(
                             {
                               overflowX: document ? 'visible' : 'hidden',
                               overflowY: document ? 'visible' : 'auto',
-                              overscrollBehavior: document ? undefined : 'contain',
+                              overscrollBehaviorY: document ? undefined : 'contain',
                               ...(document ? {} : { containerType: 'size' }),
                             } as WebCssStyle,
                           ]}

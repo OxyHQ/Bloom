@@ -5,6 +5,7 @@ import { animateMotion } from '../motion/recipes';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
 import type { ScrollRestorationTarget } from '../scroll/types';
 import type { ScreenContextValue } from './context';
+import { recordScrollOwnerHandoff, clearScrollOwnerHandoff } from '../scroll/owner-handoff';
 import type { ScreenViewportValue, ScreenHostValue } from './context';
 
 /** Observes the existing owner for chrome/restoration; never computes layout styles. */
@@ -32,17 +33,43 @@ export function useScreenViewportBinding(
   const active = useRef(screen.active);
   active.current = screen.active;
   const reducedMotion = useReducedMotion();
+  const owner = useRef<{ documentFlow: boolean; active: boolean; offset: number } | null>(null);
+  // A layout change can clamp the outgoing document before it dispatches its
+  // scroll event. Transfer the last live offset, before paint, rather than
+  // reading that now-collapsed owner or relying on a route navigation event.
+  useLayoutEffect(() => {
+    if (!enabled || !web || typeof window === 'undefined') return;
+    const previous = owner.current;
+    if (previous && previous.documentFlow !== documentFlow && previous.active && screen.active) {
+      const element = scrollRef.current as HTMLElement | null;
+      const target = documentFlow ? window : element;
+      if (target) recordScrollOwnerHandoff(target, previous.offset);
+      if (documentFlow) window.scrollTo({ top: previous.offset, behavior: 'instant' });
+      else if (element) element.scrollTop = previous.offset;
+    }
+    owner.current = {
+      documentFlow,
+      active: screen.active,
+      offset: documentFlow
+        ? window.scrollY
+        : ((scrollRef.current as HTMLElement | null)?.scrollTop ?? 0),
+    };
+  }, [enabled, web, documentFlow, screen.active, scrollRef]);
   useEffect(() => {
     if (!enabled || !web || !screen.active || typeof window === 'undefined') return;
     const element = scrollRef.current as HTMLElement | null;
     const target = documentFlow ? window : element;
     if (!target) return;
+    // Descendant or shell restoration effects consume the transfer first. A
+    // standalone Screen has no restorer; never leave its offset for a future route.
+    clearScrollOwnerHandoff(target);
     let previous = documentFlow ? window.scrollY : element!.scrollTop;
     const update = () => {
       const node = documentFlow
         ? (document.scrollingElement ?? document.documentElement)
         : element!;
       const y = documentFlow ? window.scrollY : node.scrollTop;
+      if (owner.current?.documentFlow === documentFlow) owner.current.offset = Math.max(0, y);
       metrics.scrollY.value = Math.max(0, y);
       metrics.contentHeight.value = node.scrollHeight;
       metrics.viewportHeight.value = Math.max(0, node.clientHeight - (documentFlow ? reserved : 0));
