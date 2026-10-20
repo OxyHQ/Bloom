@@ -1,3 +1,7 @@
+import { useBloomAppearance } from '../appearance';
+import { ITEM_GEOMETRY, CONTROL_LABEL_TYPE } from '../appearance/control-geometry';
+import { TYPE_SCALE } from '../typography/scale';
+import { useTouchInput } from '../styles/pointer';
 import React, { memo, useMemo } from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
@@ -37,7 +41,8 @@ const ItemComponent = function Item({
   selected,
   active = false,
   highlighted = false,
-  density = 'comfortable',
+  density,
+  size: sizeProp,
   style,
   titleStyle,
   subtitleStyle,
@@ -53,7 +58,15 @@ const ItemComponent = function Item({
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
-  const cfg = DENSITY[density];
+  const { size } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const geometry = ITEM_GEOMETRY[size];
+  const legacy = density !== undefined && sizeProp === undefined;
+  const cfg = legacy
+    ? DENSITY[density]
+    : { paddingVertical: geometry.paddingVertical, minHeight: geometry.height };
+  const interactive = Boolean(onPress || onLongPress);
+  const touch = useTouchInput();
+  const touchHeight = interactive && touch ? Math.max(44, cfg.minHeight) : cfg.minHeight;
 
   const containerStyle = useMemo((): ViewStyle => {
     // Precedence, loudest first. Hover and the keyboard's cursor paint ONLY a
@@ -72,7 +85,7 @@ const ItemComponent = function Item({
     return {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: space.md,
+      gap: legacy ? space.md : geometry.gap,
       // `paddingLeft`/`paddingRight`, never `paddingHorizontal`. On web
       // react-native-web maps `paddingHorizontal` to the CSS SHORTHAND
       // `padding-inline`, and its atomic sheet ranks a shorthand ABOVE the
@@ -81,14 +94,14 @@ const ItemComponent = function Item({
       // longhand precedence, honoured it. Measured: a menu checkbox row asked
       // for a 32px indicator gutter and got 8px on web and 32px on native.
       // Longhands on both sides make the last entry win on both platforms.
-      paddingLeft: space.lg,
-      paddingRight: space.lg,
+      paddingLeft: legacy ? space.lg : geometry.paddingHorizontal,
+      paddingRight: legacy ? space.lg : geometry.paddingHorizontal,
       paddingVertical: cfg.paddingVertical,
-      minHeight: cfg.minHeight,
+      minHeight: touchHeight,
       borderRadius: borderRadius.sm,
       ...(backgroundColor === undefined ? null : { backgroundColor }),
     };
-  }, [cfg, selected, active, highlighted, hovered, theme]);
+  }, [cfg, selected, active, highlighted, hovered, theme, legacy, geometry, touchHeight]);
 
   const body =
     children != null ? (
@@ -97,7 +110,14 @@ const ItemComponent = function Item({
       <View style={styles.textColumn}>
         {title != null ? (
           typeof title === 'string' ? (
-            <Text numberOfLines={1} style={[styles.title, { color: titleColor }, titleStyle]}>
+            <Text
+              numberOfLines={1}
+              style={[
+                legacy ? styles.title : TYPE_SCALE[CONTROL_LABEL_TYPE[size]],
+                { color: titleColor },
+                titleStyle,
+              ]}
+            >
               {title}
             </Text>
           ) : (

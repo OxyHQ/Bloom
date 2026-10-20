@@ -49,7 +49,7 @@ const [country, setCountry] = useState('us');
 
 `SelectValue` shows the selected ITEM's label on both platforms (`item => item.label` by default; pass a `children` function for other item shapes — it receives the item, not the value). `SelectContent` resolves that item even while its panel is closed, so the trigger reads `Apple`, not `apple`, from the first paint; the web fork used to print the raw value. A value that matches no item clears it, so resetting to `undefined` brings the placeholder back.
 
-Type is the shared ramp, inline in Inter: `text-body-medium` on `md` triggers and options, `text-body-2-medium` on `sm`.
+Type is the shared ramp, inline in Inter: `text-body-medium` on `md` triggers, `text-body-2-medium` on `sm`. Option rows independently inherit the shared menu recipe from BloomScope.
 
 `SelectTrigger` renders a pressable around its children, or hands the open handler to your own control with `asChild` — the same escape hatch every anchored Bloom family offers:
 
@@ -68,13 +68,13 @@ Colours are taken from the theme through the same ramps `Button` paints from (`f
 
 | part | `md` (default) | `sm` |
 | --- | --- | --- |
-| trigger | 38px tall (`px-2.5 py-2`, 6px gap), full pill | 28px (`px-[7px] py-1`, 4px gap), full pill |
+| trigger | 36px, 12px horizontal inset, full pill | 32px, 10px horizontal inset, full pill |
 | value | 14/20 medium | 13/18 medium |
-| chevron | 16px round-capped stroke, `text-secondary` | 14px |
-| option row | 36px (`p-2`, 10px corner) | `px-2 py-1.5` |
+| chevron | 18px | 16px |
+| option row | Inherits BloomScope (normal md 28px, 10px corner) | Same inherited menu recipe |
 
 - **Trigger** — a card-coloured field with the `neutral-200` hairline and the xs contact shadow. Hover washes it `neutral-100` and darkens the border to `neutral-300`; keyboard focus draws a 2px accent ring 2px out; disabled is `neutral-100` with `text-tertiary` and no shadow. The value is `text-primary`, the placeholder `text-placeholder` (`neutral-400`). The chevron turns over while the list is open (web). Bloom's button-like controls are full pills rather than a 10px corner here.
-- **List** (web) — a 266px-minimum panel (it grows to the trigger's width when that is wider), `p-2`, 16px corner, `shadow-dropdown`, 4px below the trigger, rows 4px apart, scrolling past 240px. It opens and closes on a 150ms fade + `scale-95` + 2px blur.
+- **List** (web) — a 266px-minimum panel (it grows to the trigger's width when that is wider), 6px inset (8px touch), 16px corner, `shadow-dropdown`, 4px below the trigger, a 2px inter-row gap at md, scrolling past 240px. It opens and closes on a 150ms fade + `scale-95` + 2px blur.
 - **Rows** — hover, keyboard focus and the chosen option share one `neutral-100` wash; the chosen one also carries `SelectItemIndicator`'s `text-secondary` tick. `disabled` options are `text-disabled` and cannot be pressed.
 - **Dark** — surfaces go to `neutral-800` with `neutral-700` hairlines and a `neutral-700`-at-60% wash; disabled text uses `neutral-600` (the semantic dark `text-disabled` is the panel colour, which hides the row).
 
@@ -197,7 +197,7 @@ Why Bloom supplies this rather than react-native-web: an option is a `role="radi
 
 ## Selection state
 
-Both forks render each option as `role="radio"` with `aria-checked` — the only spelling react-native-web reads, and one React Native folds back into `accessibilityState`. `SelectItemIndicator` draws the mark — a `text-secondary` check in the row's right-hand gutter on both platforms — and the chosen row also takes the highlight wash.
+Web renders a listbox with option rows and `aria-selected`; native retains radio rows with `aria-checked`. Keyboard selection and selected-option scrolling read the corresponding web selection state. `SelectItemIndicator` draws the mark — a `text-secondary` check in the row's right-hand gutter on both platforms — and the chosen row also takes the highlight wash.
 
 `SelectSeparator` draws a rule between runs.
 
@@ -215,3 +215,13 @@ Inside a required Field, the trigger announces the localized required constraint
 `value` controls selection; `defaultValue` initializes uncontrolled selection. `onValueChange` reports changes in either mode. Size inherits from the nearest `BloomScope`; an explicit `size` wins.
 
 An explicitly supplied `value={undefined}` is a controlled empty selection. Omit `value` to opt into uncontrolled state with `defaultValue`; callbacks do not commit a controlled selection until its parent updates the prop.
+
+Select options use the shared menu size recipe and inherit `BloomScope`, with
+an optional `SelectContent size` override independent of the trigger. Normal
+`md` options are 28px on desktop and at least 44px on touch. The existing listbox
+scroll owner remains the only scroller; the floating panel does not wrap it in
+a second viewport. Trigger geometry and the existing `maxHeight` remain.
+
+Select triggers inherit all four sizes: xs 28 / sm 32 / md 36 / lg 44px. Explicit Select.size overrides the scope. The previous sm 28 / md 38px trigger pair changes to these field proportions; option rows use the independent menu recipe.
+
+Select triggers also keep a 44px minimum touch target on native and coarse-pointer web, and update when the input device changes. Explicit fieldStyle remains the final visual override.

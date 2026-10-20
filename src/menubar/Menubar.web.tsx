@@ -1,3 +1,4 @@
+import { BloomScope } from '../appearance';
 /**
  * `Menubar` — WEB: each menu is an anchored panel from `floating/FloatingPanel`
  * rather than a sheet.
@@ -33,6 +34,8 @@ export { Menubar, MenubarMenu, MenubarTrigger } from './MenubarBase';
 
 export function MenubarContent({
   children,
+  size,
+  maxHeight,
   label: labelProp,
   side,
   align = 'start',
@@ -61,34 +64,37 @@ export function MenubarContent({
   useMenuPanelKeys(hostElement(panel), { open: menu.open, onTab: close, intent: menu.focusIntent });
 
   return (
-    <FloatingPanel
-      panelRef={setPanel}
-      open={menu.open}
-      anchor={anchor}
-      role="menu"
-      surface="menu"
-      label={label}
-      side={side}
-      align={align}
-      sideOffset={sideOffset}
-      alignOffset={alignOffset}
-      dismissible={dismissible}
-      // The one non-modal surface of the four. A menubar's defining interaction
-      // is moving between its menus, and a press-catching backdrop turns that
-      // into two clicks: the first is eaten closing the open menu, the second
-      // finally reaches the sibling trigger. Without a backdrop the press
-      // dismisses this menu AND lands on the trigger, which opens the next one.
-      modal={false}
-      minWidth={minWidth}
-      maxWidth={maxWidth}
-      onDismiss={close}
-      // `min-w-[12rem]` — a menubar menu is wider than a dropdown.
-      className={cx(MENUBAR_MENU_MIN_WIDTH_CLASS, className)}
-      style={style}
-      testID={testID}
-    >
-      <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
-    </FloatingPanel>
+    <BloomScope size={size}>
+      <FloatingPanel
+        panelRef={setPanel}
+        open={menu.open}
+        anchor={anchor}
+        role="menu"
+        surface="menu"
+        label={label}
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
+        dismissible={dismissible}
+        // The one non-modal surface of the four. A menubar's defining interaction
+        // is moving between its menus, and a press-catching backdrop turns that
+        // into two clicks: the first is eaten closing the open menu, the second
+        // finally reaches the sibling trigger. Without a backdrop the press
+        // dismisses this menu AND lands on the trigger, which opens the next one.
+        modal={false}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        maxHeight={maxHeight}
+        onDismiss={close}
+        // `min-w-[12rem]` — a menubar menu is wider than a dropdown.
+        className={cx(MENUBAR_MENU_MIN_WIDTH_CLASS, className)}
+        style={style}
+        testID={testID}
+      >
+        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+      </FloatingPanel>
+    </BloomScope>
   );
 }
 

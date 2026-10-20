@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
+import { BloomScope } from '../appearance';
 import {
   RiArrowDownSLine as ChevronBottomIcon,
   RiCheckLine as CheckIcon,
@@ -323,5 +324,35 @@ export const AlignEnd: Story = {
         </DropdownMenuContent>
       </DropdownMenu>
     </View>
+  ),
+};
+
+/** The app's normal scope, with one bounded shared scroller and nested flyouts. */
+export const ScopedLongMenu: Story = {
+  render: () => (
+    <BloomScope size="md">
+      <View style={{ padding: 40, alignItems: 'flex-start' }}>
+        <DropdownMenu defaultOpen>
+          <DropdownMenuTrigger asChild label="Open long menu">
+            <Button>Open long menu</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent testID="long-menu-panel">
+            <DropdownMenuLabel>Workspace actions</DropdownMenuLabel>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>More actions</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {Array.from({ length: 40 }, (_, index) => (
+                  <DropdownMenuItem key={index}>{`Nested action ${index + 1}`}</DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+            {Array.from({ length: 40 }, (_, index) => (
+              <DropdownMenuItem key={index}>{`Action ${index + 1}`}</DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </View>
+    </BloomScope>
   ),
 };

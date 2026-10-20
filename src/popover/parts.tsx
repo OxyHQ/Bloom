@@ -1,3 +1,4 @@
+import { useMenuDensity } from '../floating/use-menu-density';
 /**
  * The structures the floating panels repeat, published as parts so a
  * popover body is composed rather than hand-measured. Platform-neutral: the web
@@ -153,6 +154,7 @@ export function PopoverFooter({ children, className, style, testID }: PopoverFoo
 }
 
 export function PopoverSeparator({ className, style, testID }: PopoverSeparatorProps) {
+  const density = useMenuDensity();
   const palette = useMenuPalette();
   const owned = classChromeOverrides(className);
   return (
@@ -160,7 +162,20 @@ export function PopoverSeparator({ className, style, testID }: PopoverSeparatorP
       // Decorative: the sections it divides are announced on their own.
       aria-hidden
       className={className}
-      style={[kept({ ...styles.separator, backgroundColor: palette.border }, owned), style]}
+      style={[
+        kept(
+          {
+            ...styles.separator,
+            marginLeft: -density.panelPadding,
+            marginRight: -density.panelPadding,
+            marginTop: density.separatorMargin,
+            marginBottom: density.separatorMargin,
+            backgroundColor: palette.border,
+          },
+          owned,
+        ),
+        style,
+      ]}
       testID={testID}
     />
   );

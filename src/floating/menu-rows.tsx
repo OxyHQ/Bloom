@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+import { useMenuDensity } from './use-menu-density';
 /**
  * The menu ROW vocabulary — ONE implementation, published by all three menu
  * families under shadcn's own part names.
@@ -40,7 +42,8 @@
  * the target has one row inset (6px) plus a 32px minimum height, so a row is
  * the same density at every window width.
  */
-import React, { useCallback, useMemo } from 'react';
+import type React from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { StyledText, StyledView } from '../styles/styled-primitives';
@@ -48,10 +51,8 @@ import {
   ROW_ICON_SIZE,
   ROW_INDICATOR_CLASS,
   ROW_INDICATOR_END_CLASS,
-  ROW_LABEL_CLASS,
   ROW_LABEL_INSET_CLASS,
   ROW_RADIO_DOT_CLASS,
-  ROW_SEPARATOR_CLASS,
   ROW_SHORTCUT_CLASS,
 } from './constants';
 import { MenuRadioGroupProvider, useMenuRadioGroup, useMenuSurface } from './context';
@@ -93,11 +94,13 @@ function IndicatorGutter({
   position: 'leading' | 'trailing';
   children: React.ReactNode;
 }) {
+  const density = useMenuDensity();
   return (
     <StyledView className="relative">
       {children}
       <StyledView
         className={position === 'leading' ? ROW_INDICATOR_CLASS : ROW_INDICATOR_END_CLASS}
+        style={{ width: density.leadingSize }}
         pointerEvents="none"
       >
         {indicator}
@@ -218,7 +221,10 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     return (
       <MenuRadioGroupProvider value={context}>
         {/* `gap-1` — the panel's own 4px row rhythm, carried into the group. */}
-        <StyledView role="radiogroup" className="gap-space-4">
+        <StyledView
+          role={Platform.OS === 'web' ? 'group' : 'radiogroup'}
+          className={useMenuDensity().groupClass}
+        >
           {children}
         </StyledView>
       </MenuRadioGroupProvider>
@@ -277,6 +283,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
 
   function MenuLabel({ children, inset = false, className, style }: MenuLabelProps) {
     const palette = useMenuPalette();
+    const density = useMenuDensity();
+    const type = 'caption-1-medium';
     // The group label: `pl-2 text-body-medium text-text-secondary` — the
     // rows' size and weight, one step back in colour. The colour is inline only
     // while the caller passes no `className`: an inline colour would outrank a
@@ -284,14 +292,15 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     return (
       <StyledText
         className={cx(
-          ROW_LABEL_CLASS,
+          density.labelClass,
           inset && ROW_LABEL_INSET_CLASS,
-          menuTypeClass('body-medium', className),
+          menuTypeClass(type, className),
           className && 'text-muted-foreground',
           className,
         )}
         style={[
-          menuType('body-medium', className),
+          menuType(type, className),
+          inset ? { paddingLeft: density.gutter } : null,
           className ? null : { color: palette.textSecondary },
           style,
         ]}
@@ -304,12 +313,13 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
 
   function MenuSeparator() {
     const palette = useMenuPalette();
+    const density = useMenuDensity();
     // `-mx-2.5 my-1.5 h-px bg-border-button-default`. Not `Divider`: the
     // negative inset is what makes the rule reach the panel's edge through its
     // own `p-2.5`, and a hairline is not what the target draws — `h-px` is one
     // whole pixel.
     return (
-      <StyledView className={ROW_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
+      <StyledView className={density.separatorClass} style={{ backgroundColor: palette.border }} />
     );
   }
   MenuSeparator.displayName = `${prefix}Separator`;
@@ -340,7 +350,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     // `group` is the ARIA role for a set of related menu rows; it carries no
     // state, so there is no `aria-*` counterpart to spell.
     return (
-      <StyledView role="group" className={cx('gap-space-4', className)} style={style}>
+      <StyledView role="group" className={cx(useMenuDensity().groupClass, className)} style={style}>
         {children}
       </StyledView>
     );

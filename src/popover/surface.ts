@@ -153,26 +153,24 @@ export function resolvePopoverSurfaceStyle(
   palette: MenuPalette,
   overridden: ReadonlySet<PopoverChromeKey>,
   viewportWidth?: number,
+  padding = POPOVER_PADDING,
 ): WebCssStyle {
   const keep = (key: PopoverChromeKey) => !overridden.has(key);
   // Longhands, one side at a time: a caller's `style` override of one side must
   // not lose to a shorthand react-native-web ranks above it (AGENTS.md,
   // "Style"), and a caller who writes `px-4` is claiming the sides, not the top.
   //
-  // The panel's `overflow-y-auto` clips a full-bleed child to the 16px corner and
-  // scrolls once something bounds the height. React Native types no
-  // `overflowY`, and the panel has no default height bound for `auto` to act
-  // on, so the default is the clip; a caller that sets `maxHeight` wraps its
-  // body in a `ScrollView` (the calendar inbox menu does).
+  // FloatingPanel owns the bounded ScrollArea. This outer surface clips material
+  // and content to its radius; consumers do not install a second scroller.
   const style: WebCssStyle = {
     ...(keep('width') ? { width: POPOVER_WIDTH } : null),
     ...(keep('maxWidth') && viewportWidth !== undefined
       ? { maxWidth: Math.max(0, viewportWidth - POPOVER_VIEWPORT_INSET) }
       : null),
-    ...(keep('paddingTop') ? { paddingTop: POPOVER_PADDING } : null),
-    ...(keep('paddingBottom') ? { paddingBottom: POPOVER_PADDING } : null),
-    ...(keep('paddingLeft') ? { paddingLeft: POPOVER_PADDING } : null),
-    ...(keep('paddingRight') ? { paddingRight: POPOVER_PADDING } : null),
+    ...(keep('paddingTop') ? { paddingTop: padding } : null),
+    ...(keep('paddingBottom') ? { paddingBottom: padding } : null),
+    ...(keep('paddingLeft') ? { paddingLeft: padding } : null),
+    ...(keep('paddingRight') ? { paddingRight: padding } : null),
     ...(keep('radius') ? { borderRadius: POPOVER_RADIUS } : null),
     ...(keep('borderWidth') ? { borderWidth: 1 } : null),
     ...(keep('borderColor') ? { borderColor: palette.border } : null),

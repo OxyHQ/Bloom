@@ -1,15 +1,12 @@
+import { useTouchInput } from '../styles/pointer';
+import { BloomScope } from '../appearance';
+import { useMenuDensity } from '../floating/use-menu-density';
 import { useCollapsibleVisibility } from '../collapsible/context';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -19,7 +16,6 @@ import { SheetShell } from '../dialog/SheetShell';
 import {
   SELECT_CHEVRON_SIZE,
   SELECT_ITEM_CLASS,
-  SELECT_ITEM_SIZE_CLASS,
   SELECT_TRIGGER_CLASS,
   SELECT_TRIGGER_POPUP,
   SELECT_TRIGGER_SIZE_CLASS,
@@ -108,7 +104,7 @@ export function Select(props: SelectProps) {
     { size: sizeProp },
     { size: 'md', tone: 'neutral' },
   );
-  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
+  const size = inheritedSize;
   const control = useDialogControl();
   const visible = useCollapsibleVisibility();
   useLayoutEffect(() => {
@@ -156,6 +152,7 @@ export function SelectTrigger({
 }: SelectTriggerProps) {
   const { control, size, disabled: rootDisabled } = useSelectContext();
   const palette = useMenuPalette();
+  const touch = useTouchInput();
   // The trigger IS the select's control, so it takes the enclosing `Field`'s id,
   // name, description and invalid state — and the field's `disabled` on top of
   // the two it already combines. A `Popover` trigger deliberately does not do
@@ -177,6 +174,7 @@ export function SelectTrigger({
       className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[size], className)}
       style={[
         {
+          ...(touch ? { minHeight: 44 } : null),
           borderRadius: borderRadius.full,
           backgroundColor: isDisabled ? t.disabledBackground : t.background,
           borderColor: t.border,
@@ -295,6 +293,7 @@ export function SelectIcon({ style }: SelectIconProps) {
 
 export function SelectContent<T>({
   items,
+  size: contentSize,
   valueExtractor = defaultItemValueExtractor,
   ...props
 }: SelectContentProps<T>) {
@@ -309,16 +308,18 @@ export function SelectContent<T>({
   }, [items, context.value, valueExtractor, setStoredValue]);
 
   return (
-    <SelectContentInner
-      control={control}
-      size={size}
-      items={items}
-      valueExtractor={valueExtractor}
-      {...props}
-      value={context.value}
-      onValueChange={context.onValueChange}
-      disabled={context.disabled}
-    />
+    <BloomScope size={contentSize}>
+      <SelectContentInner
+        control={control}
+        size={size}
+        items={items}
+        valueExtractor={valueExtractor}
+        {...props}
+        value={context.value}
+        onValueChange={context.onValueChange}
+        disabled={context.disabled}
+      />
+    </BloomScope>
   );
 }
 
@@ -338,6 +339,7 @@ function SelectContentInner<T>({
   ...contextValues
 }: SelectContentInnerProps<T>) {
   const theme = useTheme();
+  const density = useMenuDensity();
   const { messages } = useMessages(SELECT_MESSAGES);
   const label = labelProp ?? messages.selectOption;
 
@@ -378,7 +380,7 @@ function SelectContentInner<T>({
           keyExtractor={valueExtractor}
           style={styles.flatList}
           // `gap-1` between options.
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { gap: density.gap }]}
         />
       </SelectContext.Provider>
     </SheetShell>
@@ -398,6 +400,7 @@ export function SelectItem({
   className,
   style,
 }: SelectItemProps) {
+  const density = useMenuDensity();
   const { close } = useDialogContext();
   const { value: selectedValue, onValueChange, size } = useSelectContext();
   const palette = useMenuPalette();
@@ -433,8 +436,15 @@ export function SelectItem({
       onBlur={onBlur}
       onPressIn={disabled ? undefined : onPressIn}
       onPressOut={onPressOut}
-      className={cx(SELECT_ITEM_CLASS, SELECT_ITEM_SIZE_CLASS[size], className)}
-      style={[{ backgroundColor: highlighted ? palette.rowHighlight : 'transparent' }, style]}
+      className={cx(SELECT_ITEM_CLASS, density.rowClass, className)}
+      style={[
+        {
+          backgroundColor: highlighted ? palette.rowHighlight : 'transparent',
+          paddingRight: density.gutter,
+          ...(density.touch ? { minHeight: 44 } : null),
+        },
+        style,
+      ]}
     >
       <ItemContext.Provider value={itemCtx}>
         {leading}

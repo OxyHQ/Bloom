@@ -1,3 +1,5 @@
+import { useMenuDensity } from '../floating/use-menu-density';
+import { BloomScope } from '../appearance';
 /**
  * `DropdownMenu` — NATIVE. Presents through `dialog/SheetShell`, Bloom's
  * established native-overlay convention (shared with `Select`, `ContextMenu`
@@ -82,11 +84,13 @@ export function DropdownMenuTrigger({
 
 export function DropdownMenuContent({
   children,
+  size,
   label: labelProp,
   className,
   style,
   testID,
 }: DropdownMenuContentProps) {
+  const density = useMenuDensity(size);
   const common = useCommonMessages();
   const label = labelProp ?? common.menu;
   const menu = useDropdownMenu();
@@ -97,16 +101,18 @@ export function DropdownMenuContent({
   );
 
   return (
-    <SheetShell
-      control={control}
-      label={label}
-      onClose={onSheetClose}
-      contentClassName={className}
-      contentStyle={style}
-      contentTestID={testID}
-    >
-      <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
-    </SheetShell>
+    <BloomScope size={size}>
+      <SheetShell
+        control={control}
+        label={label}
+        onClose={onSheetClose}
+        contentClassName={className}
+        contentStyle={[{ gap: density.gap }, style]}
+        contentTestID={testID}
+      >
+        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+      </SheetShell>
+    </BloomScope>
   );
 }
 

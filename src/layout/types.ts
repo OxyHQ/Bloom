@@ -1,3 +1,4 @@
+import type { BloomSize } from '../appearance';
 import type { ScrollHandlerProcessed } from 'react-native-reanimated';
 import type { ComponentRef, Ref, RefObject } from 'react';
 import type { ScrollView, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
@@ -73,6 +74,8 @@ export interface ScrollSurfaceProps extends ScrollAreaProps {
 
 /** A responsive command row: tools scroll while primary actions stay reachable. */
 export interface ToolbarProps {
+  /** App-scale spacing; omitted size inherits BloomScope. */
+  size?: BloomSize;
   children?: React.ReactNode;
   actions?: React.ReactNode;
   /** A summary or secondary row below the tools. */

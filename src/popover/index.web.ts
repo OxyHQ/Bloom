@@ -21,3 +21,6 @@ export type {
   PopoverFooterProps,
   PopoverSeparatorProps,
 } from './types';
+
+export { PopoverItem } from './PopoverItem';
+export type { PopoverItemProps } from './types';

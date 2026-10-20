@@ -1,3 +1,5 @@
+import { useMenuDensity } from '../floating/use-menu-density';
+import { BloomScope } from '../appearance';
 /**
  * `Popover` — NATIVE. Presents as a bottom sheet, the same shell
  * `DropdownMenu`, `ContextMenu` and `Select` use: a phone has no room to float a
@@ -15,7 +17,8 @@
  * `PopoverSeparator`'s full-bleed rule and `PopoverHeader`/`PopoverFooter`'s
  * `px-2` are measured against — below the handle's own 20px clearance.
  */
-import React, { useMemo, useRef } from 'react';
+import type React from 'react';
+import { useMemo, useRef } from 'react';
 import { StyleSheet, type View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
@@ -76,6 +79,7 @@ export function PopoverTrigger({
 export function PopoverContent({
   material,
   children,
+  size,
   label: labelProp,
   className,
   style,
@@ -84,20 +88,32 @@ export function PopoverContent({
   const { messages } = useMessages(POPOVER_MESSAGES);
   const label = labelProp ?? messages.popover;
   const popover = usePopover();
+  const density = useMenuDensity(size);
   const { control, onSheetClose } = useSheetOpenBridge(popover.open, popover.setOpen);
 
   return (
-    <SheetShell
-      material={material}
-      control={control}
-      label={label}
-      onClose={onSheetClose}
-      contentClassName={className}
-      contentStyle={[styles.body, style]}
-      contentTestID={testID}
-    >
-      {children}
-    </SheetShell>
+    <BloomScope size={size}>
+      <SheetShell
+        material={material}
+        control={control}
+        label={label}
+        onClose={onSheetClose}
+        contentClassName={className}
+        contentStyle={[
+          styles.body,
+          {
+            gap: density.gap,
+            paddingLeft: density.panelPadding,
+            paddingRight: density.panelPadding,
+            paddingBottom: density.panelPadding,
+          },
+          style,
+        ]}
+        contentTestID={testID}
+      >
+        {children}
+      </SheetShell>
+    </BloomScope>
   );
 }
 

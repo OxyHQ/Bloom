@@ -1,4 +1,3 @@
-import { ScrollBar } from '../layout/ScrollBar.web';
 /**
  * The WEB sub-menu: a FLYOUT panel beside its trigger row.
  *
@@ -47,12 +46,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
 import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
-import {
-  MENU_SUB_PANEL_CLASS,
-  MENU_SUB_SCROLL_CLASS,
-  MENU_SUB_SIDE_OFFSET,
-  ROW_ICON_SIZE,
-} from './constants';
+import { MENU_SUB_PANEL_CLASS, MENU_SUB_SIDE_OFFSET, ROW_ICON_SIZE } from './constants';
 import { useMenuSurface } from './context';
 import { pushFloatingEscape } from './escape-stack';
 import { FloatingPanel } from './FloatingPanel';
@@ -592,6 +586,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
 
     return (
       <FloatingPanel
+        panelRef={attachContent}
         open={sub.open}
         anchor={anchor}
         role="menu"
@@ -616,16 +611,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         style={style}
         testID={testID}
       >
-        {/* `-mx-2.5 px-2.5 max-h-96 overflow-y-auto`: the negative inset bleeds
-            the scroller to the panel edge and pads the content back, so the
-            scrollbar is not inset by the panel's own `p-2.5`. It doubles as the
-            flyout's pointer hit box — without it that ring of padding is a place where
-            the pointer is over the panel but over nothing listening, and a
-            pointer resting there would schedule a close. */}
-        <StyledView ref={attachContent} className={MENU_SUB_SCROLL_CLASS}>
-          {children}
-        </StyledView>
-        <ScrollBar target={sub.contentRef} />
+        {children}
       </FloatingPanel>
     );
   }

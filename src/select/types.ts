@@ -1,15 +1,16 @@
+import type { BloomSize } from '../appearance';
 import type { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
 import type { Props as SVGIconProps } from '../icons/shared';
 
-/** Two select densities: `md` (38px trigger) and `sm` (28px). */
-export type SelectSize = 'sm' | 'md';
+/** Shared control scale; the trigger uses field proportions. */
+export type SelectSize = BloomSize;
 
 export type SelectProps = {
   children?: React.ReactNode;
   /**
-   * `md` (default) or `sm` for compact contexts — the trigger's padding, type
-   * and chevron, and the option rows' padding and type.
+   * Explicit trigger size, otherwise inherited from BloomScope (default md).
+   * Option rows independently inherit the menu recipe.
    */
   size?: SelectSize;
   value?: string;
@@ -93,6 +94,8 @@ export type SelectIconProps = {
 };
 
 export type SelectContentProps<T> = {
+  /** Option density; otherwise inherits the nearest BloomScope. Trigger size is independent. */
+  size?: BloomSize;
   /**
    * Label displayed at the top of the selection sheet (native) or
    * used as an ARIA label (web).

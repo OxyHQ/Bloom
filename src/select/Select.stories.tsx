@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
+import { BloomScope } from '../appearance';
 import { Dialog } from '../dialog';
 import { RiHomeHeartLine, RiHotelBedLine, RiWalkLine } from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
@@ -408,4 +409,21 @@ export const Playground: StoryObj<typeof Select> = {
       </View>
     );
   },
+};
+
+export const InheritedSizes: Story = {
+  render: () => (
+    <View style={{ gap: 16, padding: 40, alignItems: 'flex-start' }}>
+      {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+        <BloomScope size={size} key={size}>
+          <Select>
+            <SelectTrigger testID={`size-${size}`} label={`Size ${size}`}>
+              <SelectValue placeholder={`Size ${size}`} />
+              <SelectIcon />
+            </SelectTrigger>
+          </Select>
+        </BloomScope>
+      ))}
+    </View>
+  ),
 };

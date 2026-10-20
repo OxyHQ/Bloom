@@ -37,6 +37,14 @@ presentation, unless a change is needed and explicitly agreed. Before
 reworking a family, inspect current main and relevant open changes so another
 agent's improvements are preserved.
 
+When reproducing a product workflow, consult its current official documentation
+and inspect the running interface. Compare supported operations, state changes,
+permissions and persistence as well as appearance. Maintain an explicit
+capability audit; a similar screenshot does not establish functional parity.
+Route reusable UI gaps into Bloom and product behavior into the consumer.
+For example, onboarding belongs in the shared sidebar's public composition
+slots, with the application supplying steps and actions.
+
 ## One composition system
 
 Use `BloomProvider`, `AppShell`, panels, `Screen` and their documented slots for
@@ -89,7 +97,10 @@ numbers across families.
 
 Normal desktop menus should be compact and legible. Use consistent icon,
 label and trailing columns, quiet section labels and deliberate separators.
-Avoid accumulating panel gaps, row margins and separator margins. The shared
+Keep a deliberate shared gap between adjacent action rows, distinct from the
+icon-to-label gap inside each row. The shared scroll-content container and
+groups own that spacing; consumers do not add per-menu gap fixes. Avoid
+accumulating panel gaps, row margins and separator margins. The shared
 recipe must preserve usable touch targets and keyboard focus, rather than
 making the consumer choose smaller controls for desktop and repair them on
 mobile.

@@ -154,5 +154,8 @@ from `neutral-400`/`neutral-500` — the same copy of the ramp stops that put
 chart-card captions at 2.42:1. See
 [Styles → Quiet text](/docs/bloom/main/styles).
 
-
 Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.
+
+## Inherited size
+
+`ReleaseStatusBadge` resolves an explicit `size`, then the nearest `BloomScope`, then its standalone `sm` default before choosing the existing Badge label rung. Inherited `xs` uses `sm`; inherited `lg` uses `md`. Status colors retain their semantic meaning.

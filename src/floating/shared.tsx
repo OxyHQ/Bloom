@@ -1,3 +1,4 @@
+import { useMenuDensity } from './use-menu-density';
 /**
  * The menu ROW itself, and the pieces of its shape that both the row set and
  * BOTH sub-menu implementations need.
@@ -31,7 +32,7 @@
  * same two nodes for the same reason — layout and visuals are one box in the
  * DOM, so a layout class and a visual class cannot land in different places.
  */
-import React from 'react';
+import type React from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
 import {
@@ -71,8 +72,6 @@ const ROW_TRANSITION: WebCssStyle | null =
       }
     : null;
 
-const ROW_LABEL_TYPE = menuType('body-medium');
-
 /**
  * Join class strings, dropping the empty ones.
  *
@@ -110,7 +109,7 @@ export function splitChildren(children: React.ReactNode): {
  * platforms: react-native-web reads only `aria-*` and React Native folds
  * `aria-checked` back into `accessibilityState`, so one prop covers both.
  */
-export type MenuRowRole = 'menuitem' | 'checkbox' | 'radio';
+export type MenuRowRole = 'menuitem' | 'checkbox' | 'radio' | 'button';
 
 export interface MenuRowShellProps {
   role: MenuRowRole;
@@ -198,12 +197,14 @@ export function MenuRowShell({
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const palette = useMenuPalette();
+  const density = useMenuDensity();
   // `MENU_ITEM_INTERACTIVE` + `MENU_ITEM_ACTIVE`: hover, keyboard focus
   // and the current selection all paint the same `dropdown-item-hover-background`.
   const highlighted = !disabled && (hovered || pressed || focused || selected);
 
   const rowClass = cx(
     ROW_CLASS,
+    density.rowClass,
     disabled ? ROW_DISABLED_CLASS : ROW_ENABLED_CLASS,
     disabled && title == null && ROW_DISABLED_DIM_CLASS,
     gutter === 'leading'
@@ -223,7 +224,11 @@ export function MenuRowShell({
 
   return (
     <StyledPressable
-      role={role}
+      role={
+        Platform.OS === 'web' && (role === 'checkbox' || role === 'radio')
+          ? `menuitem${role}`
+          : role
+      }
       // `radio` and `checkbox` are roles BOTH platforms have, so they travel on
       // `accessibilityRole` as well. `menuitem` has no React Native counterpart,
       // so the row announces itself as a button there — which is what `Item` did.
@@ -262,18 +267,30 @@ export function MenuRowShell({
       className={rowClass}
       style={[
         ROW_TRANSITION,
-        { backgroundColor: highlighted ? palette.rowHighlight : 'transparent' },
+        {
+          backgroundColor: highlighted ? palette.rowHighlight : 'transparent',
+          ...(gutter === 'leading' || inset ? { paddingLeft: density.gutter } : null),
+          ...(gutter === 'trailing' ? { paddingRight: density.gutter } : null),
+          ...(density.touch ? { minHeight: 44 } : null),
+        },
         style,
       ]}
       testID={testID}
     >
-      {leading != null ? <StyledView className={ROW_LEADING_CLASS}>{leading}</StyledView> : null}
+      {leading != null ? (
+        <StyledView
+          className={ROW_LEADING_CLASS}
+          style={{ width: density.leadingSize, alignItems: 'center', justifyContent: 'center' }}
+        >
+          {leading}
+        </StyledView>
+      ) : null}
       {title != null ? (
         <StyledText
           numberOfLines={1}
           className={ROW_TEXT_CLASS}
           // `text-body-medium`, in Inter.
-          style={[ROW_LABEL_TYPE, { color: labelColor }]}
+          style={[menuType(density.type), { color: labelColor }]}
         >
           {title}
         </StyledText>

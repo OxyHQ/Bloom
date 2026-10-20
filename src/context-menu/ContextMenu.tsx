@@ -1,3 +1,5 @@
+import { useMenuDensity } from '../floating/use-menu-density';
+import { BloomScope } from '../appearance';
 /**
  * `ContextMenu` — NATIVE. A LONG PRESS opens the same bottom sheet
  * `DropdownMenu` presents, because a phone has no right-click and no cursor to
@@ -85,7 +87,13 @@ export function ContextMenuTrigger({
   );
 }
 
-export function ContextMenuContent({ children, label: labelProp, style }: ContextMenuContentProps) {
+export function ContextMenuContent({
+  children,
+  size,
+  label: labelProp,
+  style,
+}: ContextMenuContentProps) {
+  const density = useMenuDensity(size);
   const { messages } = useMessages(CONTEXT_MENU_MESSAGES);
   const label = labelProp ?? messages.contextMenu;
   const menu = useContextMenu();
@@ -102,9 +110,16 @@ export function ContextMenuContent({ children, label: labelProp, style }: Contex
   );
 
   return (
-    <SheetShell control={control} label={label} onClose={onSheetClose} contentStyle={style}>
-      <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
-    </SheetShell>
+    <BloomScope size={size}>
+      <SheetShell
+        control={control}
+        label={label}
+        onClose={onSheetClose}
+        contentStyle={[{ gap: density.gap }, style]}
+      >
+        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+      </SheetShell>
+    </BloomScope>
   );
 }
 

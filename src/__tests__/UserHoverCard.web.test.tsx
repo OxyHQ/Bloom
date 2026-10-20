@@ -192,12 +192,12 @@ describe('AvatarGroup hover bridge', () => {
 
   /**
    * The bridge: the `View` filling the floating panel (the nearest
-   * fixed-position ancestor of the card's content) — its first child.
+   * fixed-position ancestor of the card's content), including its scroller.
    */
   function bridgeOf(node: HTMLElement): HTMLElement {
     let n: HTMLElement | null = node;
     while (n && getComputedStyle(n).position !== 'fixed') n = n.parentElement;
-    const bridge = n?.firstElementChild;
+    const bridge = n;
     if (!(bridge instanceof HTMLElement)) throw new Error('no bridge inside the panel');
     return bridge;
   }

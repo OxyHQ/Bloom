@@ -1,3 +1,6 @@
+import { useTouchInput } from '../styles/pointer';
+import { BloomScope } from '../appearance';
+import { useMenuDensity } from '../floating/use-menu-density';
 import { useCollapsibleVisibility } from '../collapsible/context';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
@@ -13,14 +16,13 @@ import React, {
   useState,
   type ComponentRef,
 } from 'react';
-import { type ScrollView, StyleSheet, View } from 'react-native';
+import { type ScrollView, StyleSheet, type View } from 'react-native';
 import { ScrollArea } from '../layout/ScrollArea.web';
 
 import {
   MENU_WIDTH,
   SELECT_CHEVRON_SIZE,
   SELECT_ITEM_CLASS,
-  SELECT_ITEM_SIZE_CLASS,
   SELECT_MAX_HEIGHT,
   SELECT_TRIGGER_CLASS,
   SELECT_TRIGGER_POPUP,
@@ -198,7 +200,7 @@ export function Select(props: SelectProps) {
     { size: sizeProp },
     { size: 'md', tone: 'neutral' },
   );
-  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
+  const size = inheritedSize;
   const [requestedOpen, setIsOpen] = useState(false);
   const visible = useCollapsibleVisibility();
   const isOpen = visible && requestedOpen;
@@ -264,6 +266,7 @@ export function SelectTrigger({
 }: SelectTriggerProps) {
   const ctx = useSelectContext();
   const palette = useMenuPalette();
+  const touch = useTouchInput();
   // The trigger IS the select's control — see the native fork.
   const membership = useFieldMembership({
     accessibilityLabel: label,
@@ -277,6 +280,7 @@ export function SelectTrigger({
 
   const t = palette.trigger;
   const fieldStyle: WebCssStyle = {
+    ...(touch ? { minHeight: 44 } : null),
     borderRadius: borderRadius.full,
     '--bloom-select-bg': isDisabled ? t.disabledBackground : t.background,
     '--bloom-select-bg-hover': t.hoverBackground,
@@ -455,6 +459,7 @@ export function SelectIcon({ style }: SelectIconProps) {
 
 export function SelectContent<T>({
   items,
+  size,
   renderItem,
   label: labelProp,
   valueExtractor = defaultItemValueExtractor,
@@ -465,6 +470,7 @@ export function SelectContent<T>({
   const { messages } = useMessages(SELECT_MESSAGES);
   const label = labelProp ?? messages.selectOption;
   const ctx = useSelectContext();
+  const density = useMenuDensity(size);
   const [, setStoredItem] = useContext(ValueStoreContext);
   // Resolve the item behind the value on every change — including while closed,
   // which is what gives the trigger its label on the first paint — and clear it
@@ -497,7 +503,7 @@ export function SelectContent<T>({
     keyboardIntent.current = false;
     const options = rovingItems(listNode, OPTION, { owner: LIST });
     const chosen =
-      options.find((option) => option.getAttribute('aria-checked') === 'true') ?? options[0];
+      options.find((option) => option.getAttribute('aria-selected') === 'true') ?? options[0];
     chosen?.focus({ preventScroll: true });
   }, [isOpen, listNode, focusRequest, keyboardIntent]);
 
@@ -559,7 +565,7 @@ export function SelectContent<T>({
       const node = (
         listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null }
       )?.getScrollableNode?.();
-      const selected = node?.querySelector<HTMLElement>('[aria-checked="true"]');
+      const selected = node?.querySelector<HTMLElement>('[aria-selected="true"]');
       if (!node || !selected) return;
       const top = selected.offsetTop;
       const bottom = top + selected.offsetHeight;
@@ -578,42 +584,45 @@ export function SelectContent<T>({
   // `minWidth` is the TRIGGER's width, which is what makes a select dropdown
   // line up under its field rather than shrink-wrap its longest option.
   return (
-    <FloatingPanel
-      open={ctx.isOpen}
-      anchor={anchor}
-      role="menu"
-      label={label}
-      align="start"
-      sideOffset={SELECT_OFFSET}
-      // `w-[266px]` as a floor, so a narrow trigger still opens the
-      // standard menu width while a wide one keeps lining up under its field.
-      // A number rather than the class: this inline `minWidth` would outrank it.
-      minWidth={
-        width !== undefined
-          ? width
-          : anchor
-            ? Math.max(MENU_WIDTH, anchor.right - anchor.left)
-            : undefined
-      }
-      style={width !== undefined ? { width } : undefined}
-      onDismiss={ctx.close}
-      surface="listbox"
-      className={className}
-    >
-      <ScrollArea
-        ref={attachList}
-        {...({ dataSet: { bloomSelectList: '' } } as Record<string, unknown>)}
-        style={{ maxHeight }}
-        // `flex flex-col gap-1` — the rows sit 4px apart.
-        contentContainerStyle={styles.list}
+    <BloomScope size={size}>
+      <FloatingPanel
+        scroll="external"
+        open={ctx.isOpen}
+        anchor={anchor}
+        role="listbox"
+        label={label}
+        align="start"
+        sideOffset={SELECT_OFFSET}
+        // `w-[266px]` as a floor, so a narrow trigger still opens the
+        // standard menu width while a wide one keeps lining up under its field.
+        // A number rather than the class: this inline `minWidth` would outrank it.
+        minWidth={
+          width !== undefined
+            ? width
+            : anchor
+              ? Math.max(MENU_WIDTH, anchor.right - anchor.left)
+              : undefined
+        }
+        style={width !== undefined ? { width } : undefined}
+        onDismiss={ctx.close}
+        surface="listbox"
+        className={className}
       >
-        {items.map((item, index) => (
-          <React.Fragment key={valueExtractor(item)}>
-            {renderItem(item, index, ctx.value)}
-          </React.Fragment>
-        ))}
-      </ScrollArea>
-    </FloatingPanel>
+        <ScrollArea
+          ref={attachList}
+          {...({ dataSet: { bloomSelectList: '' } } as Record<string, unknown>)}
+          style={{ maxHeight }}
+          // `flex flex-col gap-1` — the rows sit 4px apart.
+          contentContainerStyle={[styles.list, { gap: density.gap }]}
+        >
+          {items.map((item, index) => (
+            <React.Fragment key={valueExtractor(item)}>
+              {renderItem(item, index, ctx.value)}
+            </React.Fragment>
+          ))}
+        </ScrollArea>
+      </FloatingPanel>
+    </BloomScope>
   );
 }
 
@@ -631,6 +640,7 @@ export function SelectItem({
   className,
   style,
 }: SelectItemProps) {
+  const density = useMenuDensity();
   const ctx = useSelectContext();
   const { size } = ctx;
   const palette = useMenuPalette();
@@ -653,16 +663,12 @@ export function SelectItem({
   return (
     <StyledPressable
       ref={ref}
-      accessibilityRole="radio"
+      role="option"
       {...({ dataSet: { bloomSelectOption: '' } } as Record<string, unknown>)}
-      // The native fork has always applied this; web declared `label` and then
-      // dropped it, leaving every option a `role="radio"` with no accessible
-      // name for a screen reader to announce.
+      // The listbox option keeps its own accessible name.
       accessibilityLabel={label}
-      // `aria-checked` is the state ARIA defines for `role="radio"`, and the
-      // only one react-native-web emits — it never reads `accessibilityState`,
-      // so this fork's options announced no selection at all.
-      aria-checked={isSelected}
+      // A web listbox option exposes selected; native keeps its radio/checked model.
+      aria-selected={isSelected}
       disabled={disabled}
       onPress={
         disabled
@@ -680,13 +686,17 @@ export function SelectItem({
       } as Record<string, (() => void) | undefined>)}
       className={cx(
         SELECT_ITEM_CLASS,
-        SELECT_ITEM_SIZE_CLASS[ctx.size],
+        density.rowClass,
         disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         className,
       )}
       style={[
         ROW_TRANSITION,
-        { backgroundColor: highlighted ? palette.rowHighlight : 'transparent' },
+        {
+          backgroundColor: highlighted ? palette.rowHighlight : 'transparent',
+          paddingRight: density.gutter,
+          ...(density.touch ? { minHeight: 44 } : null),
+        },
         style,
       ]}
     >

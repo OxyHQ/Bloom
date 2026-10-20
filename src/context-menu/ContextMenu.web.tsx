@@ -1,3 +1,4 @@
+import { BloomScope } from '../appearance';
 /**
  * `ContextMenu` — WEB. Right-click opens the menu AT THE CURSOR: the anchor is
  * the click point, a zero-area box, which `overlay/dropdown-placement` already
@@ -123,6 +124,8 @@ export function ContextMenuTrigger({
 
 export function ContextMenuContent({
   children,
+  size,
+  maxHeight,
   label: labelProp,
   side,
   align = 'start',
@@ -154,27 +157,30 @@ export function ContextMenuContent({
   });
 
   return (
-    <FloatingPanel
-      panelRef={setPanel}
-      open={menu.open}
-      anchor={menu.anchor}
-      role="menu"
-      surface="menu"
-      label={label}
-      side={side}
-      align={align}
-      sideOffset={sideOffset}
-      alignOffset={alignOffset}
-      dismissible={dismissible}
-      minWidth={minWidth}
-      maxWidth={maxWidth}
-      onDismiss={onDismiss}
-      className={cx(MENU_MIN_WIDTH_CLASS, className)}
-      style={style}
-      testID={testID}
-    >
-      <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
-    </FloatingPanel>
+    <BloomScope size={size}>
+      <FloatingPanel
+        maxHeight={maxHeight}
+        panelRef={setPanel}
+        open={menu.open}
+        anchor={menu.anchor}
+        role="menu"
+        surface="menu"
+        label={label}
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
+        dismissible={dismissible}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        onDismiss={onDismiss}
+        className={cx(MENU_MIN_WIDTH_CLASS, className)}
+        style={style}
+        testID={testID}
+      >
+        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+      </FloatingPanel>
+    </BloomScope>
   );
 }
 

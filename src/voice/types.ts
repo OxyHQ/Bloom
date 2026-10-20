@@ -68,7 +68,7 @@ export interface VoiceControlsProps {
   onTypeInstead?: () => void;
   /** Disables every control. */
   disabled?: boolean;
-  /** Button size. Default `lg`. */
+  /** Explicit size overrides BloomScope; standalone default `lg`. Inherited `xs` uses `sm`. */
   size?: VoiceSize;
   /** Before the controls, at the row's start. */
   leading?: ReactNode;

@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import { useCardFill } from '../card/use-card-fill';
 import { Card } from '../card/Card';
 import { surfaceFillOn } from '../styles/surface-levels';
@@ -53,9 +54,14 @@ import type { ReleaseCardLabels, ReleaseCardProps, ReleaseStatusBadgeProps } fro
 export function ReleaseStatusBadge({
   status,
   label,
-  size = 'sm',
+  size: sizeProp,
   testID,
 }: ReleaseStatusBadgeProps) {
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'sm', tone: 'neutral' },
+  );
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize === 'lg' ? 'md' : inheritedSize;
   const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const { tone, fill } = RELEASE_STATUS_TONES[status];
   return (
