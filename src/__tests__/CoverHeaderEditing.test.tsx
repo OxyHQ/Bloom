@@ -4,8 +4,10 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { CoverHeader, CoverImage, CoverFill, type CoverHeaderProps } from '../cover-header';
 import { BloomImage } from '../image';
+import { Button } from '../button';
+import { Surface } from '../surface';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { coverGeometry, dragCoverPosition } from '../cover-header/geometry';
+import { coverGeometry, dragCoverPosition, coverSourceIdentity } from '../cover-header/geometry';
 import { resolvedStyle } from './support/rendered-style';
 
 const source = { uri: 'https://example.com/cover.jpg', headers: { Authorization: 'test' } };
@@ -188,6 +190,7 @@ it('supports web keyboard steps, bounds, Escape and explicit Enter commit', asyn
     fireEvent(ui.getByTestId('cover-position-editor'), 'keyDown', {
       nativeEvent: { key, shiftKey },
       preventDefault: jest.fn(),
+      stopPropagation: jest.fn(),
     });
   key('ArrowDown', true);
   expect(ui.UNSAFE_getByType(CoverImage).props.position.y).toBe(0.3);
@@ -258,6 +261,9 @@ it.each(['web', 'ios'] as const)('CoverFill draws the same actual gradient on %s
 });
 
 it('preserves an active draft across signed URL renewal with stable asset identity', () => {
+  const first = { uri: 'first.jpg', cacheKey: 'same-asset' };
+  const renewed = { uri: 'renewed.jpg', cacheKey: 'same-asset' };
+  expect(coverSourceIdentity(first)).toBe(coverSourceIdentity(renewed));
   const ui = render(
     wrap(header({ coverSource: { uri: 'https://example.com/first' }, coverSourceKey: 'asset1' })),
   );
@@ -274,4 +280,20 @@ it('preserves an active draft across signed URL renewal with stable asset identi
     wrap(header({ coverSource: { uri: 'https://example.com/other' }, coverSourceKey: 'asset2' })),
   );
   expect(ui.queryByText('Cancel')).toBeNull();
+});
+
+it('owns the standard Change cover action without a second material around buttons', () => {
+  const change = jest.fn();
+  const ui = render(wrap(header({ onChangeCover: change, repositionable: false })));
+  fireEvent.press(ui.getByText('Change cover'));
+  expect(change).toHaveBeenCalledTimes(1);
+  const action = ui.UNSAFE_getByType(Button);
+  expect(action.props).toMatchObject({ appearance: 'subtle', tone: 'neutral' });
+  let ancestor = action.parent;
+  while (ancestor) {
+    expect(ancestor.type).not.toBe(Surface);
+    ancestor = ancestor.parent;
+  }
+  ui.rerender(wrap(header({ repositionable: false })));
+  expect(ui.queryByText('Change cover')).toBeNull();
 });

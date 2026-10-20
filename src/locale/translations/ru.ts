@@ -3203,6 +3203,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
+    changeCover: 'Изменить обложку',
     reposition: 'Изменить положение',
     instruction:
       'Перетащите изображение. Стрелки перемещают, Shift увеличивает шаг, Enter сохраняет, Escape отменяет.',

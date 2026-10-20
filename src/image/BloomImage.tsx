@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Image as NativeImage, type ImageResizeMode } from 'react-native';
 import { loadExpoImage } from './expo-image-module';
 import type { BloomImageContentFit, BloomImageProps } from './types';
@@ -37,6 +38,21 @@ export function BloomImage({
   ...rest
 }: BloomImageProps) {
   const ExpoImage = loadExpoImage();
+  const sourceIdentity = JSON.stringify(rest.source);
+  const lifecycle = useRef({ key: sourceIdentity, revision: 0, mounted: true, probe: 0 });
+  if (lifecycle.current.key !== sourceIdentity) {
+    lifecycle.current.key = sourceIdentity;
+    lifecycle.current.revision += 1;
+  }
+  const sourceRevision = lifecycle.current.revision;
+  const current = () => lifecycle.current.mounted && lifecycle.current.revision === sourceRevision;
+  useEffect(() => {
+    lifecycle.current.mounted = true;
+    return () => {
+      lifecycle.current.mounted = false;
+      lifecycle.current.probe += 1;
+    };
+  }, []);
 
   if (ExpoImage) {
     return (
@@ -79,14 +95,59 @@ export function BloomImage({
                     target?: { naturalWidth?: number; naturalHeight?: number };
                   }
                 ).target;
-              onLoad({
-                width: loaded?.source?.width ?? target?.naturalWidth ?? 0,
-                height: loaded?.source?.height ?? target?.naturalHeight ?? 0,
-              });
+              if (!current()) return;
+              const width = loaded?.source?.width ?? target?.naturalWidth ?? 0;
+              const height = loaded?.source?.height ?? target?.naturalHeight ?? 0;
+              if (width > 0 && height > 0) {
+                lifecycle.current.probe += 1;
+                onLoad({ width, height });
+                return;
+              }
+              // RNW can await image.decode() before forwarding the load Event.
+              // Its target may then be absent. Image.getSize reads the cached
+              // image object itself, without introducing fetch/CORS requirements.
+              const descriptor =
+                typeof source === 'string'
+                  ? { uri: source }
+                  : typeof source === 'number'
+                    ? NativeImage.resolveAssetSource?.(source)
+                    : Array.isArray(source)
+                      ? source[0]
+                      : source;
+              if (!descriptor?.uri) {
+                onLoad({ width: 0, height: 0 });
+                return;
+              }
+              const probe = ++lifecycle.current.probe;
+              const valid = () => current() && lifecycle.current.probe === probe;
+              const success = (width: number, height: number) => {
+                if (valid()) onLoad({ width, height });
+              };
+              const failure = (error: unknown) => {
+                if (!valid()) return;
+                onLoad({ width: 0, height: 0 });
+                onError?.({ error: error instanceof Error ? error.message : String(error) });
+              };
+              try {
+                if (descriptor.headers && typeof NativeImage.getSizeWithHeaders === 'function')
+                  NativeImage.getSizeWithHeaders(
+                    descriptor.uri,
+                    descriptor.headers,
+                    success,
+                    failure,
+                  );
+                else NativeImage.getSize(descriptor.uri, success, failure);
+              } catch (error) {
+                failure(error);
+              }
             }
           : undefined
       }
-      onError={onError ? (event) => onError({ error: String(event.nativeEvent.error) }) : undefined}
+      onError={(event) => {
+        if (!current()) return;
+        lifecycle.current.probe += 1;
+        onError?.({ error: String(event.nativeEvent.error) });
+      }}
     />
   );
 }

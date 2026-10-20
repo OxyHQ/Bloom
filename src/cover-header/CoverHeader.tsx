@@ -33,6 +33,7 @@ function CoverHeaderComponent({
   onCoverPositionCommit,
   onCoverPositionChange,
   actions,
+  onChangeCover,
   labels,
 }: CoverHeaderProps) {
   const theme = useTheme();
@@ -46,6 +47,8 @@ function CoverHeaderComponent({
   const [draft, setDraft] = useState(() => clampPosition(coverPosition));
   const [geometry, setGeometry] = useState<CoverImageGeometry | null>(null);
   const editHost = useRef<ComponentRef<typeof View>>(null);
+  const repositionButton = useRef<ComponentRef<typeof View>>(null);
+  const wasEditing = useRef(false);
   const revision = useRef(0);
   const pendingRef = useRef(false);
   const dragStart = useRef(draft);
@@ -73,7 +76,11 @@ function CoverHeaderComponent({
     };
   }, [sourceKey, enabled]);
   useEffect(() => {
-    if (editing && Platform.OS === 'web') editHost.current?.focus();
+    if (Platform.OS === 'web') {
+      if (editing) editHost.current?.focus();
+      else if (wasEditing.current) repositionButton.current?.focus();
+    }
+    wasEditing.current = editing;
   }, [editing]);
 
   const updateDraft = useCallback(
@@ -176,10 +183,12 @@ function CoverHeaderComponent({
               }
               case 'Escape':
                 event.preventDefault();
+                event.stopPropagation();
                 cancel();
                 break;
               case 'Enter':
                 event.preventDefault();
+                event.stopPropagation();
                 void save();
                 break;
             }
@@ -211,6 +220,7 @@ function CoverHeaderComponent({
             {...webProps}
             testID={testID ? `${testID}-position-editor` : undefined}
             accessible={editing}
+            role={Platform.OS === 'web' && editing ? 'group' : undefined}
             accessibilityRole={
               Platform.OS === 'web' ? undefined : editing ? 'adjustable' : undefined
             }
@@ -276,7 +286,7 @@ function CoverHeaderComponent({
       >
         {children}
       </View>
-      {editing || actions || enabled ? (
+      {editing || actions || enabled || onChangeCover ? (
         <View
           style={[
             { position: 'absolute', top: 0, left: 0, right: 0, height: coverHeight },
@@ -284,11 +294,11 @@ function CoverHeaderComponent({
             { justifyContent: 'flex-end', alignItems: 'flex-end', padding: 12 },
           ]}
         >
-          <Surface radius={12} style={{ padding: 4, gap: 4, maxWidth: '100%' }}>
+          <View style={{ gap: 4, maxWidth: '100%' }}>
             {editing && failed ? (
-              <Text accessibilityRole="alert" style={{ paddingHorizontal: 8 }}>
-                {m.saveError}
-              </Text>
+              <Surface radius={8} style={{ padding: 8 }}>
+                <Text accessibilityRole="alert">{m.saveError}</Text>
+              </Surface>
             ) : null}
             <View
               style={{
@@ -305,6 +315,8 @@ function CoverHeaderComponent({
                     {m.cancel}
                   </Button>
                   <Button
+                    appearance="subtle"
+                    tone="neutral"
                     loading={pending}
                     onPress={() => {
                       void save();
@@ -315,12 +327,18 @@ function CoverHeaderComponent({
                 </>
               ) : (
                 <>
+                  {onChangeCover ? (
+                    <Button appearance="subtle" tone="neutral" onPress={onChangeCover}>
+                      {m.changeCover}
+                    </Button>
+                  ) : null}
                   {actions}
                   {enabled ? (
                     <Button
                       appearance="subtle"
                       tone="neutral"
                       disabled={!canMove}
+                      ref={repositionButton}
                       onPress={() => {
                         if (!canMove) return;
                         revision.current += 1;
@@ -335,7 +353,7 @@ function CoverHeaderComponent({
                 </>
               )}
             </View>
-          </Surface>
+          </View>
         </View>
       ) : null}
     </View>

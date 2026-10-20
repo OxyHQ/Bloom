@@ -2839,6 +2839,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
+    changeCover: 'Kapağı değiştir',
     reposition: 'Yeniden konumlandır',
     instruction:
       'Yeniden konumlandırmak için sürükleyin. Ok tuşlarıyla taşıyın, büyük adımlar için Shift, kaydetmek için Enter, iptal için Escape kullanın.',

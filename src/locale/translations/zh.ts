@@ -2746,6 +2746,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
+    changeCover: '更换封面',
     reposition: '调整位置',
     instruction:
       '拖动以调整位置。使用方向键移动，按 Shift 加大步幅，按 Enter 保存，按 Escape 取消。',

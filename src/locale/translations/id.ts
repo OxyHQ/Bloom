@@ -2867,6 +2867,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
+    changeCover: 'Ganti sampul',
     reposition: 'Ubah posisi',
     instruction:
       'Seret untuk mengubah posisi. Gunakan tombol panah untuk bergerak, Shift untuk langkah lebih besar, Enter untuk menyimpan, atau Escape untuk membatalkan.',

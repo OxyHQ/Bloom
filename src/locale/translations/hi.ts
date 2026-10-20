@@ -2806,6 +2806,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
+    changeCover: 'कवर बदलें',
     reposition: 'स्थान बदलें',
     instruction:
       'स्थान बदलने के लिए खींचें। तीर कुंजियों से चलाएँ, बड़े चरणों के लिए Shift, सहेजने के लिए Enter या रद्द करने के लिए Escape दबाएँ।',

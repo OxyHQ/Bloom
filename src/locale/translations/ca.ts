@@ -2879,6 +2879,7 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
 
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
+    changeCover: 'Canvia la portada',
     reposition: 'Reposiciona',
     instruction:
       'Arrossega per reposicionar. Fes servir les fletxes per moure, Maj per passos més grans, Retorn per desar o Esc per cancel·lar.',
