@@ -63,9 +63,8 @@ const CAST_EXEMPTIONS = [
   // The same, for the checkbox's focus ring.
   'checkbox/Checkbox.tsx',
   // The same, for the button group items' inset focus ring.
-  // The same `dataSet` focus-ring hook; breadcrumb and pagination also pass the
+  // The same `dataSet` focus-ring hook; pagination also passes the
   // web-only `href` / `aria-current`, divider the web-only `aria-orientation`.
-  'breadcrumb/Breadcrumb.tsx',
   'pagination/Pagination.tsx',
   'divider/Divider.tsx',
   'usage-card/UsageCard.tsx',

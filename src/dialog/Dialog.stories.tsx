@@ -227,10 +227,7 @@ export const ResponsiveAccessibility: Story = {
           placement={{ base: 'bottom', md: 'center' }}
         >
           <TextField>
-            <TextFieldInput
-              label="Draft preference"
-              placeholder="Type a draft, then resize"
-            />
+            <TextFieldInput label="Draft preference" placeholder="Type a draft, then resize" />
           </TextField>
           <Button onPress={() => setOpen(false)}>Save preferences</Button>
         </Dialog>
