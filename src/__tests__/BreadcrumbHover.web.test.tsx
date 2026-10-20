@@ -89,7 +89,7 @@ function fixture({
   );
 }
 it('uses delayed hover on the same primary control, with lazy state and one current link', () => {
-  const content = jest.fn((_state: { open: boolean }) => (
+  const content = jest.fn(({ open }: { open: boolean }) => (
     <DropdownMenuItem href="#current" current>
       {open ? 'Current destination' : 'Waiting'}
     </DropdownMenuItem>
