@@ -12,7 +12,6 @@ import { SidebarRailItem } from './SidebarRailItem';
 import type { SidebarNavItem, SidebarProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
-import { IS_WEB } from '../styles/platform';
 import { sidebarItemAction } from './use-sidebar-shortcuts';
 
 /** The rail's fixed width. */
@@ -124,7 +123,6 @@ export function SidebarRail({
           <SidebarScrollArea
             fadeColor={palette.flat}
             testID={testID ? `${testID}-scroll` : 'sidebar-rail-scroll'}
-            {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
             style={
               contentAlignment === 'center'
                 ? { flexGrow: 0, flexShrink: 1, minHeight: 0 }
@@ -139,7 +137,6 @@ export function SidebarRail({
               paddingBottom: 24,
               gap: 8,
             }}
-            showsVerticalScrollIndicator={false}
           >
             <View role="navigation" style={{ width: '100%', gap: 8 }}>
               {items.map(renderItem)}

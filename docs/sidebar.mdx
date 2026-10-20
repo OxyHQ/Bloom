@@ -235,7 +235,7 @@ radios. See [Compose application layouts](/docs/bloom/main/compose-layouts).
 />
 ```
 
-- The header, collapse control, mode switcher and quick search stay fixed; only destination rows scroll (hidden scrollbar). With a `tree`: the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
+- The header, collapse control, mode switcher and quick search stay fixed; only destination rows scroll (the shared overlay scrollbar on web, system indicator on native). With a `tree`: the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
 - A folder row is p 8 with a 20px folder glyph (open while expanded) and the label; its rows are py 5 / pr 8 / pl 36 with the label and a `meta` chip (radius 4, background-tertiary, px 4 / py 1, caption-1-medium), background-secondary-hover while selected or hovered. A curved 1px icon-quaternary connector drops from the folder glyph into each row. The rows' height and opacity ease open and shut together over 300ms; collapsed rows leave the tab order.
 - Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts every section.
 - The tree hides while collapsed.
@@ -487,7 +487,8 @@ height.
 
 ### Scroll overflow cues
 
-Each internal scroll region paints a 40px fade in its own surface color at an
+Panel and rail destinations use the shared `ScrollSurface` and its isolated metrics.
+Each region paints a 40px fade in its own surface color at an
 edge only when more content exists beyond it. The initial content and viewport
 measurements reveal the bottom cue before the first scroll. At the top there is
 no top fade; at the bottom there is no bottom fade. Content that fits has neither.

@@ -17,15 +17,18 @@ import { resolvedStyle } from './support/rendered-style';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 
-function renderIn(ui: React.ReactElement) {
-  return render(
+function frame(ui: React.ReactElement) {
+  return (
     <BloomThemeProvider mode="light" colorPreset="teal">
       <PortalProvider>
         {ui}
         <PortalOutlet />
       </PortalProvider>
-    </BloomThemeProvider>,
+    </BloomThemeProvider>
   );
+}
+function renderIn(ui: React.ReactElement) {
+  return render(frame(ui));
 }
 function setWidth(width: number) {
   jest
@@ -167,15 +170,19 @@ describe('web', () => {
 
   it('matches scroll="document" exactly', () => {
     setWidth(1440);
-    const ui = (scroll: 'page' | 'document') =>
-      renderIn(
-        <AppShell testID="shell" variant="feed" scroll={scroll} panels sidebar={{ items: NAV }}>
-          <AppShellPanel>
-            <Route />
-          </AppShellPanel>
-        </AppShell>,
-      ).toJSON();
-    expect(JSON.stringify(ui('page'))).toBe(JSON.stringify(ui('document')));
+    const ui = (scroll: 'page' | 'document') => (
+      <AppShell testID="shell" variant="feed" scroll={scroll} panels sidebar={{ items: NAV }}>
+        <AppShellPanel>
+          <Route />
+        </AppShellPanel>
+      </AppShell>
+    );
+    // Reuse the tree so decorative SVG useId values stay stable. Exact equality
+    // still verifies every layout/scroll prop and detects unintended remounts.
+    const screen = renderIn(ui('page'));
+    const page = JSON.stringify(screen.toJSON());
+    screen.rerender(frame(ui('document')));
+    expect(JSON.stringify(screen.toJSON())).toBe(page);
   });
 
   /**
