@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 import type React from 'react';
-import { act } from 'react';
+import { act, useState, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb/index.web';
@@ -284,6 +284,46 @@ it('returns from the primary popup to ArrowDown navigation after Escape', () => 
   expect(document.activeElement).toBe(control());
   key(control(), 'ArrowDown');
   advance();
+  expect(document.querySelector('[role="menu"]')).not.toBeNull();
+  expect(document.activeElement?.getAttribute('role')).toBe('menuitem');
+});
+
+it('waits for lazy menu rows before consuming keyboard focus intent', async () => {
+  function DelayedRows() {
+    const [ready, setReady] = useState(false);
+    useEffect(() => {
+      const timer = setTimeout(() => setReady(true), 800);
+      return () => clearTimeout(timer);
+    }, []);
+    return ready ? (
+      <DropdownMenuItem href="#lazy">Loaded destination</DropdownMenuItem>
+    ) : (
+      <span>Loading destinations</span>
+    );
+  }
+  mount(
+    <Breadcrumb>
+      <BreadcrumbItem current testID="current" hoverMenu={{ content: <DelayedRows /> }}>
+        Page
+      </BreadcrumbItem>
+    </Breadcrumb>,
+  );
+  act(() => control().focus());
+  key(control(), 'ArrowDown');
+  await act(async () => {
+    jest.advanceTimersByTime(1000);
+    await Promise.resolve();
+  });
+  expect(document.activeElement?.getAttribute('href')).toBe('#lazy');
+});
+
+it('keyboard navigation cancels a pending pointer-leave close even when already open', () => {
+  mount(fixture());
+  pointer(anchor(), 'pointerenter');
+  advance();
+  pointer(anchor(), 'pointerleave');
+  key(control(), 'ArrowDown');
+  advance(1000);
   expect(document.querySelector('[role="menu"]')).not.toBeNull();
   expect(document.activeElement?.getAttribute('role')).toBe('menuitem');
 });

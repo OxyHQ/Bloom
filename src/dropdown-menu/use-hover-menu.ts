@@ -39,6 +39,7 @@ export function useHoverMenuTrigger(
       if (primaryAction) hover.dismiss();
     };
     const key = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') hover.hold();
       if (primaryAction && (event.key === 'Enter' || event.key === ' ')) hover.dismiss();
     };
     node.addEventListener('pointerenter', enter);

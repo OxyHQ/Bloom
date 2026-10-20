@@ -257,6 +257,10 @@ nesting interactive controls. Primary activation cancels pending/open hover and
 its open popup suppresses further hover. Escape returns focus without restarting
 the dismissed preview. Default click activation is unchanged.
 
+Keyboard opening retains its requested first/last row while lazy content loads;
+arrival of an enabled row completes focus, and dismissal cancels the wait. Entering
+with arrows also cancels a pending pointer-leave close.
+
 All shared menu items accept `current` for a current navigation destination. It
 uses existing selected-row paint and sets `aria-current="page"` on the real host;
 combine it with `href` for native and web navigation.
