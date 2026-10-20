@@ -528,15 +528,19 @@ it('adapts native actions to the measured panel width rather than the window see
     <ReactNative.Text>{compact ? 'Compact' : 'Full'}</ReactNative.Text>
   ));
   const screen = renderBar({ title: 'Page', actions });
-  expect(actions).toHaveBeenLastCalledWith({ compact: false });
+  expect(actions).toHaveBeenLastCalledWith({ compact: false, spacious: false });
   fireEvent(screen.getByTestId('h'), 'layout', {
     nativeEvent: { layout: { width: 639, height: 56 } },
   });
-  expect(actions).toHaveBeenLastCalledWith({ compact: true });
+  expect(actions).toHaveBeenLastCalledWith({ compact: true, spacious: false });
   fireEvent(screen.getByTestId('h'), 'layout', {
     nativeEvent: { layout: { width: 640, height: 56 } },
   });
-  expect(actions).toHaveBeenLastCalledWith({ compact: false });
+  expect(actions).toHaveBeenLastCalledWith({ compact: false, spacious: false });
+  fireEvent(screen.getByTestId('h'), 'layout', {
+    nativeEvent: { layout: { width: 1280, height: 56 } },
+  });
+  expect(actions).toHaveBeenLastCalledWith({ compact: false, spacious: true });
 });
 
 it('keeps navigation chrome compact and native actions touch-sized', () => {
