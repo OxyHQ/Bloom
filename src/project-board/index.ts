@@ -1,5 +1,9 @@
 export { ProjectBoard } from './ProjectBoard';
+export { Board } from './Board';
 export type {
+  BoardColumn,
+  BoardMove,
+  BoardProps,
   BoardSort,
   NewProjectTicket,
   ProjectBoardProps,

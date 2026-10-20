@@ -4,7 +4,11 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { ProjectBoard } from './ProjectBoard.web';
+export { Board } from './Board.web';
 export type {
+  BoardColumn,
+  BoardMove,
+  BoardProps,
   BoardSort,
   NewProjectTicket,
   ProjectBoardProps,

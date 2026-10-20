@@ -2,6 +2,38 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { TokensChartCardProps } from '../chart-cards/TokensChartCard';
 
+/** Items remain opaque: the product owns its schema, grouping and persistence. */
+export interface BoardColumn<Item> {
+  id: string;
+  title: string;
+  items: readonly Item[];
+}
+
+export interface BoardMove {
+  itemId: string;
+  fromColumnId: string;
+  toColumnId: string;
+}
+
+export interface BoardProps<Item> {
+  columns: readonly BoardColumn<Item>[];
+  getItemId: (item: Item) => string;
+  renderCard: (item: Item, column: BoardColumn<Item>, state: { isDragging: boolean }) => ReactNode;
+  renderColumnHeader?: (column: BoardColumn<Item>, state: { isDropTarget: boolean }) => ReactNode;
+  renderColumnFooter?: (column: BoardColumn<Item>) => ReactNode;
+  renderEmptyColumn?: (column: BoardColumn<Item>) => ReactNode;
+  /** Request only: update columns after accepting the move. No internal data copy. */
+  onMove?: (move: BoardMove) => void;
+  /** Disables pointer moves. Also disable mutation actions in supplied card slots. */
+  readOnly?: boolean;
+  columnWidth?: number;
+  columnStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
+  className?: string;
+  accessibilityLabel?: string;
+  testID?: string;
+}
+
 export type TicketSubtask = { id: string; title: string; done: boolean };
 export type TicketComment = {
   id: string;
