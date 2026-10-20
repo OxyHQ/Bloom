@@ -995,7 +995,6 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 <SidebarScrollArea
                   fadeColor={publishedFill ?? parentFill}
                   testID={`${testID ?? 'sidebar'}-scroll`}
-                  {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
                   style={{
                     marginTop: -headerOverlap,
                     marginBottom: -8,
@@ -1012,7 +1011,6 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                     paddingRight: 8,
                     gap: hasSections ? 24 : 0,
                   }}
-                  showsVerticalScrollIndicator={false}
                   ref={scrollRef}
                   onScroll={handleScroll}
                 >

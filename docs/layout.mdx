@@ -30,6 +30,20 @@ scroller never updates an enclosing Screen's scroll metrics. Edge opacity uses
 shared values rather than per-scroll React state. Use Screen for a complete
 panel with header/footer/restoration; use ScrollSurface for a nested region.
 
+`hostStyle` sizes the outer host alongside `className`. Existing `style` continues
+to size the inner ScrollArea, whose default remains `height: '100%'`; pass a flex
+style explicitly for a region that should shrink to fit its available space.
+`fadeColor` overrides the semantic backing with the actual parent-composited fill
+(including alpha), and `fadeHeight` sets the edge depth (24px by default).
+Unmeasured content, content that fits, and subpixel overflow produce no cue.
+The shared metrics update both edges when content or viewport measurements change;
+the decorative layers ignore input and accessibility.
+
+Sidebar's panel and rail use this same surface with 40px edges. They preserve one
+scrolling destination region, the actual ScrollView ref for tree drag auto-scroll,
+and fixed header/footer controls. Web uses the shared overlay scrollbar; native
+keeps the system indicator.
+
 The legacy `chatId` prop has no effect and is deprecated. Persistent scroll
 position belongs to the Screen/restoration contract.
 

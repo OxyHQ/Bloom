@@ -63,6 +63,12 @@ export interface ResizeHandleProps {
 
 /** A self-contained scroll viewport with shared scroll-edge effects. */
 export interface ScrollSurfaceProps extends ScrollAreaProps {
+  /** Layout of the outer host. `style` continues to size its inner ScrollArea. */
+  hostStyle?: StyleProp<ViewStyle>;
+  /** Actual backing fill when the semantic surface is composited by a parent. */
+  fadeColor?: string;
+  /** Depth of each scroll-edge fade, in pixels. Defaults to 24. */
+  fadeHeight?: number;
   contentClassName?: string;
   surface?: 'primary' | 'secondary' | 'full';
   scrollRef?: Ref<ComponentRef<typeof ScrollView>>;
