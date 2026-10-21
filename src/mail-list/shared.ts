@@ -480,34 +480,32 @@ ${FOCUSABLE}:focus-visible {
   outline: 2px solid var(--bloom-mail-ring, currentColor);
   outline-offset: -2px;
 }
-${ROW}:hover,
-${ROW}:focus-within {
+${ROW}:has(:focus-visible) {
   background-color: var(--bloom-mail-hover, transparent);
-}
-${ROW}[data-selected="true"],
-${ROW}[data-selected="true"]:hover {
-  background-color: var(--bloom-mail-selected, transparent);
 }
 ${RAIL} {
   display: none;
 }
-${ROW}:hover ${RAIL},
-${ROW}:focus-within ${RAIL} {
+${ROW}:has(:focus-visible) ${RAIL} {
   display: flex;
 }
-${ROW}:hover ${METADATA},
-${ROW}:focus-within ${METADATA} {
+${ROW}:has(:focus-visible) ${METADATA} {
   display: none;
 }
-@media (hover: none) {
-  ${ROW}:hover ${RAIL},
-  ${ROW}:focus-within ${RAIL} {
-    display: none;
+@media (hover: hover) {
+  ${ROW}:hover {
+    background-color: var(--bloom-mail-hover, transparent);
   }
-  ${ROW}:hover ${METADATA},
-  ${ROW}:focus-within ${METADATA} {
+  ${ROW}:hover ${RAIL} {
     display: flex;
   }
+  ${ROW}:hover ${METADATA} {
+    display: none;
+  }
+}
+${ROW}[data-selected="true"],
+${ROW}[data-selected="true"]:hover {
+  background-color: var(--bloom-mail-selected, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
   ${RAIL} {

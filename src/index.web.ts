@@ -2223,3 +2223,5 @@ export * from './viewport/index.web';
 export * from './collapsible/index.web';
 
 export * from './panel-routing';
+
+export * from './concentric';

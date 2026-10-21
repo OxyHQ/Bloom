@@ -56,7 +56,7 @@ declare const require: (moduleName: string) => unknown;
  * record produced by `buildScopeVars`.
  */
 export type VariableContextProviderComponent = React.ComponentType<{
-  value: Record<string, string>;
+  value: Record<string, string | number>;
   children: React.ReactNode;
 }>;
 
@@ -68,6 +68,7 @@ export type VariableContextProviderComponent = React.ComponentType<{
 interface NativeWindVarsModule {
   vars: (record: Record<string, string>) => StyleProp<ViewStyle>;
   VariableContextProvider?: VariableContextProviderComponent;
+  useNativeVariable?: (name: string) => unknown;
 }
 
 /** `undefined` until the first load attempt, then the module or `null`. */
@@ -154,18 +155,21 @@ export function buildScopeVars(
  * (`usesVariables`/`variables`). A plain `<View>` with no `className` drops the
  * vars silently, so the subtree renders without the preset palette.
  */
-export function getVariableContextProvider(): VariableContextProviderComponent | null {
+export function getVariableContextProvider(
+  warnIfUnavailable = true,
+): VariableContextProviderComponent | null {
   if (Platform.OS === 'web') return null;
   const module = loadNativeWindVars();
   if (!module) {
-    warnScopeInert('the optional peer `nativewind` could not be loaded.');
+    if (warnIfUnavailable) warnScopeInert('the optional peer `nativewind` could not be loaded.');
     return null;
   }
   if (typeof module.VariableContextProvider !== 'function') {
-    warnScopeInert(
-      'the installed `nativewind` exports no `VariableContextProvider` (the ' +
-        'NativeWind 5 / react-native-css@3 API this needs).',
-    );
+    if (warnIfUnavailable)
+      warnScopeInert(
+        'the installed `nativewind` exports no `VariableContextProvider` (the ' +
+          'NativeWind 5 / react-native-css@3 API this needs).',
+      );
     return null;
   }
   return module.VariableContextProvider;
@@ -196,3 +200,10 @@ export function buildNativePresetStyle(
   }
   return module.vars(buildScopeVars(colorPreset, mode));
 }
+
+/** Resolve the optional consumer runtime's hook; the fallback keeps inline geometry usable. */
+export function getNativeVariableHook(): (name: string) => unknown {
+  if (Platform.OS === 'web') return noNativeVariable;
+  return loadNativeWindVars()?.useNativeVariable ?? noNativeVariable;
+}
+const noNativeVariable = (_name: string): unknown => undefined;

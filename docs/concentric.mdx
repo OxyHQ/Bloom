@@ -1,0 +1,77 @@
+# Concentric corners
+
+`ConcentricView` shares rounded geometry with nested surfaces. A concentric child
+subtracts the surrounding padding, border and its own margin from the parent
+radius, clamping each corner at zero. Unequal edges use the smaller of the two
+adjacent gaps. Fixed radii remain explicit choices.
+
+```tsx
+import { ConcentricView } from '@oxy.so/bloom/concentric';
+import { Surface } from '@oxy.so/bloom/surface';
+import { Card, CardBody } from '@oxy.so/bloom/card';
+
+<Surface radius={32} style={{ padding: 8, borderWidth: 2 }}>
+  <Card radius="concentric" border="none">
+    <CardBody>
+      <ConcentricView radius="concentric" style={{ height: 80 }} />
+    </CardBody>
+  </Card>
+</Surface>
+```
+
+Surface and Card publish their actual geometry. CardHeader, CardBody and
+CardFooter also publish their padding. For other layout wrappers, use
+ConcentricView: omitting `radius` carries the outer geometry through and adds
+the wrapper's padding and border. Multiple wrappers accumulate. A fixed radius
+starts a new chain; `reset` discards the inherited chain for its subtree.
+
+## NativeWind and Tailwind
+
+Import Bloom's generated `@oxy.so/bloom/design-tokens/theme.css` in the existing
+Tailwind v4 stylesheet. No additional Tailwind plugin or dependency is needed.
+Native classes require NativeWind 5, as do Bloom's other scoped CSS variables.
+
+```tsx
+<ConcentricView className="rounded-[32px] p-3 md:p-5 border-2">
+  <ConcentricView className="p-1">
+    <Card className="rounded-concentric m-1" border="none" />
+  </ConcentricView>
+</ConcentricView>
+```
+
+`rounded-concentric` and `radius="concentric"` both include the owner's margin.
+Corner variants include `rounded-t-concentric`, physical corners (`tl`, `tr`,
+`bl`, `br`) and logical edges/corners (`s`, `e`, `ss`, `se`, `es`, `ee`). Logical
+padding, margins and corners follow the application direction. Normal numeric,
+spacing-token and arbitrary-length padding, margin, border and radius utilities
+publish the corresponding geometry; responsive variants update on web without
+measuring DOM nodes. Negative margins reduce the gap.
+
+A plain NativeWind View can consume `rounded-concentric` as a leaf. Use a Bloom
+owner when that leaf has its own margin or padded descendants: plain Views do
+not publish geometry. Arbitrary custom CSS and unwrapped layout ancestors are
+not inspected. Explicit `radius` takes precedence over utility classes.
+
+## Scope
+
+The calculation models circular corners in normal nested layout. It does not
+infer absolute-positioned offsets, sibling placement, transforms or elliptical
+radii. Numeric React Native styles work on both platforms; web-only length
+expressions remain web-only. A pill radius of 9999 or greater stays a pill.
+Existing fixed Card/Surface radii are unchanged unless an automatic radius is
+requested. Concentric surfaces use circular geometry; fixed surfaces retain
+their existing curve policy.
+
+Native geometry resolves to numbers before paint. Web owners publish scoped CSS
+expressions, so responsive utilities can resolve in the browser without a
+finite ancestor-selector ladder. The exported `resolveConcentricCorners`
+function exposes the same finite numeric calculation for custom geometry owners.
+
+## Verification
+
+`ConcentricNative.test.tsx` compiles the shipped Tailwind CSS and runs the real
+native CSS runtime. It covers owner class/prop parity, positive and negative
+margins, accumulated wrappers, reset, logical corners, RTL, pills and actual
+Surface/Card adoption. The Concentric story covers matching web layouts,
+responsive padding and paint rounding. Physical-device rendering remains a
+separate integration check.

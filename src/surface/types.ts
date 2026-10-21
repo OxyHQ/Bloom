@@ -7,7 +7,7 @@ export interface SurfaceProps extends Omit<ViewProps, 'style' | 'children'> {
   /** Tint source. Opaque colours use 90% opacity; supplied alpha is preserved. */
   fill?: string;
   /** Radius shared by host and paint. Explicit prop wins over style.borderRadius, then default 20. */
-  radius?: number;
+  radius?: number | 'concentric';
   /** Platform-adaptive corners shared by the host and material. */
   cornerCurve?: CornerCurve;
   style?: StyleProp<ViewStyle>;

@@ -1,6 +1,9 @@
+import { ConcentricProvider } from '../concentric/ConcentricProvider';
+import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
 import { resolveSurfaceGeometry } from './resolve-surface-geometry';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { forwardRef, memo } from 'react';
+import type React from 'react';
+import { forwardRef, memo } from 'react';
 import type { ComponentRef } from 'react';
 import { styled } from 'react-native-css';
 import { Platform, StyleSheet, type View } from 'react-native';
@@ -29,7 +32,34 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     ref,
   ) {
     const resolvedStyle = StyleSheet.flatten(style);
-    const geometry = resolveSurfaceGeometry(radius, style, borderRadius.xl, cornerCurve);
+    const baseGeometry = resolveSurfaceGeometry(
+      radius === 'concentric' ? undefined : radius,
+      style,
+      borderRadius.xl,
+      cornerCurve,
+    );
+    const concentric = useConcentricGeometry({
+      allowClassRadius: radius === undefined,
+      webClasses: Boolean(className) && resolvedStyle?.borderRadius === undefined,
+      radius:
+        radius === 'concentric'
+          ? 'concentric'
+          : typeof baseGeometry.radius === 'number'
+            ? baseGeometry.radius
+            : undefined,
+      style: resolvedStyle ?? undefined,
+    });
+    const geometry =
+      radius === 'concentric' || concentric.hasClassRadius
+        ? {
+            radius: undefined,
+            shape: {
+              radius: concentric.radii,
+              curve: radius === 'concentric' ? ('round' as const) : cornerCurve,
+            },
+            style: concentric.radiusStyle,
+          }
+        : baseGeometry;
 
     const override = fill ?? resolvedStyle?.backgroundColor;
     const material = useResolvedSurface({
@@ -45,14 +75,26 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
         style={[
           { position: 'relative' },
           style,
-          { backgroundColor: 'transparent', ...material.vars, ...geometry.style },
+          {
+            backgroundColor: 'transparent',
+            ...material.vars,
+            ...geometry.style,
+            ...concentric.variables,
+          },
         ]}
       >
         {material.painted ? (
-          <SurfacePaint fill={material.paintFill} radius={geometry.radius} shape={geometry.shape} />
+          <SurfacePaint
+            fill={material.paintFill}
+            radius={geometry.radius}
+            shape={geometry.shape}
+            geometryStyle={geometry.style}
+          />
         ) : null}
         <SurfaceLevelProvider level={material.level} fill={material.publishedFill}>
-          {children}
+          <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
+            {children}
+          </ConcentricProvider>
         </SurfaceLevelProvider>
       </StyledView>
     );

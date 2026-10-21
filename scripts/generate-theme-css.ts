@@ -22,6 +22,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { bloomThemeBlock } from '../src/design-tokens/theme-css';
+import { concentricCss } from '../src/concentric/css';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, '..');
@@ -36,7 +37,7 @@ const HEADER = [
   ' */',
 ].join('\n');
 
-const css = `${HEADER}\n\n${bloomThemeBlock()}\n`;
+const css = `${HEADER}\n\n${bloomThemeBlock()}\n\n${concentricCss()}\n`;
 
 writeFileSync(OUT_PATH, css);
 console.log(`[generate-theme-css] wrote ${relative(REPO_ROOT, OUT_PATH)} (${css.length} bytes)`);

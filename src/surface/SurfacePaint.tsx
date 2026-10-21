@@ -1,6 +1,6 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { surfaceStyle } from '../shapes/surface-style';
-import type { SurfaceShape } from '../shapes/corner-types';
+import type { SurfaceShape, SurfaceStyle } from '../shapes/corner-types';
 import React, { memo, useEffect } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
@@ -28,6 +28,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   fill,
   radius,
   shape,
+  geometryStyle,
   direction = 'ltr',
   sheen = true,
   testID,
@@ -40,10 +41,13 @@ export const SurfacePaint = memo(function SurfacePaint({
   /** Same policy as the host; radius can remain owned by an animated host. */
   shape?: SurfaceShape;
   direction?: 'ltr' | 'rtl';
+  /** Resolved geometry shared with a concentric host, including web expressions. */
+  geometryStyle?: SurfaceStyle;
 }) {
   const geometry = {
     ...(radius === undefined ? {} : { borderRadius: radius }),
     ...surfaceStyle(shape ?? { curve: 'round' }, direction),
+    ...geometryStyle,
   };
   const theme = useTheme();
   const optics = resolveSurfaceOptics(theme.isDark);
