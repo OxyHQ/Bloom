@@ -873,3 +873,14 @@ export const AnchoredSuggestions: Story = {
     );
   },
 };
+
+/** The bounded grid recalculates complete columns while retaining one scroll owner. */
+export const EmojiAutoColumns: Story = {
+  render: function EmojiAutoColumns() {
+    return (
+      <View style={{ width: '100%', maxWidth: 600 }}>
+        <EmojiPicker columns="auto" groups={EMOJI} testID="auto-picker" />
+      </View>
+    );
+  },
+};

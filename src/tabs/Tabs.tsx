@@ -16,7 +16,7 @@ import {
 import {
   View,
   Pressable,
-  ScrollView,
+  type ScrollView,
   StyleSheet,
   type LayoutRectangle,
   type TextStyle,
@@ -879,6 +879,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
 const TabComponent: React.FC<TabsTriggerProps> = ({
   value,
   label,
+  iconOnly = false,
   leading,
   leadingIcon: LeadingIcon,
   count,
@@ -1144,13 +1145,15 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
       {hasTrailing ? null : hoverLayer}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: geometry.labelGap }}>
         {renderedIcon}
-        <Text
-          {...webDataSet({ bloomTabsLabel: '' })}
-          numberOfLines={1}
-          style={[labelTextStyle, textStyle]}
-        >
-          {label}
-        </Text>
+        {iconOnly && renderedIcon ? null : (
+          <Text
+            {...webDataSet({ bloomTabsLabel: '' })}
+            numberOfLines={1}
+            style={[labelTextStyle, textStyle]}
+          >
+            {label}
+          </Text>
+        )}
       </View>
       {showCount ? (
         <View

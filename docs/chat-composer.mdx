@@ -299,6 +299,25 @@ the dialog. This makes the dialog the single scroll owner at short viewport
 heights and while the keyboard is open. Flow mode renders its current section
 without virtualization; keep the default list for large standalone catalogs.
 
+### Emoji picker sizing and controls
+
+`size` inherits the nearest `BloomScope`, then normal `md`; an explicit value
+wins. Emoji cells use shared Button geometry (xs24, sm32, md36, lg44), with a
+44 px minimum for native and coarse pointers. Search and tone actions use
+TextFieldInput and Button. Category and custom-tab navigation use actual Tabs,
+with their existing variant geometry; category labels remain accessible while
+only icons are drawn. Tabs do not yet inherit the size scale.
+
+In the bounded virtualized list, `columns="auto"` fits complete cells to the
+measured body width and updates exact row offsets on resize or input-device
+changes. Numeric values are sanitized to at least one. Flow mode always wraps
+intrinsically, including when `columns` is omitted or numeric: it does not wait
+for measurement and ignores both `columns` and `height`.
+
+`skinToneLabel(index)` customizes the accessible name of each tone (0–5).
+The tone row wraps in narrow containers; selection and callbacks remain shared
+between bounded and embedded modes.
+
 ### Suggestions owned by a typing field
 
 `SuggestionList` is the same input-owned list for commands, mentions and emoji

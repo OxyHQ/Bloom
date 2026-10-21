@@ -85,8 +85,10 @@ export interface TabsProps {
 export interface TabsTriggerProps {
   /** Unique value identifying this tab. */
   value: string;
-  /** Tab label text. */
+  /** Tab label text, retained as the accessible name in icon-only presentation. */
   label: string;
+  /** Hide the visible label when an icon is supplied; keep the same tab interaction. */
+  iconOnly?: boolean;
   /**
    * A pre-rendered node before the label. The caller sizes and colours it; prefer
    * {@link TabsTriggerProps.leadingIcon}, which follows the selection.

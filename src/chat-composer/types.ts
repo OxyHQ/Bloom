@@ -447,6 +447,10 @@ export interface EmojiPickerProps extends PartProps {
   skinTone?: number;
   defaultSkinTone?: number;
   onSkinToneChange?: (tone: number) => void;
+  /** Accessible name for each tone, index 0–5. */
+  skinToneLabel?: (tone: number) => string;
+  /** Cell and field size: explicit prop, nearest BloomScope, then md. */
+  size?: import('../appearance').BloomSize;
   /** Reuse the enclosing surface and its palette instead of painting another panel. */
   embedded?: boolean;
   /**
@@ -455,8 +459,8 @@ export interface EmojiPickerProps extends PartProps {
    * Search still spans all groups; custom tabs also take their natural height.
    */
   scrollable?: boolean;
-  /** Columns in the virtualized grid. Default `8`; flow mode wraps to available width. */
-  columns?: number;
+  /** Columns in the virtualized grid. Default `8`; auto fits whole cells to measured width. Ignored in flow mode, which always wraps intrinsically. */
+  columns?: number | 'auto';
   /** Height of the virtualized body. Default `288`; ignored when scrollable is false. */
   height?: number;
   /** Extra top-level tabs (stickers, GIFs). */
