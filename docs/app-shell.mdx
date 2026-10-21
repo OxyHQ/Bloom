@@ -1227,6 +1227,13 @@ CSS states with lazy mounting, inert/accessibility and navigation effects. Point
 and keyboard resizing may read the current boxes during interaction. Existing
 intrinsic measurements still account for bottom chrome and tall sticky panels.
 Native and browsers without container-query support use the shared native resolver.
+On the server, where no viewport exists, the shell renders its active eligible
+panel at the available width (or the first eligible panel when no active panel
+is selected). The same compact snapshot is used for the first hydration render;
+container queries take over after hydration. This keeps content readable with
+JavaScript disabled and avoids server/client navigation-tree mismatches. A
+client-only mount uses its actual viewport immediately. The host still owns the
+available height for bounded layouts; document layouts retain natural height.
 The `verify-css-panel-layout.mjs` browser gate pauses application JavaScript and
 verifies that width changes still update panel geometry and framing.
 

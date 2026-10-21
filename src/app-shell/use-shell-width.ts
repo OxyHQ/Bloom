@@ -1,5 +1,5 @@
 import type { LayoutChangeEvent } from 'react-native';
-import { useWindowDimensions } from 'react-native';
+import { useShellViewport } from './use-shell-viewport';
 
 import { useContainerWidth } from '../hooks/use-container-width';
 
@@ -23,7 +23,7 @@ import { useContainerWidth } from '../hooks/use-container-width';
  * `src/hooks/use-container-width.ts` this import is the only line to change.)
  */
 export function useShellWidth(): { width: number; onLayout: (event: LayoutChangeEvent) => void } {
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth } = useShellViewport();
   const { width: measured, onLayout } = useContainerWidth();
   return { width: measured ?? windowWidth, onLayout };
 }

@@ -10,7 +10,7 @@ import React, {
   type ComponentType,
   type ComponentRef,
 } from 'react';
-import { Platform, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { Platform, View, type ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -43,6 +43,7 @@ import { useTheme } from '../theme/use-theme';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webViewportHeightMinus, WEB_POSITION_STICKY } from '../styles/web-view-style';
 import { useShellWidth } from './use-shell-width';
+import { useShellLayoutReady, useShellViewport } from './use-shell-viewport';
 import { Text } from '../typography/Typography';
 import { PanelOrderBoundary } from './PanelOrderBoundary';
 import type { PanelReorderHost, PanelReorderScroll } from './use-panel-reorder';
@@ -274,6 +275,7 @@ export function createPanelLayoutView(
     hasNext: boolean;
     testID?: string;
   }) {
+    const layoutReady = useShellLayoutReady();
     const panelRef = useRef<ComponentRef<typeof View>>(null);
     const dragOffset = useSharedValue(0);
     const dragLayer = useSharedValue(0);
@@ -328,7 +330,7 @@ export function createPanelLayoutView(
     const region = useAppShellRegion();
     const theme = useTheme();
     const rtl = useIsRtl();
-    const { height: viewportHeight } = useWindowDimensions();
+    const { height: viewportHeight } = useShellViewport();
     const [stickyHeight, setStickyHeight] = useState(0);
     const document = documentFlow && !track.floating;
     const floatingOpen = !!track.floating && !!panel.floating?.open && panel.visible !== false;
@@ -435,11 +437,13 @@ export function createPanelLayoutView(
         cssScope
           ? {}
           : {
-              width: vertical ? ('100%' as const) : width.value,
+              width: vertical || (!layoutReady && track.visible) ? ('100%' as const) : width.value,
               height: vertical
-                ? naturalHeight && track.visible
-                  ? ('auto' as const)
-                  : width.value
+                ? !layoutReady && track.visible && !naturalHeight
+                  ? ('100%' as const)
+                  : naturalHeight && track.visible
+                    ? ('auto' as const)
+                    : width.value
                 : !track.visible && document
                   ? opacity.value > 0.001
                     ? lastHeight.value
@@ -459,6 +463,7 @@ export function createPanelLayoutView(
         lastHeight,
         vertical,
         naturalHeight,
+        layoutReady,
         track.visible,
         document,
         cssScope,
@@ -718,6 +723,7 @@ export function createPanelLayoutView(
     gap,
     testID,
   }: PanelLayoutViewProps & { surfaceOwned?: boolean }) {
+    const layoutReady = useShellLayoutReady();
     const region = useAppShellRegion();
     const restoration = useOptionalScrollRestorationContext();
     const ancestorHost = useContext(ScreenHostContext);
@@ -754,7 +760,7 @@ export function createPanelLayoutView(
     });
     const bottomEdge = useBottomEdgeInset();
     const { width, onLayout } = useShellWidth();
-    const window = useWindowDimensions();
+    const window = useShellViewport();
     const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
     const vertical = cssScope
       ? cssState.vertical
@@ -775,7 +781,15 @@ export function createPanelLayoutView(
     const tracks = cssScope
       ? cssState.tracks
       : resolvePanelTracks(
-          { ...layout, flow: document ? 'document' : 'bounded' },
+          {
+            ...layout,
+            flow: document ? 'document' : 'bounded',
+            // No viewport exists on the server. Render one readable, fluid
+            // panel, then let the measured compositor take over after hydration.
+            ...(!layoutReady
+              ? { mode: 'split' as const, collapseBelow: Number.MAX_SAFE_INTEGER }
+              : {}),
+          },
           room,
           eligibilityFromGroup ? width : shellWidth,
           actualGap,
