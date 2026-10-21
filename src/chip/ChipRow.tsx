@@ -13,6 +13,7 @@ import { useTheme } from '../theme/use-theme';
 import { chipRowOverflow, type ChipRowScroll } from './shared';
 import type { ChipRowProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 
 /**
  * A row of pills that scrolls sideways, with a fade at whichever edge has more
@@ -69,6 +70,10 @@ function ChipRowComponent({
   testID,
 }: ChipRowProps) {
   const theme = useTheme();
+  const directionProps = useDirectionProps();
+  const rtl = useIsRtl();
+  const startInset = typeof contentInset === 'number' ? contentInset : contentInset.start;
+  const endInset = typeof contentInset === 'number' ? contentInset : contentInset.end;
   React.useEffect(() => {
     adoptStyleSheet(STYLE_ID, BLOOM_CHIP_ROW_CSS);
   }, []);
@@ -118,6 +123,7 @@ function ChipRowComponent({
     // the element a caller's `testID` lands on, and a group whose semantics
     // hide one node deeper is a group every consumer's test misses.
     <View
+      {...directionProps}
       role={role}
       accessibilityLabel={accessibilityLabel}
       aria-disabled={disabled || undefined}
@@ -156,8 +162,8 @@ function ChipRowComponent({
             gap,
             paddingTop: ringInset,
             paddingBottom: ringInset,
-            paddingLeft: contentInset + ringInset,
-            paddingRight: contentInset + ringInset,
+            paddingLeft: (rtl ? endInset : startInset) + ringInset,
+            paddingRight: (rtl ? startInset : endInset) + ringInset,
           },
           contentContainerStyle,
         ]}

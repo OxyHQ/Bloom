@@ -49,31 +49,33 @@ setting. The text uses the freed space instead of leaving an empty avatar slot.
 
 ## Attachments and secondary content
 
-Pass interactive secondary content through `MailRow.footer`. It shares the
-sender text column, so attachments stay aligned when density, avatar visibility
-or selection mode changes. Do not place attachments beside the row and copy its
-avatar widths or padding into the application.
+Pass attachment chips directly through `MailRow.attachments`. Bloom owns the
+horizontal scroller: its viewport spans the entire row, while its initial
+content aligns with the sender column. Scrolling lets chips use the space below
+the avatar, matching the behavior of media rails in a feed. Insets follow
+avatar visibility, selection controls and density inside Bloom; applications
+must not copy row geometry or nest another `ChipRow`.
 
 ```tsx
 <MailRow
   sender={{ name: senderName }}
   subject={subject}
   href={messageHref}
-  footer={
-    <Chip leadingIcon={RiFileTextLine} onPress={openAttachment}>
+  attachments={
+    <Chip leadingIcon={RiFileTextLine} variant="outlined" onPress={openAttachment}>
       {filename}
     </Chip>
   }
+  footer={secondaryLabels}
 />
 ```
 
-The footer is outside the row's link and its hidden descriptive text. Its
-controls keep their own accessible names and keyboard stops; pressing one does
-not open the message. The row's selection/hover paint and swipe region include
-the footer, while the action rail stays beside the header. Compact headers stay
-40px tall, but a compact row with a footer grows to fit that content. Without a
-footer, existing row heights are unchanged. `MailSummary.footer` forwards the
-same content when using `MailList`.
+`footer` remains ordinary secondary content constrained to the text column.
+Both slots sit outside the message link and its hidden descriptive text. Their
+controls retain accessible names and keyboard stops, and pressing an attachment
+does not open the message. Selection/hover paint and swipe encompass both slots.
+Compact headers remain 40px tall, while rows with either slot grow to fit it.
+`MailSummary` forwards both slots when using `MailList`.
 
 ## The subject and the snippet are one `Text`
 
@@ -150,8 +152,10 @@ A pointer hovers; a thumb drags. Nothing is drawn inside a phone row at rest.
 
 `actions` + `actionsPlacement` is the rail:
 
-- `hover` — over the right column, revealed on hover and on keyboard focus, and
-  hidden outright under `@media (hover: none)`. The default on web.
+- `hover` — replaces the right metadata column on hover and keyboard focus.
+  Compact 32px controls (28px at compact density) occupy normal header space, so
+  text truncates before them instead of being covered. Hidden under
+  `@media (hover: none)`, where metadata remains visible. The default on web.
 - `inline` — always drawn. A kiosk or a tablet list with no pointer and no
   gesture; never a phone.
 - `none` — drawn nowhere. The default on NATIVE.

@@ -331,6 +331,45 @@ describe('MailRow', () => {
     },
   );
 
+  it.each(['compact', 'comfortable', 'cozy'] as const)(
+    'keeps the %s attachment rail outside the text column and message link',
+    (density) => {
+      const openMessage = jest.fn();
+      const openAttachment = jest.fn();
+      mount(
+        <MailRow
+          {...ROW}
+          density={density}
+          href="/messages/roof"
+          onPress={openMessage}
+          attachments={
+            <button type="button" onClick={openAttachment}>
+              survey.pdf
+            </button>
+          }
+          actions={ACTIONS}
+          testID="r"
+        />,
+      );
+      const attachments = byTestId('r-attachments');
+      expect(attachments.parentElement).toBe(byTestId('r'));
+      expect(byTestId('r-content').contains(attachments)).toBe(false);
+      expect(attachments.closest('[aria-hidden="true"]')).toBeNull();
+      expect(attachments.closest('a')).toBeNull();
+      const button = attachments.querySelector('button');
+      if (!button) throw new Error('Missing attachment');
+      act(() => button.click());
+      expect(openAttachment).toHaveBeenCalledTimes(1);
+      expect(openMessage).not.toHaveBeenCalled();
+      expect(getComputedStyle(byTestId('r')).height).toBe('');
+      expect(byTestId('r-rail').style.position).not.toBe('absolute');
+      expect(byTestId('r-rail').style.backgroundColor).toBe('');
+      expect(getComputedStyle(byTestId('r-action-archive')).width).toBe(
+        density === 'compact' ? '28px' : '32px',
+      );
+    },
+  );
+
   it('draws the compact row at its exact height and the comfortable one at its floor', () => {
     mount(<MailRow {...ROW} density="compact" testID="r" />);
     expect(getComputedStyle(byTestId('r')).height).toBe(`${MAIL_ROW_GEOMETRY.compact.height}px`);

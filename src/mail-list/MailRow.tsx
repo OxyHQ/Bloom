@@ -4,6 +4,7 @@ import { View, type TextStyle } from 'react-native';
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
 import { Checkbox } from '../checkbox';
+import { ChipRow } from '../chip';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useSurfaceFill } from '../styles/surface-levels';
@@ -78,6 +79,7 @@ function MailRowComponent({
   density = 'comfortable',
   showAvatar = true,
   footer,
+  attachments,
   onPress,
   onLongPress,
   href,
@@ -106,6 +108,9 @@ function MailRowComponent({
   const compact = density === 'compact';
   const placement = actionsPlacement ?? (IS_WEB ? 'hover' : 'none');
   const rail = placement === 'none' ? [] : (actions ?? []);
+  const metadataAttributes =
+    placement === 'hover' && rail.length > 0 ? webDataSet({ bloomMailMetadata: '' }) : {};
+  const actionSize = placement === 'hover' ? Math.min(geo.action, 32) : geo.action;
 
   const swipeLeft = swipeActions?.left ?? [];
   const swipeRight = swipeActions?.right ?? [];
@@ -371,6 +376,7 @@ function MailRowComponent({
 
   const trailing = compact ? (
     <View
+      {...metadataAttributes}
       pointerEvents="box-none"
       style={{
         flexDirection: 'row',
@@ -385,6 +391,7 @@ function MailRowComponent({
     </View>
   ) : timeText === null && states === null ? null : (
     <View
+      {...metadataAttributes}
       pointerEvents="box-none"
       style={{
         alignItems: 'flex-end',
@@ -400,7 +407,8 @@ function MailRowComponent({
   );
 
   const hasFooter = footer !== undefined && footer !== null && footer !== false;
-  const fixedHeight = hasFooter ? undefined : geo.height;
+  const hasAttachments = attachments !== undefined && attachments !== null && attachments !== false;
+  const fixedHeight = hasFooter || hasAttachments ? undefined : geo.height;
 
   const rowStyle: WebCssStyle = {
     position: 'relative',
@@ -484,19 +492,11 @@ function MailRowComponent({
               <View
                 {...(placement === 'hover' ? webDataSet({ bloomMailRail: '' }) : {})}
                 style={{
-                  position: 'absolute',
-                  right: -4,
-                  top: 0,
-                  bottom: 0,
                   flexDirection: 'row',
                   alignItems: 'center',
+                  flexShrink: 0,
                   gap: 2,
-                  paddingLeft: 12,
-                  borderTopRightRadius: MAIL_ROW_RADIUS,
-                  borderBottomRightRadius: MAIL_ROW_RADIUS,
-                  // Whatever fill the row shows WHILE the rail is visible, so the
-                  // buttons read as part of the row rather than as a floating chip.
-                  backgroundColor: selected ? paint.selected : paint.hover,
+                  marginLeft: geo.gap,
                 }}
                 testID={testID ? `${testID}-rail` : undefined}
               >
@@ -508,7 +508,7 @@ function MailRowComponent({
                     color={mailActionColor(action, paint)}
                     hoverFill={paint.selected}
                     ring={paint.accent}
-                    size={geo.action}
+                    size={actionSize}
                     glyph={geo.actionGlyph}
                     onPress={() => {
                       action.onPress?.();
@@ -535,6 +535,28 @@ function MailRowComponent({
           ) : null}
         </View>
       </View>
+      {hasAttachments ? (
+        <View
+          pointerEvents="box-none"
+          style={{
+            overflow: 'hidden',
+            paddingTop: compact && !hasFooter ? 8 : 4,
+            paddingBottom: geo.paddingVertical || 8,
+          }}
+          testID={testID ? `${testID}-attachments` : undefined}
+        >
+          <ChipRow
+            contentInset={{
+              start: geo.paddingHorizontal + (leading === null ? 0 : geo.avatar + geo.gap),
+              end: geo.paddingHorizontal,
+            }}
+            fadeColor={selected ? paint.selected : paint.surface}
+            testID={testID ? `${testID}-attachment-row` : undefined}
+          >
+            {attachments}
+          </ChipRow>
+        </View>
+      ) : null}
     </View>
   );
 

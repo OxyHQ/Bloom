@@ -9,7 +9,7 @@ import { RiMailOpenLine } from '../icons/remix/RiMailOpenLine';
 import { RiSpamLine } from '../icons/remix/RiSpamLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { ChatListItem } from '../chat-list';
-import { Chip, ChipRow } from '../chip';
+import { Chip } from '../chip';
 import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
 import { Sidebar } from '../sidebar';
 import type { SidebarTree } from '../sidebar/types';
@@ -469,12 +469,12 @@ export const Attachments: Story = {
                 hasAttachment
                 actions={ROW_ACTIONS}
                 onPress={() => setOpened('message')}
-                footer={
-                  <ChipRow>
+                attachments={
+                  <>
                     <Chip
                       leadingIcon={RiFileTextLine}
                       size="lg"
-                      variant="outline"
+                      variant="outlined"
                       onPress={() => setOpened(`${id}-file`)}
                       testID={`${id}-file`}
                     >
@@ -483,13 +483,13 @@ export const Attachments: Story = {
                     <Chip
                       leadingIcon={RiFileTextLine}
                       size="lg"
-                      variant="outline"
+                      variant="outlined"
                       onPress={() => setOpened(`${id}-long-file`)}
                       style={{ maxWidth: 240 }}
                     >
                       measurements-and-revised-plan-for-the-roof.csv
                     </Chip>
-                  </ChipRow>
+                  </>
                 }
                 testID={id}
               />

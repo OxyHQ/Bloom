@@ -52,7 +52,7 @@ export interface MailAction {
 /**
  * Where a row's `actions` are drawn AT REST.
  *
- * `hover` is the desktop rail: the buttons appear over the right column on
+ * `hover` is the desktop rail: the buttons replace the right column on
  * hover and keyboard focus, and are hidden outright where the pointer cannot
  * hover. `inline` draws them always — a kiosk or a tablet list with no pointer
  * and no gesture. `none` draws nothing.
@@ -162,6 +162,12 @@ export interface MailRowProps {
    * it (including compact density), selection paint and swipe actions.
    */
   footer?: ReactNode;
+  /**
+   * Attachment chips in a horizontal rail spanning the entire row. Bloom owns
+   * the scroller: pass chips directly, not a ChipRow. Initial content aligns
+   * with the sender; scrolling can use the space beneath the avatar.
+   */
+  attachments?: ReactNode;
   onPress?: () => void;
   onLongPress?: () => void;
   /** A real href on web, so the row is a link and opens in a new tab. */
