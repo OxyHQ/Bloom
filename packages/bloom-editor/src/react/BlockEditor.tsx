@@ -18,6 +18,7 @@ import {
   removeBlocks,
 } from '../model/commands';
 import { exportSnapshot, snapshotToMarkdown } from '../model/snapshot';
+import { canCutAsMarkdown } from '../model/clipboard';
 import { getBlock } from '../model/document';
 import type { BlockId } from '../model/document';
 import { specOf } from '../model/schema';
@@ -83,6 +84,8 @@ export interface BlockEditorProps {
    * "Copy link to block" when given.
    */
   onCopyBlockLink?: (blockId: BlockId) => void;
+  /** Web whole-block clipboard failure. Cut keeps both blocks and selection. */
+  onClipboardError?: (reason: 'unsupported-cut' | 'write-failed') => void;
   /**
    * Images pasted into a block's text (a screenshot, a copied picture), for
    * the app to upload and insert after `blockId`: `blob:` URLs on web, file
@@ -221,6 +224,7 @@ export function EditorSurface({
   onOpenLink = openWithLinking,
   onOpenMention,
   onCopyBlockLink,
+  onClipboardError,
   onPasteImages,
   codeLanguages,
   highlightCode,
@@ -330,15 +334,29 @@ export function EditorSurface({
   // Whole-block selection on web: arrows move it (Shift extends it),
   // Backspace deletes, ⌘D duplicates, Tab and Shift-Tab nest, Return edits.
   useEffect(() => {
-    if (Platform.OS !== 'web' || readOnly) return;
+    const node = root.current as unknown as HTMLElement | null;
+    if (Platform.OS !== 'web' || readOnly || !node?.addEventListener) return;
     const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        event.defaultPrevented ||
+        node.ownerDocument.activeElement !== node ||
+        target?.closest?.('[data-bloom-editor-surface]') !== node
+      )
+        return;
       const { selectedBlocks: selected, blockMenu, codeLanguageMenu } = ui.get();
       // An open menu has the keyboard.
-      if (selected.length === 0 || blockMenu !== null || codeLanguageMenu !== null) return;
-      // A field of the editor's own (a menu's search, the link field) types.
-      const target = event.target as HTMLElement | null;
-      if (target?.closest?.('input, textarea, [contenteditable="true"]')) return;
+      if (blockMenu !== null || codeLanguageMenu !== null) return;
       const mod = event.metaKey || event.ctrlKey;
+      // A Cut/Delete clears the block selection, but this surface still owns
+      // focus and its history. Do not fall through to the browser's text undo.
+      if (mod && event.key.toLowerCase() === 'z') {
+        event.preventDefault();
+        if (event.shiftKey) store.redo();
+        else store.undo();
+        return;
+      }
+      if (selected.length === 0) return;
       if (event.key === 'Backspace' || event.key === 'Delete') {
         event.preventDefault();
         requestRemove(selected);
@@ -362,14 +380,10 @@ export function EditorSurface({
         if (first && store.doc.blocks[first]?.text) {
           store.setSelection({ kind: 'text', blockId: first, start: 0, end: 0 });
         }
-      } else if (mod && event.key.toLowerCase() === 'z') {
-        event.preventDefault();
-        if (event.shiftKey) store.redo();
-        else store.undo();
       }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    node.addEventListener('keydown', onKey);
+    return () => node.removeEventListener('keydown', onKey);
   }, [readOnly, requestRemove, store, ui]);
 
   // Selecting blocks with the pointer (web): Shift-click extends a selection
@@ -491,10 +505,26 @@ export function EditorSurface({
       )
         return;
       const selected = ui.get().selectedBlocks;
-      if (selected.length === 0 || !event.clipboardData) return;
-      const ids = selected.filter((id) => !selected.includes(store.doc.blocks[id]?.parent ?? ''));
-      event.clipboardData.setData('text/plain', snapshotToMarkdown(exportSnapshot(store.doc, ids)));
+      if (selected.length === 0) return;
+      // Own this operation even on failure: the browser must not perform a
+      // fallback Cut after we declined to remove the selected blocks.
       event.preventDefault();
+      const ids = selected.filter((id) => !selected.includes(store.doc.blocks[id]?.parent ?? ''));
+      try {
+        const snapshot = exportSnapshot(store.doc, ids);
+        const text = snapshotToMarkdown(snapshot);
+        if (cut && !canCutAsMarkdown(snapshot, text, store.schema)) {
+          onClipboardError?.('unsupported-cut');
+          return;
+        }
+        if (!event.clipboardData) throw new Error('Clipboard unavailable');
+        event.clipboardData.setData('text/plain', text);
+        if (event.clipboardData.getData('text/plain') !== text)
+          throw new Error('Clipboard write not confirmed');
+      } catch {
+        onClipboardError?.('write-failed');
+        return;
+      }
       if (cut) requestRemove(ids);
     };
     const copy = onCopy(false);
@@ -505,7 +535,7 @@ export function EditorSurface({
       node.removeEventListener('copy', copy);
       node.removeEventListener('cut', cut);
     };
-  }, [requestRemove, store, ui]);
+  }, [onClipboardError, requestRemove, store, ui]);
 
   return (
     <EditorContext.Provider value={value}>
