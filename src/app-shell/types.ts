@@ -480,10 +480,11 @@ export interface AppShellPanelsProps {
   children?: ReactNode;
   /**
    * `separated` (default): each panel its own surface, the shell's `gutter`
-   * between them. `joined`: one surface with hairline dividers. While the shell
+   * between them. `joined`: one surface with hairline dividers. `plain`: joined
+   * geometry with inherited backing, for workspaces inside Dialog/another Surface. While the shell
    * is compact (panels full-bleed) both draw hairlines.
    */
-  appearance?: 'separated' | 'joined';
+  appearance?: 'separated' | 'joined' | 'plain';
   /**
    * Below this width — of the group's OWN box, so a sidebar beside it counts —
    * exactly one panel renders: the one `show` names, else the first.

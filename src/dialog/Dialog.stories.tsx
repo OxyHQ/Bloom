@@ -8,6 +8,9 @@ import { Dialog } from './Dialog';
 import { useDialogControl } from './context';
 import { alert } from '../surfaces';
 import { OverlayInertBoundary } from '../overlay';
+import { Screen, ScreenScrollView } from '../screen';
+import { PageHeader } from '../page-header';
+import { AppShellPanels } from '../app-shell';
 
 const meta: Meta<typeof Dialog> = {
   argTypes: {
@@ -618,3 +621,57 @@ export const RapidNestedClose: Story = {
     );
   },
 };
+
+function FullscreenDemo() {
+  const control = useDialogControl();
+  return (
+    <>
+      <Button onPress={() => control.open()}>Open workspace</Button>
+      <Dialog
+        control={control}
+        presentation="fullscreen"
+        label="Workspace preview"
+        scrollable={false}
+        contentPadding={0}
+      >
+        <AppShellPanels
+          scope="local"
+          layout={{
+            appearance: 'plain',
+            header: (
+              <PageHeader
+                title="Workspace preview"
+                actions={
+                  <Button appearance="plain" onPress={() => control.close()}>
+                    Close
+                  </Button>
+                }
+              />
+            ),
+            panels: [
+              {
+                id: 'draft',
+                content: (
+                  <Screen scroll="none">
+                    <ScreenScrollView>
+                      <TextField>
+                        <TextFieldInput
+                          label="Draft"
+                          placeholder="A draft that survives resizing"
+                        />
+                      </TextField>
+                      {Array.from({ length: 30 }, (_, i) => (
+                        <Text key={`section-${i}`}>Section {i + 1}</Text>
+                      ))}
+                    </ScreenScrollView>
+                  </Screen>
+                ),
+              },
+            ],
+          }}
+        />
+      </Dialog>
+    </>
+  );
+}
+export const Fullscreen: Story = { render: () => <FullscreenDemo /> };

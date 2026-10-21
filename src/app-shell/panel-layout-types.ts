@@ -76,6 +76,11 @@ export interface AppShellPanelViewport {
 }
 export interface AppShellPanelLayout {
   panels: readonly AppShellPanelDefinition[];
+  /** Chrome spanning the complete workspace. The group's Screen reserves it once.
+   * In joined layouts it shares the group's one Surface. Use null to temporarily
+   * hide it while preserving the content tree of a workspace with a header.
+   */
+  header?: ReactNode;
   /** Access the existing viewport for domain gestures, without nesting another scroller. */
   viewportRef?: Ref<AppShellPanelViewport>;
   onViewportScroll?: (offset: { x: number; y: number }) => void;
@@ -92,7 +97,8 @@ export interface AppShellPanelLayout {
   axis?: ResponsivePanelAxis;
   /** Document grows with the main panel; bounded panels own vertical scrolling. */
   flow?: 'document' | 'bounded';
-  appearance?: 'separated' | 'joined';
+  /** Plain uses joined geometry while inheriting its enclosing Surface. */
+  appearance?: 'separated' | 'joined' | 'plain';
   gap?: number;
   /** Measured shell width, rather than the capped reading envelope. */
   collapseBelow?: AppShellBreakpoint;

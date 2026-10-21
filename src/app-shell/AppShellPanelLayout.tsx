@@ -707,13 +707,14 @@ export function createPanelLayoutView(
       </PanelScrollScope>
     );
   }
-  function PanelLayoutView({
+  function PanelLayoutTracks({
     layout,
+    surfaceOwned = false,
     shellWidth,
     eligibilityFromGroup = false,
     gap,
     testID,
-  }: PanelLayoutViewProps) {
+  }: PanelLayoutViewProps & { surfaceOwned?: boolean }) {
     const region = useAppShellRegion();
     const restoration = useOptionalScrollRestorationContext();
     const ancestorHost = useContext(ScreenHostContext);
@@ -758,7 +759,7 @@ export function createPanelLayoutView(
     const [ownWidths, setOwnWidths] = useState<Readonly<Record<string, number>>>({});
     const [ownHeights, setOwnHeights] = useState<Readonly<Record<string, number>>>({});
     const dimensions = vertical ? (layout.heights ?? ownHeights) : (layout.widths ?? ownWidths);
-    const joined = layout.appearance === 'joined';
+    const joined = layout.appearance === 'joined' || layout.appearance === 'plain';
     const actualGap = layout.gap ?? (joined ? 1 : gap);
     const document = layout.flow === 'document' && layout.mode !== 'deck' && Platform.OS === 'web';
     const deck = layout.mode === 'deck';
@@ -1051,8 +1052,9 @@ export function createPanelLayoutView(
           {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
             <DocumentRestoration enabled={document} />
           ) : null}
-          {joined ? (
+          {joined && !surfaceOwned ? (
             <ContentPanel
+              appearance={layout.appearance === 'plain' ? 'plain' : undefined}
               framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
               fill={!document}
               scrollable={false}
@@ -1088,6 +1090,40 @@ export function createPanelLayoutView(
           ) : null}
         </View>
       </PanelOrderBoundary>
+    );
+  }
+  function PanelLayoutView(props: PanelLayoutViewProps) {
+    const region = useAppShellRegion();
+    const cssScope = useContext(PanelCssContext);
+    if (props.layout.header === undefined) return <PanelLayoutTracks {...props} />;
+    const document =
+      props.layout.flow === 'document' && props.layout.mode !== 'deck' && Platform.OS === 'web';
+    const joined = props.layout.appearance === 'joined' || props.layout.appearance === 'plain';
+    const workspace = (
+      <Screen
+        scroll="none"
+        documentScroll={document}
+        header={props.layout.header}
+        testID={props.testID ? `${props.testID}-workspace` : undefined}
+      >
+        <PanelLayoutTracks {...props} surfaceOwned={joined} />
+      </Screen>
+    );
+    return joined ? (
+      <ContentPanel
+        appearance={props.layout.appearance === 'plain' ? 'plain' : undefined}
+        framed={cssScope && !props.eligibilityFromGroup ? true : (region?.framed ?? true)}
+        fill={!document}
+        scrollable={false}
+        overlaySizing={document ? 'viewport' : 'panel'}
+        overlayInset={document ? region?.viewportInset : undefined}
+        surfaceStyle={FILL}
+        contentStyle={FILL}
+      >
+        {workspace}
+      </ContentPanel>
+    ) : (
+      workspace
     );
   }
   return PanelLayoutView;

@@ -502,3 +502,41 @@ A frame can set `colorPreset` to scope the entire dialog, including its navigati
 For content that supplies its own hero heading, declare `header={{ title, titleLayout: 'hero' }}` (also supported by `useDialogHeader`). The content starts under the floating navigation without a duplicate large title or top spacer. The navigation title and scrim appear as the hero scrolls away. `titleLayout: 'large'` uses the standard in-content large title and `titleLayout: 'bar'` keeps the small title visible. Existing `largeTitle` behavior is unchanged when `titleLayout` is omitted.
 
 A frame may also declare `typography: 'system'` to use the platform system font throughout its body and navigation while preserving Bloom's semantic type scale. Omitting it on the next frame restores the enclosing typography. The same scoped policy is available independently as `TypographyScope` from `@oxy.so/bloom/typography`; `mode="system"` uses system-ui on web, System on iOS, and sans-serif on Android. The default remains Bloom typography.
+
+## Fullscreen workspaces
+
+`presentation="fullscreen"` fills the overlay viewport while retaining Dialog's
+Surface, modal focus, layering, dismissal and opening/closing lifecycle. It
+supersedes `placement`, `width`, `maxWidth`, `maxHeightRatio` and side insets. It
+uses the existing centered modal engine on web and the existing overlay drawer
+engine on native; there is no consumer viewport calculation or alternate modal.
+
+For independent panes, use `scrollable={false}` and `contentPadding={0}`, then
+compose `AppShellPanels scope="local"` with each pane's `Screen` and
+`ScreenScrollView`. That compositor owns responsive collapse and each region's
+bounded scroll. `label` names the dialog accessibly without adding another visible
+title; leave `title` and `header` unset when pane Screens own their headings.
+Screen's normal safe-area contract remains responsible for its chrome.
+
+```tsx
+<Dialog
+  control={history}
+  presentation="fullscreen"
+  label="Version history"
+  scrollable={false}
+  contentPadding={0}
+>
+  <AppShellPanels scope="local" layout={historyLayout} />
+</Dialog>
+```
+
+Fullscreen content remains mounted when the viewport changes. Closing and later
+reopening starts a new normal Dialog session. Default centered cards, side sheets,
+bottom sheets and custom-painted surfaces retain their existing geometry.
+
+A fullscreen workspace can use `AppShellPanels scope="local"` with
+`layout.appearance: 'plain'` to inherit the Dialog's Surface. Keep Dialog
+`scrollable={false}` when panel `ScreenScrollView`s own scrolling. A shared
+workspace heading belongs in `layout.header`; individual panel headings stay
+in each panel's `Screen`. Supply the Dialog's accessible `label` even when its
+visual title is omitted.

@@ -209,6 +209,19 @@ underneath) and nothing else: `header` (chrome spanning it), `scroll`,
 `colorPreset`, `appearance`, `chrome`, `errorBoundary`. A GROUP
 (`AppShellPanels`) lays several out:
 
+- **One workspace header.** Put chrome spanning every panel in `layout.header`.
+  The compositor uses its existing `Screen` to reserve the header once; the
+  tracks measure the remaining space and their own `ScreenScrollView`s retain
+  scrolling. In a joined group the header and tracks share one Surface. In a
+  separated group the header sits above the individual panel surfaces. Keep
+  the property present and use `header: null` to temporarily hide it without
+  remounting panel content. Stable panel IDs preserve editors and open overlays
+  when sibling panels appear or disappear.
+- **Inherit an existing surface.** `appearance="plain"` (or
+  `layout.appearance: 'plain'`) uses joined geometry and dividers without
+  painting another material. Use it for a local workspace inside a Dialog that
+  already owns its Surface. It supports the same shared header and scrolling
+  contracts; it does not introduce another viewport or scroll owner.
 - **Sizes without arithmetic.** A panel with `width` rests at it and shrinks
   down to its `minWidth`; a panel without one takes the room left, never below
   its own `minWidth`. Flexbox sums the min-clamped bases first, so a narrow group

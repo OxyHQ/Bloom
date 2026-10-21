@@ -21,7 +21,7 @@ import { activityBodyIsLong, groupActivityByDay, resolveActivityFeedPaint } from
 import type { ActivityFeedEntry, ActivityFeedProps } from './types';
 
 /**
- * Everything anyone did with a customer, newest block first, grouped by day.
+ * Actor-led activity, grouped by day or kept in the supplied event order.
  *
  * **This is a FEED, not a status timeline.** `TenancyTimeline` and
  * `EvictionTimeline` draw one PROCESS advancing: homogeneous steps on a spine,
@@ -46,6 +46,8 @@ import type { ActivityFeedEntry, ActivityFeedProps } from './types';
  */
 function ActivityFeedComponent({
   entries,
+  density = 'comfortable',
+  grouping = 'day',
   bodyLines = 3,
   moreLabel: moreLabelProp,
   lessLabel: lessLabelProp,
@@ -64,7 +66,12 @@ function ActivityFeedComponent({
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveActivityFeedPaint(theme, surface), [theme, surface]);
-  const groups = useMemo(() => groupActivityByDay(entries), [entries]);
+  const groups = useMemo(
+    () => (grouping === 'day' ? groupActivityByDay(entries) : [{ day: '', entries }]),
+    [entries, grouping],
+  );
+  const compact = density === 'compact';
+  const avatarSize = compact ? 24 : ACTIVITY_AVATAR_SIZE;
 
   const [revealed, setRevealed] = useState<readonly string[]>([]);
   const toggle = useCallback((id: string) => {
@@ -85,10 +92,10 @@ function ActivityFeedComponent({
     );
   }
 
-  const renderEntry = (entry: ActivityFeedEntry) => {
-    const kind = ACTIVITY_FEED_KIND[entry.kind];
-    const KindIcon = kind.icon;
-    const markPaint = resolveAccentColors(theme.colors, kind.tone, 'subtle');
+  const renderEntry = (entry: ActivityFeedEntry, index: number) => {
+    const kind = entry.kind ? ACTIVITY_FEED_KIND[entry.kind] : undefined;
+    const KindIcon = kind?.icon;
+    const markPaint = kind ? resolveAccentColors(theme.colors, kind.tone, 'subtle') : undefined;
     const open = revealed.includes(entry.id);
     const long = activityBodyIsLong(entry.body, bodyLines);
     const eid = (part: string) => (testID ? `${testID}-${entry.id}-${part}` : undefined);
@@ -97,48 +104,73 @@ function ActivityFeedComponent({
       <View
         key={entry.id}
         role="listitem"
-        style={{ flexDirection: 'row', gap: 12 }}
+        style={{
+          flexDirection: 'row',
+          gap: compact ? 8 : 12,
+          ...(grouping === 'none' && index > 0
+            ? {
+                paddingTop: ACTIVITY_ENTRY_GAP,
+                borderTopWidth: 1,
+                borderTopColor: paint.hairline,
+              }
+            : {}),
+        }}
         testID={eid('entry')}
       >
-        <View style={{ width: ACTIVITY_AVATAR_SIZE, height: ACTIVITY_AVATAR_SIZE }}>
-          <Avatar size={ACTIVITY_AVATAR_SIZE} source={entry.actor.avatar} name={entry.actor.name} />
-          <View
-            aria-hidden
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            style={{
-              position: 'absolute',
-              right: -4,
-              bottom: -4,
-              width: ACTIVITY_KIND_MARK_SIZE,
-              height: ACTIVITY_KIND_MARK_SIZE,
-              borderRadius: ACTIVITY_KIND_MARK_SIZE / 2,
-              backgroundColor: markPaint.background,
-              borderWidth: 2,
-              borderColor: paint.markRing,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            testID={eid('mark')}
-          >
-            <KindIcon width={10} height={10} fill={markPaint.foreground} />
-          </View>
+        <View style={{ width: avatarSize, height: avatarSize }}>
+          <Avatar size={avatarSize} source={entry.actor.avatar} name={entry.actor.name} />
+          {KindIcon && markPaint ? (
+            <View
+              aria-hidden
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{
+                position: 'absolute',
+                right: -4,
+                bottom: -4,
+                width: ACTIVITY_KIND_MARK_SIZE,
+                height: ACTIVITY_KIND_MARK_SIZE,
+                borderRadius: ACTIVITY_KIND_MARK_SIZE / 2,
+                backgroundColor: markPaint.background,
+                borderWidth: 2,
+                borderColor: paint.markRing,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              testID={eid('mark')}
+            >
+              <KindIcon width={10} height={10} fill={markPaint.foreground} />
+            </View>
+          ) : null}
         </View>
 
         <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-          <Text variant="body-medium" style={{ color: paint.text }} testID={eid('title')}>
-            <Text variant="body-semibold" style={{ color: paint.text }}>
-              {entry.actor.name}
-            </Text>
-            {` ${entry.title}`}
-          </Text>
           <Text
-            variant="caption-1-regular"
-            style={{ color: paint.textTertiary }}
-            testID={eid('meta')}
+            variant={compact ? 'body-2-medium' : 'body-medium'}
+            style={{ color: paint.text }}
+            testID={eid('title')}
           >
-            {[messages.kinds[entry.kind], entry.timestamp].filter(Boolean).join(' · ')}
+            <Text
+              variant={compact ? 'body-2-semibold' : 'body-semibold'}
+              style={{ color: paint.text }}
+            >
+              {entry.actor.name}
+            </Text>{' '}
+            {entry.title}
           </Text>
+          {entry.kind || entry.timestamp ? (
+            <Text
+              variant="caption-1-regular"
+              style={{ color: paint.textTertiary }}
+              testID={eid('meta')}
+            >
+              {[entry.kind ? messages.kinds[entry.kind] : undefined, entry.timestamp]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+          ) : null}
+          {entry.context}
+          {entry.content == null ? null : <View style={{ marginTop: 4 }}>{entry.content}</View>}
 
           {entry.body ? (
             <View style={{ marginTop: 4, gap: 2, alignItems: 'flex-start' }}>
@@ -154,7 +186,8 @@ function ActivityFeedComponent({
                 <Button
                   size="xs"
                   onPress={() => toggle(entry.id)}
-                  accessibilityLabel={`${open ? lessLabel : moreLabel}: ${entry.title}`}
+                  aria-expanded={open}
+                  accessibilityLabel={`${open ? lessLabel : moreLabel}: ${entry.accessibilityLabel ?? (typeof entry.title === 'string' ? entry.title : entry.actor.name)}`}
                   testID={eid('reveal')}
                   tone="accent"
                   appearance="plain"
@@ -177,6 +210,10 @@ function ActivityFeedComponent({
             </View>
           ) : null}
 
+          {entry.action == null ? null : (
+            <View style={{ marginTop: 4, alignItems: 'flex-start' }}>{entry.action}</View>
+          )}
+
           {entry.loggedBy ? (
             <Text
               variant="caption-2-regular"
@@ -195,20 +232,22 @@ function ActivityFeedComponent({
     <View role="list" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
       {groups.map((group, index) => (
         <View key={group.day} style={{ marginTop: index === 0 ? 0 : ACTIVITY_ENTRY_GAP + 8 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              marginBottom: ACTIVITY_ENTRY_GAP,
-            }}
-            testID={id(`day-${group.day}`)}
-          >
-            <Text variant="caption-1-semibold" style={{ color: paint.textSecondary }}>
-              {group.day}
-            </Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: paint.hairline }} />
-          </View>
+          {grouping === 'day' ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: ACTIVITY_ENTRY_GAP,
+              }}
+              testID={id(`day-${group.day}`)}
+            >
+              <Text variant="caption-1-semibold" style={{ color: paint.textSecondary }}>
+                {group.day}
+              </Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: paint.hairline }} />
+            </View>
+          ) : null}
           <View style={{ gap: ACTIVITY_ENTRY_GAP }}>{group.entries.map(renderEntry)}</View>
         </View>
       ))}

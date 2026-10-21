@@ -251,8 +251,13 @@ export type DialogProps = React.PropsWithChildren<{
   backdrop?: BackdropAppearance;
   /** Opt-in timing for panel and backdrop. Live reduced motion settles immediately. */
   transition?: SurfaceTransition;
-  /** Content owns paint and motion; shared overlay, focus and dismissal remain. */
-  presentation?: 'default' | 'custom';
+  /**
+   * `fullscreen` fills the overlay viewport using the normal Surface, focus and
+   * dismissal engine. It overrides placement and size caps; Screens/panels may
+   * own independent scroll regions with scrollable=false and contentPadding=0.
+   * `custom` delegates paint and motion to content.
+   */
+  presentation?: 'default' | 'custom' | 'fullscreen';
   /** Custom presentation exit lifetime, in milliseconds. */
   exitDuration?: number;
   /**

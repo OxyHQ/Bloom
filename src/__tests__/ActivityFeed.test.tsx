@@ -9,7 +9,7 @@
  * `accessibilityState` entirely, so a pill that merely looks selected is
  * indistinguishable from one that is.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -245,5 +245,73 @@ describe('an empty feed', () => {
     mount(<ActivityFeed entries={[]} testID="f" />);
     expect(byTestId('f-empty').textContent).toBe('Nothing logged yet');
     expect(groupActivityByDay([])).toEqual([]);
+  });
+});
+
+describe('heterogeneous updates through the existing feed', () => {
+  it('keeps input order without day headings and renders compact actors, rich changes and real actions', () => {
+    const inspect = jest.fn();
+    const entries: ActivityFeedEntry[] = [
+      {
+        id: 'new',
+        actor: { name: 'Ari' },
+        title: (
+          <span>
+            edited <strong>Roadmap</strong>
+          </span>
+        ),
+        day: 'Today',
+        timestamp: '09:00',
+        context: <span>Workspace / Planning</span>,
+        content: (
+          <details>
+            <summary>Changes</summary>
+            <p>Before: Draft</p>
+            <p>After: Ready</p>
+          </details>
+        ),
+        action: <button onClick={inspect}>Open revision</button>,
+      },
+      { id: 'old', actor: { name: 'Ari' }, title: 'created the page', day: 'Yesterday' },
+      { id: 'newer', actor: { name: 'Jules' }, title: 'renamed the page', day: 'Today' },
+    ];
+    mount(<ActivityFeed entries={entries} density="compact" grouping="none" testID="f" />);
+    expect(
+      [...container.querySelectorAll('[role="listitem"]')].map((el) =>
+        el.getAttribute('data-testid'),
+      ),
+    ).toEqual(['f-new-entry', 'f-old-entry', 'f-newer-entry']);
+    expect(container.querySelector('[data-testid^="f-day-"]')).toBeNull();
+    expect(queryTestId('f-new-mark')).toBeNull();
+    expect(queryTestId('f-old-meta')).toBeNull();
+    expect(byTestId('f-new-title').textContent).toBe('Ari edited Roadmap');
+    expect(byTestId('f-new-meta').textContent).toBe('09:00');
+    expect(getComputedStyle(byTestId('f-new-entry').firstElementChild!).width).toBe('24px');
+    expect(getComputedStyle(byTestId('f-old-entry')).borderTopWidth).toBe('1px');
+    const action = container.querySelector('button')!;
+    act(() => action.click());
+    expect(inspect).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toContain('Before: Draft');
+    expect(container.textContent).toContain('After: Ready');
+    expect(container.textContent).toContain('Workspace / Planning');
+  });
+
+  it('keeps a rich-title reveal named and expanded state stable after reordering', () => {
+    const entry: ActivityFeedEntry = {
+      id: 'rich',
+      day: 'Today',
+      actor: { name: 'Ari' },
+      title: <span>updated a page</span>,
+      accessibilityLabel: 'Roadmap update',
+      body: LONG_BODY,
+    };
+    mount(<ActivityFeed entries={[entry]} grouping="none" testID="f" />);
+    expect(byTestId('f-rich-reveal').getAttribute('aria-label')).toBe('Show more: Roadmap update');
+    expect(byTestId('f-rich-reveal').getAttribute('aria-expanded')).toBe('false');
+    act(() => byTestId('f-rich-reveal').click());
+    mount(<ActivityFeed entries={[{ ...entry, id: 'other' }, entry]} grouping="none" testID="f" />);
+    expect(byTestId('f-rich-reveal').getAttribute('aria-expanded')).toBe('true');
+    expect(byTestId('f-other-reveal').getAttribute('aria-expanded')).toBe('false');
+    expect(container.textContent).not.toContain('[object Object]');
   });
 });

@@ -263,7 +263,11 @@ export function createAppShellPanels(
       });
     const gap =
       layout?.gap ??
-      ((layout?.appearance ?? appearance) === 'joined' || !region.framed ? 1 : region.gutter);
+      ((layout?.appearance ?? appearance) === 'joined' ||
+      (layout?.appearance ?? appearance) === 'plain' ||
+      !region.framed
+        ? 1
+        : region.gutter);
     const box =
       region.flow === 'document'
         ? {

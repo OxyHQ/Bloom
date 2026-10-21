@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { AccentTone } from '../theme/accent-colors';
@@ -15,9 +16,18 @@ export interface ActivityFeedActor {
 export interface ActivityFeedEntry {
   /** Stable identity. Also the key the reveal state is held under. */
   id: string;
-  kind: ActivityFeedKind;
-  /** What happened, in one line — "Called about the renewal". */
-  title: string;
+  /** Optional built-in kind; omit for a general event without a CRM mark/label. */
+  kind?: ActivityFeedKind;
+  /** Inline summary after the automatically rendered actor name. Text nodes only. */
+  title: ReactNode;
+  /** Spoken summary for a rich title's body reveal. Strings use title automatically. */
+  accessibilityLabel?: string;
+  /** Context under the timestamp, such as a parent page or location. */
+  context?: ReactNode;
+  /** Rich event content, such as a change summary or an expandable details component. */
+  content?: ReactNode;
+  /** An optional real follow-up action; the feed never invents a destination. */
+  action?: ReactNode;
   actor: ActivityFeedActor;
   /**
    * The day this entry belongs to, PRE-FORMATTED ("Today", "12 March").
@@ -46,6 +56,10 @@ export interface ActivityFeedGroup {
 
 export interface ActivityFeedProps {
   entries: readonly ActivityFeedEntry[];
+  /** Content rhythm, independent of the inherited control size. Default comfortable. */
+  density?: 'comfortable' | 'compact';
+  /** Default day headings; none preserves input order with separators between entries. */
+  grouping?: 'day' | 'none';
   /**
    * Lines a `body` clamps to before the reveal is offered. Default 3. `0` never
    * clamps, and never draws a reveal.

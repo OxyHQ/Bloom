@@ -1,4 +1,5 @@
-import React, { useContext, useMemo, useState } from 'react';
+import type React from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -138,11 +139,13 @@ export const Filtered: Story = {
     const [selected, setSelected] = useState<ActivityFeedKind[]>(['call', 'meeting']);
     const counts = useMemo(() => {
       const out: Partial<Record<ActivityFeedKind, number>> = {};
-      for (const entry of ENTRIES) out[entry.kind] = (out[entry.kind] ?? 0) + 1;
+      for (const entry of ENTRIES) if (entry.kind) out[entry.kind] = (out[entry.kind] ?? 0) + 1;
       return out;
     }, []);
     const shown =
-      selected.length === 0 ? ENTRIES : ENTRIES.filter((e) => selected.includes(e.kind));
+      selected.length === 0
+        ? ENTRIES
+        : ENTRIES.filter((e) => e.kind != null && selected.includes(e.kind));
     return (
       <Page>
         <ActivityFeedFilters
@@ -192,5 +195,42 @@ export const BothThemes: Story = {
     <BothModes>
       <ActivityFeed entries={ENTRIES.slice(0, 4)} accessibilityLabel="Activity" />
     </BothModes>
+  ),
+};
+
+export const Updates: Story = {
+  render: () => (
+    <Page>
+      <ActivityFeed
+        density="compact"
+        grouping="none"
+        entries={[
+          {
+            id: 'update',
+            actor: { name: 'Marta Oyeleye' },
+            day: 'Today',
+            timestamp: '09:40',
+            title: (
+              <>
+                updated <Text variant="body-2-semibold">Release plan</Text>
+              </>
+            ),
+            context: <Text variant="caption-1-regular">Planning / Releases</Text>,
+            content: (
+              <Text variant="body-2-regular">
+                Changed the release date from June 10 to June 12.
+              </Text>
+            ),
+          },
+          {
+            id: 'created',
+            actor: { name: 'Teodor Nagy' },
+            day: 'Yesterday',
+            timestamp: '16:15',
+            title: 'created the release plan',
+          },
+        ]}
+      />
+    </Page>
   ),
 };
