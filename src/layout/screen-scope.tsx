@@ -48,9 +48,12 @@ import { TopEdgeProvider } from './top-edge';
 export function ScreenScope({
   children,
   inheritBottomEdge = false,
-}: PropsWithChildren<{ inheritBottomEdge?: boolean }>) {
+  sizing,
+}: PropsWithChildren<{ inheritBottomEdge?: boolean; sizing?: 'content' | 'fill' }>) {
   return (
-    <ScreenHostContext.Provider value={{ active: true, kind: 'element', restoreScroll: false }}>
+    <ScreenHostContext.Provider
+      value={{ active: true, kind: 'element', restoreScroll: false, sizing }}
+    >
       <ScreenViewportContext.Provider value={null}>
         <ScreenContext.Provider value={null}>
           <ScreenNavigationContext.Provider value={null}>

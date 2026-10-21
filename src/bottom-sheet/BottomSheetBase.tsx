@@ -755,7 +755,7 @@ export const BottomSheetBase = forwardRef(
     // (`layout/screen-scope.tsx`).
     const surfaceChildren = (
       <SheetKeyboardProvider value={keyboardHeight}>
-        <ScreenScope>{children}</ScreenScope>
+        <ScreenScope sizing={sizing}>{children}</ScreenScope>
       </SheetKeyboardProvider>
     );
 
@@ -798,7 +798,14 @@ export const BottomSheetBase = forwardRef(
         scrollBody
       )
     ) : (
-      <View style={[styles.nonScrollableContent, surfaceCorners, { overflow: 'hidden' }]}>
+      <View
+        style={[
+          styles.nonScrollableContent,
+          sizing === 'content' ? { flexBasis: 'auto' } : undefined,
+          surfaceCorners,
+          { overflow: 'hidden' },
+        ]}
+      >
         {surfaceChildren}
       </View>
     );

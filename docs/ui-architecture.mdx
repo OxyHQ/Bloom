@@ -136,6 +136,12 @@ contract. The owning component constrains content to the available space and
 uses Bloom's shared scroll implementation. Consumers should not insert an
 arbitrary fixed-height `ScrollView` to make the component fit.
 
+Preserve the intended sizing behavior of an overlay. A content-sized sheet
+grows with its content up to the available ceiling, then its existing content
+viewport scrolls. A collapsed flex child calls for repairing intrinsic sizing
+at the shared owner; forcing the sheet to fill the viewport changes the product
+behavior and is not an equivalent fix.
+
 One content region has one scroll owner. Headers, toolbars and footers
 coordinate with that owner; content must not acquire a second scrollbar or
 an inset scrolling box by accident. Explicitly independent regions, such as
