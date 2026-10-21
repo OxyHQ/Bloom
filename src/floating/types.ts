@@ -84,6 +84,14 @@ export interface FloatingPositionProps {
 }
 
 export interface FloatingPanelProps extends FloatingPositionProps {
+  busy?: boolean;
+  nativeID?: string;
+  /** Owner-provided scroll ref; suggestions reveal options without transferring focus. */
+  scrollRef?: React.Ref<ComponentRef<typeof import('react-native').ScrollView>>;
+  /** A typing owner can preserve its selection when a mouse selects a result. */
+  onMouseDown?: React.MouseEventHandler;
+  /** A virtual anchor can exclude its editing context from outside dismissal. */
+  contextRef?: React.RefObject<ComponentRef<typeof View> | null>;
   /** Pointer boundary includes the viewport, padding and scrollbar. */
   onPointerEnter?: () => void;
   onPointerLeave?: () => void;

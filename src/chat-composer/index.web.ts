@@ -3,6 +3,7 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
+export { suggestionOptionId } from './suggestion-option-id';
 export { ChatComposer } from './ChatComposer.web';
 export { ComposerBanner } from './ComposerBanner.web';
 export { ComposerAttachmentStrip } from './ComposerAttachmentStrip.web';
@@ -44,6 +45,7 @@ export type {
   MessageContextMenuProps,
   MessageMenuItem,
   ReactionPickerProps,
+  SuggestionAnchor,
   SuggestionKind,
   SuggestionListProps,
   VoiceRecorderLabels,

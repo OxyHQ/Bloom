@@ -73,6 +73,11 @@ export interface RichTextInputProps {
   textStyle?: RichTextStyle;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
+  /** Web: forwarded to the actual editable surface, not its wrapper. */
+  'aria-controls'?: string;
+  'aria-activedescendant'?: string;
+  'aria-expanded'?: boolean;
+  'aria-autocomplete'?: 'none' | 'inline' | 'list' | 'both';
   testID?: string;
 }
 

@@ -298,3 +298,63 @@ natural height in flow mode. Extra tab content must also delegate scrolling to
 the dialog. This makes the dialog the single scroll owner at short viewport
 heights and while the keyboard is open. Flow mode renders its current section
 without virtualization; keep the default list for large standalone catalogs.
+
+### Suggestions owned by a typing field
+
+`SuggestionList` is the same input-owned list for commands, mentions and emoji
+shortcodes. Its `activeIndex` is controlled by the typing field; opening the list
+never transfers keyboard focus to a result. The shared menu row recipe inherits
+`BloomScope` (`md` normally), including the 2 px row gap and 44 px touch minimum.
+Supply `icon` as a `BloomIconComponent` to inherit the icon dimensions and
+foreground; `leading` remains available for arbitrary avatar content.
+
+An `anchor` enables non-modal floating presentation:
+
+```tsx
+<SuggestionList
+  kind="command"
+  suggestions={matches}
+  activeIndex={activeIndex}
+  onActiveIndexChange={setActiveIndex}
+  onSelectSuggestion={choose}
+  anchor={{ contextRef: inputHostRef, getRect: measureCaretInViewport }}
+  open={open}
+  onOpenChange={setOpen}
+  listboxId={listboxId}
+  showEmpty
+/>
+```
+
+`getRect()` returns `{top, bottom, left, right}` in viewport coordinates, or
+`null` until the text layout is current. It is read again after selection,
+content, ancestor scroll and viewport changes. `contextRef` identifies the
+editing region: pointer presses within it are not outside dismissals; moving
+focus to another region closes the web list without restoring focus. The caller
+still owns query matching, keyboard commands, IME handling and permission checks.
+
+Give the field `aria-controls={listboxId}` and, only while an enabled option is
+active, `aria-activedescendant={suggestionOptionId(listboxId, item.id)}`. Option
+IDs remain stable when filtering changes their indices. Groups are contiguous
+sections named by `suggestion.group`; they do not reorder results or consume a
+selection index. `loadingLabel` and `emptyLabel` override localized announcements.
+
+Web uses the existing floating-menu placement, material, overlay stack and
+single scroll owner. It flips/clamps at the viewport edge, reveals the active
+option inside that viewport, and prevents mouse selection from blurring the
+field. Outside presses pass through. Pointer movement can change the controlled
+index; a stationary pointer does not overwrite a keyboard selection when the
+list moves or filters. Do not wrap the anchored list in another Popover or
+ScrollView.
+
+Native uses a non-modal Portal/OverlayRoot with the same placement resolver,
+Surface and ScrollArea. When caret geometry is unavailable, it measures the
+context view as an explicit fallback. Safe-area and keyboard bounds constrain
+the list; hardware Back and keyboard dismissal close it. The caller closes it
+when its input blurs. This preserves the editing keyboard instead of opening a
+modal sheet. Native layout and keyboard wiring have automated coverage; physical
+device behavior must be verified in the consuming application.
+
+The standalone presentation retains its own Surface and scroll viewport (232 px
+by default). Anchored results default to a 320 px ceiling, further constrained
+by available space; `maxHeight` can explicitly lower or change that ceiling.
+Both presentations render the same result rows and callbacks.

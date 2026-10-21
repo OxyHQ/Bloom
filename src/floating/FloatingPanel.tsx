@@ -196,6 +196,11 @@ function transformOriginFor(side: FloatingSide, align: string): string {
 }
 
 export function FloatingPanel({
+  busy,
+  nativeID,
+  scrollRef,
+  onMouseDown,
+  contextRef,
   material: surfaceMaterial = 'surface',
   open,
   anchor,
@@ -508,6 +513,8 @@ export function FloatingPanel({
       const node = panelNode as unknown as Node | null;
       const target = event.target as Node | null;
       if (node && target && node.contains(target)) return;
+      const context = contextRef?.current as unknown as Node | null;
+      if (context && target && context.contains(target)) return;
       if (
         anchor &&
         event.clientX >= anchor.left &&
@@ -521,7 +528,7 @@ export function FloatingPanel({
     };
     document.addEventListener('pointerdown', onPointerDown, true);
     return () => document.removeEventListener('pointerdown', onPointerDown, true);
-  }, [phase, dismissible, modal, onDismiss, panelNode, anchor]);
+  }, [phase, dismissible, modal, onDismiss, panelNode, anchor, contextRef]);
 
   if (phase === 'closed') return null;
   if (phase === 'open' && !anchor) return null;
@@ -542,6 +549,9 @@ export function FloatingPanel({
           />
         ) : null}
         <AnimatedPanel
+          nativeID={nativeID}
+          aria-busy={busy}
+          {...(onMouseDown ? { onMouseDown } : {})}
           ref={attach}
           role={role}
           aria-label={label}
@@ -618,6 +628,7 @@ export function FloatingPanel({
               children
             ) : (
               <ScrollArea
+                ref={scrollRef}
                 style={{ flexShrink: 1, minHeight: 0 }}
                 contentContainerStyle={{
                   gap: callerStyle?.gap ?? density.gap,

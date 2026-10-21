@@ -1,6 +1,8 @@
 import type React from 'react';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
+import { TextFieldInput } from '../text-field';
+import { suggestionOptionId } from './suggestion-option-id';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { AttachmentMenu } from './AttachmentMenu';
@@ -779,6 +781,95 @@ export const Reactions: Story = {
       <BothModes width={390}>
         <Demo />
       </BothModes>
+    );
+  },
+};
+
+/** Typing remains in the field while the shared floating list follows its anchor. */
+export const AnchoredSuggestions: Story = {
+  render: function AnchoredSuggestionsDemo() {
+    const contextRef = useRef<React.ComponentRef<typeof View>>(null);
+    const [query, setQuery] = useState('');
+    const [open, setOpen] = useState(false);
+    const [active, setActive] = useState(0);
+    const choices: ChatComposerSuggestion[] = [
+      { id: 'text', label: 'Text', group: 'Basic blocks', icon: RiPencilLine },
+      { id: 'list', label: 'Checklist', group: 'Basic blocks', icon: RiListCheck3 },
+      { id: 'file', label: 'File', group: 'Media', icon: RiFileCopyLine },
+    ];
+    const matches = choices.filter((item) =>
+      item.label.toLowerCase().includes(query.toLowerCase()),
+    );
+    const choose = (item: ChatComposerSuggestion) => {
+      setQuery(item.label);
+      setOpen(false);
+    };
+    return (
+      <View style={{ minHeight: 440, padding: 24 }}>
+        <View ref={contextRef}>
+          <TextFieldInput
+            accessibilityLabel="Command"
+            label="Command"
+            value={query}
+            placeholder="Type a command"
+            onFocus={() => setOpen(true)}
+            onChangeText={(value) => {
+              setQuery(value);
+              setActive(0);
+              setOpen(true);
+            }}
+            onKeyPress={(event) => {
+              if (!open) return;
+              const key = event.nativeEvent.key;
+              if (key === 'ArrowDown' || key === 'ArrowUp') {
+                event.preventDefault();
+                setActive(
+                  (i) =>
+                    (i + (key === 'ArrowDown' ? 1 : -1) + matches.length) %
+                    Math.max(1, matches.length),
+                );
+              }
+              if (key === 'Enter' && matches[active]) {
+                event.preventDefault();
+                choose(matches[active]);
+              }
+              if (key === 'Escape') setOpen(false);
+            }}
+            {...{
+              'aria-controls': open ? 'command-suggestions' : undefined,
+              'aria-activedescendant':
+                open && matches[active]
+                  ? suggestionOptionId('command-suggestions', matches[active].id)
+                  : undefined,
+            }}
+          />
+        </View>
+        <SuggestionList
+          kind="command"
+          suggestions={matches}
+          activeIndex={active}
+          onActiveIndexChange={setActive}
+          onSelectSuggestion={choose}
+          open={open}
+          onOpenChange={setOpen}
+          showEmpty
+          listboxId="command-suggestions"
+          anchor={{
+            contextRef,
+            getRect: () => {
+              const host = contextRef.current as unknown as {
+                getBoundingClientRect?: () => {
+                  top: number;
+                  bottom: number;
+                  left: number;
+                  right: number;
+                };
+              } | null;
+              return host?.getBoundingClientRect?.() ?? null;
+            },
+          }}
+        />
+      </View>
     );
   },
 };

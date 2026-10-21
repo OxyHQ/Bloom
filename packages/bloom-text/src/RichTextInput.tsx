@@ -22,6 +22,7 @@ import { measureRanges } from './text-geometry';
 import { containsFocus, useKeyCapture } from './key-capture';
 import { InputSync } from './input-sync';
 import { usePasteCapture } from './paste-capture';
+import { useInputAccessibility } from './input-accessibility';
 import type { ActiveMarks, RichTextInputHandle, RichTextInputProps, ToggleableMark } from './types';
 
 /** Block-level shortcuts belong to the block editor, never to one input. */
@@ -67,8 +68,9 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
   const inputRef = useRef<EnrichedTextInputInstance | null>(null);
   const wrapperRef = useRef<View | null>(null);
   const focusedRef = useRef(false);
-  useKeyCapture(wrapperRef, onKeyCommand);
-  usePasteCapture(wrapperRef, onPaste);
+  useKeyCapture(wrapperRef, editable ? onKeyCommand : undefined);
+  usePasteCapture(wrapperRef, editable ? onPaste : undefined);
+  useInputAccessibility(wrapperRef, props);
   // Mounted with the first value only; later values arrive through setValue.
   const [defaultHtml] = useState(() => segmentsToHtml(value));
   const [sync] = useState(
@@ -87,9 +89,9 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
   const handleHtml = useCallback(
     (html: string) => {
       const change = sync.report(htmlToSegments(html));
-      if (change) onChange(change);
+      if (change && editable) onChange(change);
     },
-    [sync, onChange],
+    [sync, onChange, editable],
   );
 
   useImperativeHandle(
@@ -168,6 +170,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
         style={inputStyle}
         htmlStyle={htmlStyle}
         accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ expanded: props['aria-expanded'] }}
         testID={testID}
         onChangeHtml={(e) => handleHtml(e.nativeEvent.value)}
         onChangeSelection={(e) => {
@@ -186,12 +189,12 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
                 const { key } = e.nativeEvent;
                 onKeyPress?.(key);
                 // Web reports key commands from the capture listener instead.
-                if (Platform.OS !== 'web')
+                if (editable && Platform.OS !== 'web')
                   onKeyCommand?.({ key, shift: false, alt: false, mod: false });
               }
             : undefined
         }
-        onSubmitEditing={onSubmit ? () => onSubmit() : undefined}
+        onSubmitEditing={onSubmit && editable ? () => onSubmit() : undefined}
         onPasteImages={
           onPasteImages
             ? (e) => onPasteImages(e.nativeEvent.images.map((i) => ({ ...i })))
