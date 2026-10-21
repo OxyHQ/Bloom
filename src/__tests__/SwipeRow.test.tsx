@@ -29,6 +29,7 @@ import { useTheme } from '../theme/use-theme';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import { SwipeRow, useSwipeAvailable } from '../swipe-row';
+import { ScrollArea } from '../layout/ScrollArea';
 import { SWIPE_ACTION_WIDTH, SWIPE_COMMIT_FRACTION, SWIPE_TAP_SLOP } from '../swipe-row/constants';
 import { resolveSwipeRowPaint, swipeActionPaint } from '../swipe-row/shared';
 import type { SwipeRowAction } from '../swipe-row/types';
@@ -95,7 +96,8 @@ const sameColor = (a: string, b: string) =>
 interface RecordedPan {
   __handlers: {
     onChange?: (event: { changeX: number }) => void;
-    onFinalize?: () => void;
+    onEnd?: (event: unknown, success: boolean) => void;
+    onFinalize?: (event: unknown, success: boolean) => void;
   };
 }
 
@@ -114,7 +116,8 @@ function handlers(spy: ReturnType<typeof recordPan>): RecordedPan['__handlers'] 
 function drag(spy: ReturnType<typeof recordPan>, dx: number) {
   act(() => {
     handlers(spy).onChange?.({ changeX: dx });
-    handlers(spy).onFinalize?.();
+    handlers(spy).onEnd?.({}, true);
+    handlers(spy).onFinalize?.({}, true);
   });
 }
 
@@ -405,4 +408,44 @@ describe('SwipeRow touch-action', () => {
     expect(built).toBeDefined();
     expect(built?.__config.touchAction).toBe('pan-y');
   });
+});
+
+it('gives nested horizontal scrolling precedence over row actions and releases it on removal', () => {
+  const pan = recordPan();
+  const native = jest.spyOn(Gesture, 'Native');
+  const fixture = (horizontal: boolean) => (
+    <SwipeRow actions={{ left: [ARCHIVE] }} onAction={() => {}}>
+      {horizontal ? (
+        <ScrollArea horizontal>
+          <div>Attachments</div>
+        </ScrollArea>
+      ) : (
+        <div>Message</div>
+      )}
+    </SwipeRow>
+  );
+  mount(fixture(true));
+  const outer = pan.mock.results[0]?.value as { __config: Record<string, unknown> };
+  const inner = native.mock.results[0]?.value as { __config: Record<string, unknown> };
+  expect(inner.__config.blocksExternalGesture).toBe(outer);
+  expect(inner.__config.disallowInterruption).toBe(true);
+  expect(inner.__config.shouldActivateOnStart).toBe(true);
+  expect(outer.__config.touchAction).toBe('auto');
+  expect(container.querySelector('[data-bloom-swipe-scroll]')).not.toBeNull();
+  mount(fixture(false));
+  expect(outer.__config.touchAction).toBe('pan-y');
+});
+
+it('does not commit a row action when a nested scroll cancels its pan', () => {
+  const pan = recordPan();
+  const onOpenChange = jest.fn();
+  mount(<Row onOpenChange={onOpenChange} />);
+  act(() => {
+    handlers(pan).onChange?.({ changeX: 70 });
+    handlers(pan).onEnd?.({}, false);
+    handlers(pan).onFinalize?.({}, false);
+  });
+  expect(onOpenChange).toHaveBeenCalledWith(null);
+  expect(onOpenChange).not.toHaveBeenCalledWith('left');
+  expect(maybe('sr-dismiss')).toBeNull();
 });

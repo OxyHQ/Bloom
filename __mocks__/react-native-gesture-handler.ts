@@ -38,6 +38,9 @@ const gestureBuilder = (): MockGesture => {
   };
   const builder = {
     enabled: config('enabled'),
+    blocksExternalGesture: config('blocksExternalGesture'),
+    disallowInterruption: config('disallowInterruption'),
+    shouldActivateOnStart: config('shouldActivateOnStart'),
     simultaneousWithExternalGesture: () => builder,
     withRef: () => builder,
     manualActivation: () => builder,

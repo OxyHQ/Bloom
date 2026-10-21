@@ -406,11 +406,12 @@ export function createAppShell(
       scroll: document ? 'document' : 'fixed',
       aside: undefined,
       contentSpan: undefined,
-      contentWidth: deck ? undefined : envelope,
+      contentWidth: deck || props.contentMaxWidth === 'none' ? undefined : envelope,
       contentMaxWidth: deck ? 'none' : props.contentMaxWidth,
       children: PanelLayoutView ? (
         <PanelLayoutView
           layout={layout}
+          fillWidth={props.contentMaxWidth === 'none'}
           shellWidth={width}
           gap={gap}
           testID={props.testID ? `${props.testID}-panels` : undefined}

@@ -1274,3 +1274,6 @@ from `@oxy.so/bloom/app-shell/hooks`. This entry shares the shell contexts and
 panel history without pulling shell rendering and sidebar components into the
 route's bundle. The full `app-shell` entry continues to export these hooks for
 compatibility.
+
+
+With root `panelLayout`, `contentMaxWidth="none"` makes a split workspace use all space remaining beside navigation and framing. Fixed-width descriptors keep their basis; descriptors without a width share the remainder according to `span`. Omitting this opt-in retains the preferred reading envelope. The same contract applies to web container-query layout and native measurement.

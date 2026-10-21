@@ -901,3 +901,34 @@ export const BoundedRevealPanels: Story = {
     </AppShell>
   ),
 };
+
+export const FluidSplitWorkspace: Story = {
+  parameters: { controls: { disable: true }, layout: 'fullscreen' },
+  render: () => (
+    <AppShell
+      contentMaxWidth="none"
+      drawer="reveal"
+      header={null}
+      gutter={12}
+      sidebar={{ items: DEMO_NAV }}
+      panelLayout={{
+        mode: 'split',
+        flow: 'bounded',
+        appearance: 'separated',
+        collapseBelow: 'lg',
+        activePanel: 'detail',
+        panels: [
+          {
+            id: 'list',
+            width: 380,
+            minWidth: 320,
+            maxWidth: 480,
+            content: <MapFill label="Messages" />,
+          },
+          { id: 'detail', content: <MapFill label="Message" /> },
+        ],
+      }}
+      testID="fluid-split"
+    />
+  ),
+};

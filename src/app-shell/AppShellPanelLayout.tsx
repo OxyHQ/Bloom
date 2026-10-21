@@ -77,6 +77,8 @@ const FILL: ViewStyle = {
 export interface PanelLayoutViewProps {
   layout: AppShellPanelLayout;
   shellWidth: number;
+  /** Explicit unrestricted reading envelope from the root AppShell. */
+  fillWidth?: boolean;
   /** JSX compatibility groups resolve eligibility against their own box. */
   eligibilityFromGroup?: boolean;
   gap: number;
@@ -712,6 +714,7 @@ export function createPanelLayoutView(
     surfaceOwned = false,
     shellWidth,
     eligibilityFromGroup = false,
+    fillWidth = false,
     gap,
     testID,
   }: PanelLayoutViewProps & { surfaceOwned?: boolean }) {
@@ -794,6 +797,7 @@ export function createPanelLayoutView(
           actualGap,
           layout.widths ?? ownWidths,
           layout.heights ?? ownHeights,
+          fillWidth,
         )
       : '';
     useInsertionEffect(() => {

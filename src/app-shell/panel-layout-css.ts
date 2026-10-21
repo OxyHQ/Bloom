@@ -25,6 +25,7 @@ export function panelLayoutCss(
   gap: number,
   widths: Readonly<Record<string, number>> = {},
   heights: Readonly<Record<string, number>> = {},
+  fillWidth = false,
 ) {
   const root = `[data-bloom-layout="${scope}"]`;
   const group = `[data-bloom-panel-group="${scope}"]`;
@@ -65,8 +66,11 @@ export function panelLayoutCss(
   // Both envelope constraints interpolate as lengths. Switching max-width from
   // `none` to the reading width clamps an exiting workspace immediately, making
   // its surviving track shrink before it grows while outgoing tracks fade.
-  const readingWidth =
-    'min(var(--bloom-reading-envelope), max(0px, calc(100cqw - var(--bloom-nav-width, 0px) - var(--bloom-nav-gap, 0px) - var(--bloom-frame-start, 0px) - var(--bloom-frame-end, 0px))))';
+  const availableWidth =
+    'max(0px, calc(100cqw - var(--bloom-nav-width, 0px) - var(--bloom-nav-gap, 0px) - var(--bloom-frame-start, 0px) - var(--bloom-frame-end, 0px)))';
+  const readingWidth = fillWidth
+    ? availableWidth
+    : `min(var(--bloom-reading-envelope), ${availableWidth})`;
   let css = `${root} [data-bloom-reading-envelope="${scope}"]{width:${readingWidth}!important;flex-grow:0!important;flex-shrink:0!important;flex-basis:auto!important;max-width:${readingWidth}!important;interpolate-size:allow-keywords;transition:width 380ms cubic-bezier(.4,0,.2,1) ${geometryDelay}ms,max-width 380ms cubic-bezier(.4,0,.2,1) ${geometryDelay}ms}
 ${root} [data-bloom-shell-frame="${scope}"]{transition-delay:${geometryDelay}ms!important}
 ${root} [data-bloom-reading-content="${scope}"]{width:100%!important;flex-basis:100%!important;max-width:100%!important;flex-grow:1!important}

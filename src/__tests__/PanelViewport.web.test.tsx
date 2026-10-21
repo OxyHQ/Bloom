@@ -172,3 +172,16 @@ it('enables entry motion only after the initial tracks have computed final style
   group?.removeAttribute('data-bloom-panel-ready');
   expect(added?.matches(entries[1]?.[1] ?? '')).toBe(false);
 });
+
+it('lets an explicitly unrestricted split envelope fill available shell space', () => {
+  const layout = {
+    mode: 'split' as const,
+    panels: [{ id: 'list', width: 380, minWidth: 320, maxWidth: 480 }, { id: 'detail' }],
+  };
+  const capped = panelLayoutCss('bounded', layout, 12);
+  const fluid = panelLayoutCss('fluid', layout, 12, {}, {}, true);
+  expect(capped).toContain('width:min(var(--bloom-reading-envelope), max(0px, calc(100cqw');
+  expect(fluid).toContain('width:max(0px, calc(100cqw');
+  expect(fluid).not.toContain('width:min(var(--bloom-reading-envelope)');
+  expect(fluid).toContain('flex:var(--fluid-panel-grow-1, 1) 1');
+});
