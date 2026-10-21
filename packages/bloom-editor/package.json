@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-editor",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Bloom's block editor: a headless, command-based document model and the native-first React components on top of it.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {

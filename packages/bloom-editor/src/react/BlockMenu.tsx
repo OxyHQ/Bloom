@@ -8,7 +8,6 @@ import {
   moveBlocks,
   outdentBlocks,
   setBlocksProps,
-  setProps,
   canTurnInto,
   turnInto,
 } from '../model/commands';
@@ -152,11 +151,10 @@ export function BlockMenu() {
                     act((c) =>
                       composeCommands(
                         c,
-                        targets.flatMap((target) => [
-                          (cc: CommandContext) => turnInto(cc, target, action.type),
-                          (cc: CommandContext) =>
-                            action.props ? setProps(cc, target, action.props) : null,
-                        ]),
+                        targets.map(
+                          (target) => (cc: CommandContext) =>
+                            turnInto(cc, target, action.type, action.props ?? {}),
+                        ),
                       ),
                     );
                   }}

@@ -107,6 +107,28 @@ the end of a container, an empty one included.
   its own slash item can put one in with `controller.insertMention`.
 - **Mentions**: `mentions.search` answers what an indicator finds; the
   mention is stored on the text (`mention.attributes`).
+- **Block transformations** apply the destination type and variant together.
+  `turnInto(context, blockId, type, props)` determines whether the final block
+  accepts children before moving any: toggle headings retain their subtree;
+  an ordinary heading promotes it after the heading. Pass `{}` to select the
+  ordinary variant, including when the type already matches. The three-argument
+  form preserves the existing variant. Props still pass through the destination
+  schema, and the change is one reversible transaction. Block and slash menus
+  use this same command.
+- **Whole-block clipboard on web** currently writes Markdown text, not a
+  lossless block format. Copy remains a text export. Cut first verifies that
+  the existing paste parser reconstructs the whole snapshot (including props,
+  marks and children) and that the clipboard accepts the text. Otherwise it
+  cancels the operation, retains content and selection, and calls
+  `onClipboardError('unsupported-cut' | 'write-failed' | 'changed-cut')`; applications should
+  show localized feedback. Checks are bounded to 2,000 blocks, 64 nesting levels
+  and one million characters of text/snapshot JSON; larger selections stay put.
+  Attachments, unsupported formatting and structures cannot be cut through a
+  lossy text format. Ordinary reversible paragraphs can still be cut and undone.
+  A delayed removal confirmation rechecks content, descendant IDs and positions;
+  collaborative changes or moves cancel the removal with `changed-cut` feedback.
+  The native platform text clipboard is unchanged; it does not provide the
+  web whole-block interception contract.
 - **Undo** groups typing into words and takes back only your own change,
   even when others edited the same block since.
 
@@ -227,3 +249,5 @@ bun run storybook             # Editor/BlockEditor stories
 node scripts/verify-editor.mjs  # browser checks against a built Storybook (ranges measured
                                 # against the input's own text boxes, format actions, removal)
 ```
+
+Pending whole-block removal confirmations recheck the mounted surface’s current editing capability before applying changes; becoming read-only or unmounting cancels the removal.

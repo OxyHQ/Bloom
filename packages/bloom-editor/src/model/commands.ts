@@ -239,10 +239,21 @@ export function canTurnInto(
  * lists the props it keeps. The new type's default props fill gaps; text is
  * added or kept per the new type. Refused (null) when the new type has no
  * text and the block has some: it would be gone once the document is saved.
+ *
+ * Explicit `props` select the destination variant as well as its type. An
+ * omitted `childrenWhen` flag in that object selects the ordinary variant.
+ * Resolve both together before placing children: a toggle heading must not
+ * briefly become a childless heading. Without `props`, legacy callers keep
+ * the current props/variant.
  */
-export function turnInto(ctx: CommandContext, id: BlockId, type: string): Transaction | null {
+export function turnInto(
+  ctx: CommandContext,
+  id: BlockId,
+  type: string,
+  props?: Readonly<Record<string, unknown>>,
+): Transaction | null {
   const block = getBlock(ctx.doc, id);
-  if (block.type === type || !canTurnInto(ctx, id, type)) return null;
+  if ((block.type === type && props === undefined) || !canTurnInto(ctx, id, type)) return null;
   if (!canHold(ctx.schema, parentOf(ctx.doc, id), type)) return null;
   const spec = specOf(ctx.schema, type);
   const b = new Builder(ctx.doc);
@@ -250,7 +261,20 @@ export function turnInto(ctx: CommandContext, id: BlockId, type: string): Transa
     type,
   };
   if (spec.hasText && !block.text) after.text = [];
-  if (spec.defaultProps || spec.props) after.props = propsFor(spec, block.props);
+  if (props !== undefined || spec.defaultProps || spec.props) {
+    after.props = propsFor(spec, {
+      ...block.props,
+      ...(props !== undefined && spec.childrenWhen ? { [spec.childrenWhen]: false } : {}),
+      ...props,
+    });
+  }
+  if (
+    block.type === type &&
+    after.props &&
+    Object.keys(after.props).length === Object.keys(block.props).length &&
+    Object.entries(after.props).every(([key, value]) => Object.is(block.props[key], value))
+  )
+    return null;
   b.update(id, after);
   // A type that cannot hold children hands them to the following position.
   if (!acceptsChildren(ctx.schema, getBlock(b.doc, id)) && block.children.length > 0) {

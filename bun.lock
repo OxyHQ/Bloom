@@ -94,7 +94,7 @@
     },
     "packages/bloom-editor": {
       "name": "@oxy.so/bloom-editor",
-      "version": "0.6.1",
+      "version": "0.6.2",
       "dependencies": {
         "@oxy.so/bloom-text": "workspace:^",
       },

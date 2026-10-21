@@ -22,6 +22,7 @@ import {
   moveBlocks,
   outdent,
   propsFor,
+  specOf,
   removeBlocks,
   setProps,
   snapshotToMarkdown,
@@ -254,6 +255,63 @@ describe('indent and outdent', () => {
 });
 
 describe('turnInto', () => {
+  it('turns a toggle heading into the same ordinary heading and promotes its children reversibly', () => {
+    const doc = build([
+      ['heading_1', 'Parent', [['paragraph', 'Child']], { toggleable: true, expanded: false }],
+      ['paragraph', 'Following'],
+    ]);
+    const next = run(doc, turnInto(ctx(doc), 'b1', 'heading_1', {}));
+    expect(getBlock(next, 'b1').props.toggleable).toBe(false);
+    expect(outline(next)).toEqual(['heading_1:Parent', 'paragraph:Child', 'paragraph:Following']);
+  });
+
+  it('keeps a nested subtree when the final heading variant accepts children, with one undo step', () => {
+    const doc = build([
+      [
+        'toggle',
+        'Parent',
+        [['paragraph', 'Child', [['todo', 'Grandchild', [], { checked: true }]]]],
+      ],
+      ['paragraph', 'Following'],
+    ]);
+    const store = new EditorStore({ document: doc, schema: SCHEMA, newId });
+    store.run((c) => turnInto(c, 'b1', 'heading_2', { toggleable: true, expanded: true }));
+    expect(store.doc.root).toEqual(doc.root);
+    expect(getBlock(store.doc, 'b1').children).toEqual(['b2']);
+    expect(getBlock(store.doc, 'b2')).toEqual(getBlock(doc, 'b2'));
+    expect(getBlock(store.doc, 'b3')).toEqual(getBlock(doc, 'b3'));
+    const converted = store.doc;
+    expect(store.undo()).toBe(true);
+    expect(store.doc).toEqual(doc);
+    expect(store.undo()).toBe(false);
+    expect(store.redo()).toBe(true);
+    expect(store.doc).toEqual(converted);
+  });
+
+  it('applies variant props through the destination schema and preserves unrelated formatting', () => {
+    const schema = extendSchema(SCHEMA, [
+      { ...specOf(SCHEMA, 'heading_1'), props: ['toggleable', 'expanded', 'color'] },
+    ]);
+    const doc = build([['paragraph', 'Parent', [['paragraph', 'Child']], { color: 'red' }]]);
+    const next = run(
+      doc,
+      turnInto({ ...ctx(doc), schema }, 'b1', 'heading_1', {
+        toggleable: true,
+        expanded: true,
+        ignored: 'not in schema',
+      }),
+    );
+    expect(getBlock(next, 'b1').props).toEqual({ color: 'red', toggleable: true, expanded: true });
+    expect(getBlock(next, 'b1').children).toEqual(['b2']);
+    expect(turnInto({ ...ctx(next), schema }, 'b1', 'heading_1', { toggleable: true })).toBeNull();
+  });
+
+  it('does not apply destination props when the transformation would discard text', () => {
+    const doc = build([['paragraph', 'Keep me', [], { color: 'red' }]]);
+    expect(turnInto(ctx(doc), 'b1', 'divider', { color: 'blue' })).toBeNull();
+    expect(getBlock(doc, 'b1').props.color).toBe('red');
+  });
+
   it('keeps text and props so switching back restores them', () => {
     const doc = build([['todo', 'task', [], { checked: true }]]);
     let next = run(doc, turnInto(ctx(doc), 'b1', 'paragraph'));
