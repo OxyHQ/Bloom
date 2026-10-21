@@ -375,6 +375,50 @@ describe('confirmRemove', () => {
     expect(ui.get().selectedBlocks).toEqual([]);
   });
 
+  it.each(['cut', 'delete', 'unmount'] as const)(
+    'does not remove after pending %s loses its editing capability',
+    async (kind) => {
+      let answer!: (value: boolean) => void;
+      const pending = new Promise<boolean>((resolve) => {
+        answer = resolve;
+      });
+      const store = makeStore(PARAGRAPHS);
+      const controller = new EditorController(store);
+      const editor = (readOnly: boolean) => (
+        <BlockEditor
+          store={store}
+          controller={controller}
+          slashItems={[]}
+          readOnly={readOnly}
+          confirmRemove={() => pending}
+        />
+      );
+      mount(editor(false));
+      act(() => selectBlocks(controller.ui, ['b1', 'b2']));
+      if (kind === 'cut') {
+        const data = new Map<string, string>();
+        const event = new Event('cut', { bubbles: true, cancelable: true });
+        Object.defineProperty(event, 'clipboardData', {
+          value: {
+            setData: (type: string, value: string) => data.set(type, value),
+            getData: (type: string) => data.get(type) ?? '',
+          },
+        });
+        act(() => {
+          document.activeElement?.dispatchEvent(event);
+        });
+        expect(data.get('text/plain')).toBe('Hello world\nSecond\n');
+      } else keyDown('Delete');
+      const before = store.doc;
+      act(() => root?.render(kind === 'unmount' ? null : editor(true)));
+      await act(async () => {
+        answer(true);
+        await pending;
+      });
+      expect(store.doc).toBe(before);
+      expect(store.doc.root).toEqual(['b1', 'b2']);
+    },
+  );
   it('copies on cut but removes only once agreed', () => {
     const confirm = jest.fn(() => false);
     const { store } = setup(confirm);

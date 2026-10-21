@@ -249,3 +249,5 @@ bun run storybook             # Editor/BlockEditor stories
 node scripts/verify-editor.mjs  # browser checks against a built Storybook (ranges measured
                                 # against the input's own text boxes, format actions, removal)
 ```
+
+Pending whole-block removal confirmations recheck the mounted surface’s current editing capability before applying changes; becoming read-only or unmounting cancels the removal.

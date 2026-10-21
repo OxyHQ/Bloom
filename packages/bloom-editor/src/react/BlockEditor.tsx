@@ -1,5 +1,13 @@
 import type { PastedImage } from '@oxy.so/bloom-text';
-import { type ComponentRef, type ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
+import {
+  type ComponentRef,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import type { MentionMark } from '@oxy.so/bloom-text/model';
 import {
   Linking,
@@ -255,11 +263,20 @@ export function EditorSurface({
   }, [ui, formatActions]);
 
   // Removing whole blocks waits for the app's word; one question at a time.
+  const removalAccess = useRef<{ store: EditorStore; readOnly: boolean } | null>(null);
+  useLayoutEffect(() => {
+    removalAccess.current = { store, readOnly };
+    return () => {
+      removalAccess.current = null;
+    };
+  }, [store, readOnly]);
   const confirming = useRef(false);
   const requestRemove = useCallback(
     (ids: readonly BlockId[], stillCurrent?: () => boolean) => {
       if (readOnly || ids.length === 0 || confirming.current) return;
       const answer = afterConfirm(confirmRemove, ids, () => {
+        const access = removalAccess.current;
+        if (!access || access.store !== store || access.readOnly) return;
         if (stillCurrent && !stillCurrent()) return;
         const present = ids.filter((id) => store.doc.blocks[id]);
         if (present.length === 0) return;
