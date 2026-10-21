@@ -446,3 +446,1408 @@
   --shadow-s: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.10);
   --shadow-m: 0 4px 12px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12);
 }
+
+@property --bloom-cx-publisher { syntax: "*"; inherits: false; }
+@property --bloom-cx-auto-mask { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-rauto-mask { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-radius-topLeft { syntax: "*"; inherits: false; }
+@property --bloom-cx-rradius-topLeft { syntax: "*"; inherits: false; }
+@property --bloom-cx-self-topLeft { syntax: "*"; inherits: false; }
+@property --bloom-cx-auto-topLeft { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-rauto-topLeft { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-radius-topRight { syntax: "*"; inherits: false; }
+@property --bloom-cx-rradius-topRight { syntax: "*"; inherits: false; }
+@property --bloom-cx-self-topRight { syntax: "*"; inherits: false; }
+@property --bloom-cx-auto-topRight { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-rauto-topRight { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-radius-bottomRight { syntax: "*"; inherits: false; }
+@property --bloom-cx-rradius-bottomRight { syntax: "*"; inherits: false; }
+@property --bloom-cx-self-bottomRight { syntax: "*"; inherits: false; }
+@property --bloom-cx-auto-bottomRight { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-rauto-bottomRight { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-radius-bottomLeft { syntax: "*"; inherits: false; }
+@property --bloom-cx-rradius-bottomLeft { syntax: "*"; inherits: false; }
+@property --bloom-cx-self-bottomLeft { syntax: "*"; inherits: false; }
+@property --bloom-cx-auto-bottomLeft { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-rauto-bottomLeft { syntax: "*"; inherits: false; initial-value: 0; }
+@property --bloom-cx-padding-top { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-padding-right { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-rpadding-right { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-padding-bottom { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-padding-left { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-rpadding-left { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-border-top { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-border-right { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-rborder-right { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-border-bottom { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-border-left { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-rborder-left { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-margin-top { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-margin-right { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-rmargin-right { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-margin-bottom { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-margin-left { syntax: "*"; inherits: false; initial-value: 0px; }
+@property --bloom-cx-rmargin-left { syntax: "*"; inherits: false; initial-value: 0px; }
+@utility p-* {
+  --tw-sort: padding;
+  --bloom-cx-padding-top: --spacing(--value(number));
+  --bloom-cx-padding-right: --spacing(--value(number));
+  --bloom-cx-rpadding-right: --spacing(--value(number));
+  --bloom-cx-padding-bottom: --spacing(--value(number));
+  --bloom-cx-padding-left: --spacing(--value(number));
+  --bloom-cx-rpadding-left: --spacing(--value(number));
+  --bloom-cx-padding-top: --value(--spacing-*, [length]);
+  --bloom-cx-padding-right: --value(--spacing-*, [length]);
+  --bloom-cx-rpadding-right: --value(--spacing-*, [length]);
+  --bloom-cx-padding-bottom: --value(--spacing-*, [length]);
+  --bloom-cx-padding-left: --value(--spacing-*, [length]);
+  --bloom-cx-rpadding-left: --value(--spacing-*, [length]);
+}
+@utility p-px {
+  --tw-sort: padding;
+  --bloom-cx-padding-top: 1px;
+  --bloom-cx-padding-right: 1px;
+  --bloom-cx-rpadding-right: 1px;
+  --bloom-cx-padding-bottom: 1px;
+  --bloom-cx-padding-left: 1px;
+  --bloom-cx-rpadding-left: 1px;
+}
+@utility px-* {
+  --tw-sort: padding-x;
+  --bloom-cx-padding-left: --spacing(--value(number));
+  --bloom-cx-rpadding-left: --spacing(--value(number));
+  --bloom-cx-padding-right: --spacing(--value(number));
+  --bloom-cx-rpadding-right: --spacing(--value(number));
+  --bloom-cx-padding-left: --value(--spacing-*, [length]);
+  --bloom-cx-rpadding-left: --value(--spacing-*, [length]);
+  --bloom-cx-padding-right: --value(--spacing-*, [length]);
+  --bloom-cx-rpadding-right: --value(--spacing-*, [length]);
+}
+@utility px-px {
+  --tw-sort: padding-x;
+  --bloom-cx-padding-left: 1px;
+  --bloom-cx-rpadding-left: 1px;
+  --bloom-cx-padding-right: 1px;
+  --bloom-cx-rpadding-right: 1px;
+}
+@utility py-* {
+  --tw-sort: padding-y;
+  --bloom-cx-padding-top: --spacing(--value(number));
+  --bloom-cx-padding-bottom: --spacing(--value(number));
+  --bloom-cx-padding-top: --value(--spacing-*, [length]);
+  --bloom-cx-padding-bottom: --value(--spacing-*, [length]);
+}
+@utility py-px {
+  --tw-sort: padding-y;
+  --bloom-cx-padding-top: 1px;
+  --bloom-cx-padding-bottom: 1px;
+}
+@utility pt-* {
+  --tw-sort: padding-t;
+  --bloom-cx-padding-top: --spacing(--value(number));
+  --bloom-cx-padding-top: --value(--spacing-*, [length]);
+}
+@utility pt-px {
+  --tw-sort: padding-t;
+  --bloom-cx-padding-top: 1px;
+}
+@utility pr-* {
+  --tw-sort: padding-r;
+  --bloom-cx-padding-right: --spacing(--value(number));
+  --bloom-cx-rpadding-right: --spacing(--value(number));
+  --bloom-cx-padding-right: --value(--spacing-*, [length]);
+  --bloom-cx-rpadding-right: --value(--spacing-*, [length]);
+}
+@utility pr-px {
+  --tw-sort: padding-r;
+  --bloom-cx-padding-right: 1px;
+  --bloom-cx-rpadding-right: 1px;
+}
+@utility pb-* {
+  --tw-sort: padding-b;
+  --bloom-cx-padding-bottom: --spacing(--value(number));
+  --bloom-cx-padding-bottom: --value(--spacing-*, [length]);
+}
+@utility pb-px {
+  --tw-sort: padding-b;
+  --bloom-cx-padding-bottom: 1px;
+}
+@utility pl-* {
+  --tw-sort: padding-l;
+  --bloom-cx-padding-left: --spacing(--value(number));
+  --bloom-cx-rpadding-left: --spacing(--value(number));
+  --bloom-cx-padding-left: --value(--spacing-*, [length]);
+  --bloom-cx-rpadding-left: --value(--spacing-*, [length]);
+}
+@utility pl-px {
+  --tw-sort: padding-l;
+  --bloom-cx-padding-left: 1px;
+  --bloom-cx-rpadding-left: 1px;
+}
+@utility ps-* {
+  --tw-sort: padding-s;
+  --bloom-cx-padding-left: --spacing(--value(number));
+  --bloom-cx-rpadding-right: --spacing(--value(number));
+  --bloom-cx-padding-left: --value(--spacing-*, [length]);
+  --bloom-cx-rpadding-right: --value(--spacing-*, [length]);
+}
+@utility ps-px {
+  --tw-sort: padding-s;
+  --bloom-cx-padding-left: 1px;
+  --bloom-cx-rpadding-right: 1px;
+}
+@utility pe-* {
+  --tw-sort: padding-e;
+  --bloom-cx-padding-right: --spacing(--value(number));
+  --bloom-cx-rpadding-left: --spacing(--value(number));
+  --bloom-cx-padding-right: --value(--spacing-*, [length]);
+  --bloom-cx-rpadding-left: --value(--spacing-*, [length]);
+}
+@utility pe-px {
+  --tw-sort: padding-e;
+  --bloom-cx-padding-right: 1px;
+  --bloom-cx-rpadding-left: 1px;
+}
+@utility m-* {
+  --tw-sort: margin;
+  --bloom-cx-margin-top: --spacing(--value(number));
+  --bloom-cx-margin-right: --spacing(--value(number));
+  --bloom-cx-rmargin-right: --spacing(--value(number));
+  --bloom-cx-margin-bottom: --spacing(--value(number));
+  --bloom-cx-margin-left: --spacing(--value(number));
+  --bloom-cx-rmargin-left: --spacing(--value(number));
+  --bloom-cx-margin-top: --value(--spacing-*, [length]);
+  --bloom-cx-margin-right: --value(--spacing-*, [length]);
+  --bloom-cx-rmargin-right: --value(--spacing-*, [length]);
+  --bloom-cx-margin-bottom: --value(--spacing-*, [length]);
+  --bloom-cx-margin-left: --value(--spacing-*, [length]);
+  --bloom-cx-rmargin-left: --value(--spacing-*, [length]);
+}
+@utility m-px {
+  --tw-sort: margin;
+  --bloom-cx-margin-top: 1px;
+  --bloom-cx-margin-right: 1px;
+  --bloom-cx-rmargin-right: 1px;
+  --bloom-cx-margin-bottom: 1px;
+  --bloom-cx-margin-left: 1px;
+  --bloom-cx-rmargin-left: 1px;
+}
+@utility -m-* {
+  --tw-sort: margin;
+  --bloom-cx-margin-top: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-right: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-rmargin-right: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-bottom: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-left: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-rmargin-left: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-top: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-margin-right: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-rmargin-right: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-margin-bottom: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-margin-left: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-rmargin-left: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -m-px {
+  --tw-sort: margin;
+  --bloom-cx-margin-top: -1px;
+  --bloom-cx-margin-right: -1px;
+  --bloom-cx-rmargin-right: -1px;
+  --bloom-cx-margin-bottom: -1px;
+  --bloom-cx-margin-left: -1px;
+  --bloom-cx-rmargin-left: -1px;
+}
+@utility mx-* {
+  --tw-sort: margin-x;
+  --bloom-cx-margin-left: --spacing(--value(number));
+  --bloom-cx-rmargin-left: --spacing(--value(number));
+  --bloom-cx-margin-right: --spacing(--value(number));
+  --bloom-cx-rmargin-right: --spacing(--value(number));
+  --bloom-cx-margin-left: --value(--spacing-*, [length]);
+  --bloom-cx-rmargin-left: --value(--spacing-*, [length]);
+  --bloom-cx-margin-right: --value(--spacing-*, [length]);
+  --bloom-cx-rmargin-right: --value(--spacing-*, [length]);
+}
+@utility mx-px {
+  --tw-sort: margin-x;
+  --bloom-cx-margin-left: 1px;
+  --bloom-cx-rmargin-left: 1px;
+  --bloom-cx-margin-right: 1px;
+  --bloom-cx-rmargin-right: 1px;
+}
+@utility -mx-* {
+  --tw-sort: margin-x;
+  --bloom-cx-margin-left: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-rmargin-left: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-right: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-rmargin-right: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-left: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-rmargin-left: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-margin-right: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-rmargin-right: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -mx-px {
+  --tw-sort: margin-x;
+  --bloom-cx-margin-left: -1px;
+  --bloom-cx-rmargin-left: -1px;
+  --bloom-cx-margin-right: -1px;
+  --bloom-cx-rmargin-right: -1px;
+}
+@utility my-* {
+  --tw-sort: margin-y;
+  --bloom-cx-margin-top: --spacing(--value(number));
+  --bloom-cx-margin-bottom: --spacing(--value(number));
+  --bloom-cx-margin-top: --value(--spacing-*, [length]);
+  --bloom-cx-margin-bottom: --value(--spacing-*, [length]);
+}
+@utility my-px {
+  --tw-sort: margin-y;
+  --bloom-cx-margin-top: 1px;
+  --bloom-cx-margin-bottom: 1px;
+}
+@utility -my-* {
+  --tw-sort: margin-y;
+  --bloom-cx-margin-top: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-bottom: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-top: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-margin-bottom: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -my-px {
+  --tw-sort: margin-y;
+  --bloom-cx-margin-top: -1px;
+  --bloom-cx-margin-bottom: -1px;
+}
+@utility mt-* {
+  --tw-sort: margin-t;
+  --bloom-cx-margin-top: --spacing(--value(number));
+  --bloom-cx-margin-top: --value(--spacing-*, [length]);
+}
+@utility mt-px {
+  --tw-sort: margin-t;
+  --bloom-cx-margin-top: 1px;
+}
+@utility -mt-* {
+  --tw-sort: margin-t;
+  --bloom-cx-margin-top: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-top: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -mt-px {
+  --tw-sort: margin-t;
+  --bloom-cx-margin-top: -1px;
+}
+@utility mr-* {
+  --tw-sort: margin-r;
+  --bloom-cx-margin-right: --spacing(--value(number));
+  --bloom-cx-rmargin-right: --spacing(--value(number));
+  --bloom-cx-margin-right: --value(--spacing-*, [length]);
+  --bloom-cx-rmargin-right: --value(--spacing-*, [length]);
+}
+@utility mr-px {
+  --tw-sort: margin-r;
+  --bloom-cx-margin-right: 1px;
+  --bloom-cx-rmargin-right: 1px;
+}
+@utility -mr-* {
+  --tw-sort: margin-r;
+  --bloom-cx-margin-right: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-rmargin-right: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-right: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-rmargin-right: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -mr-px {
+  --tw-sort: margin-r;
+  --bloom-cx-margin-right: -1px;
+  --bloom-cx-rmargin-right: -1px;
+}
+@utility mb-* {
+  --tw-sort: margin-b;
+  --bloom-cx-margin-bottom: --spacing(--value(number));
+  --bloom-cx-margin-bottom: --value(--spacing-*, [length]);
+}
+@utility mb-px {
+  --tw-sort: margin-b;
+  --bloom-cx-margin-bottom: 1px;
+}
+@utility -mb-* {
+  --tw-sort: margin-b;
+  --bloom-cx-margin-bottom: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-bottom: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -mb-px {
+  --tw-sort: margin-b;
+  --bloom-cx-margin-bottom: -1px;
+}
+@utility ml-* {
+  --tw-sort: margin-l;
+  --bloom-cx-margin-left: --spacing(--value(number));
+  --bloom-cx-rmargin-left: --spacing(--value(number));
+  --bloom-cx-margin-left: --value(--spacing-*, [length]);
+  --bloom-cx-rmargin-left: --value(--spacing-*, [length]);
+}
+@utility ml-px {
+  --tw-sort: margin-l;
+  --bloom-cx-margin-left: 1px;
+  --bloom-cx-rmargin-left: 1px;
+}
+@utility -ml-* {
+  --tw-sort: margin-l;
+  --bloom-cx-margin-left: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-rmargin-left: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-left: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-rmargin-left: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -ml-px {
+  --tw-sort: margin-l;
+  --bloom-cx-margin-left: -1px;
+  --bloom-cx-rmargin-left: -1px;
+}
+@utility ms-* {
+  --tw-sort: margin-s;
+  --bloom-cx-margin-left: --spacing(--value(number));
+  --bloom-cx-rmargin-right: --spacing(--value(number));
+  --bloom-cx-margin-left: --value(--spacing-*, [length]);
+  --bloom-cx-rmargin-right: --value(--spacing-*, [length]);
+}
+@utility ms-px {
+  --tw-sort: margin-s;
+  --bloom-cx-margin-left: 1px;
+  --bloom-cx-rmargin-right: 1px;
+}
+@utility -ms-* {
+  --tw-sort: margin-s;
+  --bloom-cx-margin-left: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-rmargin-right: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-left: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-rmargin-right: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -ms-px {
+  --tw-sort: margin-s;
+  --bloom-cx-margin-left: -1px;
+  --bloom-cx-rmargin-right: -1px;
+}
+@utility me-* {
+  --tw-sort: margin-e;
+  --bloom-cx-margin-right: --spacing(--value(number));
+  --bloom-cx-rmargin-left: --spacing(--value(number));
+  --bloom-cx-margin-right: --value(--spacing-*, [length]);
+  --bloom-cx-rmargin-left: --value(--spacing-*, [length]);
+}
+@utility me-px {
+  --tw-sort: margin-e;
+  --bloom-cx-margin-right: 1px;
+  --bloom-cx-rmargin-left: 1px;
+}
+@utility -me-* {
+  --tw-sort: margin-e;
+  --bloom-cx-margin-right: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-rmargin-left: calc(--spacing(--value(number)) * -1);
+  --bloom-cx-margin-right: calc(--value(--spacing-*, [length]) * -1);
+  --bloom-cx-rmargin-left: calc(--value(--spacing-*, [length]) * -1);
+}
+@utility -me-px {
+  --tw-sort: margin-e;
+  --bloom-cx-margin-right: -1px;
+  --bloom-cx-rmargin-left: -1px;
+}
+@utility border-* {
+  --tw-sort: border-width;
+  --bloom-cx-border-top: --value(integer)px;
+  --bloom-cx-border-right: --value(integer)px;
+  --bloom-cx-rborder-right: --value(integer)px;
+  --bloom-cx-border-bottom: --value(integer)px;
+  --bloom-cx-border-left: --value(integer)px;
+  --bloom-cx-rborder-left: --value(integer)px;
+  --bloom-cx-border-top: --value([length]);
+  --bloom-cx-border-right: --value([length]);
+  --bloom-cx-rborder-right: --value([length]);
+  --bloom-cx-border-bottom: --value([length]);
+  --bloom-cx-border-left: --value([length]);
+  --bloom-cx-rborder-left: --value([length]);
+}
+@utility border {
+  --tw-sort: border-width;
+  --bloom-cx-border-top: 1px;
+  --bloom-cx-border-right: 1px;
+  --bloom-cx-rborder-right: 1px;
+  --bloom-cx-border-bottom: 1px;
+  --bloom-cx-border-left: 1px;
+  --bloom-cx-rborder-left: 1px;
+}
+@utility border-x-* {
+  --tw-sort: border-width-x;
+  --bloom-cx-border-left: --value(integer)px;
+  --bloom-cx-rborder-left: --value(integer)px;
+  --bloom-cx-border-right: --value(integer)px;
+  --bloom-cx-rborder-right: --value(integer)px;
+  --bloom-cx-border-left: --value([length]);
+  --bloom-cx-rborder-left: --value([length]);
+  --bloom-cx-border-right: --value([length]);
+  --bloom-cx-rborder-right: --value([length]);
+}
+@utility border-x {
+  --tw-sort: border-width-x;
+  --bloom-cx-border-left: 1px;
+  --bloom-cx-rborder-left: 1px;
+  --bloom-cx-border-right: 1px;
+  --bloom-cx-rborder-right: 1px;
+}
+@utility border-y-* {
+  --tw-sort: border-width-y;
+  --bloom-cx-border-top: --value(integer)px;
+  --bloom-cx-border-bottom: --value(integer)px;
+  --bloom-cx-border-top: --value([length]);
+  --bloom-cx-border-bottom: --value([length]);
+}
+@utility border-y {
+  --tw-sort: border-width-y;
+  --bloom-cx-border-top: 1px;
+  --bloom-cx-border-bottom: 1px;
+}
+@utility border-t-* {
+  --tw-sort: border-width-t;
+  --bloom-cx-border-top: --value(integer)px;
+  --bloom-cx-border-top: --value([length]);
+}
+@utility border-t {
+  --tw-sort: border-width-t;
+  --bloom-cx-border-top: 1px;
+}
+@utility border-r-* {
+  --tw-sort: border-width-r;
+  --bloom-cx-border-right: --value(integer)px;
+  --bloom-cx-rborder-right: --value(integer)px;
+  --bloom-cx-border-right: --value([length]);
+  --bloom-cx-rborder-right: --value([length]);
+}
+@utility border-r {
+  --tw-sort: border-width-r;
+  --bloom-cx-border-right: 1px;
+  --bloom-cx-rborder-right: 1px;
+}
+@utility border-b-* {
+  --tw-sort: border-width-b;
+  --bloom-cx-border-bottom: --value(integer)px;
+  --bloom-cx-border-bottom: --value([length]);
+}
+@utility border-b {
+  --tw-sort: border-width-b;
+  --bloom-cx-border-bottom: 1px;
+}
+@utility border-l-* {
+  --tw-sort: border-width-l;
+  --bloom-cx-border-left: --value(integer)px;
+  --bloom-cx-rborder-left: --value(integer)px;
+  --bloom-cx-border-left: --value([length]);
+  --bloom-cx-rborder-left: --value([length]);
+}
+@utility border-l {
+  --tw-sort: border-width-l;
+  --bloom-cx-border-left: 1px;
+  --bloom-cx-rborder-left: 1px;
+}
+@utility border-s-* {
+  --tw-sort: border-width-s;
+  --bloom-cx-border-left: --value(integer)px;
+  --bloom-cx-rborder-right: --value(integer)px;
+  --bloom-cx-border-left: --value([length]);
+  --bloom-cx-rborder-right: --value([length]);
+}
+@utility border-s {
+  --tw-sort: border-width-s;
+  --bloom-cx-border-left: 1px;
+  --bloom-cx-rborder-right: 1px;
+}
+@utility border-e-* {
+  --tw-sort: border-width-e;
+  --bloom-cx-border-right: --value(integer)px;
+  --bloom-cx-rborder-left: --value(integer)px;
+  --bloom-cx-border-right: --value([length]);
+  --bloom-cx-rborder-left: --value([length]);
+}
+@utility border-e {
+  --tw-sort: border-width-e;
+  --bloom-cx-border-right: 1px;
+  --bloom-cx-rborder-left: 1px;
+}
+@utility rounded {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0.25rem;
+  --bloom-cx-rradius-topLeft: 0.25rem;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: 0.25rem;
+  --bloom-cx-rradius-topRight: 0.25rem;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: 0.25rem;
+  --bloom-cx-rradius-bottomRight: 0.25rem;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: 0.25rem;
+  --bloom-cx-rradius-bottomLeft: 0.25rem;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0px;
+  --bloom-cx-rradius-topLeft: 0px;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: 0px;
+  --bloom-cx-rradius-topRight: 0px;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: 0px;
+  --bloom-cx-rradius-bottomRight: 0px;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: 0px;
+  --bloom-cx-rradius-bottomLeft: 0px;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-topLeft: calc(infinity * 1px);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: calc(infinity * 1px);
+  --bloom-cx-rradius-topRight: calc(infinity * 1px);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-topLeft: 1;
+  --bloom-cx-rauto-topLeft: 1;
+  border-top-left-radius: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-radius-topLeft: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-rradius-topLeft: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-auto-topRight: 1;
+  --bloom-cx-rauto-topRight: 1;
+  border-top-right-radius: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-radius-topRight: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-rradius-topRight: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-auto-bottomRight: 1;
+  --bloom-cx-rauto-bottomRight: 1;
+  border-bottom-right-radius: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-radius-bottomRight: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-rradius-bottomRight: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-auto-bottomLeft: 1;
+  --bloom-cx-rauto-bottomLeft: 1;
+  border-bottom-left-radius: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+  --bloom-cx-radius-bottomLeft: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+  --bloom-cx-rradius-bottomLeft: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+}
+@utility rounded-t {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0.25rem;
+  --bloom-cx-rradius-topLeft: 0.25rem;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: 0.25rem;
+  --bloom-cx-rradius-topRight: 0.25rem;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-t-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-t-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0px;
+  --bloom-cx-rradius-topLeft: 0px;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: 0px;
+  --bloom-cx-rradius-topRight: 0px;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-t-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-topLeft: calc(infinity * 1px);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: calc(infinity * 1px);
+  --bloom-cx-rradius-topRight: calc(infinity * 1px);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-t-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-topLeft: 1;
+  --bloom-cx-rauto-topLeft: 1;
+  border-top-left-radius: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-radius-topLeft: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-rradius-topLeft: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-auto-topRight: 1;
+  --bloom-cx-rauto-topRight: 1;
+  border-top-right-radius: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-radius-topRight: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-rradius-topRight: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+}
+@utility rounded-r {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: 0.25rem;
+  --bloom-cx-rradius-topRight: 0.25rem;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: 0.25rem;
+  --bloom-cx-rradius-bottomRight: 0.25rem;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-r-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-r-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: 0px;
+  --bloom-cx-rradius-topRight: 0px;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: 0px;
+  --bloom-cx-rradius-bottomRight: 0px;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-r-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: calc(infinity * 1px);
+  --bloom-cx-rradius-topRight: calc(infinity * 1px);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-r-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-topRight: 1;
+  --bloom-cx-rauto-topRight: 1;
+  border-top-right-radius: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-radius-topRight: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-rradius-topRight: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-auto-bottomRight: 1;
+  --bloom-cx-rauto-bottomRight: 1;
+  border-bottom-right-radius: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-radius-bottomRight: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-rradius-bottomRight: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+}
+@utility rounded-b {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: 0.25rem;
+  --bloom-cx-rradius-bottomRight: 0.25rem;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: 0.25rem;
+  --bloom-cx-rradius-bottomLeft: 0.25rem;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-b-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-b-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: 0px;
+  --bloom-cx-rradius-bottomRight: 0px;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: 0px;
+  --bloom-cx-rradius-bottomLeft: 0px;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-b-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-b-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-bottomRight: 1;
+  --bloom-cx-rauto-bottomRight: 1;
+  border-bottom-right-radius: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-radius-bottomRight: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-rradius-bottomRight: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-auto-bottomLeft: 1;
+  --bloom-cx-rauto-bottomLeft: 1;
+  border-bottom-left-radius: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+  --bloom-cx-radius-bottomLeft: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+  --bloom-cx-rradius-bottomLeft: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+}
+@utility rounded-l {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0.25rem;
+  --bloom-cx-rradius-topLeft: 0.25rem;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-bottomLeft: 0.25rem;
+  --bloom-cx-rradius-bottomLeft: 0.25rem;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-l-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-l-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0px;
+  --bloom-cx-rradius-topLeft: 0px;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-bottomLeft: 0px;
+  --bloom-cx-rradius-bottomLeft: 0px;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-l-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-topLeft: calc(infinity * 1px);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-l-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-topLeft: 1;
+  --bloom-cx-rauto-topLeft: 1;
+  border-top-left-radius: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-radius-topLeft: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-rradius-topLeft: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-auto-bottomLeft: 1;
+  --bloom-cx-rauto-bottomLeft: 1;
+  border-bottom-left-radius: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+  --bloom-cx-radius-bottomLeft: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+  --bloom-cx-rradius-bottomLeft: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+}
+@utility rounded-tl {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0.25rem;
+  --bloom-cx-rradius-topLeft: 0.25rem;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+}
+@utility rounded-tl-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+}
+@utility rounded-tl-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0px;
+  --bloom-cx-rradius-topLeft: 0px;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+}
+@utility rounded-tl-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-topLeft: calc(infinity * 1px);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+}
+@utility rounded-tl-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-topLeft: 1;
+  --bloom-cx-rauto-topLeft: 1;
+  border-top-left-radius: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-radius-topLeft: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+  --bloom-cx-rradius-topLeft: var(--bloom-cx-self-topLeft, var(--bloom-concentric-topLeft, 0px));
+}
+@utility rounded-tr {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: 0.25rem;
+  --bloom-cx-rradius-topRight: 0.25rem;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-tr-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-tr-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: 0px;
+  --bloom-cx-rradius-topRight: 0px;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-tr-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: calc(infinity * 1px);
+  --bloom-cx-rradius-topRight: calc(infinity * 1px);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-tr-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-topRight: 1;
+  --bloom-cx-rauto-topRight: 1;
+  border-top-right-radius: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-radius-topRight: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+  --bloom-cx-rradius-topRight: var(--bloom-cx-self-topRight, var(--bloom-concentric-topRight, 0px));
+}
+@utility rounded-br {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: 0.25rem;
+  --bloom-cx-rradius-bottomRight: 0.25rem;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-br-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-br-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: 0px;
+  --bloom-cx-rradius-bottomRight: 0px;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-br-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-br-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-bottomRight: 1;
+  --bloom-cx-rauto-bottomRight: 1;
+  border-bottom-right-radius: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-radius-bottomRight: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+  --bloom-cx-rradius-bottomRight: var(--bloom-cx-self-bottomRight, var(--bloom-concentric-bottomRight, 0px));
+}
+@utility rounded-bl {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: 0.25rem;
+  --bloom-cx-rradius-bottomLeft: 0.25rem;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-bl-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-bl-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: 0px;
+  --bloom-cx-rradius-bottomLeft: 0px;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-bl-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-bl-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-auto-bottomLeft: 1;
+  --bloom-cx-rauto-bottomLeft: 1;
+  border-bottom-left-radius: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+  --bloom-cx-radius-bottomLeft: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+  --bloom-cx-rradius-bottomLeft: var(--bloom-cx-self-bottomLeft, var(--bloom-concentric-bottomLeft, 0px));
+}
+@property --bloom-cx-self-ss { syntax: "*"; inherits: false; }
+@property --bloom-cx-self-se { syntax: "*"; inherits: false; }
+@property --bloom-cx-self-es { syntax: "*"; inherits: false; }
+@property --bloom-cx-self-ee { syntax: "*"; inherits: false; }
+@utility rounded-s {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0.25rem;
+  --bloom-cx-rradius-topRight: 0.25rem;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomLeft: 0.25rem;
+  --bloom-cx-rradius-bottomRight: 0.25rem;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-s-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-s-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0px;
+  --bloom-cx-rradius-topRight: 0px;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomLeft: 0px;
+  --bloom-cx-rradius-bottomRight: 0px;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-s-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-topRight: calc(infinity * 1px);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-s-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: var(--bloom-cx-self-ss, var(--bloom-concentric-ss, 0px));
+  --bloom-cx-rradius-topRight: var(--bloom-cx-self-ss, var(--bloom-concentric-ss, 0px));
+  --bloom-cx-auto-topLeft: 1;
+  --bloom-cx-rauto-topRight: 1;
+  --bloom-cx-radius-bottomLeft: var(--bloom-cx-self-es, var(--bloom-concentric-es, 0px));
+  --bloom-cx-rradius-bottomRight: var(--bloom-cx-self-es, var(--bloom-concentric-es, 0px));
+  --bloom-cx-auto-bottomLeft: 1;
+  --bloom-cx-rauto-bottomRight: 1;
+  border-start-start-radius: var(--bloom-cx-self-ss, var(--bloom-concentric-ss, 0px));
+  border-end-start-radius: var(--bloom-cx-self-es, var(--bloom-concentric-es, 0px));
+}
+@utility rounded-e {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: 0.25rem;
+  --bloom-cx-rradius-topLeft: 0.25rem;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-bottomRight: 0.25rem;
+  --bloom-cx-rradius-bottomLeft: 0.25rem;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-e-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-e-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: 0px;
+  --bloom-cx-rradius-topLeft: 0px;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-bottomRight: 0px;
+  --bloom-cx-rradius-bottomLeft: 0px;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-e-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: calc(infinity * 1px);
+  --bloom-cx-rradius-topLeft: calc(infinity * 1px);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-e-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: var(--bloom-cx-self-se, var(--bloom-concentric-se, 0px));
+  --bloom-cx-rradius-topLeft: var(--bloom-cx-self-se, var(--bloom-concentric-se, 0px));
+  --bloom-cx-auto-topRight: 1;
+  --bloom-cx-rauto-topLeft: 1;
+  --bloom-cx-radius-bottomRight: var(--bloom-cx-self-ee, var(--bloom-concentric-ee, 0px));
+  --bloom-cx-rradius-bottomLeft: var(--bloom-cx-self-ee, var(--bloom-concentric-ee, 0px));
+  --bloom-cx-auto-bottomRight: 1;
+  --bloom-cx-rauto-bottomLeft: 1;
+  border-start-end-radius: var(--bloom-cx-self-se, var(--bloom-concentric-se, 0px));
+  border-end-end-radius: var(--bloom-cx-self-ee, var(--bloom-concentric-ee, 0px));
+}
+@utility rounded-ss {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0.25rem;
+  --bloom-cx-rradius-topRight: 0.25rem;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-ss-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-ss-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: 0px;
+  --bloom-cx-rradius-topRight: 0px;
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-ss-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-topRight: calc(infinity * 1px);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topRight: 0;
+}
+@utility rounded-ss-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: var(--bloom-cx-self-ss, var(--bloom-concentric-ss, 0px));
+  --bloom-cx-rradius-topRight: var(--bloom-cx-self-ss, var(--bloom-concentric-ss, 0px));
+  --bloom-cx-auto-topLeft: 1;
+  --bloom-cx-rauto-topRight: 1;
+  border-start-start-radius: var(--bloom-cx-self-ss, var(--bloom-concentric-ss, 0px));
+}
+@utility rounded-se {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: 0.25rem;
+  --bloom-cx-rradius-topLeft: 0.25rem;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topLeft: 0;
+}
+@utility rounded-se-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-topLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topLeft: 0;
+}
+@utility rounded-se-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: 0px;
+  --bloom-cx-rradius-topLeft: 0px;
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topLeft: 0;
+}
+@utility rounded-se-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: calc(infinity * 1px);
+  --bloom-cx-rradius-topLeft: calc(infinity * 1px);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topLeft: 0;
+}
+@utility rounded-se-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topRight: var(--bloom-cx-self-se, var(--bloom-concentric-se, 0px));
+  --bloom-cx-rradius-topLeft: var(--bloom-cx-self-se, var(--bloom-concentric-se, 0px));
+  --bloom-cx-auto-topRight: 1;
+  --bloom-cx-rauto-topLeft: 1;
+  border-start-end-radius: var(--bloom-cx-self-se, var(--bloom-concentric-se, 0px));
+}
+@utility rounded-es {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: 0.25rem;
+  --bloom-cx-rradius-bottomRight: 0.25rem;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-es-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-es-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: 0px;
+  --bloom-cx-rradius-bottomRight: 0px;
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-es-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+}
+@utility rounded-es-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomLeft: var(--bloom-cx-self-es, var(--bloom-concentric-es, 0px));
+  --bloom-cx-rradius-bottomRight: var(--bloom-cx-self-es, var(--bloom-concentric-es, 0px));
+  --bloom-cx-auto-bottomLeft: 1;
+  --bloom-cx-rauto-bottomRight: 1;
+  border-end-start-radius: var(--bloom-cx-self-es, var(--bloom-concentric-es, 0px));
+}
+@utility rounded-ee {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: 0.25rem;
+  --bloom-cx-rradius-bottomLeft: 0.25rem;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-ee-* {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: --value(--radius-*, [length]);
+  --bloom-cx-rradius-bottomLeft: --value(--radius-*, [length]);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-ee-none {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: 0px;
+  --bloom-cx-rradius-bottomLeft: 0px;
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-ee-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+@utility rounded-ee-concentric {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-bottomRight: var(--bloom-cx-self-ee, var(--bloom-concentric-ee, 0px));
+  --bloom-cx-rradius-bottomLeft: var(--bloom-cx-self-ee, var(--bloom-concentric-ee, 0px));
+  --bloom-cx-auto-bottomRight: 1;
+  --bloom-cx-rauto-bottomLeft: 1;
+  border-end-end-radius: var(--bloom-cx-self-ee, var(--bloom-concentric-ee, 0px));
+}

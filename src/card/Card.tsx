@@ -1,3 +1,6 @@
+import { ConcentricView } from '../concentric';
+import { ConcentricProvider } from '../concentric/ConcentricProvider';
+import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { CardForegroundContext } from './context';
@@ -24,7 +27,7 @@ import { resolveBloomColors } from '../appearance/colors';
  * requires a new appearance name.
  */
 import React, { type ComponentRef, memo, useMemo, useContext } from 'react';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, type View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { styled } from 'react-native-css';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -101,19 +104,49 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
     const cornerCurve =
       cornerCurveProp ?? (radius === 'panel' ? panelShape.curve : SURFACE_SHAPES.card.curve);
     const explicitRadius =
-      radius === 'panel' ? panelShape.radius : radius ? RADIUS[radius] : undefined;
+      radius === 'panel'
+        ? panelShape.radius
+        : radius && radius !== 'concentric'
+          ? RADIUS[radius]
+          : undefined;
     // On web the caller's `className` arrives in `style` as a compiled-CSS entry
     // (this component is `styled()` below). Values are read from the inline part
     // only, and the classes stay separate entries on the host — never flattened
     // into the inline object, which react-native-web would reject wholesale.
-    const { classes, inline: callerStyle } = splitCompiledStyle(style);
-    const resolvedGeometry = resolveSurfaceGeometry(
+    const { classes, inline: callerStyle } = splitCompiledStyle<ViewStyle>(style);
+    const baseGeometry = resolveSurfaceGeometry(
       explicitRadius,
       callerStyle,
       SURFACE_SHAPES.card.radius,
       cornerCurve,
     );
     const appearance = appearanceProp ?? 'solid';
+    const borderRole = border ?? VARIANT_DEFAULTS[appearance].border;
+    const concentric = useConcentricGeometry({
+      allowClassRadius: radius === undefined,
+      webClasses: Boolean(classes || className) && callerStyle?.borderRadius === undefined,
+      radius:
+        radius === 'concentric'
+          ? 'concentric'
+          : typeof baseGeometry.radius === 'number'
+            ? baseGeometry.radius
+            : undefined,
+      style: {
+        ...callerStyle,
+        borderWidth: borderRole === 'none' ? 0 : BORDER_PX[borderRole],
+      },
+    });
+    const resolvedGeometry =
+      radius === 'concentric' || concentric.hasClassRadius
+        ? {
+            radius: undefined,
+            shape: {
+              radius: concentric.radii,
+              curve: radius === 'concentric' ? ('round' as const) : cornerCurve,
+            },
+            style: concentric.radiusStyle,
+          }
+        : baseGeometry;
     const { tone } = useBloomAppearance({ tone: toneProp }, { size: 'md', tone: 'neutral' });
     const paint = resolveBloomColors(theme.colors, tone, appearance);
     // Drive the press-opacity via state instead of Pressable's function-form
@@ -168,46 +201,59 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
     const outerStyle: ViewStyle = {
       ...resolved,
       ...material.vars,
+      ...concentric.variables,
       ...(paintsSurface ? { backgroundColor: 'transparent' } : null),
     };
     const contents = (
       <>
         {paintsSurface ? (
-          <SurfacePaint fill={String(fill)} radius={resolvedGeometry.radius} shape={shape} />
+          <SurfacePaint
+            fill={String(fill)}
+            radius={resolvedGeometry.radius}
+            shape={shape}
+            geometryStyle={resolvedGeometry.style}
+          />
         ) : null}
-        <SurfaceLevelProvider level={material.level} fill={publishedFill}>
-          <CardForegroundContext.Provider value={tone === 'neutral' ? undefined : paint.foreground}>
-            {clipContent ? (
-              <View
-                testID={testID ? `${testID}-clip` : undefined}
-                style={[
-                  contentStyle,
-                  surfaceStyle({
-                    ...shape,
-                    radius:
-                      typeof resolvedGeometry.radius === 'number'
-                        ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth)
-                        : undefined,
-                  }),
-                  {
-                    borderRadius:
-                      typeof resolvedGeometry.radius === 'number'
-                        ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth)
-                        : resolvedGeometry.radius,
-                    overflow: 'hidden',
-                    alignSelf: 'stretch',
-                    flexGrow: 1,
-                    flexShrink: 1,
-                  },
-                ]}
-              >
-                {children}
-              </View>
-            ) : (
-              children
-            )}
-          </CardForegroundContext.Provider>
-        </SurfaceLevelProvider>
+        <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
+          <SurfaceLevelProvider level={material.level} fill={publishedFill}>
+            <CardForegroundContext.Provider
+              value={tone === 'neutral' ? undefined : paint.foreground}
+            >
+              {clipContent ? (
+                <ConcentricView
+                  radius={
+                    radius === 'concentric' || concentric.hasClassRadius ? 'concentric' : undefined
+                  }
+                  testID={testID ? `${testID}-clip` : undefined}
+                  style={[
+                    contentStyle,
+                    surfaceStyle({
+                      ...shape,
+                      radius:
+                        typeof resolvedGeometry.radius === 'number'
+                          ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth)
+                          : undefined,
+                    }),
+                    {
+                      borderRadius:
+                        typeof resolvedGeometry.radius === 'number'
+                          ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth)
+                          : resolvedGeometry.radius,
+                      overflow: 'hidden',
+                      alignSelf: 'stretch',
+                      flexGrow: 1,
+                      flexShrink: 1,
+                    },
+                  ]}
+                >
+                  {children}
+                </ConcentricView>
+              ) : (
+                children
+              )}
+            </CardForegroundContext.Provider>
+          </SurfaceLevelProvider>
+        </ConcentricProvider>
       </>
     );
 
@@ -254,7 +300,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
 );
 
 const CardHeaderComponent: React.FC<CardHeaderProps> = ({ children, style }) => (
-  <View
+  <ConcentricView
     style={[
       {
         paddingHorizontal: space.lg,
@@ -265,11 +311,11 @@ const CardHeaderComponent: React.FC<CardHeaderProps> = ({ children, style }) => 
     ]}
   >
     {children}
-  </View>
+  </ConcentricView>
 );
 
 const CardBodyComponent: React.FC<CardBodyProps> = ({ children, style }) => (
-  <View
+  <ConcentricView
     style={[
       {
         paddingHorizontal: space.lg,
@@ -279,11 +325,11 @@ const CardBodyComponent: React.FC<CardBodyProps> = ({ children, style }) => (
     ]}
   >
     {children}
-  </View>
+  </ConcentricView>
 );
 
 const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => (
-  <View
+  <ConcentricView
     style={[
       {
         paddingHorizontal: space.lg,
@@ -298,7 +344,7 @@ const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => 
     ]}
   >
     {children}
-  </View>
+  </ConcentricView>
 );
 
 const CardTitleComponent: React.FC<CardTitleProps> = ({ children, style, numberOfLines }) => {

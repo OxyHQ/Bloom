@@ -1,3 +1,5 @@
+import { ConcentricProvider } from '../concentric/ConcentricProvider';
+import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
 import { resolveSurfaceGeometry } from './resolve-surface-geometry';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { forwardRef, memo } from 'react';
@@ -42,7 +44,34 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
   ) {
     const theme = useTheme();
     const resolvedStyle = StyleSheet.flatten(style);
-    const geometry = resolveSurfaceGeometry(radius, style, borderRadius.xl, cornerCurve);
+    const baseGeometry = resolveSurfaceGeometry(
+      radius === 'concentric' ? undefined : radius,
+      style,
+      borderRadius.xl,
+      cornerCurve,
+    );
+    const concentric = useConcentricGeometry({
+      allowClassRadius: radius === undefined,
+      webClasses: Boolean(className) && resolvedStyle?.borderRadius === undefined,
+      radius:
+        radius === 'concentric'
+          ? 'concentric'
+          : typeof baseGeometry.radius === 'number'
+            ? baseGeometry.radius
+            : undefined,
+      style: resolvedStyle ?? undefined,
+    });
+    const geometry =
+      radius === 'concentric' || concentric.hasClassRadius
+        ? {
+            radius: undefined,
+            shape: {
+              radius: concentric.radii,
+              curve: radius === 'concentric' ? ('round' as const) : cornerCurve,
+            },
+            style: concentric.radiusStyle,
+          }
+        : baseGeometry;
     useInteractiveWebCss('bloom-surface-web-css', CSS);
     const override = fill ?? resolvedStyle?.backgroundColor;
     const material = useResolvedSurface({
@@ -68,11 +97,18 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
         style={[
           baseStyle,
           style,
-          { backgroundColor: 'transparent', ...material.vars, ...geometry.style },
+          {
+            backgroundColor: 'transparent',
+            ...material.vars,
+            ...geometry.style,
+            ...concentric.variables,
+          },
         ]}
       >
         <SurfaceLevelProvider level={material.level} fill={material.publishedFill}>
-          {children}
+          <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
+            {children}
+          </ConcentricProvider>
         </SurfaceLevelProvider>
       </StyledView>
     );

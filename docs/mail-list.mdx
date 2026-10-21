@@ -156,8 +156,9 @@ A pointer hovers; a thumb drags. Nothing is drawn inside a phone row at rest.
 
 - `hover` — replaces the right metadata column on hover and keyboard focus.
   Compact 32px controls (28px at compact density) occupy normal header space, so
-  text truncates before them instead of being covered. Hidden under
-  `@media (hover: none)`, where metadata remains visible. The default on web.
+  text truncates before them instead of being covered. Pointer hover applies only
+  under `@media (hover: hover)`. Keyboard `:focus-visible` reveals the rail on
+  every device; a touch tap keeps metadata and the resting fill. The default on web.
 - `inline` — always drawn. A kiosk or a tablet list with no pointer and no
   gesture; never a phone.
 - `none` — drawn nowhere. The default on NATIVE.
@@ -182,8 +183,10 @@ message.
 A drag has no tab stop and no announced name. Three paths, and the row carries
 all of them:
 
-- **A pointer** — the rail, which appears on `:focus-within` as well as on
-  hover, so a keyboard reaches it.
+- **A pointer or keyboard** — the rail appears on real pointer hover or when
+  the row contains `:focus-visible`. Ordinary touch focus never leaves a row
+  highlighted. `scripts/verify-mail-row-focus.mjs` verifies tap, blur, Tab and selection
+  in a real browser at mobile, touch-display and desktop sizes.
 - **A touch reader** — every rail and pane action is on the row's
   `accessibilityActions`, once per key, which is the rotor. react-native-web
   drops that prop and rightly: there the rail is already in the tab order.

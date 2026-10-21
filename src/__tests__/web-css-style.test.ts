@@ -48,6 +48,11 @@ const files = sourceFiles(SRC);
  * web-CSS cast. Anything else is a regression.
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
+  'concentric/use-concentric-geometry.ts': {
+    count: 1,
+    reason:
+      'cssRadius narrows a web-only CSS length expression to RN borderRadius at the geometry owner boundary. Native returns numeric corners before this branch; no style object or unsupported key is cast.',
+  },
   'styles/web-view-style.ts': {
     count: 7,
     reason:

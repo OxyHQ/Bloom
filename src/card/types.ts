@@ -22,7 +22,7 @@ import type { ShadowRole } from '../design-tokens/shadows';
  * and the shared circular panel curve. Other cards retain the fixed radius
  * scale, so their geometry does not change with the workspace setting.
  */
-export type CardRadius = keyof typeof RADIUS | 'panel';
+export type CardRadius = keyof typeof RADIUS | 'panel' | 'concentric';
 
 /** Elevation role, or none. Resolved through `bloomShadowStyle`, which owns the platform split. */
 export type CardElevation = 'none' | ShadowRole;

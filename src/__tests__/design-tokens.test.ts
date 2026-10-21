@@ -1,3 +1,4 @@
+import { concentricCss } from '../concentric/css';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
@@ -220,8 +221,14 @@ describe('design-tokens shipped theme.css', () => {
   const themeCss = readFileSync(join(__dirname, '..', 'design-tokens', 'theme.css'), 'utf8');
 
   it('the @theme block equals bloomThemeBlock() (no drift)', () => {
-    const block = themeCss.slice(themeCss.indexOf('@theme')).trimEnd();
+    const block = themeCss
+      .slice(themeCss.indexOf('@theme'), themeCss.indexOf('\n\n@property'))
+      .trimEnd();
     expect(block).toBe(bloomThemeBlock());
+  });
+
+  it('ships the generated concentric utilities without drift', () => {
+    expect(themeCss.slice(themeCss.indexOf('@property')).trimEnd()).toBe(concentricCss());
   });
 
   it('carries the auto-generated / do-not-edit header', () => {
