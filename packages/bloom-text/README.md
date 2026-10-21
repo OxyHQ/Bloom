@@ -52,6 +52,19 @@ const [value, setValue] = useState<Segment[]>([{ text: 'Hello ' }, { text: 'worl
   clipboard's HTML and plain text before the input pastes, and may claim it
   (a block editor turning HTML into blocks).
 
+## Suggestion accessibility
+
+`aria-controls`, `aria-activedescendant`, `aria-expanded` and
+`aria-autocomplete` are forwarded to the actual web editing surface, along
+with `accessibilityLabel`. They describe a caller-owned suggestion list without
+moving focus from the caret. When `aria-expanded` is supplied, the input uses
+combobox semantics; otherwise it remains a textbox. Dismissal removes the
+relationships without replacing the input or its content. The adapter also
+applies these attributes if the underlying editing engine remounts its surface.
+Native receives the input label and expanded accessibility state; DOM option
+relationships are web-only. `editable={false}` disables command, submit and
+paste handlers as well as the native editing control.
+
 ## Measuring the text (web)
 
 `ref.measureRanges([{ start, end }, …])` returns, for each range, the boxes

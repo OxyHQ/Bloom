@@ -109,9 +109,15 @@ export function splitChildren(children: React.ReactNode): {
  * platforms: react-native-web reads only `aria-*` and React Native folds
  * `aria-checked` back into `accessibilityState`, so one prop covers both.
  */
-export type MenuRowRole = 'menuitem' | 'checkbox' | 'radio' | 'button';
+export type MenuRowRole = 'menuitem' | 'checkbox' | 'radio' | 'button' | 'option';
 
 export interface MenuRowShellProps {
+  nativeID?: string;
+  onLayout?: import('react-native').PressableProps['onLayout'];
+  /** Suggestions keep DOM focus in their typing field and own the highlight. */
+  controlledHighlight?: boolean;
+  onPointerMove?: import('react-native').PressableProps['onPointerMove'];
+  onHoverChange?: () => void;
   href?: string;
   role: MenuRowRole;
   /** `aria-checked`, for the two roles that have a checked state. */
@@ -176,6 +182,11 @@ function safeMatches(
  * a platform with no pointer at all.
  */
 export function MenuRowShell({
+  nativeID,
+  onLayout,
+  controlledHighlight = false,
+  onPointerMove,
+  onHoverChange,
   href,
   role,
   checked,
@@ -204,7 +215,8 @@ export function MenuRowShell({
   const density = useMenuDensity();
   // `MENU_ITEM_INTERACTIVE` + `MENU_ITEM_ACTIVE`: hover, keyboard focus
   // and the current selection all paint the same `dropdown-item-hover-background`.
-  const highlighted = !disabled && (hovered || pressed || focused || selected || current);
+  const highlighted =
+    !disabled && ((!controlledHighlight && (hovered || focused)) || pressed || selected || current);
 
   const rowClass = cx(
     ROW_CLASS,
@@ -228,6 +240,11 @@ export function MenuRowShell({
 
   return (
     <StyledPressable
+      nativeID={nativeID}
+      onLayout={onLayout}
+      tabIndex={role === 'option' ? -1 : undefined}
+      onPointerMove={disabled ? undefined : onPointerMove}
+      {...(role === 'option' ? { 'aria-selected': selected } : {})}
       {...(Platform.OS === 'web' && href != null && !disabled ? { href } : {})}
       role={
         Platform.OS === 'web' && (role === 'checkbox' || role === 'radio')
@@ -237,7 +254,9 @@ export function MenuRowShell({
       // `radio` and `checkbox` are roles BOTH platforms have, so they travel on
       // `accessibilityRole` as well. `menuitem` has no React Native counterpart,
       // so the row announces itself as a button there — which is what `Item` did.
-      accessibilityRole={href != null ? 'link' : role === 'menuitem' ? 'button' : role}
+      accessibilityRole={
+        href != null ? 'link' : role === 'menuitem' || role === 'option' ? 'button' : role
+      }
       accessibilityLabel={accessibilityLabel ?? title}
       // One spelling, both platforms: react-native-web reads only `aria-*` and
       // React Native folds these two back into `accessibilityState`. The disabled
@@ -253,7 +272,14 @@ export function MenuRowShell({
       // React Native types these on `Pressable` and only a platform with a real
       // pointer ever calls them, so there is no `Platform.OS` branch to write and
       // a touch never flashes a hover state on its way to a press.
-      onHoverIn={disabled ? undefined : onHoverIn}
+      onHoverIn={
+        disabled
+          ? undefined
+          : () => {
+              onHoverIn();
+              onHoverChange?.();
+            }
+      }
       onHoverOut={disabled ? undefined : onHoverOut}
       onFocus={
         disabled

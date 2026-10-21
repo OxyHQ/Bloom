@@ -1,3 +1,4 @@
+export { suggestionOptionId } from './suggestion-option-id';
 export { ChatComposer } from './ChatComposer';
 export { ComposerBanner } from './ComposerBanner';
 export { ComposerAttachmentStrip } from './ComposerAttachmentStrip';
@@ -39,6 +40,7 @@ export type {
   MessageContextMenuProps,
   MessageMenuItem,
   ReactionPickerProps,
+  SuggestionAnchor,
   SuggestionKind,
   SuggestionListProps,
   VoiceRecorderLabels,

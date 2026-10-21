@@ -490,3 +490,6 @@ export const CHAT_COMPOSER_WEB_CSS = `
   [data-bloom-chat-composer-row] { transition: none; }
 }
 `;
+
+/** Anchored command results cap at this height, further bounded by their viewport. */
+export const SUGGESTION_ANCHORED_MAX_HEIGHT = 320;

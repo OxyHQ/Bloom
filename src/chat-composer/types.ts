@@ -55,6 +55,12 @@ export interface ChatComposerAttachment {
 }
 
 export interface ChatComposerSuggestion {
+  /** Optional section heading; contiguous items retain caller ordering. */
+  group?: string;
+  /** Custom command icon or mention avatar, using the shared leading column. */
+  leading?: React.ReactNode;
+  /** An icon component receives the shared menu dimensions and foreground. */
+  icon?: BloomIconComponent;
   id: string;
   /** The name, the command (`/giphy`) or the shortcode (`:smile:`). */
   label: string;
@@ -79,7 +85,21 @@ export interface ChatComposerSuggestion {
  */
 export type SuggestionKind = 'mention' | 'command' | 'emoji';
 
+/** A live viewport-relative caret box. Native falls back to the context view. */
+export interface SuggestionAnchor {
+  getRect: () => { top: number; bottom: number; left: number; right: number } | null;
+  contextRef: React.RefObject<React.ComponentRef<typeof import('react-native').View> | null>;
+}
+
 export interface SuggestionListProps extends PartProps {
+  /** Virtual anchor enables the non-modal, caret-anchored presentation. */
+  anchor?: SuggestionAnchor;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** ID shared with the typing field's aria-controls. */
+  listboxId?: string;
+  /** Explicit size overrides the nearest BloomScope; normal is md. */
+  size?: import('../appearance').BloomSize;
   kind: SuggestionKind;
   suggestions: ReadonlyArray<ChatComposerSuggestion>;
   /** The highlighted row. `-1` (the default) highlights nothing. */
@@ -108,6 +128,8 @@ export interface SuggestionListProps extends PartProps {
   showEmpty?: boolean;
   /** Replaces the localized empty line. */
   emptyLabel?: string;
+  /** Overrides the localized loading announcement. */
+  loadingLabel?: string;
 }
 
 export interface ChatComposerLabels {
