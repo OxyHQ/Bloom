@@ -1,15 +1,9 @@
 import { ScrollArea } from '../layout/ScrollArea';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
-import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Platform,
-  Pressable,
-  View,
-  useWindowDimensions,
-  type LayoutChangeEvent,
-  type ViewStyle,
-} from 'react-native';
+import type React from 'react';
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -53,6 +47,7 @@ import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-s
 import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
 import type { AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
+import { useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
 import { usePanelInteraction } from './use-panel-interaction';
@@ -195,7 +190,7 @@ export function createAppShellEngine() {
     const drawerCloseLabel = drawerCloseLabelProp ?? messages.closeNavigation;
     const theme = useTheme();
     const navigationChrome = resolvePanelChrome(theme);
-    const { height: viewportHeight } = useWindowDimensions();
+    const { height: viewportHeight } = useShellViewport();
     const [asideHeight, setAsideHeight] = useState(0);
     const { width, onLayout } = useShellWidth();
     const insets = useShellInsets();

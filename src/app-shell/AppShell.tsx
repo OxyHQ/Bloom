@@ -6,7 +6,7 @@ import React, {
   useId,
   type ComponentType,
 } from 'react';
-import { Platform, View, useWindowDimensions } from 'react-native';
+import { Platform, View } from 'react-native';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { useScreen } from '../screen/context';
 import type { ScreenComponents } from '../screen/types';
@@ -26,6 +26,7 @@ import { breakpointPx } from './constants';
 import type { PanelLayoutViewProps } from './AppShellPanelLayout';
 import { panelEnvelope } from './panel-layout';
 import { useShellWidth } from './use-shell-width';
+import { useShellLayoutReady, useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext, panelCssScope } from './panel-layout-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
@@ -95,7 +96,7 @@ export function createAppShell(
     style,
     testID,
   }: AppShellProps) {
-    const { width: windowWidth } = useWindowDimensions();
+    const { width: windowWidth } = useShellViewport();
     const [containerWidth, setContainerWidth] = useState<number | null>(null);
     const width = containerWidth ?? windowWidth;
     const { colors } = useTheme();
@@ -260,7 +261,7 @@ export function createAppShell(
       scroll = 'document',
       testID,
     } = props;
-    const window = useWindowDimensions();
+    const window = useShellViewport();
     const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
     const width = measuredWidth ?? window.width;
     const navFrom =
@@ -386,7 +387,9 @@ export function createAppShell(
   function ModularAppShell(props: AppShellProps) {
     const { width, onLayout } = useShellWidth();
     const scope = panelCssScope(useId());
+    const layoutReady = useShellLayoutReady();
     const cssLayout =
+      layoutReady &&
       Platform.OS === 'web' &&
       typeof CSS !== 'undefined' &&
       CSS.supports?.('container-type', 'inline-size');
