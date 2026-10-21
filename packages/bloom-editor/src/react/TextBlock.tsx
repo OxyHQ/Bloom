@@ -1,4 +1,5 @@
 import type { ActiveMarks } from '@oxy.so/bloom-text/model';
+import { suggestionOptionId, type SuggestionAnchor } from '@oxy.so/bloom/chat-composer';
 import {
   type KeyCommand,
   type PasteData,
@@ -13,6 +14,7 @@ import {
   type ComponentRef,
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -55,7 +57,7 @@ import { useBlockDecoration } from './decorations';
 import { FormatBar } from './FormatBar';
 import { InlinePopover } from './InlinePopover';
 import { inlineTargetAt } from './inline-target';
-import { MentionMenu } from './MentionMenu';
+import { MentionMenu, mentionSuggestionId } from './MentionMenu';
 import { MeasuredCarets, MeasuredHighlights, useMeasuredMarks } from './RangeMarks';
 import { MONO_FONT, RunsText } from './RunsText';
 import { SlashMenu } from './SlashMenu';
@@ -91,12 +93,58 @@ export function TextBlock({ block }: { block: Block }) {
   } = useEditorContext();
   const id = block.id;
   const hostRef = useRef<ComponentRef<typeof View> | null>(null);
+  const inputHostRef = useRef<ComponentRef<typeof View> | null>(null);
   const spec = specOf(store.schema, block.type);
   const inputRef = useRef<RichTextInputHandle | null>(null);
   const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
   const focusedRef = useRef(false);
   const shiftEnterRef = useRef(false);
   const [focused, setFocused] = useState(false);
+  const suggestionId = `bloom-editor-suggestions-${useId().replace(/:/g, '')}`;
+  const access = useRef<{ store: typeof store; readOnly: boolean } | null>(null);
+  const mentionSearch = useRef(0);
+  useLayoutEffect(() => {
+    access.current = { store, readOnly };
+    if (readOnly) {
+      mentionSearch.current += 1;
+      if (ui.get().slash?.blockId === id) ui.set({ slash: null });
+      if (ui.get().mention?.blockId === id) ui.set({ mention: null });
+    }
+    return () => {
+      access.current = null;
+      mentionSearch.current += 1;
+      if (ui.get().slash?.blockId === id) ui.set({ slash: null });
+      if (ui.get().mention?.blockId === id) ui.set({ mention: null });
+    };
+  }, [id, readOnly, store, ui]);
+  const canEdit = useCallback(
+    () =>
+      access.current?.store === store && !access.current.readOnly && Boolean(store.doc.blocks[id]),
+    [id, store],
+  );
+  const suggestionAnchor = useMemo<SuggestionAnchor>(
+    () => ({
+      contextRef: inputHostRef,
+      getRect: () => {
+        const host = inputHostRef.current as unknown as {
+          getBoundingClientRect?: () => DOMRect;
+        } | null;
+        const box = host?.getBoundingClientRect?.();
+        if (!box) return null;
+        const offset = selectionRef.current.start;
+        const rect = inputRef.current?.measureRanges([{ start: offset, end: offset }])?.[0]?.[0];
+        return rect
+          ? {
+              left: box.left + rect.x,
+              right: box.left + rect.x + rect.width,
+              top: box.top + rect.y,
+              bottom: box.top + rect.y + rect.height,
+            }
+          : box;
+      },
+    }),
+    [],
+  );
 
   // Register this block's input for focus moves and formatting commands.
   useEffect(() => {
@@ -158,10 +206,14 @@ export function TextBlock({ block }: { block: Block }) {
   const runSlashItem = useCallback(
     (item: SlashItem) => {
       const slash = ui.get().slash;
+      if (!canEdit() || slash?.blockId !== id) return;
       ui.set({ slash: null });
-      if (!slash) return;
       const current = getBlock(store.doc, id);
       const text = segmentsToPlainText(current.text ?? []);
+      // A remote edit may have replaced the query without moving our caret.
+      // Never delete unrelated text using offsets from an obsolete popup.
+      if (slashQuery(text, slash.slashAt, slash.slashAt + 1 + slash.query.length) !== slash.query)
+        return;
       const end = Math.min(text.length, slash.slashAt + 1 + slash.query.length);
       const removeQuery = (c: CommandContext) =>
         applyEdit(c, id, { index: slash.slashAt, deleteCount: end - slash.slashAt, insert: '' });
@@ -182,18 +234,30 @@ export function TextBlock({ block }: { block: Block }) {
         onSlashAction?.(item.action.id, id);
       }
     },
-    [id, onSlashAction, run, store, ui],
+    [canEdit, id, onSlashAction, run, store, ui],
   );
 
   const onChange = useCallback(
     ({ segments, edit }: RichTextChange) => {
+      if (!canEdit()) return;
       const ctx = store.context();
       const current = getBlock(ctx.doc, id);
       const text = segmentsToPlainText(segments);
 
       if (edit && edit.deleteCount === 0) {
         const at = slashTriggerAt(text, edit.index, edit.insert);
-        if (at !== null) ui.set({ slash: { blockId: id, slashAt: at, query: '', highlighted: 0 } });
+        if (at !== null)
+          ui.set({ mention: null, slash: { blockId: id, slashAt: at, query: '', highlighted: 0 } });
+      }
+      const slash = ui.get().slash;
+      if (slash?.blockId === id && edit) {
+        const query = slashQuery(text, slash.slashAt, edit.index + edit.insert.length);
+        ui.set({
+          slash:
+            query === null
+              ? null
+              : { ...slash, query, highlighted: query === slash.query ? slash.highlighted : 0 },
+        });
       }
 
       // Line breaks pasted into a one-line block: a block per line (Notion).
@@ -234,7 +298,7 @@ export function TextBlock({ block }: { block: Block }) {
       }
       store.dispatch(editText(ctx, id, segments));
     },
-    [id, inlineEquations, spec.multiline, store, ui],
+    [canEdit, id, inlineEquations, spec.multiline, store, ui],
   );
 
   // Web: HTML pasted from a page or another editor becomes blocks. A paste
@@ -269,8 +333,13 @@ export function TextBlock({ block }: { block: Block }) {
       store.setSelection({ kind: 'text', blockId: id, start: selection.start, end: selection.end });
       const slash = ui.get().slash;
       if (slash && slash.blockId === id) {
-        const text = segmentsToPlainText(getBlock(store.doc, id).text ?? []);
-        const query = slashQuery(text, slash.slashAt, selection.start);
+        const current = store.doc.blocks[id];
+        if (!current) return;
+        const text = segmentsToPlainText(current.text ?? []);
+        const query =
+          selection.start === selection.end
+            ? slashQuery(text, slash.slashAt, selection.start)
+            : null;
         if (query === null) ui.set({ slash: null });
         else if (query !== slash.query) ui.set({ slash: { ...slash, query, highlighted: 0 } });
       }
@@ -291,16 +360,16 @@ export function TextBlock({ block }: { block: Block }) {
   );
 
   // Each lookup gets a number; only the latest one's answer is shown.
-  const mentionSearch = useRef(0);
   const onMentionQuery = useCallback(
     (query: { indicator: string; text: string } | null) => {
-      if (!query || !mentions) {
+      const seq = ++mentionSearch.current;
+      if (!query || !mentions || !canEdit()) {
         if (ui.get().mention?.blockId === id) ui.set({ mention: null });
         return;
       }
       const current = ui.get().mention;
-      const seq = ++mentionSearch.current;
       ui.set({
+        slash: null,
         mention: {
           blockId: id,
           indicator: query.indicator,
@@ -313,31 +382,32 @@ export function TextBlock({ block }: { block: Block }) {
       mentions.search(query).then(
         (items) => {
           const open = ui.get().mention;
-          if (seq !== mentionSearch.current || open?.blockId !== id) return;
+          if (!canEdit() || seq !== mentionSearch.current || open?.blockId !== id) return;
           ui.set({ mention: { ...open, items, loading: false, highlighted: 0 } });
         },
         () => {
           const open = ui.get().mention;
-          if (seq !== mentionSearch.current || open?.blockId !== id) return;
+          if (!canEdit() || seq !== mentionSearch.current || open?.blockId !== id) return;
           ui.set({ mention: { ...open, items: [], loading: false } });
         },
       );
     },
-    [id, mentions, ui],
+    [canEdit, id, mentions, ui],
   );
 
   const chooseMention = useCallback(
     (item: MentionItem) => {
       const open = ui.get().mention;
+      if (!canEdit() || open?.blockId !== id || open.loading) return;
       ui.set({ mention: null });
-      if (!open) return;
       inputRef.current?.insertMention(open.indicator, item.label, { ...item.attributes });
     },
-    [ui],
+    [canEdit, id, ui],
   );
 
   const onKeyCommand = useCallback(
     (key: KeyCommand): boolean => {
+      if (!canEdit()) return false;
       const mention = ui.get().mention;
       if (mention && mention.blockId === id) {
         const count = Math.max(mention.items.length, 1);
@@ -353,7 +423,7 @@ export function TextBlock({ block }: { block: Block }) {
           return true;
         }
         if (key.key === 'Enter' || key.key === 'Tab') {
-          const item = mention.items[mention.highlighted];
+          const item = mention.loading ? undefined : mention.items[mention.highlighted];
           if (item) chooseMention(item);
           else ui.set({ mention: null });
           return true;
@@ -372,7 +442,7 @@ export function TextBlock({ block }: { block: Block }) {
           ui.set({ slash: null });
           return true;
         }
-        if (key.key === 'Enter') {
+        if (key.key === 'Enter' || key.key === 'Tab') {
           const item = matches[slash.highlighted];
           if (item) runSlashItem(item);
           else ui.set({ slash: null });
@@ -454,13 +524,14 @@ export function TextBlock({ block }: { block: Block }) {
       }
       return false;
     },
-    [chooseMention, controller, focusBlock, id, run, runSlashItem, slashItems, store, ui],
+    [canEdit, chooseMention, controller, focusBlock, id, run, runSlashItem, slashItems, store, ui],
   );
 
   const onSubmit = useCallback(() => {
+    if (!canEdit()) return;
     const mention = ui.get().mention;
     if (mention && mention.blockId === id) {
-      const item = mention.items[mention.highlighted];
+      const item = mention.loading ? undefined : mention.items[mention.highlighted];
       if (item) chooseMention(item);
       else ui.set({ mention: null });
       return;
@@ -490,7 +561,7 @@ export function TextBlock({ block }: { block: Block }) {
         (cc) => splitBlock(cc, id, sel.start),
       ]),
     );
-  }, [chooseMention, id, run, runSlashItem, slashItems, store, ui]);
+  }, [canEdit, chooseMention, id, run, runSlashItem, slashItems, store, ui]);
 
   // The input reports its marks whenever they change, focused or not (a link
   // set while the link field has the keyboard): the block the selection is in
@@ -516,7 +587,20 @@ export function TextBlock({ block }: { block: Block }) {
     const sel = store.selection;
     return sel?.kind === 'text' ? inlineTargetAt(block.text ?? [], sel.start) : null;
   }, [inlineKey, block.text, store]);
-  const slashOpen = useUi(ui, (s) => s.slash?.blockId === id || s.mention?.blockId === id);
+  const slashState = useUi(ui, (s) => (s.slash?.blockId === id ? s.slash : null));
+  const mentionState = useUi(ui, (s) => (s.mention?.blockId === id ? s.mention : null));
+  const slashOpen = !readOnly && (slashState !== null || mentionState !== null);
+  const activeSuggestion = mentionState
+    ? !mentionState.loading && mentionState.items[mentionState.highlighted]
+    : slashState
+      ? filterSlashItems(slashItems, slashState.query)[slashState.highlighted]
+      : undefined;
+  const activeSuggestionId = activeSuggestion
+    ? suggestionOptionId(
+        suggestionId,
+        mentionState ? mentionSuggestionId(activeSuggestion as MentionItem) : activeSuggestion.id,
+      )
+    : undefined;
 
   // Web: the marks and link of a selection, over the block (touch devices
   // get `EditorToolbar` above the keyboard instead).
@@ -593,7 +677,7 @@ export function TextBlock({ block }: { block: Block }) {
     <View ref={hostRef}>
       {/* Under the input's text: the highlights measured on it. */}
       <MeasuredHighlights marks={measured} />
-      <View style={runs ? styles.unseen : undefined}>
+      <View ref={inputHostRef} style={runs ? styles.unseen : undefined}>
         <RichTextInput
           ref={inputRef}
           value={block.text ?? []}
@@ -614,6 +698,8 @@ export function TextBlock({ block }: { block: Block }) {
             clearBlockSelection(ui);
             ui.set({
               focused: id,
+              ...(ui.get().slash?.blockId !== id && { slash: null }),
+              ...(ui.get().mention?.blockId !== id && { mention: null }),
               ...(marksRef.current && { marks: { blockId: id, marks: marksRef.current } }),
             });
             // The input reports its caret before it reports focus; claim it now.
@@ -624,9 +710,20 @@ export function TextBlock({ block }: { block: Block }) {
             focusedRef.current = false;
             setFocused(false);
             if (ui.get().focused === id) ui.set({ focused: null });
+            // Native suggestion rows keep the keyboard through the shared
+            // scroll owner's keyboardShouldPersistTaps. A real blur leaves
+            // this input; web's portal distinguishes inside/outside focus.
+            if (Platform.OS !== 'web') {
+              if (ui.get().slash?.blockId === id) ui.set({ slash: null });
+              if (ui.get().mention?.blockId === id) ui.set({ mention: null });
+            }
             store.sealHistory();
           }}
           editable={!readOnly}
+          aria-controls={slashOpen ? suggestionId : undefined}
+          aria-expanded={slashOpen ? true : undefined}
+          aria-autocomplete={slashOpen ? 'list' : undefined}
+          aria-activedescendant={slashOpen ? activeSuggestionId : undefined}
           textStyle={textStyle}
           style={isCode ? styles.codeInput : undefined}
           accessibilityLabel={placeholder}
@@ -681,8 +778,18 @@ export function TextBlock({ block }: { block: Block }) {
       {inlineTarget && focused && !slashOpen && !readOnly ? (
         <InlinePopover target={inlineTarget} />
       ) : null}
-      <SlashMenu blockId={id} onChoose={runSlashItem} />
-      <MentionMenu blockId={id} onChoose={chooseMention} />
+      <SlashMenu
+        blockId={id}
+        onChoose={runSlashItem}
+        anchor={suggestionAnchor}
+        listboxId={suggestionId}
+      />
+      <MentionMenu
+        blockId={id}
+        onChoose={chooseMention}
+        anchor={suggestionAnchor}
+        listboxId={suggestionId}
+      />
     </View>
   );
 }

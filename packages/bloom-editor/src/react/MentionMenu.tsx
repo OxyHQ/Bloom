@@ -1,96 +1,50 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SuggestionList, type SuggestionAnchor } from '@oxy.so/bloom/chat-composer';
 import type { BlockId } from '../model/document';
 import { type MentionItem, useEditorContext } from './context';
 import { useUi } from './ui-store';
 
-/** The mention menu under a block: the matches for what was typed after `@`, grouped. */
+/** The same shared suggestion renderer, with application-provided mention results. */
 export function MentionMenu({
   blockId,
   onChoose,
+  anchor,
+  listboxId,
 }: {
   blockId: BlockId;
   onChoose: (item: MentionItem) => void;
+  anchor: SuggestionAnchor;
+  listboxId: string;
 }) {
-  const { ui, theme, labels } = useEditorContext();
+  const { ui, labels, readOnly } = useEditorContext();
   const mention = useUi(ui, (s) => (s.mention?.blockId === blockId ? s.mention : null));
-  if (!mention) return null;
-  const { items } = mention;
-
+  if (!mention || readOnly) return null;
   return (
-    <View
-      style={[styles.menu, { backgroundColor: theme.background, borderColor: theme.border }]}
-      accessibilityRole="menu"
-    >
-      {items.length === 0 ? (
-        <Text style={[styles.empty, { color: theme.textMuted }]} accessibilityLiveRegion="polite">
-          {mention.loading ? labels.mentionSearching : labels.mentionNoResults}
-        </Text>
-      ) : (
-        <ScrollView style={styles.scroll} keyboardShouldPersistTaps="always">
-          {items.map((item, index) => {
-            const showGroup = item.group && (index === 0 || items[index - 1]?.group !== item.group);
-            const active = index === mention.highlighted;
-            return (
-              <View key={`${item.group ?? ''}:${item.id}`}>
-                {showGroup ? (
-                  <Text style={[styles.group, { color: theme.textMuted }]}>{item.group}</Text>
-                ) : null}
-                <Pressable
-                  accessibilityRole="menuitem"
-                  accessibilityState={{ selected: active }}
-                  aria-selected={active}
-                  onHoverIn={() => ui.set({ mention: { ...mention, highlighted: index } })}
-                  onPress={() => onChoose(item)}
-                  style={[styles.item, active && { backgroundColor: theme.selection }]}
-                >
-                  <Text style={[styles.label, { color: theme.text }]} numberOfLines={1}>
-                    {item.label}
-                  </Text>
-                  {item.description ? (
-                    <Text
-                      style={[styles.description, { color: theme.textMuted }]}
-                      numberOfLines={1}
-                    >
-                      {item.description}
-                    </Text>
-                  ) : null}
-                </Pressable>
-              </View>
-            );
-          })}
-        </ScrollView>
-      )}
-    </View>
+    <SuggestionList
+      kind="mention"
+      anchor={anchor}
+      listboxId={listboxId}
+      suggestions={mention.items.map((item) => ({ ...item, id: mentionSuggestionId(item) }))}
+      activeIndex={mention.highlighted}
+      onActiveIndexChange={(highlighted) => {
+        const current = ui.get().mention;
+        if (current?.blockId === blockId) ui.set({ mention: { ...current, highlighted } });
+      }}
+      onSelectSuggestion={(_, index) => {
+        const item = mention.items[index];
+        if (item) onChoose(item);
+      }}
+      onOpenChange={(open) => {
+        if (!open && ui.get().mention?.blockId === blockId) ui.set({ mention: null });
+      }}
+      loading={mention.loading}
+      loadingLabel={labels.mentionSearching}
+      showEmpty
+      emptyLabel={labels.mentionNoResults}
+    />
   );
 }
 
-const styles = StyleSheet.create({
-  menu: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    zIndex: 50,
-    width: 300,
-    marginTop: 4,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-  },
-  scroll: { maxHeight: 320 },
-  group: {
-    fontSize: 11,
-    fontWeight: '600',
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  item: { paddingHorizontal: 12, paddingVertical: 6, marginHorizontal: 4, borderRadius: 4 },
-  label: { fontSize: 14 },
-  description: { fontSize: 12, marginTop: 1 },
-  empty: { fontSize: 13, paddingHorizontal: 12, paddingVertical: 8 },
-});
+/** A person and a page may have the same ID; keep their option IDs distinct. */
+export function mentionSuggestionId(item: MentionItem): string {
+  return JSON.stringify([item.group ?? '', item.id]);
+}

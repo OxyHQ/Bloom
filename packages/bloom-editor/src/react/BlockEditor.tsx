@@ -30,7 +30,7 @@ import { canCutAsMarkdown, cutSourceMatches } from '../model/clipboard';
 import { getBlock } from '../model/document';
 import type { BlockId } from '../model/document';
 import { specOf } from '../model/schema';
-import type { SlashItem } from '../model/slash';
+import type { SlashMenuItem } from './context';
 import type { EditorStore } from '../model/store';
 import { BLOCK_DOM_PREFIX, blockElementAt, GUTTER_DOM_PREFIX } from './block-dom';
 import { BlockMenu } from './BlockMenu';
@@ -67,7 +67,7 @@ import { DEFAULT_THEME, type EditorTheme } from './theme';
 export interface BlockEditorProps {
   store: EditorStore;
   /** Items of the `/` menu (and of "Turn into"), localized by the app. */
-  slashItems: readonly SlashItem[];
+  slashItems: readonly SlashMenuItem[];
   /** Runs a slash item whose action is `custom` (upload an image, add a database). */
   onSlashAction?: (id: string, blockId: BlockId) => void;
   /** Renderers for block types the editor does not draw (media, embeds, app blocks). */

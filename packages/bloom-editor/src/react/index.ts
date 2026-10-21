@@ -16,6 +16,7 @@ export type {
   FormatAction,
   InlineEquations,
   MentionItem,
+  SlashMenuItem,
   MentionSource,
   PasteTextInput,
   TextRangeSelection,

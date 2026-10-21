@@ -20,6 +20,7 @@ module.exports = {
   // they load (`paste-capture.web.ts` over the native no-op beside it).
   moduleFileExtensions: ['web.tsx', 'web.ts', 'tsx', 'ts', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
+    '^@oxy.so/bloom/chat-composer$': '<rootDir>/src/react/__tests__/support/suggestion-list.tsx',
     // Test against the sibling package's source, not its last build.
     '^@oxy.so/bloom-text/model$': '<rootDir>/../bloom-text/src/model.ts',
     '^@oxy.so/bloom-text$': '<rootDir>/../bloom-text/src/index.ts',
