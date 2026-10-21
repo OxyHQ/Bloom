@@ -87,6 +87,86 @@ describe('domIdPrefix', () => {
   });
 });
 
+describe('destination variants in block and slash menus', () => {
+  const slashItems: BlockEditorProps['slashItems'] = [
+    {
+      id: 'heading',
+      label: 'Heading',
+      group: 'basic',
+      action: { kind: 'block', type: 'heading_1' },
+    },
+    {
+      id: 'toggle-heading',
+      label: 'Toggle heading',
+      group: 'basic',
+      action: { kind: 'block', type: 'heading_1', props: { toggleable: true, expanded: true } },
+    },
+  ];
+  function choose(label: string) {
+    const item = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"]')).find(
+      (element) => element.textContent === label,
+    );
+    expect(item).toBeDefined();
+    act(() => item?.click());
+  }
+
+  it('changes a same-type toggle heading through the real block menu and undoes the entire change', () => {
+    const store = makeStore([
+      {
+        type: 'heading_1',
+        text: [{ text: 'Parent' }],
+        props: { toggleable: true, expanded: true },
+        children: [{ type: 'paragraph', text: [{ text: 'Child' }] }],
+      },
+    ]);
+    const before = store.doc;
+    const controller = new EditorController(store);
+    mount(<BlockEditor store={store} controller={controller} slashItems={slashItems} />);
+    act(() => controller.ui.set({ blockMenu: 'b1' }));
+    choose('Heading');
+    expect(store.doc.blocks.b1?.props.toggleable).toBe(false);
+    expect(store.doc.root).toEqual(['b1', 'b2']);
+    act(() => {
+      store.undo();
+    });
+    expect(store.doc).toEqual(before);
+  });
+
+  it.each(['block', 'slash'] as const)(
+    'keeps children when choosing a toggle heading from the %s menu',
+    (menu) => {
+      const store = makeStore([
+        {
+          type: 'toggle',
+          text: [{ text: menu === 'slash' ? '/' : 'Parent' }],
+          props: { expanded: true },
+          children: [{ type: 'paragraph', text: [{ text: 'Child' }] }],
+        },
+      ]);
+      const before = store.doc;
+      const controller = new EditorController(store);
+      mount(<BlockEditor store={store} controller={controller} slashItems={slashItems} />);
+      act(() =>
+        controller.ui.set(
+          menu === 'block'
+            ? { blockMenu: 'b1' }
+            : { slash: { blockId: 'b1', slashAt: 0, query: '', highlighted: 0 } },
+        ),
+      );
+      choose('Toggle heading');
+      expect(store.doc.root).toEqual(['b1']);
+      expect(store.doc.blocks.b1?.type).toBe('heading_1');
+      expect(store.doc.blocks.b1?.props.toggleable).toBe(true);
+      expect(store.doc.blocks.b1?.children).toEqual(['b2']);
+      expect(store.doc.blocks.b2?.parent).toBe('b1');
+      act(() => {
+        store.undo();
+      });
+      expect(store.doc).toEqual(before);
+    },
+  );
+});
+
 describe('text-range decorations', () => {
   it('draws highlights and a named caret over a block that is not being edited', () => {
     const store = makeStore(PARAGRAPHS);

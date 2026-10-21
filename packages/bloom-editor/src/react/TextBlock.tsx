@@ -34,7 +34,6 @@ import {
   nextTextBlock,
   outdent,
   previousTextBlock,
-  setProps,
   splitBlock,
   turnInto,
 } from '../model/commands';
@@ -174,9 +173,8 @@ export function TextBlock({ block }: { block: Block }) {
           composeCommands(c, [
             removeQuery,
             emptyAfter
-              ? (cc) => turnInto(cc, id, type)
+              ? (cc) => turnInto(cc, id, type, props ?? {})
               : (cc) => insertBlockAfter(cc, id, type, props ? { props } : {}),
-            (cc) => (emptyAfter && props ? setProps(cc, id, props) : null),
           ]),
         );
       } else {

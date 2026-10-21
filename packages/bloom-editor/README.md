@@ -107,6 +107,14 @@ the end of a container, an empty one included.
   its own slash item can put one in with `controller.insertMention`.
 - **Mentions**: `mentions.search` answers what an indicator finds; the
   mention is stored on the text (`mention.attributes`).
+- **Block transformations** apply the destination type and variant together.
+  `turnInto(context, blockId, type, props)` determines whether the final block
+  accepts children before moving any: toggle headings retain their subtree;
+  an ordinary heading promotes it after the heading. Pass `{}` to select the
+  ordinary variant, including when the type already matches. The three-argument
+  form preserves the existing variant. Props still pass through the destination
+  schema, and the change is one reversible transaction. Block and slash menus
+  use this same command.
 - **Undo** groups typing into words and takes back only your own change,
   even when others edited the same block since.
 
