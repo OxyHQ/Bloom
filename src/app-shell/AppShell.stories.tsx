@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
+import { BottomBar } from '../bottom-bar';
 import { RiAddFill, RiFilter3Fill, RiHomeLine } from '../icons/remix';
 import { DEMO_NOTIFICATIONS } from '../notification-center/NotificationCenter.stories';
 import {
@@ -854,3 +855,80 @@ function ContinuousWorkspaceDemo() {
   );
 }
 export const ContinuousWorkspace: Story = { render: () => <ContinuousWorkspaceDemo /> };
+
+/** Fixed mail-style panels remain bounded while reveal navigation crosses desktop. */
+export const BoundedRevealPanels: Story = {
+  parameters: { controls: { disable: true }, layout: 'fullscreen' },
+  render: () => (
+    <AppShell
+      panels
+      safeArea
+      drawer="reveal"
+      scroll="fixed"
+      header={null}
+      contentMaxWidth="none"
+      gutter={8}
+      sidebar={{
+        secondaryItems: DEMO_SECONDARY,
+        footer: <Button>Account</Button>,
+        items: Array.from({ length: 40 }, (_, index) => ({
+          key: `mailbox-${index}`,
+          label: `Mailbox ${index}`,
+          icon: RiHomeLine,
+        })),
+      }}
+      bottomBar={
+        <BottomBar
+          items={[{ name: 'inbox', label: 'Inbox', icon: <RiHomeLine /> }]}
+          value="inbox"
+          onValueChange={() => undefined}
+        />
+      }
+      testID="bounded-reveal"
+    >
+      <AppShellPanels testID="bounded-reveal-panels">
+        <AppShellPanel id="list" width={380} minWidth={240} chrome="none">
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, gap: 12 }}>
+            {Array.from({ length: 40 }, (_, index) => (
+              <Placeholder key={index} height={88} />
+            ))}
+          </ScrollView>
+        </AppShellPanel>
+        <AppShellPanel id="detail" appearance="plain" chrome="none">
+          <MapFill label="Message" />
+        </AppShellPanel>
+      </AppShellPanels>
+    </AppShell>
+  ),
+};
+
+export const FluidSplitWorkspace: Story = {
+  parameters: { controls: { disable: true }, layout: 'fullscreen' },
+  render: () => (
+    <AppShell
+      contentMaxWidth="none"
+      drawer="reveal"
+      header={null}
+      gutter={12}
+      sidebar={{ items: DEMO_NAV }}
+      panelLayout={{
+        mode: 'split',
+        flow: 'bounded',
+        appearance: 'separated',
+        collapseBelow: 'lg',
+        activePanel: 'detail',
+        panels: [
+          {
+            id: 'list',
+            width: 380,
+            minWidth: 320,
+            maxWidth: 480,
+            content: <MapFill label="Messages" />,
+          },
+          { id: 'detail', content: <MapFill label="Message" /> },
+        ],
+      }}
+      testID="fluid-split"
+    />
+  ),
+};

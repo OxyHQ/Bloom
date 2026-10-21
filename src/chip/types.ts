@@ -162,13 +162,18 @@ export interface ChipRowProps {
   children?: React.ReactNode;
   /** Between pills. Default 8. */
   gap?: number;
-  /** Side padding inside the scroller, so the first and last pill clear the edge. */
-  contentInset?: number;
+  /**
+   * Padding inside the scrolling content. A number applies to both ends;
+   * logical start/end insets align initial content without narrowing the viewport.
+   */
+  contentInset?: number | { start: number; end: number };
   /**
    * The colour the web edge fades blend into — the surface behind the row.
    * Default the page background.
    */
   fadeColor?: string;
+  /** Web edge treatment. A mask fades alpha over dynamic surfaces; default overlay. */
+  fadeMode?: 'overlay' | 'mask';
   /**
    * Room kept on every side for a pill's focus ring, taken back out again with
    * negative margins so the row still lines up with what is above it. Default 4.

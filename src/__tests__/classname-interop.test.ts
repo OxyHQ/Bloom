@@ -59,7 +59,6 @@ const CAST_EXEMPTIONS = [
   // `:focus-visible` rule to match.
   'chip/Chip.tsx',
   // The same, for the hook the pill row's hidden scrollbar rule hangs off.
-  'chip/ChipRow.tsx',
   // The same, for the checkbox's focus ring.
   'checkbox/Checkbox.tsx',
   // The same, for the button group items' inset focus ring.

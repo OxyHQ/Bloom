@@ -323,6 +323,31 @@ describe('ChipRow', () => {
     expect(row.contains(byTestId('row-any'))).toBe(true);
   });
 
+  it('places asymmetric insets on scrolling content without narrowing the rail', () => {
+    mount(
+      <ChipRow contentInset={{ start: 64, end: 14 }} testID="inset-row">
+        <Chip testID="inset-chip">survey.pdf</Chip>
+      </ChipRow>,
+    );
+    const content = byTestId('inset-chip').parentElement;
+    if (!content) throw new Error('Missing scroll content');
+    expect(getComputedStyle(content).paddingLeft).toBe('68px');
+    expect(getComputedStyle(content).paddingRight).toBe('18px');
+    expect(byTestId('inset-row').style.marginLeft).toBe('');
+    expect(byTestId('inset-row').style.paddingLeft).toBe('');
+  });
+
+  it('uses alpha masks without overlay paint or scrollbar controls', () => {
+    mount(
+      <ChipRow fadeMode="mask" testID="masked">
+        <Chip>Document</Chip>
+      </ChipRow>,
+    );
+    expect(byTestId('masked-track').style.maskImage).toContain('linear-gradient');
+    expect(container.querySelector('[role="scrollbar"]')).toBeNull();
+    expect(container.querySelector('[data-testid="masked-fade-end"]')).toBeNull();
+  });
+
   it('names the close button after the chip, not "Remove" five times', () => {
     mount(
       <ChipRow testID="row">

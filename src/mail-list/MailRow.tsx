@@ -1,9 +1,10 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
 import { Checkbox } from '../checkbox';
+import { ChipRow } from '../chip';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useSurfaceFill } from '../styles/surface-levels';
@@ -77,6 +78,8 @@ function MailRowComponent({
   onCheckedChange,
   density = 'comfortable',
   showAvatar = true,
+  footer,
+  attachments,
   onPress,
   onLongPress,
   href,
@@ -105,6 +108,9 @@ function MailRowComponent({
   const compact = density === 'compact';
   const placement = actionsPlacement ?? (IS_WEB ? 'hover' : 'none');
   const rail = placement === 'none' ? [] : (actions ?? []);
+  const metadataAttributes =
+    placement === 'hover' && rail.length > 0 ? webDataSet({ bloomMailMetadata: '' }) : {};
+  const actionSize = placement === 'hover' ? Math.min(geo.action, 32) : geo.action;
 
   const swipeLeft = swipeActions?.left ?? [];
   const swipeRight = swipeActions?.right ?? [];
@@ -270,7 +276,6 @@ function MailRowComponent({
         flexDirection: 'row',
         alignItems: 'center',
         gap: geo.gap,
-        marginLeft: leading === null ? 0 : geo.gap,
       }}
     >
       <Text
@@ -305,7 +310,7 @@ function MailRowComponent({
       pointerEvents="none"
       aria-hidden
       importantForAccessibility="no-hide-descendants"
-      style={{ flex: 1, minWidth: 0, marginLeft: leading === null ? 0 : geo.gap, gap: geo.lineGap }}
+      style={{ flex: 1, minWidth: 0, gap: geo.lineGap }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 }}>
         <Text
@@ -371,6 +376,7 @@ function MailRowComponent({
 
   const trailing = compact ? (
     <View
+      {...metadataAttributes}
       pointerEvents="box-none"
       style={{
         flexDirection: 'row',
@@ -385,6 +391,7 @@ function MailRowComponent({
     </View>
   ) : timeText === null && states === null ? null : (
     <View
+      {...metadataAttributes}
       pointerEvents="box-none"
       style={{
         alignItems: 'flex-end',
@@ -399,10 +406,14 @@ function MailRowComponent({
     </View>
   );
 
+  const hasFooter = footer !== undefined && footer !== null && footer !== false;
+  const hasAttachments = attachments !== undefined && attachments !== null && attachments !== false;
+  const fixedHeight = hasFooter || hasAttachments ? undefined : geo.height;
+
   const rowStyle: WebCssStyle = {
     position: 'relative',
     minHeight: geo.minHeight,
-    ...(geo.height === undefined ? null : { height: geo.height }),
+    ...(fixedHeight === undefined ? null : { height: fixedHeight }),
     borderRadius: MAIL_ROW_RADIUS,
     justifyContent: 'center',
     '--bloom-mail-hover': paint.hover,
@@ -438,56 +449,112 @@ function MailRowComponent({
         pointerEvents="box-none"
         style={{
           flexDirection: 'row',
-          alignItems: 'center',
-          minHeight: geo.minHeight,
-          ...(geo.height === undefined ? null : { height: geo.height }),
-          paddingTop: geo.paddingVertical,
-          paddingBottom: geo.paddingVertical,
+          alignItems: 'flex-start',
           paddingLeft: geo.paddingHorizontal,
           paddingRight: geo.paddingHorizontal,
         }}
       >
-        {leading}
-        {column}
-        {trailing}
-      </View>
-      {rail.length > 0 ? (
+        {leading === null ? null : (
+          <View
+            pointerEvents="box-none"
+            style={{
+              minHeight: geo.minHeight,
+              paddingTop: geo.paddingVertical,
+              paddingBottom: geo.paddingVertical,
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            {leading}
+          </View>
+        )}
         <View
-          {...(placement === 'hover' ? webDataSet({ bloomMailRail: '' }) : {})}
-          style={{
-            position: 'absolute',
-            right: geo.paddingHorizontal - 4,
-            top: 0,
-            bottom: 0,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 2,
-            paddingLeft: 12,
-            borderTopRightRadius: MAIL_ROW_RADIUS,
-            borderBottomRightRadius: MAIL_ROW_RADIUS,
-            // Whatever fill the row shows WHILE the rail is visible, so the
-            // buttons read as part of the row rather than as a floating chip.
-            backgroundColor: selected ? paint.selected : paint.hover,
-          }}
-          testID={testID ? `${testID}-rail` : undefined}
+          pointerEvents="box-none"
+          style={{ flex: 1, minWidth: 0, marginLeft: leading === null ? 0 : geo.gap }}
+          testID={testID ? `${testID}-content` : undefined}
         >
-          {rail.map((action) => (
-            <MailGlyphButton
-              key={action.key}
-              label={action.label}
-              icon={action.icon}
-              color={mailActionColor(action, paint)}
-              hoverFill={paint.selected}
-              ring={paint.accent}
-              size={geo.action}
-              glyph={geo.actionGlyph}
-              onPress={() => {
-                action.onPress?.();
-                onAction?.(action.key);
+          <View
+            pointerEvents="box-none"
+            style={{
+              position: 'relative',
+              flexDirection: 'row',
+              alignItems: 'center',
+              minHeight: geo.minHeight,
+              ...(geo.height === undefined ? null : { height: geo.height }),
+              paddingTop: geo.paddingVertical,
+              paddingBottom: geo.paddingVertical,
+            }}
+            testID={testID ? `${testID}-header` : undefined}
+          >
+            {column}
+            {trailing}
+            {rail.length > 0 ? (
+              <View
+                {...(placement === 'hover' ? webDataSet({ bloomMailRail: '' }) : {})}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  flexShrink: 0,
+                  gap: 2,
+                  marginLeft: geo.gap,
+                }}
+                testID={testID ? `${testID}-rail` : undefined}
+              >
+                {rail.map((action) => (
+                  <MailGlyphButton
+                    key={action.key}
+                    label={action.label}
+                    icon={action.icon}
+                    color={mailActionColor(action, paint)}
+                    hoverFill={paint.selected}
+                    ring={paint.accent}
+                    size={actionSize}
+                    glyph={geo.actionGlyph}
+                    onPress={() => {
+                      action.onPress?.();
+                      onAction?.(action.key);
+                    }}
+                    testID={testID ? `${testID}-action-${action.key}` : undefined}
+                  />
+                ))}
+              </View>
+            ) : null}
+          </View>
+          {hasFooter ? (
+            <View
+              pointerEvents="box-none"
+              style={{
+                minWidth: 0,
+                paddingTop: compact ? 8 : 0,
+                paddingBottom: geo.paddingVertical || 8,
               }}
-              testID={testID ? `${testID}-action-${action.key}` : undefined}
-            />
-          ))}
+              testID={testID ? `${testID}-footer` : undefined}
+            >
+              {footer}
+            </View>
+          ) : null}
+        </View>
+      </View>
+      {hasAttachments ? (
+        <View
+          pointerEvents="box-none"
+          style={{
+            overflow: 'hidden',
+            paddingTop: compact && !hasFooter ? 8 : 4,
+            paddingBottom: geo.paddingVertical || 8,
+          }}
+          testID={testID ? `${testID}-attachments` : undefined}
+        >
+          <ChipRow
+            contentInset={{
+              start: geo.paddingHorizontal + (leading === null ? 0 : geo.avatar + geo.gap),
+              end: geo.paddingHorizontal,
+            }}
+            fadeMode="mask"
+            testID={testID ? `${testID}-attachment-row` : undefined}
+          >
+            {attachments}
+          </ChipRow>
         </View>
       ) : null}
     </View>
@@ -498,9 +565,9 @@ function MailRowComponent({
     <SwipeRow
       actions={toSwipeActions({ left: swipeLeft, right: swipeRight })}
       onAction={onAction}
-      // No `height`: a comfortable row is a FLOOR, so the panes take whatever
-      // the row turns out to be rather than pinning it to the floor's value.
-      {...(geo.height === undefined ? null : { height: geo.height })}
+      // Rows with secondary content grow at every density; swipe panes follow
+      // that measured height rather than clipping to the compact header.
+      {...(fixedHeight === undefined ? null : { height: fixedHeight })}
       radius={MAIL_ROW_RADIUS}
       background={paint.surface}
       testID={testID ? `${testID}-swipe` : undefined}

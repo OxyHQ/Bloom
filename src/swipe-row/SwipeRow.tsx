@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -23,6 +23,9 @@ import { resolveSwipeRowPaint, swipeActionPaint } from './shared';
 import type { SwipeRowAction, SwipeRowProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SWIPE_ROW_MESSAGES } from './messages';
+import { SwipeRowScrollContext } from './context';
+import { useInteractiveWebCss } from '../styles/interactive-web-css';
+import { webDataSet } from '../styles/web-data';
 
 /**
  * ONE drag affordance for every list row in this library.
@@ -81,12 +84,23 @@ export function SwipeRow({
   children,
   testID,
 }: SwipeRowProps) {
+  useInteractiveWebCss(
+    'bloom-swipe-scroll-css',
+    `
+[data-bloom-swipe-content] :not(:has([data-bloom-swipe-scroll])):not([data-bloom-swipe-scroll]):not([data-bloom-swipe-scroll] *) { touch-action: pan-y; }
+`,
+  );
   const { messages } = useMessages(SWIPE_ROW_MESSAGES);
   const closeLabel = closeLabelProp ?? messages.closeActions;
   const theme = useTheme();
   const translateX = useSharedValue(0);
   const reducedMotion = useReducedMotion();
   const [open, setOpen] = useState<'left' | 'right' | null>(null);
+  const [horizontalScrollers, setHorizontalScrollers] = useState(0);
+  const registerScroller = useCallback(() => {
+    setHorizontalScrollers((count) => count + 1);
+    return () => setHorizontalScrollers((count) => count - 1);
+  }, []);
 
   const tones = useMemo(() => paint ?? resolveSwipeRowPaint(theme), [paint, theme]);
   // The panes sit UNDER the row, so the travelling layer has to be opaque or
@@ -120,8 +134,9 @@ export function SwipeRow({
           const next = translateX.value + event.changeX;
           translateX.value = Math.max(-rightWidth, Math.min(leftWidth, next));
         })
-        .onFinalize(() => {
+        .onEnd((_event, success) => {
           'worklet';
+          if (!success) return;
           const travelled = Math.abs(translateX.value);
           if (travelled < SWIPE_TAP_SLOP) {
             translateX.value = 0;
@@ -136,8 +151,19 @@ export function SwipeRow({
             ? target
             : withTiming(target, { duration: SWIPE_SNAP_DURATION });
           runOnJS(settle)(commit ? opening : null);
+        })
+        .onFinalize((_event, success) => {
+          'worklet';
+          if (success) return;
+          translateX.value = reducedMotion ? 0 : withTiming(0, { duration: SWIPE_SNAP_DURATION });
+          runOnJS(settle)(null);
         }),
     [leftWidth, reducedMotion, rightWidth, settle, translateX],
+  );
+
+  const scrollContext = useMemo(
+    () => ({ pan, register: registerScroller }),
+    [pan, registerScroller],
   );
 
   const rowStyle = useAnimatedStyle(
@@ -238,14 +264,16 @@ export function SwipeRow({
           {pane(right, 'right')}
         </Animated.View>
       ) : null}
-      {/* `pan-y` is load-bearing on touch web — see the doc comment above.
-          Without it RNGH's default `none` makes the list unscrollable by touch
-          wherever a row is under the finger, which is everywhere. */}
-      <GestureDetector gesture={pan} touchAction="pan-y">
+      {/* A horizontal descendant needs an unrestricted ancestor path. The
+          sheet keeps pan-y on non-scrolling branches, preserving row swipes. */}
+      <GestureDetector gesture={pan} touchAction={horizontalScrollers > 0 ? 'auto' : 'pan-y'}>
         <Animated.View
+          {...webDataSet({ bloomSwipeContent: '' })}
           style={[{ backgroundColor: rowFill }, height === undefined ? null : { height }, rowStyle]}
         >
-          {children}
+          <SwipeRowScrollContext.Provider value={scrollContext}>
+            {children}
+          </SwipeRowScrollContext.Provider>
           {open !== null ? (
             // While a pane is open the row itself closes it rather than opening
             // what it points at — the same rule a tap outside an open menu follows.

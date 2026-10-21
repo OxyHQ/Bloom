@@ -1,5 +1,5 @@
 import { ScrollArea } from '../layout/ScrollArea';
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import {
   View,
   type LayoutChangeEvent,
@@ -7,12 +7,12 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { chipRowOverflow, type ChipRowScroll } from './shared';
 import type { ChipRowProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 
 /**
  * A row of pills that scrolls sideways, with a fade at whichever edge has more
@@ -27,6 +27,7 @@ import { IS_WEB } from '../styles/platform';
  *
  * Web only, and deliberately: the fade is painted with a CSS gradient, and on
  * native a scroll row already shows its own bounce. The row scrolls on both.
+ * `fadeMode="mask"` fades alpha instead, preserving dynamic underlying surfaces.
  *
  * `ringInset` keeps room on every side for a pill's focus ring and takes it
  * back out with negative margins, so the row still lines up with the heading
@@ -41,24 +42,12 @@ import { IS_WEB } from '../styles/platform';
 /** Width of each edge's fade. */
 export const CHIP_ROW_EDGE = 40;
 
-const STYLE_ID = 'bloom-chip-row-web-css';
-const TRACK = '[data-bloom-chip-row-track]';
-
-const BLOOM_CHIP_ROW_CSS = `
-${TRACK} {
-  scrollbar-width: none;
-  overscroll-behavior-x: contain;
-}
-${TRACK}::-webkit-scrollbar {
-  display: none;
-}
-`;
-
 function ChipRowComponent({
   children,
   gap = 8,
   contentInset = 0,
   fadeColor,
+  fadeMode = 'overlay',
   ringInset = 4,
   role = 'group',
   accessibilityLabel,
@@ -69,13 +58,19 @@ function ChipRowComponent({
   testID,
 }: ChipRowProps) {
   const theme = useTheme();
-  React.useEffect(() => {
-    adoptStyleSheet(STYLE_ID, BLOOM_CHIP_ROW_CSS);
-  }, []);
-
+  const directionProps = useDirectionProps();
+  const rtl = useIsRtl();
+  const startInset = typeof contentInset === 'number' ? contentInset : contentInset.start;
+  const endInset = typeof contentInset === 'number' ? contentInset : contentInset.end;
   const [scroll, setScroll] = useState<ChipRowScroll>({ x: 0, viewport: 0, content: 0 });
   const overflow = useMemo(() => chipRowOverflow(scroll), [scroll]);
   const fade = fadeColor ?? theme.colors.background;
+
+  // A mask fades content alpha, so hover/selection/material remain the actual
+  // surface underneath instead of an approximation painted over the track.
+  const maskImage = `linear-gradient(to right, ${overflow.previous ? 'transparent, black 18px' : 'black, black'}, ${overflow.next ? 'black calc(100% - 18px), transparent' : 'black, black'})`;
+  const maskStyle: WebCssStyle | undefined =
+    IS_WEB && fadeMode === 'mask' ? { maskImage, WebkitMaskImage: maskImage } : undefined;
 
   const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
@@ -118,6 +113,7 @@ function ChipRowComponent({
     // the element a caller's `testID` lands on, and a group whose semantics
     // hide one node deeper is a group every consumer's test misses.
     <View
+      {...directionProps}
       role={role}
       accessibilityLabel={accessibilityLabel}
       aria-disabled={disabled || undefined}
@@ -131,9 +127,8 @@ function ChipRowComponent({
       testID={testID}
     >
       <ScrollArea
-        {...(IS_WEB ? ({ dataSet: { bloomChipRowTrack: '' } } as Record<string, unknown>) : {})}
         horizontal
-        showsHorizontalScrollIndicator={false}
+        scrollbar="never"
         keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         scrollEventThrottle={16}
         onScroll={onScroll}
@@ -141,14 +136,17 @@ function ChipRowComponent({
         onContentSizeChange={onContentSizeChange}
         // The ring room, and the same amount taken back out, so a focus outline
         // is not clipped by the scroller and the row still lines up.
-        style={{
-          flexGrow: 0,
-          minWidth: 0,
-          marginTop: -ringInset,
-          marginBottom: -ringInset,
-          marginLeft: -ringInset,
-          marginRight: -ringInset,
-        }}
+        style={[
+          {
+            flexGrow: 0,
+            minWidth: 0,
+            marginTop: -ringInset,
+            marginBottom: -ringInset,
+            marginLeft: -ringInset,
+            marginRight: -ringInset,
+          },
+          maskStyle,
+        ]}
         contentContainerStyle={[
           {
             flexDirection: 'row',
@@ -156,8 +154,8 @@ function ChipRowComponent({
             gap,
             paddingTop: ringInset,
             paddingBottom: ringInset,
-            paddingLeft: contentInset + ringInset,
-            paddingRight: contentInset + ringInset,
+            paddingLeft: (rtl ? endInset : startInset) + ringInset,
+            paddingRight: (rtl ? startInset : endInset) + ringInset,
           },
           contentContainerStyle,
         ]}
@@ -165,14 +163,14 @@ function ChipRowComponent({
       >
         {children}
       </ScrollArea>
-      {IS_WEB && overflow.previous ? (
+      {IS_WEB && fadeMode === 'overlay' && overflow.previous ? (
         <View
           pointerEvents="none"
           style={edgeStyle('left')}
           testID={testID ? `${testID}-fade-start` : undefined}
         />
       ) : null}
-      {IS_WEB && overflow.next ? (
+      {IS_WEB && fadeMode === 'overlay' && overflow.next ? (
         <View
           pointerEvents="none"
           style={edgeStyle('right')}

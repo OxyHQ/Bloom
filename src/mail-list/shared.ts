@@ -468,6 +468,7 @@ export const MAIL_LIST_STYLE_ID = 'bloom-mail-list-web-css';
 const ROW = '[data-bloom-mail-row]';
 const FOCUSABLE = '[data-bloom-mail-focusable]';
 const RAIL = '[data-bloom-mail-rail]';
+const METADATA = '[data-bloom-mail-metadata]';
 
 export const MAIL_LIST_CSS = `
 ${FOCUSABLE} {
@@ -488,18 +489,24 @@ ${ROW}[data-selected="true"]:hover {
   background-color: var(--bloom-mail-selected, transparent);
 }
 ${RAIL} {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 120ms ease-out;
+  display: none;
 }
 ${ROW}:hover ${RAIL},
 ${ROW}:focus-within ${RAIL} {
-  opacity: 1;
-  pointer-events: auto;
+  display: flex;
+}
+${ROW}:hover ${METADATA},
+${ROW}:focus-within ${METADATA} {
+  display: none;
 }
 @media (hover: none) {
-  ${RAIL} {
+  ${ROW}:hover ${RAIL},
+  ${ROW}:focus-within ${RAIL} {
     display: none;
+  }
+  ${ROW}:hover ${METADATA},
+  ${ROW}:focus-within ${METADATA} {
+    display: flex;
   }
 }
 @media (prefers-reduced-motion: reduce) {

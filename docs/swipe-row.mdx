@@ -155,3 +155,6 @@ put the same actions in it.
 - **It does not open programmatically.** There is no `open` prop: an app that
   opens a row nobody touched has drawn a menu, and a menu is a different
   component.
+
+
+Horizontal `ScrollArea` descendants reserve their gestures through the shared scroll owner. Their native gesture blocks the enclosing row pan, including drags at the rail's edges. On touch web, the scroller path permits browser scrolling while the surrounding row content keeps vertical browser panning and horizontal row actions. Removing the scroller restores the default row touch policy. Applications do not need event propagation handlers or gesture offsets.

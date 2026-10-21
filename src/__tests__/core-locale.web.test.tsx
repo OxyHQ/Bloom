@@ -62,14 +62,17 @@ function byTestId(id: string): HTMLElement {
 }
 
 interface RecordedPan {
-  __handlers: { onChange?: (event: { changeX: number }) => void; onFinalize?: () => void };
+  __handlers: {
+    onChange?: (event: { changeX: number }) => void;
+    onEnd?: (event: unknown, success: boolean) => void;
+  };
 }
 
 function openRow(spy: jest.SpyInstance) {
   const built = spy.mock.results[0]?.value as RecordedPan;
   act(() => {
     built.__handlers.onChange?.({ changeX: -2 * SWIPE_ACTION_WIDTH });
-    built.__handlers.onFinalize?.();
+    built.__handlers.onEnd?.({}, true);
   });
 }
 

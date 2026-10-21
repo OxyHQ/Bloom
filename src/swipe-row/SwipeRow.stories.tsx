@@ -9,6 +9,7 @@ import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { SwipeRow } from './SwipeRow';
+import { ChipRow, Chip } from '../chip';
 import type { SwipeRowActions } from './types';
 
 /**
@@ -133,6 +134,36 @@ export const OwnPaint: Story = {
         >
           <Row title="Pere Aguiló" subtitle="Quote for the shutters" />
         </SwipeRow>
+      </Frame>
+    );
+  },
+};
+
+export const HorizontalContent: Story = {
+  render: () => {
+    const [openCount, setOpenCount] = useState(0);
+    return (
+      <Frame>
+        <SwipeRow
+          actions={ACTIONS}
+          onAction={() => {}}
+          onOpenChange={(side) => {
+            if (side) setOpenCount((count) => count + 1);
+          }}
+          testID="scroll-swipe"
+        >
+          <Row
+            title="Drag this header"
+            subtitle="The attachment rail keeps its own touch gesture"
+          />
+          <ChipRow testID="scroll-rail">
+            {Array.from({ length: 8 }, (_, index) => `Attachment ${index + 1}.pdf`).map((name) => (
+              <Chip key={name}>{name}</Chip>
+            ))}
+          </ChipRow>
+        </SwipeRow>
+        <Text testID="scroll-open-count">{String(openCount)}</Text>
+        <View style={{ height: 1500 }} />
       </Frame>
     );
   },

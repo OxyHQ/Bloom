@@ -1386,7 +1386,10 @@ export function createAppShellEngine() {
                 testID={testID ? `${testID}-reveal-page` : undefined}
                 style={[
                   {
-                    flexGrow: 1,
+                    // Bounded shells must shrink this retained reveal host;
+                    // otherwise a long sidebar makes every panel document-tall.
+                    ...(doc ? { flexGrow: 1 } : flexFill),
+                    minHeight: 0,
                     minWidth: 0,
                     overflow:
                       Platform.OS === 'web' ? (isOpen ? WEB_OVERFLOW_CLIP : 'visible') : 'hidden',
@@ -1403,13 +1406,16 @@ export function createAppShellEngine() {
                   accessibilityElementsHidden={isOpen}
                   importantForAccessibility={isOpen ? 'no-hide-descendants' : 'auto'}
                   {...(Platform.OS === 'web' && isOpen ? { inert: true } : {})}
-                  style={{ flexGrow: 1, minHeight: 0, minWidth: 0 }}
+                  style={{ ...(doc ? { flexGrow: 1 } : flexFill), minHeight: 0, minWidth: 0 }}
                 >
                   {topBarNode}
                   <StyledView className={doc ? undefined : 'flex-1 min-h-0'}>
                     <View
                       {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
-                      style={[rowStyle, { flexGrow: 1, minWidth: 0 }]}
+                      style={[
+                        rowStyle,
+                        { ...(doc ? { flexGrow: 1 } : flexFill), minHeight: 0, minWidth: 0 },
+                      ]}
                     >
                       {navRegion}
                       {body}

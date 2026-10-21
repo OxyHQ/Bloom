@@ -35,6 +35,13 @@ jest.mock('react-native', () => {
   return jest.requireActual('react-native-web');
 });
 
+// The reveal page is animated; a string mock drops both its styles and testID.
+jest.mock('react-native-reanimated', () => {
+  const base = jest.requireActual('../../__mocks__/react-native-reanimated');
+  const { View } = jest.requireActual('react-native-web');
+  return { ...base, __esModule: true, default: { ...base.default, View } };
+});
+
 import { Text, View } from 'react-native';
 
 import { AppShell, AppShellPanel, AppShellPanels } from '../app-shell/index.web';
@@ -388,4 +395,49 @@ it('keeps navigation and the primary panel mounted across document split and bou
   render(shape, 'document');
   expect(container.querySelector('[data-testid="shell-navigation"]')).toBe(navigation);
   expect(mounts).toBe(1);
+});
+
+it('bounds every retained reveal ancestor with long navigation, and releases document flow', () => {
+  setViewport(1440);
+  const shape: Partial<AppShellProps> = {
+    ...SHAPES['dashboard, reveal, panels'],
+    sidebar: {
+      items: Array.from({ length: 40 }, (_, index) => ({
+        key: `folder-${index}`,
+        label: `Folder ${index}`,
+        icon: RiHomeLine,
+      })),
+    },
+  };
+  let retained: Element | null = null;
+  for (const scroll of ['fixed', 'document', 'container', 'fixed'] as const) {
+    render(shape, scroll);
+    const page = container.querySelector('[data-testid="shell-reveal-page"]');
+    if (!page) throw new Error(`Missing reveal host in ${scroll}`);
+    if (retained) expect(page).toBe(retained);
+    retained = page;
+    const navigation = container.querySelector('[data-testid="shell-navigation"]');
+    let ancestor = navigation?.parentElement;
+    const hosts: HTMLElement[] = [];
+    while (ancestor && ancestor.dataset.testid !== 'shell') {
+      hosts.push(ancestor);
+      ancestor = ancestor.parentElement;
+    }
+    expect(hosts.length).toBeGreaterThanOrEqual(4);
+    for (const host of hosts) {
+      const computed = getComputedStyle(host);
+      if (scroll !== 'document') {
+        if (host.classList.contains('flex-1')) {
+          expect(host.classList.contains('min-h-0')).toBe(true);
+          continue;
+        }
+        expect(computed.flexGrow).toBe('1');
+        expect(computed.flexShrink).toBe('1');
+        expect(['0px', '0%']).toContain(computed.flexBasis);
+        expect(computed.minHeight).toBe('0px');
+      } else {
+        expect(computed.overflow).not.toBe('hidden');
+      }
+    }
+  }
 });
