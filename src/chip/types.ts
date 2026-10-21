@@ -172,6 +172,8 @@ export interface ChipRowProps {
    * Default the page background.
    */
   fadeColor?: string;
+  /** Web edge treatment. A mask fades alpha over dynamic surfaces; default overlay. */
+  fadeMode?: 'overlay' | 'mask';
   /**
    * Room kept on every side for a pill's focus ring, taken back out again with
    * negative margins so the row still lines up with what is above it. Default 4.

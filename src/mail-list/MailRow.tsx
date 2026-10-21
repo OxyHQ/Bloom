@@ -550,7 +550,7 @@ function MailRowComponent({
               start: geo.paddingHorizontal + (leading === null ? 0 : geo.avatar + geo.gap),
               end: geo.paddingHorizontal,
             }}
-            fadeColor={selected ? paint.selected : paint.surface}
+            fadeMode="mask"
             testID={testID ? `${testID}-attachment-row` : undefined}
           >
             {attachments}

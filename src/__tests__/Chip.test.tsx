@@ -337,6 +337,17 @@ describe('ChipRow', () => {
     expect(byTestId('inset-row').style.paddingLeft).toBe('');
   });
 
+  it('uses alpha masks without overlay paint or scrollbar controls', () => {
+    mount(
+      <ChipRow fadeMode="mask" testID="masked">
+        <Chip>Document</Chip>
+      </ChipRow>,
+    );
+    expect(byTestId('masked-track').style.maskImage).toContain('linear-gradient');
+    expect(container.querySelector('[role="scrollbar"]')).toBeNull();
+    expect(container.querySelector('[data-testid="masked-fade-end"]')).toBeNull();
+  });
+
   it('names the close button after the chip, not "Remove" five times', () => {
     mount(
       <ChipRow testID="row">
