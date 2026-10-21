@@ -181,6 +181,7 @@ export function createScreenScrollView(
         }}
         style={[
           Platform.OS === 'web' ? { flexGrow: 1, flexShrink: 1, minHeight: 0 } : style,
+          screen.contentSized ? { flexBasis: 'auto' } : undefined,
           restoration?.restorePending ? { opacity: 0 } : null,
         ]}
         onScroll={onNativeScroll}
@@ -253,6 +254,7 @@ export function createScreenScrollView(
     style,
     ...props
   }: InnerProps) {
+    const screen = useScreen();
     const viewport = useScreenViewport();
     const activeRef = useRef(active !== false);
     activeRef.current = active !== false;
@@ -377,7 +379,12 @@ export function createScreenScrollView(
       <View
         {...props}
         onLayout={!viewport && active ? onLayout : undefined}
-        style={[{ flexGrow: 1 }, style, restoration?.restorePending ? { opacity: 0 } : null]}
+        style={[
+          { flexGrow: 1 },
+          style,
+          screen.contentSized ? { flexBasis: 'auto' } : undefined,
+          restoration?.restorePending ? { opacity: 0 } : null,
+        ]}
       >
         <StyledView
           ref={contentRef}

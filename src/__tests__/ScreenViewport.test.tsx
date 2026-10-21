@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
-import React, { useEffect, useRef } from 'react';
+import type React from 'react';
+import { useEffect, useRef } from 'react';
 import { Platform, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -11,6 +12,7 @@ import { useSharedValue } from 'react-native-reanimated';
 import { usePanelScrollContainer } from '../app-shell/context';
 import { ScreenHostContext } from '../screen/context';
 import { resolvedStyle } from './support/rendered-style';
+import { ScreenScope } from '../layout/screen-scope';
 const originalOS = Platform.OS;
 beforeAll(() => Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' }));
 afterAll(() => Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS }));
@@ -67,6 +69,58 @@ it('declares local chrome once, and overlay headers reserve no content inset', (
     paddingTop: 0,
     paddingBottom: 96,
   });
+});
+it('lets a content-sized surface retain intrinsic height without replacing its scroll owner', () => {
+  const mounts = jest.fn();
+  let owner: ReturnType<typeof useScreenViewport>;
+  function Body() {
+    useEffect(mounts, []);
+    owner = useScreenViewport();
+    return <View testID="body" />;
+  }
+  const draw = (sizing: 'content' | 'fill') =>
+    wrap(
+      <ScreenScope sizing={sizing}>
+        <Screen
+          testID="intrinsic"
+          scroll="auto"
+          header={<View />}
+          bottomBar={<View />}
+          contentClearance={0}
+        >
+          <ScreenScrollView testID="body-flow" style={{ flex: 1 }}>
+            <Body />
+          </ScreenScrollView>
+        </Screen>
+      </ScreenScope>,
+    );
+  const tree = render(draw('content'));
+  fireEvent(tree.getByTestId('intrinsic-header'), 'layout', {
+    nativeEvent: { layout: { height: 48 } },
+  });
+  fireEvent(tree.getByTestId('intrinsic-bottom'), 'layout', {
+    nativeEvent: { layout: { height: 96 } },
+  });
+  expect(owner!.kind).toBe('element');
+  const initialOwner = owner!.scrollRef;
+  expect(resolvedStyle(tree.getByTestId('intrinsic').props.style).flexBasis).toBe('auto');
+  expect(resolvedStyle(tree.getByTestId('intrinsic-viewport').props.style)).toMatchObject({
+    containerType: 'inline-size',
+    overflowY: 'auto',
+    flexBasis: 'auto',
+  });
+  expect(resolvedStyle(tree.getByTestId('body-flow').props.style).flexBasis).toBe('auto');
+  expect(resolvedStyle(tree.getByTestId('intrinsic-scroll-content').props.style)).toMatchObject({
+    paddingTop: 48,
+    paddingBottom: 96,
+  });
+  tree.rerender(draw('fill'));
+  expect(resolvedStyle(tree.getByTestId('intrinsic-viewport').props.style)).toMatchObject({
+    containerType: 'size',
+    flexBasis: 0,
+  });
+  expect(owner!.scrollRef).toBe(initialOwner);
+  expect(mounts).toHaveBeenCalledTimes(1);
 });
 it('retains declared content and scroll wrapper when its host changes document/column ownership', () => {
   const mounts = jest.fn();

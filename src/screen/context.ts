@@ -5,6 +5,8 @@ import type { SharedValue } from 'react-native-reanimated';
 
 export interface ScreenContextValue {
   active: boolean;
+  /** A content-sized overlay keeps intrinsic block size until its host ceiling. */
+  contentSized?: boolean;
   scrollY: SharedValue<number>;
   collapseProgress: SharedValue<number>;
   collapseTarget: SharedValue<number>;
@@ -57,6 +59,8 @@ export function useScreenViewport(): ScreenViewportValue | null {
 }
 /** Host metadata, independent of the screen's declarative chrome. */
 export interface ScreenHostValue {
+  /** The first Screen contributes intrinsic height to a content-sized surface. */
+  sizing?: 'content' | 'fill';
   /** Overlays own independent screen state and must not restore the underlying route. */
   restoreScroll?: boolean;
   active: boolean;

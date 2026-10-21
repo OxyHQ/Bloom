@@ -88,6 +88,7 @@ export function createScreen(
       [incomingHost, parentScreen],
     );
     const ownsViewport = scroll === 'auto';
+    const contentSized = host.sizing === 'content';
     const reservesChrome = ownsViewport || scroll === 'none';
     const ownWebViewport = ownsViewport && Platform.OS === 'web';
     const restoration = useOptionalScrollRestorationContext();
@@ -166,6 +167,7 @@ export function createScreen(
     const value = useMemo(
       () => ({
         active,
+        contentSized,
         scrollY,
         collapseProgress,
         collapseTarget,
@@ -187,6 +189,7 @@ export function createScreen(
       }),
       [
         active,
+        contentSized,
         scrollY,
         collapseProgress,
         collapseTarget,
@@ -341,7 +344,7 @@ export function createScreen(
                         : {
                             flexGrow: 1,
                             flexShrink: 1,
-                            flexBasis: 0,
+                            flexBasis: contentSized ? 'auto' : 0,
                             minHeight: 0,
                             position: 'relative',
                             backgroundColor: surfaceFill,
@@ -380,7 +383,7 @@ export function createScreen(
                               zIndex: 0,
                               flexGrow: 1,
                               flexShrink: 1,
-                              flexBasis: 0,
+                              flexBasis: contentSized ? 'auto' : 0,
                               minHeight: 0,
                               minWidth: 0,
                               ...((ownsViewport && !ownWebViewport) || scroll === 'none'
@@ -406,13 +409,15 @@ export function createScreen(
                               minWidth: 0,
                               flexGrow: 1,
                               flexShrink: document ? 0 : 1,
-                              flexBasis: document ? 'auto' : 0,
+                              flexBasis: document || contentSized ? 'auto' : 0,
                             },
                             {
                               overflowX: document ? 'visible' : 'hidden',
                               overflowY: document ? 'visible' : 'auto',
                               overscrollBehaviorY: document ? undefined : 'contain',
-                              ...(document ? {} : { containerType: 'size' }),
+                              ...(document
+                                ? {}
+                                : { containerType: contentSized ? 'inline-size' : 'size' }),
                             } as WebCssStyle,
                           ]}
                         >

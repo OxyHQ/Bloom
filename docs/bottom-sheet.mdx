@@ -131,15 +131,22 @@ for normalization rules and a full example.
 
 ## Flex-based screens
 
-Use `sizing="fill"` when a sheet contains a `Screen`, chat canvas or virtualized
-list with no intrinsic height. Bloom bounds the sheet with its existing
-safe-area, keyboard and detached-edge calculation. `sizing="content"` remains
-the default for naturally sized content. `scrollable={false}` delegates
-scrolling to the child; it does not select a size. Explicit `style.height`
-retains its existing precedence.
+`sizing="content"` is the default: the sheet grows with its content until the
+existing safe-area, keyboard and detached-edge ceiling. Its first `Screen`
+inherits this sizing contract, so flex-based content contributes its natural
+height rather than collapsing or requiring a viewport-filling workaround. The
+Screen keeps its measured chrome and its existing scroll owner; when content
+exceeds the ceiling, that viewport scrolls instead of adding an outer scroller.
+
+Use `sizing="fill"` only when filling the available height is the intended
+presentation, such as a full-height canvas. A zero-height flex composition is a
+missing intrinsic-sizing contract, not a reason to change a content-sized
+sheet into a full-height one. `scrollable={false}` delegates scrolling to the
+child; it does not select a size. Explicit `style.height` retains its existing
+precedence.
 
 ```tsx
-<BottomSheet sizing="fill" scrollable={false}>
+<BottomSheet sizing="content" scrollable={false}>
   <Screen scroll="none" header={<PageHeader title="Conversation" />}>
     <ScreenScrollView>{messages}</ScreenScrollView>
   </Screen>

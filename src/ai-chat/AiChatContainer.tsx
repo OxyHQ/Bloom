@@ -154,7 +154,11 @@ export function AiChatContainerBase({
         }
       >
         {background ? (
-          <View pointerEvents="none" style={{ position: 'absolute', inset: 0 }}>
+          <View
+            testID={testID ? `${testID}-background` : undefined}
+            pointerEvents="none"
+            style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}
+          >
             {background}
           </View>
         ) : null}

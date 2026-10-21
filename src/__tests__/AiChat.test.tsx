@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import type React from 'react';
+import { useContext } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
@@ -526,12 +527,27 @@ describe('AiChatContainer host slots', () => {
     expect(surfaceColor).not.toBe('transparent');
 
     const painted = renderIn(
-      <AiChatContainer testID="chat" title="t" composer={null} background={<Text>wallpaper</Text>}>
+      <AiChatContainer
+        testID="chat"
+        title="t"
+        composer={null}
+        background={
+          <View style={{ position: 'absolute', top: -200, height: 2000 }}>
+            <Text>wallpaper</Text>
+          </View>
+        }
+      >
         <AiChatThread>turns</AiChatThread>
       </AiChatContainer>,
     );
     // The layer is a slot, not an escape hatch: the surface is still painted.
     expect(painted.getByText('wallpaper')).toBeTruthy();
+    expect(resolvedStyle(painted.getByTestId('chat-background').props.style)).toMatchObject({
+      position: 'absolute',
+      inset: 0,
+      overflow: 'hidden',
+    });
+    expect(painted.getByTestId('chat-background').props.pointerEvents).toBe('none');
     expect(resolvedStyle(painted.getByTestId('chat').props.style).backgroundColor).toBe(
       surfaceColor,
     );
