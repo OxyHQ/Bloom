@@ -82,6 +82,7 @@ export const BottomSheetBase = forwardRef(
       showHandle = true,
       backdropOpacity = BACKDROP_DIM_OPACITY,
       scrollable = true,
+      sizing = 'content',
       manualActivation = false,
       animatedProgress,
       handleComponent,
@@ -618,12 +619,16 @@ export const BottomSheetBase = forwardRef(
     // safe area: it is a panel hanging off the screen, not a card.
     const topGap = detached ? windowEdgeGap(insets.top, EDGE_GAP) : insets.top;
 
-    const sheetHeightStyle = useAnimatedStyle(
-      () => ({
-        maxHeight: screenHeightSV.value - keyboardHeight.value - topGap - detachedGap,
-      }),
-      [topGap, detachedGap, screenHeightSV, keyboardHeight],
-    );
+    const sheetHeightStyle = useAnimatedStyle(() => {
+      const availableHeight = Math.max(
+        0,
+        screenHeightSV.value - keyboardHeight.value - topGap - detachedGap,
+      );
+      return {
+        maxHeight: availableHeight,
+        height: sizing === 'fill' ? availableHeight : undefined,
+      };
+    }, [sizing, topGap, detachedGap, screenHeightSV, keyboardHeight]);
 
     const sheetMarginStyle = useAnimatedStyle(() => {
       // Only add margin when detached, otherwise extend behind safe area

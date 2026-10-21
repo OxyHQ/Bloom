@@ -39,7 +39,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | --- | --- | --- | --- | --- | --- |
 | Field membership | 53 | 31 | 0 | 22 | 0 |
 | Control presentation | 53 | 52 | 1 | 0 | 0 |
-| Trigger composition | 10 | 8 | 0 | 2 | 0 |
+| Trigger composition | 11 | 8 | 0 | 3 | 0 |
 | Controlled / uncontrolled state | 60 | 57 | 2 | 1 | 0 |
 
 The control-presentation census detects families declaring canonical size props; blank entries do not prove inherited sizing. Fixed-size controls and composite layouts need a separate visual audit. This table does not certify touch-target geometry.
@@ -81,6 +81,7 @@ None.
 ### Trigger composition
 
 - `button` (does-not-apply) — `Button`’s own `asChild` renders the button AS an anchor or a router `Link` — it opens nothing and merges no open handler, so it is a different feature with the same name. It FORWARDS the trigger contract’s props when an anchored family clones it, which is the half that matters here.
+- `dialog` (does-not-apply) — DialogFrameProvider uses BloomColorScope asChild only to apply its palette to the panel renderer without an inline layout host. Dialog has no asChild trigger API; its control and open prop own activation.
 - `theme` (does-not-apply) — `BloomColorScope`/`SeedScope` clone their child to merge a style instead of adding a layout node. No surface, no press, no open.
 
 ### Controlled / uncontrolled state
@@ -122,7 +123,7 @@ None.
 | `blur` | internal | universal | `blur.mdx` | — | 2 |  |  |  |  |
 | `booking` | `@oxy.so/bloom/booking` + barrel | universal | `booking.mdx` | yes | 5 |  |  |  | reads |
 | `bottom-bar` | `@oxy.so/bloom/bottom-bar` + barrel | web fork | `bottom-bar.mdx` | yes | 2 |  |  |  |  |
-| `bottom-sheet` | `@oxy.so/bloom/bottom-sheet` + barrel | web fork | `bottom-sheet.mdx` | yes | 9 |  |  |  |  |
+| `bottom-sheet` | `@oxy.so/bloom/bottom-sheet` + barrel | web fork | `bottom-sheet.mdx` | yes | 11 |  |  |  |  |
 | `breadcrumb` | `@oxy.so/bloom/breadcrumb` + barrel | web fork | `breadcrumb.mdx` | yes | 4 |  | reads |  |  |
 | `button` | `@oxy.so/bloom/button` + barrel | web fork | `button.mdx` | yes | 57 |  | reads | n/a¹ |  |
 | `button-group` | `@oxy.so/bloom/button-group` + barrel | web fork | `button-group.mdx` | yes | 9 |  | reads |  |  |
@@ -161,7 +162,7 @@ None.
 | `date-picker` | `@oxy.so/bloom/date-picker` + barrel | universal | `date-picker.mdx` | yes | 6 | reads | reads |  | reads |
 | `delivery-slot` | `@oxy.so/bloom/delivery-slot` + barrel | universal | `delivery-slot.mdx` | yes | 2 | reads |  |  |  |
 | `design-tokens` | `@oxy.so/bloom/design-tokens` + barrel | universal | `design-tokens.mdx` | yes | 6 |  |  |  |  |
-| `dialog` | `@oxy.so/bloom/dialog` + barrel | web fork | `dialog.mdx` | yes | 36 |  |  |  |  |
+| `dialog` | `@oxy.so/bloom/dialog` + barrel | web fork | `dialog.mdx` | yes | 36 |  |  | n/a¹ |  |
 | `directions` | `@oxy.so/bloom/directions` + barrel | universal | `directions.mdx` | yes | 3 |  |  |  |  |
 | `divider` | `@oxy.so/bloom/divider` + barrel | universal | `divider.mdx` | yes | 1 |  |  |  |  |
 | `dropdown-menu` | `@oxy.so/bloom/dropdown-menu` + barrel | web fork | `dropdown-menu.mdx` | yes | 10 |  |  | reads | reads |
@@ -267,7 +268,7 @@ None.
 | `rating` | `@oxy.so/bloom/rating` + barrel | web fork | `rating.mdx` | yes | 7 | reads | reads |  |  |
 | `recent-hires-card` | `@oxy.so/bloom/recent-hires-card` + barrel | universal | `recent-hires-card.mdx` | yes | 1 |  |  |  |  |
 | `route-stops` | `@oxy.so/bloom/route-stops` + barrel | universal | `route-stops.mdx` | yes | 2 |  |  |  |  |
-| `screen` | `@oxy.so/bloom/screen` + barrel | web fork | `screen.mdx` | yes | 19 |  |  |  |  |
+| `screen` | `@oxy.so/bloom/screen` + barrel | web fork | `screen.mdx` | yes | 21 |  |  |  |  |
 | `scroll` | `@oxy.so/bloom/scroll` + barrel | web fork | `scroll.mdx` | yes | 9 |  |  |  |  |
 | `search` | `@oxy.so/bloom/search` + barrel | universal | `search.mdx` | yes | 6 | reads |  |  |  |
 | `segmented-control` | `@oxy.so/bloom/segmented-control` + barrel | universal | `segmented-control.mdx` | yes | 5 | reads | reads |  |  |
@@ -303,7 +304,7 @@ None.
 | `tenancy` | `@oxy.so/bloom/tenancy` + barrel | universal | `tenancy.mdx` | yes | 5 |  | reads |  |  |
 | `text-field` | `@oxy.so/bloom/text-field` + barrel | universal | `text-field.mdx` | yes | 19 | reads | reads |  |  |
 | `textarea` | `@oxy.so/bloom/textarea` + barrel | universal | `textarea.mdx` | yes | 4 | reads | reads |  | n/a¹ |
-| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 466 |  |  | n/a¹ | reads |
+| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 467 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 2 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 18 |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 3 |  | reads |  |  |

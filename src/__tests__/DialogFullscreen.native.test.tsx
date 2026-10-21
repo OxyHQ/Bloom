@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
 // Explicit native owner: the web dispatcher must not stand in for this coverage.
 import { Dialog } from '../dialog/Dialog';
@@ -42,4 +42,18 @@ it.each([true, false])('delegates native scrolling only when requested: %s', (sc
     </BloomThemeProvider>,
   );
   expect(view.UNSAFE_queryAllByType(ScrollArea)).toHaveLength(scrollable ? 1 : 0);
+});
+
+it('does not reserve a native View for an inactive dialog theme scope', () => {
+  const view = render(<BloomThemeProvider fonts={false}>{null}</BloomThemeProvider>);
+  const before = view.UNSAFE_getAllByType(View).length;
+  view.rerender(
+    <BloomThemeProvider fonts={false}>
+      <Dialog label="Closed">
+        <Text>Hidden</Text>
+      </Dialog>
+    </BloomThemeProvider>,
+  );
+  expect(view.UNSAFE_getAllByType(View)).toHaveLength(before);
+  expect(view.queryByText('Hidden')).toBeNull();
 });

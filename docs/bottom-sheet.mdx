@@ -128,3 +128,20 @@ springs remain unchanged. Reduced motion, including live OS changes, settles
 presentation or dismissal immediately. Omitting `transition` retains existing
 spring/timing defaults. See [Dialog](./dialog.mdx#backdrop-paint-and-timed-presentation)
 for normalization rules and a full example.
+
+## Flex-based screens
+
+Use `sizing="fill"` when a sheet contains a `Screen`, chat canvas or virtualized
+list with no intrinsic height. Bloom bounds the sheet with its existing
+safe-area, keyboard and detached-edge calculation. `sizing="content"` remains
+the default for naturally sized content. `scrollable={false}` delegates
+scrolling to the child; it does not select a size. Explicit `style.height`
+retains its existing precedence.
+
+```tsx
+<BottomSheet sizing="fill" scrollable={false}>
+  <Screen scroll="none" header={<PageHeader title="Conversation" />}>
+    <ScreenScrollView>{messages}</ScreenScrollView>
+  </Screen>
+</BottomSheet>
+```

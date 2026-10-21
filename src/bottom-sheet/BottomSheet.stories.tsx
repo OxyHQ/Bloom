@@ -3,6 +3,9 @@ import { Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
+import { Screen, ScreenScrollView } from '../screen';
+import { PageHeader } from '../page-header';
+import { TextField, TextFieldInput } from '../text-field';
 import { BottomSheet } from './index';
 import type { BottomSheetRef } from './types';
 
@@ -15,6 +18,7 @@ const meta: Meta<typeof BottomSheet> = {
     showHandle: { control: 'boolean' },
     backdropOpacity: { control: 'number' },
     scrollable: { control: 'boolean' },
+    sizing: { control: 'select', options: ['content', 'fill'] },
     manualActivation: { control: 'boolean' },
   },
   id: 'base-bottom-sheet',
@@ -123,6 +127,35 @@ export const Playground: Story = {
             <Text>Configure this sheet in Controls.</Text>
             <Button onPress={() => ref.current?.dismiss()}>Close sheet</Button>
           </View>
+        </BottomSheet>
+      </>
+    );
+  },
+};
+
+export const FlexScreen: Story = {
+  render: function FlexScreenStory() {
+    const sheet = useRef<BottomSheetRef>(null);
+    return (
+      <>
+        <Button onPress={() => sheet.current?.present()}>Open conversation</Button>
+        <BottomSheet
+          ref={sheet}
+          detached
+          sizing="fill"
+          scrollable={false}
+          accessibilityLabel="Conversation"
+        >
+          <Screen scroll="none" header={<PageHeader title="Conversation" />}>
+            <ScreenScrollView>
+              <TextField>
+                <TextFieldInput label="Message" placeholder="A draft that survives resizing" />
+              </TextField>
+              {Array.from({ length: 30 }, (_, i) => (
+                <Text key={`message-${i}`}>Message {i + 1}</Text>
+              ))}
+            </ScreenScrollView>
+          </Screen>
         </BottomSheet>
       </>
     );

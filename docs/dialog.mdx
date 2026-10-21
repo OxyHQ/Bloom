@@ -540,3 +540,8 @@ A fullscreen workspace can use `AppShellPanels scope="local"` with
 workspace heading belongs in `layout.header`; individual panel headings stay
 in each panel's `Screen`. Supply the Dialog's accessible `label` even when its
 visual title is omitted.
+
+Dialog appearance scopes compose onto the actual panel renderer. They do not
+insert a host beside the calling page, even while the dialog is closed. A
+consumer may place Dialogs beside flex content without reserving invisible
+gaps; frame palette changes still preserve the mounted content and portal scope.

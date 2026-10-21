@@ -84,10 +84,16 @@ export interface BottomSheetProps {
    * (e.g. a `FlatList`, `SectionList`, or any other VirtualizedList).
    * Nesting a VirtualizedList inside the internal ScrollView would break
    * windowing/keyboard handling and trigger a React Native warning. In
-   * non-scrollable mode the screen receives the full available height
-   * (minus the drag handle) and must manage its own overflow.
+   * non-scrollable mode the screen must manage its own overflow. Use
+   * sizing="fill" when it needs a bounded viewport rather than intrinsic height.
    */
   scrollable?: boolean;
+  /**
+   * Content fits its intrinsic height by default. Fill gives flex-based screens
+   * and virtualized lists a bounded viewport using the sheet's existing safe-area,
+   * keyboard and detached-edge calculation. It does not add a scroll owner.
+   */
+  sizing?: 'content' | 'fill';
   /**
    * When `true`, the body pan uses RNGH's `manualActivation` and only
    * activates when (a) the inner ScrollView is at the top AND (b) the user
