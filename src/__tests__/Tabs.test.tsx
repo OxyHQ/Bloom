@@ -6,6 +6,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Tabs, TabsTrigger } from '../tabs';
 import { resolveTabsPaint, type TabsDragController } from '../tabs/Tabs';
+import { RiAddLine } from '../icons/remix/RiAddLine';
 import { TYPE_SCALE } from '../typography/scale';
 import type { Theme } from '../theme/types';
 import { pressHost } from './support/press-host';
@@ -68,6 +69,26 @@ function Bar({
 }
 
 describe('Tabs', () => {
+  it('keeps icon-only tab names and native selection, while ordinary labels stay visible', () => {
+    const onValueChange = jest.fn();
+    const screen = renderWithTheme(
+      <Tabs value="a" onValueChange={onValueChange}>
+        <TabsTrigger value="a" label="First" iconOnly leadingIcon={RiAddLine} testID="icon-tab" />
+        <TabsTrigger value="b" label="Second" />
+        <TabsTrigger value="c" label="No icon" iconOnly />
+      </Tabs>,
+    );
+    expect(screen.queryByText('First')).toBeNull();
+    expect(screen.getByText('Second')).toBeTruthy();
+    expect(screen.getByText('No icon')).toBeTruthy();
+    const tab = screen.getByTestId('icon-tab');
+    expect(tab.props.accessibilityLabel).toBe('First');
+    expect(tab.props.accessibilityRole).toBe('tab');
+    expect(tab.props['aria-selected']).toBe(true);
+    pressHost(tab);
+    expect(onValueChange).toHaveBeenCalledWith('a');
+  });
+
   it('reveals an already-measured selection when its viewport arrives or narrows', () => {
     const scrollTo = jest.fn();
     const { getByText, getByTestId } = render(

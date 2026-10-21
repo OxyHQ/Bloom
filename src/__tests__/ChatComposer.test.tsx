@@ -20,6 +20,7 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
+import { BloomScope } from '../appearance';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Surface } from '../surface/Surface.web';
 import {
@@ -1000,6 +1001,134 @@ describe('EmojiPicker', () => {
         (node) => node.style.height === '999px',
       ),
     ).toBe(false);
+  });
+
+  it('lets its enclosing scroll owner lay out the selected category and searches across categories', () => {
+    mount(<EmojiPicker groups={groups} scrollable={false} height={99} testID="e" />);
+    expect(cells()).toEqual(['e-emoji-😂', 'e-emoji-🙂']);
+    expect(byTestId('e-flow').style.height).toBe('');
+    expect(byTestId('e-flow').className).not.toMatch(/overflowY/);
+    press(byTestId('e-category-people'));
+    expect(cells()).toEqual(['e-emoji-👍']);
+    expect(byTestId('e-category-people').getAttribute('aria-selected')).toBe('true');
+    mount(<EmojiPicker groups={groups} scrollable={false} query="laugh" testID="e" />);
+    expect(cells()).toEqual(['e-emoji-😂']);
+  });
+
+  it.each([
+    ['xs', 24],
+    ['sm', 32],
+    ['md', 36],
+    ['lg', 44],
+  ] as const)('inherits %s geometry and honors an explicit override', (size, height) => {
+    mount(
+      <BloomScope size={size}>
+        <EmojiPicker groups={groups} scrollable={false} testID="e" />
+      </BloomScope>,
+    );
+    expect(byTestId('e-emoji-😂').style.height).toBe(`${height}px`);
+    mount(
+      <BloomScope size={size}>
+        <EmojiPicker size="lg" groups={groups} scrollable={false} testID="e" />
+      </BloomScope>,
+    );
+    expect(byTestId('e-emoji-😂').style.height).toBe('44px');
+  });
+
+  it.each(['light', 'dark'] as const)('uses the enclosing material in embedded %s mode', (mode) => {
+    mount(<EmojiPicker groups={groups} embedded scrollable={false} testID="e" />, mode);
+    expect(byTestId('e').style.paddingLeft).toBe('0px');
+    expect(byTestId('e').classList.contains('bloom-surface')).toBe(false);
+    mount(<EmojiPicker groups={groups} scrollable={false} testID="e" />, mode);
+    expect(byTestId('e').classList.contains('bloom-surface')).toBe(true);
+    expect(byTestId('e-search').getAttribute('aria-label')).toBe('Search emoji');
+  });
+
+  it('navigates flow categories with the shared Tabs keyboard behavior', () => {
+    mount(<EmojiPicker groups={groups} scrollable={false} testID="e" />);
+    act(() => byTestId('e-category-smileys').focus());
+    act(() =>
+      byTestId('e-category-smileys').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      ),
+    );
+    expect(document.activeElement).toBe(byTestId('e-category-people'));
+    expect(cells()).toEqual(['e-emoji-👍']);
+  });
+
+  it('adapts mounted cells to coarse-pointer targets', () => {
+    const previous = window.matchMedia;
+    let coarse = false;
+    const query: MediaQueryList = new (class extends EventTarget {
+      get matches() {
+        return coarse;
+      }
+      media = '(pointer: coarse)';
+      onchange: MediaQueryList['onchange'] = null;
+      addListener() {}
+      removeListener() {}
+    })();
+    window.matchMedia = () => query;
+    try {
+      mount(<EmojiPicker groups={groups} scrollable={false} testID="e" />);
+      expect(byTestId('e-emoji-😂').style.height).toBe('36px');
+      act(() => {
+        coarse = true;
+        query.dispatchEvent(new Event('change'));
+      });
+      expect(byTestId('e-emoji-😂').style.height).toBe('44px');
+      expect(byTestId('e-skin-tone').style.minHeight).toBe('44px');
+      act(() => {
+        coarse = false;
+        query.dispatchEvent(new Event('change'));
+      });
+      expect(byTestId('e-emoji-😂').style.height).toBe('36px');
+    } finally {
+      window.matchMedia = previous;
+    }
+  });
+
+  it('uses caller tone names and keeps unbounded custom content in flow mode', () => {
+    mount(
+      <EmojiPicker
+        groups={groups}
+        scrollable={false}
+        skinToneLabel={(tone) => `Tone ${tone}`}
+        testID="e"
+      />,
+    );
+    press(byTestId('e-skin-tone'));
+    expect(byTestId('e-skin-tone-3').getAttribute('aria-label')).toBe('Tone 3');
+    mount(
+      <EmojiPicker
+        groups={groups}
+        scrollable={false}
+        activeTab="custom"
+        tabs={[
+          {
+            key: 'custom',
+            label: 'Custom',
+            content: <span data-testid="custom">Custom body</span>,
+          },
+        ]}
+        testID="e"
+      />,
+    );
+    expect(byTestId('custom').parentElement?.style.height).toBe('');
+  });
+
+  it('keeps category tabs icon-only with accessible names and keyboard selection', () => {
+    mount(<EmojiPicker groups={groups} scrollable={false} testID="e" />);
+    const first = byTestId('e-category-smileys');
+    expect(first.getAttribute('aria-label')).toBe('Smileys');
+    expect(first.textContent).toBe('');
+    act(() => {
+      first.focus();
+      first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    });
+    expect(document.activeElement).toBe(byTestId('e-category-people'));
+    expect(byTestId('e-category-people').getAttribute('aria-selected')).toBe('true');
+    expect(cells()).toEqual(['e-emoji-👍']);
   });
 
   it('swaps the body for a custom tab, and marks the tab selected', () => {

@@ -202,3 +202,10 @@ Ctrl+Shift+Right while it is focused. Immutable and disabled tabs are skipped by
 keyboard moves. A drag cannot cross into another strip. Trailing settings buttons
 remain separate from the draggable target. Native apps can expose the same
 persistence action through a trigger's existing long-press menu.
+
+## Icon-only triggers
+
+Use `TabsTrigger iconOnly leadingIcon={Icon} label="Category"` to keep a compact
+icon-only presentation with the normal tab keyboard and selection behavior.
+The label remains its accessible name. Without an icon, the visible label is
+retained; other triggers continue to show their label by default.
