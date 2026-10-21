@@ -104,9 +104,9 @@ describe('destination variants in block and slash menus', () => {
     },
   ];
   function choose(label: string) {
-    const item = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"]')).find(
-      (element) => element.textContent === label,
-    );
+    const item = Array.from(
+      document.querySelectorAll<HTMLElement>('[role="menuitem"], [role="option"]'),
+    ).find((element) => element.textContent === label);
     expect(item).toBeDefined();
     act(() => item?.click());
   }

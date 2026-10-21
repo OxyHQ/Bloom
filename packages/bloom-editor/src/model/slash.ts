@@ -53,10 +53,10 @@ function normalize(value: string): string {
  * which beats a match anywhere. Equal scores keep the given order. An empty
  * query returns every item.
  */
-export function filterSlashItems(items: readonly SlashItem[], query: string): SlashItem[] {
+export function filterSlashItems<T extends SlashItem>(items: readonly T[], query: string): T[] {
   const q = normalize(query.trim());
   if (!q) return [...items];
-  const scored: { item: SlashItem; score: number; index: number }[] = [];
+  const scored: { item: T; score: number; index: number }[] = [];
   items.forEach((item, index) => {
     const label = normalize(item.label);
     const keywords = (item.keywords ?? []).map(normalize);

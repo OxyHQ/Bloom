@@ -94,7 +94,7 @@
     },
     "packages/bloom-editor": {
       "name": "@oxy.so/bloom-editor",
-      "version": "0.6.2",
+      "version": "0.7.0",
       "dependencies": {
         "@oxy.so/bloom-text": "workspace:^",
       },
@@ -102,6 +102,7 @@
         "yjs": "13.6.33",
       },
       "peerDependencies": {
+        "@oxy.so/bloom": "^15.11.0",
         "react": ">=19.0.0",
         "react-native": ">=0.81.0",
         "yjs": ">=13.6.0 <14.0.0",
@@ -754,6 +755,8 @@
     "@oxc-resolver/binding-win32-ia32-msvc": ["@oxc-resolver/binding-win32-ia32-msvc@11.19.1", "", { "os": "win32", "cpu": "ia32" }, "sha512-EW+ND5q2Tl+a3pH81l1QbfgbF3HmqgwLfDfVithRFheac8OTcnbXt/JxqD2GbDkb7xYEqy1zNaVFRr3oeG8npA=="],
 
     "@oxc-resolver/binding-win32-x64-msvc": ["@oxc-resolver/binding-win32-x64-msvc@11.19.1", "", { "os": "win32", "cpu": "x64" }, "sha512-6hIU3RQu45B+VNTY4Ru8ppFwjVS/S5qwYyGhBotmjxfEKk41I2DlGtRfGJndZ5+6lneE2pwloqunlOyZuX/XAw=="],
+
+    "@oxy.so/bloom": ["@oxy.so/bloom@15.11.0", "", { "dependencies": { "@tanstack/react-virtual": "^3.14.3", "react-native-css": "3.1.0-rc.0", "react-remove-scroll-bar": "^2.3.8" }, "peerDependencies": { "@lottiefiles/dotlottie-react": ">=0.13.0", "@react-native-community/netinfo": ">=11.1.0", "expo": "*", "expo-blur": "*", "expo-font": "*", "expo-haptics": "*", "expo-image": "*", "expo-router": ">=3.0.0", "expo-video": "*", "lottie-react-native": ">=7.0.0", "nativewind": ">=5.0.0 || 5.0.0-rc.0", "react": ">=18.0.0", "react-dom": ">=18.0.0", "react-native": ">=0.73.0", "react-native-gesture-handler": ">=2.16.1", "react-native-keyboard-controller": ">=1.11.4", "react-native-reanimated": ">=3.13.0", "react-native-safe-area-context": ">=5.0.0", "react-native-screens": ">=3.16.0", "react-native-svg": ">=13.0.0", "react-native-webview": ">=13.0.0" }, "optionalPeers": ["@lottiefiles/dotlottie-react", "@react-native-community/netinfo", "expo", "expo-font", "expo-haptics", "expo-router", "expo-video", "lottie-react-native", "nativewind", "react-dom", "react-native-keyboard-controller", "react-native-webview"] }, "sha512-Nv40KOXLxaEirZi6wlwgJ4wSjraYz80aVz+o+2kYAQn0hYrQK2nuxpSElxM/X/cZNkQInZlUJWRp/dU8/EyQHQ=="],
 
     "@oxy.so/bloom-editor": ["@oxy.so/bloom-editor@workspace:packages/bloom-editor"],
 

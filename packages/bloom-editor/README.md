@@ -14,6 +14,42 @@ Two halves:
   keeps an editor store and a `Y.Doc` the same. Platform-free; `yjs` is a peer.
 - `@oxy.so/bloom-editor` — the React editor over it.
 
+## UI dependency and suggestions
+
+The React adapter requires `@oxy.so/bloom >=15.11.0 <16` and a `BloomProvider`
+at the application root. Slash and mention menus use the actual
+`SuggestionList` from `@oxy.so/bloom/chat-composer`; the editor supplies data,
+the caret anchor and command callbacks. The `/model` and `/yjs` entrypoints
+remain independent of React, React Native and Bloom UI at runtime.
+
+In this repository, build `packages/bloom-text` and install the required released
+Bloom peer before typechecking or building the editor. Public declarations and
+emitted JavaScript both retain the package imports; the UI is not inlined into
+the editor. Release the required Bloom UI version before releasing the adapter.
+
+`SlashMenuItem` extends the platform-free `SlashItem` with `icon` (a Bloom
+icon component, sized and coloured by the shared row) and `leading` (custom
+content such as an avatar). `MentionItem` accepts the same presentation slots.
+Do not add menu padding, dimensions, scroll views or replacement renderers in
+an application to style these menus.
+
+On web, the menu follows the measured caret and falls back to the input's box
+if text geometry is unavailable. Native uses the input's measured view because
+the native text engine does not expose character rectangles. Bloom owns
+viewport fitting, keyboard avoidance, material and the sole scroll region.
+The input retains focus and names the active option through ARIA. Arrow keys
+move the highlighted result; Enter and Tab choose it. With no result those
+keys only close the menu. Escape, external focus and outside dismissal close
+without changing the typed text. Web composition keys remain with the input.
+A permission change clears suggestions, and stale callbacks cannot mutate a
+read-only, replaced or unmounted editor.
+
+Standard block actions remove the slash query and transform/insert in one
+undoable transaction. Custom application actions keep their existing contract:
+the query is consumed before `onSlashAction` runs; asynchronous creation and
+picker cancellation belong to the application. This does not make those
+external actions atomic with document undo.
+
 ## Use
 
 ```tsx

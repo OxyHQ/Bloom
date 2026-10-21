@@ -12,8 +12,9 @@
 # anyone reproducing bun.lock. Override deliberately, for a fix you have reason
 # to take immediately, with `bun install --minimum-release-age=0`.
 #
-# No excludes: nothing here comes from an Oxy scope. If a first-party dependency
-# is ever added, its first install fails naming the package, and that name goes
-# in a `minimumReleaseAgeExcludes` list — matched EXACTLY, since a scope glob
+# The editor's required UI peer is a verified first-party release. Exclude only
+# that exact package; third-party dependencies retain the quarantine. Names in
+# `minimumReleaseAgeExcludes` are matched EXACTLY, since a scope glob
 # ("@oxy.so/*") is accepted by the parser and silently matches nothing.
 minimumReleaseAge = 604800
+minimumReleaseAgeExcludes = ["@oxy.so/bloom"]

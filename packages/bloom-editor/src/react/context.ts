@@ -1,4 +1,5 @@
 import type { PastedImage, RichTextInputHandle } from '@oxy.so/bloom-text';
+import type { BloomIconComponent } from '@oxy.so/bloom/icons';
 import type { MentionMark } from '@oxy.so/bloom-text/model';
 import { createContext, type ReactNode, useContext, useSyncExternalStore } from 'react';
 import type { Block, BlockId } from '../model/document';
@@ -22,11 +23,19 @@ export interface BlockRendererProps {
 
 export type BlockRenderer = (props: BlockRendererProps) => ReactNode;
 
+/** Presentation belongs to React; the slash command model stays platform-free. */
+export interface SlashMenuItem extends SlashItem {
+  leading?: ReactNode;
+  icon?: BloomIconComponent;
+}
+
 /** Something a mention can point at (a person, a page, a date), as the app finds it. */
 export interface MentionItem {
   id: string;
   label: string;
   description?: string;
+  leading?: ReactNode;
+  icon?: BloomIconComponent;
   /** Section heading in the menu (People, Pages…). */
   group?: string;
   /** Stored with the mention: what it points at, e.g. `{ kind: 'page', id }`. */
@@ -125,7 +134,7 @@ export interface EditorContextValue {
   onOpenLink: (href: string) => void;
   /** Follow a mention (open the page, show the person); without it mentions offer no "Open". */
   onOpenMention?: (mention: MentionMark, text: string) => void;
-  slashItems: readonly SlashItem[];
+  slashItems: readonly SlashMenuItem[];
   onSlashAction?: (id: string, blockId: BlockId) => void;
   /** Copy a link to a block; without it the block menu offers no such action. */
   onCopyBlockLink?: (blockId: BlockId) => void;
