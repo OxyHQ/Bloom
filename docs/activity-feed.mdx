@@ -114,3 +114,42 @@ view OF the feed — and the wrong one for this.)
 It is CONTROLLED and filters nothing itself. Which entries reach `ActivityFeed`
 is the app's decision; a filter row that also held the answer would be a second
 source of truth for one list.
+
+## General updates and rich changes
+
+The same entry renderer also serves document, project and account updates. Omit
+`kind` when none of the built-in activity kinds applies: the actor remains the
+leading mark, with no invented icon or kind label. `title` accepts inline text
+nodes after the actor's automatically rendered name. Supply `accessibilityLabel`
+when that rich title needs a spoken summary for its body reveal.
+
+```tsx
+<ActivityFeed
+  density="compact"
+  grouping="none"
+  entries={updates.map(update => ({
+    id: update.id,
+    actor: update.actor,
+    day: update.formattedDay,
+    timestamp: update.formattedTime,
+    title: update.summary,
+    context: <Text variant="caption-1-regular">{update.location}</Text>,
+    content: <ChangeDetails changes={update.changes} />,
+    action: update.revisionId
+      ? <Button appearance="plain" onPress={() => openRevision(update.revisionId)}>View revision</Button>
+      : undefined,
+  }))}
+/>
+```
+
+`compact` is a content-density recipe: 24px actors, an 8px avatar-to-content gap
+and the smaller body typography role. It does not change the inherited control
+size; the application remains `md`. The default comfortable recipe is unchanged.
+`grouping="none"` preserves the exact input order, omits day headings and draws
+separators between entries. Default day grouping still buckets by formatted day.
+
+`context`, `content` and `action` are content slots inside that same entry. They
+can compose real links, `Accordion` details and shared typography. The consumer
+owns whether a change or revision exists; the feed supplies no fabricated diff,
+fetching, timestamps or destinations. Keep the feed in its screen's existing
+scroll owner; it does not introduce another scroller.

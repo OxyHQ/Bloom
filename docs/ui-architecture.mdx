@@ -50,7 +50,10 @@ slots, with the application supplying steps and actions.
 Use `BloomProvider`, `AppShell`, panels, `Screen` and their documented slots for
 application framing, navigation, headers, content, side panels and bottom
 chrome. Use explicit local composition scopes for an embedded region, not a
-second application layout.
+second application layout. Preserve the compositor's normal frame and spacing
+when adapting a visual reference. Removing its gutters or navigation spacing
+requires an explicit product decision; visual similarity alone is not a reason
+to flatten the established Bloom frame.
 
 Components coordinate through the existing contracts: inherited presentation,
 field membership, surface backing, screen scope, edge claims, scroll ownership,

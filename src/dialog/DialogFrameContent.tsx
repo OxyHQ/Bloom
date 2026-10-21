@@ -32,7 +32,11 @@ export function DialogFrameProvider({
   frameKey?: string;
   colorPreset?: AppColorName;
   typography?: TypographyMode;
-  ColorScope?: React.ComponentType<{ children: React.ReactNode; colorPreset?: AppColorName }>;
+  ColorScope?: React.ComponentType<{
+    children: React.ReactNode;
+    colorPreset?: AppColorName;
+    asChild?: boolean;
+  }>;
 }>) {
   const [override, setOverride] = useState<{
     owner: symbol;
@@ -51,7 +55,9 @@ export function DialogFrameProvider({
     <FrameKeyContext.Provider value={frameKey}>
       <FrameAppearanceContext.Provider value={contribute}>
         <TypographyScope mode={override ? override.typography : typography}>
-          <ColorScope colorPreset={override ? override.preset : colorPreset}>{children}</ColorScope>
+          <ColorScope asChild colorPreset={override ? override.preset : colorPreset}>
+            {children}
+          </ColorScope>
         </TypographyScope>
       </FrameAppearanceContext.Provider>
     </FrameKeyContext.Provider>

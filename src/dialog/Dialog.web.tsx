@@ -163,7 +163,10 @@ function useDialogCss(): void {
  * animation (no `exiting` layout animation).
  */
 export function Dialog({ placement, frame, children, header, ...props }: DialogProps) {
-  const session = usePresentationSession(placement, props);
+  const session = usePresentationSession(
+    props.presentation === 'fullscreen' ? 'center' : placement,
+    props,
+  );
   const rest = {
     ...props,
     startOpen: session.startOpen,
@@ -422,7 +425,7 @@ function CenterOrSideDialog({
                     position: WEB_POSITION_FIXED,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    paddingHorizontal: presentation === 'custom' ? undefined : 20,
+                    paddingHorizontal: presentation === 'default' ? 20 : undefined,
                   },
                   containerStyle,
                 ]}
@@ -566,7 +569,7 @@ function DialogPanel({
   // The card's own `maxHeight` (the ratio percentage below) does the exact
   // capping — the viewport is just the bound the reshape may not exceed.
   const morphState = useDialogMorph({
-    enabled: presentation !== 'custom' && morph !== false,
+    enabled: presentation === 'default' && morph !== false,
     measurable: scrollable !== false,
     maxHeight: viewportHeight,
     maxWidth,
@@ -608,13 +611,19 @@ function DialogPanel({
           position: 'relative',
           ...(presentation === 'custom' ? {} : surfaceStyle(SURFACE_SHAPES.dialog)),
           width: '100%',
-          maxWidth,
+          maxWidth: presentation === 'fullscreen' ? undefined : maxWidth,
+          height: presentation === 'fullscreen' ? '100%' : undefined,
           // The Dialog OWNS the size cap + scroll boundary (its content renders
           // bare, edge-to-edge). Short content stays natural; tall content is
           // capped at `maxHeightRatio` of the viewport and scrolls inside the
           // rounded card (via the ScrollView below) — consumers never add their
           // own height cap / ScrollView. `overflow: hidden` clips to the radius.
-          maxHeight: presentation === 'custom' ? undefined : `${Math.round(heightRatio * 100)}%`,
+          maxHeight:
+            presentation === 'fullscreen'
+              ? '100%'
+              : presentation === 'custom'
+                ? undefined
+                : `${Math.round(heightRatio * 100)}%`,
           overflow: presentation === 'custom' ? 'visible' : 'hidden',
           backgroundColor: 'transparent',
           // `--bloom-surface` on the element that carries the fill, so web CSS
@@ -638,7 +647,7 @@ function DialogPanel({
         // Drives `height` (and `maxWidth`) only while a morph is in flight; at
         // rest it resolves to `height: 'auto'` — the natural sizing above. Placed
         // before `style` so a consumer's explicit size still wins.
-        morphState.panelStyle,
+        presentation === 'fullscreen' ? undefined : morphState.panelStyle,
         style,
         { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
       ]}

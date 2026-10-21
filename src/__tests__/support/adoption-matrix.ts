@@ -402,6 +402,11 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     },
   },
   trigger: {
+    dialog: {
+      verdict: 'does-not-apply',
+      reason:
+        'DialogFrameProvider uses BloomColorScope asChild only to apply its palette to the panel renderer without an inline layout host. Dialog has no asChild trigger API; its control and open prop own activation.',
+    },
     button: {
       verdict: 'does-not-apply',
       reason:

@@ -14,7 +14,8 @@ import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import React, {
+import type React from 'react';
+import {
   useCallback,
   useEffect,
   useId,
@@ -41,6 +42,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
+import { ScrollArea } from '../layout/ScrollArea';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { useTheme } from '../theme/use-theme';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -102,7 +104,10 @@ const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
  *   3. Pure children — no `title`/`description`/`actions`.
  */
 export function Dialog({ placement, frame, children, header, ...props }: DialogProps) {
-  const session = usePresentationSession(placement, props);
+  const session = usePresentationSession(
+    props.presentation === 'fullscreen' ? 'end' : placement,
+    props,
+  );
   const rest = {
     ...props,
     startOpen: session.startOpen,
@@ -561,10 +566,11 @@ function SideSheet({
   const [mounted, setMounted] = useState(open);
   const progress = useSharedValue(open ? 1 : 0);
 
-  const insetTop = inset?.top ?? 0;
-  const insetBottom = inset?.bottom ?? 0;
-  const insetLeft = inset?.left ?? 0;
-  const insetRight = inset?.right ?? 0;
+  const fullscreen = presentation === 'fullscreen';
+  const insetTop = fullscreen ? 0 : (inset?.top ?? 0);
+  const insetBottom = fullscreen ? 0 : (inset?.bottom ?? 0);
+  const insetLeft = fullscreen ? 0 : (inset?.left ?? 0);
+  const insetRight = fullscreen ? 0 : (inset?.right ?? 0);
   // `start`/`end` resolve to the physical edge they land on for everything a
   // layout engine does not mirror: the slide sign, and which `inset` applies.
   const rtl = useIsRtl();
@@ -578,8 +584,10 @@ function SideSheet({
   const oppositeInset = edge === 'left' ? insetRight : insetLeft;
 
   const sideWidth = useMemo(() => {
-    return resolveSideSheetWidth(viewportWidth, width, anchorInset, oppositeInset, minSideGutter);
-  }, [viewportWidth, anchorInset, oppositeInset, width, minSideGutter]);
+    return fullscreen
+      ? viewportWidth
+      : resolveSideSheetWidth(viewportWidth, width, anchorInset, oppositeInset, minSideGutter);
+  }, [fullscreen, viewportWidth, anchorInset, oppositeInset, width, minSideGutter]);
 
   // Travel distance for the hidden state: the panel's measured width, with the
   // geometry target as the pre-measurement fallback.
@@ -673,7 +681,12 @@ function SideSheet({
   // content: anything inside it that has to be opaque in "the colour I am on"
   // gets the drawer's, not that of whatever surface it was opened from. The
   // sheet path is covered by `BottomSheetBase`, which publishes the same way.
-  const surfaceChildren = <>{children}</>;
+  const surfaceChildren =
+    fullscreen && scrollable ? (
+      <ScrollArea style={{ flex: 1, minHeight: 0 }}>{children}</ScrollArea>
+    ) : (
+      <>{children}</>
+    );
 
   return (
     // `OverlayRoot` takes this drawer's place in the open-order overlay stack.
@@ -749,7 +762,7 @@ function SideSheet({
             <View
               style={{
                 padding: contentPadding,
-                flex: presentation === 'custom' || !scrollable ? 1 : undefined,
+                flex: presentation === 'custom' || fullscreen || !scrollable ? 1 : undefined,
                 minHeight: 0,
                 borderRadius: panelRadius,
                 overflow: presentation === 'custom' ? 'visible' : 'hidden',
