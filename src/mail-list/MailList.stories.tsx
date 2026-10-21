@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -8,6 +9,8 @@ import { RiMailOpenLine } from '../icons/remix/RiMailOpenLine';
 import { RiSpamLine } from '../icons/remix/RiSpamLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { ChatListItem } from '../chat-list';
+import { Chip, ChipRow } from '../chip';
+import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
 import { Sidebar } from '../sidebar';
 import type { SidebarTree } from '../sidebar/types';
 import { useTheme } from '../theme/use-theme';
@@ -437,6 +440,63 @@ export const PointerTargets: Story = {
           onPress={() => setOpened((n) => n + 1)}
         />
       </View>
+    );
+  },
+};
+
+/** Secondary controls share the text column across avatar and density changes. */
+export const Attachments: Story = {
+  parameters: { bleed: true },
+  render: () => {
+    const [opened, setOpened] = useState('');
+    return (
+      <Frame width={520}>
+        <Text testID="attachment-result">{opened}</Text>
+        {(['comfortable', 'compact', 'cozy'] as const).flatMap((density) =>
+          (['avatar', 'hidden', 'selection'] as const).map((mode) => {
+            const id = `attachments-${density}-${mode}`;
+            return (
+              <MailRow
+                key={id}
+                sender={{ name: 'Mireia Solans' }}
+                subject="Roof survey"
+                snippet="The revised measurements are attached."
+                time="14:02"
+                density={density}
+                showAvatar={mode !== 'hidden'}
+                onCheckedChange={mode === 'selection' ? () => undefined : undefined}
+                selected={mode === 'selection'}
+                hasAttachment
+                actions={ROW_ACTIONS}
+                onPress={() => setOpened('message')}
+                footer={
+                  <ChipRow>
+                    <Chip
+                      leadingIcon={RiFileTextLine}
+                      size="lg"
+                      variant="outline"
+                      onPress={() => setOpened(`${id}-file`)}
+                      testID={`${id}-file`}
+                    >
+                      survey.pdf
+                    </Chip>
+                    <Chip
+                      leadingIcon={RiFileTextLine}
+                      size="lg"
+                      variant="outline"
+                      onPress={() => setOpened(`${id}-long-file`)}
+                      style={{ maxWidth: 240 }}
+                    >
+                      measurements-and-revised-plan-for-the-roof.csv
+                    </Chip>
+                  </ChipRow>
+                }
+                testID={id}
+              />
+            );
+          }),
+        )}
+      </Frame>
     );
   },
 };

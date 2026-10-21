@@ -14,7 +14,7 @@
  * are asserted directly: they are where the arithmetic and the ORDER live, and
  * a rendered list cannot tell a stable bucketing from a lucky one.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -289,6 +289,48 @@ describe('MailRow', () => {
     expect(maybe('r-avatar')).toBeNull();
   });
 
+  it.each(['compact', 'comfortable', 'cozy'] as const)(
+    'keeps %s footer controls accessible and outside message navigation',
+    (density) => {
+      const openMessage = jest.fn();
+      const openAttachment = jest.fn();
+      for (const mode of ['avatar', 'hidden', 'selection'] as const) {
+        mount(
+          <MailRow
+            {...ROW}
+            density={density}
+            showAvatar={mode !== 'hidden'}
+            onCheckedChange={mode === 'selection' ? () => undefined : undefined}
+            href="/messages/roof"
+            onPress={openMessage}
+            selected
+            actions={ACTIONS}
+            footer={
+              <button type="button" onClick={openAttachment}>
+                survey.pdf
+              </button>
+            }
+            testID="r"
+          />,
+        );
+        const footer = byTestId('r-footer');
+        const control = footer.querySelector('button');
+        if (!control) throw new Error('Missing attachment control');
+        expect(footer.closest('[aria-hidden="true"]')).toBeNull();
+        expect(control.closest('a')).toBeNull();
+        expect(footer.parentElement).toBe(byTestId('r-header').parentElement);
+        expect(footer.parentElement).toBe(byTestId('r-content'));
+        expect(byTestId('r-content').contains(byTestId('r-sender'))).toBe(true);
+        expect(byTestId('r-header').contains(byTestId('r-rail'))).toBe(true);
+        expect(byTestId('r').getAttribute('data-selected')).toBe('true');
+        expect(getComputedStyle(byTestId('r')).height).toBe('');
+        act(() => control.click());
+      }
+      expect(openAttachment).toHaveBeenCalledTimes(3);
+      expect(openMessage).not.toHaveBeenCalled();
+    },
+  );
+
   it('draws the compact row at its exact height and the comfortable one at its floor', () => {
     mount(<MailRow {...ROW} density="compact" testID="r" />);
     expect(getComputedStyle(byTestId('r')).height).toBe(`${MAIL_ROW_GEOMETRY.compact.height}px`);
@@ -349,7 +391,7 @@ describe('MailRow', () => {
     );
     expect(getComputedStyle(byTestId('r')).minHeight).toBe('80px');
     expect(getComputedStyle(byTestId('r')).height).toBe('');
-    expect(getComputedStyle(byTestId('r-link').nextElementSibling!).paddingTop).toBe('16px');
+    expect(getComputedStyle(byTestId('r-header')).paddingTop).toBe('16px');
     expect(getComputedStyle(byTestId('r-avatar')).height).toBe('48px');
     expect(getComputedStyle(byTestId('loading-row-0')).minHeight).toBe('80px');
     expect(getComputedStyle(byTestId('bar')).height).toBe('56px');

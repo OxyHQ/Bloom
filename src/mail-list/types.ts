@@ -155,6 +155,13 @@ export interface MailRowProps {
   /** Show sender avatars. Selection checkboxes remain visible when enabled. */
   showAvatar?: boolean;
   density?: MailDensity;
+  /**
+   * Secondary content below the header, aligned with the sender text column.
+   * May contain interactive attachments or other controls: it stays outside
+   * the row link and retains its own accessibility. The whole row grows with
+   * it (including compact density), selection paint and swipe actions.
+   */
+  footer?: ReactNode;
   onPress?: () => void;
   onLongPress?: () => void;
   /** A real href on web, so the row is a link and opens in a new tab. */

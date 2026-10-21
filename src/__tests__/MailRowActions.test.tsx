@@ -15,9 +15,9 @@
  * It renders through the `react-native` MOCK (`Platform.OS === 'ios'`), so the
  * assertions are on the element TREE rather than on DOM attributes.
  */
-import React from 'react';
-import { render } from '@testing-library/react-native';
-import type { AccessibilityActionEvent } from 'react-native';
+import type React from 'react';
+import { fireEvent, render } from '@testing-library/react-native';
+import { Pressable, Text, type AccessibilityActionEvent } from 'react-native';
 
 import { RiArchiveLine } from '../icons/remix/RiArchiveLine';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
@@ -107,6 +107,36 @@ describe('MailRow on a touch pointer', () => {
     invoke('nothing-by-that-name');
     expect(fired).toEqual(['archive', 'delete']);
     expect(own).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps an interactive compact footer inside the growing swipe region', () => {
+    const openMessage = jest.fn();
+    const openAttachment = jest.fn();
+    const screen = mount(
+      <MailRow
+        {...ROW}
+        density="compact"
+        onPress={openMessage}
+        swipeActions={{ right: [DELETE] }}
+        footer={
+          <Pressable
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="survey.pdf"
+            onPress={openAttachment}
+          >
+            <Text>survey.pdf</Text>
+          </Pressable>
+        }
+        testID="r"
+      />,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'survey.pdf' }));
+    expect(openAttachment).toHaveBeenCalledTimes(1);
+    expect(openMessage).not.toHaveBeenCalled();
+    expect(screen.getByTestId('r-footer')).toBeTruthy();
+    expect(screen.getByTestId('r-swipe')).not.toHaveStyle({ height: 40 });
+    expect(screen.getByTestId('r')).not.toHaveStyle({ height: 40 });
   });
 
   it('carries no rotor actions at all when the row has none', () => {
