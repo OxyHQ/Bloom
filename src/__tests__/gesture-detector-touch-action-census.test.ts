@@ -42,8 +42,10 @@ const SRC = join(__dirname, '..');
  * where the gesture itself needs both axes.
  */
 const DECISIONS: Record<string, readonly string[]> = {
-  // Rows tile a vertically scrolling list.
-  'swipe-row/SwipeRow.tsx': ['pan-y'],
+  // Rows keep pan-y; nested horizontal ScrollArea paths use auto and reserve the pan.
+  'swipe-row/SwipeRow.tsx': ['dynamic'],
+  // Native scroll ownership must leave browser scrolling available on web.
+  'layout/ScrollViewport.tsx': ['auto'],
   // Tree rows tile the sidebar's vertically scrolling viewport, lifted by a long
   // press. Web never mounts the detector (rows drag as HTML5 sources there);
   // pan-y keeps enabling it from freezing the sidebar's scroll.

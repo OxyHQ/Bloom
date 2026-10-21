@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { SwipeRowScrollContext } from '../swipe-row/scroll-context';
+import { SwipeRowScrollContext } from '../swipe-row/context';
 import { webDataSet } from '../styles/web-data';
 import { ScrollMetricsContext, useScrollMetricsValue } from './scroll-metrics';
 import Animated from 'react-native-reanimated';

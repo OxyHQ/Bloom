@@ -23,7 +23,7 @@ import { resolveSwipeRowPaint, swipeActionPaint } from './shared';
 import type { SwipeRowAction, SwipeRowProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SWIPE_ROW_MESSAGES } from './messages';
-import { SwipeRowScrollContext } from './scroll-context';
+import { SwipeRowScrollContext } from './context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { webDataSet } from '../styles/web-data';
 
