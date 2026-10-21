@@ -120,11 +120,13 @@ the end of a container, an empty one included.
   the existing paste parser reconstructs the whole snapshot (including props,
   marks and children) and that the clipboard accepts the text. Otherwise it
   cancels the operation, retains content and selection, and calls
-  `onClipboardError('unsupported-cut' | 'write-failed')`; applications should
+  `onClipboardError('unsupported-cut' | 'write-failed' | 'changed-cut')`; applications should
   show localized feedback. Checks are bounded to 2,000 blocks, 64 nesting levels
   and one million characters of text/snapshot JSON; larger selections stay put.
   Attachments, unsupported formatting and structures cannot be cut through a
   lossy text format. Ordinary reversible paragraphs can still be cut and undone.
+  A delayed removal confirmation rechecks content, descendant IDs and positions;
+  collaborative changes or moves cancel the removal with `changed-cut` feedback.
   The native platform text clipboard is unchanged; it does not provide the
   web whole-block interception contract.
 - **Undo** groups typing into words and takes back only your own change,

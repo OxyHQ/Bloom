@@ -4,6 +4,7 @@
 import { act, type ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { documentFromSnapshot, EditorStore, type BlockSnapshot } from '../../model';
+import { editText, moveBlocks } from '../../model/commands';
 import { BlockEditor, EditorSurface, type BlockEditorProps } from '../BlockEditor';
 import { EditorController, useEditorController } from '../controller';
 import { BlockDecorations } from '../decorations';
@@ -648,11 +649,14 @@ describe('clipboard ownership', () => {
 });
 
 describe('whole-block Cut safety', () => {
-  function setup(blocks: BlockSnapshot[]) {
+  function setup(
+    blocks: BlockSnapshot[],
+    confirmation: BlockEditorProps['confirmRemove'] = () => true,
+  ) {
     const store = makeStore(blocks);
     const controller = new EditorController(store);
     const onClipboardError = jest.fn();
-    const confirmRemove = jest.fn(() => true);
+    const confirmRemove = jest.fn(confirmation);
     mount(
       <BlockEditor
         store={store}
@@ -713,6 +717,53 @@ describe('whole-block Cut safety', () => {
       expect(state.confirmRemove).not.toHaveBeenCalled();
       expect(state.store.getSnapshot()).toBe(before);
       expect(state.controller.ui.get().selectedBlocks).toBe(selected);
+    },
+  );
+  it.each(['text', 'order', 'parent', 'unchanged'] as const)(
+    'revalidates a copied selection after asynchronous confirmation: %s',
+    async (change) => {
+      let confirm!: (value: boolean) => void;
+      const answer = new Promise<boolean>((resolve) => {
+        confirm = resolve;
+      });
+      const state = setup(
+        [...PARAGRAPHS, { type: 'toggle', text: [{ text: 'Destination' }] }],
+        () => answer,
+      );
+      act(() => selectBlocks(state.controller.ui, ['b1']));
+      const data = new Map<string, string>();
+      cut({
+        setData: (type, value) => {
+          data.set(type, value);
+        },
+        getData: (type) => data.get(type) ?? '',
+      });
+      expect(data.get('text/plain')).toBe('Hello world\n');
+      expect(state.store.doc.blocks.b1).toBeDefined();
+      act(() => {
+        const ctx = state.store.context();
+        if (change === 'text')
+          state.store.dispatch(editText(ctx, 'b1', [{ text: 'Remote edit' }]), 'remote');
+        if (change === 'order')
+          state.store.dispatch(moveBlocks(ctx, ['b1'], 'b2', 'after'), 'remote');
+        if (change === 'parent')
+          state.store.dispatch(moveBlocks(ctx, ['b1'], 'b3', 'inside'), 'remote');
+      });
+      const beforeConfirm = state.store.doc;
+      const selected = state.controller.ui.get().selectedBlocks;
+      await act(async () => {
+        confirm(true);
+        await answer;
+      });
+      if (change === 'unchanged') {
+        expect(state.store.doc.blocks.b1).toBeUndefined();
+        expect(state.onClipboardError).not.toHaveBeenCalled();
+      } else {
+        expect(state.store.doc).toBe(beforeConfirm);
+        expect(state.controller.ui.get().selectedBlocks).toEqual(selected);
+        expect(state.onClipboardError).toHaveBeenCalledWith('changed-cut');
+      }
+      expect(data.get('text/plain')).toBe('Hello world\n');
     },
   );
   it('cuts supported blocks only after a confirmed write and remains undoable', () => {

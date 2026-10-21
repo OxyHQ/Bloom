@@ -1,6 +1,6 @@
-import { canCutAsMarkdown } from '../clipboard';
+import { canCutAsMarkdown, cutSourceMatches } from '../clipboard';
 import { DEFAULT_SCHEMA, extendSchema } from '../schema';
-import { type BlockSnapshot, snapshotToMarkdown } from '../snapshot';
+import { type BlockSnapshot, documentFromSnapshot, snapshotToMarkdown } from '../snapshot';
 
 const schema = extendSchema(DEFAULT_SCHEMA, [
   { type: 'image', hasText: false, canHaveChildren: false, props: ['fileId', 'url'] },
@@ -35,4 +35,35 @@ it('bounds the check before rebuilding a large clipboard document', () => {
   const block = { type: 'paragraph', text: [{ text: 'x' }] };
   expect(safe(Array.from({ length: 2_001 }, () => block))).toBe(false);
   expect(safe([{ type: 'paragraph', text: [{ text: 'x'.repeat(1_000_001) }] }])).toBe(false);
+});
+
+it('detects a changed subtree even when its exported text and shape are identical', () => {
+  let id = 0;
+  const before = documentFromSnapshot(
+    [
+      {
+        type: 'toggle',
+        text: [{ text: 'Parent' }],
+        children: [{ type: 'paragraph', text: [{ text: 'Child' }] }],
+      },
+    ],
+    () => `b${++id}`,
+  );
+  const parent = before.root[0];
+  if (!parent) throw new Error('Missing parent');
+  const child = before.blocks[parent]?.children[0];
+  if (!child) throw new Error('Missing child');
+  const parentBlock = before.blocks[parent];
+  const childBlock = before.blocks[child];
+  if (!parentBlock || !childBlock) throw new Error('Missing blocks');
+  const current = {
+    ...before,
+    blocks: {
+      ...before.blocks,
+      [parent]: { ...parentBlock, children: ['replacement'] },
+      replacement: { ...childBlock, id: 'replacement' },
+    },
+  };
+  expect(cutSourceMatches(before, before, [parent])).toBe(true);
+  expect(cutSourceMatches(before, current, [parent])).toBe(false);
 });

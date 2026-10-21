@@ -18,7 +18,7 @@ import {
   removeBlocks,
 } from '../model/commands';
 import { exportSnapshot, snapshotToMarkdown } from '../model/snapshot';
-import { canCutAsMarkdown } from '../model/clipboard';
+import { canCutAsMarkdown, cutSourceMatches } from '../model/clipboard';
 import { getBlock } from '../model/document';
 import type { BlockId } from '../model/document';
 import { specOf } from '../model/schema';
@@ -85,7 +85,7 @@ export interface BlockEditorProps {
    */
   onCopyBlockLink?: (blockId: BlockId) => void;
   /** Web whole-block clipboard failure. Cut keeps both blocks and selection. */
-  onClipboardError?: (reason: 'unsupported-cut' | 'write-failed') => void;
+  onClipboardError?: (reason: 'unsupported-cut' | 'write-failed' | 'changed-cut') => void;
   /**
    * Images pasted into a block's text (a screenshot, a copied picture), for
    * the app to upload and insert after `blockId`: `blob:` URLs on web, file
@@ -257,9 +257,10 @@ export function EditorSurface({
   // Removing whole blocks waits for the app's word; one question at a time.
   const confirming = useRef(false);
   const requestRemove = useCallback(
-    (ids: readonly BlockId[]) => {
+    (ids: readonly BlockId[], stillCurrent?: () => boolean) => {
       if (readOnly || ids.length === 0 || confirming.current) return;
       const answer = afterConfirm(confirmRemove, ids, () => {
+        if (stillCurrent && !stillCurrent()) return;
         const present = ids.filter((id) => store.doc.blocks[id]);
         if (present.length === 0) return;
         clearBlockSelection(ui);
@@ -510,8 +511,9 @@ export function EditorSurface({
       // fallback Cut after we declined to remove the selected blocks.
       event.preventDefault();
       const ids = selected.filter((id) => !selected.includes(store.doc.blocks[id]?.parent ?? ''));
+      const copiedDocument = store.doc;
       try {
-        const snapshot = exportSnapshot(store.doc, ids);
+        const snapshot = exportSnapshot(copiedDocument, ids);
         const text = snapshotToMarkdown(snapshot);
         if (cut && !canCutAsMarkdown(snapshot, text, store.schema)) {
           onClipboardError?.('unsupported-cut');
@@ -525,7 +527,12 @@ export function EditorSurface({
         onClipboardError?.('write-failed');
         return;
       }
-      if (cut) requestRemove(ids);
+      if (cut)
+        requestRemove(ids, () => {
+          const current = cutSourceMatches(copiedDocument, store.doc, ids);
+          if (!current) onClipboardError?.('changed-cut');
+          return current;
+        });
     };
     const copy = onCopy(false);
     const cut = onCopy(true);

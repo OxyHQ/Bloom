@@ -1,7 +1,27 @@
-import { applyTransaction } from './operations';
+import { type EditorDocument, subtreeIds } from './document';
+import { anchorOf, applyTransaction } from './operations';
 import { pasteIntoBlock } from './paste';
 import type { Schema } from './schema';
-import { type BlockSnapshot, documentFromSnapshot, documentToSnapshot } from './snapshot';
+import {
+  type BlockSnapshot,
+  documentFromSnapshot,
+  documentToSnapshot,
+  exportSnapshot,
+} from './snapshot';
+
+/** A delayed Cut may remove only the same content, subtree and positions it copied. */
+export function cutSourceMatches(
+  before: EditorDocument,
+  current: EditorDocument,
+  ids: readonly string[],
+): boolean {
+  if (ids.some((id) => !before.blocks[id] || !current.blocks[id])) return false;
+  const state = (doc: EditorDocument) => ({
+    blocks: exportSnapshot(doc, ids),
+    positions: ids.map((id) => ({ id, ...anchorOf(doc, id), subtree: subtreeIds(doc, id) })),
+  });
+  return JSON.stringify(state(before)) === JSON.stringify(state(current));
+}
 
 /**
  * Whether the currently supported plain-text paste can reconstruct this entire
