@@ -23,9 +23,11 @@ only where the product needs them.
 | `ScrollArea` / `ScrollBar` | Shared scrolling primitive / indicator | Independently scrolling content / existing viewport ref |
 | Application store | Account policy and durable persistence | Controlled histories, snapshot storage, conflict handling |
 
-A header belongs to its screen. A panel containing that screen does not add
-another header. Scrolling belongs to one owner; an indicator observes that owner
-without introducing another scroll container.
+A screen-specific header belongs to its `Screen`; its containing panel does not
+add another copy. Chrome spanning the workspace belongs in `layout.header`,
+where the compositor reserves it once above all panel tracks. Each panel keeps
+its own content scroll owner; an indicator observes that owner without
+introducing another scroll container.
 
 ### Interaction follows the same ownership
 
@@ -290,10 +292,13 @@ separate operations. See [Motion](/docs/bloom/main/motion).
 
 ### Flat surfaces and persistent chrome
 
-`appearance: 'joined' | 'separated'` describes the group. For an individual
+`appearance: 'joined' | 'separated' | 'plain'` describes the group. A plain group
+keeps joined geometry and dividers while inheriting its enclosing Surface;
+use it for a local workspace inside a Dialog that already owns material.
+Its shared header and panel scroll contracts remain the same. For an individual
 painted panel without raised chrome, use `chrome: 'none'`, `surfaceClassName`
-and the matching resolved `surfaceColor`. `appearance: 'plain'` instead leaves
-the panel transparent and inherits its enclosing fill. Use `BloomScope panelRadius`
+and the matching resolved `surfaceColor`. A panel's `appearance: 'plain'` leaves
+that panel transparent and inherits its enclosing fill. Use `BloomScope panelRadius`
 for local corner geometry. Bounded panels clip their actual rounded surface, so
 dragging them does not paint page-colored corners over their neighbors.
 
