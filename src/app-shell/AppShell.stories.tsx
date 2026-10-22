@@ -612,6 +612,41 @@ export const ModularInbox: Story = {
     </View>
   ),
 };
+
+/** Intrinsic chrome reserves the bounded viewport before any measurements. */
+export const BoundedChrome: Story = {
+  parameters: { controls: { disable: true }, layout: 'fullscreen' },
+  render: () => (
+    <AppShell
+      testID="bounded-chrome"
+      header={null}
+      drawer="reveal"
+      contentMaxWidth="none"
+      sidebar={{ items: [{ key: 'inbox', label: 'Inbox', icon: RiHomeLine }] }}
+      topBar={
+        <View style={{ height: 40 }}>
+          <Text>Workspace navigation</Text>
+        </View>
+      }
+      bottomBar={
+        <View style={{ height: 96 }}>
+          <Text>Bottom navigation</Text>
+        </View>
+      }
+      panelLayout={{
+        mode: 'split',
+        flow: 'bounded',
+        appearance: 'separated',
+        collapseBelow: 'lg',
+        activePanel: 'detail',
+        panels: [
+          { id: 'list', width: 380, content: <Text>List</Text> },
+          { id: 'detail', content: <Text>Detail</Text> },
+        ],
+      }}
+    />
+  ),
+};
 export const ModularMap: Story = {
   render: () => (
     <View style={{ height: 680 }}>
