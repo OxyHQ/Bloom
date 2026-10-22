@@ -39,11 +39,10 @@ export function BloomProvider({
       {/* The locale for everything below, the font-loading screen included. */}
       <LocaleProvider locale={locale}>
         <BloomThemeProvider {...themeProps}>
-          {/* Holds the first paint on the same screen as font loading until a
-              non-English locale's strings have loaded (English never waits).
-              Inside the theme, like the font wait, because that screen is built
-              from Bloom components that read it. */}
-          <LocaleProvider locale={locale} fallback={themeProps.onFontsLoading ?? null}>
+          {/* An explicit loading screen may hold a translated first paint.
+              Without one, preserve visible content while strings load. During
+              hydration the locale scope retains the server's published locale. */}
+          <LocaleProvider locale={locale} fallback={themeProps.onFontsLoading}>
             <ScrollRestorationProvider adapter={scrollAdapter}>
               <BloomHapticsProvider enabled={haptics}>
                 {/*
