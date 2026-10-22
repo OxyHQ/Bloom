@@ -48,6 +48,11 @@ const files = sourceFiles(SRC);
  * web-CSS cast. Anything else is a regression.
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
+  'app-shell/AppShellPanelVisibility.tsx': {
+    count: 1,
+    reason:
+      "The compositor's CSS custom property resolves display to flex/none before hydration. This VALUE-level cast bridges RN's narrower display union only when web CSS visibility is active; native and legacy contexts use their own boolean. SSR and native visibility suites assert both paths and retained content.",
+  },
   'concentric/use-concentric-geometry.ts': {
     count: 1,
     reason:

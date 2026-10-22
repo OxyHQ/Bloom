@@ -24,7 +24,7 @@
  *   - A TEST is the only one that runs in CI on every change.
  *
  * THE STORY RULE IS SCOPED, AND THE SCOPE IS DERIVED. `design-tokens` and
- * `styles` render nothing, so demanding a story of them would be answered by a
+ * `image-aspect-ratio-cache` render nothing, so demanding a story of them would be answered by a
  * story that demonstrates nothing — a Potemkin artifact is the same erosion as
  * an exclusion list, arriving from the other side. A family needs a story when
  * it PUBLISHES A COMPONENT: a PascalCase value exported from one of its own
@@ -383,8 +383,6 @@ const NO_COMPONENT: readonly string[] = [
   'image-resolver',
   // A context Provider, a hook and the language table — no `.tsx`.
   'locale',
-  // Style atoms, tokens and the `styled()` primitives — inputs to components.
-  'styles',
 ];
 
 const docStem = (family: string): string => DOC_ALIASES[family] ?? family;
@@ -465,6 +463,9 @@ describe('the coverage census reads real artifacts', () => {
     // publishing nothing, and it is not because the walk found no files.
     expect(implementationFiles(join(SRC, 'design-tokens'))).toEqual([]);
     expect(publishedComponents('design-tokens')).toEqual([]);
+    // Styles now owns an actual SSR component, alongside its existing surface
+    // presentation story; it is no longer a data-only family.
+    expect(publishedComponents('styles')).toContain('ServerStyleSheet');
   });
 
   it('asks for a story from every family that publishes a component, and only those', () => {
