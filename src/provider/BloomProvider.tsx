@@ -1,6 +1,7 @@
 /** Universal application state. Supply scrollAdapter explicitly to enable router restoration.
  * Visual outlets remain owned by the app's composition to avoid duplicate hosts.
  */
+import { ServerStyleContext } from '../styles/context';
 import type { ReactNode } from 'react';
 
 import { BlurTargetProvider } from '../blur/blur-target';
@@ -30,22 +31,24 @@ export function BloomProvider({
   scrollAdapter = noRouterAdapter,
   locale,
   characterRuntimeUrl,
+  ssrStyles,
   ...themeProps
 }: BloomProviderProps) {
   return (
     // `value` is passed unconditionally (null when unset) so toggling a resolver
     // never changes the tree shape and remounts everything below it.
-    <ImageResolverProvider value={imageResolver ?? null}>
-      {/* The locale for everything below, the font-loading screen included. */}
-      <LocaleProvider locale={locale}>
-        <BloomThemeProvider {...themeProps}>
-          {/* An explicit loading screen may hold a translated first paint.
+    <ServerStyleContext.Provider value={ssrStyles}>
+      <ImageResolverProvider value={imageResolver ?? null}>
+        {/* The locale for everything below, the font-loading screen included. */}
+        <LocaleProvider locale={locale}>
+          <BloomThemeProvider {...themeProps}>
+            {/* An explicit loading screen may hold a translated first paint.
               Without one, preserve visible content while strings load. During
               hydration the locale scope retains the server's published locale. */}
-          <LocaleProvider locale={locale} fallback={themeProps.onFontsLoading}>
-            <ScrollRestorationProvider adapter={scrollAdapter}>
-              <BloomHapticsProvider enabled={haptics}>
-                {/*
+            <LocaleProvider locale={locale} fallback={themeProps.onFontsLoading}>
+              <ScrollRestorationProvider adapter={scrollAdapter}>
+                <BloomHapticsProvider enabled={haptics}>
+                  {/*
                   A PROVIDER, not an outlet, and the distinction is the one this
                   component's exclusion list encodes. Outlets stay out because a
                   second mount duplicates every surface they render; this renders NO
@@ -56,16 +59,16 @@ export function BloomProvider({
                   insets, and it must WRAP the content, which is exactly what this
                   provider already does with `children`.
                 */}
-                <BlurTargetProvider>
-                  {/*
+                  <BlurTargetProvider>
+                    {/*
                     The bottom edge's claim registry. Also a provider, not an outlet:
                     it renders nothing and holds only the set of surfaces currently
                     parked at the bottom edge, so a tab bar can publish its footprint
                     and a FAB or a toast stack can read it without either importing
                     the other.
                   */}
-                  <BottomEdgeProvider>
-                    {/*
+                    <BottomEdgeProvider>
+                      {/*
                       And the top edge's, for the same reason one edge further up: a
                       floating `PageHeader` overlays the content rather than sitting
                       above it, so the content has to be told how much of the edge is
@@ -73,30 +76,31 @@ export function BloomProvider({
                       reader of either only ever wants one number and must not
                       re-render when the other moves.
                     */}
-                    <TopEdgeProvider>
-                      <TabBarMinimizeProvider>
-                        {/*
+                      <TopEdgeProvider>
+                        <TabBarMinimizeProvider>
+                          {/*
                           A provider, not an outlet: it renders nothing, loads nothing and
                           draws nothing until a bot's character is asked for, so an avatar
                           anywhere below finds the runtime without every app mounting this.
                           Inner `AgentAvatarProvider`s still win for their own subtree.
                         */}
-                        <AgentAvatarProvider
-                          runtimeUrl={characterRuntimeUrl}
-                          stillStorage={themeProps.storage}
-                        >
-                          {children}
-                        </AgentAvatarProvider>
-                      </TabBarMinimizeProvider>
-                    </TopEdgeProvider>
-                  </BottomEdgeProvider>
-                </BlurTargetProvider>
-              </BloomHapticsProvider>
-            </ScrollRestorationProvider>
-          </LocaleProvider>
-        </BloomThemeProvider>
-      </LocaleProvider>
-    </ImageResolverProvider>
+                          <AgentAvatarProvider
+                            runtimeUrl={characterRuntimeUrl}
+                            stillStorage={themeProps.storage}
+                          >
+                            {children}
+                          </AgentAvatarProvider>
+                        </TabBarMinimizeProvider>
+                      </TopEdgeProvider>
+                    </BottomEdgeProvider>
+                  </BlurTargetProvider>
+                </BloomHapticsProvider>
+              </ScrollRestorationProvider>
+            </LocaleProvider>
+          </BloomThemeProvider>
+        </LocaleProvider>
+      </ImageResolverProvider>
+    </ServerStyleContext.Provider>
   );
 }
 

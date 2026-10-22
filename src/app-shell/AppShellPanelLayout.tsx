@@ -1,7 +1,7 @@
 import React, {
   useEffect,
   useCallback,
-  useInsertionEffect,
+  useLayoutEffect,
   useImperativeHandle,
   useMemo,
   useContext,
@@ -52,7 +52,7 @@ import { PanelReorderHandle } from './PanelReorderHandle';
 import { usePanelReveal } from './use-panel-reveal';
 import { usePanelResize, type PanelResizePreview } from './use-panel-resize';
 import { PanelCssContext, panelLayoutCss } from './panel-layout-css';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import {
   AppShellPanelContext,
   PanelScrollContainerContext,
@@ -599,6 +599,7 @@ export function createPanelLayoutView(
                   id: panel.id,
                   alone,
                   framed,
+                  cssVisibility: !!cssScope,
                   visible: panel.visible !== false && track.visible,
                   active,
                 }}
@@ -761,7 +762,12 @@ export function createPanelLayoutView(
     );
     const [cssState, setCssState] = useState<{ vertical: boolean; tracks: ResolvedPanelTrack[] }>({
       vertical: false,
-      tracks: layout.panels.map((panel) => ({ id: panel.id, width: 0, visible: false, gap: 0 })),
+      tracks: layout.panels.map((panel) => ({
+        id: panel.id,
+        width: 0,
+        visible: !!cssScope && panel.visible !== false,
+        gap: 0,
+      })),
     });
     const bottomEdge = useBottomEdgeInset();
     const { width, onLayout } = useShellWidth();
@@ -819,10 +825,7 @@ export function createPanelLayoutView(
           fillWidth,
         )
       : '';
-    useInsertionEffect(() => {
-      if (cssScope) adoptStyleSheet(cssScope, cssRules);
-    }, [cssScope, cssRules]);
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (!cssScope || !rootRef.current || typeof getComputedStyle !== 'function') return;
       const root = rootRef.current as unknown as HTMLElement;
       const read = () => {
@@ -842,12 +845,14 @@ export function createPanelLayoutView(
             floating: style?.getPropertyValue('--bloom-panel-floating').trim() === '1',
           };
         });
-        // The first computed-style read establishes the visible tracks at their
-        // final geometry. Only later insertions/display changes get an entry
-        // transition; animating the initial tree also scales already-sized media.
-        // Reuse this visibility read instead of adding a frame, timer or measure.
-        if (!root.hasAttribute('data-bloom-panel-ready'))
+        // Commit the first CSS geometry while transitions are disabled. Merely
+        // reading custom properties does not establish used dimensions: enabling
+        // motion then can animate SSR/hidden zero widths into the workspace.
+        // Resolve layout before enabling later interactions, all before paint.
+        if (!root.hasAttribute('data-bloom-panel-ready')) {
+          root.getBoundingClientRect();
           root.setAttribute('data-bloom-panel-ready', 'true');
+        }
         setCssState((previous) =>
           previous.vertical === (axis === 'vertical') &&
           JSON.stringify(previous.tracks) === JSON.stringify(next)
@@ -1038,6 +1043,7 @@ export function createPanelLayoutView(
     );
     return (
       <PanelOrderBoundary ids={layout.panels.map((panel) => panel.id)} rootRef={rootRef}>
+        <ServerStyleSheet id={cssScope ?? ''} css={cssRules} />
         <View
           ref={rootRef}
           {...(cssScope

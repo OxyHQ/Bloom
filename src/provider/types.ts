@@ -1,10 +1,14 @@
+import type { ServerStylePolicy } from '../styles/context';
 import type { ReactNode } from 'react';
 import type { ScrollRouterAdapter } from '../scroll/types';
-import { type ImageResolver } from '../image-resolver';
-import { type BloomThemeProviderProps } from '../theme';
+import type { ImageResolver } from '../image-resolver';
+import type { BloomThemeProviderProps } from '../theme';
 
 export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'children'> {
   children: ReactNode;
+  /** Emit compositor CSS in server HTML. Opt in only when the host CSP permits
+   * inline styles, or supply the matching style nonce on server and hydration. */
+  ssrStyles?: ServerStylePolicy;
   /** Stable router adapter; omitted means automatic restoration is inactive. */
   scrollAdapter?: ScrollRouterAdapter;
   /**

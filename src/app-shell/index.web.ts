@@ -36,6 +36,7 @@ export const { AppShellPanel, AppShellPanels } = createAppShellPanels(
   PanelLayoutView,
   ScrollArea,
 );
+export { AppShellPanelVisibility } from './AppShellPanelVisibility';
 export { AppShellHeader } from './AppShellHeader';
 export { AppShellMenuButton } from './AppShellMenuButton';
 export { APP_SHELL_DEFAULTS } from './constants';
@@ -70,6 +71,7 @@ export type {
   AppShellMenuButtonProps,
   AppShellProps,
   AppShellPanelProps,
+  AppShellPanelVisibilityProps,
   AppShellPanelsProps,
   NotificationBellProps,
   ProOfferCardProps,

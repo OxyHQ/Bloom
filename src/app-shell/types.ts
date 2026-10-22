@@ -1,6 +1,6 @@
 import type { AppColorName } from '../theme/color-presets';
 import type { ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle, ViewProps } from 'react-native';
 
 import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
 import type { ContentPanelChrome, ContentPanelProps } from '../content-panel/types';
@@ -496,4 +496,10 @@ export interface AppShellPanelsProps {
   widths?: AppShellPanelLayout['widths'];
   onWidthsChange?: AppShellPanelLayout['onWidthsChange'];
   testID?: string;
+}
+
+/** Responsive presentation only; hidden content remains mounted. */
+export interface AppShellPanelVisibilityProps extends ViewProps {
+  when: 'alone' | 'multiple';
+  className?: string;
 }

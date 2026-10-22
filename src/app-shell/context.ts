@@ -57,7 +57,12 @@ export interface AppShellPanelValue {
 
 const OUTSIDE_PANEL: AppShellPanelValue = { alone: false, framed: false };
 
-export const AppShellPanelContext = createContext<AppShellPanelValue | null>(null);
+export const AppShellPanelContext = createContext<
+  | (AppShellPanelValue & {
+      /** Internal: this inline host publishes visibility CSS variables. */ cssVisibility?: boolean;
+    })
+  | null
+>(null);
 AppShellPanelContext.displayName = 'BloomAppShellPanelContext';
 
 /** The enclosing `AppShellPanel`: its id, whether it is drawn alone and framed. */

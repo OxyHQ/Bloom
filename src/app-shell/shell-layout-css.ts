@@ -1,5 +1,4 @@
-import { useEffect, useInsertionEffect, useMemo, useState } from 'react';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import type { SidebarMetrics } from '../sidebar/metrics';
 import { resolveSidebarGeometry } from '../sidebar/geometry';
@@ -122,6 +121,7 @@ ${root} [data-bloom-shell-nav="${scope}"] [data-bloom-shell-nav-mode] > *{width:
       `${frame}{--bloom-nav-mode:${mode};--bloom-nav-collapsed:${collapsed ? 1 : 0};--bloom-nav-capacity:${capacity ? 1 : 0};--bloom-framed:${framed ? 1 : 0};--bloom-small:${width >= BREAKPOINTS.sm ? 1 : 0};--bloom-nav-display:${inFlow ? 'flex' : 'none'};--bloom-panel-nav-display:${mode === 'panel' ? 'flex' : 'none'};--bloom-rail-nav-display:${mode === 'rail' ? 'flex' : 'none'};--bloom-nav-width:${!inFlow ? 0 : mode === 'rail' ? railWidth : collapsed ? geometry.collapsedWidth : metrics.expanded}px;--bloom-frame-top:${flush ? 0 : outer}px;--bloom-frame-bottom:${flush ? 0 : outer}px;--bloom-frame-start:${flush ? 0 : outer}px;--bloom-frame-end:${outer}px;--bloom-body-gutter:${flush ? outer : 0}px;--bloom-nav-gap:${rowGap}px; --bloom-frame-alignment:${alignment};justify-content:flex-start!important}`;
     const query = `(min-width:${width}px)${upper === undefined ? '' : ` and (width < ${upper}px)`}`;
     let rules = state(baseCollapsed, false);
+    rules += `${root} [data-bloom-shell-bar="${scope}"][data-bloom-shell-bar-visibility="compact"]{display:${inFlow ? 'none' : 'flex'}!important}\n`;
     if (!framed)
       rules += `${root} [data-bloom-reading-envelope="${scope}"]{--bloom-reading-envelope:100%!important}
 ${root} [data-bloom-panel-group="${scope}"] [data-bloom-panel-mask],${root} [data-bloom-panel-group="${scope}"] [data-bloom-panel-border]{display:none!important}
@@ -137,7 +137,10 @@ ${root} [data-bloom-panel-group="${scope}"] [data-bloom-panel],${root} [data-blo
   return css;
 }
 
-export function useCssShellLayout(scope: string | null, options: Options): CssShellState | null {
+export function useCssShellLayout(
+  scope: string | null,
+  options: Options,
+): (CssShellState & { css: string }) | null {
   const [state, setState] = useState<CssShellState>({
     mode: 'panel',
     collapsed: false,
@@ -146,10 +149,7 @@ export function useCssShellLayout(scope: string | null, options: Options): CssSh
     small: true,
   });
   const css = useMemo(() => (scope ? shellLayoutCss(scope, options) : ''), [scope, options]);
-  useInsertionEffect(() => {
-    if (scope) adoptStyleSheet(`${scope}-shell`, css);
-  }, [scope, css]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!scope || typeof document === 'undefined') return;
     const root = document.querySelector<HTMLElement>(`[data-bloom-layout="${scope}"]`);
     if (!root) return;
@@ -174,5 +174,5 @@ export function useCssShellLayout(scope: string | null, options: Options): CssSh
     observer.observe(root);
     return () => observer.disconnect();
   }, [scope, css]);
-  return scope ? state : null;
+  return scope ? { ...state, css } : null;
 }

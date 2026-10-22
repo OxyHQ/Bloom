@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { act, createRef } from 'react';
+import { act, createRef, useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { AppShellPanels } from '../app-shell/index.web';
@@ -128,6 +128,25 @@ it.each(['contained', 'document'] as const)(
 
 it('enables entry motion only after the initial tracks have computed final styles', () => {
   const reads: boolean[] = [];
+  const layoutReads: boolean[] = [];
+  const rect = HTMLElement.prototype.getBoundingClientRect;
+  jest.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    if (this.hasAttribute('data-bloom-panel-group'))
+      layoutReads.push(this.hasAttribute('data-bloom-panel-ready'));
+    return rect.call(this);
+  });
+  const beforePaint: boolean[] = [];
+  function ObserveCommit() {
+    useLayoutEffect(() => {
+      beforePaint.push(
+        host.querySelector('[data-bloom-panel-group]')?.hasAttribute('data-bloom-panel-ready') ??
+          false,
+      );
+    });
+    return null;
+  }
   const computedStyle = jest.mocked(window.getComputedStyle).getMockImplementation();
   if (!computedStyle) throw new Error('Missing computed-style adapter');
   jest.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
@@ -146,12 +165,15 @@ it('enables entry motion only after the initial tracks have computed final style
           panels: [{ id: 'main', width: 620 }, ...(extra ? [{ id: 'added', width: 390 }] : [])],
         }}
       />
+      <ObserveCommit />
     </BloomThemeProvider>
   );
   act(() => root.render(renderPanels(false)));
   const group = host.querySelector('[data-bloom-panel-group]');
   const main = host.querySelector('[data-testid="entry-panels-main"]');
   expect(reads[0]).toBe(false);
+  expect(layoutReads).toEqual([false]);
+  expect(beforePaint[0]).toBe(true);
   expect(group?.getAttribute('data-bloom-panel-ready')).toBe('true');
   reads.length = 0;
   act(() => root.render(renderPanels(true)));
@@ -161,6 +183,8 @@ it('enables entry motion only after the initial tracks have computed final style
   const scope = group?.getAttribute('data-bloom-panel-group');
   if (!scope) throw new Error('Missing CSS panel group');
   const css = panelLayoutCss(scope, { panels: [{ id: 'main' }, { id: 'added' }] }, 8);
+  expect(css).toContain(`[data-bloom-panel-group="${scope}"]:not([data-bloom-panel-ready])`);
+  expect(css).toContain('[data-bloom-shell-nav="' + scope + '"]){transition:none!important}');
   const entries = [...css.matchAll(/@starting-style\{([^{}]+)\{/g)];
   expect(entries).toHaveLength(2);
   for (const [, selector] of entries) {
