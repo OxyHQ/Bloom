@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { BloomColorScope } from '../theme/color-scope/ColorScope.web';
 import { useTheme } from '../theme/use-theme';
+import { useNavigationTheme } from '../theme/use-navigation-theme';
 import { useThemePaint, useThemeRecipe } from '../theme/use-theme-paint';
 import { ServerStyleContext } from '../styles/context';
 import { buildTheme } from '../theme/build-theme';
@@ -181,4 +182,46 @@ it('keeps a fixed light palette separate from its changing root backing', () => 
   expect(node?.getAttribute('data-dark')).toBe(surfaceFillOn(local, backings.dark));
   expect(node?.getAttribute('data-light')).toBe(surfaceFillOn(local, backings.light));
   expect(node?.getAttribute('data-dark')).not.toBe(node?.getAttribute('data-light'));
+});
+
+it('keeps navigation screen paint stable from server markup through stored-dark hydration', async () => {
+  function NavigationScreen() {
+    const navigation = useNavigationTheme();
+    return (
+      <main
+        data-navigation-dark={String(navigation.dark)}
+        style={{ backgroundColor: navigation.colors.background, color: navigation.colors.text }}
+      />
+    );
+  }
+  function NavigationFixture({ mode }: { mode: 'light' | 'dark' }) {
+    return (
+      <BloomThemeProvider fonts={false} mode={mode} prepaintTheme={config}>
+        <NavigationScreen />
+      </BloomThemeProvider>
+    );
+  }
+  const host = document.createElement('div');
+  document.body.append(host);
+  host.innerHTML = renderToString(<NavigationFixture mode="light" />);
+  const screen = host.querySelector('main');
+  expect(screen?.style.backgroundColor).toBe('var(--bloom-paint-background)');
+  expect(screen?.style.color).toBe('var(--bloom-paint-text)');
+  expect(screen?.dataset.navigationDark).toBe('false');
+  const errors: unknown[] = [];
+  let root: Root | undefined;
+  try {
+    await act(async () => {
+      root = hydrateRoot(host, <NavigationFixture mode="dark" />, {
+        onRecoverableError: (error) => errors.push(error),
+      });
+    });
+    expect(errors).toEqual([]);
+    expect(host.querySelector('main')).toBe(screen);
+    expect(screen?.style.backgroundColor).toBe('var(--bloom-paint-background)');
+    expect(screen?.dataset.navigationDark).toBe('true');
+  } finally {
+    await act(async () => root?.unmount());
+    host.remove();
+  }
 });
