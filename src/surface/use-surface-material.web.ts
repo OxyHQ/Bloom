@@ -11,6 +11,8 @@ export function useSurfaceMaterial(
   id: string,
   fill: string,
   enabled = true,
+  paintFill?: string,
+  paintOptics?: ReturnType<typeof resolveSurfaceOptics>,
 ): WebCssStyle {
   const css = useMemo(
     () =>
@@ -19,17 +21,17 @@ export function useSurfaceMaterial(
   );
   useInteractiveWebCss(id, css);
   const theme = useContext(BloomThemeContext)?.theme;
-  const optics = resolveSurfaceOptics(theme?.isDark ?? false);
+  const optics = paintOptics ?? resolveSurfaceOptics(theme?.isDark ?? false);
   return useMemo(
     () =>
       enabled
         ? {
             backgroundColor: 'transparent',
-            '--bloom-surface-fill': resolveSurfaceTint(fill),
+            '--bloom-surface-fill': paintFill ?? resolveSurfaceTint(fill),
             '--bloom-surface-rim': optics.rim,
             '--bloom-surface-sheen': optics.sheenCss,
           }
         : {},
-    [optics, fill, enabled],
+    [optics, fill, paintFill, enabled],
   );
 }

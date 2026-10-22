@@ -1,4 +1,5 @@
-import { useSurfaceFill } from '../styles/surface-levels';
+import { useThemeRecipe } from '../theme/use-theme-paint';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/progressive-blur.tsx
  * (MIT © 2026 David Mokos).
@@ -38,7 +39,10 @@ export function ProgressiveBlur({
   direction = 'top',
   ...rest
 }: ProgressiveBlurProps) {
-  const surfaceFill = useSurfaceFill();
+  const surfaceFill = useSurfaceFillRecipe();
+  const recipe = useThemeRecipe((theme, documentMode) =>
+    buildTailGradient(surfaceFill[documentMode], direction),
+  );
 
   const filter = `blur(${intensity * WEB_BLUR_PER_INTENSITY}px)`;
   const mask = buildMaskGradient(direction);
@@ -51,10 +55,15 @@ export function ProgressiveBlur({
     WebkitBackdropFilter: filter,
     maskImage: mask,
     WebkitMaskImage: mask,
-    backgroundImage: buildTailGradient(surfaceFill, direction),
+    backgroundImage: recipe.paint,
   };
 
-  return <View {...rest} style={[webStyle, style]} />;
+  return (
+    <>
+      {recipe.sheet}
+      <View {...rest} style={[webStyle, style]} />
+    </>
+  );
 }
 
 ProgressiveBlur.displayName = 'ProgressiveBlur';

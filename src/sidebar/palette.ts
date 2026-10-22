@@ -1,11 +1,10 @@
-import { useMemo } from 'react';
-
 import { BUTTON_SHADOW } from '../button/shared';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { PANEL_SHADOW, resolvePanelChrome } from '../styles/panel-chrome';
 import { hairlineOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
+import { createContext, useContext } from 'react';
 import { useTheme } from '../theme/use-theme';
 import type { SidebarAvatarColor } from './types';
 
@@ -112,7 +111,10 @@ export function resolveSidebarPalette(theme: Theme): SidebarPalette {
   };
 }
 
+export const SidebarPaintContext = createContext<SidebarPalette | null>(null);
+
 export function useSidebarPalette(): SidebarPalette {
+  const inherited = useContext(SidebarPaintContext);
   const theme = useTheme();
-  return useMemo(() => resolveSidebarPalette(theme), [theme]);
+  return inherited ?? resolveSidebarPalette(theme);
 }

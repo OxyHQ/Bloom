@@ -56,7 +56,9 @@ import { ThemeToggle } from '../theme-toggle';
 import { Text, TYPE_SCALE } from '../typography';
 import { resolveSidebarGeometry, SidebarGeometryProvider } from './geometry';
 import { SidebarSizeProvider, SIDEBAR_METRICS } from './metrics';
-import { useSidebarPalette, type SidebarPalette } from './palette';
+import { SidebarPaintContext, resolveSidebarPalette, type SidebarPalette } from './palette';
+import { useThemeRecipe } from '../theme/use-theme-paint';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { Collapsible, CollapseProvider, MORPH_MS, useSidebarWebCss } from './parts';
 import { SidebarItem } from './SidebarItem';
 import { SidebarModeSwitcher } from './SidebarModeSwitcher';
@@ -252,13 +254,16 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const clearSearchLabel = clearSearchLabelProp ?? messages.clearSearch;
   const noResultsLabel = noResultsLabelProp ?? messages.noResults;
   const modesLabel = modesLabelProp ?? messages.mode;
-  const palette = useSidebarPalette();
+  const paletteRecipe = useThemeRecipe(resolveSidebarPalette);
+  const palette = paletteRecipe.paint;
+  const parentRecipe = useSurfaceFillRecipe();
   const parentFill = useSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
   const panelShape = usePanelShape();
   const customSurface = StyleSheet.flatten(style);
   const surfaceFill =
-    customSurface?.backgroundColor ?? (surface === 'plain' ? undefined : palette.panel);
+    customSurface?.backgroundColor ??
+    (surface === 'plain' ? undefined : paletteRecipe.current.panel);
   const hasFill =
     typeof surfaceFill === 'string' &&
     surfaceFill !== 'transparent' &&
@@ -267,6 +272,19 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const publishedFill = hasFill
     ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill
     : undefined;
+  const materialRecipe = useThemeRecipe((theme, documentMode) =>
+    resolveSurfaceMaterial({
+      fill:
+        typeof customSurface?.backgroundColor === 'string'
+          ? customSurface.backgroundColor
+          : surface === 'plain'
+            ? 'transparent'
+            : paletteRecipe[documentMode].panel,
+      parentFill: parentRecipe[documentMode],
+      paint: paintsSurface,
+    }),
+  )!;
+  const publishedPaint = materialRecipe.paint.publishedFill;
   const { size: scopedSize } = useBloomAppearance(
     { size: sizeProp },
     { size: 'md', tone: 'neutral' },
@@ -950,12 +968,13 @@ const SidebarPanel: React.FC<SidebarProps> = ({
               panelStyle,
               style,
               paintsSurface ? { backgroundColor: 'transparent' } : undefined,
-              surfaceFillVars(publishedFill),
+              surfaceFillVars(publishedPaint),
             ]}
           >
             {paintsSurface ? (
               <SurfacePaint
                 fill={surfaceFill}
+                paintFill={materialRecipe.paint.paintFill}
                 shape={{ curve: panelShape.curve }}
                 radius={customSurface?.borderRadius ?? (surface === 'card' ? panelShape.radius : 0)}
               />
@@ -993,7 +1012,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                   {showSearch && !flatMobile ? searchButton : null}
                 </View>
                 <SidebarScrollArea
-                  fadeColor={publishedFill ?? parentFill}
+                  fadeColor={publishedFill ? publishedPaint : parentRecipe.paint}
                   testID={`${testID ?? 'sidebar'}-scroll`}
                   style={{
                     marginTop: -headerOverlap,
@@ -1172,12 +1191,26 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       </SidebarGeometryProvider>
     </SidebarSizeProvider>
   );
-  return publishedFill ? (
-    <SurfaceLevelProvider level={plain ? parentLevel : 1} fill={publishedFill}>
-      {sidebar}
-    </SurfaceLevelProvider>
-  ) : (
-    sidebar
+  return (
+    <SidebarPaintContext.Provider value={palette}>
+      {paletteRecipe.sheet}
+      {materialRecipe.sheet}
+      {parentRecipe.sheet}
+      {publishedFill ? (
+        <SurfaceLevelProvider
+          level={plain ? parentLevel : 1}
+          fill={publishedFill}
+          fillModes={{
+            light: materialRecipe.light.publishedFill,
+            dark: materialRecipe.dark.publishedFill,
+          }}
+        >
+          {sidebar}
+        </SurfaceLevelProvider>
+      ) : (
+        sidebar
+      )}
+    </SidebarPaintContext.Provider>
   );
 };
 

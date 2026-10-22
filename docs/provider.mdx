@@ -47,6 +47,56 @@ A nonce on the stylesheet alone does not authorize those attributes under CSP.
 </BloomProvider>
 ```
 
+For a themed first paint, share one `BloomThemeBootstrapConfig` between
+`BloomThemeHead` in the document head and `BloomProvider prepaintTheme`. The head
+publishes light and dark palettes from Bloom's color engine, with a CSS system
+preference fallback. Its small synchronous script reads `modeStorageKey` before
+body content paints. That key holds a plain `light`, `dark`, `system` or
+`adaptive` string; it is not Bloom's JSON persistence format. The app's existing
+controlled `mode` must restore the same preference. No account data enters the
+document bootstrap.
+
+```tsx
+import { BloomThemeHead, type BloomThemeBootstrapConfig } from '@oxy.so/bloom/theme';
+
+const themeBoot: BloomThemeBootstrapConfig = {
+  defaultMode: 'system',
+  modeStorageKey: 'app_theme_preference',
+};
+
+// In the document <head>, before body content:
+<BloomThemeHead config={themeBoot} nonce={requestNonce} />
+
+// In the app, using its current persisted preference:
+<BloomProvider mode={themePreference} prepaintTheme={themeBoot} ssrStyles="inline">
+  <App />
+</BloomProvider>
+```
+
+Use both `prepaintTheme` and `ssrStyles` for shared component first paint: the head supplies semantic tokens, while `ssrStyles` authorizes the instance-specific surface and chrome recipes. Omitting the latter does not provide complete SSR paint.
+
+The host must authorize both head resources through its CSP: pass an authorized
+nonce, or hash the exact `css` and `script` returned by `getThemeBootstrap(config)`.
+Static hosts can collect these hashes from their final export. A stylesheet
+nonce does not authorize a script, and Bloom does not loosen the host policy.
+With scripts disabled or storage unavailable, the configured default and OS
+preference remain usable.
+
+The provider first hydrates the same raw semantic palette as the server. It
+leaves the head's chosen paint intact until the client preference is available,
+then publishes the real palette. This prevents React from leaving mismatched
+server inline colors unchanged. Semantic color math still receives RGB values;
+opted-in web paint reads CSS variables. Use `useThemePaint()` for semantic colors assigned to final styles; keep `useTheme()` for numeric color calculations and behavior. Shared surfaces resolve both complete material recipes through the same color engine, then emit ordinary mode-selected CSS declarations before their content. Local forced color scopes retain their chosen mode, including when portaled. Native and providers without this option
+retain their existing behavior. Keep bootstrap defaults consistent with the
+root provider; later account color changes remain runtime updates.
+
+Verify actual painted panel pixels from the first frame through hydration for
+stored dark on a light OS, forced light on a dark OS, and system mode. Checking
+only the root `dark` class or body background misses a light sidebar or list
+whose server inline color survived hydration. Also assert node identity and
+capture hydration errors; a correct final palette alone does not prove a
+continuous transition.
+
 Keep the adapter reference stable. Vite and other router integrations supply their
 own `ScrollRouterAdapter`; Expo consumers now pass the adapter explicitly instead
 of receiving an implicit router dependency.

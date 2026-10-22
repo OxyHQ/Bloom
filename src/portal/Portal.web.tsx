@@ -13,7 +13,9 @@
  * `PortalOutlet` are still exported on web — they just become harmless no-op
  * fragments so consumers that *do* mount them keep compiling.
  */
-import React, { Fragment, memo, useContext, useLayoutEffect, useState } from 'react';
+import { useScopePaint } from '../theme/color-scope/paint-vars';
+import type React from 'react';
+import { Fragment, memo, useContext, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Z_INDEX } from '../styles/z-index';
 import { ThemeScopeContext } from '../theme/color-scope/context';
@@ -63,12 +65,16 @@ function getPortalRoot(): HTMLElement | null {
 export function Portal({ children }: React.PropsWithChildren<object>) {
   const [root, setRoot] = useState<HTMLElement | null>(null);
   const scope = useContext(ThemeScopeContext);
+  const paint = useScopePaint(scope);
   useLayoutEffect(() => {
     setRoot(getPortalRoot());
   }, []);
   if (!root) return null;
   return createPortal(
-    <div style={{ ...scope?.vars, display: 'contents', pointerEvents: 'none' }}>{children}</div>,
+    <div style={{ ...paint.vars, display: 'contents', pointerEvents: 'none' }}>
+      {paint.sheet}
+      {children}
+    </div>,
     root,
   );
 }

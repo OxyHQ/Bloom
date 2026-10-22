@@ -9,7 +9,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import { useSharedValue } from 'react-native-reanimated';
-import { useSurfaceFill } from '../styles/surface-levels';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import {
   WEB_POSITION_STICKY,
   WEB_SURFACE_STICKY_TOP,
@@ -72,7 +72,8 @@ export function createScreen(
     testID,
     ...props
   }: ScreenProps) {
-    const surfaceFill = useSurfaceFill();
+    const surfaceRecipe = useSurfaceFillRecipe();
+    const surfaceFill = surfaceRecipe.paint;
     const parentScreen = useContext(ScreenContext);
     const parentViewport = useContext(ScreenViewportContext);
     const inheritedMetrics = useContext(ScrollMetricsContext);
@@ -317,6 +318,7 @@ export function createScreen(
     ) : null;
     return (
       <ScreenHostContext.Provider value={host}>
+        {surfaceRecipe.sheet}
         <ScreenNavigationContext.Provider
           value={
             navigationScope === 'inherit'

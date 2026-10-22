@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import {
   type TextProps as RNTextProps,
   Platform,
@@ -8,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
+import { useThemePaint } from '../theme/use-theme-paint';
 import { fontFamilies } from '../fonts/tokens';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { space } from '../styles/tokens';
@@ -90,7 +91,7 @@ const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
  * leading-*, text-foreground, …) override defaults when provided.
  */
 const TextComponent = function Text({ children, style, className, variant, ...rest }: TextProps) {
-  const { colors } = useTheme();
+  const colors = useThemePaint();
   const systemFamily = useTypographySystemFamily();
   const trimmedClassName = className?.trim() ? className : undefined;
 
@@ -149,7 +150,7 @@ const H2_RULE: TextStyle = { borderBottomWidth: 1, paddingBottom: 8 };
 
 function createHeadingElement({ level }: { level: number }): React.FC<TextProps> {
   return function HeadingElement({ style, className, ...rest }: TextProps) {
-    const { colors } = useTheme();
+    const colors = useThemePaint();
     const extraProps: Record<string, unknown> =
       Platform.OS === 'web' ? { role: 'heading', 'aria-level': level } : {};
 
@@ -246,7 +247,7 @@ const LEAD_TYPOGRAPHY: TextStyle = {
 
 /** An intro paragraph — larger than body text and set in the secondary colour. */
 export function Lead({ style, className, ...rest }: TextProps) {
-  const { colors } = useTheme();
+  const colors = useThemePaint();
   const defaults = typographyDefaultsWhenNoClassName(className, {
     ...LEAD_TYPOGRAPHY,
     color: colors.textSecondary,
@@ -291,7 +292,7 @@ const MUTED_TYPOGRAPHY: TextStyle = {
 
 /** De-emphasised supporting text. */
 export function Muted({ style, className, ...rest }: TextProps) {
-  const { colors } = useTheme();
+  const colors = useThemePaint();
   const defaults = typographyDefaultsWhenNoClassName(className, {
     ...MUTED_TYPOGRAPHY,
     color: colors.textSecondary,
@@ -314,7 +315,7 @@ Muted.displayName = 'Muted';
  * and a `Text` directly.
  */
 export function Blockquote({ children, style, textStyle, testID }: BlockquoteProps) {
-  const { colors } = useTheme();
+  const colors = useThemePaint();
   const { width } = useWindowDimensions();
   const wide = width >= BREAKPOINTS.sm;
   const extraProps: Record<string, unknown> = Platform.OS === 'web' ? { role: 'blockquote' } : {};

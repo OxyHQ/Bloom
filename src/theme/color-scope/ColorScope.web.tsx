@@ -1,8 +1,10 @@
-import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
+import type React from 'react';
+import { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 
 import { BloomThemeContext } from '../BloomThemeProvider';
 import { ThemeScopeContext } from './context';
 import { useScope } from './use-scope';
+import { useScopePaint } from './paint-vars';
 import type { BloomColorScopeTokens } from './types';
 import type { AppColorName } from '../color-presets';
 import { buildScopeVars } from './style-builder';
@@ -76,7 +78,8 @@ export function BloomColorScope({
   children,
 }: BloomColorScopeProps) {
   const { context, state, vars } = useScope(colorPreset, mode, tokens, seed);
-  const varsStyle = vars as React.CSSProperties | undefined;
+  const paint = useScopePaint(state, Boolean(vars));
+  const varsStyle = paint.vars as React.CSSProperties | undefined;
 
   let content: React.ReactNode;
   if (asChild) {
@@ -105,7 +108,10 @@ export function BloomColorScope({
 
   return (
     <BloomThemeContext.Provider value={context}>
-      <ThemeScopeContext.Provider value={state}>{content}</ThemeScopeContext.Provider>
+      <ThemeScopeContext.Provider value={state}>
+        {paint.sheet}
+        {content}
+      </ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
 }

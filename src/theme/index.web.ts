@@ -97,3 +97,8 @@ export { setColorSchemeSafe } from './set-color-scheme-safe';
 export { initCssInteropDarkMode } from './init-css-interop';
 export type { BloomThemeStorage, PersistedThemeState } from './persistence';
 export { webLocalStorage } from './persistence';
+
+export { useThemePaint } from './use-theme-paint';
+export { BloomThemeHead } from './ThemeBootstrap';
+export { getThemeBootstrap } from './prepaint';
+export type { BloomThemeBootstrapConfig } from './prepaint';

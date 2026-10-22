@@ -4,7 +4,8 @@
 // first time Bloom toggles the dark class on <html>. See ./init-css-interop.
 import './init-css-interop';
 
-import React, {
+import type React from 'react';
+import {
   createContext,
   useCallback,
   useContext,
@@ -12,6 +13,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import {
   Platform,
@@ -31,7 +33,7 @@ import { buildTheme } from './build-theme';
 import { ThemeScopeContext, type ScopeState } from './color-scope/context';
 import { buildThemeFromSeed } from './build-theme-from-seed';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
-import { type AppColorName } from './color-presets';
+import type { AppColorName } from './color-presets';
 import { buildScopeVars, getVariableContextProvider } from './color-scope/style-builder';
 import { applyVarsToRootVariables } from './native-root-vars';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -48,9 +50,14 @@ import type { ExplicitAccents } from './preset-vars';
 import { setColorSchemeSafe } from './set-color-scheme-safe';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import type { Theme, ThemeMode } from './types';
+import { PrepaintThemeContext } from './prepaint/context';
+import { applyPrepaintMode, themePaintVars, type BloomThemeBootstrapConfig } from './prepaint';
 
 const DEFAULT_PRESET: AppColorName = 'oxy';
 const DEFAULT_MODE: ThemeMode = 'system';
+const subscribeHydration = () => () => {};
+const clientHydrationSnapshot = () => true;
+const serverHydrationSnapshot = () => false;
 
 export interface BloomThemeContextValue {
   theme: Theme;
@@ -96,6 +103,8 @@ export const BloomThemeContext: React.Context<BloomThemeContextValue | null> =
   ));
 
 export interface BloomThemeProviderProps {
+  /** Pair with BloomThemeHead for a preference-aware web paint before hydration. */
+  prepaintTheme?: BloomThemeBootstrapConfig;
   /** Controlled mode. Omit to use Bloom's internal state (with optional persistence). */
   mode?: ThemeMode;
   /** Controlled color preset. Omit to use Bloom's internal state. */
@@ -319,8 +328,8 @@ function useThemeState({
 export function BloomThemeProvider({
   mode: controlledMode,
   colorPreset: controlledPreset,
-  defaultMode = DEFAULT_MODE,
-  defaultColorPreset = DEFAULT_PRESET,
+  defaultMode: requestedDefaultMode,
+  defaultColorPreset: requestedDefaultPreset,
   onModeChange,
   onColorPresetChange,
   persistKey,
@@ -333,9 +342,20 @@ export function BloomThemeProvider({
   secondaryColor,
   tertiaryColor,
   seed,
+  prepaintTheme,
   children,
 }: BloomThemeProviderProps) {
+  const defaultMode = requestedDefaultMode ?? prepaintTheme?.defaultMode ?? DEFAULT_MODE;
+  const defaultColorPreset =
+    requestedDefaultPreset ?? prepaintTheme?.defaultColorPreset ?? DEFAULT_PRESET;
   const rnScheme = useRNColorScheme();
+  const clientReady = useSyncExternalStore(
+    subscribeHydration,
+    clientHydrationSnapshot,
+    serverHydrationSnapshot,
+  );
+  const prepaint = Platform.OS === 'web' && prepaintTheme !== undefined;
+  const serverPaint = prepaint && !clientReady;
 
   // The app-wide ambient override, driven imperatively via `useAmbientTheme()`
   // from anywhere in the app. Subscribed through the module-level store's
@@ -371,7 +391,14 @@ export function BloomThemeProvider({
     [effectiveSecondary, effectiveTertiary],
   );
 
-  const { mode, colorPreset, setMode, setColorPreset, resetTheme, hydrated } = useThemeState({
+  const {
+    mode: liveMode,
+    colorPreset: livePreset,
+    setMode,
+    setColorPreset,
+    resetTheme,
+    hydrated,
+  } = useThemeState({
     controlledMode,
     controlledPreset,
     defaultMode,
@@ -382,10 +409,22 @@ export function BloomThemeProvider({
     onColorPresetChange,
   });
 
+  // The document cannot know localStorage or the browser's OS preference.
+  // Match its raw semantic theme on the first hydration render; paired CSS paint
+  // already selects the actual preference without changing React attributes.
+  const mode = serverPaint ? (prepaintTheme?.defaultMode ?? DEFAULT_MODE) : liveMode;
+  const colorPreset = serverPaint
+    ? (prepaintTheme?.defaultColorPreset ?? DEFAULT_PRESET)
+    : livePreset;
+
   const isAdaptive = mode === 'adaptive';
   const effectiveMode: Exclude<ThemeMode, 'adaptive'> = isAdaptive ? 'system' : mode;
   const resolved: 'light' | 'dark' =
-    effectiveMode === 'system' ? (rnScheme === 'dark' ? 'dark' : 'light') : effectiveMode;
+    effectiveMode === 'system'
+      ? !serverPaint && rnScheme === 'dark'
+        ? 'dark'
+        : 'light'
+      : effectiveMode;
 
   // Apply native color scheme, dark class, and CSS vars whenever the resolved
   // mode or preset changes. `useIsomorphicLayoutEffect` runs before paint on
@@ -431,6 +470,7 @@ export function BloomThemeProvider({
     () => ({
       theme: themeColors,
       vars: themeVars,
+      rootMode: resolved,
       resolveMode: (nextMode) =>
         nextMode === resolved
           ? { theme: themeColors, vars: themeVars }
@@ -466,12 +506,17 @@ export function BloomThemeProvider({
   );
 
   useIsomorphicLayoutEffect(() => {
+    // Never overwrite a head-selected dark first paint with the server's light
+    // hydration snapshot. The next client snapshot publishes the real theme.
+    if (serverPaint) return;
     setColorSchemeSafe(effectiveMode);
+    if (prepaint) applyPrepaintMode(resolved);
     applyDarkClass(resolved);
     applyVarsToDocument(themeVars);
+    if (prepaint) applyVarsToDocument(themePaintVars(themeColors.colors));
     const background = themeVars['--background'];
     if (background) applyDocumentTheme(resolved, background);
-  }, [effectiveMode, resolved, themeVars]);
+  }, [effectiveMode, resolved, themeVars, themeColors, serverPaint, prepaint]);
 
   // Native only: publish the same vars into react-native-css's GLOBAL root
   // variable family so they reach the ENTIRE app tree — navigator screens and
@@ -511,11 +556,13 @@ export function BloomThemeProvider({
   const VariableProvider = getVariableContextProvider();
 
   const content = (
-    <ThemeScopeContext.Provider value={scopeState}>
-      <FontLoader enabled={fonts} fallback={onFontsLoading}>
-        {isGated ? (onHydrating ?? null) : children}
-      </FontLoader>
-    </ThemeScopeContext.Provider>
+    <PrepaintThemeContext.Provider value={prepaint ? prepaintTheme : undefined}>
+      <ThemeScopeContext.Provider value={scopeState}>
+        <FontLoader enabled={fonts} fallback={onFontsLoading}>
+          {isGated ? (onHydrating ?? null) : children}
+        </FontLoader>
+      </ThemeScopeContext.Provider>
+    </PrepaintThemeContext.Provider>
   );
 
   if (Platform.OS === 'web') {

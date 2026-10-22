@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTheme } from './use-theme';
+import { useThemePaint } from './use-theme-paint';
 
 export interface NavigationThemeFont {
   fontFamily: string;
@@ -35,12 +36,14 @@ const NAV_FONTS: NavigationTheme['fonts'] = {
  * Projects Bloom's resolved theme into a react-navigation `Theme` POJO for
  * expo-router's <ThemeProvider>. Keeps Bloom the single source of truth for
  * navigator chrome (Stack headers, screen backgrounds, modal) so it tracks
- * the active color preset. Returns a structural object — no react-navigation
+ * the active color preset. Opted-in web navigators receive prepaint CSS colors
+ * for final chrome styles; native values and the behavioral dark flag stay concrete. Returns a structural object — no react-navigation
  * import — so Bloom stays decoupled. Replaces the per-app copies in
  * test-app-expo / inbox / accounts.
  */
 export function useNavigationTheme(): NavigationTheme {
-  const { mode, colors } = useTheme();
+  const { mode } = useTheme();
+  const colors = useThemePaint();
   return useMemo(
     () => ({
       dark: mode === 'dark',

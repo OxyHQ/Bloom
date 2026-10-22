@@ -1,7 +1,7 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { StyledView } from '../styles/styled-primitives';
-import { memo, useContext, useEffect, useInsertionEffect, useMemo, useRef, useState } from 'react';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { memo, useContext, useEffect, useRef, useState } from 'react';
+import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { dataHook } from '../styles/data-hook';
 import {
   Platform,
@@ -23,7 +23,6 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { ScreenHostContext } from '../screen/context';
 import { useHeaderDockContext } from '../layout/header-dock';
-import { useSurfaceFill } from '../styles/surface-levels';
 import { ScreenHeaderContext, useScreenContext } from '../screen/context';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
@@ -39,7 +38,8 @@ import {
   type WebCssStyle,
 } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
-import { useTheme } from '../theme/use-theme';
+import { useThemeRecipe, useThemePaint } from '../theme/use-theme-paint';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { Title, Subtitle } from '../typography';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
@@ -188,8 +188,9 @@ function PageHeaderComponent({
   const navigationPresentation = presentation === 'navigation';
   const actionGap = navigationPresentation ? 2 : floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP;
   const overlay = placement === 'overlay';
-  const theme = useTheme();
-  const surfaceFill = useSurfaceFill() ?? theme.colors.background;
+  const colors = useThemePaint();
+  const surfaceRecipe = useSurfaceFillRecipe();
+  const surfaceFill = surfaceRecipe.paint;
   const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_INSETS);
   const padTop = (safeArea ?? !isWeb) ? insets.top : 0;
 
@@ -233,10 +234,6 @@ function PageHeaderComponent({
     }
   };
 
-  useInsertionEffect(() => {
-    if (isWeb) adoptStyleSheet('bloom-page-header-layout', PAGE_HEADER_LAYOUT_CSS);
-  }, [isWeb]);
-
   // An overlaying header occupies no layout, so it declares what it covers and
   // the content reads it back. Measured rather than computed: a second title
   // line, an enlarged font or a notch all move it, and every one of those is a
@@ -254,14 +251,13 @@ function PageHeaderComponent({
     };
   }, [dock, height, overlay, placement]);
 
-  const paint = useMemo(() => {
-    return {
-      background: surfaceFill,
-      separator: theme.colors.borderLight,
-      textSecondary: theme.colors.textSecondary,
-      shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
-    };
-  }, [theme, surfaceFill]);
+  const paintRecipe = useThemeRecipe((theme, documentMode) => ({
+    background: surfaceRecipe[documentMode],
+    separator: theme.colors.borderLight,
+    textSecondary: theme.colors.textSecondary,
+    shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+  }));
+  const paint = paintRecipe.paint;
 
   // ── The scroll owner ──────────────────────────────────────────────────────
   //
@@ -492,7 +488,7 @@ function PageHeaderComponent({
             variant={navigationPresentation ? 'body-medium' : 'headline-medium'}
             numberOfLines={1}
             style={{
-              color: tone === 'onImage' ? '#FFFFFF' : theme.colors.text,
+              color: tone === 'onImage' ? '#FFFFFF' : colors.text,
               textAlign: centered ? 'center' : 'left',
               maxWidth: '100%',
             }}
@@ -636,121 +632,128 @@ function PageHeaderComponent({
   ) : null;
 
   return (
-    <View
-      {...directionProps}
-      {...dataHook('bloomPageHeader')}
-      {...dataHook('bloomPageHeaderDensity', density)}
-      {...dataHook('bloomPageHeaderPresentation', presentation)}
-      testID={testID}
-      onLayout={onContainerLayout}
-      style={[
-        [
-          styles.container,
-          webLayout,
-          { paddingTop: padTop },
-          overlay
-            ? [
-                styles.overlay,
-                {
-                  zIndex: Z_INDEX.floating,
-                  // Android's native scroll surfaces also participate in elevation.
-                  // Keep this local chrome above its sibling list without a portal.
-                  ...(!isWeb ? { elevation: Z_INDEX.floating } : {}),
-                },
-              ]
-            : null,
-          containerWeb,
-          placement === 'overlap' ? { marginBottom: -height, zIndex: Z_INDEX.floating } : null,
-          style,
-        ],
-        pointerEventsStyle(overlay || (floating && screen) ? 'box-none' : undefined),
-      ]}
-    >
-      {chrome}
-      {floating && dock ? (
-        <Animated.View
-          testID={testID ? `${testID}-docked-fill` : undefined}
-          style={[
-            [StyleSheet.absoluteFill, { backgroundColor: surfaceFill }, dockFillStyle],
-            pointerEventsStyle('none'),
-          ]}
-        />
+    <>
+      {paintRecipe.sheet}
+      {surfaceRecipe.sheet}
+      {isWeb ? (
+        <ServerStyleSheet id="bloom-page-header-layout" css={PAGE_HEADER_LAYOUT_CSS} />
       ) : null}
-      <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
-        <StyledView
-          {...dataHook('bloomPageHeaderBar')}
-          className={navigationPresentation ? 'py-0' : compact ? 'min-h-8 py-0' : 'min-h-14 py-2'}
-          style={[
-            [
-              styles.bar,
-              navigationPresentation && { gap: 2, minHeight: NAVIGATION_HEIGHT },
-              !isWeb && { paddingLeft: sideInset, paddingRight: sideInset },
-            ],
-            pointerEventsStyle(floating ? 'box-none' : undefined),
-          ]}
-          testID={testID ? `${testID}-bar` : undefined}
-        >
-          <View
-            {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
+      <View
+        {...directionProps}
+        {...dataHook('bloomPageHeader')}
+        {...dataHook('bloomPageHeaderDensity', density)}
+        {...dataHook('bloomPageHeaderPresentation', presentation)}
+        testID={testID}
+        onLayout={onContainerLayout}
+        style={[
+          [
+            styles.container,
+            webLayout,
+            { paddingTop: padTop },
+            overlay
+              ? [
+                  styles.overlay,
+                  {
+                    zIndex: Z_INDEX.floating,
+                    // Android's native scroll surfaces also participate in elevation.
+                    // Keep this local chrome above its sibling list without a portal.
+                    ...(!isWeb ? { elevation: Z_INDEX.floating } : {}),
+                  },
+                ]
+              : null,
+            containerWeb,
+            placement === 'overlap' ? { marginBottom: -height, zIndex: Z_INDEX.floating } : null,
+            style,
+          ],
+          pointerEventsStyle(overlay || (floating && screen) ? 'box-none' : undefined),
+        ]}
+      >
+        {chrome}
+        {floating && dock ? (
+          <Animated.View
+            testID={testID ? `${testID}-docked-fill` : undefined}
+            style={[
+              [StyleSheet.absoluteFill, { backgroundColor: surfaceFill }, dockFillStyle],
+              pointerEventsStyle('none'),
+            ]}
+          />
+        ) : null}
+        <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
+          <StyledView
+            {...dataHook('bloomPageHeaderBar')}
+            className={navigationPresentation ? 'py-0' : compact ? 'min-h-8 py-0' : 'min-h-14 py-2'}
             style={[
               [
-                styles.start,
-                centered
-                  ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: sideInset } : {}) }
-                  : styles.startFill,
+                styles.bar,
+                navigationPresentation && { gap: 2, minHeight: NAVIGATION_HEIGHT },
+                !isWeb && { paddingLeft: sideInset, paddingRight: sideInset },
               ],
               pointerEventsStyle(floating ? 'box-none' : undefined),
             ]}
-            onLayout={centered ? onStartLayout : undefined}
-            testID={testID ? `${testID}-start` : undefined}
+            testID={testID ? `${testID}-bar` : undefined}
           >
-            {backButton}
-            {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
-            {centered ? null : titleBlock}
-          </View>
-          {centered && titleBlock ? (
             <View
-              {...dataHook('bloomPageHeaderCenter')}
+              {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
               style={[
                 [
-                  styles.centerSlot,
-                  !isWeb && { marginLeft: centerInset, marginRight: centerInset },
+                  styles.start,
+                  centered
+                    ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: sideInset } : {}) }
+                    : styles.startFill,
                 ],
-                pointerEventsStyle('box-none'),
+                pointerEventsStyle(floating ? 'box-none' : undefined),
               ]}
-              testID={testID ? `${testID}-center` : undefined}
+              onLayout={centered ? onStartLayout : undefined}
+              testID={testID ? `${testID}-start` : undefined}
             >
-              {titleBlock}
+              {backButton}
+              {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+              {centered ? null : titleBlock}
             </View>
-          ) : null}
-          {centered ? (
-            <View
-              {...dataHook('bloomPageHeaderEnd')}
-              style={[
-                { position: 'absolute', ...(!isWeb ? { insetInlineEnd: sideInset } : {}) },
-                pointerEventsStyle('box-none'),
-              ]}
-            >
-              {actionsSlot}
-            </View>
-          ) : (
-            actionsSlot
-          )}
-        </StyledView>
-      </BloomScope>
-      {accessory ? (
-        <View
-          {...dataHook('bloomPageHeaderAccessory')}
-          testID={testID ? `${testID}-accessory` : undefined}
-          style={[
-            { minWidth: 0, paddingBottom: 8 },
-            !isWeb ? { paddingLeft: sideInset, paddingRight: sideInset } : undefined,
-          ]}
-        >
-          {accessory}
-        </View>
-      ) : null}
-    </View>
+            {centered && titleBlock ? (
+              <View
+                {...dataHook('bloomPageHeaderCenter')}
+                style={[
+                  [
+                    styles.centerSlot,
+                    !isWeb && { marginLeft: centerInset, marginRight: centerInset },
+                  ],
+                  pointerEventsStyle('box-none'),
+                ]}
+                testID={testID ? `${testID}-center` : undefined}
+              >
+                {titleBlock}
+              </View>
+            ) : null}
+            {centered ? (
+              <View
+                {...dataHook('bloomPageHeaderEnd')}
+                style={[
+                  { position: 'absolute', ...(!isWeb ? { insetInlineEnd: sideInset } : {}) },
+                  pointerEventsStyle('box-none'),
+                ]}
+              >
+                {actionsSlot}
+              </View>
+            ) : (
+              actionsSlot
+            )}
+          </StyledView>
+        </BloomScope>
+        {accessory ? (
+          <View
+            {...dataHook('bloomPageHeaderAccessory')}
+            testID={testID ? `${testID}-accessory` : undefined}
+            style={[
+              { minWidth: 0, paddingBottom: 8 },
+              !isWeb ? { paddingLeft: sideInset, paddingRight: sideInset } : undefined,
+            ]}
+          >
+            {accessory}
+          </View>
+        ) : null}
+      </View>
+    </>
   );
 }
 

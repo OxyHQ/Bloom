@@ -1,3 +1,6 @@
+import { useThemeRecipe, useThemePaint } from '../theme/use-theme-paint';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
+import { resolveTabBarTheme } from './shared';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { TabBarSurface } from './surface';
@@ -25,6 +28,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
   type ComponentType,
   type ComponentProps,
 } from 'react';
@@ -99,6 +103,7 @@ type BarContextValue = {
   /** True while a scrub is in progress — the finger owns the highlight. */
   isDragging: SharedValue<boolean>;
   theme: TabBarTheme;
+  paintTheme: TabBarTheme;
   /** Set only on the CONTROLLED path (see `TabBarProps.activeIndex`). */
   activeIndex: number | undefined;
   /**
@@ -113,6 +118,9 @@ type BarContextValue = {
 };
 
 const BarContext = createContext<BarContextValue | null>(null);
+const subscribeHydration = () => () => {};
+const hydratedSnapshot = () => true;
+const serverHydrationSnapshot = () => false;
 
 /**
  * Whether the bar's `Tap` gesture has already reported the touch a button's
@@ -216,6 +224,17 @@ function TabBarBody({
   const dirProps = useDirectionProps();
   const layer = useSurfaceLayer();
   const theme = useTabBarTheme(themeOverrides);
+  const parentRecipe = useSurfaceFillRecipe();
+  const recipe = useThemeRecipe((palette, documentMode) => {
+    const modeTheme = resolveTabBarTheme(palette.colors, themeOverrides);
+    return {
+      theme: modeTheme,
+      material: resolveSurfaceMaterial({
+        fill: modeTheme.blurTint,
+        parentFill: parentRecipe[documentMode],
+      }),
+    };
+  });
   const publishedFill = resolveSurfaceMaterial({
     fill: theme.blurTint,
     parentFill: layer.parentFill,
@@ -568,6 +587,7 @@ function TabBarBody({
       highlightOpacity,
       isDragging,
       theme,
+      paintTheme: recipe.paint.theme,
       activeIndex,
       driven,
       selectIndex,
@@ -582,6 +602,7 @@ function TabBarBody({
       activeIndex,
       driven,
       selectIndex,
+      recipe.paint.theme,
     ],
   );
 
@@ -595,6 +616,7 @@ function TabBarBody({
       }}
       style={[[embedded ? { width: '100%' } : styles.root, style], pointerEventsStyle('box-none')]}
     >
+      {recipe.sheet}
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
           Rendered CONDITIONALLY, and as nothing at all when off: the band is
           full-bleed and 114pt tall at a zero bottom inset, so it blurs whatever
@@ -627,13 +649,28 @@ function TabBarBody({
         ]}
       >
         <OptionalGesture enabled={!scrollable} gesture={gesture}>
-          <Animated.View style={[barStyle, surfaceFillVars(publishedFill)]}>
-            <TabBarSurface theme={theme} style={shapeStyle} />
+          <Animated.View style={[barStyle, surfaceFillVars(recipe.paint.material.publishedFill)]}>
+            <TabBarSurface
+              theme={theme}
+              paintFill={recipe.paint.material.paintFill}
+              style={shapeStyle}
+            />
             <Animated.View
-              style={[styles.highlight, { backgroundColor: theme.highlight }, highlightStyle]}
+              style={[
+                styles.highlight,
+                { backgroundColor: recipe.paint.theme.highlight },
+                highlightStyle,
+              ]}
             />
             <View accessibilityRole="tablist" style={styles.itemRow}>
-              <SurfaceLevelProvider level={layer.level} fill={publishedFill}>
+              <SurfaceLevelProvider
+                level={layer.level}
+                fill={publishedFill}
+                fillModes={{
+                  light: recipe.light.material.publishedFill,
+                  dark: recipe.dark.material.publishedFill,
+                }}
+              >
                 <BarContext.Provider value={barContext}>{children}</BarContext.Provider>
               </SurfaceLevelProvider>
             </View>
@@ -667,6 +704,13 @@ function TabBarButtonBody({
   // Resolved outside the bar too, so a standalone button still themes itself.
   const standaloneTheme = useTabBarTheme();
   const theme = bar?.theme ?? standaloneTheme;
+  const colors = useThemePaint();
+  const paintTheme = bar?.paintTheme ?? resolveTabBarTheme(colors);
+  const hydrated = useSyncExternalStore(
+    subscribeHydration,
+    hydratedSnapshot,
+    serverHydrationSnapshot,
+  );
   const slideIndex = bar?.slideIndex;
   const highlightOpacity = bar?.highlightOpacity;
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
@@ -796,13 +840,22 @@ function TabBarButtonBody({
             tells each layer which one it is, so an item with an `activeIcon`
             crossfades between two different nodes and not just two tints. */}
         <View>
-          <Glyph item={item} tint={theme.inactiveTint} size={ICON_SIZE} active={false} />
+          <Glyph item={item} tint={paintTheme.inactiveTint} size={ICON_SIZE} active={false} />
           <Animated.View style={[StyleSheet.absoluteFill, styles.glyphLayer, activeGlyphStyle]}>
-            <Glyph item={item} tint={theme.activeTint} size={ICON_SIZE} active />
+            <Glyph item={item} tint={paintTheme.activeTint} size={ICON_SIZE} active />
           </Animated.View>
         </View>
         {/* Fades out and is clipped by the shrinking box — no layout anim. */}
-        <Animated.Text numberOfLines={1} style={[styles.label, labelStyle]}>
+        <Animated.Text
+          numberOfLines={1}
+          style={[
+            styles.label,
+            labelStyle,
+            Platform.OS === 'web' && !hydrated
+              ? { color: focused ? paintTheme.activeTint : paintTheme.inactiveTint }
+              : undefined,
+          ]}
+        >
           {item.label}
         </Animated.Text>
       </Animated.View>
