@@ -63,12 +63,20 @@ function setup(initial: AvatarJoinArrival<Member>[], withFlights = true) {
 }
 
 /** Two frames: the source carrying the avatar lays out before it is measured. */
-const afterLayout = () => act(async () => new Promise((resolve) => setTimeout(resolve, 60)));
+const afterLayout = () =>
+  act(async () => {
+    await jest.advanceTimersByTimeAsync(48);
+  });
 const live = (id: string) => ({ agent: member(id), live: true });
 
 beforeEach(() => {
+  jest.useFakeTimers();
   world.reduced = false;
   world.launches = [];
+});
+
+afterEach(() => {
+  jest.useRealTimers();
 });
 
 describe('avatarJoinFlights', () => {

@@ -112,6 +112,14 @@ sibling of the navigation capsule, above their shared blur.
 `BloomProvider` mounts the registry. Outside one, `useBottomEdgeInset()` returns
 `0` and `useClaimBottomEdge` is a no-op, so a surface stays usable standalone.
 
+An owner that has already reduced a viewport by an in-flow slot can pass its
+measured height as `BottomEdgeProvider consume={height}`. This translates parent
+claims into the smaller viewport (`max(0, parent - consumed)`) and combines them
+with local claims by maximum. It preserves unrelated outer overlays and releases
+the consumed space when a slot becomes hidden. Without `consume`, the existing
+isolated default and `inherit` behavior are unchanged. AppShell applies this at
+its bounded web content boundary; consumers should use the shell's slot.
+
 ## `useTopEdgeInset` / `useClaimTopEdge` — the same thing, one edge up
 
 A header that participates in layout answers this by existing: the content

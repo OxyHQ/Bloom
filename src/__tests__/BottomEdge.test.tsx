@@ -89,6 +89,30 @@ function Claimant({ height }: { height: number }) {
 }
 
 describe('the bottom-edge registry', () => {
+  it('never commits stale reservation when a consumed slot disappears in the same update', () => {
+    const committed: number[] = [];
+    function LayoutProbe() {
+      const inset = useBottomEdgeInset();
+      React.useLayoutEffect(() => {
+        committed.push(inset);
+      });
+      return null;
+    }
+    const ui = (height: number) => (
+      <BottomEdgeProvider>
+        <BottomEdgeProvider consume={height}>
+          <LayoutProbe />
+        </BottomEdgeProvider>
+        <Claimant height={height} />
+      </BottomEdgeProvider>
+    );
+    const { rerender } = render(ui(74));
+    committed.length = 0;
+    rerender(ui(0));
+    expect(committed.length).toBeGreaterThan(0);
+    expect(committed.every((inset) => inset === 0)).toBe(true);
+  });
+
   it('reports nothing claimed outside a provider', () => {
     // A surface must stay usable standalone rather than throwing.
     let seen: number | undefined;

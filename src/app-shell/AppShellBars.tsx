@@ -14,6 +14,8 @@
  *
  * The anchoring itself forks, and has to:
  *
+ * - Bounded web with reserved space — intrinsic flex flow. The shell consumes
+ *   its actual height before JS and gives the content its own bottom edge.
  * - WEB + document scroll — `position: fixed`. The document is what scrolls, so
  *   the only box that stays put is the viewport.
  * - everything else (web `container`/`fixed`, and all of native) — absolute
@@ -63,6 +65,8 @@ function anchorBottom(doc: boolean): WebCssStyle {
 }
 
 export interface AppShellBottomBarProps {
+  /** Bounded web shells reserve the slot through intrinsic flex layout. */
+  inFlow?: boolean;
   visibility?: 'compact' | 'always';
   children: React.ReactNode;
   /** Document scroll: pin to the viewport rather than to the frame. */
@@ -78,6 +82,7 @@ export interface AppShellBottomBarProps {
  * instead of leaving a stripe of page showing through.
  */
 const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
+  inFlow = false,
   visibility = 'always',
   children,
   doc,
@@ -118,7 +123,12 @@ const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
         : {})}
       pointerEvents="box-none"
       onLayout={onLayout}
-      style={[anchorBottom(doc), { paddingBottom: insets.bottom }]}
+      style={[
+        inFlow
+          ? { position: 'relative', flexShrink: 0, zIndex: Z_INDEX.floating }
+          : anchorBottom(doc),
+        { paddingBottom: insets.bottom },
+      ]}
     >
       <BottomBarSlotContext.Provider value={insets.bottom}>
         {children}

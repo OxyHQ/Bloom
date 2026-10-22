@@ -829,9 +829,15 @@ describe('AiChatShell safe area ownership', () => {
         </BottomBarSlotContext.Provider>
       </SafeAreaInsetsContext.Provider>,
     );
-    const style = resolvedStyle(tree.getByTestId('safe-shell').props.style);
-    expect(style.padding).toBe(0);
-    expect(style.paddingTop).toBeUndefined();
+    const shell = tree.getByTestId('safe-shell');
+    // Web compositor chrome has a stable outer column; the zero-padding frame
+    // lives on its inner row. Both layers must remain free of device insets.
+    const styles = [shell, ...shell.findAllByType(View)].map((node) =>
+      resolvedStyle(node.props.style),
+    );
+    expect(styles).toContainEqual(expect.objectContaining({ padding: 0 }));
+    expect(styles.some((style) => style.paddingTop === insets.top)).toBe(false);
+    expect(styles.some((style) => style.paddingBottom === insets.bottom)).toBe(false);
     expect(tree.getByTestId('inset-reader').props.children).toBe(
       JSON.stringify({ original: insets, bottom: 9 }),
     );

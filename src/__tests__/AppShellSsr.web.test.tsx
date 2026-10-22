@@ -58,7 +58,8 @@ jest.mock('react-native-svg', () => {
   };
 });
 
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
+import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { AppShellPanelContext } from '../app-shell/context';
 import { PanelCssContext } from '../app-shell/panel-layout-css';
 import { AppShell, AppShellPanelVisibility } from '../app-shell/index.web';
@@ -158,6 +159,78 @@ describe('AppShell server layout', () => {
       'flex',
     );
   });
+
+  it.each(['reveal', 'overlay'] as const)(
+    'reserves arbitrary bottom chrome through flow before measurement (%s)',
+    async (drawer) => {
+      Object.defineProperty(globalThis, 'CSS', {
+        value: { supports: () => true },
+        configurable: true,
+      });
+      function Edge({ name }: { name: string }) {
+        return <Text testID={name}>{useBottomEdgeInset()}</Text>;
+      }
+      function Bar({ height }: { height: number }) {
+        return <View testID="custom-bar" style={{ height }} />;
+      }
+      function Reserved({ height = 96, reserve = true, document = false }) {
+        return (
+          <BloomProvider mode="light" fonts={false} ssrStyles="inline">
+            <AppShell
+              testID="reserved"
+              header={null}
+              drawer={drawer}
+              sidebar={{ items: [] }}
+              bottomBar={<Bar height={height} />}
+              bottomBarVisibility="always"
+              reserveBottomBarSpace={reserve}
+              panelLayout={{
+                flow: document ? 'document' : 'bounded',
+                panels: [{ id: 'content', content: <Edge name="inside-edge" /> }],
+              }}
+            />
+            <Edge name="outside-edge" />
+          </BloomProvider>
+        );
+      }
+      host.innerHTML = renderToString(<Reserved />);
+      const bar = host.querySelector<HTMLElement>('[data-testid="reserved-bottom-bar"]');
+      const content = host.querySelector('[data-testid="inside-edge"]');
+      const group = host.querySelector<HTMLElement>('[data-bloom-panel-group]');
+      if (!bar || !group) throw new Error('Missing server-rendered shell chrome or panel group');
+      expect(bar.style.position).toBe('relative');
+      expect(bar.style.flexShrink).toBe('0');
+      expect(host.querySelector<HTMLElement>('[data-testid="custom-bar"]')?.style.height).toBe(
+        '96px',
+      );
+      expect(group.style.paddingBottom).toBe('0px');
+      const errors: unknown[] = [];
+      await act(async () => {
+        root = hydrateRoot(host, <Reserved />, { onRecoverableError: (e) => errors.push(e) });
+      });
+      expect(errors).toEqual([]);
+      expect(host.querySelector('[data-testid="inside-edge"]')).toBe(content);
+      expect(content?.textContent).toBe('0');
+      expect(host.querySelector('[data-testid="outside-edge"]')?.textContent).toBe('0');
+      expect(group.style.paddingBottom).toBe('0px');
+      if (!root) throw new Error('Hydration did not produce a root');
+      const mounted = root;
+      await act(async () => mounted.render(<Reserved height={143} />));
+      expect(host.querySelector('[data-testid="inside-edge"]')).toBe(content);
+      expect(host.querySelector<HTMLElement>('[data-testid="custom-bar"]')?.style.height).toBe(
+        '143px',
+      );
+      expect(group.style.paddingBottom).toBe('0px');
+      await act(async () => mounted.render(<Reserved height={143} reserve={false} />));
+      expect(bar.style.position).toBe('absolute');
+      expect(group.style.paddingBottom).toBe('0px');
+      expect(host.querySelector('[data-testid="inside-edge"]')).toBe(content);
+      await act(async () => mounted.render(<Reserved height={143} document />));
+      expect(bar.style.position).toBe('fixed');
+      expect(host.querySelector('[data-testid="outside-edge"]')?.textContent).toBe('0');
+      expect(host.querySelector('[data-testid="inside-edge"]')).toBe(content);
+    },
+  );
 
   it.each(['inline', { nonce: 'app-shell-nonce' }] as const)(
     'ships responsive compositor CSS before JS with %j and preserves every panel',

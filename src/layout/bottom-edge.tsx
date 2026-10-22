@@ -60,12 +60,14 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useId,
+  useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type PropsWithChildren,
 } from 'react';
+import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 
 import { createEdgeStore, NO_INSET, NO_SUBSCRIPTION, type EdgeStore } from './edge-store';
 
@@ -80,11 +82,51 @@ const BottomEdgeContext = createContext<EdgeStore | null>(null);
 export function BottomEdgeProvider({
   children,
   inherit = false,
-}: PropsWithChildren<{ inherit?: boolean }>) {
+  consume,
+}: PropsWithChildren<{
+  inherit?: boolean;
+  /** Space already occupied by an in-flow slot above this viewport's edge. */
+  consume?: number;
+}>) {
   const parent = useContext(BottomEdgeContext);
   const [store] = useState(createEdgeStore);
+  const consumed =
+    consume === undefined ? undefined : Math.max(0, Number.isFinite(consume) ? consume : 0);
+  const initialConsumed = useRef(consumed ?? 0);
+  // Keep the snapshot identity stable when the viewport consumes a new height.
+  // useSyncExternalStore refreshes its getter in a passive effect: replacing it
+  // during render can make a simultaneous parent claim update compare against
+  // the previous translation and leave stale padding visible for one frame.
+  const translated = useMemo(() => {
+    let amount = initialConsumed.current;
+    const listeners = new Set<() => void>();
+    return {
+      ...store,
+      getInset: () => Math.max(store.getInset(), (parent?.getInset() ?? 0) - amount),
+      subscribe(listener: () => void) {
+        listeners.add(listener);
+        const own = store.subscribe(listener);
+        const outer = parent?.subscribe(listener);
+        return () => {
+          listeners.delete(listener);
+          own();
+          outer?.();
+        };
+      },
+      setConsumed(next: number) {
+        if (amount === next) return;
+        amount = next;
+        for (const listener of listeners) listener();
+      },
+    };
+  }, [store, parent]);
+  useIsomorphicLayoutEffect(() => {
+    translated.setConsumed(consumed ?? 0);
+  }, [translated, consumed]);
   return (
-    <BottomEdgeContext.Provider value={inherit ? parent : store}>
+    <BottomEdgeContext.Provider
+      value={consumed !== undefined ? translated : inherit ? parent : store}
+    >
       {children}
     </BottomEdgeContext.Provider>
   );
@@ -102,10 +144,9 @@ BottomEdgeProvider.displayName = 'BottomEdgeProvider';
  * <View style={{ position: 'absolute', bottom: windowEdgeGap(insets.bottom) + occupied }} />
  * ```
  *
- * `0` outside a provider, and `0` on the first commit even inside one — a claim
- * registers in an effect, so a reader mounted in the same commit as its claimant
- * settles one frame later. That is a layout offset rather than a measurement, so
- * the settle is invisible in practice; nothing here waits on a real layout pass.
+ * `0` outside a provider and during server rendering. Claims synchronize in the
+ * layout phase, so a changed or hidden surface updates its readers before paint.
+ * Measurements still belong to the claimant, never to this registry.
  */
 export function useBottomEdgeInset(): number {
   const store = useContext(BottomEdgeContext);
@@ -131,7 +172,7 @@ export function useClaimBottomEdge(height: number): void {
   const store = useContext(BottomEdgeContext);
   const id = useId();
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!store) return;
     store.claim(id, height);
     return () => store.release(id);
