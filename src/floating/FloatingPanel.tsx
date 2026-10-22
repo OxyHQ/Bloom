@@ -83,7 +83,12 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Backdrop, OverlayRoot } from '../overlay';
-import { resolveDropdownPlacement, type DropdownPlacement } from '../overlay/dropdown-placement';
+import {
+  resolveDropdownPlacement,
+  resolvePlacementBounds,
+  type DropdownPlacement,
+} from '../overlay/dropdown-placement';
+import { usePlacementBoundary } from '../overlay/placement-boundary';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { Portal } from '../portal/index.web';
 import { StyledView } from '../styles/styled-primitives';
@@ -105,6 +110,7 @@ import { useMenuPalette } from './menu-palette';
 import { pushFloatingEscape } from './escape-stack';
 import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
+import { rectOf } from './use-anchor-rect';
 import { useFrameThrottle } from './use-frame-throttle';
 import { useCommonMessages } from '../locale/common-messages';
 
@@ -267,6 +273,9 @@ export function FloatingPanel({
   // layout effect), so the node lands one render after the panel mounts. An
   // effect keyed only on `open` would measure nothing.
   const [panelNode, setPanelNode] = useState<ComponentRef<typeof View> | null>(null);
+  // The panel the trigger lives in, if any: the box this surface is fitted
+  // against while it fits there (`resolvePlacementBounds`).
+  const boundary = usePlacementBoundary();
   const [placement, setPlacement] = useState<DropdownPlacement | null>(null);
   // What was last published, mirrored so a pass that resolves to the position
   // the panel already holds never reaches the dispatcher. Returning the current
@@ -367,6 +376,7 @@ export function FloatingPanel({
     const alignsVertically = side === 'left' || side === 'right';
     const shiftY = alignsVertically ? alignOffset : 0;
     const shiftX = alignsVertically ? 0 : alignOffset;
+    const size = { width, height: layoutHeight };
     const next = resolveDropdownPlacement({
       anchor: {
         top: anchor.top + shiftY,
@@ -374,8 +384,13 @@ export function FloatingPanel({
         left: anchor.left + shiftX,
         right: anchor.right + shiftX,
       },
-      size: { width, height: layoutHeight },
-      viewport: { width: window.innerWidth, height: window.innerHeight },
+      size,
+      bounds: resolvePlacementBounds({
+        boundary: rectOf(boundary?.current as ComponentRef<typeof View> | null),
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        size,
+        gutter: VIEWPORT_GUTTER,
+      }),
       offset: sideOffset,
       gutter: VIEWPORT_GUTTER,
       align,
@@ -386,7 +401,7 @@ export function FloatingPanel({
     // its motion style for a position it already holds. Dropping the update is
     // what makes a settled panel free to scroll past.
     store(next);
-  }, [store, phase, anchor, panelNode, side, align, sideOffset, alignOffset, minWidth]);
+  }, [store, phase, anchor, panelNode, boundary, side, align, sideOffset, alignOffset, minWidth]);
 
   // Coalesced to one pass per frame: a scroll gesture dispatches a stream of
   // events (one per nested scroller, several per frame) and the browser paints
@@ -411,11 +426,20 @@ export function FloatingPanel({
     if (phase !== 'open' || typeof window === 'undefined') return;
     window.addEventListener('resize', schedule);
     window.addEventListener('scroll', schedule, true);
+    // A panel resized by its divider moves the box the surface is fitted
+    // against without a window `resize` or a `scroll`.
+    const boundaryNode = boundary?.current;
+    const observer =
+      boundaryNode instanceof Element && typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(schedule)
+        : null;
+    if (observer && boundaryNode instanceof Element) observer.observe(boundaryNode);
     return () => {
       window.removeEventListener('resize', schedule);
       window.removeEventListener('scroll', schedule, true);
+      observer?.disconnect();
     };
-  }, [phase, schedule]);
+  }, [phase, schedule, boundary]);
 
   // Where the panel ended up, which is what both the slide and the origin
   // describe. Held across the exit with the placement itself.

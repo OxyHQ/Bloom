@@ -88,9 +88,11 @@ export function SuggestionPanel({
       right: rect.right - insets.left,
     },
     size: { width, height: Math.min(height, ceiling) },
-    viewport: {
-      width: viewport.width - insets.left - insets.right,
-      height: Math.max(0, bottom - top),
+    bounds: {
+      top: 0,
+      left: 0,
+      right: viewport.width - insets.left - insets.right,
+      bottom: Math.max(0, bottom - top),
     },
     gutter: 0,
     offset: 4,

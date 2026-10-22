@@ -23,7 +23,7 @@
 
 import { clamp } from '../styles/clamp';
 
-/** Viewport-relative box the surface is positioned against. A right-click point is a zero-area anchor. */
+/** Viewport-relative box the surface is anchored to. A right-click point is a zero-area anchor. */
 export interface DropdownAnchor {
   top: number;
   bottom: number;
@@ -35,10 +35,15 @@ export interface DropdownPlacementInput {
   anchor: DropdownAnchor;
   /** The surface's size, measured at the width it will finally be laid out at. */
   size: { width: number; height: number };
-  viewport: { width: number; height: number };
+  /**
+   * The box the surface must stay inside, in the anchor's coordinate space: the
+   * viewport, or — when the trigger lives in a panel the surface fits in — that
+   * panel (`resolvePlacementBounds`).
+   */
+  bounds: DropdownAnchor;
   /** Gap left between the anchor and the surface on the vertical axis. */
   offset: number;
-  /** Minimum distance kept from every viewport edge. */
+  /** Minimum distance kept from every edge of `bounds`. */
   gutter: number;
   /**
    * How the surface lines up with the anchor on the CROSS axis — the one `side`
@@ -77,7 +82,7 @@ export interface DropdownPlacement {
 /**
  * The MAIN axis: sit on the preferred side of the anchor when the surface fits
  * there, else flip to the other side, else clamp the preferred position into the
- * viewport.
+ * bounds.
  *
  * Written against a generic axis — `nearEdge`/`farEdge` are the anchor's
  * `top`/`bottom` for a vertical side and its `left`/`right` for a horizontal
@@ -88,7 +93,8 @@ function resolveMainAxis({
   nearEdge,
   farEdge,
   extent,
-  viewportExtent,
+  min,
+  max,
   offset,
   gutter,
   prefersNear,
@@ -96,7 +102,9 @@ function resolveMainAxis({
   nearEdge: number;
   farEdge: number;
   extent: number;
-  viewportExtent: number;
+  /** The bounds' near and far edge on this axis. */
+  min: number;
+  max: number;
   offset: number;
   gutter: number;
   prefersNear: boolean;
@@ -104,8 +112,8 @@ function resolveMainAxis({
   const near = nearEdge - offset - extent;
   const far = farEdge + offset;
 
-  const fitsNear = near >= gutter;
-  const fitsFar = far + extent <= viewportExtent - gutter;
+  const fitsNear = near >= min + gutter;
+  const fitsFar = far + extent <= max - gutter;
 
   const preferred = prefersNear ? near : far;
   const fitsPreferred = prefersNear ? fitsNear : fitsFar;
@@ -114,22 +122,24 @@ function resolveMainAxis({
 
   if (fitsPreferred) return preferred;
   if (fitsAlternative) return alternative;
-  return clamp(preferred, gutter, viewportExtent - gutter - extent);
+  return clamp(preferred, min + gutter, max - gutter - extent);
 }
 
-/** The CROSS axis: align against the anchor, then clamp into the viewport. */
+/** The CROSS axis: align against the anchor, then clamp into the bounds. */
 function resolveCrossAxis({
   startEdge,
   endEdge,
   extent,
-  viewportExtent,
+  min,
+  max,
   gutter,
   align,
 }: {
   startEdge: number;
   endEdge: number;
   extent: number;
-  viewportExtent: number;
+  min: number;
+  max: number;
   gutter: number;
   align: 'start' | 'end' | 'center';
 }): number {
@@ -139,7 +149,45 @@ function resolveCrossAxis({
       : align === 'center'
         ? (startEdge + endEdge) / 2 - extent / 2
         : startEdge;
-  return clamp(preferred, gutter, viewportExtent - gutter - extent);
+  return clamp(preferred, min + gutter, max - gutter - extent);
+}
+
+/**
+ * Which box a surface collides with: the PANEL its trigger lives in when the
+ * surface fits there, else the viewport.
+ *
+ * A menu opened from a panel's edge used to hang over the neighbouring panel
+ * though it fit in its own. The surface is still portaled to the document (an
+ * `overflow` or stacking context in the panel cannot trap it) — only the box it
+ * is fitted against changes. A surface larger than its panel falls back to the
+ * viewport rather than being clipped or squeezed, and a panel scrolled partly
+ * off-screen is intersected with the viewport first, so "fits" means fits in the
+ * part of the panel the reader can see.
+ */
+export function resolvePlacementBounds({
+  boundary,
+  viewport,
+  size,
+  gutter,
+}: {
+  /** The enclosing panel's viewport-relative box, or `null` outside any panel. */
+  boundary: DropdownAnchor | null;
+  viewport: { width: number; height: number };
+  size: { width: number; height: number };
+  gutter: number;
+}): DropdownAnchor {
+  const screen = { top: 0, left: 0, right: viewport.width, bottom: viewport.height };
+  if (!boundary) return screen;
+  const visible = {
+    top: Math.max(boundary.top, screen.top),
+    left: Math.max(boundary.left, screen.left),
+    right: Math.min(boundary.right, screen.right),
+    bottom: Math.min(boundary.bottom, screen.bottom),
+  };
+  const fits =
+    visible.right - visible.left >= size.width + gutter * 2 &&
+    visible.bottom - visible.top >= size.height + gutter * 2;
+  return fits ? visible : screen;
 }
 
 /**
@@ -151,7 +199,7 @@ function resolveCrossAxis({
 export function resolveDropdownPlacement({
   anchor,
   size,
-  viewport,
+  bounds,
   offset,
   gutter,
   align,
@@ -163,7 +211,8 @@ export function resolveDropdownPlacement({
     nearEdge: vertical ? anchor.top : anchor.left,
     farEdge: vertical ? anchor.bottom : anchor.right,
     extent: vertical ? size.height : size.width,
-    viewportExtent: vertical ? viewport.height : viewport.width,
+    min: vertical ? bounds.top : bounds.left,
+    max: vertical ? bounds.bottom : bounds.right,
     offset,
     gutter,
     prefersNear: side === 'top' || side === 'left',
@@ -173,7 +222,8 @@ export function resolveDropdownPlacement({
     startEdge: vertical ? anchor.left : anchor.top,
     endEdge: vertical ? anchor.right : anchor.bottom,
     extent: vertical ? size.width : size.height,
-    viewportExtent: vertical ? viewport.width : viewport.height,
+    min: vertical ? bounds.left : bounds.top,
+    max: vertical ? bounds.right : bounds.bottom,
     gutter,
     align,
   });
