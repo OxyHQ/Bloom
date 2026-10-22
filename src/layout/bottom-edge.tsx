@@ -62,6 +62,7 @@ import {
   useContext,
   useId,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type PropsWithChildren,
@@ -91,21 +92,37 @@ export function BottomEdgeProvider({
   const [store] = useState(createEdgeStore);
   const consumed =
     consume === undefined ? undefined : Math.max(0, Number.isFinite(consume) ? consume : 0);
-  const translated = useMemo<EdgeStore>(
-    () => ({
+  const initialConsumed = useRef(consumed ?? 0);
+  // Keep the snapshot identity stable when the viewport consumes a new height.
+  // useSyncExternalStore refreshes its getter in a passive effect: replacing it
+  // during render can make a simultaneous parent claim update compare against
+  // the previous translation and leave stale padding visible for one frame.
+  const translated = useMemo(() => {
+    let amount = initialConsumed.current;
+    const listeners = new Set<() => void>();
+    return {
       ...store,
-      getInset: () => Math.max(store.getInset(), (parent?.getInset() ?? 0) - (consumed ?? 0)),
-      subscribe(listener) {
+      getInset: () => Math.max(store.getInset(), (parent?.getInset() ?? 0) - amount),
+      subscribe(listener: () => void) {
+        listeners.add(listener);
         const own = store.subscribe(listener);
         const outer = parent?.subscribe(listener);
         return () => {
+          listeners.delete(listener);
           own();
           outer?.();
         };
       },
-    }),
-    [store, parent, consumed],
-  );
+      setConsumed(next: number) {
+        if (amount === next) return;
+        amount = next;
+        for (const listener of listeners) listener();
+      },
+    };
+  }, [store, parent]);
+  useIsomorphicLayoutEffect(() => {
+    translated.setConsumed(consumed ?? 0);
+  }, [translated, consumed]);
   return (
     <BottomEdgeContext.Provider
       value={consumed !== undefined ? translated : inherit ? parent : store}

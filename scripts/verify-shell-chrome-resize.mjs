@@ -6,7 +6,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE ?? 'playwright');
 const browser = await chromium.launch();
 const page = await browser.newPage({
   viewport: { width: 393, height: 900 },
-  reducedMotion: 'reduce',
+  reducedMotion: 'no-preference',
 });
 const base = process.env.STORYBOOK_URL ?? 'http://localhost:6007';
 try {
