@@ -96,14 +96,18 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { surfaceStyle as resolveShapeStyle } from '../shapes/surface-style';
 import { StyledView } from '../styles/styled-primitives';
 
-import { useOptionalPanelChrome, usePanelShape } from '../styles/panel-chrome';
+import { resolvePanelChrome, usePanelShape } from '../styles/panel-chrome';
 import {
   SurfaceLevelProvider,
   surfaceFillVars,
   useOptionalSurfaceFill,
   useSurfaceLevelValue,
 } from '../styles/surface-levels';
-import { useTheme } from '../theme/use-theme';
+import { useThemePaint, useThemeRecipe } from '../theme/use-theme-paint';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
+import { ServerStyleSheet } from '../styles/ServerStyleSheet';
+import { surfaceMaterialCss } from '../surface/web-material';
+import { resolveSurfaceOptics } from '../surface/shared';
 import { ContentPanelNestingContext, useContentPanelNestingGuard } from './context';
 import { usePanelSurfaceFill } from './shared';
 import type { ContentPanelFramedBreakpoint, ContentPanelProps } from './types';
@@ -200,7 +204,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // Dev-only invariant — must run unconditionally (before deriving any
   // mode-specific branch) so the hook order stays stable (rules of hooks).
   useContentPanelNestingGuard();
-  const { colors } = useTheme();
+  const colors = useThemePaint();
   // The floating-panel edge the `Sidebar` wears. Optional: the panel drew its
   // own surface long before it had a shadow, so it must not start throwing
   // outside a provider.
@@ -214,9 +218,16 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         ? radius
         : `${typeof radius === 'number' ? radius : panelShape.radius}px`,
   };
-  const panelChrome = useOptionalPanelChrome();
+  const chromeRecipe = useThemeRecipe(resolvePanelChrome);
+  const panelChrome = chromeRecipe?.paint;
+  const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
+  const parentRecipe = useSurfaceFillRecipe();
+  const customFill = surfaceColor ?? StyleSheet.flatten(surfaceStyle)?.backgroundColor;
+  const fillRecipe = useThemeRecipe((theme) =>
+    typeof customFill === 'string' ? customFill : rawFill === undefined ? undefined : theme.colors.card,
+  );
   const defaultFill = rawFill;
   const { width } = useWindowDimensions();
   const parentFill = useOptionalSurfaceFill();
@@ -233,10 +244,20 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     : rawFill && paintsSurface
       ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill
       : rawFill;
+  const materialRecipe = useThemeRecipe((theme) => {
+    const fill = fillRecipe?.[theme.mode];
+    const parent = parentRecipe?.[theme.mode];
+    if (isPlain) return { publishedFill: parent, paintFill: 'transparent' };
+    if (!fill || !paintsSurface || !parent) return { publishedFill: fill, paintFill: fill ?? 'transparent' };
+    return resolveSurfaceMaterial({ fill, parentFill: parent });
+  });
   const materialStyle = useSurfaceMaterial(
     '[data-bloom-panel-material]',
     'bloom-content-panel-material',
     defaultFill ?? 'transparent',
+    true,
+    materialRecipe?.paint.paintFill,
+    opticsRecipe?.paint,
   );
 
   // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
@@ -339,6 +360,10 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
+      {chromeRecipe?.sheet}{opticsRecipe?.sheet}{materialRecipe?.sheet}{parentRecipe?.sheet}
+      <ServerStyleSheet id="bloom-content-panel-insets" css={PANEL_INSET_CSS} />
+      <ServerStyleSheet id="bloom-content-panel-material" css={`[data-bloom-panel-material] { isolation: isolate; }
+${surfaceMaterialCss('[data-bloom-panel-material]', 'var(--bloom-surface-fill)')}`} />
       <StyledView
         testID="content-panel-surface"
         {...{
@@ -357,7 +382,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           // `--bloom-surface` rides the element that carries the fill, so CSS
           // below the panel and `useOptionalSurfaceFill()` below the panel cannot
           // disagree about what the panel painted.
-          surfaceFillVars(publishedFill),
+          surfaceFillVars(materialRecipe?.paint.publishedFill ?? publishedFill),
           insetVars,
           panelVars,
           curveStyle,
@@ -390,7 +415,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             style={{
               ...panelStyle,
               ...insetStyle,
-              boxShadow: `0 0 0 ${maskSpread}px ${maskColor ?? (isPlain ? parentFill : undefined) ?? colors.background}`,
+              boxShadow: `0 0 0 ${maskSpread}px ${maskColor ?? (isPlain ? parentRecipe?.paint : undefined) ?? colors.background}`,
             }}
           />
         )}
@@ -442,7 +467,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         >
           {/* Solid panels publish their painted surface. Plain panels preserve
               the enclosing surface so descendant scrims follow its real fill. */}
-          <SurfaceLevelProvider level={isPlain ? parentLevel : 1} fill={publishedFill}>
+          <SurfaceLevelProvider level={isPlain ? parentLevel : 1} fill={publishedFill} fillModes={materialRecipe?.light.publishedFill && materialRecipe.dark.publishedFill ? { light: materialRecipe.light.publishedFill, dark: materialRecipe.dark.publishedFill } : undefined}>
             {errorBoundary === false ? (
               children
             ) : (

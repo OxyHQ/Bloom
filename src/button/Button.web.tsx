@@ -1,3 +1,7 @@
+import { useThemeRecipe } from '../theme/use-theme-paint';
+import { useSurfaceFillRecipe, useSurfaceLevelValue } from '../styles/surface-levels';
+import { resolveSurfaceLayer } from '../surface/use-surface-layer';
+import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { useButtonLayout } from './use-button-layout.web';
 import { useLongPress } from './use-long-press.web';
@@ -245,7 +249,8 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         ? true
         : undefined);
     const theme = useTheme();
-    const layer = useSurfaceLayer();
+    const parentRecipe = useSurfaceFillRecipe()!;
+    const parentLevel = useSurfaceLevelValue();
     const reactId = useId();
     const resolvedId = id ?? `bloom-btn-${reactId}`;
 
@@ -291,17 +296,19 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
 
-    const palette = useMemo(
-      () =>
-        isLink && linkTone != null && toneProp == null
-          ? resolveLinkButtonPalette(theme, linkTone)
-          : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
-      [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill, material],
-    );
+    const paintRecipe = useThemeRecipe((modeTheme) => {
+      const layer = resolveSurfaceLayer(modeTheme, parentRecipe[modeTheme.mode], parentLevel);
+      const palette = isLink && linkTone != null && toneProp == null
+        ? resolveLinkButtonPalette(modeTheme, linkTone)
+        : resolveButtonPalette(appearance, modeTheme, tone, colors, layer.fill, material);
+      return { palette, optics: resolveSurfaceOptics(modeTheme.isDark), shadow: palette.shadow ? BUTTON_SHADOW[modeTheme.isDark ? 'dark' : 'light'] : 'none' };
+    })!;
+    const palette = paintRecipe.paint.palette;
+    const withPaint = (node: ReactElement) => <>{paintRecipe.sheet}<ServerStyleSheet id={STYLE_ID} css={BLOOM_BUTTON_CSS} />{node}</>;
     const underlineMode = resolveButtonUnderline(isLink, underline);
 
     const containerStyle = useMemo((): CSSProperties => {
-      const shadow = palette.shadow ? BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] : 'none';
+      const shadow = paintRecipe.paint.shadow;
       const base: CSSProperties = {
         ['--bloom-btn-height' as string]: `${geometry.height}px`,
         ['--bloom-btn-padding' as string]: `${geometry.paddingHorizontal}px`,
@@ -313,8 +320,8 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           ? `${geometry.letterSpacing}px`
           : 'normal',
         // CSS custom props consumed by the static stylesheet — see its header.
-        ['--bloom-surface-rim' as string]: resolveSurfaceOptics(theme.isDark).rim,
-        ['--bloom-surface-sheen' as string]: resolveSurfaceOptics(theme.isDark).sheenCss,
+        ['--bloom-surface-rim' as string]: paintRecipe.paint.optics.rim,
+        ['--bloom-surface-sheen' as string]: paintRecipe.paint.optics.sheenCss,
         ['--bloom-btn-gap' as string]: `${geometry.gap}px`,
         ['--bloom-btn-ring' as string]: palette.ring,
         // No press scale — the pressed state is the active paint alone.
@@ -376,6 +383,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       geometry,
       palette,
       theme.isDark,
+      paintRecipe.paint,
       isSquare,
       wide,
       isIconVariant,
@@ -561,7 +569,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         tabIndex?: number;
       }>;
       const childProps = child.props;
-      return React.cloneElement(child, {
+      return withPaint(React.cloneElement(child, {
         ref: setRoot,
         'aria-hidden': hidden,
         className: [composedClassName, childProps.className].filter(Boolean).join(' '),
@@ -616,13 +624,13 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         title: title ?? childProps.title,
         id: childProps.id ?? resolvedId,
         tabIndex: isInteractionBlocked ? -1 : childProps.tabIndex,
-      });
+      }));
     }
 
     // `href` renders a real anchor, for a button link or an anchor `LinkButton`.
     // A blocked link drops navigation, while retaining its role and name.
     if (href != null && !asChild) {
-      return (
+      return withPaint(
         <a
           ref={setRoot}
           aria-hidden={hidden}
@@ -656,7 +664,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       );
     }
 
-    return (
+    return withPaint(
       <button
         ref={setRoot}
         aria-hidden={hidden}

@@ -132,6 +132,8 @@ export function useTabBarTheme(overrides?: Partial<TabBarTheme>): TabBarTheme {
 export type TabBarSurfaceComponent = ComponentType<TabBarSurfaceProps>;
 
 export interface TabBarSurfaceProps {
+  /** Final CSS tint; the raw theme remains available to native colour math. */
+  paintFill?: string;
   /** Resolved theme — the surface paints `blurTint`. */
   theme: TabBarTheme;
   /**

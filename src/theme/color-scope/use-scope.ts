@@ -36,7 +36,7 @@ export function useScope(
             : inherited.resolveMode(resolved);
       return applyScopeTokens(base, tokens);
     };
-    return { ...resolveMode(mode ?? parent.theme.mode), resolveMode };
+    return { ...resolveMode(mode ?? parent.theme.mode), resolveMode, fixedMode: mode ?? inherited?.fixedMode };
   }, [parent, inherited, active, colorPreset, mode, tokens, seed]);
   const context = useMemo(
     () =>

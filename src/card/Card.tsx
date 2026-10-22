@@ -1,3 +1,6 @@
+import { useThemeRecipe } from '../theme/use-theme-paint';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
+import { resolveSurfaceLayer } from '../surface/use-surface-layer';
 import { ConcentricView } from '../concentric';
 import { ConcentricProvider } from '../concentric/ConcentricProvider';
 import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
@@ -99,6 +102,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
   ) {
     const theme = useTheme();
     const layer = useSurfaceLayer();
+    const parentRecipe = useSurfaceFillRecipe()!;
     const parentLevel = useSurfaceLevelValue();
     const panelShape = usePanelShape();
     const cornerCurve =
@@ -198,26 +202,40 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
       paint: appearance !== 'plain',
     });
     const { paintFill: fill, painted: paintsSurface, publishedFill } = material;
+    const paintRecipe = useThemeRecipe((palette) => {
+      const modeLayer = resolveSurfaceLayer(palette, parentRecipe[palette.mode], parentLevel);
+      const modePaint = resolveBloomColors(palette.colors, tone, appearance);
+      const background = callerStyle?.backgroundColor ??
+        (tone === 'neutral' && appearance !== 'plain' ? modeLayer.fill : modePaint.background);
+      return {
+        ...resolveSurfaceMaterial({ fill: String(background), parentFill: modeLayer.parentFill, parentLevel, paint: appearance !== 'plain' }),
+        borderColor: tone === 'neutral' ? palette.colors.border : modePaint.border,
+        foreground: modePaint.foreground,
+      };
+    })!;
     const outerStyle: ViewStyle = {
       ...resolved,
-      ...material.vars,
+      ...paintRecipe.paint.vars,
+      ...(resolved.borderColor === containerStyle.borderColor ? { borderColor: paintRecipe.paint.borderColor } : null),
       ...concentric.variables,
       ...(paintsSurface ? { backgroundColor: 'transparent' } : null),
     };
     const contents = (
       <>
+        {paintRecipe.sheet}
         {paintsSurface ? (
           <SurfacePaint
             fill={String(fill)}
+            paintFill={paintRecipe.paint.paintFill}
             radius={resolvedGeometry.radius}
             shape={shape}
             geometryStyle={resolvedGeometry.style}
           />
         ) : null}
         <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
-          <SurfaceLevelProvider level={material.level} fill={publishedFill}>
+          <SurfaceLevelProvider level={material.level} fill={publishedFill} fillModes={{ light: paintRecipe.light.publishedFill, dark: paintRecipe.dark.publishedFill }}>
             <CardForegroundContext.Provider
-              value={tone === 'neutral' ? undefined : paint.foreground}
+              value={tone === 'neutral' ? undefined : paintRecipe.paint.foreground}
             >
               {clipContent ? (
                 <ConcentricView

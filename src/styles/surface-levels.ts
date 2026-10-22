@@ -98,6 +98,8 @@
  * the only form that is correct on both platforms — so cross-platform code
  * reads `useSurfaceFill()` and a web-only fork may read the variable.
  */
+import { useThemeRecipe } from '../theme/use-theme-paint';
+import type { ThemePaintModes } from '../theme/paint';
 import { createContext, createElement, useContext, useMemo, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
@@ -271,6 +273,7 @@ interface AmbientSurface {
   level: SurfaceLevel;
   /** The colour the container actually painted, or `null` to use the rung's. */
   fill: string | null;
+  fillModes?: ThemePaintModes<string>;
 }
 
 const NO_AMBIENT_SURFACE: AmbientSurface = { level: 0, fill: null };
@@ -289,6 +292,8 @@ export interface SurfaceLevelProviderProps {
    * parent. Omit it and the rung answers, exactly as before.
    */
   fill?: string;
+  /** Shared owners retain both resolved backings for prepaint descendants. */
+  fillModes?: ThemePaintModes<string>;
   children?: ReactNode;
 }
 
@@ -304,8 +309,8 @@ export interface SurfaceLevelProviderProps {
  * container that sets one and not the other leaves CSS below it reading the
  * ENCLOSING surface's colour — which is the wrong colour, silently.
  */
-export function SurfaceLevelProvider({ level, fill, children }: SurfaceLevelProviderProps) {
-  const value = useMemo<AmbientSurface>(() => ({ level, fill: fill ?? null }), [level, fill]);
+export function SurfaceLevelProvider({ level, fill, fillModes, children }: SurfaceLevelProviderProps) {
+  const value = useMemo<AmbientSurface>(() => ({ level, fill: fill ?? null, fillModes }), [level, fill, fillModes]);
   return createElement(SurfaceLevelContext.Provider, { value }, children);
 }
 
@@ -387,3 +392,10 @@ export function useRingOffsetStyle(): Record<string, string> {
   const surface = useSurfaceFill();
   return useMemo(() => ({ [RING_OFFSET_VAR]: surface }), [surface]);
 }
+
+/** Resolve the actual backing in each palette, retaining explicit custom fills. */
+export function useSurfaceFillRecipe() {
+  const { level, fill, fillModes } = useContext(SurfaceLevelContext);
+  return useThemeRecipe((theme) => fillModes?.[theme.mode] ?? fill ?? levelBackground(theme, level));
+}
+

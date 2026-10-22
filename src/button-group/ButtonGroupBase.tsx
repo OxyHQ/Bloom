@@ -16,9 +16,9 @@ import { Platform, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { BloomScope, useBloomAppearance } from '../appearance';
 
-import { useTheme } from '../theme/use-theme';
+import { useThemeRecipe } from '../theme/use-theme-paint';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { hairlineOn, useSurfaceFill } from '../styles/surface-levels';
+import { hairlineOn, useSurfaceFillRecipe } from '../styles/surface-levels';
 import { BUTTON_RADIUS, BUTTON_SHADOW, resolveCanonicalButtonPalette } from '../button/shared';
 import { moveSelection, SELECTION_SPRING } from '../motion/selection-motion';
 import { useGroupSelection } from './use-group-selection';
@@ -28,13 +28,9 @@ import type { ButtonGroupItemProps, ButtonGroupProps } from './types';
 
 /** Separators resolve against the material actually published by the group. */
 function Divider() {
-  const theme = useTheme();
-  const fill = useSurfaceFill();
-  return (
-    <View
-      style={{ width: 1, marginTop: 8, marginBottom: 8, backgroundColor: hairlineOn(theme, fill) }}
-    />
-  );
+  const fill = useSurfaceFillRecipe()!;
+  const recipe = useThemeRecipe((theme) => hairlineOn(theme, fill[theme.mode]))!;
+  return <>{recipe.sheet}<View style={{ width: 1, marginTop: 8, marginBottom: 8, backgroundColor: recipe.paint }} /></>;
 }
 
 /** The group owns joining and inheritance; Button owns each actual control. */
@@ -57,7 +53,7 @@ export function createButtonGroup(
     style,
     testID,
   }: ButtonGroupProps) {
-    const theme = useTheme();
+    const recipe = useThemeRecipe((theme) => ({ selection: resolveCanonicalButtonPalette('outline', theme, 'neutral'), shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] }))!;
     const canonicalSize = sizeProp;
     const { size: scopedSize } = useBloomAppearance(
       { size: canonicalSize },
@@ -95,7 +91,7 @@ export function createButtonGroup(
       }),
       [x, y, width, height, opacity],
     );
-    const selectionPalette = resolveCanonicalButtonPalette('outline', theme, 'neutral');
+    const selectionPalette = recipe.paint.selection;
     const items = Children.toArray(children).filter(isValidElement);
     const showDividers = dividers ?? true;
     const row = items.map((item, index) => (
@@ -106,7 +102,7 @@ export function createButtonGroup(
     ));
     if (separated)
       return (
-        <GroupContext.Provider value={context}>
+        <GroupContext.Provider value={context}>{recipe.sheet}
           <BloomScope size={size}>
             {/* One pill: the group's own Surface paints the rim and shadow once, around the
                 whole, and clips the first segment's start and the last one's end. The segments
@@ -120,7 +116,7 @@ export function createButtonGroup(
               style={[
                 {
                   alignSelf: 'flex-start',
-                  boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+                  boxShadow: recipe.paint.shadow,
                 },
                 style,
               ]}
@@ -142,7 +138,7 @@ export function createButtonGroup(
         </GroupContext.Provider>
       );
     return (
-      <GroupContext.Provider value={context}>
+      <GroupContext.Provider value={context}>{recipe.sheet}
         <BloomScope size={size}>
           <Surface
             radius={BUTTON_RADIUS}
@@ -153,7 +149,7 @@ export function createButtonGroup(
             style={[
               {
                 alignSelf: 'flex-start',
-                boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+                boxShadow: recipe.paint.shadow,
               },
               style,
             ]}

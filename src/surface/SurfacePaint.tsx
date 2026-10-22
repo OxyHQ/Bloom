@@ -7,7 +7,8 @@ import { StyledView } from '../styles/styled-primitives';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { surfaceMaterialCss } from './web-material';
-import { useTheme } from '../theme/use-theme';
+import { useThemeRecipe } from '../theme/use-theme-paint';
+import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { resolveSurfaceTint, resolveSurfaceOptics } from './shared';
 
 const WEB_PAINT_CSS = `
@@ -26,6 +27,7 @@ ${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)')}
  */
 export const SurfacePaint = memo(function SurfacePaint({
   fill,
+  paintFill,
   radius,
   shape,
   geometryStyle,
@@ -37,6 +39,8 @@ export const SurfacePaint = memo(function SurfacePaint({
   testID?: string;
   /** Omit for sheen/rim only on a host that already owns its fill. */
   fill?: string;
+  /** Final paired tint supplied by the material owner; never used for colour math. */
+  paintFill?: string;
   radius?: NonNullable<ViewStyle['borderRadius']>;
   /** Same policy as the host; radius can remain owned by an animated host. */
   shape?: SurfaceShape;
@@ -49,8 +53,8 @@ export const SurfacePaint = memo(function SurfacePaint({
     ...surfaceStyle(shape ?? { curve: 'round' }, direction),
     ...geometryStyle,
   };
-  const theme = useTheme();
-  const optics = resolveSurfaceOptics(theme.isDark);
+  const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark))!;
+  const optics = opticsRecipe.paint;
   const resolvedFill = resolveSurfaceTint(fill ?? 'transparent');
   const isWeb = Platform.OS === 'web';
   useEffect(() => {
@@ -65,16 +69,20 @@ export const SurfacePaint = memo(function SurfacePaint({
       left: 0,
       ...geometry,
       backgroundColor: 'transparent',
-      '--bloom-surface-paint-fill': resolvedFill,
+      '--bloom-surface-paint-fill': paintFill ?? resolvedFill,
       '--bloom-surface-rim': optics.rim,
       '--bloom-surface-sheen': optics.sheenCss,
     };
     return (
+      <>
+      {opticsRecipe.sheet}
+      <ServerStyleSheet id="bloom-surface-paint-web-css" css={WEB_PAINT_CSS} />
       <StyledView
         testID={testID}
         className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`}
         style={[paintStyle, pointerEventsStyle('none')]}
       />
+      </>
     );
   }
   return (

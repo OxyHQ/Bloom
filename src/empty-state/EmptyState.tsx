@@ -6,8 +6,8 @@ import { Chip } from '../chip';
 import { IconCircle } from '../icon-circle';
 import type { Props as IconProps } from '../icons/shared';
 import { useMessages } from '../locale/messages';
-import { useSurfaceFill } from '../styles/surface-levels';
-import { useTheme } from '../theme/use-theme';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
+import { useThemeRecipe } from '../theme/use-theme-paint';
 import { Text } from '../typography';
 import { EMPTY_STATE_ACTION_GAP, EMPTY_STATE_GEOMETRY } from './constants';
 import { EMPTY_STATE_MESSAGES } from './messages';
@@ -58,10 +58,10 @@ function EmptyStateComponent({
   style,
   testID,
 }: EmptyStateProps) {
-  const theme = useTheme();
   const { messages } = useMessages(EMPTY_STATE_MESSAGES);
-  const surface = useSurfaceFill();
-  const paint = useMemo(() => resolveEmptyStatePaint(theme, surface), [theme, surface]);
+  const surface = useSurfaceFillRecipe()!;
+  const recipe = useThemeRecipe((theme) => resolveEmptyStatePaint(theme, surface[theme.mode]))!;
+  const paint = recipe.paint;
   const g = EMPTY_STATE_GEOMETRY[variant];
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
@@ -106,6 +106,8 @@ function EmptyStateComponent({
   );
 
   return (
+    <>
+    {recipe.sheet}
     <View
       testID={testID}
       role="group"
@@ -214,6 +216,7 @@ function EmptyStateComponent({
         </View>
       ) : null}
     </View>
+    </>
   );
 }
 

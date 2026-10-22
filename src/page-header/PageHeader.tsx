@@ -39,7 +39,8 @@ import {
   type WebCssStyle,
 } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
-import { useTheme } from '../theme/use-theme';
+import { useThemeRecipe, useThemePaint } from '../theme/use-theme-paint';
+import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { Title, Subtitle } from '../typography';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
@@ -188,8 +189,9 @@ function PageHeaderComponent({
   const navigationPresentation = presentation === 'navigation';
   const actionGap = navigationPresentation ? 2 : floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP;
   const overlay = placement === 'overlay';
-  const theme = useTheme();
-  const surfaceFill = useSurfaceFill() ?? theme.colors.background;
+  const colors = useThemePaint();
+  const surfaceRecipe = useSurfaceFillRecipe()!;
+  const surfaceFill = surfaceRecipe.paint;
   const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_INSETS);
   const padTop = (safeArea ?? !isWeb) ? insets.top : 0;
 
@@ -254,14 +256,13 @@ function PageHeaderComponent({
     };
   }, [dock, height, overlay, placement]);
 
-  const paint = useMemo(() => {
-    return {
-      background: surfaceFill,
-      separator: theme.colors.borderLight,
-      textSecondary: theme.colors.textSecondary,
-      shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
-    };
-  }, [theme, surfaceFill]);
+  const paintRecipe = useThemeRecipe((theme) => ({
+    background: surfaceRecipe[theme.mode],
+    separator: theme.colors.borderLight,
+    textSecondary: theme.colors.textSecondary,
+    shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+  }))!;
+  const paint = paintRecipe.paint;
 
   // ── The scroll owner ──────────────────────────────────────────────────────
   //
@@ -492,7 +493,7 @@ function PageHeaderComponent({
             variant={navigationPresentation ? 'body-medium' : 'headline-medium'}
             numberOfLines={1}
             style={{
-              color: tone === 'onImage' ? '#FFFFFF' : theme.colors.text,
+              color: tone === 'onImage' ? '#FFFFFF' : colors.text,
               textAlign: centered ? 'center' : 'left',
               maxWidth: '100%',
             }}
@@ -636,6 +637,8 @@ function PageHeaderComponent({
   ) : null;
 
   return (
+    <>
+    {paintRecipe.sheet}{surfaceRecipe.sheet}
     <View
       {...directionProps}
       {...dataHook('bloomPageHeader')}
@@ -751,6 +754,7 @@ function PageHeaderComponent({
         </View>
       ) : null}
     </View>
+    </>
   );
 }
 

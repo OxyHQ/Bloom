@@ -9,6 +9,8 @@ export interface ScopePalette {
 /** Private resolved source, retained through scopes and portal outlets. */
 export interface ScopeState extends ScopePalette {
   resolveMode: (mode: 'light' | 'dark') => ScopePalette;
+  /** Explicit local mode, retained through portals; undefined inherits document selection. */
+  fixedMode?: 'light' | 'dark';
 }
 
 declare global {

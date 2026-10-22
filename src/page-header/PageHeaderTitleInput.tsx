@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { styled } from 'react-native-css';
 import { useFieldMembership } from '../field/membership';
-import { useTheme } from '../theme/use-theme';
+import { useThemePaint } from '../theme/use-theme-paint';
 import { TYPE_SCALE } from '../typography/scale';
 import { IS_WEB } from '../styles/platform';
 import type { PageHeaderTitleInputProps } from './types';
@@ -29,7 +29,7 @@ export function PageHeaderTitleInput({
   style,
   ...props
 }: PageHeaderTitleInputProps) {
-  const { colors } = useTheme();
+  const colors = useThemePaint();
   const field = useFieldMembership({
     label,
     accessibilityLabel,

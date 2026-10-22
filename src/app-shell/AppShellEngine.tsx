@@ -32,6 +32,7 @@ import {
 } from '../styles/web-view-style';
 import { ScrollBar } from '../layout';
 import { useTheme } from '../theme/use-theme';
+import { useThemePaint, useThemeRecipe } from '../theme/use-theme-paint';
 import { resolvePanelChrome } from '../styles/panel-chrome';
 import { useMessages } from '../locale/messages';
 import { APP_SHELL_MESSAGES } from './messages';
@@ -191,7 +192,11 @@ export function createAppShellEngine() {
     const drawerOpenLabel = drawerOpenLabelProp ?? messages.openNavigation;
     const drawerCloseLabel = drawerCloseLabelProp ?? messages.closeNavigation;
     const theme = useTheme();
-    const navigationChrome = resolvePanelChrome(theme);
+    const paintColors = useThemePaint();
+    const backgroundRecipe = useThemeRecipe((palette) => palette.colors.background)!;
+    const cardRecipe = useThemeRecipe((palette) => palette.colors.card)!;
+    const navigationRecipe = useThemeRecipe(resolvePanelChrome)!;
+    const navigationChrome = navigationRecipe.paint;
     const { height: viewportHeight } = useShellViewport();
     const [asideHeight, setAsideHeight] = useState(0);
     const { width, onLayout } = useShellWidth();
@@ -458,7 +463,7 @@ export function createAppShellEngine() {
         previous.focus();
     }, [isOpen, drawerStyle]);
 
-    const background = theme.colors.background;
+    const background = paintColors.background;
 
     // ---- pinned slots -------------------------------------------------------
     // `compact` is the phone case the slot exists for: the bar appears exactly
@@ -665,7 +670,8 @@ export function createAppShellEngine() {
     const bars = (
       <SurfaceLevelProvider
         level={compactRegion ? 1 : 0}
-        fill={compactRegion ? theme.colors.card : background}
+        fill={compactRegion ? theme.colors.card : theme.colors.background}
+        fillModes={compactRegion ? cardRecipe : backgroundRecipe}
       >
         {Platform.OS === 'web' && doc ? (
           <ScrollBar target="document" insets={{ start: gutter, end: bottomEdge + gutter }} />
@@ -1332,6 +1338,7 @@ export function createAppShellEngine() {
     if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
       return safeFrame(
         <AppShellProvider value={shell}>
+          {navigationRecipe.sheet}
           <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
           {withFrameSwipe(
             <View
@@ -1514,6 +1521,7 @@ export function createAppShellEngine() {
     if (topBarNode || (Platform.OS === 'web' && cssLayout != null)) {
       return safeFrame(
         <AppShellProvider value={shell}>
+          {navigationRecipe.sheet}
           <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
           {withFrameSwipe(
             <View
@@ -1541,6 +1549,7 @@ export function createAppShellEngine() {
 
     return safeFrame(
       <AppShellProvider value={shell}>
+          {navigationRecipe.sheet}
         <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
         {withFrameSwipe(
           <View
