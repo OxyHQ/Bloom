@@ -1,7 +1,7 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { StyledView } from '../styles/styled-primitives';
-import { memo, useContext, useEffect, useInsertionEffect, useMemo, useRef, useState } from 'react';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { memo, useContext, useEffect, useRef, useState } from 'react';
+import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { dataHook } from '../styles/data-hook';
 import {
   Platform,
@@ -23,7 +23,6 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { ScreenHostContext } from '../screen/context';
 import { useHeaderDockContext } from '../layout/header-dock';
-import { useSurfaceFill } from '../styles/surface-levels';
 import { ScreenHeaderContext, useScreenContext } from '../screen/context';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
@@ -234,10 +233,6 @@ function PageHeaderComponent({
       setMeasuredHeight(nextHeight);
     }
   };
-
-  useInsertionEffect(() => {
-    if (isWeb) adoptStyleSheet('bloom-page-header-layout', PAGE_HEADER_LAYOUT_CSS);
-  }, [isWeb]);
 
   // An overlaying header occupies no layout, so it declares what it covers and
   // the content reads it back. Measured rather than computed: a second title
@@ -640,6 +635,9 @@ function PageHeaderComponent({
     <>
       {paintRecipe.sheet}
       {surfaceRecipe.sheet}
+      {isWeb ? (
+        <ServerStyleSheet id="bloom-page-header-layout" css={PAGE_HEADER_LAYOUT_CSS} />
+      ) : null}
       <View
         {...directionProps}
         {...dataHook('bloomPageHeader')}

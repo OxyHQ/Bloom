@@ -64,6 +64,7 @@ import { AppShellPanelContext } from '../app-shell/context';
 import { PanelCssContext } from '../app-shell/panel-layout-css';
 import { AppShell, AppShellPanelVisibility } from '../app-shell/index.web';
 import { BloomProvider } from '../provider/BloomProvider';
+import { PageHeader } from '../page-header/PageHeader';
 import type { ServerStylePolicy } from '../styles/context';
 import { RiHomeLine } from '../icons/remix';
 import type { AppShellPanelLayout } from '../app-shell/panel-layout-types';
@@ -143,6 +144,32 @@ describe('AppShell server layout', () => {
     host.remove();
     Object.defineProperty(globalThis, 'CSS', { value: css, configurable: true });
     consoleErrors.mockRestore();
+  });
+
+  it('delivers header container insets in server HTML and adopts them without replacing the bar', async () => {
+    const app = (
+      <BloomProvider fonts={false} ssrStyles="inline">
+        <PageHeader title="Inbox" scrim="none" testID="server-header" />
+      </BloomProvider>
+    );
+    host.innerHTML = renderToString(app);
+    const bar = host.querySelector('[data-bloom-page-header-bar]');
+    const style = host.querySelector('[data-bloom-server-style="bloom-page-header-layout"]');
+    expect(bar).not.toBeNull();
+    expect(style?.textContent).toContain('--bloom-page-header-inset: 16px');
+    expect(style?.textContent).toContain('padding-left: var(--bloom-page-header-inset) !important');
+    expect(style?.textContent).toContain('@container bloom-page-header (min-width: 640px)');
+    expect(style?.textContent).toContain('--bloom-page-header-inset: 24px');
+    const errors: unknown[] = [];
+    await act(async () => {
+      root = hydrateRoot(host, app, { onRecoverableError: (error) => errors.push(error) });
+    });
+    expect(errors).toEqual([]);
+    expect(host.querySelector('[data-bloom-page-header-bar]')).toBe(bar);
+    expect(host.querySelector('[data-bloom-server-style="bloom-page-header-layout"]')).toBeNull();
+    expect(
+      sheets.adopted().some((sheet) => sheet.cssText.includes('--bloom-page-header-inset')),
+    ).toBe(true);
   });
 
   it('does not apply an outer compositor visibility variable to an inner legacy panel', () => {
