@@ -82,6 +82,17 @@ export function BottomBarBase({
       items.length * MAX_EXPANDED_ITEM_WIDTH + ROW_PAD_H * 2,
     ),
   );
+  // The browser can distribute the row before JavaScript measures it. Keep
+  // the comfortable width as the flex basis, shrinking beside the action;
+  // a measured zero must not hide navigation in the server-rendered page.
+  const navigationStyle =
+    Platform.OS === 'web'
+      ? {
+          width: items.length * MAX_EXPANDED_ITEM_WIDTH + ROW_PAD_H * 2,
+          flexShrink: 1,
+          minWidth: 0,
+        }
+      : { width: navigationWidth, minWidth: 0 };
   // Only interaction eligibility crosses to JS; all motion stays on the shared UI signal.
   useAnimatedReaction(
     () => hideAction && progress.value > 0.01,
@@ -179,16 +190,19 @@ export function BottomBarBase({
         ]}
       >
         {items.length > 0 && (
-          <View
-            testID={testID ? `${testID}-navigation` : undefined}
-            style={{ width: navigationWidth, minWidth: 0 }}
-          >
+          <View testID={testID ? `${testID}-navigation` : undefined} style={navigationStyle}>
             <ScrollArea
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ minWidth: '100%' }}
             >
-              <View style={{ width: Math.max(navigationWidth, items.length * 44 + 8) }}>
+              <View
+                style={
+                  Platform.OS === 'web'
+                    ? { width: '100%', minWidth: items.length * 44 + 8 }
+                    : { width: Math.max(navigationWidth, items.length * 44 + 8) }
+                }
+              >
                 <Navigation
                   scrollable={navigationWidth > 0 && navigationWidth < items.length * 44 + 8}
                   embedded
