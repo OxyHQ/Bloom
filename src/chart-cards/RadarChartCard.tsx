@@ -38,7 +38,7 @@ import { useChartCardSurfacePalette, useChartTones } from './primitives/use-char
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { lerp, useChartProgress } from './use-chart-progress';
-import { useBloomLocale } from '../locale/context';
+import { useResolvedBloomLocale } from '../locale/context';
 
 /** One axis of a radar: its category `label` plus one numeric field per series. */
 export type RadarPoint = { label: string } & Record<string, number | string>;
@@ -226,7 +226,7 @@ export function RadarChartCard({
   style,
   testID,
 }: RadarChartCardProps) {
-  const chartLocale = useBloomLocale();
+  const chartLocale = useResolvedBloomLocale();
   const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);

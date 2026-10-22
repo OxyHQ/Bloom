@@ -1,4 +1,4 @@
-import { useEffect, useInsertionEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useInsertionEffect, useMemo, useState } from 'react';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import type { SidebarMetrics } from '../sidebar/metrics';
@@ -149,7 +149,7 @@ export function useCssShellLayout(scope: string | null, options: Options): CssSh
   useInsertionEffect(() => {
     if (scope) adoptStyleSheet(`${scope}-shell`, css);
   }, [scope, css]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!scope || typeof document === 'undefined') return;
     const root = document.querySelector<HTMLElement>(`[data-bloom-layout="${scope}"]`);
     if (!root) return;

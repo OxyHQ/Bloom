@@ -7,7 +7,7 @@ import { TABULAR } from './ChartHeader';
 import { FadeOnChange } from './FadeOnChange';
 import { formatNumber } from './format';
 import { useChartCardPalette } from './use-chart-palette';
-import { useBloomLocale } from '../../locale/context';
+import { useResolvedBloomLocale } from '../../locale/context';
 
 export interface ChartCenterReadoutProps {
   value: number;
@@ -36,7 +36,7 @@ export function ChartCenterReadout({
   style,
   testID,
 }: ChartCenterReadoutProps) {
-  const locale = useBloomLocale();
+  const locale = useResolvedBloomLocale();
   const format = formatProp ?? ((value: number) => formatNumber(value, locale));
   const palette = useChartCardPalette();
   const display = useCountUpPrecise(value);
