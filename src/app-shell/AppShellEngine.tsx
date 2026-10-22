@@ -2,6 +2,7 @@ import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { ScrollArea } from '../layout/ScrollArea';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { BottomEdgeProvider } from '../layout/bottom-edge';
 import type React from 'react';
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
@@ -465,6 +466,9 @@ export function createAppShellEngine() {
     const barActive = (visibility: 'compact' | 'always') => visibility === 'always' || !navInFlow;
     const showTopBar = topBar != null && barActive(topBarVisibility);
     const showBottomBar = bottomBar != null && barActive(bottomBarVisibility);
+    // The bounded web viewport gives up the actual slot height through flex
+    // layout, including SSR. Measuring an overlay cannot reserve its first frame.
+    const flowBottomBar = !!cssScope && !doc && reserveBottomBarSpace && bottomBar != null;
     const showFloatingAction = floatingAction != null;
     // Preserve the real device insets for fullscreen dialogs and portals. Only
     // the bounded shell consumes these edges; bottom chrome keeps its own inset.
@@ -507,7 +511,7 @@ export function createAppShellEngine() {
     const bottomEdge = showBottomBar ? bottomBarHeight : insets.bottom;
     const contentReserve =
       showBottomBar || showFloatingAction
-        ? (reserveBottomBarSpace ? bottomEdge : 0) +
+        ? (reserveBottomBarSpace && !flowBottomBar ? bottomEdge : 0) +
           (showFloatingAction ? floatingActionHeight + gutter : 0)
         : 0;
     // `scroll="page"` on native: each route's `ScreenScrollView` is the
@@ -668,6 +672,7 @@ export function createAppShellEngine() {
         ) : null}
         {(cssScope ? bottomBar != null : showBottomBar) ? (
           <AppShellBottomBar
+            inFlow={flowBottomBar}
             visibility={bottomBarVisibility}
             doc={doc && !revealAvailable}
             onHeightChange={setBottomBarHeight}
@@ -1200,7 +1205,17 @@ export function createAppShellEngine() {
       </>
     );
 
-    const body = canvas ? canvasBody : centred ? centredBody : dashboardBody;
+    // The bar still publishes its outer-edge claim for sibling overlays. Inside
+    // the smaller viewport, translate remaining outer claims by the actual
+    // occupied height. Unrelated overlays and local claims remain effective.
+    const body = (
+      <BottomEdgeProvider
+        inherit={!flowBottomBar}
+        consume={flowBottomBar ? bottomBarHeight : undefined}
+      >
+        {canvas ? canvasBody : centred ? centredBody : dashboardBody}
+      </BottomEdgeProvider>
+    );
 
     const overlayFrameStyle: ViewStyle = {
       position: 'absolute',
@@ -1461,14 +1476,15 @@ export function createAppShellEngine() {
                 {...(Platform.OS === 'web' && isOpen ? { inert: true } : {})}
                 style={[
                   {
-                    position: doc ? WEB_POSITION_FIXED : 'absolute',
-                    left: 0,
-                    right: 0,
-                    overflow: 'hidden',
+                    position: flowBottomBar ? 'relative' : doc ? WEB_POSITION_FIXED : 'absolute',
+                    flexShrink: 0,
+                    left: flowBottomBar ? undefined : 0,
+                    right: flowBottomBar ? undefined : 0,
+                    overflow: flowBottomBar ? 'visible' : 'hidden',
                   },
                   revealTransition,
                   variant === 'feed' ? feedPageStyle : pageStyle,
-                  variant === 'feed' ? feedBarsStyle : { top: 0, bottom: 0 },
+                  flowBottomBar ? null : variant === 'feed' ? feedBarsStyle : { top: 0, bottom: 0 },
                 ]}
               >
                 {bars}
@@ -1495,7 +1511,7 @@ export function createAppShellEngine() {
     // The top bar is a SIBLING above the columns, so it spans the shell edge to
     // edge without escaping the frame's padding. Without one the root stays the
     // row it has always been, so nothing about an existing shell moves.
-    if (topBarNode) {
+    if (topBarNode || (Platform.OS === 'web' && cssLayout != null)) {
       return safeFrame(
         <AppShellProvider value={shell}>
           <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />

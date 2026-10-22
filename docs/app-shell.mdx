@@ -1242,6 +1242,15 @@ sheet without a stale SSR cascade. Native and unsupported browsers retain the
 shared resolver. The host owns available height for bounded layouts; document
 layouts retain natural height.
 
+In bounded web layouts, a reserved bottom bar participates in the shell's flex
+column at its intrinsic height, just like the top bar. Its space is already
+occupied in server HTML; hydration does not shrink the panels after measuring
+the bar. The content translates outer edge claims by the height already occupied
+by the slot, combines the remainder with its local claims by maximum, and keeps
+the bar's outer claim available to sibling overlays. A hidden slot consumes zero.
+Document layouts, native,
+and `reserveBottomBarSpace={false}` retain the anchored overlay behavior.
+
 For presentation that depends on whether a panel is alone, use
 `AppShellPanelVisibility when="alone"` (or `when="multiple"`) around that content.
 The compositor supplies CSS visibility before JavaScript; native uses the same

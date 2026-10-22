@@ -62,6 +62,7 @@ import {
   useContext,
   useEffect,
   useId,
+  useMemo,
   useState,
   useSyncExternalStore,
   type PropsWithChildren,
@@ -80,11 +81,35 @@ const BottomEdgeContext = createContext<EdgeStore | null>(null);
 export function BottomEdgeProvider({
   children,
   inherit = false,
-}: PropsWithChildren<{ inherit?: boolean }>) {
+  consume,
+}: PropsWithChildren<{
+  inherit?: boolean;
+  /** Space already occupied by an in-flow slot above this viewport's edge. */
+  consume?: number;
+}>) {
   const parent = useContext(BottomEdgeContext);
   const [store] = useState(createEdgeStore);
+  const consumed =
+    consume === undefined ? undefined : Math.max(0, Number.isFinite(consume) ? consume : 0);
+  const translated = useMemo<EdgeStore>(
+    () => ({
+      ...store,
+      getInset: () => Math.max(store.getInset(), (parent?.getInset() ?? 0) - (consumed ?? 0)),
+      subscribe(listener) {
+        const own = store.subscribe(listener);
+        const outer = parent?.subscribe(listener);
+        return () => {
+          own();
+          outer?.();
+        };
+      },
+    }),
+    [store, parent, consumed],
+  );
   return (
-    <BottomEdgeContext.Provider value={inherit ? parent : store}>
+    <BottomEdgeContext.Provider
+      value={consumed !== undefined ? translated : inherit ? parent : store}
+    >
       {children}
     </BottomEdgeContext.Provider>
   );

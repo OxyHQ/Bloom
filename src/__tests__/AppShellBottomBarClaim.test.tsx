@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Text } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -69,4 +69,50 @@ it('remains usable without a bottom-edge provider', () => {
   );
   layout(tree, 58);
   expect(callback).toHaveBeenCalledWith(58);
+});
+
+it('translates outer claims into an intrinsically reserved viewport without hiding other overlays', () => {
+  function Probe({ name }: { name: string }) {
+    return <Text testID={name}>{useBottomEdgeInset()}</Text>;
+  }
+  function Reserved({ local = 0 }: { local?: number }) {
+    const [consumed, setConsumed] = useState(0);
+    return (
+      <>
+        <BottomEdgeProvider consume={consumed}>
+          <OtherClaim height={local} />
+          <Probe name="content-edge" />
+        </BottomEdgeProvider>
+        <AppShellBottomBar inFlow doc={false} testID="bar" onHeightChange={setConsumed}>
+          <Text>Arbitrary intrinsic chrome</Text>
+        </AppShellBottomBar>
+        <Probe name="outer-edge" />
+      </>
+    );
+  }
+  const ui = (local = 0, outer = 200) => (
+    <BottomEdgeProvider>
+      <OtherClaim height={outer} />
+      <Reserved local={local} />
+    </BottomEdgeProvider>
+  );
+  const tree = render(ui());
+  expect(tree.getByTestId('content-edge').props.children).toBe(200);
+  layout(tree, 96);
+  expect(tree.getByTestId('content-edge').props.children).toBe(104);
+  expect(tree.getByTestId('outer-edge').props.children).toBe(200);
+  tree.rerender(ui(0, 260));
+  expect(tree.getByTestId('content-edge').props.children).toBe(164);
+  expect(tree.getByTestId('outer-edge').props.children).toBe(260);
+  tree.rerender(ui(150));
+  expect(tree.getByTestId('content-edge').props.children).toBe(150);
+  expect(tree.getByTestId('outer-edge').props.children).toBe(200);
+  layout(tree, 0); // CSS hides compact chrome on desktop: nothing is consumed.
+  expect(tree.getByTestId('content-edge').props.children).toBe(200);
+  layout(tree, 240);
+  expect(tree.getByTestId('content-edge').props.children).toBe(150);
+  expect(tree.getByTestId('outer-edge').props.children).toBe(240);
+  tree.rerender(ui());
+  expect(tree.getByTestId('content-edge').props.children).toBe(0);
+  expect(tree.getByTestId('outer-edge').props.children).toBe(240);
 });
