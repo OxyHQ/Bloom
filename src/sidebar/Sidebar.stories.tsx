@@ -881,6 +881,7 @@ export const Sizes: Story = {
           items={DEMO_NAV}
           selected="calendar"
           account={DEMO_ACCOUNT}
+          tree={SIZES_TREE}
           showSearch={false}
           showThemeToggle={false}
           testID={`sidebar-${size}`}
@@ -889,6 +890,30 @@ export const Sizes: Story = {
     </Frame>
   ),
 };
+
+const SIZES_TREE: SidebarTree[] = [
+  {
+    key: 'recent',
+    label: 'Recently viewed',
+    items: [
+      { key: 'loft', label: 'Loft in Gràcia', meta: '2h' },
+      { key: 'flat', label: 'Two-bed flat', meta: '1d' },
+    ],
+  },
+  {
+    key: 'saved',
+    label: 'Saved',
+    folders: [
+      {
+        key: 'shortlist',
+        label: 'Shortlist',
+        defaultOpen: true,
+        items: [{ key: 'studio', label: 'Studio near the beach', meta: '3' }],
+      },
+    ],
+  },
+  { key: 'archive', label: 'Archive', emptyLabel: 'Nothing archived' },
+];
 
 /** Compact modes keep their icons centered at every panel size and surface. */
 export const CollapsedModes: Story = {

@@ -36,6 +36,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { IS_WEB } from '../styles/platform';
 import { SIDEBAR_MESSAGES } from './messages';
+import { useSidebarMetrics } from './metrics';
 import type { SidebarPalette } from './palette';
 import { SidebarFolder } from './SidebarFolder';
 import {
@@ -52,8 +53,6 @@ import type { SidebarTree, SidebarTreeDrop, SidebarTreeFolder, SidebarTreeItem }
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
 /** One level of nesting: a row's content starts this much further in than its parent's. */
 export const TREE_INDENT = 16;
-/** The disclosure's square, and the lane every row of a nesting section keeps for it. */
-const DISCLOSURE = 20;
 /** Long enough that a press opens the row and a swipe still scrolls the sidebar. */
 const LIFT_AFTER_MS = 350;
 const DRAG_MIME = 'application/x-bloom-sidebar-row';
@@ -63,17 +62,17 @@ type TreePress = (item: SidebarTreeItem, folder?: SidebarTreeFolder) => void;
 /**
  * One labelled section of the sidebar's tree.
  *
- *   label     body-medium text-secondary, its `actions` at the end. A
+ *   label     `tree.label` text-secondary, its `actions` at the end. A
  *             `collapsible` section's label is a disclosure (16px chevron,
  *             turning 90° open) that shows and hides the rows (300ms).
  *   status    `loading` / `error` (an alert, in the danger role) / `emptyLabel`,
- *             body-regular, inset 8, in place of rows.
+ *             `tree.status`, inset 8, in place of rows.
  *   rows      2 apart: direct rows (any depth), then folders 4 apart.
  *
- * A row: radius full, py 5, inset 8 plus 16 per level. In a section where any
- * row nests, every row keeps a 20px lane for the disclosure (a chevron that
- * turns 90° open) so labels align; then the icon or `leading` (20px box, gap
- * 8), the label (body-medium text-secondary, truncating) and the `meta` chip.
+ * A row: radius full, py `tree.padding`, inset 8 plus 16 per level. In a section where any
+ * row nests, every row keeps a `tree.icon` lane for the disclosure (a chevron that
+ * turns 90° open) so labels align; then the icon or `leading` (`tree.icon` box, gap
+ * 8), the label (`tree.label` text-secondary, truncating) and the `meta` chip.
  * Hover and selection fill the whole line with background-secondary-hover; the
  * actions sit inside it, at the end, never in the row's press target. Children
  * ease open and shut (300ms) and are only mounted while shown.
@@ -101,6 +100,7 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
   palette: SidebarPalette;
 }) {
   const common = useCommonMessages();
+  const { tree } = useSidebarMetrics();
   const key = sectionKey(section);
   const [open, setOpen] = useControllableState<boolean>({
     value: section.open,
@@ -110,12 +110,12 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
   const shown = !section.collapsible || open || searching;
   const hasRows = items.length > 0 || folders.length > 0;
   const status = section.loading ? (
-    <Text variant="body-regular" style={[statusStyle, { color: palette.textTertiary }]}>
+    <Text variant={tree.status} style={[statusStyle, { color: palette.textTertiary }]}>
       {`${common.loading}…`}
     </Text>
   ) : section.error ? (
     <Text
-      variant="body-regular"
+      variant={tree.status}
       role="alert"
       accessibilityLiveRegion="polite"
       style={[statusStyle, { color: palette.menu.destructive }]}
@@ -123,7 +123,7 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
       {section.error}
     </Text>
   ) : !hasRows && section.emptyLabel ? (
-    <Text variant="body-regular" style={[statusStyle, { color: palette.textTertiary }]}>
+    <Text variant={tree.status} style={[statusStyle, { color: palette.textTertiary }]}>
       {section.emptyLabel}
     </Text>
   ) : null;
@@ -204,9 +204,10 @@ function SectionLabel({
     position: 'inside',
   }));
 
+  const { tree } = useSidebarMetrics();
   const label = (
     <Text
-      variant="body-medium"
+      variant={tree.label}
       numberOfLines={1}
       style={{ color: palette.textSecondary, flexShrink: 1 }}
     >
@@ -248,7 +249,7 @@ function SectionLabel({
           }
         >
           {label}
-          <Chevron open={open} size={16} color={palette.textTertiary} />
+          <Chevron open={open} size={tree.icon - 4} color={palette.textTertiary} />
         </Pressable>
       ) : (
         label
@@ -550,6 +551,8 @@ const TreeRow = memo(function TreeRow({
     onTreeItemPress(item, undefined);
   };
 
+  const { tree } = useSidebarMetrics();
+  const lane = tree.icon;
   const inset = 8 + depth * TREE_INDENT;
   const Icon = item.icon;
   const row = (
@@ -597,8 +600,8 @@ const TreeRow = memo(function TreeRow({
             hitSlop={4}
             style={
               {
-                width: DISCLOSURE,
-                height: DISCLOSURE,
+                width: lane,
+                height: lane,
                 flexShrink: 0,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -609,10 +612,10 @@ const TreeRow = memo(function TreeRow({
             }
             testID={`sidebar-tree-disclosure-${item.key}`}
           >
-            <Chevron open={expanded} size={16} color={palette.textTertiary} />
+            <Chevron open={expanded} size={lane - 4} color={palette.textTertiary} />
           </Pressable>
         ) : (
-          <View style={{ width: DISCLOSURE + 4, flexShrink: 0 }} />
+          <View style={{ width: lane + 4, flexShrink: 0 }} />
         )
       ) : null}
       <Pressable
@@ -655,8 +658,8 @@ const TreeRow = memo(function TreeRow({
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            paddingTop: 5,
-            paddingBottom: 5,
+            paddingTop: tree.padding,
+            paddingBottom: tree.padding,
             paddingInlineStart: nests ? 0 : inset,
             paddingInlineEnd: 8,
             borderRadius: borderRadius.full,
@@ -667,18 +670,22 @@ const TreeRow = memo(function TreeRow({
         {Icon || item.leading != null ? (
           <View
             style={{
-              width: 20,
-              height: 20,
+              width: tree.icon,
+              height: tree.icon,
               flexShrink: 0,
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            {Icon ? <Icon width={20} height={20} fill={palette.textSecondary} /> : item.leading}
+            {Icon ? (
+              <Icon width={tree.icon} height={tree.icon} fill={palette.textSecondary} />
+            ) : (
+              item.leading
+            )}
           </View>
         ) : null}
         <Text
-          variant="body-medium"
+          variant={tree.label}
           numberOfLines={1}
           style={{ minWidth: 0, flex: 1, color: selected ? palette.text : palette.textSecondary }}
         >
@@ -698,11 +705,7 @@ const TreeRow = memo(function TreeRow({
               paddingBottom: 1,
             }}
           >
-            <Text
-              variant="caption-1-medium"
-              numberOfLines={1}
-              style={{ color: palette.textSecondary }}
-            >
+            <Text variant={tree.meta} numberOfLines={1} style={{ color: palette.textSecondary }}>
               {item.meta}
             </Text>
           </View>
@@ -769,12 +772,12 @@ const TreeRow = memo(function TreeRow({
               ))
             ) : item.emptyLabel ? (
               <Text
-                variant="body-regular"
+                variant={tree.status}
                 numberOfLines={1}
                 style={{
-                  paddingTop: 5,
-                  paddingBottom: 5,
-                  paddingInlineStart: inset + TREE_INDENT + (nests ? DISCLOSURE + 4 : 0),
+                  paddingTop: tree.padding,
+                  paddingBottom: tree.padding,
+                  paddingInlineStart: inset + TREE_INDENT + (nests ? lane + 4 : 0),
                   paddingInlineEnd: 8,
                   color: palette.textTertiary,
                 }}
