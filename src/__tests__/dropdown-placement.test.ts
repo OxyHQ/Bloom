@@ -1,9 +1,10 @@
 import {
   resolveDropdownPlacement,
+  resolvePlacementBounds,
   type DropdownPlacementInput,
 } from '../overlay/dropdown-placement';
 
-const VIEWPORT = { width: 1000, height: 500 };
+const VIEWPORT = { top: 0, left: 0, right: 1000, bottom: 500 };
 const GUTTER = 8;
 
 /** A 200x40 trigger at (400, y), the shape the web `Menu` anchors against. */
@@ -15,7 +16,7 @@ function place(overrides: Partial<DropdownPlacementInput>): { top: number; left:
   return resolveDropdownPlacement({
     anchor: trigger(100),
     size: { width: 180, height: 100 },
-    viewport: VIEWPORT,
+    bounds: VIEWPORT,
     offset: 6,
     gutter: GUTTER,
     align: 'end',
@@ -249,5 +250,67 @@ describe('resolveDropdownPlacement', () => {
       expect(right.left).not.toBe(bottom.left);
       expect(right.top).not.toBe(bottom.top);
     });
+  });
+});
+
+describe('resolvePlacementBounds', () => {
+  const viewport = { width: 1000, height: 500 };
+  const size = { width: 200, height: 100 };
+  // The right-hand panel of a two-panel layout.
+  const panel = { top: 0, left: 600, right: 1000, bottom: 500 };
+  const resolve = (boundary: typeof panel | null, menu = size) =>
+    resolvePlacementBounds({ boundary, viewport, size: menu, gutter: GUTTER });
+
+  it('is the viewport outside any panel', () => {
+    expect(resolve(null)).toEqual({ top: 0, left: 0, right: 1000, bottom: 500 });
+  });
+
+  it('is the panel when the surface fits in it', () => {
+    expect(resolve(panel)).toEqual(panel);
+  });
+
+  it('keeps a menu from an edge trigger inside its panel instead of the neighbour', () => {
+    // Trigger at the panel's LEFT edge, aligned to the end: viewport bounds would
+    // let the 180-wide surface hang over x < 600, the neighbouring panel.
+    const anchor = { top: 100, bottom: 140, left: 610, right: 640 };
+    const input = {
+      anchor,
+      size,
+      offset: 6,
+      gutter: GUTTER,
+      align: 'end',
+      side: 'bottom',
+    } as const;
+    const inPanel = resolveDropdownPlacement({ ...input, bounds: resolve(panel) });
+    const inViewport = resolveDropdownPlacement({ ...input, bounds: resolve(null) });
+    expect(inViewport.left).toBe(440);
+    expect(inPanel.left).toBe(600 + GUTTER);
+  });
+
+  it('falls back to the viewport when the surface does not fit in the panel', () => {
+    const narrow = { top: 0, left: 600, right: 760, bottom: 500 };
+    expect(resolve(narrow)).toEqual({ top: 0, left: 0, right: 1000, bottom: 500 });
+  });
+
+  it('counts the gutters when deciding whether it fits', () => {
+    const exact = { top: 0, left: 600, right: 600 + size.width + GUTTER * 2, bottom: 500 };
+    expect(resolve(exact)).toEqual(exact);
+    expect(resolve({ ...exact, right: exact.right - 1 })).toEqual({
+      top: 0,
+      left: 0,
+      right: 1000,
+      bottom: 500,
+    });
+  });
+
+  it('intersects a panel that runs past the viewport with the viewport', () => {
+    // A document-flow panel is as tall as its content, not as tall as the screen.
+    const tall = { top: -300, left: 600, right: 1000, bottom: 2000 };
+    expect(resolve(tall)).toEqual({ top: 0, left: 600, right: 1000, bottom: 500 });
+  });
+
+  it('judges fit against the VISIBLE part of a panel scrolled partly off-screen', () => {
+    const mostlyOff = { top: 450, left: 600, right: 1000, bottom: 900 };
+    expect(resolve(mostlyOff)).toEqual({ top: 0, left: 0, right: 1000, bottom: 500 });
   });
 });

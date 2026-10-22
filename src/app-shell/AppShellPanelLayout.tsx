@@ -59,6 +59,7 @@ import {
   ShellColorClaimContext,
 } from './context';
 import { useColorClaims, type ColorClaim } from './use-color-claims';
+import { PlacementBoundaryContext } from '../overlay/placement-boundary';
 import { PanelNavigation, PanelScrollScope } from './PanelNavigation';
 import { resolvePanelAxis, resolvePanelTracks, type ResolvedPanelTrack } from './panel-layout';
 import type {
@@ -602,22 +603,26 @@ export function createPanelLayoutView(
                   active,
                 }}
               >
-                {/* A viewport mask may bleed past its own surface by a pixel. Bound
+                {/* Menus and popovers opened in here stay inside this panel while
+                they fit in it (`overlay/placement-boundary`). */}
+                <PlacementBoundaryContext.Provider value={panelRef}>
+                  {/* A viewport mask may bleed past its own surface by a pixel. Bound
                 that paint to this track so zero-gap neighbors keep their border.
                 clip/visible preserves the document's vertical sticky scroll root. */}
-                <ColorScope colorPreset={screenPreset ?? panel.colorPreset} asChild>
-                  <View
-                    testID={testID ? `${testID}-surface-bounds` : undefined}
-                    style={[
-                      FILL,
-                      Platform.OS === 'web'
-                        ? ({ overflowX: 'clip', overflowY: 'visible' } as WebCssStyle)
-                        : undefined,
-                    ]}
-                  >
-                    {surface}
-                  </View>
-                </ColorScope>
+                  <ColorScope colorPreset={screenPreset ?? panel.colorPreset} asChild>
+                    <View
+                      testID={testID ? `${testID}-surface-bounds` : undefined}
+                      style={[
+                        FILL,
+                        Platform.OS === 'web'
+                          ? ({ overflowX: 'clip', overflowY: 'visible' } as WebCssStyle)
+                          : undefined,
+                      ]}
+                    >
+                      {surface}
+                    </View>
+                  </ColorScope>
+                </PlacementBoundaryContext.Provider>
               </AppShellPanelContext.Provider>
             ) : null}
             {(joined || !framed) && track.gap > 0 ? (

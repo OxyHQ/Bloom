@@ -165,7 +165,7 @@ Verified in a real browser by `scripts/verify-submenu-flyout.mjs` — jest can s
 
 ## Placement (web)
 
-`DropdownMenuContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'start'`), `sideOffset` and `alignOffset` — the same four Radix takes. They are preferences: the surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
+`DropdownMenuContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'start'`), `sideOffset` and `alignOffset` — the same four Radix takes. They are preferences: the surface flips to the other side when the named one does not fit and clamps into the viewport when neither does. Opened from inside an `AppShell` panel, it collides with that panel while it fits there (see [Popover › Inside a panel](./popover.mdx)).
 
 `side` also accepts `'left'` and `'right'`, which make the horizontal axis the one that fits, flips and clamps, and `align` the vertical one. That is how the sub-panel positions itself; a root dropdown has no use for it.
 
