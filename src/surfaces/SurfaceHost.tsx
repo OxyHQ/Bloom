@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 
 import { useDialogControl } from '../dialog/context';
-import { useBloomLocale } from '../locale/context';
+import { useResolvedBloomLocale } from '../locale/context';
 import type { DialogProps } from '../dialog/types';
 import {
   finalizeClose,
@@ -72,7 +73,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
   function SurfaceLayer({ entry }: { entry: SurfaceEntry }) {
     const control = useDialogControl();
     const { id, status } = entry;
-    const locale = useBloomLocale();
+    const locale = useResolvedBloomLocale();
 
     const controls = useMemo<SurfaceControls>(
       () => ({

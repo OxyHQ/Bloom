@@ -58,7 +58,7 @@ export function useMessages<M>(
   localeProp?: string,
 ): { locale: string | undefined; messages: M } {
   const scope = useContext(LocaleContext);
-  const locale = localeProp ?? scope?.locale;
+  const locale = localeProp ?? scope?.resolvedLocale ?? scope?.locale;
   const translations = scope ? scope.translations : getBloomTranslations();
   const messages = useMemo(
     () => pickFrom(translations, catalog, locale),

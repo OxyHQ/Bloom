@@ -2,6 +2,7 @@ import React, {
   useEffect,
   useCallback,
   useInsertionEffect,
+  useLayoutEffect,
   useImperativeHandle,
   useMemo,
   useContext,
@@ -822,7 +823,7 @@ export function createPanelLayoutView(
     useInsertionEffect(() => {
       if (cssScope) adoptStyleSheet(cssScope, cssRules);
     }, [cssScope, cssRules]);
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (!cssScope || !rootRef.current || typeof getComputedStyle !== 'function') return;
       const root = rootRef.current as unknown as HTMLElement;
       const read = () => {
@@ -842,12 +843,14 @@ export function createPanelLayoutView(
             floating: style?.getPropertyValue('--bloom-panel-floating').trim() === '1',
           };
         });
-        // The first computed-style read establishes the visible tracks at their
-        // final geometry. Only later insertions/display changes get an entry
-        // transition; animating the initial tree also scales already-sized media.
-        // Reuse this visibility read instead of adding a frame, timer or measure.
-        if (!root.hasAttribute('data-bloom-panel-ready'))
+        // Commit the first CSS geometry while transitions are disabled. Merely
+        // reading custom properties does not establish used dimensions: enabling
+        // motion then can animate SSR/hidden zero widths into the workspace.
+        // Resolve layout before enabling later interactions, all before paint.
+        if (!root.hasAttribute('data-bloom-panel-ready')) {
+          root.getBoundingClientRect();
           root.setAttribute('data-bloom-panel-ready', 'true');
+        }
         setCssState((previous) =>
           previous.vertical === (axis === 'vertical') &&
           JSON.stringify(previous.tracks) === JSON.stringify(next)

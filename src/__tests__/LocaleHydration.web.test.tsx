@@ -11,7 +11,7 @@ jest.mock('../locale/languages', () => ({
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomProvider } from '../provider/BloomProvider';
-import { useBloomLocale } from '../locale/context';
+import { LocaleProvider, useBloomLocale } from '../locale/context';
 import { COMMON_MESSAGES } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import * as translations from '../locale/translations';
@@ -28,8 +28,8 @@ describe('locale hydration and delayed translations', () => {
   let unmounts: number;
 
   function Content() {
-    const { messages } = useMessages(COMMON_MESSAGES);
-    const locale = useBloomLocale();
+    const { messages, locale } = useMessages(COMMON_MESSAGES);
+    const explicitLocale = useBloomLocale();
     useEffect(() => {
       mounts++;
       return () => {
@@ -37,7 +37,7 @@ describe('locale hydration and delayed translations', () => {
       };
     }, []);
     return (
-      <button data-testid="content">
+      <button data-testid="content" data-explicit-locale={explicitLocale ?? 'automatic'}>
         {locale}:{messages.cancel}
       </button>
     );
@@ -92,6 +92,7 @@ describe('locale hydration and delayed translations', () => {
       });
       expect(host.querySelector('button')).toBe(original);
       expect(original?.textContent).toBe(serverText);
+      expect(original?.getAttribute('data-explicit-locale')).toBe('automatic');
       expect(load).toHaveBeenCalled();
       expect(mounts).toBe(1);
       expect(unmounts).toBe(0);
@@ -105,9 +106,43 @@ describe('locale hydration and delayed translations', () => {
       });
       expect(host.querySelector('button')).toBe(original);
       expect(original?.textContent).toMatch(new RegExp(`^${language}:`));
+      expect(original?.getAttribute('data-explicit-locale')).toBe('automatic');
       expect(original?.textContent).not.toBe(`${language}:Cancel`);
       expect(mounts).toBe(1);
       expect(unmounts).toBe(0);
+    },
+  );
+
+  // Match the SDK's public bridge contract: a browser-derived locale is not an
+  // app choice and must not override the account's currentLanguage.
+  function AccountLocaleBridge({ currentLanguage }: { currentLanguage: string }) {
+    const inherited = useBloomLocale();
+    return (
+      <LocaleProvider locale={inherited ?? currentLanguage}>
+        <Content />
+      </LocaleProvider>
+    );
+  }
+
+  it.each([
+    [undefined, 'es', 'es', 'Cancelar'],
+    ['de', 'es', 'de', 'Abbrechen'],
+  ])(
+    'preserves account language priority under app locale %s',
+    async (appLocale, account, expected, cancel) => {
+      runtimeLanguage = 'en-US';
+      await act(async () => {
+        await loadLanguage('es');
+        await loadLanguage('de');
+        root = createRoot(host);
+        root.render(
+          <BloomProvider fonts={false} mode="light" locale={appLocale}>
+            <AccountLocaleBridge currentLanguage={account!} />
+          </BloomProvider>,
+        );
+      });
+      expect(host.querySelector('button')?.textContent).toBe(`${expected}:${cancel}`);
+      expect(host.querySelector('button')?.getAttribute('data-explicit-locale')).toBe(expected);
     },
   );
 

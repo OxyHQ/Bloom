@@ -1232,8 +1232,12 @@ panel at the available width (or the first eligible panel when no active panel
 is selected). The same compact snapshot is used for the first hydration render;
 container queries take over after hydration. This keeps content readable with
 JavaScript disabled and avoids server/client navigation-tree mismatches. A
-client-only mount uses its actual viewport immediately. The host still owns the
-available height for bounded layouts; document layouts retain natural height.
+client-only mount uses its actual viewport immediately. Before the first CSS
+paint, layout effects synchronize the active tracks and navigation state. The
+compositor resolves its initial dimensions with transitions disabled, then enables
+motion for subsequent changes; hydration does not animate the workspace from
+zero width. This one initial layout read commits CSS geometry rather than
+calculating app-owned widths. The host still owns the available height for bounded layouts; document layouts retain natural height.
 The `verify-css-panel-layout.mjs` browser gate pauses application JavaScript and
 verifies that width changes still update panel geometry and framing.
 

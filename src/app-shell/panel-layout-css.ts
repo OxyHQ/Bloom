@@ -76,6 +76,7 @@ ${root} [data-bloom-shell-frame="${scope}"]{transition-delay:${geometryDelay}ms!
 ${root} [data-bloom-reading-content="${scope}"]{width:100%!important;flex-basis:100%!important;max-width:100%!important;flex-grow:1!important}
 ${row}{gap:0!important}
 ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{interpolate-size:allow-keywords;transition:${geometryTransitions},opacity ${ordered ? 150 : 380}ms cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms),scale 150ms ease var(--bloom-panel-fade-delay,0ms),display 380ms allow-discrete ${geometryDelay}ms;transition-behavior:allow-discrete}
+${group}:not([data-bloom-panel-ready]) [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:not(:has(${group}[data-bloom-panel-ready])) :is([data-bloom-reading-envelope="${scope}"],[data-bloom-shell-frame="${scope}"],[data-bloom-shell-nav="${scope}"]){transition:none!important}
 ${group}[data-bloom-panel-resizing] [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:has(${group}[data-bloom-panel-resizing]) [data-bloom-reading-envelope="${scope}"]{transition:none!important}
 ${group}[data-bloom-panel-resizing]{user-select:none;cursor:col-resize}
 ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}

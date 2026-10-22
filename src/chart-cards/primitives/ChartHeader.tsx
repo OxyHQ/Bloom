@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
 import { Chip } from '../../chip';
@@ -9,7 +9,7 @@ import { FadeOnChange } from './FadeOnChange';
 import { formatNumber, type ChartDelta } from './format';
 import type { ChartRangeOption } from './use-chart-range';
 import { useChartCardPalette } from './use-chart-palette';
-import { useBloomLocale } from '../../locale/context';
+import { useResolvedBloomLocale } from '../../locale/context';
 
 export const TABULAR: TextStyle = { fontVariant: ['tabular-nums'] };
 
@@ -56,7 +56,7 @@ export function ChartHeadline({
   style,
   testID,
 }: ChartHeadlineProps) {
-  const locale = useBloomLocale();
+  const locale = useResolvedBloomLocale();
   const format = formatProp ?? ((value: number) => formatNumber(value, locale));
   const palette = useChartCardPalette();
   const display = useCountUpPrecise(value ?? 0);

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { formatGregorian } from '../locale/format-date';
-import { useBloomLocale } from '../locale';
+import { useResolvedBloomLocale } from '../locale/context';
 import { borderRadius } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import { Calendar } from '../date-picker';
@@ -106,7 +106,7 @@ export function SettingsDateField({
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const showSaved = useSettingsSavedToast();
-  const locale = useBloomLocale();
+  const locale = useResolvedBloomLocale();
   const [open, setOpen] = useState(false);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const text = formatDate ? formatDate(value) : formatBirthDate(value, locale);
