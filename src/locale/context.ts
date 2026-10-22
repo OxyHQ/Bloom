@@ -21,11 +21,19 @@ import {
 export interface LocaleScope {
   /** The locale published to this subtree; `undefined` means the runtime's. */
   locale: string | undefined;
+  /** The inherited target, which may still be loading while locale stays visible. */
+  requestedLocale?: string;
   /** The languages loaded when this scope last rendered. */
   translations: LoadedTranslations;
 }
 
 export const LocaleContext = createContext<LocaleScope | null>(null);
+
+const subscribeRuntimeLocale = () => () => {};
+const clientRuntimeLocale = () => runtimeLocale() ?? 'en';
+// Static HTML cannot know the browser's language. Explicit locale props still
+// win; an automatic locale must hydrate the server's English snapshot first.
+const serverRuntimeLocale = () => 'en';
 
 export interface LocaleProviderProps {
   locale?: string;
@@ -53,20 +61,25 @@ export interface LocaleProviderProps {
  */
 export function LocaleProvider({ locale, fallback, children }: LocaleProviderProps) {
   const parent = useContext(LocaleContext);
+  const automaticLocale = useSyncExternalStore(
+    subscribeRuntimeLocale,
+    clientRuntimeLocale,
+    serverRuntimeLocale,
+  );
   const translations = useSyncExternalStore(
     subscribeBloomTranslations,
     getBloomTranslations,
     getBloomTranslations,
   );
-  const requested = locale ?? parent?.locale;
-  const language = resolveBloomLanguage(requested ?? runtimeLocale());
+  const requested = locale ?? parent?.requestedLocale ?? parent?.locale ?? automaticLocale;
+  const language = resolveBloomLanguage(requested);
   const settled = isBloomLanguageSettled(translations, language);
 
   // The last locale this scope published. Adjusted during render — React's
   // pattern for state derived from a changing input — so a settled locale is
   // published in the same render that notices it, not one commit later.
   const [shown, setShown] = useState<{ locale: string | undefined; ever: boolean }>(() =>
-    settled ? { locale: requested, ever: true } : { locale: parent?.locale, ever: false },
+    settled ? { locale: requested, ever: true } : { locale: parent?.locale ?? 'en', ever: false },
   );
   if (settled && (!shown.ever || shown.locale !== requested)) {
     setShown({ locale: requested, ever: true });
@@ -79,8 +92,8 @@ export function LocaleProvider({ locale, fallback, children }: LocaleProviderPro
 
   const published = settled ? requested : shown.locale;
   const value = useMemo<LocaleScope>(
-    () => ({ locale: published, translations }),
-    [published, translations],
+    () => ({ locale: published, requestedLocale: requested, translations }),
+    [published, requested, translations],
   );
 
   if (fallback !== undefined && !settled && !shown.ever) {
