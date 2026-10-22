@@ -20,7 +20,11 @@
 //  react-native-web is unaffected: it appends an EMPTY style element and fills
 //  it through `sheet.insertRule`, never through text content.)
 //
-//  The `<style>` path survives only as the fallback for a document without
+//  ServerStyleSheet separately supports explicit, CSP-authorized SSR CSS. It
+//  adopts here before React removes its server node; ordinary client components
+//  keep using this function without an inline stylesheet.
+//
+//  The client `<style>` path survives only as the fallback for a document without
 //  constructed-stylesheet support — jsdom 26 has the `CSSStyleSheet`
 //  constructor but neither `replaceSync` nor `adoptedStyleSheets`, so the whole
 //  jest suite takes it, and so do browsers older than Chrome 73 / Safari 16.4 /

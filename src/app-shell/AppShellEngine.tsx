@@ -1,3 +1,4 @@
+import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { ScrollArea } from '../layout/ScrollArea';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
@@ -665,8 +666,9 @@ export function createAppShellEngine() {
         {Platform.OS === 'web' && doc ? (
           <ScrollBar target="document" insets={{ start: gutter, end: bottomEdge + gutter }} />
         ) : null}
-        {showBottomBar ? (
+        {(cssScope ? bottomBar != null : showBottomBar) ? (
           <AppShellBottomBar
+            visibility={bottomBarVisibility}
             doc={doc && !revealAvailable}
             onHeightChange={setBottomBarHeight}
             testID={testID ? `${testID}-bottom-bar` : undefined}
@@ -689,8 +691,9 @@ export function createAppShellEngine() {
       </SurfaceLevelProvider>
     );
 
-    const topBarNode = showTopBar ? (
+    const topBarNode = (cssScope ? topBar != null : showTopBar) ? (
       <AppShellTopBar
+        visibility={topBarVisibility}
         insetTop={ownsSafeArea ? 0 : undefined}
         doc={doc}
         onHeightChange={setTopBarHeight}
@@ -1314,6 +1317,7 @@ export function createAppShellEngine() {
     if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
       return safeFrame(
         <AppShellProvider value={shell}>
+          <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
           {withFrameSwipe(
             <View
               {...dirProps}
@@ -1494,6 +1498,7 @@ export function createAppShellEngine() {
     if (topBarNode) {
       return safeFrame(
         <AppShellProvider value={shell}>
+          <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
           {withFrameSwipe(
             <View
               {...dirProps}
@@ -1520,6 +1525,7 @@ export function createAppShellEngine() {
 
     return safeFrame(
       <AppShellProvider value={shell}>
+        <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
         {withFrameSwipe(
           <View
             {...dirProps}

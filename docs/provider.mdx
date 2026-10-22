@@ -30,6 +30,23 @@ the runtime's locale; a component's own `locale` prop still wins. See
 </BloomProvider>
 ```
 
+Server-rendered apps can opt into compositor CSS in the initial HTML with
+`ssrStyles="inline"` when their Content Security Policy permits inline styles,
+or `ssrStyles={{ nonce: requestNonce }}` when the stylesheet nonce is authorized.
+Pass the same policy and nonce during hydration. Without this option, Bloom emits
+no inline server stylesheet and retains its readable compact server fallback.
+The client always adopts the current sheet before removing the server element,
+so later descriptor changes cannot compete with stale server rules. This option
+covers AppShell and embedded AppShellPanels; it does not replace the host's
+React Native Web CSS extraction or authorize its separate inline style attributes.
+A nonce on the stylesheet alone does not authorize those attributes under CSP.
+
+```tsx
+<BloomProvider ssrStyles="inline">
+  <AppShell panelLayout={workspace} />
+</BloomProvider>
+```
+
 Keep the adapter reference stable. Vite and other router integrations supply their
 own `ScrollRouterAdapter`; Expo consumers now pass the adapter explicitly instead
 of receiving an implicit router dependency.

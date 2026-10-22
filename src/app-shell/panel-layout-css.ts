@@ -139,7 +139,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
             : flexible && dim !== undefined
               ? 0
               : (p.span ?? 1);
-      rules += `${item(index)}{--bloom-panel-visible:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
       rules += `@starting-style{${item(index).replace(group, `${group}[data-bloom-panel-ready]:not([data-bloom-panel-ordering])`)}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;opacity:0!important;margin-inline-start:0!important;margin-top:0!important}}\n`;
     }
     if (pageDeck && !vertical) {
@@ -195,7 +195,7 @@ ${row}{width:100%!important;min-width:0!important}
       layout.panels.forEach((p, index) => {
         rules +=
           p.id === active?.id
-            ? `${item(index)}{--bloom-panel-visible:1;display:flex!important;flex:1 1 0px!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;opacity:1!important}`
+            ? `${item(index)}{--bloom-panel-alone-display:flex;--bloom-panel-multiple-display:none;--bloom-panel-visible:1;display:flex!important;flex:1 1 0px!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;opacity:1!important}`
             : hidden(index);
       });
       rules += '}\n';

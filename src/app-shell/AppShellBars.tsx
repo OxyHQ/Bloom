@@ -26,7 +26,8 @@
  * not, so a full-width FAB wrapper never swallows a tap on the content behind
  * it.
  */
-import React, { memo, useCallback, useContext, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useContext, useRef, useState } from 'react';
 import { Platform, View, type LayoutChangeEvent } from 'react-native';
 import { PanelCssContext } from './panel-layout-css';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -62,6 +63,7 @@ function anchorBottom(doc: boolean): WebCssStyle {
 }
 
 export interface AppShellBottomBarProps {
+  visibility?: 'compact' | 'always';
   children: React.ReactNode;
   /** Document scroll: pin to the viewport rather than to the frame. */
   doc: boolean;
@@ -76,6 +78,7 @@ export interface AppShellBottomBarProps {
  * instead of leaving a stripe of page showing through.
  */
 const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
+  visibility = 'always',
   children,
   doc,
   onHeightChange,
@@ -105,7 +108,13 @@ const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
     <View
       testID={testID}
       {...(Platform.OS === 'web' && cssScope
-        ? { dataSet: { bloomShellViewportChrome: cssScope } }
+        ? {
+            dataSet: {
+              bloomShellViewportChrome: cssScope,
+              bloomShellBar: cssScope,
+              bloomShellBarVisibility: visibility,
+            },
+          }
         : {})}
       pointerEvents="box-none"
       onLayout={onLayout}
@@ -174,6 +183,7 @@ export const AppShellFloatingAction = memo(AppShellFloatingActionComponent);
 AppShellFloatingAction.displayName = 'AppShellFloatingAction';
 
 export interface AppShellTopBarProps {
+  visibility?: 'compact' | 'always';
   /** The enclosing safe frame may already own the top inset. */
   insetTop?: number;
   children: React.ReactNode;
@@ -192,6 +202,7 @@ export interface AppShellTopBarProps {
  * outside the scroller, which pins it by construction.
  */
 const AppShellTopBarComponent: React.FC<AppShellTopBarProps> = ({
+  visibility = 'always',
   children,
   doc,
   testID,
@@ -199,10 +210,14 @@ const AppShellTopBarComponent: React.FC<AppShellTopBarProps> = ({
   insetTop,
 }) => {
   const insets = useShellInsets();
+  const cssScope = useContext(PanelCssContext);
   const pinned: WebCssStyle = doc ? { position: WEB_POSITION_STICKY, top: 0 } : {};
   return (
     <View
       testID={testID}
+      {...(Platform.OS === 'web' && cssScope
+        ? { dataSet: { bloomShellBar: cssScope, bloomShellBarVisibility: visibility } }
+        : {})}
       onLayout={(event) => onHeightChange?.(event.nativeEvent.layout.height)}
       style={[{ zIndex: Z_INDEX.floating, paddingTop: insetTop ?? insets.top }, pinned]}
     >

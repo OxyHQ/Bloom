@@ -26,7 +26,7 @@ import { breakpointPx } from './constants';
 import type { PanelLayoutViewProps } from './AppShellPanelLayout';
 import { panelEnvelope } from './panel-layout';
 import { useShellWidth } from './use-shell-width';
-import { useShellLayoutReady, useShellViewport } from './use-shell-viewport';
+import { useShellCssLayout, useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext, panelCssScope } from './panel-layout-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
@@ -387,12 +387,7 @@ export function createAppShell(
   function ModularAppShell(props: AppShellProps) {
     const { width, onLayout } = useShellWidth();
     const scope = panelCssScope(useId());
-    const layoutReady = useShellLayoutReady();
-    const cssLayout =
-      layoutReady &&
-      Platform.OS === 'web' &&
-      typeof CSS !== 'undefined' &&
-      CSS.supports?.('container-type', 'inline-size');
+    const cssLayout = useShellCssLayout();
     const layout = props.panelLayout!;
     const gap =
       layout.gap ??

@@ -1227,17 +1227,28 @@ CSS states with lazy mounting, inert/accessibility and navigation effects. Point
 and keyboard resizing may read the current boxes during interaction. Existing
 intrinsic measurements still account for bottom chrome and tall sticky panels.
 Native and browsers without container-query support use the shared native resolver.
-On the server, where no viewport exists, the shell renders its active eligible
-panel at the available width (or the first eligible panel when no active panel
-is selected). The same compact snapshot is used for the first hydration render;
-container queries take over after hydration. This keeps content readable with
-JavaScript disabled and avoids server/client navigation-tree mismatches. A
-client-only mount uses its actual viewport immediately. Before the first CSS
-paint, layout effects synchronize the active tracks and navigation state. The
-compositor resolves its initial dimensions with transitions disabled, then enables
-motion for subsequent changes; hydration does not animate the workspace from
-zero width. This one initial layout read commits CSS geometry rather than
-calculating app-owned widths. The host still owns the available height for bounded layouts; document layouts retain natural height.
+With `BloomProvider ssrStyles="inline"` (or an authorized stylesheet nonce),
+server HTML includes the descriptor's container-query rules and all eligible
+panel content. The browser selects navigation, tracks, framing and capacity
+before JavaScript runs, using the same CSS tree as the first hydration render.
+Without that explicit CSP opt-in, the server renders its active eligible panel
+at the available width (or the first eligible panel when none is selected) and
+hydrates the same compact snapshot before enabling the CSS compositor.
+Before the first client paint, layout effects synchronize active tracks and
+navigation state. Initial dimensions resolve with transitions disabled, then
+motion becomes available for subsequent changes. Server styles are adopted
+before their DOM elements are removed; changes to descriptors update the adopted
+sheet without a stale SSR cascade. Native and unsupported browsers retain the
+shared resolver. The host owns available height for bounded layouts; document
+layouts retain natural height.
+
+For presentation that depends on whether a panel is alone, use
+`AppShellPanelVisibility when="alone"` (or `when="multiple"`) around that content.
+The compositor supplies CSS visibility before JavaScript; native uses the same
+panel context. Hidden content remains mounted and takes no layout space. A
+`useAppShellPanel().alone` boolean cannot choose responsive server markup because
+the server does not know the viewport. Keep that hook for client behavior.
+
 The `verify-css-panel-layout.mjs` browser gate pauses application JavaScript and
 verifies that width changes still update panel geometry and framing.
 

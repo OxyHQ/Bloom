@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { useServerStylePolicy } from '../styles/context';
 import { Platform, useWindowDimensions } from 'react-native';
 
 const subscribe = () => () => {};
@@ -15,4 +16,16 @@ export function useShellLayoutReady() {
 export function useShellViewport() {
   const viewport = useWindowDimensions();
   return useShellLayoutReady() ? viewport : serverViewport;
+}
+
+/** Opted-in SSR uses the same CSS tree as first hydration; feature fallback is client-only. */
+export function useShellCssLayout() {
+  const ready = useShellLayoutReady();
+  const serverStyles = useServerStylePolicy();
+  return (
+    Platform.OS === 'web' &&
+    (!ready
+      ? !!serverStyles
+      : typeof CSS !== 'undefined' && !!CSS.supports?.('container-type', 'inline-size'))
+  );
 }

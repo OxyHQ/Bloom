@@ -50,6 +50,7 @@ import { AppShellPanelContext } from './context';
 import type { AppShellPanelProps, AppShellPanelsProps } from './types';
 import { useMessages } from '../locale/messages';
 import { APP_SHELL_MESSAGES } from './messages';
+import { useShellCssLayout } from './use-shell-viewport';
 import { useShellWidth } from './use-shell-width';
 import { PanelCssContext, panelCssScope } from './panel-layout-css';
 import type { PanelLayoutViewProps } from './AppShellPanelLayout';
@@ -246,10 +247,7 @@ export function createAppShellPanels(
     const { width, onLayout } = useShellWidth();
     const scope = panelCssScope(useId());
     const { messages } = useMessages(APP_SHELL_MESSAGES);
-    const css =
-      Platform.OS === 'web' &&
-      typeof CSS !== 'undefined' &&
-      CSS.supports?.('container-type', 'inline-size');
+    const css = useShellCssLayout();
     const panels = Children.toArray(children)
       .filter(isValidElement)
       .map((child, index) => {
