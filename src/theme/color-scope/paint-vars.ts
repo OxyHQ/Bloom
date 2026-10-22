@@ -1,6 +1,6 @@
 import { createElement, useId, useMemo } from 'react';
 import { themePaintVars, themePaintRecipe, themePaintCss } from '../paint';
-import { usePrepaintThemeConfig } from '../prepaint-context';
+import { usePrepaintThemeConfig } from '../prepaint/context';
 import { ServerStyleSheet } from '../../styles/ServerStyleSheet';
 import type { ScopeState } from './context';
 

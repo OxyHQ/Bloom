@@ -50,7 +50,7 @@ import type { ExplicitAccents } from './preset-vars';
 import { setColorSchemeSafe } from './set-color-scheme-safe';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import type { Theme, ThemeMode } from './types';
-import { PrepaintThemeContext } from './prepaint-context';
+import { PrepaintThemeContext } from './prepaint/context';
 import { applyPrepaintMode, themePaintVars, type BloomThemeBootstrapConfig } from './prepaint';
 
 const DEFAULT_PRESET: AppColorName = 'oxy';

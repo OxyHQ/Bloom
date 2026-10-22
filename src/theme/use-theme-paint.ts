@@ -2,7 +2,7 @@ import { createElement, useContext, useId, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { useTheme } from './use-theme';
 import { ThemeScopeContext } from './color-scope/context';
-import { usePrepaintTheme, usePrepaintThemeConfig } from './prepaint-context';
+import { usePrepaintTheme, usePrepaintThemeConfig } from './prepaint/context';
 import { themePaintRecipe, themePaintColors, themePaintCss } from './paint';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import type { Theme, ThemeColors } from './types';

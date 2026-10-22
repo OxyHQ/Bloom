@@ -10,7 +10,7 @@ import { getThemeBootstrap, type BloomThemeBootstrapConfig } from '../theme/prep
 import { useBloomTheme } from '../theme/use-theme';
 import { buildTheme } from '../theme/build-theme';
 import { buildScopeVars } from '../theme/color-scope/style-builder';
-import { usePrepaintTheme } from '../theme/prepaint-context';
+import { usePrepaintTheme } from '../theme/prepaint/context';
 import type { ThemeMode } from '../theme/types';
 
 let mockScheme: 'light' | 'dark' = 'light';
