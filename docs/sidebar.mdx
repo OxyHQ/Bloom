@@ -409,6 +409,14 @@ The docked edge is not the card's border: that one is white in light mode, a hig
 | `md` | 40     | 22    | `headline-medium` | 260      | 56        |
 | `lg`  | 44     | 24    | `title-3-medium` | 300      | 60        |
 
+The tree section takes its type, glyph and row inset from the same table (`SIDEBAR_METRICS[size].tree`), one step denser than the rows above it: the section label, row and folder labels, the `meta` chip and the loading, error and empty lines.
+
+| size | label            | meta               | status            | glyph | row inset |
+| ---- | ---------------- | ------------------ | ----------------- | ----- | --------- |
+| `sm` | `body-2-medium`  | `caption-2-medium` | `body-2-regular`  | 16    | 4         |
+| `md` | `body-medium`    | `caption-1-medium` | `body-regular`    | 20    | 5         |
+| `lg` | `headline-medium` | `body-2-medium`   | `headline-regular` | 22   | 6         |
+
 The table describes a card without a primary action. Runtime collapsed width is the icon lane plus 7px padding on each side and the borders actually painted: card adds2px, docked1px, plain0px. The lane is the row square, or at least50px when `primaryAction` is present (total66/65/64px respectively). Navigation and search retain their30/40/44px circles, centred in the wider lane; their icons are not enlarged. Logo, collapse control, modes, theme and account controls share that centre. Expanded navigation retains its2px inset, and the primary action uses the same edges. A row outside a sidebar takes `size` itself; inside one it inherits the panel's.
 
 `AppShell` passes both through (`sidebar={{ surface, size }}`) and treats `docked` as what it is — it gives up its start and vertical padding around that column and lets it run the full height, so the hairline is the separator instead of a gutter.

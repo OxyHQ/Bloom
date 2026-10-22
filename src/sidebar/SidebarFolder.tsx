@@ -17,6 +17,7 @@ import { useIsRtl } from '../hooks/use-is-rtl';
 import { RiFolderLine } from '../icons/remix/RiFolderLine';
 import { RiFolderOpenLine } from '../icons/remix/RiFolderOpenLine';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useSidebarMetrics } from './metrics';
 import { Text } from '../typography';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import { useSidebarWebCss } from './parts';
@@ -87,6 +88,7 @@ export function SidebarTreeRow({
   palette: SidebarPalette;
 }) {
   const { state: hovered, onIn, onOut } = useInteractionState();
+  const { tree } = useSidebarMetrics();
   const style: WebCssStyle = {
     flex: 1,
     minWidth: 0,
@@ -94,8 +96,8 @@ export function SidebarTreeRow({
     alignItems: 'center',
     gap: 10,
     borderRadius: borderRadius.full,
-    paddingTop: 5,
-    paddingBottom: 5,
+    paddingTop: tree.padding,
+    paddingBottom: tree.padding,
     paddingInlineEnd: 8,
     // In a folder the label clears the connector and lines up with the
     // folder's own label; a section row starts where a folder's glyph does.
@@ -133,7 +135,7 @@ export function SidebarTreeRow({
         style={style}
       >
         <Text
-          variant="body-medium"
+          variant={tree.label}
           numberOfLines={1}
           style={{ minWidth: 0, flex: 1, color: palette.textSecondary }}
         >
@@ -153,11 +155,7 @@ export function SidebarTreeRow({
               paddingBottom: 1,
             }}
           >
-            <Text
-              variant="caption-1-medium"
-              numberOfLines={1}
-              style={{ color: palette.textSecondary }}
-            >
+            <Text variant={tree.meta} numberOfLines={1} style={{ color: palette.textSecondary }}>
               {item.meta}
             </Text>
           </View>
@@ -194,6 +192,7 @@ function SidebarFolderComponent({
 }: SidebarFolderProps) {
   const palette = useSidebarPalette();
   useSidebarWebCss();
+  const { tree } = useSidebarMetrics();
   const reducedMotion = useReducedMotion();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const [isOpen, setOpen] = useControllableState<boolean>({
@@ -232,7 +231,7 @@ function SidebarFolderComponent({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    padding: 8,
+    padding: tree.padding + 3,
     borderRadius: borderRadius.full,
     backgroundColor: hovered ? palette.rowHover : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
@@ -253,10 +252,10 @@ function SidebarFolderComponent({
           style={rowStyle}
         >
           <View style={{ flexShrink: 0 }}>
-            <Icon width={20} height={20} fill={palette.textSecondary} />
+            <Icon width={tree.icon} height={tree.icon} fill={palette.textSecondary} />
           </View>
           <Text
-            variant="body-medium"
+            variant={tree.label}
             numberOfLines={1}
             style={{ flexShrink: 1, color: palette.textSecondary }}
           >
