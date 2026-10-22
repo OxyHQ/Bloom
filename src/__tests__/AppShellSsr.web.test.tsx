@@ -245,7 +245,9 @@ describe('AppShell server layout', () => {
       expect(list?.textContent).toContain('Mailbox list');
       expect(detail?.textContent).toContain('Readable server content');
       expect(host.querySelector('[data-bloom-layout]')).not.toBeNull();
-      const styles = [...host.querySelectorAll('style[data-bloom-server-style]')];
+      const styles = [...host.querySelectorAll('style[data-bloom-server-style]')].filter((sheet) =>
+        sheet.getAttribute('data-bloom-server-style')?.startsWith('bloom-panels-'),
+      );
       expect(styles).toHaveLength(2);
       expect(host.querySelector('[data-testid="ssr-shell-top-bar"]')?.textContent).toContain(
         'Compact top navigation',

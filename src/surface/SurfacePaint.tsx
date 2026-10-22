@@ -53,7 +53,7 @@ export const SurfacePaint = memo(function SurfacePaint({
     ...surfaceStyle(shape ?? { curve: 'round' }, direction),
     ...geometryStyle,
   };
-  const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark))!;
+  const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
   const optics = opticsRecipe.paint;
   const resolvedFill = resolveSurfaceTint(fill ?? 'transparent');
   const isWeb = Platform.OS === 'web';
@@ -75,13 +75,13 @@ export const SurfacePaint = memo(function SurfacePaint({
     };
     return (
       <>
-      {opticsRecipe.sheet}
-      <ServerStyleSheet id="bloom-surface-paint-web-css" css={WEB_PAINT_CSS} />
-      <StyledView
-        testID={testID}
-        className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`}
-        style={[paintStyle, pointerEventsStyle('none')]}
-      />
+        {opticsRecipe.sheet}
+        <ServerStyleSheet id="bloom-surface-paint-web-css" css={WEB_PAINT_CSS} />
+        <StyledView
+          testID={testID}
+          className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`}
+          style={[paintStyle, pointerEventsStyle('none')]}
+        />
       </>
     );
   }

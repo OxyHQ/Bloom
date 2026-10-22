@@ -14,7 +14,8 @@
  * fragments so consumers that *do* mount them keep compiling.
  */
 import { useScopePaint } from '../theme/color-scope/paint-vars';
-import React, { Fragment, memo, useContext, useLayoutEffect, useState } from 'react';
+import type React from 'react';
+import { Fragment, memo, useContext, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Z_INDEX } from '../styles/z-index';
 import { ThemeScopeContext } from '../theme/color-scope/context';
@@ -70,7 +71,10 @@ export function Portal({ children }: React.PropsWithChildren<object>) {
   }, []);
   if (!root) return null;
   return createPortal(
-    <div style={{ ...paint.vars, display: 'contents', pointerEvents: 'none' }}>{paint.sheet}{children}</div>,
+    <div style={{ ...paint.vars, display: 'contents', pointerEvents: 'none' }}>
+      {paint.sheet}
+      {children}
+    </div>,
     root,
   );
 }

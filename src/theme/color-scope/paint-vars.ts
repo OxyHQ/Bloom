@@ -12,7 +12,7 @@ export function useScopePaint(scope: ScopeState | null | undefined, active = tru
     if (!scope || !active) return { vars: undefined, sheet: null };
     if (!config) return { vars: scope.vars, sheet: null };
     const palette = (mode: 'light' | 'dark') => {
-      const resolved = scope.resolveMode(mode);
+      const resolved = scope.resolveMode(scope.fixedMode ?? mode);
       return { ...resolved.vars, ...themePaintVars(resolved.theme.colors) };
     };
     const light = palette('light');
@@ -21,10 +21,12 @@ export function useScopePaint(scope: ScopeState | null | undefined, active = tru
     const lightVars: Record<string, string> = {};
     const darkVars: Record<string, string> = {};
     const vars = themePaintRecipe(current, light, dark, `--${id}`, lightVars, darkVars);
-    const css = themePaintCss(':root', lightVars, darkVars, config.defaultMode, scope.fixedMode);
+    const css = Object.keys(lightVars).length
+      ? themePaintCss(':root', lightVars, darkVars, config.defaultMode, scope.fixedMode)
+      : '';
     return {
       vars: { ...vars, ...(scope.fixedMode ? { colorScheme: scope.fixedMode } : undefined) },
-      sheet: createElement(ServerStyleSheet, { id, css }),
+      sheet: css ? createElement(ServerStyleSheet, { id, css, owned: true }) : null,
     };
   }, [config, id, scope, active]);
 }

@@ -31,7 +31,7 @@ General failures: `~/Oxy/AGENTS.md`. Per-direction rule, freeze mechanism (two r
 
 - **Web forks self-inject required CSS.** Consumer-global CSS is insufficient: missing animation-name silently ships dead motion.
 - **Inject through `styles/adopt-style-sheet.ts`, never DOM `<style>`.** CSP `style-src 'self'` silently drops inline rules while an element-ID guard still reports success. Constructed `CSSStyleSheet.replaceSync()` + `adoptedStyleSheets` avoids inline hooks. `adoptStyleSheet(id, css)` replaces sheets in place; inspect adopted sheets, not element IDs. jsdom lacks these APIs; Jest exercises only `src/__tests__/support/constructed-style-sheets.ts` fallback.
-- **SSR exception is explicit:** `BloomProvider ssrStyles` opts AppShell into `styles/ServerStyleSheet`; authorized inline CSS or the host nonce renders through SSR + first hydration only. Adoption happens before React removes the server node. No opt-in means no server `<style>`; never copy this mechanism into components. A stylesheet nonce does not authorize RNW's separate style attributes. See `docs/provider.mdx`.
+- **SSR exception is explicit:** `BloomProvider ssrStyles` opts shared layout and paint owners into `styles/ServerStyleSheet`; authorized inline CSS or the host nonce renders through SSR + first hydration only. Adoption happens before React removes the server node. No opt-in means no server `<style>`; never copy this mechanism into components. A stylesheet nonce does not authorize RNW's separate style attributes. See `docs/provider.mdx`.
 - **Flatten a `StyleProp` before spreading it into a raw DOM element's `style`** — use `flattenWebStyle()`, never `StyleSheet.flatten` (mechanism, and why jest can't catch it: `docs/styles.mdx` `flatten`).
 
 ## Consumer web CSS pipeline (className layout is inert without it)
@@ -116,6 +116,8 @@ Two surfaces remain; CenteredDialog/ResponsiveSheet removed without shims. API/m
 - Native tooltip still cannot position inside sheets (`docs/tooltip.mdx`).
 
 ## Theme and design tokens
+
+- `BloomThemeHead` is the explicit prepaint document-head exception: shared generated token CSS + preference script, authorized by the host nonce/hashes. Runtime component styles still use adopted sheets; SSR recipes use `ServerStyleSheet` under `ssrStyles`. `useThemePaint` is final style output; `useTheme` stays concrete for color arithmetic/native.
 
 BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via applyColorPresetVars (never raw HSL triples). getResolvedTokens feeds BOTH platforms. Presets: APP_COLOR_PRESETS keys. BloomColorScope emits canonical --x and Tailwind --color-x. Contract: `docs/design-tokens.mdx`.
 

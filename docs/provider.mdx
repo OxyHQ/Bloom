@@ -73,6 +73,8 @@ const themeBoot: BloomThemeBootstrapConfig = {
 </BloomProvider>
 ```
 
+Use both `prepaintTheme` and `ssrStyles` for shared component first paint: the head supplies semantic tokens, while `ssrStyles` authorizes the instance-specific surface and chrome recipes. Omitting the latter does not provide complete SSR paint.
+
 The host must authorize both head resources through its CSP: pass an authorized
 nonce, or hash the exact `css` and `script` returned by `getThemeBootstrap(config)`.
 Static hosts can collect these hashes from their final export. A stylesheet
@@ -84,7 +86,7 @@ The provider first hydrates the same raw semantic palette as the server. It
 leaves the head's chosen paint intact until the client preference is available,
 then publishes the real palette. This prevents React from leaving mismatched
 server inline colors unchanged. Semantic color math still receives RGB values;
-opted-in web paint reads CSS variables. Native and providers without this option
+opted-in web paint reads CSS variables. Use `useThemePaint()` for semantic colors assigned to final styles; keep `useTheme()` for numeric color calculations and behavior. Shared surfaces resolve both complete material recipes through the same color engine, then emit ordinary mode-selected CSS declarations before their content. Local forced color scopes retain their chosen mode, including when portaled. Native and providers without this option
 retain their existing behavior. Keep bootstrap defaults consistent with the
 root provider; later account color changes remain runtime updates.
 

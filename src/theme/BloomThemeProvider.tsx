@@ -470,6 +470,7 @@ export function BloomThemeProvider({
     () => ({
       theme: themeColors,
       vars: themeVars,
+      rootMode: resolved,
       resolveMode: (nextMode) =>
         nextMode === resolved
           ? { theme: themeColors, vars: themeVars }

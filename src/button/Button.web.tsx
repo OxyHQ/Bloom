@@ -249,7 +249,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         ? true
         : undefined);
     const theme = useTheme();
-    const parentRecipe = useSurfaceFillRecipe()!;
+    const parentRecipe = useSurfaceFillRecipe();
     const parentLevel = useSurfaceLevelValue();
     const reactId = useId();
     const resolvedId = id ?? `bloom-btn-${reactId}`;
@@ -296,15 +296,26 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
 
-    const paintRecipe = useThemeRecipe((modeTheme) => {
-      const layer = resolveSurfaceLayer(modeTheme, parentRecipe[modeTheme.mode], parentLevel);
-      const palette = isLink && linkTone != null && toneProp == null
-        ? resolveLinkButtonPalette(modeTheme, linkTone)
-        : resolveButtonPalette(appearance, modeTheme, tone, colors, layer.fill, material);
-      return { palette, optics: resolveSurfaceOptics(modeTheme.isDark), shadow: palette.shadow ? BUTTON_SHADOW[modeTheme.isDark ? 'dark' : 'light'] : 'none' };
-    })!;
+    const paintRecipe = useThemeRecipe((modeTheme, documentMode) => {
+      const layer = resolveSurfaceLayer(modeTheme, parentRecipe[documentMode], parentLevel);
+      const palette =
+        isLink && linkTone != null && toneProp == null
+          ? resolveLinkButtonPalette(modeTheme, linkTone)
+          : resolveButtonPalette(appearance, modeTheme, tone, colors, layer.fill, material);
+      return {
+        palette,
+        optics: resolveSurfaceOptics(modeTheme.isDark),
+        shadow: palette.shadow ? BUTTON_SHADOW[modeTheme.isDark ? 'dark' : 'light'] : 'none',
+      };
+    });
     const palette = paintRecipe.paint.palette;
-    const withPaint = (node: ReactElement) => <>{paintRecipe.sheet}<ServerStyleSheet id={STYLE_ID} css={BLOOM_BUTTON_CSS} />{node}</>;
+    const withPaint = (node: ReactElement) => (
+      <>
+        {paintRecipe.sheet}
+        <ServerStyleSheet id={STYLE_ID} css={BLOOM_BUTTON_CSS} />
+        {node}
+      </>
+    );
     const underlineMode = resolveButtonUnderline(isLink, underline);
 
     const containerStyle = useMemo((): CSSProperties => {
@@ -569,62 +580,64 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         tabIndex?: number;
       }>;
       const childProps = child.props;
-      return withPaint(React.cloneElement(child, {
-        ref: setRoot,
-        'aria-hidden': hidden,
-        className: [composedClassName, childProps.className].filter(Boolean).join(' '),
-        style: { ...containerStyle, ...resolvedStyle, ...childProps.style },
-        onPointerDown: (event) => {
-          childProps.onPointerDown?.(event);
-          longPress.onPointerDown(event);
-        },
-        onPointerEnter: (event) => {
-          childProps.onPointerEnter?.(event);
-          handlePointerEnter(event);
-        },
-        onPointerLeave: (event) => {
-          childProps.onPointerLeave?.(event);
-          handlePointerLeave(event);
-        },
-        onFocus: (event) => {
-          childProps.onFocus?.(event);
-          onFocus?.(event);
-        },
-        onBlur: (event) => {
-          childProps.onBlur?.(event);
-          handleBlur(event);
-        },
-        onKeyDown: (event) => {
-          childProps.onKeyDown?.(event);
-          handleKeyDown(event);
-        },
-        onKeyUp: (event) => {
-          childProps.onKeyUp?.(event);
-          handleKeyUp(event);
-        },
-        onContextMenu: (event) => {
-          childProps.onContextMenu?.(event);
-          longPress.onContextMenu(event);
-        },
-        onClick: (event: MouseEvent<HTMLElement>) => {
-          if (longPress.suppressClick(event)) return;
-          if (stopPropagation) event.stopPropagation();
-          if (isInteractionBlocked) {
-            event.preventDefault();
-            return;
-          }
-          childProps.onClick?.(event);
-          onPress?.(event as unknown as GestureResponderEvent);
-        },
-        'aria-disabled': isInteractionBlocked || undefined,
-        'aria-busy': loading || undefined,
-        'aria-pressed': togglePressed,
-        'aria-label': ariaLabel ?? childProps['aria-label'],
-        'aria-current': ariaCurrent ?? childProps['aria-current'],
-        title: title ?? childProps.title,
-        id: childProps.id ?? resolvedId,
-        tabIndex: isInteractionBlocked ? -1 : childProps.tabIndex,
-      }));
+      return withPaint(
+        React.cloneElement(child, {
+          ref: setRoot,
+          'aria-hidden': hidden,
+          className: [composedClassName, childProps.className].filter(Boolean).join(' '),
+          style: { ...containerStyle, ...resolvedStyle, ...childProps.style },
+          onPointerDown: (event) => {
+            childProps.onPointerDown?.(event);
+            longPress.onPointerDown(event);
+          },
+          onPointerEnter: (event) => {
+            childProps.onPointerEnter?.(event);
+            handlePointerEnter(event);
+          },
+          onPointerLeave: (event) => {
+            childProps.onPointerLeave?.(event);
+            handlePointerLeave(event);
+          },
+          onFocus: (event) => {
+            childProps.onFocus?.(event);
+            onFocus?.(event);
+          },
+          onBlur: (event) => {
+            childProps.onBlur?.(event);
+            handleBlur(event);
+          },
+          onKeyDown: (event) => {
+            childProps.onKeyDown?.(event);
+            handleKeyDown(event);
+          },
+          onKeyUp: (event) => {
+            childProps.onKeyUp?.(event);
+            handleKeyUp(event);
+          },
+          onContextMenu: (event) => {
+            childProps.onContextMenu?.(event);
+            longPress.onContextMenu(event);
+          },
+          onClick: (event: MouseEvent<HTMLElement>) => {
+            if (longPress.suppressClick(event)) return;
+            if (stopPropagation) event.stopPropagation();
+            if (isInteractionBlocked) {
+              event.preventDefault();
+              return;
+            }
+            childProps.onClick?.(event);
+            onPress?.(event as unknown as GestureResponderEvent);
+          },
+          'aria-disabled': isInteractionBlocked || undefined,
+          'aria-busy': loading || undefined,
+          'aria-pressed': togglePressed,
+          'aria-label': ariaLabel ?? childProps['aria-label'],
+          'aria-current': ariaCurrent ?? childProps['aria-current'],
+          title: title ?? childProps.title,
+          id: childProps.id ?? resolvedId,
+          tabIndex: isInteractionBlocked ? -1 : childProps.tabIndex,
+        }),
+      );
     }
 
     // `href` renders a real anchor, for a button link or an anchor `LinkButton`.
@@ -660,7 +673,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           data-testid={testID}
         >
           {body}
-        </a>
+        </a>,
       );
     }
 
@@ -700,7 +713,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         data-testid={testID}
       >
         {body}
-      </button>
+      </button>,
     );
   },
 );

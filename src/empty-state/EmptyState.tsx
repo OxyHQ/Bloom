@@ -59,8 +59,10 @@ function EmptyStateComponent({
   testID,
 }: EmptyStateProps) {
   const { messages } = useMessages(EMPTY_STATE_MESSAGES);
-  const surface = useSurfaceFillRecipe()!;
-  const recipe = useThemeRecipe((theme) => resolveEmptyStatePaint(theme, surface[theme.mode]))!;
+  const surface = useSurfaceFillRecipe();
+  const recipe = useThemeRecipe((theme, documentMode) =>
+    resolveEmptyStatePaint(theme, surface[documentMode]),
+  );
   const paint = recipe.paint;
   const g = EMPTY_STATE_GEOMETRY[variant];
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
@@ -107,115 +109,115 @@ function EmptyStateComponent({
 
   return (
     <>
-    {recipe.sheet}
-    <View
-      testID={testID}
-      role="group"
-      accessibilityLabel={accessibilityLabel ?? joinEmptyStateName([title, description])}
-      style={[
-        {
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: g.gap,
-          paddingTop: g.paddingVertical,
-          paddingBottom: g.paddingVertical,
-          ...(minHeight != null ? { minHeight } : null),
-        },
-        style,
-      ]}
-    >
-      {mark != null ? (
-        <View testID={id('mark')} style={{ alignItems: 'center' }}>
-          {mark}
-        </View>
-      ) : null}
-
-      {title != null || description != null ? (
-        <View style={{ alignItems: 'center', gap: g.textGap, maxWidth: g.maxWidth }}>
-          {title != null ? (
-            <Text
-              variant={g.title}
-              role="heading"
-              aria-level={3}
-              testID={id('title')}
-              style={{ color: paint.text, textAlign: 'center' }}
-            >
-              {title}
-            </Text>
-          ) : null}
-          {description != null ? (
-            <Text
-              variant={g.description}
-              testID={id('description')}
-              style={{ color: paint.textSecondary, textAlign: 'center' }}
-            >
-              {description}
-            </Text>
-          ) : null}
-        </View>
-      ) : null}
-
-      {suggestions && suggestions.length > 0 ? (
-        <View
-          testID={id('suggestions')}
-          role="group"
-          accessibilityLabel={suggestionsLabel ?? messages.suggestions}
-          style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
+      {recipe.sheet}
+      <View
+        testID={testID}
+        role="group"
+        accessibilityLabel={accessibilityLabel ?? joinEmptyStateName([title, description])}
+        style={[
+          {
             alignItems: 'center',
-            gap: EMPTY_STATE_ACTION_GAP,
-          }}
-        >
-          {suggestions.map((suggestion) => (
-            <Chip
-              key={suggestion.id}
-              appearance="outline"
-              tone="neutral"
-              size={variant === 'compact' ? 'sm' : 'md'}
-              leadingIcon={suggestion.icon}
-              onPress={suggestion.onPress}
-              testID={id(`suggestion-${suggestion.id}`)}
-            >
-              {suggestion.label}
-            </Chip>
-          ))}
-        </View>
-      ) : null}
-
-      {children != null ? (
-        // `alignSelf: 'stretch'` and `minWidth: 0`: what goes here is a strip, a
-        // fact box or a list, none of which is centred text — and a flex child
-        // without the floor takes its content's min-content width as the
-        // block's own, which is how a nowrap line inside one widens the page.
-        <View testID={id('content')} style={{ alignSelf: 'stretch', minWidth: 0 }}>
-          {children}
-        </View>
-      ) : null}
-
-      {action || secondaryAction ? (
-        <View
-          testID={id('actions')}
-          style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
             justifyContent: 'center',
-            alignItems: 'center',
-            gap: EMPTY_STATE_ACTION_GAP,
-          }}
-        >
-          {action ? renderAction(action, 'primary') : null}
-          {secondaryAction ? renderAction(secondaryAction, 'secondary') : null}
-        </View>
-      ) : null}
+            gap: g.gap,
+            paddingTop: g.paddingVertical,
+            paddingBottom: g.paddingVertical,
+            ...(minHeight != null ? { minHeight } : null),
+          },
+          style,
+        ]}
+      >
+        {mark != null ? (
+          <View testID={id('mark')} style={{ alignItems: 'center' }}>
+            {mark}
+          </View>
+        ) : null}
 
-      {footer != null ? (
-        <View testID={id('footer')} style={{ alignItems: 'center' }}>
-          {footer}
-        </View>
-      ) : null}
-    </View>
+        {title != null || description != null ? (
+          <View style={{ alignItems: 'center', gap: g.textGap, maxWidth: g.maxWidth }}>
+            {title != null ? (
+              <Text
+                variant={g.title}
+                role="heading"
+                aria-level={3}
+                testID={id('title')}
+                style={{ color: paint.text, textAlign: 'center' }}
+              >
+                {title}
+              </Text>
+            ) : null}
+            {description != null ? (
+              <Text
+                variant={g.description}
+                testID={id('description')}
+                style={{ color: paint.textSecondary, textAlign: 'center' }}
+              >
+                {description}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
+        {suggestions && suggestions.length > 0 ? (
+          <View
+            testID={id('suggestions')}
+            role="group"
+            accessibilityLabel={suggestionsLabel ?? messages.suggestions}
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: EMPTY_STATE_ACTION_GAP,
+            }}
+          >
+            {suggestions.map((suggestion) => (
+              <Chip
+                key={suggestion.id}
+                appearance="outline"
+                tone="neutral"
+                size={variant === 'compact' ? 'sm' : 'md'}
+                leadingIcon={suggestion.icon}
+                onPress={suggestion.onPress}
+                testID={id(`suggestion-${suggestion.id}`)}
+              >
+                {suggestion.label}
+              </Chip>
+            ))}
+          </View>
+        ) : null}
+
+        {children != null ? (
+          // `alignSelf: 'stretch'` and `minWidth: 0`: what goes here is a strip, a
+          // fact box or a list, none of which is centred text — and a flex child
+          // without the floor takes its content's min-content width as the
+          // block's own, which is how a nowrap line inside one widens the page.
+          <View testID={id('content')} style={{ alignSelf: 'stretch', minWidth: 0 }}>
+            {children}
+          </View>
+        ) : null}
+
+        {action || secondaryAction ? (
+          <View
+            testID={id('actions')}
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: EMPTY_STATE_ACTION_GAP,
+            }}
+          >
+            {action ? renderAction(action, 'primary') : null}
+            {secondaryAction ? renderAction(secondaryAction, 'secondary') : null}
+          </View>
+        ) : null}
+
+        {footer != null ? (
+          <View testID={id('footer')} style={{ alignItems: 'center' }}>
+            {footer}
+          </View>
+        ) : null}
+      </View>
     </>
   );
 }

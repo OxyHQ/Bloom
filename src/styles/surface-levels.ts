@@ -309,8 +309,16 @@ export interface SurfaceLevelProviderProps {
  * container that sets one and not the other leaves CSS below it reading the
  * ENCLOSING surface's colour — which is the wrong colour, silently.
  */
-export function SurfaceLevelProvider({ level, fill, fillModes, children }: SurfaceLevelProviderProps) {
-  const value = useMemo<AmbientSurface>(() => ({ level, fill: fill ?? null, fillModes }), [level, fill, fillModes]);
+export function SurfaceLevelProvider({
+  level,
+  fill,
+  fillModes,
+  children,
+}: SurfaceLevelProviderProps) {
+  const value = useMemo<AmbientSurface>(
+    () => ({ level, fill: fill ?? null, fillModes }),
+    [level, fill, fillModes],
+  );
   return createElement(SurfaceLevelContext.Provider, { value }, children);
 }
 
@@ -396,6 +404,7 @@ export function useRingOffsetStyle(): Record<string, string> {
 /** Resolve the actual backing in each palette, retaining explicit custom fills. */
 export function useSurfaceFillRecipe() {
   const { level, fill, fillModes } = useContext(SurfaceLevelContext);
-  return useThemeRecipe((theme) => fillModes?.[theme.mode] ?? fill ?? levelBackground(theme, level));
+  return useThemeRecipe(
+    (theme, documentMode) => fillModes?.[documentMode] ?? fill ?? levelBackground(theme, level),
+  );
 }
-

@@ -102,7 +102,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
   ) {
     const theme = useTheme();
     const layer = useSurfaceLayer();
-    const parentRecipe = useSurfaceFillRecipe()!;
+    const parentRecipe = useSurfaceFillRecipe();
     const parentLevel = useSurfaceLevelValue();
     const panelShape = usePanelShape();
     const cornerCurve =
@@ -202,21 +202,29 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
       paint: appearance !== 'plain',
     });
     const { paintFill: fill, painted: paintsSurface, publishedFill } = material;
-    const paintRecipe = useThemeRecipe((palette) => {
-      const modeLayer = resolveSurfaceLayer(palette, parentRecipe[palette.mode], parentLevel);
+    const paintRecipe = useThemeRecipe((palette, documentMode) => {
+      const modeLayer = resolveSurfaceLayer(palette, parentRecipe[documentMode], parentLevel);
       const modePaint = resolveBloomColors(palette.colors, tone, appearance);
-      const background = callerStyle?.backgroundColor ??
+      const background =
+        callerStyle?.backgroundColor ??
         (tone === 'neutral' && appearance !== 'plain' ? modeLayer.fill : modePaint.background);
       return {
-        ...resolveSurfaceMaterial({ fill: String(background), parentFill: modeLayer.parentFill, parentLevel, paint: appearance !== 'plain' }),
+        ...resolveSurfaceMaterial({
+          fill: String(background),
+          parentFill: modeLayer.parentFill,
+          parentLevel,
+          paint: appearance !== 'plain',
+        }),
         borderColor: tone === 'neutral' ? palette.colors.border : modePaint.border,
         foreground: modePaint.foreground,
       };
-    })!;
+    });
     const outerStyle: ViewStyle = {
       ...resolved,
       ...paintRecipe.paint.vars,
-      ...(resolved.borderColor === containerStyle.borderColor ? { borderColor: paintRecipe.paint.borderColor } : null),
+      ...(resolved.borderColor === containerStyle.borderColor
+        ? { borderColor: paintRecipe.paint.borderColor }
+        : null),
       ...concentric.variables,
       ...(paintsSurface ? { backgroundColor: 'transparent' } : null),
     };
@@ -233,7 +241,14 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
           />
         ) : null}
         <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
-          <SurfaceLevelProvider level={material.level} fill={publishedFill} fillModes={{ light: paintRecipe.light.publishedFill, dark: paintRecipe.dark.publishedFill }}>
+          <SurfaceLevelProvider
+            level={material.level}
+            fill={publishedFill}
+            fillModes={{
+              light: paintRecipe.light.publishedFill,
+              dark: paintRecipe.dark.publishedFill,
+            }}
+          >
             <CardForegroundContext.Provider
               value={tone === 'neutral' ? undefined : paintRecipe.paint.foreground}
             >

@@ -28,9 +28,14 @@ import type { ButtonGroupItemProps, ButtonGroupProps } from './types';
 
 /** Separators resolve against the material actually published by the group. */
 function Divider() {
-  const fill = useSurfaceFillRecipe()!;
-  const recipe = useThemeRecipe((theme) => hairlineOn(theme, fill[theme.mode]))!;
-  return <>{recipe.sheet}<View style={{ width: 1, marginTop: 8, marginBottom: 8, backgroundColor: recipe.paint }} /></>;
+  const fill = useSurfaceFillRecipe();
+  const recipe = useThemeRecipe((theme, documentMode) => hairlineOn(theme, fill[documentMode]));
+  return (
+    <>
+      {recipe.sheet}
+      <View style={{ width: 1, marginTop: 8, marginBottom: 8, backgroundColor: recipe.paint }} />
+    </>
+  );
 }
 
 /** The group owns joining and inheritance; Button owns each actual control. */
@@ -53,7 +58,10 @@ export function createButtonGroup(
     style,
     testID,
   }: ButtonGroupProps) {
-    const recipe = useThemeRecipe((theme) => ({ selection: resolveCanonicalButtonPalette('outline', theme, 'neutral'), shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] }))!;
+    const recipe = useThemeRecipe((theme) => ({
+      selection: resolveCanonicalButtonPalette('outline', theme, 'neutral'),
+      shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+    }));
     const canonicalSize = sizeProp;
     const { size: scopedSize } = useBloomAppearance(
       { size: canonicalSize },
@@ -102,7 +110,8 @@ export function createButtonGroup(
     ));
     if (separated)
       return (
-        <GroupContext.Provider value={context}>{recipe.sheet}
+        <GroupContext.Provider value={context}>
+          {recipe.sheet}
           <BloomScope size={size}>
             {/* One pill: the group's own Surface paints the rim and shadow once, around the
                 whole, and clips the first segment's start and the last one's end. The segments
@@ -138,7 +147,8 @@ export function createButtonGroup(
         </GroupContext.Provider>
       );
     return (
-      <GroupContext.Provider value={context}>{recipe.sheet}
+      <GroupContext.Provider value={context}>
+        {recipe.sheet}
         <BloomScope size={size}>
           <Surface
             radius={BUTTON_RADIUS}

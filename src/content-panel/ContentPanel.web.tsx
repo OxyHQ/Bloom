@@ -87,7 +87,8 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * (no dynamic concatenation of the arbitrary `web:[…]` / `rounded-[var(--bloom-panel-radius)]` /
  * `md:` parts — whole class strings are selected per mode instead).
  */
-import React, { memo, useInsertionEffect } from 'react';
+import type React from 'react';
+import { memo, useInsertionEffect } from 'react';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { StyleSheet, useWindowDimensions, type ViewStyle } from 'react-native';
 
@@ -220,13 +221,17 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   };
   const chromeRecipe = useThemeRecipe(resolvePanelChrome);
   const panelChrome = chromeRecipe?.paint;
-  const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
+  const opticsRecipe = useThemeRecipe((theme, documentMode) => resolveSurfaceOptics(theme.isDark));
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
   const parentRecipe = useSurfaceFillRecipe();
   const customFill = surfaceColor ?? StyleSheet.flatten(surfaceStyle)?.backgroundColor;
-  const fillRecipe = useThemeRecipe((theme) =>
-    typeof customFill === 'string' ? customFill : rawFill === undefined ? undefined : theme.colors.card,
+  const fillRecipe = useThemeRecipe((theme, documentMode) =>
+    typeof customFill === 'string'
+      ? customFill
+      : rawFill === undefined
+        ? undefined
+        : theme.colors.card,
   );
   const defaultFill = rawFill;
   const { width } = useWindowDimensions();
@@ -244,11 +249,12 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     : rawFill && paintsSurface
       ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill
       : rawFill;
-  const materialRecipe = useThemeRecipe((theme) => {
-    const fill = fillRecipe?.[theme.mode];
-    const parent = parentRecipe?.[theme.mode];
+  const materialRecipe = useThemeRecipe((theme, documentMode) => {
+    const fill = fillRecipe?.[documentMode];
+    const parent = parentRecipe?.[documentMode];
     if (isPlain) return { publishedFill: parent, paintFill: 'transparent' };
-    if (!fill || !paintsSurface || !parent) return { publishedFill: fill, paintFill: fill ?? 'transparent' };
+    if (!fill || !paintsSurface || !parent)
+      return { publishedFill: fill, paintFill: fill ?? 'transparent' };
     return resolveSurfaceMaterial({ fill, parentFill: parent });
   });
   const materialStyle = useSurfaceMaterial(
@@ -360,10 +366,16 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
-      {chromeRecipe?.sheet}{opticsRecipe?.sheet}{materialRecipe?.sheet}{parentRecipe?.sheet}
+      {chromeRecipe?.sheet}
+      {opticsRecipe?.sheet}
+      {materialRecipe?.sheet}
+      {parentRecipe?.sheet}
       <ServerStyleSheet id="bloom-content-panel-insets" css={PANEL_INSET_CSS} />
-      <ServerStyleSheet id="bloom-content-panel-material" css={`[data-bloom-panel-material] { isolation: isolate; }
-${surfaceMaterialCss('[data-bloom-panel-material]', 'var(--bloom-surface-fill)')}`} />
+      <ServerStyleSheet
+        id="bloom-content-panel-material"
+        css={`[data-bloom-panel-material] { isolation: isolate; }
+${surfaceMaterialCss('[data-bloom-panel-material]', 'var(--bloom-surface-fill)')}`}
+      />
       <StyledView
         testID="content-panel-surface"
         {...{
@@ -467,7 +479,18 @@ ${surfaceMaterialCss('[data-bloom-panel-material]', 'var(--bloom-surface-fill)')
         >
           {/* Solid panels publish their painted surface. Plain panels preserve
               the enclosing surface so descendant scrims follow its real fill. */}
-          <SurfaceLevelProvider level={isPlain ? parentLevel : 1} fill={publishedFill} fillModes={materialRecipe?.light.publishedFill && materialRecipe.dark.publishedFill ? { light: materialRecipe.light.publishedFill, dark: materialRecipe.dark.publishedFill } : undefined}>
+          <SurfaceLevelProvider
+            level={isPlain ? parentLevel : 1}
+            fill={publishedFill}
+            fillModes={
+              materialRecipe?.light.publishedFill && materialRecipe.dark.publishedFill
+                ? {
+                    light: materialRecipe.light.publishedFill,
+                    dark: materialRecipe.dark.publishedFill,
+                  }
+                : undefined
+            }
+          >
             {errorBoundary === false ? (
               children
             ) : (

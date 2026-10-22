@@ -224,11 +224,17 @@ function TabBarBody({
   const dirProps = useDirectionProps();
   const layer = useSurfaceLayer();
   const theme = useTabBarTheme(themeOverrides);
-  const parentRecipe = useSurfaceFillRecipe()!;
-  const recipe = useThemeRecipe((palette) => {
+  const parentRecipe = useSurfaceFillRecipe();
+  const recipe = useThemeRecipe((palette, documentMode) => {
     const modeTheme = resolveTabBarTheme(palette.colors, themeOverrides);
-    return { theme: modeTheme, material: resolveSurfaceMaterial({ fill: modeTheme.blurTint, parentFill: parentRecipe[palette.mode] }) };
-  })!;
+    return {
+      theme: modeTheme,
+      material: resolveSurfaceMaterial({
+        fill: modeTheme.blurTint,
+        parentFill: parentRecipe[documentMode],
+      }),
+    };
+  });
   const publishedFill = resolveSurfaceMaterial({
     fill: theme.blurTint,
     parentFill: layer.parentFill,
@@ -644,12 +650,27 @@ function TabBarBody({
       >
         <OptionalGesture enabled={!scrollable} gesture={gesture}>
           <Animated.View style={[barStyle, surfaceFillVars(recipe.paint.material.publishedFill)]}>
-            <TabBarSurface theme={theme} paintFill={recipe.paint.material.paintFill} style={shapeStyle} />
+            <TabBarSurface
+              theme={theme}
+              paintFill={recipe.paint.material.paintFill}
+              style={shapeStyle}
+            />
             <Animated.View
-              style={[styles.highlight, { backgroundColor: recipe.paint.theme.highlight }, highlightStyle]}
+              style={[
+                styles.highlight,
+                { backgroundColor: recipe.paint.theme.highlight },
+                highlightStyle,
+              ]}
             />
             <View accessibilityRole="tablist" style={styles.itemRow}>
-              <SurfaceLevelProvider level={layer.level} fill={publishedFill} fillModes={{ light: recipe.light.material.publishedFill, dark: recipe.dark.material.publishedFill }}>
+              <SurfaceLevelProvider
+                level={layer.level}
+                fill={publishedFill}
+                fillModes={{
+                  light: recipe.light.material.publishedFill,
+                  dark: recipe.dark.material.publishedFill,
+                }}
+              >
                 <BarContext.Provider value={barContext}>{children}</BarContext.Provider>
               </SurfaceLevelProvider>
             </View>
@@ -685,7 +706,11 @@ function TabBarButtonBody({
   const theme = bar?.theme ?? standaloneTheme;
   const colors = useThemePaint();
   const paintTheme = bar?.paintTheme ?? resolveTabBarTheme(colors);
-  const hydrated = useSyncExternalStore(subscribeHydration, hydratedSnapshot, serverHydrationSnapshot);
+  const hydrated = useSyncExternalStore(
+    subscribeHydration,
+    hydratedSnapshot,
+    serverHydrationSnapshot,
+  );
   const slideIndex = bar?.slideIndex;
   const highlightOpacity = bar?.highlightOpacity;
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
@@ -821,7 +846,16 @@ function TabBarButtonBody({
           </Animated.View>
         </View>
         {/* Fades out and is clipped by the shrinking box — no layout anim. */}
-        <Animated.Text numberOfLines={1} style={[styles.label, labelStyle, Platform.OS === 'web' && !hydrated ? { color: focused ? paintTheme.activeTint : paintTheme.inactiveTint } : undefined]}>
+        <Animated.Text
+          numberOfLines={1}
+          style={[
+            styles.label,
+            labelStyle,
+            Platform.OS === 'web' && !hydrated
+              ? { color: focused ? paintTheme.activeTint : paintTheme.inactiveTint }
+              : undefined,
+          ]}
+        >
           {item.label}
         </Animated.Text>
       </Animated.View>

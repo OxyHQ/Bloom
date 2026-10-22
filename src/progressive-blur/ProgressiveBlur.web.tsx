@@ -39,8 +39,10 @@ export function ProgressiveBlur({
   direction = 'top',
   ...rest
 }: ProgressiveBlurProps) {
-  const surfaceFill = useSurfaceFillRecipe()!;
-  const recipe = useThemeRecipe((theme) => buildTailGradient(surfaceFill[theme.mode], direction))!;
+  const surfaceFill = useSurfaceFillRecipe();
+  const recipe = useThemeRecipe((theme, documentMode) =>
+    buildTailGradient(surfaceFill[documentMode], direction),
+  );
 
   const filter = `blur(${intensity * WEB_BLUR_PER_INTENSITY}px)`;
   const mask = buildMaskGradient(direction);
@@ -56,7 +58,12 @@ export function ProgressiveBlur({
     backgroundImage: recipe.paint,
   };
 
-  return <>{recipe.sheet}<View {...rest} style={[webStyle, style]} /></>;
+  return (
+    <>
+      {recipe.sheet}
+      <View {...rest} style={[webStyle, style]} />
+    </>
+  );
 }
 
 ProgressiveBlur.displayName = 'ProgressiveBlur';

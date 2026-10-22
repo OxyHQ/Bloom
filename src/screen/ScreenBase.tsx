@@ -72,7 +72,7 @@ export function createScreen(
     testID,
     ...props
   }: ScreenProps) {
-    const surfaceRecipe = useSurfaceFillRecipe()!;
+    const surfaceRecipe = useSurfaceFillRecipe();
     const surfaceFill = surfaceRecipe.paint;
     const parentScreen = useContext(ScreenContext);
     const parentViewport = useContext(ScreenViewportContext);

@@ -254,15 +254,16 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const clearSearchLabel = clearSearchLabelProp ?? messages.clearSearch;
   const noResultsLabel = noResultsLabelProp ?? messages.noResults;
   const modesLabel = modesLabelProp ?? messages.mode;
-  const paletteRecipe = useThemeRecipe(resolveSidebarPalette)!;
+  const paletteRecipe = useThemeRecipe(resolveSidebarPalette);
   const palette = paletteRecipe.paint;
-  const parentRecipe = useSurfaceFillRecipe()!;
+  const parentRecipe = useSurfaceFillRecipe();
   const parentFill = useSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
   const panelShape = usePanelShape();
   const customSurface = StyleSheet.flatten(style);
   const surfaceFill =
-    customSurface?.backgroundColor ?? (surface === 'plain' ? undefined : paletteRecipe.current.panel);
+    customSurface?.backgroundColor ??
+    (surface === 'plain' ? undefined : paletteRecipe.current.panel);
   const hasFill =
     typeof surfaceFill === 'string' &&
     surfaceFill !== 'transparent' &&
@@ -271,13 +272,18 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const publishedFill = hasFill
     ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill
     : undefined;
-  const materialRecipe = useThemeRecipe((theme) => resolveSurfaceMaterial({
-    fill: typeof customSurface?.backgroundColor === 'string'
-      ? customSurface.backgroundColor
-      : surface === 'plain' ? 'transparent' : paletteRecipe[theme.mode].panel,
-    parentFill: parentRecipe[theme.mode],
-    paint: paintsSurface,
-  }))!;
+  const materialRecipe = useThemeRecipe((theme, documentMode) =>
+    resolveSurfaceMaterial({
+      fill:
+        typeof customSurface?.backgroundColor === 'string'
+          ? customSurface.backgroundColor
+          : surface === 'plain'
+            ? 'transparent'
+            : paletteRecipe[documentMode].panel,
+      parentFill: parentRecipe[documentMode],
+      paint: paintsSurface,
+    }),
+  )!;
   const publishedPaint = materialRecipe.paint.publishedFill;
   const { size: scopedSize } = useBloomAppearance(
     { size: sizeProp },
@@ -1185,16 +1191,27 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       </SidebarGeometryProvider>
     </SidebarSizeProvider>
   );
-  return <SidebarPaintContext.Provider value={palette}>
-    {paletteRecipe.sheet}{materialRecipe.sheet}{parentRecipe.sheet}
-    {publishedFill ? (
-    <SurfaceLevelProvider level={plain ? parentLevel : 1} fill={publishedFill} fillModes={{ light: materialRecipe.light.publishedFill, dark: materialRecipe.dark.publishedFill }}>
-      {sidebar}
-    </SurfaceLevelProvider>
-  ) : (
-    sidebar
-  )}
-  </SidebarPaintContext.Provider>;
+  return (
+    <SidebarPaintContext.Provider value={palette}>
+      {paletteRecipe.sheet}
+      {materialRecipe.sheet}
+      {parentRecipe.sheet}
+      {publishedFill ? (
+        <SurfaceLevelProvider
+          level={plain ? parentLevel : 1}
+          fill={publishedFill}
+          fillModes={{
+            light: materialRecipe.light.publishedFill,
+            dark: materialRecipe.dark.publishedFill,
+          }}
+        >
+          {sidebar}
+        </SurfaceLevelProvider>
+      ) : (
+        sidebar
+      )}
+    </SidebarPaintContext.Provider>
+  );
 };
 
 // Two component types, so switching `variant` remounts instead of changing the hook order.

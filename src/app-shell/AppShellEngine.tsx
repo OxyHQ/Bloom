@@ -193,9 +193,9 @@ export function createAppShellEngine() {
     const drawerCloseLabel = drawerCloseLabelProp ?? messages.closeNavigation;
     const theme = useTheme();
     const paintColors = useThemePaint();
-    const backgroundRecipe = useThemeRecipe((palette) => palette.colors.background)!;
-    const cardRecipe = useThemeRecipe((palette) => palette.colors.card)!;
-    const navigationRecipe = useThemeRecipe(resolvePanelChrome)!;
+    const backgroundRecipe = useThemeRecipe((palette) => palette.colors.background);
+    const cardRecipe = useThemeRecipe((palette) => palette.colors.card);
+    const navigationRecipe = useThemeRecipe(resolvePanelChrome);
     const navigationChrome = navigationRecipe.paint;
     const { height: viewportHeight } = useShellViewport();
     const [asideHeight, setAsideHeight] = useState(0);
@@ -1549,7 +1549,7 @@ export function createAppShellEngine() {
 
     return safeFrame(
       <AppShellProvider value={shell}>
-          {navigationRecipe.sheet}
+        {navigationRecipe.sheet}
         <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
         {withFrameSwipe(
           <View
