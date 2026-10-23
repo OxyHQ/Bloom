@@ -523,6 +523,30 @@ describe('native scroll-restoration hook', () => {
   });
 });
 
+it('observes snapshots where window has no DOM events, as on React Native', () => {
+  // React Native aliases `window` to the global object: no DOM events, no history.
+  const { addEventListener, removeEventListener } = window;
+  const history = Object.getOwnPropertyDescriptor(window, 'history');
+  Object.assign(window, { addEventListener: undefined, removeEventListener: undefined });
+  Object.defineProperty(window, 'history', { configurable: true, value: undefined });
+  try {
+    const frames = new FrameScheduler();
+    frames.install();
+    const changed = jest.fn();
+    const harness = new Harness({ onSnapshotChange: changed });
+    harness.show({ content: 'feed', list: new FakeList() });
+    act(() => frames.flushOneFrame());
+    harness.scroll(300);
+    harness.unmountScreen();
+    expect(changed).toHaveBeenCalledWith({ 'feed%00': 300 });
+    harness.teardown();
+  } finally {
+    Object.assign(window, { addEventListener, removeEventListener });
+    if (history) Object.defineProperty(window, 'history', history);
+    else delete (window as { history?: History }).history;
+  }
+});
+
 it('restores a persisted native offset only when content is ready, then captures updates', () => {
   const frames = new FrameScheduler();
   frames.install();

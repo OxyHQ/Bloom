@@ -122,6 +122,15 @@ function useManualBrowserScrollRestoration(): void {
   }, []);
 }
 
+/**
+ * `pagehide` exists only in a browser. React Native also defines `window` (as an
+ * alias of the global object) but gives it no DOM events, so the test is for
+ * `addEventListener` itself, not for `window`.
+ */
+function hasWindowEvents(): boolean {
+  return typeof window !== 'undefined' && typeof window.addEventListener === 'function';
+}
+
 /** No React updates per scroll frame: only the host's settled snapshot callback runs. */
 function usePersistentScrollStore(options: ScrollRestorationPersistence): ScrollOffsetStore {
   const [store] = useState(() => new ScrollOffsetStore(options.initialSnapshot));
@@ -151,13 +160,14 @@ function usePersistentScrollStore(options: ScrollRestorationPersistence): Scroll
     const hide = () => {
       if (document.visibilityState === 'hidden') flush();
     };
-    if (typeof window !== 'undefined') window.addEventListener('pagehide', flush);
+    const browser = hasWindowEvents();
+    if (browser) window.addEventListener('pagehide', flush);
     if (typeof document !== 'undefined') document.addEventListener('visibilitychange', hide);
     return () => {
       unsubscribe();
       unsubscribeFlush();
       appState.remove();
-      if (typeof window !== 'undefined') window.removeEventListener('pagehide', flush);
+      if (browser) window.removeEventListener('pagehide', flush);
       if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', hide);
       flush();
     };
