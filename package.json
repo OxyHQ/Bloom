@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.23.1",
+  "version": "15.24.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1762,6 +1762,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/icon-circle/index.d.ts",
         "default": "./lib/commonjs/icon-circle/index.js"
+      }
+    },
+    "./engagement-bar": {
+      "react-native": {
+        "types": "./lib/typescript/module/engagement-bar/index.d.ts",
+        "default": "./src/engagement-bar/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/engagement-bar/index.d.ts",
+        "default": "./lib/module/engagement-bar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/engagement-bar/index.d.ts",
+        "default": "./lib/commonjs/engagement-bar/index.js"
       }
     },
     "./empty-state": {
@@ -4376,6 +4390,9 @@
       ],
       "icon-circle": [
         "./lib/typescript/module/icon-circle/index.d.ts"
+      ],
+      "engagement-bar": [
+        "./lib/typescript/module/engagement-bar/index.d.ts"
       ],
       "empty-state": [
         "./lib/typescript/module/empty-state/index.d.ts"

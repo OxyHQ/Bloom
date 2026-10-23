@@ -214,6 +214,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./motion', 'motion/index.ts'],
   ['./animated-check', 'animated-check/index.ts'],
   ['./icon-circle', 'icon-circle/index.ts'],
+  // A post's action bar: reply, repost, like, share, save.
+  ['./engagement-bar', 'engagement-bar/index.ts'],
   // Nothing to show, said once — the base block a dozen families hand-rolled.
   ['./empty-state', 'empty-state/index.ts'],
   ['./connection-dots', 'connection-dots/index.ts'],
