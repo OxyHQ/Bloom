@@ -13,8 +13,9 @@ assets on native.
 With `BloomProvider ssrStyles`, the same font rules are included before the
 server-rendered text. Font discovery must not wait for hydration: otherwise a
 cached page still paints a system face and changes its glyph metrics when the
-JavaScript bundle installs Bloom's font sheet. Hydration adopts that sheet before
-removing the server style node, without replacing or hiding visible content.
+JavaScript bundle installs Bloom's font sheet. Hydration retains the authorized
+server style node so its already loaded font faces are not replaced. Client-only
+hosts use a constructed stylesheet, without replacing or hiding visible content.
 The host's inline/nonce policy applies exactly as it does to layout styles.
 Client-only hosts install the same rules before their first paint.
 
@@ -107,7 +108,7 @@ the whole mechanism — there is no runtime platform check anywhere in the famil
 | Condition | Barrel | `applyFontFaces` | `FONT_ASSETS` | `FontLoader` |
 | --- | --- | --- | --- | --- |
 | `react-native` (Metro) | `index.ts` | no-op stub | the Metro asset map | loads `.ttf` via `useFonts` |
-| `browser` (Vite, webpack, Metro-web) | `index.web.ts` | injects `@font-face` | empty | emits opted-in SSR styles; adopts before paint |
+| `browser` (Vite, webpack, Metro-web) | `index.web.ts` | injects `@font-face` | empty | retains opted-in SSR font styles; otherwise adopts before paint |
 | `node` (SSR, prerender, tooling) | `index.node.ts` | no-op stub | empty | renders children |
 | `import` / `require` | `index.ts` | no-op stub | empty | — |
 
@@ -153,6 +154,7 @@ to a system face rather than erroring. Bloom's own Storybook ran with
 `fonts={false}` for months and every story looked plausible.
 
 Check the computed `font-family` on real text, not that the provider is
-mounted. On web, `applyFontFaces()` goes through a CONSTRUCTED stylesheet
-(`adoptedStyleSheets`), so there is no `<style id="bloom-fonts">` element to
-look for — read the document's adopted sheets, or just measure the text.
+mounted. On web, the provider retains its authorized
+`style[data-bloom-server-style="bloom-fonts"]` node. Without that server sheet,
+`applyFontFaces()` uses a constructed stylesheet (`adoptedStyleSheets`). Inspect
+the matching rules and measure actual text through a cold hydration.
