@@ -341,6 +341,13 @@ export { PressableScale } from './pressable-scale';
 export type { PressableScaleProps } from './pressable-scale';
 export { SubtleHover } from './subtle-hover';
 export type { SubtleHoverProps } from './subtle-hover';
+export { EngagementAction, EngagementBar, EngagementGroup } from './engagement-bar';
+export type {
+  EngagementActionProps,
+  EngagementBarProps,
+  EngagementGroupProps,
+  EngagementTone,
+} from './engagement-bar';
 
 // Motion presets (Reanimated enter/exit + directional screen transition)
 export {

@@ -1,0 +1,103 @@
+---
+title: EngagementBar
+description: A post's action bar — reply, repost, like, share, save — built to be mounted on every row of a feed.
+order: 47
+---
+
+# EngagementBar
+
+The row of actions under a post. `EngagementBar` lays out `EngagementAction`s
+with an optional `trailing` group pushed to the far edge; `EngagementGroup` puts
+adjacent actions that read as one control (an up/down vote) on a single pill.
+
+```tsx
+import {
+  EngagementAction,
+  EngagementBar,
+  EngagementGroup,
+} from '@oxy.so/bloom/engagement-bar';
+import { RiHeart3Fill } from '@oxy.so/bloom/icons/RiHeart3Fill';
+import { RiHeart3Line } from '@oxy.so/bloom/icons/RiHeart3Line';
+import { RiChat3Line } from '@oxy.so/bloom/icons/RiChat3Line';
+import { RiBookmarkFill } from '@oxy.so/bloom/icons/RiBookmarkFill';
+import { RiBookmarkLine } from '@oxy.so/bloom/icons/RiBookmarkLine';
+
+<EngagementBar
+  trailing={
+    <EngagementAction
+      icon={RiBookmarkLine}
+      activeIcon={RiBookmarkFill}
+      accessibilityLabel="Save"
+      active={saved}
+      onPress={toggleSave}
+    />
+  }
+>
+  <EngagementAction
+    icon={RiHeart3Line}
+    activeIcon={RiHeart3Fill}
+    accessibilityLabel="Like"
+    count={likes}
+    active={liked}
+    tone="error"
+    popOnActivate
+    rollCount
+    onPress={toggleLike}
+  />
+  <EngagementAction icon={RiChat3Line} accessibilityLabel="Reply" count={replies} onPress={reply} />
+</EngagementBar>
+```
+
+## Actions
+
+| prop | |
+| --- | --- |
+| `icon`, `activeIcon` | `BloomIconComponent`s. `activeIcon` (a filled heart) is drawn while `active`. |
+| `accessibilityLabel` | Required — the action is a glyph. Keep it constant; `active` carries the state. |
+| `count` | Formatted by the bar and hidden at `0` or when absent. |
+| `active`, `tone` | Defined `active` makes a toggle: it paints the glyph and count in `tone` (default `primary`) and announces `aria-pressed` plus `accessibilityState.selected`. |
+| `onPress` | Return `false` to reject the press (the viewer must sign in first): no haptic and no animation follow. |
+| `onLongPress`, `accessibilityActions`, `onAccessibilityAction` | A long press is a second job no screen reader can reach; pair it with an accessibility action that does the same. |
+| `popOnActivate` | The glyph dips, swells and settles while a ring bursts when a press turns the action on. |
+| `rollCount` | The count rolls to its new value when a press changes it — up from below as it rises, down as it falls. |
+| `busy`, `disabled` | `busy` swaps the glyph for a spinner and ignores presses without dimming; `disabled` dims. |
+| `hitSlop` | Defaults to 8. Actions in one `EngagementGroup` should not grow toward each other. |
+
+At rest the glyph and count are `textSecondary`; active, they take the tone's
+text member — the `outlined` foreground of `resolveAccentColors`, legible on the
+page in both modes. A press paints the tone's tint behind the action through the
+pressable's own pressed state; on the web, hover paints the same tint and focus
+draws the canonical ring.
+
+## The bar
+
+| prop | |
+| --- | --- |
+| `formatCount` | Every count in the bar. Defaults to `formatCompactNumber` in the bar's locale (`12.5K`, `12,5 mil`). |
+| `locale` | For the default format. Defaults to the nearest `LocaleProvider`. |
+| `haptics` | A light impact on press, a medium one on long press. Defaults to `true`; a `BloomHapticsProvider` can still turn it off. |
+| `trailing` | Actions packed against the far edge, in either direction. |
+
+The bar bleeds by the actions' horizontal padding, so the first and last glyphs
+line up with the content edge while the press tint still has room around them.
+
+## Cost
+
+A feed mounts one bar per row and five or six actions per bar, so the action's
+cost at rest is the design:
+
+- **One pressable host per action.** No style wrapper, no `className` interop,
+  no animated component. The glyph and the count are its direct children.
+- **One hook slot and one context read.** The bar resolves paint, the count
+  format and haptics once per theme and hands them to its actions through one
+  context.
+- **No mapper at rest.** Press feedback is the platform's pressed state. The pop
+  and the roll each mount their animated nodes only on the action that was
+  pressed, only after the press was accepted, and only until their animation
+  ends — a refetch or a recycled row never animates. Both drive shared values
+  imperatively with the values in their mappers' deps, and reduced motion jumps
+  to the end ([Motion](/docs/bloom/main/motion)).
+
+`src/__tests__/EngagementBar.test.tsx` pins the shape: fibers and hook slots per
+action at rest, and that the animated nodes appear on an accepted press and are
+gone when it finishes.
