@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.21.0",
+  "version": "15.21.1",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3853,6 +3853,7 @@
     "generate:exports": "node scripts/generate-platform-exports.mjs",
     "generate:theme-css": "bun scripts/generate-theme-css.ts",
     "generate:theme-golden": "bun scripts/generate-theme-golden.ts",
+    "generate:preset-accent-hues": "bun scripts/generate-preset-accent-hues.ts",
     "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
     "generate:adoption-matrix": "bun scripts/generate-adoption-matrix.ts",
     "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts && bun run build:avatar-runtime",

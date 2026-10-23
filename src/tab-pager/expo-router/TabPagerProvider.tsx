@@ -4,9 +4,11 @@ import { useSharedValue } from 'react-native-reanimated';
 import { animateMotion } from '../../motion/recipes';
 import { useRouter, usePathname, type Href } from '../../panel-routing/expo-router';
 import {
+  TabPagerActiveContext,
   TabPagerContext,
   TabPagerItemsContext,
   type TabCommitter,
+  type TabPagerActive,
   type TabPagerContextValue,
 } from '../context';
 import { barItemsOf, createPageModel, pagesStructure } from '../pages';
@@ -44,6 +46,11 @@ export function TabPagerProvider({ pages, children }: TabPagerProviderProps) {
   const progress = useSharedValue(model.barPositions[activeIndex] ?? 0);
   const chromeProgress = useSharedValue(chromeTarget);
   const committerRef = useRef<TabCommitter | null>(null);
+  // Read when a page is selected, not a dependency of `selectTab`: everything
+  // that holds `selectTab` — the tabs layout above all — would otherwise
+  // re-render on every navigation.
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
 
   const registerCommitter = useCallback((committer: TabCommitter | null) => {
     committerRef.current = committer;
@@ -92,10 +99,10 @@ export function TabPagerProvider({ pages, children }: TabPagerProviderProps) {
       // With a navigator, switching changes what sits UNDER a pushed route, so
       // the push is dismissed first — and only when something is pushed:
       // `canDismiss()` is true for ordinary stack history as well.
-      if (activeIndex < 0 && router.canDismiss()) router.dismissAll();
+      if (activeIndexRef.current < 0 && router.canDismiss()) router.dismissAll();
       committer.commit(name);
     },
-    [model, progress, activeIndex, router],
+    [model, progress, router],
   );
 
   const leaveTab = useCallback(
@@ -113,20 +120,24 @@ export function TabPagerProvider({ pages, children }: TabPagerProviderProps) {
     () => ({
       pages: model.pages,
       model,
-      activeIndex,
-      activePage: model.pages[activeIndex]?.name ?? null,
       progress,
       chromeProgress,
       selectTab,
       leaveTab,
       registerCommitter,
     }),
-    [model, activeIndex, progress, chromeProgress, selectTab, leaveTab, registerCommitter],
+    [model, progress, chromeProgress, selectTab, leaveTab, registerCommitter],
+  );
+  const active = useMemo<TabPagerActive>(
+    () => ({ activeIndex, activePage: model.pages[activeIndex]?.name ?? null }),
+    [model, activeIndex],
   );
 
   return (
     <TabPagerContext.Provider value={value}>
-      <TabPagerItemsContext.Provider value={items}>{children}</TabPagerItemsContext.Provider>
+      <TabPagerActiveContext.Provider value={active}>
+        <TabPagerItemsContext.Provider value={items}>{children}</TabPagerItemsContext.Provider>
+      </TabPagerActiveContext.Provider>
     </TabPagerContext.Provider>
   );
 }

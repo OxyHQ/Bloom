@@ -28,6 +28,7 @@ import { APP_COLOR_PRESETS, HEX_TO_APP_COLOR } from './color-presets';
 import { Hct } from './color-engine/hct';
 import { TonalPalette } from './color-engine/tonal-palette';
 import { blueFromArgb, greenFromArgb, redFromArgb } from './color-engine/color-utils';
+import { PRESET_ACCENT_HUES } from './preset-accent-hues';
 
 /** Semantic status seeds. Only hue and chroma survive; tones come from the policy. */
 export const STATUS_SEEDS = {
@@ -263,15 +264,36 @@ function hueDistance(a: number, b: number): number {
 }
 
 /**
- * The tone at which a hue reaches its highest chroma in sRGB — where it is most
- * itself.
- *
- * It varies enormously by family: red and orange peak near tone 55, violet near
- * 33, while lime, green and cyan only peak above 85. A single tone for every hue
- * therefore reads right for some and as mud for others — lime at tone 49 is
- * olive, and it takes tone 89 to look like lime at all.
+ * Memoize a pure function of a hue, bounded like the engine's role cache: the
+ * presets ask for a handful of hues, but a custom seed (a profile colour, an
+ * artwork seed) explores fifty, so the oldest entries make room.
  */
-function peakTone(hue: number): number {
+function memoByHue<T>(solve: (hue: number) => T, limit: number): (hue: number) => T {
+  const cache = new Map<number, T>();
+  return (hue) => {
+    let value = cache.get(hue);
+    if (value === undefined) {
+      value = solve(hue);
+      cache.set(hue, value);
+      if (cache.size > limit) cache.delete(cache.keys().next().value as number);
+    }
+    return value;
+  };
+}
+
+/**
+ * Where a hue reaches its highest chroma in sRGB — where it is most itself — and
+ * that chroma: how vivid the hue can get at all.
+ *
+ * The tone varies enormously by family: red and orange peak near tone 55, violet
+ * near 33, while lime, green and cyan only peak above 85. A single tone for every
+ * hue therefore reads right for some and as mud for others — lime at tone 49 is
+ * olive, and it takes tone 89 to look like lime at all.
+ *
+ * Sixty-three HCT solves per hue, and the accent search asks for fifty hues per
+ * seed, so it is memoized.
+ */
+const huePeak = memoByHue((hue: number): { tone: number; chroma: number } => {
   const palette = TonalPalette.fromHueAndChroma(hue, 200);
   let bestTone = 50;
   let bestChroma = -1;
@@ -282,13 +304,11 @@ function peakTone(hue: number): number {
       bestTone = tone;
     }
   }
-  return bestTone;
-}
+  return { tone: bestTone, chroma: bestChroma };
+}, 1024);
 
-/** How vivid a hue can get at all — its chroma at its peak tone. */
-function peakChroma(hue: number): number {
-  return Hct.fromInt(TonalPalette.fromHueAndChroma(hue, 200).tone(peakTone(hue))).chroma;
-}
+const peakTone = (hue: number): number => huePeak(hue).tone;
+const peakChroma = (hue: number): number => huePeak(hue).chroma;
 
 /**
  * Nudge a hue to the most vivid one near it, but only when that is a real gain.
@@ -408,6 +428,12 @@ function fillPair(palette: TonalPalette, startTone: number): { fill: string; for
   return { fill: rgb(palette.tone(tone)), foreground: foregroundFor(palette.tone(tone)) };
 }
 
+/** The two accent hues a seed rotates to when nothing pins them. */
+export interface AccentHues {
+  secondary: number;
+  tertiary: number;
+}
+
 /**
  * Pick the two accent hues: which arm of the split becomes the STANDOUT one
  * (`tertiary` — the FAB, the compose button) and which stays quiet.
@@ -419,7 +445,7 @@ function fillPair(palette: TonalPalette, startTone: number): { fill: string; for
  * them onto the same pocket, which collapses the pair and leaves the destructive
  * check below with nothing to swap to.
  */
-function accentHues(seedHue: number): { secondary: number; tertiary: number } {
+export function deriveAccentHues(seedHue: number): AccentHues {
   const [firstRotation, secondRotation] = SPLIT_ROTATIONS;
   const geometricA = (seedHue + firstRotation) % 360;
   const geometricB = (seedHue + secondRotation) % 360;
@@ -438,6 +464,19 @@ function accentHues(seedHue: number): { secondary: number; tertiary: number } {
   return hueDistance(standout, errorHue) < DESTRUCTIVE_PROXIMITY
     ? { secondary: standout, tertiary: quiet }
     : { secondary: quiet, tertiary: standout };
+}
+
+const derivedAccentHues = memoByHue(deriveAccentHues, 128);
+
+/**
+ * {@link deriveAccentHues} for a seed: read from the generated table for a
+ * built-in preset — the search behind it is most of a cold theme solve, and the
+ * preset registry is fixed — and solved (memoized) for any other seed.
+ * `preset-accent-hues.test.ts` asserts the table equals the search for every
+ * preset, so the two can never disagree.
+ */
+function accentHues(seedHex: string, seedHue: number): AccentHues {
+  return PRESET_ACCENT_HUES[seedHex.toLowerCase()] ?? derivedAccentHues(seedHue);
 }
 
 /**
@@ -539,10 +578,10 @@ export function buildPolicyTokens(
     '--sidebar-accent-foreground': monochrome ? roles.onSecondaryContainer : mutedForeground,
   };
 
-  const hues = accentHues(seed.hue);
   for (const role of ['secondary', 'tertiary'] as const) {
     const pin = pinned[role];
-    const hue = pin !== undefined ? Hct.fromInt(argbFromHex(pin)).hue : hues[role];
+    const hue =
+      pin !== undefined ? Hct.fromInt(argbFromHex(pin)).hue : accentHues(seedHex, seed.hue)[role];
     // One hue, three palettes. Every member shares it, so the family still reads
     // as one colour; only how loudly each speaks differs.
     // A monochrome theme has no accents to rotate to; the trio becomes a ladder

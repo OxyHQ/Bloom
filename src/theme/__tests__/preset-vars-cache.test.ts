@@ -1,9 +1,9 @@
 /**
  * `getPresetVars` solves each preset/mode/accent set once.
  *
- * The policy layer is the expensive part of a theme (~50 ms per set on a
- * 4x-throttled mobile profile) and `BloomThemeProvider` asks for the same set
- * twice on one render, so the result is cached. These tests pin both halves of
+ * A set is two solves (the M3 roles, then the policy layer) and
+ * `BloomThemeProvider` asks for the same set twice on one render, so the result
+ * is cached. These tests pin both halves of
  * that contract: the solve runs once per distinct input, and every caller still
  * gets its own object, so a caller that edits what it was handed cannot change
  * what the next one reads.

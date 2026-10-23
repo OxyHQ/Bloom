@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 import { BottomBar } from '../bottom-bar';
 import { useHaptics } from '../hooks/use-haptics';
-import { TabPagerItemsContext, useTabPagerContext } from './context';
+import { TabPagerActiveContext, TabPagerItemsContext, useTabPagerContext } from './context';
 import type { TabPagerBottomBarProps } from './types';
 
 /**
@@ -13,8 +13,8 @@ import type { TabPagerBottomBarProps } from './types';
  * compose button, `onValueLongPress`, `minimizeProgress`.
  */
 export function TabPagerBottomBar({ onReselect, ...props }: TabPagerBottomBarProps) {
-  const { model, activeIndex, activePage, progress, chromeProgress, selectTab } =
-    useTabPagerContext();
+  const { model, progress, chromeProgress, selectTab } = useTabPagerContext();
+  const { activeIndex, activePage } = useContext(TabPagerActiveContext);
   const items = useContext(TabPagerItemsContext);
   const impact = useHaptics();
   // An unmatched value is the bar's "no selection": a pushed route, or a page

@@ -4,6 +4,7 @@ import { useTabPager, type TabPage, type TabPagerState } from '../tab-pager';
 import { TabPagerBottomBar } from '../tab-pager/TabPagerBottomBar';
 import { useTabPagerContext, type TabCommitter } from '../tab-pager/context';
 import { createPageModel, valueAtPage } from '../tab-pager/pages';
+import { TabPagerLayout } from '../tab-pager/expo-router/TabPagerLayout';
 import { TabPagerProvider } from '../tab-pager/expo-router/TabPagerProvider';
 import { stateLeavingTab } from '../tab-pager/expo-router/leave-tab';
 
@@ -20,6 +21,16 @@ jest.mock('expo-router', () => ({
   usePathname: () => mockPathname,
 }));
 jest.mock('../bottom-bar', () => ({ BottomBar: jest.fn(() => null) }));
+// The layout's navigator: one call per layout render.
+jest.mock('expo-router/ui', () => ({
+  useTabsWithTriggers: jest.fn(() => ({
+    state: { index: 0, routes: [], routeNames: ['camera', 'index', 'write', 'you'] },
+    descriptors: {},
+    navigation: { preload: () => {}, navigate: () => {} },
+    NavigationContent: ({ children }: { children: unknown }) => children,
+  })),
+}));
+jest.mock('../tab-pager/expo-router/TabPager', () => ({ TabPager: () => null }));
 
 /** A page without a bar item sits left of Home, so page and bar indices differ. */
 const PAGES: TabPage[] = [
@@ -133,6 +144,20 @@ it('shows the bar on a route pushed over a page that hides it, pager or not', ()
   tabs.landOn('/p/1');
   expect(tabs.pager.activePage).toBeNull();
   expect(tabs.pager.chromeProgress.value).toBe(0);
+});
+
+it('does not re-render the tabs layout when only the page in front changes', () => {
+  const { useTabsWithTriggers } = jest.requireMock('expo-router/ui');
+  const layout = <TabPagerLayout />;
+  const tree = () => <TabPagerProvider pages={PAGES}>{layout}</TabPagerProvider>;
+  const view = render(tree());
+  const renders = jest.mocked(useTabsWithTriggers).mock.calls.length;
+  expect(renders).toBeGreaterThan(0);
+  for (const pathname of ['/you', '/p/1', '/camera']) {
+    mockPathname = pathname;
+    view.rerender(tree());
+  }
+  expect(useTabsWithTriggers).toHaveBeenCalledTimes(renders);
 });
 
 it('drops the page being left from the back history', () => {

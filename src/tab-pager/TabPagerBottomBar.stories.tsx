@@ -5,7 +5,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Fab } from '../fab/index.web';
 import * as Icons from '../icons';
 import { animateMotion } from '../motion/recipes';
-import { TabPagerContext, TabPagerItemsContext, type TabPagerContextValue } from './context';
+import {
+  TabPagerActiveContext,
+  TabPagerContext,
+  TabPagerItemsContext,
+  type TabPagerContextValue,
+} from './context';
 import { barItemsOf, createPageModel } from './pages';
 import { TabPagerBottomBar } from './TabPagerBottomBar';
 import type { TabPage } from './types';
@@ -42,8 +47,6 @@ function Shell({ page }: { page: string }) {
   const value: TabPagerContextValue = {
     pages: PAGES,
     model,
-    activeIndex,
-    activePage: active,
     progress,
     chromeProgress,
     selectTab: setActive,
@@ -52,13 +55,15 @@ function Shell({ page }: { page: string }) {
   };
   return (
     <TabPagerContext.Provider value={value}>
-      <TabPagerItemsContext.Provider value={items}>
-        <View style={{ height: 220, width: 390, maxWidth: '100%', justifyContent: 'flex-end' }}>
-          <TabPagerBottomBar
-            action={<Fab icon={Icons.RiQuillPenLine} accessibilityLabel="Compose" />}
-          />
-        </View>
-      </TabPagerItemsContext.Provider>
+      <TabPagerActiveContext.Provider value={{ activeIndex, activePage: active }}>
+        <TabPagerItemsContext.Provider value={items}>
+          <View style={{ height: 220, width: 390, maxWidth: '100%', justifyContent: 'flex-end' }}>
+            <TabPagerBottomBar
+              action={<Fab icon={Icons.RiQuillPenLine} accessibilityLabel="Compose" />}
+            />
+          </View>
+        </TabPagerItemsContext.Provider>
+      </TabPagerActiveContext.Provider>
     </TabPagerContext.Provider>
   );
 }
