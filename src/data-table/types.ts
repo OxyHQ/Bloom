@@ -126,6 +126,12 @@ export interface DataTableProps<T> {
   /** Accessible name of the density control (`"Table density"` in English). */
   sizeToggleAccessibilityLabel?: string;
 
+  /**
+   * Draws the table's own 1px border, 16px radius and 8px top inset. Defaults to
+   * `true`. Pass `false` inside a surface that already owns the frame (a dialog,
+   * a sheet, a card) so the table does not read as a second, nested border.
+   */
+  bordered?: boolean;
   /** Shown in the 160px empty band when `rows` is empty. */
   emptyState?: ReactNode;
   /**
