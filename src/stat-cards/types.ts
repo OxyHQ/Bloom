@@ -63,12 +63,13 @@ export interface StatCardsProps {
   /**
    * Columns at the widest breakpoint. The grid, by WINDOW width:
    *
-   *   plain   2 columns, 4 from 1024px
-   *   footer  1 column, 2 from 640px, 4 from 1280px
+   *   plain   2 columns, 4 (or 3) from 1024px
+   *   footer  1 column, 2 from 640px, 3 from 1024px, 4 from 1280px
    *
+   * `3` steps 1 or 2 → 3 at 1024px (a short last row keeps the grid's columns),
    * `2` stops at two columns, `1` pins a single column at every width. Defaults to `4`.
    */
-  columns?: 1 | 2 | 4;
+  columns?: 1 | 2 | 3 | 4;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

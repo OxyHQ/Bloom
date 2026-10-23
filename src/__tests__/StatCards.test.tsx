@@ -102,6 +102,12 @@ describe('StatCards', () => {
     expect(statCardsColumnCount('footer', 4, 1280)).toBe(4);
     expect(statCardsColumnCount('footer', 1, 1440)).toBe(1);
     expect(statCardsColumnCount('plain', 1, 1440)).toBe(1);
+    expect(statCardsColumnCount('plain', 3, 800)).toBe(2);
+    expect(statCardsColumnCount('plain', 3, 1440)).toBe(3);
+    expect(statCardsColumnCount('footer', 3, 500)).toBe(1);
+    expect(statCardsColumnCount('footer', 3, 800)).toBe(2);
+    expect(statCardsColumnCount('footer', 3, 1100)).toBe(3);
+    expect(statCardsColumnCount('footer', 3, 1440)).toBe(3);
   });
 
   it('renders only the first `count` stats', () => {

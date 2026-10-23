@@ -367,9 +367,11 @@ export function statCardsColumnCount(
   if (columns === 1) return 1;
   if (variant === 'footer') {
     if (columns === 4 && windowWidth >= BREAKPOINT_XL) return 4;
+    if (columns === 3 && windowWidth >= BREAKPOINT_LG) return 3;
     return windowWidth >= BREAKPOINT_SM ? 2 : 1;
   }
   if (columns === 4 && windowWidth >= BREAKPOINT_LG) return 4;
+  if (columns === 3 && windowWidth >= BREAKPOINT_LG) return 3;
   return 2;
 }
 
