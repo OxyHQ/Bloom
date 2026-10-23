@@ -18,6 +18,16 @@ removing the server style node, without replacing or hiding visible content.
 The host's inline/nonce policy applies exactly as it does to layout styles.
 Client-only hosts install the same rules before their first paint.
 
+For a server-rendered first screen, put `BloomFontHead` from
+`@oxy.so/bloom/fonts` in the HTML document's `<head>`, before its stylesheet
+links. It preloads Inter and both display cuts using the same asset URLs as
+the font sheet, so downloads can run while the blocking CSS and document load.
+It does not gate the app or change `font-display`. Do not place it inside the
+hydrated app root: document resource hoisting belongs to the document renderer.
+Pass `families={['sans', 'mono']}` for a first screen using monospace text instead
+of the display face; the default is `['sans', 'display']`. Native and unbundled
+Node exports are inert because they have no web asset pipeline.
+
 ```tsx
 // Nothing to do: BloomThemeProvider already does this.
 <BloomThemeProvider>…</BloomThemeProvider>
