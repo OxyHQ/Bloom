@@ -92,6 +92,11 @@ that arbitrate a drag between the pager and a child that also scrolls.
   page's neighbours stay laid out, and the rest are parked.
 - **Expo routes are preloaded**, so every page has its route before its first
   visit.
+- **Navigating does not re-render the tabs layout.** Its navigator hook
+  (`useTabsWithTriggers`) is not memoized upstream (~36ms a render on a Pixel
+  10 Pro), so the layout reads only what changes with the pages' structure; the
+  page in front lives in a context of its own that only the bar and
+  `useTabPager()` read.
 
 `react-native-pager-view` is an **optional peer**. Without it the same pages
 switch by tap only, and a dev warning names the package.

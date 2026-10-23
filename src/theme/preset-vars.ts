@@ -59,8 +59,7 @@ export function getPresetVars(
  * Resolved token sets, by preset, mode and pinned accents. `generateRoleColors`
  * already caches the M3 roles, but the policy layer on top (`buildPolicyTokens`:
  * fill tones searched for a legible label, the accent, chart and status
- * families) is most of the cost — ~12 ms per set on a desktop CPU, ~50 ms on a
- * 4x-throttled mobile profile — and one theme asks for the same set more than
+ * families) is a second solve, and one theme asks for the same set more than
  * once: `BloomThemeProvider` resolves it for the scope vars and again for the
  * theme object on the same render, on every app's cold start. The inputs are
  * all static (presets are a fixed registry), so the result is too; the bound
@@ -152,10 +151,9 @@ function solvePresetVars(
 /**
  * A preset's page background (`--background`) for one mode — exactly what
  * `getPresetVars(colorName, mode)['--background']` returns, for one tone solve
- * instead of the whole set (~50 ms on a 4x-throttled mobile profile, before the
- * first paint). For UI drawn before the theme resolves, such as a boot splash,
- * which needs this one colour and often for the mode the device is NOT in. The
- * page colour does not depend on pinned accents, so it takes none.
+ * instead of the whole set. For UI drawn before the theme resolves, such as a
+ * boot splash, which needs this one colour and often for the mode the device is
+ * NOT in. The page colour does not depend on pinned accents, so it takes none.
  */
 export function getPresetBackground(colorName: AppColorName, mode: 'light' | 'dark'): string {
   const preset = APP_COLOR_PRESETS[colorName];

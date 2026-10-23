@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import type { TabBarItem } from '../tab-bar/types';
 import type { PageModel } from './pages';
 import type { TabPagerState } from './types';
@@ -18,14 +18,29 @@ export interface TabCommitter {
   leave: (from: string, to: string) => void;
 }
 
-export interface TabPagerContextValue extends TabPagerState {
+/**
+ * Everything but the page in front. It changes only with the pages' structure,
+ * so the tabs layout — whose navigator hook is costly to re-run — reads this and
+ * nothing else; `selectTab` reads the page in front when it is called.
+ */
+export interface TabPagerContextValue extends Omit<TabPagerState, 'activePage'> {
   model: PageModel;
-  /** The page in front as a PAGE index, or -1. */
-  activeIndex: number;
   registerCommitter: (committer: TabCommitter | null) => void;
 }
 
 export const TabPagerContext = createContext<TabPagerContextValue | null>(null);
+
+/** The page in front, apart from the rest: it changes on every navigation. */
+export interface TabPagerActive {
+  /** The page in front as a PAGE index, or -1. */
+  activeIndex: number;
+  activePage: string | null;
+}
+
+export const TabPagerActiveContext = createContext<TabPagerActive>({
+  activeIndex: -1,
+  activePage: null,
+});
 
 /**
  * The bar's items, apart from the rest: labels and icons (an unread badge, an
@@ -41,5 +56,10 @@ export function useTabPagerContext(): TabPagerContextValue {
 
 /** The app's root pages: which one is in front, and how to move between them. */
 export function useTabPager(): TabPagerState {
-  return useTabPagerContext();
+  const { pages, progress, chromeProgress, selectTab, leaveTab } = useTabPagerContext();
+  const { activePage } = useContext(TabPagerActiveContext);
+  return useMemo(
+    () => ({ pages, activePage, progress, chromeProgress, selectTab, leaveTab }),
+    [pages, activePage, progress, chromeProgress, selectTab, leaveTab],
+  );
 }

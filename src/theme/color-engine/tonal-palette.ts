@@ -14,7 +14,7 @@ export class TonalPalette {
   private constructor(
     readonly hue: number,
     readonly chroma: number,
-    readonly keyColor: Hct,
+    private key: Hct | undefined,
   ) {}
 
   static fromInt(argb: number): TonalPalette {
@@ -26,8 +26,17 @@ export class TonalPalette {
   }
 
   static fromHueAndChroma(hue: number, chroma: number): TonalPalette {
-    const keyColor = new KeyColor(hue, chroma).create();
-    return new TonalPalette(hue, chroma, keyColor);
+    return new TonalPalette(hue, chroma, undefined);
+  }
+
+  /**
+   * The palette's key colour, solved on first read. Only the M3 key-colour
+   * roles read it; most palettes (every one the colour policy builds) only ever
+   * read tones, and the solve is a binary search of HCT solves at max chroma.
+   */
+  get keyColor(): Hct {
+    if (this.key === undefined) this.key = new KeyColor(this.hue, this.chroma).create();
+    return this.key;
   }
 
   /** ARGB of this palette at the given tone. */
