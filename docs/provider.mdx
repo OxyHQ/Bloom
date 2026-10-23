@@ -127,6 +127,10 @@ drawn, so `Avatar account={bot}` works anywhere below it. `characterRuntimeUrl` 
 hosted runtime for an app that self-hosts it; `storage` (the theme's adapter) persists drawn
 stills. See [Avatar](/docs/avatar).
 
+It also owns the native status bar's content style: it follows the theme, and an
+active Screen with a different appearance claims its own. Apps render no
+`StatusBar`. See [Theme](/docs/theme#native-status-bar).
+
 Visual hosts (`ToastOutlet`, `SurfaceHost`, portal/dialog outlets) stay outside the
 provider: their position determines stacking, and mounting duplicate outlets draws
 duplicate surfaces. `Screen` scopes coordinated geometry and motion locally.

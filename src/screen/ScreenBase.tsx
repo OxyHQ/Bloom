@@ -31,6 +31,7 @@ import {
   ScreenNavigationContext,
 } from './context';
 import { useScreenWindowBinding } from './use-screen-window-scroll';
+import { useStatusBarClaim } from '../theme/SystemStatusBar';
 import type { ScreenProps } from './types';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 import type { ScreenKeyboardComponents } from './keyboard-components';
@@ -99,6 +100,9 @@ export function createScreen(
     useEffect(() => {
       if (active && colorPreset) return host.claimColorPreset?.(colorPreset);
     }, [active, colorPreset, host.claimColorPreset]);
+    // A dark screen in a light app (or the reverse) owns the status bar content
+    // while it is the active one.
+    useStatusBarClaim(active);
     const localScrollY = useSharedValue(0);
     const scrollY =
       ownsViewport && !parentScreen && !parentViewport && host.metrics

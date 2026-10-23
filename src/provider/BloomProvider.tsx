@@ -13,6 +13,7 @@ import { BloomHapticsProvider } from '../hooks/use-haptics';
 import { AgentAvatarProvider } from '../agent-avatar/AgentAvatarProvider';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
 import { BloomThemeProvider, type BloomThemeProviderProps } from '../theme';
+import { SystemStatusBar } from '../theme/SystemStatusBar';
 import { ScrollRestorationProvider } from '../scroll/context';
 import { useEffect } from 'react';
 import type { ScrollRouterAdapter } from '../scroll/types';
@@ -77,20 +78,27 @@ export function BloomProvider({
                       re-render when the other moves.
                     */}
                       <TopEdgeProvider>
-                        <TabBarMinimizeProvider>
-                          {/*
+                        {/*
+                        The native status bar's content follows the theme, and an
+                        active dark Screen claims light content over it. One owner,
+                        so no app renders its own status bar.
+                      */}
+                        <SystemStatusBar>
+                          <TabBarMinimizeProvider>
+                            {/*
                           A provider, not an outlet: it renders nothing, loads nothing and
                           draws nothing until a bot's character is asked for, so an avatar
                           anywhere below finds the runtime without every app mounting this.
                           Inner `AgentAvatarProvider`s still win for their own subtree.
                         */}
-                          <AgentAvatarProvider
-                            runtimeUrl={characterRuntimeUrl}
-                            stillStorage={themeProps.storage}
-                          >
-                            {children}
-                          </AgentAvatarProvider>
-                        </TabBarMinimizeProvider>
+                            <AgentAvatarProvider
+                              runtimeUrl={characterRuntimeUrl}
+                              stillStorage={themeProps.storage}
+                            >
+                              {children}
+                            </AgentAvatarProvider>
+                          </TabBarMinimizeProvider>
+                        </SystemStatusBar>
                       </TopEdgeProvider>
                     </BottomEdgeProvider>
                   </BlurTargetProvider>
