@@ -4,6 +4,7 @@ import { createRoot, hydrateRoot, type Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { Platform } from 'react-native';
 import { FontLoader } from '../fonts/FontLoader';
+import { applyFontFaces } from '../fonts/apply-font-faces.web';
 import { ServerStyleContext, type ServerStylePolicy } from '../styles/context';
 import { dropStyleSheet } from '../styles/adopt-style-sheet';
 import {
@@ -63,42 +64,42 @@ it('publishes all font faces before server text without waiting for JavaScript',
   expect(sheets.adopted()).toHaveLength(0);
 });
 
-it('adopts server font rules before removing their node and preserves hydrated text', async () => {
+it('retains the loaded server font sheet through hydration without replacing its faces', async () => {
   const host = document.createElement('div');
   document.body.append(host);
-  host.innerHTML = renderToString(<Fixture />);
+  host.innerHTML = renderToString(<Fixture policy={{ nonce: 'font-nonce' }} />);
   const heading = host.querySelector('h1');
   const style = host.querySelector('[data-bloom-server-style="bloom-fonts"]');
   const serverCss = style?.textContent;
   const recoveries: unknown[] = [];
-  const removedWithFonts: boolean[] = [];
-  const removeChild = host.removeChild.bind(host);
-  const removal = jest.spyOn(host, 'removeChild').mockImplementation((node) => {
-    if (node === style)
-      removedWithFonts.push(sheets.adopted().some((s) => s.cssText === serverCss));
-    return removeChild(node);
-  });
+  const serverSheet = (style as HTMLStyleElement).sheet;
+  // Imperative and provider consumers may share a document, including before hydration.
+  applyFontFaces();
+  expect(sheets.adopted()).toHaveLength(0);
   let root: Root | undefined;
   try {
     await act(async () => {
-      root = hydrateRoot(host, <Fixture />, { onRecoverableError: (e) => recoveries.push(e) });
+      root = hydrateRoot(host, <Fixture policy={{ nonce: 'font-nonce' }} />, {
+        onRecoverableError: (e) => recoveries.push(e),
+      });
     });
     expect(recoveries).toEqual([]);
     expect(host.querySelector('h1')).toBe(heading);
-    expect(host.querySelector('[data-bloom-server-style]')).toBeNull();
-    expect(removedWithFonts).toEqual([true]);
-    expect(sheets.adopted()).toHaveLength(1);
-    expect(sheets.adopted()[0]?.cssText).toBe(serverCss);
-    await act(async () => root?.render(<Fixture />));
-    expect(sheets.adopted()).toHaveLength(1);
-    expect(sheets.adopted()[0]?.replaceSyncCalls).toBe(1);
+    expect(host.querySelector('[data-bloom-server-style]')).toBe(style);
+    expect((style as HTMLStyleElement).sheet).toBe(serverSheet);
+    expect(style?.textContent).toBe(serverCss);
+    expect(style?.getAttribute('nonce')).toBe('font-nonce');
+    applyFontFaces();
+    expect(sheets.adopted()).toHaveLength(0);
+    await act(async () => root?.render(<Fixture policy={{ nonce: 'font-nonce' }} />));
+    expect(host.querySelector('[data-bloom-server-style]')).toBe(style);
+    expect((style as HTMLStyleElement).sheet).toBe(serverSheet);
+    expect(sheets.adopted()).toHaveLength(0);
   } finally {
-    removal.mockRestore();
     await act(async () => root?.unmount());
     host.remove();
   }
-  // Font faces are document resources, retained for later provider mounts.
-  expect(sheets.adopted()).toHaveLength(1);
+  expect(sheets.adopted()).toHaveLength(0);
 });
 
 it('preserves opt-out and client-only hosts without emitting unauthorized server styles', async () => {
@@ -118,3 +119,28 @@ it('preserves opt-out and client-only hosts without emitting unauthorized server
     host.remove();
   }
 });
+
+it.each<ServerStylePolicy>(['inline', { nonce: 'font-nonce' }])(
+  'uses constructed fonts for client-only mounts and remounts even with policy %p',
+  async (policy) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    try {
+      for (let mount = 0; mount < 2; mount++) {
+        const root = createRoot(host);
+        try {
+          await act(async () => root.render(<Fixture policy={policy} />));
+          const styles = host.querySelectorAll('[data-bloom-server-style="bloom-fonts"]');
+          expect(styles).toHaveLength(0);
+          expect(sheets.adopted()).toHaveLength(1);
+          expect(sheets.adopted()[0]?.replaceSyncCalls).toBe(1);
+        } finally {
+          await act(async () => root.unmount());
+        }
+        expect(host.querySelector('style')).toBeNull();
+      }
+    } finally {
+      host.remove();
+    }
+  },
+);
