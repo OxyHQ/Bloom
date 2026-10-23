@@ -62,7 +62,7 @@ import { Text, View } from 'react-native';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { AppShellPanelContext } from '../app-shell/context';
 import { PanelCssContext } from '../app-shell/panel-layout-css';
-import { AppShell, AppShellPanelVisibility } from '../app-shell/index.web';
+import { AppShell, AppShellMenuButton, AppShellPanelVisibility } from '../app-shell/index.web';
 import { BloomProvider } from '../provider/BloomProvider';
 import { PageHeader } from '../page-header/PageHeader';
 import type { ServerStylePolicy } from '../styles/context';
@@ -171,6 +171,71 @@ describe('AppShell server layout', () => {
       sheets.adopted().some((sheet) => sheet.cssText.includes('--bloom-page-header-inset')),
     ).toBe(true);
   });
+
+  it.each(['drawer', 'panel'] as const)(
+    'keeps the canonical menu trigger and header stable through %s hydration',
+    async (navigationMode) => {
+      Object.defineProperty(globalThis, 'CSS', {
+        value: { supports: () => true },
+        configurable: true,
+      });
+      const readStyle = window.getComputedStyle.bind(window);
+      const styleSpy = jest.spyOn(window, 'getComputedStyle').mockImplementation((element) => {
+        const style = readStyle(element);
+        if (!element.hasAttribute('data-bloom-shell-frame')) return style;
+        const readValue = style.getPropertyValue.bind(style);
+        style.getPropertyValue = (name) =>
+          name === '--bloom-nav-mode' ? navigationMode : readValue(name);
+        return style;
+      });
+      const app = (
+        <BloomProvider fonts={false} ssrStyles="inline">
+          <AppShell
+            header={null}
+            navFrom={777}
+            sidebar={{ items: [] }}
+            panelLayout={{
+              panels: [
+                {
+                  id: 'list',
+                  content: (
+                    <PageHeader
+                      title="Inbox"
+                      leading={<AppShellMenuButton testID="responsive-menu" />}
+                      testID="responsive-header"
+                    />
+                  ),
+                },
+              ],
+            }}
+          />
+        </BloomProvider>
+      );
+      try {
+        host.innerHTML = renderToString(app);
+        const menu = host.querySelector<HTMLElement>('[data-testid="responsive-menu"]');
+        const start = host.querySelector('[data-testid="responsive-header-start"]');
+        expect(menu).not.toBeNull();
+        expect(menu?.style.display).toBe('var(--bloom-drawer-trigger-display, none)');
+        // Hiding the button itself removes both its width and the flex gap.
+        expect(menu?.parentElement).toBe(start);
+        const css = [...host.querySelectorAll('style')].map((node) => node.textContent).join('');
+        expect(css).toContain('width < 777px');
+        expect(css).toContain('--bloom-drawer-trigger-display:flex');
+        expect(css).toContain('--bloom-drawer-trigger-display:none');
+        const errors: unknown[] = [];
+        await act(async () => {
+          root = hydrateRoot(host, app, { onRecoverableError: (error) => errors.push(error) });
+        });
+        expect(errors).toEqual([]);
+        expect(host.querySelector('[data-testid="responsive-menu"]')).toBe(menu);
+        expect(menu?.parentElement).toBe(start);
+        expect(menu?.style.display).toBe('var(--bloom-drawer-trigger-display, none)');
+      } finally {
+        styleSpy.mockRestore();
+      }
+    },
+  );
 
   it('does not apply an outer compositor visibility variable to an inner legacy panel', () => {
     host.innerHTML = renderToString(
