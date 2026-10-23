@@ -7,7 +7,7 @@ bun run build       # bob build → lib/ (commonjs + module + typescript)
 bun run test / typescript / lint / format / clean / verify:package
 ```
 
-npm: only Actions → Release packages (Oxy's shared workflow); gates = `prepublishOnly` — `~/Oxy/docs/npm-releases.md`.
+npm: merging a version bump to main publishes it (Release packages, Oxy's shared workflow, once CI passed on that commit); gates = CI — `~/Oxy/docs/npm-releases.md`.
 
 RN + Web library. Families: `src/<name>/`, published subpaths and root exports.
 
@@ -18,7 +18,7 @@ RN + Web library. Families: `src/<name>/`, published subpaths and root exports.
 - **Forks have TWO barrels:** native `index.ts`, web `index.web.ts` (`browser` condition), never `index.native.*`. Exception: three `theme/native-root-vars.*` files; native imports `react-native-css/native-internal`, unavailable to web/tsc.
 - **Relative imports ignore export conditions.** Web-only importers name forked targets' `.web` sibling; neutral targets stay bare (`.web` breaks native). Avatar-group hoverCard passed old reachability/browser checks because one importer was correct while another used the bare barrel and Storybook Vite resolved `.web.tsx` anyway. `web-fork-reachability.test.ts` checks both; `docs/avatar-group.mdx`.
 - **Keep `react-native` conditions split into `types` + `default`.** Bare strings make consumers typecheck Bloom `.tsx`, importing react-dom and undeclared optional peers.
-- **Required postbuild `verify:package`:** all packed exports must ship; RN has no src fallback. Keep both recursion guards: `--ignore-scripts`, `BLOOM_VERIFY_PACKAGE_RUNNING`.
+- **Required postbuild `verify:package`:** all packed exports must ship; RN has no src fallback. No `prepack`/`prepare`: a pack must never rebuild (`--ignore-scripts`).
 - **Toast is not web-forked:** only `ToastHost.native.tsx` splits; exclude `./toast` from `WEB_FORKED_SUBPATHS`.
 
 ## Reanimated web layout animations
