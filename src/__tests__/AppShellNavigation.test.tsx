@@ -452,6 +452,13 @@ describe('native navigation with layout props', () => {
     expect(screen.getByTestId('native-aside-content')).toBeTruthy();
     expect(screen.UNSAFE_queryAllByType(ReactNative.ScrollView).length).toBeGreaterThan(0);
   });
+  it('opens an href-only item from the bottom bar through Linking', () => {
+    setWidth(390);
+    const openURL = jest.spyOn(ReactNative.Linking, 'openURL').mockResolvedValue(undefined);
+    const screen = renderIn(<AppShell sidebar={{ items: NAV }} navigationPlacement="bottom" />);
+    fireEvent.press(screen.getByLabelText('Home'));
+    expect(openURL).toHaveBeenCalledWith('/');
+  });
   it('external layout delegates page scrolling to its child', () => {
     setWidth(1440);
     const screen = renderIn(

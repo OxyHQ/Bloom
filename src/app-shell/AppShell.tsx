@@ -6,7 +6,7 @@ import React, {
   useId,
   type ComponentType,
 } from 'react';
-import { Platform, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { useScreen } from '../screen/context';
 import type { ScreenComponents } from '../screen/types';
@@ -18,7 +18,7 @@ import { PageHeader } from '../page-header';
 import type { BottomBarProps } from '../bottom-bar/types';
 import type { FabProps } from '../fab/types';
 import { ResponsiveNavigation } from './ResponsiveNavigation';
-import type { AppShellProps, AppShellEngineProps } from './types';
+import type { AppShellProps, AppShellEngineProps, AppShellSidebarProps } from './types';
 import { createAppShellEngine } from './AppShellEngine';
 import { resolveScrollMode } from './layout';
 import { AppShellMenuButton } from './AppShellMenuButton';
@@ -32,6 +32,22 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import { ShellColorClaimContext } from './context';
 import { useColorClaims } from './use-color-claims';
+
+/**
+ * A navigation selection the app does not handle itself goes to the sidebar
+ * item: its `onPress`, else the sidebar's `onNavigate`, else its `href`. React
+ * Native has no `window.location`, so a native `href` opens through `Linking`.
+ */
+function selectSidebarItem(sidebar: AppShellSidebarProps | undefined, key: string): void {
+  const item = sidebar?.items?.find((candidate) => candidate.key === key);
+  if (!item) return;
+  if (item.onPress) item.onPress();
+  else if (sidebar?.onNavigate) sidebar.onNavigate(item);
+  else if (item.href) {
+    if (Platform.OS === 'web') window.location.assign(item.href);
+    else void Linking.openURL(item.href).catch(() => undefined);
+  }
+}
 
 export function resolveNavigationPlacement(
   width: number,
@@ -138,15 +154,8 @@ export function createAppShell(
     );
     const selected = value ?? sidebar?.selected;
     const docked = sidebar?.surface === 'docked';
-    const select = (next: string) => {
-      if (onValueChange) onValueChange(next);
-      else {
-        const item = sidebar?.items?.find((candidate) => candidate.key === next);
-        if (item?.onPress) item.onPress();
-        else if (item && sidebar?.onNavigate) sidebar.onNavigate(item);
-        else if (item?.href && typeof window !== 'undefined') window.location.assign(item.href);
-      }
-    };
+    const select = (next: string) =>
+      onValueChange ? onValueChange(next) : selectSidebarItem(sidebar, next);
     const shellProps = {
       navigation: items,
       value: selected,
@@ -291,16 +300,8 @@ export function createAppShell(
         icon: <item.icon />,
       })) ??
       [];
-    const select = (next: string) => {
-      if (onValueChange) onValueChange(next);
-      else {
-        const item = sidebar?.items?.find((candidate) => candidate.key === next);
-        if (item?.onPress) item.onPress();
-        else if (item && sidebar?.onNavigate) sidebar.onNavigate(item);
-        else if (item?.href && typeof globalThis.window !== 'undefined')
-          globalThis.window.location.assign(item.href);
-      }
-    };
+    const select = (next: string) =>
+      onValueChange ? onValueChange(next) : selectSidebarItem(sidebar, next);
     const mappedItems = useMemo(
       () =>
         navigation?.map((item) => ({
