@@ -17,6 +17,7 @@ import {
   surfaceFillOn,
 } from '../styles/surface-levels';
 import { buildTheme } from '../theme/build-theme';
+import { buildThemeFromSeed } from '../theme/build-theme-from-seed';
 import * as namedPalettes from '../theme/prepaint-palettes';
 import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
 
@@ -197,51 +198,54 @@ it('does not compute server preset variants on a client-only mount', async () =>
     host.remove();
   }
 });
-it('resolves a fixed light child against the requested root preset and mode backing', () => {
-  let observed: Record<string, string> = {};
-  function Child() {
-    const parent = useSurfaceFillRecipe();
-    const material = useThemeRecipe((theme, mode, preset) =>
-      surfaceFillOn(theme, resolvePaintMode(parent, mode, preset)),
+it.each([undefined, '#1f8a73'])(
+  'resolves a fixed light child with seed %s against the requested root backing',
+  (seed) => {
+    let observed: Record<string, string> = {};
+    function Child() {
+      const parent = useSurfaceFillRecipe();
+      const material = useThemeRecipe((theme, mode, preset) =>
+        surfaceFillOn(theme, resolvePaintMode(parent, mode, preset)),
+      );
+      observed = {
+        yellow: material.resolvePreset('yellow', 'dark'),
+        blue: material.resolvePreset('blue', 'dark'),
+      };
+      return (
+        <>
+          {material.sheet}
+          <span>Child</span>
+        </>
+      );
+    }
+    function Parent() {
+      const fill = useThemeRecipe((theme) => theme.colors.background);
+      return (
+        <>
+          {fill.sheet}
+          <SurfaceLevelProvider level={0} fill={fill.current} fillModes={fill}>
+            <BloomColorScope colorPreset="pink" seed={seed} mode="light">
+              <Child />
+            </BloomColorScope>
+          </SurfaceLevelProvider>
+        </>
+      );
+    }
+    renderToString(
+      <ServerStyleContext.Provider value="inline">
+        <BloomThemeProvider fonts={false} prepaintTheme={config}>
+          <Parent />
+        </BloomThemeProvider>
+      </ServerStyleContext.Provider>,
     );
-    observed = {
-      yellow: material.resolvePreset('yellow', 'dark'),
-      blue: material.resolvePreset('blue', 'dark'),
-    };
-    return (
-      <>
-        {material.sheet}
-        <span>Child</span>
-      </>
+    const child = seed ? buildThemeFromSeed(seed, 'light') : buildTheme('pink', 'light');
+    expect(observed.yellow).toBe(
+      surfaceFillOn(child, buildTheme('yellow', 'dark').colors.background),
     );
-  }
-  function Parent() {
-    const fill = useThemeRecipe((theme) => theme.colors.background);
-    return (
-      <>
-        {fill.sheet}
-        <SurfaceLevelProvider level={0} fill={fill.current} fillModes={fill}>
-          <BloomColorScope colorPreset="pink" mode="light">
-            <Child />
-          </BloomColorScope>
-        </SurfaceLevelProvider>
-      </>
-    );
-  }
-  renderToString(
-    <ServerStyleContext.Provider value="inline">
-      <BloomThemeProvider fonts={false} prepaintTheme={config}>
-        <Parent />
-      </BloomThemeProvider>
-    </ServerStyleContext.Provider>,
-  );
-  const child = buildTheme('pink', 'light');
-  expect(observed.yellow).toBe(
-    surfaceFillOn(child, buildTheme('yellow', 'dark').colors.background),
-  );
-  expect(observed.blue).toBe(surfaceFillOn(child, buildTheme('blue', 'dark').colors.background));
-  expect(observed.yellow).not.toBe(observed.blue);
-});
+    expect(observed.blue).toBe(surfaceFillOn(child, buildTheme('blue', 'dark').colors.background));
+    expect(observed.yellow).not.toBe(observed.blue);
+  },
+);
 
 it('retains the head-selected palette while an asynchronous web adapter restores it', async () => {
   let resolveStored!: (raw: string) => void;
