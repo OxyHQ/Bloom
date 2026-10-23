@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import { useThemeRecipe, useThemePaint } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { resolveTabBarTheme } from './shared';
@@ -225,13 +226,13 @@ function TabBarBody({
   const layer = useSurfaceLayer();
   const theme = useTabBarTheme(themeOverrides);
   const parentRecipe = useSurfaceFillRecipe();
-  const recipe = useThemeRecipe((palette, documentMode) => {
+  const recipe = useThemeRecipe((palette, documentMode, documentPreset) => {
     const modeTheme = resolveTabBarTheme(palette.colors, themeOverrides);
     return {
       theme: modeTheme,
       material: resolveSurfaceMaterial({
         fill: modeTheme.blurTint,
-        parentFill: parentRecipe[documentMode],
+        parentFill: resolvePaintMode(parentRecipe, documentMode, documentPreset),
       }),
     };
   });
@@ -669,6 +670,8 @@ function TabBarBody({
                 fillModes={{
                   light: recipe.light.material.publishedFill,
                   dark: recipe.dark.material.publishedFill,
+                  resolvePreset: (preset, mode) =>
+                    recipe.resolvePreset(preset, mode).material.publishedFill,
                 }}
               >
                 <BarContext.Provider value={barContext}>{children}</BarContext.Provider>

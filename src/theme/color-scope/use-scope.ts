@@ -21,7 +21,7 @@ export function useScope(
     seed !== undefined || colorPreset !== undefined || mode !== undefined || tokens !== undefined;
   const state = useMemo<ScopeState | null>(() => {
     if (!parent || !active) return inherited;
-    const resolveMode = (resolved: 'light' | 'dark'): ScopePalette => {
+    const resolvePreset = (preset: AppColorName, resolved: 'light' | 'dark'): ScopePalette => {
       const base =
         seed !== undefined
           ? {
@@ -30,17 +30,20 @@ export function useScope(
             }
           : colorPreset !== undefined || !inherited
             ? {
-                theme: buildTheme(colorPreset ?? parent.colorPreset, resolved),
-                vars: buildScopeVars(colorPreset ?? parent.colorPreset, resolved),
+                theme: buildTheme(colorPreset ?? preset, resolved),
+                vars: buildScopeVars(colorPreset ?? preset, resolved),
               }
-            : inherited.resolveMode(resolved);
+            : (inherited.resolvePreset?.(preset, resolved) ?? inherited.resolveMode(resolved));
       return applyScopeTokens(base, tokens);
     };
+    const resolveMode = (resolved: 'light' | 'dark') => resolvePreset(parent.colorPreset, resolved);
     return {
       ...resolveMode(mode ?? parent.theme.mode),
       resolveMode,
+      resolvePreset,
       fixedMode: mode ?? inherited?.fixedMode,
       rootMode: inherited?.rootMode ?? parent.theme.mode,
+      prepaintReady: inherited?.prepaintReady,
     };
   }, [parent, inherited, active, colorPreset, mode, tokens, seed]);
   const context = useMemo(

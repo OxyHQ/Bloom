@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import React, {
   Children,
   createContext,
@@ -29,7 +30,9 @@ import type { ButtonGroupItemProps, ButtonGroupProps } from './types';
 /** Separators resolve against the material actually published by the group. */
 function Divider() {
   const fill = useSurfaceFillRecipe();
-  const recipe = useThemeRecipe((theme, documentMode) => hairlineOn(theme, fill[documentMode]));
+  const recipe = useThemeRecipe((theme, documentMode, documentPreset) =>
+    hairlineOn(theme, resolvePaintMode(fill, documentMode, documentPreset)),
+  );
   return (
     <>
       {recipe.sheet}

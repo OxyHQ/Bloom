@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 import type { Theme } from '../types';
+import type { AppColorName } from '../color-presets';
 
 export interface ScopePalette {
   theme: Theme;
@@ -9,10 +10,14 @@ export interface ScopePalette {
 /** Private resolved source, retained through scopes and portal outlets. */
 export interface ScopeState extends ScopePalette {
   resolveMode: (mode: 'light' | 'dark') => ScopePalette;
+  /** Resolve inherited document presets while retaining explicit local sources. */
+  resolvePreset?: (preset: AppColorName, mode: 'light' | 'dark') => ScopePalette;
   /** Explicit local mode, retained through portals; undefined inherits document selection. */
   fixedMode?: 'light' | 'dark';
   /** Root selection is independent of a local forced palette and its backing. */
   rootMode?: 'light' | 'dark';
+  /** Server CSS remains authoritative until the root publishes its live selection. */
+  prepaintReady?: boolean;
 }
 
 declare global {

@@ -1,56 +1,67 @@
-import { buildScopeVars } from './color-scope/style-builder';
-import type { AppColorName } from './color-presets';
+import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
 import type { ThemeMode } from './types';
-import type { ThemeColors } from './types';
-import { buildTheme } from './build-theme';
+import { getPrepaintPalette } from './prepaint-palettes';
+import { presetPaintCss, themePaintCss, themePaintVars } from './paint';
+export { themePaintVars } from './paint';
 
 /** Share the same configuration between the document head and root provider. */
 export interface BloomThemeBootstrapConfig {
   defaultMode?: ThemeMode;
   defaultColorPreset?: AppColorName;
-  /** localStorage key containing a plain light/dark/system/adaptive preference. */
+  /** Existing Bloom JSON theme storage; named presets paint before hydration. */
+  persistKey?: string;
+  /** Plain mode preference; when valid, takes precedence over the JSON mode. */
   modeStorageKey?: string;
 }
 
-/** Raw semantic colors stay numeric; only final web paint reads these CSS variables. */
-export function themePaintVars(colors: ThemeColors): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(colors).map(([name, value]) => [`--bloom-paint-${name}`, value]),
-  );
-}
-
-export function applyPrepaintMode(mode: 'light' | 'dark'): void {
+export function applyPrepaintMode(mode: 'light' | 'dark', preset?: AppColorName): void {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
   root.setAttribute('data-bloom-theme-mode', mode);
+  if (preset) root.setAttribute('data-bloom-theme-preset', preset);
 }
 
-function declarations(vars: Record<string, string>): string {
-  return Object.entries(vars)
-    .map(([key, value]) => `${key}:${value};`)
-    .join('');
+const presetCss = new Map<string, string>();
+function paletteVars(preset: AppColorName, mode: 'light' | 'dark') {
+  const palette = getPrepaintPalette(preset, mode);
+  return { ...palette.vars, ...themePaintVars(palette.theme.colors), 'color-scheme': mode };
 }
 
-/**
- * Build deterministic head resources from Bloom's own palette engine. Hosts can
- * hash these exact script bytes for CSP, or give BloomThemeHead a nonce.
- */
+/** Engine-derived resources for the document head; hosts authorize their exact CSP bytes. */
 export function getThemeBootstrap(config: BloomThemeBootstrapConfig = {}): {
   css: string;
   script: string;
 } {
   const preset = config.defaultColorPreset ?? 'oxy';
   const mode = config.defaultMode ?? 'system';
-  const light = `${declarations(buildScopeVars(preset, 'light'))}${declarations(themePaintVars(buildTheme(preset, 'light').colors))}color-scheme:light;`;
-  const dark = `${declarations(buildScopeVars(preset, 'dark'))}${declarations(themePaintVars(buildTheme(preset, 'dark').colors))}color-scheme:dark;`;
-  const system = mode === 'system' || mode === 'adaptive';
-  const css = `:root{${mode === 'dark' ? dark : light}}${system ? `@media(prefers-color-scheme:dark){:root:not([data-bloom-theme-mode]){${dark}}}` : ''}:root[data-bloom-theme-mode="light"]{${light}}:root[data-bloom-theme-mode="dark"]{${dark}}html,body{background-color:var(--background);color:var(--foreground);}`;
-  // JSON is code data, never HTML. Escape '<' so a storage key cannot close the
-  // script element; separators also remain safe in older script parsers.
-  const data = JSON.stringify({ mode, key: config.modeStorageKey })
+  const key = `${preset}/${mode}/${Boolean(config.persistKey)}`;
+  let css = presetCss.get(key);
+  if (css === undefined) {
+    css = config.persistKey
+      ? presetPaintCss(
+          APP_COLOR_NAMES.map((name) => ({
+            preset: name,
+            light: paletteVars(name, 'light'),
+            dark: paletteVars(name, 'dark'),
+          })),
+          preset,
+          mode,
+        )
+      : themePaintCss(':root', paletteVars(preset, 'light'), paletteVars(preset, 'dark'), mode);
+    css += 'html,body{background-color:var(--background);color:var(--foreground);}';
+    presetCss.set(key, css);
+  }
+  // JSON is code data, never HTML. Escape delimiters that can close a script.
+  const data = JSON.stringify({
+    mode,
+    preset,
+    key: config.modeStorageKey,
+    persist: config.persistKey,
+    presets: config.persistKey ? APP_COLOR_NAMES : undefined,
+  })
     .replace(/</g, '\\u003c')
     .replace(/\u2028/g, '\\u2028')
     .replace(/\u2029/g, '\\u2029');
-  const script = `(function(c){var m=c.mode;try{var s=c.key&&localStorage.getItem(c.key);if(s==='light'||s==='dark'||s==='system'||s==='adaptive')m=s}catch(e){}var d=m==='dark';if(m==='system'||m==='adaptive'){try{d=matchMedia('(prefers-color-scheme: dark)').matches}catch(e){}}var r=document.documentElement;r.setAttribute('data-bloom-theme-mode',d?'dark':'light');r.classList.toggle('dark',d)})(${data});`;
+  const script = `(function(c){var m=c.mode,p=c.preset;function valid(v){return v==='light'||v==='dark'||v==='system'||v==='adaptive'}try{var j=c.persist&&JSON.parse(localStorage.getItem(c.persist)||'null');if(j&&typeof j==='object'){if(valid(j.mode))m=j.mode;if(c.presets.indexOf(j.colorPreset)!==-1)p=j.colorPreset}}catch(e){}try{var s=c.key&&localStorage.getItem(c.key);if(valid(s))m=s}catch(e){}var d=m==='dark';if(m==='system'||m==='adaptive'){try{d=matchMedia('(prefers-color-scheme: dark)').matches}catch(e){}}var r=document.documentElement;r.setAttribute('data-bloom-theme-mode',d?'dark':'light');if(c.persist)r.setAttribute('data-bloom-theme-preset',p);r.classList.toggle('dark',d)})(${data});`;
   return { css, script };
 }

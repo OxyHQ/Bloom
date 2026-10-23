@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import {
   SurfaceLevelProvider,
   surfaceFillVars,
@@ -272,15 +273,15 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const publishedFill = hasFill
     ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill
     : undefined;
-  const materialRecipe = useThemeRecipe((theme, documentMode) =>
+  const materialRecipe = useThemeRecipe((_theme, documentMode, documentPreset) =>
     resolveSurfaceMaterial({
       fill:
         typeof customSurface?.backgroundColor === 'string'
           ? customSurface.backgroundColor
           : surface === 'plain'
             ? 'transparent'
-            : paletteRecipe[documentMode].panel,
-      parentFill: parentRecipe[documentMode],
+            : resolvePaintMode(paletteRecipe, documentMode, documentPreset).panel,
+      parentFill: resolvePaintMode(parentRecipe, documentMode, documentPreset),
       paint: paintsSurface,
     }),
   )!;
@@ -1203,6 +1204,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           fillModes={{
             light: materialRecipe.light.publishedFill,
             dark: materialRecipe.dark.publishedFill,
+            resolvePreset: (preset, mode) =>
+              materialRecipe.resolvePreset(preset, mode).publishedFill,
           }}
         >
           {sidebar}

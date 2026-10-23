@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import React, { memo, useMemo, type ComponentType, type ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -60,8 +61,8 @@ function EmptyStateComponent({
 }: EmptyStateProps) {
   const { messages } = useMessages(EMPTY_STATE_MESSAGES);
   const surface = useSurfaceFillRecipe();
-  const recipe = useThemeRecipe((theme, documentMode) =>
-    resolveEmptyStatePaint(theme, surface[documentMode]),
+  const recipe = useThemeRecipe((theme, documentMode, documentPreset) =>
+    resolveEmptyStatePaint(theme, resolvePaintMode(surface, documentMode, documentPreset)),
   );
   const paint = recipe.paint;
   const g = EMPTY_STATE_GEOMETRY[variant];

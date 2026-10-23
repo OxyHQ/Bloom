@@ -73,6 +73,25 @@ const themeBoot: BloomThemeBootstrapConfig = {
 </BloomProvider>
 ```
 
+For a saved named color preset, add `persistKey: 'app.bloom.theme'` to that
+same configuration and pass `storage={webLocalStorage}` to the provider on web
+(an AsyncStorage-compatible adapter on native). The provider derives its key
+from the shared configuration. This uses Bloom's existing JSON persistence;
+`modeStorageKey`, when present and valid, still takes priority in the document,
+so retain the matching controlled mode above. No separate preset cache or
+app-specific bootstrap script is needed. Use `awaitHydration={false}` when
+public app chrome must remain mounted while an asynchronous adapter resolves.
+
+Preset prepaint emits the registered palette variants on the server, sharing
+aliases only when their complete color vectors agree. Material recipes retain
+the document preset independently of a forced local color or mode, so nested
+surfaces compose against their actual parent. Hydration adopts each server
+sheet verbatim before replacing it with the live palette; the browser does not
+calculate every registered preset. Dynamic owned sheets are released normally.
+Measure the exported HTML size and first paint when opting into this broader
+palette coverage. A first visit without a saved preference necessarily uses
+the configured default until the app supplies the account color.
+
 Use both `prepaintTheme` and `ssrStyles` for shared component first paint: the head supplies semantic tokens, while `ssrStyles` authorizes the instance-specific surface and chrome recipes. Omitting the latter does not provide complete SSR paint.
 
 The host must authorize both head resources through its CSP: pass an authorized

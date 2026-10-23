@@ -52,6 +52,7 @@ import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import type { Theme, ThemeMode } from './types';
 import { PrepaintThemeContext } from './prepaint/context';
 import { applyPrepaintMode, themePaintVars, type BloomThemeBootstrapConfig } from './prepaint';
+import { getPrepaintPalette } from './prepaint-palettes';
 
 const DEFAULT_PRESET: AppColorName = 'oxy';
 const DEFAULT_MODE: ThemeMode = 'system';
@@ -120,7 +121,7 @@ export interface BloomThemeProviderProps {
   /**
    * Persist mode + preset under this storage key. Bloom becomes the single
    * source of truth — apps don't need their own theme store. Has no effect
-   * without `storage`.
+   * without `storage`. Defaults to `prepaintTheme.persistKey` when configured.
    */
   persistKey?: string;
   /**
@@ -332,7 +333,7 @@ export function BloomThemeProvider({
   defaultColorPreset: requestedDefaultPreset,
   onModeChange,
   onColorPresetChange,
-  persistKey,
+  persistKey: requestedPersistKey,
   storage,
   awaitHydration,
   onHydrating,
@@ -345,6 +346,7 @@ export function BloomThemeProvider({
   prepaintTheme,
   children,
 }: BloomThemeProviderProps) {
+  const persistKey = requestedPersistKey ?? prepaintTheme?.persistKey;
   const defaultMode = requestedDefaultMode ?? prepaintTheme?.defaultMode ?? DEFAULT_MODE;
   const defaultColorPreset =
     requestedDefaultPreset ?? prepaintTheme?.defaultColorPreset ?? DEFAULT_PRESET;
@@ -355,7 +357,6 @@ export function BloomThemeProvider({
     serverHydrationSnapshot,
   );
   const prepaint = Platform.OS === 'web' && prepaintTheme !== undefined;
-  const serverPaint = prepaint && !clientReady;
 
   // The app-wide ambient override, driven imperatively via `useAmbientTheme()`
   // from anywhere in the app. Subscribed through the module-level store's
@@ -408,6 +409,10 @@ export function BloomThemeProvider({
     onModeChange,
     onColorPresetChange,
   });
+
+  // A web adapter may be asynchronous. Keep the head-selected palette until
+  // its saved state is ready instead of briefly publishing the default theme.
+  const serverPaint = prepaint && (!clientReady || !hydrated);
 
   // The document cannot know localStorage or the browser's OS preference.
   // Match its raw semantic theme on the first hydration render; paired CSS paint
@@ -471,6 +476,27 @@ export function BloomThemeProvider({
       theme: themeColors,
       vars: themeVars,
       rootMode: resolved,
+      prepaintReady: !serverPaint,
+      resolvePreset: (nextPreset, nextMode) =>
+        effectiveSeed
+          ? {
+              theme: buildThemeFromSeed(effectiveSeed, nextMode, undefined, undefined, {
+                secondarySeed: effectiveSecondary,
+                tertiarySeed: effectiveTertiary,
+              }),
+              vars: buildSeedScopeVars({
+                seed: effectiveSeed,
+                mode: nextMode,
+                secondarySeed: effectiveSecondary,
+                tertiarySeed: effectiveTertiary,
+              }),
+            }
+          : !explicitAccents && !isAdaptive
+            ? getPrepaintPalette(nextPreset, nextMode)
+            : {
+                theme: buildTheme(nextPreset, nextMode, isAdaptive, explicitAccents),
+                vars: buildScopeVars(nextPreset, nextMode, explicitAccents),
+              },
       resolveMode: (nextMode) =>
         nextMode === resolved
           ? { theme: themeColors, vars: themeVars }
@@ -502,6 +528,7 @@ export function BloomThemeProvider({
       colorPreset,
       isAdaptive,
       explicitAccents,
+      serverPaint,
     ],
   );
 
@@ -510,13 +537,22 @@ export function BloomThemeProvider({
     // hydration snapshot. The next client snapshot publishes the real theme.
     if (serverPaint) return;
     setColorSchemeSafe(effectiveMode);
-    if (prepaint) applyPrepaintMode(resolved);
+    if (prepaint) applyPrepaintMode(resolved, prepaintTheme?.persistKey ? colorPreset : undefined);
     applyDarkClass(resolved);
     applyVarsToDocument(themeVars);
     if (prepaint) applyVarsToDocument(themePaintVars(themeColors.colors));
     const background = themeVars['--background'];
     if (background) applyDocumentTheme(resolved, background);
-  }, [effectiveMode, resolved, themeVars, themeColors, serverPaint, prepaint]);
+  }, [
+    effectiveMode,
+    resolved,
+    themeVars,
+    themeColors,
+    serverPaint,
+    prepaint,
+    prepaintTheme?.persistKey,
+    colorPreset,
+  ]);
 
   // Native only: publish the same vars into react-native-css's GLOBAL root
   // variable family so they reach the ENTIRE app tree — navigator screens and

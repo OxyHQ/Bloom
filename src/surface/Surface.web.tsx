@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import { ConcentricProvider } from '../concentric/ConcentricProvider';
 import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
 import { resolveSurfaceGeometry } from './resolve-surface-geometry';
@@ -82,12 +83,14 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     const material = useResolvedSurface({
       fill: override === undefined ? undefined : String(override),
     });
-    const opticsRecipe = useThemeRecipe((theme, documentMode) =>
-      resolveSurfaceOptics(theme.isDark),
-    );
+    const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
     const optics = opticsRecipe.paint;
-    const materialRecipe = useThemeRecipe((theme, documentMode) => {
-      const layer = resolveSurfaceLayer(theme, parent[documentMode], parentLevel);
+    const materialRecipe = useThemeRecipe((theme, documentMode, documentPreset) => {
+      const layer = resolveSurfaceLayer(
+        theme,
+        resolvePaintMode(parent, documentMode, documentPreset),
+        parentLevel,
+      );
       return resolveSurfaceMaterial({
         fill: override === undefined ? layer.fill : String(override),
         parentFill: layer.parentFill,
@@ -131,6 +134,8 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
             fillModes={{
               light: materialRecipe.light.publishedFill,
               dark: materialRecipe.dark.publishedFill,
+              resolvePreset: (preset, mode) =>
+                materialRecipe.resolvePreset(preset, mode).publishedFill,
             }}
           >
             <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>

@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { StyledView } from '../styles/styled-primitives';
 import { memo, useContext, useEffect, useRef, useState } from 'react';
@@ -251,8 +252,8 @@ function PageHeaderComponent({
     };
   }, [dock, height, overlay, placement]);
 
-  const paintRecipe = useThemeRecipe((theme, documentMode) => ({
-    background: surfaceRecipe[documentMode],
+  const paintRecipe = useThemeRecipe((theme, documentMode, documentPreset) => ({
+    background: resolvePaintMode(surfaceRecipe, documentMode, documentPreset),
     separator: theme.colors.borderLight,
     textSecondary: theme.colors.textSecondary,
     shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
