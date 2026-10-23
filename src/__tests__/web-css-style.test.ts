@@ -48,6 +48,11 @@ const files = sourceFiles(SRC);
  * web-CSS cast. Anything else is a regression.
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
+  'app-shell/AppShellMenuButton.tsx': {
+    count: 1,
+    reason:
+      "The compositor's drawer trigger uses a VALUE-level display cast for its flex/none CSS custom property. Native and non-compositor shells retain boolean visibility; SSR drawer/panel tests assert the same button survives hydration and directly occupies the header's flex slot.",
+  },
   'app-shell/AppShellPanelVisibility.tsx': {
     count: 1,
     reason:

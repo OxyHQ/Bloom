@@ -426,12 +426,13 @@ export function createAppShellEngine() {
     const shell = useMemo(
       () => ({
         drawerAvailable,
+        drawerDisplay: cssScope && hasNav ? 'var(--bloom-drawer-trigger-display, none)' : undefined,
         drawerOpen: isOpen,
         openDrawer: () => setOpen(true),
         closeDrawer: () => setOpen(false),
         toggleDrawer: () => setOpen(!isOpen),
       }),
-      [drawerAvailable, isOpen, setOpen],
+      [drawerAvailable, isOpen, setOpen, cssScope, hasNav],
     );
 
     /**
