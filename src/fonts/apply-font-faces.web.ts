@@ -21,5 +21,12 @@ const STYLE_ID = 'bloom-fonts';
  * provide (Metro needs `woff2` in `assetExts`).
  */
 export function applyFontFaces(): void {
+  // A provider's authorized SSR sheet already owns loaded FontFace objects.
+  // Re-declaring them in a constructed sheet would restart font loading.
+  const serverSheet =
+    typeof document === 'undefined'
+      ? null
+      : document.querySelector<HTMLStyleElement>('[data-bloom-server-style="bloom-fonts"]');
+  if (serverSheet?.sheet && serverSheet.textContent === FONT_FACE_CSS) return;
   adoptStyleSheet(STYLE_ID, FONT_FACE_CSS);
 }
