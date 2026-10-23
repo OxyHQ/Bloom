@@ -114,8 +114,9 @@ Do NOT re-declare Bloom's radius or spacing scales locally — the imported CSS 
 the single authority.
 
 If you need the block inline (e.g. an app that assembles its stylesheet at build
-time) rather than via `@import`, `bloomThemeBlock()` / `bloomThemeCss()` return
-the exact same content programmatically:
+time) rather than via `@import`, `bloomThemeBlock()` returns the exact same
+content programmatically. It inlines the spacing unit (`@theme inline`), so
+`p-3` or `leading-5` compile to literal pixels on native too:
 
 ```ts
 import { bloomThemeBlock } from '@oxy.so/bloom/design-tokens';

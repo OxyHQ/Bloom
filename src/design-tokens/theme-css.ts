@@ -20,14 +20,9 @@ import { TYPE_SCALE } from '../typography/scale';
  * to a full `rgb(...)` color at runtime, so the alias is a direct `var(--x)`
  * reference — NEVER `hsl(var(--x))`.
  *
- * Usage (web Tailwind v4, in the app's global stylesheet):
- *
- *   import { bloomThemeCss } from '@oxy.so/bloom/design-tokens';
- *   // build-time: write `@theme { ${bloomThemeCss()} }` into global.css, OR
- *   // paste the generated block once (see docs/design-tokens.md).
- *
- * A consumer that prefers a static stylesheet can copy the output of
- * `bloomThemeCss()` directly into their `@theme { … }` — the values are stable.
+ * Usage: `@import "@oxy.so/bloom/design-tokens/theme.css"`, or write
+ * `bloomThemeBlock()` into a generated stylesheet. `bloomThemeCss()` is only the
+ * `@theme` body; the spacing unit lives in the inline block beside it.
  */
 
 import { ACCENT_TEXT_ROLES, BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from './color-roles';
@@ -97,9 +92,6 @@ export function bloomThemeCss(): string {
   // `bg-divider` / `border-divider` read intentionally in list/section UIs.
   lines.push('  --color-divider: var(--border);');
 
-  // A rem defaults to 14px in the native CSS compiler. Authored numeric
-  // utilities use the same 4px grid as the web, without consumer configuration.
-  lines.push('  --spacing: 4px;');
   for (const [name, width] of Object.entries(COMPONENT_CONTAINERS))
     lines.push(`  --container-${name}: ${width};`);
 
@@ -163,7 +155,16 @@ export function bloomThemeCss(): string {
   return lines.join('\n');
 }
 
-/** The full `@theme { … }` block, ready to inject into a v4 stylesheet. */
+/**
+ * The spacing unit, inlined. A rem is 14px in the native CSS compiler, so the
+ * grid is spelled in px; and inlining it makes `p-3`, `min-h-14` or `leading-5`
+ * compile to literal pixels. Through `var(--spacing)`, react-native-css resolves
+ * a `line-height` at runtime and multiplies it by the font size: `leading-5`
+ * rendered a 320px line box on Android.
+ */
+const SPACING_BLOCK = '@theme inline {\n  --spacing: 4px;\n}';
+
+/** Everything a v4 stylesheet needs: the inlined spacing unit, then the `@theme` block. */
 export function bloomThemeBlock(): string {
-  return `@theme {\n${bloomThemeCss()}\n}`;
+  return `${SPACING_BLOCK}\n\n@theme {\n${bloomThemeCss()}\n}`;
 }
