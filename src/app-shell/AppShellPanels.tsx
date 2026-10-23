@@ -78,6 +78,7 @@ function useRegion(): AppShellRegionValue {
       gutter: STANDALONE_GUTTER,
       viewportInset: { top: 0, bottom: 0 },
       bottomReserve: 0,
+      underBottomBar: false,
       revealed: false,
       maskColor: theme.colors.background,
     }
@@ -241,6 +242,7 @@ export function createAppShellPanels(
           flow: 'bounded',
           viewportInset: { top: 0, bottom: 0 },
           bottomReserve: 0,
+          underBottomBar: false,
           maskColor: parentFill ?? inheritedRegion.maskColor,
         }
       : inheritedRegion;

@@ -40,13 +40,18 @@ const MinimizeContext = createContext<MinimizeState | null>(null);
 
 /**
  * Wrap the tab tree once. Screens then call `useMinimizeOnScroll()` and the bar
- * reads the same progress, so scrolling any screen minimizes the bar.
+ * reads the same progress, so scrolling any screen minimizes the bar. Pass
+ * `state` to drive the bar from motion that already exists — the app shell
+ * hands its bottom bar the active screen's collapse this way.
  */
-export function TabBarMinimizeProvider({ children }: PropsWithChildren) {
+export function TabBarMinimizeProvider({
+  children,
+  state: driven,
+}: PropsWithChildren<{ state?: MinimizeState }>) {
   const progress = useSharedValue(0);
   const target = useSharedValue(0);
-  const state = useMemo(() => ({ progress, target }), [progress, target]);
-  return <MinimizeContext.Provider value={state}>{children}</MinimizeContext.Provider>;
+  const own = useMemo(() => ({ progress, target }), [progress, target]);
+  return <MinimizeContext.Provider value={driven ?? own}>{children}</MinimizeContext.Provider>;
 }
 
 TabBarMinimizeProvider.displayName = 'TabBarMinimizeProvider';

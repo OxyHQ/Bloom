@@ -46,6 +46,7 @@ import { AppShellHeader } from './AppShellHeader';
 import { APP_SHELL_DEFAULTS as D, breakpointPx } from './constants';
 import { AppShellProvider } from './context';
 import { ScreenNavigationContext, type ScreenNavigationState } from '../screen/context';
+import { TabBarMinimizeProvider } from '../tab-bar/context';
 import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-shell-region';
 import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
 import type { AppShellEngineProps } from './types';
@@ -544,6 +545,15 @@ export function createAppShellEngine() {
       }),
       [inheritedNavigation, pageProgress, pageTarget, pageScroller, contentReserve],
     );
+    // The active screen's collapse also minimizes the shell's bottom bar, so an
+    // app's bar follows the screen it covers without a scroll handler of its own.
+    const barMinimize = useMemo(
+      () =>
+        pageNative
+          ? { progress: pageNavigation.collapseProgress, target: pageNavigation.collapseTarget }
+          : undefined,
+      [pageNative, pageNavigation],
+    );
     const pageChildren = pageNative ? (
       <ScreenNavigationContext.Provider value={pageNavigation}>
         {children}
@@ -582,6 +592,7 @@ export function createAppShellEngine() {
         // A bounded panel's content owns its edge (`useBottomEdgeInset`); a
         // growing one reserves the bar under its last row.
         bottomReserve: mode === 'fixed' ? 0 : contentReserve,
+        underBottomBar: !reserveBottomBarSpace,
         revealed: feedRevealed,
         maskColor: background,
       }),
@@ -595,6 +606,7 @@ export function createAppShellEngine() {
         contentReserve,
         feedRevealed,
         background,
+        reserveBottomBarSpace,
       ],
     );
     // Native animates a numeric reading envelope. Web uses NativeWind CSS flex
@@ -685,7 +697,11 @@ export function createAppShellEngine() {
             onHeightChange={setBottomBarHeight}
             testID={testID ? `${testID}-bottom-bar` : undefined}
           >
-            {bottomBar}
+            {barMinimize ? (
+              <TabBarMinimizeProvider state={barMinimize}>{bottomBar}</TabBarMinimizeProvider>
+            ) : (
+              bottomBar
+            )}
           </AppShellBottomBar>
         ) : null}
         {showFloatingAction ? (
