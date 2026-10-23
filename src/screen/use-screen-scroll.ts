@@ -29,10 +29,19 @@ export function useScreenScroll({
   useEffect(() => {
     if (!active) return;
     screen.activeScrollerId.value = id;
+    // Screens sharing one navigation state (a panel's routes) share its offset:
+    // the scroller taking over publishes its own, never the previous screen's,
+    // and at its top the chrome is expanded, as `onScroll` below would leave it.
+    const y = previousY.value;
+    screen.scrollY.value = y;
+    if (y < 24 && screen.collapseTarget.value !== 0) {
+      screen.collapseTarget.value = 0;
+      animateMotion(screen.collapseProgress, 0, 'expand', reducedMotion);
+    }
     return () => {
       if (screen.activeScrollerId.value === id) screen.activeScrollerId.value = null;
     };
-  }, [active, id, screen.activeScrollerId]);
+  }, [active, id, screen, previousY, reducedMotion]);
   const record = useCallback(
     (event: NativeScrollEvent) =>
       restoration?.onScroll({ nativeEvent: event } as NativeSyntheticEvent<NativeScrollEvent>),
