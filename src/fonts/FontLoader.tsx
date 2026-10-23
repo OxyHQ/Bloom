@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import type React from 'react';
 // Reach for the web variant explicitly. The default `./apply-font-faces`
 // is a no-op stub on native — native loads its fonts via
 // `useFonts(FONT_ASSETS)` in `FontLoader.native.tsx` and has no use for
@@ -6,7 +6,8 @@ import React, { useRef } from 'react';
 // up by web bundlers — Metro selects `FontLoader.native.tsx` on iOS/Android
 // — so it is safe to take a direct dependency on the web implementation
 // here.
-import { applyFontFaces } from './apply-font-faces.web';
+import { ServerStyleSheet } from '../styles/ServerStyleSheet';
+import { FONT_FACE_CSS } from './font-face-css.web';
 
 export interface FontLoaderProps {
   /**
@@ -16,7 +17,7 @@ export interface FontLoaderProps {
   enabled: boolean;
   /**
    * Rendered while native fonts load. Ignored on web — the web variant
-   * applies CSS `@font-face` rules synchronously and uses `font-display: swap`
+   * publishes CSS `@font-face` rules and uses `font-display: swap`
    * to handle the FOUT period.
    */
   fallback?: React.ReactNode;
@@ -24,21 +25,19 @@ export interface FontLoaderProps {
 }
 
 /**
- * Web font loader. Applies the Bloom `@font-face` rules and CSS variables
- * to `:root` on first render, before the first paint, using the same
- * `useRef`-during-render pattern as `BloomThemeProvider`'s color application.
- *
- * No `useEffect`: the side effect runs synchronously inside the render phase,
- * gated by a ref so it only executes once. Subsequent renders short-circuit.
+ * Publish font faces with the server-rendered content when the host opts into
+ * SSR styles. The browser can discover fonts before the JavaScript bundle runs.
+ * ServerStyleSheet adopts the same rules before removing their server node;
+ * client-only hosts install them before paint without gating any content.
  *
  * Native consumers resolve `FontLoader.native.tsx` via the React Native /
  * Metro bundler's platform extension resolution — they never load this file.
  */
 export function FontLoader({ enabled, children }: FontLoaderProps) {
-  const applied = useRef(false);
-  if (enabled && !applied.current) {
-    applied.current = true;
-    applyFontFaces();
-  }
-  return <>{children}</>;
+  return (
+    <>
+      {enabled && <ServerStyleSheet id="bloom-fonts" css={FONT_FACE_CSS} />}
+      {children}
+    </>
+  );
 }

@@ -1,11 +1,5 @@
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import {
-  blomusModernusRegular,
-  blomusModernusBold,
-  interVariable,
-  jetbrainsMonoVariable,
-} from './font-urls.web';
-import { fontFamilies } from './tokens';
+import { FONT_FACE_CSS } from './font-face-css.web';
 
 const STYLE_ID = 'bloom-fonts';
 
@@ -17,8 +11,8 @@ const STYLE_ID = 'bloom-fonts';
  * split keeps the web font payload out of the native bundle entirely.
  * Idempotent: safe to call multiple times; `adoptStyleSheet` keys the sheet by
  * id, so repeat calls re-parse nothing. SSR-safe via its `typeof document`
- * guard. `BloomThemeProvider` calls this on every mount by default, which is
- * why it also has to survive a page whose CSP forbids inline styles — see
+ * guard. Imperative consumers share the exact sheet used by `FontLoader`,
+ * including on pages whose CSP forbids inline styles — see
  * `styles/adopt-style-sheet.ts`.
  *
  * The URLs come from `./font-urls.web`, which imports the `.woff2` files so
@@ -27,18 +21,5 @@ const STYLE_ID = 'bloom-fonts';
  * provide (Metro needs `woff2` in `assetExts`).
  */
 export function applyFontFaces(): void {
-  adoptStyleSheet(
-    STYLE_ID,
-    `
-    @font-face { font-family: 'BlomusModernus'; src: url("${blomusModernusRegular}") format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-    @font-face { font-family: 'BlomusModernus'; src: url("${blomusModernusBold}") format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
-    @font-face { font-family: 'Inter'; src: url("${interVariable}") format('woff2-variations'); font-weight: 100 900; font-style: normal; font-display: swap; }
-    @font-face { font-family: 'JetBrains Mono'; src: url("${jetbrainsMonoVariable}") format('woff2-variations'); font-weight: 100 800; font-style: normal; font-display: swap; }
-    :root {
-      --bloom-font-display: ${fontFamilies.display};
-      --bloom-font-sans: ${fontFamilies.sans};
-      --bloom-font-mono: ${fontFamilies.mono};
-    }
-  `,
-  );
+  adoptStyleSheet(STYLE_ID, FONT_FACE_CSS);
 }

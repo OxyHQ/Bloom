@@ -10,6 +10,14 @@ Bloom ships its own typefaces and loads them for you. `BloomThemeProvider`
 mounts `FontLoader`, which injects `@font-face` rules on web and loads the
 assets on native.
 
+With `BloomProvider ssrStyles`, the same font rules are included before the
+server-rendered text. Font discovery must not wait for hydration: otherwise a
+cached page still paints a system face and changes its glyph metrics when the
+JavaScript bundle installs Bloom's font sheet. Hydration adopts that sheet before
+removing the server style node, without replacing or hiding visible content.
+The host's inline/nonce policy applies exactly as it does to layout styles.
+Client-only hosts install the same rules before their first paint.
+
 ```tsx
 // Nothing to do: BloomThemeProvider already does this.
 <BloomThemeProvider>…</BloomThemeProvider>
@@ -89,7 +97,7 @@ the whole mechanism — there is no runtime platform check anywhere in the famil
 | Condition | Barrel | `applyFontFaces` | `FONT_ASSETS` | `FontLoader` |
 | --- | --- | --- | --- | --- |
 | `react-native` (Metro) | `index.ts` | no-op stub | the Metro asset map | loads `.ttf` via `useFonts` |
-| `browser` (Vite, webpack, Metro-web) | `index.web.ts` | injects `@font-face` | empty | injects on first render |
+| `browser` (Vite, webpack, Metro-web) | `index.web.ts` | injects `@font-face` | empty | emits opted-in SSR styles; adopts before paint |
 | `node` (SSR, prerender, tooling) | `index.node.ts` | no-op stub | empty | renders children |
 | `import` / `require` | `index.ts` | no-op stub | empty | — |
 
