@@ -114,6 +114,28 @@ describe('VirtualList (web)', () => {
     expect(queryByText(c, 'Row 0')).toBeNull();
   });
 
+  it.each([[[{ id: 'a', label: 'Row a' }]], [[]]])(
+    'pads the header, the rows and the empty slot with its content container',
+    (data) => {
+      const c = mount(
+        <VirtualList<Row>
+          data={data}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <span>{item.label}</span>}
+          ListHeaderComponent={<div>List header</div>}
+          ListEmptyComponent={<div>Nothing here</div>}
+          contentContainerStyle={{ paddingTop: 70 }}
+        />,
+      );
+      const header = getByText(c, 'List header');
+      const container = header.parentElement as HTMLElement;
+      expect(container.style.paddingTop).toBe('70px');
+      expect(
+        container.contains(data.length > 0 ? getByText(c, 'Row a') : getByText(c, 'Nothing here')),
+      ).toBe(true);
+    },
+  );
+
   it('supports a thunk slot for the header', () => {
     const c = mount(
       <VirtualList<Row>

@@ -202,9 +202,11 @@ function VirtualListWebInner<T>(
   if (count === 0) {
     return (
       <View style={[{ minHeight: 0 }, flatStyle]} testID={testID}>
-        {header}
-        {renderSlot(ListEmptyComponent)}
-        {footer}
+        <div style={flatContentStyle}>
+          {header}
+          {renderSlot(ListEmptyComponent)}
+          {footer}
+        </div>
       </View>
     );
   }
@@ -224,8 +226,11 @@ function VirtualListWebInner<T>(
 
   return (
     <View style={[{ minHeight: 0 }, flatStyle]} testID={testID}>
-      {header}
+      {/* Like FlatList's, the content container wraps the header, the rows and
+          the footer, so its padding (a Screen's header and bar clearance) clears
+          the whole list rather than the rows alone. */}
       <div style={flatContentStyle}>
+        {header}
         <div ref={wrapperRef} style={{ height: spacerHeight, width: '100%', position: 'relative' }}>
           {virtualItems.map((virtualRow) => {
             const item = items[virtualRow.index];
@@ -248,9 +253,9 @@ function VirtualListWebInner<T>(
             );
           })}
         </div>
+        {footer}
+        {endMarker}
       </div>
-      {footer}
-      {endMarker}
     </View>
   );
 }
