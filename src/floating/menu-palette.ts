@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { resolveSurfaceLevel } from '../styles/surface-levels';
 
 import { BUTTON_SHADOW } from '../button/shared';
-import { resolveFieldRestBorder } from '../text-field/shared';
+import { resolveFieldRestBorder } from '../styles/field-border';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 

@@ -31,6 +31,12 @@ describe('typography defaults', () => {
     ).toEqual({ fontSize: 14, color: 'red' });
   });
 
+  it('drops every default for a custom class it cannot read', () => {
+    expect(
+      typographyDefaultsWhenNoClassName('chip-label mt-2', { fontSize: 13, color: 'red' }),
+    ).toBeUndefined();
+  });
+
   it('returns undefined when every default is claimed', () => {
     expect(
       typographyDefaultsWhenNoClassName('text-lg text-foreground', { fontSize: 13, color: 'red' }),

@@ -26,7 +26,20 @@ const NON_COLOR_TEXT_TOKEN =
 const WEIGHT_TOKEN =
   /^(?:thin|extralight|light|normal|medium|semibold|bold|extrabold|black|\[\d+\])$/;
 
+/**
+ * Utilities that cannot set size, weight or colour. A token outside every
+ * recognised family is a CUSTOM class (`chip-label`, an app's own `.hero`): its
+ * rules are opaque here, so it is assumed to set any of them and every default
+ * is dropped, as before. Only a className made wholly of recognised tokens keeps
+ * the defaults it does not claim.
+ */
+const NON_TYPOGRAPHIC_UTILITY = new RegExp(
+  `^(?:-?(?:m|p)[trblxyse]?-|-?(?:inset|top|left|right|bottom|start|end|z|order|translate|rotate|scale|skew)-|(?:flex|grow|shrink|basis|w|h|min|max|size|gap|space|items|justify|self|content|place|col|row|grid|auto|overflow|rounded|border|divide|bg|from|via|to|shadow|opacity|tracking|align|whitespace|break|select|pointer|cursor|transition|duration|delay|ease|animate|aspect|object|ring|outline|fill|stroke|line-clamp|backdrop|blur|web|native|ios|android)(?:-|$)|(?:block|inline|inline-block|hidden|relative|absolute|fixed|sticky|static|truncate|uppercase|lowercase|capitalize|normal-case|italic|not-italic|underline|no-underline|line-through|sr-only|font-(?:sans|serif|mono|display)|grow|shrink)$)`,
+);
+
 type TypographyKey = 'color' | 'fontSize' | 'lineHeight' | 'fontWeight';
+
+const ALL_KEYS: readonly TypographyKey[] = ['color', 'fontSize', 'lineHeight', 'fontWeight'];
 
 /** The default keys a className's utilities already set. */
 export function typographyKeysClaimedByClassName(
@@ -49,6 +62,8 @@ export function typographyKeysClaimedByClassName(
       claimed.add('lineHeight');
     } else if (token.startsWith('font-') && WEIGHT_TOKEN.test(token.slice(5))) {
       claimed.add('fontWeight');
+    } else if (!NON_TYPOGRAPHIC_UTILITY.test(token)) {
+      for (const key of ALL_KEYS) claimed.add(key);
     }
   }
   return claimed;

@@ -10,6 +10,7 @@ import { useTheme } from '../theme/use-theme';
 import { RADIUS } from '../design-tokens/scales';
 import { TYPE_SCALE } from '../typography/scale';
 import { animation } from '../styles/tokens';
+import { FIELD_REST_BORDER_WIDTH, resolveFieldRestBorder } from '../styles/field-border';
 
 /**
  * The geometry and palette the `Input` shell paints, shared by `TextField`,
@@ -99,16 +100,8 @@ const TEXT_FIELD_TRANSITION_STYLE: WebCssStyle = {
 export const TEXT_FIELD_WEB_TRANSITION: ViewStyle | undefined =
   Platform.OS === 'web' ? TEXT_FIELD_TRANSITION_STYLE : undefined;
 
-/**
- * The field family's resting border: 1px, flush with the outer edge. The same
- * token `Select`'s trigger draws, so a text field and a select in one form row
- * share one outline instead of one being a bare fill. Hover and focus paint
- * their 2px ring over it.
- */
-export const TEXT_FIELD_REST_BORDER_WIDTH = 1;
-export function resolveFieldRestBorder(theme: Theme): string {
-  return theme.colors.borderLight;
-}
+export const TEXT_FIELD_REST_BORDER_WIDTH = FIELD_REST_BORDER_WIDTH;
+export { resolveFieldRestBorder };
 
 export interface TextFieldPalette {
   /** The resting 1px outline shared with `Select`'s trigger (`resolveFieldRestBorder`). */
