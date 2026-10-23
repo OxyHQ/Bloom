@@ -57,8 +57,10 @@ import {
   AppShellPanelContext,
   PanelScrollContainerContext,
   ShellColorClaimContext,
+  type ColorClaim,
 } from './context';
-import { useColorClaims, type ColorClaim } from './use-color-claims';
+import { useLatestClaim } from '../hooks/use-latest-claim';
+import type { AppColorName } from '../theme/color-presets';
 import { PlacementBoundaryContext } from '../overlay/placement-boundary';
 import { PanelNavigation, PanelScrollScope } from './PanelNavigation';
 import { resolvePanelAxis, resolvePanelTracks, type ResolvedPanelTrack } from './panel-layout';
@@ -355,7 +357,7 @@ export function createPanelLayoutView(
       () => ({ scrollY, contentHeight, viewportHeight: scrollViewportHeight }),
       [scrollY, contentHeight, scrollViewportHeight],
     );
-    const [screenPreset, claimPanelPreset] = useColorClaims();
+    const [screenPreset, claimPanelPreset] = useLatestClaim<AppColorName>();
     const claimShellPreset = useContext(ShellColorClaimContext);
     const claimColorPreset = useCallback<ColorClaim>(
       (preset) => {

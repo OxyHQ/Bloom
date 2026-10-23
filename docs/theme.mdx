@@ -137,3 +137,23 @@ pre-hydration fallback. Loading and auth gates should paint with
 `theme.colors.background`, never a hardcoded light or dark colour.
 Browser and operating-system navigation areas may ignore `theme-color`; their
 final appearance must be checked on a real mobile device.
+
+## Native status bar
+
+`BloomProvider` owns the native status bar's content style the same way it owns
+`theme-color` on the web: light content over a dark theme, dark content over a
+light one, following manual modes and system changes. Apps render no
+`StatusBar` of their own (neither `expo-status-bar` nor React Native's); remove
+it from the root layout and from screens.
+
+A `Screen` whose resolved appearance differs from the app theme claims its own
+content while it is active, so a reel wrapped in `<BloomColorScope mode="dark">`
+inside a light app gets light content and hands the bar back when it
+deactivates. The latest live claim wins; screens that match the app claim
+nothing. See [Screen](/docs/screen#status-bar). There is no prop: the
+appearance the screen already paints decides it.
+
+Bloom renders React Native's `StatusBar` (`expo-status-bar` wraps the same
+component), so no extra package is needed. Its stack lets later mounts win,
+which means a status bar an app still renders overrides Bloom's until it is
+removed. Web renders nothing here; browser chrome follows `theme-color` above.

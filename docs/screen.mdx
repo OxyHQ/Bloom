@@ -297,6 +297,16 @@ shorten or inset the scrollbar track. Keep reading-column width and content
 padding inside `ScreenScrollView.contentContainerStyle`, so they do not move
 the viewport, header or scrollbar inward.
 
+### Status bar
+
+An active Screen whose resolved appearance differs from the app theme sets the
+native status bar's content: a dark screen in a light app (inside
+`<BloomColorScope mode="dark">`, for instance) gets light content, and the
+reverse. It releases the bar when it deactivates, so retained tab screens pass
+`active={focused}` exactly as they do for scroll and color recipes. Screens that
+match the app theme claim nothing and the bar follows the theme. See
+[Theme](/docs/theme#native-status-bar).
+
 ### Nested activity and viewport constraints
 
 A nested Screen inherits the inactivity of its ancestor. `navigationScope="isolated"`

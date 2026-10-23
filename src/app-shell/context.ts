@@ -4,7 +4,11 @@
  */
 import { createContext, useContext, type RefObject } from 'react';
 import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
-import type { ColorClaim } from './use-color-claims';
+import type { Claim } from '../hooks/use-latest-claim';
+import type { AppColorName } from '../theme/color-presets';
+
+/** A screen's claim on the colour preset of the panel or shell hosting it. */
+export type ColorClaim = Claim<AppColorName>;
 
 export interface AppShellContextValue {
   /**

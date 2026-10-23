@@ -31,7 +31,8 @@ import { PanelCssContext, PanelCssLayoutContext, panelCssScope } from './panel-l
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import { ShellColorClaimContext } from './context';
-import { useColorClaims } from './use-color-claims';
+import { useLatestClaim } from '../hooks/use-latest-claim';
+import type { AppColorName } from '../theme/color-presets';
 
 /**
  * A navigation selection the app does not handle itself goes to the sidebar
@@ -396,7 +397,7 @@ export function createAppShell(
     const envelope = panelEnvelope(layout, cssLayout ? Number.MAX_SAFE_INTEGER : width, gap);
     const document = layout.flow === 'document' && layout.mode !== 'deck' && Platform.OS === 'web';
     const deck = layout.mode === 'deck';
-    const [shellPreset, claimShellPreset] = useColorClaims();
+    const [shellPreset, claimShellPreset] = useLatestClaim<AppColorName>();
     const normalized: AppShellProps = {
       ...props,
       panelLayout: undefined,

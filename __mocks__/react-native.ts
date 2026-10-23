@@ -61,6 +61,7 @@ export const Pressable = createComponent('Pressable');
 export const TouchableOpacity = createComponent('TouchableOpacity');
 export const TextInput = createComponent('TextInput');
 export const Modal = createComponent('Modal');
+export const StatusBar = createComponent('StatusBar');
 export const ActivityIndicator = createComponent('ActivityIndicator');
 // Its absence is not a missing convenience — an undefined element type makes
 // the WHOLE subtree fail to render ("Element type is invalid"), so every family
