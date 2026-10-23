@@ -19,7 +19,12 @@ export interface AppShellContextValue {
   toggleDrawer: () => void;
 }
 
-const AppShellContext = createContext<AppShellContextValue | null>(null);
+const AppShellContext = createContext<
+  | (AppShellContextValue & {
+      /** Internal: compositor-owned first-paint visibility. */ drawerDisplay?: string;
+    })
+  | null
+>(null);
 AppShellContext.displayName = 'BloomAppShellContext';
 
 export const AppShellProvider = AppShellContext.Provider;
@@ -29,6 +34,11 @@ export function useAppShell(): AppShellContextValue {
   const value = useContext(AppShellContext);
   if (!value) throw new Error('useAppShell must be used inside an <AppShell>.');
   return value;
+}
+
+/** Internal CSS counterpart of drawerAvailable; native keeps the boolean path. */
+export function useAppShellDrawerDisplay(): string | undefined {
+  return useContext(AppShellContext)?.drawerDisplay;
 }
 
 /** The enclosing `AppShell`'s drawer, or `null` outside one. */
