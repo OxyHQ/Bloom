@@ -37,6 +37,8 @@ const FORBIDDEN: Record<string, string> = {
   // this scan deliberately ignores — listed so the intent is recorded, and
   // caught here the day somebody turns it into a static import.
   'expo-video': '@oxy.so/bloom/video-view (and ./media-flight)',
+  // Also loaded through an optional `require`, from the tab pager's native layout.
+  'react-native-pager-view': '@oxy.so/bloom/tab-pager/expo-router',
 };
 
 /**

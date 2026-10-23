@@ -222,13 +222,29 @@ describe('web forks are reachable off Metro', () => {
     // importing `@oxy.so/bloom/select` resolves that subpath's own
     // conditions, so a family whose only route to its fork is `src/index.web.ts`
     // serves the native build to every direct subpath import.
+    //
+    // The owner is the NEAREST published barrel above the fork, not always the
+    // top-level family: `tab-pager/expo-router/` is its own subpath, and its
+    // forks are served by that subpath's condition.
+    const subpathByDir = new Map<string, string>();
+    for (const [subpath, entry] of Object.entries(exportsMap)) {
+      if (typeof entry !== 'object' || entry === null) continue;
+      const rn = (entry as Record<string, unknown>)['react-native'];
+      const source =
+        typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
+      if (typeof source !== 'string' || !/\/index\.ts$/.test(source)) continue;
+      subpathByDir.set(dirname(source.replace('./src/', '')), subpath);
+    }
     const offenders: string[] = [];
     let checked = 0;
     for (const file of allWebForks) {
       if (hasNativeSibling(file)) continue; // three-file form: neutral default covers it
       const rel = relative(SRC, file);
+      let owner = dirname(rel);
+      while (owner !== '.' && !subpathByDir.has(owner)) owner = dirname(owner);
       const family = rel.includes('/') ? rel.slice(0, rel.indexOf('/')) : null;
-      const subpath = family === null ? '.' : `./${family}`;
+      const nearest = owner === '.' ? undefined : subpathByDir.get(owner);
+      const subpath = nearest ?? (family === null ? '.' : `./${family}`);
       checked += 1;
       const entry = exportsMap[subpath];
       if (typeof entry !== 'object' || entry === null) {

@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.19.0",
+  "version": "15.20.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3700,6 +3700,39 @@
         "default": "./lib/commonjs/tab-bar/expo-router/index.js"
       }
     },
+    "./tab-pager": {
+      "react-native": {
+        "types": "./lib/typescript/module/tab-pager/index.d.ts",
+        "default": "./src/tab-pager/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/tab-pager/index.d.ts",
+        "default": "./lib/module/tab-pager/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tab-pager/index.d.ts",
+        "default": "./lib/commonjs/tab-pager/index.js"
+      }
+    },
+    "./tab-pager/expo-router": {
+      "react-native": {
+        "types": "./lib/typescript/module/tab-pager/expo-router/index.d.ts",
+        "default": "./src/tab-pager/expo-router/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/tab-pager/expo-router/index.web.d.ts",
+        "import": "./lib/module/tab-pager/expo-router/index.web.js",
+        "require": "./lib/commonjs/tab-pager/expo-router/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/tab-pager/expo-router/index.d.ts",
+        "default": "./lib/module/tab-pager/expo-router/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tab-pager/expo-router/index.d.ts",
+        "default": "./lib/commonjs/tab-pager/expo-router/index.js"
+      }
+    },
     "./progressive-blur": {
       "react-native": {
         "types": "./lib/typescript/module/progressive-blur/index.d.ts",
@@ -3900,6 +3933,7 @@
     "react-native": ">=0.73.0",
     "react-native-gesture-handler": ">=2.16.1",
     "react-native-keyboard-controller": ">=1.11.4",
+    "react-native-pager-view": ">=6.0.0",
     "react-native-reanimated": ">=3.13.0",
     "react-native-safe-area-context": ">=5.0.0",
     "react-native-screens": ">=3.16.0",
@@ -3938,6 +3972,9 @@
       "optional": true
     },
     "react-native-keyboard-controller": {
+      "optional": true
+    },
+    "react-native-pager-view": {
       "optional": true
     },
     "react-native-webview": {
@@ -4725,6 +4762,12 @@
       ],
       "tab-bar/expo-router": [
         "./lib/typescript/module/tab-bar/expo-router/index.d.ts"
+      ],
+      "tab-pager": [
+        "./lib/typescript/module/tab-pager/index.d.ts"
+      ],
+      "tab-pager/expo-router": [
+        "./lib/typescript/module/tab-pager/expo-router/index.d.ts"
       ],
       "progressive-blur": [
         "./lib/typescript/module/progressive-blur/index.d.ts"

@@ -117,6 +117,27 @@ it('hides a minimized accessory from hit testing and accessibility and releases 
   expect(resolvedStyle(action.props.style).opacity).toBe(0);
   expect(resolvedStyle(action.props.style).marginInlineStart).toBe(0);
 });
+it('takes a hidden bar off its edge and out of hit testing and accessibility', () => {
+  const hideProgress = { value: 1 } as NonNullable<TabBarProps['minimizeProgress']>;
+  const view = render(
+    <BottomBarBase
+      Navigation={Navigation}
+      Item={Item}
+      Blur={Blur}
+      items={items}
+      value="home"
+      onValueChange={() => {}}
+      hideProgress={hideProgress}
+      testID="bar"
+    />,
+  );
+  const bar = view.getByTestId('bar', { includeHiddenElements: true });
+  const style = resolvedStyle(bar.props.style);
+  expect(bar.props.pointerEvents).toBe('none');
+  expect(bar.props.importantForAccessibility).toBe('no-hide-descendants');
+  expect(style.opacity).toBe(0);
+  expect(style.transform).toEqual([{ translateY: style.height }]);
+});
 it.each(['standalone', 'visible'] as const)(
   'keeps a %s action available while minimized',
   (mode) => {

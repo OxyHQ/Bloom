@@ -43,7 +43,7 @@ themselves. Setup: [`AppShell`, Right-to-left](/docs/bloom/main/app-shell).
 
 ## Pager and shell composition
 
-`activeProgress` accepts a shared continuous item index from a swipe pager. `value` remains the settled semantic destination; use an unmatched value when a pushed route has no selection. `onValueLongPress(value)` handles destination actions such as account switching.
+`activeProgress` accepts a shared continuous item index from a swipe pager. `value` remains the settled semantic destination; use an unmatched value when a pushed route has no selection. `onValueLongPress(value)` handles destination actions such as account switching. `hideProgress` (0 shown, 1 gone) takes the whole bar away continuously — it fades and slides off its edge, and past halfway leaves hit testing and the accessibility tree — for a page that draws no item. [`TabPagerBottomBar`](/docs/bloom/main/tab-pager) drives both from the app's pages.
 
 Inside an `AppShell` bottom-bar slot, the shell owns measurement and the bottom safe area. `BottomBar` automatically consumes that ownership, so the inset is applied once. Standalone bars retain their own edge claim and inset.
 

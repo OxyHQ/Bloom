@@ -169,6 +169,7 @@ export type {
 export * from './appearance';
 export * from './screen/index.web';
 export * from './bottom-bar/index.web';
+export * from './tab-pager';
 export * from './button/index.web';
 export { Surface } from './surface/index.web';
 export type { SurfaceProps } from './surface/index.web';

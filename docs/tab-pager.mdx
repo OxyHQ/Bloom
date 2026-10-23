@@ -1,0 +1,114 @@
+---
+title: Tab pager
+description: Swipeable root pages for the app shell — the pages, the native pager, the tabs layout and the bottom bar bound to them, declared once.
+order: 142
+---
+
+# Tab pager
+
+An app's root pages — Home, Videos, Notifications, a profile — side by side,
+swiped between on native and tapped between everywhere, with the bottom bar's
+highlight following the finger. The app declares its pages once; Bloom owns the
+pager, the navigator, the highlight and the bar's presence.
+
+```tsx
+// app/(app)/_layout.tsx — above the AppShell, because the bar renders over pushed routes too
+import { TabPagerProvider } from '@oxy.so/bloom/tab-pager/expo-router';
+import { TabPagerBottomBar, useTabPager, type TabPage } from '@oxy.so/bloom/tab-pager';
+
+const pages: TabPage[] = [
+  { name: 'camera', href: '/camera' }, // no bar item: the bar leaves while it is in front
+  { name: 'index', href: '/', preload: true, bar: { label: 'Home', icon: <RiHome5Line /> } },
+  { name: 'videos', href: '/videos', preload: true, bar: { label: 'Videos', icon: <RiVideoLine /> } },
+  { name: 'write', href: '/write' },
+  { name: 'you', href: '/you', preload: true, bar: { label: 'You', icon: <Avatar … /> } },
+];
+
+function ComposeButton() {
+  const { selectTab } = useTabPager();
+  return <Fab icon={RiQuillPenLine} accessibilityLabel="Compose" onPress={() => selectTab('write')} />;
+}
+
+<TabPagerProvider pages={pages}>
+  <AppShell bottomBar={<TabPagerBottomBar onReselect={scrollToTop} action={<ComposeButton />} />} … />
+</TabPagerProvider>
+```
+
+```tsx
+// app/(app)/(tabs)/_layout.tsx — one route file per page name in this group
+export { TabPagerLayout as default } from '@oxy.so/bloom/tab-pager/expo-router';
+```
+
+## Pages
+
+`TabPage` is `{ name, href, preload?, bar? }`, in pager order.
+
+- **`name`** is the route's name in the tabs group; **`href`** its exact path, which is
+  how a pathname is recognised as the page.
+- **`preload`** mounts the page ahead of a visit — as a neighbour of the page in
+  front, and kept laid out while the bar can reach it — so neither a swipe nor a
+  tap lands on a blank screen. Leave it off for a heavy page (a composer) or one
+  that holds hardware (a camera): those mount when the reader lands on them.
+- **`bar`** (`label`, `icon`, optional `activeIcon`) is the page's bottom-bar
+  item. A page without one is reached by swiping or `selectTab`, and the bar
+  fades and slides away while it is in front. The highlight stays parked on the
+  nearest item instead of leaving the pill.
+
+Labels and icons may change as often as a badge does: only the bar re-renders
+for them.
+
+## `useTabPager()`
+
+From `@oxy.so/bloom/tab-pager`, under a `TabPagerProvider`:
+
+| Field | |
+| --- | --- |
+| `pages` | The pages, as handed to the provider. |
+| `activePage` | The page in front, or `null` on a route pushed over the pages. |
+| `selectTab(name)` | Bring a page to the front. A route pushed over the pages is dismissed first. |
+| `leaveTab(from, to)` | Bring `to` to the front and forget `from`: neither Back nor the pager returns to it (a published composer). On web the browser entry is replaced. |
+| `progress` | The highlight's position in bar-item units, on the UI thread. |
+| `chromeProgress` | The bar's absence, 0 to 1, on the UI thread. |
+
+## Native
+
+`TabPagerLayout` is an expo-router tabs navigator (`useTabsWithTriggers`,
+`backBehavior: 'history'`) whose pages render inside `react-native-pager-view` —
+ViewPager2 on Android, `UIPageViewController` on iOS, the platform components
+that arbitrate a drag between the pager and a child that also scrolls.
+
+- **The finger drives the bar on the UI thread.** `onPageScroll` writes
+  `progress` and `chromeProgress` from a worklet, interpolated between the two
+  pages under the finger. Nothing else writes `progress` while the pager is
+  mounted.
+- **A tap cuts.** `setPageWithoutAnimation`, not an animated scroll through
+  every page in between (measured ~680ms a tap on a Pixel 10 Pro); the highlight
+  and the bar's presence spring to the destination instead.
+- **Pages are admitted lazily.** The focused page renders first; preloading
+  neighbours of the page the pager has come to rest on mount on the next frame,
+  or at once when a drag starts.
+- **Off-screen pages are cheap.** Each page is a `react-native-screens`
+  `Screen`: the page in front is active, preloading bar pages and the resting
+  page's neighbours stay laid out, and the rest are parked.
+- **Expo routes are preloaded**, so every page has its route before its first
+  visit.
+
+`react-native-pager-view` is an **optional peer**. Without it the same pages
+switch by tap only, and a dev warning names the package.
+
+## Web
+
+`TabPagerLayout` renders the route in place (`<Slot/>`): the web shell scrolls
+the document, which side-by-side viewport-height pages cannot coexist with. The
+provider still moves the highlight the moment the reader presses, navigates by
+`href`, and prefetches every page's route chunk up front. The pager package
+never enters a web bundle.
+
+## The bar's presence
+
+`chromeProgress` settles on the route in front whenever a route lands, whoever
+moved it there: a route pushed over a page without a bar item (a post opened
+from the camera) is not that page, and keeps the bar. `TabPagerBottomBar`
+passes it to `BottomBar`'s `hideProgress`, which fades and slides the bar off
+its edge and, past halfway, removes it from hit testing and the accessibility
+tree.

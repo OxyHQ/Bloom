@@ -97,6 +97,11 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
     file: 'panel-routing/expo-router/PanelRouterAdapter.tsx',
     why: 'the explicit Expo adapter is reachable only from panel-routing/expo-router and tabs/expo-router; panel-routing and tabs cores import no Expo router, so other routers remain supported',
   },
+  {
+    peer: 'expo-router',
+    file: 'tab-pager/expo-router/TabPagerLayout.tsx',
+    why: 'the native tabs layout IS an expo-router navigator (`useTabsWithTriggers`) and is reachable only from `@oxy.so/bloom/tab-pager/expo-router`; the core `tab-pager` (hook, bar, types) imports no router',
+  },
 ];
 
 /**
@@ -114,6 +119,7 @@ const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/BottomSheet.tsx' },
   { peer: 'react-native-keyboard-controller', file: 'screen/keyboard-components.ts' },
   { peer: 'expo-video', file: 'media-flight/expo-video-module.ts' },
+  { peer: 'react-native-pager-view', file: 'tab-pager/expo-router/pager-view-module.ts' },
   { peer: 'lottie-react-native', file: 'sticker/lottie-module.ts' },
   { peer: '@lottiefiles/dotlottie-react', file: 'sticker/lottie-module.web.ts' },
 ];
