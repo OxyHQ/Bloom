@@ -348,6 +348,8 @@ export type {
   EngagementGroupProps,
   EngagementTone,
 } from './engagement-bar';
+export { ShareSheet } from './share-sheet';
+export type { ShareSheetProps, ShareSheetTarget } from './share-sheet';
 
 // Motion presets (Reanimated enter/exit + directional screen transition)
 export {

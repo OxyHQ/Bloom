@@ -2784,6 +2784,14 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'মাইক্রোফোন মিউট করা আছে',
 };
 
+const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
+  title: 'শেয়ার করুন',
+  people: 'পাঠান',
+  targets: 'এতে শেয়ার করুন',
+  sendTo: (name) => `${name}-কে পাঠান`,
+  noPeople: 'কাউকে পাওয়া যায়নি',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'কভার পরিবর্তন',
@@ -3012,6 +3020,7 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
+  SHARE_SHEET_MESSAGES,
 };
 
 export default translations;

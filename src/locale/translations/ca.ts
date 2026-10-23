@@ -2877,6 +2877,14 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'Micròfon silenciat',
 };
 
+const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
+  title: 'Comparteix',
+  people: 'Envia a',
+  targets: 'Comparteix a',
+  sendTo: (name) => `Envia a ${name}`,
+  noPeople: "No s'ha trobat ningú",
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Canvia la portada',
@@ -3105,6 +3113,7 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
+  SHARE_SHEET_MESSAGES,
 };
 
 export default translations;

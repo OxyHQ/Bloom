@@ -1,0 +1,64 @@
+---
+title: ShareSheet
+description: What a "send" button opens — people to send to, a search, and a row of other destinations.
+order: 48
+---
+
+# ShareSheet
+
+The content of the sheet a post's "send" button opens, in the shape people know
+from Instagram: a search field, a grid of people (four to a row), and a row of
+other destinations under them (copy the link, another app, the system sheet).
+
+```tsx
+import { BottomSheet } from '@oxy.so/bloom/bottom-sheet';
+import { ShareSheet } from '@oxy.so/bloom/share-sheet';
+import { RiLinksLine } from '@oxy.so/bloom/icons/RiLinksLine';
+import { RiShareLine } from '@oxy.so/bloom/icons/RiShareLine';
+
+<BottomSheet ref={sheet}>
+  <ShareSheet
+    search={{ value: term, onValueChange: setTerm }}
+    people={people}
+    peopleLoading={isLoading}
+    onPersonPress={(id) => sendTo(id)}
+    targets={[
+      { key: 'copy', label: 'Copy link', icon: RiLinksLine, onPress: copyLink },
+      { key: 'more', label: 'More', icon: RiShareLine, onPress: openSystemShare },
+    ]}
+  />
+</BottomSheet>
+```
+
+## Ownership
+
+- **The app owns who and what.** `people` are `PersonSummary`s (the
+  `chat-people` shape), in the order to show them. Pressing one calls
+  `onPersonPress(id)`, and the app decides what sending means: open a
+  conversation, send at once, or select.
+- **The sheet owns how.** The grid, the tiles, the targets row, the loading
+  placeholders and the empty line.
+- **It is content, not a sheet.** Present it in the app's `BottomSheet`. It
+  renders flat and does not scroll vertically, because the sheet it sits in owns
+  that overflow. The targets row is its own sideways scroller.
+
+## Props
+
+| prop | |
+|---|---|
+| `title` | Heading; defaults to "Share" in the locale, `null` draws none. |
+| `search` | `{ value, onValueChange, placeholder?, onSubmit? }`. This is the `DialogHeader` search shape, built on `Search`. |
+| `people` | Absent hides the section, which is what a signed-out reader should see. Empty shows `peopleEmpty`. |
+| `onPersonPress` | `(id) => void`. |
+| `peopleLoading` | Placeholder tiles, drawn only while `people` is empty, so a refetch does not blank a shown list. |
+| `peopleEmpty` | Replaces the default "No one found" line. |
+| `targets` | `{ key, label, icon, onPress, testID? }[]`. Every disc is the same neutral tint, brand glyphs included (`RiWhatsappFill`, `RiTelegramFill`, `RiTwitterXFill`), so the row reads as one set in both themes. |
+| `size` | `sm` / `md` / `lg`; inherits `BloomScope` (`xs` maps to `sm`). Avatars are 48 / 56 / 64 and discs 44 / 52 / 56. |
+| `locale` | For the fixed strings. |
+
+## Accessibility
+
+A person's tile is a button named "Send to {name}", so the name says what
+pressing it does. A target is a button named by its visible label. The people
+grid is a `list` named "Send to", the targets row is named "Share to", and the
+title is a `heading`.
