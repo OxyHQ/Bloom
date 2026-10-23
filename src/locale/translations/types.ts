@@ -142,6 +142,7 @@ import type { SORTABLE_MEDIA_MESSAGES } from '../../sortable-media/messages';
 import type { CONNECTION_DOTS_MESSAGES } from '../../connection-dots/messages';
 import type { CHAT_PEOPLE_MESSAGES } from '../../chat-people/messages';
 import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
+import type { SHARE_SHEET_MESSAGES } from '../../share-sheet/messages';
 
 export interface Translations {
   COVER_HEADER_MESSAGES: CatalogMessages<typeof COVER_HEADER_MESSAGES>;
@@ -284,4 +285,5 @@ export interface Translations {
   readonly CHAT_PEOPLE_MESSAGES: CatalogMessages<typeof CHAT_PEOPLE_MESSAGES>;
   readonly EMPTY_STATE_MESSAGES: CatalogMessages<typeof EMPTY_STATE_MESSAGES>;
   readonly VOICE_MESSAGES: CatalogMessages<typeof VOICE_MESSAGES>;
+  readonly SHARE_SHEET_MESSAGES: CatalogMessages<typeof SHARE_SHEET_MESSAGES>;
 }

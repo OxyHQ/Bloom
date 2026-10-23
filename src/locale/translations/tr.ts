@@ -2837,6 +2837,14 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'Mikrofon sessize alındı',
 };
 
+const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
+  title: 'Paylaş',
+  people: 'Gönder',
+  targets: 'Şurada paylaş',
+  sendTo: (name) => `${name} kişisine gönder`,
+  noPeople: 'Kimse bulunamadı',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Kapağı değiştir',
@@ -3065,6 +3073,7 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
+  SHARE_SHEET_MESSAGES,
 };
 
 export default translations;

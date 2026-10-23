@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.25.0",
+  "version": "15.26.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1776,6 +1776,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/engagement-bar/index.d.ts",
         "default": "./lib/commonjs/engagement-bar/index.js"
+      }
+    },
+    "./share-sheet": {
+      "react-native": {
+        "types": "./lib/typescript/module/share-sheet/index.d.ts",
+        "default": "./src/share-sheet/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/share-sheet/index.d.ts",
+        "default": "./lib/module/share-sheet/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/share-sheet/index.d.ts",
+        "default": "./lib/commonjs/share-sheet/index.js"
       }
     },
     "./empty-state": {
@@ -4393,6 +4407,9 @@
       ],
       "engagement-bar": [
         "./lib/typescript/module/engagement-bar/index.d.ts"
+      ],
+      "share-sheet": [
+        "./lib/typescript/module/share-sheet/index.d.ts"
       ],
       "empty-state": [
         "./lib/typescript/module/empty-state/index.d.ts"

@@ -216,6 +216,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./icon-circle', 'icon-circle/index.ts'],
   // A post's action bar: reply, repost, like, share, save.
   ['./engagement-bar', 'engagement-bar/index.ts'],
+  // What a "send" button opens: people to send to and other destinations.
+  ['./share-sheet', 'share-sheet/index.ts'],
   // Nothing to show, said once — the base block a dozen families hand-rolled.
   ['./empty-state', 'empty-state/index.ts'],
   ['./connection-dots', 'connection-dots/index.ts'],

@@ -2744,6 +2744,14 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: '麦克风已静音',
 };
 
+const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
+  title: '分享',
+  people: '发送给',
+  targets: '分享到',
+  sendTo: (name) => `发送给 ${name}`,
+  noPeople: '未找到任何人',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: '更换封面',
@@ -2971,6 +2979,7 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
+  SHARE_SHEET_MESSAGES,
 };
 
 export default translations;

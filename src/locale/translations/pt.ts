@@ -2924,6 +2924,14 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'Microfone silenciado',
 };
 
+const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
+  title: 'Partilhar',
+  people: 'Enviar para',
+  targets: 'Partilhar em',
+  sendTo: (name) => `Enviar para ${name}`,
+  noPeople: 'Ninguém encontrado',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Alterar capa',
@@ -3151,6 +3159,7 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
+  SHARE_SHEET_MESSAGES,
 };
 
 export default translations;
