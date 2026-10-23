@@ -30,7 +30,6 @@ jest.mock('../styles/adopt-style-sheet', () => ({
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const config = {
   persistKey: 'app-theme',
-  modeStorageKey: 'app-mode',
   defaultColorPreset: 'oxy' as const,
 };
 const storage = {
@@ -50,8 +49,8 @@ afterEach(() => {
   Platform.OS = oldPlatform;
   jest.restoreAllMocks();
 });
-function bootstrap(blocked = false) {
-  const script = getThemeBootstrap(config).script;
+function bootstrap(blocked = false, modeStorageKey?: string) {
+  const script = getThemeBootstrap({ ...config, modeStorageKey }).script;
   new Function('document', 'localStorage', 'matchMedia', script)(
     document,
     blocked
@@ -94,13 +93,18 @@ function Fixture({ persist = true }: { persist?: boolean }) {
   );
 }
 
-it('reads the existing JSON preset and lets the legacy plain mode override its mode', () => {
+it('reads the existing JSON preset while the legacy key remains the sole mode source', () => {
   localStorage.setItem('app-theme', JSON.stringify({ mode: 'dark', colorPreset: 'yellow' }));
   localStorage.setItem('app-mode', 'light');
-  bootstrap();
+  bootstrap(false, 'app-mode');
   expect(document.documentElement.getAttribute('data-bloom-theme-preset')).toBe('yellow');
   expect(document.documentElement.getAttribute('data-bloom-theme-mode')).toBe('light');
   localStorage.setItem('app-mode', 'invalid');
+  bootstrap(false, 'app-mode');
+  expect(document.documentElement.getAttribute('data-bloom-theme-mode')).toBe('light');
+  localStorage.removeItem('app-mode');
+  bootstrap(false, 'app-mode');
+  expect(document.documentElement.getAttribute('data-bloom-theme-mode')).toBe('light');
   bootstrap();
   expect(document.documentElement.getAttribute('data-bloom-theme-mode')).toBe('dark');
 });

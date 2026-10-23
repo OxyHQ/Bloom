@@ -77,8 +77,10 @@ For a saved named color preset, add `persistKey: 'app.bloom.theme'` to that
 same configuration and pass `storage={webLocalStorage}` to the provider on web
 (an AsyncStorage-compatible adapter on native). The provider derives its key
 from the shared configuration. This uses Bloom's existing JSON persistence;
-`modeStorageKey`, when present and valid, still takes priority in the document,
-so retain the matching controlled mode above. No separate preset cache or
+When `modeStorageKey` is configured it remains the authoritative mode store,
+including the configured default for missing or invalid values. JSON mode is
+used only without that separate mode key; retain the matching controlled mode
+above when using it. No separate preset cache or
 app-specific bootstrap script is needed. Use `awaitHydration={false}` when
 public app chrome must remain mounted while an asynchronous adapter resolves.
 

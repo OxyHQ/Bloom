@@ -10,7 +10,7 @@ export interface BloomThemeBootstrapConfig {
   defaultColorPreset?: AppColorName;
   /** Existing Bloom JSON theme storage; named presets paint before hydration. */
   persistKey?: string;
-  /** Plain mode preference; when valid, takes precedence over the JSON mode. */
+  /** Authoritative plain mode store; missing/invalid values use defaultMode. */
   modeStorageKey?: string;
 }
 
@@ -62,6 +62,6 @@ export function getThemeBootstrap(config: BloomThemeBootstrapConfig = {}): {
     .replace(/</g, '\\u003c')
     .replace(/\u2028/g, '\\u2028')
     .replace(/\u2029/g, '\\u2029');
-  const script = `(function(c){var m=c.mode,p=c.preset;function valid(v){return v==='light'||v==='dark'||v==='system'||v==='adaptive'}try{var j=c.persist&&JSON.parse(localStorage.getItem(c.persist)||'null');if(j&&typeof j==='object'){if(valid(j.mode))m=j.mode;if(c.presets.indexOf(j.colorPreset)!==-1)p=j.colorPreset}}catch(e){}try{var s=c.key&&localStorage.getItem(c.key);if(valid(s))m=s}catch(e){}var d=m==='dark';if(m==='system'||m==='adaptive'){try{d=matchMedia('(prefers-color-scheme: dark)').matches}catch(e){}}var r=document.documentElement;r.setAttribute('data-bloom-theme-mode',d?'dark':'light');if(c.persist)r.setAttribute('data-bloom-theme-preset',p);r.classList.toggle('dark',d)})(${data});`;
+  const script = `(function(c){var m=c.mode,p=c.preset;function valid(v){return v==='light'||v==='dark'||v==='system'||v==='adaptive'}try{var j=c.persist&&JSON.parse(localStorage.getItem(c.persist)||'null');if(j&&typeof j==='object'){if(!c.key&&valid(j.mode))m=j.mode;if(c.presets.indexOf(j.colorPreset)!==-1)p=j.colorPreset}}catch(e){}try{var s=c.key&&localStorage.getItem(c.key);if(valid(s))m=s}catch(e){}var d=m==='dark';if(m==='system'||m==='adaptive'){try{d=matchMedia('(prefers-color-scheme: dark)').matches}catch(e){}}var r=document.documentElement;r.setAttribute('data-bloom-theme-mode',d?'dark':'light');if(c.persist)r.setAttribute('data-bloom-theme-preset',p);r.classList.toggle('dark',d)})(${data});`;
   return { css, script };
 }
