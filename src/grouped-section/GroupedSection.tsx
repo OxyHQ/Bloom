@@ -103,6 +103,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
   title,
   titleNumberOfLines = 1,
   description,
+  descriptionLines = 2,
   value,
   rightElement,
   showChevron,
@@ -150,7 +151,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
         {description ? (
           <Text
             style={[styles.description, { color: theme.colors.textSecondary }]}
-            numberOfLines={2}
+            numberOfLines={descriptionLines === 0 ? undefined : descriptionLines}
           >
             {description}
           </Text>

@@ -123,7 +123,11 @@ describe('SettingsModal shell', () => {
     expect(resolvedStyle(getByTestId('settings-header').props.style).paddingTop).toBe(0);
     expect(getByTestId('settings-header-title').props['aria-level']).toBe(2);
     expect(getByTestId('settings-header-actions')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('settings-header-scrim').props.style).opacity).toBe(0);
+    // The opaque bar: content scrolling under it must not ghost through.
+    expect(queryByTestId('settings-header-scrim')).toBeNull();
+    const background = getByTestId('settings-header-background');
+    expect(resolvedStyle(background.props.style).opacity).toBe(1);
+    expect(resolvedStyle(background.props.style).backgroundColor).toBeTruthy();
     expect(queryByTestId('settings-title-row')).toBeNull();
     expect(queryByTestId('settings-fade')).toBeNull();
     const page = getByTestId('settings-page');

@@ -16,7 +16,8 @@ import { IS_WEB } from '../styles/platform';
  * The action bar under a step of a multi-step flow.
  *
  *   bar      1px hairline on top (neutral-200, dark neutral-800), page
- *            background, py 16 px 24 (px 16 below 480 wide)
+ *            background, py 16; the sides are PageFooter's page gutter
+ *            (16, 24 from `sm`), so the bar lines up with the content above
  *   left     "Back" — the underlined text action (body-semibold, text-primary);
  *            omitted with `onBack`, and the primary action stays on the right
  *   middle   an optional `status` line, caption-1-regular text-secondary,
@@ -31,7 +32,6 @@ import { IS_WEB } from '../styles/platform';
 const NARROW = 480;
 const WIZARD_FOOTER_CSS = `
 @container bloom-wizard-footer (width < ${NARROW}px) {
-  [data-bloom-wizard-footer-row] { padding-left: 16px !important; padding-right: 16px !important; }
   [data-bloom-wizard-footer-status] { display: none !important; }
 }
 `;
@@ -64,7 +64,6 @@ export function createWizardFooter({
     useInsertionEffect(() => {
       if (IS_WEB) adoptStyleSheet('bloom-wizard-footer-layout', WIZARD_FOOTER_CSS);
     }, []);
-    const inset = narrow ? 16 : 24;
 
     const barStyle: WebCssStyle = {
       flexDirection: 'row',
@@ -73,8 +72,6 @@ export function createWizardFooter({
       gap: 16,
       paddingTop: 16,
       paddingBottom: 16,
-      paddingLeft: inset,
-      paddingRight: inset,
     };
 
     const frameStyle: WebCssStyle = {
@@ -89,7 +86,10 @@ export function createWizardFooter({
         testID={testID}
         position={sticky ? 'sticky' : 'inline'}
         scrim="none"
-        contentContainerStyle={{ paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0 }}
+        // The horizontal inset is PageFooter's own (16, 24 from `sm`), the same
+        // gutter the page content uses; only the vertical padding is the
+        // wizard's, supplied by the bar below.
+        contentContainerStyle={{ paddingTop: 0, paddingBottom: 0 }}
         style={[frameStyle, style]}
       >
         <View

@@ -179,4 +179,12 @@ describe('WizardFooter', () => {
     mount(<WizardFooter onNext={() => undefined} sticky={false} testID="wf" />);
     expect(byTestId('wf').style.position).not.toBe('sticky');
   });
+
+  it('takes its side inset from PageFooter, the page gutter, not a gutter of its own', () => {
+    mount(<WizardFooter onNext={() => undefined} testID="wf" />);
+    expect(byTestId('wf-row').style.paddingLeft).toContain('--bloom-page-footer-inset');
+    const bar = container.querySelector('[data-bloom-wizard-footer-row]') as HTMLElement;
+    expect(bar.style.paddingLeft).toBe('');
+    expect(bar.style.paddingRight).toBe('');
+  });
 });

@@ -1,4 +1,3 @@
-import { ScrollArea } from '../layout/ScrollArea';
 import { useBloomAppearance } from '../appearance';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -49,8 +48,9 @@ import { IS_WEB } from '../styles/platform';
  *
  *   surface     1px border-table, radius 16, pt 8, pb 12 (0 without a footer)
  *   toolbar     px 12 py 4, gap 12; title (text-tertiary) over summary
- *               (text-primary), both body-medium; controls gap 10, wrapping
- *               to their own scrolling row below 640px (the `sm` breakpoint)
+ *               (text-primary, wraps), both body-medium; controls gap 10,
+ *               wrapping onto their own full-width row below 640px (the `sm`
+ *               breakpoint)
  *   table       8 below the toolbar; min width 1000 scrolls horizontally
  *   select col  16px checkbox, 8 gap, then the first column's content
  *   footer      1px separator-border on top, px 12 pt 12, `Pagination`
@@ -161,6 +161,7 @@ export function DataTable<T>({
   sizeToggleAccessibilityLabel: sizeToggleAccessibilityLabelProp,
   emptyState,
   minWidth,
+  bordered = true,
   layout = 'table',
   style,
   testID,
@@ -265,12 +266,14 @@ export function DataTable<T>({
     <View testID={testID} style={[{ width: '100%', alignItems: 'center', gap: 20 }, style]}>
       <View
         onLayout={onLayout}
+        testID={testID ? `${testID}-surface` : undefined}
         style={{
           width: '100%',
-          borderWidth: 1,
-          borderColor: palette.border,
-          borderRadius: 16,
-          paddingTop: 8,
+          // `bordered={false}`: the host surface owns the frame, so no second
+          // border, radius or top gap inside it.
+          ...(bordered
+            ? { borderWidth: 1, borderColor: palette.border, borderRadius: 16, paddingTop: 8 }
+            : null),
           paddingBottom: totalPages > 1 ? 12 : 0,
         }}
       >
@@ -288,7 +291,7 @@ export function DataTable<T>({
               paddingBottom: 4,
             }}
           >
-            <View style={{ justifyContent: 'center', flexShrink: 0 }}>
+            <View style={{ justifyContent: 'center', flexShrink: 1, minWidth: 0 }}>
               {isTextLike(title) ? (
                 <Text
                   numberOfLines={1}
@@ -300,47 +303,31 @@ export function DataTable<T>({
                 title
               )}
               {isTextLike(summary) ? (
-                <Text
-                  numberOfLines={1}
-                  style={[TYPE_SCALE['body-medium'], { color: palette.text }]}
-                >
-                  {summary}
-                </Text>
+                // Wraps: a long count line ("48 customers matching ...") must not
+                // be cut off or push the toolbar controls out of view.
+                <Text style={[TYPE_SCALE['body-medium'], { color: palette.text }]}>{summary}</Text>
               ) : (
                 summary
               )}
             </View>
             {toolbar != null ? (
-              narrow ? (
-                // `-mx-3 w-[calc(100%+1.5rem)] overflow-x-auto px-3`: the
-                // controls scroll edge to edge under the title on a phone.
-                <ScrollArea
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={{ marginLeft: -12, marginRight: -12, alignSelf: 'stretch' }}
-                  contentContainerStyle={{
-                    paddingLeft: 12,
-                    paddingRight: 12,
-                    gap: 10,
-                    alignItems: 'center',
-                  }}
-                >
-                  {toolbar}
-                </ScrollArea>
-              ) : (
-                <View
-                  style={{
-                    flexShrink: 1,
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                    gap: 10,
-                  }}
-                >
-                  {toolbar}
-                </View>
-              )
+              <View
+                style={{
+                  flexShrink: 1,
+                  minWidth: 0,
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  // Below 640 the controls take their own full-width row and
+                  // wrap onto further lines; a scrolling row clipped filters.
+                  ...(narrow
+                    ? { alignSelf: 'stretch', justifyContent: 'flex-start' }
+                    : { justifyContent: 'flex-end' }),
+                  alignItems: 'center',
+                  gap: 10,
+                }}
+              >
+                {toolbar}
+              </View>
             ) : null}
           </View>
         ) : null}

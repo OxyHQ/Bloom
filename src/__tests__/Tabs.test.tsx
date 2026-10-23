@@ -118,6 +118,29 @@ describe('Tabs', () => {
     expect(scrollTo).toHaveBeenLastCalledWith({ x: 550, animated: false });
   });
 
+  it('cues an overflowing strip with edge fades and start-aligns its triggers', () => {
+    const { getByTestId, queryByTestId } = renderWithTheme(<Bar value="a" />);
+    const strip = getByTestId('tabs');
+    expect(flattenStyle(strip.props.contentContainerStyle).justifyContent).toBe('flex-start');
+    expect(queryByTestId('tabs-fade-end')).toBeNull();
+    act(() => {
+      fireEvent(strip, 'layout', { nativeEvent: { layout: { width: 300 } } });
+      strip.props.onContentSizeChange(900, 40);
+    });
+    expect(queryByTestId('tabs-fade-end')).not.toBeNull();
+    expect(queryByTestId('tabs-fade-start')).toBeNull();
+    act(() => {
+      fireEvent.scroll(strip, {
+        nativeEvent: {
+          contentOffset: { x: 120, y: 0 },
+          layoutMeasurement: { width: 300, height: 40 },
+          contentSize: { width: 900, height: 40 },
+        },
+      });
+    });
+    expect(queryByTestId('tabs-fade-start')).not.toBeNull();
+  });
+
   it('renders trigger labels', () => {
     const { getByText } = renderWithTheme(<Bar value="a" />);
     expect(getByText('First')).toBeTruthy();

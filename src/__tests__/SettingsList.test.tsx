@@ -114,6 +114,22 @@ describe('SettingsListItem', () => {
   });
 });
 
+describe('GroupedSectionItem description lines', () => {
+  const lines = (props: { descriptionLines?: number }): number | undefined => {
+    const { getByText } = renderWithTheme(
+      <SettingsListItem title="Policy" description="A long description" {...props} />,
+    );
+    return getByText('A long description').props.numberOfLines as number | undefined;
+  };
+
+  it('keeps two lines by default, and takes a count or 0 for no clamp', () => {
+    expect(lines({})).toBe(2);
+    expect(lines({ descriptionLines: 4 })).toBe(4);
+    expect(lines({ descriptionLines: 1 })).toBe(1);
+    expect(lines({ descriptionLines: 0 })).toBeUndefined();
+  });
+});
+
 describe('SettingsListGroup', () => {
   // The colours the provider resolves, read through the same hook the group uses,
   // so the assertion names roles rather than hex values that move with presets.

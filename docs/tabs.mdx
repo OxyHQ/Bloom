@@ -186,6 +186,8 @@ The rail used to be `neutral-800` in dark — the exact fill `QueuePanel` (and
 every other menu-surface family) paints its panel with, **ΔE 0**. A tab strip
 inside one had no rail. On the page the rail lands within 0.04 of its old colour.
 
+A strip wider than its viewport draws a fade over each edge that hides more tabs, and start-aligns its triggers so the first one is never pushed out of reach.
+
 The scrolling tab viewport keeps its intrinsic height (`flexGrow: 0`,
 `flexShrink: 0`). This matters in native columns above virtualized lists:
 React Native's default ScrollView growth otherwise takes space from the feed,

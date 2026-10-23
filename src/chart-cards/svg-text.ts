@@ -42,3 +42,13 @@ export function boundedLabelSlot(
   const width = Math.max(0, Math.min(preferredWidth, room));
   return { left: anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2, width };
 }
+
+/**
+ * The extent to reserve for a label whose text measured `width`. A fractional
+ * measure placed at the plot edge leaves a slot a hair narrower than the text,
+ * and `numberOfLines={1}` then ellipsises it ("Oct …"); round up and add a pixel
+ * so a label that fits always renders whole.
+ */
+export function measuredLabelWidth(width: number): number {
+  return Math.ceil(width) + 1;
+}

@@ -470,7 +470,6 @@ export function createSettingsModal(
                                   onClose: requestClose,
                                 }}
                                 key={currentPage}
-                                palette={palette}
                                 inset={CONTENT_INSET.compact}
                                 insetTop={CONTENT_INSET.compact}
                                 testID={testID}
@@ -519,7 +518,6 @@ export function createSettingsModal(
                                   onClose: requestClose,
                                 }}
                                 key={currentPage}
-                                palette={palette}
                                 inset={CONTENT_INSET[layout]}
                                 insetTop={pageConfig?.compactTitle ? 6 : 12}
                                 testID={testID}
@@ -618,13 +616,7 @@ export function createSettingsModal(
             style={styles.railCompact}
             testID={testID ? `${testID}-rail` : undefined}
           >
-            <PageScroller
-              header={header}
-              palette={palette}
-              inset={0}
-              scrimColor={palette.secondary}
-              testID={testID}
-            >
+            <PageScroller header={header} inset={0} testID={testID}>
               {content}
             </PageScroller>
           </View>
@@ -737,12 +729,8 @@ export function createSettingsModal(
     backLabel,
     closeLabel,
     onClose,
-    palette,
-    scrimColor = palette.full,
     testID,
   }: SettingsHeaderProps & {
-    palette: SettingsPalette;
-    scrimColor?: string;
     testID?: string;
   }) {
     return (
@@ -752,8 +740,11 @@ export function createSettingsModal(
         onBack={onBack}
         backLabel={backLabel}
         safeArea={false}
-        scrim="auto"
-        scrimColor={scrimColor}
+        // The opaque bar, not the floating islands: page content scrolls UNDER
+        // this header, and the floating presentation's translucent capsules and
+        // gradient scrim showed that content ghosting through. The bar paints the
+        // modal's published surface fill and draws its hairline once scrolled.
+        presentation="bar"
         actions={
           <ButtonGroup accessibilityLabel={closeLabel}>
             <ButtonGroupItem
@@ -774,18 +765,14 @@ export function createSettingsModal(
   function PageScroller({
     children,
     header,
-    palette,
     inset,
     insetTop = 0,
-    scrimColor,
     testID,
   }: {
     children: React.ReactNode;
     header: SettingsHeaderProps;
-    palette: SettingsPalette;
     inset: number;
     insetTop?: number;
-    scrimColor?: string;
     testID?: string;
   }) {
     return (
@@ -794,9 +781,7 @@ export function createSettingsModal(
         documentScroll={false}
         navigationScope="isolated"
         contentClearance={0}
-        header={
-          <SettingsHeader {...header} palette={palette} scrimColor={scrimColor} testID={testID} />
-        }
+        header={<SettingsHeader {...header} testID={testID} />}
         style={styles.scroll}
       >
         <SettingsPageContent inset={inset} insetTop={insetTop} testID={testID}>

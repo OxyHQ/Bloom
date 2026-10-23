@@ -103,6 +103,8 @@ attribute.
 
 ## Right to left
 
+The off track is the quietest blend of the text colour over the surface the switch sits on that still clears 3:1 (WCAG 1.4.11), in light and dark; the off thumb contrasts with it (white in light, the text colour in dark) so an off switch never reads as on or disabled. Disabled is the 40% opacity alone.
+
 Under `<html dir="rtl">` (web) or `I18nManager` RTL (native) the thumb rests at the right edge and travels left when on. The track places it at the inline start, and the travel is a physical `translateX`, so its sign comes from `useIsRtl()`.
 
 ## API migration

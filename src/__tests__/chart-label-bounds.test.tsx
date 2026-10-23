@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ComboChartCard } from '../chart-cards/ComboChartCard';
-import { boundedLabelSlot } from '../chart-cards/svg-text';
+import { boundedLabelSlot, measuredLabelWidth } from '../chart-cards/svg-text';
 import { resolvedStyle } from './support/rendered-style';
 
 it.each(['start', 'middle', 'end'] as const)(
@@ -53,4 +53,12 @@ it('bounds both axes and the invisible category measurement boxes on a phone', (
     expect(style.left).toBeGreaterThanOrEqual(0);
     expect(Number(style.left) + Number(style.width)).toBeLessThanOrEqual(326);
   }
+});
+
+it('reserves a whole pixel past a fractional label measure so the last label is not ellipsised', () => {
+  expect(measuredLabelWidth(21.4)).toBe(23);
+  const w = measuredLabelWidth(21.4);
+  // The last tick is pulled in to `plot - w / 2`; its slot must still hold the text.
+  const slot = boundedLabelSlot(326, 326 - w / 2, 'middle', 200);
+  expect(slot.width).toBeGreaterThanOrEqual(21.4);
 });

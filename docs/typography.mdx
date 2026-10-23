@@ -83,7 +83,7 @@ A caller who wants utility classes composes a `View` and a `Text` directly.
 
 ## `className` and inline defaults
 
-Every other variant applies its size, weight and colour ONLY when no `className` is passed. react-native-css merges utilities into `style` first, so an inline default repeating `fontSize` or `color` would win the merge and silently break the caller's `text-lg` or `text-primary`. `fontFamily` is the exception and stays inline either way.
+Every other variant drops a default only for the keys the `className` claims (a custom class it cannot read, such as `chip-label`, is assumed to claim all of them): `text-<size>` (and `text-[14px]`) claims size and line height, `text-<colour>` claims colour, `leading-*` line height and `font-<weight>` weight. react-native-css merges utilities into `style` first, so an inline default repeating a claimed key would win the merge and silently break the caller's `text-lg` or `text-primary`; every other default still applies, so `<Muted className="mt-2">` keeps its secondary colour (dropping all defaults left it unset, and invisible in dark mode). `fontFamily` is the exception and stays inline either way.
 
 Because the family is inline, a family utility cannot beat it, so `Text` reads the ones it can answer from `className` itself: `font-display` (or a size from `text-3xl` up) sets BlomusModernus, and `font-mono` sets JetBrains Mono, at any breakpoint or state prefix (`md:font-mono`). An explicit `font-mono` wins over a family implied by size or variant: `text-4xl font-mono` is mono. Bloom defines no serif family (`fonts/tokens.ts` has `sans`, `display` and `mono`), so `font-serif` has no counterpart.
 

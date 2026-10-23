@@ -1,4 +1,4 @@
-import { boundedLabelSlot } from '../svg-text';
+import { boundedLabelSlot, measuredLabelWidth } from '../svg-text';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Platform,
@@ -300,7 +300,7 @@ export function CartesianPlot({
                     numberOfLines={1}
                     style={[X_TICK_TYPE, tickColor, { maxWidth: '100%' }]}
                     onLayout={(event) => {
-                      const w = event.nativeEvent.layout.width;
+                      const w = measuredLabelWidth(event.nativeEvent.layout.width);
                       setLabelWidths((prev) => (prev[key] === w ? prev : { ...prev, [key]: w }));
                     }}
                   >

@@ -66,7 +66,17 @@ export function ChartLegend({
             onPointerEnter={onActiveChange ? () => onActiveChange(index) : undefined}
             onPointerLeave={onActiveChange ? () => onActiveChange(null) : undefined}
             style={[
-              { flexDirection: 'row', alignItems: 'center', gap: 6, opacity: dimmed ? 0.5 : 1 },
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                opacity: dimmed ? 0.5 : 1,
+                // A long label shrinks (and truncates) inside the row rather than
+                // pushing the legend wider than its card.
+                maxWidth: '100%',
+                minWidth: 0,
+                flexShrink: 1,
+              },
               transition,
             ]}
           >
@@ -79,7 +89,11 @@ export function ChartLegend({
                 backgroundColor: item.color,
               }}
             />
-            <Text variant="body-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+            <Text
+              variant="body-regular"
+              numberOfLines={1}
+              style={{ color: palette.textSecondary, flexShrink: 1, minWidth: 0 }}
+            >
               {item.label}
             </Text>
             {item.value !== undefined ? (

@@ -361,9 +361,11 @@ function CustomersDataTable({
   width = 1020,
   initialQuery = '',
   layout,
+  bordered,
   testID,
 }: {
   layout?: DataTableLayout;
+  bordered?: boolean;
   pageSize?: number;
   showSizeToggle?: boolean;
   width?: number;
@@ -447,6 +449,7 @@ function CustomersDataTable({
         emptyState="No customers match your filters."
         minWidth={1000}
         layout={layout}
+        bordered={bordered}
       />
     </View>
   );
@@ -507,7 +510,17 @@ export const Empty: Story = {
   ),
 };
 
-/** Below 640px the toolbar stacks and its controls scroll sideways; the table scrolls horizontally past its 1000px minimum. */
+/** `bordered={false}`: for a table inside a dialog, sheet or card that already draws the frame. */
+export const Unbordered: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Page padding={40}>
+      <CustomersDataTable testID="dt-unbordered" bordered={false} showSizeToggle={false} />
+    </Page>
+  ),
+};
+
+/** Below 640px the toolbar stacks and its filters wrap; the table scrolls horizontally past its 1000px minimum, with an edge fade as the cue. */
 export const Narrow: Story = {
   parameters: { controls: { disable: true } },
   render: () => (

@@ -1,4 +1,5 @@
 import { ScrollArea } from '../layout/ScrollArea';
+import { ScrollEdgeFade, useHorizontalScrollEdges } from '../layout/ScrollEdgeFade';
 import { useBloomAppearance } from '../appearance';
 import React, {
   Children,
@@ -262,6 +263,7 @@ export function Table({
     inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   const palette = useMemo(() => resolveTablePalette(theme), [theme]);
+  const edges = useHorizontalScrollEdges();
   const columns = readColumns(children);
   const columnsKey = JSON.stringify(columns);
   // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised layouts, not the array identity
@@ -289,13 +291,27 @@ export function Table({
   return (
     <TableContext.Provider value={context}>
       {minWidth != null ? (
-        <ScrollArea
-          horizontal
-          style={[{ width: '100%' }, containerStyle]}
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          {table}
-        </ScrollArea>
+        // The fades are the scroll cue: a table wider than its viewport shows
+        // where more columns hide, instead of looking cut off.
+        <View style={[{ width: '100%' }, containerStyle]}>
+          <ScrollArea
+            horizontal
+            style={{ width: '100%' }}
+            contentContainerStyle={{ flexGrow: 1 }}
+            onScroll={edges.onScroll}
+            onLayout={edges.onLayout}
+            onContentSizeChange={edges.onContentSizeChange}
+            scrollEventThrottle={16}
+          >
+            {table}
+          </ScrollArea>
+          {edges.canScrollStart ? (
+            <ScrollEdgeFade edge="start" testID={testID ? `${testID}-fade-start` : undefined} />
+          ) : null}
+          {edges.canScrollEnd ? (
+            <ScrollEdgeFade edge="end" testID={testID ? `${testID}-fade-end` : undefined} />
+          ) : null}
+        </View>
       ) : (
         <View style={[{ width: '100%' }, containerStyle]}>{table}</View>
       )}

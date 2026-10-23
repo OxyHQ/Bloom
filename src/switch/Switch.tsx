@@ -7,6 +7,8 @@ import React, { memo, useCallback, useEffect, useRef } from 'react';
 import { Pressable, Animated, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useSurfaceFill } from '../styles/surface-levels';
+import { resolveSwitchOffPaint } from './paint';
 import { animation } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
@@ -53,6 +55,12 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
       { size: 'md', tone: 'accent' },
     );
     const paint = resolveBloomColors(theme.colors, tone, 'solid');
+    const surface = useSurfaceFill();
+    const off = resolveSwitchOffPaint({
+      surface,
+      text: theme.colors.text,
+      isDark: theme.isDark,
+    });
     const field = useFieldMembership({ accessibilityLabel, disabled, nativeID });
     const isDisabled = field.disabled;
     useAccessibleNameWarning('Switch', field.accessibilityLabel);
@@ -104,7 +112,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
 
     const trackBg = anim.interpolate({
       inputRange: [0, 1],
-      outputRange: [theme.colors.border, paint.background],
+      outputRange: [off.track, paint.background],
     });
 
     // `alignItems: 'flex-start'` parks the thumb at the inline start, which is
@@ -174,7 +182,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
               {
                 backgroundColor: anim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [theme.colors.text, paint.foreground],
+                  outputRange: [off.thumb, paint.foreground],
                 }),
                 width: thumb,
                 height: thumbHeight,

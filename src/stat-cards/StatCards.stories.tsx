@@ -115,6 +115,16 @@ export const TwoColumns: Story = {
   ),
 };
 
+/** `columns={3}`: two-up below 1024px, three-up from there; the short last row keeps the tracks. */
+export const ThreeColumns: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={frame}>
+      <StatCards stats={PLAIN_STATS} columns={3} />
+    </View>
+  ),
+};
+
 /** `count` renders the first N; a short last row keeps the grid's columns. */
 export const Count: Story = {
   parameters: { controls: { disable: true } },

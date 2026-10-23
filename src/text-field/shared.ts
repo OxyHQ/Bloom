@@ -10,6 +10,7 @@ import { useTheme } from '../theme/use-theme';
 import { RADIUS } from '../design-tokens/scales';
 import { TYPE_SCALE } from '../typography/scale';
 import { animation } from '../styles/tokens';
+import { FIELD_REST_BORDER_WIDTH, resolveFieldRestBorder } from '../styles/field-border';
 
 /**
  * The geometry and palette the `Input` shell paints, shared by `TextField`,
@@ -99,7 +100,12 @@ const TEXT_FIELD_TRANSITION_STYLE: WebCssStyle = {
 export const TEXT_FIELD_WEB_TRANSITION: ViewStyle | undefined =
   Platform.OS === 'web' ? TEXT_FIELD_TRANSITION_STYLE : undefined;
 
+export const TEXT_FIELD_REST_BORDER_WIDTH = FIELD_REST_BORDER_WIDTH;
+export { resolveFieldRestBorder };
+
 export interface TextFieldPalette {
+  /** The resting 1px outline shared with `Select`'s trigger (`resolveFieldRestBorder`). */
+  restBorder: string;
   /** `background-tertiary-default`. */
   background: string;
   /** `input-disabled-background`. */
@@ -150,6 +156,7 @@ export function resolveTextFieldPalette(
 ): TextFieldPalette {
   const c = theme.colors;
   return {
+    restBorder: resolveFieldRestBorder(theme),
     background: surfaceFillOn(theme, surface),
     backgroundDisabled: surfaceFillOn(theme, surface),
     backgroundInvalid: c.errorSubtle,

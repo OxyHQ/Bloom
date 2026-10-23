@@ -28,7 +28,7 @@ the same pixels. `AreaChartCard.tsx` is the reference implementation — read it
 | `useChartRange` / `ChartRange<T>` | selection state; a range's fields override the card's props |
 | `ChartCenterReadout` | absolutely centred number for ring charts (`size` `display` / `title`) |
 | `ChartStatTiles` | tile rows (3 per row ≥ 640 viewport, 2 below), bleed −8 / −4, 40% dimming |
-| `ChartLegend` | centred wrapping swatch legend, 50% dimming |
+| `ChartLegend` | centred wrapping swatch legend, 50% dimming; an item shrinks and truncates rather than overflowing its card |
 | `useChartTones()` + `resolveTone(tones, i, color?, activeColor?)` | in `palette.ts` / `use-chart-palette.ts` |
 | `useMonoTone()` / `resolveMonoTone(theme)` | |
 | `describeDeltaRatio` | `format.ts`. (`geometry.ts#describeDelta(current, previous)` is the dashboard cards' two-total version) |

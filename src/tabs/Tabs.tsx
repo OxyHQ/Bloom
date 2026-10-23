@@ -1,4 +1,5 @@
 import { ScrollArea } from '../layout/ScrollArea';
+import { ScrollEdgeFade, useHorizontalScrollEdges } from '../layout/ScrollEdgeFade';
 import { webDataSet } from '../styles/web-data';
 import type React from 'react';
 import {
@@ -446,6 +447,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   const remeasureScheduledRef = useRef(false);
   const indicatorPlacedRef = useRef(false);
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const edges = useHorizontalScrollEdges();
   const stripRef = useRef<ComponentRef<typeof View>>(null);
   const viewportWidthRef = useRef(0);
   // The value the underline currently belongs to, from EITHER path. A ref
@@ -762,6 +764,9 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     (): WebCssStyle => ({
       flexDirection: 'row',
       alignItems: 'center',
+      // Start-aligned, never centred: a centred row that overflows its viewport
+      // pushes the first tab into negative space, where it cannot be scrolled to.
+      justifyContent: 'flex-start',
       gap: STRIP_GAP,
       // The strip is `w-full`: the baseline runs the container's whole
       // width even when the triggers do not fill it. As a scroll view's content
@@ -847,30 +852,45 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
           {isUnderline ? indicator : null}
         </View>
       ) : (
-        <ScrollArea
-          ref={scrollRef}
-          {...stripA11y}
-          horizontal
-          // A tab strip owns its intrinsic cross-axis height. RN ScrollView's
-          // default flexGrow: 1 otherwise consumes the list's remaining space.
-          style={{ flexGrow: 0, flexShrink: 0 }}
-          scrollbar="never"
-          contentContainerStyle={[containerStyle, style]}
-          onLayout={(e) => {
-            viewportWidthRef.current = e.nativeEvent.layout.width;
-            // Child geometry may arrive first, and a viewport resize need not
-            // change any trigger's layout. Reveal the current selection in both
-            // cases without depending on another child measurement or render.
-            const selected = selectedValueRef.current;
-            const target = selected === undefined ? undefined : triggerLayoutsRef.current[selected];
-            if (hasSelection && target) revealTrigger(target, false);
-          }}
-          testID={testID}
-        >
-          {isUnderline ? null : indicator}
-          {children}
-          {isUnderline ? indicator : null}
-        </ScrollArea>
+        // The host carries the edge fades: a strip wider than its viewport shows
+        // where more tabs hide, so a clipped trigger reads as "scroll", not "cut off".
+        <View style={{ position: 'relative', flexShrink: 0, maxWidth: '100%' }}>
+          <ScrollArea
+            ref={scrollRef}
+            {...stripA11y}
+            horizontal
+            // A tab strip owns its intrinsic cross-axis height. RN ScrollView's
+            // default flexGrow: 1 otherwise consumes the list's remaining space.
+            style={{ flexGrow: 0, flexShrink: 0 }}
+            scrollbar="never"
+            contentContainerStyle={[containerStyle, style]}
+            onScroll={edges.onScroll}
+            onContentSizeChange={edges.onContentSizeChange}
+            scrollEventThrottle={16}
+            onLayout={(e) => {
+              edges.onLayout(e);
+              viewportWidthRef.current = e.nativeEvent.layout.width;
+              // Child geometry may arrive first, and a viewport resize need not
+              // change any trigger's layout. Reveal the current selection in both
+              // cases without depending on another child measurement or render.
+              const selected = selectedValueRef.current;
+              const target =
+                selected === undefined ? undefined : triggerLayoutsRef.current[selected];
+              if (hasSelection && target) revealTrigger(target, false);
+            }}
+            testID={testID}
+          >
+            {isUnderline ? null : indicator}
+            {children}
+            {isUnderline ? indicator : null}
+          </ScrollArea>
+          {edges.canScrollStart ? (
+            <ScrollEdgeFade edge="start" testID={testID ? `${testID}-fade-start` : undefined} />
+          ) : null}
+          {edges.canScrollEnd ? (
+            <ScrollEdgeFade edge="end" testID={testID ? `${testID}-fade-end` : undefined} />
+          ) : null}
+        </View>
       )}
     </TabsContext.Provider>
   );
