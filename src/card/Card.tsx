@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { resolveSurfaceLayer } from '../surface/use-surface-layer';
@@ -202,8 +203,12 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
       paint: appearance !== 'plain',
     });
     const { paintFill: fill, painted: paintsSurface, publishedFill } = material;
-    const paintRecipe = useThemeRecipe((palette, documentMode) => {
-      const modeLayer = resolveSurfaceLayer(palette, parentRecipe[documentMode], parentLevel);
+    const paintRecipe = useThemeRecipe((palette, documentMode, documentPreset) => {
+      const modeLayer = resolveSurfaceLayer(
+        palette,
+        resolvePaintMode(parentRecipe, documentMode, documentPreset),
+        parentLevel,
+      );
       const modePaint = resolveBloomColors(palette.colors, tone, appearance);
       const background =
         callerStyle?.backgroundColor ??
@@ -247,6 +252,8 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
             fillModes={{
               light: paintRecipe.light.publishedFill,
               dark: paintRecipe.dark.publishedFill,
+              resolvePreset: (preset, mode) =>
+                paintRecipe.resolvePreset(preset, mode).publishedFill,
             }}
           >
             <CardForegroundContext.Provider

@@ -99,7 +99,7 @@
  * reads `useSurfaceFill()` and a web-only fork may read the variable.
  */
 import { useThemeRecipe } from '../theme/use-theme-paint';
-import type { ThemePaintModes } from '../theme/paint';
+import { resolvePaintMode, type ThemePaintModes } from '../theme/paint';
 import { createContext, createElement, useContext, useMemo, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
@@ -405,6 +405,9 @@ export function useRingOffsetStyle(): Record<string, string> {
 export function useSurfaceFillRecipe() {
   const { level, fill, fillModes } = useContext(SurfaceLevelContext);
   return useThemeRecipe(
-    (theme, documentMode) => fillModes?.[documentMode] ?? fill ?? levelBackground(theme, level),
+    (theme, documentMode, documentPreset) =>
+      (fillModes ? resolvePaintMode(fillModes, documentMode, documentPreset) : undefined) ??
+      fill ??
+      levelBackground(theme, level),
   );
 }

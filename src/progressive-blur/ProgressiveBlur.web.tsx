@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
 /**
@@ -40,8 +41,8 @@ export function ProgressiveBlur({
   ...rest
 }: ProgressiveBlurProps) {
   const surfaceFill = useSurfaceFillRecipe();
-  const recipe = useThemeRecipe((theme, documentMode) =>
-    buildTailGradient(surfaceFill[documentMode], direction),
+  const recipe = useThemeRecipe((_theme, documentMode, documentPreset) =>
+    buildTailGradient(resolvePaintMode(surfaceFill, documentMode, documentPreset), direction),
   );
 
   const filter = `blur(${intensity * WEB_BLUR_PER_INTENSITY}px)`;

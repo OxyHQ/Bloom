@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 /**
@@ -221,12 +222,14 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   };
   const chromeRecipe = useThemeRecipe(resolvePanelChrome);
   const panelChrome = chromeRecipe?.paint;
-  const opticsRecipe = useThemeRecipe((theme, documentMode) => resolveSurfaceOptics(theme.isDark));
+  const opticsRecipe = useThemeRecipe((theme, documentMode, documentPreset) =>
+    resolveSurfaceOptics(theme.isDark),
+  );
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
   const parentRecipe = useSurfaceFillRecipe();
   const customFill = surfaceColor ?? StyleSheet.flatten(surfaceStyle)?.backgroundColor;
-  const fillRecipe = useThemeRecipe((theme, documentMode) =>
+  const fillRecipe = useThemeRecipe((theme) =>
     typeof customFill === 'string'
       ? customFill
       : rawFill === undefined
@@ -249,9 +252,9 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     : rawFill && paintsSurface
       ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill
       : rawFill;
-  const materialRecipe = useThemeRecipe((theme, documentMode) => {
-    const fill = fillRecipe?.[documentMode];
-    const parent = parentRecipe?.[documentMode];
+  const materialRecipe = useThemeRecipe((_theme, documentMode, documentPreset) => {
+    const fill = resolvePaintMode(fillRecipe, documentMode, documentPreset);
+    const parent = resolvePaintMode(parentRecipe, documentMode, documentPreset);
     if (isPlain) return { publishedFill: parent, paintFill: 'transparent' };
     if (!fill || !paintsSurface || !parent)
       return { publishedFill: fill, paintFill: fill ?? 'transparent' };
@@ -487,6 +490,9 @@ ${surfaceMaterialCss('[data-bloom-panel-material]', 'var(--bloom-surface-fill)')
                 ? {
                     light: materialRecipe.light.publishedFill,
                     dark: materialRecipe.dark.publishedFill,
+                    resolvePreset: (preset, mode) =>
+                      materialRecipe.resolvePreset(preset, mode).publishedFill ??
+                      parentRecipe.resolvePreset(preset, mode),
                   }
                 : undefined
             }

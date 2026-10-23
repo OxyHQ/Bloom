@@ -1,3 +1,4 @@
+import { resolvePaintMode } from '../theme/paint';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe, useSurfaceLevelValue } from '../styles/surface-levels';
 import { resolveSurfaceLayer } from '../surface/use-surface-layer';
@@ -296,8 +297,12 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
 
-    const paintRecipe = useThemeRecipe((modeTheme, documentMode) => {
-      const layer = resolveSurfaceLayer(modeTheme, parentRecipe[documentMode], parentLevel);
+    const paintRecipe = useThemeRecipe((modeTheme, documentMode, documentPreset) => {
+      const layer = resolveSurfaceLayer(
+        modeTheme,
+        resolvePaintMode(parentRecipe, documentMode, documentPreset),
+        parentLevel,
+      );
       const palette =
         isLink && linkTone != null && toneProp == null
           ? resolveLinkButtonPalette(modeTheme, linkTone)

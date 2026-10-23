@@ -21,7 +21,14 @@ export function useScope(
     seed !== undefined || colorPreset !== undefined || mode !== undefined || tokens !== undefined;
   const state = useMemo<ScopeState | null>(() => {
     if (!parent || !active) return inherited;
-    const resolveMode = (resolved: 'light' | 'dark'): ScopePalette => {
+    const palettes = new Map<string, ScopePalette>();
+    const resolvePreset = (preset: AppColorName, resolved: 'light' | 'dark'): ScopePalette => {
+      // A fixed local source is independent of the requested document preset.
+      // Its backing remains a separate recipe axis; only its own palette is shared.
+      const source = seed !== undefined ? `seed:${seed}` : `preset:${colorPreset ?? preset}`;
+      const key = `${source}/${resolved}`;
+      const cached = palettes.get(key);
+      if (cached) return cached;
       const base =
         seed !== undefined
           ? {
@@ -30,17 +37,22 @@ export function useScope(
             }
           : colorPreset !== undefined || !inherited
             ? {
-                theme: buildTheme(colorPreset ?? parent.colorPreset, resolved),
-                vars: buildScopeVars(colorPreset ?? parent.colorPreset, resolved),
+                theme: buildTheme(colorPreset ?? preset, resolved),
+                vars: buildScopeVars(colorPreset ?? preset, resolved),
               }
-            : inherited.resolveMode(resolved);
-      return applyScopeTokens(base, tokens);
+            : (inherited.resolvePreset?.(preset, resolved) ?? inherited.resolveMode(resolved));
+      const palette = applyScopeTokens(base, tokens);
+      palettes.set(key, palette);
+      return palette;
     };
+    const resolveMode = (resolved: 'light' | 'dark') => resolvePreset(parent.colorPreset, resolved);
     return {
       ...resolveMode(mode ?? parent.theme.mode),
       resolveMode,
+      resolvePreset,
       fixedMode: mode ?? inherited?.fixedMode,
       rootMode: inherited?.rootMode ?? parent.theme.mode,
+      prepaintReady: inherited?.prepaintReady,
     };
   }, [parent, inherited, active, colorPreset, mode, tokens, seed]);
   const context = useMemo(

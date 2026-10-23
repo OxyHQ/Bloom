@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 export interface FontLoaderProps {
   /** Ignored — there is nothing to load. Kept so the API matches every platform. */
@@ -18,7 +18,7 @@ export interface FontLoaderProps {
  * guard.
  *
  * It exists as a separate file rather than reusing that one because
- * `FontLoader.tsx` imports `./apply-font-faces.web` outright, which reaches
+ * `FontLoader.tsx` imports `./font-face-css.web` outright, which reaches
  * `font-urls.web`'s `.woff2` imports. Node hands a `.woff2` to the JS parser,
  * so merely LOADING that module is fatal — the guard inside the function never
  * gets a chance to run. Reached only through the `node` export condition on

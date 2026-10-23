@@ -19,3 +19,5 @@ export { applyFontFaces } from './apply-font-faces';
 export { FONT_ASSETS } from './font-assets';
 export { FontLoader } from './FontLoader.node';
 export type { FontLoaderProps } from './FontLoader.node';
+export { BloomFontHead } from './BloomFontHead';
+export type { BloomFontHeadProps } from './types';

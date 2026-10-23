@@ -9,3 +9,5 @@ export { applyFontFaces } from './apply-font-faces.web';
 export { FONT_ASSETS } from './font-assets.web';
 export { FontLoader } from './FontLoader';
 export type { FontLoaderProps } from './FontLoader';
+export { BloomFontHead } from './BloomFontHead.web';
+export type { BloomFontHeadProps } from './types';
