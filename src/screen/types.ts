@@ -16,6 +16,12 @@ export interface ScreenProps extends ViewProps {
   scroll?: 'auto' | 'content' | 'none';
   /** Overlay chrome paints above content without reserving its height. */
   headerPlacement?: 'inset' | 'overlay';
+  /**
+   * `overlay` floats `bottomBar` over the content, whose scroller pads its end
+   * clear of it (a reply prompt under a thread). `inset` (default) keeps the
+   * content above it (a chat composer the thread is anchored to).
+   */
+  bottomBarPlacement?: 'inset' | 'overlay';
   /** Disable all descendant scroll writers when a navigator retains this screen. */
   active?: boolean;
   /** inherit shell navigation motion; shared establishes a shell; isolated resets it for a modal. */
