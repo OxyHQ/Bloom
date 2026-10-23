@@ -110,6 +110,9 @@ const Reanimated = {
     return (ratio < 0.5 ? outputRange[0] : outputRange[1]) ?? '';
   },
   runOnJS: (fn: (...args: unknown[]) => void) => fn,
+  // Custom native-event handlers (a pager's `onPageScroll`): the worklet as-is.
+  useHandler: () => ({ context: {}, doDependenciesDiffer: false, useWeb: false }),
+  useEvent: <T>(handler: T) => handler,
   cancelAnimation: (_sv: unknown) => {},
   Easing: {
     out: (fn: unknown) => fn,
@@ -213,6 +216,8 @@ export const interpolate = Reanimated.interpolate;
 export const interpolateColor = Reanimated.interpolateColor;
 export const Extrapolation = Reanimated.Extrapolation;
 export const runOnJS = Reanimated.runOnJS;
+export const useHandler = Reanimated.useHandler;
+export const useEvent = Reanimated.useEvent;
 export const cancelAnimation = Reanimated.cancelAnimation;
 export const Easing = Reanimated.Easing;
 export default Reanimated.default;

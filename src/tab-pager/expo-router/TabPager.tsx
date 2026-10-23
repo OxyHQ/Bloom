@@ -8,7 +8,17 @@ import {
   type ReactNode,
 } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { useEvent, useHandler, type SharedValue } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useEvent,
+  useHandler,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { Screen } from 'react-native-screens';
 import { animateMotion } from '../../motion/recipes';
 import { valueAtPage, type PageModel } from '../pages';
@@ -72,10 +82,14 @@ function usePageScrollHandler(handler: (event: PageScrollEvent) => void, deps: u
  * yet admitted renders an empty view, never `null` — a missing child would
  * shift every page after it.
  *
- * A TAP CUTS. `setPageWithoutAnimation`: an animated `setPage` scrolls through
- * every page in between (measured ~680ms a tap on a Pixel 10 Pro). With no
- * scroll there is no `onPageScroll`, so the highlight is sprung from here for
- * a jump.
+ * A TAP TRANSITIONS WITHOUT TRAVELLING. To the page next door it slides, as a
+ * swipe would: that neighbour is already laid out, and `onPageScroll` drives
+ * the highlight. Further away it fades through (Material's bottom-navigation
+ * transition): the page in front fades out, the pager cuts, the destination
+ * fades in from a slight scale. An animated `setPage` there would scroll
+ * through every page in between, unmounted and blank (measured ~680ms a tap on
+ * a Pixel 10 Pro), so the highlight is sprung from here instead. Reduced
+ * motion cuts.
  *
  * Without `react-native-pager-view` the same pages render as a tap-only stack.
  */
@@ -100,6 +114,13 @@ export function TabPager({
   // drives the pager, the pager reports the page again: this ref is what keeps
   // the two directions from echoing.
   const pageRef = useRef(focusedPage);
+  const reducedMotion = useReducedMotion();
+  // The fade-through's visibility of the pager, 1 at rest.
+  const fade = useSharedValue(1);
+  const fadeStyle = useAnimatedStyle(() => ({
+    opacity: fade.value,
+    transform: [{ scale: FADE_THROUGH_SCALE + (1 - FADE_THROUGH_SCALE) * fade.value }],
+  }));
   // Routes allowed to render: the focused one, and preloading neighbours.
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(
     () => new Set([state.routes[state.index]?.key].filter(Boolean) as string[]),
@@ -147,14 +168,40 @@ export function TabPager({
 
   // ROUTE → PAGER: a tap, a deep link, a back gesture. The bar's presence
   // needs nothing here: the provider settles it on every route landing.
+  const cutTo = useCallback((page: number) => {
+    pagerRef.current?.setPageWithoutAnimation(page);
+  }, []);
   useEffect(() => {
-    if (focusedPage === pageRef.current) return;
+    const from = pageRef.current;
+    if (focusedPage === from) return;
     pageRef.current = focusedPage;
     admit([keyForPage(focusedPage)]);
-    pagerRef.current?.setPageWithoutAnimation(focusedPage);
-    if (!PagerView) setSettledPage(focusedPage);
+    if (!PagerView) {
+      setSettledPage(focusedPage);
+    } else if (!reducedMotion && Math.abs(focusedPage - from) === 1) {
+      pagerRef.current?.setPage(focusedPage);
+      return;
+    } else if (!reducedMotion) {
+      fade.value = withTiming(0, FADE_OUT, (finished) => {
+        if (!finished) return;
+        runOnJS(cutTo)(focusedPage);
+        fade.value = withTiming(1, FADE_IN);
+      });
+    } else {
+      cutTo(focusedPage);
+    }
     animateMotion(progress, barPositions[focusedPage] ?? 0, 'select');
-  }, [focusedPage, keyForPage, admit, PagerView, progress, barPositions]);
+  }, [
+    focusedPage,
+    keyForPage,
+    admit,
+    PagerView,
+    reducedMotion,
+    fade,
+    cutTo,
+    progress,
+    barPositions,
+  ]);
 
   // Warm the neighbours of the resting page on the frame AFTER it settled,
   // never on the frame that is already rendering the destination.
@@ -218,22 +265,29 @@ export function TabPager({
 
   if (!PagerView) return <View style={styles.page}>{children}</View>;
   return (
-    <PagerView
-      ref={pagerRef}
-      style={styles.page}
-      initialPage={focusedPage}
-      // One page either side: exactly what neighbour admission maintains.
-      offscreenPageLimit={1}
-      // An overdrag at either end is a horizontal gesture stolen from a child.
-      overdrag={false}
-      onPageScroll={onPageScroll}
-      onPageSelected={onPageSelected}
-      onPageScrollStateChanged={onPageScrollStateChanged}
-    >
-      {children}
-    </PagerView>
+    <Animated.View style={[styles.page, fadeStyle]}>
+      <PagerView
+        ref={pagerRef}
+        style={styles.page}
+        initialPage={focusedPage}
+        // One page either side: exactly what neighbour admission maintains.
+        offscreenPageLimit={1}
+        // An overdrag at either end is a horizontal gesture stolen from a child.
+        overdrag={false}
+        onPageScroll={onPageScroll}
+        onPageSelected={onPageSelected}
+        onPageScrollStateChanged={onPageScrollStateChanged}
+      >
+        {children}
+      </PagerView>
+    </Animated.View>
   );
 }
+
+/** Material's fade-through: out fast, in from a slight scale. */
+const FADE_THROUGH_SCALE = 0.96;
+const FADE_OUT = { duration: 90, easing: Easing.in(Easing.quad) };
+const FADE_IN = { duration: 210, easing: Easing.out(Easing.cubic) };
 
 const styles = StyleSheet.create({
   page: { flex: 1 },

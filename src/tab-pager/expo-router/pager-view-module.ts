@@ -19,6 +19,7 @@ declare const require: (moduleName: string) => unknown;
 
 /** The pager's imperative handle, as far as Bloom calls it. */
 export interface PagerViewHandle {
+  setPage(page: number): void;
   setPageWithoutAnimation(page: number): void;
 }
 
