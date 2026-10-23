@@ -164,6 +164,7 @@ export type {
 export * from './appearance';
 export * from './screen';
 export * from './bottom-bar';
+export * from './tab-pager';
 export * from './button';
 export { Surface } from './surface';
 export type { SurfaceProps } from './surface';

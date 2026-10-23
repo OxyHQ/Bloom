@@ -891,6 +891,9 @@ The social template uses an 8px gutter, matching the compact framed layout.
 Dashboard and feed take `drawer="reveal"` on compact screens (the default is the portaled `overlay` drawer): the page slides aside and rounds its corners to expose the sidebar. While it is open the drawer is modal: focus moves in and Tab stays inside, Escape, Android back and the VoiceOver escape gesture close it, and the page and its veil leave the accessibility tree. Feed keeps the same page wrapper and content subtree when navigation crosses between compact and desktop; the desktop navigation stays in the body row. Put `AppShellMenuButton` in a custom header’s `leading` slot; it hides automatically when navigation is in flow. Shells without navigation do not acquire a sidebar or drawer.
 
 
+For swipeable root pages, put [`TabPagerBottomBar`](/docs/bloom/main/tab-pager) in this
+slot: the app declares its pages once and the shell's bar follows the pager.
+
 With `scroll="page"` on native the slot's bar minimizes with the active screen: a
 Bloom `BottomBar` there reads the screen's `collapseProgress` without a scroll handler
 of its own.

@@ -8,6 +8,7 @@ import Animated, {
   interpolate,
   runOnJS,
   useReducedMotion,
+  useSharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -46,6 +47,7 @@ export function BottomBarBase({
   actionPlacement = 'auto',
   actionBehavior = 'hide',
   minimizeProgress,
+  hideProgress,
   blur = false,
   maxWidth = 560,
   style,
@@ -109,6 +111,29 @@ export function BottomBarBase({
       (document.activeElement as HTMLElement | null)?.blur?.();
     node.inert = actionHidden;
   }, [actionHidden]);
+  // Presence follows the same split as the action: the motion stays on the UI
+  // signal, and only the halfway crossing reaches JS to drop interaction. An
+  // unsupplied `hideProgress` is stood in for by a value nothing writes, because
+  // a reaction cannot be registered conditionally.
+  const shown = useSharedValue(0);
+  const hide = hideProgress ?? shown;
+  const rootRef = useRef<ComponentRef<typeof View>>(null);
+  const [barHidden, setBarHidden] = useState(() => hide.value > 0.5);
+  useAnimatedReaction(
+    () => hide.value > 0.5,
+    (hidden, previous) => {
+      if (hidden !== previous) runOnJS(setBarHidden)(hidden);
+    },
+    [hide, setBarHidden],
+  );
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const node = rootRef.current as unknown as HTMLElement | null;
+    if (!node) return;
+    if (barHidden && node.contains(document.activeElement))
+      (document.activeElement as HTMLElement | null)?.blur?.();
+    node.inert = barHidden;
+  }, [barHidden]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const suppliedBottomInset = useContext(BottomBarSlotContext);
   const bottom = Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
@@ -150,13 +175,25 @@ export function BottomBarBase({
       transform: [{ scale: 1 - amount * 0.15 }],
     };
   }, [progress, hideAction, reducedMotion, actionWidth, hasItems, above]);
+  const presenceStyle = useAnimatedStyle(() => {
+    const amount = Math.min(1, Math.max(0, reducedMotion ? Number(hide.value > 0.5) : hide.value));
+    // The whole footprint, so a gone bar leaves no sliver above the edge.
+    return {
+      opacity: 1 - amount,
+      transform: [{ translateY: amount * (bottom + footprint) }],
+    };
+  }, [hide, reducedMotion, bottom, footprint]);
   if (keyboardVisible || (!items.length && !action)) return null;
   return (
-    <View
+    <Animated.View
       {...dirProps}
+      ref={rootRef}
       testID={testID}
-      pointerEvents="box-none"
-      style={[{ height: bottom + footprint, justifyContent: 'flex-end' }, style]}
+      pointerEvents={barHidden ? 'none' : 'box-none'}
+      accessibilityElementsHidden={barHidden}
+      importantForAccessibility={barHidden ? 'no-hide-descendants' : 'auto'}
+      aria-hidden={barHidden}
+      style={[{ height: bottom + footprint, justifyContent: 'flex-end' }, style, presenceStyle]}
     >
       {blur && (
         <Blur
@@ -258,6 +295,6 @@ export function BottomBarBase({
           </Animated.View>
         )}
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }

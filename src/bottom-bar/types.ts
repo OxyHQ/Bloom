@@ -18,6 +18,13 @@ export interface BottomBarProps {
   /** Hide the accessory while minimizing, returning on upward scroll. Default hide; standalone actions remain visible. */
   actionBehavior?: 'hide' | 'visible';
   minimizeProgress?: SharedValue<number>;
+  /**
+   * The bar's presence, 0 (shown) to 1 (gone), on the UI thread. The bar fades
+   * and slides off its edge continuously, so a swipe onto a page without a bar
+   * item takes the bar away under the finger; past halfway it leaves hit
+   * testing and the accessibility tree.
+   */
+  hideProgress?: SharedValue<number>;
   /** Optional screen-edge blur band; disabled by default. */
   blur?: boolean;
   maxWidth?: number;

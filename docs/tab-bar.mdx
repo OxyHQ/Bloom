@@ -119,6 +119,8 @@ Two things about this shape are load-bearing:
 
 ## Driven by a pager
 
+For an app's root pages, [`@oxy.so/bloom/tab-pager`](/docs/bloom/main/tab-pager) is all of this, built in: the pager, the navigator and a bound bar. This section is the seam it uses.
+
 `TabSlot` cross-fades screens; it does not translate them. An app that pages its tab screens side by side — the Instagram gesture — owns that motion itself, and then the highlight has to move with the finger rather than spring to a settled index once the navigation commits. `activeProgress` is that seam: a shared value the pager writes every frame, in TAB UNITS.
 
 With `react-native-pager-view`, the value the bar wants is `position + offset` off `onPageScroll`, which reanimated can read on the UI thread — no bridge hop, no JS frame:
