@@ -45,6 +45,7 @@ import {
   TEXT_FIELD_INPUT_INSET,
   TEXT_FIELD_LEADING_GAP,
   TEXT_FIELD_RADIUS,
+  TEXT_FIELD_REST_BORDER_WIDTH,
   TEXT_FIELD_RING_WIDTH,
   TEXT_FIELD_STACK_GAP,
   TEXT_FIELD_TEXT,
@@ -352,28 +353,48 @@ function Chrome({ invalid }: { invalid: boolean }) {
     disabled: ctx.disabled,
   });
   return (
-    <FieldBox
-      className={ctx.chromeClassName}
-      stateStyle={
-        ctx.disabled || invalid
-          ? paint
-          : ctx.focused || ctx.addonFocused
-            ? { borderColor: paint.borderColor }
-            : undefined
-      }
-      baseStyle={[
-        a.z_10,
-        a.absolute,
-        a.inset_0,
-        {
-          borderRadius: ctx.radius,
-          borderWidth: TEXT_FIELD_RING_WIDTH,
-          ...paint,
-        },
-        TEXT_FIELD_WEB_TRANSITION,
-      ]}
-      style={pointerEventsStyle('none')}
-    />
+    <>
+      {/* The resting outline, under the ring: hover and focus cover it, an invalid
+          field's tint stands alone. Flush 1px, like the select trigger's border. */}
+      {invalid ? null : (
+        <View
+          pointerEvents="none"
+          testID="text-field-rest-border"
+          style={[
+            a.z_10,
+            a.absolute,
+            a.inset_0,
+            {
+              borderRadius: ctx.radius,
+              borderWidth: TEXT_FIELD_REST_BORDER_WIDTH,
+              borderColor: ctx.palette.restBorder,
+            },
+          ]}
+        />
+      )}
+      <FieldBox
+        className={ctx.chromeClassName}
+        stateStyle={
+          ctx.disabled || invalid
+            ? paint
+            : ctx.focused || ctx.addonFocused
+              ? { borderColor: paint.borderColor }
+              : undefined
+        }
+        baseStyle={[
+          a.z_10,
+          a.absolute,
+          a.inset_0,
+          {
+            borderRadius: ctx.radius,
+            borderWidth: TEXT_FIELD_RING_WIDTH,
+            ...paint,
+          },
+          TEXT_FIELD_WEB_TRANSITION,
+        ]}
+        style={pointerEventsStyle('none')}
+      />
+    </>
   );
 }
 

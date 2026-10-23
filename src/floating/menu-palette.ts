@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { resolveSurfaceLevel } from '../styles/surface-levels';
 
 import { BUTTON_SHADOW } from '../button/shared';
+import { resolveFieldRestBorder } from '../text-field/shared';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 
@@ -58,7 +59,7 @@ export function resolveMenuPalette(theme: Theme): MenuPalette {
     trigger: {
       background: c.backgroundSecondary,
       hoverBackground: c.backgroundTertiary,
-      border: c.borderLight,
+      border: resolveFieldRestBorder(theme),
       hoverBorder: c.border,
       disabledBackground: c.backgroundSecondary,
       disabledForeground: c.textTertiary,

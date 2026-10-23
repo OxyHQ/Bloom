@@ -74,6 +74,7 @@ describe('TextField palette (input tokens)', () => {
       const surface = c.background;
       const background = surfaceFillOn(theme, surface);
       expect(resolveTextFieldPalette(theme)).toEqual({
+        restBorder: c.borderLight,
         background,
         backgroundDisabled: background,
         backgroundInvalid: c.errorSubtle,
@@ -218,6 +219,24 @@ describe('TextField states', () => {
       borderColor: TRANSPARENT,
     });
     expect(root.getByLabelText('Email').props.placeholderTextColor).toBe(p.placeholder);
+  });
+
+  it('draws the same resting outline as the select trigger, flush and 1px, except when invalid', () => {
+    const theme = captureTheme('light');
+    const p = resolveTextFieldPalette(theme);
+    expect(p.restBorder).toBe(resolveMenuPalette(theme).trigger.border);
+    const root = renderWithTheme(
+      <TextFieldInput label="Email" value="" onValueChange={() => {}} />,
+    );
+    const outline = resolvedStyle(root.getByTestId('text-field-rest-border').props.style);
+    expect(outline.borderWidth).toBe(1);
+    expect(outline.borderColor).toBe(p.restBorder);
+    const invalid = renderWithTheme(
+      <TextField invalid>
+        <TextFieldInput label="Email" value="" onValueChange={() => {}} />
+      </TextField>,
+    );
+    expect(invalid.queryByTestId('text-field-rest-border')).toBeNull();
   });
 
   it('focus rings the shell and darkens the placeholder', () => {

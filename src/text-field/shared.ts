@@ -99,7 +99,20 @@ const TEXT_FIELD_TRANSITION_STYLE: WebCssStyle = {
 export const TEXT_FIELD_WEB_TRANSITION: ViewStyle | undefined =
   Platform.OS === 'web' ? TEXT_FIELD_TRANSITION_STYLE : undefined;
 
+/**
+ * The field family's resting border: 1px, flush with the outer edge. The same
+ * token `Select`'s trigger draws, so a text field and a select in one form row
+ * share one outline instead of one being a bare fill. Hover and focus paint
+ * their 2px ring over it.
+ */
+export const TEXT_FIELD_REST_BORDER_WIDTH = 1;
+export function resolveFieldRestBorder(theme: Theme): string {
+  return theme.colors.borderLight;
+}
+
 export interface TextFieldPalette {
+  /** The resting 1px outline shared with `Select`'s trigger (`resolveFieldRestBorder`). */
+  restBorder: string;
   /** `background-tertiary-default`. */
   background: string;
   /** `input-disabled-background`. */
@@ -150,6 +163,7 @@ export function resolveTextFieldPalette(
 ): TextFieldPalette {
   const c = theme.colors;
   return {
+    restBorder: resolveFieldRestBorder(theme),
     background: surfaceFillOn(theme, surface),
     backgroundDisabled: surfaceFillOn(theme, surface),
     backgroundInvalid: c.errorSubtle,
