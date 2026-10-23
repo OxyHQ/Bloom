@@ -5,8 +5,7 @@ import { ThemeScopeContext } from './color-scope/context';
 import { usePrepaintTheme, usePrepaintThemeConfig } from './prepaint/context';
 import { themePaintRecipe, themePaintColors, themePaintCss, presetPaintCss } from './paint';
 import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
-import { ServerStyleSheet } from '../styles/ServerStyleSheet';
-import { useServerStyleText } from '../styles/use-server-style-text';
+import { ServerStyleSheetFactory } from '../styles/ServerStyleSheetFactory';
 import type { Theme, ThemeColors } from './types';
 
 /** Internal boundary: colour arithmetic runs on RGB, the owner emits its sheet. */
@@ -69,20 +68,22 @@ export function useThemeRecipe<T>(
     };
     return { current, light, dark, paint, resolvePreset, serverCss, clientCss };
   }, [theme, scope, config, id, resolve]);
-  const css = useServerStyleText(
-    id,
-    recipe.serverCss,
-    recipe.clientCss,
-    scope?.prepaintReady !== false,
-    Boolean(config?.persistKey),
-  );
   return {
     current: recipe.current,
     light: recipe.light,
     dark: recipe.dark,
     paint: recipe.paint,
     resolvePreset: recipe.resolvePreset,
-    sheet: css ? createElement(ServerStyleSheet, { id, css, owned: true }) : null,
+    sheet:
+      Platform.OS === 'web' && config && scope
+        ? createElement(ServerStyleSheetFactory, {
+            id,
+            server: recipe.serverCss,
+            client: recipe.clientCss,
+            liveReady: scope.prepaintReady !== false,
+            reuseServer: Boolean(config.persistKey),
+          })
+        : null,
   };
 }
 

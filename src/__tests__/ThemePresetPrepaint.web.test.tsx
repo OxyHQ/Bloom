@@ -18,6 +18,7 @@ import {
 } from '../styles/surface-levels';
 import { buildTheme } from '../theme/build-theme';
 import { buildThemeFromSeed } from '../theme/build-theme-from-seed';
+import * as seedPalettes from '../theme/build-theme-from-seed';
 import * as namedPalettes from '../theme/prepaint-palettes';
 import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
 
@@ -201,6 +202,7 @@ it('does not compute server preset variants on a client-only mount', async () =>
 it.each([undefined, '#1f8a73'])(
   'resolves a fixed light child with seed %s against the requested root backing',
   (seed) => {
+    const seedBuild = seed ? jest.spyOn(seedPalettes, 'buildThemeFromSeed') : undefined;
     let observed: Record<string, string> = {};
     function Child() {
       const parent = useSurfaceFillRecipe();
@@ -238,6 +240,7 @@ it.each([undefined, '#1f8a73'])(
         </BloomThemeProvider>
       </ServerStyleContext.Provider>,
     );
+    if (seedBuild) expect(seedBuild).toHaveBeenCalledTimes(1);
     const child = seed ? buildThemeFromSeed(seed, 'light') : buildTheme('pink', 'light');
     expect(observed.yellow).toBe(
       surfaceFillOn(child, buildTheme('yellow', 'dark').colors.background),
@@ -297,6 +300,48 @@ it('retains the head-selected palette while an asynchronous web adapter restores
     expect(host.querySelector('main')).toBe(original);
     expect(original?.getAttribute('data-preset')).toBe('yellow');
     expect(document.documentElement.getAttribute('data-bloom-theme-preset')).toBe('yellow');
+  } finally {
+    await act(async () => root?.unmount());
+    host.remove();
+  }
+});
+
+it('does not generate any server preset CSS for a raw backing recipe whose sheet is unused', async () => {
+  function RawBacking() {
+    const recipe = useThemeRecipe((theme) => theme.colors.background);
+    return <main data-backing={recipe.current}>Raw backing owner</main>;
+  }
+  function RawFixture() {
+    return (
+      <ServerStyleContext.Provider value="inline">
+        <BloomThemeProvider
+          fonts={false}
+          prepaintTheme={config}
+          storage={storage}
+          awaitHydration={false}
+        >
+          <RawBacking />
+        </BloomThemeProvider>
+      </ServerStyleContext.Provider>
+    );
+  }
+  const spy = jest.spyOn(namedPalettes, 'getPrepaintPalette');
+  const host = document.createElement('div');
+  document.body.append(host);
+  host.innerHTML = renderToString(<RawFixture />);
+  expect(host.querySelector('style')).toBeNull();
+  expect(spy).not.toHaveBeenCalled();
+  localStorage.setItem('app-theme', JSON.stringify({ colorPreset: 'yellow' }));
+  let root: Root | undefined;
+  try {
+    await act(async () => {
+      root = hydrateRoot(host, <RawFixture />);
+    });
+    expect(spy).not.toHaveBeenCalled();
+    expect(adoptStyleSheet).not.toHaveBeenCalledWith(
+      expect.stringContaining('bloom-paint-'),
+      expect.anything(),
+    );
   } finally {
     await act(async () => root?.unmount());
     host.remove();

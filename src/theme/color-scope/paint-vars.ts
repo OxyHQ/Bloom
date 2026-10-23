@@ -2,8 +2,7 @@ import { createElement, useId, useMemo } from 'react';
 import { themePaintVars, themePaintRecipe, themePaintCss, presetPaintCss } from '../paint';
 import { APP_COLOR_NAMES, type AppColorName } from '../color-presets';
 import { usePrepaintThemeConfig } from '../prepaint/context';
-import { ServerStyleSheet } from '../../styles/ServerStyleSheet';
-import { useServerStyleText } from '../../styles/use-server-style-text';
+import { ServerStyleSheetFactory } from '../../styles/ServerStyleSheetFactory';
 import type { ScopeState } from './context';
 
 /** Preserve scoped aliases and explicit local mode across DOM and portal hosts. */
@@ -56,15 +55,17 @@ export function useScopePaint(scope: ScopeState | null | undefined, active = tru
       clientCss,
     };
   }, [config, id, scope, active]);
-  const css = useServerStyleText(
-    id,
-    recipe.serverCss,
-    recipe.clientCss,
-    scope?.prepaintReady !== false,
-    Boolean(config?.persistKey),
-  );
   return {
     vars: recipe.vars,
-    sheet: css ? createElement(ServerStyleSheet, { id, css, owned: true }) : null,
+    sheet:
+      scope && active && config
+        ? createElement(ServerStyleSheetFactory, {
+            id,
+            server: recipe.serverCss,
+            client: recipe.clientCss,
+            liveReady: scope.prepaintReady !== false,
+            reuseServer: Boolean(config.persistKey),
+          })
+        : null,
   };
 }
