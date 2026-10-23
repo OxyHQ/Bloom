@@ -161,6 +161,7 @@ const SwitcherTrigger = React.forwardRef<ComponentRef<typeof View>, TriggerProps
       justifyContent: 'flex-start',
       alignSelf: 'flex-start',
       minWidth: 0,
+      maxWidth: '100%',
       borderRadius: borderRadius.full,
       '--bloom-sidebar-ring': palette.ring,
       '--bloom-sidebar-ring-offset': palette.panel,
@@ -203,12 +204,27 @@ const SwitcherTrigger = React.forwardRef<ComponentRef<typeof View>, TriggerProps
         />
         <Collapsible collapsed={collapsed}>
           <View
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 2, paddingInlineStart: 8 }}
+            testID={testID ? `${testID}-label` : undefined}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 2,
+              paddingInlineStart: 8,
+              minWidth: 0,
+              flexShrink: 1,
+            }}
           >
-            <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
+            {/* The name truncates; the chevron keeps its 16px and never overlaps it. */}
+            <Text
+              variant="body-medium"
+              numberOfLines={1}
+              style={{ color: palette.text, flexShrink: 1, minWidth: 0 }}
+            >
               {name}
             </Text>
-            <ChevronUpDownSmall color={palette.textTertiary} />
+            <View style={{ flexShrink: 0 }}>
+              <ChevronUpDownSmall color={palette.textTertiary} />
+            </View>
           </View>
         </Collapsible>
       </AnimatedPressable>
@@ -311,7 +327,13 @@ const CardTrigger = React.forwardRef<ComponentRef<typeof View>, TriggerProps & {
           <SidebarAvatarView avatar={avatar} size="md" palette={palette} />
           <Collapsible collapsed={collapsed}>
             <View
-              style={{ paddingInlineStart: 8, justifyContent: 'center', alignItems: 'flex-start' }}
+              style={{
+                paddingInlineStart: 8,
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                minWidth: 0,
+                flexShrink: 1,
+              }}
             >
               <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                 {name}
@@ -374,7 +396,9 @@ export function SidebarIdentityHeading({
       }}
     >
       <SidebarAvatarView avatar={avatar} size="md" palette={palette} />
-      <View style={{ minWidth: 0, justifyContent: 'center', alignItems: 'flex-start' }}>
+      <View
+        style={{ minWidth: 0, flexShrink: 1, justifyContent: 'center', alignItems: 'flex-start' }}
+      >
         <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
           {name}
         </Text>
