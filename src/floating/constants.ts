@@ -236,14 +236,7 @@ export const ROW_GUTTER_END_CLASS = 'pl-space-8 pr-space-32';
  * implement, rather than the `truncate` class, which compiles to three CSS
  * properties React Native's `Text` does not have.
  *
- * NO `leading-*`, and that is the opposite of a rounding error. `text-sm` ALONE
- * computes 14px/20px, which is the target's line box. Adding `leading-5` — the
- * apparently equivalent spelling of the same 20px — measured 17.5px instead,
- * because `nativewind/theme` emits a SECOND `.leading-N` rule,
- * `line-height: calc(var(--spacing) / 1rem * N)`, that lands after Tailwind's own
- * and turns every `leading-*` into a UNITLESS MULTIPLIER: `leading-5` is 1.25,
- * and so is `leading-[20px]`. Every Oxy consumer imports `nativewind/theme`, so
- * this holds fleet-wide — spell a menu line height by leaving `leading-*` off.
+ * NO `leading-*`: `text-sm` alone computes 14px/20px, the target's line box.
  */
 export const ROW_TEXT_CLASS = 'flex-1 min-w-0';
 

@@ -5,6 +5,10 @@
  * changing any design token.
  */
 
+@theme inline {
+  --spacing: 4px;
+}
+
 @theme {
   --color-status-blue-background: var(--info-subtle);
   --color-status-blue-text: var(--info-text);
@@ -159,7 +163,6 @@
   --color-info-subtle: var(--info-subtle);
   --color-destructive-foreground: #ffffff;
   --color-divider: var(--border);
-  --spacing: 4px;
   --container-xs: 320px;
   --container-sm: 384px;
   --container-md: 448px;

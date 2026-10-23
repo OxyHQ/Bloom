@@ -209,8 +209,8 @@ describe('design-tokens v4 @theme css', () => {
     expect(css).not.toMatch(/--line-height: [\d.]+px/);
   });
 
-  it('wraps the body in a @theme block', () => {
-    expect(bloomThemeBlock()).toMatch(/^@theme \{[\s\S]*\}$/);
+  it('inlines the spacing unit before the @theme block', () => {
+    expect(bloomThemeBlock()).toBe(`@theme inline {\n  --spacing: 4px;\n}\n\n@theme {\n${css}\n}`);
   });
 });
 
