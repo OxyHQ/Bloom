@@ -27,3 +27,20 @@ function Disclosure() {
   );
 }
 export const Default: Story = { render: () => <Disclosure /> };
+
+/** `descriptionLines` lifts the two-line clamp (`0` never truncates). */
+export const LongDescription: Story = {
+  render: () => (
+    <GroupedSection title="Policies">
+      <GroupedSectionItem
+        title="Data retention"
+        description="Records are kept for ninety days after an account closes, then removed from every backup within a further thirty days unless the law requires otherwise."
+        descriptionLines={0}
+      />
+      <GroupedSectionItem
+        title="Clamped (default)"
+        description="Records are kept for ninety days after an account closes, then removed from every backup within a further thirty days unless the law requires otherwise."
+      />
+    </GroupedSection>
+  ),
+};

@@ -46,7 +46,7 @@ The group renders a rounded card on iOS-style platforms and on web. The first it
 />
 ```
 
-`description` is multi-line and styled in muted text under the title.
+`description` is multi-line and styled in muted text under the title. It clamps at two lines; `descriptionLines` changes that (`0` never truncates).
 
 ## Toggle row
 
@@ -138,6 +138,7 @@ Custom surrounding surfaces can publish their fill using `SurfaceLevelProvider`.
 | `icon?` | `React.ReactNode` | Leading icon. |
 | `title` | `string` | Primary label. |
 | `description?` | `string` | Multi-line secondary text. |
+| `descriptionLines?` | `number` | Lines before truncation. Default `2`; `0` never truncates. |
 | `value?` | `string` | Right-side value string. |
 | `rightElement?` | `React.ReactNode` | Replaces value / chevron with a custom node. |
 | `showChevron?` | `boolean` | Defaults to `true` when `onPress` is set. |

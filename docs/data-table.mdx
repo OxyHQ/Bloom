@@ -51,7 +51,9 @@ Every piece of state — `sort`, `selectedRowIds`, `page`, `size` — is uncontr
 | footer | 1px `separator-border` on top, `px-3 pt-3`, [`Pagination`](./pagination.mdx) |
 | density | `SegmentedControl` 20 under the surface, centred |
 
-Below 640px of its own width (`sm`, measured with `onLayout` so it works on native) the toolbar stacks and its controls become one horizontally scrolling row that bleeds to the surface edges.
+Below 640px of its own width (`sm`, measured with `onLayout` so it works on native) the toolbar stacks and its controls take their own full-width row and wrap onto further lines, so no filter is clipped. The `summary` wraps too instead of truncating.
+
+`bordered={false}` drops the table's own 1px border, 16px radius and 8px top inset, for a table inside a dialog, sheet or card that already owns the frame (otherwise it reads as a second, nested border). A table with `minWidth` that overflows its container draws a fade over the edge where more columns hide, and over the leading edge once scrolled.
 
 | token | light | dark |
 |---|---|---|

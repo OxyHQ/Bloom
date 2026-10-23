@@ -21,7 +21,7 @@ Coloured by Bloom's theme through the same ramps as `Button`:
 | icon            | 20                 | 20      |
 | radius          | 12                 | 12      |
 
-The shell uses the shared secondary surface with a 2px **inset** ring: transparent at rest, the semantic border under the pointer, and primary while focused. A focused field darkens its placeholder to the text colour.
+The shell uses the shared secondary surface with a flush 1px resting outline (`restBorder`, the same field border token `Select`'s trigger draws, so mixed form rows share one outline; omitted when invalid) and a 2px **inset** ring that covers it: transparent at rest, the semantic border under the pointer, and primary while focused. A focused field darkens its placeholder to the text colour.
 
 - **Invalid** tints the fill red (`red-100`; red-950 at 60% over the page in dark), reddens the placeholder and the icons, and drops the ring.
 - **Disabled** dims the fill, the value, the placeholder and the icons, drops the ring, and (web) shows the `not-allowed` cursor over the control.
