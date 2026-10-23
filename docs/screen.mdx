@@ -33,7 +33,9 @@ another scroller. Changing host flow preserves the screen's content tree and
 transfers its live reading offset between document and bounded owners before
 paint. This layout handoff is separate from navigating to or restoring a route.
 `headerPlacement="overlay"` lets a profile hero or media page extend under its
-header. Insets otherwise reserve the measured header/footer once.
+header, and `bottomBarPlacement="overlay"` lets a thread scroll under its reply
+prompt, the scroller padding its end clear of the bar (the default `inset`
+keeps a chat thread above the composer it is anchored to). Insets otherwise reserve the measured header/footer once.
 
 On native, auto reserves chrome space but the screen's list or `ScreenScrollView`
 continues owning scrolling. `scroll="content"` (the compatibility default) keeps

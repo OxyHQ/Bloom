@@ -58,6 +58,7 @@ export function createScreen(
     header,
     scroll = 'content',
     headerPlacement = 'inset',
+    bottomBarPlacement = 'inset',
     bottomBar,
     bottomBarKeyboardBehavior = 'hide',
     primaryAction,
@@ -152,6 +153,9 @@ export function createScreen(
     // (`reserveBottomBarSpace={false}`). A screen without a bar of its own pads
     // nothing there, so its scroller clears that bar instead.
     const scrollsUnderBar = Platform.OS !== 'web' && !hasBottom && !!region?.underBottomBar;
+    // On web the bar already floats over the scrolled content (sticky in the
+    // document, inside the viewport otherwise); only native reserved it.
+    const bottomOverlaid = bottomBarPlacement === 'overlay' && Platform.OS !== 'web';
     const underBarInset = (scrollsUnderBar ? navigationEdge : 0) + contentClearance;
     const document =
       (documentScroll ??
@@ -180,7 +184,8 @@ export function createScreen(
         activeScrollerId,
         contentInsetsHandled: document || reservesChrome,
         bottomInsetHandled:
-          scroll === 'none' || ((document || ownsViewport) && !keyboardFollow && !scrollsUnderBar),
+          scroll === 'none' ||
+          ((document || ownsViewport) && !keyboardFollow && !scrollsUnderBar && !bottomOverlaid),
         keyboardFollow,
         keyboardFooterHeight: hasBottom ? bottom : 0,
         documentScroll: document,
@@ -219,6 +224,7 @@ export function createScreen(
         navigationEdge,
         keyboardFollow,
         scrollsUnderBar,
+        bottomOverlaid,
         underBarInset,
       ],
     );
@@ -402,7 +408,9 @@ export function createScreen(
                                 ? {
                                     paddingTop: reservedTop,
                                     paddingBottom:
-                                      keyboardFollow && scroll !== 'none' ? 0 : reservedBottom,
+                                      (keyboardFollow && scroll !== 'none') || bottomOverlaid
+                                        ? 0
+                                        : reservedBottom,
                                   }
                                 : {}),
                             }
