@@ -21,6 +21,11 @@ export interface GroupedSectionItemProps {
   titleNumberOfLines?: number;
   /** Secondary description text below title */
   description?: string;
+  /**
+   * Lines the description may take before it truncates. Defaults to `2`; `0`
+   * never truncates (a help text or a policy that has to be read whole).
+   */
+  descriptionLines?: number;
   /** Right-side value text (e.g. "English", "On") */
   value?: string;
   /** Custom right-side element (toggle, badge, etc.) */
