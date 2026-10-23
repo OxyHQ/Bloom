@@ -42,3 +42,21 @@ it('keeps shared material on a filled card', () => {
   expect(UNSAFE_queryAllByType(Svg)).toHaveLength(0);
   expect(surfaceSheens(toJSON())).toHaveLength(1);
 });
+
+it('draws no inset rim inside a bordered card, so the outline appearance is one stroke', () => {
+  const rims = (node: unknown): string[] => {
+    const out: string[] = [];
+    const walk = (n: unknown) => {
+      if (!n || typeof n !== 'object') return;
+      const el = n as { props?: { style?: unknown }; children?: unknown[] };
+      const bs = resolvedStyle(el.props?.style as never).boxShadow;
+      if (typeof bs === 'string' && bs.includes('inset')) out.push(bs);
+      for (const c of el.children ?? []) walk(c);
+    };
+    walk(node);
+    return out;
+  };
+  expect(rims(render(<Card appearance="solid" />).toJSON())).toHaveLength(1);
+  expect(rims(render(<Card appearance="outline" />).toJSON())).toHaveLength(0);
+  expect(rims(render(<Card appearance="solid" border="thin" />).toJSON())).toHaveLength(0);
+});

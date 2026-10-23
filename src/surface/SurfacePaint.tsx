@@ -33,9 +33,15 @@ export const SurfacePaint = memo(function SurfacePaint({
   geometryStyle,
   direction = 'ltr',
   sheen = true,
+  rim = true,
   testID,
 }: {
   sheen?: boolean;
+  /**
+   * The inset highlight rim. A host that draws its own border turns this off,
+   * or the two read as one double stroke.
+   */
+  rim?: boolean;
   testID?: string;
   /** Omit for sheen/rim only on a host that already owns its fill. */
   fill?: string;
@@ -70,7 +76,7 @@ export const SurfacePaint = memo(function SurfacePaint({
       ...geometry,
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': paintFill ?? resolvedFill,
-      '--bloom-surface-rim': optics.rim,
+      '--bloom-surface-rim': rim ? optics.rim : 'none',
       '--bloom-surface-sheen': optics.sheenCss,
     };
     return (
@@ -95,7 +101,7 @@ export const SurfacePaint = memo(function SurfacePaint({
           {
             overflow: 'hidden',
             backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
-            boxShadow: optics.rim,
+            ...(rim ? { boxShadow: optics.rim } : null),
             ...(sheen ? { experimental_backgroundImage: optics.sheenCss } : null),
           },
         ],

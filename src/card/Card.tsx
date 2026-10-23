@@ -243,6 +243,9 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
             radius={resolvedGeometry.radius}
             shape={shape}
             geometryStyle={resolvedGeometry.style}
+            // A bordered card (`outline`, or any `border`) already has its stroke;
+            // the paint's inset rim would be a second one inside it.
+            rim={borderRole === 'none'}
           />
         ) : null}
         <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
