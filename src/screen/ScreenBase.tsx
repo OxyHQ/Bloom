@@ -191,7 +191,9 @@ export function createScreen(
             : hasBottom
               ? bottom + navigationEdge + contentClearance
               : navigationScope === 'inherit'
-                ? (inheritedNavigation?.bottomInset ?? underBarInset)
+                ? scrollsUnderBar
+                  ? Math.max(inheritedNavigation?.bottomInset ?? 0, underBarInset)
+                  : (inheritedNavigation?.bottomInset ?? underBarInset)
                 : underBarInset,
       }),
       [

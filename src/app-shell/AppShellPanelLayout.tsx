@@ -507,10 +507,12 @@ export function createPanelLayoutView(
         <View style={FILL}>{content}</View>
       );
     const renderPanel = (content: React.ReactNode, navigation?: PanelNavigationController) => {
-      // Under the bottom bar a side-by-side panel reaches it, so its content
-      // clears it; a stacked one sits above the group viewport's own clearance.
+      // Under the bottom bar a side-by-side panel reaches it: its content clears
+      // the bar and drives it (the shell's navigation motion); a stacked one sits
+      // above the group viewport's own clearance.
+      const underBar = !document && !vertical && !!region?.underBottomBar;
       const body = (
-        <ScreenScope inheritBottomEdge={document || (!vertical && !!region?.underBottomBar)}>
+        <ScreenScope inheritBottomEdge={document || underBar} inheritNavigation={underBar}>
           <ScreenHostContext.Provider value={navigation ? { ...host, navigation } : host}>
             <ScrollMetricsContext.Provider value={metrics}>
               <ScrollOffsetProvider value={scrollY}>{content}</ScrollOffsetProvider>
