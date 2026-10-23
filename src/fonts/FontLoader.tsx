@@ -27,8 +27,9 @@ export interface FontLoaderProps {
 /**
  * Publish font faces with the server-rendered content when the host opts into
  * SSR styles. The browser can discover fonts before the JavaScript bundle runs.
- * ServerStyleSheet adopts the same rules before removing their server node;
- * client-only hosts install them before paint without gating any content.
+ * Keep that authorized sheet through hydration: copying @font-face rules to a
+ * new sheet creates new FontFace objects and can unload an already visible font.
+ * Client-only hosts install their rules before paint without gating content.
  *
  * Native consumers resolve `FontLoader.native.tsx` via the React Native /
  * Metro bundler's platform extension resolution — they never load this file.
@@ -36,7 +37,7 @@ export interface FontLoaderProps {
 export function FontLoader({ enabled, children }: FontLoaderProps) {
   return (
     <>
-      {enabled && <ServerStyleSheet id="bloom-fonts" css={FONT_FACE_CSS} />}
+      {enabled && <ServerStyleSheet id="bloom-fonts" css={FONT_FACE_CSS} retainServerNode />}
       {children}
     </>
   );
