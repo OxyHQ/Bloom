@@ -84,6 +84,14 @@ jobs:
       # Includes prebuild generation and postbuild tarball/freshness checks.
       - run: bun run build
       - run: bun run typescript
+      # The separately published workspace packages: their typecheck and jest
+      # run (the root jest config ignores packages/). This is what gates their
+      # release; the release itself runs no tests.
+      - name: Workspace packages typecheck and test
+        run: |
+          for package in packages/bloom-text packages/bloom-editor; do
+            (cd "$package" && bun run typescript && bun run test)
+          done
       - name: Generated sources are committed
         run: |
           git diff --exit-code

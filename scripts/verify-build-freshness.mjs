@@ -42,16 +42,12 @@
  * ## THE THREE MODES ANSWER DIFFERENT QUESTIONS, AND ONE OF THEM CANNOT ANSWER
  * ## THE ONE THIS WAS WRITTEN FOR
  *
- * Packing runs `prepack`, which is `clean && build` — so the default mode always
- * audits a build made SECONDS AGO. That is worth having (it catches a build that
- * silently drops a symbol) but it is structurally incapable of catching a STALE
- * `lib`, because it just rebuilt it. Saying so here rather than letting the name
- * imply otherwise: a gate that cannot fail for the reason you are running it is
- * the thing this whole file is about.
- *
+ * The default mode packs `lib/` as it sits on disk (Bloom declares no `prepack`
+ * or `prepare`, and the pack runs with `--ignore-scripts`), exactly as the
+ * release packs the tree its one build produced, and audits that tarball.
  * `--tarball` audits an artifact nobody is rebuilding, which is what a published
- * package is. `--worktree` audits `lib/` exactly as it sits on disk, which is
- * the mode that reproduces what happened in the consuming worktree.
+ * package is. `--worktree` audits `lib/` in place without packing, which is the
+ * mode that reproduces what happened in the consuming worktree.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -94,13 +90,10 @@ function fail(problems) {
 // --------------------------------------------------------------------------
 
 function packSelf(into) {
-  // `BLOOM_VERIFY_PACKAGE_RUNNING` stops the `prepare` lifecycle re-entering a
-  // build from inside a pack that is already building.
-  execFileSync('bun', ['pm', 'pack', '--destination', into], {
+  execFileSync('bun', ['pm', 'pack', '--ignore-scripts', '--destination', into], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'inherit'],
-    env: { ...process.env, BLOOM_VERIFY_PACKAGE_RUNNING: '1' },
   });
   const tgz = readdirSync(into).find((name) => name.endsWith('.tgz'));
   if (tgz === undefined) throw new Error('bun pm pack produced no .tgz');

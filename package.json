@@ -3829,18 +3829,14 @@
     "verify:build-freshness": "node scripts/verify-build-freshness.mjs --worktree",
     "verify:consumer-types": "node scripts/verify-consumer-typecheck.mjs",
     "test": "jest",
-    "test:release": "for shard in 1 2 3 4 5; do node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=4 --shard=$shard/5 || exit $?; done",
     "typescript": "tsc --noEmit && node scripts/verify-consumer-typecheck.mjs",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "clean": "rm -rf lib",
-    "prepack": "bun run clean && bun run build",
-    "prepare": "[ -n \"$BLOOM_VERIFY_PACKAGE_RUNNING\" ] || bun run build || true",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
-    "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs",
-    "prepublishOnly": "bun run typescript && bun run test:release && bun run build"
+    "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
