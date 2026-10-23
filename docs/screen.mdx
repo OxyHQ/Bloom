@@ -97,7 +97,8 @@ and apply `contentInsets.top`/`bottom` to its content container. `handler` accep
 processed Reanimated handler, preserving drag and momentum subscriptions. Only the
 active binding drives chrome, and a binding that becomes active publishes its own
 offset, so a screen never opens with the previous screen's collapse. Set
-`active={false}` on retained background lists.
+`active={false}` on retained background lists. Outside a `Screen` the hook binds a
+plain list (no chrome, zero insets), so one list component serves both.
 Nested `Screen`s keep scroll offsets local. Under AppShell they inherit navigation motion and bottom clearance; `navigationScope="isolated"` creates an independent modal scope. Do not place several active scrollers
 in one screen; designate the primary list explicitly.
 

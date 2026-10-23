@@ -20,3 +20,9 @@ it('publishes the activated scroller’s own offset, not the previous screen’s
   expect(screen.scrollY.value).toBe(0);
   expect(screen.collapseTarget.value).toBe(0);
 });
+
+it('binds a list outside any Screen with no chrome and no insets', () => {
+  const { result } = renderHook(() => useScreenScroll());
+  expect(result.current.contentInsets).toEqual({ top: 0, bottom: 0 });
+  expect(typeof result.current.onScroll).not.toBe('undefined');
+});

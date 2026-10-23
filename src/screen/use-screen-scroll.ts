@@ -1,6 +1,6 @@
 import { animateMotion } from '../motion/recipes';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
-import { useCallback, useEffect, useId } from 'react';
+import { useCallback, useEffect, useId, useMemo } from 'react';
 import {
   runOnJS,
   useAnimatedScrollHandler,
@@ -10,16 +10,51 @@ import {
 } from 'react-native-reanimated';
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
 import { recordScrollMetrics } from '../layout/scroll-metrics-events';
-import { useScreen } from './context';
+import { useScreenContext, type ScreenContextValue } from './context';
 import type { ScreenScrollOptions } from './types';
 
-/** Bind an animated ScrollView or virtualized list without moving frame work to JS. */
+type ScreenScrollState = Pick<
+  ScreenContextValue,
+  | 'active'
+  | 'scrollY'
+  | 'collapseProgress'
+  | 'collapseTarget'
+  | 'activeScrollerId'
+  | 'contentInsetsHandled'
+  | 'bottomInsetHandled'
+  | 'topInset'
+  | 'bottomInset'
+>;
+
+/**
+ * Bind an animated ScrollView or virtualized list without moving frame work to JS.
+ * Outside a Screen the list scrolls like any list: no chrome to drive, no insets.
+ */
 export function useScreenScroll({
   active: requestedActive = true,
   handler = null,
   restoration,
 }: ScreenScrollOptions = {}) {
-  const screen = useScreen();
+  const context = useScreenContext();
+  const ownScrollY = useSharedValue(0);
+  const ownProgress = useSharedValue(0);
+  const ownTarget = useSharedValue(0);
+  const ownScroller = useSharedValue<string | null>(null);
+  const standalone = useMemo<ScreenScrollState>(
+    () => ({
+      active: true,
+      scrollY: ownScrollY,
+      collapseProgress: ownProgress,
+      collapseTarget: ownTarget,
+      activeScrollerId: ownScroller,
+      contentInsetsHandled: true,
+      bottomInsetHandled: true,
+      topInset: 0,
+      bottomInset: 0,
+    }),
+    [ownScrollY, ownProgress, ownTarget, ownScroller],
+  );
+  const screen: ScreenScrollState = context ?? standalone;
   const metrics = useScrollMetricsValue();
   const active = requestedActive && screen.active;
   const restoring = restoration?.restorePending ?? false;
