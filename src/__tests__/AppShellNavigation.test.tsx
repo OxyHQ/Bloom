@@ -5,7 +5,7 @@ import * as ReactNative from 'react-native';
 import { fireEvent, render, within } from '@testing-library/react-native';
 
 import { ContentPanel } from '../content-panel';
-import { ScreenScrollView } from '../screen';
+import { Screen, ScreenScrollView, useScreen } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
 import {
@@ -16,6 +16,8 @@ import {
   ProOfferCard,
 } from '../app-shell';
 import { RiHomeLine } from '../icons/remix';
+import { ScreenNavigationContext } from '../screen/context';
+import { useTabBarMinimized } from '../tab-bar/context';
 import type { NotificationCenterItem } from '../notification-center';
 import { resolvedStyle, sheenStops, surfaceSheens } from './support/rendered-style';
 
@@ -458,6 +460,60 @@ describe('native navigation with layout props', () => {
     const screen = renderIn(<AppShell sidebar={{ items: NAV }} navigationPlacement="bottom" />);
     fireEvent.press(screen.getByLabelText('Home'));
     expect(openURL).toHaveBeenCalledWith('/');
+  });
+  it('minimizes the app bottom bar with the active screen on page scroll', () => {
+    setWidth(390);
+    let bar: unknown;
+    let screen: unknown;
+    function Bar() {
+      bar = useTabBarMinimized();
+      return null;
+    }
+    function Route() {
+      screen = React.useContext(ScreenNavigationContext)?.collapseProgress;
+      return null;
+    }
+    renderIn(
+      <AppShell variant="feed" scroll="page" bottomBar={<Bar />}>
+        <Route />
+      </AppShell>,
+    );
+    expect(screen).toBeDefined();
+    expect(bar).toBe(screen);
+  });
+  it('minimizes the app bottom bar with a panel route on page scroll', () => {
+    setWidth(390);
+    let bar: unknown;
+    let route: unknown;
+    function Bar() {
+      bar = useTabBarMinimized();
+      return null;
+    }
+    function Route() {
+      route = useScreen().collapseProgress;
+      return null;
+    }
+    renderIn(
+      <AppShell
+        scroll="page"
+        reserveBottomBarSpace={false}
+        bottomBar={<Bar />}
+        panelLayout={{
+          panels: [
+            {
+              id: 'main',
+              content: (
+                <Screen>
+                  <Route />
+                </Screen>
+              ),
+            },
+          ],
+        }}
+      />,
+    );
+    expect(route).toBeDefined();
+    expect(bar).toBe(route);
   });
   it('external layout delegates page scrolling to its child', () => {
     setWidth(1440);

@@ -22,6 +22,7 @@ const region: AppShellRegionValue = {
   gutter: 8,
   viewportInset: { top: 8, bottom: 8 },
   bottomReserve: 0,
+  underBottomBar: false,
   revealed: false,
   maskColor: '#fff',
 };

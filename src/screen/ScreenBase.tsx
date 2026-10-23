@@ -148,6 +148,11 @@ export function createScreen(
     // bottom edge. This screen's bar stacks ON it, never under it, and the content
     // clears both.
     const navigationEdge = useBottomEdgeInset();
+    // On native a panel can reach under the app's bottom bar
+    // (`reserveBottomBarSpace={false}`). A screen without a bar of its own pads
+    // nothing there, so its scroller clears that bar instead.
+    const scrollsUnderBar = Platform.OS !== 'web' && !hasBottom && !!region?.underBottomBar;
+    const underBarInset = (scrollsUnderBar ? navigationEdge : 0) + contentClearance;
     const document =
       (documentScroll ??
         (ownsViewport &&
@@ -174,7 +179,8 @@ export function createScreen(
         collapseTarget,
         activeScrollerId,
         contentInsetsHandled: document || reservesChrome,
-        bottomInsetHandled: scroll === 'none' || ((document || ownsViewport) && !keyboardFollow),
+        bottomInsetHandled:
+          scroll === 'none' || ((document || ownsViewport) && !keyboardFollow && !scrollsUnderBar),
         keyboardFollow,
         keyboardFooterHeight: hasBottom ? bottom : 0,
         documentScroll: document,
@@ -185,8 +191,10 @@ export function createScreen(
             : hasBottom
               ? bottom + navigationEdge + contentClearance
               : navigationScope === 'inherit'
-                ? (inheritedNavigation?.bottomInset ?? contentClearance)
-                : contentClearance,
+                ? scrollsUnderBar
+                  ? Math.max(inheritedNavigation?.bottomInset ?? 0, underBarInset)
+                  : (inheritedNavigation?.bottomInset ?? underBarInset)
+                : underBarInset,
       }),
       [
         active,
@@ -210,6 +218,8 @@ export function createScreen(
         keyboardVisible,
         navigationEdge,
         keyboardFollow,
+        scrollsUnderBar,
+        underBarInset,
       ],
     );
     useScreenWindowBinding(value, { active: document && !ownsViewport });

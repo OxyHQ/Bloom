@@ -402,7 +402,9 @@ export function createAppShell(
       panelLayout: undefined,
       panels: true,
       variant: props.variant ?? 'feed',
-      scroll: document ? 'document' : 'fixed',
+      // Native panels can share the routes' navigation motion (`page`): the
+      // shell's bottom bar then minimizes with the screen in front.
+      scroll: document ? 'document' : props.scroll === 'page' ? 'page' : 'fixed',
       aside: undefined,
       contentSpan: undefined,
       contentWidth: deck || props.contentMaxWidth === 'none' ? undefined : envelope,

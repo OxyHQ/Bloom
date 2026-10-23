@@ -10,6 +10,7 @@ import { Screen, ScreenScrollView, useScreen } from '../screen';
 import type { ScreenContextValue } from '../screen/context';
 import { resolvedStyle } from './support/rendered-style';
 import { BottomEdgeProvider, useClaimBottomEdge } from '../layout/bottom-edge';
+import { AppShellRegionContext } from '../layout/app-shell-region';
 
 function wrap(children: React.ReactNode) {
   return <BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>;
@@ -362,3 +363,36 @@ it.each(['light', 'dark'] as const)(
     expect(resolvedStyle(tree.getByTestId('standalone').props.style).backgroundColor).toBeTruthy();
   },
 );
+
+it('hands the app bottom bar to its scroller under it when it has no bar of its own (native)', () => {
+  function Claim() {
+    useClaimBottomEdge(80);
+    return null;
+  }
+  const tree = render(
+    wrap(
+      <BottomEdgeProvider>
+        <Claim />
+        <AppShellRegionContext.Provider
+          value={{
+            flow: 'bounded',
+            framed: false,
+            gutter: 0,
+            viewportInset: { top: 0, bottom: 0 },
+            bottomReserve: 0,
+            underBottomBar: true,
+            revealed: false,
+            maskColor: '#ffffff',
+          }}
+        >
+          <Screen testID="screen">
+            <ScreenScrollView testID="scroll" />
+          </Screen>
+        </AppShellRegionContext.Provider>
+      </BottomEdgeProvider>,
+    ),
+  );
+  expect(resolvedStyle(tree.getByTestId('scroll').props.contentContainerStyle)).toMatchObject({
+    paddingBottom: 96,
+  });
+});

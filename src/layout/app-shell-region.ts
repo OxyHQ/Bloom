@@ -33,6 +33,11 @@ export interface AppShellRegionValue {
   viewportInset: { top: number; bottom: number };
   /** Bottom chrome a growing (document / container) panel reserves under its content. */
   bottomReserve: number;
+  /**
+   * Bounded panels reach under the bottom bar (`reserveBottomBarSpace={false}`)
+   * and their scrollers clear it; otherwise the group reserves the bar.
+   */
+  underBottomBar: boolean;
   /** The reveal drawer is open: panels veil themselves and drop their edge. */
   revealed: boolean;
   /** The page background the panels' web mask paints. */

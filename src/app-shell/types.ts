@@ -282,10 +282,11 @@ export interface AppShellEngineProps {
    * last item is never hidden behind it.
    */
   bottomBar?: ReactNode;
-  /** Reserve the measured bar height in document/container content (default true).
-   * False keeps the bar over fullscreen content whose own scroller accounts for
-   * the occupied bottom edge. The bar still publishes its real edge occupancy.
-   * Fixed mode always leaves clearance to its child navigator/list. */
+  /** Reserve the measured bar height under the content (default true): below
+   * document/container content and under bounded (native) panels.
+   * False keeps the bar over the content: bounded panels reach under it and
+   * Bloom's scrollers (`Screen`, `ScreenScrollView`, `VirtualList`,
+   * `useScreenScroll`) clear it. The bar still publishes its real edge occupancy. */
   reserveBottomBarSpace?: boolean;
   /** `compact` (default): only while the nav is a drawer. */
   bottomBarVisibility?: AppShellBarVisibility;

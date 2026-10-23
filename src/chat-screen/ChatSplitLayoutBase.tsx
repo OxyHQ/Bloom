@@ -54,6 +54,7 @@ export function createChatSplitLayout({
         gutter: 0,
         viewportInset: { top: 0, bottom: 0 },
         bottomReserve: 0,
+        underBottomBar: false,
         revealed: false,
         maskColor: paint.page,
       }),

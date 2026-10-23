@@ -38,7 +38,7 @@ import { ScreenContext, ScreenNavigationContext } from '../screen/context';
  * consumer gets this by using them. It is exported for a surface Bloom does not
  * own — an app's own full-screen route presented over another.
  */
-import type { PropsWithChildren } from 'react';
+import { useContext, type PropsWithChildren } from 'react';
 
 import { BottomEdgeProvider } from './bottom-edge';
 import { ScrollMetricsContext } from './scroll-metrics';
@@ -48,15 +48,22 @@ import { TopEdgeProvider } from './top-edge';
 export function ScreenScope({
   children,
   inheritBottomEdge = false,
+  inheritNavigation = false,
   sizing,
-}: PropsWithChildren<{ inheritBottomEdge?: boolean; sizing?: 'content' | 'fill' }>) {
+}: PropsWithChildren<{
+  inheritBottomEdge?: boolean;
+  /** Keep the enclosing navigation motion (a panel the shell's bottom bar follows). */
+  inheritNavigation?: boolean;
+  sizing?: 'content' | 'fill';
+}>) {
+  const navigation = useContext(ScreenNavigationContext);
   return (
     <ScreenHostContext.Provider
       value={{ active: true, kind: 'element', restoreScroll: false, sizing }}
     >
       <ScreenViewportContext.Provider value={null}>
         <ScreenContext.Provider value={null}>
-          <ScreenNavigationContext.Provider value={null}>
+          <ScreenNavigationContext.Provider value={inheritNavigation ? navigation : null}>
             <TopEdgeProvider>
               <BottomEdgeProvider inherit={inheritBottomEdge}>
                 {/* null means no scroller has claimed this scope yet. */}

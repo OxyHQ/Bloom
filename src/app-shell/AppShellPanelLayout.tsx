@@ -154,6 +154,7 @@ export function createPanelLayoutView(
     testID,
     scrollRef,
     onScroll,
+    bottomInset,
   }: {
     children: React.ReactNode;
     horizontal?: boolean;
@@ -162,6 +163,8 @@ export function createPanelLayoutView(
     testID?: string;
     scrollRef?: React.MutableRefObject<unknown>;
     onScroll?: ScrollAreaProps['onScroll'];
+    /** Bottom clearance for the scrolled content: the bar it scrolls under. */
+    bottomInset?: number;
   }) {
     const own = useRef<unknown>(null);
     const node = scrollRef ?? own;
@@ -178,6 +181,7 @@ export function createPanelLayoutView(
               {
                 overflowX: enabled ? (horizontal ? 'auto' : 'hidden') : 'visible',
                 overflowY: enabled ? (horizontal ? 'hidden' : 'auto') : 'visible',
+                paddingBottom: bottomInset,
               } as WebCssStyle,
             ]}
           >
@@ -196,7 +200,7 @@ export function createPanelLayoutView(
         testID={testID}
         onScroll={onScroll}
         style={FILL}
-        contentContainerStyle={{ flexGrow: 1, alignItems: 'stretch' }}
+        contentContainerStyle={{ flexGrow: 1, alignItems: 'stretch', paddingBottom: bottomInset }}
       >
         {children}
       </ScrollArea>
@@ -215,12 +219,16 @@ export function createPanelLayoutView(
   }) {
     const ref = useRef<unknown>(null);
     const binding = useScrollRestoration(document ? 'window' : ref, { enabled: active });
+    const bottomEdge = useBottomEdgeInset();
+    const region = useAppShellRegion();
+    const underBar = !document && !!region?.underBottomBar;
     return (
       <Viewport
         enabled={active && !document}
         document={document}
         scrollRef={ref}
         onScroll={binding.onScroll}
+        bottomInset={underBar ? bottomEdge : undefined}
         testID={testID}
       >
         <PanelScrollContainerContext.Provider value={document ? null : ref}>
@@ -499,8 +507,12 @@ export function createPanelLayoutView(
         <View style={FILL}>{content}</View>
       );
     const renderPanel = (content: React.ReactNode, navigation?: PanelNavigationController) => {
+      // Under the bottom bar a side-by-side panel reaches it: its content clears
+      // the bar and drives it (the shell's navigation motion); a stacked one sits
+      // above the group viewport's own clearance.
+      const underBar = !document && !vertical && !!region?.underBottomBar;
       const body = (
-        <ScreenScope inheritBottomEdge={document}>
+        <ScreenScope inheritBottomEdge={document || underBar} inheritNavigation={underBar}>
           <ScreenHostContext.Provider value={navigation ? { ...host, navigation } : host}>
             <ScrollMetricsContext.Provider value={metrics}>
               <ScrollOffsetProvider value={scrollY}>{content}</ScrollOffsetProvider>
@@ -1036,6 +1048,7 @@ export function createPanelLayoutView(
         }}
         enabled={deck && !documentHorizontal}
         document={document}
+        bottomInset={vertical && !document && region?.underBottomBar ? bottomEdge : undefined}
         testID={testID ? `${testID}-scroll` : undefined}
       >
         {row}
@@ -1067,7 +1080,14 @@ export function createPanelLayoutView(
             {
               minWidth: 0,
               alignSelf: 'stretch',
-              paddingBottom: document ? (region?.bottomReserve ?? 0) : bottomEdge,
+              // A bounded group reserves the bottom bar, or — when the app keeps
+              // the bar over its content — fills under it and what scrolls clears
+              // it (`useBottomEdgeInset`, the panel scroller, the vertical deck).
+              paddingBottom: document
+                ? (region?.bottomReserve ?? 0)
+                : region?.underBottomBar
+                  ? 0
+                  : bottomEdge,
               ...(cssScope
                 ? {
                     containerType: document ? 'inline-size' : 'size',

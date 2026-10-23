@@ -263,7 +263,7 @@ bottoms at short viewport heights, since jsdom does not perform flex layout.
 | Region (`scroll`) | A sole `AppShellPanel` | `AppShellPanels` |
 | --- | --- | --- |
 | `document` / `page` on web | grows with the page; its frame is a screen-tall sticky rectangle pinned at the gutter; reserves the bottom bar under its content | one viewport tall less the gutters and top bar — the document has nothing to scroll |
-| `fixed` / `page` on native | fills the region; the content (a `ScreenScrollView`, a `FlatList`, a navigator) scrolls itself and clears the bar with `useBottomEdgeInset()` | fills the region; each panel's content scrolls itself |
+| `fixed` / `page` on native | fills the region above the bottom bar, or under it with `reserveBottomBarSpace={false}`, where the content (a `ScreenScrollView`, a `useScreenScroll` list, a navigator) scrolls itself and clears the bar | the same, for each panel's content |
 | `container` | grows inside the shell's `ScrollView` | fills the scroller's viewport |
 
 `scroll="panel"` on a panel in a bounded region wraps its content in Bloom's own
@@ -338,9 +338,11 @@ phone, and a negative margin is wrong the moment the page's padding changes.
 Both bars are MEASURED. By default the content column reserves their height, so
 the last row of a feed is never hidden behind them. A dashboard with
 `reserveBottomBarSpace={false}` keeps the bottom bar over the full-height content,
-including with `scroll="fixed"`. Its scrollers should apply
-`useBottomEdgeInset()` from `@oxy.so/bloom/layout` as bottom content padding, so
-the final item can scroll clear while the page background continues underneath. Measured in Chrome at 390,
+including with `scroll="fixed"` and in native panels. Bloom's scrollers apply the
+bar as bottom content padding themselves (`contentInsets.bottom` of
+`useScreenScroll`); any other scroller applies `useBottomEdgeInset()` from
+`@oxy.so/bloom/layout`, so the final item can scroll clear while the page
+background continues underneath. Measured in Chrome at 390,
 scrolled to the page end: last item bottom `768`, action top `784`, bar top `844`.
 
 With a content panel, the reserved clearance stays inside its painted surface.
@@ -889,12 +891,16 @@ The social template uses an 8px gutter, matching the compact framed layout.
 Dashboard and feed take `drawer="reveal"` on compact screens (the default is the portaled `overlay` drawer): the page slides aside and rounds its corners to expose the sidebar. While it is open the drawer is modal: focus moves in and Tab stays inside, Escape, Android back and the VoiceOver escape gesture close it, and the page and its veil leave the accessibility tree. Feed keeps the same page wrapper and content subtree when navigation crosses between compact and desktop; the desktop navigation stays in the body row. Put `AppShellMenuButton` in a custom header’s `leading` slot; it hides automatically when navigation is in flow. Shells without navigation do not acquire a sidebar or drawer.
 
 
+With `scroll="page"` on native the slot's bar minimizes with the active screen: a
+Bloom `BottomBar` there reads the screen's `collapseProgress` without a scroll handler
+of its own.
+
 The `bottomBar` slot publishes its measured footprint through the shared bottom-edge registry. Measurement includes the slot’s safe-area padding; embedded bars must not add that inset again. Native feeds and separately positioned FABs can read `useBottomEdgeInset()` without importing the navigation component. Claims combine by maximum, not addition, and disappear when the slot unmounts. The slot never reads its own claim to size itself; repeated equal layout measurements do not trigger another height callback.
 
 For fullscreen video or a child scroller that accounts for the occupied bottom edge itself,
 set `reserveBottomBarSpace={false}`. The visible bar still publishes its measured height
 through the shared edge registry; document/container content receives no duplicate bar padding.
-`scroll="fixed"` always leaves scrolling and clearance to the child navigator or list.
+Native panels then reach under the bar and leave clearance to their scrollers.
 
 ProOfferCard retains its animated complementary host and decorative artwork, with shared SurfacePaint beneath it and contextual backing published for descendant controls. Explicit background overrides remain supported.
 
