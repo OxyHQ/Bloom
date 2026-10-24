@@ -1,0 +1,103 @@
+---
+title: Video playback
+description: Which video plays now — one audible player app-wide, visibility-driven autoplay, nothing playing off a visible screen.
+order: 79
+---
+
+# Video playback
+
+The one authority that answers "may this player play right now?" for every
+video in an app. Mount `VideoPlaybackProvider` once, above every screen; each
+player asks `useVideoPlayback()` and applies the answer with
+`useVideoPlaybackControl()`.
+
+```tsx
+import { useVideoPlayer } from 'expo-video';
+import { VideoView } from '@oxy.so/bloom/video-view';
+import { useVideoPlayback, useVideoPlaybackControl } from '@oxy.so/bloom/video-playback';
+
+function FeedVideo({ uri, postId }: { uri: string; postId: string }) {
+  const id = useId();
+  const container = useRef<View>(null);
+  const player = useVideoPlayer(uri, (p) => (p.loop = true));
+  const { shouldPlay, claimActive } = useVideoPlayback({
+    id,
+    target: container, // web: observed and measured
+    viewabilityKey: postId, // native: matched against the list's viewable keys
+  });
+  useVideoPlaybackControl(player, shouldPlay);
+  return (
+    <View ref={container}>
+      <VideoView player={player} />
+    </View>
+  );
+}
+```
+
+## The rule
+
+A player plays when it is **visible** and, unless it is `silent`, **elected**.
+
+- **Visible**: on screen AND on a visible screen (`useScreenVisible()`: its
+  `Screen` is active and the app is in the foreground). Applies to every player,
+  silent ones included, so an off-screen GIF stops decoding.
+- **Elected**: among the visible audible players exactly one plays. Web ranks by
+  distance from a line 40% down the window, measured when the election runs;
+  native ranks by the order the list published its viewable keys (topmost wins).
+  Equal ranks resolve on the id, so the winner never depends on mount order.
+- `claimActive()` (a manual play) takes the slot while that player stays
+  visible; once it leaves view the claim is dropped for good.
+- `ownsSession` marks the player the OS is showing in its Picture-in-Picture
+  window: it takes the slot outright and ignores both the layout and the
+  foreground gate, because the viewer is watching it outside the app's layout.
+  `canLoad` is true for it, and otherwise only on a visible screen.
+
+Where a viewability source exists, an unmatched player is **not** visible.
+"Unknown, so assume yes" is exactly how a scrolled-past video keeps playing, so
+every ambiguous case falls to silence.
+
+## Where visibility comes from
+
+- **Web**: pass `target`; the hook observes it (half on screen counts) and reads
+  its centre at election time. A surface that knows better than an observer (a
+  pager's snapped slide) omits `target` and calls `reportVisibility(centerY,
+  onScreen)` itself.
+- **Native, inside a list**: the list mounts `VideoViewabilityProvider` and
+  publishes its on-screen keys in on-screen order, either as `viewableKeys`
+  (derived while rendering) or through a store from `createViewableKeysStore()`
+  published from `onViewableItemsChanged` (the list itself does not re-render).
+  Parts the list cannot address by key (its header, a row whose players are
+  keyed otherwise) sit in a `VideoViewabilityScope` bound to one list key.
+- **Native, no list above**: visible while its screen is.
+
+`useViewableVisible({ viewabilityKey, target })` gives the same answer to a view
+that is not a video (an embed that loads only while seen): screen visible AND on
+screen, by the same measured row set on native, by an observer on web.
+
+## One player, several presenters
+
+`useVideoPlaybackControl(player, shouldPlay, shouldLoad?)` lets several mounted
+presenters share one player (a row and the media flight carrying it to the next
+route): it plays while ANY presenter asks, re-applies that after a source change
+or once ready, and returns a latched "has painted a frame" for the poster. A
+presenter unmounting is not a pause command, so a route handoff never stutters.
+`subscribeVideoLoadingDemand` feeds a decoder that runs beside the player (a JS
+HLS decoder on web); `setVideoHasRenderedFrame` reports a frame a view learned
+about first. The player is a structural slice of expo-video's
+(`ControlledVideoPlayer`), so this family links no package and is on the root
+barrel as well as `@oxy.so/bloom/video-playback`.
+
+## Performance
+
+The audible slot and a list's viewable set change on scroll. Both live in
+external stores read through `useSyncExternalStore`, keyed per player: a new
+winner re-renders the old and the new one, and a row entering view re-renders
+that row alone. Carried through a Context they woke every mounted player
+(measured: twenty memoized players, one row scrolling in re-rendered all
+twenty-one).
+
+## Not here
+
+Mute preference (persisted per app), a player's lifetime and source registry,
+and a reel's Picture-in-Picture cursor stay with the app: they depend on the
+app's storage and media sources, not on which video plays.

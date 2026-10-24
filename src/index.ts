@@ -163,6 +163,7 @@ export type {
 } from './surfaces';
 export * from './appearance';
 export * from './screen';
+export * from './video-playback';
 export * from './bottom-bar';
 export * from './tab-pager';
 export * from './button';
