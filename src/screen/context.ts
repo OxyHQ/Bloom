@@ -20,6 +20,8 @@ export interface ScreenContextValue {
   keyboardFooterHeight?: number;
   /** Web `documentScroll`: the window is this screen's scroller, so content stays in document flow. */
   documentScroll?: boolean;
+  /** `headerPlacement="overlay"`: the header floats over the content, which runs under it. */
+  headerOverlays?: boolean;
   topInset: number;
   bottomInset: number;
 }

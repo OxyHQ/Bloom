@@ -194,6 +194,7 @@ export function createScreen(
         keyboardFollow,
         keyboardFooterHeight: hasBottom ? bottom : 0,
         documentScroll: document,
+        headerOverlays: header != null && headerPlacement === 'overlay',
         topInset: reservedTop,
         bottomInset:
           keyboardVisible && !hasBottom
@@ -214,6 +215,7 @@ export function createScreen(
         collapseTarget,
         activeScrollerId,
         header,
+        headerPlacement,
         hasBottom,
         top,
         bottom,
