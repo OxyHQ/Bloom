@@ -62,6 +62,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   invisible = false,
   placement = 'top-right',
   children,
+  material: materialProp = 'surface',
   style,
   textStyle,
   testID,
@@ -102,6 +103,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     return String(content);
   }, [content, dot, max]);
 
+  const flat = materialProp === 'flat';
   const badgeStyle = useMemo((): ViewStyle => {
     if (dot && attached) {
       return {
@@ -133,6 +135,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       // differ. Overrides must use these same longhands.
       paddingLeft: Icon ? Math.max(0, geometry.paddingHorizontal - 2) : geometry.paddingHorizontal,
       paddingRight: geometry.paddingHorizontal,
+      ...(flat ? { backgroundColor: paint.background } : null),
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -147,7 +150,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     };
 
     return base;
-  }, [dot, attached, geometry, paint, halo, variant, Icon]);
+  }, [dot, attached, geometry, paint, halo, variant, Icon, flat]);
 
   const badgeTextStyle = useMemo(
     (): TextStyle => ({
@@ -190,6 +193,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   // caller's own background owns the pill's paint instead.
   const material =
     dot ||
+    flat ||
     isClearFill(paint.background) ||
     StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
       <SurfacePaint

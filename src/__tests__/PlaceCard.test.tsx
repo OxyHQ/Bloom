@@ -12,6 +12,7 @@
  * DIFFERENT painted colour per state, and that the two densities draw different
  * things from the same props.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -138,7 +139,7 @@ describe('the open state is a different painted colour per state', () => {
         PLACE_OPEN_TONE[state],
         'subtle',
       ).background;
-      const actual = getComputedStyle(byTestId('p-state')).backgroundColor;
+      const actual = materialFill(byTestId('p-state'));
       expect([state, actual]).toEqual([state, css(expected)]);
       painted.set(state, actual);
     }

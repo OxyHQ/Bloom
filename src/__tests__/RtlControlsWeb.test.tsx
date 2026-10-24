@@ -36,7 +36,8 @@ function renderIn(dir: 'ltr' | 'rtl', ui: React.ReactElement) {
 
 function thumbTranslate(): string {
   const track = container.querySelector('[role="switch"]')!.firstElementChild!;
-  return (track.firstElementChild as HTMLElement).style.transform;
+  // After the track's surface material, its first layer.
+  return (track.lastElementChild as HTMLElement).style.transform;
 }
 
 describe('Switch', () => {

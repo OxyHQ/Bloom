@@ -4,6 +4,7 @@
  * The home-search family, rendered through the REAL react-native-web so the
  * assertions read emitted DOM attributes and inline styles rather than props.
  */
+import { materialFill } from './support/material-fill';
 import React, { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -491,6 +492,6 @@ describe('SavedSearchCard and SaveSearchButton', () => {
     click('save');
     expect(byTestId('save').getAttribute('aria-pressed')).toBe('true');
     expect(byTestId('save').textContent).toBe('Saved');
-    expect(byTestId('save').style.backgroundColor).toBe(css(theme.colors.text));
+    expect(materialFill(byTestId('save'))).toBe(css(theme.colors.text));
   });
 });

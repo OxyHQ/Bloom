@@ -5,6 +5,7 @@
  * colours and the rendered accessibility attributes. Width-driven halves
  * (`onLayout`) are in `PropertyInsightsLayout.test.tsx`.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -269,7 +270,7 @@ describe('PriceEstimate', () => {
     expect(byTestId('pe-range').textContent).toBe('€362,000 – €398,000');
     const verdict = byTestId('pe-verdict');
     expect(verdict.textContent).toBe('Fair price');
-    expect(getComputedStyle(verdict).backgroundColor).toBe(
+    expect(materialFill(verdict)).toBe(
       normalise(resolveAccentColors(theme.colors, 'success', 'subtle').background),
     );
     expect(getComputedStyle(byTestId('pe-band')).backgroundColor).toBe(normalise(palette.band));
@@ -305,7 +306,7 @@ describe('PriceEstimate', () => {
       <PriceEstimate low={180000} high={205000} asking={250000} confidence="high" testID="pe" />,
     );
     expect(byTestId('pe-verdict').textContent).toBe('Above estimate by 22%');
-    expect(getComputedStyle(byTestId('pe-verdict')).backgroundColor).toBe(
+    expect(materialFill(byTestId('pe-verdict'))).toBe(
       normalise(resolveAccentColors(theme.colors, 'error', 'subtle').background),
     );
   });
@@ -562,10 +563,10 @@ describe('RentHistoryList', () => {
     expect(byTestId('rh-item-0').getAttribute('aria-label')).toBe(
       '€1,150 / month, Since Oct 2026, +4%, Current listing',
     );
-    expect(getComputedStyle(byTestId('rh-item-0-delta')).backgroundColor).toBe(
+    expect(materialFill(byTestId('rh-item-0-delta'))).toBe(
       normalise(resolveAccentColors(theme.colors, 'warning', 'subtle').background),
     );
-    expect(getComputedStyle(byTestId('rh-item-1-delta')).backgroundColor).toBe(
+    expect(materialFill(byTestId('rh-item-1-delta'))).toBe(
       normalise(resolveAccentColors(theme.colors, 'success', 'subtle').background),
     );
   });

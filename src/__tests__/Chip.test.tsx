@@ -29,6 +29,7 @@ import {
   resolveChipRing,
 } from '../chip';
 import { resolveButtonRamps } from '../button/shared';
+import { materialFill } from './support/material-fill';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { APP_COLOR_NAMES } from '../theme/color-presets';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -224,7 +225,7 @@ describe('Chip inverted', () => {
       const on = getComputedStyle(byTestId('on'));
       expect(rest.backgroundColor).toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
       expect(rest.borderTopWidth).toBe('1px');
-      expect(on.backgroundColor).toBe(normalise(theme.colors.text));
+      expect(materialFill(byTestId('on'))).toBe(normalise(theme.colors.text));
       // Legible by construction: it is the page's own pair, inverted.
       expect(contrast(theme.colors.text, theme.colors.background)).toBeGreaterThan(4.5);
     },

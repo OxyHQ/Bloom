@@ -4,6 +4,7 @@
  * The map pieces, rendered through the REAL react-native-web so the assertions
  * read the emitted DOM: names, pressed/checked state, geometry and paint.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -425,7 +426,7 @@ describe('MapListingPreview — housing', () => {
       'For rent',
     ]);
     expect(getComputedStyle(byTestId('p-offerings-sale')).height).toBe('20px');
-    expect(getComputedStyle(byTestId('p-offerings-sale')).backgroundColor).toBe(
+    expect(materialFill(byTestId('p-offerings-sale'))).toBe(
       normalise(resolveOfferingBadgePaint(theme, 'sale', 'tinted').background),
     );
     expect(byTestId('p-price-0').textContent).toBe('€4,800 / month');

@@ -1,4 +1,5 @@
 import React from 'react';
+import { paintedFill } from './support/material-fill';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -52,10 +53,11 @@ describe('Notification', () => {
   it('uses the theme surface and dropdown shadow, light and dark', () => {
     for (const mode of ['light', 'dark'] as const) {
       const paint = resolveNotificationPaint(buildTheme('blue', mode));
-      const style = flat(cardOf(renderNotification({}, mode))?.props.style);
+      const card = cardOf(renderNotification({}, mode));
+      const style = flat(card?.props.style);
       expect({
         mode,
-        bg: style.backgroundColor,
+        bg: card ? paintedFill(card) : undefined,
         border: style.borderColor,
         shadow: style.boxShadow,
       }).toEqual({

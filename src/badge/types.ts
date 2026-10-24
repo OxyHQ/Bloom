@@ -54,6 +54,12 @@ export interface BadgeProps {
   placement?: BadgePlacement;
   /** The element the badge is attached to. */
   children?: React.ReactNode;
+  /**
+   * The pill's paint: the shared surface material (default) or a flat fill. A
+   * badge inside a layer that fades with `opacity` (a tab glyph's crossfade)
+   * is flat, since that layer would be the material's backdrop root.
+   */
+  material?: 'surface' | 'flat';
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   testID?: string;

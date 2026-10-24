@@ -7,6 +7,7 @@
  * being dropped on web, which is the defect class these components are most
  * exposed to).
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -106,7 +107,7 @@ function normalise(color: string): string {
 }
 
 function bg(el: HTMLElement): string {
-  return getComputedStyle(el).backgroundColor;
+  return materialFill(el);
 }
 
 function paint() {
@@ -366,7 +367,8 @@ describe('UnreadBadge', () => {
 
   it('hides the drawn digits from assistive tech, so the count is read once', () => {
     mount(<UnreadBadge count={7} testID="b" />);
-    const text = byTestId('b').firstElementChild as HTMLElement;
+    // After the surface material, the badge's first layer.
+    const text = byTestId('b').lastElementChild as HTMLElement;
     expect(text.getAttribute('aria-hidden')).toBe('true');
   });
 

@@ -87,13 +87,13 @@ describe('IconCircle', () => {
 });
 
 describe('RadioIndicator', () => {
-  // The dot: a root, the default surface, the selected gradient surface and
-  // the inner dot, stacked. Both surfaces and the dot are ALWAYS mounted — they
-  // cross-fade and scale between states — so the node count does not change
-  // with `selected`.
+  // The dot: a root, the default surface's ring and its surface material, the
+  // selected gradient surface and the inner dot, stacked. All are ALWAYS
+  // mounted — they cross-fade and scale between states — so the node count does
+  // not change with `selected`.
   it('stacks the surface, the gradient and the dot in both states', () => {
-    expect(styles(<RadioIndicator selected={false} />)).toHaveLength(4);
-    expect(styles(<RadioIndicator selected />)).toHaveLength(4);
+    expect(styles(<RadioIndicator selected={false} />)).toHaveLength(5);
+    expect(styles(<RadioIndicator selected />)).toHaveLength(5);
   });
 
   it('draws the unselected surface as a 1px neutral ring on the card at 16px', () => {
@@ -101,13 +101,13 @@ describe('RadioIndicator', () => {
     const rendered = styles(<RadioIndicator selected={false} />);
     expect(rendered[0]?.width).toBe(16);
     expect(rendered[1]?.borderWidth).toBe(1);
-    expect(rendered[1]?.backgroundColor).toBe(colors.card);
+    expect(rendered[2]?.backgroundColor).toBe(colors.card);
   });
 
   it('builds the selected gradient around the theme primary', () => {
     const colors = themeColors();
     const rendered = styles(<RadioIndicator selected />);
-    const image = String(rendered[2]?.experimental_backgroundImage ?? rendered[2]?.backgroundImage);
+    const image = String(rendered[3]?.experimental_backgroundImage ?? rendered[3]?.backgroundImage);
     expect(image).toMatch(/^linear-gradient\(180deg/);
     expect(image).toContain(colors.primary);
   });
@@ -115,22 +115,22 @@ describe('RadioIndicator', () => {
   it('draws the inner dot in the primary FOREGROUND, not white', () => {
     const colors = themeColors();
     const rendered = styles(<RadioIndicator selected />);
-    expect(rendered[3]?.backgroundColor).toBe(colors.primaryForeground);
+    expect(rendered[4]?.backgroundColor).toBe(colors.primaryForeground);
   });
 
   it('falls back to white for a caller-supplied accent it cannot reason about', () => {
     const rendered = styles(<RadioIndicator selected selectedColor="rgb(102, 51, 153)" />);
     expect(
-      String(rendered[2]?.experimental_backgroundImage ?? rendered[2]?.backgroundImage),
+      String(rendered[3]?.experimental_backgroundImage ?? rendered[3]?.backgroundImage),
     ).toContain('rgb(102, 51, 153)');
-    expect(rendered[3]?.backgroundColor).toBe('#FFFFFF');
+    expect(rendered[4]?.backgroundColor).toBe('#FFFFFF');
   });
 
   it('scales the dot and the hairline with the ring', () => {
     const rendered = styles(<RadioIndicator selected size={40} />);
     expect(rendered[0]?.width).toBe(40);
     // A 6-in-16 dot and 1-in-16 border.
-    expect(rendered[3]?.width).toBe(15);
+    expect(rendered[4]?.width).toBe(15);
     expect(rendered[1]?.borderWidth).toBe(2.5);
   });
 });

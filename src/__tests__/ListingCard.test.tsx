@@ -9,6 +9,7 @@
  * and a fixed `offsetWidth`; the paging itself (scroll-snap, smooth scroll) is
  * verified in a real browser.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -649,9 +650,7 @@ describe('ListingCard — housing', () => {
     ]);
     expect(byTestId('c-link').contains(slot)).toBe(false);
     const paint = resolveOfferingBadgePaint(theme, 'sale', 'onMedia');
-    expect(getComputedStyle(byTestId('c-offering-sale')).backgroundColor).toBe(
-      normalise(paint.background),
-    );
+    expect(materialFill(byTestId('c-offering-sale'))).toBe(normalise(paint.background));
     expect(getComputedStyle(slot).flexWrap).toBe('wrap');
     expect(getComputedStyle(slot).top).toBe('12px');
     expect(getComputedStyle(slot).left).toBe('12px');
@@ -725,7 +724,7 @@ describe('ListingCard — compact density', () => {
     ]);
     const badge = byTestId('c-offering-sale');
     expect(getComputedStyle(badge).height).toBe('20px');
-    expect(getComputedStyle(badge).backgroundColor).toBe(
+    expect(materialFill(badge)).toBe(
       normalise(resolveOfferingBadgePaint(theme, 'sale', 'tinted').background),
     );
     expect(byTestId('c-photo').contains(byTestId('c-wash'))).toBe(true);

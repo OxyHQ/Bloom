@@ -1,4 +1,5 @@
 import React from 'react';
+import { hostsPaintedWith } from './support/material-fill';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { makeMutable, withSpring } from 'react-native-reanimated';
@@ -171,10 +172,8 @@ function flattenStyle(style: unknown): Record<string, unknown> {
 
 /** The sliding capsule — the only node painted with the bar's highlight color. */
 function highlight(root: ReactTestInstance): Record<string, unknown> {
-  const found = root
-    .findAll((node) => hostName(node) !== null)
-    .map((node) => flattenStyle(node.props?.style))
-    .filter((style) => style.backgroundColor === HIGHLIGHT);
+  // The capsule is the host carrying the highlight's surface material.
+  const found = hostsPaintedWith(root, HIGHLIGHT).map((node) => flattenStyle(node.props?.style));
   if (found.length !== 1) throw new Error(`Expected one highlight, found ${found.length}`);
   return found[0] as Record<string, unknown>;
 }

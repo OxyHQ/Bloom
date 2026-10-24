@@ -1,4 +1,5 @@
 import React from 'react';
+import { surfacePaintOf } from './support/material-fill';
 import { contrastRatio } from '../styles/color-contrast';
 import {
   AA_TEXT,
@@ -56,13 +57,17 @@ const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 const flat = (style: unknown) => resolvedStyle(style);
 
 /** The absolutely-positioned shell the input paints behind itself. */
-function findChrome(root: ReturnType<typeof render>) {
+function findChrome(root: ReturnType<typeof render>): Record<string, unknown> {
   const views = root.UNSAFE_getAllByType(View).filter((v) => {
     const s = flat(v.props.style);
     return s.position === 'absolute' && s.borderWidth === 2;
   });
   if (views.length !== 1) throw new Error(`expected one chrome, found ${views.length}`);
-  return flat(views[0]!.props.style);
+  // The ring overlay draws the ring; the shell's fill is its surface material's.
+  return {
+    ...flat(views[0]!.props.style),
+    backgroundColor: surfacePaintOf(root.UNSAFE_root)?.props.fill,
+  };
 }
 
 describe('TextField palette (input tokens)', () => {
