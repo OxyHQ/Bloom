@@ -1,5 +1,5 @@
 import { dismissAll, dismissToRoot, dismissTop, present, requestDismiss } from './surface-store';
-import { alert, confirm, prompt } from './prompts';
+import { alert, confirm, confirmWithSuppression, prompt } from './prompts';
 import type { PresentOptions, SurfaceRenderFn } from './types';
 
 /**
@@ -50,8 +50,20 @@ export const surfaces = {
   alert,
   /** Present a confirm surface; resolves `true`/`false`. */
   confirm,
+  /** Present a confirm with a "Don't ask again" checkbox; resolves both answers. */
+  confirmWithSuppression,
   /** Present a prompt surface; resolves the string or `null`. */
   prompt,
 } as const;
 
-export { alert, confirm, dismiss, dismissAll, dismissById, dismissToRoot, present, prompt };
+export {
+  alert,
+  confirm,
+  confirmWithSuppression,
+  dismiss,
+  dismissAll,
+  dismissById,
+  dismissToRoot,
+  present,
+  prompt,
+};

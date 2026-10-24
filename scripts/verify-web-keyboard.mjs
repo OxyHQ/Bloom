@@ -61,7 +61,7 @@ const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Every check below runs unconditionally, so a short run means something threw. */
-const EXPECTED_CASES = 62;
+const EXPECTED_CASES = 74;
 
 const results = [];
 function record(name, pass, detail) {
@@ -658,6 +658,114 @@ async function contextMenuAnchorCases(page) {
   await key(page, 'Escape', 400);
 }
 
+function textOf(page, testId) {
+  return page.evaluate(
+    (id) => document.querySelector(`[data-testid="${id}"]`)?.textContent ?? null,
+    testId,
+  );
+}
+
+/** `confirm()`, `confirmWithSuppression()` and `prompt()` from the keyboard alone. */
+async function surfaceCases(page) {
+  await story(page, 'base-surfaces--confirm');
+  await key(page, 'Tab');
+  await key(page, 'Enter', 500);
+  let f = await focused(page);
+  record('confirm: a keyboard open focuses the confirm button', f.name === 'Leave', show(f));
+  await key(page, 'Enter', 500);
+  let answer = await page.evaluate(() => document.querySelector('#storybook-root').textContent);
+  record('confirm: Enter confirms', /Answer: confirmed/.test(answer), answer);
+  await key(page, 'Enter', 500);
+  await key(page, 'Escape', 500);
+  answer = await page.evaluate(() => document.querySelector('#storybook-root').textContent);
+  record('confirm: Escape cancels', /Answer: cancelled/.test(answer), answer);
+
+  await story(page, 'base-surfaces--confirm-with-suppression');
+  await key(page, 'Tab');
+  await key(page, 'Enter', 500);
+  f = await focused(page);
+  record(
+    'suppression: the checkbox is there, unchecked, and holds focus',
+    f.role === 'checkbox' && f.selected === 'false',
+    show(f),
+  );
+  await key(page, 'Space', 300);
+  await key(page, 'Enter', 500);
+  answer = await textOf(page, 'suppressible-answer');
+  record(
+    'suppression: Space checks it and Enter confirms with it',
+    answer === 'Answer: confirmed · suppressed',
+    answer,
+  );
+  await key(page, 'Enter', 500);
+  await key(page, 'Escape', 500);
+  answer = await textOf(page, 'suppressible-answer');
+  record(
+    'suppression: Escape cancels, box untouched',
+    answer === 'Answer: cancelled · ask again',
+    answer,
+  );
+  await key(page, 'Enter', 500);
+  await key(page, 'Space', 300);
+  await key(page, 'Escape', 500);
+  answer = await textOf(page, 'suppressible-answer');
+  record(
+    'suppression: a cancelled answer still reports the checked box',
+    answer === 'Answer: cancelled · suppressed',
+    answer,
+  );
+  await key(page, 'Enter', 500);
+  await key(page, 'Tab');
+  await key(page, 'Tab');
+  f = await focused(page);
+  await key(page, 'Enter', 500);
+  answer = await textOf(page, 'suppressible-answer');
+  record(
+    'suppression: Enter on a focused Cancel still cancels',
+    f.name === 'Cancel' && answer === 'Answer: cancelled · ask again',
+    `${show(f)} / ${answer}`,
+  );
+
+  await story(page, 'base-surfaces--prompt-rename');
+  await key(page, 'Tab');
+  await key(page, 'Enter', 600);
+  const field = await page.evaluate(() => {
+    const el = document.activeElement;
+    return {
+      tag: el?.tagName,
+      value: el?.value,
+      start: el?.selectionStart,
+      end: el?.selectionEnd,
+    };
+  });
+  record(
+    'prompt: the input has focus with its value selected',
+    field.tag === 'INPUT' &&
+      field.start === 0 &&
+      field.end === (field.value ?? '').length &&
+      field.end > 0,
+    JSON.stringify(field),
+  );
+  await page.keyboard.type('Books');
+  await key(page, 'Enter', 500);
+  answer = await textOf(page, 'rename-answer');
+  record(
+    'prompt: typing replaces the selection and Enter submits',
+    answer === 'Name: Books',
+    answer,
+  );
+  f = await focused(page);
+  record(
+    'prompt: closing returns focus to the control that opened it',
+    f.name === 'Rename',
+    show(f),
+  );
+  await key(page, 'Enter', 600);
+  await key(page, 'Escape', 500);
+  answer = await textOf(page, 'rename-answer');
+  record('prompt: Escape cancels from the field', answer === 'Name: cancelled', answer);
+}
+
 async function main() {
   const puppeteer = loadPuppeteer();
   const browser = await puppeteer.launch({
@@ -674,6 +782,7 @@ async function main() {
     await segmentedCases(page);
     await menuCases(page);
     await contextMenuAnchorCases(page);
+    await surfaceCases(page);
   } finally {
     await browser.close();
   }

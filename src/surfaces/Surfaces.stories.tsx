@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { alert, confirm, prompt, present } from './index';
+import { alert, confirm, confirmWithSuppression, prompt, present } from './index';
 import { Button } from '../button';
 import { Text } from '../typography';
 
@@ -106,6 +106,60 @@ export const Prompt: Story = {
           Ask for a name
         </Button>
         <Text>Name: {name}</Text>
+      </View>
+    );
+  },
+};
+
+/**
+ * `confirmWithSuppression()`: a confirm with a "Don't ask again" checkbox,
+ * resolving both answers. Enter confirms, Space toggles the box, Esc cancels.
+ */
+export const ConfirmWithSuppression: Story = {
+  parameters: { controls: { disable: true } },
+  render: function SuppressionStory() {
+    const [answer, setAnswer] = useState<string>('—');
+    return (
+      <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
+        <Button
+          testID="ask-suppressible"
+          onPress={async () => {
+            const result = await confirmWithSuppression({
+              title: 'Close 12 tabs?',
+              description: 'The window has 12 tabs open.',
+              confirmLabel: 'Close tabs',
+              suppressionLabel: "Don't ask again",
+            });
+            setAnswer(
+              `${result.confirmed ? 'confirmed' : 'cancelled'} · ${result.suppressed ? 'suppressed' : 'ask again'}`,
+            );
+          }}
+        >
+          Close tabs
+        </Button>
+        <Text testID="suppressible-answer">Answer: {answer}</Text>
+      </View>
+    );
+  },
+};
+
+/** `prompt()` with a value to edit: the text is selected on open, Enter submits. */
+export const PromptRename: Story = {
+  parameters: { controls: { disable: true } },
+  render: function PromptRenameStory() {
+    const [name, setName] = useState<string>('—');
+    return (
+      <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
+        <Button
+          testID="ask-rename"
+          onPress={async () => {
+            const value = await prompt({ title: 'Rename folder', defaultValue: 'Reading list' });
+            setName(value ?? 'cancelled');
+          }}
+        >
+          Rename
+        </Button>
+        <Text testID="rename-answer">Name: {name}</Text>
       </View>
     );
   },

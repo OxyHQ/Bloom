@@ -1,6 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { type ComponentRef, useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
+import { Checkbox } from '../checkbox';
+import { hostElement } from '../floating/menu-keyboard';
 import { ActionRow } from '../dialog/DialogContent';
 import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
 import { pickMessages, useMessages } from '../locale/messages';
@@ -13,6 +15,8 @@ import type {
   SurfaceConfirmOptions,
   SurfaceControls,
   SurfacePromptOptions,
+  SurfaceSuppressibleConfirmOptions,
+  SurfaceSuppressibleConfirmResult,
 } from './types';
 
 /**
@@ -130,6 +134,142 @@ export function confirm(options: SurfaceConfirmOptions): Promise<boolean> {
 }
 
 /**
+ * The suppressible confirm's body: the checkbox, then the same button row
+ * `confirm()` gets from the Dialog's `actions` — rendered here because the
+ * buttons resolve the checkbox's live state.
+ *
+ * Enter confirms from anywhere in the surface but the button row (a focused
+ * Cancel still means Cancel), as a desktop alert's default button does; initial focus
+ * lands on the checkbox, the first control, so without this Enter would do
+ * nothing. Space toggles the checkbox, Escape cancels through the Dialog.
+ */
+function SuppressibleConfirmSurface({
+  options,
+  surface,
+  onSuppressedChange,
+}: {
+  options: SurfaceSuppressibleConfirmOptions;
+  surface: SurfaceControls;
+  onSuppressedChange: (suppressed: boolean) => void;
+}) {
+  const { messages } = useMessages(SURFACES_MESSAGES);
+  const common = useCommonMessages();
+  const [suppressed, setSuppressedState] = useState(options.suppressed ?? false);
+  const setSuppressed = useCallback(
+    (next: boolean) => {
+      setSuppressedState(next);
+      onSuppressedChange(next);
+    },
+    [onSuppressedChange],
+  );
+  const suppressedRef = useRef(suppressed);
+  suppressedRef.current = suppressed;
+  const answer = useCallback(
+    (confirmed: boolean) =>
+      surface.dismiss({
+        confirmed,
+        suppressed: suppressedRef.current,
+      } satisfies SurfaceSuppressibleConfirmResult),
+    [surface],
+  );
+  const bodyRef = useRef<ComponentRef<typeof View> | null>(null);
+  const actionsRef = useRef<ComponentRef<typeof View> | null>(null);
+  useEffect(() => {
+    const body = hostElement(bodyRef.current);
+    const panel = body?.closest('[role="dialog"]') ?? body;
+    if (!panel) return undefined;
+    const onKeyDown = (event: Event) => {
+      const key = event as KeyboardEvent;
+      if (key.key !== 'Enter' || key.defaultPrevented || key.isComposing) return;
+      const target = key.target as Node | null;
+      if (target && hostElement(actionsRef.current)?.contains(target)) return;
+      key.preventDefault();
+      answer(true);
+    };
+    panel.addEventListener('keydown', onKeyDown);
+    return () => panel.removeEventListener('keydown', onKeyDown);
+  }, [answer]);
+
+  const actions: DialogAction[] = [
+    {
+      label: options.confirmLabel ?? messages.confirm,
+      color: options.destructive ? 'destructive' : 'default',
+      shouldCloseOnPress: false,
+      onPress: () => answer(true),
+      testID: 'bloom-surface-confirm-confirm',
+    },
+  ];
+  if (!options.hideCancel) {
+    actions.push({
+      label: options.cancelLabel ?? common.cancel,
+      color: 'cancel',
+      shouldCloseOnPress: false,
+      onPress: () => answer(false),
+      testID: 'bloom-surface-confirm-cancel',
+    });
+  }
+
+  return (
+    <View ref={bodyRef}>
+      <Checkbox
+        checked={suppressed}
+        onCheckedChange={setSuppressed}
+        label={options.suppressionLabel}
+        testID="bloom-surface-confirm-suppression"
+      />
+      <View ref={actionsRef} style={{ paddingTop: 16 }}>
+        <ActionRow actions={actions} />
+      </View>
+    </View>
+  );
+}
+
+/**
+ * `confirm()` with a suppression checkbox ("Don't ask again") under the
+ * description. Resolves whether it was confirmed AND the checkbox's state —
+ * `suppressed` is reported however the surface closed, so a cancelled answer
+ * can still be remembered.
+ *
+ * ```tsx
+ * const { confirmed, suppressed } = await confirmWithSuppression({
+ *   title: 'Close 12 tabs?',
+ *   confirmLabel: 'Close tabs',
+ *   suppressionLabel: "Don't ask again",
+ * });
+ * ```
+ */
+export function confirmWithSuppression(
+  options: SurfaceSuppressibleConfirmOptions,
+): Promise<SurfaceSuppressibleConfirmResult> {
+  // A backdrop / Escape / back dismissal resolves no result, so the checkbox's
+  // state is tracked as it changes rather than read from the answer.
+  let suppressed = options.suppressed ?? false;
+  const onSuppressedChange = (next: boolean) => {
+    suppressed = next;
+  };
+  return present<unknown>(
+    (surface) => (
+      <SuppressibleConfirmSurface
+        options={options}
+        surface={surface}
+        onSuppressedChange={onSuppressedChange}
+      />
+    ),
+    {
+      placement: options.placement ?? 'center',
+      dismissOnBackdrop: options.dismissible ?? true,
+      title: options.title,
+      description: options.description,
+      label: options.title,
+    },
+  ).then((result) =>
+    result && typeof result === 'object' && 'confirmed' in result
+      ? (result as SurfaceSuppressibleConfirmResult)
+      : { confirmed: false, suppressed },
+  );
+}
+
+/**
  * The prompt's body. Unlike `alert`/`confirm` this cannot be pure presentation
  * config: its buttons read the live input value, which is component state, so
  * the row is rendered here — through the SAME `ActionRow` the Dialog's own
@@ -172,6 +312,7 @@ function PromptSurface({
         value={value}
         onValueChange={setValue}
         autoFocus
+        selectTextOnFocus
         returnKeyType="done"
         onSubmitEditing={onSubmit}
         testID="bloom-surface-prompt-input"

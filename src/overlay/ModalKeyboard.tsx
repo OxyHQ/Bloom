@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { View } from 'react-native';
 
 import {
@@ -50,6 +51,14 @@ export function ModalKeyboard({
   state.current = { closing, dismissible, dismiss };
   const opener = useRef<HTMLElement | null>(null);
   const cancelRestore = useRef<(() => void) | undefined>(undefined);
+  // Read in the FIRST render, before the commit: content that focuses itself on
+  // mount (a prompt's `autoFocus` field) does so before any effect here runs,
+  // and an effect-time read recorded that field as the opener, so focus fell to
+  // <body> on close instead of returning to the control that opened the modal.
+  const activeAtMount = useRef<Element | null | undefined>(undefined);
+  if (activeAtMount.current === undefined) {
+    activeAtMount.current = typeof document === 'undefined' ? null : document.activeElement;
+  }
 
   const restoreFocus = useCallback(() => {
     const target = opener.current;
@@ -63,9 +72,13 @@ export function ModalKeyboard({
   useEffect(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     cancelRestore.current?.();
-    const active = document.activeElement;
-    opener.current = active instanceof HTMLElement && active !== document.body ? active : null;
     const panel = () => panelRef.current as unknown as HTMLElement | null;
+    const active = activeAtMount.current ?? document.activeElement;
+    activeAtMount.current = null;
+    opener.current =
+      active instanceof HTMLElement && active !== document.body && !panel()?.contains(active)
+        ? active
+        : null;
     // A frame later, so content that focuses itself on mount has done so.
     const frame = requestAnimationFrame(() => {
       const node = panel();
