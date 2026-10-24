@@ -143,7 +143,7 @@ export function peakGain(rim: SurfaceRim): number {
 }
 
 /** Frosting radius, in CSS px. */
-export const SURFACE_BLUR_PX = 8;
+export const SURFACE_BLUR_PX = 24;
 
 /** The backdrop under the tint: frosted, saturated, flattened, brightened. */
 export function materialFilter({ saturate, slope, offset }: SurfaceLook): string {

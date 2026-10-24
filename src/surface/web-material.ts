@@ -10,6 +10,12 @@ const EDGE_LINE_PX = 1.25;
  * Measured by depth from the edge, so it holds for any radius, capsules included.
  */
 const STRAIGHT = 0.75;
+/**
+ * The deepest a corner's light reaches, in CSS px: the measured profile is for a
+ * 10–12px corner. Scaled to a capsule's end it would light half the side and read
+ * as an outline, so on larger radii the light stops where it would on the tab.
+ */
+const CORNER_REACH_PX = 12;
 const CORNER = 0.27;
 
 /**
@@ -30,7 +36,7 @@ const CORNER = 0.27;
  * the glow within 8px of the top and bottom.
  */
 export function surfaceMaterialCss(selector: string, fill: string, transition = 'none'): string {
-  const y = 'min(var(--bloom-surface-corner-y, 16px), 50%)';
+  const y = `min(var(--bloom-surface-corner-y, 16px), 50%, ${CORNER_REACH_PX}px)`;
   const strength = `linear-gradient(to bottom, rgba(0,0,0,${STRAIGHT}) 0, rgba(0,0,0,${STRAIGHT}) ${EDGE_LINE_PX}px, rgba(0,0,0,${CORNER}) ${2 * EDGE_LINE_PX}px, rgba(0,0,0,${CORNER}) calc(${y} * 0.58), transparent calc(${y} * 0.84), transparent calc(100% - ${y} * 0.84), rgba(0,0,0,${CORNER}) calc(100% - ${y} * 0.58), rgba(0,0,0,${CORNER}) calc(100% - ${2 * EDGE_LINE_PX}px), rgba(0,0,0,${STRAIGHT}) calc(100% - ${EDGE_LINE_PX}px), rgba(0,0,0,${STRAIGHT}) 100%)`;
   return `
 ${selector} {

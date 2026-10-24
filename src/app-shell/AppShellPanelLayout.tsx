@@ -636,7 +636,16 @@ export function createPanelLayoutView(
                       style={[
                         FILL,
                         Platform.OS === 'web'
-                          ? ({ overflowX: 'clip', overflowY: 'visible' } as WebCssStyle)
+                          ? ((joined || document
+                              ? { overflowX: 'clip', overflowY: 'visible' }
+                              : {
+                                  // Separated panels have the gap to themselves, and
+                                  // their shadow falls into it. Chrome honours a clip
+                                  // margin only when both axes clip; `clip` makes no
+                                  // scroll container, so sticky content is unaffected.
+                                  overflow: 'clip',
+                                  overflowClipMargin: gap,
+                                }) as unknown as WebCssStyle)
                           : undefined,
                       ]}
                     >

@@ -115,6 +115,12 @@ export const SURFACE_VARS_OFF: Record<string, string> = {
 };
 
 /**
+ * How much of an opaque fill the web material keeps: the rest is the frosted
+ * backdrop showing through, which is what makes the blur visible at all.
+ */
+export const SURFACE_TINT_OPACITY = 0.72;
+
+/**
  * One subtle material: retain explicit alpha; on the web, opaque fills transmit
  * ten percent through the backdrop blur beneath them. Native has no blur under a
  * surface (a `BlurView` inside one can SIGSEGV on Android), so a transmitted
@@ -124,7 +130,7 @@ export const SURFACE_VARS_OFF: Record<string, string> = {
 export function resolveSurfaceTint(fill: string): string {
   if (Platform.OS !== 'web') return fill;
   const parsed = parseRgba(fill);
-  return parsed?.a === 1 ? withAlpha(fill, 0.9) : fill;
+  return parsed?.a === 1 ? withAlpha(fill, SURFACE_TINT_OPACITY) : fill;
 }
 
 /** Estimate the backing descendants see by compositing tint onto its parent. */

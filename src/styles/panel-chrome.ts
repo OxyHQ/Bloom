@@ -1,14 +1,13 @@
 /**
- * The FLOATING PANEL chrome — the edge Bloom's big surfaces wear: a hairline
- * plus the shared corner shape and soft three-part shadow that lifts a panel off the page background.
+ * The FLOATING PANEL chrome — the edge Bloom's big surfaces wear: the shared
+ * corner shape and a soft two-part shadow that lifts a panel off the page background.
  *
  * It lives here because two surfaces wear the same thing and had it written
  * twice: the `Sidebar`'s panel and the framed `ContentPanel`. A panel that only
  * draws a border reads as a box; the shadow is what makes it a panel.
  *
- *   shadow   0 1px 0 (the seat), 0 1px 12px (the soft body), 0 0 1px (the edge
- *            definition that keeps the hairline from disappearing on a
- *            same-coloured background)
+ *   shadow   0 1px 0 (the seat), 0 1px 12px (the soft body); the edge itself is
+ *            the material's light
  *   border   the canonical subtle border role in both modes
  */
 import { useContext } from 'react';
@@ -18,10 +17,14 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 
+/**
+ * The lift only: a contact line under the panel and a soft shadow. The panel's
+ * edge is the material's own light, so there is no dark 1px ring around it; with
+ * the light on top and the ring left on the sides, the edge read as two borders.
+ */
 export const PANEL_SHADOW = {
-  light:
-    '0 1px 0 0 rgba(0, 0, 0, 0.0196), 0 1px 12px 0 rgba(0, 0, 0, 0.0588), 0 0 1px 0 rgba(0, 0, 0, 0.3216)',
-  dark: '0 1px 0 0 rgba(0, 0, 0, 0.1), 0 1px 12px 0 rgba(0, 0, 0, 0.16), 0 0 1px 0 rgba(0, 0, 0, 0.42)',
+  light: '0 1px 0 0 rgba(0, 0, 0, 0.0196), 0 1px 12px 0 rgba(0, 0, 0, 0.0588)',
+  dark: '0 1px 0 0 rgba(0, 0, 0, 0.1), 0 1px 12px 0 rgba(0, 0, 0, 0.16)',
 } as const;
 
 export interface PanelChrome {
