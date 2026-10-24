@@ -559,3 +559,5 @@ export { RiWifiLine } from './RiWifiLine';
 export { RiWindowLine } from './RiWindowLine';
 export { RiWindyLine } from './RiWindyLine';
 export { RiWrenchLine } from './RiWrenchLine';
+export { RiYoutubeFill } from './RiYoutubeFill';
+export { RiYoutubeLine } from './RiYoutubeLine';
