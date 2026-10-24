@@ -117,10 +117,13 @@ export function TabPager({
   const reducedMotion = useReducedMotion();
   // The fade-through's visibility of the pager, 1 at rest.
   const fade = useSharedValue(1);
-  const fadeStyle = useAnimatedStyle(() => ({
-    opacity: fade.value,
-    transform: [{ scale: FADE_THROUGH_SCALE + (1 - FADE_THROUGH_SCALE) * fade.value }],
-  }));
+  const fadeStyle = useAnimatedStyle(
+    () => ({
+      opacity: fade.value,
+      transform: [{ scale: FADE_THROUGH_SCALE + (1 - FADE_THROUGH_SCALE) * fade.value }],
+    }),
+    [fade],
+  );
   // Routes allowed to render: the focused one, and preloading neighbours.
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(
     () => new Set([state.routes[state.index]?.key].filter(Boolean) as string[]),
