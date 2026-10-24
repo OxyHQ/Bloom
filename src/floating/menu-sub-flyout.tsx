@@ -40,7 +40,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { View } from 'react-native';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
@@ -99,6 +101,8 @@ type DomNode = {
   removeEventListener: HTMLElement['removeEventListener'];
   contains: HTMLElement['contains'];
   querySelector: HTMLElement['querySelector'];
+  closest: HTMLElement['closest'];
+  style: HTMLElement['style'];
 };
 
 function domNode(node: ComponentRef<typeof View> | null): DomNode | null {
@@ -163,6 +167,102 @@ function leavesForAnotherRow(
   if (ownFlyout?.contains(row as HTMLElement)) return false;
   if (ownTrigger?.contains(row as HTMLElement)) return false;
   return true;
+}
+
+/**
+ * Is the pointer heading for a SIBLING sub-trigger? Then this flyout does not close
+ * on its own: the sibling's flyout takes it over (see {@link morphInto}), and a
+ * close here would race the takeover and fade a second panel past the first.
+ */
+function leavesForSiblingSub(event: Event, ownTrigger: DomNode | null): boolean {
+  const next = (event as PointerEvent).relatedTarget;
+  if (!(next instanceof Element)) return false;
+  const trigger = next.closest('[aria-haspopup="menu"]');
+  return !!trigger && !ownTrigger?.contains(trigger as HTMLElement);
+}
+
+/**
+ * One flyout per menu level. When the pointer moves from one sub-trigger to a
+ * sibling, the open flyout is not closed while another opens beside it: the
+ * browser carries the old panel into the new one with a view transition — it
+ * moves and resizes to the new submenu while its rows cross-fade, uncropped and
+ * unstretched — so the user sees one panel travel rather than two overlap.
+ */
+const FLYOUT_TRANSITION = 'bloom-menu-flyout';
+const MORPHING_CLASS = 'bloom-menu-morphing';
+/** The panel's travel; its rows cross-fade a little faster so they settle as it lands. */
+const MORPH_MS = 200;
+const FADE_MS = 140;
+/** Longest wait for the new panel to be placed before the transition goes on without it. */
+const SETTLE_TIMEOUT_MS = 160;
+const MORPH_CSS = `
+html.${MORPHING_CLASS} { view-transition-name: none; }
+html.${MORPHING_CLASS}::view-transition { pointer-events: none; }
+::view-transition-group(${FLYOUT_TRANSITION}) {
+  animation-duration: ${MORPH_MS}ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+::view-transition-old(${FLYOUT_TRANSITION}),
+::view-transition-new(${FLYOUT_TRANSITION}) {
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+  animation-duration: ${FADE_MS}ms;
+}
+`;
+
+interface OpenFlyout {
+  id: symbol;
+  panel: () => DomNode | null;
+  closeInstantly: () => void;
+}
+
+/** The open flyout of each menu panel, keyed by the panel its trigger sits in. */
+const openFlyouts = new Map<Element, OpenFlyout>();
+
+function parentPanel(trigger: ComponentRef<typeof View> | null): Element | null {
+  return domNode(trigger)?.closest('[role="menu"]') ?? null;
+}
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (update: () => Promise<void>) => { finished: Promise<void> };
+};
+
+function canMorph(): boolean {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return false;
+  if (typeof (document as ViewTransitionDocument).startViewTransition !== 'function') return false;
+  return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Swap `from` for the flyout `open` mounts, through one view transition. The old
+ * panel is snapshotted under the shared name, then closed instantly while the new
+ * one opens instantly; the transition waits for `settled` (the new panel placed
+ * and named) before it snapshots the result.
+ */
+function morphInto(
+  from: DomNode,
+  swap: () => void,
+  settled: Promise<void>,
+  finished: () => void,
+): void {
+  adoptStyleSheet('bloom-menu-morph-css', MORPH_CSS);
+  const root = document.documentElement;
+  from.style.setProperty('view-transition-name', FLYOUT_TRANSITION);
+  root.classList.add(MORPHING_CLASS);
+  const transition = (document as ViewTransitionDocument).startViewTransition!(async () => {
+    from.style.removeProperty('view-transition-name');
+    flushSync(swap);
+    await Promise.race([
+      settled,
+      new Promise<void>((resolve) => setTimeout(resolve, SETTLE_TIMEOUT_MS)),
+    ]);
+  });
+  transition.finished.finally(() => {
+    root.classList.remove(MORPHING_CLASS);
+    finished();
+  });
 }
 
 /** The first focusable descendant, so Right lands ON the panel's first row. */
@@ -309,6 +409,12 @@ interface SubFlyoutContextValue {
   closeNow: () => void;
   /** Close now and put focus back on the trigger row (Left, Escape). */
   closeAndRefocus: () => void;
+  /** Open and close without the panel's own motion: a takeover is animated by the transition. */
+  instant: boolean;
+  /** Set while this flyout is the one a view transition carries the old panel into. */
+  morphing: boolean;
+  /** The new panel is placed and named: the transition may take its snapshot. */
+  settle: () => void;
 }
 
 const SubFlyoutContext = React.createContext<SubFlyoutContextValue | null>(null);
@@ -345,12 +451,44 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     // mid-delay, and would then call `setOpen` on an unmounted tree.
     useEffect(() => cancelTimer, [cancelTimer]);
 
+    const id = useRef(Symbol('bloom-menu-sub')).current;
+    const [instant, setInstant] = useState(false);
+    const [morphing, setMorphing] = useState(false);
+    const settleRef = useRef<(() => void) | null>(null);
+    const settle = useCallback(() => {
+      settleRef.current?.();
+      settleRef.current = null;
+    }, []);
+
     const keepOpen = useCallback(() => {
       cancelTimer();
-      // `pointermove` is intentionally continuous. Once open, cancel the close
-      // timer without re-notifying a controlled consumer on every coordinate.
-      if (!isOpen) setOpen(true);
-    }, [cancelTimer, isOpen, setOpen]);
+      if (isOpen) return;
+      const parent = parentPanel(triggerRef.current);
+      const sibling = parent ? openFlyouts.get(parent) : undefined;
+      if (!sibling || sibling.id === id) {
+        setInstant(false);
+        setOpen(true);
+        return;
+      }
+      const swap = () => {
+        sibling.closeInstantly();
+        setInstant(true);
+        setOpen(true);
+      };
+      const from = sibling.panel();
+      if (!from || !canMorph()) {
+        flushSync(swap);
+        return;
+      }
+      const settled = new Promise<void>((resolve) => {
+        settleRef.current = resolve;
+      });
+      setMorphing(true);
+      morphInto(from, swap, settled, () => {
+        setMorphing(false);
+        setInstant(false);
+      });
+    }, [cancelTimer, isOpen, setOpen, id]);
 
     const closeSoon = useCallback(() => {
       cancelTimer();
@@ -372,6 +510,24 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       trigger?.querySelector<HTMLElement>('[role="menuitem"]')?.focus?.();
     }, [cancelTimer, setOpen]);
 
+    useEffect(() => {
+      if (!isOpen) return undefined;
+      const parent = parentPanel(triggerRef.current);
+      if (!parent) return undefined;
+      openFlyouts.set(parent, {
+        id,
+        panel: () => domNode(contentRef.current),
+        closeInstantly: () => {
+          cancelTimer();
+          setInstant(true);
+          setOpen(false);
+        },
+      });
+      return () => {
+        if (openFlyouts.get(parent)?.id === id) openFlyouts.delete(parent);
+      };
+    }, [isOpen, id, cancelTimer, setOpen]);
+
     const context = useMemo<SubFlyoutContextValue>(
       () => ({
         open: isOpen,
@@ -382,8 +538,11 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         closeSoon,
         closeNow,
         closeAndRefocus,
+        instant,
+        morphing,
+        settle,
       }),
-      [isOpen, setOpen, keepOpen, closeSoon, closeNow, closeAndRefocus],
+      [isOpen, setOpen, keepOpen, closeSoon, closeNow, closeAndRefocus, instant, morphing, settle],
     );
 
     return <SubFlyoutContext.Provider value={context}>{children}</SubFlyoutContext.Provider>;
@@ -428,8 +587,12 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       };
       const onLeave = (event: Event) => {
         if (!isHoverPointer(event)) return;
-        // Straight onto another row of the parent panel — a sibling trigger, or
-        // any plain item — is not the diagonal the delay exists for.
+        // A sibling sub-trigger takes this flyout over itself; anything else on
+        // the parent panel is not the diagonal the delay exists for.
+        if (leavesForSiblingSub(event, element)) {
+          sub.closeSoon();
+          return;
+        }
         if (leavesForAnotherRow(event, domNode(sub.contentRef.current), element)) {
           sub.closeNow();
           return;
@@ -580,6 +743,25 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     const surface = useMenuSurface();
     useMenuPanelKeys(hostElement(node), { open: sub.open, onTab: surface.close });
 
+    // While a view transition carries the previous flyout into this one, the
+    // panel wears the shared name; once it is placed (two frames: placement,
+    // then the instant motion) the transition may snapshot it.
+    const { morphing, settle } = sub;
+    useEffect(() => {
+      const element = domNode(node);
+      if (!element) return undefined;
+      if (!morphing) {
+        element.style.removeProperty('view-transition-name');
+        return undefined;
+      }
+      if (!sub.open || !anchor) return undefined;
+      element.style.setProperty('view-transition-name', FLYOUT_TRANSITION);
+      let frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(settle);
+      });
+      return () => cancelAnimationFrame(frame);
+    }, [node, morphing, sub.open, anchor, settle]);
+
     // Move focus onto the panel once it has been placed, so Right genuinely
     // ENTERS the submenu rather than only opening it.
     useEffect(() => {
@@ -603,6 +785,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         alignOffset={alignOffset}
         dismissible={false}
         modal={false}
+        instant={sub.instant}
         onDismiss={sub.closeAndRefocus}
         surface="menu"
         minWidth={minWidth}
