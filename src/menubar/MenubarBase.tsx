@@ -15,10 +15,13 @@
  * that is not Metro and no gate would report it.
  */
 import React, { type ComponentRef, useMemo, useRef } from 'react';
-import type { View as RNView } from 'react-native';
+import { StyleSheet, type View as RNView } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { FIELD_REST_BORDER_WIDTH } from '../styles/field-border';
 
 import {
   MENUBAR_CLASS,
+  MENUBAR_RADIUS,
   MENUBAR_TRIGGER_CLASS,
   MENUBAR_TRIGGER_OPEN_CLASS,
   MENUBAR_TRIGGER_TEXT_CLASS,
@@ -56,7 +59,6 @@ export function Menubar({
   const context = useMemo(() => ({ value: openValue, setValue }), [openValue, setValue]);
   const palette = useMenuPalette();
   const barPaint = {
-    backgroundColor: palette.trigger.background,
     borderColor: palette.trigger.border,
     boxShadow: palette.trigger.shadow,
   };
@@ -77,6 +79,13 @@ export function Menubar({
         className={cx(MENUBAR_CLASS, className)}
         style={[barPaint, style]}
       >
+        {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+          <SurfacePaint
+            fill={palette.trigger.background}
+            radius={MENUBAR_RADIUS - FIELD_REST_BORDER_WIDTH}
+            composite
+          />
+        ) : null}
         {children}
       </StyledView>
     </MenubarProvider>

@@ -2,6 +2,8 @@ import { memo, useMemo } from 'react';
 
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import Svg, { Path } from 'react-native-svg';
+import { StyleSheet } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -59,6 +61,9 @@ ${SELECTOR} path { transition: none; }
 }`,
 });
 
+/** Above the disc's material, which is positioned. */
+const GLYPH_STYLE = { position: 'relative' } as const;
+
 /** Native retains its established invisible padding around the dismiss disc. */
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
@@ -88,12 +93,24 @@ function CloseButtonComponent({
     borderRadius: g.box / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: touchTarget ? 'transparent' : paint.background,
+    backgroundColor: 'transparent',
     '--bloom-button-close-ring': paint.ring,
   };
+  // The disc paints through the shared surface material, unless a caller's own
+  // background owns it.
+  const disc =
+    StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+      <SurfacePaint fill={paint.background} radius={g.box / 2} composite />
+    ) : null;
 
   const glyph = (
-    <Svg width={g.glyph} height={g.glyph} viewBox={`0 0 ${g.glyph} ${g.glyph}`} fill="none">
+    <Svg
+      width={g.glyph}
+      height={g.glyph}
+      viewBox={`0 0 ${g.glyph} ${g.glyph}`}
+      fill="none"
+      style={GLYPH_STYLE}
+    >
       <Path
         d={`M${g.inset} ${g.inset}L${g.glyph - g.inset} ${g.glyph - g.inset}`}
         stroke={color}
@@ -145,13 +162,16 @@ function CloseButtonComponent({
             borderRadius: g.box / 2,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: paint.background,
           }}
         >
+          {disc}
           {glyph}
         </StyledView>
       ) : (
-        glyph
+        <>
+          {disc}
+          {glyph}
+        </>
       )}
     </StyledPressable>
   );

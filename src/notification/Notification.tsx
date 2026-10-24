@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { Animated, Easing, View, type ViewStyle } from 'react-native';
+import { Animated, Easing, StyleSheet, View, type ViewStyle } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
 
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
@@ -124,7 +125,7 @@ export function notificationCardStyle(paint: NotificationPaint): WebCssStyle {
     borderRadius: G.radius,
     borderWidth: 1,
     borderColor: paint.border,
-    backgroundColor: paint.surface,
+    backgroundColor: 'transparent',
     boxShadow: paint.shadow,
   };
 }
@@ -215,6 +216,9 @@ function NotificationComponent({
         style,
       ]}
     >
+      {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+        <SurfacePaint fill={paint.surface} radius={G.radius - 1} composite />
+      ) : null}
       {avatar ? (
         <NotificationAvatarVisual avatar={avatar} paint={paint} />
       ) : (

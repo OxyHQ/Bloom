@@ -14,6 +14,7 @@ import {
   Pressable,
   type PressableProps,
   type StyleProp,
+  StyleSheet,
   type TextStyle,
   View,
   type ViewStyle,
@@ -35,6 +36,7 @@ import type { TypeScaleFamily } from '../typography';
 import type { Theme } from '../theme/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   NOT_DISABLED,
   interactiveWebCss,
@@ -431,12 +433,15 @@ export function SegmentedControl<T extends string>({
             height,
             padding,
             borderRadius: borderRadius.full,
-            backgroundColor: solid ? palette.track : 'transparent',
+            backgroundColor: 'transparent',
           },
           style,
         ]}
         role={type === 'tabs' ? 'tablist' : 'radiogroup'}
       >
+        {solid && StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+          <SurfacePaint fill={palette.track} radius={borderRadius.full} composite />
+        ) : null}
         {solid && selectedPosition !== null && (
           <SegmentedThumb x={thumbX} width={thumbWidth} palette={palette} />
         )}
@@ -679,7 +684,6 @@ function SegmentedThumb({
     bottom: TRACK_PADDING,
     left: 0,
     borderRadius: borderRadius.full,
-    backgroundColor: palette.thumb,
     boxShadow: palette.thumbShadow,
   };
 
@@ -690,5 +694,9 @@ function SegmentedThumb({
     }),
     [x, width],
   );
-  return <Animated.View pointerEvents="none" style={[base, animatedStyle]} />;
+  return (
+    <Animated.View pointerEvents="none" style={[base, animatedStyle]}>
+      <SurfacePaint fill={palette.thumb} radius={borderRadius.full} composite />
+    </Animated.View>
+  );
 }

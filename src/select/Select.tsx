@@ -30,6 +30,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 
 import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
 import { borderRadius } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   defaultExtractLabel,
   defaultItemValueExtractor,
@@ -39,6 +40,7 @@ import {
   SelectValueRow,
   useSelectItemContext,
   VALUE_TYPE,
+  selectTriggerPaintRadius,
 } from './shared';
 import type {
   SelectContentProps,
@@ -176,13 +178,16 @@ export function SelectTrigger({
         {
           ...(touch ? { minHeight: 44 } : null),
           borderRadius: borderRadius.full,
-          backgroundColor: isDisabled ? t.disabledBackground : t.background,
           borderColor: t.border,
           boxShadow: isDisabled ? undefined : t.shadow,
         },
         fieldStyle,
       ]}
     >
+      <SurfacePaint
+        fill={isDisabled ? t.disabledBackground : t.background}
+        radius={selectTriggerPaintRadius(fieldStyle)}
+      />
       {children}
     </StyledView>
   );

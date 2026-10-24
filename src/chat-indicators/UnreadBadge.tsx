@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
 
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
@@ -102,7 +103,6 @@ function UnreadBadgeComponent({
           borderRadius: height / 2,
           paddingLeft: pad,
           paddingRight: pad,
-          backgroundColor: fill,
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
@@ -111,6 +111,9 @@ function UnreadBadgeComponent({
       ]}
       testID={testID}
     >
+      {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+        <SurfacePaint fill={fill} radius={height / 2} composite />
+      ) : null}
       <Text
         variant={SIZE_TYPE[size]}
         importantForAccessibility="no"

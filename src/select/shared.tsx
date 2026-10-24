@@ -17,6 +17,9 @@ import { useMenuDensity } from '../floating/use-menu-density';
 import type React from 'react';
 import { createContext, useContext } from 'react';
 import Svg, { Path } from 'react-native-svg';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { FIELD_REST_BORDER_WIDTH } from '../styles/field-border';
+import { borderRadius } from '../styles/tokens';
 
 import {
   ROW_ICON_SIZE,
@@ -41,6 +44,22 @@ import type {
   SelectScrollButtonProps,
   SelectSize,
 } from './types';
+
+// ---------------------------------------------------------------------------
+// Trigger paint
+// ---------------------------------------------------------------------------
+
+/**
+ * The corner of the trigger's surface paint. The paint sits inside the field's
+ * 1px border, so its corner is the field's own less that border; a capsule or a
+ * non-numeric radius passes through.
+ */
+export function selectTriggerPaintRadius(
+  fieldStyle: StyleProp<ViewStyle>,
+): NonNullable<ViewStyle['borderRadius']> {
+  const radius = StyleSheet.flatten(fieldStyle)?.borderRadius ?? borderRadius.full;
+  return typeof radius === 'number' ? Math.max(0, radius - FIELD_REST_BORDER_WIDTH) : radius;
+}
 
 // ---------------------------------------------------------------------------
 // Trigger state

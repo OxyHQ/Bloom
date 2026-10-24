@@ -1,4 +1,5 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { Animated, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -114,7 +115,9 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
       testID={testID}
       style={[{ width: size, height: size, borderRadius: radius, flexShrink: 0 }, style]}
     >
-      {/* Default surface. */}
+      {/* Default surface, on the shared surface material. The selected gradient
+          keeps its own paint and inset highlight, and the dot is too small for
+          the material's edge light. */}
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
@@ -122,12 +125,13 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
             borderRadius: radius,
             borderWidth: paint.borderWidth,
             borderColor: paint.border,
-            backgroundColor: paint.surface,
             boxShadow: paint.shadow,
             opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
           },
         ]}
-      />
+      >
+        <SurfacePaint fill={paint.surface} radius={radius - paint.borderWidth} composite />
+      </Animated.View>
       {/* Selected gradient surface. */}
       <Animated.View
         style={[

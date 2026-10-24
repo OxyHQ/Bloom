@@ -1,6 +1,7 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { useBloomAppearance } from '../appearance';
 import { FieldBox } from './FieldBox';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   type ComponentRef,
   createContext,
@@ -46,6 +47,7 @@ import {
   TEXT_FIELD_LEADING_GAP,
   TEXT_FIELD_RADIUS,
   TEXT_FIELD_REST_BORDER_WIDTH,
+  TEXT_FIELD_FILL_TRANSITION,
   TEXT_FIELD_RING_WIDTH,
   TEXT_FIELD_STACK_GAP,
   TEXT_FIELD_TEXT,
@@ -354,6 +356,13 @@ function Chrome({ invalid }: { invalid: boolean }) {
   });
   return (
     <>
+      {/* The fill is the shared surface material, under the outline and ring. */}
+      <SurfacePaint
+        fill={paint.backgroundColor}
+        radius={ctx.radius}
+        composite
+        transition={TEXT_FIELD_FILL_TRANSITION}
+      />
       {/* The resting outline, under the ring: hover and focus cover it, an invalid
           field's tint stands alone. Flush 1px, like the select trigger's border. */}
       {invalid ? null : (
@@ -376,7 +385,7 @@ function Chrome({ invalid }: { invalid: boolean }) {
         className={ctx.chromeClassName}
         stateStyle={
           ctx.disabled || invalid
-            ? paint
+            ? { backgroundColor: 'transparent', borderColor: paint.borderColor }
             : ctx.focused || ctx.addonFocused
               ? { borderColor: paint.borderColor }
               : undefined
@@ -388,7 +397,8 @@ function Chrome({ invalid }: { invalid: boolean }) {
           {
             borderRadius: ctx.radius,
             borderWidth: TEXT_FIELD_RING_WIDTH,
-            ...paint,
+            backgroundColor: 'transparent',
+            borderColor: paint.borderColor,
           },
           TEXT_FIELD_WEB_TRANSITION,
         ]}

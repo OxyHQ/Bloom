@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { Theme } from '../theme/types';
@@ -40,10 +41,17 @@ function ShareTargetButtonComponent({ target, circleSize, colors }: ShareTargetB
               borderRadius: circleSize / 2,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: pressed || hovered ? colors.border : colors.backgroundSecondary,
             }}
           >
-            <Icon width={glyph} height={glyph} fill={colors.text} />
+            <SurfacePaint
+              fill={pressed || hovered ? colors.border : colors.backgroundSecondary}
+              radius={circleSize / 2}
+              composite
+            />
+            {/* A view, so the glyph stacks over the disc's positioned material. */}
+            <View>
+              <Icon width={glyph} height={glyph} fill={colors.text} />
+            </View>
           </View>
           <Text
             variant="caption-1-regular"

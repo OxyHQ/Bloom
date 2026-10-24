@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Animated,
   Easing,
@@ -236,7 +237,6 @@ const SUB = '[data-bloom-file-upload-sub]';
 const BLOOM_FILE_UPLOAD_CSS = `
 ${ROOT} {
   outline: none;
-  transition: background-color 300ms ease-out;
 }
 ${ROOT}[data-bloom-file-upload="idle"] {
   cursor: pointer;
@@ -670,7 +670,6 @@ const FileUploadComponent = function FileUpload({
     width: '100%',
     flexShrink: 0,
     borderRadius: BOX_RADIUS,
-    ...(IS_WEB ? { backgroundColor: busy ? paint.busyBackground : paint.idleBackground } : null),
     opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-file-upload-ring': paint.ring,
   };
@@ -729,8 +728,17 @@ const FileUploadComponent = function FileUpload({
         />
       ) : null}
 
-      {/* Native: the fill cross-fade (web transitions the root's own background). */}
-      {IS_WEB ? null : (
+      {/* The frame is the shared surface material. Web transitions its fill;
+          native cross-fades the fill underneath and paints only the sheen and
+          rim, since a native paint's fill cannot animate. */}
+      {IS_WEB ? (
+        <SurfacePaint
+          fill={busy ? paint.busyBackground : paint.idleBackground}
+          radius={BOX_RADIUS}
+          composite
+          transition="background-color 300ms ease-out"
+        />
+      ) : (
         <Animated.View
           pointerEvents="none"
           style={[
@@ -745,6 +753,7 @@ const FileUploadComponent = function FileUpload({
           ]}
         />
       )}
+      {IS_WEB ? null : <SurfacePaint radius={BOX_RADIUS} />}
 
       {/* Dashed idle border. */}
       <Animated.View

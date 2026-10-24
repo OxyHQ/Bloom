@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
 
 import { useTheme } from '../theme/use-theme';
 import { Button, CloseButton } from '../button';
@@ -89,11 +90,13 @@ function AnnouncementComponent({
     borderRadius: GEOMETRY.radius,
     borderWidth: 1,
     borderColor: paint.border,
-    backgroundColor: paint.surface,
   };
 
   return (
     <Animated.View testID={testID} style={[cardStyle, motion.style, style]}>
+      {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+        <SurfacePaint fill={paint.surface} radius={GEOMETRY.radius - 1} composite />
+      ) : null}
       <View style={{ width: '100%', alignItems: 'flex-start', gap: GEOMETRY.contentGap }}>
         <Icon width={GEOMETRY.icon} height={GEOMETRY.icon} fill={paint.icon} />
         {dismissible ? (

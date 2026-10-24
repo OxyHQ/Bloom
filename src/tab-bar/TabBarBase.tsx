@@ -5,6 +5,8 @@ import { resolveTabBarTheme } from './shared';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { TabBarSurface } from './surface';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { borderRadius } from '../styles/tokens';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
@@ -656,13 +658,14 @@ function TabBarBody({
               paintFill={recipe.paint.material.paintFill}
               style={shapeStyle}
             />
-            <Animated.View
-              style={[
-                styles.highlight,
-                { backgroundColor: recipe.paint.theme.highlight },
-                highlightStyle,
-              ]}
-            />
+            <Animated.View style={[styles.highlight, highlightStyle]}>
+              <SurfacePaint
+                fill={recipe.paint.theme.highlight}
+                radius={borderRadius.full}
+                composite
+                backing={publishedFill}
+              />
+            </Animated.View>
             <View accessibilityRole="tablist" style={styles.itemRow}>
               <SurfaceLevelProvider
                 level={layer.level}

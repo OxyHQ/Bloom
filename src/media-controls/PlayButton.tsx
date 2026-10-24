@@ -1,9 +1,10 @@
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -14,7 +15,6 @@ import { SpinnerRing } from './SpinnerRing';
 import type { PlayButtonProps, PlayButtonSize } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
-import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
@@ -119,11 +119,21 @@ function PlayButtonComponent({
     borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: fill,
     opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-media-ring': paint.ring,
-    ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: '150ms' } : null),
   };
+
+  // The disc paints through the shared surface material, unless a caller's own
+  // background owns it; `plain` has no disc.
+  const disc =
+    fill === undefined || StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
+      <SurfacePaint
+        fill={fill}
+        radius={box / 2}
+        composite
+        transition="background-color 150ms ease"
+      />
+    );
 
   const glyphBox = (
     <View pointerEvents="none" style={{ width: glyph, height: glyph }}>
@@ -153,6 +163,7 @@ function PlayButtonComponent({
         style={[rootStyle, style]}
         testID={testID}
       >
+        {disc}
         {glyphBox}
       </View>
     );
@@ -175,6 +186,7 @@ function PlayButtonComponent({
       style={[rootStyle, style]}
       testID={testID}
     >
+      {disc}
       {glyphBox}
     </Pressable>
   );
