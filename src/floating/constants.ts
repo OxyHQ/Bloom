@@ -303,6 +303,9 @@ export const ROW_CHEVRON_CLASS = 'shrink-0 ms-auto';
 /*  The menu bar itself                                                       */
 /* -------------------------------------------------------------------------- */
 
+/** The bar's corner, as its `rounded-[10px]` class spells it. */
+export const MENUBAR_RADIUS = 10;
+
 /**
  * The bar: `flex h-10 items-center gap-1 p-1 border`, `rounded-2lg`
  * (10px, concentric with the 6px triggers inside its 4px padding). Its colours —

@@ -142,3 +142,16 @@ export function resolveSurfaceFill(fill: string, backdrop: string): string {
   const channel = (front: number, back: number) => Math.round(front * tint.a + back * (1 - tint.a));
   return `rgb(${channel(tint.r, base.r)}, ${channel(tint.g, base.g)}, ${channel(tint.b, base.b)})`;
 }
+
+/** Whether a fill paints nothing, so its host has no surface to put material on. */
+export function isClearFill(fill: string | undefined | null): boolean {
+  if (fill == null) return true;
+  if (fill.trim().toLowerCase() === 'transparent') return true;
+  return parseRgba(fill)?.a === 0;
+}
+
+/** A translucent fill over its backing, as one opaque colour; a clear fill stays clear. */
+export function compositeOnto(fill: string, backing: string): string {
+  const alpha = parseRgba(fill)?.a;
+  return alpha === undefined || alpha === 0 ? fill : resolveSurfaceFill(fill, backing);
+}

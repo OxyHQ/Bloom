@@ -1,11 +1,13 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
 import React, { memo, useMemo } from 'react';
-import { View, type ViewStyle, type TextStyle } from 'react-native';
+import { StyleSheet, View, type ViewStyle, type TextStyle } from 'react-native';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { isClearFill } from '../surface/shared';
 import { borderRadius } from '../styles/tokens';
 import { Z_INDEX } from '../styles/z-index';
 import { BADGE_GEOMETRY, resolveBadgePaint } from './shared';
@@ -131,7 +133,6 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       // differ. Overrides must use these same longhands.
       paddingLeft: Icon ? Math.max(0, geometry.paddingHorizontal - 2) : geometry.paddingHorizontal,
       paddingRight: geometry.paddingHorizontal,
-      backgroundColor: paint.background,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -184,6 +185,20 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       </View>
     ) : null;
 
+  // A pill's fill paints through the shared surface material; a dot is too small
+  // for the edge light to read as anything but noise, so it stays a flat fill. A
+  // caller's own background owns the pill's paint instead.
+  const material =
+    dot ||
+    isClearFill(paint.background) ||
+    StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
+      <SurfacePaint
+        fill={paint.background}
+        radius={variant === 'outlined' ? borderRadius.full - 1 : borderRadius.full}
+        composite
+      />
+    );
+
   const label =
     displayContent != null ? (
       <Text variant={geometry.type} numberOfLines={1} style={[badgeTextStyle, textStyle]}>
@@ -197,6 +212,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
 
     return (
       <View style={[badgeStyle, style]} testID={testID}>
+        {material}
         {core}
         {iconNode}
         {label}
@@ -220,6 +236,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
             style,
           ]}
         >
+          {material}
           {iconNode}
           {label}
         </View>

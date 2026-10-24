@@ -4,6 +4,7 @@ import React, { forwardRef, memo, useMemo, type ComponentRef } from 'react';
 import {
   View,
   Pressable,
+  StyleSheet,
   type MouseEvent as NativeMouseEvent,
   type TextStyle,
   type ViewStyle,
@@ -12,6 +13,8 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { borderRadius } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { isClearFill } from '../surface/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import {
@@ -194,7 +197,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
             height: geometry.height,
             borderRadius: borderRadius.full,
             paddingHorizontal: geometry.paddingHorizontal,
-            backgroundColor: paint.background,
+            backgroundColor: 'transparent',
             borderWidth: paint.borderWidth,
             borderColor: paint.border,
           }),
@@ -262,6 +265,20 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       <RiCloseLine width={CLOSE_ICON} height={CLOSE_ICON} fill={paint.foreground} />
     </Pressable>
   ) : null;
+
+  // The fill paints through the shared surface material. A caller's own class or
+  // background owns the pill's paint instead, so it acquires no surface.
+  const callerFill = StyleSheet.flatten(style)?.backgroundColor;
+  const fill = pressed && !disabled ? paint.pressedBackground : paint.background;
+  const material =
+    className || callerFill !== undefined || isClearFill(fill) ? null : (
+      <SurfacePaint
+        fill={fill}
+        radius={Math.max(0, borderRadius.full - paint.borderWidth)}
+        composite
+        transition="background-color 120ms ease"
+      />
+    );
 
   const content = (
     <>
@@ -373,8 +390,6 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
                 hovered && !disabled && paint.hoveredBorder
                   ? { borderColor: paint.hoveredBorder }
                   : null,
-                // Before the caller's `style`, so `style` still wins the array.
-                pressed && !disabled && { backgroundColor: paint.pressedBackground },
                 style,
               ]
         }
@@ -402,6 +417,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
         aria-disabled={disabled || undefined}
         testID={testID}
       >
+        {onClose ? null : material}
         {content}
       </StyledPressable>
     );
@@ -416,10 +432,10 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
           containerStyle,
           disabled && { opacity: 0.5 },
           hovered && !disabled && paint.hoveredBorder ? { borderColor: paint.hoveredBorder } : null,
-          pressed && !disabled && { backgroundColor: paint.pressedBackground },
           style,
         ]}
       >
+        {material}
         {button}
         {closeButton}
       </StyledView>
@@ -434,6 +450,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
+      {material}
       {content}
       {closeButton}
     </StyledView>

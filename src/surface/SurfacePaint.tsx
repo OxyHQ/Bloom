@@ -4,16 +4,23 @@ import type { SurfaceShape, SurfaceStyle } from '../shapes/corner-types';
 import React, { memo, useEffect } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
+import { webDataSet } from '../styles/web-data';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { surfaceMaterialCss } from './web-material';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
-import { resolveSurfaceTint, resolveSurfaceOptics, surfaceOpticsVars } from './shared';
+import {
+  compositeOnto,
+  resolveSurfaceTint,
+  resolveSurfaceOptics,
+  surfaceOpticsVars,
+} from './shared';
+import { useSurfaceFill } from '../styles/surface-levels';
 
 const WEB_PAINT_CSS = `
 .bloom-surface-paint { isolation: isolate; overflow: clip; overflow-clip-margin: 1px; }
-${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)')}
+${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)', 'var(--bloom-surface-paint-transition, none)')}
 `;
 
 /**
@@ -33,6 +40,10 @@ export const SurfacePaint = memo(function SurfacePaint({
   direction = 'ltr',
   sheen = true,
   rim = true,
+  outset = 0,
+  composite = false,
+  backing,
+  transition,
   testID,
 }: {
   sheen?: boolean;
@@ -42,6 +53,24 @@ export const SurfacePaint = memo(function SurfacePaint({
    */
   rim?: boolean;
   testID?: string;
+  /**
+   * The host's own border width. An absolute child sits inside the border, so a
+   * host whose border is a state ring (transparent at rest) passes it here and
+   * the paint covers the whole border box, as a CSS background would.
+   */
+  outset?: number;
+  /**
+   * The fill is a theme token designed to read over the surface it sits on
+   * (a translucent tint such as an error or accent wash). On the web, composite
+   * it onto that surface first, so the material shows the colour the token reads
+   * as instead of the filtered backdrop through its transparency. Native has no
+   * backdrop filter, so its translucent fill already reads as designed.
+   */
+  composite?: boolean;
+  /** What `composite` composites onto when it is not the surface in context. */
+  backing?: string;
+  /** Web only: how the fill changes between states, e.g. `background-color 200ms ease`. */
+  transition?: string;
   /** Omit for sheen/rim only on a host that already owns its fill. */
   fill?: string;
   /** Final paired tint supplied by the material owner; never used for colour math. */
@@ -54,14 +83,20 @@ export const SurfacePaint = memo(function SurfacePaint({
   geometryStyle?: SurfaceStyle;
 }) {
   const geometry = {
+    ...(outset ? { top: -outset, right: -outset, bottom: -outset, left: -outset } : null),
     ...(radius === undefined ? {} : { borderRadius: radius }),
     ...surfaceStyle(shape ?? { curve: 'round' }, direction),
     ...geometryStyle,
   };
   const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
   const optics = opticsRecipe.paint;
-  const resolvedFill = resolveSurfaceTint(fill ?? 'transparent');
   const isWeb = Platform.OS === 'web';
+  const contextBacking = useSurfaceFill();
+  const resolvedFill = resolveSurfaceTint(
+    composite && isWeb && fill !== undefined
+      ? compositeOnto(fill, backing ?? contextBacking)
+      : (fill ?? 'transparent'),
+  );
   useEffect(() => {
     if (isWeb) adoptStyleSheet('bloom-surface-paint-web-css', WEB_PAINT_CSS);
   }, [isWeb]);
@@ -75,6 +110,7 @@ export const SurfacePaint = memo(function SurfacePaint({
       ...geometry,
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': paintFill ?? resolvedFill,
+      ...(transition ? { '--bloom-surface-paint-transition': transition } : null),
       ...surfaceOpticsVars(optics, radius, rim),
     };
     return (
@@ -83,6 +119,8 @@ export const SurfacePaint = memo(function SurfacePaint({
         <ServerStyleSheet id="bloom-surface-paint-web-css" css={WEB_PAINT_CSS} />
         <StyledView
           testID={testID}
+          // The semantic fill the material tints with, before its translucency.
+          {...(fill === undefined ? null : webDataSet({ bloomSurfaceFill: fill }))}
           className="bloom-surface-paint"
           style={[paintStyle, pointerEventsStyle('none')]}
         />

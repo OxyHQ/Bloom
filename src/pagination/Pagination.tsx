@@ -4,6 +4,7 @@ import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { borderRadius } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -142,7 +143,6 @@ const PageCell = memo(function PageCell({
         justifyContent: 'center',
         borderWidth: 1,
         borderColor: palette.currentBorder,
-        backgroundColor: palette.currentBackground,
         boxShadow: palette.shadow,
         '--bloom-pagination-ring': palette.ring,
       }
@@ -176,6 +176,9 @@ const PageCell = memo(function PageCell({
         onHoverOut={onHoverOut}
         style={style}
       >
+        {current ? (
+          <SurfacePaint fill={palette.currentBackground} radius={CELL / 2 - 1} composite />
+        ) : null}
         <Text
           variant="body-medium"
           style={{ color: current || hovered ? palette.primary : palette.secondary }}

@@ -14,6 +14,7 @@ import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { Text } from '../typography';
 import { borderRadius, DISABLED_OPACITY, animation } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { focusRingShadow } from '../styles/interactive-web-css';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -431,7 +432,9 @@ function SliderBase({
           ...(IS_WEB ? ({ touchAction: 'none' } as WebCssStyle) : null),
         }}
       >
-        {/* Rail. */}
+        {/* Rail. Flat, not the surface material: at 4-8px tall the material's
+            edge lines and glow cover the whole rail and it reads as a hollow
+            tube rather than a track. */}
         <View
           pointerEvents="none"
           style={{
@@ -523,7 +526,6 @@ function SliderBase({
               : hoveredIndex === index
                 ? paint.thumbBorderHover
                 : paint.thumbBorder,
-            backgroundColor: paint.thumb,
             boxShadow: shadow,
             alignItems: 'center',
             justifyContent: 'center',
@@ -564,6 +566,12 @@ function SliderBase({
                 : {})}
               style={thumbStyle}
             >
+              {/* The thumb is a raised knob on the shared surface material. */}
+              <SurfacePaint
+                fill={paint.thumb}
+                radius={thumbSize / 2 - thumbBorderWidth}
+                composite
+              />
               {showTooltip && (
                 <View
                   pointerEvents="none"

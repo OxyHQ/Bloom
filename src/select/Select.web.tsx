@@ -40,6 +40,8 @@ import { StyledPressable, StyledText, StyledView } from '../styles/styled-primit
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { resolveSurfaceTint } from '../surface/shared';
 import type { WebCssStyle } from '../styles/web-view-style';
 import {
   defaultExtractLabel,
@@ -50,6 +52,7 @@ import {
   SelectValueRow,
   useSelectItemContext,
   VALUE_TYPE,
+  selectTriggerPaintRadius,
 } from './shared';
 import type {
   SelectContentProps,
@@ -90,13 +93,13 @@ const TRIGGER_STYLE_ID = 'bloom-select-trigger-web-css';
 const FIELD = '[data-bloom-select-field]';
 const TRIGGER_CSS = `
 ${FIELD} {
-  background-color: var(--bloom-select-bg);
+  --bloom-select-paint: var(--bloom-select-bg);
   border-color: var(--bloom-select-border);
   box-shadow: var(--bloom-select-shadow);
-  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 *:hover > ${FIELD}:not([data-disabled]) {
-  background-color: var(--bloom-select-bg-hover);
+  --bloom-select-paint: var(--bloom-select-bg-hover);
   border-color: var(--bloom-select-border-hover);
 }
 *:focus-visible > ${FIELD} {
@@ -282,8 +285,8 @@ export function SelectTrigger({
   const fieldStyle: WebCssStyle = {
     ...(touch ? { minHeight: 44 } : null),
     borderRadius: borderRadius.full,
-    '--bloom-select-bg': isDisabled ? t.disabledBackground : t.background,
-    '--bloom-select-bg-hover': t.hoverBackground,
+    '--bloom-select-bg': resolveSurfaceTint(isDisabled ? t.disabledBackground : t.background),
+    '--bloom-select-bg-hover': resolveSurfaceTint(t.hoverBackground),
     '--bloom-select-border': t.border,
     '--bloom-select-border-hover': t.hoverBorder,
     '--bloom-select-shadow': isDisabled ? '0 0 #0000' : t.shadow,
@@ -304,6 +307,11 @@ export function SelectTrigger({
       className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[ctx.size], className)}
       style={[fieldStyle, fieldStyleOverride]}
     >
+      <SurfacePaint
+        paintFill="var(--bloom-select-paint)"
+        radius={selectTriggerPaintRadius(fieldStyleOverride)}
+        transition="background-color 200ms ease"
+      />
       {children}
     </StyledView>
   );
