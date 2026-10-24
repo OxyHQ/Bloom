@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import { useContext, useMemo, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { ScreenHostContext } from '../../screen/context';
 import { useSurfaceFill } from '../../styles/surface-levels';
 import { useIsFocused } from './PanelRouterAdapter';
 
@@ -16,17 +17,24 @@ import { useIsFocused } from './PanelRouterAdapter';
  * It also takes every scene but the top one out of the accessibility tree. A
  * push leaves the scenes under it mounted, and TalkBack otherwise walks straight
  * into the feed behind a post.
+ *
+ * And it makes the screens of a covered scene inactive, as the pager does for
+ * its pages: their videos stop, their scroll stops driving the chrome, and their
+ * reselect, status bar and floating action yield to the screen on top — without
+ * every route passing `active={isFocused}` to its `Screen`.
  */
 export function StackScene({ children }: { children: ReactNode }) {
   const fill = useSurfaceFill();
   const focused = useIsFocused();
+  const host = useContext(ScreenHostContext);
+  const sceneHost = useMemo(() => ({ ...host, active: host.active && focused }), [host, focused]);
   return (
     <View
       style={[styles.scene, { backgroundColor: fill }]}
       importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
       accessibilityElementsHidden={!focused}
     >
-      {children}
+      <ScreenHostContext.Provider value={sceneHost}>{children}</ScreenHostContext.Provider>
     </View>
   );
 }

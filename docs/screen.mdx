@@ -366,6 +366,9 @@ reloads is the screen's to say, once, and only while it is active:
 ```tsx
 import { useScreenReselectHandler, useScreenReselect } from '@oxy.so/bloom/screen';
 
+<Screen reselect={{ refresh: () => query.refetch() }}>…</Screen>
+
+// Or from content inside the screen:
 useScreenReselectHandler({ refresh: () => query.refetch() });
 
 // A screen that drives its own scroller (a reel, whose top is its first slide):
@@ -375,7 +378,8 @@ useScreenReselectHandler({ isAtTop: () => index === 0, scrollToTop, refresh });
 const reselect = useScreenReselect();
 ```
 
-`AppShell` mounts one reselect scope for its routes, and a `TabPagerProvider`
+The latest live registration answers, so when a screen pushed on top leaves,
+the one beneath answers again. `AppShell` mounts one reselect scope for its routes, and a `TabPagerProvider`
 above it reselects through it when its destination in front is pressed again.
 Every panel with navigation of its own (a deck column) is a scope of its own.
 `useFrontScroller()` returns the scroller in front, to move it elsewhere (a

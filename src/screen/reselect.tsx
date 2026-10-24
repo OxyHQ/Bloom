@@ -38,21 +38,24 @@ interface ReselectRegistry {
 }
 
 /**
- * One slot, last registration wins, and a cleanup clears only the slot it
- * filled: a screen that lost focus must not take the next screen's slot with it
- * when it unregisters late.
+ * The latest live registration wins, and a cleanup removes only its own: when
+ * the screen pushed on top leaves, the one beneath answers again without having
+ * to register anew (it never stopped being active underneath).
  */
 function useSlot<T>() {
-  const slot = useRef<{ id: number; read: () => T } | null>(null);
+  const live = useRef(new Map<number, () => T>());
   const counter = useRef(0);
   const register = useCallback((read: () => T) => {
     const id = ++counter.current;
-    slot.current = { id, read };
+    live.current.set(id, read);
     return () => {
-      if (slot.current?.id === id) slot.current = null;
+      live.current.delete(id);
     };
   }, []);
-  const read = useCallback(() => slot.current?.read() ?? null, []);
+  const read = useCallback(() => {
+    const reads = [...live.current.values()];
+    return reads[reads.length - 1]?.() ?? null;
+  }, []);
   return [register, read] as const;
 }
 
@@ -110,17 +113,26 @@ export function useFrontScroller(): () => ScreenScroller | null {
 /**
  * Declare what reselecting the enclosing Screen means. It answers only while
  * that Screen is the active one: a pager keeps every page mounted, and a page
- * behind must never answer for the one in front.
+ * behind must never answer for the one in front. A component that renders the
+ * Screen itself passes the same handler as its `reselect` prop instead.
  */
 export function useScreenReselectHandler(handler: ScreenReselectHandler): void {
+  useRegisterReselectHandler(handler, useScreenContext()?.active ?? false);
+}
+
+/** The registration behind `useScreenReselectHandler` and `Screen reselect`. */
+export function useRegisterReselectHandler(
+  handler: ScreenReselectHandler | undefined,
+  active: boolean,
+): void {
   const register = useContext(ScreenReselectContext)?.registerHandler;
-  const active = useScreenContext()?.active ?? false;
   const latest = useRef(handler);
   latest.current = handler;
+  const present = handler !== undefined;
   useEffect(() => {
-    if (!active || !register) return;
-    return register(() => latest.current);
-  }, [active, register]);
+    if (!active || !present || !register) return;
+    return register(() => latest.current as ScreenReselectHandler);
+  }, [active, present, register]);
 }
 
 /**

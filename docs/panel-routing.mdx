@@ -58,7 +58,10 @@ A native stack inside an AppShell panel takes `stackSceneLayout` as its
 `screenLayout`. Each scene paints the panel's surface fill (`useSurfaceFill`, a
 scoped colour included), so a screen without a background of its own never shows
 the one under it through itself, and every scene but the focused one leaves the
-accessibility tree, so TalkBack does not walk into the feed behind a post.
+accessibility tree, so TalkBack does not walk into the feed behind a post. The
+screens of a covered scene are inactive (as a pager's hidden pages are): their
+videos stop and their reselect, status bar and floating action yield to the
+screen on top, without each route passing `active` to its `Screen`.
 
 ```tsx
 import { Stack } from 'expo-router';

@@ -33,6 +33,7 @@ import {
 } from './context';
 import { useScreenWindowBinding } from './use-screen-window-scroll';
 import { useStatusBarClaim } from '../theme/SystemStatusBar';
+import { useRegisterReselectHandler } from './reselect';
 import { ScreenActionOwnerContext, useScreenActionClaim } from '../app-shell/screen-action';
 import type { ScreenProps } from './types';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
@@ -65,6 +66,7 @@ export function createScreen(
     bottomBar,
     bottomBarKeyboardBehavior = 'hide',
     primaryAction,
+    reselect,
     active: requestedActive = true,
     navigationScope = 'inherit',
     documentScroll,
@@ -105,6 +107,7 @@ export function createScreen(
     // A dark screen in a light app (or the reverse) owns the status bar content
     // while it is the active one.
     useStatusBarClaim(active);
+    useRegisterReselectHandler(reselect, active);
     // Its own floating action asks the shell's to step aside while it is in front.
     useScreenActionClaim(active && primaryAction != null);
     const localScrollY = useSharedValue(0);
