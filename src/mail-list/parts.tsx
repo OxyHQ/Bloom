@@ -33,8 +33,11 @@ export interface MailRowLinkProps {
   href?: string;
   selected?: boolean;
   paint: MailPaint;
-  /** Fires on press-in/out so the row can paint itself pressed on native. */
-  onPressedChange?: (pressed: boolean) => void;
+  /**
+   * The fill the link paints over the row WHILE Pressable reports it pressed;
+   * omit for none. Native only: on web the adopted sheet owns the fill.
+   */
+  pressedFill?: string;
   /** Every action the row offers, as platform accessibility actions. */
   actions?: readonly MailAction[];
   onAction?: (key: string) => void;
@@ -55,6 +58,11 @@ export interface MailRowLinkProps {
  * screen-reader user has to a swipe: the rotor lists them on the row itself.
  * react-native-web drops the prop, and rightly — there the rail is in the tab
  * order and `:focus-within` reveals it.
+ *
+ * The pressed fill is Pressable's OWN `pressed`, painted on the link, never a
+ * copy mirrored from `onPressIn`/`onPressOut` into the row: Android can lose
+ * the press-out of a tap that navigates, and a mirror then stays pressed
+ * (`docs/mail-list.mdx`).
  */
 export function MailRowLink({
   name,
@@ -63,7 +71,7 @@ export function MailRowLink({
   href,
   selected = false,
   paint,
-  onPressedChange,
+  pressedFill,
   actions,
   onAction,
   testID,
@@ -110,9 +118,11 @@ export function MailRowLink({
       accessibilityState={{ selected }}
       onPress={onPress || (!IS_WEB && href) ? handlePress : undefined}
       onLongPress={onLongPress}
-      onPressIn={onPressedChange ? () => onPressedChange(true) : undefined}
-      onPressOut={onPressedChange ? () => onPressedChange(false) : undefined}
-      style={style}
+      style={
+        pressedFill === undefined
+          ? style
+          : ({ pressed }) => (pressed ? [style, { backgroundColor: pressedFill }] : style)
+      }
       testID={testID}
     />
   );
@@ -154,7 +164,9 @@ export function MailGlyphButton({
   style,
   testID,
 }: MailGlyphButtonProps) {
-  const [active, setActive] = useState(false);
+  // Hover is mirrored (Pressable reports no hover on native); PRESS is read from
+  // Pressable itself, so a lost press-out cannot leave the button lit.
+  const [hovered, setHovered] = useState(false);
   // The DRAWN control and the TOUCH target are two numbers. A 44-tall button in
   // the row's right column sets the row's height — a list of two-line rows came
   // out at 88 because of it — so the glyph is drawn at `size` and the target is
@@ -163,7 +175,7 @@ export function MailGlyphButton({
   // ABOVE the row's link, so the slop takes the press from the link rather than
   // from another button.
   const slop = Math.max(0, Math.round((MAIL_TOUCH_TARGET - size) / 2));
-  const buttonStyle: WebCssStyle = {
+  const buttonStyle = (active: boolean): WebCssStyle => ({
     width: size,
     height: size,
     borderRadius: size / 2,
@@ -172,7 +184,7 @@ export function MailGlyphButton({
     backgroundColor: active ? hoverFill : 'transparent',
     '--bloom-mail-ring': ring,
     ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: '120ms' } : null),
-  };
+  });
   return (
     <Pressable
       {...webDataSet({ bloomMailFocusable: '' })}
@@ -186,11 +198,9 @@ export function MailGlyphButton({
         : { 'aria-pressed': pressed, accessibilityState: { selected: pressed } })}
       onPress={onPress}
       hitSlop={{ top: slop, bottom: slop, left: slop, right: slop }}
-      onHoverIn={() => setActive(true)}
-      onHoverOut={() => setActive(false)}
-      onPressIn={() => setActive(true)}
-      onPressOut={() => setActive(false)}
-      style={[buttonStyle, style]}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      style={({ pressed: down }) => [buttonStyle(hovered || down), style]}
       testID={testID}
     >
       <Icon width={glyph} height={glyph} fill={color} />

@@ -88,6 +88,32 @@ Section headings PIN while their own rows scroll under them, through
 would pin on web and do nothing at all on native, which is the shape of bug
 nothing in jest can see.
 
+**Sticky headings are OFF by default on Android; `stickyHeaders` opts in.** On
+Allo's Android release (RN 0.88, Fabric) the rows rendered unpainted until the
+first scroll. React Native wraps each sticky child in `ScrollViewStickyHeader`:
+an `Animated.View` at `zIndex: 10` with a native-driven `translateY` (re-committed
+on Fabric through a debounced JS timer). An A–Z list puts one of those layered,
+animated wrappers between every few rows, and they are the suspected cause. The
+trade-off: on Android the letter heading scrolls away with its rows instead of
+pinning, so the A–Z rail (and `activeLetter`) is the only "where am I" cue. iOS
+and web keep pinning; `stickyHeaders={false}` turns it off there too. **Still
+owed: a device run** confirming the rows paint with the wrappers gone (and
+whether opting back in reproduces it) — jest sees only the prop the ScrollView
+receives (`ContactListNative.test.tsx`).
+
+### Search results: `layout="flat"`
+
+```tsx
+<ContactList sections={[{ letter: '', contacts: matches }]} layout="flat" />
+<ContactList sections={sections} layout="flat" flatLabel="Results" />
+```
+
+Every contact of every non-empty section in ONE section, in the order given,
+under `flatLabel` or no heading at all. There is no A–Z rail (`showIndex`,
+`indexLetters`, `activeLetter` are ignored) and nothing is pinned: letters
+index a sorted directory, and a ranked list of matches is not one. Nothing
+matched draws `emptyState`.
+
 The rail down the right edge scrolls the list itself when it can (it measures
 each section with `onLayout`) and always reports the letter through
 `onJumpToLetter`, so an app driving a virtualised list gets what it needs. **A
@@ -284,8 +310,10 @@ nothing to say anything was meant to happen.
 
 `src/__tests__/ChatPeople.test.tsx` reads the emitted DOM through the real
 react-native-web, so it pins the checkbox row's role and state, the rail's names
-and its refusal to jump to an absent letter, the role badges, and both pure
-functions. It cannot see whether the sticky headings actually stick, whether the
+and its refusal to jump to an absent letter, the flat layout, the role badges,
+and both pure functions; `ContactListNative.test.tsx` pins which platforms ask
+for sticky headings. It cannot see whether the sticky headings actually stick,
+whether Android paints the rows, whether the
 rail is reachable with a thumb, or whether the story chrome stays legible over a
 bright photo. Those are browser and device checks.
 

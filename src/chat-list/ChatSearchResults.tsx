@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
@@ -54,7 +54,6 @@ function ResultRow({
   const theme = useTheme();
   const { messages } = useMessages(CHAT_LIST_MESSAGES);
   const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
-  const [pressed, setPressed] = useState(false);
   const geo = CHAT_ROW_GEOMETRY[density];
   const marker = chatMarker(result.chatKind, result.verified, messages.item);
   const name = [result.name, marker?.label, result.detail, result.time]
@@ -70,7 +69,7 @@ function ResultRow({
     '--bloom-chat-selected': paint.selected,
     ...(IS_WEB
       ? { transitionProperty: 'background-color', transitionDuration: '120ms' }
-      : { backgroundColor: pressed ? paint.hover : 'transparent' }),
+      : { backgroundColor: 'transparent' }),
   };
 
   return (
@@ -80,7 +79,7 @@ function ResultRow({
         onPress={onPress ? () => onPress(result.id) : undefined}
         href={result.href}
         paint={paint}
-        onPressedChange={setPressed}
+        pressedFill={IS_WEB ? undefined : paint.hover}
         testID={testID ? `${testID}-link` : undefined}
       />
       <View

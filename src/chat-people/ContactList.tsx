@@ -1,13 +1,13 @@
 import { ScrollArea } from '../layout/ScrollArea';
 import React, { type ComponentRef, memo, useCallback, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
+import { Platform, Pressable, type ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ContactRow } from './ContactRow';
 import { contactIndexLetters, contactSectionIndex, resolveChatPeoplePaint } from './shared';
-import type { ContactListProps } from './types';
+import type { ContactListProps, ContactSection } from './types';
 import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
@@ -22,6 +22,20 @@ import { CHAT_PEOPLE_MESSAGES } from './messages';
  * same prop the native ScrollView does, so one spelling pins the heading on
  * both platforms; `position: sticky` would pin it on web and do nothing at all
  * on native, which is the shape of bug nothing in jest can see.
+ *
+ * STICKY IS OFF BY DEFAULT ON ANDROID. React Native wraps every sticky child in
+ * `ScrollViewStickyHeader`: an `Animated.View` at `zIndex: 10` whose
+ * `translateY` is native-driven from the scroll offset (and, on Fabric,
+ * re-committed through a debounced JS timer). On Allo's Android release (RN
+ * 0.88 Fabric) the contact rows between those wrappers rendered UNPAINTED
+ * until the first scroll. A list of one heading per letter puts one such
+ * layered, animated wrapper between every few rows, and they are the SUSPECTED
+ * cause (a device run with them removed is still owed); the default leaves
+ * them out on Android, and `stickyHeaders` opts back in (`docs/chat-people.mdx`).
+ *
+ * `layout="flat"` is for search results: every contact in ONE section, in the
+ * order given, under `flatLabel` or no heading at all, and never a rail —
+ * letters index a sorted directory, not a ranked list of matches.
  *
  * The rail SCROLLS the list itself when it can (it measures each section's
  * offset with `onLayout`) and always reports the letter through
@@ -42,7 +56,9 @@ function ContactListComponent({
   onContactPress,
   onContactSelectedChange,
   onContactAction,
-  stickyHeaders = true,
+  stickyHeaders: stickyHeadersProp,
+  layout = 'sections',
+  flatLabel,
   height,
   header,
   footer,
@@ -57,9 +73,18 @@ function ContactListComponent({
   const offsets = useRef<Map<string, number>>(new Map());
   const [, setMeasured] = useState(0);
 
-  const filled = sections.filter((section) => section.contacts.length > 0);
+  // Read at RENDER, not at import, so a test can name the platform.
+  const stickyHeaders = stickyHeadersProp ?? Platform.OS !== 'android';
+  const flat = layout === 'flat';
+  const sectioned = sections.filter((section) => section.contacts.length > 0);
+  const flatContacts = flat ? sectioned.flatMap((section) => section.contacts) : [];
+  const filled: readonly ContactSection[] = flat
+    ? flatContacts.length > 0
+      ? [{ letter: flatLabel ?? '', contacts: flatContacts }]
+      : []
+    : sectioned;
   const letters = contactIndexLetters(filled, indexLetters);
-  const railVisible = showIndex ?? filled.length > 1;
+  const railVisible = !flat && (showIndex ?? filled.length > 1);
   const jumpLabel = formatJumpLabel ?? messages.jumpTo;
 
   const onSectionLayout = useCallback((letter: string, event: LayoutChangeEvent) => {
@@ -84,25 +109,35 @@ function ContactListComponent({
   const stickyIndices: number[] = [];
   if (header !== undefined) children.push(<View key="__header">{header}</View>);
   for (const section of filled) {
-    stickyIndices.push(children.length);
-    children.push(
-      <View
-        key={`heading-${section.letter}`}
-        onLayout={(event) => onSectionLayout(section.letter, event)}
-        style={{
-          backgroundColor: paint.surface,
-          paddingTop: 10,
-          paddingRight: 10,
-          paddingBottom: 4,
-          paddingLeft: 10,
-        }}
-        testID={testID ? `${testID}-heading-${section.letter}` : undefined}
-      >
-        <Text variant="caption-1-semibold" style={{ color: paint.textSecondary }}>
-          {section.letter}
-        </Text>
-      </View>,
-    );
+    // A flat list draws its heading only when it was given a label, and never
+    // pins it: one label over a list of matches has nothing to stay above.
+    if (!flat || section.letter.length > 0) {
+      if (!flat) stickyIndices.push(children.length);
+      children.push(
+        <View
+          key={`heading-${section.letter}`}
+          onLayout={(event) => onSectionLayout(section.letter, event)}
+          style={{
+            backgroundColor: paint.surface,
+            paddingTop: 10,
+            paddingRight: 10,
+            paddingBottom: 4,
+            paddingLeft: 10,
+          }}
+          testID={
+            testID
+              ? flat
+                ? `${testID}-heading`
+                : `${testID}-heading-${section.letter}`
+              : undefined
+          }
+        >
+          <Text variant="caption-1-semibold" style={{ color: paint.textSecondary }}>
+            {section.letter}
+          </Text>
+        </View>,
+      );
+    }
     for (const contact of section.contacts) {
       children.push(
         <ContactRow
@@ -145,7 +180,7 @@ function ContactListComponent({
       <ScrollArea
         ref={scroller}
         style={height === undefined ? undefined : { height }}
-        stickyHeaderIndices={stickyHeaders ? stickyIndices : undefined}
+        stickyHeaderIndices={stickyHeaders && stickyIndices.length > 0 ? stickyIndices : undefined}
         testID={testID ? `${testID}-scroll` : undefined}
       >
         {children}

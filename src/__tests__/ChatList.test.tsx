@@ -11,7 +11,7 @@
  * `composeChatRowName`) are asserted directly: they are where the ORDER and the
  * offsets live, and a rendered string cannot tell a stable sort from a lucky one.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -612,9 +612,9 @@ describe('StoriesRow', () => {
     mount(
       <StoriesRow stories={STORIES} own={{}} onStoryPress={() => undefined} testID="stories" />,
     );
-    const rendered = [...container.querySelectorAll('[data-testid^="stories-"]')].map((el) =>
-      el.getAttribute('data-testid'),
-    );
+    const rendered = [
+      ...container.querySelectorAll('[data-testid^="stories-"]:not([data-testid$="-caption"])'),
+    ].map((el) => el.getAttribute('data-testid'));
     expect(rendered).toEqual(['stories-own', 'stories-story-b', 'stories-story-a']);
   });
 
@@ -642,6 +642,35 @@ describe('StoriesRow', () => {
     act(() => byTestId('stories-story-a').click());
     act(() => byTestId('stories-own').click());
     expect(pressed).toEqual(['a', 'own']);
+  });
+
+  it('draws your avatar from YOUR name and captions it with the label', () => {
+    // One string used to feed both: with no name the avatar drew the label's
+    // first letter ("Y" of "Your story"), and with a name the caption was it.
+    mount(<StoriesRow stories={STORIES} own={{}} testID="stories" />);
+    expect(byTestId('stories-own').textContent).toBe('');
+    expect(byTestId('stories-own-caption').textContent).toBe('Your story');
+
+    mount(
+      <StoriesRow
+        stories={STORIES}
+        own={{ name: 'Mireia Solans' }}
+        labels={{ own: 'Your status' }}
+        testID="stories"
+      />,
+    );
+    expect(byTestId('stories-own').textContent).toBe('M');
+    expect(byTestId('stories-own-caption').textContent).toBe('Your status');
+  });
+
+  it("gives a caption the entry's whole slot, and your own two lines", () => {
+    // Capped at the ring's footprint (60 + 8) the caption cut "Your status" to
+    // "Your sta…"; the slot is the footprint plus the gap to the next entry.
+    mount(<StoriesRow stories={STORIES} own={{}} gap={12} testID="stories" />);
+    const ownCaption = byTestId('stories-own-caption');
+    expect(ownCaption.style.width).toBe('80px');
+    const ownText = ownCaption.firstElementChild as HTMLElement;
+    expect(ownText.style.getPropertyValue('-webkit-line-clamp')).toBe('2');
   });
 
   it('names the strip as a list', () => {

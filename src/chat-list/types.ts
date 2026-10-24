@@ -389,7 +389,11 @@ export interface StoryEntry {
 }
 
 export interface StoriesRowLabels {
-  /** The first entry's name. `'Your story'` in English (localised). */
+  /**
+   * The caption under your own entry. `'Your story'` in English (localised).
+   * It is ALWAYS the caption, whether or not `own.name` is given; up to two
+   * lines, so a short phrase is never truncated.
+   */
   own?: string;
   /** Names the + badge. `'Add to your story'` in English (localised). */
   add?: string;
@@ -399,7 +403,9 @@ export interface StoriesRowProps {
   stories: readonly StoryEntry[];
   /**
    * Your own entry, drawn first with a `+` badge. Omit it and the row starts at
-   * the first story.
+   * the first story. `name` and `avatar` are the ACCOUNT's (its display name and
+   * picture) and draw only the avatar — its initial and tint, or the image; the
+   * caption is `labels.own`. With neither, the avatar is the placeholder.
    */
   own?: Omit<StoryEntry, 'id' | 'name'> & { name?: string };
   onStoryPress?: (id: string) => void;
@@ -416,7 +422,10 @@ export interface StoriesRowProps {
   accessibilityLabel?: string;
   labels?: StoriesRowLabels;
   style?: StyleProp<ViewStyle>;
-  /** Entries get `<testID>-story-<id>`, your own `<testID>-own`. */
+  /**
+   * Entries get `<testID>-story-<id>`, your own `<testID>-own` (its caption
+   * `<testID>-own-caption`).
+   */
   testID?: string;
 }
 

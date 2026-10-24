@@ -1,4 +1,5 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
@@ -101,7 +102,6 @@ function ChatListItemComponent({
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
   const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
-  const [pressed, setPressed] = useState(false);
   // The drag belongs to the POINTER, not to the platform: `swipeEnabled`
   // overrides it, and the panes take this family's own resolved pairs so they
   // match the rest of the row exactly.
@@ -245,7 +245,7 @@ function ChatListItemComponent({
     // would outrank the `:hover` rule and the row would never light up.
     ...(IS_WEB
       ? { transitionProperty: 'background-color', transitionDuration: '120ms' }
-      : { backgroundColor: selected ? paint.selected : pressed ? paint.hover : 'transparent' }),
+      : { backgroundColor: selected ? paint.selected : 'transparent' }),
   };
 
   const row = (
@@ -261,7 +261,9 @@ function ChatListItemComponent({
         href={href}
         selected={selected}
         paint={paint}
-        onPressedChange={setPressed}
+        // The press is painted by the link from Pressable's own state (see
+        // RowLink); a selected row keeps its selected fill.
+        pressedFill={IS_WEB || selected ? undefined : paint.hover}
         testID={testID ? `${testID}-link` : undefined}
       />
       <View

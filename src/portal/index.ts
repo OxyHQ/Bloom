@@ -8,3 +8,6 @@ export {
 // offered here because this is the subpath the app root already imports.
 export { OverlayInertBoundary } from '../overlay/OverlayInertBoundary';
 export type { OverlayInertBoundaryProps } from '../overlay/types';
+// Native portals carry the context of where `<Portal>` is written; a module
+// whose context describes a position in the host tree (not data) opts out.
+export { excludeFromPortalBridge } from './context-bridge';

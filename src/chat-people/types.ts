@@ -77,6 +77,9 @@ export interface ContactSection {
   contacts: readonly ContactRowProps[];
 }
 
+/** `sections` — A–Z headings and the rail. `flat` — one list of matches. */
+export type ContactListLayout = 'sections' | 'flat';
+
 export interface ContactListProps {
   sections: readonly ContactSection[];
   /** Draws the A–Z rail down the right edge. Default true when there are 2+ sections. */
@@ -92,8 +95,23 @@ export interface ContactListProps {
   onContactPress?: (id: string) => void;
   onContactSelectedChange?: (id: string, next: boolean) => void;
   onContactAction?: (id: string) => void;
-  /** Pins each section heading while its rows scroll under it. Default true. */
+  /**
+   * Pins each section heading while its rows scroll under it. Default `true` on
+   * iOS and web, `false` on ANDROID: React Native's sticky wrappers (an
+   * animated, `zIndex`-layered view per heading) left the rows between them
+   * unpainted until the first scroll on an Android release build. Pass `true`
+   * to opt in there. Ignored by `layout="flat"`.
+   */
   stickyHeaders?: boolean;
+  /**
+   * `'sections'` (default): one heading per section, plus the A–Z rail.
+   * `'flat'`: every contact in ONE section in the order given — for search
+   * results — under `flatLabel` (or no heading), with NO rail and no pinning;
+   * `showIndex`, `indexLetters` and `activeLetter` are ignored.
+   */
+  layout?: ContactListLayout;
+  /** The one heading of `layout="flat"`, e.g. "Results". Omit for none. */
+  flatLabel?: string;
   /** Fixes the scroller's height. Without it the list grows to its content. */
   height?: number;
   header?: ReactNode;

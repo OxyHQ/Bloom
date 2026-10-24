@@ -659,3 +659,47 @@ export const Rows: Story = {
     </View>
   ),
 };
+
+/**
+ * A control too wide to sit beside its label wraps under it; the label column
+ * never gets narrower than 140px. Allo's Appearance "Colour" chooser used to
+ * stay on the label's line on Android and squeeze the description to one word
+ * per line, its own text running off the card. Narrow the canvas to watch the
+ * chooser drop below and truncate inside its pill.
+ */
+export const WideTrailingControl: Story = {
+  parameters: { controls: { disable: true } },
+  render: function WideTrailingControlStory() {
+    const [value, setValue] = useState('raspberry');
+    return (
+      <View style={{ padding: 16, width: 380, maxWidth: '100%' }}>
+        <SettingsCard>
+          <SettingsRow label="Colour" description="Warm reds over a gold and cobalt accent">
+            <Select value={value} onValueChange={setValue}>
+              <SelectTrigger label="Colour">
+                <SelectValue />
+                <SelectIcon />
+              </SelectTrigger>
+              <SelectContent
+                label="Colour"
+                items={[
+                  { value: 'raspberry', label: 'Raspberry + Antique Gold + Cobalt' },
+                  { value: 'teal', label: 'Teal' },
+                ]}
+                renderItem={(item) => (
+                  <SelectItem value={item.value} label={item.label}>
+                    <SelectItemIndicator />
+                    <SelectItemText>{item.label}</SelectItemText>
+                  </SelectItem>
+                )}
+              />
+            </Select>
+          </SettingsRow>
+          <SettingsRow label="Follow account" description="Use the account's theme on this device">
+            <Switch checked onCheckedChange={() => {}} accessibilityLabel="Follow account" />
+          </SettingsRow>
+        </SettingsCard>
+      </View>
+    );
+  },
+};

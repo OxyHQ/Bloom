@@ -32,8 +32,11 @@ export interface RowLinkProps {
   href?: string;
   selected?: boolean;
   paint: ChatListPaint;
-  /** Fires on press-in/out so the row can paint itself pressed on native. */
-  onPressedChange?: (pressed: boolean) => void;
+  /**
+   * The fill the link paints over the row WHILE Pressable reports it pressed;
+   * omit for none. Native only: on web the adopted sheet owns the fill.
+   */
+  pressedFill?: string;
   testID?: string;
 }
 
@@ -44,6 +47,14 @@ export interface RowLinkProps {
  * anywhere on them falls through, while the hover action buttons are drawn over
  * it as their OWN targets. A button inside an anchor is invalid HTML and would
  * make every "Archive" click open the conversation.
+ *
+ * THE PRESSED FILL IS PRESSABLE'S OWN `pressed`, read in a style function and
+ * painted on the link itself (it fills the row and sits under the content). It
+ * used to be MIRRORED into the row's state from `onPressIn`/`onPressOut`, and a
+ * mirror is only as good as the last press-out it heard: on Android a tap that
+ * pushes a screen can lose it (the delayed press-out is a timer the Pressable
+ * cancels when it unmounts or resets), and the row came back still painted
+ * pressed. A fill derived from the Pressable has no second copy to go stale.
  */
 export function RowLink({
   name,
@@ -52,7 +63,7 @@ export function RowLink({
   href,
   selected = false,
   paint,
-  onPressedChange,
+  pressedFill,
   testID,
 }: RowLinkProps) {
   const handlePress = (event: GestureResponderEvent) => {
@@ -81,9 +92,11 @@ export function RowLink({
       accessibilityState={{ selected }}
       onPress={onPress || (!IS_WEB && href) ? handlePress : undefined}
       onLongPress={onLongPress}
-      onPressIn={onPressedChange ? () => onPressedChange(true) : undefined}
-      onPressOut={onPressedChange ? () => onPressedChange(false) : undefined}
-      style={style}
+      style={
+        pressedFill === undefined
+          ? style
+          : ({ pressed }) => (pressed ? [style, { backgroundColor: pressedFill }] : style)
+      }
       testID={testID}
     />
   );
@@ -122,8 +135,10 @@ export function ChatGlyphButton({
   style,
   testID,
 }: ChatGlyphButtonProps) {
-  const [active, setActive] = useState(false);
-  const buttonStyle: WebCssStyle = {
+  // Hover is mirrored (Pressable reports no hover on native); PRESS is read from
+  // Pressable itself, so a lost press-out cannot leave the button lit (RowLink).
+  const [hovered, setHovered] = useState(false);
+  const buttonStyle = (active: boolean): WebCssStyle => ({
     width: size,
     height: size,
     borderRadius: size / 2,
@@ -132,18 +147,16 @@ export function ChatGlyphButton({
     backgroundColor: active ? hoverFill : 'transparent',
     '--bloom-chat-ring': ring,
     ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: '120ms' } : null),
-  };
+  });
   return (
     <Pressable
       {...webDataSet({ bloomChatFocusable: '' })}
       role="button"
       accessibilityLabel={label}
       onPress={onPress}
-      onHoverIn={() => setActive(true)}
-      onHoverOut={() => setActive(false)}
-      onPressIn={() => setActive(true)}
-      onPressOut={() => setActive(false)}
-      style={[buttonStyle, style]}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      style={({ pressed }) => [buttonStyle(hovered || pressed), style]}
       testID={testID}
     >
       <Icon width={glyph} height={glyph} fill={color} />

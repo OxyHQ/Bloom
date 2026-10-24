@@ -3,6 +3,7 @@ import type { ComponentRef } from 'react';
 import { Platform, StyleSheet, type View } from 'react-native';
 import { BlurTargetView } from 'expo-blur';
 
+import { excludeFromPortalBridge } from '../portal/context-bridge';
 import type { BlurTargetProviderProps, BlurWindowProps } from './types';
 
 /**
@@ -74,15 +75,20 @@ const isAndroid = () => Platform.OS === 'android';
  * The app-root target. Deliberately NOT exported as a hook — reading this
  * without crossing a window boundary is the crash.
  */
-const RootBlurTargetContext = createContext<
-  React.RefObject<ComponentRef<typeof View> | null> | undefined
->(undefined);
+const RootBlurTargetContext = excludeFromPortalBridge(
+  createContext<React.RefObject<ComponentRef<typeof View> | null> | undefined>(undefined),
+);
 
 /**
  * True only inside a declared separate native window. Default `false` is what
  * makes the unsafe position the DEFAULT position.
+ *
+ * Both contexts stay at the OUTLET's value inside a native `<Portal>`, whose
+ * content renders in the app's own window whatever window the `<Portal>` was
+ * written in. Bridged, a portal written inside a `BlurWindow` would hand its
+ * backdrop the root target from inside the root window: the crash above.
  */
-const SeparateWindowContext = createContext(false);
+const SeparateWindowContext = excludeFromPortalBridge(createContext(false));
 
 /**
  * Wraps the app content so a portaled surface can blur it.

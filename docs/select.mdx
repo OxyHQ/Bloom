@@ -110,6 +110,10 @@ The colours are INLINE (or, for the web trigger's hover and ring, custom propert
 
 It used to take a render prop instead, which handed its child a `state` object whose `pressed` was a hardcoded `false` and whose `hovered` the native fork never computed. Press and hover styling on a select trigger was therefore dead while the API read as though it worked. Bring your own control through `asChild` and its own states are real.
 
+### A trigger never outgrows its line
+
+The trigger shrinks to the line it is on (`flexShrink: 1`, `maxWidth: '100%'`) and its value truncates before the chevron (`flexShrink: 1` inline, not only through `SELECT_VALUE_CLASS`). A non-shrinking trigger keeps a min-content wider than its line: Allo's "Raspberry + Antique Gold + Cobalt" pushed the pill and its chevron past a settings card's edge on Android. Gate: `SelectTriggerFit.test.tsx`, both forks.
+
 ## Leading marks
 
 `leading` on `SelectValue` and on `SelectItem` puts a node — a status dot, an icon — before the label, so an option's content can lead with a status dot or a glyph:
