@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
 
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
@@ -130,6 +131,9 @@ export function notificationCardStyle(paint: NotificationPaint): WebCssStyle {
   };
 }
 
+/** The card's stroke while its surface is absent, so it leaves with the material. */
+const HIDDEN_STROKE: ViewStyle = { borderColor: 'transparent' };
+
 const CLOSE_POSITION: ViewStyle = { position: 'absolute', top: G.closeInset, right: G.closeInset };
 
 function Countdown({ duration, delay, color }: { duration: number; delay: number; color: string }) {
@@ -214,6 +218,7 @@ function NotificationComponent({
         !description && !actions?.length ? { alignItems: 'center' } : null,
         motion.style,
         motion.presenceStyle,
+        IS_WEB && !motion.present ? HIDDEN_STROKE : null,
         style,
       ]}
     >
