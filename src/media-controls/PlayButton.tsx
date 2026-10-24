@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -119,9 +120,12 @@ function PlayButtonComponent({
     borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: disabled ? DISABLED_OPACITY : 1,
+    // The web dims a disabled disc's glyph and material instead: an `opacity`
+    // here would make the host the material's backdrop root.
+    opacity: disabled && !IS_WEB ? DISABLED_OPACITY : 1,
     '--bloom-media-ring': paint.ring,
   };
+  const dimmed = disabled && IS_WEB;
 
   // The disc paints through the shared surface material, unless a caller's own
   // background owns it; `plain` has no disc.
@@ -132,11 +136,15 @@ function PlayButtonComponent({
         radius={box / 2}
         composite
         transition="background-color 150ms ease"
+        presence={dimmed ? DISABLED_OPACITY : undefined}
       />
     );
 
   const glyphBox = (
-    <View pointerEvents="none" style={{ width: glyph, height: glyph }}>
+    <View
+      pointerEvents="none"
+      style={{ width: glyph, height: glyph, opacity: dimmed ? DISABLED_OPACITY : 1 }}
+    >
       {loading ? (
         <SpinnerRing size={glyph} color={glyphColor} />
       ) : (

@@ -18,6 +18,12 @@ export interface RadioIndicatorProps {
   selectedForeground?: string;
   /** Border color when unselected (defaults to the semantic border) */
   borderColor?: string;
+  /**
+   * The control it belongs to is disabled. The disc is then flat rather than on
+   * the surface material, because the row or card around it dims with
+   * `opacity`, which would make it the material's backdrop root.
+   */
+  disabled?: boolean;
   /** Custom style */
   style?: StyleProp<ViewStyle>;
   testID?: string;

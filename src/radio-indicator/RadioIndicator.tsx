@@ -69,6 +69,7 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
   selectedColor,
   selectedForeground,
   borderColor,
+  disabled = false,
   style,
   testID,
 }) => {
@@ -117,7 +118,18 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
     >
       {/* Default surface, on the shared surface material. The selected gradient
           keeps its own paint and inset highlight, and the dot is too small for
-          the material's edge light. */}
+          the material's edge light. On the web the material cannot sit inside the
+          fading layer (a fading ancestor is its backdrop root, so the blur would
+          vanish), so it fades its own layers beside it; disabled, it is flat. */}
+      {IS_WEB && !disabled ? (
+        <SurfacePaint
+          fill={paint.surface}
+          radius={radius}
+          composite
+          presence={selected ? 0 : 1}
+          presenceMs={TRANSITION_MS}
+        />
+      ) : null}
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
@@ -125,12 +137,13 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
             borderRadius: radius,
             borderWidth: paint.borderWidth,
             borderColor: paint.border,
+            backgroundColor: IS_WEB && disabled ? paint.surface : undefined,
             boxShadow: paint.shadow,
             opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
           },
         ]}
       >
-        <SurfacePaint fill={paint.surface} radius={radius - paint.borderWidth} composite />
+        {IS_WEB ? null : <SurfacePaint fill={paint.surface} radius={radius - paint.borderWidth} />}
       </Animated.View>
       {/* Selected gradient surface. */}
       <Animated.View

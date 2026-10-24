@@ -93,12 +93,17 @@ function AnnouncementComponent({
   };
 
   return (
-    <Animated.View testID={testID} style={[cardStyle, motion.style, style]}>
+    <Animated.View testID={testID} style={[cardStyle, motion.style, motion.presenceStyle, style]}>
       {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
         <SurfacePaint fill={paint.surface} radius={GEOMETRY.radius - 1} composite />
       ) : null}
       <View style={{ width: '100%', alignItems: 'flex-start', gap: GEOMETRY.contentGap }}>
-        <Icon width={GEOMETRY.icon} height={GEOMETRY.icon} fill={paint.icon} />
+        {/* Content fades in wrappers of its own, never over a surface material:
+            the close button and the action fade their material through the
+            host's presence. */}
+        <Animated.View style={motion.contentStyle}>
+          <Icon width={GEOMETRY.icon} height={GEOMETRY.icon} fill={paint.icon} />
+        </Animated.View>
         {dismissible ? (
           <CloseButton
             size="xs"
@@ -110,7 +115,12 @@ function AnnouncementComponent({
             style={{ position: 'absolute', top: 0, right: 0 }}
           />
         ) : null}
-        <View style={{ width: '100%', alignItems: 'flex-start', gap: GEOMETRY.textGap }}>
+        <Animated.View
+          style={[
+            { width: '100%', alignItems: 'flex-start', gap: GEOMETRY.textGap },
+            motion.contentStyle,
+          ]}
+        >
           <Text variant="body-medium" style={{ width: '100%', color: paint.title }}>
             {title}
           </Text>
@@ -119,7 +129,7 @@ function AnnouncementComponent({
               {description}
             </Text>
           ) : null}
-        </View>
+        </Animated.View>
       </View>
 
       {actionLabel ? (
