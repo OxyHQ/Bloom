@@ -472,6 +472,8 @@ export { RiSpeaker3Line } from './RiSpeaker3Line';
 export { RiSpeakerLine } from './RiSpeakerLine';
 export { RiSpeedUpFill } from './RiSpeedUpFill';
 export { RiSpeedUpLine } from './RiSpeedUpLine';
+export { RiSpotifyFill } from './RiSpotifyFill';
+export { RiSpotifyLine } from './RiSpotifyLine';
 export { RiStackLine } from './RiStackLine';
 export { RiStairsLine } from './RiStairsLine';
 export { RiStarFill } from './RiStarFill';
