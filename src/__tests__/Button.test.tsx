@@ -19,7 +19,7 @@ import {
   classNamesOn,
   renderedChildren,
   resolvedStyle,
-  sheenStops,
+  sheenGlow,
   surfaceSheens,
 } from './support/rendered-style';
 
@@ -658,17 +658,15 @@ describe('button details', () => {
 
 describe('filled button material', () => {
   it.each(['accent', 'danger', 'success', 'warning', 'info'] as const)(
-    'paints the shared edge glow as one gradient on one view for %s',
+    'paints the shared edge glow on one view for %s',
     (tone) => {
       const screen = renderWithTheme(<Button tone={tone}>Save</Button>);
       const sheens = surfaceSheens(screen.toJSON());
       expect(sheens).toHaveLength(1);
-      const stops = sheenStops(
-        String(resolvedStyle(sheens[0]!.props.style).experimental_backgroundImage),
-      );
-      const middle = stops[Math.floor(stops.length / 2)]!;
-      expect(stops[0]!.opacity).toBeGreaterThan(middle.opacity);
-      expect(stops[stops.length - 1]!.opacity).toBeGreaterThan(middle.opacity);
+      // One glow down from the top edge and one up from the bottom, never a gradient.
+      const glow = sheenGlow(sheens[0]!.props.style).split(', inset');
+      expect(glow).toHaveLength(2);
+      expect(resolvedStyle(sheens[0]!.props.style).experimental_backgroundImage).toBeUndefined();
       expect(screen.UNSAFE_queryAllByType(Stop)).toHaveLength(0);
     },
   );

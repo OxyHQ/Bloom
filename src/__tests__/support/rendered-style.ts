@@ -98,20 +98,25 @@ export function renderedChildren(tree: unknown, hostTestID: string): HostNode[] 
   return (host.children ?? []).filter(isHostNode);
 }
 
-const SHEEN_GRADIENT = /^linear-gradient\(180deg/;
+/** One layer of the native sheen: an inset white glow, blurred and pulled in by its spread. */
+const SHEEN_GLOW =
+  /inset 0 -?\d+(?:\.\d+)?px \d+(?:\.\d+)?px -\d+(?:\.\d+)?px rgba\(255, 255, 255, [\d.]+\)/g;
+
+/** The sheen layers of a native material pane's `boxShadow`, or `''`. */
+export function sheenGlow(style: unknown): string {
+  return (String(resolvedStyle(style).boxShadow ?? '').match(SHEEN_GLOW) ?? []).join(', ');
+}
 
 /**
  * The native surface-material panes in a rendered tree: the host views that
- * carry the shared sheen as `experimental_backgroundImage`. One per painted
- * surface, so a count is a count of materials.
+ * carry the shared sheen as inset `boxShadow` glows. One per painted surface,
+ * so a count is a count of materials.
  */
 export function surfaceSheens(tree: unknown): HostNode[] {
-  return hostNodes(tree).filter((n) =>
-    SHEEN_GRADIENT.test(String(resolvedStyle(n.props.style).experimental_backgroundImage ?? '')),
-  );
+  return hostNodes(tree).filter((n) => sheenGlow(n.props.style) !== '');
 }
 
-/** The `[color, opacity]` stops of a sheen gradient, as `rgb(...)` plus alpha. */
+/** The `[color, opacity]` of each sheen layer, as `rgb(...)` plus alpha. */
 export function sheenStops(gradient: string): Array<{ color: string; opacity: number }> {
   return [...gradient.matchAll(/rgba\((\d+), (\d+), (\d+), ([\d.]+)\)/g)].map((m) => ({
     color: `rgb(${m[1]}, ${m[2]}, ${m[3]})`,

@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
+import { resolveSurfaceFill, resolveSurfaceOptics, resolveSurfaceTint } from '../surface/shared';
 
 afterEach(() => jest.restoreAllMocks());
 
@@ -22,4 +22,32 @@ it('uses one subtle tint on the web and never compounds caller alpha', () => {
 });
 it('keeps an opaque fill opaque on native, which has no blur beneath it', () => {
   expect(resolveSurfaceTint('#123456')).toBe('#123456');
+});
+
+describe('the native material', () => {
+  // React Native reads a `boxShadow` string by its own parser: one value it
+  // cannot read drops the whole shadow, silently. `calc()`/`var()` are never read.
+  const LENGTH = '(-?\\d+(?:\\.\\d+)?)(?:px)?';
+  const SHADOW = new RegExp(
+    `^inset 0 ${LENGTH} ${LENGTH}(?: ${LENGTH})? rgba\\(255, 255, 255, (0(?:\\.\\d+)?|1)\\)$`,
+  );
+
+  it.each([false, true])(
+    'paints its sheen as inset shadows, never a gradient (dark: %s)',
+    (isDark) => {
+      const { sheenShadow, rim } = resolveSurfaceOptics(isDark);
+      for (const css of [sheenShadow, rim]) {
+        expect(css).not.toMatch(/gradient|calc\(|var\(/);
+        for (const layer of css.split(/,(?![^(]*\))/).map((part) => part.trim()))
+          expect(layer).toMatch(SHADOW);
+      }
+      const [top, bottom] = sheenShadow
+        .split(/,(?![^(]*\))/)
+        .map((part) => part.trim().match(SHADOW));
+      expect(Number(top?.[1])).toBeGreaterThan(0);
+      expect(Number(bottom?.[1])).toBe(-Number(top?.[1]));
+      // A spread of minus the blur keeps the glow off the sides.
+      expect(Number(top?.[3])).toBe(-Number(top?.[2]));
+    },
+  );
 });

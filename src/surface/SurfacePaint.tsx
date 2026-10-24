@@ -27,7 +27,7 @@ ${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)', 
  * The material under a surface's content: tint, sheen and rim.
  *
  * Web adds a backdrop blur beneath them. Native paints one `View` (tint as
- * `backgroundColor`, sheen as a CSS gradient, rim as an inset `boxShadow`):
+ * `backgroundColor`, rim and sheen as inset `boxShadow`s):
  * no SVG, no layout state, no per-surface blur. A `BlurView` inside a surface
  * can SIGSEGV on Android, so native blur lives only in `overlay/` `Backdrop`.
  */
@@ -150,8 +150,13 @@ export const SurfacePaint = memo(function SurfacePaint({
           {
             overflow: 'hidden',
             backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
-            ...(rim ? { boxShadow: optics.rim } : null),
-            ...(sheen ? { experimental_backgroundImage: optics.sheenCss } : null),
+            ...(rim || sheen
+              ? {
+                  boxShadow: [rim ? optics.rim : null, sheen ? optics.sheenShadow : null]
+                    .filter(Boolean)
+                    .join(', '),
+                }
+              : null),
             ...(presence === undefined ? null : { opacity: presence }),
           },
         ],

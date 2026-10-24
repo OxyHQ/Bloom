@@ -50,7 +50,7 @@ it('draws no inset rim inside a bordered card, so the outline appearance is one 
       if (!n || typeof n !== 'object') return;
       const el = n as { props?: { style?: unknown }; children?: unknown[] };
       const bs = resolvedStyle(el.props?.style as never).boxShadow;
-      if (typeof bs === 'string' && bs.includes('inset')) out.push(bs);
+      if (typeof bs === 'string' && /inset 0 -?1px 0 /.test(bs)) out.push(bs);
       for (const c of el.children ?? []) walk(c);
     };
     walk(node);

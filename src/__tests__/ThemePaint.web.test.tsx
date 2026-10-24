@@ -53,7 +53,7 @@ function Probe({ id }: { id: string }) {
         <span data-raw-mode={raw.mode}>Stable contents</span>
         <div
           data-testid={`${id}-material`}
-          style={{ backgroundImage: recipe.paint.optics.sheenCss }}
+          style={{ boxShadow: recipe.paint.optics.sheenShadow }}
         />
       </section>
     </>
@@ -92,7 +92,7 @@ it('ships ordinary mode rules for semantic colours, shadows, gradients and fixed
   const styles = [...host.querySelectorAll('style')].map((node) => node.textContent).join('');
   expect(styles).toContain(':root[data-bloom-theme-mode="dark"]');
   expect(styles).toContain('@media(prefers-color-scheme:dark)');
-  expect(styles).toContain(resolveSurfaceOptics(true).sheenCss);
+  expect(styles).toContain(resolveSurfaceOptics(true).sheenShadow);
   expect(styles).toContain(resolveSurfaceOptics(false).rim);
   expect(styles).not.toContain('--bloom-theme-light');
   expect(html).toContain('var(--bloom-paint-background)');
