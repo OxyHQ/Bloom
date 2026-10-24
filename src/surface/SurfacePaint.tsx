@@ -20,7 +20,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 
 const WEB_PAINT_CSS = `
 .bloom-surface-paint { isolation: isolate; overflow: clip; overflow-clip-margin: 1px; }
-${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)', 'var(--bloom-surface-paint-transition, none)')}
+${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)', 'var(--bloom-surface-paint-transition, background-color 0s)')}
 `;
 
 /**
@@ -44,6 +44,8 @@ export const SurfacePaint = memo(function SurfacePaint({
   composite = false,
   backing,
   transition,
+  presence,
+  presenceMs,
   testID,
 }: {
   sheen?: boolean;
@@ -71,6 +73,15 @@ export const SurfacePaint = memo(function SurfacePaint({
   backing?: string;
   /** Web only: how the fill changes between states, e.g. `background-color 200ms ease`. */
   transition?: string;
+  /**
+   * How present the material is, 0 to 1: how a disabled control dims it. Never
+   * dim a material's host or an ancestor with `opacity` or `filter` instead: on
+   * the web that ancestor becomes the backdrop root and the blur vanishes.
+   * Omitted, the paint inherits a fading host's `--bloom-surface-presence`.
+   */
+  presence?: number;
+  /** Web only: how long a change of `presence` takes, in milliseconds. */
+  presenceMs?: number;
   /** Omit for sheen/rim only on a host that already owns its fill. */
   fill?: string;
   /** Final paired tint supplied by the material owner; never used for colour math. */
@@ -111,6 +122,8 @@ export const SurfacePaint = memo(function SurfacePaint({
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': paintFill ?? resolvedFill,
       ...(transition ? { '--bloom-surface-paint-transition': transition } : null),
+      ...(presence === undefined ? null : { '--bloom-surface-presence': String(presence) }),
+      ...(presenceMs === undefined ? null : { '--bloom-surface-presence-ms': `${presenceMs}ms` }),
       ...surfaceOpticsVars(optics, radius, rim),
     };
     return (
@@ -139,6 +152,7 @@ export const SurfacePaint = memo(function SurfacePaint({
             backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
             ...(rim ? { boxShadow: optics.rim } : null),
             ...(sheen ? { experimental_backgroundImage: optics.sheenCss } : null),
+            ...(presence === undefined ? null : { opacity: presence }),
           },
         ],
         pointerEventsStyle('none'),

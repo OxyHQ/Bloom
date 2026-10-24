@@ -213,43 +213,51 @@ function NotificationComponent({
         // its top and leaving an empty band where a description would sit.
         !description && !actions?.length ? { alignItems: 'center' } : null,
         motion.style,
+        motion.presenceStyle,
         style,
       ]}
     >
       {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
         <SurfacePaint fill={paint.surface} radius={G.radius - 1} composite />
       ) : null}
-      {avatar ? (
-        <NotificationAvatarVisual avatar={avatar} paint={paint} />
-      ) : (
-        <NotificationStatusVisual status={status} icon={icon} paint={paint} />
-      )}
+      {/* Content fades in wrappers of its own, never over a surface material:
+          the close button and the actions fade their material through the
+          host's presence. */}
+      <Animated.View style={[{ flexShrink: 0 }, motion.contentStyle]}>
+        {avatar ? (
+          <NotificationAvatarVisual avatar={avatar} paint={paint} />
+        ) : (
+          <NotificationStatusVisual status={status} icon={icon} paint={paint} />
+        )}
+      </Animated.View>
 
       <View style={{ flex: 1, minWidth: 0, gap: G.contentGap }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            alignItems: 'baseline',
-            columnGap: G.headerGapX,
-            rowGap: G.headerGapY,
-            minWidth: 0,
-          }}
-        >
-          <Text variant="body-medium" style={{ color: paint.title, flexShrink: 1 }}>
-            {title}
-          </Text>
-          {timestamp ? (
-            <Text variant="body-regular" style={{ color: paint.timestamp }}>
-              {timestamp}
+        <Animated.View style={[{ minWidth: 0, gap: G.contentGap }, motion.contentStyle]}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              alignItems: 'baseline',
+              columnGap: G.headerGapX,
+              rowGap: G.headerGapY,
+              minWidth: 0,
+            }}
+          >
+            <Text variant="body-medium" style={{ color: paint.title, flexShrink: 1 }}>
+              {title}
+            </Text>
+            {timestamp ? (
+              <Text variant="body-regular" style={{ color: paint.timestamp }}>
+                {timestamp}
+              </Text>
+            ) : null}
+          </View>
+          {description ? (
+            <Text variant="body-regular" style={{ color: paint.description }}>
+              {description}
             </Text>
           ) : null}
-        </View>
-        {description ? (
-          <Text variant="body-regular" style={{ color: paint.description }}>
-            {description}
-          </Text>
-        ) : null}
+        </Animated.View>
         {actions?.length ? (
           <View
             style={{

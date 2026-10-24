@@ -155,3 +155,13 @@ export function compositeOnto(fill: string, backing: string): string {
   const alpha = parseRgba(fill)?.a;
   return alpha === undefined || alpha === 0 ? fill : resolveSurfaceFill(fill, backing);
 }
+
+/**
+ * A colour at `factor` of its own alpha: how a control on the material dims a
+ * stroke when disabled, since dimming its host with `opacity` would make the
+ * host the material's backdrop root.
+ */
+export function dimColor(color: string, factor: number): string {
+  const parsed = parseRgba(color);
+  return parsed ? `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, ${parsed.a * factor})` : color;
+}

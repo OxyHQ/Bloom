@@ -166,7 +166,9 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        style={[isDisabled && styles.disabled, style]}
+        // The web dims a disabled switch's thumb and material instead: an
+        // `opacity` here would make it the track material's backdrop root.
+        style={[isDisabled && !IS_WEB && styles.disabled, style]}
         hitSlop={hitSlop.md}
         testID={testID}
       >
@@ -190,10 +192,12 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
             radius={track.h / 2}
             composite
             transition={reducedMotion ? undefined : TRACK_TRANSITION}
+            presence={isDisabled && IS_WEB ? styles.disabled.opacity : undefined}
           />
           <Animated.View
             style={[
               styles.thumb,
+              isDisabled && IS_WEB && styles.disabled,
               {
                 backgroundColor: anim.interpolate({
                   inputRange: [0, 1],
