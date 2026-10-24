@@ -1,6 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
 
 import { useTheme } from '../theme/use-theme';
 import { Button, CloseButton } from '../button';
@@ -93,7 +94,16 @@ function AnnouncementComponent({
   };
 
   return (
-    <Animated.View testID={testID} style={[cardStyle, motion.style, motion.presenceStyle, style]}>
+    <Animated.View
+      testID={testID}
+      style={[
+        cardStyle,
+        motion.style,
+        motion.presenceStyle,
+        IS_WEB && !motion.present ? { borderColor: 'transparent' } : null,
+        style,
+      ]}
+    >
       {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
         <SurfacePaint fill={paint.surface} radius={GEOMETRY.radius - 1} composite />
       ) : null}

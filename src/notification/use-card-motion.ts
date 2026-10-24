@@ -55,6 +55,8 @@ export function useCardMotion({
   contentStyle: Animated.WithAnimatedValue<WebCssStyle> | undefined;
   /** Web: how present the card's surface materials are, for the host. */
   presenceStyle: WebCssStyle | undefined;
+  /** Whether the card's surface is present: a host stroke follows it out. */
+  present: boolean;
   dismiss: () => void;
   gone: boolean;
 } {
@@ -162,10 +164,13 @@ export function useCardMotion({
         ? {
             '--bloom-surface-presence': presence.present ? '1' : '0',
             '--bloom-surface-presence-ms': `${presence.ms}ms`,
+            transitionProperty: 'border-color',
+            transitionDuration: `${presence.ms}ms`,
+            transitionTimingFunction: 'ease-out',
           }
         : undefined,
     [presence],
   );
 
-  return { style, contentStyle, presenceStyle, dismiss, gone };
+  return { style, contentStyle, presenceStyle, present: presence.present, dismiss, gone };
 }
