@@ -26,10 +26,14 @@ import { materialHostSelector } from './web-material';
  *   the ones that do, so no material host ever has a fading ancestor.
  *
  * Dims (disabled, pressed, closed) are presences below 1 that stay. Native has
- * no backdrop filter, so there the host keeps its own opacity.
+ * no backdrop filter, so there the host keeps its own opacity, and a host at
+ * full presence takes none, leaving a caller's own `opacity` in force.
  */
 export function surfacePresenceStyle(presence: number, duration = 0): WebCssStyle {
-  if (Platform.OS !== 'web') return { opacity: clampPresence(presence) };
+  if (Platform.OS !== 'web') {
+    const opacity = clampPresence(presence);
+    return opacity >= 1 ? {} : { opacity };
+  }
   return surfacePresenceVars(presence, duration);
 }
 

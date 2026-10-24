@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { resolveSurfaceFill, resolveSurfaceOptics, resolveSurfaceTint } from '../surface/shared';
+import { surfacePresenceStyle } from '../surface/use-surface-presence';
 
 afterEach(() => jest.restoreAllMocks());
 
@@ -50,4 +51,10 @@ describe('the native material', () => {
       expect(Number(top?.[3])).toBe(-Number(top?.[2]));
     },
   );
+
+  it('leaves a fully present host without an opacity of its own', () => {
+    expect(surfacePresenceStyle(1)).toEqual({});
+    expect(surfacePresenceStyle(0.5)).toEqual({ opacity: 0.5 });
+    expect(surfacePresenceStyle(0)).toEqual({ opacity: 0 });
+  });
 });

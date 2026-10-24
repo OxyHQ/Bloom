@@ -47,6 +47,6 @@ So a surface that paints the material appears, leaves and dims through its **pre
 - Disabled, pressed and closed states are presences below 1 that stay (a pressed Card is 0.85, a disabled one `DISABLED_OPACITY`), or dim their content, strokes and tint colours.
 - Hover and focus reveals use `surfaceRevealCss({ scope, shown })`: the revealing box publishes presence 0 or 1, the revealed control's content and shadow fade on their own. Never `opacity: 0` on the box that holds the control.
 
-Native has no backdrop filter, so native hosts keep fading and dimming themselves with `opacity`.
+Native has no backdrop filter, so native hosts keep fading and dimming themselves with `opacity`. A host at full presence gets no `opacity` at all, so a caller's own `opacity` (a Card at `style={{ opacity: 0.4 }}`) still applies.
 
 Gates: `src/__tests__/backdrop-root.web.test.tsx` renders every file that paints the material at rest, pressed, disabled, opening and closing, and fails on any trigger on a host or an ancestor (inline, cascaded, a `@keyframes` that sets one, or a `:hover`/`:focus` rule that could); its census fails on a new painter that is neither rendered nor classified. `scripts/verify-backdrop-root.mjs` walks every Storybook story in Chromium, finds material hosts by their computed `::before`/`::after` backdrop filter, and samples every frame at rest, while hovering and pressing, and while overlay families open and close.
