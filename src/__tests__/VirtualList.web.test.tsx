@@ -150,6 +150,59 @@ describe('VirtualList (web)', () => {
     expect(getByText(c, 'Thunk header')).toBeTruthy();
     expect(getByText(c, 'Only row')).toBeTruthy();
   });
+
+  it('packs a grid into rows of numColumns, honouring each item span', () => {
+    const data: Row[] = Array.from({ length: 5 }, (_, i) => ({
+      id: String(i),
+      label: `Cell ${i}`,
+    }));
+    const c = mount(
+      <VirtualList<Row>
+        data={data}
+        numColumns={3}
+        overrideItemLayout={(layout, _item, index) => {
+          if (index === 0) layout.span = 3;
+        }}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <span>{item.label}</span>}
+      />,
+    );
+    const rowOf = (label: string) => getByText(c, label).parentElement?.parentElement;
+    expect(getByText(c, 'Cell 0').parentElement?.style.width).toBe('100%');
+    expect(rowOf('Cell 1')).toBe(rowOf('Cell 3'));
+    expect(rowOf('Cell 1')).not.toBe(rowOf('Cell 0'));
+    expect(rowOf('Cell 4')).not.toBe(rowOf('Cell 3'));
+  });
+
+  it('keeps the last sticky row scrolled past mounted and pinned', () => {
+    // TanStack measures a mounted row's `offsetHeight`, which jsdom leaves at 0.
+    const offsetHeight = jest
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockReturnValue(ROW_HEIGHT);
+    const data: Row[] = Array.from({ length: 40 }, (_, i) => ({
+      id: String(i),
+      label: `Row ${i}`,
+    }));
+    const c = mount(
+      <VirtualList<Row>
+        data={data}
+        overscan={0}
+        stickyHeaderIndices={[2]}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <span>{item.label}</span>}
+      />,
+    );
+    act(() => {
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 1600 });
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(queryByText(c, 'Row 3')).toBeNull();
+    const sticky = getByText(c, 'Row 2').parentElement as HTMLElement;
+    expect(sticky.style.position).toBe('sticky');
+    expect(sticky.style.marginTop).toBe(`${2 * ROW_HEIGHT}px`);
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
+    offsetHeight.mockRestore();
+  });
 });
 
 it('binds the document to the focused Screen without a nested scroll element', () => {

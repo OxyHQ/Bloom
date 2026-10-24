@@ -32,8 +32,11 @@ import { VirtualList } from '@oxy.so/bloom/list';
 | `keyExtractor`          | identity across updates                               |
 | `estimatedItemSize`     | how the scrollbar behaves before rows are measured    |
 | `ListHeaderComponent` / `ListFooterComponent` / `ListEmptyComponent` | the slots |
+| `ListHeaderComponentStyle` | the view around the header                         |
+| `numColumns` / `overrideItemLayout` | a grid, and which items span it            |
+| `stickyHeaderIndices`   | rows that stay pinned once scrolled past              |
 | `onEndReached` / `onEndReachedThreshold` | pagination                           |
-| `refreshing` / `onRefresh` | pull to refresh                                    |
+| `refreshing` / `onRefresh` | pull to refresh (native)                           |
 
 ## `estimatedItemSize` is why scrolling feels right or wrong
 
@@ -64,6 +67,50 @@ scroller (below), so no footer sentinel of your own is needed.
 ```tsx
 onEndReached={() => { if (!isFetching && hasMore) fetchNext(); }}
 ```
+
+## Grids: `numColumns` and `overrideItemLayout`
+
+`numColumns` lays the items out in that many equal columns, on every platform.
+`overrideItemLayout` sets `layout.span`, how many columns an item takes, so a
+full-width row (a header, an empty state) can sit inside the grid. An item that
+does not fit the rest of its row starts the next one, as FlashList packs them.
+
+```tsx
+<VirtualList
+  data={rows}
+  numColumns={3}
+  overrideItemLayout={(layout, row) => {
+    if (row.kind !== 'cell') layout.span = 3;
+  }}
+  renderItem={renderRow}
+/>
+```
+
+Native FlashList and web honour the span; the `FlatList` fallback gives every
+item one column. On web the virtualizer windows whole rows, so
+`estimatedItemSize` estimates a row. `FlatList` cannot change `numColumns` in place, so a new count
+remounts it.
+
+## Sticky rows: `stickyHeaderIndices`
+
+The indices are into `data`; `ListHeaderComponent` is not counted. A sticky
+row scrolls with the list until it reaches the top, then stays pinned until the
+next sticky row takes its place. It pins **below** the header that overlaps the
+list (`useHeaderDockInset()`), not underneath it, so no offset is passed.
+
+| engine | how |
+| ------ | --- |
+| FlashList | its own sticky headers, with `stickyHeaderConfig.offset` set to the header inset |
+| web | the last sticky row at or above the viewport stays mounted (TanStack's sticky pattern) and is laid out in flow at its own offset with `position: sticky`, so the browser pins it at the header inset; in a grid the row holding the item is pinned |
+| `FlatList` | the indices are mapped onto its cells (the header, then grid rows); it pins at its own top edge, with no header clearance |
+
+## Pull to refresh
+
+`refreshing` and `onRefresh` are native. The list draws its own
+`RefreshControl`: the spinner takes the theme's primary colour (`tintColor` on
+iOS, `colors` on Android) and, under a Screen, rests below the header rather
+than behind it. There is no `refreshControl` prop; a spinner that does not
+follow the theme was the reason to pass one.
 
 ## `keyExtractor` is not optional in practice
 
@@ -106,13 +153,16 @@ switching is an install, not a migration.
 npx expo install @shopify/flash-list
 ```
 
-## Tuning props
+## Scroller and tuning props
 
 Each is honoured by the engine that understands it and accepted-but-ignored
 elsewhere, so one call site type-checks on every platform:
 
 | prop | honoured by |
 | ---- | ----------- |
+| `scrollbar` | native, as `ScrollArea`: `never` hides the system indicator, `always` keeps it on Android, iOS's indicator follows the theme. Web: the list scrolls its Screen's scroller, which owns the bar. There is no `showsVerticalScrollIndicator` |
+| `keyboardShouldPersistTaps`, `keyboardDismissMode` | native (both engines); web has no list scroller to configure |
+| `drawDistance`, `maxItemsInRecyclePool` | FlashList |
 | `getItemType` | FlashList: rows of one type recycle into each other, so give each row shape its own |
 | `maintainVisibleContentPosition` | FlashList (on by default; `false` turns it off) |
 | `removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize`, `initialNumToRender` | `FlatList` |
