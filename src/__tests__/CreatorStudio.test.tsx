@@ -9,6 +9,7 @@
  * jsdom lays nothing out, so `onLayout` is driven by a stand-in ResizeObserver
  * and fixed `offsetWidth` / `offsetHeight`.
  */
+import { materialFill } from './support/material-fill';
 import React, { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -264,7 +265,7 @@ describe('ReleaseStatusBadge', () => {
       if (fill === 'outlined') {
         expect(el.style.borderTopWidth).toBe('1px');
       } else {
-        expect(el.style.backgroundColor).toBe(normalise(colors.background));
+        expect(materialFill(el)).toBe(normalise(colors.background));
       }
     }
   });

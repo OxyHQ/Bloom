@@ -6,6 +6,7 @@
  * attributes. Width-driven layouts need `onLayout` (a ResizeObserver jsdom does
  * not have), so every part is given an explicit `layout`.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -70,7 +71,7 @@ function normalise(color: string): string {
 /** A subtle badge paints the tone's tint behind the tone's text colour. */
 function expectSubtle(el: HTMLElement, tone: AccentTone) {
   const accent = resolveAccentColors(theme.colors, tone, 'subtle');
-  expect(getComputedStyle(el).backgroundColor).toBe(normalise(accent.background));
+  expect(materialFill(el)).toBe(normalise(accent.background));
   expect(el.textContent).not.toBe('');
 }
 
@@ -98,9 +99,7 @@ describe('EvictionReportCard', () => {
   it('paints executed as a solid neutral badge', () => {
     mount(<EvictionReportCard {...base} status="executed" testID="e" />, 'dark');
     const solid = resolveAccentColors(theme.colors, 'default', 'solid');
-    expect(getComputedStyle(byTestId('e-status')).backgroundColor).toBe(
-      normalise(solid.background),
-    );
+    expect(materialFill(byTestId('e-status'))).toBe(normalise(solid.background));
   });
 
   it('draws the date as a heading and the relative line as given, in the status text colour', () => {

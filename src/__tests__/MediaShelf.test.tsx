@@ -5,6 +5,7 @@
  * react-native-web so the assertions read the emitted DOM, plus the pure
  * geometry the row and grid are built on.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -218,8 +219,8 @@ describe('FilterChips', () => {
 
   it('tints the selected chip with the brand and leaves the rest neutral', () => {
     mount(<FilterChips options={OPTIONS} value="all" onValueChange={jest.fn()} testID="fc" />);
-    const selected = getComputedStyle(byTestId('fc-all')).backgroundColor;
-    const rest = getComputedStyle(byTestId('fc-music')).backgroundColor;
+    const selected = materialFill(byTestId('fc-all'));
+    const rest = materialFill(byTestId('fc-music'));
     expect(selected).not.toBe('');
     expect(selected).not.toBe(rest);
   });

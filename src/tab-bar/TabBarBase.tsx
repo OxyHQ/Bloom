@@ -228,7 +228,7 @@ function TabBarBody({
       if (!IS_WEB || before === null || now === before) return;
       runOnJS(setHighlightPresent)(now > before);
     },
-    [highlightOpacity],
+    [highlightOpacity, setHighlightPresent],
   );
   const isDragging = useSharedValue(false);
   const lastTicked = useSharedValue(-1);

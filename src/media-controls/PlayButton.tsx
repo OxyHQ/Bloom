@@ -55,6 +55,20 @@ const SIZE_CONFIG: Record<PlayButtonSize, { box: number; glyph: number }> = {
   lg: { box: 56, glyph: 28 },
 };
 
+/**
+ * The web glyph follows its disc's material in and out: a host that reveals the
+ * button fades the material through `--bloom-surface-presence` (an `opacity`
+ * there would blank its blur), and the glyph fades with it.
+ */
+function glyphPresence(dim: number): WebCssStyle {
+  return {
+    opacity: `calc(var(--bloom-surface-presence, 1) * ${dim})` as unknown as number,
+    transitionProperty: 'opacity',
+    transitionDuration: 'var(--bloom-surface-presence-ms, 0ms)',
+    transitionTimingFunction: 'ease-out',
+  };
+}
+
 function PlayButtonComponent({
   playing,
   onPress,
@@ -143,7 +157,11 @@ function PlayButtonComponent({
   const glyphBox = (
     <View
       pointerEvents="none"
-      style={{ width: glyph, height: glyph, opacity: dimmed ? DISABLED_OPACITY : 1 }}
+      style={{
+        width: glyph,
+        height: glyph,
+        ...(IS_WEB ? glyphPresence(dimmed ? DISABLED_OPACITY : 1) : null),
+      }}
     >
       {loading ? (
         <SpinnerRing size={glyph} color={glyphColor} />

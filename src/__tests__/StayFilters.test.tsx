@@ -6,6 +6,7 @@
  * accessibility attributes (a prop-level test cannot see what react-native-web
  * does with `aria-*`).
  */
+import { materialFill } from './support/material-fill';
 import {
   SegmentedControl,
   SegmentedControlItem,
@@ -107,7 +108,7 @@ function normalise(color: string): string {
 
 function bg(el: HTMLElement): string {
   const probe = document.createElement('div');
-  probe.style.backgroundColor = getComputedStyle(el).backgroundColor;
+  probe.style.backgroundColor = materialFill(el);
   return probe.style.backgroundColor;
 }
 

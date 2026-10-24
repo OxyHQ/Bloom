@@ -234,6 +234,12 @@ export const MEDIA_CARD_STYLE_ID = 'bloom-media-card-web-css';
 const CARD = '[data-bloom-media-card]';
 const LINK = '[data-bloom-media-card-link]';
 const REVEAL = '[data-bloom-media-card-reveal="hover"]';
+/**
+ * A reveal holding the surface material (the play disc) fades it through
+ * `--bloom-surface-presence`, never `opacity`: an `opacity` on an ancestor is
+ * the material's backdrop root, so its blur would vanish for the whole fade.
+ */
+const MATERIAL = '.bloom-surface-paint, .bloom-btn--surface, .bloom-surface';
 
 export const MEDIA_CARD_CSS = `
 ${CARD} {
@@ -253,15 +259,22 @@ ${CARD}[data-bloom-media-card-hover]:hover {
   background-color: var(--bloom-media-card-hover) !important;
 }
 ${REVEAL} {
-  opacity: 0;
   transform: translateY(8px);
   pointer-events: none;
   transition: opacity 180ms ease-out, transform 180ms ease-out;
+  --bloom-surface-presence-ms: 180ms;
+}
+${REVEAL}:not(:has(${MATERIAL})) {
+  opacity: 0;
+}
+${REVEAL}:has(${MATERIAL}) {
+  --bloom-surface-presence: 0;
 }
 ${CARD}:hover ${REVEAL},
 ${CARD}:focus-within ${REVEAL},
 ${CARD}[data-bloom-media-card-menu-open] ${REVEAL} {
   opacity: 1;
+  --bloom-surface-presence: 1;
   transform: none;
   pointer-events: auto;
 }

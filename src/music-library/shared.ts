@@ -271,23 +271,25 @@ ${FOCUSABLE}:focus-visible {
 [data-bloom-music-input]::-webkit-search-cancel-button {
   display: none;
 }
+/* The play disc is surface material: it fades through the material's presence,
+   never opacity, which would make this node its backdrop root and blank its blur. */
 [data-bloom-top-result] [data-bloom-top-result-play] {
-  opacity: 0;
-  transition: opacity 150ms ease-out;
+  --bloom-surface-presence: 0;
+  --bloom-surface-presence-ms: 150ms;
 }
 [data-bloom-top-result]:hover [data-bloom-top-result-play],
 [data-bloom-top-result]:focus-within [data-bloom-top-result-play],
 [data-bloom-top-result] [data-bloom-top-result-play][data-playing="true"] {
-  opacity: 1;
+  --bloom-surface-presence: 1;
 }
 @media (hover: none) {
   [data-bloom-top-result] [data-bloom-top-result-play] {
-    opacity: 1;
+    --bloom-surface-presence: 1;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   [data-bloom-top-result] [data-bloom-top-result-play] {
-    transition: none;
+    --bloom-surface-presence-ms: 0ms;
   }
 }
 `;

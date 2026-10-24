@@ -6,6 +6,7 @@
  * attributes. Width-driven layouts need `onLayout` (a ResizeObserver jsdom does
  * not have), so every part is given an explicit `layout`.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -81,7 +82,7 @@ function normalise(color: string): string {
 /** A subtle badge paints the tone's tint behind the tone's text colour. */
 function expectSubtle(el: HTMLElement, tone: AccentTone) {
   const accent = resolveAccentColors(theme.colors, tone, 'subtle');
-  expect(getComputedStyle(el).backgroundColor).toBe(normalise(accent.background));
+  expect(materialFill(el)).toBe(normalise(accent.background));
   expect(el.textContent).not.toBe('');
 }
 
@@ -328,7 +329,7 @@ describe('MaintenanceRequestCard', () => {
     expectSubtle(stage, MAINTENANCE_STAGE.scheduled.tone);
     expect(stage.textContent).toBe('Scheduled');
     expect(byTestId('m-priority').textContent).toBe('Urgent');
-    expect(getComputedStyle(byTestId('m-priority')).backgroundColor).toBe(
+    expect(materialFill(byTestId('m-priority'))).toBe(
       normalise(
         resolveAccentColors(theme.colors, MAINTENANCE_PRIORITY.urgent.tone, 'subtle').background,
       ),

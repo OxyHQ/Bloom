@@ -13,6 +13,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
+import { paintedFill } from './support/material-fill';
 import { contrastRatio, mixColors } from '../styles/color-contrast';
 
 const HUES: ChipHue[] = [
@@ -226,7 +227,7 @@ describe('Chip hue', () => {
     });
     const expected = resolveChipHueColors(theme, 'purple');
     const box = resolvedStyle(getByTestId('chip').props.style);
-    expect(box.backgroundColor).toBe(expected.background);
+    expect(paintedFill(getByTestId('chip'))).toBe(expected.background);
     expect(box.borderWidth).toBe(0);
     expect(resolvedStyle(getByText('Design').props.style).color).toBe(expected.foreground);
   });
@@ -236,7 +237,7 @@ describe('Chip hue', () => {
       { hue: 'lime', surface: 'rgb(10, 20, 30)', children: 'Shipped' },
       'dark',
     );
-    expect(resolvedStyle(getByTestId('chip').props.style).backgroundColor).toBe(
+    expect(paintedFill(getByTestId('chip'))).toBe(
       resolveChipHueColors(theme, 'lime', 'rgb(10, 20, 30)').background,
     );
   });
@@ -249,8 +250,8 @@ describe('Chip hue', () => {
       onPress: () => {},
       checked: true,
     });
-    const plainBg = resolvedStyle(plain.getByTestId('chip').props.style).backgroundColor;
-    const selectedBg = resolvedStyle(selected.getByTestId('chip').props.style).backgroundColor;
+    const plainBg = paintedFill(plain.getByTestId('chip'));
+    const selectedBg = paintedFill(selected.getByTestId('chip'));
     expect(plainBg).toBe(resolveChipHueColors(plain.theme, 'lime').background);
     expect(selectedBg).not.toBe(plainBg);
   });

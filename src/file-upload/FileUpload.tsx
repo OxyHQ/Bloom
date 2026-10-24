@@ -759,7 +759,10 @@ const FileUploadComponent = function FileUpload({
       {/* Everything but the material, in a layer of its own: a disabled frame
           dims this layer, never the root, whose `opacity` would make it the
           material's backdrop root. */}
-      <View pointerEvents="none" style={[fill, { opacity: disabled && IS_WEB ? DISABLED_OPACITY : 1 }]}>
+      <View
+        pointerEvents="none"
+        style={[fill, { opacity: disabled && IS_WEB ? DISABLED_OPACITY : 1 }]}
+      >
         {/* Dashed idle border. */}
         <Animated.View
           {...webDataSet({ bloomFileUploadDash: '' })}

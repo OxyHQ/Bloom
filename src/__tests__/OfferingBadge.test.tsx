@@ -5,6 +5,7 @@
  * read the emitted DOM: labels, icons, geometry, the tint pair per offering and
  * the over-a-photo variant.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -160,7 +161,7 @@ describe('OfferingBadge', () => {
   it.each(['light', 'dark'] as const)('renders the tint on the pill and the label (%s)', (mode) => {
     mount(<OfferingBadge offering="short_term_rent" testID="b" />, mode);
     const paint = resolveOfferingBadgePaint(theme, 'short_term_rent', 'tinted');
-    expect(getComputedStyle(byTestId('b')).backgroundColor).toBe(normalise(paint.background));
+    expect(materialFill(byTestId('b'))).toBe(normalise(paint.background));
     expect(getComputedStyle(label(byTestId('b'))).color).toBe(normalise(paint.foreground));
     expect(byTestId('b-icon').innerHTML).toContain(paint.icon);
   });
@@ -171,7 +172,7 @@ describe('OfferingBadge', () => {
       mount(<OfferingBadge offering="exchange" variant="onMedia" testID="b" />, mode);
       const { neutral: n } = resolveButtonRamps(theme);
       const style = getComputedStyle(byTestId('b'));
-      expect(style.backgroundColor).toBe(normalise(n[50]));
+      expect(materialFill(byTestId('b'))).toBe(normalise(n[50]));
       expect(getComputedStyle(label(byTestId('b'))).color).toBe(normalise(n[900]));
       expect(byTestId('b').style.boxShadow || style.boxShadow).not.toBe('');
     },
