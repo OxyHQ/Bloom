@@ -21,6 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Screen } from 'react-native-screens';
 import { animateMotion } from '../../motion/recipes';
+import { ScreenActivity } from '../../screen/ScreenActivity';
 import { valueAtPage, type PageModel } from '../pages';
 import {
   loadPagerView,
@@ -259,7 +260,7 @@ export function TabPager({
             }
             style={styles.page}
           >
-            {descriptor.render()}
+            <ScreenActivity active={focused}>{descriptor.render()}</ScreenActivity>
           </Screen>
         ) : null}
       </View>

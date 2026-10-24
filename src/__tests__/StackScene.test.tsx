@@ -18,7 +18,12 @@ it("paints the panel's fill and hides every scene but the top one from screen re
     </BloomThemeProvider>
   );
   const tree = render(ui());
-  const scene = () => tree.getByText('Post', { includeHiddenElements: true }).parent!.parent!;
+  // The scene is the nearest host above the text that paints a fill.
+  const scene = () => {
+    let node = tree.getByText('Post', { includeHiddenElements: true }).parent;
+    while (node && !resolvedStyle(node.props.style).backgroundColor) node = node.parent;
+    return node!;
+  };
   expect(resolvedStyle(scene().props.style).backgroundColor).toBe('#123456');
   expect(scene().props.accessibilityElementsHidden).toBe(false);
   mockFocused = false;
