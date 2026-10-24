@@ -200,7 +200,10 @@ export function Textarea({
                 paddingHorizontal:
                   TEXT_FIELD_GEOMETRY[size].paddingHorizontal - TEXT_FIELD_RING_WIDTH,
                 paddingVertical: SHELL_PADDING_VERTICAL - TEXT_FIELD_RING_WIDTH,
-                backgroundColor: 'transparent',
+                // Native draws the fill under its own border, as main did: the
+                // paint is a child, which on native covers an outset border, so
+                // the focus and invalid ring would vanish under it.
+                backgroundColor: IS_WEB ? 'transparent' : paint.backgroundColor,
                 borderColor: paint.borderColor,
               },
           TEXT_FIELD_WEB_TRANSITION,
@@ -218,9 +221,9 @@ export function Textarea({
       >
         {fieldClassName ? null : (
           <SurfacePaint
-            fill={paint.backgroundColor}
-            radius={TEXT_FIELD_RADIUS}
-            outset={TEXT_FIELD_RING_WIDTH}
+            fill={IS_WEB ? paint.backgroundColor : undefined}
+            radius={IS_WEB ? TEXT_FIELD_RADIUS : TEXT_FIELD_RADIUS - TEXT_FIELD_RING_WIDTH}
+            outset={IS_WEB ? TEXT_FIELD_RING_WIDTH : 0}
             composite
             transition={TEXT_FIELD_FILL_TRANSITION}
           />
