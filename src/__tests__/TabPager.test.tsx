@@ -1,6 +1,6 @@
 import { act, render } from '@testing-library/react-native';
 import { BottomBar } from '../bottom-bar';
-import { useTabPager, type TabPage, type TabPagerState } from '../tab-pager';
+import { useTabPager, type AppDestination, type TabPagerState } from '../tab-pager';
 import { TabPagerBottomBar } from '../tab-pager/TabPagerBottomBar';
 import { useTabPagerContext, type TabCommitter } from '../tab-pager/context';
 import { createPageModel, valueAtPage } from '../tab-pager/pages';
@@ -32,13 +32,19 @@ jest.mock('expo-router/ui', () => ({
 }));
 jest.mock('../tab-pager/expo-router/TabPager', () => ({ TabPager: () => null }));
 
-/** A page without a bar item sits left of Home, so page and bar indices differ. */
-const PAGES: TabPage[] = [
-  { name: 'camera', href: '/camera' },
-  { name: 'index', href: '/', preload: true, bar: { label: 'Home', icon: null } },
-  { name: 'write', href: '/write' },
-  { name: 'you', href: '/you', preload: true, bar: { label: 'You', icon: null } },
+const Glyph = () => null;
+/**
+ * A page without a bar item sits left of Home, so page and bar indices differ;
+ * Explore is a sidebar row and no page at all.
+ */
+const DESTINATIONS: AppDestination[] = [
+  { name: 'camera', href: '/camera', page: true },
+  { name: 'index', href: '/', preload: true, bar: true, label: 'Home', icon: Glyph },
+  { name: 'explore', href: '/explore', label: 'Explore', icon: Glyph },
+  { name: 'write', href: '/write', page: true },
+  { name: 'you', href: '/you', preload: true, bar: true, label: 'You', icon: Glyph },
 ];
+const PAGES = DESTINATIONS.filter((destination) => destination.name !== 'explore');
 
 function mount() {
   type Seen = TabPagerState & { register: (committer: TabCommitter) => void };
@@ -46,11 +52,11 @@ function mount() {
   function Probe() {
     const context = useTabPagerContext();
     seen.current = { ...useTabPager(), register: context.registerCommitter };
-    return <TabPagerBottomBar onReselect={onReselect} />;
+    return <TabPagerBottomBar />;
   }
   const onReselect = jest.fn();
   const tree = () => (
-    <TabPagerProvider pages={PAGES}>
+    <TabPagerProvider destinations={DESTINATIONS} onReselect={onReselect}>
       <Probe />
     </TabPagerProvider>
   );
@@ -105,6 +111,17 @@ it('binds the bar to the pages: items, selection, presence and reselect', () => 
   expect(tabs.bar().value).toBe('');
 });
 
+it('presses a destination the same way from anywhere: a page, a place, an action', () => {
+  const tabs = mount();
+  tabs.navigator();
+  act(() => tabs.pager.selectDestination('explore'));
+  expect(mockRouter.navigate).toHaveBeenCalledWith('/explore');
+  tabs.landOn('/explore');
+  act(() => tabs.pager.selectDestination('explore'));
+  expect(tabs.onReselect).toHaveBeenCalledWith('explore');
+  expect(tabs.bar().value).toBe('');
+});
+
 it('navigates by href and moves the highlight in bar units without a navigator', () => {
   const tabs = mount();
   act(() => tabs.pager.selectTab('you'));
@@ -149,7 +166,7 @@ it('shows the bar on a route pushed over a page that hides it, pager or not', ()
 it('does not re-render the tabs layout when only the page in front changes', () => {
   const { useTabsWithTriggers } = jest.requireMock('expo-router/ui');
   const layout = <TabPagerLayout />;
-  const tree = () => <TabPagerProvider pages={PAGES}>{layout}</TabPagerProvider>;
+  const tree = () => <TabPagerProvider destinations={DESTINATIONS}>{layout}</TabPagerProvider>;
   const view = render(tree());
   const renders = jest.mocked(useTabsWithTriggers).mock.calls.length;
   expect(renders).toBeGreaterThan(0);

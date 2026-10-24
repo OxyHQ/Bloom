@@ -5,42 +5,97 @@ import { animateMotion } from '../../motion/recipes';
 import { useRouter, usePathname, type Href } from '../../panel-routing/expo-router';
 import {
   TabPagerActiveContext,
+  TabPagerChromeContext,
   TabPagerContext,
-  TabPagerItemsContext,
   type TabCommitter,
   type TabPagerActive,
+  type TabPagerChrome,
   type TabPagerContextValue,
 } from '../context';
-import { barItemsOf, createPageModel, pagesStructure } from '../pages';
-import type { TabPage } from '../types';
+import {
+  barItemsOf,
+  createPageModel,
+  destinationsOfPages,
+  pagesOf,
+  pagesStructure,
+  sidebarItemsOf,
+} from '../pages';
+import type { AppDestination, TabPage } from '../types';
 
-export interface TabPagerProviderProps {
-  /** The app's root pages, in pager order. */
-  pages: readonly TabPage[];
+export type TabPagerProviderProps = {
+  /**
+   * Pressing the destination already in front, from the bar or the sidebar.
+   * Conventionally "back to the top", then "refresh"; without it the press
+   * does nothing.
+   */
+  onReselect?: (name: string) => void;
   children: ReactNode;
-}
+} & (
+  | {
+      /**
+       * Every place the app's navigation leads, declared once: the pages in
+       * pager order, and the sidebar's rows in this same order.
+       */
+      destinations: readonly AppDestination[];
+      pages?: never;
+    }
+  | {
+      /** @deprecated Pass `destinations`. */
+      pages: readonly TabPage[];
+      destinations?: never;
+    }
+);
 
 /**
- * The one authority on which root page is in front and where the bar's
- * highlight sits. Mount it above the `AppShell`: the bar and the tabs layout
- * both read it, and the bar renders over pushed routes too.
+ * The one authority on the app's navigation: which destination and which root
+ * page is in front, where the bar's highlight sits, and what pressing a
+ * destination does. Mount it above the `AppShell`: the shell composes its
+ * sidebar and bottom bar from it, the tabs layout pages through it, and the bar
+ * renders over pushed routes too.
  *
  * The highlight moves when the reader ACTS, not when the incoming screen has
  * finished rendering: a tap springs it at once, and with the pager mounted the
  * finger drives it. On web, where there is no navigator, a tap navigates by
  * href and every page's route chunk is warmed up front.
  */
-export function TabPagerProvider({ pages, children }: TabPagerProviderProps) {
+export function TabPagerProvider({
+  destinations: declared,
+  pages: legacyPages,
+  onReselect,
+  children,
+}: TabPagerProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const destinations = useMemo(
+    () => declared ?? destinationsOfPages(legacyPages ?? []),
+    [declared, legacyPages],
+  );
+  const pages = useMemo(() => pagesOf(destinations), [destinations]);
   const structure = pagesStructure(pages);
   // Keyed on the structure, not the array: labels and icons change with a
-  // badge, and nothing but the bar should re-render for that.
+  // badge, and nothing but the chrome should re-render for that.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `structure` is what the model reads from `pages`.
   const model = useMemo(() => createPageModel(pages), [structure]);
-  const items = useMemo(() => barItemsOf(pages), [pages]);
+  const chrome = useMemo<TabPagerChrome>(
+    () => ({
+      destinations,
+      barItems: barItemsOf(pages),
+      sidebarItems: sidebarItemsOf(destinations),
+    }),
+    [pages, destinations],
+  );
+  // Read when pressed, so pressing never re-creates what holds the callback.
+  const destinationsRef = useRef(destinations);
+  destinationsRef.current = destinations;
+  const onReselectRef = useRef(onReselect);
+  onReselectRef.current = onReselect;
 
   const activeIndex = model.indexForPathname(pathname);
+  const activeDestination = pathname
+    ? (destinations.find((destination) => destination.href === pathname)?.name ?? null)
+    : null;
+  const activeDestinationRef = useRef(activeDestination);
+  activeDestinationRef.current = activeDestination;
   const activeBar = model.barIndexOf(activeIndex);
   const chromeTarget = activeIndex >= 0 ? (model.chromeHidden[activeIndex] ?? 0) : 0;
   const progress = useSharedValue(model.barPositions[activeIndex] ?? 0);
@@ -116,6 +171,18 @@ export function TabPagerProvider({ pages, children }: TabPagerProviderProps) {
     [model, router],
   );
 
+  const selectDestination = useCallback(
+    (name: string) => {
+      const destination = destinationsRef.current.find((candidate) => candidate.name === name);
+      if (!destination) return;
+      if (destination.onPress) destination.onPress();
+      else if (name === activeDestinationRef.current) onReselectRef.current?.(name);
+      else if (model.indexOf(name) >= 0) selectTab(name);
+      else router.navigate(destination.href as Href);
+    },
+    [model, router, selectTab],
+  );
+
   const value = useMemo<TabPagerContextValue>(
     () => ({
       pages: model.pages,
@@ -124,19 +191,20 @@ export function TabPagerProvider({ pages, children }: TabPagerProviderProps) {
       chromeProgress,
       selectTab,
       leaveTab,
+      selectDestination,
       registerCommitter,
     }),
-    [model, progress, chromeProgress, selectTab, leaveTab, registerCommitter],
+    [model, progress, chromeProgress, selectTab, leaveTab, selectDestination, registerCommitter],
   );
   const active = useMemo<TabPagerActive>(
-    () => ({ activeIndex, activePage: model.pages[activeIndex]?.name ?? null }),
-    [model, activeIndex],
+    () => ({ activeIndex, activePage: model.pages[activeIndex]?.name ?? null, activeDestination }),
+    [model, activeIndex, activeDestination],
   );
 
   return (
     <TabPagerContext.Provider value={value}>
       <TabPagerActiveContext.Provider value={active}>
-        <TabPagerItemsContext.Provider value={items}>{children}</TabPagerItemsContext.Provider>
+        <TabPagerChromeContext.Provider value={chrome}>{children}</TabPagerChromeContext.Provider>
       </TabPagerActiveContext.Provider>
     </TabPagerContext.Provider>
   );

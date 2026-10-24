@@ -1,7 +1,8 @@
 import { createContext, useContext, useMemo } from 'react';
+import type { SidebarNavItem } from '../sidebar/types';
 import type { TabBarItem } from '../tab-bar/types';
 import type { PageModel } from './pages';
-import type { TabPagerState } from './types';
+import type { AppDestination, TabPagerState } from './types';
 
 /**
  * What a mounted tabs navigator takes over from the provider.
@@ -35,18 +36,32 @@ export interface TabPagerActive {
   /** The page in front as a PAGE index, or -1. */
   activeIndex: number;
   activePage: string | null;
+  /** The destination in front, page or not, or `null` on any other route. */
+  activeDestination: string | null;
 }
 
 export const TabPagerActiveContext = createContext<TabPagerActive>({
   activeIndex: -1,
   activePage: null,
+  activeDestination: null,
 });
 
 /**
- * The bar's items, apart from the rest: labels and icons (an unread badge, an
- * avatar) change far more often than the pages do, and only the bar draws them.
+ * What the bar and the sidebar draw, apart from the rest: labels and icons (an
+ * unread badge, an avatar) change far more often than the pages do, and only
+ * the navigation chrome draws them.
  */
-export const TabPagerItemsContext = createContext<TabBarItem[]>([]);
+export interface TabPagerChrome {
+  destinations: readonly AppDestination[];
+  barItems: TabBarItem[];
+  sidebarItems: SidebarNavItem[];
+}
+
+export const TabPagerChromeContext = createContext<TabPagerChrome>({
+  destinations: [],
+  barItems: [],
+  sidebarItems: [],
+});
 
 export function useTabPagerContext(): TabPagerContextValue {
   const value = useContext(TabPagerContext);
@@ -56,10 +71,11 @@ export function useTabPagerContext(): TabPagerContextValue {
 
 /** The app's root pages: which one is in front, and how to move between them. */
 export function useTabPager(): TabPagerState {
-  const { pages, progress, chromeProgress, selectTab, leaveTab } = useTabPagerContext();
+  const { pages, progress, chromeProgress, selectTab, leaveTab, selectDestination } =
+    useTabPagerContext();
   const { activePage } = useContext(TabPagerActiveContext);
   return useMemo(
-    () => ({ pages, activePage, progress, chromeProgress, selectTab, leaveTab }),
-    [pages, activePage, progress, chromeProgress, selectTab, leaveTab],
+    () => ({ pages, activePage, progress, chromeProgress, selectTab, leaveTab, selectDestination }),
+    [pages, activePage, progress, chromeProgress, selectTab, leaveTab, selectDestination],
   );
 }

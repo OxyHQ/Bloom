@@ -55,6 +55,7 @@ import { useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
 import { usePanelInteraction } from './use-panel-interaction';
+import { closingOnChoice } from './drawer-choice';
 import {
   DRAWER_EASE as REVEAL_EASE,
   DRAWER_MS as REVEAL_MS,
@@ -284,9 +285,6 @@ export function createAppShellEngine() {
             : width >= BREAKPOINTS.md));
     const compactRegion = panelHost && !framed;
     const stretchReading = compactRegion || contentMaxWidth === 'none';
-    // The drawer always opens the full panel, whatever the in-flow variant.
-    const drawerSidebar = sidebar ? { ...sidebar, variant: 'panel' as const } : undefined;
-
     // Reveal keeps its page host mounted across compact/desktop changes.
     const drawerStyle = variant === 'dashboard' || variant === 'feed' ? drawer : 'overlay';
     const centred = variant === 'feed' || variant === 'focus';
@@ -409,6 +407,10 @@ export function createAppShellEngine() {
       defaultValue: false,
       onChange: onDrawerOpenChange,
     });
+    // The drawer always opens the full panel, whatever the in-flow variant.
+    const drawerSidebar = sidebar
+      ? { ...closingOnChoice(sidebar, () => setOpen(false)), variant: 'panel' as const }
+      : undefined;
     const drawerAvailable = hasNav && !wide;
     const isOpen = open && drawerAvailable;
     // `drawerSwipe` is a native gesture: the web keeps its press-only drawer.

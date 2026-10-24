@@ -33,6 +33,7 @@ import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import { ShellColorClaimContext } from './context';
 import { useLatestClaim } from '../hooks/use-latest-claim';
 import type { AppColorName } from '../theme/color-presets';
+import { createDestinationBottomBar, useDestinationNavigation } from './destinations';
 
 /**
  * A navigation selection the app does not handle itself goes to the sidebar
@@ -72,6 +73,7 @@ export function createAppShell(
   ColorScope?: ComponentType<Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>>,
 ) {
   const AppShellEngine = createAppShellEngine();
+  const DestinationBottomBar = createDestinationBottomBar(BottomBar);
   function NavigationBottom({
     navigation = [],
     value = '',
@@ -459,7 +461,8 @@ export function createAppShell(
       shell
     );
   }
-  function ComposedAppShell(props: AppShellProps) {
+  function ComposedAppShell(declared: AppShellProps) {
+    const props = useDestinationNavigation(declared, DestinationBottomBar, Fab);
     if (props.panelLayout) return <ModularAppShell {...props} />;
     const adaptive =
       props.navigation !== undefined ||
