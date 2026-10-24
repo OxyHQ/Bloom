@@ -136,6 +136,7 @@ that arbitrate a drag between the pager and a child that also scrolls.
 - **Pages are admitted lazily.** The focused page renders first; preloading
   neighbours of the page the pager has come to rest on mount on the next frame,
   or at once when a drag starts.
+- **Only the page in front is active.** Each page's `Screen` is active while it is the page in front, as a covered stack scene's is not: a hidden page's videos stop and its reselect, status bar and floating action yield, with no `active` prop on the page.
 - **Off-screen pages are cheap.** Each page is a `react-native-screens`
   `Screen`: the page in front is active, preloading bar pages and the resting
   page's neighbours stay laid out, and the rest are parked.

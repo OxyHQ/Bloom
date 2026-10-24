@@ -1,9 +1,11 @@
 import type React from 'react';
 import { View } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 import { makeMutable } from 'react-native-reanimated';
 
 import { TabPager } from '../tab-pager/expo-router/TabPager';
+import { Screen, useScreen } from '../screen';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { createPageModel } from '../tab-pager/pages';
 
 const mockSetPage = jest.fn();
@@ -61,4 +63,44 @@ it('fades through to a page further away instead of scrolling past the pages bet
   tree.rerender(pager(3));
   expect(mockSetPage).not.toHaveBeenCalled();
   expect(mockCut).toHaveBeenCalledWith(3);
+});
+
+it('keeps only the page in front active', async () => {
+  const activity: Record<string, boolean> = {};
+  function Probe({ name }: { name: string }) {
+    activity[name] = useScreen().active;
+    return null;
+  }
+  const screens = Object.fromEntries(
+    routes.map((r) => [
+      r.key,
+      {
+        render: () => (
+          <Screen scroll="none">
+            <Probe name={r.name} />
+          </Screen>
+        ),
+      },
+    ]),
+  );
+  const ui = (index: number) => (
+    <BloomThemeProvider mode="light">
+      <TabPager
+        model={model}
+        state={{ index, routes }}
+        descriptors={screens}
+        progress={makeMutable(0)}
+        chromeProgress={makeMutable(0)}
+        onCommit={() => {}}
+      />
+    </BloomThemeProvider>
+  );
+  const tree = render(ui(1));
+  // Neighbours are admitted on the next frame.
+  await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+  expect(activity.b).toBe(true);
+  tree.rerender(ui(2));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+  expect(activity.c).toBe(true);
+  expect(activity.b).toBe(false);
 });

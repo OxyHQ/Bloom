@@ -1,6 +1,6 @@
-import { useContext, useMemo, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ScreenHostContext } from '../../screen/context';
+import { ScreenActivity } from '../../screen/ScreenActivity';
 import { useSurfaceFill } from '../../styles/surface-levels';
 import { useIsFocused } from './PanelRouterAdapter';
 
@@ -26,15 +26,13 @@ import { useIsFocused } from './PanelRouterAdapter';
 export function StackScene({ children }: { children: ReactNode }) {
   const fill = useSurfaceFill();
   const focused = useIsFocused();
-  const host = useContext(ScreenHostContext);
-  const sceneHost = useMemo(() => ({ ...host, active: host.active && focused }), [host, focused]);
   return (
     <View
       style={[styles.scene, { backgroundColor: fill }]}
       importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
       accessibilityElementsHidden={!focused}
     >
-      <ScreenHostContext.Provider value={sceneHost}>{children}</ScreenHostContext.Provider>
+      <ScreenActivity active={focused}>{children}</ScreenActivity>
     </View>
   );
 }

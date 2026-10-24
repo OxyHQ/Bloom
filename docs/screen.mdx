@@ -386,3 +386,11 @@ Every panel with navigation of its own (a deck column) is a scope of its own.
 profile's jump to its tabs). Mount a `ScreenReselectScope` yourself only for a
 separate stack of screens.
 
+## Activity
+
+A navigator that keeps screens mounted out of sight wraps each in
+`ScreenActivity active={inFront}`, and the Screens under it go inactive by
+themselves. Bloom's tab pager and native stack scenes (`stackSceneLayout`) do
+it already, so a route never passes `active` for that; pass it only for a
+screen your own code hides.
+
