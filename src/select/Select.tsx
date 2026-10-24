@@ -17,8 +17,10 @@ import {
   SELECT_CHEVRON_SIZE,
   SELECT_ITEM_CLASS,
   SELECT_TRIGGER_CLASS,
+  SELECT_TRIGGER_FIELD_STYLE,
   SELECT_TRIGGER_POPUP,
   SELECT_TRIGGER_SIZE_CLASS,
+  SELECT_TRIGGER_SIZE_STYLE,
   SELECT_VALUE_CLASS,
 } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
@@ -175,6 +177,10 @@ export function SelectTrigger({
     <StyledView
       className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[size], className)}
       style={[
+        // The geometry inline, not only as classes: with nothing but the
+        // classes the pill drew its value flush against both ends on Android.
+        className ? null : SELECT_TRIGGER_FIELD_STYLE,
+        className ? null : SELECT_TRIGGER_SIZE_STYLE[size],
         {
           ...(touch ? { minHeight: 44 } : null),
           borderRadius: borderRadius.full,

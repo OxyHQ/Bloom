@@ -25,8 +25,10 @@ import {
   SELECT_ITEM_CLASS,
   SELECT_MAX_HEIGHT,
   SELECT_TRIGGER_CLASS,
+  SELECT_TRIGGER_FIELD_STYLE,
   SELECT_TRIGGER_POPUP,
   SELECT_TRIGGER_SIZE_CLASS,
+  SELECT_TRIGGER_SIZE_STYLE,
   SELECT_VALUE_CLASS,
 } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
@@ -305,7 +307,14 @@ export function SelectTrigger({
         dataSet: isDisabled ? { bloomSelectField: '', disabled: '' } : { bloomSelectField: '' },
       } as Record<string, unknown>)}
       className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[ctx.size], className)}
-      style={[fieldStyle, fieldStyleOverride]}
+      style={[
+        // Same inline geometry as the native fork, for a host whose className
+        // pipeline is not wired (the classes still carry it where it is).
+        className ? null : SELECT_TRIGGER_FIELD_STYLE,
+        className ? null : SELECT_TRIGGER_SIZE_STYLE[ctx.size],
+        fieldStyle,
+        fieldStyleOverride,
+      ]}
     >
       <SurfacePaint
         paintFill="var(--bloom-select-paint)"
