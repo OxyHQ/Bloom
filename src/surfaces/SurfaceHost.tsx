@@ -34,6 +34,8 @@ function dialogPropsFor(p: SurfacePresentation): Partial<DialogProps> {
     width: p.width,
     maxWidth: p.maxWidth,
     maxHeightRatio: p.maxHeightRatio,
+    progress: p.progress,
+    backdrop: p.backdrop,
     inset: p.inset,
     showHandle: p.showHandle,
     dismissOnBackdrop: p.dismissOnBackdrop,

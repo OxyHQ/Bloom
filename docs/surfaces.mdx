@@ -100,6 +100,27 @@ it does **not** call: `Dialog`'s own `close()`. The value has to reach the
 `present()` promise, and it resolves on the press — a surface closed any other
 way resolves with nothing, which reads as the user having cancelled.
 
+### Content beside the sheet that moves with it
+
+A sheet that the screen behind it reacts to (a video that shrinks above its
+replies) passes a shared value as `progress`; Bloom writes the sheet's
+presented fraction into it on the UI thread, `0` closed to `1` up, through
+every frame of a drag. `backdrop` sets the paint behind the sheet, so the
+screen can stay fully visible while a tap on it still dismisses. A fixed
+height for content that loads in comes from the frame's `size`:
+
+```tsx
+const progress = useSharedValue(0);
+
+present((surface) => <Replies onClose={() => surface.dismiss()} />, {
+  placement: 'bottom',
+  scrollable: false,
+  progress,
+  backdrop: { blurIntensity: 0, dimOpacity: 0 },
+  frame: { key: 'replies', size: { height: windowHeight * 0.62 } },
+});
+```
+
 ## Buttons
 
 A built-in surface's buttons carry `shouldCloseOnPress: false` and dismiss

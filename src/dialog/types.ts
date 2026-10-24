@@ -5,6 +5,7 @@ import type { SurfaceTransition } from '../motion/types';
 import type { ReactNode } from 'react';
 import type { ButtonIconComponent } from '../button/types';
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 
 import type { ResponsiveDialogPlacement } from './placement';
 
@@ -301,6 +302,14 @@ export type DialogProps = React.PropsWithChildren<{
   maxWidth?: number;
   /** Bottom-sheet max height as a fraction of the viewport height. Defaults to `0.9`. */
   maxHeightRatio?: number;
+  /**
+   * How far the bottom sheet is presented, mirrored on the UI thread: `0`
+   * closed, `1` fully up, every value in between while it is dragged or
+   * animating. For content outside the sheet that moves with it (a video that
+   * shrinks above a replies sheet) without crossing the JS bridge. Written only
+   * while the dialog is a bottom sheet.
+   */
+  progress?: SharedValue<number>;
   /** Side-sheet inset (px) from the root overlay's edges. */
   inset?: DialogInset;
   /** Whether to render the drag handle in bottom-sheet mode. Defaults to `true`. */

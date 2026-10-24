@@ -39,6 +39,7 @@ import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
  *   - `open` (controlled) / `control` (imperative) → `present()` / `dismiss()`
  *   - `onClose`                                     → fired once the sheet settles
  *   - `maxHeightRatio`                              → sheet `maxHeight`
+ *   - `progress`                                    → sheet `animatedProgress`
  *   - `showHandle` / `dismissOnBackdrop` / `label`  → forwarded to the surface
  *   - `panelStyle`                                  → paints the sheet surface
  *   - `containerStyle`                              → wraps the content subtree
@@ -61,6 +62,7 @@ export function DialogBottomSheet({
   header,
   material: surfaceMaterial = 'surface',
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
+  progress,
   showHandle = true,
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
@@ -265,6 +267,7 @@ export function DialogBottomSheet({
       open={isControlled ? controlledOpen : startOpen}
       onDismiss={handleDismiss}
       onDismissAttempt={onDismissAttempt}
+      animatedProgress={progress}
       enablePanDownToClose
       // Nav-header mode hides the drag handle (the nav bar sits at the very top);
       // drag-to-dismiss still works via the coordinated body pan.
@@ -405,6 +408,7 @@ export type DialogBottomSheetProps = DialogPresentationLifecycle &
     | 'header'
     | 'material'
     | 'maxHeightRatio'
+    | 'progress'
     | 'showHandle'
     | 'dismissOnBackdrop'
     | 'contentPadding'
