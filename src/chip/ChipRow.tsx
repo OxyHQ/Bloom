@@ -1,5 +1,6 @@
 import { ScrollArea } from '../layout/ScrollArea';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { useSurfaceFill } from '../styles/surface-levels';
 import {
   View,
   type LayoutChangeEvent,
@@ -8,7 +9,6 @@ import {
 } from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
 import { chipRowOverflow, type ChipRowScroll } from './shared';
 import type { ChipRowProps } from './types';
 import { IS_WEB } from '../styles/platform';
@@ -21,9 +21,10 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
  * The fade is the thing worth sharing. Without it a clipped pill just stops
  * mid-glyph and reads as a rendering fault rather than as "there is more"; the
  * row `category-bar` draws is the only place in the library that had one, and
- * five filter rows were scrolling without it. The gradient resolves into
- * `fadeColor` — the surface BEHIND the row, which the row cannot know — so a
- * caller on a card must say so or the fade will blend into the page instead.
+ * five filter rows were scrolling without it. The gradient resolves into the
+ * surface behind the row (`useSurfaceFill`: a card's, a panel's, the page's), so
+ * it blends wherever the row sits; `fadeColor` overrides it for a backdrop no
+ * Bloom surface paints.
  *
  * Web only, and deliberately: the fade is painted with a CSS gradient, and on
  * native a scroll row already shows its own bounce. The row scrolls on both.
@@ -57,14 +58,14 @@ function ChipRowComponent({
   contentContainerStyle,
   testID,
 }: ChipRowProps) {
-  const theme = useTheme();
   const directionProps = useDirectionProps();
   const rtl = useIsRtl();
   const startInset = typeof contentInset === 'number' ? contentInset : contentInset.start;
   const endInset = typeof contentInset === 'number' ? contentInset : contentInset.end;
   const [scroll, setScroll] = useState<ChipRowScroll>({ x: 0, viewport: 0, content: 0 });
   const overflow = useMemo(() => chipRowOverflow(scroll), [scroll]);
-  const fade = fadeColor ?? theme.colors.background;
+  const surface = useSurfaceFill();
+  const fade = fadeColor ?? surface;
 
   // A mask fades content alpha, so hover/selection/material remain the actual
   // surface underneath instead of an approximation painted over the track.

@@ -3,8 +3,8 @@ import type { AppShellSidebarProps } from './types';
 
 /**
  * The sidebar as the modal drawer shows it: choosing anything in it — a row, an
- * action row, the compose action — closes the drawer first, so the reader sees
- * where they went rather than the drawer still over it.
+ * action row, the compose action, the logo (home) — closes the drawer first, so
+ * the reader sees where they went rather than the drawer still over it.
  */
 export function closingOnChoice(
   sidebar: AppShellSidebarProps,
@@ -27,5 +27,8 @@ export function closingOnChoice(
       ...sidebar.primaryAction,
       onPress: after(sidebar.primaryAction.onPress),
     },
+    logo: sidebar.logo?.onPress
+      ? { ...sidebar.logo, onPress: after(sidebar.logo.onPress) }
+      : sidebar.logo,
   };
 }
