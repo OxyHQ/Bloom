@@ -81,9 +81,13 @@ that arbitrate a drag between the pager and a child that also scrolls.
   `progress` and `chromeProgress` from a worklet, interpolated between the two
   pages under the finger. Nothing else writes `progress` while the pager is
   mounted.
-- **A tap cuts.** `setPageWithoutAnimation`, not an animated scroll through
-  every page in between (measured ~680ms a tap on a Pixel 10 Pro); the highlight
-  and the bar's presence spring to the destination instead.
+- **A tap transitions without travelling.** To the page next door it slides,
+  exactly as a swipe would (that neighbour is laid out, and the finger's
+  `onPageScroll` path drives the highlight). Further away it fades through,
+  Material's bottom-navigation transition: the page in front fades out in 90ms,
+  the pager cuts, and the destination fades in from 96% scale in 210ms, instead
+  of an animated scroll through every page in between (unmounted and blank,
+  ~680ms a tap on a Pixel 10 Pro). Reduced motion cuts.
 - **Pages are admitted lazily.** The focused page renders first; preloading
   neighbours of the page the pager has come to rest on mount on the next frame,
   or at once when a drag starts.
