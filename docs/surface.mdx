@@ -31,3 +31,22 @@ Hosts set the material's variables through `surfaceOpticsVars(optics, radius)` o
 Native paints a single view: tint as `backgroundColor`, the glow as a gradient and the edge line as an inset `boxShadow`. There is no per-surface `BlurView` on native. A surface's own shadow belongs on the outer node; do not clip the native outer node if it needs a shadow.
 
 `Surface` has no press, disabled, loading or business state. Controls such as Button own those states and consume the **same paint** directly: `SurfacePaint` for universal components, `surfaceMaterialCss` and `useSurfaceMaterial` for web hosts. A `Screen` inside a painted surface leaves its canvas transparent, so the surface's material and edge stay visible.
+
+## Backdrop roots: never fade or filter a material host or its ancestors
+
+In Chromium an element with `opacity` below 1, any `filter` (`blur(0px)` included: only `none` is safe), a `mask`, a `clip-path`, a `mix-blend-mode` or a `backdrop-filter` of its own is the **backdrop root** of everything under it. A material host on or under one blurs only what that element painted: it turns flat and loses its edge light for as long as the trigger lasts, then pops back. Measured behind a striped page, a dialog's stripe contrast jumped to full (255) the instant it began closing, a tooltip rested at 66 because its entrance ended on `filter: blur(0px)`, and a menu flickered on every open and close.
+
+So a surface that paints the material appears, leaves and dims through its **presence**, a number from 0 to 1 (`surface/use-surface-presence.ts`):
+
+- The host moves and scales with `transform` only.
+- Its layers fade through `--bloom-surface-presence` over `--bloom-surface-presence-ms` (`surfacePresenceStyle` on the host, or `SurfacePaint presence`/`presenceMs`). An element's own opacity does not cut its own backdrop filter, so `::before`/`::after` may fade; both variables inherit, so a material host nested in the content fades with it.
+- `useSurfacePresenceContent(host, { presence, duration, blur })` fades the content piece by piece: each subtree that holds no material host gets its own opacity (and blur, which lands on `none`), and the walk goes into the ones that do, so no material host ever has a fading ancestor. A nested host that is gone drops its shadow too. Its `exit` option fades a surface whose exit plays on a detached copy after it unmounts (a Reanimated `exiting`, as the toast's).
+- A box that holds a material host and fades must not paint its own background: give the fill its own layer (the sticky media bar does), since the walk fades the subtrees around a host, not the box that holds it.
+- `useEnteredPresence(open)` gives a surface that mounts already open (tooltip, toast, hover card) one painted frame at 0 to fade in from.
+- `useSurfacePresence(presence)` returns the `ref` and `style` for a host whose presence is a plain number.
+- Disabled, pressed and closed states are presences below 1 that stay (a pressed Card is 0.85, a disabled one `DISABLED_OPACITY`), or dim their content, strokes and tint colours.
+- Hover and focus reveals use `surfaceRevealCss({ scope, shown })`: the revealing box publishes presence 0 or 1, the revealed control's content and shadow fade on their own. Never `opacity: 0` on the box that holds the control.
+
+Native has no backdrop filter, so native hosts keep fading and dimming themselves with `opacity`.
+
+Gates: `src/__tests__/backdrop-root.web.test.tsx` renders every file that paints the material at rest, pressed, disabled, opening and closing, and fails on any trigger on a host or an ancestor (inline, cascaded, a `@keyframes` that sets one, or a `:hover`/`:focus` rule that could); its census fails on a new painter that is neither rendered nor classified. `scripts/verify-backdrop-root.mjs` walks every Storybook story in Chromium, finds material hosts by their computed `::before`/`::after` backdrop filter, and samples every frame at rest, while hovering and pressing, and while overlay families open and close.
