@@ -327,3 +327,37 @@ dimensions can collapse. Put max-width on the reading content, not that viewport
 Screen's browser entry explicitly binds the browser ScrollBar, color scope and
 restoration hook. Shared factories receive these bindings instead of relying on
 a bundler to resolve bare relative imports to `.web` files.
+
+## Reselect
+
+Pressing the place the reader is already on — the bar item or sidebar row of the
+page in front, the logo, an inner tab already open (`Tabs pressOpenTab="reselect"`)
+— takes the screen in
+front back to its top, and reloads it once it is there: the convention every
+social app shares.
+
+Where the top is belongs to Bloom. `ScreenScrollView`, the screen's own viewport
+and, on the web, the document answer for the screen while it is the active one;
+a list bound by hand passes `scrollToOffset` to `useScreenScroll` and answers
+too. A list scrolling inside the page always wins over the page. How the screen
+reloads is the screen's to say, once, and only while it is active:
+
+```tsx
+import { useScreenReselectHandler, useScreenReselect } from '@oxy.so/bloom/screen';
+
+useScreenReselectHandler({ refresh: () => query.refetch() });
+
+// A screen that drives its own scroller (a reel, whose top is its first slide):
+useScreenReselectHandler({ isAtTop: () => index === 0, scrollToTop, refresh });
+
+// Anything else that means "this place again" (a logo):
+const reselect = useScreenReselect();
+```
+
+`AppShell` mounts one reselect scope for its routes, and a `TabPagerProvider`
+above it reselects through it when its destination in front is pressed again.
+Every panel with navigation of its own (a deck column) is a scope of its own.
+`useFrontScroller()` returns the scroller in front, to move it elsewhere (a
+profile's jump to its tabs). Mount a `ScreenReselectScope` yourself only for a
+separate stack of screens.
+

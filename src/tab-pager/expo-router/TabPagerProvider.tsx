@@ -25,8 +25,8 @@ import type { AppDestination, TabPage } from '../types';
 export type TabPagerProviderProps = {
   /**
    * Pressing the destination already in front, from the bar or the sidebar.
-   * Conventionally "back to the top", then "refresh"; without it the press
-   * does nothing.
+   * Defaults to the `AppShell`'s reselect: the screen in front back to its
+   * top, and a reload when it is already there (`useScreenReselectHandler`).
    */
   onReselect?: (name: string) => void;
   children: ReactNode;
@@ -89,6 +89,13 @@ export function TabPagerProvider({
   destinationsRef.current = destinations;
   const onReselectRef = useRef(onReselect);
   onReselectRef.current = onReselect;
+  const shellReselectRef = useRef<(() => void) | null>(null);
+  const registerReselect = useCallback((reselect: () => void) => {
+    shellReselectRef.current = reselect;
+    return () => {
+      if (shellReselectRef.current === reselect) shellReselectRef.current = null;
+    };
+  }, []);
 
   const activeIndex = model.indexForPathname(pathname);
   const activeDestination = pathname
@@ -175,9 +182,16 @@ export function TabPagerProvider({
     (name: string) => {
       const destination = destinationsRef.current.find((candidate) => candidate.name === name);
       if (!destination) return;
-      if (destination.onPress) destination.onPress();
-      else if (name === activeDestinationRef.current) onReselectRef.current?.(name);
-      else if (model.indexOf(name) >= 0) selectTab(name);
+      if (destination.onPress) {
+        destination.onPress();
+        return;
+      }
+      if (name === activeDestinationRef.current) {
+        if (onReselectRef.current) onReselectRef.current(name);
+        else shellReselectRef.current?.();
+        return;
+      }
+      if (model.indexOf(name) >= 0) selectTab(name);
       else router.navigate(destination.href as Href);
     },
     [model, router, selectTab],
@@ -193,8 +207,18 @@ export function TabPagerProvider({
       leaveTab,
       selectDestination,
       registerCommitter,
+      registerReselect,
     }),
-    [model, progress, chromeProgress, selectTab, leaveTab, selectDestination, registerCommitter],
+    [
+      model,
+      progress,
+      chromeProgress,
+      selectTab,
+      leaveTab,
+      selectDestination,
+      registerCommitter,
+      registerReselect,
+    ],
   );
   const active = useMemo<TabPagerActive>(
     () => ({ activeIndex, activePage: model.pages[activeIndex]?.name ?? null, activeDestination }),

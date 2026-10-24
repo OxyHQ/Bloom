@@ -7,6 +7,7 @@ import type { ScrollRestorationTarget } from '../scroll/types';
 import type { ScreenContextValue } from './context';
 import { recordScrollOwnerHandoff, clearScrollOwnerHandoff } from '../scroll/owner-handoff';
 import type { ScreenViewportValue, ScreenHostValue } from './context';
+import { useRegisterScreenScroller } from './reselect';
 
 /** Observes the existing owner for chrome/restoration; never computes layout styles. */
 export function useScreenViewportBinding(
@@ -121,6 +122,15 @@ export function useScreenViewportBinding(
       },
     }),
     [web, documentFlow, metrics, screen.active, scrollRef],
+  );
+  // The screen's own viewport answers a reselect, as the page: a list scrolling
+  // inside it wins.
+  useRegisterScreenScroller(
+    enabled
+      ? { offset: () => metrics.scrollY.value, scrollToOffset: (y) => value.scrollTo({ y }) }
+      : null,
+    enabled && screen.active,
+    true,
   );
   return { value, scrollRef, contentRef, restoring };
 }

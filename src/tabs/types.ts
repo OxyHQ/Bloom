@@ -34,6 +34,13 @@ export interface TabsProps {
   value?: string;
   /** Called when a tab is selected. Controlled path only. */
   onValueChange?: (value: string) => void;
+  /**
+   * What pressing the open tab again does. `report` (the default) calls
+   * `onValueChange` with it like any press; `reselect` reselects the screen
+   * instead — back to its top, and a reload once it is there — as every social
+   * app's inner tabs do. Controlled path only.
+   */
+  pressOpenTab?: 'report' | 'reselect';
   /** Web drag or Ctrl+Shift+Arrow requests a move. The owner persists and renders the new order. */
   onReorder?: (fromValue: string, toValue: string) => void;
   /**

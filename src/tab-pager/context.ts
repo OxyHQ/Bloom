@@ -27,6 +27,12 @@ export interface TabCommitter {
 export interface TabPagerContextValue extends Omit<TabPagerState, 'activePage'> {
   model: PageModel;
   registerCommitter: (committer: TabCommitter | null) => void;
+  /**
+   * What reselecting means when the provider is given no `onReselect`: an
+   * `AppShell` below registers its screens' reselect (back to the top, then a
+   * reload).
+   */
+  registerReselect: (reselect: () => void) => () => void;
 }
 
 export const TabPagerContext = createContext<TabPagerContextValue | null>(null);
