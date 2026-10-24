@@ -40,6 +40,22 @@ reason this API exists beside [`Dialog`](/docs/bloom/main/dialog):
 stay out of `BloomProvider`** — where an outlet sits is an app decision, and a
 second mount would duplicate every surface.
 
+A surface renders inside whatever wraps its host, and on web a portal keeps the
+context of where it was rendered. When the provider sits above the app's own
+providers (the Oxy SDK's `OxyProvider` mounts it) and surfaces need those
+contexts (i18n, data, the app shell), mount a `<SurfaceHost />` beneath them:
+inside a `<SurfaceProvider>` it takes the stack over, and the provider stops
+rendering its own until that host unmounts. Only one host draws at a time.
+
+```tsx
+<OxyProvider>          {/* mounts <SurfaceProvider> */}
+  <AppProviders>
+    <App />
+    <SurfaceHost />     {/* surfaces see AppProviders' contexts */}
+  </AppProviders>
+</OxyProvider>
+```
+
 ## Two calls in a row STACK, they do not queue
 
 ```tsx

@@ -1,5 +1,14 @@
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { useDialogControl } from '../dialog/context';
 import { useResolvedBloomLocale } from '../locale/context';
@@ -16,6 +25,13 @@ import { SurfaceContext } from './use-surface';
 import type { SurfaceControls, SurfaceEntry, SurfacePresentation } from './types';
 
 type DialogComponent = React.ComponentType<DialogProps>;
+
+/**
+ * Set by a `<SurfaceProvider>` for its children. A `<SurfaceHost>` mounted among
+ * them claims the stack, and the provider stops rendering its own host while
+ * it does.
+ */
+const SurfaceHostSlot = createContext<(() => () => void) | null>(null);
 
 /** Default placement — the ecosystem's responsive "sheet" (bottom → centered). */
 const DEFAULT_PLACEMENT: SurfacePresentation['placement'] = {
@@ -136,7 +152,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
     );
   }
 
-  function SurfaceHost() {
+  function SurfaceStack() {
     const stack = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
     // Each Dialog owns keyboard dismissal through the global overlay stack.
@@ -150,6 +166,19 @@ export function createSurfaceHost(Dialog: DialogComponent) {
       </>
     );
   }
+
+  /**
+   * Renders the surface stack where it is mounted. Inside a `<SurfaceProvider>`
+   * it takes the stack over from the provider's own host, so an app whose
+   * surfaces read its own contexts (i18n, data, the app shell) mounts one
+   * beneath those providers: a surface renders inside whatever wraps the host,
+   * and on web a portal keeps the context of where it was rendered.
+   */
+  function SurfaceHost() {
+    const claim = useContext(SurfaceHostSlot);
+    useLayoutEffect(() => claim?.(), [claim]);
+    return <SurfaceStack />;
+  }
   SurfaceHost.displayName = 'SurfaceHost';
 
   /**
@@ -158,16 +187,24 @@ export function createSurfaceHost(Dialog: DialogComponent) {
    * usage): on web the Portal auto-creates `#bloom-portal-root`; on native mount
    * `<PortalProvider>`/`<PortalOutlet>` from `@oxy.so/bloom/portal`. Can equally be folded
    * next to that Portal provider — `<SurfaceHost>` used directly does the same
-   * job without wrapping `children`.
+   * job without wrapping `children`. A `<SurfaceHost>` mounted among `children`
+   * takes the stack over while it is mounted.
    */
   function SurfaceProvider({ children }: { children: React.ReactNode }) {
     // Resolve any pending awaiters if the provider unmounts so no `present()`
     // promise is stranded.
     useEffect(() => () => resetSurfaces(), []);
+    // How many `<SurfaceHost>`s among `children` hold the stack. One host renders
+    // it at a time: two would draw every surface twice.
+    const [claims, setClaims] = useState(0);
+    const claim = useCallback(() => {
+      setClaims((count) => count + 1);
+      return () => setClaims((count) => count - 1);
+    }, []);
     return (
       <>
-        {children}
-        <SurfaceHost />
+        <SurfaceHostSlot.Provider value={claim}>{children}</SurfaceHostSlot.Provider>
+        {claims === 0 ? <SurfaceStack /> : null}
       </>
     );
   }
