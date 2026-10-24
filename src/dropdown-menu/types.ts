@@ -10,7 +10,7 @@ import type {
   MenuSubProps,
   MenuSubTriggerProps,
   OverlayOpenProps,
-  OverlaySurfaceProps,
+  MenuSurfaceProps,
   OverlayTriggerProps,
 } from '../floating/types';
 
@@ -26,7 +26,7 @@ export type DropdownMenuTriggerProps = OverlayTriggerProps & {
   /** An independent primary press surface, composed around the same control after menu handlers. */
   pressTrigger?: React.ReactElement<OverlayTriggerProps>;
 };
-export type DropdownMenuContentProps = OverlaySurfaceProps;
+export type DropdownMenuContentProps = MenuSurfaceProps;
 
 // The row props are the SHARED menu-row shapes under this family's part names.
 // They are named here rather than only in `floating/` because that is the name

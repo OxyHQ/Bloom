@@ -60,6 +60,9 @@ import { MenuRadioGroupProvider, useMenuRadioGroup, useMenuSurface } from './con
 import { useMenuPalette } from './menu-palette';
 import { menuType, menuTypeClass } from './menu-type';
 import { cx, MenuRowShell, splitChildren } from './shared';
+import { useMenuRowAlignment } from './menu-row-alignment';
+
+const NO_ROW_TRAITS = { gutter: false, leading: false } as const;
 import type {
   MenuCheckboxRowProps,
   MenuGroupProps,
@@ -298,6 +301,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const palette = useMenuPalette();
     const density = useMenuDensity();
     const type = 'caption-1-medium';
+    const column = useMenuRowAlignment(NO_ROW_TRAITS);
+    const aligned = inset || column.gutter;
     // The group label: `pl-2 text-body-medium text-text-secondary` — the
     // rows' size and weight, one step back in colour. The colour is inline only
     // while the caller passes no `className`: an inline colour would outrank a
@@ -306,14 +311,14 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
       <StyledText
         className={cx(
           density.labelClass,
-          inset && ROW_LABEL_INSET_CLASS,
+          aligned && ROW_LABEL_INSET_CLASS,
           menuTypeClass(type, className),
           className && 'text-muted-foreground',
           className,
         )}
         style={[
           menuType(type, className),
-          inset ? { paddingLeft: density.gutter } : null,
+          aligned ? { paddingLeft: density.gutter } : null,
           className ? null : { color: palette.textSecondary },
           style,
         ]}

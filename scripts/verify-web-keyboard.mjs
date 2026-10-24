@@ -18,6 +18,9 @@
  *  - Escape ORDER between a Select's list and the Dialog around it, and between
  *    a sub-menu flyout and its menu — listener registration order on real
  *    nodes, with real bubbling.
+ *  - A `ContextMenu` opened from its `anchor` prop, with no trigger: where it
+ *    lands against the real viewport, that an outside press is caught rather
+ *    than reaching the page, and where focus goes when it closes.
  *
  * Real input only: `page.keyboard.press()` goes through the browser's own focus
  * model and default actions. Focus is placed with a real Tab from the top of
@@ -58,7 +61,7 @@ const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Every check below runs unconditionally, so a short run means something threw. */
-const EXPECTED_CASES = 50;
+const EXPECTED_CASES = 74;
 
 const results = [];
 function record(name, pass, detail) {
@@ -450,7 +453,7 @@ async function menuCases(page) {
   f = await focused(page);
   record(
     'menu selection: Enter opens onto the first checkbox row',
-    f.role === 'checkbox' && f.name === 'Grid',
+    f.role === 'menuitemcheckbox' && f.name === 'Grid',
     show(f),
   );
   await key(page, 'Space');
@@ -516,6 +519,253 @@ async function menuCases(page) {
   );
 }
 
+/** The controlled `ContextMenu` story: status text, panel rect, the viewport. */
+function anchorState(page) {
+  return page.evaluate(() => {
+    const panel = document.querySelector('[data-testid="anchor-panel"]');
+    const r = panel?.getBoundingClientRect();
+    const visible = panel ? Number(getComputedStyle(panel).opacity) > 0.9 : false;
+    return {
+      status: document.querySelector('[data-testid="anchor-result"]')?.textContent ?? '',
+      panel: r && visible ? { top: r.top, left: r.left, right: r.right, bottom: r.bottom } : null,
+      viewport: { width: innerWidth, height: innerHeight },
+      focusedTestId: document.activeElement?.closest('[data-testid]')?.getAttribute('data-testid'),
+    };
+  });
+}
+
+async function centreOf(page, testId) {
+  return page.evaluate((id) => {
+    const r = document.querySelector(`[data-testid="${id}"]`).getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  }, testId);
+}
+
+async function contextMenuAnchorCases(page) {
+  await story(page, 'base-context-menu--controlled-anchor');
+  const opener = await centreOf(page, 'anchor-open');
+  await page.mouse.click(opener.x, opener.y);
+  await sleep(400);
+  let s = await anchorState(page);
+  record(
+    'anchor: a controlled open places the menu AT the point',
+    s.panel !== null &&
+      Math.abs(s.panel.left - opener.x) <= 1 &&
+      Math.abs(s.panel.top - opener.y) <= 1,
+    JSON.stringify({ point: opener, panel: s.panel }),
+  );
+  let f = await focused(page);
+  const ring = await page.evaluate(() => {
+    const el = document.activeElement;
+    return el ? getComputedStyle(el).outlineStyle : null;
+  });
+  record(
+    'anchor: focus lands on the panel itself, no row active and no ring',
+    f.role === 'menu' && s.focusedTestId === 'anchor-panel' && ring === 'none',
+    `${show(f)} outline=${ring}`,
+  );
+  await key(page, 'ArrowDown');
+  f = await focused(page);
+  record('anchor: ArrowDown from the panel lands on the first row', f.name === 'Rename', show(f));
+
+  await key(page, 'ArrowDown');
+  await key(page, 'ArrowDown');
+  f = await focused(page);
+  record('anchor: arrows move to the sub trigger', f.name === 'Move to…', show(f));
+  await key(page, 'ArrowRight', 400);
+  f = await focused(page);
+  const flyout = await page.evaluate(() => {
+    const sub = document.querySelector('[data-testid="anchor-sub-panel"]')?.getBoundingClientRect();
+    const main = document.querySelector('[data-testid="anchor-panel"]')?.getBoundingClientRect();
+    return sub && main ? { subLeft: sub.left, mainRight: main.right } : null;
+  });
+  record(
+    'anchor: ArrowRight flies the sub-menu out beside the menu, onto its first row',
+    f.name === 'Inbox' && flyout !== null && flyout.subLeft >= flyout.mainRight - 8,
+    `${show(f)} ${JSON.stringify(flyout)}`,
+  );
+  await key(page, 'Escape', 400);
+  f = await focused(page);
+  s = await anchorState(page);
+  record(
+    'anchor: Escape closes only the flyout',
+    f.name === 'Move to…' && /open/.test(s.status) && !/closed/.test(s.status),
+    `${show(f)} / ${s.status}`,
+  );
+  await key(page, 'Escape', 400);
+  s = await anchorState(page);
+  record(
+    'anchor: a second Escape clears the anchor and focus returns to the opener',
+    /closed/.test(s.status) && s.panel === null && s.focusedTestId === 'anchor-open',
+    JSON.stringify(s),
+  );
+
+  await page.mouse.click(opener.x, opener.y);
+  await sleep(400);
+  await key(page, 'ArrowDown');
+  await key(page, 'Enter', 400);
+  s = await anchorState(page);
+  record(
+    'anchor: Enter activates the row and the menu closes',
+    /last: rename/.test(s.status) && /closed/.test(s.status),
+    s.status,
+  );
+
+  await page.mouse.click(opener.x, opener.y);
+  await sleep(400);
+  const behind = await centreOf(page, 'anchor-behind');
+  await page.mouse.click(behind.x, behind.y);
+  await sleep(400);
+  s = await anchorState(page);
+  record(
+    'anchor: an outside press closes the menu and is caught, not delivered',
+    /closed/.test(s.status) && !/behind/.test(s.status) && s.panel === null,
+    s.status,
+  );
+
+  await page.mouse.click(opener.x, opener.y);
+  await sleep(400);
+  await key(page, 'Tab', 400);
+  s = await anchorState(page);
+  record(
+    'anchor: Tab closes it and focus returns to the opener',
+    /closed/.test(s.status) && s.focusedTestId === 'anchor-open',
+    JSON.stringify(s),
+  );
+
+  const corner = await centreOf(page, 'anchor-corner');
+  await page.mouse.click(corner.x, corner.y);
+  await sleep(500);
+  s = await anchorState(page);
+  const inside =
+    s.panel !== null &&
+    s.panel.left >= 0 &&
+    s.panel.top >= 0 &&
+    s.panel.right <= s.viewport.width &&
+    s.panel.bottom <= s.viewport.height;
+  record(
+    'anchor: at the viewport corner it flips and clamps onto the screen',
+    inside && s.panel.bottom <= s.viewport.height - 4 + 1,
+    JSON.stringify(s),
+  );
+  await key(page, 'ArrowUp');
+  f = await focused(page);
+  record(
+    'anchor: a corner open takes the keys too — ArrowUp is the last row',
+    f.name === 'Delete',
+    show(f),
+  );
+  await key(page, 'Escape', 400);
+}
+
+function textOf(page, testId) {
+  return page.evaluate(
+    (id) => document.querySelector(`[data-testid="${id}"]`)?.textContent ?? null,
+    testId,
+  );
+}
+
+/** `confirm()`, `confirmWithSuppression()` and `prompt()` from the keyboard alone. */
+async function surfaceCases(page) {
+  await story(page, 'base-surfaces--confirm');
+  await key(page, 'Tab');
+  await key(page, 'Enter', 500);
+  let f = await focused(page);
+  record('confirm: a keyboard open focuses the confirm button', f.name === 'Leave', show(f));
+  await key(page, 'Enter', 500);
+  let answer = await page.evaluate(() => document.querySelector('#storybook-root').textContent);
+  record('confirm: Enter confirms', /Answer: confirmed/.test(answer), answer);
+  await key(page, 'Enter', 500);
+  await key(page, 'Escape', 500);
+  answer = await page.evaluate(() => document.querySelector('#storybook-root').textContent);
+  record('confirm: Escape cancels', /Answer: cancelled/.test(answer), answer);
+
+  await story(page, 'base-surfaces--confirm-with-suppression');
+  await key(page, 'Tab');
+  await key(page, 'Enter', 500);
+  f = await focused(page);
+  record(
+    'suppression: the checkbox is there, unchecked, and holds focus',
+    f.role === 'checkbox' && f.selected === 'false',
+    show(f),
+  );
+  await key(page, 'Space', 300);
+  await key(page, 'Enter', 500);
+  answer = await textOf(page, 'suppressible-answer');
+  record(
+    'suppression: Space checks it and Enter confirms with it',
+    answer === 'Answer: confirmed · suppressed',
+    answer,
+  );
+  await key(page, 'Enter', 500);
+  await key(page, 'Escape', 500);
+  answer = await textOf(page, 'suppressible-answer');
+  record(
+    'suppression: Escape cancels, box untouched',
+    answer === 'Answer: cancelled · ask again',
+    answer,
+  );
+  await key(page, 'Enter', 500);
+  await key(page, 'Space', 300);
+  await key(page, 'Escape', 500);
+  answer = await textOf(page, 'suppressible-answer');
+  record(
+    'suppression: a cancelled answer still reports the checked box',
+    answer === 'Answer: cancelled · suppressed',
+    answer,
+  );
+  await key(page, 'Enter', 500);
+  await key(page, 'Tab');
+  await key(page, 'Tab');
+  f = await focused(page);
+  await key(page, 'Enter', 500);
+  answer = await textOf(page, 'suppressible-answer');
+  record(
+    'suppression: Enter on a focused Cancel still cancels',
+    f.name === 'Cancel' && answer === 'Answer: cancelled · ask again',
+    `${show(f)} / ${answer}`,
+  );
+
+  await story(page, 'base-surfaces--prompt-rename');
+  await key(page, 'Tab');
+  await key(page, 'Enter', 600);
+  const field = await page.evaluate(() => {
+    const el = document.activeElement;
+    return {
+      tag: el?.tagName,
+      value: el?.value,
+      start: el?.selectionStart,
+      end: el?.selectionEnd,
+    };
+  });
+  record(
+    'prompt: the input has focus with its value selected',
+    field.tag === 'INPUT' &&
+      field.start === 0 &&
+      field.end === (field.value ?? '').length &&
+      field.end > 0,
+    JSON.stringify(field),
+  );
+  await page.keyboard.type('Books');
+  await key(page, 'Enter', 500);
+  answer = await textOf(page, 'rename-answer');
+  record(
+    'prompt: typing replaces the selection and Enter submits',
+    answer === 'Name: Books',
+    answer,
+  );
+  f = await focused(page);
+  record(
+    'prompt: closing returns focus to the control that opened it',
+    f.name === 'Rename',
+    show(f),
+  );
+  await key(page, 'Enter', 600);
+  await key(page, 'Escape', 500);
+  answer = await textOf(page, 'rename-answer');
+  record('prompt: Escape cancels from the field', answer === 'Name: cancelled', answer);
+}
+
 async function main() {
   const puppeteer = loadPuppeteer();
   const browser = await puppeteer.launch({
@@ -531,6 +781,8 @@ async function main() {
     await tabsCases(page);
     await segmentedCases(page);
     await menuCases(page);
+    await contextMenuAnchorCases(page);
+    await surfaceCases(page);
   } finally {
     await browser.close();
   }

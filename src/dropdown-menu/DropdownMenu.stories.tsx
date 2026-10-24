@@ -7,6 +7,7 @@ import { BloomScope } from '../appearance';
 import {
   RiArrowDownSLine as ChevronBottomIcon,
   RiCheckLine as CheckIcon,
+  RiShareLine,
   RiUserLine as PersonIcon,
 } from '../icons/remix';
 import { useMenuPalette } from '../floating/menu-palette';
@@ -166,6 +167,58 @@ export const Submenu: Story = {
       </DropdownMenu>
     </View>
   ),
+};
+
+/**
+ * `alignRows`, and a flyout sized to its rows. Every label in a panel starts in
+ * one column whether its row has a check, an icon, both or neither; the
+ * flyout's long checked row with its shortcut is shown whole rather than cut
+ * at a fixed 266px.
+ */
+export const AlignedRowsAndWideSubmenu: Story = {
+  parameters: { controls: { disable: true } },
+  render: function AlignedRows() {
+    const [sidebarTabs, setSidebarTabs] = useState(true);
+    const [compact, setCompact] = useState(false);
+    return (
+      <View style={{ padding: 80 }}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild label="Share">
+            <Button appearance="outline" tone="neutral">
+              Share
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent alignRows testID="aligned-panel">
+            <DropdownMenuCheckboxItem
+              testID="aligned-check"
+              checked={compact}
+              onCheckedChange={setCompact}
+            >
+              Compact
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuItem testID="aligned-icon" leading={<RiShareLine size="sm" />}>
+              Share link
+            </DropdownMenuItem>
+            <DropdownMenuItem testID="aligned-plain">Rename</DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger testID="aligned-sub-trigger">View</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent testID="aligned-sub-panel">
+                <DropdownMenuCheckboxItem
+                  testID="wide-sub-row"
+                  checked={sidebarTabs}
+                  onCheckedChange={setSidebarTabs}
+                  trailing={<DropdownMenuShortcut>Ctrl+Shift+S</DropdownMenuShortcut>}
+                >
+                  Show Tabs in Sidebar
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuItem testID="wide-sub-plain">Reset layout</DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </View>
+    );
+  },
 };
 
 /**

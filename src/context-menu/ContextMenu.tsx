@@ -10,41 +10,65 @@ import { BloomScope } from '../appearance';
  * `ContextMenu*` names — one implementation, three families.
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import type { GestureResponderEvent } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
 import { MENU_TRIGGER_POPUP } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
+import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { LongPressArea } from '../floating/LongPressArea';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
+import type { FloatingAnchor } from '../floating/types';
 import { ContextMenuProvider, useContextMenu } from './context';
+import { pointAnchor, useControlledAnchor } from './shared';
 import type { ContextMenuContentProps, ContextMenuProps, ContextMenuTriggerProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CONTEXT_MENU_MESSAGES } from './messages';
 
-export function ContextMenu({ children, onOpenChange }: ContextMenuProps) {
-  const [open, setOpen] = useState(false);
+export function ContextMenu({
+  children,
+  anchor: anchorProp,
+  onOpenChange,
+  onAnchorChange,
+}: ContextMenuProps) {
+  const [ownOpen, setOwnOpen] = useState(false);
+  const controlledAnchor = useControlledAnchor(anchorProp);
+  const controlled = controlledAnchor !== undefined;
+  // A controlled anchor presents the sheet exactly while it is non-null; its
+  // position means nothing to a sheet, which anchors to the screen.
+  const open = controlled ? controlledAnchor !== null : ownOpen;
 
   const value = useMemo(
     () => ({
       open,
-      // Native ignores the anchor: a sheet is not anchored to the press.
-      openAt: () => {
-        setOpen(true);
+      // Native ignores the anchor: a sheet is not anchored to the press. The
+      // press point is still reported, for a controlled caller to store.
+      openAt: (next: FloatingAnchor | null) => {
+        if (!controlled) setOwnOpen(true);
         onOpenChange?.(true);
+        onAnchorChange?.(next ? pointAnchor(next) : { x: 0, y: 0 });
       },
       close: () => {
-        setOpen(false);
+        if (!controlled) setOwnOpen(false);
         onOpenChange?.(false);
+        onAnchorChange?.(null);
       },
       anchor: null,
     }),
-    [open, onOpenChange],
+    [open, controlled, onOpenChange, onAnchorChange],
   );
 
   return <ContextMenuProvider value={value}>{children}</ContextMenuProvider>;
+}
+
+function pressPoint(event: GestureResponderEvent | undefined): FloatingAnchor | null {
+  const x = event?.nativeEvent?.pageX;
+  const y = event?.nativeEvent?.pageY;
+  if (typeof x !== 'number' || typeof y !== 'number') return null;
+  return { top: y, bottom: y, left: x, right: x };
 }
 
 export function ContextMenuTrigger({
@@ -74,7 +98,7 @@ export function ContextMenuTrigger({
         // is required by the handle shape, so it is explicitly a no-op rather
         // than absent.
         onPress: () => {},
-        onLongPress: () => menu.openAt(null),
+        onLongPress: (event) => menu.openAt(pressPoint(event)),
         disabled,
         accessibilityLabel: label,
         accessibilityRole: 'button',
@@ -89,6 +113,7 @@ export function ContextMenuTrigger({
 
 export function ContextMenuContent({
   children,
+  alignRows,
   size,
   label: labelProp,
   style,
@@ -117,7 +142,9 @@ export function ContextMenuContent({
         onClose={onSheetClose}
         contentStyle={[{ gap: density.gap }, style]}
       >
-        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+        <MenuSurfaceProvider value={surface}>
+          <MenuRowAlignmentScope enabled={alignRows}>{children}</MenuRowAlignmentScope>
+        </MenuSurfaceProvider>
       </SheetShell>
     </BloomScope>
   );

@@ -20,6 +20,7 @@ export {
   ContextMenuSubContent,
 } from './ContextMenu.web';
 export type {
+  ContextMenuAnchor,
   ContextMenuProps,
   ContextMenuTriggerProps,
   ContextMenuContentProps,

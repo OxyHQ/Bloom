@@ -24,6 +24,7 @@ export {
   dismissAll,
   alert,
   confirm,
+  confirmWithSuppression,
   prompt,
 } from './api';
 export { useSurface } from './use-surface';
@@ -38,4 +39,6 @@ export type {
   AlertButtonStyle,
   SurfaceConfirmOptions,
   SurfacePromptOptions,
+  SurfaceSuppressibleConfirmOptions,
+  SurfaceSuppressibleConfirmResult,
 } from './types';

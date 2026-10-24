@@ -34,6 +34,36 @@ export function rectOf(node: ComponentRef<typeof View> | null): FloatingAnchor |
   return { top: box.top, bottom: box.bottom, left: box.left, right: box.right };
 }
 
+let warnedDetachedTrigger = false;
+
+/**
+ * The trigger's box, as the surface anchors to it.
+ *
+ * The rect is the trigger's WRAPPER (`TriggerSlot`), which normally hugs the
+ * control. Under `asChild` a caller can position the CHILD out of flow
+ * (`position: absolute` on the button) and leave the wrapper an empty 0×0 box
+ * wherever it fell — the menu then opened at that spot, the window's corner in
+ * the case that found it. A zero-area wrapper with a laid-out first child
+ * anchors to the child instead, and says once in development where the
+ * geometry belongs.
+ */
+export function triggerRectOf(node: ComponentRef<typeof View> | null): FloatingAnchor | null {
+  const own = rectOf(node);
+  if (!own || own.right > own.left || own.bottom > own.top) return own;
+  const child = (node as unknown as { firstElementChild?: Element | null } | null)
+    ?.firstElementChild;
+  if (typeof child?.getBoundingClientRect !== 'function') return own;
+  const box = child.getBoundingClientRect();
+  if (box.width === 0 && box.height === 0) return own;
+  if (process.env.NODE_ENV !== 'production' && !warnedDetachedTrigger) {
+    warnedDetachedTrigger = true;
+    console.warn(
+      `[Bloom] A menu or popover trigger's anchor wrapper is 0×0 at (${own.left}, ${own.top}) while its \`asChild\` control is laid out elsewhere — the control is positioned out of flow. The surface anchors to the control for now; put position and size on the TRIGGER's \`style\` / \`className\` (the wrapper the surface measures), not on the child.`,
+    );
+  }
+  return { top: box.top, bottom: box.bottom, left: box.left, right: box.right };
+}
+
 /**
  * Do two measurements describe the same box? Two `null`s do; a `null` and a box
  * do not.
@@ -80,7 +110,7 @@ export function useAnchorRect(
   }, []);
 
   const measure = useCallback(() => {
-    store(rectOf(ref.current));
+    store(triggerRectOf(ref.current));
   }, [ref, store]);
 
   const [schedule, cancel] = useFrameThrottle(measure);

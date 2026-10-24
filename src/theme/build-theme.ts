@@ -137,7 +137,7 @@ function buildColorsFromPreset(
       // on `--background`, `mono` came out at 1.25 in light and 1.53 in dark (white
       // text on a near-white pill). The pairs the policy generates together are the
       // `-subtle`/`-text` ones, and those are what `policy-legibility.test.ts`
-      // gates. The platform palettes in `adaptive-colors.ts` keep
+      // gates. The platform palettes in `adaptive-colors.native.ts` keep
       // `primaryContainer`/`onPrimaryContainer`, which IS a matched pair.
       primarySubtleForeground: g('primary-text'),
       negative: r.error,

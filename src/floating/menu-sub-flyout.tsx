@@ -52,6 +52,7 @@ import { pushFloatingEscape } from './escape-stack';
 import { FloatingPanel } from './FloatingPanel';
 import { hostElement, MENU_ROW_SELECTOR, useMenuPanelKeys } from './menu-keyboard';
 import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
+import { MenuRowAlignmentScope, useMenuRowsAligned } from './menu-row-alignment';
 import type {
   FloatingAnchor,
   MenuSubContentProps,
@@ -500,10 +501,12 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     alignOffset,
     minWidth,
     maxWidth,
+    alignRows,
     className,
     style,
     testID,
   }: MenuSubContentProps) {
+    const parentAlignsRows = useMenuRowsAligned();
     const { messages } = useMessages(FLOATING_MESSAGES);
     const label = labelProp ?? messages.submenu;
     const sub = useSubFlyout();
@@ -604,14 +607,16 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         surface="menu"
         minWidth={minWidth}
         maxWidth={maxWidth}
-        // `w-[266px]` — a sub panel is a FIXED width (one menu width),
-        // so a column of flyouts does not step in and out as their labels change
-        // length.
+        // `min-w-[266px]` — the root menu's floor, sized to its rows above it
+        // and capped at the viewport, so a long label with a shortcut is not
+        // cut off.
         className={cx(MENU_SUB_PANEL_CLASS, className)}
         style={style}
         testID={testID}
       >
-        {children}
+        <MenuRowAlignmentScope enabled={alignRows ?? parentAlignsRows}>
+          {children}
+        </MenuRowAlignmentScope>
       </FloatingPanel>
     );
   }

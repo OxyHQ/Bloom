@@ -19,6 +19,7 @@ import React, { useMemo } from 'react';
 
 import { SheetShell } from '../dialog/SheetShell';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
+import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
@@ -28,7 +29,13 @@ import { useCommonMessages } from '../locale/common-messages';
 
 export { Menubar, MenubarMenu, MenubarTrigger } from './MenubarBase';
 
-export function MenubarContent({ children, size, label: labelProp, style }: MenubarContentProps) {
+export function MenubarContent({
+  children,
+  size,
+  label: labelProp,
+  alignRows,
+  style,
+}: MenubarContentProps) {
   const common = useCommonMessages();
   const density = useMenuDensity(size);
   const label = labelProp ?? common.menu;
@@ -47,7 +54,9 @@ export function MenubarContent({ children, size, label: labelProp, style }: Menu
         onClose={onSheetClose}
         contentStyle={[{ gap: density.gap }, style]}
       >
-        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+        <MenuSurfaceProvider value={surface}>
+          <MenuRowAlignmentScope enabled={alignRows}>{children}</MenuRowAlignmentScope>
+        </MenuSurfaceProvider>
       </SheetShell>
     </BloomScope>
   );

@@ -12,6 +12,7 @@ import type { View } from 'react-native';
 
 import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
+import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import {
   hostElement,
@@ -163,6 +164,7 @@ export function DropdownMenuTrigger({
 
 export function DropdownMenuContent({
   children,
+  alignRows,
   size,
   maxHeight,
   label: labelProp,
@@ -233,7 +235,9 @@ export function DropdownMenuContent({
         style={style}
         testID={testID}
       >
-        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+        <MenuSurfaceProvider value={surface}>
+          <MenuRowAlignmentScope enabled={alignRows}>{children}</MenuRowAlignmentScope>
+        </MenuSurfaceProvider>
       </FloatingPanel>
     </BloomScope>
   );

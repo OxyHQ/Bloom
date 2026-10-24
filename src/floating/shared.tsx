@@ -1,4 +1,5 @@
 import { useMenuDensity } from './use-menu-density';
+import { useMenuRowAlignment } from './menu-row-alignment';
 /**
  * The menu ROW itself, and the pieces of its shape that both the row set and
  * BOTH sub-menu implementations need.
@@ -208,6 +209,9 @@ export function MenuRowShell({
   testID,
   children,
 }: MenuRowShellProps) {
+  const column = useMenuRowAlignment({ gutter: gutter === 'leading', leading: leading != null });
+  const insetToColumn = inset || (column.gutter && gutter !== 'leading');
+  const leadingSpacer = column.leading && leading == null;
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
@@ -227,7 +231,7 @@ export function MenuRowShell({
       ? ROW_GUTTER_CLASS
       : gutter === 'trailing'
         ? ROW_GUTTER_END_CLASS
-        : inset
+        : insetToColumn
           ? ROW_INSET_CLASS
           : false,
     className,
@@ -301,7 +305,7 @@ export function MenuRowShell({
         ROW_TRANSITION,
         {
           backgroundColor: highlighted ? palette.rowHighlight : 'transparent',
-          ...(gutter === 'leading' || inset ? { paddingLeft: density.gutter } : null),
+          ...(gutter === 'leading' || insetToColumn ? { paddingLeft: density.gutter } : null),
           ...(gutter === 'trailing' ? { paddingRight: density.gutter } : null),
           ...(density.touch ? { minHeight: 44 } : null),
         },
@@ -309,10 +313,11 @@ export function MenuRowShell({
       ]}
       testID={testID}
     >
-      {leading != null ? (
+      {leading != null || leadingSpacer ? (
         <StyledView
           className={ROW_LEADING_CLASS}
           style={{ width: density.leadingSize, alignItems: 'center', justifyContent: 'center' }}
+          {...(leadingSpacer ? { 'aria-hidden': true } : null)}
         >
           {leading}
         </StyledView>

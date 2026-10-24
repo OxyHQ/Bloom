@@ -3,7 +3,7 @@ import type { GestureResponderEvent } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import type { DialogProps } from '../dialog';
-import { alert, confirm, prompt, SurfaceHost } from '../surfaces';
+import { alert, confirm, confirmWithSuppression, prompt, SurfaceHost } from '../surfaces';
 import { createSurfaceHost } from '../surfaces/SurfaceHost';
 import { __resetSurfacesForTests, getSnapshot } from '../surfaces/surface-store';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -91,6 +91,71 @@ describe('built-in surfaces', () => {
       expect(getSnapshot()).toHaveLength(2);
       expect(getByText('First')).toBeTruthy();
       expect(getByText('Second')).toBeTruthy();
+    });
+  });
+
+  describe('confirmWithSuppression()', () => {
+    const ask = () =>
+      confirmWithSuppression({
+        title: 'Close 12 tabs?',
+        description: 'The window has 12 tabs open.',
+        confirmLabel: 'Close tabs',
+        suppressionLabel: "Don't ask again",
+      });
+
+    it('renders the checkbox under the description and resolves both answers', async () => {
+      const { getByText, getByLabelText } = renderHost();
+      let result!: ReturnType<typeof ask>;
+      act(() => {
+        result = ask();
+      });
+      expect(getByText('The window has 12 tabs open.')).toBeTruthy();
+      act(() => {
+        fireEvent.press(getByLabelText("Don't ask again"));
+      });
+      act(() => {
+        fireEvent.press(getByText('Close tabs'));
+      });
+      await expect(result).resolves.toEqual({ confirmed: true, suppressed: true });
+    });
+
+    it('cancel resolves unconfirmed with the box as left', async () => {
+      const { getByText } = renderHost();
+      let result!: ReturnType<typeof ask>;
+      act(() => {
+        result = ask();
+      });
+      act(() => {
+        fireEvent.press(getByText('Cancel'));
+      });
+      await expect(result).resolves.toEqual({ confirmed: false, suppressed: false });
+    });
+
+    it('a backdrop / Escape dismissal still reports a checked box', async () => {
+      const { getByLabelText } = renderHost();
+      let result!: ReturnType<typeof ask>;
+      act(() => {
+        result = ask();
+      });
+      act(() => {
+        fireEvent.press(getByLabelText("Don't ask again"));
+      });
+      act(() => {
+        getSnapshot()[0]?.resolve(undefined);
+      });
+      await expect(result).resolves.toEqual({ confirmed: false, suppressed: true });
+    });
+
+    it('leaves confirm() resolving a plain boolean', async () => {
+      const { getByText } = renderHost();
+      let result!: Promise<boolean>;
+      act(() => {
+        result = confirm({ title: 'Leave?', confirmLabel: 'Leave' });
+      });
+      act(() => {
+        fireEvent.press(getByText('Leave'));
+      });
+      await expect(result).resolves.toBe(true);
     });
   });
 

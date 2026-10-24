@@ -51,6 +51,41 @@ If you want them one after the other, `await` the first. This is deliberate: a
 queue would delay an urgent surface behind a trivial one, and there is no
 general rule for which of two surfaces matters more.
 
+## "Don't ask again": `confirmWithSuppression()`
+
+A desktop alert's suppression checkbox. `confirm()` keeps resolving a plain
+boolean; this resolves both answers:
+
+```tsx
+import { confirmWithSuppression } from '@oxy.so/bloom/surfaces';
+
+const { confirmed, suppressed } = await confirmWithSuppression({
+  title: 'Close 12 tabs?',
+  confirmLabel: 'Close tabs',
+  suppressionLabel: "Don't ask again", // required: the checkbox's words
+  suppressed: false, // optional initial state
+});
+```
+
+It takes every `confirm()` option plus `suppressionLabel` and `suppressed`. The
+checkbox (Bloom's `Checkbox`) sits under the description. `suppressed` is
+reported however the surface closed, so a cancelled answer can be remembered
+too. Also on the `surfaces` object as `surfaces.confirmWithSuppression`.
+
+## The keyboard (web)
+
+- **`confirm()`** opens with focus on the confirm button: <kbd>Enter</kbd>
+  confirms, <kbd>Esc</kbd> cancels (when `dismissible`), <kbd>Tab</kbd> reaches
+  Cancel.
+- **`confirmWithSuppression()`** opens with focus on the checkbox:
+  <kbd>Space</kbd> toggles it, <kbd>Enter</kbd> confirms from anywhere but a
+  focused button (a focused Cancel still cancels), <kbd>Esc</kbd> cancels.
+- **`prompt()`** focuses its field with the text selected, so typing replaces
+  a `defaultValue` (rename flows): <kbd>Enter</kbd> submits, <kbd>Esc</kbd>
+  cancels from inside the field.
+
+Closing any of them returns focus to the control that opened it.
+
 ## `present()` is the general form
 
 ```tsx

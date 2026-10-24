@@ -202,6 +202,26 @@ export interface SurfaceConfirmOptions {
   placement?: ResponsiveDialogPlacement;
 }
 
+/**
+ * Options for {@link ../surfaces/prompts#confirmWithSuppression}: a confirm
+ * with a "Don't ask again" checkbox under its description — what a desktop
+ * alert calls its suppression button.
+ */
+export interface SurfaceSuppressibleConfirmOptions extends SurfaceConfirmOptions {
+  /** The checkbox's label, e.g. "Don't ask again". */
+  suppressionLabel: string;
+  /** Whether the checkbox starts checked. Defaults to `false`. */
+  suppressed?: boolean;
+}
+
+/** What {@link ../surfaces/prompts#confirmWithSuppression} resolves. */
+export interface SurfaceSuppressibleConfirmResult {
+  /** `true` on confirm; `false` on cancel or a backdrop/Escape/back dismissal. */
+  confirmed: boolean;
+  /** The checkbox's state when the surface closed, whichever way it closed. */
+  suppressed: boolean;
+}
+
 /** Options for the built-in {@link ../surfaces/prompts#prompt} surface. */
 export interface SurfacePromptOptions {
   /** Headline. */
