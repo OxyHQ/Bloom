@@ -111,10 +111,12 @@ export interface PageHeaderProps {
   density?: 'default' | 'compact';
 
   /**
-   * Renders the back button and is called when it is pressed. The header is
-   * router-agnostic: pass `router.back`, or your app's safe-back helper.
+   * Renders the back button and is called when it is pressed. Omitted, a
+   * screen's header offers the screen's own Back: its panel history's while it
+   * can go back, else the app's route Back (`BloomProvider back`). `null` shows
+   * no back button at all (a top-level destination).
    */
-  onBack?: () => void;
+  onBack?: (() => void) | null;
   /** The back button's accessible name. Default "Back". */
   backLabel?: string;
 

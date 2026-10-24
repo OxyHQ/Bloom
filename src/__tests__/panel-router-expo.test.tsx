@@ -3,8 +3,8 @@ import { Text, View } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { PanelNavigation } from '../app-shell/PanelNavigation';
 import { PanelRouterProvider } from '../panel-routing/PanelRouter';
-import { Link, usePathname, useRouter } from '../panel-routing/expo-router';
-const mockGlobal = { push: jest.fn(), back: jest.fn() };
+import { Link, useBackWithFallback, usePathname, useRouter } from '../panel-routing/expo-router';
+const mockGlobal = { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn() };
 jest.mock('expo-router', () => ({
   Link: Object.assign((props: object) => React.createElement('Link', props), {
     resolveHref: (href: string) => href,
@@ -56,4 +56,19 @@ it('retains the global router and normal Link outside a panel', () => {
   expect(captured).toBe(mockGlobal);
   expect(screen.getByTestId('path').props.children).toBe('/deck');
   expect(screen.getByTestId('link').props.onPress).toBeUndefined();
+});
+it('goes back through the history while it has one, else replaces the page with the fallback', () => {
+  let back = () => {};
+  function Probe() {
+    back = useBackWithFallback('/');
+    return null;
+  }
+  render(<Probe />);
+  mockGlobal.canGoBack.mockReturnValue(true);
+  back();
+  expect(mockGlobal.back).toHaveBeenCalledTimes(1);
+  mockGlobal.canGoBack.mockReturnValue(false);
+  back();
+  expect(mockGlobal.replace).toHaveBeenCalledWith('/');
+  expect(mockGlobal.back).toHaveBeenCalledTimes(1);
 });

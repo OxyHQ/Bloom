@@ -9,7 +9,7 @@ import { Pressable, Animated, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { resolveSwitchOffPaint } from './paint';
-import { animation } from '../styles/tokens';
+import { animation, hitSlop } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -163,7 +163,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         style={[isDisabled && styles.disabled, style]}
-        hitSlop={HIT_SLOP}
+        hitSlop={hitSlop.md}
         testID={testID}
       >
         <Animated.View
@@ -202,8 +202,6 @@ SwitchComponent.displayName = 'Switch';
 export const Switch: MemoRefComponent<SwitchProps, React.ComponentRef<typeof Pressable>> = memo(
   SwitchComponent,
 );
-
-const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 
 const styles = StyleSheet.create({
   disabled: {

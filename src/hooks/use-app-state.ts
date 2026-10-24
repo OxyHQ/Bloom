@@ -18,7 +18,7 @@
  *      an already-paused timer. This compares active-ness on both sides of the
  *      transition and reports only real edges.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
 const NOOP = () => {};
@@ -29,6 +29,14 @@ const NOOP = () => {};
  * the first native report), so the comparison is the whole check.
  */
 const isActive = (status: AppStateStatus | string | null | undefined) => status === 'active';
+
+/**
+ * Foreground unless the platform POSITIVELY reports otherwise. `currentState` is
+ * null until the native module answers, and stays null where it has none; an
+ * absent answer is not evidence that the app went away. iOS's transient
+ * `inactive` (app switcher, incoming call) is a real answer, and counts.
+ */
+const isForeground = () => AppState.currentState == null || isActive(AppState.currentState);
 
 /**
  * Subscribe to app-state changes.
@@ -77,4 +85,16 @@ export function useAppStateChange({
       }
     });
   }, [onBackground, onForeground]);
+}
+
+/** A server render has no app to leave. */
+const FOREGROUND_ON_SERVER = () => true;
+
+/**
+ * Whether the app is in the foreground: the native app is `active`, or the web
+ * tab is visible (React Native Web reports `document.visibilityState` through
+ * the same `AppState`, so one subscription serves both platforms).
+ */
+export function useAppForeground(): boolean {
+  return useSyncExternalStore(subscribeToAppState, isForeground, FOREGROUND_ON_SERVER);
 }

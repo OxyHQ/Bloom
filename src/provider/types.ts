@@ -12,6 +12,14 @@ export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'child
   /** Stable router adapter; omitted means automatic restoration is inactive. */
   scrollAdapter?: ScrollRouterAdapter;
   /**
+   * The app's route Back, offered by every route screen's `PageHeader` that has
+   * no history of its own. Expo apps pass `useBackWithFallback('/')` from
+   * `@oxy.so/bloom/panel-routing/expo-router`: back through the router's
+   * history, or to the fallback when a deep link left none. Omitted, a header
+   * shows Back only when given `onBack` or inside a panel history.
+   */
+  back?: () => void;
+  /**
    * Resolves bare media identifiers (Oxy file ids) to loadable URLs for every
    * Bloom surface that takes a `source` — `<Avatar>`, image galleries, cards.
    * Typically `(id, variant) => oxyServices.getFileDownloadUrl(id, variant)`.

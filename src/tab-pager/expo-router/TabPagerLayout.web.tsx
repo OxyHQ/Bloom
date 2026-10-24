@@ -1,4 +1,5 @@
 import { Slot } from '../../panel-routing/expo-router';
+import { TabPagesHost } from './TabPagesHost';
 
 /**
  * Web has no pager, deliberately. Pages side by side would each be a
@@ -11,5 +12,9 @@ import { Slot } from '../../panel-routing/expo-router';
  * has no web implementation, out of the web graph.
  */
 export function TabPagerLayout() {
-  return <Slot />;
+  return (
+    <TabPagesHost>
+      <Slot />
+    </TabPagesHost>
+  );
 }

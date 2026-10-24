@@ -70,6 +70,11 @@ export interface ScreenHostValue {
   bottomBar?: ReactNode;
   claimColorPreset?: (preset: AppColorName) => () => void;
   navigation?: { canGoBack: boolean; canGoForward: boolean; back(): void; forward(): void };
+  /**
+   * The app's route Back (`BloomProvider back`) for a host without a history of
+   * its own. Overlays, nested screens and root pages do not carry it.
+   */
+  back?: () => void;
   kind?: ScreenViewportValue['kind'];
   scrollRef?: RefObject<unknown>;
   metrics?: ScrollMetrics;

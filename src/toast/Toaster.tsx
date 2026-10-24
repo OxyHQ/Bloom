@@ -29,7 +29,7 @@ import type {
   ToastPosition,
   ToastProps,
 } from './types';
-import { useAppStateChange } from './use-app-state';
+import { useAppStateChange } from '../hooks/use-app-state';
 import { useSingleOutletGuard } from './use-single-outlet-guard';
 
 const ALL_POSITIONS: ToastPosition[] = ['top-center', 'bottom-center', 'bottom-right', 'center'];

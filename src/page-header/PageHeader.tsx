@@ -25,6 +25,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { ScreenHostContext } from '../screen/context';
 import { useHeaderDockContext } from '../layout/header-dock';
 import { ScreenHeaderContext, useScreenContext } from '../screen/context';
+import { resolveScreenBack } from '../screen/use-screen-back';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
 import { BloomScope } from '../appearance';
@@ -271,8 +272,11 @@ function PageHeaderComponent({
   const positionedByScreen = screen != null && headerScreen === screen;
   const host = useContext(ScreenHostContext);
   const hostActions = positionedByScreen ? host.headerActions : undefined;
-  const navigation = positionedByScreen ? host.navigation : undefined;
-  const onBack = screenOnBack ?? (navigation?.canGoBack ? navigation.back : undefined);
+  // `null` declines Back outright; an explicit callback wins over the host's.
+  const onBack =
+    screenOnBack === null
+      ? undefined
+      : (screenOnBack ?? (positionedByScreen ? resolveScreenBack(host) : undefined));
   const resolvedActions =
     typeof screenActions === 'function'
       ? screenActions({ compact: actionsCompact, spacious: actionsSpacious })

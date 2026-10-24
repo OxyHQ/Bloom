@@ -93,6 +93,10 @@ What the app passes itself still wins — `sidebar.items`, or a `bottomBar`
 composer). `TabPagerBottomBar` is the same bar for an app that replaces the
 shell's.
 
+The pages are the app's top-level destinations, so their screens carry no route
+Back (`BloomProvider back`): a page's `PageHeader` shows no back button unless
+given an `onBack`. A screen pushed over the pager keeps its own.
+
 ## `useTabPager()`
 
 From `@oxy.so/bloom/tab-pager`, under a `TabPagerProvider`:

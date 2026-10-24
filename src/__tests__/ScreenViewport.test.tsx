@@ -1,10 +1,12 @@
 /** @jest-environment jsdom */
 import type React from 'react';
 import { useEffect, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import { AppState, Platform, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Screen, ScreenScrollView, useScreenViewport } from '../screen';
+import { Screen, ScreenScrollView, useScreenViewport, useScreenVisible } from '../screen';
+import { BloomProvider } from '../provider';
+import { TabPagesHost } from '../tab-pager/expo-router/TabPagesHost';
 import { PageHeader } from '../page-header';
 import { useScreen } from '../screen/context';
 import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-shell-region';
@@ -265,6 +267,58 @@ it('composes host history and actions into the screen header without duplicate b
   expect(back).toHaveBeenCalledTimes(1);
   tree.rerender(ui(false, false, routeBack));
   expect(tree.getAllByTestId('route-header-back')).toHaveLength(1);
+});
+
+it("offers the app's route Back on route screens, not on root pages, overlays or a declined header", () => {
+  const back = jest.fn();
+  const screen = (testID: string, onBack?: null) => (
+    <Screen scroll="auto" header={<PageHeader testID={testID} title="Post" onBack={onBack} />}>
+      <View />
+    </Screen>
+  );
+  const tree = render(
+    <BloomProvider fonts={false} back={back}>
+      {screen('route')}
+      <TabPagesHost>{screen('tab')}</TabPagesHost>
+      <ScreenScope>{screen('sheet')}</ScreenScope>
+      {screen('declined', null)}
+    </BloomProvider>,
+  );
+  fireEvent.press(tree.getByTestId('route-back'));
+  expect(back).toHaveBeenCalledTimes(1);
+  expect(tree.queryByTestId('tab-back')).toBeNull();
+  expect(tree.queryByTestId('sheet-back')).toBeNull();
+  expect(tree.queryByTestId('declined-back')).toBeNull();
+});
+
+it('is visible to the reader only while its Screen is active and the app is in the foreground', () => {
+  const listeners: Array<() => void> = [];
+  jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, listener) => {
+    listeners.push(listener as () => void);
+    return { remove: jest.fn() };
+  });
+  let visible: boolean | undefined;
+  function Probe() {
+    visible = useScreenVisible();
+    return null;
+  }
+  const ui = (active: boolean) =>
+    wrap(
+      <Screen scroll="auto" active={active}>
+        <Probe />
+      </Screen>,
+    );
+  const tree = render(ui(false));
+  expect(visible).toBe(false);
+  tree.rerender(ui(true));
+  expect(visible).toBe(true);
+  act(() => {
+    AppState.currentState = 'background';
+    for (const listener of listeners) listener();
+  });
+  expect(visible).toBe(false);
+  AppState.currentState = 'active';
+  jest.restoreAllMocks();
 });
 
 it('declares and releases its color recipe on its own host without replacing content', () => {

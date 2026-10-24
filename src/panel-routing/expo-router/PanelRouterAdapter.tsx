@@ -1,5 +1,5 @@
 /** Explicit Expo adapter. Never changes Expo's global router or browser history. */
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import * as Expo from 'expo-router';
 import { PanelRouteSlot, useOptionalPanelRouter } from '../PanelRouter';
 import { resolvePanelHref } from '../routes';
@@ -24,6 +24,19 @@ export const useRouter: typeof Expo.useRouter = () => {
     } as ReturnType<typeof Expo.useRouter>;
   }, [global, panel]);
 };
+/**
+ * Back that always has somewhere to go: through the router's history while it
+ * has one, else replacing the page with `fallback`, the way out of a page a
+ * deep link opened. Pass the result to `BloomProvider back` once and every
+ * route screen's header offers it.
+ */
+export function useBackWithFallback(fallback: Expo.Href): () => void {
+  const router = useRouter();
+  return useCallback(
+    () => (router.canGoBack() ? router.back() : router.replace(fallback)),
+    [router, fallback],
+  );
+}
 export const usePathname: typeof Expo.usePathname = () => {
   const pathname = Expo.usePathname();
   return useOptionalPanelRouter()?.pathname ?? pathname;

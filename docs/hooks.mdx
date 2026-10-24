@@ -148,6 +148,17 @@ const dir = useIsRtl() ? -1 : 1;
 const style = useAnimatedStyle(() => ({ transform: [{ translateX: dir * 24 * p.value }] }), [p, dir]);
 ```
 
+## `useAppForeground`
+
+`true` while the app is in the foreground: the native app reports `active`, or
+the web tab is visible. React Native Web reports `document.visibilityState`
+through the same `AppState`, so one subscription serves both platforms. It counts
+as foreground until the platform positively reports otherwise (an unavailable or
+unanswered `AppState` is not evidence the app went away); iOS's transient
+`inactive` counts as away. On a screen, prefer
+[`useScreenVisible`](/docs/screen#visible-to-the-reader), which adds the Screen's
+activity.
+
 ## `mergeRefs`
 
 Combines several refs into one callback.

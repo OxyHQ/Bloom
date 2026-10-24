@@ -22,7 +22,7 @@ import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
 />
 ```
 
-Router-agnostic: the back button renders when `onBack` is set. Pass `router.back`, your app's safe-back helper, or omit it on a root screen (`router.canGoBack() ? router.back : undefined`). An explicit `onBack` takes priority over the panel navigation adapter and remains enabled at the panel's history root; without one, the header uses panel Back only when that history can go back.
+Router-agnostic: the header never imports a router. With an `onBack`, the back button renders and calls it; an explicit `onBack` takes priority over the screen's own Back and remains enabled at a panel's history root. Without one, a header positioned by a `Screen` offers the screen's Back: a panel `navigation` history's while it can go back, otherwise the app's route Back (`BloomProvider back`, configured once — see [BloomProvider](/docs/provider)), which goes back through the router or to the app's fallback when a deep link left no history. Root pages of the tab pager, overlays and nested screens have no route Back. `onBack={null}` shows no back button on an app's other top-level destinations. `useScreenBack()` from `@oxy.so/bloom/screen` returns the same Back for content that navigates back itself.
 
 For compact panel chrome, `density="compact"` uses a 32pt minimum row and 12pt
 side insets without vertical padding. Larger controls, text and accessories grow
@@ -179,7 +179,7 @@ The scrim sizes to its parent, so the parent carries the height — extend it AB
 | `density` | `'default'` | `'compact'` uses a 32pt minimum, zero vertical padding and 12pt side insets; measured content may grow. |
 | `presentation` | `'floating'` | `'bar'` for the flat strip; `'navigation'` for compact document chrome. |
 | `placement` | `'inline'` | `'overlay'` positions the header over the content and claims the top edge. |
-| `onBack` / `backLabel` | — / `"Back"` | `backLabel` is the button's accessible name — localise it. |
+| `onBack` / `backLabel` | the screen's Back / `"Back"` | `null` hides the back button. `backLabel` is the button's accessible name — localise it. |
 | `leading` | — | After the back capsule, before the title (an avatar, a logo). |
 | `actions` | — | End of the bar. Floating: wrapped in a blur `BloomScope`. |
 | `scrim` | `'auto'` | `presentation="floating"` only. `auto` \| `always` \| `none`. |
@@ -321,7 +321,7 @@ Mention, Allo and Homiio each hand-roll a `Header` with an `options` object. The
 | `options.title` | `title` |
 | `options.titlePosition: 'left' \| 'center'` | `titleAlign: 'start' \| 'center'` |
 | `options.subtitle` (string or node) | `subtitle` |
-| `options.showBackButton` (+ `useSafeBack` / `router.back` inside) | `onBack={safeBack}` — omit to hide |
+| `options.showBackButton` (+ `useSafeBack` / `router.back` inside) | nothing, with `BloomProvider back={useBackWithFallback('/')}` — `onBack={null}` to hide |
 | Homiio `showBackButton && router.canGoBack()` | `onBack={router.canGoBack() ? router.back : undefined}` |
 | `options.leftComponents: ReactNode[]` | `leading={<>…</>}` |
 | `options.rightComponents: ReactNode[]` | `actions={<>…</>}`, grouped into `ButtonGroup`s |

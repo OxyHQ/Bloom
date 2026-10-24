@@ -17,6 +17,8 @@ export {
 } from './reselect';
 export type { ScreenReselectHandler, ScreenScroller } from './reselect';
 export { useScreenViewport } from './context';
+export { useScreenBack } from './use-screen-back';
+export { useScreenVisible } from './use-screen-visible';
 export type { ScreenViewportValue } from './context';
 
 export { ScreenPager } from './ScreenPager';
