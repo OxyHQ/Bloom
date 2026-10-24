@@ -346,6 +346,35 @@ export const SELECT_TRIGGER_SIZE_CLASS = {
 } as const;
 
 /**
+ * The same field geometry as RESOLVED inline style, the default when the
+ * caller passes no `className` (a caller's className replaces the defaults, so
+ * its utilities must not be defeated by these). The classes alone left the
+ * native trigger's inner padding to the className pipeline: in Allo's Android
+ * build (15.50.0) "Raspberry + Antique Gold + Cobalt" sat flush against both
+ * ends of the pill. Padding is spelled in longhands — react-native-web ranks
+ * the `padding-inline` a `paddingHorizontal` becomes above `padding-left`.
+ */
+export const SELECT_TRIGGER_FIELD_STYLE = {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  borderWidth: 1,
+} as const;
+export const SELECT_TRIGGER_SIZE_STYLE = {
+  xs: { gap: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 5, paddingBottom: 5, minHeight: 28 },
+  sm: { gap: 6, paddingLeft: 10, paddingRight: 10, paddingTop: 6, paddingBottom: 6, minHeight: 32 },
+  md: { gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 7, paddingBottom: 7, minHeight: 36 },
+  lg: {
+    gap: 8,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 10,
+    paddingBottom: 10,
+    minHeight: 44,
+  },
+} as const;
+
+/**
  * `text-body-medium` / `text-body-2-medium` — the value and the placeholder.
  * The 18px line of `sm` rides the size utility's own `/[18px]` modifier, never a
  * `leading-*` class (see {@link ROW_TEXT_CLASS} for why that one is a trap).

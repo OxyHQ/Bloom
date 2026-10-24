@@ -114,6 +114,8 @@ It used to take a render prop instead, which handed its child a `state` object w
 
 The trigger shrinks to the line it is on (`flexShrink: 1`, `maxWidth: '100%'`) and its value truncates before the chevron (`flexShrink: 1` inline, not only through `SELECT_VALUE_CLASS`). A non-shrinking trigger keeps a min-content wider than its line: Allo's "Raspberry + Antique Gold + Cobalt" pushed the pill and its chevron past a settings card's edge on Android. Gate: `SelectTriggerFit.test.tsx`, both forks.
 
+The field's geometry (row, border, gap, padding longhands, min height per size) is inline as well as in `SELECT_TRIGGER_SIZE_CLASS`, unless you pass a `className`, which then owns it; `fieldStyle` overrides it either way. With the classes alone, 15.50.0 drew Allo's value flush against both ends of the pill on Android. The chevron is `<SelectIcon />`: a trigger without one draws none.
+
 ## Leading marks
 
 `leading` on `SelectValue` and on `SelectItem` puts a node — a status dot, an icon — before the label, so an option's content can lead with a status dot or a glyph:
