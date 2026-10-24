@@ -73,7 +73,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, type View, useWindowDimensions } from 'react-native';
+import { StyleSheet, type View, type ViewStyle, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -500,22 +500,36 @@ export function FloatingPanel({
   // `'none'`, not `blur(0px)`, so a settled panel is not left on a filter layer.
   const scaleFrom = chrome.scaleFrom;
   const blurFrom = chrome.blur;
+  // The panel itself only MOVES. Its material fades through its own layers
+  // (`--bloom-surface-presence`) and its rows through `contentMotionStyle`: an
+  // opacity or filter on the panel would cut its backdrop blur off for the whole
+  // fade (`surface/web-material.ts`).
   const motionStyle = useAnimatedStyle(
     () => ({
-      opacity: progress.value,
       transform: [
         { translateX: slideX * (1 - progress.value) },
         { translateY: slideY * (1 - progress.value) },
         { scale: scaleFrom + (1 - scaleFrom) * progress.value },
       ],
+    }),
+    [progress, slideX, slideY, scaleFrom],
+  );
+  const contentMotionStyle = useAnimatedStyle(
+    () => ({
+      opacity: progress.value,
       ...(blurFrom > 0
         ? {
             filter: progress.value >= 1 ? 'none' : `blur(${blurFrom * (1 - progress.value)}px)`,
           }
         : null),
     }),
-    [progress, slideX, slideY, scaleFrom, blurFrom],
+    [progress, blurFrom],
   );
+  const present = phase === 'open' && placement !== null;
+  const presenceStyle = {
+    '--bloom-surface-presence': present ? 1 : 0,
+    '--bloom-surface-presence-ms': `${still ? 0 : chrome.duration}ms`,
+  } as unknown as ViewStyle;
 
   // Escape dismisses the INNERMOST open surface and nothing under it — a Select
   // inside a Dialog closes its list, not the dialog (`escape-stack.ts`). The
@@ -603,7 +617,10 @@ export function FloatingPanel({
               ? {
                   backgroundColor: palette.surface,
                   borderColor: surfaceMaterial === 'flat' ? palette.border : 'transparent',
-                  boxShadow: palette.shadow,
+                  boxShadow: present ? palette.shadow : 'none',
+                  transitionProperty: 'box-shadow',
+                  transitionDuration: `${still ? 0 : chrome.duration}ms`,
+                  transitionTimingFunction: 'ease-out',
                 }
               : null,
             {
@@ -635,6 +652,7 @@ export function FloatingPanel({
               pointerEvents: phase === 'open' ? 'auto' : 'none',
             },
             motionStyle,
+            presenceStyle,
             style,
             materialStyle,
             { maxHeight: heightCeiling },
@@ -653,20 +671,22 @@ export function FloatingPanel({
             exists for.
           */}
           <SurfaceLevelProvider level={transparentFill ? 0 : 1} fill={publishedFill}>
-            {scroll === 'external' ? (
-              children
-            ) : (
-              <ScrollArea
-                ref={scrollRef}
-                style={{ flexShrink: 1, minHeight: 0 }}
-                contentContainerStyle={{
-                  gap: callerStyle?.gap ?? density.gap,
-                }}
-                keyboardShouldPersistTaps="handled"
-              >
-                {children}
-              </ScrollArea>
-            )}
+            <Animated.View style={[styles.content, contentMotionStyle]}>
+              {scroll === 'external' ? (
+                children
+              ) : (
+                <ScrollArea
+                  ref={scrollRef}
+                  style={{ flexShrink: 1, minHeight: 0 }}
+                  contentContainerStyle={{
+                    gap: callerStyle?.gap ?? density.gap,
+                  }}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {children}
+                </ScrollArea>
+              )}
+            </Animated.View>
           </SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>
@@ -675,6 +695,7 @@ export function FloatingPanel({
 }
 
 const styles = StyleSheet.create({
+  content: { flexShrink: 1, minHeight: 0 },
   backdrop: {
     position: WEB_POSITION_FIXED,
     top: 0,
