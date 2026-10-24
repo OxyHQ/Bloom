@@ -1,12 +1,14 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, View, type ViewStyle, type TextStyle } from 'react-native';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
 import { isClearFill } from '../surface/shared';
 import { borderRadius } from '../styles/tokens';
 import { Z_INDEX } from '../styles/z-index';
@@ -104,6 +106,10 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   }, [content, dot, max]);
 
   const flat = materialProp === 'flat';
+  // An Android elevation shadow is cast from the host's own background, so a
+  // native pill with a shadow keeps its fill on the host and the material adds
+  // only its light.
+  const hostFill = flat || (!IS_WEB && paint.shadow != null);
   const badgeStyle = useMemo((): ViewStyle => {
     if (dot && attached) {
       return {
@@ -135,7 +141,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       // differ. Overrides must use these same longhands.
       paddingLeft: Icon ? Math.max(0, geometry.paddingHorizontal - 2) : geometry.paddingHorizontal,
       paddingRight: geometry.paddingHorizontal,
-      ...(flat ? { backgroundColor: paint.background } : null),
+      ...(hostFill ? { backgroundColor: paint.background } : null),
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -150,7 +156,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     };
 
     return base;
-  }, [dot, attached, geometry, paint, halo, variant, Icon, flat]);
+  }, [dot, attached, geometry, paint, halo, variant, Icon, hostFill]);
 
   const badgeTextStyle = useMemo(
     (): TextStyle => ({
@@ -197,7 +203,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     isClearFill(paint.background) ||
     StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
       <SurfacePaint
-        fill={paint.background}
+        fill={hostFill ? undefined : paint.background}
         radius={variant === 'outlined' ? borderRadius.full - 1 : borderRadius.full}
         composite
       />
