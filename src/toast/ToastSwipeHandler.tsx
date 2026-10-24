@@ -19,7 +19,7 @@
  * handlers go here so a pointer over ANY row counts as a pointer over the stack.
  * The handlers are empty on native.
  */
-import * as React from 'react';
+import type * as React from 'react';
 import { Platform, StyleSheet, useWindowDimensions, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -187,14 +187,17 @@ export const ToastSwipeHandler: React.FC<React.PropsWithChildren<ToastSwipeHandl
     return {
       transform: [transform],
       // Android composites the fade poorly against the elevation shadow, so the
-      // row stays opaque there and relies on the translate alone.
-      opacity: isAndroid
-        ? 1
-        : interpolate(
-            translate.value,
-            [0, direction === 'left' ? -rowWidth : -VERTICAL_FADE_DISTANCE],
-            [1, 0],
-          ),
+      // row stays opaque there and relies on the translate alone. So does the
+      // web: the toast paints the material, and an opacity above it would make
+      // a backdrop root and turn it flat for the whole drag.
+      opacity:
+        isAndroid || Platform.OS === 'web'
+          ? 1
+          : interpolate(
+              translate.value,
+              [0, direction === 'left' ? -rowWidth : -VERTICAL_FADE_DISTANCE],
+              [1, 0],
+            ),
     };
   }, [direction, translate, rowWidth, position, isAndroid]);
 

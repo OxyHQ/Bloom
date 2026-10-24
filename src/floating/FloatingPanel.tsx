@@ -73,8 +73,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, type View, useWindowDimensions } from 'react-native';
-import type { WebCssStyle } from '../styles/web-view-style';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -91,6 +90,7 @@ import {
 } from '../overlay/dropdown-placement';
 import { usePlacementBoundary } from '../overlay/placement-boundary';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { Portal } from '../portal/index.web';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
@@ -506,14 +506,13 @@ export function FloatingPanel({
   // because that is what subscribes the mapper to it without the worklets babel
   // plugin, and the two numbers because the mapper closes over them.
   //
-  // A menu surface also un-blurs (`blur-[2px]` → none). The resting value is
-  // `'none'`, not `blur(0px)`, so a settled panel is not left on a filter layer.
+  // The panel itself only MOVES: an opacity or a filter on it (even
+  // `blur(0px)`) would make it a backdrop root and cut its material's blur off
+  // for the whole fade. Its layers fade through the presence variables and its
+  // rows through `useSurfacePresenceContent`, which also carries the menu's
+  // `blur-[2px]` → none on each row that holds no material of its own.
   const scaleFrom = chrome.scaleFrom;
   const blurFrom = chrome.blur;
-  // The panel itself only MOVES. Its material fades through its own layers
-  // (`--bloom-surface-presence`) and its rows through `contentMotionStyle`: an
-  // opacity or filter on the panel would cut its backdrop blur off for the whole
-  // fade (`surface/web-material.ts`).
   const motionStyle = useAnimatedStyle(
     () => ({
       transform: [
@@ -524,22 +523,14 @@ export function FloatingPanel({
     }),
     [progress, slideX, slideY, scaleFrom],
   );
-  const contentMotionStyle = useAnimatedStyle(
-    () => ({
-      opacity: progress.value,
-      ...(blurFrom > 0
-        ? {
-            filter: progress.value >= 1 ? 'none' : `blur(${blurFrom * (1 - progress.value)}px)`,
-          }
-        : null),
-    }),
-    [progress, blurFrom],
-  );
   const present = phase === 'open' && shownPlacement !== null;
-  const presenceStyle: WebCssStyle = {
-    '--bloom-surface-presence': present ? '1' : '0',
-    '--bloom-surface-presence-ms': `${still ? 0 : chrome.duration}ms`,
-  };
+  const presenceMs = still ? 0 : chrome.duration;
+  const presenceStyle = surfacePresenceStyle(present ? 1 : 0, presenceMs);
+  useSurfacePresenceContent(panelNode, {
+    presence: present ? 1 : 0,
+    duration: presenceMs,
+    blur: blurFrom,
+  });
 
   // Escape dismisses the INNERMOST open surface and nothing under it — a Select
   // inside a Dialog closes its list, not the dialog (`escape-stack.ts`). The
@@ -681,7 +672,7 @@ export function FloatingPanel({
             exists for.
           */}
           <SurfaceLevelProvider level={transparentFill ? 0 : 1} fill={publishedFill}>
-            <Animated.View style={[styles.content, contentMotionStyle]}>
+            <View style={styles.content}>
               {scroll === 'external' ? (
                 children
               ) : (
@@ -696,7 +687,7 @@ export function FloatingPanel({
                   {children}
                 </ScrollArea>
               )}
-            </Animated.View>
+            </View>
           </SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>

@@ -13,6 +13,12 @@ import {
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
+import {
+  surfacePresenceVars,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useMenuPalette } from '../floating/menu-palette';
 import type { FloatingAnchor } from '../floating/types';
 import { OverlayRoot } from '../overlay';
@@ -35,23 +41,28 @@ import { createTextBubble } from './TextBubble';
 import { TooltipCaret } from './TooltipCaret';
 
 /**
- * The tooltip motion: `transition duration-200 ease-out` between the
- * resting bubble and `scale-90 opacity-0 blur-[4px]`, the same shape in and out.
- * A keyframe pair rather than a transition, because the bubble mounts already
- * open — there is no earlier frame to transition from — and the exit keeps it
- * mounted for the animation's length (the `mounted` state below).
+ * The tooltip motion: `transition duration-200 ease-out` between the resting
+ * bubble and `scale-90 opacity-0 blur-[4px]`, the same shape in and out.
+ *
+ * The bubble paints the material, so only its SCALE is a keyframe pair here (it
+ * mounts already open, so there is no earlier frame to transition from). The
+ * fade and the blur never touch the bubble: an opacity or a filter on it would
+ * make it a backdrop root and cut its own blur off (a keyframe ending on
+ * `filter: none` even rests on `blur(0px)`, flat for good). Its layers fade
+ * through the presence variables, its label and caret through
+ * `useSurfacePresenceContent`, and its border and shadow by transition.
  *
  * Self-injected through `adoptStyleSheet`, never a `<style>` element.
  */
 const STYLE_ID = 'bloom-tooltip-web-css';
 const TOOLTIP_CSS = `
 @keyframes bloom-tooltip-in {
-  from { opacity: 0; transform: scale(0.9); filter: blur(4px); }
-  to { opacity: 1; transform: none; filter: none; }
+  from { transform: scale(0.9); }
+  to { transform: none; }
 }
 @keyframes bloom-tooltip-out {
-  from { opacity: 1; transform: none; filter: none; }
-  to { opacity: 0; transform: scale(0.9); filter: blur(4px); }
+  from { transform: none; }
+  to { transform: scale(0.9); }
 }
 [data-bloom-tooltip] {
   animation: bloom-tooltip-in ${TOOLTIP_MOTION_DURATION}ms cubic-bezier(0, 0, 0.2, 1) both;
@@ -62,7 +73,6 @@ const TOOLTIP_CSS = `
 }
 @media (prefers-reduced-motion: reduce) {
   [data-bloom-tooltip] { animation: none; }
-  [data-bloom-tooltip][data-state="closed"] { opacity: 0; }
 }
 `;
 
@@ -200,6 +210,14 @@ export function TooltipContent({
   // Tooltip — the column, the card — rather than to its trigger.
   const anchor = useTrackedAnchor(triggerRef, mounted);
   const [bubbleWidth, setBubbleWidth] = useState(0);
+  const [bubble, setBubble] = useState<ComponentRef<typeof View> | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
+  // Present once it has been measured (the frame before, it would show at the
+  // wrong place) and a frame has painted at zero for the fade to start from.
+  const presence =
+    useEnteredPresence(visible, mounted && anchor !== null) && bubbleWidth > 0 ? 1 : 0;
+  const presenceMs = reducedMotion ? 0 : TOOLTIP_MOTION_DURATION;
+  useSurfacePresenceContent(bubble, { presence, duration: presenceMs, blur: 4 });
 
   if (!mounted || !anchor) return null;
 
@@ -212,9 +230,13 @@ export function TooltipContent({
     paddingVertical: box.paddingVertical,
     borderRadius: box.borderRadius,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: presence ? palette.border : 'transparent',
     backgroundColor: 'transparent',
-    boxShadow: palette.shadow,
+    boxShadow: presence ? palette.shadow : 'none',
+    transitionProperty: 'border-color, box-shadow',
+    transitionDuration: `${presenceMs}ms`,
+    transitionTimingFunction: 'ease-out',
+    ...surfacePresenceVars(presence, presenceMs),
   };
 
   const viewportWidth = typeof window === 'undefined' ? Infinity : window.innerWidth;
@@ -245,8 +267,6 @@ export function TooltipContent({
             {
               left,
               maxWidth: BUBBLE_MAX_WIDTH,
-              // Invisible for the one frame before the bubble has been measured.
-              opacity: bubbleWidth ? 1 : 0,
             },
             position === 'top'
               ? { bottom: viewportHeight - anchor.top + TOOLTIP_OFFSET }
@@ -254,6 +274,7 @@ export function TooltipContent({
           ]}
         >
           <View
+            ref={setBubble}
             {...({
               dataSet: { bloomTooltip: '', state: visible ? 'open' : 'closed' },
             } as Record<string, unknown>)}

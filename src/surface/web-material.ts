@@ -18,6 +18,19 @@ const STRAIGHT = 0.75;
 const CORNER_REACH_PX = 12;
 const CORNER = 0.27;
 
+const MATERIAL_HOSTS = new Set<string>();
+
+/**
+ * Every selector the material has been painted on so far, as one selector list:
+ * the hosts whose `::before`/`::after` carry a backdrop filter. A host is
+ * registered the moment its CSS is built, which is before it can render, so
+ * `use-surface-presence.ts` and the backdrop-root gates can find every material
+ * host without a list of their own going stale.
+ */
+export function materialHostSelector(): string {
+  return [...MATERIAL_HOSTS].join(', ');
+}
+
 /**
  * A surface appears and leaves by fading these layers (`--bloom-surface-presence`,
  * over `--bloom-surface-presence-ms`), never by fading its host: an ancestor with
@@ -41,6 +54,7 @@ const CORNER = 0.27;
  * the glow within 8px of the top and bottom.
  */
 export function surfaceMaterialCss(selector: string, fill: string, transition = 'none'): string {
+  MATERIAL_HOSTS.add(selector);
   const presence = 'opacity var(--bloom-surface-presence-ms, 0ms) ease-out';
   const layerTransition = transition === 'none' ? presence : `${transition}, ${presence}`;
   const y = `min(var(--bloom-surface-corner-y, 16px), 50%, ${CORNER_REACH_PX}px)`;
