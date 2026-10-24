@@ -208,6 +208,7 @@ export function FloatingPanel({
   onMouseDown,
   contextRef,
   material: surfaceMaterial = 'surface',
+  instant = false,
   open,
   anchor,
   side = 'bottom',
@@ -289,7 +290,7 @@ export function FloatingPanel({
   const published = useRef<DropdownPlacement | null>(null);
   const [phase, setPhase] = useState<Phase>(open ? 'open' : 'closed');
   const [lastOpen, setLastOpen] = useState(open);
-  const reducedMotion = useReducedMotion();
+  const still = useReducedMotion() || instant;
   const progress = useSharedValue(0);
 
   const panelRefRef = useRef(panelRef);
@@ -325,9 +326,9 @@ export function FloatingPanel({
     if (phase !== 'closing') return;
     // Deliberately the SAME constant the exit animates over, so the unmount can
     // never land before the animation finishes or long after it.
-    const timer = setTimeout(() => setPhase('closed'), reducedMotion ? 0 : chrome.duration);
+    const timer = setTimeout(() => setPhase('closed'), still ? 0 : chrome.duration);
     return () => clearTimeout(timer);
-  }, [phase, reducedMotion, chrome.duration]);
+  }, [phase, still, chrome.duration]);
 
   // ONE pass of the placement: two forced layout reads (`getBoundingClientRect`
   // and the `offset*` pair) and, at most, one state update. Split out of the
@@ -469,7 +470,7 @@ export function FloatingPanel({
   useEffect(() => {
     if (phase === 'open') {
       if (!placement) return;
-      progress.value = reducedMotion
+      progress.value = still
         ? 1
         : withTiming(1, {
             ...MOTION_RECIPES.present,
@@ -479,7 +480,7 @@ export function FloatingPanel({
       return;
     }
     if (phase === 'closing') {
-      progress.value = reducedMotion
+      progress.value = still
         ? 0
         : withTiming(0, {
             ...MOTION_RECIPES.dismiss,
@@ -489,7 +490,7 @@ export function FloatingPanel({
       return;
     }
     progress.value = 0;
-  }, [phase, placement, reducedMotion, progress, chrome]);
+  }, [phase, placement, still, progress, chrome]);
 
   // `progress`, `slideX` and `slideY` are ALL in the deps: the shared value
   // because that is what subscribes the mapper to it without the worklets babel

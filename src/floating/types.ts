@@ -99,6 +99,12 @@ export interface FloatingPanelProps extends FloatingPositionProps {
   /** Select already supplies its list scroller. All other anchored surfaces own one here. */
   scroll?: 'auto' | 'external';
   material?: 'surface' | 'flat';
+  /**
+   * Appear and leave without the panel's own motion. A submenu that takes over
+   * from a sibling's uses it: the swap is animated by the view transition that
+   * carries one panel into the other, not by two panels fading past each other.
+   */
+  instant?: boolean;
   /** Rendered only while true — `OverlayRoot` takes its stack rank on mount. */
   open: boolean;
   /**
