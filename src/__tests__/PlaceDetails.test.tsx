@@ -16,6 +16,7 @@
  * with their `fill` — which is enough to measure that the current hour takes a
  * different paint from its neighbours and that a closed hour draws none.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 
@@ -283,7 +284,7 @@ describe('PlaceHours: the week under today, and both said out loud', () => {
         PLACE_OPEN_TONE[state],
         'subtle',
       ).background;
-      const actual = getComputedStyle(byTestId('h-state')).backgroundColor;
+      const actual = materialFill(byTestId('h-state'));
       expect([state, actual]).toEqual([state, css(expected)]);
       painted.set(state, actual);
     }

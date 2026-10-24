@@ -5,6 +5,8 @@ import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useEffect, useRef } from 'react';
 import { Pressable, Animated, StyleSheet } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
 
 import { useTheme } from '../theme/use-theme';
 import { useSurfaceFill } from '../styles/surface-levels';
@@ -25,6 +27,8 @@ const TRACK = {
 } as const;
 const THUMB = { xs: 14, sm: 18, md: 22, lg: 26 } as const;
 const PADDING = 2;
+/** The web track's fill change, matched to the thumb's gentle spring. */
+const TRACK_TRANSITION = 'background-color 300ms ease';
 const SQUEEZE_RATIO = 0.75; // thumb height shrinks to 75% when pressed
 
 const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, SwitchProps>(
@@ -162,7 +166,9 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        style={[isDisabled && styles.disabled, style]}
+        // The web dims a disabled switch's thumb and material instead: an
+        // `opacity` here would make it the track material's backdrop root.
+        style={[isDisabled && !IS_WEB && styles.disabled, style]}
         hitSlop={hitSlop.md}
         testID={testID}
       >
@@ -171,14 +177,27 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
             width: track.w,
             height: track.h,
             borderRadius: track.h / 2,
-            backgroundColor: trackBg,
+            backgroundColor: IS_WEB ? 'transparent' : trackBg,
             justifyContent: 'center',
             alignItems: 'flex-start',
           }}
         >
+          {/* The track is the shared surface material. Web paints its fill and
+              transitions it; native keeps the animated fill on the track and
+              paints only the sheen and rim, since a native paint cannot animate
+              its fill. The thumb stays a plain raised knob: at its size the edge
+              light reads as noise. */}
+          <SurfacePaint
+            fill={IS_WEB ? (checked ? paint.background : off.track) : undefined}
+            radius={track.h / 2}
+            composite
+            transition={reducedMotion ? undefined : TRACK_TRANSITION}
+            presence={isDisabled && IS_WEB ? styles.disabled.opacity : undefined}
+          />
           <Animated.View
             style={[
               styles.thumb,
+              isDisabled && IS_WEB && styles.disabled,
               {
                 backgroundColor: anim.interpolate({
                   inputRange: [0, 1],

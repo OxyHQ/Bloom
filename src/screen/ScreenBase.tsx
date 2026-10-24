@@ -10,7 +10,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import { useSharedValue } from 'react-native-reanimated';
-import { useSurfaceFillRecipe } from '../styles/surface-levels';
+import { useSurfaceFillRecipe, useSurfaceLevelValue } from '../styles/surface-levels';
 import {
   WEB_POSITION_STICKY,
   WEB_SURFACE_STICKY_TOP,
@@ -79,7 +79,11 @@ export function createScreen(
     ...props
   }: ScreenProps) {
     const surfaceRecipe = useSurfaceFillRecipe();
-    const surfaceFill = surfaceRecipe.paint;
+    // On the page the canvas is the page fill. Inside a painted surface (a panel,
+    // a sheet) that surface is already the paint, material and edge light included,
+    // and an opaque canvas over it would hide both.
+    const onSurface = useSurfaceLevelValue() > 0;
+    const surfaceFill = onSurface ? 'transparent' : surfaceRecipe.paint;
     const parentScreen = useContext(ScreenContext);
     const parentViewport = useContext(ScreenViewportContext);
     const inheritedMetrics = useContext(ScrollMetricsContext);

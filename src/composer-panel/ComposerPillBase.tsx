@@ -58,13 +58,20 @@ import type {
 import { useComposerWebCss } from './web-hooks';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useEnteredPresence } from '../surface/use-surface-presence';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 const FROST_MS = 480;
-/** `max-width: 639px`. */
+/** `max-width: 639px`, until the pill has measured itself. */
 const COMPACT_WIDTH = 640;
+/**
+ * The pill's own width below which it goes compact (the short placeholder and an
+ * icon-only model picker). Its own width, not the window's: a pill in a narrow
+ * panel of a wide window wrapped "Ask me anything" onto two lines beside the picker.
+ */
+const COMPACT_PILL_WIDTH = 560;
 /** The pill at one line: the field's 20px line box plus 8px padding either side, in a 52 box. */
 const PILL_HEIGHT = 52;
 /** One line of `body-regular`, which is what the field was fixed at. */
@@ -87,11 +94,22 @@ function FrostedChip({ shown, radius, dark }: { shown: boolean; radius: number; 
       return () => clearTimeout(timer);
     }
   }, [shown, reducedMotion, opacity]);
-  const fade = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
+  // The paint fades through its presence on the web, never an opacity above it
+  // (a backdrop root would cut off the very blur the chip exists for).
+  const fade = useAnimatedStyle(() => (IS_WEB ? {} : { opacity: opacity.value }), [opacity]);
+  const [settledShown, setSettledShown] = useState(shown);
+  if (!shown && settledShown) setSettledShown(false);
+  const entered = useEnteredPresence(shown, mounted);
+  const presence = shown && (settledShown || entered) ? 1 : 0;
   if (!mounted) return null;
   return (
     <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, fade]}>
-      <SurfacePaint fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`} radius={radius} />
+      <SurfacePaint
+        fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`}
+        radius={radius}
+        presence={IS_WEB ? presence : undefined}
+        presenceMs={reducedMotion ? 0 : FROST_MS}
+      />
     </Animated.View>
   );
 }
@@ -515,7 +533,9 @@ export function ComposerPillBase({
   const compactPlaceholder = compactPlaceholderProp ?? messages.pillCompactPlaceholder;
   const addMenu = useMemo(() => addMenuProp ?? composerAddMenu(messages), [addMenuProp, messages]);
   const effortLevels: ReadonlyArray<string> = effortLevelsProp ?? messages.effortLevels;
-  const compact = useWindowDimensions().width < COMPACT_WIDTH;
+  const windowWidth = useWindowDimensions().width;
+  const [ownWidth, setOwnWidth] = useState<number | null>(null);
+  const compact = ownWidth === null ? windowWidth < COMPACT_WIDTH : ownWidth < COMPACT_PILL_WIDTH;
 
   const [text, setText] = useControllableState<string>({
     value,
@@ -675,6 +695,7 @@ export function ComposerPillBase({
     height: fieldHeight,
     minHeight: LINE_HEIGHT,
     onMeasure: setContentHeight,
+    placeholder: compact ? compactPlaceholder : placeholder,
   });
 
   const customSurface = StyleSheet.flatten(style);
@@ -716,6 +737,7 @@ export function ComposerPillBase({
     <PillRoot
       {...dataHook('bloomComposerPill')}
       testID={testID}
+      onLayout={(event) => setOwnWidth(event.nativeEvent.layout.width)}
       style={[pillStyle, style]}
       surface={surface}
       radius={typeof customSurface?.borderRadius === 'number' ? customSurface.borderRadius : radius}

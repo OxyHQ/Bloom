@@ -1,4 +1,5 @@
 import React, { createContext, useContext } from 'react';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { StyleSheet, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -111,15 +112,10 @@ export function AdmonitionRoot({
 
   return (
     <AdmonitionContext.Provider value={{ type }}>
-      <View
-        style={[
-          styles.outer,
-          {
-            backgroundColor: colors.background,
-          },
-          style,
-        ]}
-      >
+      <View style={[styles.outer, style]}>
+        {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+          <SurfacePaint fill={colors.background} radius={16} composite />
+        ) : null}
         {/* Separate opacity preserves the token's native colour syntax and
             keeps the content fully opaque on both native and web. */}
         <View pointerEvents="none" aria-hidden style={[styles.border, { borderColor: border }]} />

@@ -84,6 +84,11 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
   },
   {
     peer: 'react-dom',
+    file: 'floating/menu-sub-flyout.tsx',
+    why: "`flushSync` inside a view transition: the swap from one submenu to its sibling must be in the DOM before the transition snapshots it. The flyout is web-only by construction (each family's web fork passes it to `createMenuRows`; native uses `menu-sub-inline`), so only a web bundler reaches it, which has react-native-web and therefore react-dom",
+  },
+  {
+    peer: 'react-dom',
     file: 'media-flight/MediaFlightLayer.web.tsx',
     why: 'same reason as the portal above, and the same API: this fork paints each shared media node into a container it created outside React, which is `createPortal` and nothing else. A `.web` file is only ever reached by a web bundler, which by definition has react-native-web and therefore react-dom',
   },

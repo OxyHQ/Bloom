@@ -14,6 +14,8 @@ import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { Text } from '../typography';
 import { borderRadius, DISABLED_OPACITY, animation } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { dimColor } from '../surface/shared';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { focusRingShadow } from '../styles/interactive-web-css';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -361,6 +363,9 @@ function SliderBase({
   const startFraction = isRange ? fractionOf(values[0] as number) : 0;
   const endFraction = fractionOf(values[values.length - 1] as number);
   const thumbBorderWidth = 1;
+  // A disabled slider dims on the web part by part: an `opacity` on the root
+  // would make it the thumb material's backdrop root, and the blur would vanish.
+  const dim = disabled && IS_WEB ? DISABLED_OPACITY : 1;
   // The thumb cursor (`cursor-grab active:cursor-grabbing`); the track
   // region is the hit target here, so it carries the cursor for the thumb —
   // through a `dataSet` hook, since RN's `cursor` type has no `grab`.
@@ -402,7 +407,7 @@ function SliderBase({
           minWidth: 0,
           flexDirection: 'column',
           gap: 8,
-          opacity: disabled ? DISABLED_OPACITY : 1,
+          opacity: disabled && !IS_WEB ? DISABLED_OPACITY : 1,
         },
         style,
       ]}
@@ -410,7 +415,7 @@ function SliderBase({
       {label != null && (
         <Text
           variant="body-medium"
-          style={{ color: paint.text }}
+          style={{ color: paint.text, opacity: dim }}
           importantForAccessibility="no"
           accessibilityElementsHidden
         >
@@ -431,7 +436,9 @@ function SliderBase({
           ...(IS_WEB ? ({ touchAction: 'none' } as WebCssStyle) : null),
         }}
       >
-        {/* Rail. */}
+        {/* Rail. Flat, not the surface material: at 4-8px tall the material's
+            edge lines and glow cover the whole rail and it reads as a hollow
+            tube rather than a track. */}
         <View
           pointerEvents="none"
           style={{
@@ -443,6 +450,7 @@ function SliderBase({
             borderRadius: borderRadius.full,
             backgroundColor: maximumTrackTintColor ?? (trackHovered ? paint.railHover : paint.rail),
             boxShadow: 'inset 0 1px 1px rgba(0, 0, 0, 0.06)',
+            opacity: dim,
             ...webTransition('background-color'),
           }}
         />
@@ -457,6 +465,7 @@ function SliderBase({
             height: trackHeight,
             borderRadius: borderRadius.full,
             boxShadow: paint.fillShadow,
+            opacity: dim,
             ...(minimumTrackTintColor
               ? { backgroundColor: minimumTrackTintColor }
               : gradientStyle(90, paint.fillTop, paint.fillBottom)),
@@ -518,12 +527,14 @@ function SliderBase({
             height: thumbSize,
             borderRadius: borderRadius.full,
             borderWidth: thumbBorderWidth,
-            borderColor: dragging
-              ? paint.thumbBorderDrag
-              : hoveredIndex === index
-                ? paint.thumbBorderHover
-                : paint.thumbBorder,
-            backgroundColor: paint.thumb,
+            borderColor: dimColor(
+              dragging
+                ? paint.thumbBorderDrag
+                : hoveredIndex === index
+                  ? paint.thumbBorderHover
+                  : paint.thumbBorder,
+              dim,
+            ),
             boxShadow: shadow,
             alignItems: 'center',
             justifyContent: 'center',
@@ -564,6 +575,13 @@ function SliderBase({
                 : {})}
               style={thumbStyle}
             >
+              {/* The thumb is a raised knob on the shared surface material. */}
+              <SurfacePaint
+                fill={paint.thumb}
+                radius={thumbSize / 2 - thumbBorderWidth}
+                composite
+                presence={dim === 1 ? undefined : dim}
+              />
               {showTooltip && (
                 <View
                   pointerEvents="none"
@@ -575,6 +593,7 @@ function SliderBase({
                     right: -100,
                     bottom: thumbSize - 2 * thumbBorderWidth + BUBBLE_OFFSET,
                     alignItems: 'center',
+                    opacity: dim,
                   }}
                 >
                   <View
@@ -632,6 +651,7 @@ function SliderBase({
                   height: 8,
                   borderRadius: borderRadius.full,
                   boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.24)',
+                  opacity: dim,
                   ...(thumbTintColor
                     ? { backgroundColor: thumbTintColor }
                     : gradientStyle(180, paint.fillTop, paint.fillBottom)),

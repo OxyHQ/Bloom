@@ -1,4 +1,5 @@
 import { useBloomAppearance } from '../appearance';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import React, { type ComponentRef, type ReactNode, useRef, useState } from 'react';
 import {
   StyleSheet,
@@ -19,6 +20,7 @@ import {
   TEXT_FIELD_GEOMETRY,
   TEXT_FIELD_INPUT_INSET,
   TEXT_FIELD_RADIUS,
+  TEXT_FIELD_FILL_TRANSITION,
   TEXT_FIELD_RING_WIDTH,
   TEXT_FIELD_STACK_GAP,
   TEXT_FIELD_TEXT,
@@ -155,6 +157,7 @@ export function Textarea({
             paddingTop: 0,
             paddingBottom: 0,
           }),
+      position: 'relative',
       margin: 0,
       minWidth: 0,
       width: '100%',
@@ -197,7 +200,11 @@ export function Textarea({
                 paddingHorizontal:
                   TEXT_FIELD_GEOMETRY[size].paddingHorizontal - TEXT_FIELD_RING_WIDTH,
                 paddingVertical: SHELL_PADDING_VERTICAL - TEXT_FIELD_RING_WIDTH,
-                ...paint,
+                // Native draws the fill under its own border, as main did: the
+                // paint is a child, which on native covers an outset border, so
+                // the focus and invalid ring would vanish under it.
+                backgroundColor: IS_WEB ? 'transparent' : paint.backgroundColor,
+                borderColor: paint.borderColor,
               },
           TEXT_FIELD_WEB_TRANSITION,
           fieldStyle,
@@ -212,6 +219,15 @@ export function Textarea({
             } as Record<string, unknown>)
           : {})}
       >
+        {fieldClassName ? null : (
+          <SurfacePaint
+            fill={IS_WEB ? paint.backgroundColor : undefined}
+            radius={IS_WEB ? TEXT_FIELD_RADIUS : TEXT_FIELD_RADIUS - TEXT_FIELD_RING_WIDTH}
+            outset={IS_WEB ? TEXT_FIELD_RING_WIDTH : 0}
+            composite
+            transition={TEXT_FIELD_FILL_TRANSITION}
+          />
+        )}
         <StyledTextInput
           className={inputClassName}
           {...rest}

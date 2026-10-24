@@ -1,6 +1,12 @@
 import { useComposerButton } from './context';
+import {
+  surfacePresenceStyle,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import React, { memo, useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import Animated, {
   Easing,
@@ -33,6 +39,9 @@ import { BloomImage } from '../image';
 
 const QUINT = Easing.bezier(...EASE_OUT_QUINT);
 const TILE_MS = 280;
+const TILE_EASING = `cubic-bezier(${EASE_OUT_QUINT.join(', ')})`;
+const DISMISS_MS = 300;
+const DISMISS_EASING = 'cubic-bezier(0, 0, 0.2, 1)';
 
 /** Tailwind `ease-out`, 300ms fades on the tile. */
 const fade = (property: string): WebCssStyle =>
@@ -73,19 +82,28 @@ function TileDismiss({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: visible ? 1 : 0,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
+    // The disc paints the material, so it never fades or blurs itself: its
+    // layers follow its presence and only the glyph fades and un-blurs.
+    ...(surfacePresenceStyle(visible ? 1 : 0, DISMISS_MS) as WebCssStyle),
     ...(IS_WEB
       ? {
-          filter: visible ? 'blur(0px)' : 'blur(3px)',
-          backdropFilter: overImage ? 'blur(2px)' : undefined,
-          transitionProperty: 'opacity, filter, color',
-          transitionDuration: '300ms',
-          transitionTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
+          transitionProperty: 'color',
+          transitionDuration: `${DISMISS_MS}ms`,
+          transitionTimingFunction: DISMISS_EASING,
         }
       : {}),
   };
+  const glyphStyle: WebCssStyle = IS_WEB
+    ? {
+        opacity: visible ? 1 : 0,
+        filter: visible ? 'none' : 'blur(3px)',
+        transitionProperty: 'opacity, filter',
+        transitionDuration: `${DISMISS_MS}ms`,
+        transitionTimingFunction: DISMISS_EASING,
+      }
+    : {};
   return (
     <Button
       appearance="solid"
@@ -105,20 +123,22 @@ function TileDismiss({
       hitSlop={6}
       style={[COMPOSER_BUTTON_LAYOUT, style]}
     >
-      <Svg width={glyph} height={glyph} viewBox={`0 0 ${glyph} ${glyph}`} fill="none">
-        <Path
-          d={`M${inset} ${inset}L${glyph - inset} ${glyph - inset}`}
-          stroke={color}
-          strokeWidth={1.6}
-          strokeLinecap="round"
-        />
-        <Path
-          d={`M${glyph - inset} ${inset}L${inset} ${glyph - inset}`}
-          stroke={color}
-          strokeWidth={1.6}
-          strokeLinecap="round"
-        />
-      </Svg>
+      <View style={glyphStyle}>
+        <Svg width={glyph} height={glyph} viewBox={`0 0 ${glyph} ${glyph}`} fill="none">
+          <Path
+            d={`M${inset} ${inset}L${glyph - inset} ${glyph - inset}`}
+            stroke={color}
+            strokeWidth={1.6}
+            strokeLinecap="round"
+          />
+          <Path
+            d={`M${glyph - inset} ${inset}L${inset} ${glyph - inset}`}
+            stroke={color}
+            strokeWidth={1.6}
+            strokeLinecap="round"
+          />
+        </Svg>
+      </View>
     </Button>
   );
 }
@@ -442,17 +462,34 @@ function PresenceTile({
     return undefined;
   }, [leaving, reducedMotion, progress]);
 
+  // A tile holds material buttons (its dismiss and retry), so on the web the
+  // tile only scales: the buttons' layers follow its presence and everything
+  // else fades and un-blurs piece by piece. Native fades the tile itself.
   const style = useAnimatedStyle(
     () => ({
-      opacity: progress.value,
+      ...(IS_WEB ? null : { opacity: progress.value }),
       transform: [{ scale: 0.8 + 0.2 * progress.value }],
-      ...(IS_WEB
-        ? { filter: progress.value >= 1 ? 'none' : `blur(${4 * (1 - progress.value)}px)` }
-        : null),
     }),
     [progress],
   );
-  return <Animated.View style={style}>{children}</Animated.View>;
+  const [node, setNode] = useState<React.ComponentRef<typeof View> | null>(null);
+  const entered = useEnteredPresence(true);
+  const presence = !leaving && (entered || reducedMotion) ? 1 : 0;
+  const presenceMs = reducedMotion ? 0 : TILE_MS;
+  useSurfacePresenceContent(node, {
+    presence,
+    duration: presenceMs,
+    easing: TILE_EASING,
+    blur: 4,
+  });
+  return (
+    <Animated.View
+      ref={setNode}
+      style={[style, IS_WEB ? surfacePresenceStyle(presence, presenceMs) : null]}
+    >
+      {children}
+    </Animated.View>
+  );
 }
 
 interface StripProps {

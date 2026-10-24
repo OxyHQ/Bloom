@@ -1,5 +1,7 @@
 import { useComposerButton } from './context';
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { View } from 'react-native';
 import Animated, {
   Easing,
@@ -80,18 +82,27 @@ function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactN
         : 0
       : withTiming(shown ? 1 : 0, { duration: 280, easing: EASE_OUT });
   }, [shown, reducedMotion, progress]);
+  // On the web the layer only scales: it can hold a material button, and an
+  // opacity or a filter on it would make it a backdrop root. The fade and blur
+  // run on its content through its presence. Native fades the layer itself.
   const style = useAnimatedStyle(
     () => ({
-      opacity: progress.value,
+      ...(IS_WEB ? null : { opacity: progress.value }),
       transform: [{ scale: 0.8 + 0.2 * progress.value }],
-      ...(IS_WEB
-        ? { filter: progress.value >= 1 ? 'none' : `blur(${3 * (1 - progress.value)}px)` }
-        : null),
     }),
     [progress],
   );
+  const [node, setNode] = useState<React.ComponentRef<typeof View> | null>(null);
+  const presenceMs = reducedMotion ? 0 : 280;
+  useSurfacePresenceContent(node, {
+    presence: shown ? 1 : 0,
+    duration: presenceMs,
+    easing: 'cubic-bezier(0, 0, 0.2, 1)',
+    blur: 3,
+  });
   return (
     <Animated.View
+      ref={setNode}
       pointerEvents="none"
       style={[
         {
@@ -104,6 +115,7 @@ function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactN
           justifyContent: 'center',
         },
         style,
+        IS_WEB ? surfacePresenceStyle(shown ? 1 : 0, presenceMs) : null,
       ]}
     >
       {children}

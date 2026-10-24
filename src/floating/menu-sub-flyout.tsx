@@ -40,9 +40,11 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { surfacePresenceTargets } from '../surface/use-surface-presence';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
 import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
@@ -99,6 +101,11 @@ type DomNode = {
   removeEventListener: HTMLElement['removeEventListener'];
   contains: HTMLElement['contains'];
   querySelector: HTMLElement['querySelector'];
+  closest: HTMLElement['closest'];
+  style: HTMLElement['style'];
+  getBoundingClientRect: HTMLElement['getBoundingClientRect'];
+  animate: HTMLElement['animate'];
+  children: HTMLElement['children'];
 };
 
 function domNode(node: ComponentRef<typeof View> | null): DomNode | null {
@@ -163,6 +170,87 @@ function leavesForAnotherRow(
   if (ownFlyout?.contains(row as HTMLElement)) return false;
   if (ownTrigger?.contains(row as HTMLElement)) return false;
   return true;
+}
+
+/**
+ * Is the pointer heading for a SIBLING sub-trigger? Then this flyout does not close
+ * on its own: the sibling's flyout takes it over (see {@link travel}), and a
+ * close here would race the takeover and fade a second panel past the first.
+ */
+function leavesForSiblingSub(event: Event, ownTrigger: DomNode | null): boolean {
+  const next = (event as PointerEvent).relatedTarget;
+  if (!(next instanceof Element)) return false;
+  const trigger = next.closest('[aria-haspopup="menu"]');
+  return !!trigger && !ownTrigger?.contains(trigger as HTMLElement);
+}
+
+/**
+ * One flyout per menu level. When the pointer moves from one sub-trigger to a
+ * sibling, the open flyout is not closed while another opens beside it: the new
+ * panel takes over from the old one where the user sees it, then travels to its
+ * own place and size while its rows fade in, so the user sees one panel travel
+ * rather than two overlap.
+ *
+ * The travel moves the LIVE panel (a transform, its width and height), never a
+ * snapshot of it. A view transition did this before and lost the material for
+ * the whole hand-over: its snapshots are painted without the page behind them,
+ * so the panel's blur had nothing to blur and the page showed through its tint
+ * for ~400ms on every move between sibling rows (measured on Windows from the
+ * window's composited frames).
+ */
+/** The panel's travel; its rows fade in a little faster so they settle as it lands. */
+const TRAVEL_MS = 200;
+const TRAVEL_EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+const FADE_MS = 140;
+
+interface OpenFlyout {
+  id: symbol;
+  /** Where the user sees this flyout now: its own box, or the one it is taking over. */
+  shownRect: () => DOMRect | null;
+  closeInstantly: () => void;
+}
+
+/** The open flyout of each menu panel, keyed by the panel its trigger sits in. */
+const openFlyouts = new Map<Element, OpenFlyout>();
+
+function parentPanel(trigger: ComponentRef<typeof View> | null): Element | null {
+  return domNode(trigger)?.closest('[role="menu"]') ?? null;
+}
+
+function canTravel(): boolean {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return false;
+  if (typeof Element === 'undefined' || typeof Element.prototype.animate !== 'function')
+    return false;
+  return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+/** Carry `panel` from the box it took over (`from`) to its own (`to`). */
+function travel(panel: DomNode, from: DOMRect, to: DOMRect): Animation[] {
+  const moves = [
+    panel.animate(
+      [
+        {
+          transform: `translate(${from.left - to.left}px, ${from.top - to.top}px)`,
+          width: `${from.width}px`,
+          height: `${from.height}px`,
+        },
+        { transform: 'translate(0px, 0px)', width: `${to.width}px`, height: `${to.height}px` },
+      ],
+      { duration: TRAVEL_MS, easing: TRAVEL_EASING },
+    ),
+  ];
+  for (const piece of surfacePresenceTargets(panel as unknown as Element)) {
+    if (piece === (panel as unknown as Element)) continue;
+    moves.push(
+      piece.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' }),
+    );
+  }
+  return moves;
+}
+
+interface Takeover {
+  rect: DOMRect;
+  release: () => void;
 }
 
 /** The first focusable descendant, so Right lands ON the panel's first row. */
@@ -309,6 +397,16 @@ interface SubFlyoutContextValue {
   closeNow: () => void;
   /** Close now and put focus back on the trigger row (Left, Escape). */
   closeAndRefocus: () => void;
+  /** Open and close without the panel's own motion: a takeover is animated by its travel. */
+  instant: boolean;
+  /** Set while this flyout is taking over from a sibling's, until it has landed. */
+  traveling: boolean;
+  /** The box the takeover starts from, while one is pending. */
+  takeoverRect: () => DOMRect | null;
+  /** The new panel is placed: close the sibling and hand back the box to travel from. */
+  arrive: () => DOMRect | null;
+  /** The travel is over. */
+  landed: () => void;
 }
 
 const SubFlyoutContext = React.createContext<SubFlyoutContextValue | null>(null);
@@ -345,12 +443,54 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     // mid-delay, and would then call `setOpen` on an unmounted tree.
     useEffect(() => cancelTimer, [cancelTimer]);
 
+    const id = useRef(Symbol('bloom-menu-sub')).current;
+    const [instant, setInstant] = useState(false);
+    const [traveling, setTraveling] = useState(false);
+    const takeover = useRef<Takeover | null>(null);
+    const takeoverRect = useCallback(() => takeover.current?.rect ?? null, []);
+    const releaseTakeover = useCallback(() => {
+      const pending = takeover.current;
+      takeover.current = null;
+      pending?.release();
+    }, []);
+    const arrive = useCallback(() => {
+      const pending = takeover.current;
+      if (pending) flushSync(releaseTakeover);
+      return pending?.rect ?? null;
+    }, [releaseTakeover]);
+    const landed = useCallback(() => {
+      setTraveling(false);
+      setInstant(false);
+    }, []);
+
+    useEffect(() => {
+      if (!isOpen) releaseTakeover();
+    }, [isOpen, releaseTakeover]);
+
     const keepOpen = useCallback(() => {
       cancelTimer();
-      // `pointermove` is intentionally continuous. Once open, cancel the close
-      // timer without re-notifying a controlled consumer on every coordinate.
-      if (!isOpen) setOpen(true);
-    }, [cancelTimer, isOpen, setOpen]);
+      if (isOpen) return;
+      const parent = parentPanel(triggerRef.current);
+      const sibling = parent ? openFlyouts.get(parent) : undefined;
+      if (!sibling || sibling.id === id) {
+        setInstant(false);
+        setOpen(true);
+        return;
+      }
+      const rect = sibling.shownRect();
+      if (!rect || !canTravel()) {
+        flushSync(() => {
+          sibling.closeInstantly();
+          setInstant(true);
+          setOpen(true);
+        });
+        return;
+      }
+      takeover.current = { rect, release: sibling.closeInstantly };
+      setInstant(true);
+      setTraveling(true);
+      setOpen(true);
+    }, [cancelTimer, isOpen, setOpen, id]);
 
     const closeSoon = useCallback(() => {
       cancelTimer();
@@ -372,6 +512,27 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       trigger?.querySelector<HTMLElement>('[role="menuitem"]')?.focus?.();
     }, [cancelTimer, setOpen]);
 
+    useEffect(() => {
+      if (!isOpen) return undefined;
+      const parent = parentPanel(triggerRef.current);
+      if (!parent) return undefined;
+      openFlyouts.set(parent, {
+        id,
+        shownRect: () =>
+          takeover.current?.rect ?? domNode(contentRef.current)?.getBoundingClientRect() ?? null,
+        closeInstantly: () => {
+          cancelTimer();
+          releaseTakeover();
+          setTraveling(false);
+          setInstant(true);
+          setOpen(false);
+        },
+      });
+      return () => {
+        if (openFlyouts.get(parent)?.id === id) openFlyouts.delete(parent);
+      };
+    }, [isOpen, id, cancelTimer, setOpen, releaseTakeover]);
+
     const context = useMemo<SubFlyoutContextValue>(
       () => ({
         open: isOpen,
@@ -382,8 +543,25 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         closeSoon,
         closeNow,
         closeAndRefocus,
+        instant,
+        traveling,
+        takeoverRect,
+        arrive,
+        landed,
       }),
-      [isOpen, setOpen, keepOpen, closeSoon, closeNow, closeAndRefocus],
+      [
+        isOpen,
+        setOpen,
+        keepOpen,
+        closeSoon,
+        closeNow,
+        closeAndRefocus,
+        instant,
+        traveling,
+        takeoverRect,
+        arrive,
+        landed,
+      ],
     );
 
     return <SubFlyoutContext.Provider value={context}>{children}</SubFlyoutContext.Provider>;
@@ -428,8 +606,12 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       };
       const onLeave = (event: Event) => {
         if (!isHoverPointer(event)) return;
-        // Straight onto another row of the parent panel — a sibling trigger, or
-        // any plain item — is not the diagonal the delay exists for.
+        // A sibling sub-trigger takes this flyout over itself; anything else on
+        // the parent panel is not the diagonal the delay exists for.
+        if (leavesForSiblingSub(event, element)) {
+          sub.closeSoon();
+          return;
+        }
         if (leavesForAnotherRow(event, domNode(sub.contentRef.current), element)) {
           sub.closeNow();
           return;
@@ -580,6 +762,30 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     const surface = useMenuSurface();
     useMenuPanelKeys(hostElement(node), { open: sub.open, onTab: surface.close });
 
+    // While it takes over from a sibling, the panel stays hidden until it is
+    // placed (two frames: placement, then the instant motion); then the sibling
+    // closes and this panel travels from the sibling's box to its own in the same
+    // frame, so there is never a frame with no panel or with two.
+    const { traveling, takeoverRect, arrive, landed } = sub;
+    useEffect(() => {
+      const element = domNode(node);
+      if (!element || !traveling || !sub.open || !anchor || !takeoverRect()) return undefined;
+      element.style.visibility = 'hidden';
+      let frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => {
+          const from = arrive();
+          element.style.removeProperty('visibility');
+          if (!from) return landed();
+          const moves = travel(element, from, element.getBoundingClientRect());
+          Promise.all(moves.map((move) => move.finished)).then(landed, landed);
+        });
+      });
+      return () => {
+        cancelAnimationFrame(frame);
+        element.style.removeProperty('visibility');
+      };
+    }, [node, traveling, sub.open, anchor, takeoverRect, arrive, landed]);
+
     // Move focus onto the panel once it has been placed, so Right genuinely
     // ENTERS the submenu rather than only opening it.
     useEffect(() => {
@@ -603,6 +809,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         alignOffset={alignOffset}
         dismissible={false}
         modal={false}
+        instant={sub.instant}
         onDismiss={sub.closeAndRefocus}
         surface="menu"
         minWidth={minWidth}

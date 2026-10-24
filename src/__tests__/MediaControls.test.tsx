@@ -5,6 +5,7 @@
  * assertions read the emitted DOM: names, state attributes, slider values,
  * colours and the seek callbacks.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -136,11 +137,9 @@ describe('PlayButton', () => {
   it('paints accent, inverse and plain from the theme', () => {
     mount(<PlayButton playing={false} testID="p" />);
     const paint = resolveMediaControlsPaint(theme);
-    expect(byTestId('p').style.backgroundColor).toBe(normalise(paint.accent));
+    expect(materialFill(byTestId('p'))).toBe(normalise(paint.accent));
     mount(<PlayButton playing={false} variant="inverse" testID="p" />, 'dark');
-    expect(byTestId('p').style.backgroundColor).toBe(
-      normalise(resolveMediaControlsPaint(theme).inverse),
-    );
+    expect(materialFill(byTestId('p'))).toBe(normalise(resolveMediaControlsPaint(theme).inverse));
     mount(<PlayButton playing={false} variant="plain" testID="p" />);
     expect(byTestId('p').style.backgroundColor).toBe('');
   });

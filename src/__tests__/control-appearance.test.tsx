@@ -8,6 +8,7 @@ import { Badge } from '../badge';
 import { Chip } from '../chip';
 import { Card, CardTitle, CardDescription } from '../card';
 import { hostNodes } from './support/rendered-style';
+import { paintedFill } from './support/material-fill';
 import { Switch } from '../switch';
 import { TextFieldInput } from '../text-field';
 
@@ -37,9 +38,14 @@ it('inherits scale and tone across distinct controls, with explicit and nested o
   const explicit = resolvedStyle(findHost(screen.toJSON(), 'explicit')?.props.style);
   const chip = resolvedStyle(findHost(screen.toJSON(), 'chip')?.props.style);
   expect([outer.height, nested.height, explicit.height, chip.height]).toEqual([24, 14, 18, 28]);
-  expect(nested.backgroundColor).toBe(outer.backgroundColor);
-  expect(chip.backgroundColor).toBe(outer.backgroundColor);
-  expect(explicit.backgroundColor).not.toBe(outer.backgroundColor);
+  const fill = (id: string) => {
+    const host = findHost(screen.toJSON(), id);
+    return host ? paintedFill(host) : undefined;
+  };
+  expect(fill('outer')).toBeTruthy();
+  expect(fill('nested')).toBe(fill('outer'));
+  expect(fill('chip')).toBe(fill('outer'));
+  expect(fill('explicit')).not.toBe(fill('outer'));
 });
 
 it('reports semantic values from boolean and text controls', () => {
@@ -111,8 +117,10 @@ it('inherits action/support roles and preserves explicit accent selection', () =
       </BloomScope>
     </BloomScope>,
   );
-  const background = (id: string) =>
-    resolvedStyle(findHost(screen.toJSON(), id)?.props.style).backgroundColor;
+  const background = (id: string) => {
+    const host = findHost(screen.toJSON(), id);
+    return host ? paintedFill(host) : undefined;
+  };
   expect(background('action')).toBe(colors.tertiary);
   expect(background('action-chip')).toBe(colors.tertiary);
   expect(background('support')).toBe(colors.secondary);

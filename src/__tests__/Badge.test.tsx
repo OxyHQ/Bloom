@@ -17,6 +17,7 @@ import { RiKey2Line } from '../icons/remix/RiKey2Line';
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
 import { findHost, hostNodes, renderedChildren, resolvedStyle } from './support/rendered-style';
+import { paintedFill } from './support/material-fill';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -137,7 +138,8 @@ describe('Badge', () => {
     );
     const positioned = hostNodes(toJSON())
       .map((node) => resolvedStyle(node.props.style))
-      .filter((style) => style.position === 'absolute');
+      // The badge, not the surface material inside it (an inert full-bleed layer).
+      .filter((style) => style.position === 'absolute' && style.pointerEvents !== 'none');
     expect(positioned).toHaveLength(1);
     expect(positioned[0]?.bottom).toBe(-4);
     expect(positioned[0]?.left).toBe(-4);
@@ -229,7 +231,7 @@ describe('Badge', () => {
       const style = resolvedStyle(getByTestId('b').props.style);
       // The photograph under it does not change with the mode, so neither does
       // the pill: the neutral ramp's 50 with a 900 label, in both modes.
-      expect(style.backgroundColor).toBeTruthy();
+      expect(paintedFill(getByTestId('b'))).toBeTruthy();
       expect(style.boxShadow ?? style.shadowColor).toBeTruthy();
       const label = resolvedStyle(getByText('Swap').props.style);
       expect(UNSAFE_getByType(RiKey2Line as never).props.fill).toBe(label.color);

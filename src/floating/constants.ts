@@ -140,7 +140,8 @@ export const MENU_MOTION_BLUR = 2;
  * resolved from the theme by `menu-palette.ts` and applied inline by
  * `FloatingPanel`, because the ramp stops it uses exist as no CSS variable.
  */
-export const MENU_PANEL_CLASS = 'overflow-hidden rounded-radius-16 border max-w-[calc(100vw-32px)]';
+export const MENU_PANEL_CLASS =
+  'overflow-hidden web:overflow-clip web:[overflow-clip-margin:1px] rounded-radius-16 border max-w-[calc(100vw-32px)]';
 
 /**
  * The select's listbox panel: the same surface, `p-2` rather than `p-2.5`
@@ -148,7 +149,7 @@ export const MENU_PANEL_CLASS = 'overflow-hidden rounded-radius-16 border max-w-
  * tighter than the action-menu Dropdown").
  */
 export const LISTBOX_PANEL_CLASS =
-  'overflow-hidden rounded-radius-16 border max-w-[calc(100vw-32px)]';
+  'overflow-hidden web:overflow-clip web:[overflow-clip-margin:1px] rounded-radius-16 border max-w-[calc(100vw-32px)]';
 
 /**
  * `w-[266px]`, as a FLOOR: a menu of short rows is exactly that
@@ -301,6 +302,9 @@ export const ROW_CHEVRON_CLASS = 'shrink-0 ms-auto';
 /* -------------------------------------------------------------------------- */
 /*  The menu bar itself                                                       */
 /* -------------------------------------------------------------------------- */
+
+/** The bar's corner, as its `rounded-[10px]` class spells it. */
+export const MENUBAR_RADIUS = 10;
 
 /**
  * The bar: `flex h-10 items-center gap-1 p-1 border`, `rounded-2lg`

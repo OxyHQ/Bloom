@@ -1,9 +1,11 @@
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -14,7 +16,6 @@ import { SpinnerRing } from './SpinnerRing';
 import type { PlayButtonProps, PlayButtonSize } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
-import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
@@ -53,6 +54,20 @@ const SIZE_CONFIG: Record<PlayButtonSize, { box: number; glyph: number }> = {
   md: { box: 48, glyph: 24 },
   lg: { box: 56, glyph: 28 },
 };
+
+/**
+ * The web glyph follows its disc's material in and out: a host that reveals the
+ * button fades the material through `--bloom-surface-presence` (an `opacity`
+ * there would blank its blur), and the glyph fades with it.
+ */
+function glyphPresence(dim: number): WebCssStyle {
+  return {
+    opacity: `calc(var(--bloom-surface-presence, 1) * ${dim})` as unknown as number,
+    transitionProperty: 'opacity',
+    transitionDuration: 'var(--bloom-surface-presence-ms, 0ms)',
+    transitionTimingFunction: 'ease-out',
+  };
+}
 
 function PlayButtonComponent({
   playing,
@@ -119,14 +134,35 @@ function PlayButtonComponent({
     borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: fill,
-    opacity: disabled ? DISABLED_OPACITY : 1,
+    // The web dims a disabled disc's glyph and material instead: an `opacity`
+    // here would make the host the material's backdrop root.
+    opacity: disabled && !IS_WEB ? DISABLED_OPACITY : 1,
     '--bloom-media-ring': paint.ring,
-    ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: '150ms' } : null),
   };
+  const dimmed = disabled && IS_WEB;
+
+  // The disc paints through the shared surface material, unless a caller's own
+  // background owns it; `plain` has no disc.
+  const disc =
+    fill === undefined || StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
+      <SurfacePaint
+        fill={fill}
+        radius={box / 2}
+        composite
+        transition="background-color 150ms ease"
+        presence={dimmed ? DISABLED_OPACITY : undefined}
+      />
+    );
 
   const glyphBox = (
-    <View pointerEvents="none" style={{ width: glyph, height: glyph }}>
+    <View
+      pointerEvents="none"
+      style={{
+        width: glyph,
+        height: glyph,
+        ...(IS_WEB ? glyphPresence(dimmed ? DISABLED_OPACITY : 1) : null),
+      }}
+    >
       {loading ? (
         <SpinnerRing size={glyph} color={glyphColor} />
       ) : (
@@ -153,6 +189,7 @@ function PlayButtonComponent({
         style={[rootStyle, style]}
         testID={testID}
       >
+        {disc}
         {glyphBox}
       </View>
     );
@@ -175,6 +212,7 @@ function PlayButtonComponent({
       style={[rootStyle, style]}
       testID={testID}
     >
+      {disc}
       {glyphBox}
     </Pressable>
   );

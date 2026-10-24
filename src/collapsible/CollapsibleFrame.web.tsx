@@ -4,6 +4,9 @@ import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { CollapsibleVisibilityContext, useCollapsibleVisibility } from './context';
 import type { CollapsibleFrameProps } from './frame-types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { surfacePresenceVars, useSurfacePresenceContent } from '../surface/use-surface-presence';
+import { DEFAULT_COLLAPSIBLE_TRANSITION } from './use-collapsible-motion';
 
 const CSS = `@layer base {
 .bloom-collapsible-panel,.bloom-collapsible-content { box-sizing:border-box;display:flex;flex-direction:column;flex-shrink:0;min-width:0; }
@@ -76,6 +79,14 @@ export function CollapsibleFrame({
     if (panel.current?.contains(document.activeElement) && active instanceof HTMLElement)
       active.blur();
   }, [visible, returnFocusRef, returnFocusId]);
+  const reduced = usePrefersReducedMotion();
+  const fadeMs = reduced ? 0 : DEFAULT_COLLAPSIBLE_TRANSITION.duration;
+  const fadeEasing = `cubic-bezier(${(DEFAULT_COLLAPSIBLE_TRANSITION.easing ?? [0.42, 0, 0.58, 1]).join(', ')})`;
+  useSurfacePresenceContent(panel, {
+    presence: visible ? 1 : 0,
+    duration: fadeMs,
+    easing: fadeEasing,
+  });
   const maxHeight = progress.interpolate({
     inputRange: [0, 1],
     outputRange: [0, height],
@@ -99,7 +110,7 @@ export function CollapsibleFrame({
         className={['bloom-collapsible-panel', className].filter(Boolean).join(' ')}
         style={[
           {
-            opacity: progress,
+            ...surfacePresenceVars(visible ? 1 : 0, fadeMs),
             maxHeight: settled || (height === 0 && open) ? undefined : maxHeight,
             overflow: settled ? 'visible' : 'hidden',
           },

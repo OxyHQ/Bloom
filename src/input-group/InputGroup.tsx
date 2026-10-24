@@ -1,4 +1,6 @@
 import { useBloomAppearance, type BloomSize } from '../appearance';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
 import React, { Children, createContext, isValidElement, memo, useContext, useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
@@ -8,6 +10,7 @@ import {
   TEXT_FIELD_GEOMETRY,
   TEXT_FIELD_LEADING_GAP,
   TEXT_FIELD_RADIUS,
+  TEXT_FIELD_FILL_TRANSITION,
   TEXT_FIELD_RING_WIDTH,
   TEXT_FIELD_TRAILING_GAP,
   TEXT_FIELD_WEB_TRANSITION,
@@ -245,13 +248,23 @@ const InputGroupComponent = function InputGroup({
               // shell's side padding and the content stays put.
               paddingLeft: cfg.paddingHorizontal - TEXT_FIELD_RING_WIDTH,
               paddingRight: cfg.paddingHorizontal - TEXT_FIELD_RING_WIDTH,
-              backgroundColor,
               borderColor,
+              // Native keeps the fill and the clip on the shell, as main did: the
+              // paint is a child, which on native covers an outset border, so
+              // the focus and invalid ring would vanish under it.
+              ...(IS_WEB ? null : { backgroundColor, overflow: 'hidden' as const }),
             },
             TEXT_FIELD_WEB_TRANSITION,
             style,
           ]}
         >
+          <SurfacePaint
+            fill={IS_WEB ? backgroundColor : undefined}
+            radius={IS_WEB ? TEXT_FIELD_RADIUS : TEXT_FIELD_RADIUS - TEXT_FIELD_RING_WIDTH}
+            outset={IS_WEB ? TEXT_FIELD_RING_WIDTH : 0}
+            composite
+            transition={TEXT_FIELD_FILL_TRANSITION}
+          />
           {positioned}
         </View>
       </TextFieldGroupContext.Provider>
@@ -266,7 +279,6 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: TEXT_FIELD_RADIUS,
     borderWidth: TEXT_FIELD_RING_WIDTH,
-    overflow: 'hidden',
   },
   addon: {
     flexDirection: 'row',

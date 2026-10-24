@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Platform, type ViewStyle } from 'react-native';
+import {
+  surfacePresenceStyle,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -15,6 +20,7 @@ import { StyledView } from '../styles/styled-primitives';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 const DURATION = 320;
 const WEB = Platform.OS === 'web';
+const PRESENCE_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 export interface PresentBoardItem<Item> {
   item: Item;
@@ -123,20 +129,33 @@ function BoardPresence({
       paddingBottom: 6 * p,
     };
   }, [height, progress]);
+  // The card holds material controls, so on the web it only scales: its fade
+  // and un-blur run through the slot's presence, never an opacity or filter
+  // above the material. Native fades and blurs the card itself.
   const paintStyle = useAnimatedStyle<ViewStyle>(() => {
     const p = Math.min(1, Math.max(0, progress.value));
     const blur = 6 * (1 - p);
     return {
-      opacity: p,
+      ...(WEB ? null : { opacity: p, filter: [{ blur }] }),
       transform: [{ scale: 0.7 + 0.3 * p }],
-      filter: WEB ? `blur(${blur}px)` : [{ blur }],
     } satisfies ViewStyle;
   }, [progress]);
+  const entered = useEnteredPresence(true);
+  const presence = present && (initial || reduced || entered) ? 1 : 0;
+  const presenceMs = reduced ? 0 : DURATION;
+  const slot = useRef(null);
+  useSurfacePresenceContent(slot, {
+    presence,
+    duration: presenceMs,
+    easing: PRESENCE_EASING,
+    blur: 6,
+  });
   return (
     <AnimatedView
+      ref={slot}
       className="relative shrink-0 pb-1.5"
       layout={reduced ? undefined : LinearTransition.duration(260)}
-      style={slotStyle}
+      style={[slotStyle, WEB ? surfacePresenceStyle(presence, presenceMs) : null]}
       pointerEvents={present || retain ? 'auto' : 'none'}
       aria-hidden={!present}
       accessibilityElementsHidden={!present}

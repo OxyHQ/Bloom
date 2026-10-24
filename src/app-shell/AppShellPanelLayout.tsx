@@ -38,7 +38,9 @@ import { ScreenHostContext } from '../screen/context';
 import type { ScreenProps } from '../screen/types';
 import { ResizeHandle } from '../layout/ResizeHandle';
 import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
-import { animatePanelLayout } from './panel-motion';
+import { PANEL_EXIT_MS, PANEL_LAYOUT_MS, animatePanelLayout } from './panel-motion';
+import { IS_WEB } from '../styles/platform';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { useTheme } from '../theme/use-theme';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -429,6 +431,19 @@ export function createPanelLayoutView(
     const opacity = useSharedValue(track.visible ? 1 : 0);
     const panelScale = useSharedValue(1);
     const lastHeight = useSharedValue(0);
+    // The panel paints the material: on the web its fade is its presence, never
+    // an opacity on the track above it (the CSS compositor does the same).
+    const fadeMs =
+      cssScope || reduced
+        ? 0
+        : transition === 'exit-before-enter'
+          ? PANEL_EXIT_MS
+          : PANEL_LAYOUT_MS;
+    useSurfacePresenceContent(cssScope ? null : panelRef, {
+      presence: track.visible ? 1 : 0,
+      duration: fadeMs,
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    });
     useEffect(() => {
       if (cssScope) return;
       animatePanelLayout(
@@ -468,7 +483,7 @@ export function createPanelLayoutView(
                   : undefined,
               marginInlineStart: vertical ? 0 : leading.value,
               marginTop: vertical ? leading.value : 0,
-              opacity: opacity.value,
+              ...(IS_WEB ? null : { opacity: opacity.value }),
               transform: [{ scale: panelScale.value }],
               maxHeight: !track.visible && opacity.value <= 0.001 ? 0 : undefined,
             },
@@ -584,6 +599,7 @@ export function createPanelLayoutView(
                 alignSelf: 'stretch',
               },
               sizing,
+              !cssScope && IS_WEB ? surfacePresenceStyle(track.visible ? 1 : 0, fadeMs) : null,
               sticky
                 ? {
                     position: WEB_POSITION_STICKY,
@@ -636,7 +652,16 @@ export function createPanelLayoutView(
                       style={[
                         FILL,
                         Platform.OS === 'web'
-                          ? ({ overflowX: 'clip', overflowY: 'visible' } as WebCssStyle)
+                          ? ((joined || document
+                              ? { overflowX: 'clip', overflowY: 'visible' }
+                              : {
+                                  // Separated panels have the gap to themselves, and
+                                  // their shadow falls into it. Chrome honours a clip
+                                  // margin only when both axes clip; `clip` makes no
+                                  // scroll container, so sticky content is unaffected.
+                                  overflow: 'clip',
+                                  overflowClipMargin: gap,
+                                }) as unknown as WebCssStyle)
                           : undefined,
                       ]}
                     >

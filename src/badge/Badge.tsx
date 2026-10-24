@@ -1,11 +1,15 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
-import React, { memo, useMemo } from 'react';
-import { View, type ViewStyle, type TextStyle } from 'react-native';
+import type React from 'react';
+import { memo, useMemo } from 'react';
+import { StyleSheet, View, type ViewStyle, type TextStyle } from 'react-native';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
+import { isClearFill } from '../surface/shared';
 import { borderRadius } from '../styles/tokens';
 import { Z_INDEX } from '../styles/z-index';
 import { BADGE_GEOMETRY, resolveBadgePaint } from './shared';
@@ -60,6 +64,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   invisible = false,
   placement = 'top-right',
   children,
+  material: materialProp = 'surface',
   style,
   textStyle,
   testID,
@@ -100,6 +105,11 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     return String(content);
   }, [content, dot, max]);
 
+  const flat = materialProp === 'flat';
+  // An Android elevation shadow is cast from the host's own background, so a
+  // native pill with a shadow keeps its fill on the host and the material adds
+  // only its light.
+  const hostFill = flat || (!IS_WEB && paint.shadow != null);
   const badgeStyle = useMemo((): ViewStyle => {
     if (dot && attached) {
       return {
@@ -131,7 +141,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       // differ. Overrides must use these same longhands.
       paddingLeft: Icon ? Math.max(0, geometry.paddingHorizontal - 2) : geometry.paddingHorizontal,
       paddingRight: geometry.paddingHorizontal,
-      backgroundColor: paint.background,
+      ...(hostFill ? { backgroundColor: paint.background } : null),
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -146,7 +156,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     };
 
     return base;
-  }, [dot, attached, geometry, paint, halo, variant, Icon]);
+  }, [dot, attached, geometry, paint, halo, variant, Icon, hostFill]);
 
   const badgeTextStyle = useMemo(
     (): TextStyle => ({
@@ -184,6 +194,21 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       </View>
     ) : null;
 
+  // A pill's fill paints through the shared surface material; a dot is too small
+  // for the edge light to read as anything but noise, so it stays a flat fill. A
+  // caller's own background owns the pill's paint instead.
+  const material =
+    dot ||
+    flat ||
+    isClearFill(paint.background) ||
+    StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
+      <SurfacePaint
+        fill={hostFill ? undefined : paint.background}
+        radius={variant === 'outlined' ? borderRadius.full - 1 : borderRadius.full}
+        composite
+      />
+    );
+
   const label =
     displayContent != null ? (
       <Text variant={geometry.type} numberOfLines={1} style={[badgeTextStyle, textStyle]}>
@@ -197,6 +222,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
 
     return (
       <View style={[badgeStyle, style]} testID={testID}>
+        {material}
         {core}
         {iconNode}
         {label}
@@ -220,6 +246,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
             style,
           ]}
         >
+          {material}
           {iconNode}
           {label}
         </View>

@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Animated,
   Easing,
@@ -236,7 +237,6 @@ const SUB = '[data-bloom-file-upload-sub]';
 const BLOOM_FILE_UPLOAD_CSS = `
 ${ROOT} {
   outline: none;
-  transition: background-color 300ms ease-out;
 }
 ${ROOT}[data-bloom-file-upload="idle"] {
   cursor: pointer;
@@ -670,8 +670,7 @@ const FileUploadComponent = function FileUpload({
     width: '100%',
     flexShrink: 0,
     borderRadius: BOX_RADIUS,
-    ...(IS_WEB ? { backgroundColor: busy ? paint.busyBackground : paint.idleBackground } : null),
-    opacity: disabled ? DISABLED_OPACITY : 1,
+    opacity: disabled && !IS_WEB ? DISABLED_OPACITY : 1,
     '--bloom-file-upload-ring': paint.ring,
   };
 
@@ -729,8 +728,18 @@ const FileUploadComponent = function FileUpload({
         />
       ) : null}
 
-      {/* Native: the fill cross-fade (web transitions the root's own background). */}
-      {IS_WEB ? null : (
+      {/* The frame is the shared surface material. Web transitions its fill;
+          native cross-fades the fill underneath and paints only the sheen and
+          rim, since a native paint's fill cannot animate. */}
+      {IS_WEB ? (
+        <SurfacePaint
+          fill={busy ? paint.busyBackground : paint.idleBackground}
+          radius={BOX_RADIUS}
+          composite
+          transition="background-color 300ms ease-out"
+          presence={disabled ? DISABLED_OPACITY : undefined}
+        />
+      ) : (
         <Animated.View
           pointerEvents="none"
           style={[
@@ -745,216 +754,228 @@ const FileUploadComponent = function FileUpload({
           ]}
         />
       )}
+      {IS_WEB ? null : <SurfacePaint radius={BOX_RADIUS} />}
 
-      {/* Dashed idle border. */}
-      <Animated.View
-        {...webDataSet({ bloomFileUploadDash: '' })}
-        pointerEvents="none"
-        style={[
-          fill,
-          {
-            borderRadius: BOX_RADIUS,
-            borderWidth: 2,
-            borderStyle: 'dashed',
-            borderColor: dashActive ? paint.dashActive : paint.dash,
-            opacity: IS_WEB
-              ? busy
-                ? 0
-                : 1
-              : busyFade.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
-          },
-        ]}
-      />
-
-      {/* Progress outline. */}
-      <Animated.View
-        {...webDataSet({ bloomFileUploadRing: '' })}
-        pointerEvents="none"
-        style={[fill, { opacity: IS_WEB ? (busy ? 1 : 0) : busyFade }]}
-      >
-        <Svg
-          width="100%"
-          height="100%"
-          preserveAspectRatio="none"
-          viewBox={`0 0 ${box.width} ${box.height}`}
-          testID={testID ? `${testID}-progress-ring` : undefined}
-        >
-          <Rect
-            x={RING_INSET}
-            y={RING_INSET}
-            width={Math.max(0, box.width - RING_INSET * 2)}
-            height={Math.max(0, box.height - RING_INSET * 2)}
-            rx={RING_RADIUS}
-            fill="none"
-            stroke={paint.ringTrack}
-            strokeWidth={RING_STROKE}
-          />
-          <Path
-            d={ringPath(box.width, box.height, RING_INSET, RING_RADIUS)}
-            fill="none"
-            stroke={paint.ringFill}
-            strokeWidth={RING_STROKE}
-            strokeLinecap="round"
-            strokeDasharray={`${dash} ${length * 2}`}
-          />
-        </Svg>
-      </Animated.View>
-
-      {/* Percentage pill over the top edge. */}
+      {/* Everything but the material, in a layer of its own: a disabled frame
+          dims this layer, never the root, whose `opacity` would make it the
+          material's backdrop root. */}
       <View
         pointerEvents="none"
-        style={{ position: 'absolute', top: -9.5, left: 0, right: 0, alignItems: 'center' }}
+        style={[fill, { opacity: disabled && IS_WEB ? DISABLED_OPACITY : 1 }]}
       >
+        {/* Dashed idle border. */}
         <Animated.View
-          {...webDataSet({ bloomFileUploadPill: busy ? 'shown' : 'hidden' })}
+          {...webDataSet({ bloomFileUploadDash: '' })}
+          pointerEvents="none"
           style={[
+            fill,
             {
-              borderRadius: 6,
-              paddingHorizontal: 6,
-              paddingVertical: 2,
-              backgroundColor: paint.pillBackground,
+              borderRadius: BOX_RADIUS,
+              borderWidth: 2,
+              borderStyle: 'dashed',
+              borderColor: dashActive ? paint.dashActive : paint.dash,
+              opacity: IS_WEB
+                ? busy
+                  ? 0
+                  : 1
+                : busyFade.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
             },
-            IS_WEB
-              ? null
-              : {
-                  opacity: pillFade,
-                  transform: [
-                    {
-                      translateY: pillDrop.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-10, 0],
-                      }),
-                    },
-                  ],
-                },
           ]}
-        >
-          <Text
-            variant="caption-1-medium"
-            numberOfLines={1}
-            style={{ color: paint.pillText, fontVariant: ['tabular-nums'] }}
-          >
-            {progress}%
-          </Text>
-        </Animated.View>
-      </View>
+        />
 
-      {/* Idle content. */}
-      <View
-        pointerEvents="none"
-        style={[fill, { alignItems: 'center', justifyContent: 'center', gap: 14 }]}
-      >
-        <StaggerLine
-          state={idleReveal}
-          kind="line"
-          order={1}
-          reducedMotion={reducedMotion}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: paint.discBackground,
-          }}
+        {/* Progress outline. */}
+        <Animated.View
+          {...webDataSet({ bloomFileUploadRing: '' })}
+          pointerEvents="none"
+          style={[fill, { opacity: IS_WEB ? (busy ? 1 : 0) : busyFade }]}
         >
-          <View {...webDataSet({ bloomFileUploadIcon: '' })}>
-            <RiUploadCloud2Line
-              width={24}
-              height={24}
-              fill={hovered && !blocked ? paint.discIconHover : paint.discIcon}
+          <Svg
+            width="100%"
+            height="100%"
+            preserveAspectRatio="none"
+            viewBox={`0 0 ${box.width} ${box.height}`}
+            testID={testID ? `${testID}-progress-ring` : undefined}
+          >
+            <Rect
+              x={RING_INSET}
+              y={RING_INSET}
+              width={Math.max(0, box.width - RING_INSET * 2)}
+              height={Math.max(0, box.height - RING_INSET * 2)}
+              rx={RING_RADIUS}
+              fill="none"
+              stroke={paint.ringTrack}
+              strokeWidth={RING_STROKE}
             />
-          </View>
-        </StaggerLine>
-        <View style={{ alignItems: 'center', gap: 8 }}>
-          <StaggerLine state={idleReveal} kind="line" order={2} reducedMotion={reducedMotion}>
+            <Path
+              d={ringPath(box.width, box.height, RING_INSET, RING_RADIUS)}
+              fill="none"
+              stroke={paint.ringFill}
+              strokeWidth={RING_STROKE}
+              strokeLinecap="round"
+              strokeDasharray={`${dash} ${length * 2}`}
+            />
+          </Svg>
+        </Animated.View>
+
+        {/* Percentage pill over the top edge. */}
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', top: -9.5, left: 0, right: 0, alignItems: 'center' }}
+        >
+          <Animated.View
+            {...webDataSet({ bloomFileUploadPill: busy ? 'shown' : 'hidden' })}
+            style={[
+              {
+                borderRadius: 6,
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                backgroundColor: paint.pillBackground,
+              },
+              IS_WEB
+                ? null
+                : {
+                    opacity: pillFade,
+                    transform: [
+                      {
+                        translateY: pillDrop.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-10, 0],
+                        }),
+                      },
+                    ],
+                  },
+            ]}
+          >
             <Text
-              variant="body-medium"
-              style={{ color: rejection ? paint.error : paint.prompt, textAlign: 'center' }}
+              variant="caption-1-medium"
+              numberOfLines={1}
+              style={{ color: paint.pillText, fontVariant: ['tabular-nums'] }}
             >
-              {rejection ?? (
-                <>
-                  {labels.prompt}{' '}
-                  <Text variant="body-medium" style={{ color: paint.select }}>
-                    {labels.select}
-                  </Text>
-                </>
-              )}
+              {progress}%
+            </Text>
+          </Animated.View>
+        </View>
+
+        {/* Idle content. */}
+        <View
+          pointerEvents="none"
+          style={[fill, { alignItems: 'center', justifyContent: 'center', gap: 14 }]}
+        >
+          <StaggerLine
+            state={idleReveal}
+            kind="line"
+            order={1}
+            reducedMotion={reducedMotion}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: paint.discBackground,
+            }}
+          >
+            <View {...webDataSet({ bloomFileUploadIcon: '' })}>
+              <RiUploadCloud2Line
+                width={24}
+                height={24}
+                fill={hovered && !blocked ? paint.discIconHover : paint.discIcon}
+              />
+            </View>
+          </StaggerLine>
+          <View style={{ alignItems: 'center', gap: 8 }}>
+            <StaggerLine state={idleReveal} kind="line" order={2} reducedMotion={reducedMotion}>
+              <Text
+                variant="body-medium"
+                style={{ color: rejection ? paint.error : paint.prompt, textAlign: 'center' }}
+              >
+                {rejection ?? (
+                  <>
+                    {labels.prompt}{' '}
+                    <Text variant="body-medium" style={{ color: paint.select }}>
+                      {labels.select}
+                    </Text>
+                  </>
+                )}
+              </Text>
+            </StaggerLine>
+            <StaggerLine state={idleReveal} kind="line" order={3} reducedMotion={reducedMotion}>
+              <Text variant="body-2-regular" style={{ color: paint.hint, textAlign: 'center' }}>
+                {allowedLabel} {messages.max(formatFileSize(maxBytes, locale))}
+              </Text>
+            </StaggerLine>
+          </View>
+        </View>
+
+        {/* Uploading / complete content. */}
+        <View
+          pointerEvents="none"
+          style={[fill, { alignItems: 'center', justifyContent: 'center' }]}
+        >
+          <StaggerLine
+            state={busyReveal}
+            kind="line"
+            order={1}
+            reducedMotion={reducedMotion}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: paint.fileDiscBorder,
+              backgroundColor: paint.fileDiscBackground,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {file ? (
+              renderFileIcon ? (
+                renderFileIcon(file)
+              ) : (
+                <DefaultFileIcon file={file} color={paint.fileIcon} />
+              )
+            ) : null}
+          </StaggerLine>
+          <StaggerLine
+            state={busyReveal}
+            kind="line"
+            order={2}
+            reducedMotion={reducedMotion}
+            style={{ marginTop: 14, maxWidth: '90%' }}
+          >
+            <Text variant="body-medium" numberOfLines={1} style={{ color: paint.fileName }}>
+              {file?.name}
             </Text>
           </StaggerLine>
-          <StaggerLine state={idleReveal} kind="line" order={3} reducedMotion={reducedMotion}>
-            <Text variant="body-2-regular" style={{ color: paint.hint, textAlign: 'center' }}>
-              {allowedLabel} {messages.max(formatFileSize(maxBytes, locale))}
-            </Text>
+          <StaggerLine
+            state={busyReveal}
+            kind="line"
+            order={3}
+            reducedMotion={reducedMotion}
+            style={{ marginTop: 4, height: 18, width: '100%' }}
+          >
+            <StaggerLine
+              state={uploadingLine}
+              kind="sub"
+              reducedMotion={reducedMotion}
+              style={{ position: 'absolute', left: 0, right: 0 }}
+            >
+              <Text variant="body-2-regular" style={{ color: paint.status, textAlign: 'center' }}>
+                {labels.uploading(file ? formatFileSize(file.size, locale) : '')}
+              </Text>
+            </StaggerLine>
+            <StaggerLine
+              state={completeLine}
+              kind="sub"
+              reducedMotion={reducedMotion}
+              style={{ position: 'absolute', left: 0, right: 0 }}
+            >
+              <Text variant="body-2-regular" style={{ color: paint.status, textAlign: 'center' }}>
+                {labels.uploaded}
+              </Text>
+            </StaggerLine>
           </StaggerLine>
         </View>
-      </View>
-
-      {/* Uploading / complete content. */}
-      <View pointerEvents="none" style={[fill, { alignItems: 'center', justifyContent: 'center' }]}>
-        <StaggerLine
-          state={busyReveal}
-          kind="line"
-          order={1}
-          reducedMotion={reducedMotion}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: paint.fileDiscBorder,
-            backgroundColor: paint.fileDiscBackground,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {file ? (
-            renderFileIcon ? (
-              renderFileIcon(file)
-            ) : (
-              <DefaultFileIcon file={file} color={paint.fileIcon} />
-            )
-          ) : null}
-        </StaggerLine>
-        <StaggerLine
-          state={busyReveal}
-          kind="line"
-          order={2}
-          reducedMotion={reducedMotion}
-          style={{ marginTop: 14, maxWidth: '90%' }}
-        >
-          <Text variant="body-medium" numberOfLines={1} style={{ color: paint.fileName }}>
-            {file?.name}
-          </Text>
-        </StaggerLine>
-        <StaggerLine
-          state={busyReveal}
-          kind="line"
-          order={3}
-          reducedMotion={reducedMotion}
-          style={{ marginTop: 4, height: 18, width: '100%' }}
-        >
-          <StaggerLine
-            state={uploadingLine}
-            kind="sub"
-            reducedMotion={reducedMotion}
-            style={{ position: 'absolute', left: 0, right: 0 }}
-          >
-            <Text variant="body-2-regular" style={{ color: paint.status, textAlign: 'center' }}>
-              {labels.uploading(file ? formatFileSize(file.size, locale) : '')}
-            </Text>
-          </StaggerLine>
-          <StaggerLine
-            state={completeLine}
-            kind="sub"
-            reducedMotion={reducedMotion}
-            style={{ position: 'absolute', left: 0, right: 0 }}
-          >
-            <Text variant="body-2-regular" style={{ color: paint.status, textAlign: 'center' }}>
-              {labels.uploaded}
-            </Text>
-          </StaggerLine>
-        </StaggerLine>
       </View>
     </Pressable>
   );

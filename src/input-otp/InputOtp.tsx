@@ -9,6 +9,7 @@ import {
   type TextStyle,
 } from 'react-native';
 
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import { BUTTON_SHADOW } from '../button/shared';
@@ -315,83 +316,101 @@ export function InputOtp({
           disabled,
         });
 
+        // The box is a host for the shared surface material, which an input
+        // cannot hold (an `<input>` renders no children and no pseudo-elements).
+        // The host takes the box's layout; the input fills it and draws the
+        // border, ring and digit over the material.
         return (
-          <TextInput
+          <View
             key={index}
-            ref={(node) => {
-              inputsRef.current[index] = node;
+            testID={testID ? `${testID}-box-${index}` : undefined}
+            style={{
+              width: BOX_SIZE,
+              // A box shrinks (never grows) when the row is narrower than its
+              // natural width, so ten boxes still fit a phone. `minWidth` 0 is
+              // what lets it: a flex item's automatic minimum is its specified
+              // width, and an `<input>` would otherwise overflow.
+              flexShrink: 1,
+              minWidth: 0,
+              height: BOX_SIZE,
+              marginLeft: gapBefore ? GROUP_GAP : 0,
             }}
-            {...(IS_WEB
-              ? ({
-                  disabled,
-                  onMouseEnter: () => setHoveredIndex(index),
-                  onMouseLeave: () =>
-                    setHoveredIndex((current) => (current === index ? null : current)),
-                } as Record<string, unknown>)
-              : {})}
-            testID={testID ? `${testID}-${index}` : undefined}
-            // Numeric is `text` with a numeric keyboard rather than a number
-            // input: a number input brings spinners, accepts `e` and `-`, and
-            // reports an empty value for anything it considers malformed.
-            {...KEYBOARD_PROPS[type]}
-            autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
-            textContentType="oneTimeCode"
-            autoFocus={autoFocus && index === 0}
-            // Long enough to accept a full autofilled or pasted code in one box,
-            // separators included: a browser truncates a paste to `maxLength`
-            // BEFORE the change handler sees it, so `length` alone lost the
-            // last character of `ABCDE-12345`.
-            maxLength={length * 2}
-            // Typing into a filled box must REPLACE its digit, so the digit is
-            // selected on focus. Web's `selectTextOnFocus` does that. Android's
-            // does not: it selects on the input's next layout, and focusing a box
-            // lays nothing out, so the keystroke landed beside the old digit and
-            // `writeFrom` spread both across two boxes. Native selects in
-            // `onFocus` instead (see Search, OxyHQ/Mention#1126).
-            selectTextOnFocus={IS_WEB}
-            caretHidden={false}
-            editable={!disabled}
-            accessibilityLabel={boxName(index + 1, length)}
-            aria-invalid={invalid || undefined}
-            aria-disabled={disabled || undefined}
-            value={digit === ' ' ? '' : digit}
-            onChangeText={(text) => writeFrom(index, text)}
-            onKeyPress={(event) => onKeyPress(event, index)}
-            onFocus={() => {
-              setFocusedIndex(index);
-              if (!IS_WEB && digit !== '' && digit !== ' ')
-                inputsRef.current[index]?.setSelection(0, 1);
-            }}
-            onBlur={() => setFocusedIndex((current) => (current === index ? null : current))}
-            keyboardAppearance={theme.isDark ? 'dark' : 'light'}
-            style={[
-              {
-                width: BOX_SIZE,
-                // A box shrinks (never grows) when the row is narrower than
-                // its natural width, so ten boxes still fit a phone. `minWidth`
-                // 0 is what lets it: a flex item's automatic minimum is its
-                // specified width, and an `<input>` would otherwise overflow.
-                flexShrink: 1,
-                minWidth: 0,
-                height: BOX_SIZE,
-                marginLeft: gapBefore ? GROUP_GAP : 0,
-                padding: 0,
-                borderRadius: TEXT_FIELD_RADIUS,
-                borderWidth: 1,
-                textAlign: 'center',
-                textAlignVertical: 'center',
-                fontFamily: MONO_FONT_FAMILY,
-                fontSize: DIGIT_TEXT.fontSize,
-                fontWeight: DIGIT_TEXT.fontWeight,
-                fontVariant: ['tabular-nums'],
-                includeFontPadding: false,
-                ...paint,
-              },
-              IS_WEB ? { lineHeight: DIGIT_TEXT.lineHeight } : undefined,
-              IS_WEB && disabled ? ({ cursor: 'not-allowed' } as unknown as TextStyle) : undefined,
-              WEB_BOX_STYLE,
-            ]}
-          />
+          >
+            <SurfacePaint fill={paint.backgroundColor} radius={TEXT_FIELD_RADIUS} composite />
+            <TextInput
+              ref={(node) => {
+                inputsRef.current[index] = node;
+              }}
+              {...(IS_WEB
+                ? ({
+                    disabled,
+                    onMouseEnter: () => setHoveredIndex(index),
+                    onMouseLeave: () =>
+                      setHoveredIndex((current) => (current === index ? null : current)),
+                  } as Record<string, unknown>)
+                : {})}
+              testID={testID ? `${testID}-${index}` : undefined}
+              // Numeric is `text` with a numeric keyboard rather than a number
+              // input: a number input brings spinners, accepts `e` and `-`, and
+              // reports an empty value for anything it considers malformed.
+              {...KEYBOARD_PROPS[type]}
+              autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
+              textContentType="oneTimeCode"
+              autoFocus={autoFocus && index === 0}
+              // Long enough to accept a full autofilled or pasted code in one box,
+              // separators included: a browser truncates a paste to `maxLength`
+              // BEFORE the change handler sees it, so `length` alone lost the
+              // last character of `ABCDE-12345`.
+              maxLength={length * 2}
+              // Typing into a filled box must REPLACE its digit, so the digit is
+              // selected on focus. Web's `selectTextOnFocus` does that. Android's
+              // does not: it selects on the input's next layout, and focusing a box
+              // lays nothing out, so the keystroke landed beside the old digit and
+              // `writeFrom` spread both across two boxes. Native selects in
+              // `onFocus` instead (see Search, OxyHQ/Mention#1126).
+              selectTextOnFocus={IS_WEB}
+              caretHidden={false}
+              editable={!disabled}
+              accessibilityLabel={boxName(index + 1, length)}
+              aria-invalid={invalid || undefined}
+              aria-disabled={disabled || undefined}
+              value={digit === ' ' ? '' : digit}
+              onChangeText={(text) => writeFrom(index, text)}
+              onKeyPress={(event) => onKeyPress(event, index)}
+              onFocus={() => {
+                setFocusedIndex(index);
+                if (!IS_WEB && digit !== '' && digit !== ' ')
+                  inputsRef.current[index]?.setSelection(0, 1);
+              }}
+              onBlur={() => setFocusedIndex((current) => (current === index ? null : current))}
+              keyboardAppearance={theme.isDark ? 'dark' : 'light'}
+              style={[
+                {
+                  position: 'relative',
+                  width: '100%',
+                  minWidth: 0,
+                  height: '100%',
+                  padding: 0,
+                  borderRadius: TEXT_FIELD_RADIUS,
+                  borderWidth: 1,
+                  textAlign: 'center',
+                  textAlignVertical: 'center',
+                  fontFamily: MONO_FONT_FAMILY,
+                  fontSize: DIGIT_TEXT.fontSize,
+                  fontWeight: DIGIT_TEXT.fontWeight,
+                  fontVariant: ['tabular-nums'],
+                  includeFontPadding: false,
+                  ...paint,
+                  backgroundColor: 'transparent',
+                },
+                IS_WEB ? { lineHeight: DIGIT_TEXT.lineHeight } : undefined,
+                IS_WEB && disabled
+                  ? ({ cursor: 'not-allowed' } as unknown as TextStyle)
+                  : undefined,
+                WEB_BOX_STYLE,
+              ]}
+            />
+          </View>
         );
       })}
     </View>

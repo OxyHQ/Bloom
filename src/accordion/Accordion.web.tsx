@@ -1,11 +1,13 @@
 import { CollapsibleFrame } from '../collapsible/CollapsibleFrame.web';
 import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
-import React, { memo, useContext } from 'react';
+import React, { memo, useContext, useState } from 'react';
 import { Animated } from 'react-native';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { useTheme } from '../theme/use-theme';
+import { DISABLED_OPACITY } from '../styles/tokens';
+import { useSurfacePresence } from '../surface/use-surface-presence';
 import { AccordionContext, AccordionItemContext } from './context';
 import { useAccordionState, useAccordionItem, useAccordionMotion } from './use-accordion';
 import type {
@@ -19,8 +21,7 @@ const CSS = `@layer base {
 .bloom-accordion-root,.bloom-accordion-item,.bloom-accordion-panel,.bloom-accordion-body { box-sizing:border-box; display:flex; flex-direction:column; flex-shrink:0; min-width:0; }
 .bloom-accordion-item { border:0 solid var(--bloom-accordion-border); border-bottom-width:1px; }
 .bloom-accordion-trigger { box-sizing:border-box; flex-shrink:0; min-width:0; display:flex; align-items:center; gap:8px; padding:12px 4px; border:0; margin:0; background:transparent; color:var(--bloom-accordion-text); text-align:start; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:normal; font-size:15px; font-weight:600; cursor:pointer; }
-.bloom-accordion-trigger:active:not(:disabled) { opacity:.7; }
-.bloom-accordion-trigger:disabled { opacity:.5; cursor:default; }
+.bloom-accordion-trigger:disabled { cursor:default; }
 .bloom-accordion-label { white-space:pre-wrap; overflow-wrap:break-word; flex-grow:1; flex-shrink:1; min-width:0; }
 .bloom-accordion-panel { overflow:hidden; }
 .bloom-accordion-body { padding:0 4px 12px; }
@@ -82,15 +83,25 @@ export const AccordionTrigger = memo(function AccordionTrigger({
   const progress = useAccordionMotion(isExpanded, 'trigger', false);
   const rotation = progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   const vars = { '--bloom-accordion-text': theme.colors.text } as React.CSSProperties;
+  // Pressed (0.7) and disabled (0.5) dim through presence: a label can hold a
+  // material badge, and an opacity on the trigger would be its backdrop root.
+  const [pressed, setPressed] = useState(false);
+  const dim = useSurfacePresence(disabled ? DISABLED_OPACITY : pressed ? 0.7 : 1);
+  const release = () => setPressed(false);
   return (
     <button
+      ref={dim.ref}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={release}
+      onPointerLeave={release}
+      onPointerCancel={release}
       type="button"
       id={triggerId}
       aria-expanded={isExpanded}
       aria-controls={contentId}
       disabled={disabled}
       className={['bloom-accordion-trigger', className].filter(Boolean).join(' ')}
-      style={{ ...vars, ...resolveNativeWebStyle(style) }}
+      style={{ ...vars, ...(dim.style as React.CSSProperties), ...resolveNativeWebStyle(style) }}
       onClick={() => toggle(value)}
     >
       {icon}

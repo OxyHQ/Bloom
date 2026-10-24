@@ -168,8 +168,7 @@ export const MaterialPlayground: Story = {
         padding: 28,
         borderRadius: 24,
         backgroundImage:
-          'url(https://raw.githubusercontent.com/lucasromerodb/liquid-glass-effect-macos/refs/heads/main/assets/flowers.jpg)',
-        backgroundSize: '500px auto',
+          'radial-gradient(circle at 18% 22%, #f97316 0 14%, transparent 34%), radial-gradient(circle at 78% 18%, #8b5cf6 0 12%, transparent 32%), radial-gradient(circle at 62% 78%, #06b6d4 0 14%, transparent 36%), radial-gradient(circle at 24% 82%, #ec4899 0 12%, transparent 32%), linear-gradient(135deg, #fde68a, #a7f3d0 50%, #bfdbfe)',
       }}
     >
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, padding: 20 }}>

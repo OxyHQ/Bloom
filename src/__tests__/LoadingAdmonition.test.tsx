@@ -11,6 +11,7 @@
  * up with a warning icon: nothing enforces that the maps agree, so the test
  * reads both for every type.
  */
+import { paintedFill } from './support/material-fill';
 import React from 'react';
 import { Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
@@ -128,7 +129,7 @@ describe('Admonition', () => {
   it('uses the information palette for info rather than a neutral fallback', () => {
     const colors = themeColors();
     const outer = subjectRoot(<Admonition type="info">x</Admonition>);
-    expect(resolvedStyle(outer.props.style).backgroundColor).toBe(colors.infoSubtle);
+    expect(paintedFill(outer)).toBe(colors.infoSubtle);
     const border = hostNodes(outer).find(
       (node) => resolvedStyle(node.props.style).borderWidth === 1,
     );

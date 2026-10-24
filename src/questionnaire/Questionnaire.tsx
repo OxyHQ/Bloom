@@ -5,6 +5,12 @@ import { DISABLED_OPACITY } from '../styles/tokens';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
+import {
+  surfacePresenceStyle,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
+import { mergeRefs } from '../hooks/merge-refs';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import {
   SurfaceLevelProvider,
@@ -189,6 +195,7 @@ const COLOR_MS = 150;
 const PILL_THUMB_MS = 300;
 const PILL_HOVER_MS = 200;
 const EASE = Easing.bezier(0.22, 1, 0.36, 1);
+const PANEL_CSS_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const PILL_EASE = Easing.bezier(0.34, 1.2, 0.64, 1);
 
 const BODY_MEDIUM: TextStyle = TYPE_SCALE['body-medium'];
@@ -351,8 +358,12 @@ function CheckboxRow({
     if (!field.disabled) onChange(!checked);
   };
   const keyboard = useChoiceSpaceKey(field.disabled, activate);
+  const presence = field.disabled ? DISABLED_OPACITY : 1;
+  const [row, setRow] = useState<unknown>(null);
+  useSurfacePresenceContent(row, { presence });
   return (
     <Pressable
+      ref={setRow}
       {...keyboard}
       disabled={field.disabled}
       aria-disabled={field.disabled || undefined}
@@ -371,7 +382,7 @@ function CheckboxRow({
       onHoverOut={onHoverOut}
       style={[
         rowStyle(palette, pressed ? 'pressed' : hovered ? 'hover' : 'rest'),
-        { opacity: field.disabled ? DISABLED_OPACITY : 1 },
+        surfacePresenceStyle(presence),
       ]}
     >
       <OptionText label={option.label} description={option.description} palette={palette} />
@@ -852,17 +863,27 @@ function SlidingPanel({
     const p = progress.value;
     const visible = role === 'enter' ? p : 1 - p;
     const offset = role === 'enter' ? (1 - p) * SLIDE * direction : -p * SLIDE * direction;
-    const style: Record<string, unknown> = {
-      opacity: visible,
-      transform: [{ translateX: offset }],
-    };
-    if (IS_WEB) style.filter = `blur(${(1 - visible) * 4}px)`;
+    const style: Record<string, unknown> = { transform: [{ translateX: offset }] };
+    if (!IS_WEB) style.opacity = visible;
     return style;
   }, [progress, role, direction]);
+  // A panel holds material controls, so on the web it only slides: its fade and
+  // un-blur run through its presence, never an opacity or filter above them.
+  const entered = useEnteredPresence(true);
+  const presence = role === 'enter' ? (!animate || entered ? 1 : 0) : animate && entered ? 0 : 1;
+  const presenceMs = animate ? PANEL_MS : 0;
+  const [node, setNode] = useState<ComponentRef<typeof View> | null>(null);
+  const attach = useMemo(() => mergeRefs([panelRef, setNode]), [panelRef]);
+  useSurfacePresenceContent(node, {
+    presence,
+    duration: presenceMs,
+    easing: PANEL_CSS_EASING,
+    blur: 4,
+  });
 
   return (
     <Animated.View
-      ref={panelRef}
+      ref={attach}
       {...dataSet({ bloomQuestionnairePanel: '' })}
       {...(IS_WEB && role === 'enter' ? { tabIndex: -1 } : {})}
       onLayout={onLayout}
@@ -874,6 +895,7 @@ function SlidingPanel({
           ? { position: 'absolute', top: VIEWPORT_INSET, left: CARD_PADDING, right: CARD_PADDING }
           : null,
         animatedStyle,
+        IS_WEB ? surfacePresenceStyle(presence, presenceMs) : null,
       ]}
     >
       {children}

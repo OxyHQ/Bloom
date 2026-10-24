@@ -215,6 +215,7 @@ const RadioComponent = function Radio<Value extends string = string>({
           size={sizeConfig.indicator}
           selectedColor={color}
           selectedForeground={foreground}
+          disabled={isDisabled}
         />
       </View>
 

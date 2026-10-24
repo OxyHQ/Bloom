@@ -120,11 +120,12 @@ export function SheetShell({
   return (
     <BottomSheet
       material={material}
-      backgroundFill={
-        material === 'flat'
-          ? String(StyleSheet.flatten(contentStyle)?.backgroundColor ?? theme.colors.background)
-          : undefined
-      }
+      // Always the panel's tint: the sheet style clears the host's own
+      // background, and the sheet would otherwise take that `transparent` as
+      // its material's fill and paint no panel at all.
+      backgroundFill={String(
+        StyleSheet.flatten(contentStyle)?.backgroundColor ?? theme.colors.background,
+      )}
       ref={ref}
       onDismiss={handleDismiss}
       enablePanDownToClose

@@ -56,6 +56,9 @@ import { CHAT_COMPOSER_MESSAGES } from './messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
+
+const SWAP_CSS_EASING = 'cubic-bezier(0, 0, 0.2, 1)';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createChatComposer({
@@ -95,14 +98,32 @@ export function createChatComposer({
           : 0
         : withTiming(shown ? 1 : 0, { duration: SWAP_MS, easing: EASE_OUT });
     }, [shown, reducedMotion, progress]);
-    const animated = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
+    // The layer holds material buttons, so on the web it never fades itself
+    // (that would make it a backdrop root and turn them flat mid-swap): the
+    // buttons follow its presence. Native fades the layer.
+    const animated = useAnimatedStyle(
+      () => (IS_WEB ? {} : { opacity: progress.value }),
+      [progress],
+    );
+    const [node, setNode] = useState<ComponentRef<typeof View> | null>(null);
+    const presenceMs = reducedMotion ? 0 : SWAP_MS;
+    useSurfacePresenceContent(node, {
+      presence: shown ? 1 : 0,
+      duration: presenceMs,
+      easing: SWAP_CSS_EASING,
+    });
     return (
       <Animated.View
+        ref={setNode}
         pointerEvents={shown ? 'auto' : 'none'}
         aria-hidden={!shown}
         accessibilityElementsHidden={!shown}
         importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}
-        style={[{ position: 'absolute', top: 0, left: 0 }, animated]}
+        style={[
+          { position: 'absolute', top: 0, left: 0 },
+          animated,
+          IS_WEB ? surfacePresenceStyle(shown ? 1 : 0, presenceMs) : null,
+        ]}
       >
         {children}
       </Animated.View>

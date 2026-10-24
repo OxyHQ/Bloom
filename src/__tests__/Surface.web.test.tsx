@@ -1,5 +1,11 @@
 /** @jest-environment jsdom */
-import { SURFACE_RIM, resolveSurfaceTint, resolveSurfaceFill } from '../surface/shared';
+import {
+  SURFACE_FILTER,
+  SURFACE_EDGE_GLOW,
+  SURFACE_HIGHLIGHT_FILTER,
+  resolveSurfaceTint,
+  resolveSurfaceFill,
+} from '../surface/shared';
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -69,10 +75,10 @@ it('uses real RN web layout styles and keeps the material on the same root', () 
   expect(getComputedStyle(surface).paddingLeft).toBe('16px');
   expect(getComputedStyle(surface).paddingRight).toBe('16px');
   expect(getComputedStyle(surface).borderTopLeftRadius).toBe('13px');
-  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(255, 255, 255, 0.9)');
+  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(255, 255, 255, 0.72)');
 });
 
-it('shares one blur-and-tint material across Surface and disabled Button', () => {
+it('shares one glass material across Surface and disabled Button', () => {
   act(() =>
     root.render(
       <>
@@ -85,27 +91,29 @@ it('shares one blur-and-tint material across Surface and disabled Button', () =>
   );
   const surfaceCss = document.getElementById('bloom-surface-web-css')!.textContent!;
   const buttonCss = document.getElementById('bloom-button-web-css')!.textContent!;
-  // The blur pane is inset to the host so it cannot leak past rounded corners.
   for (const css of [surfaceCss, buttonCss]) {
-    const sampler = css.match(/::before\s*\{([^}]+)\}/)?.[1];
-    expect(sampler).toMatch(/inset:\s*0;/);
-    expect(sampler).toContain('backdrop-filter: blur(8px)');
+    const glass = css.match(/::before\s*\{[^}]+\}/g)?.find((rule) => rule.includes('z-index: -2'));
+    expect(glass).toContain(`backdrop-filter: var(--bloom-surface-filter, ${SURFACE_FILTER})`);
+    const edge = css.match(/::after\s*\{[^}]+\}/g)?.find((rule) => rule.includes('z-index: -1'));
+    expect(edge).toContain(
+      `backdrop-filter: var(--bloom-surface-highlight-filter, ${SURFACE_HIGHLIGHT_FILTER})`,
+    );
+    expect(edge).toContain('mask-composite: add, intersect, exclude');
+    expect(edge).toContain(`mask-image: var(--bloom-surface-edge-glow, ${SURFACE_EDGE_GLOW})`);
     expect(css).not.toContain('feDisplacementMap');
     expect(css).not.toMatch(/filter:\s*url\(/);
-    expect(css).not.toContain('background-clip: padding-box');
-    expect(css).not.toContain('border: 1px solid transparent');
   }
-  for (const rule of [SURFACE_RIM, 'rgba(255, 255, 255, 0.18)']) {
-    expect(surfaceCss).toContain(rule);
-    expect(buttonCss).toContain(rule);
-  }
+  const surface = document.querySelector('[data-testid="surface"]') as HTMLElement;
+  expect(surface.style.getPropertyValue('--bloom-surface-highlight-filter')).toBe(
+    SURFACE_HIGHLIGHT_FILTER,
+  );
 });
 
 it('retains caller colour with subtle translucency beneath the optical edge', () => {
   act(() => root.render(<Surface fill="rgb(9, 20, 30)" testID="solid" />));
   const surface = container.querySelector('[data-testid="solid"]') as HTMLElement;
   expect(surface.className).toContain('bloom-surface--material');
-  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(9, 20, 30, 0.9)');
+  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(9, 20, 30, 0.72)');
 });
 
 it('the universal paint entry renders web optics without a platform barrel', () => {
@@ -160,22 +168,20 @@ it('uses the explicit brand pair and exposes persistent pressed state', () => {
   );
   const button = container.querySelector('button')!;
   expect(button.getAttribute('aria-pressed')).toBe('true');
-  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(17, 48, 79, 0.9)');
+  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(17, 48, 79, 0.72)');
   expect(button.style.getPropertyValue('--bloom-btn-fg')).toBe('#ffffff');
 });
 
-it('can omit sheen without dropping the blur pane or rim', () => {
+it('can turn the edge light off without dropping the glass', () => {
   act(() =>
     root.render(
-      <SurfacePaint testID="pane" fill="rgba(255,255,255,.25)" radius={20} sheen={false} />,
+      <SurfacePaint testID="pane" fill="rgba(255,255,255,.25)" radius={20} rim={false} />,
     ),
   );
-  const pane = container.querySelector('[data-testid="pane"]')!;
+  const pane = container.querySelector('[data-testid="pane"]') as HTMLElement;
   expect(pane.className).toContain('bloom-surface-paint');
-  expect(pane.className).toContain('bloom-surface-paint--no-sheen');
-  const css = document.getElementById('bloom-surface-paint-web-css')!.textContent!;
-  expect(css).toContain('background-image: none');
-  expect(css).toContain(SURFACE_RIM);
+  expect(pane.style.getPropertyValue('--bloom-surface-filter')).toBe(SURFACE_FILTER);
+  expect(pane.style.getPropertyValue('--bloom-surface-highlight-filter')).toBe('none');
 });
 
 // The rim owns the edge even on semantic outline buttons.

@@ -4,7 +4,7 @@ import { render } from '@testing-library/react-native';
 import { Admonition, AdmonitionContent, AdmonitionRoot } from '../admonition';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
-import { hostNodes, resolvedStyle } from './support/rendered-style';
+import { hostNodes, isHostNode, resolvedStyle } from './support/rendered-style';
 
 const cases = [
   ['info', 'info'],
@@ -28,12 +28,15 @@ describe.each(['light', 'dark'] as const)('Admonition in %s mode', (mode) => {
         </BloomThemeProvider>,
       );
       const nodes = hostNodes(view.toJSON());
-      const surface = nodes.find(
-        (node) => resolvedStyle(node.props.style).backgroundColor === colors[`${tone}Subtle`],
-      );
+      const surface = nodes.find((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.padding === 16 && style.borderRadius === 16;
+      });
       expect(surface).toBeDefined();
-      expect(resolvedStyle(surface!.props.style)).toMatchObject({ padding: 16, borderRadius: 16 });
       expect(resolvedStyle(surface!.props.style).opacity).toBeUndefined();
+      // The tint is the surface material's: the host's first layer.
+      const material = surface!.children?.find(isHostNode);
+      expect(resolvedStyle(material!.props.style).backgroundColor).toBe(colors![`${tone}Subtle`]);
       const border = nodes.find(
         (node) => resolvedStyle(node.props.style).borderColor === colors[tone],
       );

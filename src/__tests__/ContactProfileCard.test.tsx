@@ -8,6 +8,7 @@
  * quiet line resolved to on the surface it landed on, and in what ORDER the
  * card states the record — the numbers before the labels, not after them.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -282,7 +283,7 @@ describe('the numbers are a figure and TILES', () => {
     expect(byTestId('c-headline-value').textContent).toBe('€248,000');
     expect(getComputedStyle(byTestId('c-headline-value')).fontSize).toBe('24px');
     const delta = resolveAccentColors(theme.colors, 'success', 'subtle');
-    expect(getComputedStyle(byTestId('c-delta')).backgroundColor).toBe(normalise(delta.background));
+    expect(materialFill(byTestId('c-delta'))).toBe(normalise(delta.background));
   });
 
   it('paints a tile on the next fill UP from the card, value over label', () => {
@@ -369,9 +370,7 @@ describe('the chips are ONE line, after the tiles', () => {
   it('takes the tone PAIR when one is given, never an appended alpha', () => {
     mount(<ContactProfileCard {...NORA} lastTouchTone="warning" testID="c" />);
     const accent = resolveAccentColors(theme.colors, 'warning', 'subtle');
-    expect(getComputedStyle(byTestId('c-last-touch')).backgroundColor).toBe(
-      normalise(accent.background),
-    );
+    expect(materialFill(byTestId('c-last-touch'))).toBe(normalise(accent.background));
   });
 
   it('keeps the last touch a quiet LINE in a row, where there is no chip row', () => {

@@ -2,6 +2,9 @@ import { memo, useMemo } from 'react';
 
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import Svg, { Path } from 'react-native-svg';
+import { StyleSheet } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -46,6 +49,9 @@ const CLOSE_BUTTON_CSS = interactiveWebCss({
   `,
   transition: 'none',
   hover: { declarations: 'opacity: 1;' },
+  // A disabled disc dims its glyph and material, never the host: an `opacity`
+  // there would make it the material's backdrop root and the blur would vanish.
+  disabled: { opacity: null },
   outlineOffset: 2,
   extraRules: `${SELECTOR} path {
   transition: stroke ${BUTTON_TRANSITION_MS}ms ease;
@@ -58,6 +64,10 @@ ${SELECTOR}[aria-disabled="true"] {
 ${SELECTOR} path { transition: none; }
 }`,
 });
+
+/** Above the disc's material, which is positioned. */
+const GLYPH_STYLE = { position: 'relative' } as const;
+const DIMMED_GLYPH_STYLE = { position: 'relative', opacity: DISABLED_OPACITY } as const;
 
 /** Native retains its established invisible padding around the dismiss disc. */
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
@@ -88,12 +98,30 @@ function CloseButtonComponent({
     borderRadius: g.box / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: touchTarget ? 'transparent' : paint.background,
+    backgroundColor: 'transparent',
     '--bloom-button-close-ring': paint.ring,
   };
+  // The disc paints through the shared surface material, unless a caller's own
+  // background owns it.
+  const dimmed = IS_WEB && disabled;
+  const disc =
+    StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+      <SurfacePaint
+        fill={paint.background}
+        radius={g.box / 2}
+        composite
+        presence={dimmed ? DISABLED_OPACITY : undefined}
+      />
+    ) : null;
 
   const glyph = (
-    <Svg width={g.glyph} height={g.glyph} viewBox={`0 0 ${g.glyph} ${g.glyph}`} fill="none">
+    <Svg
+      width={g.glyph}
+      height={g.glyph}
+      viewBox={`0 0 ${g.glyph} ${g.glyph}`}
+      fill="none"
+      style={dimmed ? DIMMED_GLYPH_STYLE : GLYPH_STYLE}
+    >
       <Path
         d={`M${g.inset} ${g.inset}L${g.glyph - g.inset} ${g.glyph - g.inset}`}
         stroke={color}
@@ -145,13 +173,16 @@ function CloseButtonComponent({
             borderRadius: g.box / 2,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: paint.background,
           }}
         >
+          {disc}
           {glyph}
         </StyledView>
       ) : (
-        glyph
+        <>
+          {disc}
+          {glyph}
+        </>
       )}
     </StyledPressable>
   );

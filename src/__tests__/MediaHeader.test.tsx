@@ -562,8 +562,11 @@ describe('StickyMediaTopBar', () => {
     const paint = resolveMediaHeaderPaint(theme, '#1f3b73');
     expect(byTestId('t').style.height).toBe('64px');
     expect(byTestId('t-play').getAttribute('aria-label')).toBe('Play Moss');
-    const fill = byTestId('t').firstElementChild as HTMLElement;
+    // The fill is its own layer under the content, so the bar can fade it
+    // without fading the material play button's ancestors.
+    const fill = byTestId('t').firstElementChild?.firstElementChild as HTMLElement;
     expect(fill.style.backgroundColor).toBe(normalise(paint.bar));
+    expect(byTestId('t').style.opacity).toBe('');
   });
 
   it('hides itself from assistive tech and the pointer below half progress', () => {

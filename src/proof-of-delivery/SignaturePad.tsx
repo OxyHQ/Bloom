@@ -14,6 +14,7 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { useMessages } from '../locale/messages';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { useSurfacePresence } from '../surface/use-surface-presence';
 import { TextFieldInput } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -174,10 +175,14 @@ function SignaturePadComponent({
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const inkColor = ink ?? paint.padText.text;
   const padName = accessibilityLabel ?? labels.signaturePad;
+  // Disabled dims through presence: the pad's field paints the material, and an
+  // opacity on this block would make it the field's backdrop root.
+  const dim = useSurfacePresence(disabled ? DISABLED_OPACITY : 1);
 
   return (
     <View
-      style={[{ gap: PROOF_GEOMETRY.blockGap, opacity: disabled ? DISABLED_OPACITY : 1 }, style]}
+      ref={dim.ref}
+      style={[{ gap: PROOF_GEOMETRY.blockGap }, dim.style, style]}
       testID={testID}
     >
       <SurfaceLevelProvider level={1} fill={paint.pad}>

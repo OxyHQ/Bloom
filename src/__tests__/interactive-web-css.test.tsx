@@ -181,7 +181,15 @@ describe('interactiveWebCss', () => {
     it('dims and un-points a disabled control', () => {
       const sheet = css();
       expect(sheet).toContain(`${family.selector}[aria-disabled="true"]`);
-      expect(sheet).toMatch(/opacity:\s*0\.5/);
+      if (family.name === 'Chip') {
+        // A pill on the surface material dims its content and material in
+        // React, never the host: an `opacity` there would be the material's
+        // backdrop root, and its blur would vanish.
+        const start = sheet.indexOf(`${family.selector}:disabled`);
+        expect(sheet.slice(start, sheet.indexOf('}', start))).not.toMatch(/opacity/);
+      } else {
+        expect(sheet).toMatch(/opacity:\s*0\.5/);
+      }
     });
 
     if (RAW_DOM_FAMILIES.includes(family.name)) {

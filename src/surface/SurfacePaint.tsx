@@ -4,24 +4,30 @@ import type { SurfaceShape, SurfaceStyle } from '../shapes/corner-types';
 import React, { memo, useEffect } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
+import { webDataSet } from '../styles/web-data';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { surfaceMaterialCss } from './web-material';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
-import { resolveSurfaceTint, resolveSurfaceOptics } from './shared';
+import {
+  compositeOnto,
+  resolveSurfaceTint,
+  resolveSurfaceOptics,
+  surfaceOpticsVars,
+} from './shared';
+import { useSurfaceFill } from '../styles/surface-levels';
 
 const WEB_PAINT_CSS = `
-.bloom-surface-paint { isolation: isolate; overflow: hidden; }
-${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)')}
-.bloom-surface-paint--no-sheen::after { background-image: none; }
+.bloom-surface-paint { isolation: isolate; overflow: clip; overflow-clip-margin: 1px; }
+${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)', 'var(--bloom-surface-paint-transition, background-color 0s)')}
 `;
 
 /**
  * The material under a surface's content: tint, sheen and rim.
  *
  * Web adds a backdrop blur beneath them. Native paints one `View` (tint as
- * `backgroundColor`, sheen as a CSS gradient, rim as an inset `boxShadow`):
+ * `backgroundColor`, rim and sheen as inset `boxShadow`s):
  * no SVG, no layout state, no per-surface blur. A `BlurView` inside a surface
  * can SIGSEGV on Android, so native blur lives only in `overlay/` `Backdrop`.
  */
@@ -34,6 +40,12 @@ export const SurfacePaint = memo(function SurfacePaint({
   direction = 'ltr',
   sheen = true,
   rim = true,
+  outset = 0,
+  composite = false,
+  backing,
+  transition,
+  presence,
+  presenceMs,
   testID,
 }: {
   sheen?: boolean;
@@ -43,6 +55,33 @@ export const SurfacePaint = memo(function SurfacePaint({
    */
   rim?: boolean;
   testID?: string;
+  /**
+   * The host's own border width. An absolute child sits inside the border, so a
+   * host whose border is a state ring (transparent at rest) passes it here and
+   * the paint covers the whole border box, as a CSS background would.
+   */
+  outset?: number;
+  /**
+   * The fill is a theme token designed to read over the surface it sits on
+   * (a translucent tint such as an error or accent wash). On the web, composite
+   * it onto that surface first, so the material shows the colour the token reads
+   * as instead of the filtered backdrop through its transparency. Native has no
+   * backdrop filter, so its translucent fill already reads as designed.
+   */
+  composite?: boolean;
+  /** What `composite` composites onto when it is not the surface in context. */
+  backing?: string;
+  /** Web only: how the fill changes between states, e.g. `background-color 200ms ease`. */
+  transition?: string;
+  /**
+   * How present the material is, 0 to 1: how a disabled control dims it. Never
+   * dim a material's host or an ancestor with `opacity` or `filter` instead: on
+   * the web that ancestor becomes the backdrop root and the blur vanishes.
+   * Omitted, the paint inherits a fading host's `--bloom-surface-presence`.
+   */
+  presence?: number;
+  /** Web only: how long a change of `presence` takes, in milliseconds. */
+  presenceMs?: number;
   /** Omit for sheen/rim only on a host that already owns its fill. */
   fill?: string;
   /** Final paired tint supplied by the material owner; never used for colour math. */
@@ -55,14 +94,20 @@ export const SurfacePaint = memo(function SurfacePaint({
   geometryStyle?: SurfaceStyle;
 }) {
   const geometry = {
+    ...(outset ? { top: -outset, right: -outset, bottom: -outset, left: -outset } : null),
     ...(radius === undefined ? {} : { borderRadius: radius }),
     ...surfaceStyle(shape ?? { curve: 'round' }, direction),
     ...geometryStyle,
   };
   const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
   const optics = opticsRecipe.paint;
-  const resolvedFill = resolveSurfaceTint(fill ?? 'transparent');
   const isWeb = Platform.OS === 'web';
+  const contextBacking = useSurfaceFill();
+  const resolvedFill = resolveSurfaceTint(
+    composite && isWeb && fill !== undefined
+      ? compositeOnto(fill, backing ?? contextBacking)
+      : (fill ?? 'transparent'),
+  );
   useEffect(() => {
     if (isWeb) adoptStyleSheet('bloom-surface-paint-web-css', WEB_PAINT_CSS);
   }, [isWeb]);
@@ -76,8 +121,10 @@ export const SurfacePaint = memo(function SurfacePaint({
       ...geometry,
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': paintFill ?? resolvedFill,
-      '--bloom-surface-rim': rim ? optics.rim : 'none',
-      '--bloom-surface-sheen': optics.sheenCss,
+      ...(transition ? { '--bloom-surface-paint-transition': transition } : null),
+      ...(presence === undefined ? null : { '--bloom-surface-presence': String(presence) }),
+      ...(presenceMs === undefined ? null : { '--bloom-surface-presence-ms': `${presenceMs}ms` }),
+      ...surfaceOpticsVars(optics, radius, rim),
     };
     return (
       <>
@@ -85,7 +132,9 @@ export const SurfacePaint = memo(function SurfacePaint({
         <ServerStyleSheet id="bloom-surface-paint-web-css" css={WEB_PAINT_CSS} />
         <StyledView
           testID={testID}
-          className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`}
+          // The semantic fill the material tints with, before its translucency.
+          {...(fill === undefined ? null : webDataSet({ bloomSurfaceFill: fill }))}
+          className="bloom-surface-paint"
           style={[paintStyle, pointerEventsStyle('none')]}
         />
       </>
@@ -101,8 +150,14 @@ export const SurfacePaint = memo(function SurfacePaint({
           {
             overflow: 'hidden',
             backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
-            ...(rim ? { boxShadow: optics.rim } : null),
-            ...(sheen ? { experimental_backgroundImage: optics.sheenCss } : null),
+            ...(rim || sheen
+              ? {
+                  boxShadow: [rim ? optics.rim : null, sheen ? optics.sheenShadow : null]
+                    .filter(Boolean)
+                    .join(', '),
+                }
+              : null),
+            ...(presence === undefined ? null : { opacity: presence }),
           },
         ],
         pointerEventsStyle('none'),

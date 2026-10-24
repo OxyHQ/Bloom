@@ -3,6 +3,9 @@ import { useThemeRecipe } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { resolveSurfaceLayer } from '../surface/use-surface-layer';
 import { ConcentricView } from '../concentric';
+import { mergeRefs } from '../hooks/merge-refs';
+import { DISABLED_OPACITY } from '../styles/tokens';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { ConcentricProvider } from '../concentric/ConcentricProvider';
 import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
 import { surfaceStyle } from '../shapes/surface-style';
@@ -58,6 +61,9 @@ import type {
   CardDescriptionProps,
 } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
+
+/** How present a card stays while it is pressed. */
+const PRESSED_PRESENCE = 0.85;
 
 /** The width each border role resolves to. `none` resolves to zero. */
 const BORDER_PX: Record<Exclude<CardBorder, 'none'>, number> = {
@@ -158,6 +164,13 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
     // `style`, which NativeWind v4's css-interop swallows (dropping the base
     // container style: background, radius, border, shadow).
     const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
+    // Pressed and disabled dim the card through its presence, never its own
+    // opacity: on the web that would make the card a backdrop root and turn its
+    // material flat while dimmed (`surface/use-surface-presence.ts`).
+    const presence = disabled ? DISABLED_OPACITY : pressed && onPress ? PRESSED_PRESENCE : 1;
+    const [host, setHost] = React.useState<ComponentRef<typeof View> | null>(null);
+    const hostRef = React.useMemo(() => mergeRefs([ref, setHost]), [ref]);
+    useSurfacePresenceContent(host, { presence });
 
     const containerStyle = useMemo((): ViewStyle => {
       const defaults = VARIANT_DEFAULTS[appearance];
@@ -303,15 +316,10 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
     if (onPress) {
       return (
         <StyledPressable
-          ref={ref}
+          ref={hostRef}
           onLayout={onLayout}
           className={className}
-          style={[
-            classes,
-            outerStyle,
-            pressed && !disabled && { opacity: 0.85 },
-            disabled && { opacity: 0.5 },
-          ]}
+          style={[classes, outerStyle, surfacePresenceStyle(presence)]}
           onPress={onPress}
           onPressIn={disabled ? undefined : onPressIn}
           onPressOut={disabled ? undefined : onPressOut}
@@ -329,10 +337,10 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
 
     return (
       <StyledView
-        ref={ref}
+        ref={hostRef}
         onLayout={onLayout}
         className={className}
-        style={[classes, outerStyle, disabled && { opacity: 0.5 }]}
+        style={[classes, outerStyle, surfacePresenceStyle(presence)]}
         accessibilityLabel={accessibilityLabel}
         testID={testID}
       >

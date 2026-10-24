@@ -1,5 +1,7 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { Animated, Easing, View, type ViewStyle } from 'react-native';
+import { Animated, Easing, StyleSheet, View, type ViewStyle } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
 
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
@@ -124,10 +126,13 @@ export function notificationCardStyle(paint: NotificationPaint): WebCssStyle {
     borderRadius: G.radius,
     borderWidth: 1,
     borderColor: paint.border,
-    backgroundColor: paint.surface,
+    backgroundColor: 'transparent',
     boxShadow: paint.shadow,
   };
 }
+
+/** The card's stroke while its surface is absent, so it leaves with the material. */
+const HIDDEN_STROKE: ViewStyle = { borderColor: 'transparent' };
 
 const CLOSE_POSITION: ViewStyle = { position: 'absolute', top: G.closeInset, right: G.closeInset };
 
@@ -212,40 +217,52 @@ function NotificationComponent({
         // its top and leaving an empty band where a description would sit.
         !description && !actions?.length ? { alignItems: 'center' } : null,
         motion.style,
+        motion.presenceStyle,
+        IS_WEB && !motion.present ? HIDDEN_STROKE : null,
         style,
       ]}
     >
-      {avatar ? (
-        <NotificationAvatarVisual avatar={avatar} paint={paint} />
-      ) : (
-        <NotificationStatusVisual status={status} icon={icon} paint={paint} />
-      )}
+      {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+        <SurfacePaint fill={paint.surface} radius={G.radius - 1} composite />
+      ) : null}
+      {/* Content fades in wrappers of its own, never over a surface material:
+          the close button and the actions fade their material through the
+          host's presence. */}
+      <Animated.View style={[{ flexShrink: 0 }, motion.contentStyle]}>
+        {avatar ? (
+          <NotificationAvatarVisual avatar={avatar} paint={paint} />
+        ) : (
+          <NotificationStatusVisual status={status} icon={icon} paint={paint} />
+        )}
+      </Animated.View>
 
       <View style={{ flex: 1, minWidth: 0, gap: G.contentGap }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            alignItems: 'baseline',
-            columnGap: G.headerGapX,
-            rowGap: G.headerGapY,
-            minWidth: 0,
-          }}
-        >
-          <Text variant="body-medium" style={{ color: paint.title, flexShrink: 1 }}>
-            {title}
-          </Text>
-          {timestamp ? (
-            <Text variant="body-regular" style={{ color: paint.timestamp }}>
-              {timestamp}
+        <Animated.View style={[{ minWidth: 0, gap: G.contentGap }, motion.contentStyle]}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              alignItems: 'baseline',
+              columnGap: G.headerGapX,
+              rowGap: G.headerGapY,
+              minWidth: 0,
+            }}
+          >
+            <Text variant="body-medium" style={{ color: paint.title, flexShrink: 1 }}>
+              {title}
+            </Text>
+            {timestamp ? (
+              <Text variant="body-regular" style={{ color: paint.timestamp }}>
+                {timestamp}
+              </Text>
+            ) : null}
+          </View>
+          {description ? (
+            <Text variant="body-regular" style={{ color: paint.description }}>
+              {description}
             </Text>
           ) : null}
-        </View>
-        {description ? (
-          <Text variant="body-regular" style={{ color: paint.description }}>
-            {description}
-          </Text>
-        ) : null}
+        </Animated.View>
         {actions?.length ? (
           <View
             style={{

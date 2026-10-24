@@ -32,7 +32,7 @@ const meta: Meta = {
     showHistory: { control: 'boolean' },
   },
   component: AgentChat,
-  parameters: { controls: { disable: true } },
+  parameters: { controls: { disable: true }, layout: 'fullscreen' },
   id: 'agents-agent-chat',
   title: 'Patterns/Agents/Agent Chat',
 };
@@ -122,10 +122,14 @@ const ACCOUNT: Pick<
 // ---------------------------------------------------------------------------
 
 /** The page frame: background-full, p 12, and a viewport-tall workspace. */
+/**
+ * The page a chat sits in. With no size given it is the viewport, as in an app;
+ * the chat's own shell frames its panels (and drops the frame on narrow screens).
+ */
 function Page({
   children,
-  height = 760,
-  width = 1400,
+  height,
+  width,
   testID,
 }: {
   children: React.ReactNode;
@@ -134,10 +138,18 @@ function Page({
   testID?: string;
 }) {
   const { colors } = useTheme();
+  const viewport = useWindowDimensions();
+  const fills = width === undefined && height === undefined;
   return (
     <View
       testID={testID}
-      style={{ width, maxWidth: '100%', height, padding: 12, backgroundColor: colors.background }}
+      style={{
+        width: width ?? '100%',
+        maxWidth: '100%',
+        height: height ?? viewport.height,
+        padding: fills ? 0 : 12,
+        backgroundColor: colors.background,
+      }}
     >
       {children}
     </View>

@@ -205,6 +205,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
             size={DOT_SIZE}
             selectedColor={color}
             selectedForeground={foreground}
+            disabled={disabled}
           />
         </View>
       </View>

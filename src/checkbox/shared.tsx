@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import type { Theme } from '../theme/types';
@@ -292,7 +293,7 @@ export function CheckboxGlyph({
     : {
         borderWidth: 1,
         borderColor: highlighted ? paint.borderHover : paint.border,
-        backgroundColor: paint.surface,
+        backgroundColor: disabled ? paint.surface : 'transparent',
         boxShadow: paint.shadow,
       };
 
@@ -328,6 +329,13 @@ export function CheckboxGlyph({
           boxStyle,
         ]}
       >
+        {/* An empty box is on the shared surface material. A marked box keeps its
+            accent gradient and inset highlight, which a material fill would hide,
+            and a disabled box is flat: it and the rows and cards around it dim
+            with `opacity`, which would make them the material's backdrop root. */}
+        {marked || disabled ? null : (
+          <SurfacePaint fill={paint.surface} radius={BOX_RADIUS - 1} composite />
+        )}
         {indeterminate ? (
           <Svg width={box} height={box} viewBox="0 0 16 16" fill="none">
             <Path d={DASH_PATH} stroke={paint.mark} strokeWidth={2} strokeLinecap="round" />

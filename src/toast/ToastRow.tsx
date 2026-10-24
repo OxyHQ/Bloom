@@ -37,7 +37,7 @@
  * native regression that forbids the imperative driver on native.
  */
 import * as React from 'react';
-import { StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, type View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -45,7 +45,15 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { easeOutQuartFn, useToastLayoutAnimations } from './animations';
+import { EXIT_DURATION, easeOutQuartFn, useToastLayoutAnimations } from './animations';
+import { IS_WEB } from '../styles/platform';
+import {
+  surfacePresenceStyle,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
+
+const TOAST_CSS_EASE_OUT_QUART = 'cubic-bezier(0.165, 0.84, 0.44, 1)';
 import {
   CLOSE_BUTTON_HIT_AREA,
   ENTERING_ANIMATION_DURATION,
@@ -275,9 +283,12 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
   const wiggleScale = useSharedValue(1);
   // ONE mapper for both transforms: two animated styles on the same view would
   // each return a `transform` array and the later one would win outright.
+  // On the web the row only moves: the toast paints the material, so its fade
+  // in and out is its presence (layers through the variables, content piece by
+  // piece) on the measured node, never an opacity above the material.
   const rowStyle = useAnimatedStyle(
     () => ({
-      opacity: enterProgress.value,
+      ...(IS_WEB ? null : { opacity: enterProgress.value }),
       transform: [
         { translateY: (1 - enterProgress.value) * enterDistance },
         { scale: wiggleScale.value },
@@ -315,6 +326,14 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
   const measuredRef = React.useRef<
     (React.ComponentRef<typeof View> & { getBoundingClientRect?: () => DOMRect }) | null
   >(null);
+  const entered = useEnteredPresence(true);
+  const presence = enterTranslateY === undefined || entered ? 1 : 0;
+  useSurfacePresenceContent(measuredRef, {
+    presence,
+    duration: ENTERING_ANIMATION_DURATION,
+    easing: TOAST_CSS_EASE_OUT_QUART,
+    exit: exiting ? EXIT_DURATION : 0,
+  });
 
   // Tiers 1 and 2 of the ladder — see the W6 note in the file header.
   React.useLayoutEffect(() => {
@@ -456,11 +475,14 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
               ]}
             >
               <Animated.View
-                style={{
-                  flexShrink: 0,
-                  marginLeft: -Number(insetLeft),
-                  marginRight: -Number(insetRight),
-                }}
+                style={[
+                  {
+                    flexShrink: 0,
+                    marginLeft: -Number(insetLeft),
+                    marginRight: -Number(insetRight),
+                  },
+                  IS_WEB ? surfacePresenceStyle(presence, ENTERING_ANIMATION_DURATION) : null,
+                ]}
                 ref={measuredRef}
                 onLayout={handleLayout}
                 entering={entering}

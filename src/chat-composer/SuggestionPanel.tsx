@@ -10,6 +10,8 @@ import { resolveDropdownPlacement } from '../overlay/dropdown-placement';
 import type { FloatingAnchor } from '../floating/types';
 import { useMenuDensity } from '../floating/use-menu-density';
 import { Surface } from '../surface';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
+import type { ViewRef } from '../styles/native-refs';
 import { ScrollArea } from '../layout/ScrollArea';
 import type { SuggestionPanelProps } from './suggestion-panel-types';
 
@@ -32,6 +34,7 @@ export function SuggestionPanel({
   const density = useMenuDensity();
   const [rect, setRect] = useState<FloatingAnchor | null>(null);
   const [height, setHeight] = useState(0);
+  const [host, setHost] = useState<ViewRef | null>(null);
   const [keyboardTop, setKeyboardTop] = useState<number | null>(
     () => Keyboard.metrics()?.screenY ?? null,
   );
@@ -67,6 +70,9 @@ export function SuggestionPanel({
       active = false;
     };
   }, [anchor, open, viewport.width, viewport.height, keyboardTop, children]);
+  // Hidden for the frame before it is measured through its presence, never an
+  // opacity on the panel: that would make it its own material's backdrop root.
+  useSurfacePresenceContent(host, { presence: height ? 1 : 0 });
   if (!open || !rect) return null;
   const gutter = 8;
   const top = insets.top + gutter;
@@ -110,9 +116,10 @@ export function SuggestionPanel({
               top: position.top + top,
               left: position.left + insets.left,
               maxHeight: ceiling,
-              opacity: height ? 1 : 0,
             },
+            surfacePresenceStyle(height ? 1 : 0),
           ]}
+          ref={setHost}
           onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
           testID={testID}
         >

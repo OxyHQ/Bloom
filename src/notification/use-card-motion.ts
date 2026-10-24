@@ -49,7 +49,14 @@ export function useCardMotion({
 }): {
   // Annotated: inferred, the declaration would spell RN 0.88's expanded colour
   // union (`NativeColorValue`), a name RN 0.86's types do not export.
+  /** The card host: its movement, and on native its fade. */
   style: Animated.WithAnimatedValue<WebCssStyle>;
+  /** Web: the fade and blur, for content that holds no surface material. */
+  contentStyle: Animated.WithAnimatedValue<WebCssStyle> | undefined;
+  /** Web: how present the card's surface materials are, for the host. */
+  presenceStyle: WebCssStyle | undefined;
+  /** Whether the card's surface is present: a host stroke follows it out. */
+  present: boolean;
   dismiss: () => void;
   gone: boolean;
 } {
@@ -61,12 +68,20 @@ export function useCardMotion({
   // (auto-dismiss) and a later press cannot both run the exit.
   const dismissingRef = useRef(false);
   const [gone, setGone] = useState(false);
+  // The web material fades its own layers: a fading or blurred ancestor would
+  // become its backdrop root, so the blur would vanish for the whole fade and
+  // pop back at its end.
+  const [presence, setPresence] = useState({ present: !animateIntro, ms: 0 });
   const onExitedRef = useRef(onExited);
   onExitedRef.current = onExited;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animateIntro) return;
+    const reveal = setTimeout(
+      () => setPresence({ present: true, ms: intro.duration }),
+      (introDelay ?? 0) * 1000,
+    );
     const animation = Animated.timing(enter, {
       toValue: 1,
       duration: intro.duration,
@@ -75,7 +90,10 @@ export function useCardMotion({
       useNativeDriver: SUPPORTS_NATIVE_DRIVER,
     });
     animation.start();
-    return () => animation.stop();
+    return () => {
+      clearTimeout(reveal);
+      animation.stop();
+    };
     // Mount-only, like `initial`/`animate`.
   }, []);
 
@@ -91,6 +109,7 @@ export function useCardMotion({
       return;
     }
     enter.stopAnimation();
+    setPresence({ present: false, ms: exit.duration });
     Animated.timing(leave, {
       toValue: 1,
       duration: exit.duration,
@@ -102,11 +121,19 @@ export function useCardMotion({
     });
   }, [reducedMotion, enter, leave, exit.duration, exitEasing]);
 
+  const lerp = useCallback(
+    (value: Animated.Value, from: number, to: number) =>
+      value.interpolate({ inputRange: [0, 1], outputRange: [from, to] }),
+    [],
+  );
+  const opacity = useMemo(
+    () => Animated.multiply(lerp(enter, intro.opacity, 1), lerp(leave, 1, exit.opacity)),
+    [lerp, enter, leave, intro, exit],
+  );
+
   const style = useMemo((): Animated.WithAnimatedValue<WebCssStyle> => {
-    const lerp = (value: Animated.Value, from: number, to: number) =>
-      value.interpolate({ inputRange: [0, 1], outputRange: [from, to] });
     const animated: Record<string, unknown> = {
-      opacity: Animated.multiply(lerp(enter, intro.opacity, 1), lerp(leave, 1, exit.opacity)),
+      ...(IS_WEB ? null : { opacity }),
       transform: [
         {
           translateY: Animated.add(
@@ -117,17 +144,33 @@ export function useCardMotion({
         { scale: Animated.multiply(lerp(enter, intro.scale, 1), lerp(leave, 1, exit.scale)) },
       ],
     };
-    if (IS_WEB) {
-      animated.filter = Animated.add(
-        lerp(enter, intro.blur, 0),
-        lerp(leave, 0, exit.blur),
-      ).interpolate({
+    return animated as Animated.WithAnimatedValue<WebCssStyle>;
+  }, [lerp, opacity, enter, leave, intro, exit]);
+
+  const contentStyle = useMemo((): Animated.WithAnimatedValue<WebCssStyle> | undefined => {
+    if (!IS_WEB) return undefined;
+    return {
+      opacity,
+      filter: Animated.add(lerp(enter, intro.blur, 0), lerp(leave, 0, exit.blur)).interpolate({
         inputRange: [0, 10],
         outputRange: ['blur(0px)', 'blur(10px)'],
-      });
-    }
-    return animated as Animated.WithAnimatedValue<WebCssStyle>;
-  }, [enter, leave, intro, exit]);
+      }),
+    } as Animated.WithAnimatedValue<WebCssStyle>;
+  }, [lerp, opacity, enter, leave, intro, exit]);
 
-  return { style, dismiss, gone };
+  const presenceStyle = useMemo(
+    (): WebCssStyle | undefined =>
+      IS_WEB
+        ? {
+            '--bloom-surface-presence': presence.present ? '1' : '0',
+            '--bloom-surface-presence-ms': `${presence.ms}ms`,
+            transitionProperty: 'border-color',
+            transitionDuration: `${presence.ms}ms`,
+            transitionTimingFunction: 'ease-out',
+          }
+        : undefined,
+    [presence],
+  );
+
+  return { style, contentStyle, presenceStyle, present: presence.present, dismiss, gone };
 }

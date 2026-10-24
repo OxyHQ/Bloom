@@ -6,6 +6,7 @@
  * attributes. Width-driven layouts need `onLayout` (a ResizeObserver jsdom does
  * not have), so every part is given an explicit `layout`.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -69,7 +70,7 @@ function normalise(color: string): string {
 /** A subtle badge paints the tone's tint behind the tone's text colour. */
 function expectSubtle(el: HTMLElement, tone: AccentTone) {
   const accent = resolveAccentColors(theme.colors, tone, 'subtle');
-  expect(getComputedStyle(el).backgroundColor).toBe(normalise(accent.background));
+  expect(materialFill(el)).toBe(normalise(accent.background));
   expect(el.textContent).not.toBe('');
 }
 

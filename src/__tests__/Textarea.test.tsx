@@ -1,4 +1,5 @@
 import React from 'react';
+import { surfacePaintOf } from './support/material-fill';
 import { TextInput, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
@@ -30,13 +31,18 @@ function captureTheme(): Theme {
 }
 
 /** The shell: the View carrying the 2px inset ring. */
-function shellStyle(root: ReturnType<typeof render>) {
+function shellStyle(root: ReturnType<typeof render>): Record<string, unknown> {
   const shells = root
     .UNSAFE_getAllByType(View)
     .map((v) => resolvedStyle(v.props.style))
     .filter((s) => s.borderWidth === 2 && s.borderRadius === 12);
   if (shells.length !== 1) throw new Error(`expected one shell, found ${shells.length}`);
-  return shells[0]!;
+  // The shell draws the ring. On native it keeps its own fill under that ring,
+  // and the material only lights it; on the web the fill is the material's.
+  return {
+    ...shells[0]!,
+    backgroundColor: surfacePaintOf(root.UNSAFE_root)?.props.fill ?? shells[0]!.backgroundColor,
+  };
 }
 
 describe('Textarea', () => {
@@ -90,6 +96,9 @@ describe('Textarea', () => {
       rest.UNSAFE_getByType(TextInput).props.onFocus({});
     });
     expect(shellStyle(rest).borderColor).toBe(p.ringFocus);
+    // A native paint is a child, drawn over the shell's border: it must stay
+    // inside the ring, or the focus and invalid ring vanish under it.
+    expect(surfacePaintOf(rest.UNSAFE_root)?.props.outset ?? 0).toBe(0);
 
     const invalid = renderWithTheme(<Textarea label="Bio" invalid hint="Too short" />);
     expect(shellStyle(invalid).backgroundColor).toBe(p.backgroundInvalid);

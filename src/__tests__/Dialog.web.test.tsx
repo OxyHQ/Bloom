@@ -94,8 +94,11 @@ describe('Dialog.web keyframe self-injection', () => {
     expect(styleEl?.parentElement).toBe(document.head);
 
     const css = styleEl?.textContent ?? '';
-    expect(css).toContain('@keyframes bloomDialogZoomFadeIn');
-    expect(css).toContain('@keyframes bloomDialogZoomFadeOut');
+    expect(css).toContain('@keyframes bloomDialogZoomIn');
+    expect(css).toContain('@keyframes bloomDialogZoomOut');
+    // Scale only: the card paints the material, so an opacity keyframe would
+    // make it its own backdrop root for the whole fade.
+    expect(css).not.toMatch(/opacity/);
     // The backdrop's own fade is NOT a keyframe: it rides a shared value, so
     // the dim can never be driven past its own opacity (see the black-flash
     // regression below).

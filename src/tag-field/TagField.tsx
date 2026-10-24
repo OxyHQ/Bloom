@@ -1,4 +1,5 @@
 import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Pressable,
   TextInput,
@@ -22,6 +23,7 @@ import {
   TEXT_FIELD_GEOMETRY,
   TEXT_FIELD_INPUT_INSET,
   TEXT_FIELD_RADIUS,
+  TEXT_FIELD_FILL_TRANSITION,
   TEXT_FIELD_RING_WIDTH,
   TEXT_FIELD_STACK_GAP,
   TEXT_FIELD_TEXT,
@@ -323,6 +325,12 @@ export function TagField({
           2px ring costs the chips and the caret no room and an empty tag field
           is exactly the rung an empty text field is.
         */}
+        <SurfacePaint
+          fill={shell.backgroundColor}
+          radius={TEXT_FIELD_RADIUS}
+          composite
+          transition={TEXT_FIELD_FILL_TRANSITION}
+        />
         <View
           pointerEvents="none"
           style={[
@@ -332,7 +340,7 @@ export function TagField({
             {
               borderRadius: TEXT_FIELD_RADIUS,
               borderWidth: TEXT_FIELD_RING_WIDTH,
-              ...shell,
+              borderColor: shell.borderColor,
             },
             TEXT_FIELD_WEB_TRANSITION,
           ]}

@@ -5,7 +5,7 @@ description: Shared component bases, migrated surfaces and intentional exception
 
 # Material composition
 
-Surface has one shared material: a 90%-opaque body, gradient and rim, over one backdrop blur on web. There is no material selector. A component keeps its layout, interaction and accessibility semantics; only its paint is shared. Semantic actions keep their fill and foreground pairs with the same subtle transparency. BottomBar's optional blur band remains independent.
+Surface has one shared material: a frosted body (72% of an opaque fill over a blurred backdrop) and an edge of light along its top and bottom. There is no material selector. A component keeps its layout, interaction and accessibility semantics; only its paint is shared. Semantic actions keep their fill and foreground pairs with the same subtle transparency. BottomBar's optional blur band remains independent.
 
 ## Choose the existing base
 
@@ -15,12 +15,12 @@ Surface has one shared material: a 90%-opaque body, gradient and rim, over one b
 | Quiet icon action with ref/hover contracts | GlyphButton | PlayerIconButton, QueueIconButton and other existing glyph adapters |
 | Card content | Card | LinkPreviewCard and existing card-shaped families; the Social template now uses LinkPreviewCard directly |
 | Passive container | Surface | Standalone content with caller-owned spacing |
-| Existing universal interactive/layout host | SurfacePaint | Button native, Card, Sidebar, Dialog/BottomSheet, QueuePanel, standalone UserHoverCard, native Tooltip, ComposerPanel/Pill, Toast, docked MailCompose native ContentPanel and SettingsModal |
+| Existing universal interactive/layout host | SurfacePaint | Button native, Card, Sidebar, Dialog/BottomSheet, QueuePanel, standalone UserHoverCard, native Tooltip, ComposerPanel/Pill, Toast, docked MailCompose native ContentPanel and SettingsModal; the field family (TextField, Search, PhoneInput, Textarea, InputGroup, TagField, InputOtp cells) and SelectTrigger; Chip, Badge pills, UnreadBadge counts; SegmentedControl track and thumb; the tab and bottom bar highlight; Notification, Announcement, Admonition and CloseButton; the Menubar bar, the current Pagination cell, the FileUpload frame, ShareTargetButton discs and the PlayButton disc; the Switch track, the Slider thumb, an empty Checkbox box and the RadioIndicator surface |
 | Existing web host with its own fill/classes | useSurfaceMaterial | FloatingPanel, Tooltip and ContentPanel; inherits the host's actual radius without measurement |
 | Anchored overlay behavior | FloatingPanel | Web Popover, DropdownMenu, ContextMenu, Menubar, Select and HoverCard |
 | Modal/sheet behavior | Dialog / BottomSheet / SheetShell | AlertDialog, Command and existing native overlay adapters |
 
-`SurfacePaint` can own a supplied fill, or omit `fill` to add only the gradient and rim over a host-owned background. Hosts that hand their fill to the material stay transparent so they do not hide the backdrop. Explicit alpha is preserved; default fills retain 90% opacity. Native uses one View with tint, an experimental background-image sheen and an inset box-shadow rim. It has no per-surface blur or SVG displacement. The web host hook adds shared pseudo-elements, without a wrapper or a per-frame JavaScript loop. Backdrop filtering still incurs compositor cost per painted surface.
+`SurfacePaint` can own a supplied fill, or omit `fill` to add only the edge light over a host-owned background. Hosts that hand their fill to the material stay transparent so they do not hide the backdrop. Explicit alpha is preserved; default fills keep 72% opacity on web. Native uses one View with tint, a background-image glow and an inset box-shadow edge line; it has no per-surface blur. The web host hook adds shared pseudo-elements, without a wrapper or a per-frame JavaScript loop. Backdrop filtering still incurs compositor cost per painted surface.
 
 Surface and painted Card resolve depth from the actual parent and publish the fill composited against that backing through both React context and the web CSS variable. Plain transparent containers inherit; a plain explicit background publishes that backing without increasing the level. Material does not own padding, dimensions, geometry, elevation or state. Foreground/fill pairs stay with the semantic palette. A surface-level context must continue to describe the fill its descendants actually sit on. Never replace the parent's layout node just to paint material.
 
@@ -32,6 +32,13 @@ Surface and painted Card resolve depth from the actual parent and publish the fi
 - ComposerIconButton now composes Button and forwards its recording press-in/press-out, long-press and anchor ref contracts. Composer actions use Button; radio rows, tabs and overlay dismissal planes retain their own semantics.
 - MapSearchArea's auto-update control remains a named checkbox with checked state. Its role cannot be replaced by an ordinary action button.
 - Fields, selection controls, meters, charts, rows and decorative status tabs keep their dedicated behavior and visual encodings. Reusing Surface does not mean wrapping every primitive in another panel.
+- Too small or too thin for the edge light, so flat: status and presence dots, the radio dot, the Switch thumb (its height also animates), the Slider rail and range (at 4-8px the edge lines cover the whole rail), a marked Checkbox box and the selected RadioIndicator (their accent gradient and inset highlight are their own paint). A disabled Checkbox box or RadioIndicator is flat too: the rows and cards around them dim with `opacity`. A tab glyph's count badge is `material="flat"`: the glyph layers crossfade with `opacity`.
+
+## Hosts, fills and states
+
+A painted host keeps its background transparent and renders `SurfacePaint` as its first child. A host whose border is a state ring (transparent at rest) passes the border width as `outset`, so the paint covers the border box; a host with a visible border paints inside it, at the inner radius. A translucent theme tint (an error or accent wash) passes `composite`, so on the web the material shows the colour the token reads as over its surface (`backing` names that surface when it is not the one in context); native keeps the tint as is. `transition` carries a host's fill transition onto the material. Content without its own position (a raw SVG glyph) sits in a view, or it paints beneath the positioned material.
+
+Never give a material's host or any ancestor `opacity < 1` or a `filter` (even `blur(0px)`): on the web it becomes the backdrop root and the blur vanishes, then pops back. Disabled controls dim their content, strokes and the material's own presence (`SurfacePaint presence`, `--bloom-surface-presence`); hosts that appear and leave move with `transform` and fade the material through `--bloom-surface-presence` and their content in wrappers of its own (Notification, Announcement). Native keeps dimming the host: it has no backdrop filter.
 
 ## Verification
 

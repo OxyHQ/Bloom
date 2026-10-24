@@ -51,6 +51,8 @@ import { SETTINGS_MODAL_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
+import { mergeRefs } from '../hooks/merge-refs';
+import { surfacePresenceVars, useSurfacePresenceContent } from '../surface/use-surface-presence';
 
 export function createSettingsModal(
   { Screen, ScreenScrollView }: ScreenComponents,
@@ -351,14 +353,23 @@ export function createSettingsModal(
     );
 
     // Full screen, a .85 scale reads as the page shrinking away; compact rises 16px instead.
+    // The panel paints the material, so on the web its wrapper only moves: the
+    // fade and un-blur run through the panel's presence and its content.
     const webPanelMotion: WebCssStyle = {
-      opacity: visible ? 1 : 0,
       transform: isCompact ? [{ translateY: visible ? 0 : 16 }] : [{ scale: visible ? 1 : 0.85 }],
-      filter: visible ? 'blur(0px)' : 'blur(4px)',
-      transitionProperty: 'opacity, transform, filter',
+      transitionProperty: 'transform',
       transitionDuration: reducedMotion ? '0ms' : `${MOTION_MS}ms`,
       transitionTimingFunction: MOTION_EASING,
     };
+    const presenceMs = reducedMotion ? 0 : MOTION_MS;
+    const [panelNode, setPanelNode] = useState<ComponentRef<typeof View> | null>(null);
+    const attachPanel = useMemo(() => mergeRefs([panelRef, setPanelNode]), []);
+    useSurfacePresenceContent(panelNode, {
+      presence: visible ? 1 : 0,
+      duration: presenceMs,
+      easing: MOTION_EASING,
+      blur: 4,
+    });
 
     if (!mounted) return null;
 
@@ -408,7 +419,7 @@ export function createSettingsModal(
                   ]}
                 >
                   <View
-                    ref={panelRef}
+                    ref={attachPanel}
                     tabIndex={IS_WEB ? -1 : undefined}
                     role="dialog"
                     aria-modal
@@ -437,6 +448,15 @@ export function createSettingsModal(
                         ...surfaceFillVars(publishedFill),
                         boxShadow: palette.shadowXs,
                       },
+                      IS_WEB
+                        ? ({
+                            ...surfacePresenceVars(visible ? 1 : 0, presenceMs),
+                            boxShadow: visible ? palette.shadowXs : 'none',
+                            transitionProperty: 'box-shadow',
+                            transitionDuration: `${presenceMs}ms`,
+                            transitionTimingFunction: MOTION_EASING,
+                          } as WebCssStyle)
+                        : null,
                       ringVars(palette),
                     ]}
                   >
@@ -850,7 +870,7 @@ export function createSettingsModal(
       transform: [{ translateY }, { scale: shown ? 1 : 0.9 }],
       ...(IS_WEB
         ? {
-            filter: shown ? 'blur(0px)' : 'blur(2px)',
+            filter: shown ? 'none' : 'blur(2px)',
             transitionProperty: 'opacity, transform, filter',
             transitionDuration: reducedMotion || phase === 'hidden' ? '0ms' : '200ms',
             transitionTimingFunction: 'ease-out',

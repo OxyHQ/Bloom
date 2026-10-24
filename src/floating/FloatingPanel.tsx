@@ -73,7 +73,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, type View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -90,6 +90,7 @@ import {
 } from '../overlay/dropdown-placement';
 import { usePlacementBoundary } from '../overlay/placement-boundary';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { Portal } from '../portal/index.web';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
@@ -208,6 +209,7 @@ export function FloatingPanel({
   onMouseDown,
   contextRef,
   material: surfaceMaterial = 'surface',
+  instant = false,
   open,
   anchor,
   side = 'bottom',
@@ -266,6 +268,10 @@ export function FloatingPanel({
     'bloom-floating-surface-css',
     typeof ownFill === 'string' ? ownFill : 'transparent',
     surfaceMaterial !== 'flat',
+    undefined,
+    undefined,
+    StyleSheet.flatten(style)?.borderRadius ??
+      (surface === 'popover' ? undefined : SURFACE_SHAPES.menu.radius),
   );
   const transparentFill = ownFill === 'transparent' || parsedFill?.a === 0;
   // The mounted panel as STATE, not a bare ref: placement has to measure it,
@@ -285,7 +291,7 @@ export function FloatingPanel({
   const published = useRef<DropdownPlacement | null>(null);
   const [phase, setPhase] = useState<Phase>(open ? 'open' : 'closed');
   const [lastOpen, setLastOpen] = useState(open);
-  const reducedMotion = useReducedMotion();
+  const still = useReducedMotion() || instant;
   const progress = useSharedValue(0);
 
   const panelRefRef = useRef(panelRef);
@@ -321,9 +327,9 @@ export function FloatingPanel({
     if (phase !== 'closing') return;
     // Deliberately the SAME constant the exit animates over, so the unmount can
     // never land before the animation finishes or long after it.
-    const timer = setTimeout(() => setPhase('closed'), reducedMotion ? 0 : chrome.duration);
+    const timer = setTimeout(() => setPhase('closed'), still ? 0 : chrome.duration);
     return () => clearTimeout(timer);
-  }, [phase, reducedMotion, chrome.duration]);
+  }, [phase, still, chrome.duration]);
 
   // ONE pass of the placement: two forced layout reads (`getBoundingClientRect`
   // and the `offset*` pair) and, at most, one state update. Split out of the
@@ -450,6 +456,15 @@ export function FloatingPanel({
     return { side: resolved, origin: transformOriginFor(resolved, align) };
   }, [placement, anchor, side, align]);
 
+  // Once placed in an open phase, the panel keeps that placement until it closes.
+  // A re-measure can resolve to nothing for a frame (the anchor is re-read, the
+  // panel node is replaced); without this the panel jumped back to its anchor and
+  // its material faded out and in again for that frame — a visible flicker.
+  const [placedAt, setPlacedAt] = useState<DropdownPlacement | null>(null);
+  if (phase === 'open' && placement && placement !== placedAt) setPlacedAt(placement);
+  if (phase === 'closed' && placedAt) setPlacedAt(null);
+  const shownPlacement = placement ?? (phase === 'closed' ? null : placedAt);
+
   const [held, setHeld] = useState(landed);
   if (landed && landed !== held) setHeld(landed);
   const geometry = landed ?? held;
@@ -465,7 +480,7 @@ export function FloatingPanel({
   useEffect(() => {
     if (phase === 'open') {
       if (!placement) return;
-      progress.value = reducedMotion
+      progress.value = still
         ? 1
         : withTiming(1, {
             ...MOTION_RECIPES.present,
@@ -475,7 +490,7 @@ export function FloatingPanel({
       return;
     }
     if (phase === 'closing') {
-      progress.value = reducedMotion
+      progress.value = still
         ? 0
         : withTiming(0, {
             ...MOTION_RECIPES.dismiss,
@@ -485,32 +500,37 @@ export function FloatingPanel({
       return;
     }
     progress.value = 0;
-  }, [phase, placement, reducedMotion, progress, chrome]);
+  }, [phase, placement, still, progress, chrome]);
 
   // `progress`, `slideX` and `slideY` are ALL in the deps: the shared value
   // because that is what subscribes the mapper to it without the worklets babel
   // plugin, and the two numbers because the mapper closes over them.
   //
-  // A menu surface also un-blurs (`blur-[2px]` → none). The resting value is
-  // `'none'`, not `blur(0px)`, so a settled panel is not left on a filter layer.
+  // The panel itself only MOVES: an opacity or a filter on it (even
+  // `blur(0px)`) would make it a backdrop root and cut its material's blur off
+  // for the whole fade. Its layers fade through the presence variables and its
+  // rows through `useSurfacePresenceContent`, which also carries the menu's
+  // `blur-[2px]` → none on each row that holds no material of its own.
   const scaleFrom = chrome.scaleFrom;
   const blurFrom = chrome.blur;
   const motionStyle = useAnimatedStyle(
     () => ({
-      opacity: progress.value,
       transform: [
         { translateX: slideX * (1 - progress.value) },
         { translateY: slideY * (1 - progress.value) },
         { scale: scaleFrom + (1 - scaleFrom) * progress.value },
       ],
-      ...(blurFrom > 0
-        ? {
-            filter: progress.value >= 1 ? 'none' : `blur(${blurFrom * (1 - progress.value)}px)`,
-          }
-        : null),
     }),
-    [progress, slideX, slideY, scaleFrom, blurFrom],
+    [progress, slideX, slideY, scaleFrom],
   );
+  const present = phase === 'open' && shownPlacement !== null;
+  const presenceMs = still ? 0 : chrome.duration;
+  const presenceStyle = surfacePresenceStyle(present ? 1 : 0, presenceMs);
+  useSurfacePresenceContent(panelNode, {
+    presence: present ? 1 : 0,
+    duration: presenceMs,
+    blur: blurFrom,
+  });
 
   // Escape dismisses the INNERMOST open surface and nothing under it — a Select
   // inside a Dialog closes its list, not the dialog (`escape-stack.ts`). The
@@ -597,8 +617,11 @@ export function FloatingPanel({
             isMenuSurface
               ? {
                   backgroundColor: palette.surface,
-                  borderColor: palette.border,
-                  boxShadow: palette.shadow,
+                  borderColor: surfaceMaterial === 'flat' ? palette.border : 'transparent',
+                  boxShadow: present ? palette.shadow : 'none',
+                  transitionProperty: 'box-shadow',
+                  transitionDuration: `${still ? 0 : chrome.duration}ms`,
+                  transitionTimingFunction: 'ease-out',
                 }
               : null,
             {
@@ -607,7 +630,7 @@ export function FloatingPanel({
               // already the shape it will be laid out at. It is invisible until
               // then because `progress` is still 0.
               left:
-                placement?.left ??
+                shownPlacement?.left ??
                 (anchor
                   ? side === 'right'
                     ? anchor.right + sideOffset
@@ -616,7 +639,7 @@ export function FloatingPanel({
                       : anchor.left
                   : 0),
               top:
-                placement?.top ??
+                shownPlacement?.top ??
                 (anchor
                   ? side === 'left' || side === 'right'
                     ? anchor.top
@@ -630,6 +653,7 @@ export function FloatingPanel({
               pointerEvents: phase === 'open' ? 'auto' : 'none',
             },
             motionStyle,
+            presenceStyle,
             style,
             materialStyle,
             { maxHeight: heightCeiling },
@@ -648,20 +672,22 @@ export function FloatingPanel({
             exists for.
           */}
           <SurfaceLevelProvider level={transparentFill ? 0 : 1} fill={publishedFill}>
-            {scroll === 'external' ? (
-              children
-            ) : (
-              <ScrollArea
-                ref={scrollRef}
-                style={{ flexShrink: 1, minHeight: 0 }}
-                contentContainerStyle={{
-                  gap: callerStyle?.gap ?? density.gap,
-                }}
-                keyboardShouldPersistTaps="handled"
-              >
-                {children}
-              </ScrollArea>
-            )}
+            <View style={styles.content}>
+              {scroll === 'external' ? (
+                children
+              ) : (
+                <ScrollArea
+                  ref={scrollRef}
+                  style={{ flexShrink: 1, minHeight: 0 }}
+                  contentContainerStyle={{
+                    gap: callerStyle?.gap ?? density.gap,
+                  }}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {children}
+                </ScrollArea>
+              )}
+            </View>
           </SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>
@@ -670,6 +696,7 @@ export function FloatingPanel({
 }
 
 const styles = StyleSheet.create({
+  content: { flexShrink: 1, minHeight: 0 },
   backdrop: {
     position: WEB_POSITION_FIXED,
     top: 0,

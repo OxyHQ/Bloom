@@ -13,6 +13,11 @@ import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { SurfacePaint } from '../surface/SurfacePaint';
+import {
+  surfacePresenceVars,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 /**
  * `Dialog` — WEB: a pure-DOM modal overlay rendered into Bloom's `Portal`.
@@ -98,11 +103,13 @@ const FADE_OUT_DURATION = CENTER_FADE_OUT_DURATION;
  * DOM node — so these are annotated `WebCssStyle` rather than cast. The
  * `@keyframes` they name are self-injected by `useDialogCss()`.
  */
-const ZOOM_FADE_IN: WebCssStyle = {
-  animation: 'bloomDialogZoomFadeIn cubic-bezier(0.16, 1, 0.3, 1) 0.3s',
+const ZOOM_IN_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const ZOOM_IN_DURATION = 300;
+const ZOOM_IN: WebCssStyle = {
+  animation: `bloomDialogZoomIn ${ZOOM_IN_EASING} ${ZOOM_IN_DURATION}ms`,
 };
-const ZOOM_FADE_OUT: WebCssStyle = {
-  animation: `bloomDialogZoomFadeOut ease-in ${FADE_OUT_DURATION}ms forwards`,
+const ZOOM_OUT: WebCssStyle = {
+  animation: `bloomDialogZoomOut ease-in ${FADE_OUT_DURATION}ms forwards`,
 };
 /**
  * Backdrop fade-in duration (ms). The card's zoom-fade is longer; the dim
@@ -538,13 +545,42 @@ function DialogPanel({
   children?: React.ReactNode;
 }) {
   const motion = useSurfaceTransition(transition);
+  const entered = useEnteredPresence(!isClosing);
+  const presence = presentation === 'custom' || entered ? 1 : 0;
+  const presenceMs =
+    presentation === 'custom' || motion.reducedMotion
+      ? 0
+      : (motion.duration ?? (isClosing ? FADE_OUT_DURATION : ZOOM_IN_DURATION));
+  const presenceEasing =
+    motion.duration !== undefined ? motion.cssEasing : isClosing ? 'ease-in' : ZOOM_IN_EASING;
+  useSurfacePresenceContent(panelRef, {
+    presence,
+    duration: presenceMs,
+    easing: presenceEasing,
+  });
+  const theme = useTheme();
+  // The card only scales; its material, border, shadow and content fade.
+  const presenceStyle: WebCssStyle | undefined =
+    presentation === 'custom'
+      ? undefined
+      : {
+          ...surfacePresenceVars(presence, presenceMs),
+          borderColor: presence
+            ? theme.isDark
+              ? 'rgba(255,255,255,0.1)'
+              : 'rgba(0,0,0,0.1)'
+            : 'transparent',
+          boxShadow: presence ? bloomShadowStyle('m').boxShadow : 'none',
+          transitionProperty: 'border-color, box-shadow',
+          transitionDuration: `${presenceMs}ms`,
+          transitionTimingFunction: presenceEasing,
+        };
   const panelMotion: WebCssStyle | undefined =
     motion.duration === undefined
       ? undefined
       : {
-          animation: `${isClosing ? 'bloomDialogZoomFadeOut' : 'bloomDialogZoomFadeIn'} ${motion.cssEasing} ${motion.duration}ms${isClosing ? ' forwards' : ''}`,
+          animation: `${isClosing ? 'bloomDialogZoomOut' : 'bloomDialogZoomIn'} ${motion.cssEasing} ${motion.duration}ms${isClosing ? ' forwards' : ''}`,
         };
-  const theme = useTheme();
   const { close } = useDialogContext();
   const titleId = useId();
   const descriptionId = useId();
@@ -642,7 +678,8 @@ function DialogPanel({
           // `OverlayRoot` (see `src/overlay/stack.ts`) — never a number here.
           zIndex: Z_INDEX.raised,
         },
-        presentation === 'custom' ? undefined : isClosing ? ZOOM_FADE_OUT : ZOOM_FADE_IN,
+        presentation === 'custom' ? undefined : isClosing ? ZOOM_OUT : ZOOM_IN,
+        presenceStyle,
         presentation === 'custom' ? undefined : panelMotion,
         // Drives `height` (and `maxWidth`) only while a morph is in flight; at
         // rest it resolves to `height: 'auto'` — the natural sizing above. Placed
@@ -813,13 +850,24 @@ function SheetSurface({
 
   const visible = shown && entered;
 
+  // The drawer slides; its material and content fade through its presence,
+  // never its own opacity (a backdrop root would cut its blur off mid-slide).
+  const sheetMs = motion.reducedMotion ? 0 : (motion.duration ?? ANIMATION_DURATION);
+  const sheetEasing = transition ? motion.cssEasing : EASE_OUT;
+  useSurfacePresenceContent(panelRef, {
+    presence: visible ? 1 : 0,
+    duration: sheetMs,
+    easing: sheetEasing,
+  });
   const panelTransition = useMemo<WebCssStyle>(
     () => ({
-      transitionProperty: 'transform, opacity',
+      ...surfacePresenceVars(visible ? 1 : 0, sheetMs),
+      boxShadow: visible ? bloomShadowStyle('m').boxShadow : 'none',
+      transitionProperty: 'transform, box-shadow',
       transitionDuration: `${motion.duration ?? ANIMATION_DURATION}ms`,
-      transitionTimingFunction: transition ? motion.cssEasing : EASE_OUT,
+      transitionTimingFunction: sheetEasing,
     }),
-    [motion.duration, motion.cssEasing, !!transition],
+    [motion.duration, sheetEasing, sheetMs, visible],
   );
 
   const backdropTransition = useMemo<WebCssStyle>(
@@ -858,7 +906,6 @@ function SheetSurface({
       width: cappedWidth,
       ...surfaceStyle(SURFACE_SHAPES.dialog),
       transform: [{ translateX: visible ? 0 : hiddenSign }],
-      opacity: visible ? 1 : 0,
     };
   }, [visible, placement, rtl, width, inset, viewportWidth, minSideGutter]);
 
@@ -1092,15 +1139,19 @@ const sheetStyles: Record<'root' | 'backdrop' | 'panel', ViewStyle> = {
  * injection is guarded by a unique style id.
  *
  * ```css
- * @keyframes bloomDialogZoomFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
- * @keyframes bloomDialogZoomFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+ * @keyframes bloomDialogZoomIn { from { transform: scale(0.95); } to { transform: scale(1); } }
+ * @keyframes bloomDialogZoomOut { from { transform: scale(1); } to { transform: scale(0.95); } }
  * ```
+ *
+ * Scale only: the card paints the material, and an opacity on it would make it
+ * a backdrop root and cut its own blur off for the whole fade. The card fades
+ * through its presence (`surface/use-surface-presence.ts`) instead.
  *
  * The `left`/`right` placements do NOT depend on this — they animate via
  * self-contained inline CSS transitions and need no keyframe injection. The
  * `bottom` placement uses bloom's `BottomSheet` (reanimated) and needs none.
  */
 export const BLOOM_DIALOG_CSS = `
-@keyframes bloomDialogZoomFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-@keyframes bloomDialogZoomFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+@keyframes bloomDialogZoomIn { from { transform: scale(0.95); } to { transform: scale(1); } }
+@keyframes bloomDialogZoomOut { from { transform: scale(1); } to { transform: scale(0.95); } }
 `;

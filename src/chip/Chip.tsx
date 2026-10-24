@@ -4,6 +4,7 @@ import React, { forwardRef, memo, useMemo, type ComponentRef } from 'react';
 import {
   View,
   Pressable,
+  StyleSheet,
   type MouseEvent as NativeMouseEvent,
   type TextStyle,
   type ViewStyle,
@@ -12,6 +13,8 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { borderRadius } from '../styles/tokens';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { dimColor, isClearFill } from '../surface/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import {
@@ -37,6 +40,8 @@ import type { MemoRefComponent } from '../styles/native-refs';
  * `close-line` (16) as the close glyph.
  */
 const CLOSE_ICON = 16;
+/** How far a disabled pill dims. */
+const DISABLED_DIM = 0.5;
 
 // ---------------------------------------------------------------------------
 //  Keyboard focus on web
@@ -86,8 +91,12 @@ const BLOOM_CHIP_CSS = interactiveWebCss({
     justify-content: flex-start;
     box-sizing: border-box;
   `,
-  transition: 'background-color 120ms ease, border-color 120ms ease, opacity 120ms ease',
-  hover: { declarations: 'opacity: 0.9;' },
+  transition: 'background-color 120ms ease, border-color 120ms ease',
+  // The surface material fades its own layers: an `opacity` on the pill would
+  // make it the material's backdrop root and the blur would vanish. So hover
+  // fades the material, and a disabled pill dims its content and material.
+  hover: { declarations: '--bloom-surface-presence: 0.9;' },
+  disabled: { opacity: null },
   outlineOffset: 2,
   extraRules: `
 /* The removable pill contains two sibling controls. Draw one exterior focus ring. */
@@ -109,6 +118,16 @@ const BLOOM_CHIP_CSS = interactiveWebCss({
    a resolved token. The shared opacity hover would fire as well and fade the
    label of a pill that has no fill to fade. The disabled filter is not optional:
    without it this would undo the 0.5 a disabled chip is dimmed to, on hover. */
+[data-bloom-chip][data-bloom-chip-inverted]${NOT_DISABLED}:hover {
+  --bloom-surface-presence: 1;
+}
+[data-bloom-chip] {
+  --bloom-surface-presence-ms: 120ms;
+}
+/* A pill without material has no backdrop to lose, and fades whole on hover. */
+[data-bloom-chip]:not([data-bloom-chip-material])${NOT_DISABLED}:hover {
+  opacity: 0.9;
+}
 [data-bloom-chip][data-bloom-chip-inverted]${NOT_DISABLED}:hover {
   opacity: 1;
 }
@@ -184,6 +203,11 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
     [theme, tone, variant, selected, hue, surface],
   );
   const ring = useMemo(() => resolveChipRing(theme), [theme]);
+  // Native dims a disabled pill whole. The web dims its content, stroke and
+  // material instead: an `opacity` on the pill would make it the material's
+  // backdrop root, and the blur would vanish.
+  const dimHost = disabled && !IS_WEB;
+  const dimContent = disabled && IS_WEB;
   const geometry = CHIP_GEOMETRY[size];
 
   const containerStyle = useMemo(
@@ -194,9 +218,9 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
             height: geometry.height,
             borderRadius: borderRadius.full,
             paddingHorizontal: geometry.paddingHorizontal,
-            backgroundColor: paint.background,
+            backgroundColor: 'transparent',
             borderWidth: paint.borderWidth,
-            borderColor: paint.border,
+            borderColor: dimContent ? dimColor(paint.border, DISABLED_DIM) : paint.border,
           }),
       flexDirection: 'row',
       alignItems: 'center',
@@ -214,7 +238,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       // cannot know; native has no such style key and ignores it.
       '--bloom-chip-ring': ring,
     }),
-    [className, geometry, paint, ring],
+    [className, geometry, paint, ring, dimContent],
   );
 
   const labelStyle = useMemo(
@@ -223,8 +247,9 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       // The label yields before the pill does: a chip narrower than its text
       // ellipsises rather than overflowing its own radius.
       flexShrink: 1,
+      ...(dimContent ? { opacity: DISABLED_DIM } : null),
     }),
-    [className, paint],
+    [className, paint, dimContent],
   );
 
   // Icons inside the pill are sized to the RUNG, not to whatever the caller
@@ -236,8 +261,9 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       height: geometry.icon,
       alignItems: 'center',
       justifyContent: 'center',
+      ...(dimContent ? { opacity: DISABLED_DIM } : null),
     }),
-    [geometry],
+    [geometry, dimContent],
   );
 
   // A row of removable chips is a row of buttons all called "Remove" otherwise,
@@ -262,6 +288,21 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       <RiCloseLine width={CLOSE_ICON} height={CLOSE_ICON} fill={paint.foreground} />
     </Pressable>
   ) : null;
+
+  // The fill paints through the shared surface material. A caller's own class or
+  // background owns the pill's paint instead, so it acquires no surface.
+  const callerFill = StyleSheet.flatten(style)?.backgroundColor;
+  const fill = pressed && !disabled ? paint.pressedBackground : paint.background;
+  const material =
+    className || callerFill !== undefined || isClearFill(fill) ? null : (
+      <SurfacePaint
+        fill={fill}
+        radius={Math.max(0, borderRadius.full - paint.borderWidth)}
+        composite
+        transition="background-color 120ms ease"
+        presence={dimContent ? DISABLED_DIM : undefined}
+      />
+    );
 
   const content = (
     <>
@@ -348,6 +389,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
                 bloomChip: '',
                 ...(geometry.minWidth ? { bloomChipCenter: '' } : null),
                 ...(variant === 'inverted' ? { bloomChipInverted: '' } : null),
+                ...(material && !onClose ? { bloomChipMaterial: '' } : null),
               },
               ...(tabIndex !== undefined ? { tabIndex } : null),
               ...(onKeyDown ? { onKeyDown } : null),
@@ -369,12 +411,10 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
               }
             : [
                 containerStyle,
-                disabled && { opacity: 0.5 },
+                dimHost && { opacity: DISABLED_DIM },
                 hovered && !disabled && paint.hoveredBorder
                   ? { borderColor: paint.hoveredBorder }
                   : null,
-                // Before the caller's `style`, so `style` still wins the array.
-                pressed && !disabled && { backgroundColor: paint.pressedBackground },
                 style,
               ]
         }
@@ -402,6 +442,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
         aria-disabled={disabled || undefined}
         testID={testID}
       >
+        {onClose ? null : material}
         {content}
       </StyledPressable>
     );
@@ -414,12 +455,12 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
         {...(IS_WEB ? { dataSet: { bloomChipGroup: '' } } : {})}
         style={[
           containerStyle,
-          disabled && { opacity: 0.5 },
+          dimHost && { opacity: DISABLED_DIM },
           hovered && !disabled && paint.hoveredBorder ? { borderColor: paint.hoveredBorder } : null,
-          pressed && !disabled && { backgroundColor: paint.pressedBackground },
           style,
         ]}
       >
+        {material}
         {button}
         {closeButton}
       </StyledView>
@@ -430,10 +471,11 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
     <StyledView
       className={className}
       ref={ref}
-      style={[containerStyle, disabled && { opacity: 0.5 }, style]}
+      style={[containerStyle, dimHost && { opacity: DISABLED_DIM }, style]}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
+      {material}
       {content}
       {closeButton}
     </StyledView>

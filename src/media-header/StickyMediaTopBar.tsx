@@ -1,5 +1,5 @@
 import React, { memo, useEffect } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -13,6 +13,8 @@ import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
 import type { StickyMediaTopBarProps } from './types';
 import { clamp01 } from '../styles/clamp';
+import { IS_WEB } from '../styles/platform';
+import { useSurfacePresence } from '../surface/use-surface-presence';
 
 /** Built once, at module scope, so the fade, `style` and the a11y props share one node. */
 const FadeView = Animated.createAnimatedComponent(View);
@@ -62,7 +64,14 @@ function StickyMediaTopBarComponent({
         ? target
         : withTiming(target, { duration: 200, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
   }, [driven, reducedMotion, target, opacity]);
-  const fadeStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
+  // The bar holds a material play button, so on the web it never fades
+  // itself (that would make it the button's backdrop root): its fill and
+  // content fade through its presence. Native fades the bar.
+  const fadeStyle = useAnimatedStyle(() => (IS_WEB ? {} : { opacity: opacity.value }), [opacity]);
+  const presence = useSurfacePresence(target, {
+    duration: driven || reducedMotion ? 0 : 200,
+    easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  });
 
   const shown = target >= 0.5;
 
@@ -71,7 +80,8 @@ function StickyMediaTopBarComponent({
       pointerEvents={shown ? 'box-none' : 'none'}
       aria-hidden={!shown}
       importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}
-      style={[{ height, width: '100%' }, style, fadeStyle]}
+      style={[{ height, width: '100%' }, style, fadeStyle, IS_WEB ? presence.style : null]}
+      ref={presence.ref}
       testID={testID}
     >
       <View
@@ -82,9 +92,12 @@ function StickyMediaTopBarComponent({
           gap: 12,
           paddingLeft: 16,
           paddingRight: 16,
-          backgroundColor: paint.bar,
         }}
       >
+        <View
+          pointerEvents="none"
+          style={[StyleSheet.absoluteFill, { backgroundColor: paint.bar }]}
+        />
         {leading}
         <PlayButton
           playing={playing}

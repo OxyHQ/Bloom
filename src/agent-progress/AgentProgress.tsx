@@ -1,8 +1,14 @@
 import { SurfacePaint } from '../surface/SurfacePaint';
+import {
+  surfacePresenceVars,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
@@ -87,6 +93,8 @@ const DEFAULT_COMPLETION_DELAY_MS = 1000;
 const PROCESS_START_DELAY_MS = MODULE_EXPAND_MS + STEP_REVEAL_MS;
 
 const EASE = Easing.bezier(0.22, 1, 0.36, 1);
+const CARD_ENTER_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const CARD_ENTER_MS = 350;
 /** motion's `easeOut`. */
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 /** motion's default tween. */
@@ -858,7 +866,7 @@ function AgentProgressComponent({
     parentFill: surfaceLayer.parentFill,
     parentLevel: surfaceLayer.parentLevel,
   });
-  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
+  const { paintFill, publishedFill: surfaceFill } = material;
   const palette = resolvePalette(theme);
   const reducedMotion = useReducedMotion();
 
@@ -923,7 +931,6 @@ function AgentProgressComponent({
   // ---- card motion --------------------------------------------------------
   const cardOpacity = useSharedValue(reducedMotion ? 1 : 0);
   const cardY = useSharedValue(reducedMotion ? 0 : -12);
-  const cardBlur = useSharedValue(reducedMotion ? 0 : 8);
   const cardHeight = useSharedValue(
     reducedMotion ? (minimized ? MINIMIZED_HEIGHT : expandedHeight) : 0,
   );
@@ -931,9 +938,8 @@ function AgentProgressComponent({
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (reducedMotion) return;
-    cardOpacity.value = withTiming(1, { duration: 350, easing: EASE });
+    cardOpacity.value = withTiming(1, { duration: CARD_ENTER_MS, easing: EASE });
     cardY.value = withTiming(0, { duration: 500, easing: EASE });
-    cardBlur.value = withTiming(0, { duration: 400, easing: EASE });
   }, []);
 
   const endReopen = useCallback(() => {
@@ -960,15 +966,27 @@ function AgentProgressComponent({
     });
   }, [minimized, expandedHeight, reducedMotion, cardHeight, endReopen]);
 
+  // The card paints the material, so on the web it never fades or blurs
+  // itself (a backdrop root would cut its blur off, and `blur(0px)` at rest
+  // would keep it flat): its layers fade in through its presence and its
+  // content fades and un-blurs through `useSurfacePresenceContent`.
   const cardStyle = useAnimatedStyle(() => {
     const out: WebCssStyle = {
-      opacity: cardOpacity.value,
+      ...(IS_WEB ? null : { opacity: cardOpacity.value }),
       height: cardHeight.value,
       transform: [{ translateY: cardY.value }],
-      ...(IS_WEB ? { filter: `blur(${cardBlur.value}px)` } : null),
     };
     return out;
-  }, [cardOpacity, cardY, cardBlur, cardHeight]);
+  }, [cardOpacity, cardY, cardHeight]);
+  const [cardNode, setCardNode] = useState<React.ComponentRef<typeof View> | null>(null);
+  const cardPresence = useEnteredPresence(true) || reducedMotion ? 1 : 0;
+  const cardPresenceMs = reducedMotion ? 0 : CARD_ENTER_MS;
+  useSurfacePresenceContent(cardNode, {
+    presence: cardPresence,
+    duration: cardPresenceMs,
+    easing: CARD_ENTER_EASING,
+    blur: 8,
+  });
 
   // ---- plan ring ----------------------------------------------------------
   // This runs piecewise per step rather than one linear pass over
@@ -1021,9 +1039,16 @@ function AgentProgressComponent({
     setMinimized(false);
   };
 
-  const cardStatic: ViewStyle = {
+  const cardStatic: WebCssStyle = {
     backgroundColor: 'transparent',
-    boxShadow: palette.shadow,
+    boxShadow: !IS_WEB || cardPresence ? palette.shadow : 'none',
+    ...(IS_WEB
+      ? {
+          transitionProperty: 'box-shadow',
+          transitionDuration: `${cardPresenceMs}ms`,
+          transitionTimingFunction: CARD_ENTER_EASING,
+        }
+      : null),
   };
   const stepMask: WebCssStyle = IS_WEB
     ? {
@@ -1041,6 +1066,7 @@ function AgentProgressComponent({
 
   return (
     <Animated.View
+      ref={setCardNode}
       aria-live="polite"
       testID={testID}
       style={[
@@ -1049,6 +1075,7 @@ function AgentProgressComponent({
         style,
         cardStyle,
         { backgroundColor: 'transparent', ...material.vars },
+        IS_WEB ? surfacePresenceVars(cardPresence, cardPresenceMs) : null,
       ]}
     >
       <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />

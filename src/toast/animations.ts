@@ -108,7 +108,16 @@ const ENTER_TRANSLATE_Y: Record<ToastPosition, number> = {
 
 /** Exit stays near its resting slot instead of throwing the card offscreen. */
 const EXIT_TRANSLATE_Y_SINGLE = 12;
-const EXIT_DURATION = 180;
+export const EXIT_DURATION = 180;
+
+/**
+ * On the web the exit keyframe only MOVES the row: the toast paints the
+ * material, and an opacity on the exiting copy would make it a backdrop root and
+ * turn the toast flat for its whole exit. The fade is `ToastRow`'s presence
+ * (`useSurfacePresenceContent`'s `exit`), played on the very nodes the copy holds.
+ */
+const EXIT_FADES = Platform.OS !== 'web';
+const fade = (value: number) => (EXIT_FADES ? { opacity: value } : null);
 
 /**
  * Bounded so an animated `gap` cannot grow the cache without limit. The natural
@@ -176,9 +185,9 @@ export function getToastExitAnimation({
     // would look wrong, so it only fades.
     if (isHiddenByLimit) {
       return new Keyframe({
-        from: { opacity: 1 },
-        50: { opacity: 0.35 },
-        to: { opacity: 0 },
+        from: { ...fade(1), transform: [{ translateY: 0 }] },
+        50: { ...fade(0.35), transform: [{ translateY: 0 }] },
+        to: { ...fade(0), transform: [{ translateY: 0 }] },
       }).duration(EXIT_DURATION);
     }
 
@@ -189,11 +198,11 @@ export function getToastExitAnimation({
 
     return (
       new Keyframe({
-        from: { opacity: 1, transform: [{ translateY: 0 }] },
+        from: { ...fade(1), transform: [{ translateY: 0 }] },
         // Explicit stops keep the deceleration on web too: custom bezier
         // factories have no recognised CSS easing name without the plugin.
-        50: { opacity: 0.35, transform: [{ translateY: translateY * 0.75 }] },
-        to: { opacity: 0, transform: [{ translateY }] },
+        50: { ...fade(0.35), transform: [{ translateY: translateY * 0.75 }] },
+        to: { ...fade(0), transform: [{ translateY }] },
       })
         // Finishes within the store's 300ms overlay teardown grace period.
         .duration(EXIT_DURATION)

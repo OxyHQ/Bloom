@@ -7,6 +7,7 @@
  * what is behind it, and whether the single-column layout emits a real tablist
  * with a real selected tab.
  */
+import { materialFill } from './support/material-fill';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -123,9 +124,7 @@ describe('a deal card', () => {
   it('paints the health as the tone PAIR, never a colour of its own', () => {
     mount(<DealCard {...DEAL} health="at-risk" testID="d" />);
     const accent = resolveAccentColors(theme.colors, 'warning', 'subtle');
-    expect(getComputedStyle(byTestId('d-health')).backgroundColor).toBe(
-      normalise(accent.background),
-    );
+    expect(materialFill(byTestId('d-health'))).toBe(normalise(accent.background));
     expect(dealHealthTone('at-risk')).toBe('warning');
     expect(dealHealthTone(undefined)).toBe('default');
   });

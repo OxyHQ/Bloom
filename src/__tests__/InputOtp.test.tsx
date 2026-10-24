@@ -92,26 +92,32 @@ describe('InputOtp', () => {
   it('renders one 48px mono box per digit, in a named group', () => {
     const root = renderWithTheme(<InputOtp testID="otp" />);
     expect(root.getByLabelText('One-time code')).toBeTruthy();
+    // The box is a host for the surface material; the input fills it.
+    const host = resolvedStyle(root.getByTestId('otp-box-0').props.style);
+    expect(host).toMatchObject({ width: 48, height: 48 });
+    // Narrows, never grows, when the row does not fit (ten boxes on a phone).
+    expect(host).toMatchObject({ flexShrink: 1, minWidth: 0 });
+    expect(host.flexGrow).toBeUndefined();
     const style = resolvedStyle(box(root, 0).props.style);
     expect(style).toMatchObject({
-      width: 48,
-      height: 48,
+      width: '100%',
+      height: '100%',
       borderRadius: 12,
       borderWidth: 1,
+      backgroundColor: 'transparent',
       fontSize: 18,
       fontWeight: '500',
       textAlign: 'center',
     });
-    // Narrows, never grows, when the row does not fit (ten boxes on a phone).
-    expect(style).toMatchObject({ flexShrink: 1, minWidth: 0 });
-    expect(style.flexGrow).toBeUndefined();
     expect(box(root, 0).props.autoComplete).toBe('one-time-code');
   });
 
   it('adds the 12px group gap before each group', () => {
-    const root = renderWithTheme(<InputOtp groupEvery={3} />);
-    expect(resolvedStyle(box(root, 2).props.style).marginLeft).toBe(0);
-    expect(resolvedStyle(box(root, 3).props.style).marginLeft).toBe(12);
+    const root = renderWithTheme(<InputOtp groupEvery={3} testID="otp" />);
+    const margin = (i: number) =>
+      resolvedStyle(root.getByTestId(`otp-box-${i}`).props.style).marginLeft;
+    expect(margin(2)).toBe(0);
+    expect(margin(3)).toBe(12);
   });
 
   it('typing fills and a full autofill distributes, firing onComplete once full', () => {
@@ -252,9 +258,11 @@ describe('InputOtp type="alphanumeric"', () => {
   });
 
   it('groupEvery={5} splits ten boxes into two groups of five', () => {
-    const root = renderWithTheme(<InputOtp type="alphanumeric" length={10} groupEvery={5} />);
+    const root = renderWithTheme(
+      <InputOtp type="alphanumeric" length={10} groupEvery={5} testID="otp" />,
+    );
     const margin = (i: number) =>
-      resolvedStyle(root.getByLabelText(`Character ${i + 1} of 10`).props.style).marginLeft;
+      resolvedStyle(root.getByTestId(`otp-box-${i}`).props.style).marginLeft;
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(margin)).toEqual([0, 0, 0, 0, 0, 12, 0, 0, 0, 0]);
   });
 

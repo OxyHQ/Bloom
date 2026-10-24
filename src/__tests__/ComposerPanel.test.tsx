@@ -245,7 +245,7 @@ describe('ComposerPanel', () => {
     );
     expect(getByText('40%', { includeHiddenElements: true })).toBeTruthy();
     const landed = getByLabelText('Remove Brief.docx');
-    expect(resolvedStyle(landed.props.style).opacity).toBe(1);
+    expect(resolvedStyle(landed.props.style).opacity ?? 1).toBe(1);
     // In flight: invisible AND out of the accessibility tree.
     expect(queryByLabelText('Remove Deck.key')).toBeNull();
     const pending = getByLabelText('Remove Deck.key', { includeHiddenElements: true });
@@ -267,7 +267,7 @@ describe('ComposerPanel', () => {
     // `progress` is ignored once failed: no percentage in flight.
     expect(queryByText('40%', { includeHiddenElements: true })).toBeNull();
     const dismiss = getByLabelText('Remove Deck.key');
-    expect(resolvedStyle(dismiss.props.style).opacity).toBe(1);
+    expect(resolvedStyle(dismiss.props.style).opacity ?? 1).toBe(1);
     pressHost(dismiss);
     expect(onRemove).toHaveBeenCalledWith('a');
     // No retry handler, no retry button.

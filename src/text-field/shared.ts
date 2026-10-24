@@ -97,6 +97,9 @@ const TEXT_FIELD_TRANSITION_STYLE: WebCssStyle = {
   transitionTimingFunction: 'ease',
 };
 
+/** The shell fill's transition, as the surface material spells it. */
+export const TEXT_FIELD_FILL_TRANSITION = `background-color ${TEXT_FIELD_TRANSITION_MS}ms ease`;
+
 export const TEXT_FIELD_WEB_TRANSITION: ViewStyle | undefined =
   Platform.OS === 'web' ? TEXT_FIELD_TRANSITION_STYLE : undefined;
 

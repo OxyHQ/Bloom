@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { SURFACE_RIM } from '../surface/shared';
+import { SURFACE_HIGHLIGHT_FILTER } from '../surface/shared';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -564,7 +564,7 @@ describe('Button.web', () => {
       const btn = getByRole(c, 'button', { name: 'Go' });
       expect(btn).toHaveClass('bloom-btn--surface');
       expect(BLOOM_BUTTON_CSS).toContain('backdrop-filter:');
-      expect(BLOOM_BUTTON_CSS).toContain(SURFACE_RIM);
+      expect(BLOOM_BUTTON_CSS).toContain(SURFACE_HIGHLIGHT_FILTER);
       expect(btn.style.getPropertyValue('--bloom-btn-bg-hover')).not.toBe(
         btn.style.getPropertyValue('--bloom-btn-bg'),
       );

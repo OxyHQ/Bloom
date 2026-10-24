@@ -1,5 +1,5 @@
 import { InteractionBoundary } from '../overlay/InteractionBoundary';
-import React, { memo, useEffect, useMemo } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View, type TextStyle } from 'react-native';
 
 import { Badge } from '../badge';
@@ -16,6 +16,8 @@ import { RouteStops } from '../route-stops';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { IS_WEB } from '../styles/platform';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { webDataSet } from '../styles/web-data';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { RouteStop } from '../route-stops';
@@ -36,6 +38,9 @@ import {
 import type { JobCardProps, JobPlace } from './types';
 import { useMessages } from '../locale/messages';
 import { JOB_BOARD_MESSAGES } from './messages';
+
+/** How present the job's subject stays while it is pressed. */
+const PRESSED_PRESENCE = 0.7;
 
 /**
  * One piece of work, from the side of the person who would do it.
@@ -140,6 +145,13 @@ function JobCardComponent({
   // combines with the job's own state rather than replacing it, so a caller
   // cannot re-enable a job the marketplace has already given away.
   const inert = disabled || closed;
+  // Dims and the subject's press run through presence on the web: the card and
+  // its marks paint the material, which an opacity above them would turn flat.
+  const [subjectPressed, setSubjectPressed] = useState(false);
+  const [subjectNode, setSubjectNode] = useState<unknown>(null);
+  useSurfacePresenceContent(subjectNode, { presence: subjectPressed ? PRESSED_PRESENCE : 1 });
+  const [rowNode, setRowNode] = useState<unknown>(null);
+  useSurfacePresenceContent(rowNode, { presence: inert ? DISABLED_OPACITY : 1 });
   const warning = resolveAccentColors(theme.colors, 'warning', 'subtle');
   const stateWord = closed ? labels.state[state] : undefined;
 
@@ -255,9 +267,16 @@ function JobCardComponent({
       aria-disabled={inert || undefined}
       accessibilityState={{ disabled: inert }}
       {...webDataSet({ bloomJobSubject: '' })}
+      ref={setSubjectNode}
+      onPressIn={() => setSubjectPressed(true)}
+      onPressOut={() => setSubjectPressed(false)}
       style={({ pressed }) => [
         { flex: 1, minWidth: 0, borderRadius: 12, ...ringVars },
-        pressed ? { opacity: 0.7 } : null,
+        IS_WEB
+          ? surfacePresenceStyle(subjectPressed ? PRESSED_PRESENCE : 1)
+          : pressed
+            ? { opacity: PRESSED_PRESENCE }
+            : null,
       ]}
       testID={id('subject')}
     >
@@ -301,12 +320,13 @@ function JobCardComponent({
   if (!comfortable) {
     return (
       <View
+        ref={setRowNode}
         style={[
           {
             minHeight: JOB_BOARD_GEOMETRY.rowMinHeight,
             justifyContent: 'center',
-            opacity: inert ? DISABLED_OPACITY : 1,
           },
+          surfacePresenceStyle(inert ? DISABLED_OPACITY : 1),
           style,
         ]}
         testID={testID}
@@ -422,9 +442,9 @@ function JobCardComponent({
         style={[
           surfaceFillVars(paint.surface),
           selected ? { borderColor: paint.accent } : null,
-          inert ? { opacity: DISABLED_OPACITY } : null,
           style,
         ]}
+        disabled={inert}
         testID={testID}
         appearance="outline"
       >

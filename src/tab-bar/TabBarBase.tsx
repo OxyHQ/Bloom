@@ -5,6 +5,9 @@ import { resolveTabBarTheme } from './shared';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { TabBarSurface } from './surface';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { IS_WEB } from '../styles/platform';
+import { borderRadius } from '../styles/tokens';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
@@ -54,7 +57,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { moveSelection } from '../motion/selection-motion';
+import { moveSelection, SELECTION_FADE } from '../motion/selection-motion';
 import { useHaptics } from '../hooks/use-haptics';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
@@ -213,6 +216,20 @@ function TabBarBody({
   // selection must show its highlight on the first frame exactly as it always
   // has, and one that mounts without a selection must never flash it.
   const highlightOpacity = useSharedValue(hasSelection ? 1 : 0);
+  // The web highlight is surface material, which fades its own layers: an
+  // `opacity` on its host would make that host the backdrop root and the blur
+  // would vanish for the whole fade. So the web follows the fade's DIRECTION
+  // (every writer of `highlightOpacity` included: a scrub can show it too) and
+  // hands it to the material as presence.
+  const [highlightPresent, setHighlightPresent] = useState(hasSelection);
+  useAnimatedReaction(
+    () => highlightOpacity.value,
+    (now, before) => {
+      if (!IS_WEB || before === null || now === before) return;
+      runOnJS(setHighlightPresent)(now > before);
+    },
+    [highlightOpacity, setHighlightPresent],
+  );
   const isDragging = useSharedValue(false);
   const lastTicked = useSharedValue(-1);
   // The tabs are a flex row, so they mirror under RTL by themselves; the
@@ -549,7 +566,7 @@ function TabBarBody({
       // stop being drawn: `slideIndex` is a position in tab units, so an
       // out-of-range one is a real place — one item-width to the LEFT of the
       // first tab, i.e. half outside the pill — not an absence.
-      opacity: highlightOpacity.value,
+      opacity: IS_WEB ? 1 : highlightOpacity.value,
       transform: [{ translateX: dir * (ROW_PAD_H + itemWidth * slideIndex.value) }],
     };
   }, [progress, slideIndex, highlightOpacity, barOuterWidth, tabCount, minimizeInset, dir]);
@@ -656,13 +673,16 @@ function TabBarBody({
               paintFill={recipe.paint.material.paintFill}
               style={shapeStyle}
             />
-            <Animated.View
-              style={[
-                styles.highlight,
-                { backgroundColor: recipe.paint.theme.highlight },
-                highlightStyle,
-              ]}
-            />
+            <Animated.View style={[styles.highlight, highlightStyle]}>
+              <SurfacePaint
+                fill={recipe.paint.theme.highlight}
+                radius={borderRadius.full}
+                composite
+                backing={publishedFill}
+                presence={IS_WEB ? (highlightPresent ? 1 : 0) : undefined}
+                presenceMs={SELECTION_FADE.duration}
+              />
+            </Animated.View>
             <View accessibilityRole="tablist" style={styles.itemRow}>
               <SurfaceLevelProvider
                 level={layer.level}

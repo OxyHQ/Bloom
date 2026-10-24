@@ -5,6 +5,7 @@
  * `BookingBar`, `TripCard` — rendered through the REAL react-native-web, so the
  * assertions read emitted DOM attributes and computed styles rather than props.
  */
+import { materialFill } from './support/material-fill';
 import React, { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -491,7 +492,7 @@ describe('TripCard', () => {
     mount(<TripCard testID="trip" title="Cabin" status="cancelled" />);
     const badge = byTestId('trip-status');
     expect(badge.textContent).toBe('Cancelled');
-    expect(getComputedStyle(badge).backgroundColor).toBe(
+    expect(materialFill(badge)).toBe(
       css(resolveAccentColors(theme().colors, 'error', 'subtle').background),
     );
   });

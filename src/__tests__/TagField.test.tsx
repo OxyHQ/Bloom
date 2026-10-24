@@ -9,6 +9,7 @@
  * that ignores its `Field` renders a perfectly ordinary input. So the
  * assertions read the emitted attributes and the emitted text, never the props.
  */
+import { materialFill } from './support/material-fill';
 import React, { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -89,8 +90,11 @@ function input(id = 'tags-input'): HTMLInputElement {
  * paints its own shell with. It carries no testID because it is not a part a
  * caller addresses; it is the first child of the shell, under the content.
  */
+/** The ring overlay: the shell's first layer after its surface material. */
 function chrome(id = 'tags'): HTMLElement {
-  const el = byTestId(`${id}-shell`).firstElementChild;
+  const el = [...byTestId(`${id}-shell`).children].find(
+    (child) => !child.hasAttribute('data-bloom-surface-fill'),
+  );
   if (!(el instanceof HTMLElement)) throw new Error('No chrome under the shell');
   return el;
 }
@@ -224,7 +228,7 @@ describe('it IS a text field, not a lookalike', () => {
   it('paints the text-field shell: its fill, its 12px corner, its ring on focus', () => {
     mount(<Harness label="Tags" placeholder="Add a tag" />);
     const rest = getComputedStyle(chrome());
-    expect(rgb(rest.backgroundColor)).toEqual(rgb(FIELD.background));
+    expect(rgb(materialFill(byTestId('tags-shell')))).toEqual(rgb(FIELD.background));
     expect(rest.borderTopLeftRadius).toBe('12px');
     // No ring at rest — the fill is the field.
     expect(rest.borderTopColor).toBe('rgba(0, 0, 0, 0)');
@@ -234,9 +238,9 @@ describe('it IS a text field, not a lookalike', () => {
 
   it('takes the invalid and the disabled fill from the same table', () => {
     mount(<Harness label="Tags" invalid />);
-    expect(rgb(getComputedStyle(chrome()).backgroundColor)).toEqual(rgb(FIELD.backgroundInvalid));
+    expect(rgb(materialFill(byTestId('tags-shell')))).toEqual(rgb(FIELD.backgroundInvalid));
     mount(<Harness label="Tags" disabled />);
-    expect(rgb(getComputedStyle(chrome()).backgroundColor)).toEqual(rgb(FIELD.backgroundDisabled));
+    expect(rgb(materialFill(byTestId('tags-shell')))).toEqual(rgb(FIELD.backgroundDisabled));
     // Neither state draws a ring: the tinted fill carries them.
     expect(getComputedStyle(chrome()).borderTopColor).toBe('rgba(0, 0, 0, 0)');
   });
@@ -256,7 +260,7 @@ describe('the chips are Bloom chosen-thing pills', () => {
     expect(chip.height).toBe('28px');
     expect(chip.borderTopLeftRadius).toBe('9999px');
     const paint = resolveAccentColors(THEME.colors, 'default', 'subtle');
-    expect(rgb(chip.backgroundColor)).toEqual(rgb(paint.background));
+    expect(rgb(materialFill(byTestId('tags-chip-tide')))).toEqual(rgb(paint.background));
   });
 
   it('lets the field name the × in its own words', () => {
@@ -271,9 +275,7 @@ describe('the chips are Bloom chosen-thing pills', () => {
   it('takes the field tone', () => {
     mount(<Harness initial={['tide']} tone="primary" label="Tags" />);
     const paint = resolveAccentColors(THEME.colors, 'primary', 'subtle');
-    expect(rgb(getComputedStyle(byTestId('tags-chip-tide')).backgroundColor)).toEqual(
-      rgb(paint.background),
-    );
+    expect(rgb(materialFill(byTestId('tags-chip-tide')))).toEqual(rgb(paint.background));
   });
 });
 

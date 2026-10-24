@@ -23,7 +23,7 @@ jest.mock('../theme/use-theme', () => ({
     },
   }),
 }));
-import { SURFACE_RIM } from '../surface/shared';
+import { SURFACE_HIGHLIGHT_FILTER } from '../surface/shared';
 import { Button, BLOOM_BUTTON_CSS } from '../button/Button.web';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let container: HTMLDivElement;
@@ -54,17 +54,17 @@ it.each(['solid', 'subtle', 'outline'] as const)(
     expect(button.disabled).toBe(true);
     expect(button.className).toContain('bloom-btn--surface');
     expect(button.style.getPropertyValue('--bloom-btn-bg-disabled')).toBe(
-      'rgba(239, 240, 239, 0.9)',
+      'rgba(239, 240, 239, 0.72)',
     );
     expect(BLOOM_BUTTON_CSS).toContain('backdrop-filter:');
     expect(BLOOM_BUTTON_CSS).not.toContain('filter: url(');
-    expect(BLOOM_BUTTON_CSS).toContain(SURFACE_RIM);
+    expect(BLOOM_BUTTON_CSS).toContain(SURFACE_HIGHLIGHT_FILTER);
   },
 );
-it('composites a built-in subtle tint before applying the shared 90% tint', () => {
+it('composites a built-in subtle tint before applying the shared tint', () => {
   act(() => root.render(<Button appearance="subtle">Subtle</Button>));
   const button = container.querySelector('button')!;
-  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(225, 235, 229, 0.9)');
+  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(225, 235, 229, 0.72)');
   expect(button.style.getPropertyValue('--bloom-btn-fg')).toBe('#14532d');
 });
 it('preserves a vivid brand pair and keeps plain actions unfilled', () => {
@@ -77,7 +77,7 @@ it('preserves a vivid brand pair and keeps plain actions unfilled', () => {
     ),
   );
   const [brand, plain] = container.querySelectorAll('button');
-  expect(brand!.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(18, 52, 86, 0.9)');
+  expect(brand!.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(18, 52, 86, 0.72)');
   expect(brand!.style.getPropertyValue('--bloom-btn-fg')).toBe('#ffffff');
   expect(plain!.className).not.toContain('bloom-btn--surface');
 });

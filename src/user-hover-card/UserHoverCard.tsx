@@ -7,7 +7,13 @@ import {
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  surfacePresenceVars,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
+import type React from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { BloomImage } from '../image';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -79,6 +85,7 @@ const RADIUS = 16;
 const STAT_RADIUS = 10;
 
 const MENU_EASING = Easing.bezier(...MENU_MOTION_EASING);
+const MENU_CSS_EASING = `cubic-bezier(${MENU_MOTION_EASING.join(', ')})`;
 
 interface HoverCardPalette {
   surface: string;
@@ -108,14 +115,29 @@ export function resolveUserHoverCardPalette(theme: Theme): HoverCardPalette {
   };
 }
 
-/** Entrance only: the card is mounted when it is shown and unmounted to hide. */
-function useEntrance(enabled: boolean) {
+/**
+ * Entrance only: the card is mounted when it is shown and unmounted to hide.
+ *
+ * The card paints the material, so on the web it only scales: its layers fade
+ * in through its presence and its content fades and un-blurs through
+ * `useSurfacePresenceContent`. An opacity or a filter on the card itself would
+ * make it a backdrop root and turn its material flat for the whole entrance.
+ * Native fades the card itself, as before.
+ */
+function useEntrance(enabled: boolean, host: unknown) {
   const reducedMotion = useReducedMotion();
   const animate = enabled && !reducedMotion;
   const progress = useRef(new Animated.Value(animate ? 0 : 1)).current;
-  // Once the entrance lands the animated style is dropped, so a settled card is
-  // not left on a `blur(0px)` filter layer (FloatingPanel rests on `none` too).
   const [settled, setSettled] = useState(false);
+  const entered = useEnteredPresence(true);
+  const presence = !animate || entered ? 1 : 0;
+  const duration = animate ? MENU_MOTION_DURATION : 0;
+  useSurfacePresenceContent(host, {
+    presence,
+    duration,
+    easing: MENU_CSS_EASING,
+    blur: MENU_MOTION_BLUR,
+  });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
@@ -124,8 +146,6 @@ function useEntrance(enabled: boolean) {
       toValue: 1,
       duration: MENU_MOTION_DURATION,
       easing: MENU_EASING,
-      // The blur is a CSS filter and only exists on web, where there is no
-      // native driver anyway.
       useNativeDriver: SUPPORTS_NATIVE_DRIVER,
     });
     animation.start((result) => {
@@ -135,10 +155,8 @@ function useEntrance(enabled: boolean) {
     // Mount-only, like the panel's own enter.
   }, []);
 
-  return useMemo(() => {
-    if (!animate || settled) return null;
-    const style: Record<string, unknown> = {
-      opacity: progress,
+  const style = useMemo(() => {
+    const scale = {
       transform: [
         {
           scale: progress.interpolate({
@@ -149,13 +167,15 @@ function useEntrance(enabled: boolean) {
       ],
     };
     if (IS_WEB) {
-      style.filter = progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [`blur(${MENU_MOTION_BLUR}px)`, 'blur(0px)'],
-      });
+      return {
+        ...(animate && !settled ? scale : null),
+        ...surfacePresenceVars(presence, duration),
+      } as Animated.WithAnimatedValue<WebCssStyle>;
     }
-    return style as Animated.WithAnimatedValue<WebCssStyle>;
-  }, [animate, settled, progress]);
+    if (!animate || settled) return null;
+    return { opacity: progress, ...scale } as Animated.WithAnimatedValue<WebCssStyle>;
+  }, [animate, settled, progress, presence, duration]);
+  return { style, presence, duration };
 }
 
 function SkeletonBlock({ style, color }: { style: ViewStyle; color: string }) {
@@ -197,7 +217,8 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
     typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
       ? resolveSurfaceMaterial({ fill: background, parentFill, paint: !bare }).publishedFill
       : undefined;
-  const entrance = useEntrance(animateIn && !bare);
+  const [host, setHost] = useState<React.ComponentRef<typeof View> | null>(null);
+  const entrance = useEntrance(animateIn && !bare, host);
 
   const hasCover = typeof cover === 'string' && cover.length > 0;
   const coverUri = hasCover
@@ -216,9 +237,16 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         paddingRight: PADDING,
         borderRadius: RADIUS,
         borderWidth: 1,
-        borderColor: palette.border,
         backgroundColor: palette.surface,
-        boxShadow: palette.shadow,
+        boxShadow: IS_WEB && !entrance.presence ? 'none' : palette.shadow,
+        borderColor: IS_WEB && !entrance.presence ? 'transparent' : palette.border,
+        ...(IS_WEB
+          ? {
+              transitionProperty: 'box-shadow, border-color',
+              transitionDuration: `${entrance.duration}ms`,
+              transitionTimingFunction: MENU_CSS_EASING,
+            }
+          : null),
         // The card clips nothing: the `footer` slot is documented as unclipped,
         // and the cover clips itself to the inner radius.
         overflow: 'visible',
@@ -289,12 +317,13 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   if (loading) {
     const content = (
       <Animated.View
+        ref={setHost}
         testID={testID}
         aria-busy
         accessibilityState={{ busy: true }}
         style={[
           cardStyle,
-          entrance,
+          entrance.style,
           style,
           surfaceFillVars(publishedFill),
           !bare && publishedFill ? { backgroundColor: 'transparent' } : null,
@@ -379,10 +408,11 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
 
   const content = (
     <Animated.View
+      ref={setHost}
       testID={testID}
       style={[
         cardStyle,
-        entrance,
+        entrance.style,
         style,
         surfaceFillVars(publishedFill),
         !bare && publishedFill ? { backgroundColor: 'transparent' } : null,

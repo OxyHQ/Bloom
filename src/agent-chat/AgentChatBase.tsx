@@ -158,6 +158,13 @@ function transcriptOf(
     .join('\n\n');
 }
 
+/**
+ * The gutter around the panels and the gap between them. The shell owns both: it
+ * frames the panels with it on wide screens and drops it on compact ones, and a
+ * panel's shadow needs it, since the shell clips at its own edge.
+ */
+const PANEL_GAP = 12;
+
 export function AgentChatBase({
   disabled = false,
   messages,
@@ -257,14 +264,14 @@ export function AgentChatBase({
     <AppShell
       testID={testID}
       variant="dashboard"
-      gutter={0}
+      gutter={PANEL_GAP}
       safeArea={false}
       contentMaxWidth="none"
       style={style}
       panelLayout={{
         mode: 'split',
         flow: 'bounded',
-        gap: 12,
+        gap: PANEL_GAP,
         activePanel: 'conversation',
         panels: [
           {

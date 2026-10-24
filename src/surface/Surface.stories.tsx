@@ -7,6 +7,7 @@ import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { Card } from '../card';
 import { LinkPreviewCard } from '../link-preview';
 import { Text } from '../typography/Typography';
+import { useTheme } from '../theme/use-theme';
 
 const meta: Meta<typeof Surface> = {
   id: 'base-surface',
@@ -82,7 +83,7 @@ function MaterialExample() {
         padding: 40,
         minHeight: 560,
         background:
-          'url(https://raw.githubusercontent.com/lucasromerodb/liquid-glass-effect-macos/refs/heads/main/assets/flowers.jpg) center / 500px',
+          'repeating-linear-gradient(115deg, rgba(255,255,255,0.55) 0 6px, transparent 6px 22px), radial-gradient(circle at 18% 22%, #f97316 0 14%, transparent 34%), radial-gradient(circle at 78% 18%, #8b5cf6 0 12%, transparent 32%), radial-gradient(circle at 62% 78%, #06b6d4 0 14%, transparent 36%), radial-gradient(circle at 24% 82%, #ec4899 0 12%, transparent 32%), linear-gradient(135deg, #fde68a, #a7f3d0 50%, #bfdbfe)',
         display: 'flex',
         gap: 24,
         flexWrap: 'wrap',
@@ -200,4 +201,65 @@ export const Nested: Story = {
       </Surface>
     </View>
   ),
+};
+
+const TILE = { width: 54, height: 40, radius: 10 };
+
+function Glyph({ dim }: { dim?: boolean }) {
+  return (
+    <View
+      style={{
+        width: 16,
+        height: 16,
+        borderRadius: 5,
+        backgroundColor: dim ? 'rgba(80, 40, 50, 0.45)' : '#1a1a1a',
+      }}
+    />
+  );
+}
+
+/** Astro's pinned tabs: the reference this material was measured from, at their own size. */
+export const PinnedTabs: Story = {
+  render: function Render() {
+    const { isDark } = useTheme();
+    const sidebar = isDark
+      ? 'linear-gradient(180deg, #4a3239, #3d2a30)'
+      : 'linear-gradient(180deg, #ebcbd3, #f1dde2)';
+    const active = isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(255, 255, 255, 0.56)';
+    const resting = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    return (
+      <div style={{ display: 'flex', gap: 32, padding: 32, flexWrap: 'wrap' }}>
+        <div style={{ width: 190, padding: 8, borderRadius: 16, background: sidebar }}>
+          <View style={{ flexDirection: 'row', gap: 7 }}>
+            {[active, resting, resting].map((fill, index) => (
+              <Surface
+                key={index}
+                testID={`pinned-tile-${index}`}
+                fill={fill}
+                radius={TILE.radius}
+                cornerCurve="smooth"
+                style={{
+                  width: TILE.width,
+                  height: TILE.height,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Glyph dim={index > 0} />
+              </Surface>
+            ))}
+          </View>
+        </div>
+        <div style={{ width: 360, padding: 24, borderRadius: 20, background: sidebar }}>
+          <Surface style={{ padding: 20, gap: 12 }}>
+            <Text variant="title-3-semibold">The same material on a panel</Text>
+            <Text>
+              Bright top and bottom edges, a soft glow, and the material over whatever is behind.
+            </Text>
+            <Button>Continue</Button>
+          </Surface>
+        </div>
+      </div>
+    );
+  },
 };
