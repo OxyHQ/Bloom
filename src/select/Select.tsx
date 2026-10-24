@@ -257,7 +257,12 @@ export function SelectValue({
         className && (hasValue ? 'text-foreground' : 'text-muted-foreground'),
         className,
       )}
-      style={[menuType(VALUE_TYPE[trigger.size], className), className ? null : { color }, style]}
+      style={[
+        styles.valueText,
+        menuType(VALUE_TYPE[trigger.size], className),
+        className ? null : { color },
+        style,
+      ]}
     >
       {display}
     </StyledText>
@@ -483,6 +488,18 @@ const styles = StyleSheet.create({
   // class cannot outrank one.
   triggerSlot: {
     alignSelf: 'stretch',
+    // Never wider than the line it is on: a long value ("Raspberry + Antique
+    // Gold + Cobalt" in a settings row) truncates inside the pill instead of
+    // pushing the pill and its chevron past the edge.
+    flexShrink: 1,
+    minWidth: 0,
+    maxWidth: '100%',
+  },
+  // Inline as well as `SELECT_VALUE_CLASS`: the value must give way to the
+  // chevron even where the className pipeline is not wired.
+  valueText: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   flatList: {
     flexGrow: 0,

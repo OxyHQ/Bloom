@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import * as ReactNative from 'react-native';
 import { Text as RNText } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
+import type { ReactTestInstance } from 'react-test-renderer';
+import { SETTINGS_ROW_LABEL_MIN_WIDTH } from '../settings-modal/SettingsRows';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
@@ -435,6 +437,54 @@ describe('SettingsModal responsive layout', () => {
     pressHost(getByTestId('settings-nav-general'));
     expect(resolvedStyle(getByTestId('row').props.style)).toMatchObject({ flexWrap: 'wrap' });
   });
+
+  // Allo's Appearance "Colour" row on a Pixel 8a: a 300px chooser stayed beside
+  // the label and squeezed it to ~48dp, one word per line. Yoga zeroes the
+  // computed basis of a row's ONLY grow+shrink child and breaks lines on that
+  // basis bounded by min/max, so a positive `flexBasis` on the label column
+  // never reached the wrap decision; `minWidth` does. Pinned in every layout,
+  // because the regular row (no wrap at all) crushed the label the same way.
+  it.each([
+    ['compact', 375],
+    ['medium', 760],
+    ['regular', 1280],
+  ] as const)('never lets a wide control crush the label column (%s)', (_layout, width) => {
+    setWindow(width, 812);
+    const pages = {
+      general: {
+        title: 'General',
+        content: (
+          <SettingsCard>
+            <SettingsRow label="Colour" description="A long description" testID="row">
+              <RNText testID="control">Raspberry + Antique Gold + Cobalt</RNText>
+            </SettingsRow>
+          </SettingsCard>
+        ),
+      },
+    };
+    const { getByTestId } = renderWithTheme(
+      <SettingsModal
+        open
+        onClose={() => {}}
+        groups={GROUPS}
+        pages={pages}
+        initialView="page"
+        testID="settings"
+      />,
+    );
+    flush();
+    const row = getByTestId('row');
+    expect(resolvedStyle(row.props.style)).toMatchObject({ flexWrap: 'wrap' });
+    const column = row.children[0] as ReactTestInstance;
+    const columnStyle = resolvedStyle(column.props.style);
+    expect(columnStyle).toMatchObject({
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
+      minWidth: SETTINGS_ROW_LABEL_MIN_WIDTH,
+    });
+    expect(SETTINGS_ROW_LABEL_MIN_WIDTH).toBe(140);
+  });
 });
 
 describe('SettingsCard rows', () => {
@@ -461,7 +511,8 @@ describe('SettingsCard rows', () => {
       paddingTop: 10,
       paddingBottom: 10,
       paddingRight: 10,
-      gap: 16,
+      columnGap: 16,
+      rowGap: 8,
     });
     expect(resolvedStyle(getByTestId('b').props.style).borderBottomWidth).toBe(1);
     expect(resolvedStyle(getByTestId('c').props.style).borderBottomWidth).toBe(0);

@@ -1,4 +1,5 @@
-import React, { useContext, useState } from 'react';
+import type React from 'react';
+import { useContext, useState } from 'react';
 import { Image, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -200,7 +201,7 @@ export const Contacts: Story = {
     }));
     return (
       <BothModes min={400}>
-        <Caption>browse — chevrons, sticky headings, the rail</Caption>
+        <Caption>browse — chevrons, sticky headings (opt-in on Android), the rail</Caption>
         <ContactList
           sections={SECTIONS.map((section) => ({
             ...section,
@@ -226,6 +227,34 @@ export const Contacts: Story = {
       </BothModes>
     );
   },
+};
+
+/**
+ * Search results: `layout="flat"` puts every match in ONE section in the order
+ * given, with no A–Z rail and nothing pinned — unlabelled, or under one label.
+ */
+export const ContactSearchResults: Story = {
+  render: () => (
+    <BothModes min={400}>
+      <Caption>flat, unlabelled</Caption>
+      <ContactList
+        sections={SECTIONS}
+        layout="flat"
+        height={260}
+        onContactPress={() => undefined}
+        testID="results"
+      />
+      <Caption>flat, one label</Caption>
+      <ContactList
+        sections={SECTIONS}
+        layout="flat"
+        flatLabel="Results"
+        height={260}
+        onContactPress={() => undefined}
+        testID="results-labelled"
+      />
+    </BothModes>
+  ),
 };
 
 /** The chips above a search field, scrolling and wrapping. */

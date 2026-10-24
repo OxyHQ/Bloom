@@ -99,6 +99,13 @@ colour-blind reader, and it has to be placed somewhere, which is how a row ends
 up with a dot, a bold name and a coloured time all saying the same thing once
 each. The weight change IS the state.
 
+On native the pressed row is painted by the row's covering link from
+Pressable's OWN `pressed` (a style function), never mirrored from
+`onPressIn`/`onPressOut` into the row's state: Android can lose the press-out of
+a tap that navigates, and the mirrored copy then left the row painted pressed
+after coming back. A `selected` row keeps its own fill while pressed. Gate:
+`ListRowPressedNative.test.tsx`; the mechanism is in `docs/chat-list.mdx`.
+
 Every colour comes from the fill the list was handed: the hovered row is
 `surfaceFillOn(theme, surface)`, the selected row is one step further, and the
 text rungs are `surfaceTextOn` floored against the same fill. So a list inside a

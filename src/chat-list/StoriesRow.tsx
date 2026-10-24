@@ -23,9 +23,13 @@ import { CHAT_LIST_MESSAGES } from './messages';
  * off the right edge. The order is computed with a STABLE sort, so two unseen
  * stories keep the order the app gave them.
  *
- * Names sit under the rings, one line, clipped to the ring's footprint so the
- * row's rhythm survives a long name. The whole strip scrolls horizontally with
- * no visible scrollbar on web.
+ * Names sit under the rings, one line, in a caption column as wide as the
+ * entry's whole SLOT (the ring's footprint plus the gap to its neighbour), so a
+ * long name is clipped there and the row's rhythm survives it. Your own
+ * caption is the LABEL ("Your story"), never your name, and may take two lines
+ * rather than truncate a short phrase; the avatar is drawn from `own.name` and
+ * `own.avatar`, so with no name it shows the placeholder, not the label's first
+ * letter. The whole strip scrolls horizontally with no visible scrollbar on web.
  *
  * ACCESSIBILITY: `role="list"` named by `accessibilityLabel`; each ring is a
  * button named by `StoryRing`'s own `accessibilityLabel` ("Ana Ferrer's story"),
@@ -60,18 +64,32 @@ function StoriesRowComponent({
     [seenLast, stories],
   );
 
-  const ownName = own?.name ?? labels?.own ?? messages.ownStory;
+  // The caption and the avatar are TWO strings. One string for both drew the
+  // label's first letter ("Y" of "Your status") as the avatar's initial when the
+  // app passed no name, and the person's name as the caption when it did.
+  const ownCaption = labels?.own ?? messages.ownStory;
   const addLabel = labels?.add ?? messages.addStory;
   // The ring reserves `thickness + gap` on every side (2 + 2 by default), so the
-  // caption column is the ring's real footprint, not the avatar's.
+  // ring's real footprint is that, not the avatar's.
   const footprint = size + 8;
+  // A caption may use the entry's whole SLOT, the footprint plus the gap to the
+  // next entry: capped at the footprint alone (68px at the default size) it cut
+  // "Your status" to "Your sta…". The column is centred under the ring and
+  // overflows the footprint by half a gap on each side, so the rings keep their
+  // spacing exactly.
+  const captionWidth = footprint + gap;
 
-  const caption = (text: string) => (
-    <View aria-hidden importantForAccessibility="no-hide-descendants">
+  const caption = (text: string, lines: number, captionTestID?: string) => (
+    <View
+      aria-hidden
+      importantForAccessibility="no-hide-descendants"
+      style={{ width: captionWidth, alignItems: 'center' }}
+      testID={captionTestID}
+    >
       <Text
         variant="caption-1-regular"
-        numberOfLines={1}
-        style={{ color: paint.textMuted, maxWidth: footprint, textAlign: 'center' }}
+        numberOfLines={lines}
+        style={{ color: paint.textMuted, maxWidth: captionWidth, textAlign: 'center' }}
       >
         {text}
       </Text>
@@ -124,9 +142,9 @@ function StoriesRowComponent({
               }
               testID={testID ? `${testID}-own` : undefined}
             >
-              <Avatar source={own.avatar ?? null} name={ownName} size={size} />
+              <Avatar source={own.avatar ?? null} name={own.name} size={size} />
             </StoryRing>
-            {caption(ownName)}
+            {caption(ownCaption, 2, testID ? `${testID}-own-caption` : undefined)}
           </View>
         ) : null}
         {ordered.map((story) => (
@@ -140,7 +158,7 @@ function StoriesRowComponent({
             >
               <Avatar source={story.avatar ?? null} name={story.name} size={size} />
             </StoryRing>
-            {caption(story.name)}
+            {caption(story.name, 1)}
           </View>
         ))}
       </View>

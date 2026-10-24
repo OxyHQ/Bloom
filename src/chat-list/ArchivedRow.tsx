@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
@@ -48,7 +48,6 @@ function ArchivedRowComponent({
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
   const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
-  const [pressed, setPressed] = useState(false);
   const geo = CHAT_ROW_GEOMETRY[density];
   const showCount = (count ?? 0) > 0;
   const name = showCount ? messages.archivedName(label, count ?? 0) : label;
@@ -62,7 +61,7 @@ function ArchivedRowComponent({
     '--bloom-chat-selected': paint.selected,
     ...(IS_WEB
       ? { transitionProperty: 'background-color', transitionDuration: '120ms' }
-      : { backgroundColor: pressed ? paint.hover : 'transparent' }),
+      : { backgroundColor: 'transparent' }),
   };
 
   return (
@@ -76,7 +75,7 @@ function ArchivedRowComponent({
         onPress={onPress}
         href={href}
         paint={paint}
-        onPressedChange={setPressed}
+        pressedFill={IS_WEB ? undefined : paint.hover}
         testID={testID ? `${testID}-link` : undefined}
       />
       <View

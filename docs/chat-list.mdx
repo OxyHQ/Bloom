@@ -170,6 +170,20 @@ With `href` the row is a `link`; with `onPress` alone it is a `button`; with
 neither it is not a control at all. `selected` is `aria-current` on web and
 `accessibilityState.selected` on native.
 
+### The pressed fill (native)
+
+On native a pressed row is painted by the row's covering link from
+**Pressable's own `pressed`** (a style function), never from a copy the row
+keeps in its own state. That copy, set by `onPressIn` and cleared by
+`onPressOut`, stuck on Allo's Android release: tap a row that pushes a screen,
+come back, and the row was still painted pressed, because Pressability delays a
+short tap's press-out on a timer that a reset or remount of the Pressable
+cancels, and the mirror never heard it. `ChatListItem`, `ArchivedRow`, the
+`ChatSearchResults` rows and the hover buttons all read the press from the
+Pressable; a `selected` row keeps its selected fill and gains no pressed one.
+On web the adopted sheet paints hover and press. Gate:
+`ListRowPressedNative.test.tsx` (the same contract holds `mail-list`).
+
 ## `ChatList`
 
 ```tsx
@@ -252,9 +266,27 @@ seen ring holding its place pushes the new ones off the right edge. The reorder
 is a STABLE sort, so two unseen stories keep the order you gave them; `state:
 'none'` counts as seen.
 
-Names sit under the rings, one line, clipped to the ring's footprint. Each ring
-is named `"<name>'s story"`, and the caption under it is hidden so the name is
-announced once.
+Names sit under the rings, one line, in a caption column as wide as the entry's
+whole slot — the ring's footprint (`size + 8`) plus `gap` — centred under the
+ring, so the rings keep their spacing. Each ring is named `"<name>'s story"`,
+and the caption under it is hidden so the name is announced once.
+
+Your own entry is two strings, never one. `own.name` and `own.avatar` are the
+ACCOUNT's display name and picture and draw only the avatar (initial and tint,
+or the image; with neither, the placeholder). The caption is ALWAYS
+`labels.own` (`"Your story"`), up to two lines. One string for both drew the
+label's first letter as the avatar ("Y" of "Your status") when the app passed
+no name, and capped at the footprint the caption cut "Your status" to
+"Your sta…". Pass the account:
+
+```tsx
+<StoriesRow
+  stories={stories}
+  own={{ name: me.displayName, avatar: me.avatar }}
+  labels={{ own: t('status.yours') }}
+  onOwnPress={addStatus}
+/>
+```
 
 ## `ChatSearchField` and `ChatSearchResults`
 

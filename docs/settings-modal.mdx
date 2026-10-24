@@ -73,7 +73,7 @@ The modal's base size is a fixed 871×614 panel. Bloom adapts it to the window w
 | `medium` | 640–899px | Same panel inside a 16px gutter; rail 220px, insets 24px. |
 | `compact` | < 640px | Full screen (no radius or gutter, content inside the safe area). Two levels: the section list with chevrons, then the page pushed over it with the shared `PageHeader` back island. Android's back button returns to the list before it closes. The panel rises 16px instead of scaling from .85. |
 
-In `compact`, `SettingsRow` lets its control wrap under the label when both do not fit (a switch stays beside it, a `SettingsValueField` drops below and fills the row), and the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`). Every default string — the modal's `labels`, the Storage and Tools pages' copy, the plan chip — is localised via `BloomProvider locale`, and `SettingsDateField` formats its date in that locale.
+In every layout `SettingsRow` wraps its control under the label when both do not fit, and the label column never gets narrower than `SETTINGS_ROW_LABEL_MIN_WIDTH` (140): a switch stays beside it, a long `Select` drops below and truncates inside its pill, and in `compact` a `SettingsValueField` drops below and fills the row. The column is `flexBasis: 0` + grow + that `minWidth`, never a positive `flexBasis`: Yoga gives a row's ONLY grow-and-shrink child a computed basis of 0 and breaks lines on that basis bounded by min/max alone, so the old `flexBasis: 140` never reached the decision. A 300px colour chooser stayed on the label's line on Android, the description wrapped one word per line in ~48dp, and the chooser's text ran off the card (Allo, Bloom 15.48). In `compact` the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`). Every default string — the modal's `labels`, the Storage and Tools pages' copy, the plan chip — is localised via `BloomProvider locale`, and `SettingsDateField` formats its date in that locale.
 
 ## Shared header
 
@@ -91,12 +91,14 @@ Menus, selects, tooltips and the date popover opened inside a page stack above i
 
 `useSettingsSavedToast()` returns the enclosing modal's trigger (a no-op outside one). `SettingsTextField` and `SettingsDateField` call it when a changed value commits (`showSavedToast={false}` opts out); a custom control calls it itself. It rises 12px in, holds 2s and drifts 10px up as it fades.
 
+It is centred by a full-width row, never by its own measured width. It used to sit at `left: 50%` with `marginLeft: -width / 2` from its own `onLayout` — a size fed back into its own position. Yoga rounds a width as round(right) − round(left), so moving the edge by half the width can flip the rounded width by one device pixel, which moves the edge back. On a Pixel 8a (2.625) every odd-pixel label width alternated 201 ↔ 200px forever, and Fabric reports every frame change: the open, idle modal committed a layout on every vsync (601 frames in 5 s, ~146 % CPU, uiautomator never idle) behind a toast at opacity 0. Its height is still measured, and feeds only a transform. `SettingsModalIdle.test.tsx` replays Fabric's pixel grid on the toast and checks that no host's own `onLayout` moves or resizes that host, over this modal and every `Dialog` placement.
+
 ## Rows
 
 | Export | Geometry |
 | --- | --- |
 | `SettingsCard` | background/secondary, radius 16, **pl 12** |
-| `SettingsRow` | min-height 52, py 10 pr 10, gap 16, 1px separator under every row **except the last** |
+| `SettingsRow` | min-height 52, py 10 pr 10, column gap 16 (12 compact), row gap 8, label column ≥ 140, 1px separator under every row **except the last** |
 | `SettingsSection` | label body-2-medium (inset 12, or 8 on Tools), optional description and trailing action, 8 above the card |
 | `SettingsSectionLabel` | body-2-medium text/secondary |
 | `SettingsValueField` | 32×202, radius 10, background/tertiary |

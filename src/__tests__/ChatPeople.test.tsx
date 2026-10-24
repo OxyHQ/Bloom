@@ -7,7 +7,7 @@
  * pure functions that carry the arithmetic — `storyProgressFill` and
  * `nameCounterTone`.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -312,6 +312,35 @@ describe('ContactList', () => {
     );
     press(byTestId('l-contact-ana-select'));
     expect(picked).toEqual([['ana', true]]);
+  });
+
+  it('flat layout: one unlabelled list of every match, in order, with no rail', () => {
+    mount(<ContactList sections={SECTIONS} layout="flat" showIndex testID="l" />);
+    // No letter heading and no rail, even with `showIndex` asking for one.
+    expect(container.querySelector('[data-testid^="l-heading"]')).toBeNull();
+    expect(maybe('l-rail')).toBeNull();
+    const order = [...container.querySelectorAll('[data-testid^="l-contact-"]')]
+      .map((el) => el.getAttribute('data-testid'))
+      .filter((id) => id !== null && /^l-contact-[a-z]+$/.test(id));
+    expect(order).toEqual(['l-contact-ana', 'l-contact-ade', 'l-contact-kofi']);
+  });
+
+  it('flat layout: one heading when given a label, and the empty state when nothing matched', () => {
+    mount(<ContactList sections={SECTIONS} layout="flat" flatLabel="Results" testID="l" />);
+    expect(text(byTestId('l-heading'))).toBe('Results');
+    expect(maybe('l-heading-A')).toBeNull();
+
+    mount(
+      <ContactList
+        sections={[{ letter: 'A', contacts: [] }]}
+        layout="flat"
+        flatLabel="Results"
+        emptyState={<span data-testid="l-none" />}
+        testID="l"
+      />,
+    );
+    expect(maybe('l-none')).not.toBeNull();
+    expect(maybe('l-heading')).toBeNull();
   });
 });
 

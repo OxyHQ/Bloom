@@ -22,6 +22,7 @@ export {
 } from './shared';
 export type {
   ChannelPostCardProps,
+  ContactListLayout,
   ContactListProps,
   ContactRowProps,
   ContactRowTrailing,

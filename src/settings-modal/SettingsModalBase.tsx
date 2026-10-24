@@ -860,13 +860,22 @@ export function createSettingsModal(
     testID?: string;
   }) {
     const shown = phase === 'shown';
-    const [box, setBox] = useState({ width: 0, height: 26 });
+    // Only the HEIGHT is measured, and it feeds only a transform. The pill used
+    // to centre itself with `left: '50%'` plus `marginLeft: -width / 2` from its
+    // own measured width — a size fed back into its own position. Yoga rounds a
+    // node's width as round(right) - round(left), so moving the left edge by
+    // half the width can flip the rounded width by one device pixel, which
+    // moves the edge back: on a Pixel 8a (2.625) every odd-pixel label width
+    // alternated 201 <-> 200 px forever. Fabric reports every frame change, so
+    // the open (and idle) settings modal committed a layout on every vsync —
+    // 601 frames in 5 s, ~146 % CPU — behind a toast at opacity 0. The row
+    // below centres it instead, so nothing about its position depends on it.
+    const [height, setHeight] = useState(26);
     // `translate-y-1/2`, `calc(50% + 12px)` (rising in) and `calc(50% - 10px)` (drifting out).
-    const half = box.height / 2;
+    const half = height / 2;
     const translateY = phase === 'shown' ? half : phase === 'hidden' ? half + 12 : half - 10;
     const motion: WebCssStyle = {
       opacity: shown ? 1 : 0,
-      marginLeft: -box.width / 2,
       transform: [{ translateY }, { scale: shown ? 1 : 0.9 }],
       ...(IS_WEB
         ? {
@@ -878,29 +887,31 @@ export function createSettingsModal(
         : null),
     };
     return (
-      <View
-        pointerEvents="none"
-        aria-live="polite"
-        accessibilityLiveRegion="polite"
-        onLayout={(event) => {
-          const { width, height } = event.nativeEvent.layout;
-          setBox({ width, height });
-        }}
-        testID={testID}
-        style={[
-          styles.toast,
-          {
-            borderColor: palette.borderButton,
-            backgroundColor: palette.primary,
-            boxShadow: palette.shadowDropdown,
-          },
-          motion,
-        ]}
-      >
-        <RiCheckboxCircleFill width={16} height={16} fill={palette.success[600]} />
-        <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.text }}>
-          {label}
-        </Text>
+      <View pointerEvents="none" style={styles.toastRow}>
+        <View
+          pointerEvents="none"
+          aria-live="polite"
+          accessibilityLiveRegion="polite"
+          onLayout={(event) => {
+            const next = event.nativeEvent.layout.height;
+            setHeight((previous) => (previous === next ? previous : next));
+          }}
+          testID={testID}
+          style={[
+            styles.toast,
+            {
+              borderColor: palette.borderButton,
+              backgroundColor: palette.primary,
+              boxShadow: palette.shadowDropdown,
+            },
+            motion,
+          ]}
+        >
+          <RiCheckboxCircleFill width={16} height={16} fill={palette.success[600]} />
+          <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.text }}>
+            {label}
+          </Text>
+        </View>
       </View>
     );
   }
@@ -986,11 +997,15 @@ export function createSettingsModal(
       flex: 1,
       minHeight: 0,
     },
-    toast: {
+    toastRow: {
       position: 'absolute',
       bottom: 0,
-      left: '50%',
+      left: 0,
+      right: 0,
       zIndex: 10,
+      alignItems: 'center',
+    },
+    toast: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,

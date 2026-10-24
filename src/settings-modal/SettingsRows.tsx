@@ -87,12 +87,30 @@ export function useSettingsRowIsLast(): boolean {
   return useContext(SettingsRowPositionContext).last;
 }
 
-/** One label + control row. */
+/**
+ * The narrowest the label column may get beside its control. A control that
+ * would leave it less wraps onto its own line under the label instead.
+ */
+export const SETTINGS_ROW_LABEL_MIN_WIDTH = 140;
+
+/**
+ * One label + control row.
+ *
+ * The row always wraps, and the label column is `flexBasis: 0` + grow + a
+ * `minWidth`, never a positive `flexBasis`. Yoga gives the ONLY child that both
+ * grows and shrinks a computed basis of 0 (`CalculateLayout.cpp`,
+ * `singleFlexChild`), and its line breaking reads that basis — clamped by the
+ * min/max constraints and nothing else — so the compact row's old
+ * `flexBasis: 140` never reached the decision: a 300px chooser stayed on the
+ * label's line, the label was squeezed to ~48dp (Allo's "Colour" row, one word
+ * per line) and the chooser's text ran off the edge. A `minWidth` is the
+ * constraint that line breaking does honour, on native and in CSS alike.
+ */
 export function SettingsRow({ label, description, children, style, testID }: SettingsRowProps) {
   const palette = useSettingsPalette();
   const last = useSettingsRowIsLast();
-  // Compact: the control wraps under its label when both do not fit on one line
-  // (a switch stays beside it; a 202px value field drops below).
+  // Compact keeps its tighter column gap; every layout wraps a control that
+  // does not fit beside the label (a switch stays beside it).
   const compact = useSettingsLayout() === 'compact';
   return (
     <View
@@ -104,7 +122,7 @@ export function SettingsRow({ label, description, children, style, testID }: Set
         style,
       ]}
     >
-      <View style={[styles.rowText, compact ? styles.rowTextCompact : null]}>
+      <View style={styles.rowText}>
         <Text variant="body-regular" style={{ color: palette.text }}>
           {label}
         </Text>
@@ -214,9 +232,11 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 16,
+    columnGap: 16,
+    rowGap: 8,
     minHeight: 52,
     width: '100%',
     paddingTop: 10,
@@ -224,17 +244,13 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   rowText: {
+    flexGrow: 1,
     flexShrink: 1,
-    minWidth: 0,
+    flexBasis: 0,
+    minWidth: SETTINGS_ROW_LABEL_MIN_WIDTH,
   },
   rowCompact: {
-    flexWrap: 'wrap',
-    rowGap: 8,
     columnGap: 12,
-  },
-  rowTextCompact: {
-    flexGrow: 1,
-    flexBasis: 140,
   },
   section: {
     width: '100%',

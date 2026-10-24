@@ -1,4 +1,5 @@
-import React, { useContext, useMemo, useState } from 'react';
+import type React from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -547,6 +548,32 @@ export const Actions: Story = {
           <ChatListItem key={chat.id} {...chat} onAction={() => undefined} />
         ))}
       </View>
+    </BothModes>
+  ),
+};
+
+/**
+ * Your own entry: the avatar is the ACCOUNT's (name and picture), the caption
+ * is always the label, and the caption takes the entry's whole slot (or two
+ * lines) rather than truncating a short phrase.
+ */
+export const StoriesOwnEntry: Story = {
+  render: () => (
+    <BothModes>
+      <Caption>no name or picture — the placeholder, never the label's first letter</Caption>
+      <StoriesRow stories={STORIES} own={{}} labels={{ own: 'Your status' }} />
+      <Caption>a name — its initial and tint; the caption is still the label</Caption>
+      <StoriesRow
+        stories={STORIES}
+        own={{ name: 'Mireia Solans' }}
+        labels={{ own: 'Your status' }}
+      />
+      <Caption>a picture and a two-line label</Caption>
+      <StoriesRow
+        stories={STORIES}
+        own={{ name: 'Mireia Solans', avatar: face('you') }}
+        labels={{ own: 'Add to your status' }}
+      />
     </BothModes>
   ),
 };

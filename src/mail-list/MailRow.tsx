@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { Avatar } from '../avatar';
@@ -101,7 +101,6 @@ function MailRowComponent({
     adoptStyleSheet(MAIL_LIST_STYLE_ID, MAIL_LIST_CSS);
   }, []);
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
-  const [pressed, setPressed] = useState(false);
 
   const text = useMemo(() => mailStrings(strings, messages), [strings, messages]);
   const geo = MAIL_ROW_GEOMETRY[density];
@@ -423,7 +422,7 @@ function MailRowComponent({
     ...(IS_WEB
       ? { transitionProperty: 'background-color', transitionDuration: '120ms' }
       : {
-          backgroundColor: selected ? paint.selected : pressed ? paint.hover : 'transparent',
+          backgroundColor: selected ? paint.selected : 'transparent',
         }),
   };
 
@@ -440,7 +439,8 @@ function MailRowComponent({
         href={href}
         selected={selected}
         paint={paint}
-        onPressedChange={setPressed}
+        // Painted by the link from Pressable's own state; selected keeps its fill.
+        pressedFill={IS_WEB || selected ? undefined : paint.hover}
         actions={rotorActions}
         onAction={onAction}
         testID={testID ? `${testID}-link` : undefined}

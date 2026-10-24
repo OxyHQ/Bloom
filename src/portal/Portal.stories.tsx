@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -130,6 +130,46 @@ export const ManyAtOnce: Story = {
           ))}
           <Card appearance="outline" radius="radius-16" style={{ padding: 12, gap: 4 }}>
             <Text style={{ fontSize: 12, opacity: 0.7 }}>outlet ↓</Text>
+            <PortalOutlet />
+          </Card>
+        </View>
+      </PortalProvider>
+    );
+  },
+};
+
+const AccountContext = createContext<string | null>(null);
+
+function AccountName() {
+  const name = useContext(AccountContext);
+  if (name === null) throw new Error('AccountProvider is missing');
+  return <Text>Signed in as {name}</Text>;
+}
+
+/**
+ * Portaled content keeps the context of the place `<Portal>` is written. The
+ * account provider wraps the portal and NOT the outlet — the shape of every app
+ * root — and the content still reads it. On native that is the context bridge
+ * (`portal/context-bridge.tsx`); before it, this threw "AccountProvider is
+ * missing" on a device while web, where `createPortal` keeps context, was fine.
+ */
+export const KeepsTheAppsContext: Story = {
+  parameters: { controls: { disable: true } },
+  render: function KeepsTheAppsContextStory() {
+    const [name, setName] = useState('Maya');
+    return (
+      <PortalProvider>
+        <View style={{ gap: 12, width: 420, maxWidth: '100%' }}>
+          <AccountContext.Provider value={name}>
+            <Button onPress={() => setName((v) => (v === 'Maya' ? 'Ade' : 'Maya'))}>
+              Switch account
+            </Button>
+            <Portal>
+              <AccountName />
+            </Portal>
+          </AccountContext.Provider>
+          <Card appearance="outline" radius="radius-16" style={{ padding: 12, gap: 4 }}>
+            <Text style={{ fontSize: 12, opacity: 0.7 }}>outlet ↓ (outside the provider)</Text>
             <PortalOutlet />
           </Card>
         </View>

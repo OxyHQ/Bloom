@@ -25,6 +25,38 @@ import { Portal } from '@oxy.so/bloom/portal';
 </View>
 ```
 
+## Content keeps the context of where `<Portal>` is written
+
+On web this is `createPortal`'s own behaviour. On native it is a bridge
+(`src/portal/context-bridge.tsx`), because React Native has no portal into a
+view: `ReactFabric.createPortal` commits with `completeRoot(containerTag, …)`,
+which replaces a whole ROOT's children. Bloom's native portal is therefore a
+context + outlet — and the content renders under the outlet, so until 15.50
+every provider between the outlet and the `<Portal>` was lost. Bloom bridged
+its theme and nothing else: Allo's Settings → Account crashed on Android with
+`AlloSettingsProvider is missing` while the same tree worked on web.
+
+Now the `<Portal>` reads its own fiber, collects every context provider above it
+(nearest first), subscribes to each, and the outlet renders the content inside
+the same providers with the same values — react-query, i18n, navigation, the
+app's own contexts. A new value re-registers the content in a layout effect, so
+it lands in the same frame as the tree around the `<Portal>`.
+
+Deliberately NOT bridged — the content sees the OUTLET's value, as before:
+
+| Context | Why |
+| --- | --- |
+| React Native's `TextAncestorContext`, `ScrollView.Context`, `VirtualizedList`'s context | They say where a node is in the host tree; bridged, a list in a portal written inside a list registers as that list's nested child. |
+| safe-area insets and frame | The outlet covers the root window; the window's insets describe the surface. |
+| the portal group's own contexts | The outlet's element changes on every append; a portal subscribed to it re-appends forever. |
+| `blur/blur-target.tsx`'s window contexts | A portal written inside a `<Modal>`'s `BlurWindow` renders in the ROOT window: bridged, its backdrop would blur its own ancestor (SIGSEGV). |
+
+A module declares its own as `excludeFromPortalBridge(createContext(…))`
+(exported from `@oxy.so/bloom/portal`; it marks the context object and returns
+it) — for host-position contexts only, never for data.
+`OverlayRoot` separately resets screen, scroll, edge and surface-level contexts
+for every surface, on both platforms. Gate: `PortalContextBridge.test.tsx`.
+
 ## `PortalProvider` and `PortalOutlet` are NATIVE-ONLY
 
 On web the fork portals directly to `document.body`, so both are explicit no-op
@@ -96,5 +128,5 @@ A portaled surface still needs:
 
 Each portal is tracked by its own id, so opening a second does not replace the
 first, and unmounting one removes only that one. Order at the outlet follows
-mount order — which is also why the overlay stack, not the outlet, decides what
+mount order (an update keeps a portal's place) — which is also why the overlay stack, not the outlet, decides what
 paints on top.
