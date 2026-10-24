@@ -108,6 +108,7 @@ Drop the declarative props entirely — `children` owns every pixel.
 | `width?` | `number` | `460` | Side-sheet width (px) on `left`/`right`/`start`/`end` placements. |
 | `maxWidth?` | `number` | `480` | Centered-card max width (px). |
 | `maxHeightRatio?` | `number` | `0.9` | Bottom-sheet max height as a fraction of the viewport height. |
+| `progress?` | `SharedValue<number>` | — | Bottom sheet's presented fraction (`0` closed → `1` up), written on the UI thread while it opens, closes or is dragged, for content outside the sheet that moves with it. |
 | `inset?` | `{ top?; bottom?; left?; right? }` | — | Side-sheet inset (px) from the overlay container edges. |
 | `showHandle?` | `boolean` | `true` | Show drag handle in bottom-sheet mode. |
 | `dismissOnBackdrop?` | `boolean` | `true` | Let the user dismiss: backdrop tap, Escape, Android Back, and dragging down the bottom sheet or the native centred card. |

@@ -40,6 +40,22 @@ reason this API exists beside [`Dialog`](/docs/bloom/main/dialog):
 stay out of `BloomProvider`** — where an outlet sits is an app decision, and a
 second mount would duplicate every surface.
 
+A surface renders inside whatever wraps its host, and on web a portal keeps the
+context of where it was rendered. When the provider sits above the app's own
+providers (the Oxy SDK's `OxyProvider` mounts it) and surfaces need those
+contexts (i18n, data, the app shell), mount a `<SurfaceHost />` beneath them:
+inside a `<SurfaceProvider>` it takes the stack over, and the provider stops
+rendering its own until that host unmounts. Only one host draws at a time.
+
+```tsx
+<OxyProvider>          {/* mounts <SurfaceProvider> */}
+  <AppProviders>
+    <App />
+    <SurfaceHost />     {/* surfaces see AppProviders' contexts */}
+  </AppProviders>
+</OxyProvider>
+```
+
 ## Two calls in a row STACK, they do not queue
 
 ```tsx
@@ -99,6 +115,27 @@ The content resolves the promise by calling `surface.dismiss(value)`. Note what
 it does **not** call: `Dialog`'s own `close()`. The value has to reach the
 `present()` promise, and it resolves on the press — a surface closed any other
 way resolves with nothing, which reads as the user having cancelled.
+
+### Content beside the sheet that moves with it
+
+A sheet that the screen behind it reacts to (a video that shrinks above its
+replies) passes a shared value as `progress`; Bloom writes the sheet's
+presented fraction into it on the UI thread, `0` closed to `1` up, through
+every frame of a drag. `backdrop` sets the paint behind the sheet, so the
+screen can stay fully visible while a tap on it still dismisses. A fixed
+height for content that loads in comes from the frame's `size`:
+
+```tsx
+const progress = useSharedValue(0);
+
+present((surface) => <Replies onClose={() => surface.dismiss()} />, {
+  placement: 'bottom',
+  scrollable: false,
+  progress,
+  backdrop: { blurIntensity: 0, dimOpacity: 0 },
+  frame: { key: 'replies', size: { height: windowHeight * 0.62 } },
+});
+```
 
 ## Buttons
 

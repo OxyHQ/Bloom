@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 
+import type { BackdropAppearance } from '../overlay/types';
 import type {
   DialogAction,
   DialogHeaderConfig,
@@ -35,6 +37,18 @@ export interface SurfacePresentation {
   maxWidth?: number;
   /** Bottom-sheet max height as a fraction of the viewport height. */
   maxHeightRatio?: number;
+  /**
+   * The bottom sheet's presented fraction (`0` closed → `1` up), mirrored on the
+   * UI thread for content outside the surface that moves with it. Forwarded to
+   * `Dialog`.
+   */
+  progress?: SharedValue<number>;
+  /**
+   * Backdrop paint. `{ blurIntensity: 0, dimOpacity: 0 }` keeps the content
+   * behind fully visible while a tap on it still dismisses the surface.
+   * Forwarded to `Dialog`.
+   */
+  backdrop?: BackdropAppearance;
   /** Side-sheet inset (px) from the root overlay's edges. */
   inset?: DialogInset;
   /** Whether to render the drag handle in bottom-sheet mode. */
