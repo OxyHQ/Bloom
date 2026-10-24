@@ -66,7 +66,8 @@ describe('UserHoverCard', () => {
         </SurfaceLevelProvider>,
       );
       expect(screen.getByTestId('surface-probe').props.children).toBe(
-        kind === 'painted' ? '1:rgb(33, 67, 101)' : '2:#abcdef',
+        // Native paints the custom fill opaque, so it publishes that fill as-is.
+        kind === 'painted' ? '1:#123456' : '2:#abcdef',
       );
       screen.unmount();
     }

@@ -38,7 +38,7 @@ it('keeps caller layout and clipped paint radius on the same native root', () =>
   expect(resolvedStyle(root.props.style).overflow).toBeUndefined();
 });
 
-it('material keeps the shared gradient and rim on a translucent base', () => {
+it('native material keeps the shared gradient and rim on an opaque base', () => {
   const { UNSAFE_queryAllByType, getByTestId, toJSON } = render(
     <Surface fill="#123456" testID="surface" />,
   );
@@ -46,7 +46,7 @@ it('material keeps the shared gradient and rim on a translucent base', () => {
   expect(surfaceSheens(toJSON())).toHaveLength(1);
   expect(
     getByTestId('surface').findAll(
-      (node) => resolvedStyle(node.props.style).backgroundColor === 'rgba(18, 52, 86, 0.9)',
+      (node) => resolvedStyle(node.props.style).backgroundColor === '#123456',
     ).length,
   ).toBeGreaterThan(0);
   expect(

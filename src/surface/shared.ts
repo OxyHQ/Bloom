@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { parseRgba, withAlpha } from '../theme/color-utils';
 
 /** Backdrop blur of the web material, in CSS px. One pass per surface, no displacement. */
@@ -31,8 +32,15 @@ export function resolveSurfaceOptics(isDark: boolean) {
   return isDark ? DARK_OPTICS : LIGHT_OPTICS;
 }
 
-/** One subtle material: retain explicit alpha; opaque fills transmit ten percent. */
+/**
+ * One subtle material: retain explicit alpha; on the web, opaque fills transmit
+ * ten percent through the backdrop blur beneath them. Native has no blur under a
+ * surface (a `BlurView` inside one can SIGSEGV on Android), so a transmitted
+ * tenth would show the content behind unblurred — a bar's labels over a post's
+ * text — and an opaque fill stays opaque there.
+ */
 export function resolveSurfaceTint(fill: string): string {
+  if (Platform.OS !== 'web') return fill;
   const parsed = parseRgba(fill);
   return parsed?.a === 1 ? withAlpha(fill, 0.9) : fill;
 }
