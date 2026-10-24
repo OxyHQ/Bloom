@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.29.0",
+  "version": "15.30.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3948,6 +3948,7 @@
   "peerDependencies": {
     "@lottiefiles/dotlottie-react": ">=0.13.0",
     "@react-native-community/netinfo": ">=11.1.0",
+    "@shopify/flash-list": ">=2.0.0",
     "expo": "*",
     "expo-blur": "*",
     "expo-font": "*",
@@ -3974,6 +3975,9 @@
       "optional": true
     },
     "@react-native-community/netinfo": {
+      "optional": true
+    },
+    "@shopify/flash-list": {
       "optional": true
     },
     "expo": {

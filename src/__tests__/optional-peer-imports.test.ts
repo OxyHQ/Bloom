@@ -120,6 +120,7 @@ const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: 'react-native-keyboard-controller', file: 'screen/keyboard-components.ts' },
   { peer: 'expo-video', file: 'media-flight/expo-video-module.ts' },
   { peer: 'react-native-pager-view', file: 'tab-pager/expo-router/pager-view-module.ts' },
+  { peer: '@shopify/flash-list', file: 'list/flash-list-module.ts' },
   { peer: 'lottie-react-native', file: 'sticker/lottie-module.ts' },
   { peer: '@lottiefiles/dotlottie-react', file: 'sticker/lottie-module.web.ts' },
 ];
