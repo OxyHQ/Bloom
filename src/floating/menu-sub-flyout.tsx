@@ -44,6 +44,7 @@ import { flushSync } from 'react-dom';
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { surfacePresenceTargets } from '../surface/use-surface-presence';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
 import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
@@ -237,8 +238,9 @@ function travel(panel: DomNode, from: DOMRect, to: DOMRect): Animation[] {
       { duration: TRAVEL_MS, easing: TRAVEL_EASING },
     ),
   ];
-  for (const child of Array.from(panel.children)) {
-    moves.push(child.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' }));
+  for (const piece of surfacePresenceTargets(panel as unknown as Element)) {
+    if (piece === (panel as unknown as Element)) continue;
+    moves.push(piece.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' }));
   }
   return moves;
 }
