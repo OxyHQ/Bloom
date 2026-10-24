@@ -64,7 +64,6 @@ export function AgentChatComposerBase({
       <ComposerLoader active={busy}>
         <ComposerPill
           placeholder={l.placeholder}
-          compactPlaceholder={l.placeholder}
           addMenu={
             onAttach
               ? [

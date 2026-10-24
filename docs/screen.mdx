@@ -68,9 +68,10 @@ is required. `scroll="content"` remains the explicit-list compatibility mode
 whose list binds `useScreenScroll`; it does not reserve chrome around arbitrary
 non-scrolling children.
 
-`Screen` owns a continuous page canvas. It paints the containing surface fill,
-so a Screen inside an AppShell panel matches that panel in light and dark mode.
-Standalone Screens use the page fill. `header` and `bottomBar` overlay the content;
+`Screen` owns a continuous page canvas. Standalone, it paints the page fill. Inside
+a painted surface (an AppShell panel, a sheet) the canvas stays transparent: the
+surface is already the paint, material and edge light included, and an opaque
+canvas over it would hide both. Its content still reads that surface's fill. `header` and `bottomBar` overlay the content;
 `ScreenScrollView` reserves their measured footprints, adding its own content padding.
 Safe-area padding belongs to the chrome, so it is included exactly once in those measurements.
 

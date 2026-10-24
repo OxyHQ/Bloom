@@ -38,6 +38,11 @@ export interface TextareaAutosizeOptions {
   minHeight: number;
   /** Receives the draft's content height, in px, whenever it is measured. */
   onMeasure: (contentHeight: number) => void;
+  /**
+   * The placeholder shown while the field is empty. An empty field is as tall as its
+   * placeholder, so a new one (a compact pill's shorter prompt) is measured again.
+   */
+  placeholder?: string;
 }
 
 /** The DOM surface this reads and writes — `HTMLTextAreaElement`, narrowed. */
@@ -84,7 +89,7 @@ export function measureTextarea(node: AutosizeNode, collapse: boolean): number {
 export function useTextareaAutosize(
   ref: RefObject<ComponentRef<typeof TextInput> | null>,
   text: string,
-  { enabled, height, minHeight, onMeasure }: TextareaAutosizeOptions,
+  { enabled, height, minHeight, onMeasure, placeholder }: TextareaAutosizeOptions,
 ): void {
   // What the field held at the last measurement, and the floor it was held to.
   const last = useRef<{ text: string; minHeight: number } | null>(null);
@@ -103,6 +108,14 @@ export function useTextareaAutosize(
     const measured = measureTextarea(node, collapse);
     if (measured > 0) latest.current.onMeasure(measured);
   }, [enabled, ref, text, minHeight]);
+
+  useLayoutEffect(() => {
+    if (!enabled || placeholder === undefined) return;
+    const node = ref.current as unknown as AutosizeNode | null;
+    if (!node?.style || typeof node.scrollHeight !== 'number') return;
+    const measured = measureTextarea(node, latest.current.height > latest.current.minHeight);
+    if (measured > 0) latest.current.onMeasure(measured);
+  }, [enabled, ref, placeholder]);
 
   useLayoutEffect(() => {
     if (!enabled || typeof ResizeObserver === 'undefined') return;

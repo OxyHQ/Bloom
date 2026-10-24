@@ -15,8 +15,8 @@ it('publishes explicit transparency against the actual backing', () => {
 
 it('uses one subtle tint on the web and never compounds caller alpha', () => {
   jest.replaceProperty(Platform, 'OS', 'web');
-  expect(resolveSurfaceTint('#123456')).toBe('rgba(18, 52, 86, 0.9)');
-  expect(resolveSurfaceTint(resolveSurfaceTint('#123456'))).toBe('rgba(18, 52, 86, 0.9)');
+  expect(resolveSurfaceTint('#123456')).toBe('rgba(18, 52, 86, 0.72)');
+  expect(resolveSurfaceTint(resolveSurfaceTint('#123456'))).toBe('rgba(18, 52, 86, 0.72)');
   expect(resolveSurfaceTint('rgba(18,52,86,0.2)')).toBe('rgba(18,52,86,0.2)');
   expect(resolveSurfaceTint('transparent')).toBe('transparent');
 });

@@ -266,7 +266,7 @@ describe('chrome', () => {
 afterEach(() => jest.restoreAllMocks());
 
 it.each([
-  ['#80A0C0', 'rgba(128, 160, 192, 0.9)'],
+  ['#80A0C0', 'rgba(128, 160, 192, 0.72)'],
   ['rgba(128, 160, 192, 0.4)', 'rgba(128, 160, 192, 0.4)'],
 ])('delegates %s to paint and publishes the matching body fill', (background, painted) => {
   // The web material: an opaque fill transmits a tenth through the backdrop blur.

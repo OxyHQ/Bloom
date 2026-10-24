@@ -339,7 +339,7 @@ it('isolates overlay screen motion from its trigger screen without losing the vi
 });
 
 it.each(['light', 'dark'] as const)(
-  'paints the inherited surface on %s screens, with caller overrides preserved',
+  'leaves a painted surface to paint itself on %s screens, with caller overrides preserved',
   (mode) => {
     let inherited: string | undefined;
     function Probe() {
@@ -357,7 +357,9 @@ it.each(['light', 'dark'] as const)(
         <Screen testID="standalone" />
       </BloomThemeProvider>,
     );
-    expect(resolvedStyle(tree.getByTestId('screen').props.style).backgroundColor).toBe(inherited);
+    expect(resolvedStyle(tree.getByTestId('screen').props.style).backgroundColor).toBe(
+      'transparent',
+    );
     expect(inherited).toBe('#334455');
     expect(resolvedStyle(tree.getByTestId('override').props.style).backgroundColor).toBe('#123456');
     expect(resolvedStyle(tree.getByTestId('standalone').props.style).backgroundColor).toBeTruthy();

@@ -7,9 +7,9 @@ afterEach(() => jest.restoreAllMocks());
 it('resolves paint, backing, CSS and depth as one decision', () => {
   jest.replaceProperty(Platform, 'OS', 'web');
   const outer = resolveSurfaceMaterial({ fill: '#ffffff', parentFill: '#000000', parentLevel: 2 });
-  expect(outer.paintFill).toBe('rgba(255, 255, 255, 0.9)');
-  expect(outer.publishedFill).toBe('rgb(230, 230, 230)');
-  expect(outer.vars).toEqual({ '--bloom-surface': 'rgb(230, 230, 230)' });
+  expect(outer.paintFill).toBe('rgba(255, 255, 255, 0.72)');
+  expect(outer.publishedFill).toBe('rgb(184, 184, 184)');
+  expect(outer.vars).toEqual({ '--bloom-surface': 'rgb(184, 184, 184)' });
   expect(outer.level).toBe(3);
   const nested = resolveSurfaceMaterial({
     fill: '#000000',
@@ -17,7 +17,7 @@ it('resolves paint, backing, CSS and depth as one decision', () => {
     parentLevel: outer.level,
   });
   expect(nested.level).toBe(3);
-  expect(nested.publishedFill).toBe('rgb(23, 23, 23)');
+  expect(nested.publishedFill).toBe('rgb(52, 52, 52)');
 });
 it('paints and publishes an opaque fill as-is on native, with no CSS props', () => {
   expect(
@@ -52,7 +52,7 @@ it('resets portal depth explicitly without losing the actual fill', () => {
   jest.replaceProperty(Platform, 'OS', 'web');
   expect(
     resolveSurfaceMaterial({ fill: '#ffffff', parentFill: '#000000', parentLevel: 3, level: 0 }),
-  ).toMatchObject({ level: 0, publishedFill: 'rgb(230, 230, 230)' });
+  ).toMatchObject({ level: 0, publishedFill: 'rgb(184, 184, 184)' });
 });
 it('uses explicit geometry, then caller style, then the family default for paint and host', () => {
   expect(resolveSurfaceGeometry(20, { borderRadius: 8 }, 12, 'smooth')).toMatchObject({

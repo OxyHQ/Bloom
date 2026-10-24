@@ -75,7 +75,7 @@ it('uses real RN web layout styles and keeps the material on the same root', () 
   expect(getComputedStyle(surface).paddingLeft).toBe('16px');
   expect(getComputedStyle(surface).paddingRight).toBe('16px');
   expect(getComputedStyle(surface).borderTopLeftRadius).toBe('13px');
-  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(255, 255, 255, 0.9)');
+  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(255, 255, 255, 0.72)');
 });
 
 it('shares one glass material across Surface and disabled Button', () => {
@@ -113,7 +113,7 @@ it('retains caller colour with subtle translucency beneath the optical edge', ()
   act(() => root.render(<Surface fill="rgb(9, 20, 30)" testID="solid" />));
   const surface = container.querySelector('[data-testid="solid"]') as HTMLElement;
   expect(surface.className).toContain('bloom-surface--material');
-  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(9, 20, 30, 0.9)');
+  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(9, 20, 30, 0.72)');
 });
 
 it('the universal paint entry renders web optics without a platform barrel', () => {
@@ -168,7 +168,7 @@ it('uses the explicit brand pair and exposes persistent pressed state', () => {
   );
   const button = container.querySelector('button')!;
   expect(button.getAttribute('aria-pressed')).toBe('true');
-  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(17, 48, 79, 0.9)');
+  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(17, 48, 79, 0.72)');
   expect(button.style.getPropertyValue('--bloom-btn-fg')).toBe('#ffffff');
 });
 
