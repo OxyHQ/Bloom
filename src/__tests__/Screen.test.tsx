@@ -397,6 +397,23 @@ it('hands the app bottom bar to its scroller under it when it has no bar of its 
   });
 });
 
+it('floats its own floating action over the content, which pads its end clear of it (native)', () => {
+  const tree = render(
+    wrap(
+      <Screen testID="screen" scroll="auto" primaryAction={<View />}>
+        <ScreenScrollView testID="scroll" />
+      </Screen>,
+    ),
+  );
+  fireEvent(tree.getByTestId('screen-bottom'), 'layout', {
+    nativeEvent: { layout: { height: 72 } },
+  });
+  expect(resolvedStyle(tree.getByTestId('screen-content').props.style).paddingBottom).toBe(0);
+  expect(resolvedStyle(tree.getByTestId('scroll').props.contentContainerStyle)).toMatchObject({
+    paddingBottom: 72 + 16,
+  });
+});
+
 it('floats an overlay bar over an auto screen and hands its height to the scroller (native)', () => {
   const tree = render(
     wrap(

@@ -154,8 +154,13 @@ export function createScreen(
     // nothing there, so its scroller clears that bar instead.
     const scrollsUnderBar = Platform.OS !== 'web' && !hasBottom && !!region?.underBottomBar;
     // On web the bar already floats over the scrolled content (sticky in the
-    // document, inside the viewport otherwise); only native reserved it.
-    const bottomOverlaid = bottomBarPlacement === 'overlay' && Platform.OS !== 'web';
+    // document, inside the viewport otherwise); only native reserved it. A
+    // footer holding nothing but the floating action always floats: a FAB sits
+    // over the content, whose scroller pads its end clear of it, never above a
+    // band the content stops short of.
+    const actionOnly = primaryAction != null && bottomBar == null && host.bottomBar == null;
+    const bottomOverlaid =
+      (bottomBarPlacement === 'overlay' || actionOnly) && Platform.OS !== 'web';
     const underBarInset = (scrollsUnderBar ? navigationEdge : 0) + contentClearance;
     const document =
       (documentScroll ??
