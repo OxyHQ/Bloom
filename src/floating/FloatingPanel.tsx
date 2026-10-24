@@ -456,6 +456,15 @@ export function FloatingPanel({
     return { side: resolved, origin: transformOriginFor(resolved, align) };
   }, [placement, anchor, side, align]);
 
+  // Once placed in an open phase, the panel keeps that placement until it closes.
+  // A re-measure can resolve to nothing for a frame (the anchor is re-read, the
+  // panel node is replaced); without this the panel jumped back to its anchor and
+  // its material faded out and in again for that frame — a visible flicker.
+  const [placedAt, setPlacedAt] = useState<DropdownPlacement | null>(null);
+  if (phase === 'open' && placement && placement !== placedAt) setPlacedAt(placement);
+  if (phase === 'closed' && placedAt) setPlacedAt(null);
+  const shownPlacement = placement ?? (phase === 'closed' ? null : placedAt);
+
   const [held, setHeld] = useState(landed);
   if (landed && landed !== held) setHeld(landed);
   const geometry = landed ?? held;
@@ -526,7 +535,7 @@ export function FloatingPanel({
     }),
     [progress, blurFrom],
   );
-  const present = phase === 'open' && placement !== null;
+  const present = phase === 'open' && shownPlacement !== null;
   const presenceStyle: WebCssStyle = {
     '--bloom-surface-presence': present ? '1' : '0',
     '--bloom-surface-presence-ms': `${still ? 0 : chrome.duration}ms`,
@@ -630,7 +639,7 @@ export function FloatingPanel({
               // already the shape it will be laid out at. It is invisible until
               // then because `progress` is still 0.
               left:
-                placement?.left ??
+                shownPlacement?.left ??
                 (anchor
                   ? side === 'right'
                     ? anchor.right + sideOffset
@@ -639,7 +648,7 @@ export function FloatingPanel({
                       : anchor.left
                   : 0),
               top:
-                placement?.top ??
+                shownPlacement?.top ??
                 (anchor
                   ? side === 'left' || side === 'right'
                     ? anchor.top
