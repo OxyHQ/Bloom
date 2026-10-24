@@ -63,3 +63,33 @@ it('renders through FlashList when it is installed, with the same Screen binding
   ref.current?.scrollTo({ y: 40, animated: false });
   expect(mockScrollToOffset).toHaveBeenCalledWith({ offset: 40, animated: false });
 });
+
+it('hands FlashList its grid, sticky, recycling and scroller props', () => {
+  const { FlashList } = jest.requireMock('@shopify/flash-list');
+  const overrideItemLayout = () => {};
+  const tree = render(
+    <VirtualList
+      data={[{ id: 'a' }]}
+      renderItem={({ item }) => <Text key={item.id}>Row {item.id}</Text>}
+      numColumns={3}
+      overrideItemLayout={overrideItemLayout}
+      stickyHeaderIndices={[0]}
+      drawDistance={400}
+      maxItemsInRecyclePool={24}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      scrollbar="never"
+    />,
+  );
+  expect(tree.UNSAFE_getByType(FlashList).props).toMatchObject({
+    numColumns: 3,
+    overrideItemLayout,
+    stickyHeaderIndices: [0],
+    stickyHeaderConfig: { offset: 0 },
+    drawDistance: 400,
+    maxItemsInRecyclePool: 24,
+    keyboardShouldPersistTaps: 'handled',
+    keyboardDismissMode: 'on-drag',
+    showsVerticalScrollIndicator: false,
+  });
+});

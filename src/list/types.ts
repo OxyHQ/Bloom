@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
+import type { ScrollAreaScrollbar } from '../layout/types';
 
 /** Info passed to {@link VirtualListProps.renderItem} for each row. */
 export interface VirtualListRenderItemInfo<T> {
@@ -34,6 +35,8 @@ export interface VirtualListProps<T> {
   keyExtractor?: (item: T, index: number) => string;
   /** Rendered above the rows; scrolls away with the content. */
   ListHeaderComponent?: VirtualListSlot;
+  /** Style for the view around `ListHeaderComponent`. */
+  ListHeaderComponentStyle?: StyleProp<ViewStyle>;
   /** Rendered (in place of rows) when `data` is empty. */
   ListEmptyComponent?: VirtualListSlot;
   /** Rendered below the rows. */
@@ -60,10 +63,41 @@ export interface VirtualListProps<T> {
   onEndReached?: () => void;
   /** Viewport-relative distance from the end that fires `onEndReached`. Default 2, as `FlatList`. */
   onEndReachedThreshold?: number;
+  /**
+   * Indices into `data` (`ListHeaderComponent` is not counted) of the rows that
+   * stay pinned once scrolled past, until the next one takes their place. They
+   * pin below the header that overlaps the list (`useHeaderDockInset()`), not
+   * under it. Native FlashList and web; the `FlatList` fallback pins at its top
+   * edge.
+   */
+  stickyHeaderIndices?: number[];
+  /** Lays rows out as a grid of this many equal columns. Default 1. */
+  numColumns?: number;
+  /**
+   * Sets `layout.span`: how many of the `numColumns` an item takes (1 by
+   * default), so a full-width header row can sit in a grid. An item that does
+   * not fit the rest of its row starts the next one. FlashList and web; the
+   * `FlatList` fallback gives every item one column.
+   */
+  overrideItemLayout?: (
+    layout: { span?: number },
+    item: T,
+    index: number,
+    maxColumns: number,
+  ) => void;
   /** Pull-to-refresh active flag (native). */
   refreshing?: boolean;
-  /** Pull-to-refresh handler (native). */
+  /** Pull-to-refresh handler (native). Its spinner takes the theme's primary colour. */
   onRefresh?: () => void;
+  /**
+   * When the native scroll indicator shows (`never` hides it), as `ScrollArea`.
+   * Web: the list scrolls its Screen's scroller, which owns the bar.
+   */
+  scrollbar?: ScrollAreaScrollbar;
+  /** Native: whether a tap outside a focused input reaches the row or dismisses the keyboard. */
+  keyboardShouldPersistTaps?: ScrollViewProps['keyboardShouldPersistTaps'];
+  /** Native: whether dragging the list dismisses the keyboard. */
+  keyboardDismissMode?: ScrollViewProps['keyboardDismissMode'];
   /** Test id applied to the outer container. */
   testID?: string;
 
@@ -81,6 +115,10 @@ export interface VirtualListProps<T> {
   maintainVisibleContentPosition?: boolean;
   /** FlashList: rows of one type recycle into each other. Give each row shape its own. */
   getItemType?: (item: T, index: number) => string | number | undefined;
+  /** FlashList: how far beyond the viewport (px) rows are drawn ahead of scrolling. */
+  drawDistance?: number;
+  /** FlashList: the most row views kept for recycling. */
+  maxItemsInRecyclePool?: number;
 }
 
 /** Imperative handle exposed via `ref`. */

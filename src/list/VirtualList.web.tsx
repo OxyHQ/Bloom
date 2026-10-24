@@ -43,9 +43,16 @@ import { useScreenViewport } from '../screen/context';
 import { useScreenWindowScroll } from '../screen/use-screen-window-scroll';
 import { useDocumentEndReached } from '../screen/use-document-end-reached';
 import { DEFAULT_END_REACHED_THRESHOLD } from '../screen/use-end-reached';
+import { useHeaderDockInset } from '../layout/header-dock';
+import { Z_INDEX } from '../styles/z-index';
 import { type CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useVirtualizer, useWindowVirtualizer } from '@tanstack/react-virtual';
+import {
+  defaultRangeExtractor,
+  useVirtualizer,
+  useWindowVirtualizer,
+  type Range,
+} from '@tanstack/react-virtual';
 
 import type { VirtualListHandle, VirtualListProps, VirtualListSlot } from './types';
 
@@ -68,9 +75,42 @@ const END_MARKER_STYLE: CSSProperties = {
   pointerEvents: 'none',
 };
 
+const NO_ROWS: readonly number[] = [];
+
+/** One grid row: its items, each with the columns it spans. */
+type GridRow = { index: number; span: number }[];
+
 function renderSlot(slot: VirtualListSlot): React.ReactElement | null {
   if (!slot) return null;
   return typeof slot === 'function' ? slot() : slot;
+}
+
+/**
+ * Packs items into rows of `numColumns` as FlashList does: an item spans
+ * `overrideItemLayout`'s `span` columns (1 by default), and one that does not fit
+ * the rest of its row starts the next.
+ */
+function packGrid<T>(
+  items: readonly T[],
+  numColumns: number,
+  overrideItemLayout: VirtualListProps<T>['overrideItemLayout'],
+): GridRow[] {
+  const rows: GridRow[] = [];
+  let row: GridRow | undefined;
+  let used = 0;
+  items.forEach((item, index) => {
+    const layout: { span?: number } = {};
+    overrideItemLayout?.(layout, item, index, numColumns);
+    const span = Math.min(Math.max(layout.span ?? 1, 1), numColumns);
+    if (!row || used + span > numColumns) {
+      row = [];
+      rows.push(row);
+      used = 0;
+    }
+    row.push({ index, span });
+    used += span;
+  });
+  return rows;
 }
 
 function VirtualListWebInner<T>(
@@ -82,6 +122,7 @@ function VirtualListWebInner<T>(
     renderItem,
     keyExtractor,
     ListHeaderComponent,
+    ListHeaderComponentStyle,
     ListEmptyComponent,
     ListFooterComponent,
     style,
@@ -90,11 +131,48 @@ function VirtualListWebInner<T>(
     overscan,
     onEndReached,
     onEndReachedThreshold = DEFAULT_END_REACHED_THRESHOLD,
+    stickyHeaderIndices,
+    numColumns = 1,
+    overrideItemLayout,
     testID,
   } = props;
 
   const items = data ?? [];
   const count = items.length;
+
+  // A grid virtualizes rows of cells; a plain list, one item per row.
+  const grid = React.useMemo(
+    () => (numColumns > 1 ? packGrid(items, numColumns, overrideItemLayout) : null),
+    [items, numColumns, overrideItemLayout],
+  );
+  const rowCount = grid?.length ?? count;
+  const firstItemOf = (row: number) => grid?.[row]?.[0]?.index ?? row;
+
+  // The rows holding a sticky item, ascending. They pin below the header that
+  // overlaps the list, as FlashList's `stickyHeaderConfig.offset`.
+  const stickyRows = React.useMemo(() => {
+    if (!stickyHeaderIndices?.length) return NO_ROWS;
+    if (!grid) return [...new Set(stickyHeaderIndices)].sort((a, b) => a - b);
+    const sticky = new Set(stickyHeaderIndices);
+    return grid.flatMap((cells, row) =>
+      cells.some((cell) => sticky.has(cell.index)) ? [row] : [],
+    );
+  }, [stickyHeaderIndices, grid]);
+  const stickyTop = useHeaderDockInset();
+  // TanStack's sticky pattern: the last sticky row at or above the viewport stays
+  // mounted while the rows after it scroll, so it can stay pinned.
+  const rangeExtractor = React.useCallback(
+    (range: Range) => {
+      const indexes = defaultRangeExtractor(range);
+      let pinned: number | undefined;
+      for (const row of stickyRows) {
+        if (row > range.startIndex) break;
+        pinned = row;
+      }
+      return pinned === undefined || indexes.includes(pinned) ? indexes : [pinned, ...indexes];
+    },
+    [stickyRows],
+  );
 
   // The Screen in front decides the scroller: its own element in an
   // element-kind panel, the window otherwise. A retained screen that is not in
@@ -144,21 +222,21 @@ function VirtualListWebInner<T>(
   }, [measureScrollMargin, count]);
 
   const estimate = estimatedItemSize ?? DEFAULT_ESTIMATED_ITEM_SIZE;
+  const itemKey = (index: number) => {
+    const item = items[index];
+    return keyExtractor && item !== undefined ? keyExtractor(item, index) : index;
+  };
   // `useFlushSync: false`: by default every scroll event re-renders the list
   // synchronously before the browser can paint; overscan covers the frame an
   // ordinary batched render lags.
   const options = {
-    count,
+    count: rowCount,
     estimateSize: () => estimate,
     overscan: overscan ?? DEFAULT_OVERSCAN,
     scrollMargin,
     useFlushSync: false,
-    getItemKey: keyExtractor
-      ? (index: number) => {
-          const item = items[index];
-          return item !== undefined ? keyExtractor(item, index) : index;
-        }
-      : undefined,
+    rangeExtractor,
+    getItemKey: keyExtractor ? (row: number) => itemKey(firstItemOf(row)) : undefined,
   };
   // Both are always called (hook order); only the one matching the scroller is
   // enabled, so a panel switching flow keeps its list mounted.
@@ -236,7 +314,14 @@ function VirtualListWebInner<T>(
   const flatStyle = StyleSheet.flatten(style);
   const flatContentStyle = StyleSheet.flatten(contentContainerStyle) as CSSProperties | undefined;
 
-  const header = renderSlot(ListHeaderComponent);
+  const renderCell = (index: number) => {
+    const item = items[index];
+    return item !== undefined && renderItem ? renderItem({ item, index }) : null;
+  };
+
+  const slot = renderSlot(ListHeaderComponent);
+  const header =
+    slot && ListHeaderComponentStyle ? <View style={ListHeaderComponentStyle}>{slot}</View> : slot;
   const footer = renderSlot(ListFooterComponent);
 
   if (count === 0) {
@@ -263,6 +348,8 @@ function VirtualListWebInner<T>(
     ? lastItem.start + lastItem.size - virtualizer.options.scrollMargin
     : 0;
   const spacerHeight = Math.max(totalSize, lastItemEnd);
+  // Where the last in-flow (sticky) row ends, measured from the top of the rows.
+  let flowEnd = 0;
 
   return (
     <View style={[{ minHeight: 0 }, flatStyle]} testID={testID}>
@@ -271,24 +358,62 @@ function VirtualListWebInner<T>(
           the whole list rather than the rows alone. */}
       <div style={flatContentStyle}>
         {header}
-        <div ref={wrapperRef} style={{ height: spacerHeight, width: '100%', position: 'relative' }}>
+        {/* A column, so a sticky row's top margin never collapses through it. */}
+        <div
+          ref={wrapperRef}
+          style={{
+            height: spacerHeight,
+            width: '100%',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           {virtualItems.map((virtualRow) => {
-            const item = items[virtualRow.index];
-            if (item === undefined) return null;
+            if (items[firstItemOf(virtualRow.index)] === undefined) return null;
+            const offset = virtualRow.start - virtualizer.options.scrollMargin;
+            let placement: CSSProperties;
+            if (stickyRows.includes(virtualRow.index)) {
+              // In flow at its own offset, so `position: sticky` pins it at the
+              // header's edge once scrolled past, over the rows that follow.
+              placement = {
+                position: 'sticky',
+                top: stickyTop,
+                marginTop: offset - flowEnd,
+                flexShrink: 0,
+                zIndex: Z_INDEX.raised,
+              };
+              flowEnd = offset + virtualRow.size;
+            } else {
+              placement = {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                transform: `translateY(${offset}px)`,
+              };
+            }
+            const cells = grid?.[virtualRow.index];
             return (
               <div
                 key={virtualRow.key}
                 ref={getRowRef(String(virtualRow.key))}
                 data-index={virtualRow.index}
                 style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
+                  ...placement,
                   width: '100%',
-                  transform: `translateY(${virtualRow.start - virtualizer.options.scrollMargin}px)`,
+                  ...(cells ? { display: 'flex', flexDirection: 'row' } : null),
                 }}
               >
-                {renderItem ? renderItem({ item, index: virtualRow.index }) : null}
+                {cells
+                  ? cells.map((cell) => (
+                      <div
+                        key={itemKey(cell.index)}
+                        style={{ width: `${(cell.span / numColumns) * 100}%` }}
+                      >
+                        {renderCell(cell.index)}
+                      </div>
+                    ))
+                  : renderCell(virtualRow.index)}
               </div>
             );
           })}

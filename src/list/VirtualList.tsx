@@ -24,7 +24,10 @@ import * as React from 'react';
 import Animated from 'react-native-reanimated';
 import { useScreenScroll } from '../screen/use-screen-scroll';
 import { mergeRefs } from '../hooks/merge-refs';
-import { FlatList, StyleSheet, type FlatListProps } from 'react-native';
+import { useHeaderDockInset } from '../layout/header-dock';
+import { useNativeScrollIndicator } from '../layout/use-native-scroll-indicator';
+import { BloomThemeContext } from '../theme/BloomThemeProvider';
+import { FlatList, RefreshControl, StyleSheet, type FlatListProps } from 'react-native';
 
 import { loadFlashList, type FlashListLikeProps, type ListScrollHandle } from './flash-list-module';
 import type { VirtualListHandle, VirtualListProps, VirtualListSlot } from './types';
@@ -32,7 +35,12 @@ import type { VirtualListHandle, VirtualListProps, VirtualListSlot } from './typ
 /** What both engines take; each adds only the tuning knobs it understands. */
 type SharedListProps<T> = Omit<
   FlashListLikeProps<T>,
-  'getItemType' | 'maintainVisibleContentPosition'
+  | 'getItemType'
+  | 'maintainVisibleContentPosition'
+  | 'overrideItemLayout'
+  | 'stickyHeaderConfig'
+  | 'drawDistance'
+  | 'maxItemsInRecyclePool'
 >;
 type FlatListLikeProps<T> = SharedListProps<T> &
   Pick<
@@ -57,6 +65,20 @@ function renderSlot(slot: VirtualListSlot): React.ReactElement | undefined {
   return (typeof slot === 'function' ? slot() : slot) ?? undefined;
 }
 
+/**
+ * `FlatList` counts `ListHeaderComponent` as its first cell and a grid's rows as
+ * cells, where FlashList and the web count `data`; map one onto the other.
+ */
+function flatListStickyIndices(
+  indices: number[] | undefined,
+  numColumns: number,
+  hasHeader: boolean,
+): number[] | undefined {
+  if (!indices) return undefined;
+  const offset = hasHeader ? 1 : 0;
+  return [...new Set(indices.map((index) => Math.floor(index / numColumns) + offset))];
+}
+
 function VirtualListNativeInner<T>(
   props: VirtualListProps<T> & { screenBinding?: ReturnType<typeof useScreenScroll> },
   ref: React.ForwardedRef<VirtualListHandle>,
@@ -66,22 +88,37 @@ function VirtualListNativeInner<T>(
     renderItem,
     keyExtractor,
     ListHeaderComponent,
+    ListHeaderComponentStyle,
     ListEmptyComponent,
     ListFooterComponent,
     style,
     contentContainerStyle,
     onEndReached,
     onEndReachedThreshold,
+    stickyHeaderIndices,
+    numColumns = 1,
+    overrideItemLayout,
     refreshing,
     onRefresh,
+    scrollbar,
+    keyboardShouldPersistTaps,
+    keyboardDismissMode,
     initialNumToRender,
     maxToRenderPerBatch,
     windowSize,
     removeClippedSubviews,
     getItemType,
     maintainVisibleContentPosition,
+    drawDistance,
+    maxItemsInRecyclePool,
     testID,
   } = props;
+
+  // Optional: a list must work outside a provider, with the platform's spinner.
+  const primary = React.useContext(BloomThemeContext)?.theme.colors.primary;
+  const indicator = useNativeScrollIndicator(scrollbar);
+  const stickyHeaderOffset = useHeaderDockInset();
+  const header = renderSlot(ListHeaderComponent);
 
   const listRef = React.useRef<ListScrollHandle>(null);
 
@@ -113,23 +150,41 @@ function VirtualListNativeInner<T>(
     data: data ?? undefined,
     renderItem: renderListItem,
     keyExtractor,
-    ListHeaderComponent: renderSlot(ListHeaderComponent),
+    ListHeaderComponent: header,
+    ListHeaderComponentStyle,
     ListEmptyComponent: renderSlot(ListEmptyComponent),
     ListFooterComponent: renderSlot(ListFooterComponent),
     style,
     onScroll: props.screenBinding?.onScroll,
     scrollEventThrottle: 16,
     contentContainerStyle,
+    numColumns,
     onEndReached: onEndReached ? () => onEndReached() : undefined,
     onEndReachedThreshold,
-    refreshing,
-    onRefresh,
+    // The spinner rests below the Screen's header rather than behind it.
+    refreshControl: onRefresh ? (
+      <RefreshControl
+        refreshing={refreshing ?? false}
+        onRefresh={onRefresh}
+        tintColor={primary}
+        colors={primary ? [primary] : undefined}
+        progressViewOffset={props.screenBinding?.contentInsets.top}
+      />
+    ) : undefined,
+    keyboardShouldPersistTaps,
+    keyboardDismissMode,
+    ...indicator,
     testID,
   };
 
   return AnimatedFlashList ? (
     <AnimatedFlashList<T>
       {...shared}
+      stickyHeaderIndices={stickyHeaderIndices}
+      stickyHeaderConfig={stickyHeaderIndices ? { offset: stickyHeaderOffset } : undefined}
+      overrideItemLayout={overrideItemLayout}
+      drawDistance={drawDistance}
+      maxItemsInRecyclePool={maxItemsInRecyclePool}
       getItemType={getItemType}
       maintainVisibleContentPosition={
         maintainVisibleContentPosition === false ? { disabled: true } : undefined
@@ -137,7 +192,10 @@ function VirtualListNativeInner<T>(
     />
   ) : (
     <AnimatedFlatList<T>
+      // `FlatList` cannot change `numColumns` in place: a new count is a new list.
+      key={numColumns}
       {...shared}
+      stickyHeaderIndices={flatListStickyIndices(stickyHeaderIndices, numColumns, header != null)}
       initialNumToRender={initialNumToRender}
       maxToRenderPerBatch={maxToRenderPerBatch}
       windowSize={windowSize}

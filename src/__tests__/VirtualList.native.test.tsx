@@ -1,9 +1,10 @@
 import React from 'react';
-import { Text, FlatList } from 'react-native';
+import { Text, FlatList, RefreshControl } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { Screen } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
 import { VirtualList, type VirtualListHandle } from '../list';
 
@@ -65,6 +66,36 @@ describe('VirtualList (native)', () => {
     expect(
       resolvedStyle(tree.UNSAFE_getByType(FlatList).props.contentContainerStyle),
     ).toMatchObject({ paddingTop: 80, paddingBottom: 28 });
+  });
+
+  it("maps data sticky indices onto FlatList's cells: the header, then grid rows", () => {
+    const tree = render(
+      <VirtualList
+        data={['a', 'b', 'c', 'd', 'e', 'f']}
+        numColumns={2}
+        stickyHeaderIndices={[0, 4]}
+        ListHeaderComponent={<Text>Header row</Text>}
+        renderItem={({ item }) => <Text>{item}</Text>}
+      />,
+    );
+    expect(tree.UNSAFE_getByType(FlatList).props.stickyHeaderIndices).toEqual([1, 3]);
+  });
+
+  it("tints the pull-to-refresh spinner with the theme's primary colour", () => {
+    let primary: string | undefined;
+    function Probe() {
+      primary = useTheme().colors.primary;
+      return null;
+    }
+    const tree = render(
+      <BloomThemeProvider fonts={false}>
+        <Probe />
+        <VirtualList data={[]} refreshing={false} onRefresh={() => {}} />
+      </BloomThemeProvider>,
+    );
+    const spinner = tree.UNSAFE_getByType(FlatList).props.refreshControl;
+    expect(spinner.type).toBe(RefreshControl);
+    expect(spinner.props).toMatchObject({ tintColor: primary, colors: [primary] });
   });
 
   it('exposes an imperative scroll handle via ref', () => {

@@ -1,6 +1,6 @@
-import { useContext, type ComponentType } from 'react';
+import type { ComponentType } from 'react';
 import { ScrollViewport } from './ScrollViewport';
-import { BloomThemeContext } from '../theme/BloomThemeProvider';
+import { useNativeScrollIndicator } from './use-native-scroll-indicator';
 import type { ScrollAreaProps } from './types';
 
 /**
@@ -15,21 +15,17 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
   onLayout,
   onContentSizeChange,
   scrollEventThrottle,
-  scrollbar = 'scroll',
+  scrollbar,
   size: _size,
   ref,
   className,
   containerClassName,
   ...props
 }: ScrollAreaProps) {
-  // Optional: a scroller must work outside a provider, with the system's own indicator.
-  const isDark = useContext(BloomThemeContext)?.theme.isDark;
+  const indicator = useNativeScrollIndicator(scrollbar);
   return (
     <ScrollViewport
-      indicatorStyle={isDark === undefined ? 'default' : isDark ? 'white' : 'black'}
-      persistentScrollbar={scrollbar === 'always'}
-      showsVerticalScrollIndicator={scrollbar !== 'never'}
-      showsHorizontalScrollIndicator={scrollbar !== 'never'}
+      {...indicator}
       {...props}
       className={[containerClassName, className].filter(Boolean).join(' ') || undefined}
       onScroll={onScroll}

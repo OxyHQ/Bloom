@@ -40,8 +40,16 @@ export type FlashListLikeProps<T> = Pick<
   | 'scrollEventThrottle'
   | 'onEndReached'
   | 'onEndReachedThreshold'
-  | 'refreshing'
-  | 'onRefresh'
+  | 'refreshControl'
+  | 'stickyHeaderIndices'
+  | 'numColumns'
+  | 'ListHeaderComponentStyle'
+  | 'keyboardShouldPersistTaps'
+  | 'keyboardDismissMode'
+  | 'indicatorStyle'
+  | 'persistentScrollbar'
+  | 'showsVerticalScrollIndicator'
+  | 'showsHorizontalScrollIndicator'
   | 'testID'
 > & {
   ref?: Ref<ListScrollHandle>;
@@ -50,6 +58,15 @@ export type FlashListLikeProps<T> = Pick<
   onScroll?: unknown;
   getItemType?: (item: T, index: number) => string | number | undefined;
   maintainVisibleContentPosition?: { disabled?: boolean };
+  overrideItemLayout?: (
+    layout: { span?: number },
+    item: T,
+    index: number,
+    maxColumns: number,
+  ) => void;
+  stickyHeaderConfig?: { offset?: number };
+  drawDistance?: number;
+  maxItemsInRecyclePool?: number;
 };
 
 export type FlashListLike = <T>(props: FlashListLikeProps<T>) => ReactElement | null;
