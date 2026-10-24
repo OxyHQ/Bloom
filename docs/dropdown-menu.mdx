@@ -106,6 +106,23 @@ Both announce their state as `aria-checked`, which is the spelling react-native-
 
 The established defaults stay unchanged: checkbox rows use a check and radio rows use a dot, both in the leading gutter. `indicator` replaces that selected mark, `indicatorPosition="trailing"` moves its reserved gutter to the opposite edge, and `indicator={null}` suppresses the visual mark without removing `aria-checked`. These props are implemented once by the shared row factory, so `ContextMenu` and `Menubar` receive the identical contract.
 
+## Lining rows up: `alignRows`
+
+A check or radio row draws its indicator in a leading gutter, and a row with a `leading` icon starts its label after the icon. By default each row keeps its own layout and `inset` lines a plain row up with indicator rows by hand. `alignRows` on the content does it for the whole panel, like a desktop menu:
+
+```tsx
+<DropdownMenuContent alignRows>
+  <DropdownMenuCheckboxItem checked={tabsInSidebar} onCheckedChange={setTabsInSidebar}
+    trailing={<DropdownMenuShortcut>Ctrl+Shift+S</DropdownMenuShortcut>}>
+    Show Tabs in Sidebar
+  </DropdownMenuCheckboxItem>
+  <DropdownMenuItem leading={<RiShareLine size="sm" />}>Share link</DropdownMenuItem>
+  <DropdownMenuItem>Rename</DropdownMenuItem>
+</DropdownMenuContent>
+```
+
+When any row has a leading indicator, every row (and `DropdownMenuLabel`) takes the gutter; when any row has a `leading` icon, rows without one keep an empty icon-wide slot. Rows add and remove themselves as they mount, so a menu built at run time aligns without the caller computing `inset` or passing blank spacers. A web flyout aligns its own rows and inherits the parent's `alignRows` (`DropdownMenuSubContent alignRows={false}` opts out); on native the inline sub-menu sits in, and aligns with, the parent's column. Same prop on `ContextMenuContent` and `MenubarContent`.
+
 ## Keyboard (web)
 
 The web menu follows the ARIA menu-button pattern, and the same keys reach `ContextMenu` and `Menubar` — all three render one row set (`floating/menu-keyboard.ts`):
