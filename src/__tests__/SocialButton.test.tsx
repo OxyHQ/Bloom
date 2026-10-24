@@ -66,14 +66,15 @@ describe('SocialButton — data', () => {
 describe('SocialButton — shared material', () => {
   it('passes brand color pairs into the real Button', () => {
     const { toJSON } = renderWithTheme(<SocialButton brand="figma" />);
-    expect(JSON.stringify(toJSON())).toContain('rgba(242, 78, 30, 0.9)');
+    // Native paints the surface opaque: there is no blur beneath it to transmit through.
+    expect(JSON.stringify(toJSON())).toContain('"backgroundColor":"#F24E1E"');
   });
   it('keeps surface paint and the supplied foreground for branded enabled states', () => {
     const palette = resolveButtonPalette('solid', themeFor('light'), 'accent', {
       background: '#F24E1E',
       foreground: '#FFFFFF',
     });
-    expect(palette.rest.background).toBe('rgba(242, 78, 30, 0.9)');
+    expect(palette.rest.background).toBe('#F24E1E');
     for (const state of [palette.rest, palette.hover, palette.active]) {
       expect(state.foreground).toBe('#FFFFFF');
       expect(state.surface).toBe(true);
@@ -140,15 +141,15 @@ describe('SocialButton — render', () => {
   it('uses primary for Oxy and Google, secondary for white', () => {
     for (const brand of ['oxy', 'google'] as const) {
       const primary = renderWithTheme(<SocialButton brand={brand} />);
-      const fill = parseRgba(
-        resolveButtonPalette('solid', themeFor('light'), 'accent').rest.background,
-      )!;
-      expect(JSON.stringify(primary.toJSON())).toContain(
-        `rgba(${fill.r}, ${fill.g}, ${fill.b}, 0.9)`,
-      );
+      const theme = themeFor('light');
+      const fill = resolveButtonPalette('solid', theme, 'accent').rest.background;
+      expect(parseRgba(fill)?.a).toBe(1);
+      expect(JSON.stringify(primary.toJSON())).toContain(`"backgroundColor":"${fill}"`);
       primary.unmount();
       const white = renderWithTheme(<SocialButton brand={brand} appearance="white" />);
-      expect(JSON.stringify(white.toJSON())).toContain(', 0.9)');
+      const whiteFill = resolveButtonPalette('outline', theme, 'neutral').rest.background;
+      expect(parseRgba(whiteFill)?.a).toBe(1);
+      expect(JSON.stringify(white.toJSON())).toContain(`"backgroundColor":"${whiteFill}"`);
       white.unmount();
     }
   });

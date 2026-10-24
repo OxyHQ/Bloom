@@ -1,12 +1,15 @@
+import { Platform } from 'react-native';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { resolveSurfaceGeometry } from '../surface/resolve-surface-geometry';
 
+afterEach(() => jest.restoreAllMocks());
+
 it('resolves paint, backing, CSS and depth as one decision', () => {
+  jest.replaceProperty(Platform, 'OS', 'web');
   const outer = resolveSurfaceMaterial({ fill: '#ffffff', parentFill: '#000000', parentLevel: 2 });
   expect(outer.paintFill).toBe('rgba(255, 255, 255, 0.9)');
   expect(outer.publishedFill).toBe('rgb(230, 230, 230)');
-  // Native receives no CSS-only props; the web integration suite verifies aliases.
-  expect(outer.vars).toBeUndefined();
+  expect(outer.vars).toEqual({ '--bloom-surface': 'rgb(230, 230, 230)' });
   expect(outer.level).toBe(3);
   const nested = resolveSurfaceMaterial({
     fill: '#000000',
@@ -15,6 +18,11 @@ it('resolves paint, backing, CSS and depth as one decision', () => {
   });
   expect(nested.level).toBe(3);
   expect(nested.publishedFill).toBe('rgb(23, 23, 23)');
+});
+it('paints and publishes an opaque fill as-is on native, with no CSS props', () => {
+  expect(
+    resolveSurfaceMaterial({ fill: '#ffffff', parentFill: '#000000', parentLevel: 2 }),
+  ).toMatchObject({ paintFill: '#ffffff', publishedFill: '#ffffff', vars: undefined, level: 3 });
 });
 it('preserves explicit alpha and keeps plain/backing hosts out of the depth ladder', () => {
   const material = resolveSurfaceMaterial({
@@ -41,6 +49,7 @@ it('preserves explicit alpha and keeps plain/backing hosts out of the depth ladd
   ).toMatchObject({ painted: false, publishedFill: '#123456', level: 2 });
 });
 it('resets portal depth explicitly without losing the actual fill', () => {
+  jest.replaceProperty(Platform, 'OS', 'web');
   expect(
     resolveSurfaceMaterial({ fill: '#ffffff', parentFill: '#000000', parentLevel: 3, level: 0 }),
   ).toMatchObject({ level: 0, publishedFill: 'rgb(230, 230, 230)' });

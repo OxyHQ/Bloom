@@ -894,7 +894,8 @@ it('publishes custom sidebar paint while plain sidebars inherit the enclosing su
       </SurfaceLevelProvider>,
     );
     expect(screen.getByTestId('sidebar-surface-probe').props.children).toBe(
-      surface === 'card' ? '1:rgb(33, 67, 101)' : '2:#abcdef',
+      // Native paints the custom fill opaque, so it publishes that fill as-is.
+      surface === 'card' ? '1:#123456' : '2:#abcdef',
     );
     screen.unmount();
   }

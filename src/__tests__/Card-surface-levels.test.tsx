@@ -50,12 +50,10 @@ it('keeps page card fill and raises nested cards from the actual parent fill', (
       </Card>
     </Card>,
   );
-  expect(value(screen, 'outer')).toEqual({ fill: 'rgb(253, 253, 253)', level: 1 });
+  // Native paints the card opaque, so the backing it publishes is the card itself.
+  expect(value(screen, 'outer')).toEqual({ fill: '#ffffff', level: 1 });
   expect(value(screen)).toEqual({
-    fill: resolveSurfaceFill(
-      resolveSurfaceTint(surfaceFillOn(mockTheme, 'rgb(253, 253, 253)')),
-      'rgb(253, 253, 253)',
-    ),
+    fill: resolveSurfaceFill(resolveSurfaceTint(surfaceFillOn(mockTheme, '#ffffff')), '#ffffff'),
     level: 2,
   });
 });
@@ -121,7 +119,7 @@ it('preserves colored semantic pairs and estimates the surface against its paren
       <Probe />
     </Card>,
   );
-  expect(value(solid).fill).toBe('rgb(44, 115, 71)');
+  expect(value(solid).fill).toBe('#166534');
   const tinted = render(
     <SurfaceLevelProvider level={1} fill="#222222">
       <Card style={{ backgroundColor: 'rgba(255,255,255,.25)' }}>
