@@ -113,7 +113,8 @@ on layout; content footprint stays expanded while visual chrome contracts, avoid
 scroll-range changes during animation.
 
 For a page's own action (a "new folder" on saved posts), `primaryAction={<Fab ... />}`
-anchors it inside the screen, above the app's bottom bar. While that screen is the
+floats it over the content, above the app's bottom bar; the content scrolls under
+it and its scroller pads its end clear of it. While that screen is the
 active one, an `AppShell`'s own floating action (the compose FAB) steps aside: one
 floating action on screen at a time. The app's action belongs to the shell's
 `primaryAction`, never to every screen.

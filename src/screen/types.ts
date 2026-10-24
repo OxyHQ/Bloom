@@ -36,7 +36,11 @@ export interface ScreenProps extends ViewProps {
    * its root KeyboardProvider. Web retains the ordinary Screen viewport.
    */
   bottomBarKeyboardBehavior?: 'hide' | 'visible' | 'follow';
-  /** Standalone action; with navigation use BottomBar.action instead. */
+  /**
+   * The page's own floating action (a "new folder"). It floats over the
+   * content, which scrolls under it and pads its end clear of it, and the
+   * shell's floating action steps aside while this screen is in front.
+   */
   primaryAction?: ReactNode;
   /**
    * What reselecting this screen means — pressing the place the reader is
