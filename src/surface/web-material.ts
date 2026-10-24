@@ -19,6 +19,11 @@ const CORNER_REACH_PX = 12;
 const CORNER = 0.27;
 
 /**
+ * A surface appears and leaves by fading these layers (`--bloom-surface-presence`,
+ * over `--bloom-surface-presence-ms`), never by fading its host: an ancestor with
+ * `opacity` below 1 or a `filter` is where a backdrop filter stops seeing, so a
+ * host that faded itself lost its blur for the whole fade and got it back at the end.
+ *
  * Paint only: the caller keeps its own root, layout, semantics and state.
  * Root must be positioned/isolated and transparent, with rounded clipping that
  * leaves a pixel of margin (`overflow-clip-margin: 1px`) so the layers' own
@@ -36,6 +41,8 @@ const CORNER = 0.27;
  * the glow within 8px of the top and bottom.
  */
 export function surfaceMaterialCss(selector: string, fill: string, transition = 'none'): string {
+  const presence = 'opacity var(--bloom-surface-presence-ms, 0ms) ease-out';
+  const layerTransition = transition === 'none' ? presence : `${transition}, ${presence}`;
   const y = `min(var(--bloom-surface-corner-y, 16px), 50%, ${CORNER_REACH_PX}px)`;
   const strength = `linear-gradient(to bottom, rgba(0,0,0,${STRAIGHT}) 0, rgba(0,0,0,${STRAIGHT}) ${EDGE_LINE_PX}px, rgba(0,0,0,${CORNER}) ${2 * EDGE_LINE_PX}px, rgba(0,0,0,${CORNER}) calc(${y} * 0.58), transparent calc(${y} * 0.84), transparent calc(100% - ${y} * 0.84), rgba(0,0,0,${CORNER}) calc(100% - ${y} * 0.58), rgba(0,0,0,${CORNER}) calc(100% - ${2 * EDGE_LINE_PX}px), rgba(0,0,0,${STRAIGHT}) calc(100% - ${EDGE_LINE_PX}px), rgba(0,0,0,${STRAIGHT}) 100%)`;
   return `
@@ -56,10 +63,13 @@ ${selector}::before {
   backdrop-filter: var(--bloom-surface-filter, ${SURFACE_FILTER});
   -webkit-backdrop-filter: var(--bloom-surface-filter, ${SURFACE_FILTER});
   background-color: ${fill};
-  transition: ${transition};
+  opacity: var(--bloom-surface-presence, 1);
+  transition: ${layerTransition};
 }
 ${selector}::after {
   z-index: -1;
+  opacity: var(--bloom-surface-presence, 1);
+  transition: ${presence};
   box-sizing: border-box;
   border: ${EDGE_LINE_PX}px solid transparent;
   backdrop-filter: var(--bloom-surface-highlight-filter, ${SURFACE_HIGHLIGHT_FILTER});
