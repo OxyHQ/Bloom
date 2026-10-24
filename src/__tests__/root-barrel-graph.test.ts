@@ -14,7 +14,7 @@ import { dirname, join, relative, resolve } from 'node:path';
  * reads identically to an oversight (and `image-resolver`, `scroll`, `overlay`
  * and four others WERE oversights).
  *
- * Only STATIC imports count. `theme/adaptive-colors.ts` names `expo-router`
+ * Only STATIC imports count. `theme/adaptive-colors.native.ts` names `expo-router`
  * inside a `require()` in a try block — Metro marks that dependency optional and
  * links nothing — so a scan that counted every specifier would report the
  * barrel as already linking expo-router and this gate would be unfalsifiable.

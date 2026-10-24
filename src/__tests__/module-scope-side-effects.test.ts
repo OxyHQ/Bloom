@@ -93,7 +93,7 @@ function platformSiblings(file: string): string[] {
 }
 
 /**
- * STATIC specifiers only. `theme/adaptive-colors.ts` names `expo-router` inside a
+ * STATIC specifiers only. `theme/adaptive-colors.native.ts` names `expo-router` inside a
  * `require()` in a try block; Metro links nothing for it, and neither does this.
  */
 function staticRelativeSpecifiers(text: string): string[] {

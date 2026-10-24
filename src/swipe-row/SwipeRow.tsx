@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -162,7 +162,7 @@ export function SwipeRow({
   );
 
   const scrollContext = useMemo(
-    () => ({ pan, register: registerScroller }),
+    () => ({ pan, register: registerScroller, ScrollGate: SwipeScrollGate }),
     [pan, registerScroller],
   );
 
@@ -288,5 +288,27 @@ export function SwipeRow({
         </Animated.View>
       </GestureDetector>
     </View>
+  );
+}
+
+/** A horizontal scroller inside the row: its native gesture blocks the row's pan. */
+function SwipeScrollGate({ children }: { children: ReactNode }) {
+  const owner = useContext(SwipeRowScrollContext);
+  const pan = owner?.pan;
+  const gesture = useMemo(
+    () =>
+      pan
+        ? Gesture.Native()
+            .blocksExternalGesture(pan)
+            .disallowInterruption(true)
+            .shouldActivateOnStart(true)
+        : null,
+    [pan],
+  );
+  if (!gesture) return <>{children}</>;
+  return (
+    <GestureDetector gesture={gesture} touchAction="auto">
+      {children}
+    </GestureDetector>
   );
 }

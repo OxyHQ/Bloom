@@ -1,5 +1,4 @@
-import { useContext, useEffect, useMemo } from 'react';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useContext, useEffect } from 'react';
 import { SwipeRowScrollContext } from '../swipe-row/context';
 import { webDataSet } from '../styles/web-data';
 import { ScrollMetricsContext, useScrollMetricsValue } from './scroll-metrics';
@@ -17,16 +16,7 @@ export function ScrollViewport(props: ScrollAreaProps) {
   const swipe = useContext(SwipeRowScrollContext);
   const owner = props.horizontal ? swipe : null;
   useEffect(() => owner?.register(), [owner]);
-  const nativeGesture = useMemo(
-    () =>
-      owner
-        ? Gesture.Native()
-            .blocksExternalGesture(owner.pan)
-            .disallowInterruption(true)
-            .shouldActivateOnStart(true)
-        : null,
-    [owner],
-  );
+  const ScrollGate = owner?.ScrollGate;
   const viewport =
     props.animatedHandler === undefined ? (
       <PlainViewport {...props} {...(owner ? webDataSet({ bloomSwipeScroll: '' }) : {})} />
@@ -37,13 +27,7 @@ export function ScrollViewport(props: ScrollAreaProps) {
   // under its provider. Isolate layout, content-size and animated events alike.
   return (
     <ScrollMetricsContext.Provider value={props.horizontal ? null : metrics}>
-      {nativeGesture ? (
-        <GestureDetector gesture={nativeGesture} touchAction="auto">
-          {viewport}
-        </GestureDetector>
-      ) : (
-        viewport
-      )}
+      {ScrollGate ? <ScrollGate>{viewport}</ScrollGate> : viewport}
     </ScrollMetricsContext.Provider>
   );
 }
