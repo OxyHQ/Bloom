@@ -1,4 +1,6 @@
 import React, { memo, useEffect, useMemo } from 'react';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { useSurfacePresence } from '../surface/use-surface-presence';
 import { Pressable, StyleSheet, View, type TextStyle } from 'react-native';
 import { BloomImage } from '../image';
 
@@ -226,6 +228,10 @@ function ContactProfileCardComponent({
     </View>
   );
 
+  // The subject holds a material badge: its press dim goes through presence,
+  // never its own opacity (that badge's backdrop root on the web).
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
+  const pressDim = useSurfacePresence(pressed ? 0.7 : 1);
   const ringVars: WebCssStyle = { '--bloom-contact-ring': paint.ring };
   const subject = onPress ? (
     <Pressable
@@ -236,10 +242,10 @@ function ContactProfileCardComponent({
       }
       onPress={onPress}
       {...webDataSet({ bloomContactSubject: '' })}
-      style={({ pressed }) => [
-        { flex: 1, minWidth: 0, borderRadius: 12, ...ringVars },
-        pressed ? { opacity: 0.7 } : null,
-      ]}
+      ref={pressDim.ref}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      style={[{ flex: 1, minWidth: 0, borderRadius: 12, ...ringVars }, pressDim.style]}
       testID={id('subject')}
     >
       {identity}

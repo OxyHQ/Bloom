@@ -373,3 +373,18 @@ ${withHost(shown, REVEALED_HOST)} {
 }
 ${rehide ? hide(rehide) : ''}`;
 }
+
+/**
+ * The host style and ref for a host whose presence is a plain number (a pressed
+ * or disabled dim, a scroll-driven reveal): spread `style` on the host, hand it
+ * `ref`, and its material and content follow `presence` without the host ever
+ * taking an opacity on the web. Native gets the host opacity it always had.
+ */
+export function useSurfacePresence(
+  presence: number,
+  options: Omit<SurfacePresenceContentOptions, 'presence'> = {},
+): { ref: (node: unknown) => void; style: WebCssStyle } {
+  const [node, setNode] = useState<unknown>(null);
+  useSurfacePresenceContent(node, { ...options, presence });
+  return { ref: setNode, style: surfacePresenceStyle(presence, options.duration ?? 0) };
+}

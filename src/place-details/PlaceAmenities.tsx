@@ -8,6 +8,7 @@ import { AmenityList } from '../listing-details/AmenityList';
 import type { Amenity } from '../listing-details/types';
 import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
+import { useSurfacePresence } from '../surface/use-surface-presence';
 import { useTheme } from '../theme/use-theme';
 import { PLACE_DETAILS_MESSAGES } from './messages';
 import { resolvePlaceDetailsPaint } from './shared';
@@ -35,6 +36,26 @@ import type { PlaceAmenitiesProps } from './types';
  *                encoding the list uses, because the two layouts must not
  *                disagree about what "has no wifi" looks like
  */
+/**
+ * One amenity. An unavailable one dims to 0.7 through its presence: the chip
+ * paints the material, and an opacity on the chip or this item would be its
+ * backdrop root on the web.
+ */
+function AmenityItem({
+  available,
+  children,
+  ...props
+}: React.ComponentProps<typeof View> & { available: boolean }) {
+  const dim = useSurfacePresence(available ? 1 : UNAVAILABLE_PRESENCE);
+  return (
+    <View {...props} ref={dim.ref} style={dim.style}>
+      {children}
+    </View>
+  );
+}
+
+const UNAVAILABLE_PRESENCE = 0.7;
+
 function PlaceAmenitiesComponent({
   items,
   layout = 'list',
@@ -94,8 +115,9 @@ function PlaceAmenitiesComponent({
       testID={testID}
     >
       {shown.map(({ label, icon, description: _description, available = true }, index) => (
-        <View
+        <AmenityItem
           key={`${label}-${index}`}
+          available={available}
           role="listitem"
           accessible
           accessibilityLabel={available ? label : `${unavailableLabel}: ${label}`}
@@ -117,11 +139,10 @@ function PlaceAmenitiesComponent({
                 ? undefined
                 : { color: paint.textTertiary, textDecorationLine: 'line-through' }
             }
-            style={available ? undefined : { opacity: 0.7 }}
           >
             {label}
           </Chip>
-        </View>
+        </AmenityItem>
       ))}
       {onShowAll && fullCount > shown.length ? (
         <Button
