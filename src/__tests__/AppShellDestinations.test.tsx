@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import * as ReactNative from 'react-native';
 import { fireEvent, render, within } from '@testing-library/react-native';
 
@@ -35,7 +36,11 @@ function Home() {
   return null;
 }
 
-function renderShell(width: number, drawer?: { onDrawerOpenChange: (open: boolean) => void }) {
+function renderShell(
+  width: number,
+  drawer?: { onDrawerOpenChange: (open: boolean) => void },
+  screenAction?: ReactElement,
+) {
   jest
     .spyOn(ReactNative, 'useWindowDimensions')
     .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
@@ -51,7 +56,7 @@ function renderShell(width: number, drawer?: { onDrawerOpenChange: (open: boolea
             onDrawerOpenChange={drawer?.onDrawerOpenChange}
             primaryAction={{ icon: RiQuillPenLine, label: 'Compose', onPress: () => {} }}
           >
-            <Screen scroll="none">
+            <Screen scroll="none" primaryAction={screenAction}>
               <Home />
             </Screen>
           </AppShell>
@@ -95,4 +100,15 @@ it('reselects the screen in front when its destination is pressed again', () => 
   fireEvent.press(screen.getByTestId('sidebar-item-index'));
   expect(refresh).toHaveBeenCalledTimes(1);
   expect(mockRouter.navigate).not.toHaveBeenCalledWith('/');
+});
+
+it("shows one floating action: the screen in front with its own makes the bar's step aside", () => {
+  const screen = renderShell(
+    390,
+    undefined,
+    <ReactNative.View accessible accessibilityLabel="New folder" />,
+  );
+  const bar = within(screen.getByTestId('shell-bottom-bar'));
+  expect(bar.queryByLabelText('Compose')).toBeNull();
+  expect(screen.getByLabelText('New folder')).toBeTruthy();
 });

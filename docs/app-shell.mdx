@@ -808,7 +808,9 @@ and sidebar from 1024. Explicit `bottom`, `rail` or `sidebar` overrides that cho
 
 `primaryAction` accepts Fab props. In bottom placement it appears beside the tab
 capsule and shares its animation; wider placements float it at the bottom-end corner (bottom-right in LTR)
-of the content area, independently of the sidebar.
+of the content area, independently of the sidebar. While the screen in front shows a
+`primaryAction` of its own, the shell's floating action steps aside (the sidebar's
+compose row stays): one floating action on screen at a time.
 `header` overrides the default header; `title`, `breadcrumb` and `actions` configure
 that default. `contentMaxWidth` defaults to 1300. `overlay` stays in the screen's
 content tree, before its chrome; dialogs and toasts should use their proper outlets.

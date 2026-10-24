@@ -8,11 +8,13 @@ import {
 } from '../tab-pager/context';
 import { useTabPagerBottomBar } from '../tab-pager/TabPagerBottomBar';
 import type { AppShellProps } from './types';
+import { useScreenActionClaimed } from './screen-action';
 
 /** The platform's `BottomBar`, bound to the pager, for the shell's own bar. */
 export function createDestinationBottomBar(BottomBar: ComponentType<BottomBarProps>) {
   return function DestinationBottomBar({ action }: { action?: ReactNode }) {
-    return <BottomBar {...useTabPagerBottomBar()} action={action} />;
+    const claimed = useScreenActionClaimed();
+    return <BottomBar {...useTabPagerBottomBar()} action={claimed ? undefined : action} />;
   };
 }
 

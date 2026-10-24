@@ -112,8 +112,11 @@ The shell does not choose a router or create overlay outlets. Measurements settl
 on layout; content footprint stays expanded while visual chrome contracts, avoiding
 scroll-range changes during animation.
 
-For a standalone action, `primaryAction={<Fab ... />}` anchors a static action
-inside the screen. With navigation, pass the action to `BottomBar.action` instead.
+For a page's own action (a "new folder" on saved posts), `primaryAction={<Fab ... />}`
+anchors it inside the screen, above the app's bottom bar. While that screen is the
+active one, an `AppShell`'s own floating action (the compose FAB) steps aside: one
+floating action on screen at a time. The app's action belongs to the shell's
+`primaryAction`, never to every screen.
 `headerHeight` and `bottomBarHeight` declare initial footprints for custom chrome;
 defaults match Bloom's 56-point header and 58-point bottom bar plus safe area.
 For compact PageHeader chrome without a top safe area, `headerHeight={32}`
