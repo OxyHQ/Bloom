@@ -415,13 +415,12 @@ function CenteredOrSideDialog({
       backdrop={backdrop}
       transition={transition}
       material={surfaceMaterial}
-      backgroundFill={
-        surfaceMaterial === 'flat'
-          ? String(
-              StyleSheet.flatten([style, panelStyle])?.backgroundColor ?? theme.colors.background,
-            )
-          : undefined
-      }
+      // Always the panel's tint: `sheetStyle` clears the host's own background,
+      // and the sheet would otherwise take that `transparent` as its material's
+      // fill and paint no panel at all.
+      backgroundFill={String(
+        StyleSheet.flatten([style, panelStyle])?.backgroundColor ?? theme.colors.background,
+      )}
       ref={ref}
       // Seed the sheet's open state, as the bottom placement does: `BottomSheet`
       // reads its first visibility from `open` alone, so without it an
