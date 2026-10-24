@@ -896,9 +896,11 @@ itself: the app declares its destinations once, and the shell draws the sidebar'
 rows and this bar from them, `primaryAction` as the compose row or the bar's FAB.
 Pass `bottomBar={null}` for no bar on a route.
 
-With `scroll="page"` on native the slot's bar minimizes with the active screen: a
-Bloom `BottomBar` there reads the screen's `collapseProgress` without a scroll handler
-of its own.
+The slot's bar minimizes with the active screen — with `scroll="page"` on native, and
+on the web wherever the document scrolls: a Bloom `BottomBar` there reads the route
+screen's `collapseProgress` (on the web, driven by the window's scroll) without a
+scroll handler of its own. A screen that does not scroll the document, such as a
+full-screen reel, leaves it expanded, and the screen taking over expands it again.
 
 The `bottomBar` slot publishes its measured footprint through the shared bottom-edge registry. Measurement includes the slot’s safe-area padding; embedded bars must not add that inset again. Native feeds and separately positioned FABs can read `useBottomEdgeInset()` without importing the navigation component. Claims combine by maximum, not addition, and disappear when the slot unmounts. The slot never reads its own claim to size itself; repeated equal layout measurements do not trigger another height callback.
 

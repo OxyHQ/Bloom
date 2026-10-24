@@ -1,6 +1,7 @@
 import { ScrollArea } from '../layout/ScrollArea';
 import { type ComponentRef, useContext, useRef, useState, type ComponentType } from 'react';
-import { View, Keyboard, Platform } from 'react-native';
+import { View, Platform } from 'react-native';
+import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { useEffect } from 'react';
 import Animated, {
   useAnimatedReaction,
@@ -134,18 +135,9 @@ export function BottomBarBase({
       (document.activeElement as HTMLElement | null)?.blur?.();
     node.inert = barHidden;
   }, [barHidden]);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const keyboardVisible = useKeyboardVisible();
   const suppliedBottomInset = useContext(BottomBarSlotContext);
   const bottom = Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
   useClaimBottomEdge(keyboardVisible || suppliedBottomInset !== undefined ? 0 : bottom + footprint);
   const rowStyle = useAnimatedStyle(
     () => ({

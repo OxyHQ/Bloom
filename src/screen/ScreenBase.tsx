@@ -4,7 +4,8 @@ import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
 import type React from 'react';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { Keyboard, Platform, View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
@@ -130,18 +131,7 @@ export function createScreen(
     const top =
       measuredTop ?? headerHeight ?? 56 + (Platform.OS === 'web' ? 0 : (insets?.top ?? 0));
     const bottom = measuredBottom ?? bottomBarHeight ?? 58 + windowEdgeGap(insets?.bottom ?? 0);
-    const [keyboardVisible, setKeyboardVisible] = useState(
-      () => Platform.OS !== 'web' && (Keyboard.isVisible?.() ?? false),
-    );
-    useEffect(() => {
-      if (Platform.OS === 'web') return;
-      const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-      const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
-      return () => {
-        show.remove();
-        hide.remove();
-      };
-    }, []);
+    const keyboardVisible = useKeyboardVisible();
     const keyboardFollow =
       getKeyboardComponents !== null &&
       Platform.OS !== 'web' &&
