@@ -73,7 +73,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, type View, type ViewStyle, useWindowDimensions } from 'react-native';
+import { StyleSheet, type View, useWindowDimensions } from 'react-native';
+import type { WebCssStyle } from '../styles/web-view-style';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -526,10 +527,10 @@ export function FloatingPanel({
     [progress, blurFrom],
   );
   const present = phase === 'open' && placement !== null;
-  const presenceStyle = {
-    '--bloom-surface-presence': present ? 1 : 0,
+  const presenceStyle: WebCssStyle = {
+    '--bloom-surface-presence': present ? '1' : '0',
     '--bloom-surface-presence-ms': `${still ? 0 : chrome.duration}ms`,
-  } as unknown as ViewStyle;
+  };
 
   // Escape dismisses the INNERMOST open surface and nothing under it — a Select
   // inside a Dialog closes its list, not the dialog (`escape-stack.ts`). The

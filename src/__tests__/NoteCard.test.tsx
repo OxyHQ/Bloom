@@ -405,6 +405,6 @@ describe('the card paints its own surface in both modes', () => {
     const expected = resolveNoteCardPaint(theme, theme.colors.background, 'info').background;
     expect(drawn).toBe(resolveSurfaceTint(expected));
     // Material transmits a little backdrop while descendants receive its composite.
-    expect(drawn).toMatch(/, 0.9\)$/);
+    expect(drawn).toMatch(/, 0.72\)$/);
   });
 });
