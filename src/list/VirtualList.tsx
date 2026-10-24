@@ -23,6 +23,7 @@
 import * as React from 'react';
 import Animated from 'react-native-reanimated';
 import { useScreenScroll } from '../screen/use-screen-scroll';
+import { mergeRefs } from '../hooks/merge-refs';
 import { FlatList, StyleSheet, type FlatListProps } from 'react-native';
 
 import { loadFlashList, type FlashListLikeProps, type ListScrollHandle } from './flash-list-module';
@@ -155,12 +156,18 @@ function ScreenVirtualList<T>({
   forwardedRef,
   ...props
 }: VirtualListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
-  const binding = useScreenScroll(props.screen);
+  // The list is its screen's scroller, so it answers the screen's reselect.
+  const handle = React.useRef<VirtualListHandle>(null);
+  const binding = useScreenScroll({
+    ...props.screen,
+    scrollToOffset: (offset) => handle.current?.scrollToOffset({ offset, animated: true }),
+  });
+  const ref = React.useMemo(() => mergeRefs([handle, forwardedRef]), [forwardedRef]);
   const padding = StyleSheet.flatten(props.contentContainerStyle);
   return (
     <PlainVirtualList
       {...props}
-      ref={forwardedRef}
+      ref={ref}
       screenBinding={binding}
       style={[props.style, props.screen?.restoration?.restorePending ? { opacity: 0 } : null]}
       contentContainerStyle={[
