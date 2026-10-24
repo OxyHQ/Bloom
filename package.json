@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.47.0",
+  "version": "15.48.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1673,6 +1673,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/video-view/index.d.ts",
         "default": "./lib/commonjs/video-view/index.js"
+      }
+    },
+    "./video-playback": {
+      "react-native": {
+        "types": "./lib/typescript/module/video-playback/index.d.ts",
+        "default": "./src/video-playback/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/video-playback/index.d.ts",
+        "default": "./lib/module/video-playback/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/video-playback/index.d.ts",
+        "default": "./lib/commonjs/video-playback/index.js"
       }
     },
     "./teleport": {
@@ -4390,6 +4404,9 @@
       ],
       "video-view": [
         "./lib/typescript/module/video-view/index.d.ts"
+      ],
+      "video-playback": [
+        "./lib/typescript/module/video-playback/index.d.ts"
       ],
       "teleport": [
         "./lib/typescript/module/teleport/index.d.ts"

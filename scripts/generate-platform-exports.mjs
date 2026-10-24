@@ -208,6 +208,9 @@ const SUBPATHS = /** @type {const} */ ([
   // video, so it has the optional peer; an app that renders none never loads
   // those declarations.
   ['./video-view', 'video-view/index.ts'],
+  // Which video plays now: one audible player, visibility-driven, paused off a
+  // visible screen. Links no package (the player is a structural slice).
+  ['./video-playback', 'video-playback/index.ts'],
   ['./teleport', 'teleport/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],
