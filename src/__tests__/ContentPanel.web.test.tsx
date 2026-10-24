@@ -112,7 +112,7 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     expect(classesFor(tree, 'content-panel-content')).toContain('web:overflow-clip');
     const border = classesFor(tree, 'content-panel-border-frame');
     expect(border).toContain('border');
-    expect(border).toContain('border-border');
+    expect(border).toContain('border-transparent');
   });
 
   it('selects the viewport mask rule, which covers the declared insets', () => {
@@ -229,7 +229,7 @@ describe('chrome', () => {
       </ContentPanel>,
     );
     const frame = findHost(toJSON(), 'content-panel-border-frame');
-    expect(classesFor(toJSON(), 'content-panel-border-frame')).toContain('border-border');
+    expect(classesFor(toJSON(), 'content-panel-border-frame')).toContain('border-transparent');
     expect(resolvedStyle(frame?.props.style).boxShadow).toBe(PANEL_SHADOW.light);
   });
 

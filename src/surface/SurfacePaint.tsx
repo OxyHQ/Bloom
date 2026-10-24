@@ -9,12 +9,11 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { surfaceMaterialCss } from './web-material';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
-import { resolveSurfaceTint, resolveSurfaceOptics } from './shared';
+import { resolveSurfaceTint, resolveSurfaceOptics, surfaceOpticsVars } from './shared';
 
 const WEB_PAINT_CSS = `
-.bloom-surface-paint { isolation: isolate; overflow: hidden; }
+.bloom-surface-paint { isolation: isolate; overflow: clip; overflow-clip-margin: 1px; }
 ${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)')}
-.bloom-surface-paint--no-sheen::after { background-image: none; }
 `;
 
 /**
@@ -76,8 +75,7 @@ export const SurfacePaint = memo(function SurfacePaint({
       ...geometry,
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': paintFill ?? resolvedFill,
-      '--bloom-surface-rim': rim ? optics.rim : 'none',
-      '--bloom-surface-sheen': optics.sheenCss,
+      ...surfaceOpticsVars(optics, radius, rim),
     };
     return (
       <>
@@ -85,7 +83,7 @@ export const SurfacePaint = memo(function SurfacePaint({
         <ServerStyleSheet id="bloom-surface-paint-web-css" css={WEB_PAINT_CSS} />
         <StyledView
           testID={testID}
-          className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`}
+          className="bloom-surface-paint"
           style={[paintStyle, pointerEventsStyle('none')]}
         />
       </>

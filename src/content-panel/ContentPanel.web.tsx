@@ -140,22 +140,26 @@ const RESPONSIVE_WEB: Record<
   { surface: string; content: string; overlayHidden: string }
 > = {
   500: {
-    surface: 'min-[500px]:rounded-[var(--bloom-panel-radius)]',
+    surface:
+      '[--bloom-surface-highlight-filter:none] min-[500px]:rounded-[var(--bloom-panel-radius)] min-[500px]:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)]',
     content: 'min-[500px]:rounded-[var(--bloom-panel-radius)] web:min-[500px]:overflow-x-clip',
     overlayHidden: 'max-[500px]:hidden',
   },
   640: {
-    surface: 'sm:rounded-[var(--bloom-panel-radius)]',
+    surface:
+      '[--bloom-surface-highlight-filter:none] sm:rounded-[var(--bloom-panel-radius)] sm:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)]',
     content: 'sm:rounded-[var(--bloom-panel-radius)] web:sm:overflow-x-clip',
     overlayHidden: 'max-sm:hidden',
   },
   768: {
-    surface: 'md:rounded-[var(--bloom-panel-radius)]',
+    surface:
+      '[--bloom-surface-highlight-filter:none] md:rounded-[var(--bloom-panel-radius)] md:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)]',
     content: 'md:rounded-[var(--bloom-panel-radius)] web:md:overflow-x-clip',
     overlayHidden: 'max-md:hidden',
   },
   1024: {
-    surface: 'lg:rounded-[var(--bloom-panel-radius)]',
+    surface:
+      '[--bloom-surface-highlight-filter:none] lg:rounded-[var(--bloom-panel-radius)] lg:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)]',
     content: 'lg:rounded-[var(--bloom-panel-radius)] web:lg:overflow-x-clip',
     overlayHidden: 'max-lg:hidden',
   },
@@ -267,7 +271,12 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     true,
     materialRecipe?.paint.paintFill,
     opticsRecipe?.paint,
+    framed === false ? undefined : radius,
+    framed === undefined ? 'responsive' : 'always',
   );
+
+  // A painted panel's edge is the material's own light; a hairline over it would hide it.
+  const frameBorder = paintsSurface ? 'border border-transparent' : 'border border-border';
 
   // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
   // `false` → never framed (full-bleed).
@@ -454,10 +463,10 @@ ${surfaceMaterialCss('[data-bloom-panel-material]', 'var(--bloom-surface-fill)')
             ]}
             className={
               boundToPanel
-                ? `web:[grid-area:1/1] z-[120] h-full w-full rounded-[var(--bloom-panel-radius)] border border-border ${responsive ? bp.overlayHidden : ''}`
+                ? `web:[grid-area:1/1] z-[120] h-full w-full rounded-[var(--bloom-panel-radius)] ${frameBorder} ${responsive ? bp.overlayHidden : ''}`
                 : responsive
-                  ? `web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-[var(--bloom-panel-radius)] border border-border ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)]`
-                  : 'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-[var(--bloom-panel-radius)] border border-border web:[margin-bottom:calc(-100dvh+16px)]'
+                  ? `web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-[var(--bloom-panel-radius)] ${frameBorder} ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)]`
+                  : `web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-[var(--bloom-panel-radius)] ${frameBorder} web:[margin-bottom:calc(-100dvh+16px)]`
             }
           />
         )}

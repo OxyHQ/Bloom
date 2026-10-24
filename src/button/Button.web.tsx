@@ -6,7 +6,7 @@ import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { useButtonLayout } from './use-button-layout.web';
 import { useLongPress } from './use-long-press.web';
-import { resolveSurfaceOptics } from '../surface/shared';
+import { resolveSurfaceOptics, surfaceOpticsVars } from '../surface/shared';
 import type { GestureResponderEvent, View } from 'react-native';
 import { surfaceMaterialCss } from '../surface/web-material';
 import type { LinkButtonProps } from './types';
@@ -101,7 +101,8 @@ export const BLOOM_BUTTON_CSS = `@layer base {\n${interactiveWebCss({
     gap: var(--bloom-btn-gap, 2px);
     position: relative;
     isolation: isolate;
-    overflow: hidden;
+    overflow: clip;
+    overflow-clip-margin: 1px;
     white-space: nowrap;
     border-style: solid;
     border-width: var(--bloom-btn-border-width, 0px);
@@ -336,8 +337,10 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           ? `${geometry.letterSpacing}px`
           : 'normal',
         // CSS custom props consumed by the static stylesheet — see its header.
-        ['--bloom-surface-rim' as string]: paintRecipe.paint.optics.rim,
-        ['--bloom-surface-sheen' as string]: paintRecipe.paint.optics.sheenCss,
+        ...surfaceOpticsVars(
+          paintRecipe.paint.optics,
+          isLink ? 4 : Math.min(BUTTON_RADIUS, geometry.height / 2),
+        ),
         ['--bloom-btn-gap' as string]: `${geometry.gap}px`,
         ['--bloom-btn-ring' as string]: palette.ring,
         // No press scale — the pressed state is the active paint alone.

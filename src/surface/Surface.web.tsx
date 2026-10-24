@@ -17,7 +17,7 @@ import { borderRadius } from '../styles/tokens';
 import { StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
-import { resolveSurfaceOptics } from './shared';
+import { resolveSurfaceOptics, surfaceOpticsVars } from './shared';
 import { surfaceMaterialCss } from './web-material';
 import type { SurfaceProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
@@ -29,6 +29,7 @@ const CSS = `
   box-sizing: border-box;
 }
 .bloom-surface { overflow: hidden; }
+.bloom-surface--material { overflow: clip; overflow-clip-margin: 1px; }
 ${surfaceMaterialCss('.bloom-surface--material', 'var(--bloom-surface-fill)')}
 `;
 
@@ -98,8 +99,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       });
     });
     const baseStyle: WebCssStyle = {
-      '--bloom-surface-rim': optics.rim,
-      '--bloom-surface-sheen': optics.sheenCss,
+      ...surfaceOpticsVars(optics, geometry.radius ?? resolvedStyle?.borderRadius),
       ...geometry.style,
       backgroundColor: 'transparent',
       '--bloom-surface-fill': materialRecipe.paint.paintFill,

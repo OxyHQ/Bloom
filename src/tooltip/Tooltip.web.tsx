@@ -161,6 +161,10 @@ export function TooltipContent({
     '[data-bloom-tooltip]',
     'bloom-tooltip-surface-css',
     palette.surface,
+    true,
+    undefined,
+    undefined,
+    TOOLTIP_SIZES[size].borderRadius,
   );
   const { position, visible, triggerRef } = useContext(TooltipContext);
 
