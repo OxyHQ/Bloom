@@ -49,6 +49,7 @@ const STORY = 'base-dropdown--submenu';
 const EDGE_STORY = 'base-dropdown--submenu-with-no-room-to-the-right';
 const LAYOUT_STORY = 'base-dropdown--submenu-layout-shift-does-not-open';
 const SIBLING_STORY = 'base-dropdown--sibling-submenus';
+const ALIGNED_STORY = 'base-dropdown--aligned-rows-and-wide-submenu';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -72,6 +73,36 @@ async function boxOf(page, testId) {
 }
 
 const centre = (b) => ({ x: b.left + b.width / 2, y: b.top + b.height / 2 });
+
+/**
+ * Where a row's LABEL text starts and whether it is cut: the text node's own
+ * range, not the row's box, so a gutter or an icon slot moves it.
+ */
+async function labelOf(page, testId, text) {
+  return page.evaluate(
+    (id, label) => {
+      const row = document.querySelector(`[data-testid="${id}"]`);
+      if (!row) return null;
+      const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (node.textContent.trim() !== label) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const r = range.getBoundingClientRect();
+        const el = node.parentElement;
+        return {
+          left: Math.round(r.left * 10) / 10,
+          right: r.right,
+          cut: el.scrollWidth > el.clientWidth + 0.5,
+          rowRight: row.getBoundingClientRect().right,
+        };
+      }
+      return null;
+    },
+    testId,
+    text,
+  );
+}
 
 /**
  * Is the panel holding `testId` still ON SCREEN — not merely still in the DOM?
@@ -118,7 +149,7 @@ async function openMenu(page, storyId) {
 }
 
 /** Every check below runs unconditionally, so a short run means something threw. */
-const EXPECTED_CASES = 23;
+const EXPECTED_CASES = 28;
 
 const results = [];
 function record(name, pass, detail) {
@@ -390,6 +421,55 @@ async function main() {
       `second opacity=${secondAfter.opacity.toFixed(2)}`,
     );
     await page.screenshot({ path: `${OUT}/flyout-siblings.png` });
+
+    // alignRows + a flyout sized to its rows.
+    await openMenu(page, ALIGNED_STORY);
+    const check = await labelOf(page, 'aligned-check', 'Compact');
+    const icon = await labelOf(page, 'aligned-icon', 'Share link');
+    const plain = await labelOf(page, 'aligned-plain', 'Rename');
+    const subTriggerLabel = await labelOf(page, 'aligned-sub-trigger', 'View');
+    const lefts = [check, icon, plain, subTriggerLabel].map((l) => l?.left);
+    record(
+      'alignRows: check, icon, plain and sub-trigger labels start in one column',
+      lefts.every((x) => typeof x === 'number' && Math.abs(x - lefts[0]) <= 0.5),
+      `label lefts=${JSON.stringify(lefts)}`,
+    );
+    const aligned = await boxOf(page, 'aligned-sub-trigger');
+    if (!aligned) throw new Error('no aligned sub trigger');
+    await page.mouse.move(centre(aligned).x, centre(aligned).y, { steps: 4 });
+    await sleep(500);
+    const wide = await labelOf(page, 'wide-sub-row', 'Show Tabs in Sidebar');
+    const shortcut = await labelOf(page, 'wide-sub-row', 'Ctrl+Shift+S');
+    const subPanel = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="wide-sub-row"]')?.closest('[role="menu"]');
+      const r = el?.getBoundingClientRect();
+      return r ? { left: r.left, right: r.right, width: r.width } : null;
+    });
+    record(
+      'wide flyout: the long checked row is not cut off',
+      wide !== null && !wide.cut,
+      JSON.stringify(wide),
+    );
+    record(
+      'wide flyout: the shortcut sits whole inside the row',
+      shortcut !== null &&
+        wide !== null &&
+        shortcut.left > wide.right &&
+        shortcut.right <= shortcut.rowRight,
+      JSON.stringify({ wide, shortcut }),
+    );
+    record(
+      'wide flyout: the panel grew past the 266px floor to fit',
+      subPanel !== null && subPanel.width > 266,
+      JSON.stringify(subPanel),
+    );
+    const subPlain = await labelOf(page, 'wide-sub-plain', 'Reset layout');
+    record(
+      'alignRows: the flyout aligns its own rows (inherited from the parent)',
+      wide !== null && subPlain !== null && Math.abs(wide.left - subPlain.left) <= 0.5,
+      JSON.stringify({ wide: wide?.left, plain: subPlain?.left }),
+    );
+    await page.screenshot({ path: `${OUT}/flyout-aligned-wide.png` });
 
     let failed = results.filter((r) => !r.pass).length;
     // Vacuity floor: a run that bailed early must not read as success.

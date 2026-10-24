@@ -650,7 +650,11 @@ async function contextMenuAnchorCases(page) {
   );
   await key(page, 'ArrowUp');
   f = await focused(page);
-  record('anchor: a corner open takes the keys too — ArrowUp is the last row', f.name === 'Delete', show(f));
+  record(
+    'anchor: a corner open takes the keys too — ArrowUp is the last row',
+    f.name === 'Delete',
+    show(f),
+  );
   await key(page, 'Escape', 400);
 }
 

@@ -266,6 +266,17 @@ export interface OverlaySurfaceProps extends FloatingPositionProps {
   testID?: string;
 }
 
+/** The anchored surface of the three MENU families (not the popover). */
+export interface MenuSurfaceProps extends OverlaySurfaceProps {
+  /**
+   * Line rows up the way a desktop menu does: when any row draws a check /
+   * radio indicator, every row takes the indicator gutter; when any row has a
+   * `leading` icon, every row without one keeps an empty slot that wide. Off
+   * by default, which keeps per-row `inset`.
+   */
+  alignRows?: boolean;
+}
+
 // ---------------------------------------------------------------------------
 //  The menu ROW vocabulary
 //
@@ -407,8 +418,18 @@ export interface MenuSubContentProps {
   sideOffset?: number;
   /** Vertical shift applied before viewport clamping on web. */
   alignOffset?: number;
+  /**
+   * Web: the panel's width range. It sizes to its rows between them — the
+   * 266px menu floor by default, capped at the viewport.
+   */
   minWidth?: number;
   maxWidth?: number;
+  /**
+   * {@link MenuSurfaceProps.alignRows} for the flyout's own rows. Defaults to
+   * the parent surface's setting. Native renders the sub-menu inline, in the
+   * parent's column, which aligns it with the parent.
+   */
+  alignRows?: boolean;
   /** Appended to the sub panel's own classes — see {@link MenuRowProps.className}. */
   className?: string;
   style?: StyleProp<ViewStyle>;

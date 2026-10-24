@@ -15,6 +15,7 @@ import type { GestureResponderEvent } from 'react-native';
 import { SheetShell } from '../dialog/SheetShell';
 import { MENU_TRIGGER_POPUP } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
+import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { LongPressArea } from '../floating/LongPressArea';
@@ -112,6 +113,7 @@ export function ContextMenuTrigger({
 
 export function ContextMenuContent({
   children,
+  alignRows,
   size,
   label: labelProp,
   style,
@@ -140,7 +142,9 @@ export function ContextMenuContent({
         onClose={onSheetClose}
         contentStyle={[{ gap: density.gap }, style]}
       >
-        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+        <MenuSurfaceProvider value={surface}>
+          <MenuRowAlignmentScope enabled={alignRows}>{children}</MenuRowAlignmentScope>
+        </MenuSurfaceProvider>
       </SheetShell>
     </BloomScope>
   );

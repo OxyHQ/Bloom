@@ -11,7 +11,7 @@ import type {
   MenuSubContentProps,
   MenuSubProps,
   MenuSubTriggerProps,
-  OverlaySurfaceProps,
+  MenuSurfaceProps,
   OverlayTriggerProps,
 } from '../floating/types';
 
@@ -40,7 +40,7 @@ export interface MenubarMenuProps {
 }
 
 export type MenubarTriggerProps = OverlayTriggerProps;
-export type MenubarContentProps = OverlaySurfaceProps;
+export type MenubarContentProps = MenuSurfaceProps;
 
 export type MenubarItemProps = MenuRowProps;
 export type MenubarCheckboxItemProps = MenuCheckboxRowProps;

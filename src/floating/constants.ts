@@ -163,10 +163,12 @@ export const MENU_WIDTH = 266;
 export const MENUBAR_MENU_MIN_WIDTH_CLASS = 'min-w-[266px]';
 
 /**
- * A sub panel is a FIXED 266px, not a shrink-wrap, so a column of flyouts does
- * not step in and out as their labels change length.
+ * A sub panel takes the root menu's 266px FLOOR and sizes to its rows above
+ * it, like the root panel. It was a fixed 266px so a column of flyouts would
+ * not step in and out, but that cut off a long label with a shortcut and a
+ * check gutter; `minWidth` / `maxWidth` narrow the range per panel.
  */
-export const MENU_SUB_PANEL_CLASS = 'w-[266px]';
+export const MENU_SUB_PANEL_CLASS = 'min-w-[266px]';
 
 /**
  * The sub panel's scroller: `-mx-2.5 px-2.5 max-h-96 overflow-y-auto

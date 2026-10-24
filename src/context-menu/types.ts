@@ -11,7 +11,7 @@ import type {
   MenuSubContentProps,
   MenuSubProps,
   MenuSubTriggerProps,
-  OverlaySurfaceProps,
+  MenuSurfaceProps,
 } from '../floating/types';
 
 /**
@@ -72,7 +72,7 @@ export interface ContextMenuTriggerProps {
   testID?: string;
 }
 
-export type ContextMenuContentProps = OverlaySurfaceProps;
+export type ContextMenuContentProps = MenuSurfaceProps;
 
 export type ContextMenuItemProps = MenuRowProps;
 export type ContextMenuCheckboxItemProps = MenuCheckboxRowProps;

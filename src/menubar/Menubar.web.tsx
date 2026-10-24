@@ -20,6 +20,7 @@ import {
   MENUBAR_SIDE_OFFSET,
 } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
+import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { hostElement, useMenuPanelKeys } from '../floating/menu-keyboard';
 import { createMenuRows } from '../floating/menu-rows';
@@ -34,6 +35,7 @@ export { Menubar, MenubarMenu, MenubarTrigger } from './MenubarBase';
 
 export function MenubarContent({
   children,
+  alignRows,
   size,
   maxHeight,
   label: labelProp,
@@ -92,7 +94,9 @@ export function MenubarContent({
         style={style}
         testID={testID}
       >
-        <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
+        <MenuSurfaceProvider value={surface}>
+          <MenuRowAlignmentScope enabled={alignRows}>{children}</MenuRowAlignmentScope>
+        </MenuSurfaceProvider>
       </FloatingPanel>
     </BloomScope>
   );
