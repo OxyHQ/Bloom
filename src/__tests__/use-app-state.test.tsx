@@ -1,7 +1,7 @@
 import { AppState, type AppStateStatus } from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 
-import { subscribeToAppState, useAppStateChange } from '../toast/use-app-state';
+import { subscribeToAppState, useAppForeground, useAppStateChange } from '../hooks/use-app-state';
 
 /**
  * Both platform branches matter: RN-Web reports `AppState.isAvailable === false`
@@ -114,5 +114,32 @@ describe('useAppStateChange', () => {
     const hook = renderHook(() => useAppStateChange({ onBackground, onForeground }));
     expect(() => hook.unmount()).not.toThrow();
     expect(onBackground).not.toHaveBeenCalled();
+  });
+});
+
+describe('useAppForeground', () => {
+  afterEach(() => {
+    AppState.currentState = 'active';
+    jest.restoreAllMocks();
+  });
+
+  it('follows the app leaving and returning to the foreground', () => {
+    const listeners: Array<(status: AppStateStatus) => void> = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, listener) => {
+      listeners.push(listener);
+      return { remove: jest.fn() };
+    });
+    const emit = (status: 'active' | 'background') =>
+      act(() => {
+        AppState.currentState = status;
+        for (const listener of listeners) listener(status);
+      });
+
+    const hook = renderHook(() => useAppForeground());
+    expect(hook.result.current).toBe(true);
+    emit('background');
+    expect(hook.result.current).toBe(false);
+    emit('active');
+    expect(hook.result.current).toBe(true);
   });
 });

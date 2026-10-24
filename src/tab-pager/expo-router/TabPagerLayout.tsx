@@ -4,6 +4,7 @@ import type { Href } from '../../panel-routing/expo-router';
 import { useTabPagerContext } from '../context';
 import { stateLeavingTab } from './leave-tab';
 import { TabPager } from './TabPager';
+import { TabPagesHost } from './TabPagesHost';
 
 /**
  * The tabs group's layout: one navigator over the provider's pages, paged side
@@ -73,15 +74,17 @@ export function TabPagerLayout() {
 
   return (
     <NavigationContent>
-      <TabPager
-        model={model}
-        state={state}
-        descriptors={descriptors}
-        progress={progress}
-        chromeProgress={chromeProgress}
-        // A swipe takes the same path as a tap, including dismissing a push.
-        onCommit={selectTab}
-      />
+      <TabPagesHost>
+        <TabPager
+          model={model}
+          state={state}
+          descriptors={descriptors}
+          progress={progress}
+          chromeProgress={chromeProgress}
+          // A swipe takes the same path as a tap, including dismissing a push.
+          onCommit={selectTab}
+        />
+      </TabPagesHost>
     </NavigationContent>
   );
 }

@@ -15,7 +15,8 @@ import { TabBarMinimizeProvider } from '../tab-bar/context';
 import { BloomThemeProvider, type BloomThemeProviderProps } from '../theme';
 import { SystemStatusBar } from '../theme/SystemStatusBar';
 import { ScrollRestorationProvider } from '../scroll/context';
-import { useEffect } from 'react';
+import { ScreenHostContext } from '../screen/context';
+import { useEffect, useMemo } from 'react';
 import type { ScrollRouterAdapter } from '../scroll/types';
 
 // Stable inert adapter keeps root composition universal; routing is explicit.
@@ -30,11 +31,15 @@ export function BloomProvider({
   imageResolver,
   haptics = true,
   scrollAdapter = noRouterAdapter,
+  back,
   locale,
   characterRuntimeUrl,
   ssrStyles,
   ...themeProps
 }: BloomProviderProps) {
+  // The root screen host: what a route's first Screen inherits when no panel
+  // re-hosts it. Overlays and nested screens start from a fresh host.
+  const host = useMemo(() => ({ active: true, back }), [back]);
   return (
     // `value` is passed unconditionally (null when unset) so toggling a resolver
     // never changes the tree shape and remounts everything below it.
@@ -95,7 +100,9 @@ export function BloomProvider({
                               runtimeUrl={characterRuntimeUrl}
                               stillStorage={themeProps.storage}
                             >
-                              {children}
+                              <ScreenHostContext.Provider value={host}>
+                                {children}
+                              </ScreenHostContext.Provider>
                             </AgentAvatarProvider>
                           </TabBarMinimizeProvider>
                         </SystemStatusBar>

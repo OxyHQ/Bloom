@@ -1,4 +1,5 @@
 import { Easing } from 'react-native-reanimated';
+import { hitSlop } from '../styles/tokens';
 
 /** The glyph box, in px. */
 export const ENGAGEMENT_ICON_SIZE = 20;
@@ -17,7 +18,7 @@ export const ENGAGEMENT_PAD_Y = 2;
 /** Glyph-to-count gap. */
 export const ENGAGEMENT_COUNT_GAP = 4;
 
-export const ENGAGEMENT_HIT_SLOP = 8;
+export const ENGAGEMENT_HIT_SLOP = hitSlop.md;
 
 /** Icon pop and ring burst, in ms. */
 export const POP_MS = 300;

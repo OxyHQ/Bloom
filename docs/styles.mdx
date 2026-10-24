@@ -52,6 +52,17 @@ Prefer the numeric names (`radius-20`) when you are naming a rung in an API —
 [`Card`](/docs/bloom/main/card)'s `radius` prop takes those — and the t-shirt
 names in ad-hoc inline style.
 
+`tokens.hitSlop` is the touch padding of icon-sized affordances, as `hitSlop`
+scalars: `sm` (6) for dense chrome inside an already-padded row, `md` (8) for a
+standalone icon, `lg` (12) for a bare icon with no padding of its own. A scalar
+expands on all four edges, so the region cannot reach further on one side and
+steal taps meant for a neighbour; genuinely asymmetric geometry (two halves of
+one pill) writes its object out inline.
+
+```tsx
+<Pressable hitSlop={tokens.hitSlop.md} onPress={onClose}>
+```
+
 ## `BREAKPOINTS`
 
 The shared widths, so a component and the screen around it agree about when the

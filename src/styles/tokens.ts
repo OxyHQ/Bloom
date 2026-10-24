@@ -76,6 +76,24 @@ export const borderRadius = {
 } as const;
 
 /**
+ * Touch-target padding for icon-sized affordances, as `hitSlop` scalars.
+ *
+ * Scalars, deliberately: React Native expands a scalar `hitSlop` on all four
+ * edges, so it cannot be left lopsided — a region that reaches further on one
+ * edge silently steals taps aimed at whatever sits there. Geometry that is
+ * genuinely asymmetric (two halves of one pill) writes its object out inline.
+ *
+ *   sm  dense chrome inside an already-padded row, where more would collide
+ *   md  a standalone icon affordance
+ *   lg  a bare icon with no padding of its own, carrying the whole target
+ */
+export const hitSlop = {
+  sm: 6,
+  md: 8,
+  lg: 12,
+} as const;
+
+/**
  * Gradient definitions for icon system.
  */
 /**

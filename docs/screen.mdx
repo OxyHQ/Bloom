@@ -307,6 +307,24 @@ reverse. It releases the bar when it deactivates, so retained tab screens pass
 match the app theme claim nothing and the bar follows the theme. See
 [Theme](/docs/theme#native-status-bar).
 
+### Visible to the reader
+
+`useScreenVisible()` is true while the calling Screen is active and the app is in
+the foreground (`useAppForeground()` from `@oxy.so/bloom/hooks`: the native app
+`active`, or the web tab visible). Gate impression tracking, live updates, video
+playback and polling on it rather than combining route focus, viewport activity
+and `AppState` per feature. Retained route screens pass `active={focused}`, as
+they already do for scroll and color recipes; a panel's visibility is part of the
+Screen's activity. Outside a Screen only the app's state counts.
+
+### Back
+
+`useScreenBack()` returns the Back the screen's `PageHeader` offers — its panel
+history's while it can go back, otherwise the app's route Back
+(`BloomProvider back`) — or `undefined` where there is none (a panel's history
+root, a tab pager page, an overlay). Content that navigates back itself (after a
+delete, on a cancel) calls it rather than holding its own fallback.
+
 ### Nested activity and viewport constraints
 
 A nested Screen inherits the inactivity of its ancestor. `navigationScope="isolated"`

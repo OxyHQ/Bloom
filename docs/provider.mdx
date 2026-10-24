@@ -30,6 +30,25 @@ the runtime's locale; a component's own `locale` prop still wins. See
 </BloomProvider>
 ```
 
+Pass `back` to give every route screen a working Back, configured once. A
+`PageHeader` positioned by a route's `Screen` offers it without an `onBack`: back
+through the router's history, or to the fallback when a deep link left none.
+Bloom's provider imports no router, so the router binding supplies the function:
+
+```tsx
+import { useBackWithFallback } from '@oxy.so/bloom/panel-routing/expo-router';
+
+const back = useBackWithFallback('/');
+<BloomProvider back={back}>
+  <App />
+</BloomProvider>
+```
+
+A panel `navigation` history keeps its own Back, hidden at its root. Overlays
+(dialogs, sheets), nested screens and the tab pager's pages carry no route Back;
+an app's other top-level destinations pass `onBack={null}`. See
+[Page header](/docs/page-header).
+
 Server-rendered apps can opt into compositor CSS in the initial HTML with
 `ssrStyles="inline"` when their Content Security Policy permits inline styles,
 or `ssrStyles={{ nonce: requestNonce }}` when the stylesheet nonce is authorized.

@@ -48,6 +48,25 @@ Bloom's `tabs/expo-router` adapter uses this same scope. Modifier clicks and
 `target="_blank"` keep normal canonical links; external hrefs remain external.
 The core `panel-routing` entry does not import Expo.
 
+`useBackWithFallback(fallback)` from the same entry is the app's route Back:
+`router.back()` while the router has history, otherwise `router.replace(fallback)`,
+the way out of a page a deep link opened. Pass it once to `BloomProvider back`
+and every route screen's `PageHeader` offers it with no `onBack`
+([BloomProvider](/docs/provider)).
+
+A native stack inside an AppShell panel takes `stackSceneLayout` as its
+`screenLayout`. Each scene paints the panel's surface fill (`useSurfaceFill`, a
+scoped colour included), so a screen without a background of its own never shows
+the one under it through itself, and every scene but the focused one leaves the
+accessibility tree, so TalkBack does not walk into the feed behind a post.
+
+```tsx
+import { Stack } from 'expo-router';
+import { stackSceneLayout } from '@oxy.so/bloom/panel-routing/expo-router';
+
+<Stack screenOptions={{ headerShown: false }} screenLayout={stackSceneLayout} />
+```
+
 The controller supports push, replace, navigate, back, forward, dismiss,
 dismissAll, dismissTo and setParams. A new navigation after Back truncates the
 forward history. The lower-level panel controller exposes `go(delta)` for one

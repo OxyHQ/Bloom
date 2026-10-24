@@ -371,9 +371,13 @@ export function createPanelLayoutView(
       },
       [claimPanelPreset, claimShellPreset],
     );
+    // The app's route Back passes through the panel; a panel `navigation`
+    // history takes precedence over it where it can go back.
+    const { back } = useContext(ScreenHostContext);
     const host = useMemo(
       () => ({
         active,
+        back,
         restoresDocument: document,
         kind: (Platform.OS !== 'web' ? 'native' : document ? 'document' : 'element') as
           | 'native'
@@ -396,6 +400,7 @@ export function createPanelLayoutView(
       }),
       [
         active,
+        back,
         document,
         metrics,
         panel.headerActions,
