@@ -219,7 +219,8 @@ function parentPanel(trigger: ComponentRef<typeof View> | null): Element | null 
 
 function canTravel(): boolean {
   if (typeof document === 'undefined' || typeof window === 'undefined') return false;
-  if (typeof Element === 'undefined' || typeof Element.prototype.animate !== 'function') return false;
+  if (typeof Element === 'undefined' || typeof Element.prototype.animate !== 'function')
+    return false;
   return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
@@ -240,7 +241,9 @@ function travel(panel: DomNode, from: DOMRect, to: DOMRect): Animation[] {
   ];
   for (const piece of surfacePresenceTargets(panel as unknown as Element)) {
     if (piece === (panel as unknown as Element)) continue;
-    moves.push(piece.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' }));
+    moves.push(
+      piece.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' }),
+    );
   }
   return moves;
 }
