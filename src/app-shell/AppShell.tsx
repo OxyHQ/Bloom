@@ -35,6 +35,11 @@ import { useLatestClaim } from '../hooks/use-latest-claim';
 import type { AppColorName } from '../theme/color-presets';
 import { createDestinationBottomBar, useDestinationNavigation } from './destinations';
 import { ShellReselectScope } from './reselect-scope';
+import {
+  ScreenActionOwnerContext,
+  ScreenActionScope,
+  useScreenActionClaimed,
+} from './screen-action';
 
 /**
  * A navigation selection the app does not handle itself goes to the sidebar
@@ -84,6 +89,7 @@ export function createAppShell(
     testID,
   }: AppShellProps) {
     const { collapseProgress } = useScreen();
+    const claimed = useScreenActionClaimed();
     return (
       <BottomBar
         actionBehavior={bottomActionBehavior}
@@ -91,7 +97,7 @@ export function createAppShell(
         value={value}
         onValueChange={onValueChange ?? (() => {})}
         minimizeProgress={collapseProgress}
-        action={primaryAction ? <Fab {...primaryAction} /> : undefined}
+        action={primaryAction && !claimed ? <Fab {...primaryAction} /> : undefined}
         testID={testID ? `${testID}-navigation-bottom` : undefined}
       />
     );
@@ -117,6 +123,7 @@ export function createAppShell(
     testID,
   }: AppShellProps) {
     const { width: windowWidth } = useShellViewport();
+    const actionClaimed = useScreenActionClaimed();
     const [containerWidth, setContainerWidth] = useState<number | null>(null);
     const width = containerWidth ?? windowWidth;
     const { colors } = useTheme();
@@ -220,43 +227,47 @@ export function createAppShell(
             )}
           </ResponsiveNavigation>
         ) : null}
-        <Screen
-          navigationScope="shared"
-          active={active}
-          documentScroll={scroll === 'external'}
-          testID={testID ? `${testID}-screen` : undefined}
-          style={{ minWidth: 0 }}
-          header={
-            header ??
-            (title ? (
-              <PageHeader title={title} subtitle={breadcrumb} actions={actions} sticky={false} />
-            ) : null)
-          }
-          bottomBar={bottom}
-          primaryAction={
-            placement !== 'bottom' && primaryAction ? <Fab {...primaryAction} /> : undefined
-          }
-        >
-          {scroll === 'auto' ? (
-            <ScreenScrollView style={{ flex: 1 }}>
-              <View
-                testID={testID ? `${testID}-content` : undefined}
-                style={{
-                  width: '100%',
-                  maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth,
-                  alignSelf: 'center',
-                  padding: contentPadding,
-                  gap: 16,
-                }}
-              >
-                {children}
-              </View>
-            </ScreenScrollView>
-          ) : (
-            children
-          )}
-          {overlay}
-        </Screen>
+        <ScreenActionOwnerContext.Provider value="shell">
+          <Screen
+            navigationScope="shared"
+            active={active}
+            documentScroll={scroll === 'external'}
+            testID={testID ? `${testID}-screen` : undefined}
+            style={{ minWidth: 0 }}
+            header={
+              header ??
+              (title ? (
+                <PageHeader title={title} subtitle={breadcrumb} actions={actions} sticky={false} />
+              ) : null)
+            }
+            bottomBar={bottom}
+            primaryAction={
+              placement !== 'bottom' && primaryAction && !actionClaimed ? (
+                <Fab {...primaryAction} />
+              ) : undefined
+            }
+          >
+            {scroll === 'auto' ? (
+              <ScreenScrollView style={{ flex: 1 }}>
+                <View
+                  testID={testID ? `${testID}-content` : undefined}
+                  style={{
+                    width: '100%',
+                    maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth,
+                    alignSelf: 'center',
+                    padding: contentPadding,
+                    gap: 16,
+                  }}
+                >
+                  {children}
+                </View>
+              </ScreenScrollView>
+            ) : (
+              children
+            )}
+            {overlay}
+          </Screen>
+        </ScreenActionOwnerContext.Provider>
       </View>
     );
   }
@@ -275,6 +286,7 @@ export function createAppShell(
       testID,
     } = props;
     const window = useShellViewport();
+    const actionClaimed = useScreenActionClaimed();
     const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
     const width = measuredWidth ?? window.width;
     const navFrom =
@@ -350,42 +362,46 @@ export function createAppShell(
           }
         : undefined;
     return (
-      <Screen
-        active={active}
-        navigationScope="shared"
-        documentScroll={document}
-        testID={testID ? `${testID}-screen` : undefined}
-        onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
-      >
-        <AppShellEngine
-          {...(props as AppShellEngineProps)}
-          scroll={engineScroll}
-          sidebar={mappedSidebar}
-          navFrom={navFrom}
-          navExpandedFrom={navExpandedFrom}
-          header={
-            props.header !== undefined ? (
-              props.header
-            ) : props.title ? (
-              <PageHeader
-                title={props.title}
-                subtitle={props.breadcrumb}
-                actions={props.actions}
-                leading={<AppShellMenuButton accessibilityLabel={props.drawerOpenLabel} />}
-              />
-            ) : undefined
-          }
-          bottomBar={props.bottomBar !== undefined ? props.bottomBar : bottom}
-          bottomBarVisibility={props.bottomBarVisibility ?? 'compact'}
-          floatingAction={
-            props.floatingAction !== undefined ? (
-              props.floatingAction
-            ) : primaryAction && (!compact || !hasNavigation || props.bottomBar !== undefined) ? (
-              <Fab {...primaryAction} />
-            ) : undefined
-          }
-        />
-      </Screen>
+      <ScreenActionOwnerContext.Provider value="shell">
+        <Screen
+          active={active}
+          navigationScope="shared"
+          documentScroll={document}
+          testID={testID ? `${testID}-screen` : undefined}
+          onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
+        >
+          <AppShellEngine
+            {...(props as AppShellEngineProps)}
+            scroll={engineScroll}
+            sidebar={mappedSidebar}
+            navFrom={navFrom}
+            navExpandedFrom={navExpandedFrom}
+            header={
+              props.header !== undefined ? (
+                props.header
+              ) : props.title ? (
+                <PageHeader
+                  title={props.title}
+                  subtitle={props.breadcrumb}
+                  actions={props.actions}
+                  leading={<AppShellMenuButton accessibilityLabel={props.drawerOpenLabel} />}
+                />
+              ) : undefined
+            }
+            bottomBar={props.bottomBar !== undefined ? props.bottomBar : bottom}
+            bottomBarVisibility={props.bottomBarVisibility ?? 'compact'}
+            floatingAction={
+              props.floatingAction !== undefined ? (
+                props.floatingAction
+              ) : primaryAction &&
+                !actionClaimed &&
+                (!compact || !hasNavigation || props.bottomBar !== undefined) ? (
+                <Fab {...primaryAction} />
+              ) : undefined
+            }
+          />
+        </Screen>
+      </ScreenActionOwnerContext.Provider>
     );
   }
   const AdaptiveAppShell = AppShell;
@@ -470,7 +486,9 @@ export function createAppShell(
     const props = useDestinationNavigation(declared, DestinationBottomBar, Fab);
     return (
       <ShellReselectScope>
-        <AppShellBody {...props} />
+        <ScreenActionScope>
+          <AppShellBody {...props} />
+        </ScreenActionScope>
       </ShellReselectScope>
     );
   }

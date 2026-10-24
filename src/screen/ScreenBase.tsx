@@ -33,6 +33,7 @@ import {
 } from './context';
 import { useScreenWindowBinding } from './use-screen-window-scroll';
 import { useStatusBarClaim } from '../theme/SystemStatusBar';
+import { ScreenActionOwnerContext, useScreenActionClaim } from '../app-shell/screen-action';
 import type { ScreenProps } from './types';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 import type { ScreenKeyboardComponents } from './keyboard-components';
@@ -104,6 +105,8 @@ export function createScreen(
     // A dark screen in a light app (or the reverse) owns the status bar content
     // while it is the active one.
     useStatusBarClaim(active);
+    // Its own floating action asks the shell's to step aside while it is in front.
+    useScreenActionClaim(active && primaryAction != null);
     const localScrollY = useSharedValue(0);
     const scrollY =
       ownsViewport && !parentScreen && !parentViewport && host.metrics
@@ -327,150 +330,154 @@ export function createScreen(
       </Footer>
     ) : null;
     return (
-      <ScreenHostContext.Provider value={host}>
-        {surfaceRecipe.sheet}
-        <ScreenNavigationContext.Provider
-          value={
-            navigationScope === 'inherit'
-              ? inheritedNavigation
-              : { ...navigation, bottomInset: value.bottomInset }
-          }
-        >
-          <ScreenContext.Provider value={value}>
-            <ScreenViewportContext.Provider value={ownsViewport ? viewport.value : parentViewport}>
-              <ScrollMetricsContext.Provider
-                value={ownsViewport ? viewport.value.metrics : inheritedMetrics}
+      <ScreenActionOwnerContext.Provider value="route">
+        <ScreenHostContext.Provider value={host}>
+          {surfaceRecipe.sheet}
+          <ScreenNavigationContext.Provider
+            value={
+              navigationScope === 'inherit'
+                ? inheritedNavigation
+                : { ...navigation, bottomInset: value.bottomInset }
+            }
+          >
+            <ScreenContext.Provider value={value}>
+              <ScreenViewportContext.Provider
+                value={ownsViewport ? viewport.value : parentViewport}
               >
-                <ScrollOffsetProvider value={ownsViewport ? value.scrollY : inheritedOffset}>
-                  <View
-                    {...props}
-                    testID={testID}
-                    style={[
-                      document
-                        ? {
-                            minHeight: pageMinHeight,
-                            width: '100%',
-                            position: 'relative',
-                            backgroundColor: surfaceFill,
-                          }
-                        : {
-                            flexGrow: 1,
-                            flexShrink: 1,
-                            flexBasis: contentSized ? 'auto' : 0,
-                            minHeight: 0,
-                            position: 'relative',
-                            backgroundColor: surfaceFill,
-                          },
-                      viewportCss,
-                      style,
-                    ]}
-                  >
-                    {ownWebViewport &&
-                    restoration &&
-                    host.restoreScroll !== false &&
-                    !(document && host.restoresDocument) ? (
-                      <ScreenViewportRestoration
-                        target={document ? 'window' : viewport.scrollRef}
-                        active={active}
-                        restoring={viewport.restoring}
-                      />
-                    ) : null}
-                    {headerNode}
+                <ScrollMetricsContext.Provider
+                  value={ownsViewport ? viewport.value.metrics : inheritedMetrics}
+                >
+                  <ScrollOffsetProvider value={ownsViewport ? value.scrollY : inheritedOffset}>
                     <View
-                      testID={testID ? `${testID}-content` : undefined}
-                      style={
+                      {...props}
+                      testID={testID}
+                      style={[
                         document
                           ? {
+                              minHeight: pageMinHeight,
+                              width: '100%',
                               position: 'relative',
-                              zIndex: 0,
-                              flexGrow: 1,
-                              flexShrink: 0,
-                              paddingTop: reservedTop,
-                              paddingBottom: hasBottom
-                                ? bottom + navigationEdge + contentClearance
-                                : 0,
+                              backgroundColor: surfaceFill,
                             }
                           : {
-                              position: 'relative',
-                              zIndex: 0,
                               flexGrow: 1,
                               flexShrink: 1,
                               flexBasis: contentSized ? 'auto' : 0,
                               minHeight: 0,
-                              minWidth: 0,
-                              ...((ownsViewport && !ownWebViewport) || scroll === 'none'
-                                ? {
-                                    paddingTop: reservedTop,
-                                    paddingBottom:
-                                      (keyboardFollow && scroll !== 'none') || bottomOverlaid
-                                        ? 0
-                                        : reservedBottom,
-                                  }
-                                : {}),
-                            }
-                      }
-                    >
-                      {ownWebViewport ? (
-                        <View
-                          ref={viewport.scrollRef as React.Ref<React.ElementRef<typeof View>>}
-                          {...{
-                            dataSet: { bloomScreenViewport: document ? 'document' : 'element' },
-                          }}
-                          testID={testID ? `${testID}-viewport` : undefined}
-                          style={[
-                            {
-                              minHeight: 0,
-                              minWidth: 0,
-                              flexGrow: 1,
-                              flexShrink: document ? 0 : 1,
-                              flexBasis: document || contentSized ? 'auto' : 0,
+                              position: 'relative',
+                              backgroundColor: surfaceFill,
                             },
-                            {
-                              overflowX: document ? 'visible' : 'hidden',
-                              overflowY: document ? 'visible' : 'auto',
-                              overscrollBehaviorY: document ? undefined : 'contain',
-                              ...(document
-                                ? {}
-                                : { containerType: contentSized ? 'inline-size' : 'size' }),
-                            } as WebCssStyle,
-                          ]}
-                        >
-                          <View
-                            ref={viewport.contentRef as React.Ref<React.ElementRef<typeof View>>}
-                            testID={testID ? `${testID}-scroll-content` : undefined}
-                            style={{
-                              minWidth: 0,
-                              flexGrow: 1,
-                              flexShrink: 0,
-                              ...(!document
-                                ? { paddingTop: reservedTop, paddingBottom: reservedBottom }
-                                : {}),
-                            }}
-                          >
-                            {children}
-                          </View>
-                        </View>
-                      ) : (
-                        children
-                      )}
-                      {ownWebViewport && active && !document ? (
-                        <ScrollBar target={scrollbarTarget} />
-                      ) : null}
-                      {ownWebViewport && active && document && region?.flow !== 'document' ? (
-                        <ScrollBar
-                          target="document"
-                          insets={{ start: reservedTop, end: reservedBottom }}
+                        viewportCss,
+                        style,
+                      ]}
+                    >
+                      {ownWebViewport &&
+                      restoration &&
+                      host.restoreScroll !== false &&
+                      !(document && host.restoresDocument) ? (
+                        <ScreenViewportRestoration
+                          target={document ? 'window' : viewport.scrollRef}
+                          active={active}
+                          restoring={viewport.restoring}
                         />
                       ) : null}
+                      {headerNode}
+                      <View
+                        testID={testID ? `${testID}-content` : undefined}
+                        style={
+                          document
+                            ? {
+                                position: 'relative',
+                                zIndex: 0,
+                                flexGrow: 1,
+                                flexShrink: 0,
+                                paddingTop: reservedTop,
+                                paddingBottom: hasBottom
+                                  ? bottom + navigationEdge + contentClearance
+                                  : 0,
+                              }
+                            : {
+                                position: 'relative',
+                                zIndex: 0,
+                                flexGrow: 1,
+                                flexShrink: 1,
+                                flexBasis: contentSized ? 'auto' : 0,
+                                minHeight: 0,
+                                minWidth: 0,
+                                ...((ownsViewport && !ownWebViewport) || scroll === 'none'
+                                  ? {
+                                      paddingTop: reservedTop,
+                                      paddingBottom:
+                                        (keyboardFollow && scroll !== 'none') || bottomOverlaid
+                                          ? 0
+                                          : reservedBottom,
+                                    }
+                                  : {}),
+                              }
+                        }
+                      >
+                        {ownWebViewport ? (
+                          <View
+                            ref={viewport.scrollRef as React.Ref<React.ElementRef<typeof View>>}
+                            {...{
+                              dataSet: { bloomScreenViewport: document ? 'document' : 'element' },
+                            }}
+                            testID={testID ? `${testID}-viewport` : undefined}
+                            style={[
+                              {
+                                minHeight: 0,
+                                minWidth: 0,
+                                flexGrow: 1,
+                                flexShrink: document ? 0 : 1,
+                                flexBasis: document || contentSized ? 'auto' : 0,
+                              },
+                              {
+                                overflowX: document ? 'visible' : 'hidden',
+                                overflowY: document ? 'visible' : 'auto',
+                                overscrollBehaviorY: document ? undefined : 'contain',
+                                ...(document
+                                  ? {}
+                                  : { containerType: contentSized ? 'inline-size' : 'size' }),
+                              } as WebCssStyle,
+                            ]}
+                          >
+                            <View
+                              ref={viewport.contentRef as React.Ref<React.ElementRef<typeof View>>}
+                              testID={testID ? `${testID}-scroll-content` : undefined}
+                              style={{
+                                minWidth: 0,
+                                flexGrow: 1,
+                                flexShrink: 0,
+                                ...(!document
+                                  ? { paddingTop: reservedTop, paddingBottom: reservedBottom }
+                                  : {}),
+                              }}
+                            >
+                              {children}
+                            </View>
+                          </View>
+                        ) : (
+                          children
+                        )}
+                        {ownWebViewport && active && !document ? (
+                          <ScrollBar target={scrollbarTarget} />
+                        ) : null}
+                        {ownWebViewport && active && document && region?.flow !== 'document' ? (
+                          <ScrollBar
+                            target="document"
+                            insets={{ start: reservedTop, end: reservedBottom }}
+                          />
+                        ) : null}
+                      </View>
+                      {bottomNode}
                     </View>
-                    {bottomNode}
-                  </View>
-                </ScrollOffsetProvider>
-              </ScrollMetricsContext.Provider>
-            </ScreenViewportContext.Provider>
-          </ScreenContext.Provider>
-        </ScreenNavigationContext.Provider>
-      </ScreenHostContext.Provider>
+                  </ScrollOffsetProvider>
+                </ScrollMetricsContext.Provider>
+              </ScreenViewportContext.Provider>
+            </ScreenContext.Provider>
+          </ScreenNavigationContext.Provider>
+        </ScreenHostContext.Provider>
+      </ScreenActionOwnerContext.Provider>
     );
   }
 
