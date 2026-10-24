@@ -45,7 +45,7 @@ const [category, setCategory] = useState('trending');
 | `trailing`           | pinned right, 24 from the strip, never scrolls                                           |
 | `accessibilityLabel` | required — names the tablist                                                              |
 | `gap`                | space between items, default `32`                                                        |
-| `fadeColor`          | what the web edge fades blend into, default the page background — set it when the bar sits on a card |
+| `fadeColor`          | what the web edge fades blend into; defaults to the surface the bar sits on (a card, a panel, the page) |
 | `previousLabel`, `nextLabel` | the web arrows' names, default "Previous categories" / "Next categories", localised via `BloomProvider locale` |
 | `style`, `testID`    | items get `<testID>-item-<key>`, arrows `<testID>-previous` / `-next`                    |
 

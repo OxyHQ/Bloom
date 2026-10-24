@@ -1,5 +1,6 @@
 import { ScrollArea } from '../layout/ScrollArea';
 import { type ComponentRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSurfaceFill } from '../styles/surface-levels';
 import {
   Pressable,
   ScrollView,
@@ -282,7 +283,8 @@ function CategoryBarComponent({
   }, []);
   const reducedMotion = useReducedMotion();
   const paint = useMemo(() => resolveCategoryBarPaint(theme), [theme]);
-  const fade = fadeColor ?? theme.colors.background;
+  const surface = useSurfaceFill();
+  const fade = fadeColor ?? surface;
 
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const scroll = useRef<CategoryBarScroll>({ x: 0, viewport: 0, content: 0 });
