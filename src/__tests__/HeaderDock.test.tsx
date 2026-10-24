@@ -176,3 +176,22 @@ it('uses the stable panel metrics above a route Screen instead of an inherited s
   expect(observed).toBe(hostScroll);
   expect(resolvedStyle(tree.getByTestId('host-header-docked-fill').props.style).opacity).toBe(1);
 });
+it('publishes the height of a header its Screen lays over the content, for native list offsets', () => {
+  const tree = render(
+    <BloomThemeProvider fonts={false}>
+      <HeaderDockProvider scrollY={position}>
+        <Screen
+          scroll="none"
+          headerPlacement="overlay"
+          header={<PageHeader testID="header" title={<Text>Profile</Text>} />}
+        >
+          <Probe />
+        </Screen>
+      </HeaderDockProvider>
+    </BloomThemeProvider>,
+  );
+  fireEvent(tree.getByTestId('header'), 'layout', {
+    nativeEvent: { layout: { height: 96, width: 390, x: 0, y: 0 } },
+  });
+  expect(tree.getByTestId('list-inset').props.children).toBe(96);
+});

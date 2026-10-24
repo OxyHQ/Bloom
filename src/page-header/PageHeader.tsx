@@ -242,16 +242,24 @@ function PageHeaderComponent({
   // case a constant was written to survive and does not.
   const dock = useHeaderDockContext();
   const dockProgress = dock?.progress;
-  useClaimTopEdge(overlay || placement === 'overlap' || dock ? height : 0);
+  // What the header covers: its own overlay placements, and a Screen that lays
+  // its header over the content (`headerPlacement="overlay"`), so a docking
+  // section pins below it rather than behind it.
+  const screen = useScreenContext();
+  const headerScreen = useContext(ScreenHeaderContext);
+  const positionedByScreen = screen != null && headerScreen === screen;
+  const coversContent =
+    overlay || placement === 'overlap' || (positionedByScreen && screen.headerOverlays === true);
+  useClaimTopEdge(coversContent || dock ? height : 0);
   useEffect(() => {
     if (!dock) return;
     dock.headerHeight.value = height;
-    dock.overlay.value = overlay || placement === 'overlap';
-    dock.setOverlaps(overlay || placement === 'overlap');
+    dock.overlay.value = coversContent;
+    dock.setOverlaps(coversContent);
     return () => {
       dock.headerHeight.value = 0;
     };
-  }, [dock, height, overlay, placement]);
+  }, [dock, height, coversContent]);
 
   const paintRecipe = useThemeRecipe((theme, documentMode, documentPreset) => ({
     background: resolvePaintMode(surfaceRecipe, documentMode, documentPreset),
@@ -267,9 +275,6 @@ function PageHeaderComponent({
   // The context step is the one that matters for a Bloom composition: without
   // it a header inside a scrolling panel followed `window.scrollY`, which on a
   // desktop shell never moves, so the header looked deliberately inert.
-  const screen = useScreenContext();
-  const headerScreen = useContext(ScreenHeaderContext);
-  const positionedByScreen = screen != null && headerScreen === screen;
   const host = useContext(ScreenHostContext);
   const hostActions = positionedByScreen ? host.headerActions : undefined;
   // `null` declines Back outright; an explicit callback wins over the host's.
