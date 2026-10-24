@@ -41,6 +41,7 @@ import { CarouselContext, CarouselItemIndexContext } from './context';
 import { CAROUSEL_MESSAGES } from './messages';
 import type { CarouselControls, CarouselItemProps, CarouselProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { surfaceRevealCss } from '../surface/use-surface-presence';
 
 /**
  * A gallery carousel: a horizontal run of slides you scroll through, with
@@ -112,14 +113,12 @@ const TRACK = '[data-bloom-carousel-track]';
 const DOT = '[data-bloom-carousel-dot]';
 
 const BLOOM_CAROUSEL_CSS = `
-${ROOT} { --bloom-carousel-arrow-opacity: 1; }
-${ARROW} {
-  opacity: var(--bloom-carousel-arrow-opacity, 1);
-  transition: opacity 150ms ease-out;
-}
+${surfaceRevealCss({ scope: ARROW, shown: `${ARROW}:not([data-bloom-carousel-arrow="hidden"])` })}
 @media (hover: hover) and (pointer: fine) {
-  ${HOVER_ROOT} { --bloom-carousel-arrow-opacity: 0; }
-  ${HOVER_ROOT}:hover, ${HOVER_ROOT}:focus-within { --bloom-carousel-arrow-opacity: 1; }
+${surfaceRevealCss({
+  scope: `${HOVER_ROOT} ${ARROW}`,
+  shown: `${HOVER_ROOT}:hover ${ARROW}:not([data-bloom-carousel-arrow="hidden"]), ${HOVER_ROOT}:focus-within ${ARROW}:not([data-bloom-carousel-arrow="hidden"])`,
+})}
 }
 ${TRACK} {
   scroll-snap-type: x mandatory;
@@ -151,7 +150,10 @@ ${DOT}:focus-visible {
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
-${DOT}, ${ARROW} {
+${ARROW} {
+  --bloom-surface-presence-ms: 0ms;
+}
+${DOT}, ${ARROW} .bloom-btn--surface > * {
   transition: none;
 }
 }
@@ -731,12 +733,12 @@ const CarouselComponent = function Carousel({
     return hideUnavailableArrows || (IS_WEB && arrowsVisibility === 'hover') ? (
       <View
         ref={ref}
-        {...webDataSet({ bloomCarouselArrow: '' })}
+        {...webDataSet({ bloomCarouselArrow: hidden ? 'hidden' : '' })}
         aria-hidden={hidden || undefined}
         accessibilityElementsHidden={hidden}
         importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
         pointerEvents={hidden ? 'none' : 'auto'}
-        style={{ flexShrink: 0, ...(hidden ? { opacity: 0 } : undefined) }}
+        style={{ flexShrink: 0, ...(hidden && !IS_WEB ? { opacity: 0 } : undefined) }}
       >
         {button}
       </View>

@@ -2,7 +2,8 @@ import { useBloomAppearance } from '../appearance';
 import { ITEM_GEOMETRY, CONTROL_LABEL_TYPE } from '../appearance/control-geometry';
 import { TYPE_SCALE } from '../typography/scale';
 import { useTouchInput } from '../styles/pointer';
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState } from 'react';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -10,6 +11,9 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { Text } from '../typography';
 import { borderRadius, fontSize, space } from '../styles/tokens';
 import type { ItemProps } from './types';
+
+const DISABLED_PRESENCE = 0.5;
+const PRESSED_PRESENCE = 0.6;
 
 const DENSITY = {
   comfortable: { paddingVertical: 10, minHeight: 44 },
@@ -56,6 +60,15 @@ const ItemComponent = function Item({
   const theme = useTheme();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  // Dims run through presence: on the web a row's opacity would be the backdrop
+  // root of any material inside it (a badge, a mark), turning it flat.
+  const presence = disabled
+    ? DISABLED_PRESENCE
+    : pressed && (onPress || onLongPress)
+      ? PRESSED_PRESENCE
+      : 1;
+  const [row, setRow] = useState<unknown>(null);
+  useSurfacePresenceContent(row, { presence });
 
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
   const { size } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
@@ -210,7 +223,8 @@ const ItemComponent = function Item({
         // setting `accessibilityState.expanded` alone announces nothing on web.
         aria-expanded={expanded}
         {...selectedAria}
-        style={[disabled && styles.disabled, pressed && !disabled && styles.pressed]}
+        ref={setRow}
+        style={surfacePresenceStyle(presence)}
       >
         {content}
       </Pressable>
@@ -233,7 +247,8 @@ const ItemComponent = function Item({
       accessibilityState={{ disabled, selected, expanded }}
       aria-expanded={expanded}
       {...selectedAria}
-      style={disabled ? styles.disabled : undefined}
+      ref={setRow}
+      style={surfacePresenceStyle(presence)}
     >
       {content}
     </View>
@@ -257,12 +272,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: fontSize.sm,
     lineHeight: fontSize.sm * 1.3,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  pressed: {
-    opacity: 0.6,
   },
 });
 

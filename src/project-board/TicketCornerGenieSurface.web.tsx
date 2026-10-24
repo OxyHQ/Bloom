@@ -157,6 +157,8 @@ function copySurface(source: HTMLDivElement, prefix: string) {
     element.style.animation = 'none';
     element.style.transition = 'none';
     element.style.backdropFilter = 'none';
+    element.style.setProperty('--bloom-surface-filter', 'none');
+    element.style.setProperty('--bloom-surface-highlight-filter', 'none');
     if (originals[index]!.classList.contains('animate-chart-reveal')) {
       element.style.clipPath = getComputedStyle(originals[index]!).clipPath;
     }
@@ -164,7 +166,7 @@ function copySurface(source: HTMLDivElement, prefix: string) {
     if (originals[index]!.scrollTop)
       element.dataset.genieScroll = String(originals[index]!.scrollTop);
   });
-  copy.style.opacity = '1';
+  copy.style.visibility = 'visible';
   copy.style.transform = 'none';
   copy.style.filter = 'none';
   return copy;
@@ -192,7 +194,7 @@ export function TicketCornerGenieSurface({ children }: { children: ReactNode }) 
     if (reducedMotion) {
       root.dataset.entered = 'true';
       setEntered(true);
-      surface.style.opacity = '1';
+      surface.style.visibility = 'visible';
       shadow.style.opacity = '1';
       bands.replaceChildren();
       progressRef.current = 0;
@@ -268,7 +270,7 @@ export function TicketCornerGenieSurface({ children }: { children: ReactNode }) 
         });
         if (cancelled) return;
       }
-      surface.style.opacity = '0';
+      surface.style.visibility = 'hidden';
       bands.style.opacity = '1';
       const progress = Array.from(
         { length: FRAMES + 1 },
@@ -305,7 +307,7 @@ export function TicketCornerGenieSurface({ children }: { children: ReactNode }) 
           if (!exiting) {
             root.dataset.entered = 'true';
             setEntered(true);
-            surface.style.opacity = '1';
+            surface.style.visibility = 'visible';
             shadow.style.opacity = '1';
             shadow.style.transform = 'none';
             bands.style.opacity = '0';
@@ -344,7 +346,13 @@ export function TicketCornerGenieSurface({ children }: { children: ReactNode }) 
           className={styles.shadow}
           style={{ opacity: reducedMotion ? 1 : 0 }}
         />
-        <div ref={surfaceRef} className={styles.surface} style={{ opacity: reducedMotion ? 1 : 0 }}>
+        {/* Hidden, never faded: an opacity here would be the backdrop root of
+            the material inside, which the live panel hands back at full blur. */}
+        <div
+          ref={surfaceRef}
+          className={styles.surface}
+          style={{ visibility: reducedMotion ? 'visible' : 'hidden' }}
+        >
           {children}
         </div>
         <div ref={bandsRef} aria-hidden inert className={styles.bands} />

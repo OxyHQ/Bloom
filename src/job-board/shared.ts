@@ -209,4 +209,7 @@ export const JOB_BOARD_WEB_CSS = interactiveWebCss({
   varPrefix: 'bloom-job',
   reset: 'none',
   transition: 'background-color 150ms ease',
+  // The card or row around it already dims through its presence; an opacity
+  // here would sit above the subject's material marks and turn them flat.
+  disabled: { opacity: null },
 });

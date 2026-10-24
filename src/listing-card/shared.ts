@@ -12,6 +12,7 @@ import type {
   Offering,
 } from './types';
 import { mixColors } from '../styles/color-contrast';
+import { surfaceRevealCss } from '../surface/use-surface-presence';
 
 /** The photo tile's corner radius (a card image). */
 export const PHOTO_RADIUS = 16;
@@ -243,15 +244,7 @@ ${TRACK} [data-bloom-listing-card-slide] {
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
-${ARROW} {
-  opacity: 0;
-  transition: opacity 150ms ease-out;
-}
-@media (any-hover: hover) {
-  ${CARD}:hover ${ARROW}, ${ARROW}:focus-within {
-    opacity: 1;
-  }
-}
+${surfaceRevealCss({ scope: ARROW, shown: `${CARD}:hover ${ARROW}, ${ARROW}:focus-within` })}
 @media (any-hover: none) {
   ${ARROW} {
     display: none;
@@ -270,7 +263,10 @@ ${CARD}[data-bloom-listing-card-zoom] ${PHOTO} {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  ${ARROW}, ${DOT} {
+  ${ARROW} {
+    --bloom-surface-presence-ms: 0ms;
+  }
+  ${ARROW} .bloom-btn--surface > *, ${DOT} {
     transition: none;
   }
   ${CARD}[data-bloom-listing-card-zoom] ${PHOTO},

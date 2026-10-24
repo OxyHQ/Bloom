@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import { StyledPressable as Pressable, StyledView as View } from '../styles/styled-primitives';
 
 import { resolveButtonRamps } from '../button/shared';
@@ -16,6 +16,7 @@ import { useFieldMembership } from '../field/membership';
 import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 
 /**
  * A selectable card for settings, plans, properties, vehicles and other choices.
@@ -175,6 +176,9 @@ function SelectionCardComponent({
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const highlighted = !disabled && (hovered || pressed);
 
+  const [card, setCard] = useState<unknown>(null);
+  useSurfacePresenceContent(card, { presence: disabled ? DISABLED_OPACITY : 1 });
+
   const borderWidth = selected ? 2 : 1;
   const inset = (compact ? 16 : 20) - (borderWidth - 1);
   const hasBody = children != null && children !== false;
@@ -190,7 +194,7 @@ function SelectionCardComponent({
         : highlighted
           ? paint.borderHover
           : paint.border,
-    opacity: disabled ? DISABLED_OPACITY : 1,
+    ...(surfacePresenceStyle(disabled ? DISABLED_OPACITY : 1) as WebCssStyle),
     ...(IS_WEB
       ? { transitionProperty: 'border-color, background-color', transitionDuration: '120ms' }
       : null),
@@ -291,7 +295,7 @@ function SelectionCardComponent({
   };
 
   return (
-    <View testID={testID} className={className} style={cardStyle}>
+    <View ref={setCard} testID={testID} className={className} style={cardStyle}>
       {selection === 'multiple' ? (
         <Pressable
           role="checkbox"

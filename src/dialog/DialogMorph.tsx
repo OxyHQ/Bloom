@@ -10,9 +10,13 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
+  type ComponentRef,
 } from 'react';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-import type { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
+import type { LayoutChangeEvent, StyleProp, View, ViewStyle } from 'react-native';
+import { IS_WEB } from '../styles/platform';
+import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -66,6 +70,7 @@ const MORPH_MEASURE_TIMEOUT_MS = 200;
 
 /** Reshape easing — matches the ease-out the rest of the Dialog motion uses. */
 const MORPH_EASING = Easing.out(Easing.cubic);
+const MORPH_CSS_EASING = 'cubic-bezier(0.33, 1, 0.68, 1)';
 
 /**
  * Largest plausible gap between the panel box and its content (borders, the
@@ -282,6 +287,10 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
   /** Incoming content remains visible throughout a short directional settle. */
   const fade = useSharedValue(1);
   const travel = useSharedValue(0);
+  // The web runs the same settle through the content's presence: the frame can
+  // hold material controls, and an opacity above them would turn them flat.
+  const [swap, setSwap] = useState({ presence: 1, duration: 0 });
+  const swapFrame = useRef<number | null>(null);
   const reducedMotion = usePrefersReducedMotion();
   const reducedRef = useRef(reducedMotion);
   reducedRef.current = reducedMotion;
@@ -396,6 +405,14 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
         travel.value = 0;
       } else {
         fade.value = 0.92;
+        if (IS_WEB && typeof requestAnimationFrame !== 'undefined') {
+          if (swapFrame.current !== null) cancelAnimationFrame(swapFrame.current);
+          setSwap({ presence: 0.92, duration: 0 });
+          swapFrame.current = requestAnimationFrame(() => {
+            swapFrame.current = null;
+            setSwap({ presence: 1, duration: DIALOG_MORPH_FADE_DURATION });
+          });
+        }
         travel.value = next.direction === 'backward' ? -8 : 8;
         fade.value = withTiming(1, { duration: DIALOG_MORPH_FADE_DURATION, easing: MORPH_EASING });
         travel.value = withTiming(0, {
@@ -559,8 +576,17 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
   }, [pinned, height, declaredHeight, widthPinned, width, declaredMaxWidth, maxWidth]);
 
   const contentStyle = useAnimatedStyle<ViewStyle>(
-    () => ({ opacity: fade.value, transform: [{ translateX: travel.value }] }),
+    () => ({
+      ...(IS_WEB ? null : { opacity: fade.value }),
+      transform: [{ translateX: travel.value }],
+    }),
     [fade, travel],
+  );
+  useEffect(
+    () => () => {
+      if (swapFrame.current !== null) cancelAnimationFrame(swapFrame.current);
+    },
+    [],
   );
 
   return {
@@ -569,6 +595,7 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
     onContentLayout,
     panelStyle,
     contentStyle,
+    swap,
   };
 }
 
@@ -593,12 +620,23 @@ export function DialogMorphContent({
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }): React.ReactElement {
+  const [node, setNode] = useState<ComponentRef<typeof View> | null>(null);
+  useSurfacePresenceContent(node, {
+    presence: morph.swap.presence,
+    duration: morph.swap.duration,
+    easing: MORPH_CSS_EASING,
+  });
   return (
     <DialogFrameContext.Provider value={morph.channel}>
       <Animated.View
+        ref={setNode}
         testID="bloom-dialog-frame-content"
         onLayout={morph.onContentLayout}
-        style={[style, morph.contentStyle]}
+        style={[
+          style,
+          morph.contentStyle,
+          IS_WEB ? surfacePresenceStyle(morph.swap.presence, morph.swap.duration) : null,
+        ]}
       >
         {children}
       </Animated.View>

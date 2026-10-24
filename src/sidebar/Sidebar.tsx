@@ -60,7 +60,13 @@ import { SidebarSizeProvider, SIDEBAR_METRICS } from './metrics';
 import { SidebarPaintContext, resolveSidebarPalette, type SidebarPalette } from './palette';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
-import { Collapsible, CollapseProvider, MORPH_MS, useSidebarWebCss } from './parts';
+import {
+  Collapsible,
+  CollapseProvider,
+  MORPH_MS,
+  useMorphPresence,
+  useSidebarWebCss,
+} from './parts';
 import { SidebarItem } from './SidebarItem';
 import { SidebarModeSwitcher } from './SidebarModeSwitcher';
 import { SidebarPlanCard } from './SidebarPlanCard';
@@ -384,7 +390,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const contentMorph = useAnimatedStyle(
     () => ({
       height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : undefined,
-      opacity: 1 - progress.value,
+      ...(IS_WEB ? null : { opacity: 1 - progress.value }),
       marginTop: treeShown || hasHeader ? 0 : 24 * (1 - progress.value),
     }),
     [contentHeight, collapsed, progress, treeShown, hasHeader],
@@ -452,8 +458,17 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     };
   }, [progress, hasLogo, hasAccount, collapsedLane, dir]);
   const themeGeometry = useAnimatedStyle(() => ({ height: 40 - 4 * progress.value }), [progress]);
-  const themeExpandedStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
-  const themeCollapsedStyle = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
+  const themeExpandedStyle = useAnimatedStyle(
+    () => (IS_WEB ? {} : { opacity: 1 - progress.value }),
+    [progress],
+  );
+  const themeCollapsedStyle = useAnimatedStyle(
+    () => (IS_WEB ? {} : { opacity: progress.value }),
+    [progress],
+  );
+  const contentFade = useMorphPresence(!collapsed);
+  const themeExpandedFade = useMorphPresence(!collapsed);
+  const themeCollapsedFade = useMorphPresence(collapsed);
 
   // ---- search ------------------------------------------------------------
   const activateSearch = useCallback(() => {
@@ -1083,7 +1098,12 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                       accessibilityElementsHidden={collapsed}
                       importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
                       {...(IS_WEB && collapsed ? { inert: true } : {})}
-                      style={[{ overflow: 'hidden', flexShrink: 0 }, contentMorph]}
+                      ref={contentFade.ref}
+                      style={[
+                        { overflow: 'hidden', flexShrink: 0 },
+                        contentMorph,
+                        contentFade.style,
+                      ]}
                     >
                       <Animated.View
                         onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
@@ -1124,9 +1144,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                     accessibilityElementsHidden={collapsed}
                     importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
                     {...(IS_WEB && collapsed ? { inert: true } : {})}
+                    ref={themeExpandedFade.ref}
                     style={[
                       { position: 'absolute', insetInlineStart: 0, top: 0 },
                       themeExpandedStyle,
+                      themeExpandedFade.style,
                     ]}
                   >
                     <ThemeToggle
@@ -1140,9 +1162,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                     accessibilityElementsHidden={!collapsed}
                     importantForAccessibility={collapsed ? 'auto' : 'no-hide-descendants'}
                     {...(IS_WEB && !collapsed ? { inert: true } : {})}
+                    ref={themeCollapsedFade.ref}
                     style={[
                       { position: 'absolute', left: 0, right: 0, top: 0 },
                       themeCollapsedStyle,
+                      themeCollapsedFade.style,
                     ]}
                   >
                     <ThemeToggle collapsed style={{ alignSelf: 'center' }} />

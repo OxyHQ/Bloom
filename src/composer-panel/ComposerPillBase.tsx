@@ -58,6 +58,7 @@ import type {
 import { useComposerWebCss } from './web-hooks';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useEnteredPresence } from '../surface/use-surface-presence';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -93,11 +94,22 @@ function FrostedChip({ shown, radius, dark }: { shown: boolean; radius: number; 
       return () => clearTimeout(timer);
     }
   }, [shown, reducedMotion, opacity]);
-  const fade = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
+  // The paint fades through its presence on the web, never an opacity above it
+  // (a backdrop root would cut off the very blur the chip exists for).
+  const fade = useAnimatedStyle(() => (IS_WEB ? {} : { opacity: opacity.value }), [opacity]);
+  const [settledShown, setSettledShown] = useState(shown);
+  if (!shown && settledShown) setSettledShown(false);
+  const entered = useEnteredPresence(shown, mounted);
+  const presence = shown && (settledShown || entered) ? 1 : 0;
   if (!mounted) return null;
   return (
     <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, fade]}>
-      <SurfacePaint fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`} radius={radius} />
+      <SurfacePaint
+        fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`}
+        radius={radius}
+        presence={IS_WEB ? presence : undefined}
+        presenceMs={reducedMotion ? 0 : FROST_MS}
+      />
     </Animated.View>
   );
 }

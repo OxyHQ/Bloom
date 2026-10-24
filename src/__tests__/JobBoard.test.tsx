@@ -283,7 +283,11 @@ describe('a closed job is DRAWN, not removed', () => {
     expect(queryTestId('j-pass')).toBeNull();
     expect(byTestId('j-closed').textContent).toBe('Expired');
     expect(byTestId('j-state').textContent).toBe('Expired');
-    expect(byTestId('j').style.opacity).toBe(String(DISABLED_OPACITY));
+    // Dimmed through its presence, never an opacity on the card above its material.
+    expect(byTestId('j').style.opacity).toBe('');
+    expect(byTestId('j').style.getPropertyValue('--bloom-surface-presence')).toBe(
+      String(DISABLED_OPACITY),
+    );
   });
 
   it('says TAKEN for the other closure, and neither for an open job', () => {

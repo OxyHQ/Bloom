@@ -1,12 +1,5 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import type React from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { BloomImage } from '../image';
 
@@ -38,6 +31,7 @@ import { useMessages } from '../locale/messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { SORTABLE_MEDIA_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { surfaceRevealCss } from '../surface/use-surface-presence';
 
 /**
  * An editable, reorderable grid of uploaded photos. The first photo is the
@@ -95,19 +89,12 @@ ${TILE} img {
   -webkit-user-drag: none;
   user-drag: none;
 }
-${CONTROLS} {
-  transition: opacity 150ms ease-out;
-}
 @media (any-hover: hover) {
-  ${CONTROLS} {
-    opacity: 0;
-  }
-  ${TILE}:hover ${CONTROLS}, ${TILE}:focus-within ${CONTROLS} {
-    opacity: 1;
-  }
-  ${GRID}[data-bloom-sortable-grid="dragging"] ${CONTROLS} {
-    opacity: 0;
-  }
+${surfaceRevealCss({
+  scope: CONTROLS,
+  shown: `${TILE}:hover ${CONTROLS}, ${TILE}:focus-within ${CONTROLS}`,
+  rehide: `${GRID}[data-bloom-sortable-grid="dragging"] ${CONTROLS}`,
+})}
 }
 ${ADD} {
   outline: none;
@@ -121,6 +108,9 @@ ${ADD}:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   ${CONTROLS} {
+    --bloom-surface-presence-ms: 0ms;
+  }
+  ${CONTROLS} .bloom-btn--surface > * {
     transition: none;
   }
 }

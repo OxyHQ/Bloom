@@ -139,10 +139,13 @@ export function useEnteredPresence(open: boolean, mounted = true): boolean {
       setEntered(true);
       return;
     }
-    let frame = requestAnimationFrame(() => {
+    let frame = 0;
+    frame = requestAnimationFrame(() => {
       frame = requestAnimationFrame(() => setEntered(true));
     });
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frame);
+    };
   }, [mounted]);
   return entered && mounted && open;
 }
@@ -302,10 +305,26 @@ function restorePresence(map: Map<HostNode, Touched>, blur: number): void {
 
 const REVEALED_HOST = '.bloom-btn--surface';
 
+/** A selector list split on its top-level commas only (`:is(a, b)` stays whole). */
+function splitSelectors(selectors: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let current = '';
+  for (const char of selectors) {
+    if (char === '(') depth++;
+    if (char === ')') depth--;
+    if (char === ',' && depth === 0) {
+      out.push(current.trim());
+      current = '';
+    } else current += char;
+  }
+  if (current.trim()) out.push(current.trim());
+  return out;
+}
+
 const withHost = (selectors: string, suffix: string) =>
-  selectors
-    .split(',')
-    .map((selector) => `${selector.trim()} ${suffix}`)
+  splitSelectors(selectors)
+    .map((selector) => `${selector} ${suffix}`)
     .join(',\n');
 
 /**

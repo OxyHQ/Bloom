@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 import { BREAKPOINTS } from '../styles/breakpoints';
+import { surfaceRevealCss } from '../surface/use-surface-presence';
 import { breakpointPx } from './constants';
 import {
   panelEnvelope,
@@ -8,6 +9,13 @@ import {
   DEFAULT_PANEL_WIDTH,
 } from './panel-layout';
 import type { AppShellPanelLayout } from './panel-layout-types';
+
+/**
+ * A panel painting the material fades through `--bloom-surface-presence` and its
+ * content, never its own opacity: that would make it the material's backdrop
+ * root and turn it flat for the whole fade.
+ */
+const PANEL_MATERIAL = '[data-bloom-panel-material]';
 
 export const PanelCssContext = createContext<string | null>(null);
 export const PanelCssLayoutContext = createContext<{
@@ -37,6 +45,8 @@ export function panelLayoutCss(
   const deck = layout.mode === 'deck';
   const ordered = layout.transition === 'exit-before-enter';
   const geometryDelay = ordered ? 150 : 0;
+  const fadeMs = ordered ? 150 : 380;
+  const trailing = `${root} [data-bloom-deck-trailing="${scope}"]`;
   const geometryProperties = [
     'width',
     'height',
@@ -76,11 +86,13 @@ ${root} [data-bloom-shell-frame="${scope}"]{transition-delay:${geometryDelay}ms!
 ${root} [data-bloom-reading-content="${scope}"]{width:100%!important;flex-basis:100%!important;max-width:100%!important;flex-grow:1!important}
 ${row}{gap:0!important}
 ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{interpolate-size:allow-keywords;transition:${geometryTransitions},opacity ${ordered ? 150 : 380}ms cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms),scale 150ms ease var(--bloom-panel-fade-delay,0ms),display 380ms allow-discrete ${geometryDelay}ms;transition-behavior:allow-discrete}
+${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{--bloom-surface-presence-ms:${fadeMs}ms}
+${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index] ${PANEL_MATERIAL}>*{opacity:var(--bloom-surface-presence,1);transition:opacity ${fadeMs}ms cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms)}
 ${group}:not([data-bloom-panel-ready]) [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:not(:has(${group}[data-bloom-panel-ready])) :is([data-bloom-reading-envelope="${scope}"],[data-bloom-shell-frame="${scope}"],[data-bloom-shell-nav="${scope}"]){transition:none!important}
 ${group}[data-bloom-panel-resizing] [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:has(${group}[data-bloom-panel-resizing]) [data-bloom-reading-envelope="${scope}"]{transition:none!important}
 ${group}[data-bloom-panel-resizing]{user-select:none;cursor:col-resize}
 ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
-@media(prefers-reduced-motion:reduce){${root} [data-bloom-reading-envelope="${scope}"],${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{transition:none}}
+@media(prefers-reduced-motion:reduce){${root} [data-bloom-reading-envelope="${scope}"],${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index] ${PANEL_MATERIAL}>*{transition:none}${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{--bloom-surface-presence-ms:0ms}}
 `;
   if (pageDeck)
     css += `:root:has(${root}){container-type:scroll-state;container-name:bloom-document-scroll}\n`;
@@ -106,7 +118,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
     const envelope = deck ? '100%' : `${panelEnvelope(layout, lower, gap)}px`;
     let rules = `${root} [data-bloom-reading-envelope="${scope}"]{--bloom-reading-envelope:${envelope}}\n${row}{flex-direction:${vertical ? 'column' : 'row'}!important;--bloom-panel-axis:${axis}}\n`;
     const hidden = (index: number) =>
-      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:0!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;opacity:0!important;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n`;
+      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:0!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
     for (let index = 0; index < layout.panels.length; index++) {
       const p = layout.panels[index]!;
       rules += `${item(index)}{--bloom-panel-floating:${p.floating && lower < breakpointPx(p.floating.below) ? 1 : 0}}\n`;
@@ -139,8 +151,12 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
             : flexible && dim !== undefined
               ? 0
               : (p.span ?? 1);
-      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
-      rules += `@starting-style{${item(index).replace(group, `${group}[data-bloom-panel-ready]:not([data-bloom-panel-ordering])`)}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;opacity:0!important;margin-inline-start:0!important;margin-top:0!important}}\n`;
+      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-surface-presence:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+      const entering = item(index).replace(
+        group,
+        `${group}[data-bloom-panel-ready]:not([data-bloom-panel-ordering])`,
+      );
+      rules += `@starting-style{${entering}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin-inline-start:0!important;margin-top:0!important}${entering}:not(:has(${PANEL_MATERIAL})){opacity:0!important}}\n`;
     }
     if (pageDeck && !vertical) {
       const trackWidths = shown.map((panel) =>
@@ -165,13 +181,14 @@ ${root} [data-bloom-reading-envelope="${scope}"]{min-width:0!important}
 ${root} [data-bloom-shell-nav="${scope}"]{position:sticky!important;inset-inline-start:0;top:0;z-index:200;background-color:inherit}
 ${root} [data-bloom-shell-nav="${scope}"]{isolation:isolate}
 ${root} [data-bloom-deck-trailing="${scope}"]{display:flex;position:absolute;inset-inline-end:var(--bloom-frame-end);top:50%;transform:translateY(-50%);z-index:210;width:64px;min-height:96px;padding:8px;align-items:center;justify-content:center;visibility:visible}
-${root} [data-bloom-deck-trailing="${scope}"]>*{opacity:0;transition:opacity 150ms ease}
-${root} [data-bloom-deck-trailing="${scope}"]:is(:hover,:focus-within)>*{opacity:1}
+${root} [data-bloom-deck-trailing="${scope}"]>:not(.bloom-btn--surface){opacity:0;transition:opacity 150ms ease}
+${root} [data-bloom-deck-trailing="${scope}"]:is(:hover,:focus-within)>:not(.bloom-btn--surface){opacity:1}
+${surfaceRevealCss({ scope: trailing, shown: `${trailing}:hover, ${trailing}:focus-within` })}
 @supports(animation-timeline:scroll(root inline)){
 @keyframes ${scope}-deck-end{from{visibility:hidden}to{visibility:visible}}
 ${root} [data-bloom-deck-trailing="${scope}"]{position:fixed;inset-inline-end:0;animation:${scope}-deck-end steps(1,end) both;animation-timeline:scroll(root inline);animation-range:calc(100% - 1px) 100%}
 }
-@media(prefers-reduced-motion:reduce){${root} [data-bloom-deck-trailing="${scope}"]>*{transition:none}}
+@media(prefers-reduced-motion:reduce){${root} [data-bloom-deck-trailing="${scope}"]>*,${trailing} .bloom-btn--surface>*{transition:none}${trailing}{--bloom-surface-presence-ms:0ms}}
 
 ${root} [data-bloom-shell-nav="${scope}"]::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:var(--bloom-nav-overlay-surface);border-inline-end:1px solid var(--bloom-nav-overlay-border);box-shadow:var(--bloom-nav-overlay-shadow);opacity:0}
 @supports(animation-timeline:scroll(root inline)){
@@ -195,7 +212,7 @@ ${row}{width:100%!important;min-width:0!important}
       layout.panels.forEach((p, index) => {
         rules +=
           p.id === active?.id
-            ? `${item(index)}{--bloom-panel-alone-display:flex;--bloom-panel-multiple-display:none;--bloom-panel-visible:1;display:flex!important;flex:1 1 0px!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;opacity:1!important}`
+            ? `${item(index)}{--bloom-panel-alone-display:flex;--bloom-panel-multiple-display:none;--bloom-panel-visible:1;display:flex!important;flex:1 1 0px!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;opacity:1!important;--bloom-surface-presence:1}`
             : hidden(index);
       });
       rules += '}\n';

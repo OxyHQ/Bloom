@@ -1,5 +1,6 @@
 import type React from 'react';
-import { createContext, useContext, useEffect, useMemo } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type { ViewRef } from '../styles/native-refs';
 import {
   StyleSheet,
   View,
@@ -24,9 +25,15 @@ import { Text } from '../typography';
 import type { SidebarPalette } from './palette';
 import type { SidebarAvatar } from './types';
 import { IS_WEB } from '../styles/platform';
+import {
+  surfacePresenceStyle,
+  surfaceRevealCss,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
 
 /** The `duration-300 ease-in-out` morph. */
 export const MORPH_MS = 300;
+const MORPH_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 // ---------------------------------------------------------------------------
 //  Collapse progress, shared with every label slot: 0 expanded, 1 collapsed.
@@ -59,8 +66,34 @@ export function useSidebarCollapseProgress(collapsed: boolean): SharedValue<numb
 }
 
 /**
+ * How a part of the sidebar that shows only expanded (or only collapsed) fades
+ * on the web: through its presence, so a material control inside keeps its blur
+ * for the whole morph. Native fades the part itself with the morph's progress.
+ */
+export function useMorphPresence(
+  shown: boolean,
+  blur = 0,
+): { ref: (node: ViewRef | null) => void; style: ViewStyle | null } {
+  const reducedMotion = useReducedMotion();
+  const [node, setNode] = useState<ViewRef | null>(null);
+  const duration = reducedMotion ? 0 : MORPH_MS;
+  useSurfacePresenceContent(node, {
+    presence: shown ? 1 : 0,
+    duration,
+    easing: MORPH_EASING,
+    blur,
+  });
+  return {
+    ref: setNode,
+    style: IS_WEB ? surfacePresenceStyle(shown ? 1 : 0, duration) : null,
+  };
+}
+
+/**
  * A `Collapsible` slot: max-width + opacity + blur(3px) collapse to
- * nothing while the icon beside it stays pinned. The natural width is measured
+ * nothing while the icon beside it stays pinned. On the web the slot itself
+ * only clamps: it can hold material controls, so its fade and blur run through
+ * its presence, never an opacity or filter above them. The natural width is measured
  * on an unshrinking inner box, so the clamp can animate from it.
  *
  * Outside a sidebar (no progress in context) it follows `collapsed` directly.
@@ -80,16 +113,16 @@ export function Collapsible({
   const natural = useSharedValue(0);
   const animated = useAnimatedStyle(() => {
     const p = progress.value;
-    const base: ViewStyle = {
-      opacity: 1 - p,
+    return {
+      ...(IS_WEB ? null : { opacity: 1 - p }),
       maxWidth: p >= 1 ? 0 : p <= 0 || natural.value === 0 ? undefined : natural.value * (1 - p),
     };
-    if (IS_WEB) (base as { filter?: string }).filter = p > 0 ? `blur(${3 * p}px)` : 'none';
-    return base;
   }, [progress, natural]);
+  const fade = useMorphPresence(!collapsed, 3);
 
   return (
     <Animated.View
+      ref={fade.ref}
       style={[
         {
           flexDirection: 'row',
@@ -101,6 +134,7 @@ export function Collapsible({
         },
         style,
         animated,
+        fade.style,
       ]}
     >
       <View
@@ -126,6 +160,10 @@ export function Collapsible({
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-sidebar-web-css';
+const MATERIAL_BUTTON = '.bloom-btn--surface';
+const MATERIAL_PAINT = '.bloom-surface-paint';
+const ROW_ACTIONS = '[data-bloom-sidebar-row="hover"] > [data-bloom-sidebar-row-actions]';
+const ROW_ACTIONS_SHOWN = `[data-bloom-sidebar-row="hover"]:hover > [data-bloom-sidebar-row-actions], [data-bloom-sidebar-row="hover"]:focus-within > [data-bloom-sidebar-row-actions]`;
 const SEL = '[data-bloom-sidebar]';
 const WEB_CSS = `
 ${SEL} {
@@ -144,11 +182,14 @@ ${SEL}[data-bloom-sidebar="inset"]:focus-visible {
   box-shadow: inset 0 0 0 2px var(--bloom-sidebar-ring);
 }
 /* A row's "hover" actions: on a pointer that hovers they show with the row's
-   hover or focus; touch always draws them. */
+   hover or focus; touch always draws them. Actions holding material controls
+   reveal through their presence, never an opacity above them. */
 @media (hover: hover) {
-  [data-bloom-sidebar-row="hover"] > [data-bloom-sidebar-row-actions] { opacity: 0; transition: opacity 150ms ease; }
-  [data-bloom-sidebar-row="hover"]:hover > [data-bloom-sidebar-row-actions],
-  [data-bloom-sidebar-row="hover"]:focus-within > [data-bloom-sidebar-row-actions] { opacity: 1; }
+  ${ROW_ACTIONS}:not(:has(${MATERIAL_BUTTON})):not(:has(${MATERIAL_PAINT})) { opacity: 0; transition: opacity 150ms ease; }
+  ${ROW_ACTIONS_SHOWN} { opacity: 1; }
+${surfaceRevealCss({ scope: `${ROW_ACTIONS}:has(${MATERIAL_BUTTON})`, shown: ROW_ACTIONS_SHOWN })}
+${surfaceRevealCss({ scope: `${ROW_ACTIONS}:has(${MATERIAL_PAINT})`, shown: ROW_ACTIONS_SHOWN })}
+  ${ROW_ACTIONS} :has(> ${MATERIAL_PAINT}) > :not(${MATERIAL_PAINT}) { opacity: var(--bloom-surface-presence, 1); transition: opacity 150ms ease; }
 }
 `;
 

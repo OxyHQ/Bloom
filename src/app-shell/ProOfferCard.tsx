@@ -2,6 +2,11 @@ import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
+import {
+  surfacePresenceVars,
+  useEnteredPresence,
+  useSurfacePresenceContent,
+} from '../surface/use-surface-presence';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
@@ -57,6 +62,8 @@ import { IS_WEB } from '../styles/platform';
  */
 
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
+const ENTER_CSS_EASING = 'cubic-bezier(0, 0, 0.58, 1)';
+const ENTER_MS = 300;
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
 
 /** `--shadow-waitlist`, light and dark. */
@@ -204,12 +211,37 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   useEffect(() => {
     enter.value = reducedMotion
       ? 1
-      : withDelay(enterDelay, withTiming(1, { duration: 300, easing: EASE_OUT }));
+      : withDelay(enterDelay, withTiming(1, { duration: ENTER_MS, easing: EASE_OUT }));
   }, [enter, enterDelay, reducedMotion]);
+  // The card paints the material, so on the web it only rises: its fade runs
+  // through its presence (layers, shadow and content), never its own opacity.
   const enterStyle = useAnimatedStyle(
-    () => ({ opacity: enter.value, transform: [{ translateY: (1 - enter.value) * 16 }] }),
+    () => ({
+      ...(IS_WEB ? null : { opacity: enter.value }),
+      transform: [{ translateY: (1 - enter.value) * 16 }],
+    }),
     [enter],
   );
+  const [delayed, setDelayed] = useState(enterDelay <= 0);
+  useEffect(() => {
+    if (enterDelay <= 0) return;
+    const timer = setTimeout(() => setDelayed(true), enterDelay);
+    return () => clearTimeout(timer);
+  }, [enterDelay]);
+  const entered = useEnteredPresence(true);
+  const presence = reducedMotion || (entered && delayed) ? 1 : 0;
+  const presenceMs = reducedMotion ? 0 : ENTER_MS;
+  const [node, setNode] = useState<unknown>(null);
+  useSurfacePresenceContent(node, { presence, duration: presenceMs, easing: ENTER_CSS_EASING });
+  const presenceStyle: WebCssStyle | null = IS_WEB
+    ? {
+        ...surfacePresenceVars(presence, presenceMs),
+        boxShadow: presence ? palette.shadow : 'none',
+        transitionProperty: 'box-shadow',
+        transitionDuration: `${presenceMs}ms`,
+        transitionTimingFunction: ENTER_CSS_EASING,
+      }
+    : null;
 
   const narrow = viewport < BREAKPOINTS.sm;
   const position: ViewStyle =
@@ -240,6 +272,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
 
   return (
     <Animated.View
+      ref={setNode}
       {...dirProps}
       role="complementary"
       accessibilityLabel={accessibilityLabel}
@@ -257,6 +290,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
           boxShadow: palette.shadow,
         },
         enterStyle,
+        presenceStyle,
         style,
         { backgroundColor: 'transparent', ...material.vars },
       ]}

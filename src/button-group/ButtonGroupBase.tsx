@@ -21,7 +21,9 @@ import { useThemeRecipe } from '../theme/use-theme-paint';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { hairlineOn, useSurfaceFillRecipe } from '../styles/surface-levels';
 import { BUTTON_RADIUS, BUTTON_SHADOW, resolveCanonicalButtonPalette } from '../button/shared';
-import { moveSelection, SELECTION_SPRING } from '../motion/selection-motion';
+import { moveSelection, SELECTION_FADE, SELECTION_SPRING } from '../motion/selection-motion';
+import { surfacePresenceStyle, useEnteredPresence } from '../surface/use-surface-presence';
+import { IS_WEB } from '../styles/platform';
 import { useGroupSelection } from './use-group-selection';
 import type { ButtonProps } from '../button/types';
 import type { SurfaceProps } from '../surface/types';
@@ -93,15 +95,18 @@ export function createButtonGroup(
       height.value = snap ? layout.height : withSpring(layout.height, SELECTION_SPRING);
       moveSelection(x, opacity, layout.x);
     }, [layout, x, y, width, height, opacity]);
+    // The selection is a Surface: on the web it fades through its presence,
+    // never an opacity on the wrapper above its material.
     const selectionStyle = useAnimatedStyle(
       () => ({
         width: width.value,
         height: height.value,
-        opacity: opacity.value,
+        ...(IS_WEB ? null : { opacity: opacity.value }),
         transform: [{ translateX: x.value }, { translateY: y.value }],
       }),
       [x, y, width, height, opacity],
     );
+    const selectionPresence = useEnteredPresence(!!layout, !!layout || initialized.current) ? 1 : 0;
     const selectionPalette = recipe.paint.selection;
     const items = Children.toArray(children).filter(isValidElement);
     const showDividers = dividers ?? true;
@@ -181,7 +186,13 @@ export function createButtonGroup(
                 <Animated.View
                   pointerEvents="none"
                   testID={testID ? `${testID}-selection` : undefined}
-                  style={[{ position: 'absolute', left: 0, top: 0 }, selectionStyle]}
+                  style={[
+                    { position: 'absolute', left: 0, top: 0 },
+                    selectionStyle,
+                    IS_WEB
+                      ? surfacePresenceStyle(selectionPresence, SELECTION_FADE.duration)
+                      : null,
+                  ]}
                 >
                   <Surface
                     radius={BUTTON_RADIUS}
