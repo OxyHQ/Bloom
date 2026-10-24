@@ -15,8 +15,10 @@ import type { FloatingAnchor } from '../floating/types';
 export interface ContextMenuContextValue {
   open: boolean;
   /**
-   * Open at a viewport point. Native passes `null` — it presents a sheet, which
-   * anchors to the screen rather than to the press.
+   * Open at a viewport point. Native passes the press point only for a
+   * controlled caller to store — it presents a sheet, which anchors to the
+   * screen rather than to the press. In the controlled form this ASKS: the
+   * caller's `anchor` decides.
    */
   openAt: (anchor: FloatingAnchor | null) => void;
   close: () => void;

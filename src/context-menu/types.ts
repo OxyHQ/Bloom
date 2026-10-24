@@ -15,15 +15,44 @@ import type {
 } from '../floating/types';
 
 /**
- * A context menu is UNCONTROLLED by construction — the open position comes from
- * the pointer event that opens it, so there is no `open` a caller could set that
- * would mean anything. Radix's `ContextMenu.Root` takes the same view and
- * publishes only `onOpenChange`.
+ * Where a context menu opens, in viewport (CSS client) coordinates.
+ *
+ * A POINT is what a pointer gives — the menu's corner sits on it, exactly as a
+ * right-click places it. A RECT anchors to a box instead (a button the menu
+ * should open beside), with the same fit / flip / clamp against the viewport.
+ * Native ignores the position: a context menu is a bottom sheet there.
+ */
+export type ContextMenuAnchor =
+  | { x: number; y: number }
+  | { top: number; right: number; bottom: number; left: number };
+
+/**
+ * A context menu has ONE fact: where it is anchored. Open means "anchored
+ * somewhere", so there is no separate `open` that could disagree with it.
+ *
+ * Uncontrolled (the default): the trigger's right-click (web) or long press
+ * (native) supplies the anchor, and `onOpenChange` reports it.
+ *
+ * Controlled: pass `anchor`, and the menu is open exactly while it is non-null
+ * — positioned at it on web, presented as the bottom sheet on native. Every
+ * dismissal (outside press, Escape, Tab, a row that closes the menu, a sheet
+ * swipe) calls `onOpenChange(false)` and `onAnchorChange(null)`; clear the
+ * anchor in response. A `ContextMenuTrigger` is optional in this form.
  */
 export interface ContextMenuProps {
   children?: React.ReactNode;
+  /**
+   * Controlled anchor. `null` is closed; a point or rect is open there. Omit
+   * (leave `undefined`) for the uncontrolled, trigger-driven menu.
+   */
+  anchor?: ContextMenuAnchor | null;
   /** Called whenever the menu opens or closes, from any cause. */
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Called with the anchor the menu asks for: the pointer point when a trigger
+   * opens it, `null` when it is dismissed. What a controlled caller stores.
+   */
+  onAnchorChange?: (anchor: ContextMenuAnchor | null) => void;
 }
 
 export interface ContextMenuTriggerProps {

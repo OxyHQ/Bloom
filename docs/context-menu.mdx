@@ -1,6 +1,6 @@
 ---
 title: ContextMenu
-description: The menu a right-click opens on web and a long press opens on native.
+description: The menu a right-click opens on web and a long press opens on native — or code opens at a point.
 order: 16
 ---
 
@@ -52,9 +52,40 @@ On native there is no cursor to anchor to, so a long press presents the same bot
 
 The native trigger (without `asChild`) times the hold off raw touch events and never takes the touch responder. On Android the responder's view intercepts every later move of its touch, so a `Pressable` trigger kept a horizontal `ScrollView` inside it — a code block in a chat turn — from scrolling. Taps still reach whatever the content makes pressable; a drag past 10dp, an early lift or a scroller taking the touch cancels the hold, and assistive tech opens the menu through the `longpress` accessibility action. With `asChild` your own element takes the long press, responder and all.
 
-## No `open` prop, on purpose
+## Opening it from code: `anchor`
 
-`ContextMenu` is uncontrolled by construction. Its open POSITION comes from the pointer event that opened it, so there is no `open` a caller could set that would mean anything — Radix's `ContextMenu.Root` takes the same view. What you get instead is `onOpenChange`:
+A context menu has ONE fact — where it is anchored — so there is still no `open` prop that could disagree with it. To open one from code (a toolbar button's handler, a right-click forwarded from outside the page, a keyboard shortcut), pass that fact instead:
+
+```tsx
+import { ContextMenu, ContextMenuContent, ContextMenuItem, type ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
+
+const [anchor, setAnchor] = useState<ContextMenuAnchor | null>(null);
+
+<Button onPress={() => setAnchor({ x: lastPointer.x, y: lastPointer.y })}>More</Button>
+
+<ContextMenu anchor={anchor} onAnchorChange={setAnchor}>
+  <ContextMenuContent>
+    <ContextMenuItem onPress={rename}>Rename</ContextMenuItem>
+    <ContextMenuItem onPress={remove}>Delete</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
+```
+
+| Prop | Type | |
+| --- | --- | --- |
+| `anchor` | `ContextMenuAnchor \| null` | Controlled. Open exactly while non-null; omit it (`undefined`) for the right-click menu. |
+| `onAnchorChange` | `(anchor: ContextMenuAnchor \| null) => void` | The anchor the menu asks for: a trigger's point when one opens it, `null` on every dismissal. |
+| `onOpenChange` | `(open: boolean) => void` | Fires in both forms, from any cause. |
+
+`ContextMenuAnchor` is a viewport point `{ x, y }` (CSS client coordinates — `event.clientX/clientY`) or a rect `{ top, right, bottom, left }` to open beside a box. Either goes through the same fit / flip / clamp a right-click does, so a point at the bottom-right corner opens the menu up and to the left, on screen.
+
+- **Dismissal asks; the caller decides.** An outside press, <kbd>Esc</kbd>, <kbd>Tab</kbd>, a row that closes the menu and (native) a sheet swipe all call `onOpenChange(false)` and `onAnchorChange(null)`. The menu stays open until you clear `anchor`.
+- **Focus lands on the panel, not a row**, as a desktop menu opened from code does: nothing is highlighted, <kbd>↓</kbd> moves to the first row and <kbd>↑</kbd> to the last, and every other menu key works at once. A new `anchor` while open is a new open (moved, focus re-taken).
+- **No trigger needed.** Without a `ContextMenuTrigger`, focus returns on close to the element that held it before the open (if it is still in the document). With one, it returns to the trigger, and the trigger's right-click no longer opens the menu by itself — it calls `onAnchorChange({ x, y })` with the click point for you to store.
+- **Sub-menus and keys are unchanged**: flyouts, → / ←, the escape order and row activation are the right-click menu's.
+- **Native** presents the same bottom sheet a long press does while `anchor` is non-null; the position is ignored. A trigger's long press reports the press point.
+
+Without `anchor` the menu is the uncontrolled right-click menu, exactly as before. `onOpenChange` still reports it:
 
 ```tsx
 <ContextMenu onOpenChange={(open) => setDimmed(open)}>

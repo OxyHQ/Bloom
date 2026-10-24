@@ -46,7 +46,12 @@ export const MENU_ROW_SELECTOR =
 /** A panel, so a nested panel's rows are never counted as this one's. */
 const MENU_PANEL_SELECTOR = '[role="menu"]';
 
-export type MenuFocusEdge = 'first' | 'last';
+/**
+ * `'panel'` focuses the menu itself with no row active, the way a desktop menu
+ * opens from code: nothing is highlighted, and ↓ / ↑ then land on the first /
+ * last row.
+ */
+export type MenuFocusEdge = 'first' | 'last' | 'panel';
 
 /**
  * Where focus should land the next time the menu's panel is ready — set by a
@@ -108,25 +113,42 @@ export function useReturnFocusOnClose(
   open: boolean,
   isInside: (element: Element) => boolean,
 ): void {
+  const target = useCallback(() => triggerControl(anchorRef.current), [anchorRef]);
+  useRestoreFocusOnClose(target, open, isInside);
+}
+
+/**
+ * {@link useReturnFocusOnClose} for a surface with no trigger to return to:
+ * `target` resolves, AT the close, the element focus should go back to (`null`
+ * leaves focus alone). A `ContextMenu` opened from its `anchor` prop resolves
+ * the element that held focus before it opened.
+ */
+export function useRestoreFocusOnClose(
+  target: () => HTMLElement | null | undefined,
+  open: boolean,
+  isInside: (element: Element) => boolean,
+): void {
   const wasOpen = useRef(open);
   const isInsideRef = useRef(isInside);
   isInsideRef.current = isInside;
+  const targetRef = useRef(target);
+  targetRef.current = target;
   useEffect(() => {
     const closed = wasOpen.current && !open;
     wasOpen.current = open;
     if (!closed || typeof document === 'undefined') return undefined;
     const active = document.activeElement;
     if (!active || active === document.body || isInsideRef.current(active)) {
-      triggerControl(anchorRef.current)?.focus({ preventScroll: true });
+      targetRef.current()?.focus({ preventScroll: true });
       return undefined;
     }
     const timer = setTimeout(() => {
       if (document.activeElement === document.body && !active.isConnected) {
-        triggerControl(anchorRef.current)?.focus({ preventScroll: true });
+        targetRef.current()?.focus({ preventScroll: true });
       }
     }, MENU_MOTION_DURATION + 50);
     return () => clearTimeout(timer);
-  }, [open, anchorRef]);
+  }, [open]);
 }
 
 /** Whether an element is one of the menu surfaces — any panel, any depth. */
@@ -183,6 +205,16 @@ export function useMenuTriggerKeys(
   useReturnFocusOnClose(anchorRef, open, isInMenuSurface);
 }
 
+/**
+ * Focus the panel itself. It is not a tab stop (`tabindex=-1`) and draws no
+ * ring: being focused only gives the menu's keys somewhere to land.
+ */
+function focusPanel(panel: HTMLElement): void {
+  if (!panel.hasAttribute('tabindex')) panel.setAttribute('tabindex', '-1');
+  panel.style.outline = 'none';
+  panel.focus({ preventScroll: true });
+}
+
 /** The enabled rows that belong to `panel`, in document order. */
 function menuRows(panel: Element): HTMLElement[] {
   // The owner is the nearest `role="menu"` — the panel itself, or (for a sub
@@ -209,6 +241,11 @@ export function useMenuPanelKeys(
     if (!open || !panel || !edge?.current) return;
     const land = () => {
       if (!edge.current) return true;
+      if (edge.current === 'panel') {
+        edge.current = null;
+        focusPanel(panel);
+        return true;
+      }
       const rows = menuRows(panel);
       const target = edge.current === 'last' ? rows[rows.length - 1] : rows[0];
       if (!target) return false;

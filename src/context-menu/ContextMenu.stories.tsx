@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { Button } from '../button';
 import { Card } from '../card';
 import { Text } from '../typography';
 import {
@@ -16,6 +17,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
+  type ContextMenuAnchor,
 } from './index';
 
 const meta: Meta = {
@@ -93,6 +95,66 @@ export const WithSelectionAndSubmenu: Story = {
                 <ContextMenuItem inset>Spam</ContextMenuItem>
               </ContextMenuSubContent>
             </ContextMenuSub>
+          </ContextMenuContent>
+        </ContextMenu>
+      </View>
+    );
+  },
+};
+
+/**
+ * CONTROLLED, with no trigger: a menu opened by code at a point — here the last
+ * pointer position, the way a browser opens a menu for a toolbar button or a
+ * right-click forwarded from outside the page. The menu is open exactly while
+ * `anchor` is non-null; every dismissal asks for it to be cleared.
+ */
+export const ControlledAnchor: Story = {
+  parameters: { controls: { disable: true } },
+  render: function ControlledAnchorContextMenu() {
+    const [anchor, setAnchor] = useState<ContextMenuAnchor | null>(null);
+    const [last, setLast] = useState('idle');
+    const pointer = useRef<{ x: number; y: number } | null>(null);
+    useEffect(() => {
+      if (typeof document === 'undefined') return undefined;
+      const onPointerDown = (event: PointerEvent) => {
+        pointer.current = { x: event.clientX, y: event.clientY };
+      };
+      document.addEventListener('pointerdown', onPointerDown, true);
+      return () => document.removeEventListener('pointerdown', onPointerDown, true);
+    }, []);
+    const choose = (value: string) => () => setLast(value);
+    return (
+      <View style={{ width: 320, maxWidth: '100%', gap: 16 }}>
+        <Text testID="anchor-result">
+          last: {last} · {anchor ? 'open' : 'closed'}
+        </Text>
+        <Button testID="anchor-behind" onPress={choose('behind')}>
+          Behind the menu
+        </Button>
+        <Button testID="anchor-open" onPress={() => setAnchor(pointer.current ?? { x: 24, y: 24 })}>
+          Open menu here
+        </Button>
+        <Button
+          testID="anchor-corner"
+          onPress={() => setAnchor({ x: window.innerWidth - 4, y: window.innerHeight - 4 })}
+        >
+          Open at the bottom-right corner
+        </Button>
+        <ContextMenu anchor={anchor} onAnchorChange={setAnchor}>
+          <ContextMenuContent testID="anchor-panel">
+            <ContextMenuItem onPress={choose('rename')}>Rename</ContextMenuItem>
+            <ContextMenuItem onPress={choose('duplicate')}>Duplicate</ContextMenuItem>
+            <ContextMenuSub>
+              <ContextMenuSubTrigger>Move to…</ContextMenuSubTrigger>
+              <ContextMenuSubContent testID="anchor-sub-panel">
+                <ContextMenuItem onPress={choose('inbox')}>Inbox</ContextMenuItem>
+                <ContextMenuItem onPress={choose('archive')}>Archive</ContextMenuItem>
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+            <ContextMenuSeparator />
+            <ContextMenuItem tone="danger" onPress={choose('delete')}>
+              Delete
+            </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
       </View>

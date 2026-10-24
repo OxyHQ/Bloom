@@ -6,6 +6,9 @@ import { BloomScope } from '../appearance';
  *
  * Everything below the anchor — portal, overlay rank, dismiss layer, placement —
  * is `floating/FloatingPanel`, shared with the other three anchored families.
+ *
+ * The `anchor` prop hands the same point in from outside (a menu opened by
+ * code, with no element to right-click), and the rest is identical.
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import type { View } from 'react-native';
@@ -18,6 +21,7 @@ import {
   isInMenuSurface,
   useMenuFocusIntent,
   useMenuPanelKeys,
+  useRestoreFocusOnClose,
   useReturnFocusOnClose,
 } from '../floating/menu-keyboard';
 import { createMenuRows } from '../floating/menu-rows';
@@ -25,32 +29,74 @@ import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { FloatingAnchor } from '../floating/types';
+import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 import { ContextMenuProvider, useContextMenu } from './context';
+import { pointAnchor, useControlledAnchor } from './shared';
 import type { ContextMenuContentProps, ContextMenuProps, ContextMenuTriggerProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CONTEXT_MENU_MESSAGES } from './messages';
 
-export function ContextMenu({ children, onOpenChange }: ContextMenuProps) {
-  const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);
+export function ContextMenu({
+  children,
+  anchor: anchorProp,
+  onOpenChange,
+  onAnchorChange,
+}: ContextMenuProps) {
+  const [ownAnchor, setOwnAnchor] = useState<FloatingAnchor | null>(null);
+  const controlledAnchor = useControlledAnchor(anchorProp);
+  const controlled = controlledAnchor !== undefined;
+  const anchor = controlled ? controlledAnchor : ownAnchor;
+  const open = anchor !== null;
   const focusIntent = useMenuFocusIntent();
+
+  // A controlled open is a menu opened by code, and opens the way a desktop
+  // menu does: focus on the PANEL with no row highlighted, so the keys act at
+  // once and ↓ lands on the first row. A NEW position while open is a new open
+  // too. Layout phase, so the intent is set before the panel's passive effect
+  // looks for it.
+  const { request } = focusIntent;
+  useIsomorphicLayoutEffect(() => {
+    if (controlledAnchor) request('panel');
+  }, [controlledAnchor, request]);
+
+  // With no trigger to return to, focus goes back to wherever it was before
+  // the menu took it — read in the layout phase of the opening commit, before
+  // the panel focuses its first row. A mounted trigger's own return runs FIRST
+  // (a child's effects precede its parent's), so this finds focus already back
+  // on the trigger and leaves it there.
+  const focusBeforeOpen = useRef<HTMLElement | null>(null);
+  useIsomorphicLayoutEffect(() => {
+    if (!open || typeof document === 'undefined') return;
+    const active = document.activeElement as HTMLElement | null;
+    focusBeforeOpen.current =
+      active && active !== document.body && !isInMenuSurface(active) ? active : null;
+  }, [open]);
+  const focusTargetBeforeOpen = useCallback(() => {
+    const target = focusBeforeOpen.current;
+    return target?.isConnected ? target : null;
+  }, []);
+  useRestoreFocusOnClose(focusTargetBeforeOpen, open, isInMenuSurface);
 
   const value = useMemo(
     () => ({
       // The anchor IS the open state: a context menu with nowhere to sit is not
       // open, and two facts that must always agree are better kept as one.
-      open: anchor !== null,
+      // Controlled, the caller owns that one fact and is asked to change it.
+      open,
       openAt: (next: FloatingAnchor | null) => {
-        setAnchor(next);
+        if (!controlled) setOwnAnchor(next);
         onOpenChange?.(next !== null);
+        onAnchorChange?.(next ? pointAnchor(next) : null);
       },
       close: () => {
-        setAnchor(null);
+        if (!controlled) setOwnAnchor(null);
         onOpenChange?.(false);
+        onAnchorChange?.(null);
       },
       anchor,
       focusIntent,
     }),
-    [anchor, onOpenChange, focusIntent],
+    [open, anchor, controlled, onOpenChange, onAnchorChange, focusIntent],
   );
 
   return <ContextMenuProvider value={value}>{children}</ContextMenuProvider>;
