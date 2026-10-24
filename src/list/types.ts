@@ -44,7 +44,8 @@ export interface VirtualListProps<T> {
   contentContainerStyle?: StyleProp<ViewStyle>;
   /**
    * First-paint row-height estimate (px) used before a row is measured. On web
-   * each row is measured after mount and this is only the initial guess.
+   * each row is measured after mount and this is only the initial guess; native
+   * FlashList v2 measures without one.
    */
   estimatedItemSize?: number;
   /** Web: extra rows mounted beyond the viewport (virtualization overscan). */
@@ -52,7 +53,7 @@ export interface VirtualListProps<T> {
   /**
    * Called once each time the end of the list (footer included) comes within
    * `onEndReachedThreshold` viewports — native from the list's own scroller, web
-   * from the window. Re-arms when the user scrolls back out of range or the row
+   * from the Screen's (the window, or an element-kind panel's own element). Re-arms when the user scrolls back out of range or the row
    * count changes; never fires while `data` is empty. Guard on your own
    * in-flight flag: a second approach can come before the first page lands.
    */
@@ -66,22 +67,26 @@ export interface VirtualListProps<T> {
   /** Test id applied to the outer container. */
   testID?: string;
 
-  // --- FlatList / @legendapp/list tuning knobs --------------------------------
-  // Honored on native where applicable; accepted-but-ignored on web (the window
-  // virtualizer manages its own mounted-row budget). Declared so the type stays
-  // a precise drop-in for the existing call sites.
+  // --- FlashList / FlatList / @legendapp/list tuning knobs ---------------------
+  // Honored by the native engine that understands them (FlashList when the app
+  // installs it, `FlatList` otherwise); accepted-but-ignored elsewhere, and on
+  // web, where the virtualizer manages its own mounted-row budget. Declared so
+  // one call site type-checks on every platform and engine.
   removeClippedSubviews?: boolean;
   maxToRenderPerBatch?: number;
   windowSize?: number;
   initialNumToRender?: number;
   recycleItems?: boolean;
+  /** FlashList keeps it on by default; `false` turns it off. */
   maintainVisibleContentPosition?: boolean;
+  /** FlashList: rows of one type recycle into each other. Give each row shape its own. */
+  getItemType?: (item: T, index: number) => string | number | undefined;
 }
 
 /** Imperative handle exposed via `ref`. */
 export interface VirtualListHandle {
-  /** Scroll to an absolute offset (px). Web scrolls the document. */
+  /** Scroll to an absolute offset (px). Web scrolls the Screen's scroller: the document or its panel. */
   scrollToOffset: (params?: { offset?: number; animated?: boolean }) => void;
-  /** Scroll to a coordinate. Web scrolls the document to `y`. */
+  /** Scroll to a coordinate. Web scrolls the Screen's scroller to `y`. */
   scrollTo: (params?: { x?: number; y?: number; animated?: boolean }) => void;
 }

@@ -6,8 +6,9 @@ order: 52
 
 # VirtualList
 
-Bloom's list. On web it windows against the scroller; on native it is a
-virtualized list. Same props either way.
+Bloom's list. On web it windows against the scroller of the Screen in front;
+on native it is FlashList when the app installs it, `FlatList` otherwise. Same
+props either way.
 
 ```tsx
 import { VirtualList } from '@oxy.so/bloom/list';
@@ -57,8 +58,8 @@ Both platforms honour it with the same semantics. `onEndReachedThreshold` is in
 viewports and defaults to 2, as `FlatList`. The end includes `ListFooterComponent`.
 It re-arms when the user scrolls back out of range or the row count changes, so
 a page that still leaves the end in range asks again. It never fires while `data`
-is empty. On web the window is the scroller: an end marker after the footer is
-observed against the viewport, so no footer sentinel of your own is needed.
+is empty. On web an end marker after the footer is observed against the list's
+scroller (below), so no footer sentinel of your own is needed.
 
 ```tsx
 onEndReached={() => { if (!isFetching && hasMore) fetchNext(); }}
@@ -70,10 +71,50 @@ Without stable keys, rows recycle onto the wrong data: a list that reorders
 shows the previous row's content for a frame, and inputs inside rows keep the
 wrong value. Use the entity's id, never the index.
 
-## Native tuning props
+## Web: the Screen in front decides the scroller
 
-`removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize`,
-`initialNumToRender`, `recycleItems` and `maintainVisibleContentPosition` are
-honoured on native where applicable and accepted-but-ignored on web, where the
-window virtualizer manages its own mounted-row budget. They are on the type so
-one call site type-checks on both platforms.
+The list creates no scroll container. It reads the nearest `Screen`'s viewport:
+
+| Screen                                         | the list scrolls             |
+| ---------------------------------------------- | ---------------------------- |
+| document flow (`documentScroll`, a document panel), or no Screen | the window |
+| an element-kind panel's `Screen scroll="auto"` | that panel's own element     |
+
+Rows, `scrollMargin`, `onEndReached` and the `ref` handle all follow that
+scroller, so the same call site works in a full-page route and in a side panel,
+and keeps working when a panel changes flow. There is no prop for it.
+
+A screen that is not in front (`Screen active={false}`, a hidden panel) leaves
+its list idle: rows measured at `display: none` would move a scroller the reader
+is still using elsewhere. The list's origin is re-read whenever its box could
+have moved — shown again, or content above it grew — never from a box-less
+wrapper.
+
+`screen={{ active, restoration }}` binds the window to the Screen's chrome only
+when no Screen viewport already does; a Screen that owns its viewport drives
+the header and bar from it.
+
+## Native: FlashList when installed
+
+`@shopify/flash-list` (v2) is an optional peer. Install it and every native
+`VirtualList` recycles its rows through FlashList; leave it out and the same
+call sites render through `FlatList`. The props, the Screen binding (header and
+bar insets, chrome motion, restoration) and the `ref` handle are identical, so
+switching is an install, not a migration.
+
+```sh
+npx expo install @shopify/flash-list
+```
+
+## Tuning props
+
+Each is honoured by the engine that understands it and accepted-but-ignored
+elsewhere, so one call site type-checks on every platform:
+
+| prop | honoured by |
+| ---- | ----------- |
+| `getItemType` | FlashList: rows of one type recycle into each other, so give each row shape its own |
+| `maintainVisibleContentPosition` | FlashList (on by default; `false` turns it off) |
+| `removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize`, `initialNumToRender` | `FlatList` |
+| `estimatedItemSize`, `overscan` | web |
+| `recycleItems` | nothing; kept for `@legendapp/list` call sites |

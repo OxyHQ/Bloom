@@ -8,10 +8,11 @@ import { createRoot, type Root } from 'react-dom/client';
 import { getByText, queryByText } from '@testing-library/dom';
 import '@testing-library/jest-dom';
 
+import { Platform } from 'react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Screen, useScreen } from '../screen';
-import type { ScreenContextValue } from '../screen/context';
-import { VirtualList } from '../list/index.web';
+import { Screen, useScreen, useScreenViewport } from '../screen';
+import { ScreenHostContext, type ScreenContextValue } from '../screen/context';
+import { VirtualList, type VirtualListHandle } from '../list/index.web';
 
 // `@tanstack/react-virtual` measures rows via ResizeObserver + getBoundingClientRect,
 // neither of which jsdom implements with a real layout engine. Stub both so the
@@ -331,5 +332,52 @@ describe('VirtualList (web) onEndReached', () => {
   it('observes nothing without a handler', () => {
     mount(list(rows(3)));
     expect(ObserverStub.instances).toHaveLength(0);
+  });
+
+  it('paginates and scrolls against an element-kind panel, never the window', () => {
+    const os = Platform.OS;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
+    let viewport: ReturnType<typeof useScreenViewport> = null;
+    let screen: ScreenContextValue | undefined;
+    function Probe() {
+      viewport = useScreenViewport();
+      screen = useScreen();
+      return null;
+    }
+    const ref = React.createRef<VirtualListHandle>();
+    try {
+      mount(
+        <BloomThemeProvider fonts={false}>
+          <ScreenHostContext.Provider value={{ active: true, kind: 'element' }}>
+            <Screen scroll="auto">
+              <Probe />
+              <VirtualList<Row>
+                ref={ref}
+                screen={{}}
+                data={rows(3)}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => <span>{item.label}</span>}
+                onEndReached={jest.fn()}
+              />
+            </Screen>
+          </ScreenHostContext.Provider>
+        </BloomThemeProvider>,
+      );
+      expect(viewport!.kind).toBe('element');
+      const panel = viewport!.scrollRef!.current as HTMLElement;
+      expect(live()[0]!.options.root).toBe(panel);
+      panel.scrollTo = jest.fn();
+      ref.current!.scrollToOffset({ offset: 40, animated: false });
+      expect(panel.scrollTo).toHaveBeenCalledWith({ top: 40, behavior: 'auto' });
+      // The panel drives the Screen; a window scroll is not this list's.
+      act(() => {
+        Object.defineProperty(window, 'scrollY', { configurable: true, value: 120 });
+        window.dispatchEvent(new Event('scroll'));
+      });
+      expect(screen!.scrollY.value).toBe(0);
+    } finally {
+      Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
+    }
   });
 });
