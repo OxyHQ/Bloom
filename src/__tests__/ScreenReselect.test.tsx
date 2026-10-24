@@ -81,3 +81,24 @@ it('reselects the screen from the open inner tab, and still selects the others',
   fireEvent.press(screen.getByLabelText('B'));
   expect(select).toHaveBeenCalledWith('b');
 });
+
+it('answers for the screen beneath again once the one pushed over it leaves', () => {
+  const below = jest.fn();
+  const above = jest.fn();
+  const tree = (pushed: boolean) => (
+    <BloomThemeProvider mode="light">
+      <ScreenReselectScope>
+        <Trigger />
+        <Screen scroll="none" reselect={{ refresh: below }} />
+        {pushed ? <Screen scroll="none" reselect={{ refresh: above }} /> : null}
+      </ScreenReselectScope>
+    </BloomThemeProvider>
+  );
+  const view = render(tree(true));
+  act(() => reselect());
+  expect(above).toHaveBeenCalledTimes(1);
+  expect(below).not.toHaveBeenCalled();
+  view.rerender(tree(false));
+  act(() => reselect());
+  expect(below).toHaveBeenCalledTimes(1);
+});

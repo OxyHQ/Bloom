@@ -38,6 +38,12 @@ export interface ScreenProps extends ViewProps {
   bottomBarKeyboardBehavior?: 'hide' | 'visible' | 'follow';
   /** Standalone action; with navigation use BottomBar.action instead. */
   primaryAction?: ReactNode;
+  /**
+   * What reselecting this screen means — pressing the place the reader is
+   * already on: usually `{ refresh }`. Answered only while the screen is active.
+   * Content inside the screen can declare it with `useScreenReselectHandler`.
+   */
+  reselect?: import('./reselect').ScreenReselectHandler;
   /** Initial footprint before layout; include any safe area in custom values. */
   headerHeight?: number;
   bottomBarHeight?: number;
