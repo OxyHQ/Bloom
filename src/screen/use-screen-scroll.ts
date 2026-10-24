@@ -11,6 +11,7 @@ import {
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
 import { recordScrollMetrics } from '../layout/scroll-metrics-events';
 import { useScreenContext, type ScreenContextValue } from './context';
+import { useRegisterScreenScroller } from './reselect';
 import type { ScreenScrollOptions } from './types';
 
 type ScreenScrollState = Pick<
@@ -34,6 +35,7 @@ export function useScreenScroll({
   active: requestedActive = true,
   handler = null,
   restoration,
+  scrollToOffset,
 }: ScreenScrollOptions = {}) {
   const context = useScreenContext();
   const ownScrollY = useSharedValue(0);
@@ -77,6 +79,10 @@ export function useScreenScroll({
       if (screen.activeScrollerId.value === id) screen.activeScrollerId.value = null;
     };
   }, [active, id, screen, previousY, reducedMotion]);
+  useRegisterScreenScroller(
+    scrollToOffset ? { offset: () => previousY.value, scrollToOffset } : null,
+    active && context !== null,
+  );
   const record = useCallback(
     (event: NativeScrollEvent) =>
       restoration?.onScroll({ nativeEvent: event } as NativeSyntheticEvent<NativeScrollEvent>),

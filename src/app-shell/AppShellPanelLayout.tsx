@@ -33,6 +33,7 @@ import { ScrollOffsetProvider } from '../layout/scroll-offset';
 import { ScreenScope } from '../layout/screen-scope';
 import { useOptionalScrollRestorationContext } from '../scroll/context';
 import { ScreenContext } from '../screen/context';
+import { ScreenReselectScope } from '../screen/reselect';
 import { ScreenHostContext } from '../screen/context';
 import type { ScreenProps } from '../screen/types';
 import { ResizeHandle } from '../layout/ResizeHandle';
@@ -719,15 +720,22 @@ export function createPanelLayoutView(
     return (
       <PanelScrollScope id={panel.id} active={active}>
         {panel.navigation ? (
-          <PanelNavigation
-            id={panel.id}
-            active={active}
-            options={{
-              ...panel.navigation,
-              render: (entry, navigation) =>
-                renderPanel(renderScreen(panel.navigation!.render(entry, navigation)), navigation),
-            }}
-          />
+          // A panel with navigation of its own is a stack of screens of its own:
+          // its reselect answers for its screens, not the main one's.
+          <ScreenReselectScope>
+            <PanelNavigation
+              id={panel.id}
+              active={active}
+              options={{
+                ...panel.navigation,
+                render: (entry, navigation) =>
+                  renderPanel(
+                    renderScreen(panel.navigation!.render(entry, navigation)),
+                    navigation,
+                  ),
+              }}
+            />
+          </ScreenReselectScope>
         ) : (
           renderPanel(renderScreen(panel.content))
         )}

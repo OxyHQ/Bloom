@@ -4,6 +4,7 @@ import { fireEvent, render, within } from '@testing-library/react-native';
 import { AppShell } from '../app-shell';
 import { RiCompass3Line, RiHomeLine, RiQuillPenLine, RiUserLine } from '../icons/remix';
 import { PortalOutlet, PortalProvider } from '../portal';
+import { Screen, useScreenReselectHandler } from '../screen';
 import type { AppDestination } from '../tab-pager';
 import { TabPagerProvider } from '../tab-pager/expo-router/TabPagerProvider';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -28,6 +29,12 @@ const DESTINATIONS: AppDestination[] = [
   { name: 'you', href: '/you', bar: true, label: 'You', icon: RiUserLine, badge: 2 },
 ];
 
+const refresh = jest.fn();
+function Home() {
+  useScreenReselectHandler({ refresh });
+  return null;
+}
+
 function renderShell(width: number, drawer?: { onDrawerOpenChange: (open: boolean) => void }) {
   jest
     .spyOn(ReactNative, 'useWindowDimensions')
@@ -43,7 +50,11 @@ function renderShell(width: number, drawer?: { onDrawerOpenChange: (open: boolea
             drawerOpen={drawer !== undefined}
             onDrawerOpenChange={drawer?.onDrawerOpenChange}
             primaryAction={{ icon: RiQuillPenLine, label: 'Compose', onPress: () => {} }}
-          />
+          >
+            <Screen scroll="none">
+              <Home />
+            </Screen>
+          </AppShell>
         </TabPagerProvider>
         <PortalOutlet />
       </PortalProvider>
@@ -77,4 +88,11 @@ it('closes the drawer once a destination is chosen in it', () => {
   fireEvent.press(screen.getByTestId('sidebar-item-explore'));
   expect(onDrawerOpenChange).toHaveBeenCalledWith(false);
   expect(mockRouter.navigate).toHaveBeenCalledWith('/explore');
+});
+
+it('reselects the screen in front when its destination is pressed again', () => {
+  const screen = renderShell(1440);
+  fireEvent.press(screen.getByTestId('sidebar-item-index'));
+  expect(refresh).toHaveBeenCalledTimes(1);
+  expect(mockRouter.navigate).not.toHaveBeenCalledWith('/');
 });

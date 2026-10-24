@@ -32,6 +32,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
+import { useScreenReselect } from '../screen/reselect';
 import type { Theme } from '../theme/types';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
@@ -403,7 +404,8 @@ function useTabsContext(component: string): TabsContextValue {
 const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function TabsBar(
   {
     value,
-    onValueChange,
+    onValueChange: reportValue,
+    pressOpenTab = 'report',
     onReorder,
     hasSelection = true,
     variant = 'underline',
@@ -416,6 +418,14 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   dragRef,
 ) {
   const theme = useTheme();
+  const reselect = useScreenReselect();
+  const onValueChange = useMemo(
+    () =>
+      pressOpenTab === 'reselect' && reportValue
+        ? (next: string) => (next === value ? reselect() : reportValue(next))
+        : reportValue,
+    [pressOpenTab, reportValue, value, reselect],
+  );
   useInteractiveWebCss(STYLE_ID, BLOOM_TABS_CSS);
   const resolvedVariant = resolveVariant(variant);
   const isUnderline = resolvedVariant === 'underline';

@@ -51,11 +51,17 @@ export interface ScreenScrollOptions {
   /** Existing restoration binding for this same scroll ref. */
   restoration?: ScrollRestorationBinding;
   handler?: ScrollHandlerProcessed | null;
+  /**
+   * How to move this scroller. With it, the scroller answers its screen's
+   * reselect (back to the top) and `useFrontScroller()` while it is active.
+   * Bloom's own scrollers pass it; a list bound by hand should too.
+   */
+  scrollToOffset?: (offset: number) => void;
 }
 
 export interface ScreenScrollViewProps
   extends Omit<ScrollViewProps, 'onScroll'>,
-    ScreenScrollOptions {
+    Omit<ScreenScrollOptions, 'scrollToOffset'> {
   /** Observes the existing screen viewport on both platforms; creates no scroll owner. */
   onScroll?: ScrollViewProps['onScroll'];
   /** Utilities for the content container, resolved by Bloom's own interop. */

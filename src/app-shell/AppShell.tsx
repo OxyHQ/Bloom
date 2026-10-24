@@ -34,6 +34,7 @@ import { ShellColorClaimContext } from './context';
 import { useLatestClaim } from '../hooks/use-latest-claim';
 import type { AppColorName } from '../theme/color-presets';
 import { createDestinationBottomBar, useDestinationNavigation } from './destinations';
+import { ShellReselectScope } from './reselect-scope';
 
 /**
  * A navigation selection the app does not handle itself goes to the sidebar
@@ -445,7 +446,7 @@ export function createAppShell(
         <PanelCssContext.Provider value={cssLayout ? scope : null}>
           <PanelCssLayoutContext.Provider value={{ layout, gap }}>
             <ShellColorClaimContext.Provider value={deck ? null : claimShellPreset}>
-              <ComposedAppShell {...normalized} />
+              <AppShellBody {...normalized} />
             </ShellColorClaimContext.Provider>
           </PanelCssLayoutContext.Provider>
         </PanelCssContext.Provider>
@@ -461,8 +462,19 @@ export function createAppShell(
       shell
     );
   }
+  /**
+   * The public shell: its navigation composed from the destinations above it,
+   * and one reselect scope for everything under it.
+   */
   function ComposedAppShell(declared: AppShellProps) {
     const props = useDestinationNavigation(declared, DestinationBottomBar, Fab);
+    return (
+      <ShellReselectScope>
+        <AppShellBody {...props} />
+      </ShellReselectScope>
+    );
+  }
+  function AppShellBody(props: AppShellProps) {
     if (props.panelLayout) return <ModularAppShell {...props} />;
     const adaptive =
       props.navigation !== undefined ||

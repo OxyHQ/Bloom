@@ -59,6 +59,7 @@ function Shell({ page }: { page: string }) {
     leaveTab: (_from, to) => setActive(to),
     selectDestination: setActive,
     registerCommitter: () => {},
+    registerReselect: () => () => {},
   };
   return (
     <TabPagerContext.Provider value={value}>

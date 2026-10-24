@@ -49,6 +49,19 @@ views somewhere else is `Tabs` holding `TabsTrigger`s and nothing more. A
 `TabsTrigger` outside a `Tabs` throws, and the message says exactly that,
 because a trigger has no geometry, indicator or keyboard of its own.
 
+## Pressing the open tab again
+
+`pressOpenTab="reselect"` makes a press on the tab that is already open reselect
+the screen — back to its top, and a reload once it is there — instead of
+reporting it to `onValueChange`, as the inner tabs of every social app do. The
+screen says how it reloads with `useScreenReselectHandler`; see
+[Screen](/docs/bloom/main/screen), "Reselect". The default, `report`, passes
+every press to `onValueChange`.
+
+```tsx
+<Tabs value={tab} onValueChange={setTab} pressOpenTab="reselect">…</Tabs>
+```
+
 ## A strip of views: `trailing` and `onLongPress`
 
 A database's view strip gives each tab its own settings button and a long-press

@@ -29,7 +29,7 @@ const destinations: AppDestination[] = [
   { name: 'write', href: '/write', page: true },
 ];
 
-<TabPagerProvider destinations={destinations} onReselect={scrollToTopThenRefresh}>
+<TabPagerProvider destinations={destinations}>
   <AppShell
     sidebar={{ logo, footer }} // the chrome around the rows, not the rows
     primaryAction={{ icon: RiQuillPenLine, label: 'Compose', onPress: () => selectTab('write') }}
@@ -68,8 +68,9 @@ for the rows:
   dialog); **`onLongPress`** adds a second one (the account switcher on Profile).
 
 Pressing a destination does the same thing wherever it is drawn: its `onPress`
-if it is an action; the provider's `onReselect` if it is already in front
-(conventionally back to the top, then refresh); a page through the pager,
+if it is an action; a reselect if it is already in front — the screen in front
+back to its top, and a reload once it is there (see [Screen](/docs/bloom/main/screen),
+"Reselect"; the provider's `onReselect` replaces it); a page through the pager,
 dismissing anything pushed over it; anything else by navigating to its `href`.
 The drawer closes itself once a choice is made in it.
 

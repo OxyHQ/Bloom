@@ -105,6 +105,7 @@ export function createScreenScrollView(
       active,
       handler: end.handler ? withEnd : handler,
       restoration,
+      scrollToOffset: (offset) => localRef.current?.scrollTo({ y: offset, animated: true }),
     });
     const observeScroll = useCallback(
       (event: NativeScrollEvent) => {
