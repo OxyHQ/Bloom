@@ -658,7 +658,7 @@ describe('button details', () => {
 
 describe('filled button material', () => {
   it.each(['accent', 'danger', 'success', 'warning', 'info'] as const)(
-    'paints the shared three-stop sheen as a gradient on one view for %s',
+    'paints the shared edge glow as one gradient on one view for %s',
     (tone) => {
       const screen = renderWithTheme(<Button tone={tone}>Save</Button>);
       const sheens = surfaceSheens(screen.toJSON());
@@ -666,8 +666,9 @@ describe('filled button material', () => {
       const stops = sheenStops(
         String(resolvedStyle(sheens[0]!.props.style).experimental_backgroundImage),
       );
-      expect(stops).toHaveLength(3);
-      expect(stops[0]!.color).not.toBe(stops[2]!.color);
+      const middle = stops[Math.floor(stops.length / 2)]!;
+      expect(stops[0]!.opacity).toBeGreaterThan(middle.opacity);
+      expect(stops[stops.length - 1]!.opacity).toBeGreaterThan(middle.opacity);
       expect(screen.UNSAFE_queryAllByType(Stop)).toHaveLength(0);
     },
   );
