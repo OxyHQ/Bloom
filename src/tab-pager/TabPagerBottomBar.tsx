@@ -1,21 +1,25 @@
 import { useCallback, useContext } from 'react';
 import { BottomBar } from '../bottom-bar';
+import type { BottomBarProps } from '../bottom-bar/types';
 import { useHaptics } from '../hooks/use-haptics';
-import { TabPagerActiveContext, TabPagerItemsContext, useTabPagerContext } from './context';
+import { TabPagerActiveContext, TabPagerChromeContext, useTabPagerContext } from './context';
 import type { TabPagerBottomBarProps } from './types';
 
 /**
- * `BottomBar` bound to the tab pager, for `AppShell`'s `bottomBar` slot.
- *
- * Its items are the pages that declare one; the highlight follows the pager
- * frame by frame, the bar fades away over a page without an item, and a press
- * selects that page. Everything else is `BottomBar`'s own props — `action` for a
- * compose button, `onValueLongPress`, `minimizeProgress`.
+ * What binds a `BottomBar` to the pager: the destinations with `bar` as its
+ * items, the highlight following the pager frame by frame, the bar fading away
+ * over a page without an item, a press doing what pressing that destination
+ * does anywhere (`selectDestination`), a long press its `onLongPress`.
  */
-export function TabPagerBottomBar({ onReselect, ...props }: TabPagerBottomBarProps) {
-  const { model, progress, chromeProgress, selectTab } = useTabPagerContext();
+export function useTabPagerBottomBar(
+  onReselect?: (name: string) => void,
+): Required<
+  Pick<BottomBarProps, 'items' | 'value' | 'onValueChange' | 'activeProgress' | 'hideProgress'>
+> &
+  Pick<BottomBarProps, 'onValueLongPress'> {
+  const { model, progress, chromeProgress, selectDestination } = useTabPagerContext();
   const { activeIndex, activePage } = useContext(TabPagerActiveContext);
-  const items = useContext(TabPagerItemsContext);
+  const { destinations, barItems } = useContext(TabPagerChromeContext);
   const impact = useHaptics();
   // An unmatched value is the bar's "no selection": a pushed route, or a page
   // that draws no item.
@@ -23,19 +27,36 @@ export function TabPagerBottomBar({ onReselect, ...props }: TabPagerBottomBarPro
   const onValueChange = useCallback(
     (name: string) => {
       impact('light');
-      if (name === value) onReselect?.(name);
-      else selectTab(name);
+      if (onReselect && name === value) onReselect(name);
+      else selectDestination(name);
     },
-    [impact, value, onReselect, selectTab],
+    [impact, value, onReselect, selectDestination],
   );
-  return (
-    <BottomBar
-      {...props}
-      items={items}
-      value={value}
-      onValueChange={onValueChange}
-      activeProgress={progress}
-      hideProgress={chromeProgress}
-    />
+  const onValueLongPress = useCallback(
+    (name: string) =>
+      destinations.find((destination) => destination.name === name)?.onLongPress?.(),
+    [destinations],
   );
+  return {
+    items: barItems,
+    value,
+    onValueChange,
+    // Only when something answers it: the bar adds a gesture for it.
+    onValueLongPress: destinations.some((destination) => destination.onLongPress)
+      ? onValueLongPress
+      : undefined,
+    activeProgress: progress,
+    hideProgress: chromeProgress,
+  };
+}
+
+/**
+ * `BottomBar` bound to the tab pager. An `AppShell` under a `TabPagerProvider`
+ * draws one on its own; render this only to replace the shell's. Everything
+ * else is `BottomBar`'s own props — `action` for a compose button,
+ * `minimizeProgress`.
+ */
+export function TabPagerBottomBar({ onReselect, ...props }: TabPagerBottomBarProps) {
+  const { onValueLongPress, ...bound } = useTabPagerBottomBar(onReselect);
+  return <BottomBar onValueLongPress={onValueLongPress} {...props} {...bound} />;
 }

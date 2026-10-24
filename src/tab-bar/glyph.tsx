@@ -13,6 +13,7 @@
 import { View } from 'react-native';
 
 import { applyIconColor } from '../frosted-icon-button/shared';
+import { withGlyphBadge } from './glyph-badge';
 import type { TabBarGlyphProps } from './shared';
 
 export function TabBarGlyph({ item, tint, size, active }: TabBarGlyphProps) {
@@ -25,7 +26,10 @@ export function TabBarGlyph({ item, tint, size, active }: TabBarGlyphProps) {
   // expressed by tinting one node two ways. Absent, the layer renders `icon`.
   return (
     <View style={{ height: size, alignItems: 'center', justifyContent: 'center' }}>
-      {applyIconColor(active ? (item.activeIcon ?? item.icon) : item.icon, tint)}
+      {withGlyphBadge(
+        applyIconColor(active ? (item.activeIcon ?? item.icon) : item.icon, tint),
+        item.badge,
+      )}
     </View>
   );
 }

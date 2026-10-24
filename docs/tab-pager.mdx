@@ -1,36 +1,40 @@
 ---
 title: Tab pager
-description: Swipeable root pages for the app shell — the pages, the native pager, the tabs layout and the bottom bar bound to them, declared once.
+description: An app's navigation declared once — the pages, the native pager, the bottom bar and the shell's sidebar all drawn from one list of destinations.
 order: 142
 ---
 
 # Tab pager
 
-An app's root pages — Home, Videos, Notifications, a profile — side by side,
-swiped between on native and tapped between everywhere, with the bottom bar's
-highlight following the finger. The app declares its pages once; Bloom owns the
-pager, the navigator, the highlight and the bar's presence.
+Every place an app's navigation leads, declared once. From that one list Bloom
+draws the pager (Home, Videos, Notifications, a profile side by side, swiped
+between on native), the bottom bar with its highlight following the finger, and
+— under an `AppShell` — the sidebar's rows, their selection, badges and the
+compose action, at whichever width puts navigation where. The app writes no
+bar, no sidebar items and no navigation handlers.
 
 ```tsx
-// app/(app)/_layout.tsx — above the AppShell, because the bar renders over pushed routes too
+// app/(app)/_layout.tsx — the provider sits above the AppShell, because the
+// bar renders over pushed routes too
 import { TabPagerProvider } from '@oxy.so/bloom/tab-pager/expo-router';
-import { TabPagerBottomBar, useTabPager, type TabPage } from '@oxy.so/bloom/tab-pager';
+import type { AppDestination } from '@oxy.so/bloom/tab-pager';
 
-const pages: TabPage[] = [
-  { name: 'camera', href: '/camera' }, // no bar item: the bar leaves while it is in front
-  { name: 'index', href: '/', preload: true, bar: { label: 'Home', icon: <RiHome5Line /> } },
-  { name: 'videos', href: '/videos', preload: true, bar: { label: 'Videos', icon: <RiVideoLine /> } },
-  { name: 'write', href: '/write' },
-  { name: 'you', href: '/you', preload: true, bar: { label: 'You', icon: <Avatar … /> } },
+const destinations: AppDestination[] = [
+  { name: 'camera', href: '/camera', page: true }, // swiped to; no item anywhere
+  { name: 'index', href: '/', bar: true, preload: true, label: 'Home', icon: RiHome5Line, activeIcon: RiHome5Fill },
+  { name: 'explore', href: '/explore', label: 'Explore', icon: RiSearchLine }, // a sidebar row
+  { name: 'notifications', href: '/notifications', bar: true, preload: true, label: 'Notifications', icon: RiNotification3Line, badge: unread },
+  { name: 'you', href: '/you', bar: true, preload: true, label: 'Profile', icon: ProfileAvatar, onLongPress: openAccounts },
+  { name: 'settings', href: '/settings', label: 'Settings', icon: RiSettings3Line, onPress: openSettings },
+  { name: 'write', href: '/write', page: true },
 ];
 
-function ComposeButton() {
-  const { selectTab } = useTabPager();
-  return <Fab icon={RiQuillPenLine} accessibilityLabel="Compose" onPress={() => selectTab('write')} />;
-}
-
-<TabPagerProvider pages={pages}>
-  <AppShell bottomBar={<TabPagerBottomBar onReselect={scrollToTop} action={<ComposeButton />} />} … />
+<TabPagerProvider destinations={destinations} onReselect={scrollToTopThenRefresh}>
+  <AppShell
+    sidebar={{ logo, footer }} // the chrome around the rows, not the rows
+    primaryAction={{ icon: RiQuillPenLine, label: 'Compose', onPress: () => selectTab('write') }}
+    …
+  />
 </TabPagerProvider>
 ```
 
@@ -39,23 +43,54 @@ function ComposeButton() {
 export { TabPagerLayout as default } from '@oxy.so/bloom/tab-pager/expo-router';
 ```
 
-## Pages
+## Destinations
 
-`TabPage` is `{ name, href, preload?, bar? }`, in pager order.
+`AppDestination` is one place, in pager order for the pages and sidebar order
+for the rows:
 
-- **`name`** is the route's name in the tabs group; **`href`** its exact path, which is
-  how a pathname is recognised as the page.
-- **`preload`** mounts the page ahead of a visit — as a neighbour of the page in
+- **`name`** identifies it — for a page, the route's name in the tabs group —
+  and **`href`** is its exact path, which is how a pathname is recognised as it.
+- **`label`**, **`icon`** (a component, `RiHome5Line`, drawn at the bar's and the
+  sidebar's own size and tint), **`activeIcon`** (the filled shape while
+  selected) and **`badge`** (a count) are what the bar item and the sidebar row
+  show.
+- **`bar`** draws a bottom-bar item, and makes the destination a page.
+  **`page`** makes it a page without one: reached by swiping or `selectTab`,
+  the bar fading and sliding away while it is in front, its highlight parked
+  on the nearest item.
+- **`preload`** mounts a page ahead of a visit — as a neighbour of the page in
   front, and kept laid out while the bar can reach it — so neither a swipe nor a
   tap lands on a blank screen. Leave it off for a heavy page (a composer) or one
   that holds hardware (a camera): those mount when the reader lands on them.
-- **`bar`** (`label`, `icon`, optional `activeIcon`) is the page's bottom-bar
-  item. A page without one is reached by swiping or `selectTab`, and the bar
-  fades and slides away while it is in front. The highlight stays parked on the
-  nearest item instead of leaving the pill.
+- **`sidebar`** draws a sidebar row; it defaults to whether there is a label and
+  an icon.
+- **`onPress`** makes it an action rather than a place (Settings opening a
+  dialog); **`onLongPress`** adds a second one (the account switcher on Profile).
 
-Labels and icons may change as often as a badge does: only the bar re-renders
-for them.
+Pressing a destination does the same thing wherever it is drawn: its `onPress`
+if it is an action; the provider's `onReselect` if it is already in front
+(conventionally back to the top, then refresh); a page through the pager,
+dismissing anything pushed over it; anything else by navigating to its `href`.
+The drawer closes itself once a choice is made in it.
+
+Labels, icons and badges may change as often as a count does: only the bar and
+the sidebar re-render for them.
+
+## The shell
+
+Under a `TabPagerProvider`, `AppShell` composes its navigation from the
+destinations:
+
+- **Sidebar** (desktop, tablet, the drawer): `sidebar.items`, `selected` (the
+  destination in front) and `onNavigate`; `primaryAction` becomes the compose
+  row. `sidebar` carries only the chrome around them — logo, footer, modes.
+- **Bottom bar** (where navigation is a drawer): the bar items, with
+  `primaryAction` as its FAB.
+
+What the app passes itself still wins — `sidebar.items`, or a `bottomBar`
+(`null` for none on a route, such as over the keyboard or a full-screen
+composer). `TabPagerBottomBar` is the same bar for an app that replaces the
+shell's.
 
 ## `useTabPager()`
 
@@ -63,12 +98,17 @@ From `@oxy.so/bloom/tab-pager`, under a `TabPagerProvider`:
 
 | Field | |
 | --- | --- |
-| `pages` | The pages, as handed to the provider. |
+| `pages` | The destinations that are pages, in pager order. |
 | `activePage` | The page in front, or `null` on a route pushed over the pages. |
 | `selectTab(name)` | Bring a page to the front. A route pushed over the pages is dismissed first. |
 | `leaveTab(from, to)` | Bring `to` to the front and forget `from`: neither Back nor the pager returns to it (a published composer). On web the browser entry is replaced. |
+| `selectDestination(name)` | Press a destination, exactly as its bar item or sidebar row would. |
 | `progress` | The highlight's position in bar-item units, on the UI thread. |
 | `chromeProgress` | The bar's absence, 0 to 1, on the UI thread. |
+
+`pages` on the provider (`TabPage`, with `bar: { label, icon }` elements) still
+works and is deprecated: it declares pages only, so the sidebar draws nothing
+from it.
 
 ## Native
 

@@ -7,24 +7,27 @@ import * as Icons from '../icons';
 import { animateMotion } from '../motion/recipes';
 import {
   TabPagerActiveContext,
+  TabPagerChromeContext,
   TabPagerContext,
-  TabPagerItemsContext,
   type TabPagerContextValue,
 } from './context';
 import { barItemsOf, createPageModel } from './pages';
 import { TabPagerBottomBar } from './TabPagerBottomBar';
-import type { TabPage } from './types';
+import type { AppDestination } from './types';
 
-const PAGES: TabPage[] = [
-  { name: 'camera', href: '/camera' },
-  { name: 'home', href: '/', preload: true, bar: { label: 'Home', icon: <Icons.RiHomeLine /> } },
+const PAGES: AppDestination[] = [
+  { name: 'camera', href: '/camera', page: true },
+  { name: 'home', href: '/', preload: true, bar: true, label: 'Home', icon: Icons.RiHomeLine },
   {
     name: 'videos',
     href: '/videos',
     preload: true,
-    bar: { label: 'Videos', icon: <Icons.RiVideoLine /> },
+    bar: true,
+    label: 'Videos',
+    icon: Icons.RiVideoLine,
+    badge: 3,
   },
-  { name: 'you', href: '/you', preload: true, bar: { label: 'You', icon: <Icons.RiUserLine /> } },
+  { name: 'you', href: '/you', preload: true, bar: true, label: 'You', icon: Icons.RiUserLine },
 ];
 
 /**
@@ -34,7 +37,10 @@ const PAGES: TabPage[] = [
  */
 function Shell({ page }: { page: string }) {
   const model = useMemo(() => createPageModel(PAGES), []);
-  const items = useMemo(() => barItemsOf(PAGES), []);
+  const chrome = useMemo(
+    () => ({ destinations: PAGES, barItems: barItemsOf(PAGES), sidebarItems: [] }),
+    [],
+  );
   const [active, setActive] = useState(page);
   useEffect(() => setActive(page), [page]);
   const activeIndex = model.indexOf(active);
@@ -51,18 +57,21 @@ function Shell({ page }: { page: string }) {
     chromeProgress,
     selectTab: setActive,
     leaveTab: (_from, to) => setActive(to),
+    selectDestination: setActive,
     registerCommitter: () => {},
   };
   return (
     <TabPagerContext.Provider value={value}>
-      <TabPagerActiveContext.Provider value={{ activeIndex, activePage: active }}>
-        <TabPagerItemsContext.Provider value={items}>
+      <TabPagerActiveContext.Provider
+        value={{ activeIndex, activePage: active, activeDestination: active }}
+      >
+        <TabPagerChromeContext.Provider value={chrome}>
           <View style={{ height: 220, width: 390, maxWidth: '100%', justifyContent: 'flex-end' }}>
             <TabPagerBottomBar
               action={<Fab icon={Icons.RiQuillPenLine} accessibilityLabel="Compose" />}
             />
           </View>
-        </TabPagerItemsContext.Provider>
+        </TabPagerChromeContext.Provider>
       </TabPagerActiveContext.Provider>
     </TabPagerContext.Provider>
   );

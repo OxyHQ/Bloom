@@ -53,6 +53,8 @@ export type TabBarItem = {
    * no error. Pre-color both nodes yourself and the crossfade still works.
    */
   activeIcon?: ReactNode;
+  /** A count drawn over the glyph's corner; nothing at 0. */
+  badge?: number;
 };
 
 export type TabBarTheme = {

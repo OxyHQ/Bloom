@@ -1,5 +1,8 @@
+import { cloneElement, createElement, isValidElement, type ReactNode } from 'react';
+import type { BloomIconComponent } from '../icons/icon-component';
+import type { SidebarNavItem } from '../sidebar/types';
 import type { TabBarItem } from '../tab-bar/types';
-import type { TabPage } from './types';
+import type { AppDestination, TabPage } from './types';
 
 /**
  * The pages as two index spaces, converted in one place.
@@ -12,7 +15,7 @@ import type { TabPage } from './types';
  * item away from the page in front.
  */
 export interface PageModel {
-  pages: readonly TabPage[];
+  pages: readonly AppDestination[];
   /** For each page, where the highlight sits, in bar units. */
   barPositions: readonly number[];
   /** For each page, 1 when it draws no bar item, else 0. */
@@ -25,7 +28,7 @@ export interface PageModel {
   indexForPathname: (pathname: string | null | undefined) => number;
 }
 
-export function createPageModel(pages: readonly TabPage[]): PageModel {
+export function createPageModel(pages: readonly AppDestination[]): PageModel {
   const barNames = pages.filter((page) => page.bar).map((page) => page.name);
   const barIndexOf = (pageIndex: number) => {
     const page = pages[pageIndex];
@@ -56,13 +59,76 @@ export function createPageModel(pages: readonly TabPage[]): PageModel {
   };
 }
 
-/** The bar's items, in bar order. */
-export function barItemsOf(pages: readonly TabPage[]): TabBarItem[] {
-  return pages.flatMap((page) => (page.bar ? [{ ...page.bar, name: page.name }] : []));
+/** The destinations that are pages, in pager order. */
+export function pagesOf(destinations: readonly AppDestination[]): AppDestination[] {
+  return destinations.filter((destination) => destination.page || destination.bar);
 }
 
-/** What the model depends on. Labels and icons are not part of it. */
-export function pagesStructure(pages: readonly TabPage[]): string {
+/** The bar's items, in bar order. */
+export function barItemsOf(destinations: readonly AppDestination[]): TabBarItem[] {
+  return destinations.flatMap(({ name, label, icon: Icon, activeIcon: ActiveIcon, badge, bar }) =>
+    bar
+      ? [
+          {
+            name,
+            label: label ?? '',
+            icon: Icon ? createElement(Icon) : null,
+            activeIcon: ActiveIcon ? createElement(ActiveIcon) : undefined,
+            badge,
+          },
+        ]
+      : [],
+  );
+}
+
+/** The sidebar's rows, in declaration order. */
+export function sidebarItemsOf(destinations: readonly AppDestination[]): SidebarNavItem[] {
+  return destinations.flatMap(
+    ({ name, href, label, icon, activeIcon, badge, sidebar, onLongPress }) =>
+      (sidebar ?? Boolean(label && icon)) && label && icon
+        ? [
+            {
+              key: name,
+              label,
+              icon,
+              activeIcon,
+              href,
+              badge: badge ? badge : undefined,
+              onLongPress,
+            },
+          ]
+        : [],
+  );
+}
+
+/**
+ * A glyph handed over as an element, as a component: the slot's size and tint
+ * fill in whatever the element does not set itself (a brand mark's own fill).
+ */
+function iconOf(node: ReactNode): BloomIconComponent {
+  return (props) =>
+    isValidElement<{ width?: number; height?: number; fill?: string }>(node)
+      ? cloneElement(node, { ...props, ...node.props })
+      : (node as never);
+}
+
+/** The deprecated `pages` prop, as destinations. */
+export function destinationsOfPages(pages: readonly TabPage[]): AppDestination[] {
+  return pages.map(({ name, href, preload, bar }) => ({
+    name,
+    href,
+    preload,
+    page: true,
+    bar: Boolean(bar),
+    sidebar: false,
+    label: bar?.label,
+    icon: bar ? iconOf(bar.icon) : undefined,
+    activeIcon: bar?.activeIcon ? iconOf(bar.activeIcon) : undefined,
+  }));
+}
+
+/** What the model depends on. Labels, icons and badges are not part of it. */
+export function pagesStructure(pages: readonly AppDestination[]): string {
   return pages
     .map((page) => `${page.name}\u0000${page.href}\u0000${page.preload ? 1 : 0}${page.bar ? 1 : 0}`)
     .join('\u0001');

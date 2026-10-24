@@ -12,6 +12,7 @@ import { RiHomeLine } from '../icons/remix';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { Screen, ScreenScrollView, useScreen } from '../screen';
 import type { ScreenContextValue } from '../screen/context';
+import { useMinimizeState } from '../tab-bar/context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -152,6 +153,24 @@ describe('native', () => {
 
 describe('web', () => {
   beforeEach(() => jest.replaceProperty(ReactNative.Platform, 'OS', 'web'));
+
+  it('minimizes the bar from the route in front, as the document scrolls it', () => {
+    setWidth(400);
+    const states: ScreenContextValue[] = [];
+    let barProgress: unknown;
+    function Bar() {
+      barProgress = useMinimizeState().progress;
+      return null;
+    }
+    renderIn(
+      <AppShell testID="shell" variant="feed" scroll="page" panels bottomBar={<Bar />}>
+        <AppShellPanel>
+          <Route probe={(state) => states.push(state)} />
+        </AppShellPanel>
+      </AppShell>,
+    );
+    expect(barProgress).toBe(states[states.length - 1]!.collapseProgress);
+  });
 
   it('scrolls the document: no shell or route scroller, the route in document flow', () => {
     setWidth(1440);

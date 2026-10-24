@@ -55,6 +55,7 @@ import { useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
 import { usePanelInteraction } from './use-panel-interaction';
+import { closingOnChoice } from './drawer-choice';
 import {
   DRAWER_EASE as REVEAL_EASE,
   DRAWER_MS as REVEAL_MS,
@@ -284,9 +285,6 @@ export function createAppShellEngine() {
             : width >= BREAKPOINTS.md));
     const compactRegion = panelHost && !framed;
     const stretchReading = compactRegion || contentMaxWidth === 'none';
-    // The drawer always opens the full panel, whatever the in-flow variant.
-    const drawerSidebar = sidebar ? { ...sidebar, variant: 'panel' as const } : undefined;
-
     // Reveal keeps its page host mounted across compact/desktop changes.
     const drawerStyle = variant === 'dashboard' || variant === 'feed' ? drawer : 'overlay';
     const centred = variant === 'feed' || variant === 'focus';
@@ -409,6 +407,10 @@ export function createAppShellEngine() {
       defaultValue: false,
       onChange: onDrawerOpenChange,
     });
+    // The drawer always opens the full panel, whatever the in-flow variant.
+    const drawerSidebar = sidebar
+      ? { ...closingOnChoice(sidebar, () => setOpen(false)), variant: 'panel' as const }
+      : undefined;
     const drawerAvailable = hasNav && !wide;
     const isOpen = open && drawerAvailable;
     // `drawerSwipe` is a native gesture: the web keeps its press-only drawer.
@@ -527,6 +529,12 @@ export function createAppShellEngine() {
     // last row still clears it.
     const pageNative = scroll === 'page' && mode === 'fixed' && Platform.OS !== 'web';
     const pageReserve = pageNative ? 0 : contentReserve;
+    // The routes share the shell's navigation state wherever the shell's bar
+    // follows the screen in front: native `scroll="page"`, and the web document,
+    // whose screens collapse from the window's own scroll. Pressing on into a
+    // screen that does not scroll the document (a full-screen reel) never
+    // collapses it, and the screen taking over expands it again.
+    const sharedNavigation = pageNative || (Platform.OS === 'web' && mode === 'document');
     const inheritedNavigation = useContext(ScreenNavigationContext);
     const pageProgress = useSharedValue(0);
     const pageTarget = useSharedValue(0);
@@ -538,28 +546,34 @@ export function createAppShellEngine() {
           collapseTarget: pageTarget,
           activeScrollerId: pageScroller,
         }),
-        bottomInset: Math.max(
-          inheritedNavigation?.bottomInset ?? PAGE_CLEARANCE,
-          contentReserve + PAGE_CLEARANCE,
-        ),
+        // The document reserves the bar itself; only native routes scroll
+        // under it and pad their own end clear.
+        bottomInset: pageNative
+          ? Math.max(
+              inheritedNavigation?.bottomInset ?? PAGE_CLEARANCE,
+              contentReserve + PAGE_CLEARANCE,
+            )
+          : inheritedNavigation?.bottomInset,
       }),
-      [inheritedNavigation, pageProgress, pageTarget, pageScroller, contentReserve],
+      [inheritedNavigation, pageProgress, pageTarget, pageScroller, contentReserve, pageNative],
     );
     // The active screen's collapse also minimizes the shell's bottom bar, so an
     // app's bar follows the screen it covers without a scroll handler of its own.
     const barMinimize = useMemo(
       () =>
-        pageNative
+        sharedNavigation
           ? { progress: pageNavigation.collapseProgress, target: pageNavigation.collapseTarget }
           : undefined,
-      [pageNative, pageNavigation],
+      [sharedNavigation, pageNavigation],
     );
-    const pageChildren = pageNative ? (
-      <ScreenNavigationContext.Provider value={pageNavigation}>
+    // Always the same element, whatever the mode: switching `scroll` on a mounted
+    // shell must not remount the routes under it.
+    const pageChildren = (
+      <ScreenNavigationContext.Provider
+        value={sharedNavigation ? pageNavigation : inheritedNavigation}
+      >
         {children}
       </ScreenNavigationContext.Provider>
-    ) : (
-      children
     );
 
     // ---- the panel region ---------------------------------------------------

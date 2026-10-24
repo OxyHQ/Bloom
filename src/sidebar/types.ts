@@ -398,7 +398,7 @@ export interface SidebarProps {
   primaryAction?: {
     label: string;
     icon: SidebarIcon;
-    onPress: () => void;
+    onPress: (event: GestureResponderEvent) => void;
     disabled?: boolean;
   };
   /** Defaults to `panel`. */
