@@ -289,6 +289,8 @@ function PollMessageComponent({
     (l): l is string => Boolean(l),
   );
 
+  const subline = [...labels, results ? undefined : hint].filter(Boolean).join(' · ');
+
   const [actionHovered, actionHandlers] = useHovered();
   const actionStyle: WebCssStyle = {
     alignItems: 'center',
@@ -321,13 +323,18 @@ function PollMessageComponent({
       <Text variant="body-medium" style={{ color: paint.text }}>
         {question}
       </Text>
-      <Text
-        variant="caption-1-regular"
-        style={{ color: paint.textMuted, paddingTop: 2 }}
-        testID={testID ? `${testID}-labels` : undefined}
-      >
-        {[...labels, results ? undefined : hint].filter(Boolean).join(' · ')}
-      </Text>
+      {/* Only when there is something to say: once results show, the hint goes,
+          and an empty Text still takes a line on Android — a gap under the
+          question after every vote. */}
+      {subline ? (
+        <Text
+          variant="caption-1-regular"
+          style={{ color: paint.textMuted, paddingTop: 2 }}
+          testID={testID ? `${testID}-labels` : undefined}
+        >
+          {subline}
+        </Text>
+      ) : null}
 
       <View style={{ paddingTop: space.sm }}>
         {options.map((option, index) => (

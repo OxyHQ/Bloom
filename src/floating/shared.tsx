@@ -308,6 +308,11 @@ export function MenuRowShell({
           ...(gutter === 'leading' || insetToColumn ? { paddingLeft: density.gutter } : null),
           ...(gutter === 'trailing' ? { paddingRight: density.gutter } : null),
           ...(density.touch ? { minHeight: 44 } : null),
+          // The gap inline as well as in `rowClass`: on native the class never
+          // reached the row, and every menu drew its icons against their labels
+          // ("QSearch", Allo on Android). A caller `className` keeps the final
+          // say over the row's geometry, as it does for Select's field.
+          ...(className == null ? { columnGap: density.itemGap } : null),
         },
         style,
       ]}

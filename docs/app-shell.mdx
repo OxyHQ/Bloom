@@ -355,7 +355,9 @@ so its fading backdrop does not introduce a strip of the outer page color.
 Use `<AppShell safeArea scroll="fixed" ...>` when the shell owns the whole
 native screen. The frame protects its top and side edges, including landscape
 notches, and keeps reveal navigation inside the same safe frame. Portaled
-navigation drawers use the device's original insets. Web geometry is unchanged;
+navigation drawers ALWAYS use the device's original insets, with or without
+`safeArea`: they render past every Screen, so nothing else clears them (keyed on
+`safeArea`, Allo's drawer ran under the status bar). Web geometry is unchanged;
 `safeArea` defaults to `false` for existing embedded shells.
 
 When bottom chrome is visible, the bottom-bar slot or floating action retains
