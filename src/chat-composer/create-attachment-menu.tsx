@@ -90,10 +90,12 @@ export function createAttachmentMenu({
           >
             <item.icon width={22} height={22} fill={tint} />
           </View>
+          {/* Two lines, centred: a quarter of a phone is ~90dp, and "Photos and
+            videos" cut to "Photos and …" named nothing. */}
           <Text
             variant="caption-1-regular"
-            numberOfLines={1}
-            style={{ color: palette.textSecondary }}
+            numberOfLines={2}
+            style={{ color: palette.textSecondary, textAlign: 'center' }}
           >
             {item.label}
           </Text>
@@ -189,9 +191,20 @@ export function createAttachmentMenu({
       onOpenChange?.(next);
     };
 
-    // A percentage string is the only way to say "n per row" in a wrapping flex
-    // row that has to work on both platforms; Yoga and CSS agree on it.
-    const cellWidth: DimensionValue = `${100 / Math.max(1, columns)}%`;
+    // The grid is explicit ROWS, never one wrapping row. Android's Yoga gave the
+    // first line of a wrapped row of Buttons the whole sheet's height and left
+    // the second 8dp, so the fifth and sixth items (Contact, Poll) were clipped
+    // out of a sheet that had already sized itself for them. A row of fixed
+    // percentage cells measures the same on both platforms, and a short last
+    // row keeps the columns.
+    const perRow = Math.max(1, Math.floor(columns));
+    const cellWidth: DimensionValue = `${100 / perRow}%`;
+    const rows: AttachmentMenuItem[][] = [];
+    for (let i = 0; i < items.length; i += perRow) rows.push(items.slice(i, i + perRow));
+    const select = (item: AttachmentMenuItem) => {
+      onSelect?.(item.id, item);
+      setOpen(false);
+    };
 
     return (
       <Popover open={isOpen} onOpenChange={setOpen}>
@@ -205,38 +218,34 @@ export function createAttachmentMenu({
           testID={testID}
         >
           {recent ? <View style={{ paddingBottom: 8 }}>{recent}</View> : null}
-          <View
-            style={
-              layout === 'grid'
-                ? { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }
-                : { flexDirection: 'column', gap: 2 }
-            }
-          >
-            {items.map((item) =>
-              layout === 'grid' ? (
-                <GridCell
-                  key={item.id}
-                  item={item}
-                  width={cellWidth}
-                  onPress={() => {
-                    onSelect?.(item.id, item);
-                    setOpen(false);
-                  }}
-                  testID={testID ? `${testID}-${item.id}` : undefined}
-                />
-              ) : (
+          {layout === 'grid' ? (
+            <View style={{ flexDirection: 'column' }}>
+              {rows.map((row) => (
+                <View key={row[0]?.id} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                  {row.map((item) => (
+                    <GridCell
+                      key={item.id}
+                      item={item}
+                      width={cellWidth}
+                      onPress={() => select(item)}
+                      testID={testID ? `${testID}-${item.id}` : undefined}
+                    />
+                  ))}
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={{ flexDirection: 'column', gap: 2 }}>
+              {items.map((item) => (
                 <ListRow
                   key={item.id}
                   item={item}
-                  onPress={() => {
-                    onSelect?.(item.id, item);
-                    setOpen(false);
-                  }}
+                  onPress={() => select(item)}
                   testID={testID ? `${testID}-${item.id}` : undefined}
                 />
-              ),
-            )}
-          </View>
+              ))}
+            </View>
+          )}
         </PopoverContent>
       </Popover>
     );

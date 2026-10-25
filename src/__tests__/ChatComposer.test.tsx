@@ -602,6 +602,26 @@ describe('ComposerAttachmentStrip', () => {
     expect(maybe('s-a-remove')).toBeNull();
   });
 
+  it('prints the file name under a document, never under a picture', () => {
+    // A picker names a photo "100.png"; the thumbnail is the label a reader
+    // wants, and the name stays the remove button's.
+    mount(
+      <ComposerAttachmentStrip
+        attachments={[
+          { id: 'doc', name: 'lease.pdf' },
+          { id: 'pic', name: '100.png', source: 'file:///roll/100.png' },
+          { id: 'clip', name: 'clip.mp4', source: 'file:///roll/clip.jpg', caption: '0:12' },
+        ]}
+        onRemove={() => {}}
+        testID="s"
+      />,
+    );
+    expect(byTestId('s-doc').textContent).toContain('lease.pdf');
+    expect(byTestId('s-pic').textContent).not.toContain('100.png');
+    expect(byTestId('s-pic-remove').getAttribute('aria-label')).toBe('Remove 100.png');
+    expect(byTestId('s-clip').textContent).toContain('0:12');
+  });
+
   it('renders nothing at all when empty', () => {
     mount(<ComposerAttachmentStrip attachments={[]} testID="s" />);
     expect(maybe('s')).toBeNull();

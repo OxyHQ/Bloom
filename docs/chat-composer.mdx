@@ -156,7 +156,7 @@ The list renders **in flow** above the bar rather than in a portal. Anchoring it
 
 ## Attachment menu
 
-`Popover`, not a surface of its own. Bloom's popover is already an anchored panel on a pointer and a bottom sheet on a phone, so this family ships **no platform fork**: it inherits the dismissal, stacking and focus behaviour those surfaces were gated for. `layout="grid"` (default, `columns` 4) draws 48px tinted discs with captions; `layout="list"` draws rows. `recent` is a slot above the items for a recent-gallery strip.
+`Popover`, not a surface of its own. Bloom's popover is already an anchored panel on a pointer and a bottom sheet on a phone, so this family ships **no platform fork**: it inherits the dismissal, stacking and focus behaviour those surfaces were gated for. `layout="grid"` (default, `columns` 4) draws 48px tinted discs with captions of up to two centred lines, as explicit rows rather than one wrapping row (Android's Yoga clipped the second line of a wrapped row of Buttons); `layout="list"` draws rows. `recent` is a slot above the items for a recent-gallery strip.
 
 ## Emoji picker
 
@@ -230,7 +230,7 @@ State colours 150ms; the mic ↔ send cross-fade 220ms; the recording dot pulses
 ### The other parts
 
 `ComposerBanner` — `kind`, `title`, `preview`, `thumbnail`, `icon`, `accentColor`, `onClose`, `closeLabel`, `trailing`.
-`ComposerAttachmentStrip` — `attachments`, `onRemove`, `size` (56), `removeLabel`.
+`ComposerAttachmentStrip` — `attachments`, `onRemove`, `size` (56), `removeLabel`. The line under a tile is the upload's progress, the `caption`, or the `name` of a tile with no picture; a picture's name is announced, never printed.
 `SuggestionList` — `kind`, `suggestions` (each may carry `verified`), `activeIndex`, `onSelectSuggestion`, `onActiveIndexChange`, `header`, `maxHeight` (232), `loading`, `showEmpty`, `emptyLabel`.
 `VoiceRecorder` — `state`, `seconds`, `duration`, `amplitudes`, `playing`, `onPlayToggle`, `onCancel`, `onDelete`, `onSend`, `onLock`, `slideToCancel`, `labels`.
 `AttachmentMenu` — `open`/`defaultOpen`/`onOpenChange`, `items`, `layout`, `columns`, `onSelect`, `recent`, `label`.
