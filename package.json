@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.52.0",
+  "version": "15.53.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1504,6 +1504,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/icons/index.d.ts",
         "default": "./lib/commonjs/icons/index.js"
+      }
+    },
+    "./icons/shared": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/shared.d.ts",
+        "default": "./src/icons/shared.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/shared.d.ts",
+        "default": "./lib/module/icons/shared.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/shared.d.ts",
+        "default": "./lib/commonjs/icons/shared.js"
       }
     },
     "./icons/Ri*": {
@@ -4371,6 +4385,9 @@
       ],
       "icons": [
         "./lib/typescript/module/icons/index.d.ts"
+      ],
+      "icons/shared": [
+        "./lib/typescript/module/icons/shared.d.ts"
       ],
       "icons/Ri*": [
         "./lib/typescript/module/icons/remix/Ri*.d.ts"

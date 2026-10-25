@@ -48,6 +48,19 @@ per-module dependency arrays. The same shape was what pushed one app's
 JavaScript budget over by 119 KiB between Bloom 2.0.0 (338 icons) and 3.1.0
 (463): the barrel grows with the icon set whether or not an app uses any of it.
 
+### Shared painting helpers without the glyph catalogue
+
+Custom glyphs can use the existing painting contract without importing the full
+icon barrel:
+
+```tsx
+import { useCommonSVGProps, type Props } from '@oxy.so/bloom/icons/shared';
+```
+
+This entry exposes the same sizes, props and theme/gradient handling as the
+barrel. It links no Remix or Simple Icons glyph modules. Keep ordinary glyph
+imports on their individual `icons/Ri…` or `icons/Si…` subpaths.
+
 ### The barrel still works, and stays supported
 
 `@oxy.so/bloom/icons` is an **exact** `exports` key and the per-glyph entry is a
