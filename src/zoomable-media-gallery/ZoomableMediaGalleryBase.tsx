@@ -135,6 +135,19 @@ const webUserSelectNoneStyle = Platform.select({
 });
 
 /**
+ * Whether the overlay's backdrop can blur. It renders through the portal in the
+ * app's own window, and on Android a blur there is not drawn (and a blur target
+ * there crashes; `blur/blur-target.tsx`), so the backdrop was expo-blur's
+ * fallback tint plus the 0.28 dim: the conversation stayed readable behind the
+ * photo (Allo, Pixel 8a). Without a blur the viewer dims to nearly opaque, as a
+ * photo viewer does.
+ */
+function overlayCanBlur(): boolean {
+  return Platform.OS !== 'android';
+}
+const UNBLURRED_DIM_OPACITY = 0.92;
+
+/**
  * The overlay's chrome: the counter pill's scrim and white, whatever the theme.
  *
  * The backdrop under it is a dark dim in every theme, so a theme-coloured
@@ -1062,9 +1075,9 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
               onPress={handleDismiss}
               accessibilityLabel={labels.close}
               progress={opacity}
-              blurIntensity={page ? 0 : undefined}
+              blurIntensity={page || !overlayCanBlur() ? 0 : undefined}
               dimColor={pagePalette?.background}
-              dimOpacity={page ? 1 : undefined}
+              dimOpacity={page ? 1 : overlayCanBlur() ? undefined : UNBLURRED_DIM_OPACITY}
             />
 
             <GestureDetector gesture={panGesture}>

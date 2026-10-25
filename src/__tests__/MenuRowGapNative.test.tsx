@@ -17,7 +17,15 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 function rowStyle(className?: string) {
   const screen = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <MenuRowShell title="Search" leading={<View />} className={className} testID="row" />
+      <MenuRowShell
+        role="menuitem"
+        disabled={false}
+        onPress={() => {}}
+        title="Search"
+        leading={<View />}
+        className={className}
+        testID="row"
+      />
     </BloomThemeProvider>,
   );
   return StyleSheet.flatten(screen.getByTestId('row').props.style);
