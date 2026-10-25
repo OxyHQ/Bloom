@@ -16,6 +16,8 @@ export function resolveMenuDensity(size: BloomSize, touch: boolean) {
     type: CONTROL_LABEL_TYPE[size],
     panelPadding: touch ? 8 : 6,
     gap: geometry.rowGap,
+    /** Between a row's leading glyph, label and trailing slot: `rowClass`'s `gap-*`, as a number. */
+    itemGap: geometry.gap,
     separatorMargin: geometry.separatorMargin,
     leadingSize: geometry.icon,
     gutter: geometry.gutter,

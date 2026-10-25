@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -29,8 +29,13 @@ import { IS_WEB } from '../styles/platform';
  * the threshold fires `onSwipeReply`; release short of it springs back. Both
  * releases animate home, so the row never stays displaced.
  *
- * The pan activates only after `activeOffsetX`, so a vertical flick through the
- * transcript is still a scroll and a tap is still a tap. The detector also
+ * The pan activates only past `ACTIVATE_X` TOWARDS the centre, so a vertical
+ * flick through the transcript is still a scroll, a tap is still a tap and a
+ * hold is still the bubble's long press. `activeOffsetX` names the range the
+ * finger may travel WITHOUT activating (RNGH activates when `dx < start` or
+ * `dx > end`), so the range must contain 0. It once read `[-9999, -12]` and
+ * `[12, 9999]`, which exclude it: the pan activated on the first move event,
+ * cancelled the JS responder, and holding a message on Android opened nothing. The detector also
  * passes `touchAction="pan-y"`: RNGH's web default is `touch-action: none`,
  * which would stop a touch browser scrolling the transcript from any bubble.
  * The web path above never mounts the detector today, so this is inert until
@@ -65,7 +70,7 @@ export function SwipeToReply({
 
   const pan = Gesture.Pan()
     .enabled(enabled)
-    .activeOffsetX(sign > 0 ? [-9999, -ACTIVATE_X] : [ACTIVATE_X, 9999])
+    .activeOffsetX(sign > 0 ? [-9999, ACTIVATE_X] : [-ACTIVATE_X, 9999])
     .failOffsetY([-12, 12])
     .onUpdate((event) => {
       const raw = event.translationX * sign;
