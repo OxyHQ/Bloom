@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { webDataSet } from '../styles/web-data';
@@ -8,7 +8,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { useHovered, useMessageMediaCss } from './parts';
+import { useHovered, useMessageMediaCss, HoldPressable } from './parts';
 import {
   fileMetaLine,
   MESSAGE_MEDIA_RADIUS,
@@ -48,7 +48,7 @@ function ContactAction({
     '--bloom-message-media-ring': paint.ring,
   };
   return (
-    <Pressable
+    <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
       {...handlers}
       role="button"
@@ -60,7 +60,7 @@ function ContactAction({
       <Text variant="body-2-medium" style={{ color: emphasis ? paint.accent : paint.text }}>
         {label}
       </Text>
-    </Pressable>
+    </HoldPressable>
   );
 }
 

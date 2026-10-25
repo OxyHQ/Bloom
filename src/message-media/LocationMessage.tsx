@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { type LayoutChangeEvent, Pressable, View } from 'react-native';
+import { type LayoutChangeEvent, View } from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -17,7 +17,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { MediaPressable, useHovered, useMessageMediaCss } from './parts';
+import { MediaPressable, useHovered, useMessageMediaCss, HoldPressable } from './parts';
 import {
   fileMetaLine,
   MESSAGE_MEDIA_RADIUS,
@@ -280,7 +280,7 @@ function LocationMessageComponent({
       ) : null}
 
       {live && onStopSharing ? (
-        <Pressable
+        <HoldPressable
           {...webDataSet({ bloomMessageMediaPressable: '' })}
           {...stopHandlers}
           role="button"
@@ -292,7 +292,7 @@ function LocationMessageComponent({
           <Text variant="caption-1-medium" style={{ color: paint.danger }}>
             {stopSharingLabel}
           </Text>
-        </Pressable>
+        </HoldPressable>
       ) : null}
     </View>
   );

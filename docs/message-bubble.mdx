@@ -151,6 +151,14 @@ thing people do with a transcript in a browser.
 `onDoublePress` suppresses the second `onPress` of a pair, so "double-press to
 react" does not also toggle selection twice.
 
+`onLongPress` reaches the WHOLE bubble on native. The body text is selectable on
+web only: a selectable native text view takes the long press for its own
+selection, and holding a message on Android opened nothing (native copies from
+the menu). And the `media` slot's own pressables (a picture's frame, a file
+row, a play button), which are deeper than the bubble and take the touch, hand
+the bubble's long press on through message-media's `MessageMediaHoldContext`
+(`HoldPressable`).
+
 ### Entities
 
 `text` is scanned for links, `@mentions` and `#hashtags`. Without

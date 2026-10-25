@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import { BloomImage } from '../image';
 import Animated, {
   Easing,
@@ -28,6 +28,7 @@ import {
   type MessageMediaPaint,
 } from './shared';
 import { useMediaSource } from './use-media-source';
+import { useMessageMediaHold } from './context';
 import type { MessageMediaSource } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
@@ -47,6 +48,20 @@ export function useMessageMediaCss(): void {
   useEffect(() => {
     adoptStyleSheet(MESSAGE_MEDIA_STYLE_ID, MESSAGE_MEDIA_CSS);
   }, []);
+}
+
+// ---------------------------------------------------------------------------
+//  HoldPressable
+// ---------------------------------------------------------------------------
+
+/**
+ * `Pressable`, plus the enclosing bubble's long press when it has none of its
+ * own (`context.ts`). Every pressable in this family is one, so holding any
+ * part of a media block opens the message menu, as holding its text does.
+ */
+export function HoldPressable({ onLongPress, ...props }: PressableProps) {
+  const hold = useMessageMediaHold();
+  return <Pressable {...props} onLongPress={onLongPress ?? hold} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,7 +119,7 @@ export const MediaPressable = memo(function MediaPressable({
     );
   }
   return (
-    <Pressable
+    <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
       role={role}
       accessibilityLabel={accessibilityLabel}
@@ -118,7 +133,7 @@ export const MediaPressable = memo(function MediaPressable({
       testID={testID}
     >
       {children}
-    </Pressable>
+    </HoldPressable>
   );
 });
 
@@ -384,7 +399,7 @@ export const MediaProgressRing = memo(function MediaProgressRing({
 
   if (onPress) {
     return (
-      <Pressable
+      <HoldPressable
         {...webDataSet({ bloomMessageMediaPressable: '' })}
         role="button"
         accessibilityLabel={accessibilityLabel}
@@ -393,7 +408,7 @@ export const MediaProgressRing = memo(function MediaProgressRing({
         testID={testID}
       >
         {body}
-      </Pressable>
+      </HoldPressable>
     );
   }
   if (determinate) {
@@ -588,7 +603,7 @@ export const MediaFailure = memo(function MediaFailure({
         {label}
       </Text>
       {onRetry ? (
-        <Pressable
+        <HoldPressable
           {...webDataSet({ bloomMessageMediaPressable: '' })}
           role="button"
           accessibilityLabel={retryLabel}
@@ -600,7 +615,7 @@ export const MediaFailure = memo(function MediaFailure({
           <Text variant="caption-1-medium" style={{ color: paint.text }}>
             {retryLabel}
           </Text>
-        </Pressable>
+        </HoldPressable>
       ) : null}
     </View>
   );
