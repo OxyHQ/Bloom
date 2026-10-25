@@ -10,6 +10,18 @@ import { useAnimatedScrollMetricsBinding } from './use-animated-scroll-metrics-b
 
 const AnimatedViewport = Animated.createAnimatedComponent(StyledScrollView);
 
+/**
+ * Taps on a control inside a scroller reach it while the keyboard is open.
+ *
+ * React Native's default (`never`) lets EVERY ancestor scroller take the first
+ * tap to dismiss the keyboard, and a tap swallowed by any one of them never
+ * reaches the control. Allo's composer sits inside three of Bloom's (panel,
+ * pager, page): with the keyboard up, Send only closed the keyboard and the
+ * message stayed in the field. `handled` still dismisses on a tap that no
+ * control takes. A caller's own value wins.
+ */
+const PERSIST_TAPS = 'handled' as const;
+
 /** One native scroll owner; animated handlers stay on the UI thread. */
 export function ScrollViewport(props: ScrollAreaProps) {
   const metrics = useScrollMetricsValue();
@@ -46,7 +58,7 @@ function PlainViewport({
     onContentSizeChange,
     scrollEventThrottle,
   });
-  return <StyledScrollView {...props} {...events} />;
+  return <StyledScrollView keyboardShouldPersistTaps={PERSIST_TAPS} {...props} {...events} />;
 }
 
 function AnimatedScrollViewport({
@@ -64,6 +76,11 @@ function AnimatedScrollViewport({
     onContentSizeChange,
   });
   return (
-    <AnimatedViewport {...props} {...events} scrollEventThrottle={scrollEventThrottle ?? 16} />
+    <AnimatedViewport
+      keyboardShouldPersistTaps={PERSIST_TAPS}
+      {...props}
+      {...events}
+      scrollEventThrottle={scrollEventThrottle ?? 16}
+    />
   );
 }

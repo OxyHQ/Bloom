@@ -165,6 +165,9 @@ export function createScreenScrollView(
         : Animated.ScrollView;
     const content = (
       <ScrollContainer
+        // A control inside the page takes its tap while the keyboard is open
+        // (`layout/ScrollViewport.tsx` has the measured case); a caller wins.
+        keyboardShouldPersistTaps="handled"
         {...props}
         {...(screen.keyboardFollow
           ? {
