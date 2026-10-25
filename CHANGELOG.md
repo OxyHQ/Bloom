@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.50.6
+
+### Fixed
+
+- **Scrollers (`ScrollArea`, `ScreenScrollView`): a control inside takes its tap while the keyboard is open.** React Native's default `keyboardShouldPersistTaps` (`never`) lets every ancestor scroller spend the first tap on dismissing the keyboard, and a tap any one of them swallows never reaches the control. Allo's composer sits inside three of Bloom's (panel, pager, page): with the keyboard up, Send only closed the keyboard and the message stayed in the field (Pixel 8a). Both default to `handled`, which still dismisses on a tap no control takes; a caller's own value wins.
+
+### Consumers
+
+Bump to 15.50.6. A screen that relied on the first tap in a scroller ONLY closing the keyboard (and not pressing what it landed on) should pass `keyboardShouldPersistTaps="never"`.
+
 ## 15.50.5
 
 ### Fixed
