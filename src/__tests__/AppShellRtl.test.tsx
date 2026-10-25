@@ -24,7 +24,7 @@
  * `dir="rtl"` and to a device with `forceRTL`.
  */
 
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -238,7 +238,11 @@ describe('AppShell overlay drawer and docked nav', () => {
     fireEvent.press(screen.getByTestId('shell-header-menu'));
     const anchor = hostStyles(screen).filter(
       (style) =>
-        style.position === 'absolute' && style.padding === 12 && style.flexDirection === 'row',
+        // Longhands: the frame clears the device insets plus 12 (none here).
+        style.position === 'absolute' &&
+        style.paddingTop === 12 &&
+        style.paddingInlineStart === 12 &&
+        style.flexDirection === 'row',
     );
     expect(anchor).toHaveLength(1);
     expect(anchor[0]).toMatchObject({ top: 0, bottom: 0, insetInlineStart: 0 });

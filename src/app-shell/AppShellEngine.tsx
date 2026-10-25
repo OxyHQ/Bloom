@@ -1254,20 +1254,20 @@ export function createAppShellEngine() {
       </BottomEdgeProvider>
     );
 
+    // The drawer is PORTALED to the app root, full screen, so the device insets
+    // are its own to clear whoever owns the page frame. Keyed on `ownsSafeArea`
+    // it cleared nothing in an app whose Screens own their insets (Allo): the
+    // panel ran under the status bar, the clock over its logo.
     const overlayFrameStyle: ViewStyle = {
       position: 'absolute',
       top: 0,
       bottom: 0,
       insetInlineStart: 0,
       flexDirection: 'row',
-      ...(ownsSafeArea
-        ? {
-            paddingTop: 12 + insets.top,
-            paddingBottom: 12 + insets.bottom,
-            paddingInlineStart: 12 + (rtl ? insets.right : insets.left),
-            paddingInlineEnd: 12 + (rtl ? insets.left : insets.right),
-          }
-        : { padding: 12 }),
+      paddingTop: 12 + insets.top,
+      paddingBottom: 12 + insets.bottom,
+      paddingInlineStart: 12 + (rtl ? insets.right : insets.left),
+      paddingInlineEnd: 12 + (rtl ? insets.left : insets.right),
     };
     const overlayPanel = drawerSidebar ? (
       <View pointerEvents={isOpen ? 'auto' : 'none'} style={{ height: '100%' }}>

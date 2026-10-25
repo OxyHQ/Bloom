@@ -1898,6 +1898,27 @@ describe('AppShell native safe-area frame', () => {
     });
   });
 
+  it('portaled overlay navigation clears the device insets without safeArea too', () => {
+    // An app whose Screens own their insets passes no `safeArea`; the drawer is
+    // portaled past every Screen, so its insets are its own. Keyed on
+    // `safeArea` it ran under the status bar (Allo, Android).
+    const view = withInsets(
+      <AppShell
+        scroll="fixed"
+        drawer="overlay"
+        drawerOpen
+        sidebar={{ items: NAV }}
+        testID="bare"
+      />,
+    );
+    expect(resolvedStyle(view.getByTestId('bare-navigation-drawer').props.style)).toMatchObject({
+      paddingTop: 59,
+      paddingBottom: 46,
+      paddingInlineStart: 32,
+      paddingInlineEnd: 19,
+    });
+  });
+
   it('safeArea is opt-in and has no effect on the web frame', () => {
     const off = withInsets(<AppShell scroll="fixed" testID="safe" />);
     expect(off.queryByTestId('safe-safe-area')).toBeNull();
