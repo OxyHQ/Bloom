@@ -2,6 +2,19 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.50.5
+
+### Fixed
+
+- **Native sheets (dropdown, context menu, popover, select, hover card, menubar): a controlled one hears every user dismissal.** `useSheetOpenBridge` closed from state a sheet the user had already dismissed (the `open=false` the dismissal itself caused), which fires no `onDismiss`, so its "closed from state" flag stayed set and swallowed the NEXT user dismissal: `onOpenChange(false)` never came, the consumer stayed `open`, and its next open was a no-op. In Allo, after two backdrop taps, holding a message opened nothing until a restart. Only a presented sheet is closed from state now.
+- **chat-composer `ReactionPicker`: emojis are whole on native.** The cell's `padding: 0` shorthand lost to Button's `paddingHorizontal: 8` (React Native ranks a longhand above the shorthand whatever the order), leaving a 14dp slot in a 30dp cell; every emoji in the message menu's reaction bar was cut in half. The cell passes longhands, as does the voice recorder's "slide to cancel".
+
+- **message-bubble: "This message was deleted" is legible on your own bubbles.** It was drawn in the theme's `muted`, which knows nothing about the fill behind it, and on the outgoing accent bubble it was dark on dark. It now takes the side's meta ink (AA against that fill). Italic lines (the deleted line, "Forwarded from") keep 2dp after the text, because Android measures advances, not ink, and clipped the slant of the last letter.
+
+### Consumers
+
+Bump to 15.50.5. No API change.
+
 ## 15.50.4
 
 ### Fixed

@@ -253,7 +253,12 @@ export function createVoiceRecorder({
               gap: 2,
               height: 'auto',
               minHeight: 0,
-              padding: 0,
+              // Longhands: Button's `paddingHorizontal` outranks a `padding`
+              // shorthand on native whatever the order.
+              paddingLeft: 0,
+              paddingRight: 0,
+              paddingTop: 0,
+              paddingBottom: 0,
             }}
             testID={testID ? `${testID}-slide` : undefined}
           >
