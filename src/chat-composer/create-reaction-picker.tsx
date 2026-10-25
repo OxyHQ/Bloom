@@ -76,13 +76,20 @@ export function createReactionPicker({
       '--bloom-chat-composer-ring': palette.focusRing,
     };
 
+    // Longhand padding: React Native ranks a longhand above the `padding`
+    // shorthand whatever the order, so Button's own 8dp `paddingLeft/Right`
+    // beat `padding: 0` and left a 14dp slot in a 30dp cell. Every emoji in
+    // the message menu's reaction bar was cut in half on Android.
     const cell: WebCssStyle = {
       width: box,
       height: box,
       minWidth: box,
       minHeight: box,
       flexShrink: 0,
-      padding: 0,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingTop: 0,
+      paddingBottom: 0,
       borderRadius: 9999,
     };
 

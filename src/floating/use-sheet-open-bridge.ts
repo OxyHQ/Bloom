@@ -10,9 +10,16 @@
  * controlled path fires synchronously and races a consumer that unmounts in its
  * own handler.
  *
- * `openedOnceRef` keeps the first commit quiet. A menu is mounted closed and
- * stays that way until pressed, so without it every menu on the screen would
- * call `dismiss()` on a sheet that was never presented, on every mount.
+ * `presentedRef` is whether the SHEET is up, and only a presented sheet is
+ * closed from state. It keeps the first commit quiet (a menu mounts closed, and
+ * every menu on the screen would otherwise dismiss a sheet never presented),
+ * and it keeps a USER dismissal from being closed a second time. That second
+ * close used to happen on every backdrop tap: the dismissal reported
+ * `open=false`, the effect then "closed" the already-closed sheet, which fires
+ * no `onDismiss`, so `closingFromStateRef` stayed set; the NEXT user dismissal
+ * was swallowed as if the consumer had asked for it, `onOpenChange(false)` never
+ * came, and a controlled menu stayed `open` with no sheet on screen. In Allo,
+ * after two backdrop taps, holding a message opened nothing until a restart.
  */
 import { useCallback, useEffect, useRef } from 'react';
 
@@ -31,7 +38,7 @@ export function useSheetOpenBridge(
   setOpen: (next: boolean) => void,
 ): SheetOpenBridge {
   const control = useDialogControl();
-  const openedOnceRef = useRef(false);
+  const presentedRef = useRef(false);
   // A close the CONSUMER asked for (they flipped `open` to false) must not
   // re-enter `onOpenChange` when the sheet finishes animating out — only a
   // user-initiated dismissal (drag down, handle tap, backdrop) reports back.
@@ -39,11 +46,13 @@ export function useSheetOpenBridge(
 
   useEffect(() => {
     if (open) {
-      openedOnceRef.current = true;
+      presentedRef.current = true;
       control.open();
       return;
     }
-    if (!openedOnceRef.current) return;
+    // Never presented, or the user already dismissed it: nothing to close.
+    if (!presentedRef.current) return;
+    presentedRef.current = false;
     closingFromStateRef.current = true;
     control.close();
   }, [open, control]);
@@ -53,6 +62,7 @@ export function useSheetOpenBridge(
       closingFromStateRef.current = false;
       return;
     }
+    presentedRef.current = false;
     setOpen(false);
   }, [setOpen]);
 
