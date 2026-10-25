@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -71,7 +72,8 @@ function GroupAvatarComponent({
   testID,
 }: GroupAvatarProps) {
   const theme = useTheme();
-  const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveChatListPaint(theme, surface), [theme, surface]);
   const ring = ringColor ?? paint.background;
 
   const shown = faces.slice(0, GROUP_AVATAR_MAX_FACES);

@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -53,7 +54,8 @@ function ResultRow({
 }) {
   const theme = useTheme();
   const { messages } = useMessages(CHAT_LIST_MESSAGES);
-  const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveChatListPaint(theme, surface), [theme, surface]);
   const geo = CHAT_ROW_GEOMETRY[density];
   const marker = chatMarker(result.chatKind, result.verified, messages.item);
   const name = [result.name, marker?.label, result.detail, result.time]
@@ -163,7 +165,8 @@ function ChatSearchResultsComponent({
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
-  const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveChatListPaint(theme, surface), [theme, surface]);
   const text = useMemo(() => ({ ...messages.search, ...labels }), [messages, labels]);
   const groups = useMemo(() => groupSearchResults(results), [results]);
   const geo = CHAT_ROW_GEOMETRY[density];

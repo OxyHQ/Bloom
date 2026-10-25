@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useMemo } from 'react';
 
 import { useTheme } from '../theme/use-theme';
@@ -33,7 +34,8 @@ function HighlightedTextComponent({
   testID,
 }: HighlightedTextProps) {
   const theme = useTheme();
-  const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveChatListPaint(theme, surface), [theme, surface]);
   const runs = useMemo(() => highlightRuns(text, query), [query, text]);
 
   return (

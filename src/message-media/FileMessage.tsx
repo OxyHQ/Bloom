@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
 import { formatFileSize } from '../file-upload/shared';
@@ -21,7 +21,13 @@ import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
-import { MediaFailure, MediaProgressRing, useHovered, useMessageMediaCss } from './parts';
+import {
+  MediaFailure,
+  MediaProgressRing,
+  useHovered,
+  useMessageMediaCss,
+  HoldPressable,
+} from './parts';
 import {
   fileKindFor,
   fileMetaLine,
@@ -230,7 +236,7 @@ function FileMessageComponent({
     <View style={style ?? null} testID={testID}>
       <View style={rowStyle} {...handlers} testID={testID ? `${testID}-row` : undefined}>
         {onPress ? (
-          <Pressable
+          <HoldPressable
             {...webDataSet({ bloomMessageMediaPressable: '' })}
             role="button"
             accessibilityLabel={rowName}
@@ -246,7 +252,7 @@ function FileMessageComponent({
             testID={testID ? `${testID}-open` : undefined}
           >
             {identity}
-          </Pressable>
+          </HoldPressable>
         ) : (
           <View
             style={{
@@ -296,7 +302,7 @@ function DownloadButton({
     '--bloom-message-media-ring': paint.ring,
   };
   return (
-    <Pressable
+    <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
       {...handlers}
       role="button"
@@ -306,7 +312,7 @@ function DownloadButton({
       testID={testID ? `${testID}-download` : undefined}
     >
       <RiDownload2Line width={16} height={16} fill={paint.text} />
-    </Pressable>
+    </HoldPressable>
   );
 }
 

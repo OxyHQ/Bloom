@@ -44,6 +44,7 @@ import { MESSAGE_BUBBLE_MESSAGES } from './messages';
 import { SwipeToReply } from './SwipeToReply';
 import type { MessageBubbleProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { MessageMediaHoldContext } from '../message-media/context';
 import { mixColors } from '../styles/color-contrast';
 
 /**
@@ -322,7 +323,11 @@ function MessageBubbleComponent({
             overflow: 'hidden',
           }}
         >
-          {media}
+          {/* The media's own pressables are deeper than the bubble and take the
+              touch; they hand the bubble's long press on (message-media `context.ts`). */}
+          <MessageMediaHoldContext.Provider value={onLongPress}>
+            {media}
+          </MessageMediaHoldContext.Provider>
           {overlayMeta && meta !== null ? (
             <View
               style={{

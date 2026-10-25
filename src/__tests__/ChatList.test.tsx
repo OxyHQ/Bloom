@@ -450,6 +450,14 @@ describe('ChatListItem actions', () => {
     expect(maybe('row-actions')).toBeNull();
   });
 
+  it('steps its hover and selected fills off the panel it is given', () => {
+    const onPanel = resolveChatListPaint(theme, '#fff8f8');
+    const onPage = resolveChatListPaint(theme);
+    expect(onPanel.background).toBe('#fff8f8');
+    expect(onPage.background).toBe(theme.colors.background);
+    expect(onPanel.hover).not.toBe(onPage.hover);
+  });
+
   it('renders the swipe panes instead once the gesture is enabled', () => {
     const calls: string[] = [];
     mount(

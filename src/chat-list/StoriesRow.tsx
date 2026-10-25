@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import { ScrollArea } from '../layout/ScrollArea';
 import { memo, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
@@ -58,7 +59,8 @@ function StoriesRowComponent({
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
-  const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveChatListPaint(theme, surface), [theme, surface]);
   const ordered = useMemo(
     () => (seenLast ? sortStories(stories) : [...stories]),
     [seenLast, stories],

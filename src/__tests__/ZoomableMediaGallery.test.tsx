@@ -10,7 +10,8 @@
  * The gestures (pinch, pan-to-dismiss, the shared-element transition from the
  * measured thumb rect) are not testable here and belong to a device build.
  */
-import React, { createRef } from 'react';
+import type React from 'react';
+import { createRef } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -259,6 +260,26 @@ describe('ZoomableMediaGallery', () => {
       expect(overlay.UNSAFE_getByType(BackdropComponent).props.dimColor).toBeUndefined();
     },
   );
+
+  it('draws the overlay share button as scrim chrome in a light theme, never a blank disc', () => {
+    // The dim under the overlay is dark in every theme. The button was the
+    // light `surface` material with a hard-coded white glyph: invisible in a
+    // light theme (Allo, Android).
+    jest.useFakeTimers();
+    try {
+      const api = renderGallery({}, 'light');
+      act(() => api.ref.current?.open(IMAGES, 0));
+      act(() => jest.advanceTimersByTime(1000));
+      const button = api
+        .UNSAFE_getAllByProps({ accessibilityLabel: 'Share media' })
+        .find((node) => node.props.colors !== undefined);
+      expect(button?.props.material).toBe('flat');
+      expect(button?.props.colors).toEqual({ background: 'rgba(0,0,0,0.55)', foreground: '#fff' });
+      expect(button?.props.icon.props.fill).toBe('#fff');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 
   it('reports opening and changed pages once, preserving the current index on close', () => {
     jest.useFakeTimers();

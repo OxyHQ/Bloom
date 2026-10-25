@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
@@ -9,7 +9,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { useHovered, useMessageMediaCss } from './parts';
+import { useHovered, useMessageMediaCss, HoldPressable } from './parts';
 import {
   formatVoteCount,
   MESSAGE_MEDIA_RADIUS,
@@ -177,7 +177,7 @@ const OptionRow = memo(function OptionRow({
   }
 
   return (
-    <Pressable
+    <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
       {...handlers}
       role={multiple ? 'checkbox' : 'radio'}
@@ -190,7 +190,7 @@ const OptionRow = memo(function OptionRow({
     >
       {mark}
       {labelBlock}
-    </Pressable>
+    </HoldPressable>
   );
 });
 
@@ -348,7 +348,7 @@ function PollMessageComponent({
       </View>
 
       {action ? (
-        <Pressable
+        <HoldPressable
           {...webDataSet({ bloomMessageMediaPressable: '' })}
           {...actionHandlers}
           role="button"
@@ -360,7 +360,7 @@ function PollMessageComponent({
           <Text variant="body-2-medium" style={{ color: paint.accent }}>
             {action.label}
           </Text>
-        </Pressable>
+        </HoldPressable>
       ) : null}
 
       <Text

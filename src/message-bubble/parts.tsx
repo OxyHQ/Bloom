@@ -9,6 +9,7 @@ import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiEyeLine } from '../icons/remix/RiEyeLine';
 import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
 import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
+import { IS_WEB } from '../styles/platform';
 import { Text } from '../typography';
 import {
   QUOTE_BAR_WIDTH,
@@ -89,7 +90,8 @@ BubbleTail.displayName = 'BubbleTail';
 
 /**
  * The message body. Selectable on web (`userSelect: 'text'` — a transcript you
- * cannot copy out of is a transcript people screenshot), and split into
+ * cannot copy out of is a transcript people screenshot; native copies from the
+ * message menu), and split into
  * entities so a caller can make a mention pressable without re-implementing
  * text layout: the spans are returned INSIDE one `Text`, so the line breaking
  * stays the platform's.
@@ -109,7 +111,10 @@ function MessageTextComponent({
   return (
     <Text
       variant="body-regular"
-      selectable
+      // Web only. On native a selectable text view takes the long press for
+      // its own selection, so holding a message on Android opened nothing:
+      // the bubble's menu (Copy among its rows) never saw the press.
+      selectable={IS_WEB}
       style={[{ color: side.text, userSelect: 'text' }, style]}
     >
       {parts.map((part) => {

@@ -72,6 +72,7 @@ function glyphPresence(dim: number): WebCssStyle {
 function PlayButtonComponent({
   playing,
   onPress,
+  onLongPress,
   interactive = true,
   size: sizeProp,
   variant = 'accent',
@@ -205,6 +206,7 @@ function PlayButtonComponent({
       accessibilityState={{ busy: loading, disabled }}
       disabled={disabled}
       onPress={onPress}
+      onLongPress={onLongPress}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       onPressIn={() => setPressed(true)}

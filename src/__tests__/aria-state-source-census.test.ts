@@ -155,6 +155,9 @@ const RN_HOSTS = new Set([
   'View',
   'Text',
   'Pressable',
+  // message-media's `Pressable` with every prop passed through; it only fills
+  // in `onLongPress` from the enclosing bubble when the caller gave none.
+  'HoldPressable',
   'ScrollView',
   'FlatList',
   'TextInput',

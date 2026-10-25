@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
-  Pressable,
   View,
   type AccessibilityActionEvent,
   type GestureResponderEvent,
@@ -17,7 +16,8 @@ import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
-import { MediaFailure, useHovered, useMessageMediaCss } from './parts';
+import { useMessageMediaHold } from './context';
+import { MediaFailure, useHovered, useMessageMediaCss, HoldPressable } from './parts';
 import {
   formatPlaybackRate,
   MESSAGE_MEDIA_WIDTH,
@@ -263,7 +263,7 @@ function SpeedPill({
     '--bloom-message-media-ring': paint.ring,
   };
   return (
-    <Pressable
+    <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
       {...handlers}
       role="button"
@@ -275,7 +275,7 @@ function SpeedPill({
       <Text variant="caption-2-medium" style={{ color: paint.text }}>
         {formatPlaybackRate(rate, locale)}
       </Text>
-    </Pressable>
+    </HoldPressable>
   );
 }
 
@@ -328,6 +328,7 @@ function VoiceMessageComponent({
   testID,
 }: VoiceMessageProps) {
   const theme = useTheme();
+  const hold = useMessageMediaHold();
   const { locale, messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const transcribeLabel = transcribeLabelProp ?? messages.transcribe;
   const hideTranscriptLabel = hideTranscriptLabelProp ?? messages.hideTranscript;
@@ -371,6 +372,7 @@ function VoiceMessageComponent({
           variant={tone === 'outgoing' ? 'inverse' : 'accent'}
           accessibilityLabel={playing ? messages.pauseVoiceMessage : messages.playVoiceMessage}
           onPress={onPlayPress}
+          onLongPress={hold}
           testID={testID ? `${testID}-play` : undefined}
         />
         <Waveform
@@ -427,7 +429,7 @@ function VoiceMessageComponent({
           />
         ) : null}
         {transcript ? (
-          <Pressable
+          <HoldPressable
             {...webDataSet({ bloomMessageMediaPressable: '' })}
             {...toggleHandlers}
             role="button"
@@ -441,7 +443,7 @@ function VoiceMessageComponent({
             <Text variant="caption-2-medium" style={{ color: paint.accent }}>
               {open ? hideTranscriptLabel : transcribeLabel}
             </Text>
-          </Pressable>
+          </HoldPressable>
         ) : null}
       </View>
 

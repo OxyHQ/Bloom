@@ -22,6 +22,8 @@ export interface PlayButtonProps {
   playing: boolean;
   /** Called on press. The button does not toggle anything itself. */
   onPress?: () => void;
+  /** Called on a long press: a voice note's play button hands on its bubble's menu. */
+  onLongPress?: () => void;
   /** Default `md`. */
   size?: PlayButtonSize;
   /** Default `accent`. */
