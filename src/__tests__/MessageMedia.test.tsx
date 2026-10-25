@@ -16,7 +16,7 @@
  *    carrying no state, and a prop-level test reads the prop straight back and
  *    passes.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -593,6 +593,18 @@ describe('accessibility STATE reaches the DOM', () => {
     expect(bar.getAttribute('aria-label')).toBe('Saturday, 75%');
     expect(byTestId('voted-option-a-percent').textContent).toBe('75%');
     expect(byTestId('voted-total').textContent).toBe('4 votes');
+  });
+
+  it('draws no empty subline once the results show', () => {
+    // The hint goes when results show; an empty Text still took a line on
+    // Android, leaving a gap under the question after every vote.
+    const options = [{ id: 'a', label: 'Saturday', votes: 1, selected: true }];
+    mount(<PollMessage question="When?" options={options} testID="open" />);
+    expect(byTestId('open-labels').textContent).toBe('Select one');
+    mount(<PollMessage question="When?" voted options={options} testID="shut" />);
+    expect(document.querySelector('[data-testid="shut-labels"]')).toBeNull();
+    mount(<PollMessage question="When?" voted anonymous options={options} testID="anon" />);
+    expect(byTestId('anon-labels').textContent).not.toBe('');
   });
 
   it('marks a quiz answer right AND wrong, not only the one the viewer picked', () => {
