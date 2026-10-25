@@ -156,7 +156,7 @@ The list renders **in flow** above the bar rather than in a portal. Anchoring it
 
 ## Attachment menu
 
-`Popover`, not a surface of its own. Bloom's popover is already an anchored panel on a pointer and a bottom sheet on a phone, so this family ships **no platform fork**: it inherits the dismissal, stacking and focus behaviour those surfaces were gated for. `layout="grid"` (default, `columns` 4) draws 48px tinted discs with captions; `layout="list"` draws rows. `recent` is a slot above the items for a recent-gallery strip.
+`Popover`, not a surface of its own. Bloom's popover is already an anchored panel on a pointer and a bottom sheet on a phone, so this family ships **no platform fork**: it inherits the dismissal, stacking and focus behaviour those surfaces were gated for. `layout="grid"` (default, `columns` 4) draws 48px tinted discs with captions of up to two centred lines, as explicit rows rather than one wrapping row (Android's Yoga clipped the second line of a wrapped row of Buttons); `layout="list"` draws rows. `recent` is a slot above the items for a recent-gallery strip.
 
 ## Emoji picker
 
