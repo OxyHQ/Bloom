@@ -19,6 +19,7 @@ import {
   splitMessageText,
   type BubbleSidePaint,
   type MessageBubblePaint,
+  ITALIC_OVERHANG,
 } from './shared';
 import type {
   MessageDirection,
@@ -152,7 +153,10 @@ export function ForwardedLine({
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       <RiShareForwardLine width={12} height={12} fill={side.meta} />
-      <Text variant="caption-1-regular" style={{ color: side.meta, fontStyle: 'italic' }}>
+      <Text
+        variant="caption-1-regular"
+        style={{ color: side.meta, fontStyle: 'italic', paddingRight: ITALIC_OVERHANG }}
+      >
         {text}
       </Text>
     </View>

@@ -39,6 +39,7 @@ import {
   resolveMessageBubblePaint,
   senderNameColor,
   sidePaint,
+  ITALIC_OVERHANG,
 } from './shared';
 import { MESSAGE_BUBBLE_MESSAGES } from './messages';
 import { SwipeToReply } from './SwipeToReply';
@@ -348,7 +349,13 @@ function MessageBubbleComponent({
         </View>
       )}
       {deleted ? (
-        <Text variant="body-regular" style={{ color: paint.muted, fontStyle: 'italic' }}>
+        // The side's meta ink, which is checked against THIS bubble's fill:
+        // the theme's `muted` was dark on the outgoing accent and the line was
+        // unreadable. `ITALIC_OVERHANG` keeps Android from clipping the slant.
+        <Text
+          variant="body-regular"
+          style={{ color: side.meta, fontStyle: 'italic', paddingRight: ITALIC_OVERHANG }}
+        >
           {text_.deleted}
         </Text>
       ) : (

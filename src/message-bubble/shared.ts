@@ -1,5 +1,5 @@
 import { surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
-import { type DimensionValue } from 'react-native';
+import type { DimensionValue } from 'react-native';
 
 import { ACCENT_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
 import { CHART_TONE_ORDER, chartHueTone } from '../chart-cards/palette';
@@ -40,6 +40,12 @@ export const BUBBLE_TAIL_RADIUS = 4;
 export const BUBBLE_PADDING_X = 12;
 export const BUBBLE_PADDING_Y = 7;
 export const RUN_GAP = 2;
+/**
+ * Room after an italic line. Android measures a TextView by the glyphs'
+ * advances, not their ink, and a slanted last letter overhangs its advance:
+ * "This message was deleted" lost the tail of its "d".
+ */
+export const ITALIC_OVERHANG = 2;
 export const GROUP_GAP = 8;
 export const DEFAULT_MAX_WIDTH: DimensionValue = '78%';
 /** Width of the SVG notch, and how far it hangs outside the bubble. */
