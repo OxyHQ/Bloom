@@ -181,3 +181,17 @@ describe('root barrel module graph', () => {
     });
   }
 });
+
+describe('public icon painting helper graph', () => {
+  it('keeps custom glyph painting independent of the glyph catalogue', () => {
+    const manifest = JSON.parse(readFileSync(join(SRC, '../package.json'), 'utf8'));
+    const entry = manifest.exports['./icons/shared']['react-native'].default;
+    const { files, packages } = walkFrom(resolve(SRC, '..', entry));
+    expect(packages.has('react-native-svg')).toBe(true);
+    expect([...files].some((file) => file.includes('/theme/'))).toBe(true);
+    const glyphs = (graph: Set<string>) =>
+      [...graph].filter((file) => /\/icons\/(?:remix|simple-icons)\//.test(file));
+    expect(glyphs(files)).toEqual([]);
+    expect(glyphs(walkFrom(join(SRC, 'icons/index.ts')).files).length).toBeGreaterThan(100);
+  });
+});

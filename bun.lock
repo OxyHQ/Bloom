@@ -57,6 +57,7 @@
       "peerDependencies": {
         "@lottiefiles/dotlottie-react": ">=0.13.0",
         "@react-native-community/netinfo": ">=11.1.0",
+        "@shopify/flash-list": ">=2.0.0",
         "expo": "*",
         "expo-blur": "*",
         "expo-font": "*",
@@ -71,6 +72,7 @@
         "react-native": ">=0.73.0",
         "react-native-gesture-handler": ">=2.16.1",
         "react-native-keyboard-controller": ">=1.11.4",
+        "react-native-pager-view": ">=6.0.0",
         "react-native-reanimated": ">=3.13.0",
         "react-native-safe-area-context": ">=5.0.0",
         "react-native-screens": ">=3.16.0",
@@ -80,6 +82,7 @@
       "optionalPeers": [
         "@lottiefiles/dotlottie-react",
         "@react-native-community/netinfo",
+        "@shopify/flash-list",
         "expo",
         "expo-font",
         "expo-haptics",
@@ -89,6 +92,7 @@
         "nativewind",
         "react-dom",
         "react-native-keyboard-controller",
+        "react-native-pager-view",
         "react-native-webview",
       ],
     },

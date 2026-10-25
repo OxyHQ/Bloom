@@ -160,6 +160,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./styles', 'styles/index.ts'],
   ['./hooks', 'hooks/index.ts'],
   ['./icons', 'icons/index.ts'],
+  // Custom glyphs share painting props without linking every Remix glyph.
+  ['./icons/shared', 'icons/shared.tsx'],
   // PATTERN. `*` is substituted by the resolver, so this is the one export
   // shape whose size does not grow with the number of modules behind it —
   // which is the whole reason it exists here and nowhere else yet. `./icons`
