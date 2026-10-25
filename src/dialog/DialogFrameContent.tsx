@@ -4,9 +4,22 @@ import { useDialogFrame } from './DialogMorph';
 import { TypographyScope, type TypographyMode } from '../typography/TypographyScope';
 import { FrameAppearanceContext } from './frame-appearance';
 import type { AppColorName } from '../theme/color-presets';
-import type { DialogScreenFrame } from './types';
+import type { DialogHeaderConfig, DialogScreenFrame } from './types';
 
 /** Internal stable host: frame declarations run below the panel's morph provider. */
+/**
+ * The header a Dialog shows with `frame`: the frame's fields over the Dialog's
+ * own. A frame that declares no header (one that only sizes content loading in)
+ * turns none on: the nav bar and its close control appear only when the Dialog
+ * or the frame asks for them.
+ */
+export function frameHeader(
+  header: DialogHeaderConfig | undefined,
+  frame: DialogScreenFrame | undefined,
+): DialogHeaderConfig | undefined {
+  return frame?.header ? { ...header, ...frame.header } : header;
+}
+
 export function DialogFrameContent({
   frame,
   children,

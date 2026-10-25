@@ -149,3 +149,25 @@ it('applies runtime frame appearance to body and header, restores it, and keeps 
   );
   expect(mounts).toBe(initialMounts);
 });
+
+it('turns no header on for a frame that only sizes its content', () => {
+  let control: ReturnType<typeof useDialogControl>;
+  function Harness() {
+    control = useDialogControl();
+    return (
+      <BloomThemeProvider mode="light">
+        <Dialog
+          control={control}
+          placement="bottom"
+          frame={{ key: 'replies', size: { height: 400 } }}
+        >
+          <Text>Replies</Text>
+        </Dialog>
+      </BloomThemeProvider>
+    );
+  }
+  const draw = render(<Harness />);
+  act(() => control.open());
+  expect(draw.getByText('Replies')).toBeTruthy();
+  expect(draw.queryByTestId('dialog-nav-close-group')).toBeNull();
+});
