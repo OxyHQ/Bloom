@@ -20,8 +20,8 @@ import {
   ScrollView,
   Share,
   useWindowDimensions,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -134,6 +134,16 @@ const webUserSelectNoneStyle = Platform.select({
   default: undefined,
 });
 
+/**
+ * The overlay's chrome: the counter pill's scrim and white, whatever the theme.
+ *
+ * The backdrop under it is a dark dim in every theme, so a theme-coloured
+ * control is wrong half the time: the share button was the light `surface`
+ * material with a hard-coded white glyph, a blank disc in a light theme (Allo,
+ * Android). The page appearance passes its own palette instead.
+ */
+const SCRIM_CHROME = { background: 'rgba(0,0,0,0.55)', foreground: '#fff' } as const;
+
 export function createZoomableMediaGallery(Button: React.ComponentType<ButtonProps>) {
   function NavArrow({
     direction,
@@ -147,6 +157,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
     pageColors?: { background: string; foreground: string };
   }) {
     const isLeft = direction === 'left';
+    const chrome = pageColors ?? SCRIM_CHROME;
     return (
       <Button
         onPress={onPress}
@@ -156,13 +167,13 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
         iconOnly
         hitSlop={8}
         accessibilityLabel={label}
-        material={pageColors ? 'flat' : 'surface'}
-        colors={pageColors}
+        material="flat"
+        colors={chrome}
         icon={
           isLeft ? (
-            <RiArrowLeftLine fill={pageColors?.foreground ?? '#fff'} size="lg" />
+            <RiArrowLeftLine fill={chrome.foreground} size="lg" />
           ) : (
-            <RiArrowRightLine fill={pageColors?.foreground ?? '#fff'} size="lg" />
+            <RiArrowRightLine fill={chrome.foreground} size="lg" />
           )
         }
         style={[styles.navArrow, isLeft ? styles.navArrowLeft : styles.navArrowRight]}
@@ -1296,9 +1307,11 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
                     tone="neutral"
                     iconOnly
                     accessibilityLabel={labels.share}
-                    material={page ? 'flat' : 'surface'}
-                    colors={pageColors}
-                    icon={<RiUpload2Line fill={pageColors?.foreground ?? '#fff'} size="md" />}
+                    material="flat"
+                    colors={pageColors ?? SCRIM_CHROME}
+                    icon={
+                      <RiUpload2Line fill={(pageColors ?? SCRIM_CHROME).foreground} size="md" />
+                    }
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     style={[
                       styles.shareButton,
