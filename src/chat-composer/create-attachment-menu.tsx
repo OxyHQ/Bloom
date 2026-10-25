@@ -59,7 +59,11 @@ export function createAttachmentMenu({
       minWidth: 0,
       paddingLeft: 0,
       paddingRight: 0,
-      alignItems: 'center',
+      // Button hands `alignItems` to its content, which is a ROW: 'center' there
+      // centres the disc vertically, so in a row where one caption wraps the
+      // other discs sat lower than its. 'flex-start' tops every disc; the
+      // content's own `justifyContent` still centres them across the cell.
+      alignItems: 'flex-start',
       gap: 6,
       paddingTop: 8,
       paddingBottom: 8,
