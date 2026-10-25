@@ -5,6 +5,7 @@ import {
 import { BloomColorScope } from '../theme/color-scope/ColorScope';
 import {
   DialogFrameContent,
+  frameHeader,
   DialogFrameProvider,
   useDialogFrameScrollReset,
 } from './DialogFrameContent';
@@ -113,7 +114,7 @@ export function Dialog({ placement, frame, children, header, ...props }: DialogP
     startOpen: session.startOpen,
     onPresentationOpen: session.onPresentationOpen,
     onPresentationClosed: session.onPresentationClosed,
-    header: frame ? { ...header, ...frame.header } : header,
+    header: frameHeader(header, frame),
     children: <DialogFrameContent frame={frame}>{children}</DialogFrameContent>,
   };
   const resolvedPlacement = session.placement;
