@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.50.7
+
+### Fixed
+
+- **page-header, page-footer (`EdgeScrim`): the floating header's fade no longer ends in a hard line on Android.** `react-native-svg` laid the ramp out about 1.55 times taller than its box there, so the box cut it off with half the page colour still showing: a line across the content at the header's foot whenever the page was scrolled (Commons, Allo; Pixel 8a, measured pixel by pixel). Android now draws the ramp as the view's own `experimental_backgroundImage` gradient, which spans exactly its box; other platforms keep the SVG. `edgeScrimGradient(color, edge)` is the gradient string.
+- **page-header: a bar with nothing in it is not drawn.** A header with no title, subtitle, back, leading slot or actions (Commons' ID tab, which only owns the status bar) is the safe area and its scrim. Once the bar's minimum height applied on native, that empty bar reserved a 56dp blank band above the content.
+
+### Consumers
+
+Bump to 15.50.7. No API change.
+
 ## 15.50.6
 
 ### Fixed

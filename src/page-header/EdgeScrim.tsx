@@ -1,8 +1,10 @@
-import React, { memo } from 'react';
-import { StyleSheet } from 'react-native';
+import type React from 'react';
+import { memo } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useSvgIdPrefix } from '../styles/svg-id';
+import { withAlpha } from '../theme/color-utils';
 
 /**
  * The floating header's EDGE EFFECT: the page colour at the top, fading to
@@ -100,7 +102,39 @@ export interface EdgeScrimProps {
   testID?: string;
 }
 
+/**
+ * The ramp as a CSS gradient, for Android's own `experimental_backgroundImage`.
+ *
+ * On Android `react-native-svg` laid the ramp out ~1.55 times taller than its
+ * box, so the box cut it off with half the page colour still showing: a hard
+ * line across the content at the header's foot, with the content above it only
+ * half covered (Commons and Allo, Pixel 8a). A view's own background gradient
+ * spans exactly that view. Alpha travels in the colour here, which a CSS
+ * gradient honours (the `stopOpacity` reason above is react-native-svg's).
+ */
+export function edgeScrimGradient(color: string, edge: 'top' | 'bottom'): string {
+  const stops = SCRIM_STOPS.map(
+    (stop) => `${withAlpha(color, stop.opacity)} ${Math.round(stop.offset * 100)}%`,
+  ).join(', ');
+  return `linear-gradient(to ${edge === 'bottom' ? 'top' : 'bottom'}, ${stops})`;
+}
+
 const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({ color, edge = 'top', testID }) => {
+  if (Platform.OS === 'android') {
+    return (
+      <View
+        testID={testID}
+        style={[
+          StyleSheet.absoluteFill,
+          { experimental_backgroundImage: edgeScrimGradient(color, edge) },
+        ]}
+      />
+    );
+  }
+  return <SvgEdgeScrim color={color} edge={edge} testID={testID} />;
+};
+
+const SvgEdgeScrim: React.FC<EdgeScrimProps> = ({ color, edge = 'top', testID }) => {
   const id = `${useSvgIdPrefix('bloom-page-header-scrim')}gradient`;
   const fromBottom = edge === 'bottom';
   return (
