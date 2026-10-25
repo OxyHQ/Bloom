@@ -152,17 +152,23 @@ export interface ChatListPaint {
 }
 
 /**
- * Every colour this family paints, from the theme only.
+ * Every colour this family paints, from the theme and the surface it sits on.
  *
- * Surfaces are the page background moved toward the text colour, so a hovered
- * row and a selected row each read as a step off WHATEVER page they sit on, in
- * light and dark, rather than off a fixed ramp stop that only matches one page
- * colour. Text, accents and the destructive tone come from the ramps.
+ * `background` is that surface: callers pass `useSurfaceFill()`, the colour the
+ * enclosing panel actually painted. Hovered and selected rows are that surface
+ * moved toward the text colour, so each reads as a step off WHATEVER it sits
+ * on, in light and dark. Reading `theme.colors.background` instead made every
+ * swipeable row a tinted slab on a phone, where the page is a `card` panel:
+ * the row's opaque swipe face was the page colour, not the panel's, and looked
+ * selected. Text, accents and the destructive tone come from the ramps.
  */
-export function resolveChatListPaint(theme: Theme): ChatListPaint {
+export function resolveChatListPaint(
+  theme: Theme,
+  background: string = theme.colors.background,
+): ChatListPaint {
   const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
-  const { background, text } = theme.colors;
+  const { text } = theme.colors;
   const step = (light: number, darkAlpha: number) =>
     mixColors(background, text, dark ? darkAlpha : light);
   // The raw `error` token is tuned for a light page; on a dark one the same red

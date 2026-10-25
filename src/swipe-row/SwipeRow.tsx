@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import { type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -105,7 +106,10 @@ export function SwipeRow({
   const tones = useMemo(() => paint ?? resolveSwipeRowPaint(theme), [paint, theme]);
   // The panes sit UNDER the row, so the travelling layer has to be opaque or
   // they read through it.
-  const rowFill = background ?? theme.colors.background;
+  // Defaults to the surface the row sits on, not the page colour: on a panel
+  // the two differ, and an opaque face in the page colour reads as a selection.
+  const surfaceFill = useSurfaceFill();
+  const rowFill = background ?? surfaceFill;
   const left = actions.left ?? [];
   const right = actions.right ?? [];
   const leftWidth = left.length * actionWidth;

@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { ScrollArea } from '../layout/ScrollArea';
 import { memo, useEffect, useMemo, useState } from 'react';
@@ -57,7 +58,8 @@ function ChatFolderTabsComponent({
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
-  const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveChatListPaint(theme, surface), [theme, surface]);
   const [selected, select] = useControllableState({
     value,
     defaultValue: defaultValue ?? folders[0]?.key ?? '',

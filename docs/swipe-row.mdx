@@ -148,7 +148,9 @@ put the same actions in it.
   the panes, the clip, the transform — and an opaque `background` under the
   travelling layer, because the panes are BEHIND the row and a transparent row
   lets the delete pane read through its own subject line. It defaults to the
-  theme's page colour; a row on a card passes that card's fill.
+  ambient surface (`useSurfaceFill()`), so a row inside a panel or card is that
+  panel's colour without being told. Defaulting to the page colour made every
+  chat row on a phone's `card` panel look selected.
 - **It does not size the row.** Pass `height` for a fixed row and the container
   takes it exactly; omit it and the panes stretch to whatever the child turns
   out to be, which is what a row with a MINIMUM height needs.

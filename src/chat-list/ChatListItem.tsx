@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import type React from 'react';
 import { memo, useEffect, useMemo } from 'react';
 import { View, type TextStyle } from 'react-native';
@@ -101,7 +102,8 @@ function ChatListItemComponent({
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
-  const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveChatListPaint(theme, surface), [theme, surface]);
   // The drag belongs to the POINTER, not to the platform: `swipeEnabled`
   // overrides it, and the panes take this family's own resolved pairs so they
   // match the rest of the row exactly.

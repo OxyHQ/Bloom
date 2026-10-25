@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -68,7 +69,8 @@ function ChatListComponent({
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
-  const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveChatListPaint(theme, surface), [theme, surface]);
   const geo = CHAT_ROW_GEOMETRY[density];
 
   const resolved: readonly ChatListSection[] = useMemo(() => {
