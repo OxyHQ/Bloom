@@ -63,6 +63,14 @@ export function createComposerAttachmentStrip({
           ? attachment.source
           : resolveImage?.(attachment.source, 'thumb');
 
+    // The line under the tile: the upload's progress, the caller's caption, or —
+    // for a glyph tile only — the file name. A picture is its own label; the
+    // name a picker gives one ("100.png", "IMG_2024…") said nothing a reader
+    // wanted, and it stays the tile's accessible name.
+    const line = uploading
+      ? `${Math.round(progress)}%`
+      : (attachment.caption ?? (uri ? undefined : attachment.name));
+
     // The box is a button only where the caller gave it something to do. A tile
     // that is `role="button"` with no handler announces an action that is not
     // there, and one that opens on press without a role is unreachable.
@@ -146,13 +154,15 @@ export function createComposerAttachmentStrip({
             />
           </View>
         ) : null}
-        <Text
-          variant="caption-2-regular"
-          numberOfLines={1}
-          style={{ color: uploading ? palette.accent : palette.textSecondary }}
-        >
-          {uploading ? `${Math.round(progress)}%` : (attachment.caption ?? attachment.name)}
-        </Text>
+        {line ? (
+          <Text
+            variant="caption-2-regular"
+            numberOfLines={1}
+            style={{ color: uploading ? palette.accent : palette.textSecondary }}
+          >
+            {line}
+          </Text>
+        ) : null}
       </View>
     );
   }
