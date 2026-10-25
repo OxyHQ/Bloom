@@ -50,6 +50,8 @@ const ItemComponent = function Item({
   style,
   titleStyle,
   subtitleStyle,
+  titleNumberOfLines = 1,
+  subtitleNumberOfLines = 2,
   accessibilityLabel,
   accessibilityHint,
   accessibilityRole,
@@ -124,7 +126,7 @@ const ItemComponent = function Item({
         {title != null ? (
           typeof title === 'string' ? (
             <Text
-              numberOfLines={1}
+              numberOfLines={titleNumberOfLines === 0 ? undefined : titleNumberOfLines}
               style={[
                 legacy ? styles.title : TYPE_SCALE[CONTROL_LABEL_TYPE[size]],
                 { color: titleColor },
@@ -140,7 +142,7 @@ const ItemComponent = function Item({
         {subtitle != null ? (
           typeof subtitle === 'string' ? (
             <Text
-              numberOfLines={2}
+              numberOfLines={subtitleNumberOfLines === 0 ? undefined : subtitleNumberOfLines}
               style={[styles.subtitle, { color: theme.colors.textSecondary }, subtitleStyle]}
             >
               {subtitle}

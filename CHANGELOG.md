@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.51.0
+
+### Added
+
+- **item: `titleNumberOfLines` and `subtitleNumberOfLines`.** Where a string title (default 1) and subtitle (default 2) truncate; `0` never does, the same contract as `GroupedSectionItem`'s `titleNumberOfLines` and `descriptionLines`. An explanatory row had no way to show its sentence whole: Commons' "how it works" rows ended mid-sentence ("incluso cuando ...", Pixel 8a, Spanish).
+
+### Consumers
+
+Bump to 15.51.0. Defaults are unchanged.
+
 ## 15.50.7
 
 ### Fixed
