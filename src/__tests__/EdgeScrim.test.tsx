@@ -7,8 +7,10 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { Platform, StyleSheet, type ViewStyle } from 'react-native';
 
 import { EdgeScrim } from '../page-header';
+import { edgeScrimGradient, SCRIM_STOPS } from '../page-header/EdgeScrim';
 import { hostNodes } from './support/rendered-style';
 
 const gradientOf = (tree: unknown) => hostNodes(tree).find((n) => n.type === 'LinearGradient')!;
@@ -42,5 +44,36 @@ describe('EdgeScrim', () => {
   it('never rotates its host to mirror', () => {
     const { toJSON } = render(<EdgeScrim color="#1d3b53" edge="bottom" />);
     expect(JSON.stringify(toJSON())).not.toContain('rotate');
+  });
+});
+
+describe('EdgeScrim on Android', () => {
+  // react-native-svg laid the ramp out ~1.55x taller than its box there, so the
+  // box cut it off half-opaque: a hard line across the content at the header's
+  // foot (Commons, Allo; Pixel 8a). Android draws it as the view's own gradient.
+  const previous = Platform.OS;
+  beforeEach(() => {
+    (Platform as { OS: string }).OS = 'android';
+  });
+  afterEach(() => {
+    (Platform as { OS: string }).OS = previous;
+  });
+
+  it('is a view gradient that spans its own box, with no SVG', () => {
+    const { toJSON } = render(<EdgeScrim color="#1d3b53" testID="scrim" />);
+    const nodes = hostNodes(toJSON());
+    expect(nodes.some((n) => n.type === 'LinearGradient' || n.type === 'Stop')).toBe(false);
+    const view = nodes.find((n) => n.props.testID === 'scrim');
+    const style = StyleSheet.flatten(view?.props.style as ViewStyle) ?? {};
+    expect(style).toMatchObject({ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 });
+    expect(style.experimental_backgroundImage).toBe(edgeScrimGradient('#1d3b53', 'top'));
+  });
+
+  it('runs from the solid colour to nothing, through the same stops, both ways', () => {
+    const top = edgeScrimGradient('#1d3b53', 'top');
+    expect(top.startsWith('linear-gradient(to bottom, rgba(29, 59, 83, 1) 0%')).toBe(true);
+    expect(top.endsWith('rgba(29, 59, 83, 0) 100%)')).toBe(true);
+    expect(top.match(/rgba\(/g)).toHaveLength(SCRIM_STOPS.length);
+    expect(edgeScrimGradient('#1d3b53', 'bottom').startsWith('linear-gradient(to top,')).toBe(true);
   });
 });

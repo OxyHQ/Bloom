@@ -210,9 +210,31 @@ function PageHeaderComponent({
   const [actionsSpacious, setActionsSpacious] = useState(!isWeb && width >= BREAKPOINTS.xl);
   const lastActionsSpacious = useRef(actionsSpacious);
   const compact = density === 'compact';
+  // A bar with nothing in it is no bar: a header that only owns the status bar
+  // (Commons' ID tab passes no title, back or actions) is the safe area and its
+  // scrim. Drawn anyway, the empty bar reserved 56dp of blank band above the
+  // content once its height stopped being class-only on native.
+  const screen = useScreenContext();
+  const headerScreen = useContext(ScreenHeaderContext);
+  const positionedByScreen = screen != null && headerScreen === screen;
+  const host = useContext(ScreenHostContext);
+  const hostActions = positionedByScreen ? host.headerActions : undefined;
+  // `null` declines Back outright; an explicit callback wins over the host's.
+  const onBack =
+    screenOnBack === null
+      ? undefined
+      : (screenOnBack ?? (positionedByScreen ? resolveScreenBack(host) : undefined));
+  const barEmpty =
+    title == null &&
+    subtitle == null &&
+    leading == null &&
+    onBack == null &&
+    screenActions == null &&
+    hostActions == null;
   const height =
     measuredHeight ||
-    padTop + (navigationPresentation ? NAVIGATION_HEIGHT : compact ? 32 : BAR_HEIGHT);
+    padTop +
+      (barEmpty ? 0 : navigationPresentation ? NAVIGATION_HEIGHT : compact ? 32 : BAR_HEIGHT);
   const sideInset =
     compact || navigationPresentation ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
 
@@ -245,9 +267,6 @@ function PageHeaderComponent({
   // What the header covers: its own overlay placements, and a Screen that lays
   // its header over the content (`headerPlacement="overlay"`), so a docking
   // section pins below it rather than behind it.
-  const screen = useScreenContext();
-  const headerScreen = useContext(ScreenHeaderContext);
-  const positionedByScreen = screen != null && headerScreen === screen;
   const coversContent =
     overlay || placement === 'overlap' || (positionedByScreen && screen.headerOverlays === true);
   useClaimTopEdge(coversContent || dock ? height : 0);
@@ -275,13 +294,6 @@ function PageHeaderComponent({
   // The context step is the one that matters for a Bloom composition: without
   // it a header inside a scrolling panel followed `window.scrollY`, which on a
   // desktop shell never moves, so the header looked deliberately inert.
-  const host = useContext(ScreenHostContext);
-  const hostActions = positionedByScreen ? host.headerActions : undefined;
-  // `null` declines Back outright; an explicit callback wins over the host's.
-  const onBack =
-    screenOnBack === null
-      ? undefined
-      : (screenOnBack ?? (positionedByScreen ? resolveScreenBack(host) : undefined));
   const resolvedActions =
     typeof screenActions === 'function'
       ? screenActions({ compact: actionsCompact, spacious: actionsSpacious })
@@ -688,68 +700,72 @@ function PageHeaderComponent({
             ]}
           />
         ) : null}
-        <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
-          <StyledView
-            {...dataHook('bloomPageHeaderBar')}
-            className={navigationPresentation ? 'py-0' : compact ? 'min-h-8 py-0' : 'min-h-14 py-2'}
-            style={[
-              [
-                styles.bar,
-                navigationPresentation && { gap: 2, minHeight: NAVIGATION_HEIGHT },
-                !isWeb && { paddingLeft: sideInset, paddingRight: sideInset },
-              ],
-              pointerEventsStyle(floating ? 'box-none' : undefined),
-            ]}
-            testID={testID ? `${testID}-bar` : undefined}
-          >
-            <View
-              {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
+        {barEmpty ? null : (
+          <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
+            <StyledView
+              {...dataHook('bloomPageHeaderBar')}
+              className={
+                navigationPresentation ? 'py-0' : compact ? 'min-h-8 py-0' : 'min-h-14 py-2'
+              }
               style={[
                 [
-                  styles.start,
-                  centered
-                    ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: sideInset } : {}) }
-                    : styles.startFill,
+                  styles.bar,
+                  navigationPresentation && { gap: 2, minHeight: NAVIGATION_HEIGHT },
+                  !isWeb && { paddingLeft: sideInset, paddingRight: sideInset },
                 ],
                 pointerEventsStyle(floating ? 'box-none' : undefined),
               ]}
-              onLayout={centered ? onStartLayout : undefined}
-              testID={testID ? `${testID}-start` : undefined}
+              testID={testID ? `${testID}-bar` : undefined}
             >
-              {backButton}
-              {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
-              {centered ? null : titleBlock}
-            </View>
-            {centered && titleBlock ? (
               <View
-                {...dataHook('bloomPageHeaderCenter')}
+                {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
                 style={[
                   [
-                    styles.centerSlot,
-                    !isWeb && { marginLeft: centerInset, marginRight: centerInset },
+                    styles.start,
+                    centered
+                      ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: sideInset } : {}) }
+                      : styles.startFill,
                   ],
-                  pointerEventsStyle('box-none'),
+                  pointerEventsStyle(floating ? 'box-none' : undefined),
                 ]}
-                testID={testID ? `${testID}-center` : undefined}
+                onLayout={centered ? onStartLayout : undefined}
+                testID={testID ? `${testID}-start` : undefined}
               >
-                {titleBlock}
+                {backButton}
+                {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+                {centered ? null : titleBlock}
               </View>
-            ) : null}
-            {centered ? (
-              <View
-                {...dataHook('bloomPageHeaderEnd')}
-                style={[
-                  { position: 'absolute', ...(!isWeb ? { insetInlineEnd: sideInset } : {}) },
-                  pointerEventsStyle('box-none'),
-                ]}
-              >
-                {actionsSlot}
-              </View>
-            ) : (
-              actionsSlot
-            )}
-          </StyledView>
-        </BloomScope>
+              {centered && titleBlock ? (
+                <View
+                  {...dataHook('bloomPageHeaderCenter')}
+                  style={[
+                    [
+                      styles.centerSlot,
+                      !isWeb && { marginLeft: centerInset, marginRight: centerInset },
+                    ],
+                    pointerEventsStyle('box-none'),
+                  ]}
+                  testID={testID ? `${testID}-center` : undefined}
+                >
+                  {titleBlock}
+                </View>
+              ) : null}
+              {centered ? (
+                <View
+                  {...dataHook('bloomPageHeaderEnd')}
+                  style={[
+                    { position: 'absolute', ...(!isWeb ? { insetInlineEnd: sideInset } : {}) },
+                    pointerEventsStyle('box-none'),
+                  ]}
+                >
+                  {actionsSlot}
+                </View>
+              ) : (
+                actionsSlot
+              )}
+            </StyledView>
+          </BloomScope>
+        )}
         {accessory ? (
           <View
             {...dataHook('bloomPageHeaderAccessory')}
