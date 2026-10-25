@@ -58,6 +58,17 @@ export interface ItemProps {
   style?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
   subtitleStyle?: StyleProp<TextStyle>;
+  /**
+   * Lines a string `title` may take before it truncates. Default `1`; `0` never
+   * truncates. For a row whose title is long in some languages, where cutting
+   * it off loses what the row is.
+   */
+  titleNumberOfLines?: number;
+  /**
+   * Lines a string `subtitle` may take before it truncates. Default `2`; `0`
+   * never truncates: an explanatory row whose sentence must be read whole.
+   */
+  subtitleNumberOfLines?: number;
   accessibilityLabel?: string;
   accessibilityHint?: string;
   accessibilityRole?: AccessibilityRole;
