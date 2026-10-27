@@ -2116,6 +2116,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: '调整窗格大小',
   notifications: '通知',
   proOffer: 'Pro 优惠',
+  addSplitLeft: '添加左侧分屏',
+  addSplitRight: '添加右侧分屏',
+  addSplitTop: '添加顶部分屏',
+  addSplitBottom: '添加底部分屏',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {

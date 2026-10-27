@@ -66,7 +66,15 @@ import { useLatestClaim } from '../hooks/use-latest-claim';
 import type { AppColorName } from '../theme/color-presets';
 import { PlacementBoundaryContext } from '../overlay/placement-boundary';
 import { PanelNavigation, PanelScrollScope } from './PanelNavigation';
-import { resolvePanelAxis, resolvePanelTracks, type ResolvedPanelTrack } from './panel-layout';
+import {
+  applyPanelSpans,
+  isFlexiblePanel,
+  resolvePanelAxis,
+  resolvePanelTracks,
+  splitPairSpans,
+  type ResolvedPanelTrack,
+} from './panel-layout';
+import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './PanelDropZones';
 import type {
   AppShellPanelDefinition,
   AppShellPanelLayout,
@@ -671,6 +679,12 @@ export function createPanelLayoutView(
                 </PlacementBoundaryContext.Provider>
               </AppShellPanelContext.Provider>
             ) : null}
+            {track.visible && !track.floating ? (
+              <PanelDropZones
+                panelId={panel.id}
+                fill={typeof panel.surfaceColor === 'string' ? panel.surfaceColor : undefined}
+              />
+            ) : null}
             {(joined || !framed) && track.gap > 0 ? (
               <View
                 pointerEvents="none"
@@ -773,7 +787,7 @@ export function createPanelLayoutView(
     );
   }
   function PanelLayoutTracks({
-    layout,
+    layout: declared,
     surfaceOwned = false,
     shellWidth,
     eligibilityFromGroup = false,
@@ -782,6 +796,9 @@ export function createPanelLayoutView(
     testID,
   }: PanelLayoutViewProps & { surfaceOwned?: boolean }) {
     const layoutReady = useShellLayoutReady();
+    const [ownSpans, setOwnSpans] = useState<Readonly<Record<string, number>>>({});
+    const spans = declared.spans ?? ownSpans;
+    const layout = useMemo(() => applyPanelSpans(declared, spans), [declared, spans]);
     const region = useAppShellRegion();
     const restoration = useOptionalScrollRestorationContext();
     const ancestorHost = useContext(ScreenHostContext);
@@ -925,7 +942,34 @@ export function createPanelLayoutView(
       return () => observer?.disconnect();
     }, [cssScope, cssRules, layout.panels]);
     const visible = tracks.filter((track) => track.visible);
+    const visibleKey = visible.map((track) => track.id).join('\n');
+    // biome-ignore lint/correctness/useExhaustiveDependencies: keyed by the visible ids
+    const visibleIds = useMemo(() => (visibleKey ? visibleKey.split('\n') : []), [visibleKey]);
+    const dropRtl = useIsRtl();
+    const drop = usePanelDropCoordinator(layout.drop, visibleIds, dropRtl, reducedMotion);
     const commitResize = (pair: Readonly<Record<string, number>>) => {
+      const ids = Object.keys(pair);
+      const resized = ids.map((id) => layout.panels.find((candidate) => candidate.id === id));
+      // Two flexible split tracks keep a proportion, not pixels: commit weights.
+      if (
+        !deck &&
+        ids.length === 2 &&
+        resized.every(
+          (candidate) =>
+            candidate !== undefined && isFlexiblePanel(candidate, vertical, dimensions),
+        )
+      ) {
+        const [first, second] = resized as [AppShellPanelDefinition, AppShellPanelDefinition];
+        const weights = splitPairSpans(first, second, pair[first.id]!, pair[second.id]!);
+        const nextSpans = { ...spans, ...weights };
+        if (declared.spans === undefined) setOwnSpans(nextSpans);
+        declared.onSpansChange?.(nextSpans);
+        for (const changed of [first, second]) {
+          if (vertical) changed.onHeightChange?.(pair[changed.id]!);
+          else changed.onWidthChange?.(pair[changed.id]!);
+        }
+        return;
+      }
       const updated = { ...dimensions, ...pair };
       if (vertical) {
         if (layout.heights === undefined) setOwnHeights(updated);
@@ -1095,90 +1139,98 @@ export function createPanelLayoutView(
       </Viewport>
     );
     return (
-      <PanelOrderBoundary ids={layout.panels.map((panel) => panel.id)} rootRef={rootRef}>
-        <ServerStyleSheet id={cssScope ?? ''} css={cssRules} />
-        <View
-          ref={rootRef}
-          {...(cssScope
-            ? {
-                dataSet: {
-                  bloomPanelGroup: cssScope,
-                  bloomPanelOrdering: reorder.ordering ? 'true' : undefined,
-                },
-              }
-            : {})}
-          testID={testID}
-          onLayout={
-            cssScope
-              ? undefined
-              : (event) => {
-                  onLayout(event);
-                  setMeasuredHeight(event.nativeEvent.layout.height);
+      <PanelDropProvider value={drop}>
+        <PanelOrderBoundary ids={layout.panels.map((panel) => panel.id)} rootRef={rootRef}>
+          <ServerStyleSheet id={cssScope ?? ''} css={cssRules} />
+          <View
+            ref={rootRef}
+            {...(cssScope
+              ? {
+                  dataSet: {
+                    bloomPanelGroup: cssScope,
+                    bloomPanelOrdering: reorder.ordering ? 'true' : undefined,
+                  },
                 }
-          }
-          style={[
-            {
-              minWidth: 0,
-              alignSelf: 'stretch',
-              // A bounded group reserves the bottom bar, or — when the app keeps
-              // the bar over its content — fills under it and what scrolls clears
-              // it (`useBottomEdgeInset`, the panel scroller, the vertical deck).
-              paddingBottom: document
-                ? (region?.bottomReserve ?? 0)
-                : region?.underBottomBar
-                  ? 0
-                  : bottomEdge,
-              ...(cssScope
-                ? {
-                    containerType: document ? 'inline-size' : 'size',
-                    containerName: `${cssScope}-group`,
+              : {})}
+            testID={testID}
+            onLayout={
+              cssScope
+                ? undefined
+                : (event) => {
+                    onLayout(event);
+                    setMeasuredHeight(event.nativeEvent.layout.height);
                   }
-                : {}),
-            } as WebCssStyle,
-            document ? {} : FILL,
-          ]}
-        >
-          {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
-            <DocumentRestoration enabled={document} />
-          ) : null}
-          {joined && !surfaceOwned ? (
-            <ContentPanel
-              appearance={layout.appearance === 'plain' ? 'plain' : undefined}
-              framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
-              fill={!document}
-              scrollable={false}
-              overlaySizing={document ? 'viewport' : 'panel'}
-              overlayInset={document ? region?.viewportInset : undefined}
-              surfaceStyle={FILL}
-              contentStyle={FILL}
-            >
-              {content}
-            </ContentPanel>
-          ) : (
-            content
-          )}
-          {layout.onPanelOrderChange ? (
-            <Text
-              accessibilityLiveRegion="polite"
-              aria-live="polite"
-              style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0 }}
-            >
-              {reorder.announcement}
-            </Text>
-          ) : null}
-          {documentHorizontal ? (
-            <ScrollBar target="document" horizontal offset={bottomEdge} />
-          ) : null}
-          {documentHorizontal && layout.trailingAction ? (
-            <View
-              {...{ dataSet: { bloomDeckTrailing: cssScope ?? undefined } }}
-              testID={testID ? `${testID}-trailing-action` : undefined}
-            >
-              {layout.trailingAction}
-            </View>
-          ) : null}
-        </View>
-      </PanelOrderBoundary>
+            }
+            style={[
+              {
+                minWidth: 0,
+                alignSelf: 'stretch',
+                // A bounded group reserves the bottom bar, or — when the app keeps
+                // the bar over its content — fills under it and what scrolls clears
+                // it (`useBottomEdgeInset`, the panel scroller, the vertical deck).
+                paddingBottom: document
+                  ? (region?.bottomReserve ?? 0)
+                  : region?.underBottomBar
+                    ? 0
+                    : bottomEdge,
+                ...(cssScope
+                  ? {
+                      containerType: document ? 'inline-size' : 'size',
+                      containerName: `${cssScope}-group`,
+                    }
+                  : {}),
+              } as WebCssStyle,
+              document ? {} : FILL,
+            ]}
+          >
+            {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
+              <DocumentRestoration enabled={document} />
+            ) : null}
+            {joined && !surfaceOwned ? (
+              <ContentPanel
+                appearance={layout.appearance === 'plain' ? 'plain' : undefined}
+                framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
+                fill={!document}
+                scrollable={false}
+                overlaySizing={document ? 'viewport' : 'panel'}
+                overlayInset={document ? region?.viewportInset : undefined}
+                surfaceStyle={FILL}
+                contentStyle={FILL}
+              >
+                {content}
+              </ContentPanel>
+            ) : (
+              content
+            )}
+            {layout.onPanelOrderChange ? (
+              <Text
+                accessibilityLiveRegion="polite"
+                aria-live="polite"
+                style={{
+                  position: 'absolute',
+                  width: 1,
+                  height: 1,
+                  overflow: 'hidden',
+                  opacity: 0,
+                }}
+              >
+                {reorder.announcement}
+              </Text>
+            ) : null}
+            {documentHorizontal ? (
+              <ScrollBar target="document" horizontal offset={bottomEdge} />
+            ) : null}
+            {documentHorizontal && layout.trailingAction ? (
+              <View
+                {...{ dataSet: { bloomDeckTrailing: cssScope ?? undefined } }}
+                testID={testID ? `${testID}-trailing-action` : undefined}
+              >
+                {layout.trailingAction}
+              </View>
+            ) : null}
+          </View>
+        </PanelOrderBoundary>
+      </PanelDropProvider>
     );
   }
   function PanelLayoutView(props: PanelLayoutViewProps) {

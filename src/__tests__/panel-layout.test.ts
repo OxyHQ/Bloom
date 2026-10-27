@@ -133,7 +133,7 @@ describe('vertical and responsive panel tracks', () => {
     ).toBe(620);
     expect(resolvePanelTracks(layout, 600, 900, 8).map((track) => track.width)).toEqual([246, 346]);
   });
-  it('distributes vertical spans and accepts controlled heights', () => {
+  it('distributes vertical spans from a zero basis, as CSS flex does, and accepts controlled heights', () => {
     const layout: AppShellPanelLayout = {
       axis: 'vertical',
       panels: [
@@ -142,7 +142,8 @@ describe('vertical and responsive panel tracks', () => {
       ],
     };
     expect(resolvePanelTracks(layout, 800, 1200, 0).map((track) => track.width)).toEqual([
-      300, 500,
+      800 / 3,
+      1600 / 3,
     ]);
     expect(
       resolvePanelTracks(layout, 800, 1200, 0, { a: 350, b: 450 }).map((track) => track.width),

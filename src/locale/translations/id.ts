@@ -2214,6 +2214,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'Ubah ukuran panel',
   notifications: 'Notifikasi',
   proOffer: 'Penawaran Pro',
+  addSplitLeft: 'Tambahkan bagian kiri',
+  addSplitRight: 'Tambahkan bagian kanan',
+  addSplitTop: 'Tambahkan bagian atas',
+  addSplitBottom: 'Tambahkan bagian bawah',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {

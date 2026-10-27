@@ -2253,6 +2253,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'Ridimensiona i riquadri',
   notifications: 'Notifiche',
   proOffer: 'Offerta Pro',
+  addSplitLeft: 'Aggiungi divisione a sinistra',
+  addSplitRight: 'Aggiungi divisione a destra',
+  addSplitTop: 'Aggiungi divisione in alto',
+  addSplitBottom: 'Aggiungi divisione in basso',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {

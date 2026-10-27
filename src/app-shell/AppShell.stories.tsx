@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -966,4 +966,109 @@ export const FluidSplitWorkspace: Story = {
       testID="fluid-split"
     />
   ),
+};
+
+function ProportionalSplitDemo() {
+  const [spans, setSpans] = useState<Readonly<Record<string, number>>>({
+    left: 1,
+    stack: 1,
+    right: 1,
+  });
+  const [stackSpans, setStackSpans] = useState<Readonly<Record<string, number>>>({});
+  return (
+    <AppShell
+      contentMaxWidth="none"
+      header={null}
+      gutter={7}
+      scroll="fixed"
+      panelLayout={{
+        mode: 'split',
+        flow: 'bounded',
+        appearance: 'separated',
+        gap: 7,
+        spans,
+        onSpansChange: setSpans,
+        panels: [
+          { id: 'left', minWidth: 220, resizable: true, content: <MapFill label="Left" /> },
+          {
+            id: 'stack',
+            minWidth: 220,
+            resizable: true,
+            appearance: 'plain',
+            content: (
+              <AppShellPanels
+                scope="local"
+                layout={{
+                  axis: 'vertical',
+                  gap: 7,
+                  spans: stackSpans,
+                  onSpansChange: setStackSpans,
+                  panels: [
+                    {
+                      id: 'top',
+                      minHeight: 120,
+                      resizable: true,
+                      content: <MapFill label="Top" />,
+                    },
+                    { id: 'bottom', minHeight: 120, content: <MapFill label="Bottom" /> },
+                  ],
+                }}
+              />
+            ),
+          },
+          { id: 'right', minWidth: 220, content: <MapFill label="Right" /> },
+        ],
+      }}
+      testID="proportional-split"
+    />
+  );
+}
+
+/** Drag a divider, then resize the window: the panes keep their proportion. */
+export const ProportionalSplit: Story = {
+  parameters: { controls: { disable: true }, layout: 'fullscreen' },
+  render: () => <ProportionalSplitDemo />,
+};
+
+function DropZonesDemo() {
+  const { width, height } = useWindowDimensions();
+  const [x, setX] = useState(0);
+  const [target, setTarget] = useState('none');
+  useEffect(() => {
+    const started = Date.now();
+    const timer = setInterval(() => {
+      const phase = ((Date.now() - started) / 6000) % 1;
+      setX(width * (phase < 0.5 ? phase * 2 : 2 - phase * 2));
+    }, 16);
+    return () => clearInterval(timer);
+  }, [width]);
+  return (
+    <AppShell
+      contentMaxWidth="none"
+      header={null}
+      gutter={7}
+      scroll="fixed"
+      panelLayout={{
+        mode: 'split',
+        flow: 'bounded',
+        gap: 7,
+        drop: {
+          active: true,
+          point: { x, y: height / 2 },
+          onTargetChange: (next) => setTarget(next ? `${next.panelId} ${next.edge}` : 'none'),
+        },
+        panels: [
+          { id: 'a', minWidth: 220, content: <MapFill label={`Target: ${target}`} /> },
+          { id: 'b', minWidth: 220, content: <MapFill label="Second pane" /> },
+        ],
+      }}
+      testID="drop-zones"
+    />
+  );
+}
+
+/** A simulated drag sweeps across the window; the targets resolve under it. */
+export const PanelDropZones: Story = {
+  parameters: { controls: { disable: true }, layout: 'fullscreen' },
+  render: () => <DropZonesDemo />,
 };

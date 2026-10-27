@@ -2257,6 +2257,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'Bereichsgröße ändern',
   notifications: 'Benachrichtigungen',
   proOffer: 'Pro-Angebot',
+  addSplitLeft: 'Linke Teilung hinzufügen',
+  addSplitRight: 'Rechte Teilung hinzufügen',
+  addSplitTop: 'Obere Teilung hinzufügen',
+  addSplitBottom: 'Untere Teilung hinzufügen',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {

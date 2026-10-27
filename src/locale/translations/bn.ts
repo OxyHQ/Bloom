@@ -2149,6 +2149,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'প্যানের আকার বদলান',
   notifications: 'বিজ্ঞপ্তি',
   proOffer: 'Pro অফার',
+  addSplitLeft: 'বাঁদিকে বিভাজন যোগ করুন',
+  addSplitRight: 'ডানদিকে বিভাজন যোগ করুন',
+  addSplitTop: 'উপরে বিভাজন যোগ করুন',
+  addSplitBottom: 'নিচে বিভাজন যোগ করুন',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {

@@ -2524,6 +2524,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'تغيير حجم الأجزاء',
   notifications: 'الإشعارات',
   proOffer: 'عرض Pro',
+  addSplitLeft: 'إضافة تقسيم أيسر',
+  addSplitRight: 'إضافة تقسيم أيمن',
+  addSplitTop: 'إضافة تقسيم علوي',
+  addSplitBottom: 'إضافة تقسيم سفلي',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
