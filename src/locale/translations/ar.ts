@@ -2508,6 +2508,10 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
   towards: (headsign) => `إلى ${headsign}`,
 };
 
+const LAYOUT_MESSAGES: Translations['LAYOUT_MESSAGES'] = {
+  showToolbar: 'إظهار شريط الأدوات',
+};
+
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   reorderPanel: (label) => `إعادة ترتيب ${label}`,
   reorderHint:
@@ -2520,6 +2524,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'تغيير حجم الأجزاء',
   notifications: 'الإشعارات',
   proOffer: 'عرض Pro',
+  addSplitLeft: 'إضافة تقسيم أيسر',
+  addSplitRight: 'إضافة تقسيم أيمن',
+  addSplitTop: 'إضافة تقسيم علوي',
+  addSplitBottom: 'إضافة تقسيم سفلي',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
@@ -3462,6 +3470,7 @@ const translations: Translations = {
   INPUT_OTP_MESSAGES,
   PLACE_DETAILS_MESSAGES,
   APP_SHELL_MESSAGES,
+  LAYOUT_MESSAGES,
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,

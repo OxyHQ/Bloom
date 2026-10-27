@@ -2154,6 +2154,10 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
   towards: (headsign) => `${headsign}行き`,
 };
 
+const LAYOUT_MESSAGES: Translations['LAYOUT_MESSAGES'] = {
+  showToolbar: 'ツールバーを表示',
+};
+
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   reorderPanel: (label) => `${label}を並べ替え`,
   reorderHint: 'ドラッグまたは矢印キーで並べ替えます。HomeとEndで先頭と末尾に移動します。',
@@ -2165,6 +2169,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'ペインのサイズを変更',
   notifications: '通知',
   proOffer: 'Pro のご案内',
+  addSplitLeft: '左に分割を追加',
+  addSplitRight: '右に分割を追加',
+  addSplitTop: '上に分割を追加',
+  addSplitBottom: '下に分割を追加',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
@@ -3022,6 +3030,7 @@ const translations: Translations = {
   INPUT_OTP_MESSAGES,
   PLACE_DETAILS_MESSAGES,
   APP_SHELL_MESSAGES,
+  LAYOUT_MESSAGES,
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,

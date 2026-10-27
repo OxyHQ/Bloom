@@ -2244,6 +2244,10 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
   towards: (headsign) => `vers ${headsign}`,
 };
 
+const LAYOUT_MESSAGES: Translations['LAYOUT_MESSAGES'] = {
+  showToolbar: 'Afficher la barre d’outils',
+};
+
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   reorderPanel: (label) => `Réorganiser ${label}`,
   reorderHint:
@@ -2256,6 +2260,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'Redimensionner les panneaux',
   notifications: 'Notifications',
   proOffer: 'Offre Pro',
+  addSplitLeft: 'Ajouter un volet à gauche',
+  addSplitRight: 'Ajouter un volet à droite',
+  addSplitTop: 'Ajouter un volet en haut',
+  addSplitBottom: 'Ajouter un volet en bas',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
@@ -3127,6 +3135,7 @@ const translations: Translations = {
   INPUT_OTP_MESSAGES,
   PLACE_DETAILS_MESSAGES,
   APP_SHELL_MESSAGES,
+  LAYOUT_MESSAGES,
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,

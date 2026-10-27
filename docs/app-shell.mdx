@@ -1325,3 +1325,199 @@ compatibility.
 
 
 With root `panelLayout`, `contentMaxWidth="none"` makes a split workspace use all space remaining beside navigation and framing. Fixed-width descriptors keep their basis; descriptors without a width share the remainder according to `span`. Omitting this opt-in retains the preferred reading envelope. The same contract applies to web container-query layout and native measurement.
+
+### Proportional splits
+
+A split whose panes have no `width` of their own (flexible tracks) divides the
+room by `span`. Resizing the boundary between two flexible panes commits their
+new weights through `spans` / `onSpansChange` instead of freezing pixels: the
+pair keeps its combined span and divides it by the ratio the drag settled on,
+so the proportion holds when the window, the navigation or the frame changes
+the region's size. `spans[id]` overrides the descriptor's `span` in the native
+resolver and the CSS compiler alike. A pair where either pane has a `width` (or
+an entry in `widths`) keeps reporting pixels through `onWidthsChange`, as
+before. Pointer, native pan and keyboard nudges commit the same way;
+`onWidthChange` on each pane still reports the size it settled at. Leave
+`spans` out for uncontrolled weights.
+
+```tsx
+const [spans, setSpans] = useState({ left: 1, right: 1 });
+<AppShell panelLayout={{
+  mode: 'split', gap: 7, spans, onSpansChange: setSpans,
+  panels: [
+    { id: 'left', minWidth: 220, resizable: true, content: <Page id="a" /> },
+    { id: 'right', minWidth: 220, content: <Page id="b" /> },
+  ],
+}} />
+```
+
+Flexible tracks grow from a zero basis, exactly as the CSS compositor's
+`flex: <span> 1 0px` does, and only a `minWidth`/`maxWidth` freezes one. The
+native resolver used to start them at their minimum, which gave native a
+`min + share` split the browser never drew (1:2 spans with 100 minimums in 800
+were 300/500 natively and 267/533 on the web; both are now 267/533).
+
+A slot of the split that stacks two panes is a nested
+`AppShellPanels scope="local"` with `axis: 'vertical'` inside a pane with
+`appearance: 'plain'`; its own `spans` keep the stack's proportion, and its
+`gap` matches the outer one. The **Proportional Split** story shows three panes
+with a stacked middle slot.
+
+### Drop zones
+
+`panelLayout.drop` draws edge targets on panels for a drag the application owns
+— a tab dragged out of a strip, a file, a card — and resolves which one the drag
+is over. Bloom does not own the drag: pass the pointer as it moves, in window
+coordinates (what `measureInWindow` reports; the viewport on the web).
+
+```tsx
+<AppShell panelLayout={{
+  ...split,
+  drop: {
+    active: dragging,
+    point: pointer,                       // { x, y } | null
+    panels: otherPaneIds,                 // default: every visible panel
+    edges: ['start', 'end'],              // default; 'top' | 'bottom' also
+    onTargetChange: setTarget,            // { panelId, edge } | null
+  },
+}} />
+```
+
+- **Stages.** While `active`, each accepting panel's targets slide in from past
+  its edges (`motion.slide`, 110ms), then grow (`motion.grow`, a spring with
+  response 0.2s and ratio 0.9). As fractions of the panel: resting
+  0.1324 × 0.383 at an inset of 0.025, grown 0.215 × 0.611 at 0.02, active
+  0.241 × 0.69 at 0.02, vertically centred (`PANEL_DROP_STAGES`). The active
+  target leans 43% of the way toward the pointer, staying inside the panel.
+- **Hit test.** Targets resolve once grown, while the pointer is over a
+  visible panel — the dragged item's own panel counts even when `panels` leaves
+  it out, so a neighbour's target resolves at the seam. The dragged picture (`preview`, default 209 × 110 centred on
+  the pointer; 0 × 0 tests the bare point) must overlap a grown target, and the
+  nearest centre wins. The current target is tested at its larger active size,
+  so it does not flicker between neighbours. `resolvePanelDropTarget` and
+  `panelDropZoneRect` are exported for the application's own drop handling.
+- **Edges are logical.** `start` is the left in LTR and the right in RTL; the
+  label names the side the user sees ("Add left split"…, localized; `labels`
+  overrides per edge).
+- **Paint.** A quiet step off the panel's fill with its hairline, a dashed inner
+  border (2pt dashes of 6/6 resting, 2.33pt of 7/7 active), a split glyph and the
+  label in the fill's secondary text; the active target turns the accent's
+  subtle pair. Nothing is hard-coded: light, dark and custom presets follow.
+- **Never in the way.** The overlay takes no pointer events, is hidden from
+  accessibility, never fades a material host, and clips at the panel's bounds.
+  Reduced motion places every stage at once.
+
+The **Panel Drop Zones** story sweeps a simulated drag across a two-pane split.
+
+## A desktop window
+
+A desktop app's window is the same shell: the navigation flush to the window,
+one content card (or a split of them) inset from the window's edges, and the
+window's own backdrop between them. Nothing about it is positioned by hand.
+
+```tsx
+<BloomScope panelRadius={10}>
+  <AppShell
+    background="transparent"              // the window's material shows between regions
+    header={null}
+    navigationAlign="content"             // with surface 'plain': flush to the window
+    navigationGap={0}
+    navFrom={0}
+    framedFrom={0}
+    contentMaxWidth="none"
+    frameInset={{ top: 6, end: 7, bottom: 7, start: 7 }}
+    sidebar={{
+      surface: 'plain', variant: 'panel', collapsed: false, collapseDisabled: true,
+      width: 190, render: (props) => <TabSidebar {...props} />,
+      dock: { hidden, onHiddenChange: setHidden, peek: true },
+    }}
+    panelLayout={{ mode: 'split', flow: 'bounded', gap: 7, spans, onSpansChange: setSpans, panels }}
+  />
+</BloomScope>
+```
+
+- **`background="transparent"`** paints nothing behind the regions, so a
+  native window material, a wallpaper or a tint the host draws shows through.
+  The default `page` paints the theme's background as before.
+- **`frameInset`** moves the framed region's window edges one at a time
+  (`top`, `bottom`, `start`, `end`; logical, so `start` is the right in RTL),
+  overriding `gutter` there only: the gap between panels and the panel gutter
+  stay `gutter` (or `panelLayout.gap`). A flush navigation owns the start edge;
+  `start` applies while it is hidden or absent. Equal edges keep the single
+  `padding` the shell always wrote.
+- **The card's corner** is the panels' `BloomScope panelRadius`.
+- With `contentMaxWidth="none"` a content-aligned shell no longer centres its
+  envelope in CSS: the envelope fills the row, so the compositor aligns it to
+  the frame's start (native always did).
+
+The **App Shell / Window** stories draw this window: docked, split, hidden, and
+with tabs across the top.
+
+### Dock and peek
+
+`sidebar.dock` lets the in-flow navigation leave the layout entirely — the
+content takes its room — and float back over the content from the start edge
+while the pointer rests there. `topBarDock` does the same for a `topBar` from
+the top edge (a tab strip across the top of a window). Both take one
+`AppShellDock`:
+
+| Field | Default | |
+| --- | --- | --- |
+| `hidden` / `defaultHidden` / `onHiddenChange` | shown | controllable |
+| `peek` | off | `true`, or `{ trigger, edge, inset, radius, hideDelay, appearance }` |
+| `peek.trigger` | `hover` | `manual`: only `useAppShell()`'s `peek()` opens it |
+| `peek.edge` | 8 | depth of the hover strip along the edge |
+| `peek.inset` | 5 | the floating region's distance from the window's edges |
+| `peek.radius` | 12 | its corner |
+| `peek.hideDelay` | 120 ms | how long the pointer may be away before it slides out |
+| `peek.appearance` | `surface` | the navigation's panel surface, border and shadow; `plain` paints nothing |
+| `onPeekChange` | | `true` as it opens, `false` once it has slid out |
+| `motion.show` / `motion.hide` | spring, response 0.215 s, ratio 0.79 | `MotionSpec` |
+| `motion.peekIn` | spring, response 0.185 s, ratio 0.77 | |
+| `motion.peekOut` | 150 ms, `cubic-bezier(0.645, 0.045, 0.355, 1)` | |
+
+The defaults are a desktop browser's sidebar, traced on a 240 fps recording:
+90% of the travel in 100 ms, a 1–2 pt overshoot at ~0.15 s, at rest by
+~0.27 s; the peek 93% in 66 ms. Every one is data
+([springs and timings as data](/docs/bloom/main/motion#springs-and-timings-as-data)),
+so a different measurement is a different object, not a code change.
+
+What it does:
+
+- **One motion, two readings.** The navigation's slot closes from its width
+  (plus the row gap it carries) to what it leaves of the frame — 0, or the
+  frame's `start` inset for a flush navigation — while its content slides back
+  past the edge by its own width. Both read ONE progress: a registered CSS
+  custom property (`--bloom-nav-dock`, `--bloom-top-dock`) on the web, a shared
+  value on native. So the content's edge and the navigation's far side can
+  never drift apart, and the web runs the whole motion on the compositor with
+  no JavaScript per frame. Measured in Chromium (`verify-app-shell-dock.mjs`):
+  the card's start edge and the sidebar's far edge stay within 0.1 pt of the
+  spring's closed form, hiding and showing.
+- **The content stays mounted.** Hidden, it is inert, out of the accessibility
+  tree and takes no pointer; its scroll position, editors and open state
+  survive. The peek floats the SAME tree, `inset` from the window's edges, over
+  the content, which never moves. From the closed peek the region's far side
+  (and its 12 pt shadow room) starts past the window's edge.
+- **Docking from a peek** lands in place, without motion: the floating region
+  becomes the docked one where it is.
+- **No peek while it moves.** The hover strip appears once hiding has landed,
+  so a pointer left at the edge does not open a peek of a region still leaving.
+- **Reduced motion** lands every change at once, on both platforms.
+- **RTL**: the start edge is the right; the slide mirrors.
+- `topBarDock` measures its bar once (the bar's first frame is in flow) and
+  needs a bounded frame: a document's top bar is sticky in the page's flow, so
+  `scroll="document"` keeps it in place.
+
+`useAppShell()` returns `navigationDock` and `topBarDock`
+(`AppShellDockState`): `available`, `hidden`, `setHidden`, `toggleHidden`,
+`peeking`, `peek(open)` and, for side effects that follow the motion on native
+(window buttons, a native view's frame), `progress` and `peekProgress` shared
+values. `peek(true)` slides it in now; `peek(false)` slides it out after
+`hideDelay` unless asked in again. A host that tracks the pointer itself (a
+native window edge watcher) sets `peek.trigger: 'manual'` and calls `peek()`.
+
+On the web the hover strip and the floating region use pointer enter and leave.
+On a native platform without hover pointer events, drive `peek()` from the
+host. Ordering the peek above the content uses `zIndex` among the row's
+children, which needs the New Architecture on macOS.

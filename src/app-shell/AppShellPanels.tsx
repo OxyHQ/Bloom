@@ -230,6 +230,8 @@ export function createAppShellPanels(
     show,
     widths,
     onWidthsChange,
+    spans,
+    onSpansChange,
     testID,
   }: AppShellPanelsProps) {
     const inheritedRegion = useRegion();
@@ -299,6 +301,8 @@ export function createAppShellPanels(
                     activePanel: show,
                     widths,
                     onWidthsChange,
+                    spans,
+                    onSpansChange,
                     flow: 'bounded',
                     horizontalScroll: 'contained',
                     gap,

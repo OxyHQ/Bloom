@@ -17,6 +17,11 @@ export interface AppShellMessages {
   movePanelBefore: string;
   movePanelAfter: string;
   panelMoved: (label: string, position: number, total: number) => string;
+  /** A panel's drop target on its left edge (the start in LTR, the end in RTL). */
+  addSplitLeft: string;
+  addSplitRight: string;
+  addSplitTop: string;
+  addSplitBottom: string;
   /** `NotificationBell`'s trigger and popover. */
   notifications: string;
   /** `ProOfferCard`'s region. */
@@ -34,6 +39,10 @@ export const APP_SHELL_MESSAGES: MessageCatalog<AppShellMessages> =
     movePanelBefore: 'Move before',
     movePanelAfter: 'Move after',
     panelMoved: (label, position, total) => `${label}, position ${position} of ${total}`,
+    addSplitLeft: 'Add left split',
+    addSplitRight: 'Add right split',
+    addSplitTop: 'Add top split',
+    addSplitBottom: 'Add bottom split',
 
     notifications: 'Notifications',
     proOffer: 'Pro offer',

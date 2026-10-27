@@ -2172,6 +2172,10 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
   towards: (headsign) => `${headsign} yönüne`,
 };
 
+const LAYOUT_MESSAGES: Translations['LAYOUT_MESSAGES'] = {
+  showToolbar: 'Araç çubuğunu göster',
+};
+
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   reorderPanel: (label) => `${label} sırasını değiştir`,
   reorderHint:
@@ -2184,6 +2188,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'Bölmeleri yeniden boyutlandır',
   notifications: 'Bildirimler',
   proOffer: 'Pro teklifi',
+  addSplitLeft: 'Sola bölme ekle',
+  addSplitRight: 'Sağa bölme ekle',
+  addSplitTop: 'Üste bölme ekle',
+  addSplitBottom: 'Alta bölme ekle',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
@@ -3042,6 +3050,7 @@ const translations: Translations = {
   INPUT_OTP_MESSAGES,
   PLACE_DETAILS_MESSAGES,
   APP_SHELL_MESSAGES,
+  LAYOUT_MESSAGES,
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,

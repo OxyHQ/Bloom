@@ -2151,6 +2151,10 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
   towards: (headsign) => `${headsign} की ओर`,
 };
 
+const LAYOUT_MESSAGES: Translations['LAYOUT_MESSAGES'] = {
+  showToolbar: 'टूलबार दिखाएँ',
+};
+
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   reorderPanel: (label) => `${label} का क्रम बदलें`,
   reorderHint:
@@ -2163,6 +2167,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'पैन का आकार बदलें',
   notifications: 'सूचनाएँ',
   proOffer: 'Pro ऑफ़र',
+  addSplitLeft: 'बाईं ओर विभाजन जोड़ें',
+  addSplitRight: 'दाईं ओर विभाजन जोड़ें',
+  addSplitTop: 'ऊपर विभाजन जोड़ें',
+  addSplitBottom: 'नीचे विभाजन जोड़ें',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
@@ -3008,6 +3016,7 @@ const translations: Translations = {
   INPUT_OTP_MESSAGES,
   PLACE_DETAILS_MESSAGES,
   APP_SHELL_MESSAGES,
+  LAYOUT_MESSAGES,
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,

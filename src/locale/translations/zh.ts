@@ -2101,6 +2101,10 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
   towards: (headsign) => `开往${headsign}`,
 };
 
+const LAYOUT_MESSAGES: Translations['LAYOUT_MESSAGES'] = {
+  showToolbar: '显示工具栏',
+};
+
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   reorderPanel: (label) => `重新排列${label}`,
   reorderHint: '拖动或使用方向键重新排列。Home 和 End 键移到首位和末位。',
@@ -2112,6 +2116,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: '调整窗格大小',
   notifications: '通知',
   proOffer: 'Pro 优惠',
+  addSplitLeft: '添加左侧分屏',
+  addSplitRight: '添加右侧分屏',
+  addSplitTop: '添加顶部分屏',
+  addSplitBottom: '添加底部分屏',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
@@ -2948,6 +2956,7 @@ const translations: Translations = {
   INPUT_OTP_MESSAGES,
   PLACE_DETAILS_MESSAGES,
   APP_SHELL_MESSAGES,
+  LAYOUT_MESSAGES,
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,

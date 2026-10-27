@@ -192,6 +192,7 @@ export {
   ResizeHandle,
   ScrollSurface,
   Toolbar,
+  AutoHideBar,
   useScrollOffset,
   ScreenScope,
   HeaderDockProvider,
@@ -206,6 +207,8 @@ export type {
   ResizeHandleProps,
   ScrollSurfaceProps,
   ToolbarProps,
+  AutoHideBarProps,
+  AutoHideBarMotion,
 } from './layout/index.web';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabSize } from './fab/index.web';
@@ -365,8 +368,21 @@ export {
   ScreenTransition,
   MOTION_RECIPES,
   animateMotion,
+  animateWithSpec,
+  motionCss,
+  motionDurationMs,
+  motionProgressAt,
+  springPhysics,
+  springProgressAt,
+  springSettleMs,
 } from './motion/index.web';
-export type { ScreenTransitionProps, ScreenTransitionDirection, MotionIntent } from './motion/index.web';
+export type {
+  ScreenTransitionProps,
+  ScreenTransitionDirection,
+  MotionIntent,
+  MotionSpec,
+  SpringSpec,
+} from './motion/index.web';
 export { AnimatedCheck } from './animated-check';
 export type { AnimatedCheckProps, AnimatedCheckRef } from './animated-check';
 

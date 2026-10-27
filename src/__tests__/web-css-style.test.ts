@@ -58,6 +58,11 @@ const ALLOWED: Record<string, { count: number; reason: string }> = {
     reason:
       "The compositor's CSS custom property resolves display to flex/none before hydration. This VALUE-level cast bridges RN's narrower display union only when web CSS visibility is active; native and legacy contexts use their own boolean. SSR and native visibility suites assert both paths and retained content.",
   },
+  'app-shell/EdgeDock.tsx': {
+    count: 2,
+    reason:
+      "`cssLength` and `cssTransform`: the dock's slot extent and its content's offset are `calc()`s of a registered progress property (`--bloom-nav-dock`), which RN's `DimensionValue` and transform array cannot name. VALUE-level, web-only (native returns numbers from a shared value first), and the only two crossings in the file.",
+  },
   'concentric/use-concentric-geometry.ts': {
     count: 1,
     reason:
