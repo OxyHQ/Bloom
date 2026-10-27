@@ -121,7 +121,7 @@ describe('CSS', () => {
       .split(',')
       .map(Number);
     expect(stops[0]).toBe(0);
-    expect(stops.at(-1)).toBe(1);
+    expect(stops[stops.length - 1]).toBe(1);
     expect(Math.max(...stops)).toBeGreaterThan(1.005);
     const at = (fraction: number) => {
       const position = fraction * (stops.length - 1);

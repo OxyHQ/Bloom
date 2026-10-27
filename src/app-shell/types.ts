@@ -7,6 +7,7 @@ import type { ContentPanelChrome, ContentPanelProps } from '../content-panel/typ
 import type { NotificationCenterItem, NotificationCenterTab } from '../notification-center/types';
 import type { SidebarProps } from '../sidebar/types';
 import type { AppShellPanelLayout } from './panel-layout-types';
+import type { MotionSpec } from '../motion/spec';
 
 /**
  * How the sidebar reaches a narrow screen (below `lg`):
@@ -24,6 +25,70 @@ export interface AppShellSidebarProps extends Omit<SidebarProps, 'mobile' | 'onC
   width?: number;
   /** Receives the shell's resolved variant, collapse, mobile and dismissal props. */
   render?: (props: SidebarProps) => ReactNode;
+  /**
+   * Let the in-flow navigation leave the layout entirely (the content takes its
+   * room) and float back over the content from the start edge. See `AppShellDock`.
+   */
+  dock?: AppShellDock;
+}
+
+/** One edge of the window, in logical terms: `start` is the left in LTR, the right in RTL. */
+export type AppShellEdge = 'top' | 'bottom' | 'start' | 'end';
+
+/** A length per window edge. */
+export type AppShellEdges = Partial<Record<AppShellEdge, number>>;
+
+/**
+ * How a hidden region comes back while the pointer is at its edge: a floating
+ * copy of the SAME mounted content, over the page, which never moves.
+ */
+export interface AppShellDockPeek {
+  /** `hover` (default): Bloom's edge strip opens it. `manual`: only `useAppShell()`'s `peek()` does. */
+  trigger?: 'hover' | 'manual';
+  /** Depth of the hover strip along the edge. Default 8. */
+  edge?: number;
+  /** The floating panel's distance from the window's edges. Default 5. */
+  inset?: number;
+  /** The floating panel's corner radius. Default 12. */
+  radius?: number;
+  /** How long the pointer may be away before it slides out, ms. Default 120. */
+  hideDelay?: number;
+  /**
+   * `surface` (default) paints Bloom's floating surface behind the content;
+   * `plain` paints nothing, for content that draws its own backing.
+   */
+  appearance?: 'surface' | 'plain';
+}
+
+/** Motion as data (`@oxy.so/bloom/motion` `MotionSpec`): a spring or a timed curve. */
+export interface AppShellDockMotion {
+  /** Coming back into the layout. Default: spring, response 0.215 s, damping ratio 0.79. */
+  show?: MotionSpec;
+  /** Leaving the layout. Default: the same spring as `show`. */
+  hide?: MotionSpec;
+  /** The peek sliding in. Default: spring, response 0.185 s, damping ratio 0.77. */
+  peekIn?: MotionSpec;
+  /** The peek sliding out. Default: 150 ms, cubic-bezier(0.645, 0.045, 0.355, 1). */
+  peekOut?: MotionSpec;
+}
+
+/**
+ * An in-flow region (the sidebar, the top bar) that can leave the layout and
+ * peek back over it. Hidden, the region gives its whole room to the content;
+ * its content stays mounted (scroll positions, editors and menus survive),
+ * inert and out of the accessibility tree until it peeks or comes back.
+ * Coming back from a peek docks in place, without motion.
+ */
+export interface AppShellDock {
+  /** Controlled. Pair with `onHiddenChange`. */
+  hidden?: boolean;
+  defaultHidden?: boolean;
+  onHiddenChange?: (hidden: boolean) => void;
+  /** Float the hidden region back over the content from its edge. `true` uses the defaults. */
+  peek?: boolean | AppShellDockPeek;
+  /** Reports the peek opening (true) and finishing its slide out (false). */
+  onPeekChange?: (peeking: boolean) => void;
+  motion?: AppShellDockMotion;
 }
 
 /**
@@ -275,6 +340,24 @@ export interface AppShellEngineProps {
   topBar?: ReactNode;
   /** `compact` (default): only while the nav is a drawer. */
   topBarVisibility?: AppShellBarVisibility;
+  /**
+   * Let a shown `topBar` leave the layout and peek back from the top edge,
+   * like `sidebar.dock` does from the start edge. See `AppShellDock`.
+   */
+  topBarDock?: AppShellDock;
+  /**
+   * The framed region's distance from each window edge, overriding `gutter`
+   * there only (panels and the gap between them keep `gutter`). A flush
+   * navigation still owns the start edge; `start` applies while it is hidden
+   * or absent.
+   */
+  frameInset?: AppShellEdges;
+  /**
+   * `page` (default) paints the theme's page background behind the regions.
+   * `transparent` paints nothing, so a window's own backdrop (a native
+   * material, a wallpaper, a tint the host draws) shows between them.
+   */
+  background?: 'page' | 'transparent';
   /**
    * The bottom bar: pinned to the bottom of the viewport (or of the frame when
    * the shell does not own the page), with the bottom safe-area inset applied
