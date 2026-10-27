@@ -93,14 +93,27 @@ export function resolvePanelTracks(
       ? eligible.filter((panel) => panel.id === active?.id)
       : eligible;
   const room = Math.max(0, available - Math.max(0, shown.length - 1) * gap);
+  // A flexible split track grows from a zero basis, as the CSS compositor's
+  // `flex: <span> 1 0px` does: its share is proportional to its span, and only
+  // a min/max boundary freezes it. Starting it at its minimum gave native a
+  // `min + share` split that the browser never drew.
+  const fromZero = (panel: AppShellPanelDefinition) =>
+    !deck &&
+    !natural &&
+    widths[panel.id] === undefined &&
+    panel.width === undefined &&
+    shown.length > 1 &&
+    !layout.expandedPanel;
   const sizes = shown.map((panel) =>
-    clampPanelWidth(
-      panel,
-      positive(
-        widths[panel.id],
-        positive(panel.width, deck && !natural ? DEFAULT_PANEL_WIDTH : panelMinimum(panel)),
-      ),
-    ),
+    fromZero(panel)
+      ? 0
+      : clampPanelWidth(
+          panel,
+          positive(
+            widths[panel.id],
+            positive(panel.width, deck && !natural ? DEFAULT_PANEL_WIDTH : panelMinimum(panel)),
+          ),
+        ),
   );
   if ((!deck || layout.expandedPanel) && shown.length === 1) sizes[0] = available;
   else if (!deck || (!natural && shown.some((panel) => (panel.span ?? 0) > 0))) {
@@ -136,6 +149,9 @@ export function resolvePanelTracks(
       });
     }
   }
+  shown.forEach((panel, index) => {
+    if (sizes[index]! < panelMinimum(panel)) sizes[index] = panelMinimum(panel);
+  });
   return layout.panels.map((panel) => {
     const index = shown.findIndex((candidate) => candidate.id === panel.id);
     return {
@@ -161,4 +177,51 @@ export function resizePanelPair(
   const maximum = Math.min(panelMaximum(first), total - panelMinimum(second));
   const width = Math.max(minimum, Math.min(maximum, requested));
   return { [first.id]: width, [second.id]: total - width };
+}
+
+/** Committed weights override descriptor spans, in the resolver and the CSS compiler alike. */
+export function applyPanelSpans(
+  layout: AppShellPanelLayout,
+  spans: Readonly<Record<string, number>> | undefined,
+): AppShellPanelLayout {
+  if (!spans) return layout;
+  let changed = false;
+  const panels = layout.panels.map((panel) => {
+    const span = spans[panel.id];
+    if (span === undefined || !Number.isFinite(span) || span <= 0 || span === panel.span)
+      return panel;
+    changed = true;
+    return { ...panel, span };
+  });
+  return changed ? { ...layout, panels } : layout;
+}
+
+/** A split track with no width of its own: it takes a share of the room by its span. */
+export function isFlexiblePanel(
+  panel: AppShellPanelDefinition,
+  vertical: boolean,
+  dimensions: Readonly<Record<string, number>>,
+) {
+  return (
+    dimensions[panel.id] === undefined && (vertical ? panel.height : panel.width) === undefined
+  );
+}
+
+/**
+ * The weights that draw a resized pair of flexible tracks at the sizes it
+ * settled on. The pair keeps its combined span, so every other track keeps its
+ * share; the split is the settled pixel ratio, so the proportion survives the
+ * region growing or shrinking.
+ */
+export function splitPairSpans(
+  first: AppShellPanelDefinition,
+  second: AppShellPanelDefinition,
+  firstSize: number,
+  secondSize: number,
+): Record<string, number> {
+  const total = positive(first.span, 1) + positive(second.span, 1);
+  const pixels = firstSize + secondSize;
+  if (!(pixels > 0) || !(total > 0)) return {};
+  const share = Math.max(0, Math.min(1, firstSize / pixels));
+  return { [first.id]: total * share, [second.id]: total * (1 - share) };
 }

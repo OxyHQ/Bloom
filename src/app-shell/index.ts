@@ -37,12 +37,25 @@ export { AppShellMenuButton } from './AppShellMenuButton';
 export { APP_SHELL_DEFAULTS } from './constants';
 export { useAppShell, useAppShellPanel, usePanelScrollContainer } from './context';
 export { usePanelNavigation, useOptionalPanelNavigation } from './PanelNavigation';
+export {
+  PANEL_DROP_STAGES,
+  PANEL_DROP_MOTION,
+  PANEL_DROP_PREVIEW,
+  panelDropZoneRect,
+  resolvePanelDropTarget,
+} from './panel-drop';
+export type { PanelDropRect, ResolvePanelDropOptions } from './panel-drop';
 export type {
   PanelAxis,
   ResponsivePanelAxis,
   AppShellPanelLayout,
   AppShellPanelViewport,
   PanelRevealRequest,
+  AppShellPanelDrop,
+  PanelDropEdge,
+  PanelDropPoint,
+  PanelDropStage,
+  PanelDropTarget,
   AppShellPanelDefinition,
   PanelNavigationEntry,
   PanelNavigationState,

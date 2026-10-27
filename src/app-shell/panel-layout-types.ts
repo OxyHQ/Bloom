@@ -6,6 +6,7 @@ export type ResponsivePanelAxis =
   | PanelAxis
   | ({ base?: PanelAxis } & Partial<Record<Breakpoint, PanelAxis>>);
 import type { AppShellBreakpoint, AppShellPanelProps } from './types';
+import type { MotionSpec } from '../motion/spec';
 
 export interface PanelNavigationEntry {
   key: string;
@@ -113,4 +114,45 @@ export interface AppShellPanelLayout {
   onHeightsChange?: (heights: Readonly<Record<string, number>>) => void;
   widths?: Readonly<Record<string, number>>;
   onWidthsChange?: (widths: Readonly<Record<string, number>>) => void;
+  /** Controlled split weights. A resize between two flexible tracks (no `width`
+   * of their own and none in `widths`) commits here instead of freezing pixels,
+   * keeping their combined span and dividing it by the settled ratio, so the
+   * proportion holds as the region resizes. Overrides each descriptor's `span`.
+   */
+  spans?: Readonly<Record<string, number>>;
+  onSpansChange?: (spans: Readonly<Record<string, number>>) => void;
+  /** Edge targets for a drag the application owns (a tab, a file, a card). */
+  drop?: AppShellPanelDrop;
+}
+
+/** A panel edge, logical on the inline axis: `start` is the left in LTR, the right in RTL. */
+export type PanelDropEdge = 'start' | 'end' | 'top' | 'bottom';
+export interface PanelDropTarget {
+  panelId: string;
+  edge: PanelDropEdge;
+}
+/** Window coordinates, as `measureInWindow` reports them (the viewport on web). */
+export interface PanelDropPoint {
+  x: number;
+  y: number;
+}
+/** Growth of a target: slid in, grown once ready, active under the dragged item. */
+export type PanelDropStage = 'rest' | 'grown' | 'active';
+export interface AppShellPanelDrop {
+  /** A drag that could land here is in progress: targets slide in on every accepting panel. */
+  active: boolean;
+  /** The pointer; targets resolve only while it is over an accepting panel. */
+  point?: PanelDropPoint | null;
+  /** Default `['start', 'end']`. */
+  edges?: readonly PanelDropEdge[];
+  /** Panels that accept the drop. Default: every visible panel. */
+  panels?: readonly string[];
+  /** The dragged item's picture, centred on the pointer, that must overlap a target. Default 209×110; 0×0 tests the point. */
+  preview?: { width: number; height: number };
+  /** The target under the drag, or null. Called when it changes. */
+  onTargetChange?: (target: PanelDropTarget | null) => void;
+  /** Overrides the localized names (`"Add left split"`…) by edge. */
+  labels?: Partial<Record<PanelDropEdge, string>>;
+  /** `slide`: arriving from past the panel's edge; `grow`: between stages. */
+  motion?: { slide?: MotionSpec; grow?: MotionSpec };
 }

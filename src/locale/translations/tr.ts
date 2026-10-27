@@ -2184,6 +2184,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'Bölmeleri yeniden boyutlandır',
   notifications: 'Bildirimler',
   proOffer: 'Pro teklifi',
+  addSplitLeft: 'Sola bölme ekle',
+  addSplitRight: 'Sağa bölme ekle',
+  addSplitTop: 'Üste bölme ekle',
+  addSplitBottom: 'Alta bölme ekle',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {

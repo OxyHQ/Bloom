@@ -1325,3 +1325,86 @@ compatibility.
 
 
 With root `panelLayout`, `contentMaxWidth="none"` makes a split workspace use all space remaining beside navigation and framing. Fixed-width descriptors keep their basis; descriptors without a width share the remainder according to `span`. Omitting this opt-in retains the preferred reading envelope. The same contract applies to web container-query layout and native measurement.
+
+### Proportional splits
+
+A split whose panes have no `width` of their own (flexible tracks) divides the
+room by `span`. Resizing the boundary between two flexible panes commits their
+new weights through `spans` / `onSpansChange` instead of freezing pixels: the
+pair keeps its combined span and divides it by the ratio the drag settled on,
+so the proportion holds when the window, the navigation or the frame changes
+the region's size. `spans[id]` overrides the descriptor's `span` in the native
+resolver and the CSS compiler alike. A pair where either pane has a `width` (or
+an entry in `widths`) keeps reporting pixels through `onWidthsChange`, as
+before. Pointer, native pan and keyboard nudges commit the same way;
+`onWidthChange` on each pane still reports the size it settled at. Leave
+`spans` out for uncontrolled weights.
+
+```tsx
+const [spans, setSpans] = useState({ left: 1, right: 1 });
+<AppShell panelLayout={{
+  mode: 'split', gap: 7, spans, onSpansChange: setSpans,
+  panels: [
+    { id: 'left', minWidth: 220, resizable: true, content: <Page id="a" /> },
+    { id: 'right', minWidth: 220, content: <Page id="b" /> },
+  ],
+}} />
+```
+
+Flexible tracks grow from a zero basis, exactly as the CSS compositor's
+`flex: <span> 1 0px` does, and only a `minWidth`/`maxWidth` freezes one. The
+native resolver used to start them at their minimum, which gave native a
+`min + share` split the browser never drew (1:2 spans with 100 minimums in 800
+were 300/500 natively and 267/533 on the web; both are now 267/533).
+
+A slot of the split that stacks two panes is a nested
+`AppShellPanels scope="local"` with `axis: 'vertical'` inside a pane with
+`appearance: 'plain'`; its own `spans` keep the stack's proportion, and its
+`gap` matches the outer one. The **Proportional Split** story shows three panes
+with a stacked middle slot.
+
+### Drop zones
+
+`panelLayout.drop` draws edge targets on panels for a drag the application owns
+— a tab dragged out of a strip, a file, a card — and resolves which one the drag
+is over. Bloom does not own the drag: pass the pointer as it moves, in window
+coordinates (what `measureInWindow` reports; the viewport on the web).
+
+```tsx
+<AppShell panelLayout={{
+  ...split,
+  drop: {
+    active: dragging,
+    point: pointer,                       // { x, y } | null
+    panels: otherPaneIds,                 // default: every visible panel
+    edges: ['start', 'end'],              // default; 'top' | 'bottom' also
+    onTargetChange: setTarget,            // { panelId, edge } | null
+  },
+}} />
+```
+
+- **Stages.** While `active`, each accepting panel's targets slide in from past
+  its edges (`motion.slide`, 110ms), then grow (`motion.grow`, a spring with
+  response 0.2s and ratio 0.9). As fractions of the panel: resting
+  0.1324 × 0.383 at an inset of 0.025, grown 0.215 × 0.611 at 0.02, active
+  0.241 × 0.69 at 0.02, vertically centred (`PANEL_DROP_STAGES`). The active
+  target leans 43% of the way toward the pointer, staying inside the panel.
+- **Hit test.** Targets resolve once grown, while the pointer is over a
+  visible panel — the dragged item's own panel counts even when `panels` leaves
+  it out, so a neighbour's target resolves at the seam. The dragged picture (`preview`, default 209 × 110 centred on
+  the pointer; 0 × 0 tests the bare point) must overlap a grown target, and the
+  nearest centre wins. The current target is tested at its larger active size,
+  so it does not flicker between neighbours. `resolvePanelDropTarget` and
+  `panelDropZoneRect` are exported for the application's own drop handling.
+- **Edges are logical.** `start` is the left in LTR and the right in RTL; the
+  label names the side the user sees ("Add left split"…, localized; `labels`
+  overrides per edge).
+- **Paint.** A quiet step off the panel's fill with its hairline, a dashed inner
+  border (2pt dashes of 6/6 resting, 2.33pt of 7/7 active), a split glyph and the
+  label in the fill's secondary text; the active target turns the accent's
+  subtle pair. Nothing is hard-coded: light, dark and custom presets follow.
+- **Never in the way.** The overlay takes no pointer events, is hidden from
+  accessibility, never fades a material host, and clips at the panel's bounds.
+  Reduced motion places every stage at once.
+
+The **Panel Drop Zones** story sweeps a simulated drag across a two-pane split.

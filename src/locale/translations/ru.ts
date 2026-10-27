@@ -2489,6 +2489,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'Изменить размер панелей',
   notifications: 'Уведомления',
   proOffer: 'Предложение Pro',
+  addSplitLeft: 'Добавить разделение слева',
+  addSplitRight: 'Добавить разделение справа',
+  addSplitTop: 'Добавить разделение сверху',
+  addSplitBottom: 'Добавить разделение снизу',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {

@@ -496,6 +496,9 @@ export interface AppShellPanelsProps {
   /** Controlled resting widths, shared by pointer and keyboard resizing. */
   widths?: AppShellPanelLayout['widths'];
   onWidthsChange?: AppShellPanelLayout['onWidthsChange'];
+  /** Controlled split weights; flexible pairs commit their resized proportion here. */
+  spans?: AppShellPanelLayout['spans'];
+  onSpansChange?: AppShellPanelLayout['onSpansChange'];
   testID?: string;
 }
 

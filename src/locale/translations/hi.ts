@@ -2163,6 +2163,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'पैन का आकार बदलें',
   notifications: 'सूचनाएँ',
   proOffer: 'Pro ऑफ़र',
+  addSplitLeft: 'बाईं ओर विभाजन जोड़ें',
+  addSplitRight: 'दाईं ओर विभाजन जोड़ें',
+  addSplitTop: 'ऊपर विभाजन जोड़ें',
+  addSplitBottom: 'नीचे विभाजन जोड़ें',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {

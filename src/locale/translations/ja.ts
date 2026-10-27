@@ -2165,6 +2165,10 @@ const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   resizePanes: 'ペインのサイズを変更',
   notifications: '通知',
   proOffer: 'Pro のご案内',
+  addSplitLeft: '左に分割を追加',
+  addSplitRight: '右に分割を追加',
+  addSplitTop: '上に分割を追加',
+  addSplitBottom: '下に分割を追加',
 };
 
 const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
