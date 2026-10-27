@@ -28,7 +28,8 @@
  *     every frame of both transitions.
  *
  * Controls, because "no violations" and "measured nothing" look the same:
- *   - a FLOOR on stories checked and on material hosts seen;
+ *   - a FLOOR on stories checked and on material hosts seen (with `--only`, at
+ *     least one matching story must paint a host);
  *   - a POSITIVE control: a material host under `opacity: .5`, one under
  *     `filter: blur(0px)` and one under a `clip-path` must each be reported,
  *     and one under a bare `transform` must not be.
@@ -474,6 +475,12 @@ try {
     console.log(
       `FAIL  only ${withHosts} stories painted a material host (floor ${HOST_STORY_FLOOR})`,
     );
+    exitCode = 1;
+  }
+  // A filtered run that matched nothing, or whose stories never rendered (a
+  // Storybook build that failed half-way serves no iframe.html), measured nothing.
+  if (ONLY && withHosts === 0) {
+    console.log(`FAIL  no story matching "${ONLY}" painted a material host: nothing was measured`);
     exitCode = 1;
   }
   if (failing > 0 || results.some((r) => r.error)) exitCode = 1;

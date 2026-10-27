@@ -135,6 +135,44 @@ export const LoadOnOpen: Story = {
   },
 };
 
+/**
+ * Content can change at any point of the card's life, its close included: this
+ * one finishes loading two frames after it starts to close, so the skeleton
+ * turns into the profile and its Follow button while the card fades out. The
+ * button's material keeps its blur through that fade.
+ */
+export const LoadsWhileClosing: Story = {
+  name: 'Loads while closing',
+  render: function LoadsWhileClosingStory() {
+    const [loaded, setLoaded] = React.useState(false);
+    const frame = React.useRef(0);
+    React.useEffect(() => () => cancelAnimationFrame(frame.current), []);
+    const onOpenChange = (open: boolean) => {
+      cancelAnimationFrame(frame.current);
+      if (open) {
+        setLoaded(false);
+        return;
+      }
+      frame.current = requestAnimationFrame(() => {
+        frame.current = requestAnimationFrame(() => setLoaded(true));
+      });
+    };
+    return (
+      <View style={{ padding: 80, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Text variant="body-regular">Reply from</Text>
+        <HoverCard onOpenChange={onOpenChange}>
+          <HoverCardTrigger asChild>
+            <Mention>@nate</Mention>
+          </HoverCardTrigger>
+          <HoverCardContent label="Nate Isern">
+            <UserHoverCard {...PROFILE} loading={!loaded} action={<FollowButton />} />
+          </HoverCardContent>
+        </HoverCard>
+      </View>
+    );
+  },
+};
+
 /** Arbitrary content gets the padded surface. */
 export const Prose: Story = {
   render: () => (

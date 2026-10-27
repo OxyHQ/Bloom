@@ -57,6 +57,7 @@ import { Dialog } from '../dialog/Dialog.web';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover/Popover.web';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip/Tooltip.web';
 import { UserHoverCard } from '../user-hover-card';
+import { HoverCardSurfaceProvider } from '../hover-card/context';
 import { AgentProgress } from '../agent-progress';
 import { useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { Admonition } from '../admonition';
@@ -661,6 +662,83 @@ describe('the check itself', () => {
     expect(opacity('row')).toBe('');
     expect(opacity('label')).toBe('0.5');
     expect(opacity('row-label')).toBe('0.5');
+    expect(backdropRootViolations()).toEqual([]);
+  });
+});
+
+describe('content that changes while a surface fades', () => {
+  function Fading({ presence, loaded }: { presence: number; loaded: boolean }) {
+    const [node, setNode] = React.useState<HTMLDivElement | null>(null);
+    useSurfacePresenceContent(node, { presence, duration: 150, blur: 2 });
+    return (
+      <div ref={setNode} data-testid="fade-root">
+        <SurfacePaint fill="#ffffff" radius={8} />
+        <HoverCardSurfaceProvider value>
+          <UserHoverCard
+            displayName="Ada"
+            username="ada"
+            bio="Bio"
+            loading={!loaded}
+            action={<Button>Follow</Button>}
+          />
+        </HoverCardSurfaceProvider>
+      </div>
+    );
+  }
+
+  /** A browser delivers mutation records before it paints; jsdom on a microtask. */
+  async function mutationsObserved() {
+    await act(async () => {
+      await Promise.resolve();
+    });
+  }
+
+  /** jsdom runs no transition, so a piece still transitioning its opacity counts as faded. */
+  function fadedHolders() {
+    const material = materialHostSelector();
+    return Array.from(document.querySelectorAll<HTMLElement>('[data-testid="fade-root"] *'))
+      .filter(
+        (node) =>
+          (node.style.opacity !== '' && Number.parseFloat(node.style.opacity) < 1) ||
+          /opacity|filter/.test(node.style.transition),
+      )
+      .filter((node) => node.matches(material) || node.querySelector(material) !== null);
+  }
+
+  it.each([
+    ['closing', 0],
+    ['dimmed', 0.5],
+  ])(
+    'hands back a faded piece that comes to hold a material host while %s',
+    async (_label, presence) => {
+      mount(<Fading presence={1} loaded={false} />);
+      settle();
+      mount(<Fading presence={presence} loaded={false} />);
+      act(() => jest.advanceTimersByTime(40));
+      expect(materialHostCount()).toBeGreaterThan(0);
+      mount(<Fading presence={presence} loaded />);
+      await mutationsObserved();
+      expect(
+        document.querySelector('[data-testid="fade-root"] .bloom-btn--surface'),
+      ).not.toBeNull();
+      expect(fadedHolders()).toEqual([]);
+      expect(backdropRootViolations()).toEqual([]);
+      const follow = document.querySelector('[data-testid="fade-root"] .bloom-btn--surface');
+      expect(
+        Array.from(follow?.children ?? []).every(
+          (child) => Number.parseFloat((child as HTMLElement).style.opacity) === presence,
+        ),
+      ).toBe(true);
+    },
+  );
+
+  it('hands back a faded piece that comes to hold one while the presence rises', async () => {
+    mount(<Fading presence={0} loaded={false} />);
+    mount(<Fading presence={1} loaded={false} />);
+    act(() => jest.advanceTimersByTime(40));
+    mount(<Fading presence={1} loaded />);
+    await mutationsObserved();
+    expect(fadedHolders()).toEqual([]);
     expect(backdropRootViolations()).toEqual([]);
   });
 });
