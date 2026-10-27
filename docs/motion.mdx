@@ -190,3 +190,39 @@ directly. Verify the last moving frame as well as intermediate frames in a
 browser; counting intermediate frames alone does not catch a large final snap.
 (The list/detail slide that measured this, `AppShellSplitPanes transition`,
 was removed in 11.0 with no consumer; the hazard stands for the next one.)
+
+## Springs and timings as data
+
+A motion that was measured stays a measurement: `MotionSpec` is either a
+`SpringSpec` — `{ response, dampingRatio }`, the period of the undamped
+oscillation in seconds and 1 for no overshoot — or the existing timing shape
+`{ duration, easing: [x1, y1, x2, y2] }`. Components that take motion as data
+(`AppShell`'s dock, `AutoHideBar`, panel drop zones) accept either.
+
+```tsx
+import { animateWithSpec, motionCss, springProgressAt } from '@oxy.so/bloom/motion';
+
+const dock = { response: 0.215, dampingRatio: 0.79 };
+animateWithSpec(progress, 1, dock, reducedMotion);   // native: withSpring, mass 1
+const { duration, easing } = motionCss(dock);        // web: '287ms', 'linear(0, …, 1)'
+springProgressAt(dock, 0.1);                         // 0.897: the closed form, for tests
+```
+
+- `springPhysics(spec)` is the `{ mass: 1, stiffness: (2π/response)², damping:
+  4π·ratio/response }` Reanimated integrates.
+- `springProgressAt(spec, seconds, velocity?)` is the closed form of that
+  oscillator (under-, critically and over-damped), and `springSettleMs` where it
+  stays within 0.1% of its travel.
+- `motionCss(spec, reduced?)` turns a spring into a CSS `linear()` curve sampled
+  over its settle time, overshoot included, within 0.5% of the closed form; a
+  timing keeps its `cubic-bezier()`. Reduced motion is a zero duration.
+- `motionProgressAt(spec, ms)` and `cubicBezierProgressAt` read either kind at a
+  time, so a test compares the motion with a recording rather than with itself.
+
+A spring carried by a CSS transition has to be a property the browser can
+interpolate: register it with `@property` (a `<number>` progress) and derive
+lengths from it with `calc()`. An unregistered custom property changes at once.
+Measured in Chromium: an element whose `width` reads an animating inherited
+property, and that declares its own `transition: width`, restarts that
+transition on every frame and trails the motion by ~200 ms; disable such
+transitions while the property moves (the shell's `data-bloom-dock-moving`).

@@ -1408,3 +1408,116 @@ coordinates (what `measureInWindow` reports; the viewport on the web).
   Reduced motion places every stage at once.
 
 The **Panel Drop Zones** story sweeps a simulated drag across a two-pane split.
+
+## A desktop window
+
+A desktop app's window is the same shell: the navigation flush to the window,
+one content card (or a split of them) inset from the window's edges, and the
+window's own backdrop between them. Nothing about it is positioned by hand.
+
+```tsx
+<BloomScope panelRadius={10}>
+  <AppShell
+    background="transparent"              // the window's material shows between regions
+    header={null}
+    navigationAlign="content"             // with surface 'plain': flush to the window
+    navigationGap={0}
+    navFrom={0}
+    framedFrom={0}
+    contentMaxWidth="none"
+    frameInset={{ top: 6, end: 7, bottom: 7, start: 7 }}
+    sidebar={{
+      surface: 'plain', variant: 'panel', collapsed: false, collapseDisabled: true,
+      width: 190, render: (props) => <TabSidebar {...props} />,
+      dock: { hidden, onHiddenChange: setHidden, peek: true },
+    }}
+    panelLayout={{ mode: 'split', flow: 'bounded', gap: 7, spans, onSpansChange: setSpans, panels }}
+  />
+</BloomScope>
+```
+
+- **`background="transparent"`** paints nothing behind the regions, so a
+  native window material, a wallpaper or a tint the host draws shows through.
+  The default `page` paints the theme's background as before.
+- **`frameInset`** moves the framed region's window edges one at a time
+  (`top`, `bottom`, `start`, `end`; logical, so `start` is the right in RTL),
+  overriding `gutter` there only: the gap between panels and the panel gutter
+  stay `gutter` (or `panelLayout.gap`). A flush navigation owns the start edge;
+  `start` applies while it is hidden or absent. Equal edges keep the single
+  `padding` the shell always wrote.
+- **The card's corner** is the panels' `BloomScope panelRadius`.
+- With `contentMaxWidth="none"` a content-aligned shell no longer centres its
+  envelope in CSS: the envelope fills the row, so the compositor aligns it to
+  the frame's start (native always did).
+
+The **App Shell / Window** stories draw this window: docked, split, hidden, and
+with tabs across the top.
+
+### Dock and peek
+
+`sidebar.dock` lets the in-flow navigation leave the layout entirely — the
+content takes its room — and float back over the content from the start edge
+while the pointer rests there. `topBarDock` does the same for a `topBar` from
+the top edge (a tab strip across the top of a window). Both take one
+`AppShellDock`:
+
+| Field | Default | |
+| --- | --- | --- |
+| `hidden` / `defaultHidden` / `onHiddenChange` | shown | controllable |
+| `peek` | off | `true`, or `{ trigger, edge, inset, radius, hideDelay, appearance }` |
+| `peek.trigger` | `hover` | `manual`: only `useAppShell()`'s `peek()` opens it |
+| `peek.edge` | 8 | depth of the hover strip along the edge |
+| `peek.inset` | 5 | the floating region's distance from the window's edges |
+| `peek.radius` | 12 | its corner |
+| `peek.hideDelay` | 120 ms | how long the pointer may be away before it slides out |
+| `peek.appearance` | `surface` | the navigation's panel surface, border and shadow; `plain` paints nothing |
+| `onPeekChange` | | `true` as it opens, `false` once it has slid out |
+| `motion.show` / `motion.hide` | spring, response 0.215 s, ratio 0.79 | `MotionSpec` |
+| `motion.peekIn` | spring, response 0.185 s, ratio 0.77 | |
+| `motion.peekOut` | 150 ms, `cubic-bezier(0.645, 0.045, 0.355, 1)` | |
+
+The defaults are a desktop browser's sidebar, traced on a 240 fps recording:
+90% of the travel in 100 ms, a 1–2 pt overshoot at ~0.15 s, at rest by
+~0.27 s; the peek 93% in 66 ms. Every one is data
+([springs and timings as data](/docs/bloom/main/motion#springs-and-timings-as-data)),
+so a different measurement is a different object, not a code change.
+
+What it does:
+
+- **One motion, two readings.** The navigation's slot closes from its width
+  (plus the row gap it carries) to what it leaves of the frame — 0, or the
+  frame's `start` inset for a flush navigation — while its content slides back
+  past the edge by its own width. Both read ONE progress: a registered CSS
+  custom property (`--bloom-nav-dock`, `--bloom-top-dock`) on the web, a shared
+  value on native. So the content's edge and the navigation's far side can
+  never drift apart, and the web runs the whole motion on the compositor with
+  no JavaScript per frame. Measured in Chromium (`verify-app-shell-dock.mjs`):
+  the card's start edge and the sidebar's far edge stay within 0.1 pt of the
+  spring's closed form, hiding and showing.
+- **The content stays mounted.** Hidden, it is inert, out of the accessibility
+  tree and takes no pointer; its scroll position, editors and open state
+  survive. The peek floats the SAME tree, `inset` from the window's edges, over
+  the content, which never moves. From the closed peek the region's far side
+  (and its 12 pt shadow room) starts past the window's edge.
+- **Docking from a peek** lands in place, without motion: the floating region
+  becomes the docked one where it is.
+- **No peek while it moves.** The hover strip appears once hiding has landed,
+  so a pointer left at the edge does not open a peek of a region still leaving.
+- **Reduced motion** lands every change at once, on both platforms.
+- **RTL**: the start edge is the right; the slide mirrors.
+- `topBarDock` measures its bar once (the bar's first frame is in flow) and
+  needs a bounded frame: a document's top bar is sticky in the page's flow, so
+  `scroll="document"` keeps it in place.
+
+`useAppShell()` returns `navigationDock` and `topBarDock`
+(`AppShellDockState`): `available`, `hidden`, `setHidden`, `toggleHidden`,
+`peeking`, `peek(open)` and, for side effects that follow the motion on native
+(window buttons, a native view's frame), `progress` and `peekProgress` shared
+values. `peek(true)` slides it in now; `peek(false)` slides it out after
+`hideDelay` unless asked in again. A host that tracks the pointer itself (a
+native window edge watcher) sets `peek.trigger: 'manual'` and calls `peek()`.
+
+On the web the hover strip and the floating region use pointer enter and leave.
+On a native platform without hover pointer events, drive `peek()` from the
+host. Ordering the peek above the content uses `zIndex` among the row's
+children, which needs the New Architecture on macOS.
