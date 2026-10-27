@@ -2,6 +2,26 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.55.0
+
+### Added
+
+- **app-shell: a navigation and a top bar that leave the layout and peek back (`sidebar.dock`, `topBarDock`).** Hidden, the region gives its whole room to the content and its content stays mounted, inert and out of the accessibility tree; resting the pointer on its edge floats the same tree 5 from the window's edges over a content that does not move, and docking from the peek lands in place. The slot and the content's offset are two readings of one progress (a registered CSS custom property on the web, a shared value on native), so the content's edge follows the navigation exactly: within 0.1 pt of the spring in Chromium. Motion is data: hide and show default to a desktop browser's measured sidebar spring (response 0.215 s, ratio 0.79), the peek to 0.185 s / 0.77 in and 150 ms out. `useAppShell()` gains `navigationDock` and `topBarDock` (`hidden`, `setHidden`, `toggleHidden`, `peeking`, `peek()`, native `progress` values). Astro's window drew all of this by hand.
+- **app-shell: `frameInset` and `background="transparent"`.** The framed region's distance from each window edge (top 6, end 7, bottom 7 for a desktop browser's card) without changing the gutter between panels; and a shell that paints nothing, so a window's own material shows between its regions.
+- **app-shell: proportional splits (`panelLayout.spans` / `onSpansChange`).** Resizing between two flexible panes commits their weights instead of freezing pixels, so a split keeps its proportion as the window resizes. `AppShellPanels` takes them too.
+- **app-shell: panel drop zones (`panelLayout.drop`).** Edge targets on each panel for a drag the app owns (a tab dragged out of a strip), staged as measured (rest, grown, active, leaning 43% toward the pointer), hit by the dragged picture's overlap with hysteresis, logical in RTL, localized, painted from tokens. `resolvePanelDropTarget` and `panelDropZoneRect` are exported.
+- **layout: `AutoHideBar`.** A toolbar that steps aside to a strip with a summary (a page's host) when its owner says so, peeks back over the body on hover (150 ms in, 250 ms out) and returns on press; the body is laid out once per change and slid, never re-laid every frame.
+- **motion: springs and timings as data.** `MotionSpec` (`{ response, dampingRatio }` or `{ duration, easing }`), `animateWithSpec` for Reanimated, `motionCss` for a CSS transition (a spring as a sampled `linear()` curve), and the closed form (`springProgressAt`, `springSettleMs`, `motionProgressAt`) for tests that compare motion with recordings.
+
+### Changed
+
+- **app-shell: flexible split panes resolve from a zero basis on native, as the CSS compositor always did.** Native used to start them at their minimum and share the rest: 1:2 spans with 100 minimums in 800 were 300/500 on native and 267/533 on the web; both are now 267/533.
+- **app-shell: a content-aligned shell with `contentMaxWidth="none"` no longer centres its envelope in CSS.** The envelope fills the row; native already aligned it to the frame's start.
+
+### Consumers
+
+Bump to 15.55.0. Every addition is opt-in; shells that set none of the new props render as before, except the two changes above.
+
 ## 15.54.0
 
 ### Added
