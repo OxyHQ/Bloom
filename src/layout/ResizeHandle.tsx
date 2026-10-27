@@ -8,7 +8,12 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { BUTTON_SHADOW } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { RESIZE_HANDLE_CSS } from './resize-handle-css';
+import {
+  PILL_DRAG_OPACITY,
+  PILL_HOVER_OPACITY,
+  RESIZE_HANDLE,
+  RESIZE_HANDLE_CSS,
+} from './resize-handle-css';
 import type { ResizeHandleProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
@@ -20,9 +25,16 @@ import { dataHook } from '../styles/data-hook';
  * icon-quaternary lines 2 apart — that follows the pointer along the edge
  * (kept 13px inside it) and stays up while dragging (150ms fade). Holding and
  * dragging reports the horizontal distance from where the drag started.
+ *
+ * The `pill` variant is a split's divider: a 4×36 bar, radius 2, centred on
+ * the separator in the foreground colour, at 32% under the pointer or focus
+ * and 55% while dragging, on a strip `thickness` deep (11: a 7px gap and 2px
+ * of each pane). Same gestures, keys and semantics.
  */
 export function ResizeHandle({
   orientation = 'vertical',
+  variant = 'grip',
+  thickness: thicknessProp,
   onResizeStart,
   onResize,
   onResizeEnd,
@@ -41,6 +53,14 @@ export function ResizeHandle({
   const label = labelProp ?? common.resizePanels;
   const [gripY, setGripY] = useState<number | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const pill = variant === 'pill';
+  const thickness =
+    thicknessProp !== undefined && Number.isFinite(thicknessProp) && thicknessProp > 0
+      ? thicknessProp
+      : pill
+        ? RESIZE_HANDLE.pill.thickness
+        : RESIZE_HANDLE.grip.thickness;
   const height = useRef(0);
   const startX = useRef(0);
   const pointer = useRef<number | null>(null);
@@ -165,7 +185,18 @@ export function ResizeHandle({
         },
         tabIndex: onNudge ? (0 as const) : undefined,
       }
-    : responder.panHandlers;
+    : pill
+      ? {
+          ...responder.panHandlers,
+          onPointerEnter: () => setHovered(true),
+          onPointerLeave: () => setHovered(false),
+          // react-native-macos reports hover as mouse enter and leave.
+          ...({
+            onMouseEnter: () => setHovered(true),
+            onMouseLeave: () => setHovered(false),
+          } as object),
+        }
+      : responder.panHandlers;
 
   const grip: WebCssStyle = {
     ...(IS_WEB
@@ -181,10 +212,21 @@ export function ResizeHandle({
     ...(IS_WEB ? null : { opacity: dragging ? 1 : 0 }),
   };
 
+  // The grip at its own depth keeps its classes; any other strip is placed
+  // here, centred on the separator (logical, so it follows the end edge in RTL).
+  const placed = pill || thickness !== RESIZE_HANDLE.grip.thickness;
+  const strip: WebCssStyle | null = !placed
+    ? null
+    : horizontal
+      ? { left: 0, right: 0, height: thickness, bottom: -thickness / 2 }
+      : { top: 0, bottom: 0, width: thickness, insetInlineEnd: -thickness / 2 };
+
   return (
     <View
       {...direction}
-      {...dataHook('bloomResizeHandle')}
+      {...(IS_WEB
+        ? { dataSet: { bloomResizeHandle: '', bloomResizeHandleVariant: variant } }
+        : null)}
       {...web}
       role="separator"
       aria-orientation={orientation}
@@ -196,30 +238,48 @@ export function ResizeHandle({
           : event.nativeEvent.layout.height;
       }}
       className={
-        horizontal
-          ? 'absolute left-0 right-0 -bottom-2.5 h-5 z-10 items-center'
-          : 'absolute top-0 bottom-0 -end-2.5 w-5 z-10 items-center'
+        placed
+          ? `absolute z-10 items-center${pill ? ' justify-center' : ''}`
+          : horizontal
+            ? 'absolute left-0 right-0 -bottom-2.5 h-5 z-10 items-center'
+            : 'absolute top-0 bottom-0 -end-2.5 w-5 z-10 items-center'
       }
-      style={style}
+      style={[strip, style]}
     >
-      <View
-        {...dataHook('bloomResizeHandlePill', dragging ? 'dragging' : '')}
-        pointerEvents="none"
-        className={
-          horizontal
-            ? 'absolute w-[25px] h-[15px] -ml-[12.5px] flex-col items-center justify-center gap-0.5 rounded-[4px] border'
-            : 'absolute w-[15px] h-[25px] -mt-[12.5px] flex-row items-center justify-center gap-0.5 rounded-[4px] border'
-        }
-        style={grip}
-      >
-        {[0, 1, 2].map((line) => (
-          <View
-            key={line}
-            className={horizontal ? 'w-[13px] h-px' : 'w-px h-[13px]'}
-            style={{ backgroundColor: colors.textTertiary }}
-          />
-        ))}
-      </View>
+      {pill ? (
+        <View
+          {...dataHook('bloomResizeHandlePill', dragging ? 'dragging' : '')}
+          pointerEvents="none"
+          style={{
+            width: horizontal ? RESIZE_HANDLE.pill.length : RESIZE_HANDLE.pill.depth,
+            height: horizontal ? RESIZE_HANDLE.pill.depth : RESIZE_HANDLE.pill.length,
+            borderRadius: RESIZE_HANDLE.pill.depth / 2,
+            backgroundColor: colors.text,
+            ...(IS_WEB
+              ? null
+              : { opacity: dragging ? PILL_DRAG_OPACITY : hovered ? PILL_HOVER_OPACITY : 0 }),
+          }}
+        />
+      ) : (
+        <View
+          {...dataHook('bloomResizeHandlePill', dragging ? 'dragging' : '')}
+          pointerEvents="none"
+          className={
+            horizontal
+              ? 'absolute w-[25px] h-[15px] -ml-[12.5px] flex-col items-center justify-center gap-0.5 rounded-[4px] border'
+              : 'absolute w-[15px] h-[25px] -mt-[12.5px] flex-row items-center justify-center gap-0.5 rounded-[4px] border'
+          }
+          style={grip}
+        >
+          {[0, 1, 2].map((line) => (
+            <View
+              key={line}
+              className={horizontal ? 'w-[13px] h-px' : 'w-px h-[13px]'}
+              style={{ backgroundColor: colors.textTertiary }}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }

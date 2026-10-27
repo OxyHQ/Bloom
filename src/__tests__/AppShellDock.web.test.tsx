@@ -27,7 +27,9 @@ jest.mock('react-native-reanimated', () => {
   return { ...base, __esModule: true, default: { ...base.default, View } };
 });
 
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
+import { Button } from '../button/Button.web';
+import { materialHostCount, backdropRootViolations } from './support/backdrop-root';
 import { AppShell, AppShellPanel, useAppShell } from '../app-shell/index.web';
 import type { AppShellContextValue } from '../app-shell/context';
 import type { AppShellProps } from '../app-shell/types';
@@ -62,6 +64,15 @@ afterEach(() => {
   container.remove();
   jest.useRealTimers();
 });
+
+function Rows() {
+  return (
+    <View testID="rows">
+      <Button testID="new-tab">New tab</Button>
+      <Text testID="row">Inbox</Text>
+    </View>
+  );
+}
 
 function mount(props: Partial<AppShellProps> = {}, dock: object = { peek: true }) {
   act(() =>
@@ -169,6 +180,127 @@ describe('the web dock', () => {
     act(() => shell!.navigationDock.setHidden(false));
     expect(node('shell').style.getPropertyValue('--bloom-nav-dock')).toBe('1');
     expect(node('shell').style.transitionDuration).toBe('0ms');
+  });
+
+  describe('a fading peek', () => {
+    const SLIDE = { duration: 180, easing: [0.215, 0.61, 0.355, 1] as const };
+    const fading = (dock: object = {}) =>
+      mount(
+        {
+          sidebar: {
+            surface: 'plain',
+            variant: 'panel',
+            collapsed: false,
+            collapseDisabled: true,
+            width: 190,
+            render: () => <Rows />,
+            dock: {
+              peek: { fade: true },
+              defaultHidden: true,
+              motion: { peekIn: SLIDE, peekOut: SLIDE },
+              ...dock,
+            },
+          },
+        },
+        {},
+      );
+    const fade = () =>
+      node('shell-navigation-host').style.getPropertyValue('--bloom-nav-peek-fade');
+
+    it('registers its own progress, present by default', () => {
+      expect(DOCK_PROPERTY_CSS).toContain(
+        "@property --bloom-nav-peek-fade{syntax:'<number>';inherits:true;initial-value:1}",
+      );
+      expect(DOCK_PROPERTY_CSS).toContain('@property --bloom-top-peek-fade');
+    });
+
+    it('waits at nothing, and any material inside reads it as its presence', () => {
+      fading();
+      const host = node('shell-navigation-host').style;
+      expect(fade()).toBe('0');
+      expect(host.getPropertyValue('--bloom-surface-presence')).toBe('var(--bloom-nav-peek-fade)');
+      expect(host.getPropertyValue('--bloom-surface-presence-ms')).toBe('0ms');
+      expect(host.opacity).toBe('');
+      expect(node('row').style.opacity).toBe('0');
+    });
+
+    it('fades in on the slide and out on the way back, never through a material host', () => {
+      jest.useFakeTimers();
+      fading();
+      expect(materialHostCount()).toBeGreaterThan(0);
+      const css = motionCss(SLIDE);
+      act(() => shell!.navigationDock.peek(true));
+      const host = node('shell-navigation-host').style;
+      expect(fade()).toBe('1');
+      expect(host.transitionProperty).toBe('--bloom-nav-peek, --bloom-nav-peek-fade');
+      expect(host.transitionDuration).toBe(`${css.duration}, ${css.duration}`);
+      expect(host.transitionTimingFunction).toBe(`${css.easing}, ${css.easing}`);
+      expect(node('row').style.opacity).toBe('1');
+      expect(node('row').style.transition).toBe(`opacity ${css.duration} ${css.easing}`);
+      expect(node('new-tab').style.opacity).toBe('');
+      expect(backdropRootViolations()).toEqual([]);
+
+      act(() => shell!.navigationDock.peek(false));
+      act(() => jest.advanceTimersByTime(120));
+      expect(fade()).toBe('0');
+      expect(host.transitionDuration).toBe(`${css.duration}, ${css.duration}`);
+      expect(node('row').style.opacity).toBe('0');
+      expect(backdropRootViolations()).toEqual([]);
+      act(() => jest.advanceTimersByTime(SLIDE.duration));
+      expect(shell!.navigationDock.peeking).toBe(false);
+      expect(fade()).toBe('0');
+    });
+
+    it('takes its own motion, and docks whole at once', () => {
+      jest.useFakeTimers();
+      const own = { duration: 90, easing: [0, 0, 0.58, 1] as const };
+      fading({ motion: { peekIn: SLIDE, peekOut: SLIDE, peekFadeIn: own } });
+      act(() => shell!.navigationDock.peek(true));
+      expect(node('shell-navigation-host').style.transitionDuration).toBe(
+        `${motionCss(SLIDE).duration}, 90ms`,
+      );
+      act(() => shell!.navigationDock.setHidden(false));
+      expect(fade()).toBe('');
+      expect(node('shell-navigation-host').style.getPropertyValue('--bloom-surface-presence')).toBe(
+        '',
+      );
+      act(() => jest.advanceTimersByTime(100));
+      expect(node('row').style.opacity).toBe('');
+    });
+
+    it('hides whole, and only then waits at nothing', () => {
+      fading({ defaultHidden: false });
+      expect(fade()).toBe('');
+      act(() => shell!.navigationDock.setHidden(true));
+      expect(fade()).toBe('1');
+      expect(node('row').style.opacity).toBe('');
+      act(() => {
+        const event = new Event('transitionend', { bubbles: true }) as TransitionEvent;
+        Object.defineProperty(event, 'propertyName', { value: '--bloom-nav-dock' });
+        node('shell').dispatchEvent(event);
+      });
+      expect(fade()).toBe('0');
+      expect(node('shell-navigation-host').style.transitionDuration).toContain('0ms');
+      expect(node('row').style.opacity).toBe('0');
+    });
+
+    it('lands at once under reduced motion', () => {
+      jest
+        .spyOn(jest.requireMock('react-native-reanimated'), 'useReducedMotion')
+        .mockReturnValue(true);
+      fading();
+      act(() => shell!.navigationDock.peek(true));
+      expect(node('shell-navigation-host').style.transitionDuration).toBe('0ms, 0ms');
+      expect(node('row').style.opacity).toBe('1');
+    });
+
+    it('leaves a peek without fade untouched', () => {
+      mount({}, { peek: true, defaultHidden: true });
+      expect(fade()).toBe('');
+      expect(node('shell-navigation-host').style.getPropertyValue('--bloom-surface-presence')).toBe(
+        '',
+      );
+    });
   });
 
   it('lets the window show through a transparent shell', () => {

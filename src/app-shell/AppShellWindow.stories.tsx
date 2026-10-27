@@ -4,10 +4,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BloomScope } from '../appearance';
 import { Button } from '../button';
-import { RiLayoutGridLine, RiSideBarLine } from '../icons/remix';
+import { RiAddLine, RiLayoutGridLine, RiSideBarLine } from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { AppShell, useAppShell } from './index';
+import type { ResizeHandleVariant } from '../layout/types';
 import type { AppShellDock } from './types';
 
 const meta: Meta<typeof AppShell> = {
@@ -37,11 +38,16 @@ function WindowBackdrop({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SidebarContent() {
+function SidebarContent({ action }: { action?: boolean }) {
   const theme = useTheme();
   const { navigationDock } = useAppShell();
   return (
     <View testID="window-sidebar" style={{ flex: 1, paddingTop: 46, paddingHorizontal: 6, gap: 3 }}>
+      {action ? (
+        <Button testID="window-new-tab" size="sm" leadingIcon={RiAddLine}>
+          New tab
+        </Button>
+      ) : null}
       {ROWS.map((row, index) => (
         <View
           key={row}
@@ -102,7 +108,17 @@ function Card({ label }: { label: string }) {
   );
 }
 
-function Window({ split, dock }: { split: number; dock?: AppShellDock }) {
+function Window({
+  split,
+  dock,
+  resizeHandle,
+  action,
+}: {
+  split: number;
+  dock?: AppShellDock;
+  resizeHandle?: ResizeHandleVariant;
+  action?: boolean;
+}) {
   const panes = ['Page', 'Second pane', 'Third pane', 'Fourth pane'].slice(0, split);
   return (
     <WindowBackdrop>
@@ -123,13 +139,14 @@ function Window({ split, dock }: { split: number; dock?: AppShellDock }) {
             collapsed: false,
             collapseDisabled: true,
             width: SIDEBAR_WIDTH,
-            render: () => <SidebarContent />,
+            render: () => <SidebarContent action={action} />,
             dock: { peek: true, ...dock },
           }}
           panelLayout={{
             mode: 'split',
             flow: 'bounded',
             gap: 7,
+            resizeHandle,
             panels: panes.map((label) => ({
               id: label,
               minWidth: 220,
@@ -154,6 +171,39 @@ export const DockedSidebar: Story = { render: () => <Window split={1} /> };
 
 /** The same window split in two, the panes 7 apart with a resize grip between. */
 export const SplitWindow: Story = { render: () => <Window split={2} /> };
+
+/**
+ * Panes divided by the split's own handle: a 4×36 bar centred in the 7 pt
+ * gap, shown only under the pointer (32% of the foreground) and while
+ * dragging (55%), its strip the gap plus 2 pt of each pane.
+ */
+export const PillDividers: Story = {
+  render: () => <Window split={3} resizeHandle="pill" />,
+};
+
+/**
+ * A peek that fades as it slides, a desktop browser's default: in and out
+ * over 180 ms on an ease-out cubic, the fade following the slide
+ * (`peek.fade`). The sidebar holds a material button, which fades through its
+ * surface presence while the rows fade piece by piece: nothing above the
+ * material ever takes an opacity, so it keeps its blur all the way.
+ */
+export const FadingPeek: Story = {
+  render: () => (
+    <Window
+      split={1}
+      action
+      dock={{
+        defaultHidden: true,
+        peek: { fade: true },
+        motion: {
+          peekIn: { duration: 180, easing: [0.215, 0.61, 0.355, 1] },
+          peekOut: { duration: 180, easing: [0.215, 0.61, 0.355, 1] },
+        },
+      }}
+    />
+  ),
+};
 
 /** Starts hidden: rest the pointer on the start edge to peek. */
 export const HiddenSidebar: Story = {

@@ -2,6 +2,21 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.56.0
+
+### Added
+
+- **app-shell: a peek that fades as it slides (`peek.fade`, `motion.peekFadeIn` / `peekFadeOut`).** A docked sidebar or top bar's peek fades in as it slides in and out as it slides out, on the slide's own motion unless given its own `MotionSpec` (a desktop browser's default peek: 180 ms, ease-out cubic, fading with the slide). Hiding, showing and docking from a peek keep the region whole. It never fades a material host or its ancestors: on the web the fade is a registered progress on the host (`--bloom-nav-peek-fade`, `--bloom-top-peek-fade`) that the material inside reads as its `--bloom-surface-presence`, while the backing and the content fade piece by piece over the same curve; in Chromium the fade, a row and a material button's layer stay on the curve frame for frame with no material ancestor faded (`scripts/verify-peek-fade-and-pill.mjs`). Native fades the host from a shared value. Reduced motion lands it at once.
+- **layout: `ResizeHandle variant="pill"` and `thickness`; app-shell: `panelLayout.resizeHandle`.** A split's divider: a 4×36 bar, radius 2, centred on the separator in the foreground colour, invisible at rest, 32% under the pointer or keyboard focus and 55% while dragging, on a strip the gap plus 2 px of each pane (11 for a 7 px gap). Same drag, keys and semantics as the grip; logical insets for RTL; hover and drag held in state on native, including react-native-macos's mouse events. Astro drew its split dividers by hand.
+
+### Fixed
+
+- **layout: reduced motion now stops the resize handle's fade.** The reduced-motion rule was less specific than the rule that sets the 150 ms fade, so the grip still faded.
+
+### Consumers
+
+Bump to 15.56.0. Both additions are opt-in; the dock host's content gains one wrapper view, laid out as before.
+
 ## 15.55.0
 
 ### Added

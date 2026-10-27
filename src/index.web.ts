@@ -205,6 +205,7 @@ export type {
   AnimatedScrollMetricsBindingOptions,
   ScrollAreaProps,
   ResizeHandleProps,
+  ResizeHandleVariant,
   ScrollSurfaceProps,
   ToolbarProps,
   AutoHideBarProps,

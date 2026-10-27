@@ -9,7 +9,7 @@
  * and the region's far side can never drift apart mid-motion, and the web
  * runs the whole motion on the compositor with no JavaScript per frame.
  */
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ComponentRef, type ReactNode } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 import { IS_WEB } from '../styles/platform';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
@@ -18,7 +18,8 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { PanelChrome } from '../styles/panel-chrome';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useIsRtl } from '../hooks/use-is-rtl';
-import { dockExtent, dockOffset, peekOffset, DOCK_DEFAULTS } from './dock';
+import { useSurfacePresenceContent } from '../surface/use-surface-presence';
+import { dockExtent, dockOffset, peekFadeTarget, peekOffset, DOCK_DEFAULTS } from './dock';
 import type { EdgeDock } from './use-edge-dock';
 
 /**
@@ -33,8 +34,8 @@ export type DockAxis = 'start' | 'top';
 
 /** The registered progress properties, one pair per docked edge. */
 export const DOCK_VARS = {
-  start: { dock: '--bloom-nav-dock', peek: '--bloom-nav-peek' },
-  top: { dock: '--bloom-top-dock', peek: '--bloom-top-peek' },
+  start: { dock: '--bloom-nav-dock', peek: '--bloom-nav-peek', fade: '--bloom-nav-peek-fade' },
+  top: { dock: '--bloom-top-dock', peek: '--bloom-top-peek', fade: '--bloom-top-peek-fade' },
 } as const;
 
 /**
@@ -42,9 +43,10 @@ export const DOCK_VARS = {
  * changes at once, and everything reading it would jump.
  */
 export const DOCK_PROPERTY_CSS = Object.values(DOCK_VARS)
-  .flatMap(({ dock, peek }) => [
+  .flatMap(({ dock, peek, fade }) => [
     `@property ${dock}{syntax:'<number>';inherits:true;initial-value:1}`,
     `@property ${peek}{syntax:'<number>';inherits:true;initial-value:0}`,
+    `@property ${fade}{syntax:'<number>';inherits:true;initial-value:1}`,
   ])
   .join('\n');
 
@@ -121,6 +123,8 @@ export function useDockSlotStyle(
   return style;
 }
 
+const CONTENT_STYLE: ViewStyle = { flexGrow: 1, alignSelf: 'stretch' };
+
 export interface DockHostProps {
   axis: DockAxis;
   dock: EdgeDock;
@@ -137,6 +141,12 @@ export interface DockHostProps {
  * The region's content, absolutely placed in its slot: at the slot's start,
  * sliding back past the edge by its own size as the slot closes; or, while it
  * peeks, floating `inset` from the window's edges with its own backing.
+ *
+ * A fading peek (`peek.fade`) never fades the host: on the web its fade is a
+ * third registered progress on the host that any material inside reads as its
+ * `--bloom-surface-presence`, while the backing and the content fade piece by
+ * piece over the same curve (`useSurfacePresenceContent`), so no material host
+ * has a fading ancestor. Native has no backdrop filter: the host fades itself.
  */
 export function DockHost({ axis, dock, size, origin, chrome, children, testID }: DockHostProps) {
   const rtl = useIsRtl();
@@ -146,16 +156,30 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
   // Offsets are negative toward the edge; the start edge is on the right in RTL.
   const flip = axis === 'start' && rtl ? -1 : 1;
   const { progress, peekProgress } = dock.state;
+  const fadeProgress = dock.fade;
+  const fades = floating && dock.resolved?.peek?.fade === true;
   const numericSize = typeof size === 'number' ? size : 0;
   const measured = typeof size === 'number' || IS_WEB;
+  const fadeTarget = peekFadeTarget(dock.resolved, dock);
+  const fadeCss = fadeTarget.motion
+    ? motionCss(fadeTarget.motion, dock.reducedMotion)
+    : { duration: '0ms', easing: 'linear' };
+  const contentRef = useRef<ComponentRef<typeof View>>(null);
+  useSurfacePresenceContent(contentRef, {
+    presence: fadeTarget.presence,
+    duration: Number.parseFloat(fadeCss.duration),
+    easing: fadeCss.easing,
+  });
   const nativeStyle = useAnimatedStyle(() => {
     if (!progress || !peekProgress) return {};
+    // Always written: Reanimated keeps a key's last value once a style drops it.
+    const opacity = { opacity: fades ? fadeProgress.value : 1 };
     if (!measured) {
       // Not measured yet: hidden sits wholly past its edge, shown in place.
       const away = progress.value < 1 && !floating;
       return axis === 'start'
-        ? { transform: [{ translateX: away ? `${-100 * flip}%` : 0 }] }
-        : { transform: [{ translateY: away ? '-100%' : 0 }] };
+        ? { ...opacity, transform: [{ translateX: away ? `${-100 * flip}%` : 0 }] }
+        : { ...opacity, transform: [{ translateY: away ? '-100%' : 0 }] };
     }
     const offset =
       flip *
@@ -163,9 +187,9 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
         ? peekOffset(numericSize, peekProgress.value)
         : dockOffset(numericSize, progress.value));
     return axis === 'start'
-      ? { transform: [{ translateX: offset }] }
-      : { transform: [{ translateY: offset }] };
-  }, [floating, numericSize, measured, progress, peekProgress, flip, axis]);
+      ? { ...opacity, transform: [{ translateX: offset }] }
+      : { ...opacity, transform: [{ translateY: offset }] };
+  }, [floating, numericSize, measured, progress, peekProgress, flip, axis, fades, fadeProgress]);
 
   const inset = peek?.inset ?? DOCK_DEFAULTS.peek.inset;
   const radius = peek?.radius ?? DOCK_DEFAULTS.peek.radius;
@@ -222,6 +246,14 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
       transform: cssTransform(offset),
     };
     motion[vars.peek] = opening ? '1' : '0';
+    if (dock.resolved.peek?.fade && dock.hidden) {
+      motion.transitionProperty = `${vars.peek}, ${vars.fade}`;
+      motion.transitionDuration = `${peekTransition.duration}, ${fadeCss.duration}`;
+      motion.transitionTimingFunction = `${peekTransition.easing}, ${fadeCss.easing}`;
+      motion[vars.fade] = String(fadeTarget.presence);
+      motion['--bloom-surface-presence'] = `var(${vars.fade})`;
+      motion['--bloom-surface-presence-ms'] = '0ms';
+    }
   }
 
   return (
@@ -241,26 +273,32 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
         IS_WEB ? null : nativeStyle,
       ]}
     >
-      {floating && peek?.appearance === 'surface' ? (
-        <View
-          pointerEvents="none"
-          style={
-            {
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              insetInlineStart: 0,
-              insetInlineEnd: 0,
-              borderRadius: radius,
-              backgroundColor: chrome.surface,
-              borderWidth: 1,
-              borderColor: chrome.border,
-              boxShadow: chrome.shadow,
-            } as WebCssStyle
-          }
-        />
-      ) : null}
-      {children}
+      <View
+        ref={contentRef}
+        testID={testID ? `${testID}-content` : undefined}
+        style={CONTENT_STYLE}
+      >
+        {floating && peek?.appearance === 'surface' ? (
+          <View
+            pointerEvents="none"
+            style={
+              {
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                insetInlineStart: 0,
+                insetInlineEnd: 0,
+                borderRadius: radius,
+                backgroundColor: chrome.surface,
+                borderWidth: 1,
+                borderColor: chrome.border,
+                boxShadow: chrome.shadow,
+              } as WebCssStyle
+            }
+          />
+        ) : null}
+        {children}
+      </View>
     </Animated.View>
   );
 }

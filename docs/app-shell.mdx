@@ -229,7 +229,9 @@ underneath) and nothing else: `header` (chrome spanning it), `scroll`,
   beside a results list stays a map.
 - **`resizable`** puts the shared `ResizeHandle` (pointer capture on web, a
   `PanResponder` on native, arrow keys ±16) on the panel's end edge, centred in
-  the gap. A drag starts from the width the panel is DRAWN at and is clamped to
+  the gap. `panelLayout.resizeHandle: 'pill'` draws a split's divider instead of
+  the grip: a 4×36 bar in the gap, shown under the pointer and while dragging,
+  its strip the gap plus 2px of each pane ([Layout](/docs/bloom/main/layout)). A drag starts from the width the panel is DRAWN at and is clamped to
   `minWidth`/`maxWidth`; `onWidthChange` reports where it settled.
 - **`collapseBelow`** — a width of the group's OWN box, so a sidebar or an aside
   beside it counts — below which exactly ONE panel renders: the one `show` names,
@@ -1471,10 +1473,12 @@ the top edge (a tab strip across the top of a window). Both take one
 | `peek.radius` | 12 | its corner |
 | `peek.hideDelay` | 120 ms | how long the pointer may be away before it slides out |
 | `peek.appearance` | `surface` | the navigation's panel surface, border and shadow; `plain` paints nothing |
+| `peek.fade` | `false` | the peek fades as it slides in and out (below) |
 | `onPeekChange` | | `true` as it opens, `false` once it has slid out |
 | `motion.show` / `motion.hide` | spring, response 0.215 s, ratio 0.79 | `MotionSpec` |
 | `motion.peekIn` | spring, response 0.185 s, ratio 0.77 | |
 | `motion.peekOut` | 150 ms, `cubic-bezier(0.645, 0.045, 0.355, 1)` | |
+| `motion.peekFadeIn` / `motion.peekFadeOut` | `peekIn` / `peekOut` | the fade's own motion, with `peek.fade` |
 
 The defaults are a desktop browser's sidebar, traced on a 240 fps recording:
 90% of the travel in 100 ms, a 1–2 pt overshoot at ~0.15 s, at rest by
@@ -1501,6 +1505,24 @@ What it does:
   (and its 12 pt shadow room) starts past the window's edge.
 - **Docking from a peek** lands in place, without motion: the floating region
   becomes the docked one where it is.
+- **A fading peek** (`peek.fade: true`) fades in as it slides in and out as it
+  slides out, on the slide's own motion unless `motion.peekFadeIn` /
+  `peekFadeOut` give it one; a desktop browser's default peek is 180 ms on an
+  ease-out cubic both ways, fading with the slide. Only the peek's own opening
+  and closing fade: hiding, showing and docking from a peek keep the region
+  whole, and a region that has finished hiding waits at 0 so its next peek
+  fades in from nothing. The region may hold material, so it never fades its
+  host (the material rule, [Surface](/docs/bloom/main/surface)): on the web
+  the fade is a third registered progress on the host (`--bloom-nav-peek-fade`,
+  `--bloom-top-peek-fade`) that the material inside reads as its
+  `--bloom-surface-presence`, frame by frame, while the backing and the content
+  fade piece by piece over the same curve (`useSurfacePresenceContent`), so no
+  material host has a fading ancestor. Native has no backdrop filter: the host
+  fades itself from a shared value. Reduced motion lands it at once, with the
+  slide. Measured in Chromium (`verify-peek-fade-and-pill.mjs`): the fade, a
+  row's opacity and a material button's body layer stay on the curve frame for
+  frame, in and out, and no ancestor of the button takes an opacity or a
+  filter. The **Fading Peek** story holds a material button in a fading peek.
 - **No peek while it moves.** The hover strip appears once hiding has landed,
   so a pointer left at the edge does not open a peek of a region still leaving.
 - **Reduced motion** lands every change at once, on both platforms.

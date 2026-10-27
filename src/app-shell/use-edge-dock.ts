@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { runOnJS, useReducedMotion, useSharedValue } from 'react-native-reanimated';
+import {
+  runOnJS,
+  useReducedMotion,
+  useSharedValue,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { IS_WEB } from '../styles/platform';
 import { animateWithSpec, motionDurationMs } from '../motion/spec';
@@ -20,7 +25,11 @@ export interface EdgeDock {
   instant: boolean;
   /** Hiding or showing is under way; the region does not peek until it lands. */
   moving: boolean;
+  /** Hidden, and the motion that took it out of the layout has landed. */
+  settledHidden: boolean;
   reducedMotion: boolean;
+  /** Native: a fading peek's presence (0 gone, 1 there). The web reads `peekFadeTarget`. */
+  fade: SharedValue<number>;
   state: AppShellDockState;
 }
 
@@ -51,9 +60,13 @@ export function useEdgeDock(
   const [phase, setPhase] = useState<PeekPhase>('closed');
   const [instant, setInstant] = useState(false);
   const [moving, setMoving] = useState(false);
+  const [settledHidden, setSettledHidden] = useState(hidden);
+  const goingHidden = useRef(hidden);
   const moveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progress = useSharedValue(hidden ? 0 : 1);
   const peekProgress = useSharedValue(0);
+  const fade = useSharedValue(0);
+  const fades = resolved?.peek?.fade === true;
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onPeekChange = useRef(dock?.onPeekChange);
@@ -80,6 +93,7 @@ export function useEdgeDock(
     moveTimer.current = null;
     movingRef.current = false;
     setMoving(false);
+    setSettledHidden(goingHidden.current);
   }, []);
 
   const settle = useCallback(() => {
@@ -94,6 +108,7 @@ export function useEdgeDock(
     phaseRef.current = 'closing';
     setPhase('closing');
     const spec = resolved.motion.peekOut;
+    if (fades && !IS_WEB) animateWithSpec(fade, 0, resolved.motion.peekFadeOut, reducedMotion);
     if (IS_WEB) {
       peekProgress.value = 0;
       const ms = reducedMotion ? 0 : motionDurationMs(spec);
@@ -105,7 +120,7 @@ export function useEdgeDock(
       'worklet';
       if (finished) runOnJS(settle)();
     });
-  }, [resolved, reducedMotion, peekProgress, settle]);
+  }, [resolved, reducedMotion, peekProgress, settle, fades, fade]);
 
   const peek = useCallback(
     (open: boolean) => {
@@ -125,9 +140,10 @@ export function useEdgeDock(
       setPhase('open');
       if (IS_WEB) peekProgress.value = 1;
       else animateWithSpec(peekProgress, 1, resolved.motion.peekIn, reducedMotion);
+      if (fades && !IS_WEB) animateWithSpec(fade, 1, resolved.motion.peekFadeIn, reducedMotion);
       if (wasClosed) onPeekChange.current?.(true);
     },
-    [resolved, hidden, reducedMotion, peekProgress, slideOut],
+    [resolved, hidden, reducedMotion, peekProgress, slideOut, fades, fade],
   );
 
   const setHidden = useCallback(
@@ -142,11 +158,12 @@ export function useEdgeDock(
         phaseRef.current = 'closed';
         setPhase('closed');
         peekProgress.value = 0;
+        fade.value = 0;
         onPeekChange.current?.(false);
       }
       setStoredHidden(next);
     },
-    [resolved, setStoredHidden, peekProgress],
+    [resolved, setStoredHidden, peekProgress, fade],
   );
 
   const target = hidden ? 0 : 1;
@@ -154,6 +171,7 @@ export function useEdgeDock(
   useEffect(() => {
     const changed = landedTarget.current !== target;
     landedTarget.current = target;
+    goingHidden.current = target === 0;
     if (moveTimer.current) clearTimeout(moveTimer.current);
     moveTimer.current = null;
     const spec = resolved ? (target ? resolved.motion.show : resolved.motion.hide) : null;
@@ -162,6 +180,7 @@ export function useEdgeDock(
       movingRef.current = true;
       setMoving(true);
     } else if (movingRef.current) landed();
+    else setSettledHidden(target === 0);
     if (IS_WEB || !animated || !spec) {
       progress.value = target;
       // The web lands on the property's own `transitionend` (below); this only
@@ -182,8 +201,9 @@ export function useEdgeDock(
     phaseRef.current = 'closed';
     setPhase('closed');
     peekProgress.value = 0;
+    fade.value = 0;
     onPeekChange.current?.(false);
-  }, [hidden, peekProgress]);
+  }, [hidden, peekProgress, fade]);
 
   useEffect(() => {
     if (!IS_WEB || !moving || !property || typeof document === 'undefined') return;
@@ -211,5 +231,16 @@ export function useEdgeDock(
     [resolved, enabled, hidden, setHidden, storedHidden, phase, peek, progress, peekProgress],
   );
 
-  return { enabled, resolved, hidden, phase, instant, moving, reducedMotion, state };
+  return {
+    enabled,
+    resolved,
+    hidden,
+    phase,
+    instant,
+    moving,
+    settledHidden: hidden && settledHidden,
+    reducedMotion,
+    fade,
+    state,
+  };
 }

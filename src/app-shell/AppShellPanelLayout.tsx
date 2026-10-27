@@ -81,6 +81,9 @@ import type {
   PanelNavigationController,
 } from './panel-layout-types';
 
+/** How far a split's pill divider reaches into each pane beside its gap, px. */
+const RESIZE_HANDLE_PANE_REACH = 2;
+
 const AnimatedView = Animated.createAnimatedComponent(View);
 const FILL: ViewStyle = {
   flexGrow: 1,
@@ -255,6 +258,7 @@ export function createPanelLayoutView(
     reorderHandle,
     registerReorder,
     transition,
+    resizeHandle,
     cssScope,
     cssFraming,
     index,
@@ -278,6 +282,7 @@ export function createPanelLayoutView(
     reorderHandle?: React.ReactNode;
     registerReorder: (id: string, host: PanelReorderHost) => () => void;
     transition: AppShellPanelLayout['transition'];
+    resizeHandle: AppShellPanelLayout['resizeHandle'];
     cssScope: string | null;
     cssFraming: boolean;
     index: number;
@@ -714,6 +719,10 @@ export function createPanelLayoutView(
               >
                 <ResizeHandle
                   orientation={vertical ? 'horizontal' : 'vertical'}
+                  variant={resizeHandle}
+                  thickness={
+                    resizeHandle === 'pill' ? gap + 2 * RESIZE_HANDLE_PANE_REACH : undefined
+                  }
                   label={panel.resizeLabel}
                   testID={testID ? `${testID}-divider` : undefined}
                   onResizeStart={() => {
@@ -1081,6 +1090,7 @@ export function createPanelLayoutView(
             panel={panel}
             registerReorder={reorder.register}
             transition={layout.transition}
+            resizeHandle={layout.resizeHandle}
             reorderHandle={
               reorder.canReorder(panel.id) ? (
                 <PanelReorderHandle
