@@ -92,15 +92,14 @@ export function useEdgeDock(
   const slideOut = useCallback(() => {
     hideTimer.current = null;
     if (phaseRef.current !== 'open' || !resolved) return;
+    phaseRef.current = 'closing';
     setPhase('closing');
     const spec = resolved.motion.peekOut;
     if (IS_WEB) {
       peekProgress.value = 0;
       const ms = reducedMotion ? 0 : motionDurationMs(spec);
-      if (ms === 0) {
-        phaseRef.current = 'closing';
-        settle();
-      } else settleTimer.current = setTimeout(settle, ms);
+      if (ms === 0) settle();
+      else settleTimer.current = setTimeout(settle, ms);
       return;
     }
     animateWithSpec(peekProgress, 0, spec, reducedMotion, (finished) => {
@@ -135,10 +134,12 @@ export function useEdgeDock(
   const setHidden = useCallback(
     (next: boolean) => {
       if (!resolved) return;
+      // Docking from a peek lands in place; every other change moves. The flag
+      // stays with the state it came with, so the style that lands it carries it.
+      setInstant(!next && phaseRef.current !== 'closed');
       if (!next && phaseRef.current !== 'closed') {
-        // Docking from a peek: the floating region becomes the docked one in place.
+        // The floating region becomes the docked one where it is.
         clearTimers();
-        setInstant(true);
         phaseRef.current = 'closed';
         setPhase('closed');
         peekProgress.value = 0;
@@ -164,7 +165,6 @@ export function useEdgeDock(
     } else if (movingRef.current) landed();
     if (IS_WEB || !animated || !spec) {
       progress.value = target;
-      if (instant) setInstant(false);
       // The web lands on the property's own `transitionend` (below); this only
       // covers a browser that cannot interpolate it, where nothing moved.
       if (animated && spec)

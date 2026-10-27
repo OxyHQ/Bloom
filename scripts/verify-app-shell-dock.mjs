@@ -179,7 +179,11 @@ try {
     host: document.querySelector('[data-testid="window-navigation-host"]').getBoundingClientRect()
       .left,
   }));
-  assert.equal(Math.round(mirroredAway.card), 1280 - 7, 'RTL hidden: the card ends 7 from the edge');
+  assert.equal(
+    Math.round(mirroredAway.card),
+    1280 - 7,
+    'RTL hidden: the card ends 7 from the edge',
+  );
   assert.ok(mirroredAway.host >= 1280, 'RTL hidden: the sidebar is past the right edge');
   await page.evaluate(() => document.documentElement.removeAttribute('dir'));
 
