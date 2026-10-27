@@ -1,6 +1,7 @@
 import type { BloomSize } from '../appearance';
 import type { ScrollHandlerProcessed } from 'react-native-reanimated';
-import type { ComponentRef, Ref, RefObject } from 'react';
+import type { ComponentRef, ReactNode, Ref, RefObject } from 'react';
+import type { MotionSpec } from '../motion/spec';
 import type { ScrollView, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
 
 /**
@@ -88,5 +89,46 @@ export interface ToolbarProps {
   accessory?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   className?: string;
+  testID?: string;
+}
+
+export interface AutoHideBarMotion {
+  /** Collapsing. Default ease-out-quad over 150ms. */
+  hide?: MotionSpec;
+  /** Coming back, revealed or peeked. Default ease-out-cubic over 200ms. */
+  show?: MotionSpec;
+}
+
+export interface AutoHideBarProps {
+  /** The full bar (a `Toolbar`, a browser's address row). Drawn at `height`. */
+  bar: ReactNode;
+  /** What the collapsed strip shows: a page's host, a document's name. Strings are drawn muted. */
+  summary?: ReactNode;
+  /**
+   * The owner's decision that the bar should step aside (a page scrolled down,
+   * a reader mode). Hovering only peeks it; pressing the strip calls
+   * `onReveal`, and the owner clears this to bring it back.
+   */
+  collapsed: boolean;
+  /** The bar's height. Default 41. */
+  height?: number;
+  /** The strip left while collapsed. Default 20. */
+  collapsedHeight?: number;
+  /** The collapsed strip was pressed. */
+  onReveal?: () => void;
+  /** Hovering the strip shows the whole bar over the body for a while. Default true. */
+  peek?: boolean;
+  /** How long the pointer rests on the strip before the bar peeks, ms. Default 150. */
+  peekDelay?: number;
+  /** How long after the pointer leaves a peeked bar it collapses again, ms. Default 250. */
+  unpeekDelay?: number;
+  motion?: AutoHideBarMotion;
+  /** The band behind the bar. Default: the fill of the surface it sits on. */
+  background?: string;
+  /** Names the strip's button. `"Show toolbar"` in English. */
+  revealLabel?: string;
+  /** The body under the bar: laid out once per change, never per frame. */
+  children?: ReactNode;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }

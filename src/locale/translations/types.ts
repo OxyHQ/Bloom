@@ -112,6 +112,7 @@ import type { MEDIA_CONTROLS_MESSAGES } from '../../media-controls/messages';
 import type { INPUT_OTP_MESSAGES } from '../../input-otp/messages';
 import type { PLACE_DETAILS_MESSAGES } from '../../place-details/messages';
 import type { APP_SHELL_MESSAGES } from '../../app-shell/messages';
+import type { LAYOUT_MESSAGES } from '../../layout/messages';
 import type { ROUTE_STOPS_MESSAGES } from '../../route-stops/messages';
 import type { SEARCH_MESSAGES } from '../../search/messages';
 import type { TAG_FIELD_MESSAGES } from '../../tag-field/messages';
@@ -254,6 +255,7 @@ export interface Translations {
   readonly INPUT_OTP_MESSAGES: CatalogMessages<typeof INPUT_OTP_MESSAGES>;
   readonly PLACE_DETAILS_MESSAGES: CatalogMessages<typeof PLACE_DETAILS_MESSAGES>;
   readonly APP_SHELL_MESSAGES: CatalogMessages<typeof APP_SHELL_MESSAGES>;
+  readonly LAYOUT_MESSAGES: CatalogMessages<typeof LAYOUT_MESSAGES>;
   readonly ROUTE_STOPS_MESSAGES: CatalogMessages<typeof ROUTE_STOPS_MESSAGES>;
   readonly SEARCH_MESSAGES: CatalogMessages<typeof SEARCH_MESSAGES>;
   readonly TAG_FIELD_MESSAGES: CatalogMessages<typeof TAG_FIELD_MESSAGES>;

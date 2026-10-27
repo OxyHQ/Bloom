@@ -456,3 +456,58 @@ header, including wrapped summaries, without a consumer height calculation.
 ```
 
 Toolbar inherits BloomScope: xs/sm/md/lg use 4/6/8/12px outer inset and tool gaps, with 2/4/4/6px between the tools and accessory. Explicit `size` overrides the scope for the toolbar and its controls. Normal md preserves the original 8px toolbar spacing; each child still uses its own family's size proportions.
+
+## `AutoHideBar` — a bar that steps aside
+
+A toolbar at the top of a region that recedes to a thin strip when its owner
+says so (a page scrolled down, a reading mode), and the body under it.
+
+```tsx
+import { AutoHideBar } from '@oxy.so/bloom/layout';
+
+<AutoHideBar
+  collapsed={scrolledDown && !findOpen}
+  onReveal={() => setScrolledDown(false)}
+  summary={host}
+  bar={<Toolbar>{navigation}</Toolbar>}
+>
+  <Page />
+</AutoHideBar>
+```
+
+- **The owner decides; the bar never hides itself.** `collapsed` is the
+  owner's answer (scroll direction, a panel that needs the bar). Hovering the
+  strip for `peekDelay` (150ms) PEEKS the whole bar over the body, which does
+  not move; leaving the peeked bar collapses it again after `unpeekDelay`
+  (250ms). Pressing the strip calls `onReveal`, and the owner clears
+  `collapsed`. `peek={false}` keeps only the press.
+- **Geometry.** `height` (41) and `collapsedHeight` (20). Collapsing, the bar's
+  controls fade early (1 → 0.45 → 0.15 → 0 over the first 60%) while it
+  recedes — scale 0.94, lifted by half what the scale takes plus 3 — and its
+  band (`background`, default the fill of the surface it sits on) shrinks onto
+  the strip; `summary` fades in over the second half.
+- **The body is laid out once per change, never per frame.** Collapsing lays it
+  out tall at once and slides it up from where it was; expanding slides it down
+  keeping the tall layout and commits the short one when the slide ends. A web
+  view, a map or a long list under the bar therefore resizes once, not 12
+  times. The bottom `height − collapsedHeight` of a tall body is clipped while
+  it slides down.
+- **Motion is data.** `motion={{ hide, show }}` takes a
+  [`MotionSpec`](/docs/bloom/main/motion) each: a spring or a duration and
+  curve. Defaults: hide 150ms `cubic-bezier(0.25, 0.46, 0.45, 0.94)`, show
+  200ms `cubic-bezier(0.215, 0.61, 0.355, 1)`. Web runs CSS transitions (the
+  opacity curves composed onto the timing function as `linear()`, no frame of
+  JavaScript); native runs Reanimated from the same specs. Reduced motion lands
+  the geometry at once and keeps a 120ms fade.
+- **Material.** The bar may hold material controls, so it fades through surface
+  presence (`useSurfacePresenceContent`), never an opacity on an ancestor of a
+  material host.
+- **Accessibility.** While collapsed the bar is inert and hidden from assistive
+  technology and the strip is a button named `revealLabel` (`"Show toolbar"`,
+  localized via `LAYOUT_MESSAGES`); while shown or peeked the strip is.
+  Logical insets throughout, so it mirrors under RTL.
+
+Gates: `auto-hide-bar.test.tsx` (modes, timers, motion maths and the CSS
+composition), `AutoHideBar.web.test.tsx` (inert/aria, the named strip, the
+one-layout FLIP through react-native-web). The native path is reasoned, not
+measured by Jest.

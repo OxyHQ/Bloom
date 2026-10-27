@@ -2134,6 +2134,10 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
   towards: (headsign) => `${headsign}-এর দিকে`,
 };
 
+const LAYOUT_MESSAGES: Translations['LAYOUT_MESSAGES'] = {
+  showToolbar: 'টুলবার দেখান',
+};
+
 const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
   reorderPanel: (label) => `${label} পুনর্বিন্যাস করুন`,
   reorderHint: 'পুনর্বিন্যাস করতে টানুন বা তীর কী ব্যবহার করুন। Home এবং End প্রথম ও শেষ অবস্থানে নিয়ে যায়।',
@@ -2989,6 +2993,7 @@ const translations: Translations = {
   INPUT_OTP_MESSAGES,
   PLACE_DETAILS_MESSAGES,
   APP_SHELL_MESSAGES,
+  LAYOUT_MESSAGES,
   ROUTE_STOPS_MESSAGES,
   SEARCH_MESSAGES,
   TAG_FIELD_MESSAGES,

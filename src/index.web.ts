@@ -192,6 +192,7 @@ export {
   ResizeHandle,
   ScrollSurface,
   Toolbar,
+  AutoHideBar,
   useScrollOffset,
   ScreenScope,
   HeaderDockProvider,
@@ -206,6 +207,8 @@ export type {
   ResizeHandleProps,
   ScrollSurfaceProps,
   ToolbarProps,
+  AutoHideBarProps,
+  AutoHideBarMotion,
 } from './layout/index.web';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabSize } from './fab/index.web';
