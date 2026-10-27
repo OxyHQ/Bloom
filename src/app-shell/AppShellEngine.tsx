@@ -1240,51 +1240,60 @@ export function createAppShellEngine() {
             ? dockedNavigation(cssNavigationModes, 'var(--bloom-nav-content-width)')
             : cssNavigationModes}
         </View>
-      ) : navInFlow && flowSidebar ? (
+      ) : navInFlow && flowSidebar && navDocked ? (
+        // Only a docked navigation's slot animates; every other one stays a plain view.
         <Animated.View
           testID={testID ? `${testID}-navigation` : undefined}
+          style={[
+            { flexShrink: 0 },
+            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+            navSlotStyle,
+            navPeekLayer,
+          ]}
+        >
+          {dockedNavigation(
+            canvasNavPad ? (
+              <View
+                style={{
+                  flexGrow: 1,
+                  flexShrink: 1,
+                  flexBasis: 0,
+                  minHeight: 0,
+                  paddingTop: gutter,
+                  paddingBottom: gutter,
+                  paddingInlineStart: gutter,
+                }}
+              >
+                {safeNavigation(<SidebarSlot {...flowSidebar} />)}
+              </View>
+            ) : (
+              safeNavigation(<SidebarSlot {...flowSidebar} />)
+            ),
+            navHostWidth,
+          )}
+        </Animated.View>
+      ) : navInFlow && flowSidebar ? (
+        <View
+          testID={testID ? `${testID}-navigation` : undefined}
           onLayout={
-            Platform.OS === 'web' || navDocked
+            Platform.OS === 'web'
               ? undefined
               : (event) => setMeasuredNavigationWidth(event.nativeEvent.layout.width)
           }
           style={[
             { flexShrink: 0 },
             doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
-            canvasNavPad && !navDocked
+            canvasNavPad
               ? {
                   paddingTop: gutter,
                   paddingBottom: gutter,
                   paddingInlineStart: gutter,
                 }
               : null,
-            navSlotStyle,
-            navPeekLayer,
           ]}
         >
-          {navDocked
-            ? dockedNavigation(
-                canvasNavPad ? (
-                  <View
-                    style={{
-                      flexGrow: 1,
-                      flexShrink: 1,
-                      flexBasis: 0,
-                      minHeight: 0,
-                      paddingTop: gutter,
-                      paddingBottom: gutter,
-                      paddingInlineStart: gutter,
-                    }}
-                  >
-                    {safeNavigation(<SidebarSlot {...flowSidebar} />)}
-                  </View>
-                ) : (
-                  safeNavigation(<SidebarSlot {...flowSidebar} />)
-                ),
-                navHostWidth,
-              )
-            : safeNavigation(<SidebarSlot {...flowSidebar} />)}
-        </Animated.View>
+          {safeNavigation(<SidebarSlot {...flowSidebar} />)}
+        </View>
       ) : null;
 
     // ---- the page region, per variant ---------------------------------------

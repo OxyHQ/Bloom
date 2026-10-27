@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform } from 'react-native';
 import { runOnJS, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { IS_WEB } from '../styles/platform';
 import { animateWithSpec, motionDurationMs } from '../motion/spec';
 import { NO_DOCK, type AppShellDockState } from './context';
 import { resolveDock, type PeekPhase, type ResolvedDock } from './dock';
 import type { AppShellDock } from './types';
 
-const IS_WEB = Platform.OS === 'web';
 const LANDING_FALLBACK_MS = 250;
 
 export interface EdgeDock {

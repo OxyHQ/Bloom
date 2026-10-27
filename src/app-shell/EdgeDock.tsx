@@ -10,7 +10,8 @@
  * runs the whole motion on the compositor with no JavaScript per frame.
  */
 import { useEffect, type ReactNode } from 'react';
-import { Platform, Pressable, View, type ViewStyle } from 'react-native';
+import { Pressable, View, type ViewStyle } from 'react-native';
+import { IS_WEB } from '../styles/platform';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { motionCss, type MotionSpec } from '../motion/spec';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -20,7 +21,13 @@ import { useIsRtl } from '../hooks/use-is-rtl';
 import { dockExtent, dockOffset, peekOffset, DOCK_DEFAULTS } from './dock';
 import type { EdgeDock } from './use-edge-dock';
 
-const IS_WEB = Platform.OS === 'web';
+/**
+ * The two VALUE-level crossings into web CSS: a length or a transform written
+ * as a `calc()` of the progress property, which React Native's unions cannot
+ * name. Native never reaches them.
+ */
+const cssLength = (css: string) => css as ViewStyle['width'];
+const cssTransform = (css: string) => css as unknown as ViewStyle['transform'];
 
 export type DockAxis = 'start' | 'top';
 
@@ -97,7 +104,7 @@ export function useDockSlotStyle(
   dock: EdgeDock,
   shown: number | null,
   hidden: number,
-): ViewStyle | null {
+) {
   const progress = dock.state.progress;
   const enabled = dock.resolved != null && shown != null;
   const nativeStyle = useAnimatedStyle(() => {
@@ -106,9 +113,12 @@ export function useDockSlotStyle(
     return axis === 'start' ? { width: extent } : { height: extent };
   }, [enabled, progress, shown, hidden, axis]);
   if (!enabled || shown == null) return null;
-  if (!IS_WEB) return nativeStyle as ViewStyle;
-  const extent = `calc(${hidden}px + ${shown - hidden}px * var(${DOCK_VARS[axis].dock}, 1))`;
-  return (axis === 'start' ? { width: extent } : { height: extent }) as unknown as ViewStyle;
+  if (!IS_WEB) return nativeStyle;
+  const extent = cssLength(
+    `calc(${hidden}px + ${shown - hidden}px * var(${DOCK_VARS[axis].dock}, 1))`,
+  );
+  const style: WebCssStyle = axis === 'start' ? { width: extent } : { height: extent };
+  return style;
 }
 
 export interface DockHostProps {
@@ -167,14 +177,14 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
             top: inset - origin.top,
             bottom: inset - origin.bottom,
             insetInlineStart: inset - origin.start,
-            width: size as number,
+            width: typeof size === 'number' ? size : cssLength(size ?? '0px'),
           }
         : {
             position: 'absolute',
             top: 0,
             bottom: 0,
             insetInlineStart: 0,
-            width: size as number,
+            width: typeof size === 'number' ? size : cssLength(size ?? '0px'),
           }
       : floating
         ? {
@@ -209,7 +219,7 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
       transitionProperty: vars.peek,
       transitionDuration: peekTransition.duration,
       transitionTimingFunction: peekTransition.easing,
-      transform: offset as unknown as ViewStyle['transform'],
+      transform: cssTransform(offset),
     };
     motion[vars.peek] = opening ? '1' : '0';
   }
@@ -225,9 +235,9 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
       onPointerEnter={floating ? () => dock.state.peek(true) : undefined}
       onPointerLeave={floating ? () => dock.state.peek(false) : undefined}
       style={[
-        placement as ViewStyle,
+        placement,
         floating ? { borderRadius: radius, overflow: 'hidden' } : null,
-        motion as ViewStyle | null,
+        motion,
         IS_WEB ? null : nativeStyle,
       ]}
     >
@@ -271,6 +281,10 @@ export function DockEdgeStrip({
 }) {
   const peek = dock.resolved?.peek;
   if (!peek || peek.trigger !== 'hover' || !dock.hidden || dock.moving) return null;
+  const stripStyle: WebCssStyle =
+    axis === 'start'
+      ? { position: 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: peek.edge }
+      : { position: 'absolute', top: 0, insetInlineStart: 0, insetInlineEnd: 0, height: peek.edge };
   return (
     <Pressable
       testID={testID}
@@ -281,17 +295,7 @@ export function DockEdgeStrip({
       importantForAccessibility="no-hide-descendants"
       onHoverIn={() => dock.state.peek(true)}
       onHoverOut={() => dock.state.peek(false)}
-      style={
-        (axis === 'start'
-          ? { position: 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: peek.edge }
-          : {
-              position: 'absolute',
-              top: 0,
-              insetInlineStart: 0,
-              insetInlineEnd: 0,
-              height: peek.edge,
-            }) as ViewStyle
-      }
+      style={stripStyle}
     />
   );
 }
