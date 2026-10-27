@@ -45,11 +45,22 @@ import {
 import { AppShellHeader } from './AppShellHeader';
 import { APP_SHELL_DEFAULTS as D, breakpointPx } from './constants';
 import { AppShellProvider } from './context';
+import {
+  DOCK_VARS,
+  DockEdgeStrip,
+  DockHost,
+  dockRootStyle,
+  useDockProperties,
+  useDockSlotStyle,
+} from './EdgeDock';
+import { useEdgeDock } from './use-edge-dock';
+import { resolveSidebarGeometry } from '../sidebar/geometry';
+import { SIDEBAR_RAIL_WIDTH } from '../sidebar/SidebarRail';
 import { ScreenNavigationContext, type ScreenNavigationState } from '../screen/context';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
 import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-shell-region';
 import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
-import type { AppShellEngineProps } from './types';
+import type { AppShellEdge, AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
 import { useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
@@ -175,6 +186,9 @@ export function createAppShellEngine() {
     framedFrom,
     topBar,
     topBarVisibility = 'compact',
+    topBarDock,
+    frameInset,
+    background: backgroundMode = 'page',
     bottomBar,
     bottomBarVisibility = 'compact',
     reserveBottomBarSpace = true,
@@ -253,6 +267,7 @@ export function createAppShellEngine() {
       navigationAlign,
       topBar,
       topBarVisibility,
+      frameInset,
       metrics: sidebarMetrics,
       layout: cssLayout?.layout ?? { panels: [] },
       gap: cssLayout?.gap ?? gutter,
@@ -260,6 +275,7 @@ export function createAppShellEngine() {
       navigationGap: Math.max(0, navigationGap ?? columnGap),
       contentWidth,
       userCollapsed,
+      fillWidth: contentMaxWidth === 'none',
     });
     const navVariant = cssShell ? (cssShell.mode === 'rail' ? 'rail' : 'panel') : nativeNavVariant;
     const wide = cssShell ? cssShell.mode !== 'drawer' : width >= breakpointPx(navTier);
@@ -363,6 +379,33 @@ export function createAppShellEngine() {
         }
       : undefined;
 
+    // The in-flow navigation's own width in its current form, which is what a
+    // dock slides out and back in (the slot around it animates; this does not).
+    const navContentWidth = !flowSidebar
+      ? 0
+      : navVariant === 'rail'
+        ? sidebar?.railWidth === undefined || !Number.isFinite(sidebar.railWidth)
+          ? SIDEBAR_RAIL_WIDTH
+          : Math.max(64, sidebar.railWidth)
+        : flowSidebar.collapsed
+          ? resolveSidebarGeometry(
+              sidebarMetrics,
+              sidebar?.surface ?? 'card',
+              !!sidebar?.primaryAction,
+              sidebar?.content != null,
+            ).collapsedWidth
+          : sidebarMetrics.expanded;
+    const navDock = useEdgeDock(sidebar?.dock, navInFlow, DOCK_VARS.start.dock);
+    const navDocked = navDock.resolved != null && navInFlow;
+    // A document's top bar is sticky in the page's flow; only a bounded frame
+    // can take it out of the layout.
+    const topDock = useEdgeDock(
+      topBarDock,
+      !doc && topBar != null && (topBarVisibility === 'always' || !navInFlow),
+      DOCK_VARS.top.dock,
+    );
+    useDockProperties(navDock.resolved != null || topDock.resolved != null);
+
     const stackedAside = asideStacked ? (
       asideEmpty ? (
         asideProbe('100%')
@@ -434,8 +477,10 @@ export function createAppShellEngine() {
         openDrawer: () => setOpen(true),
         closeDrawer: () => setOpen(false),
         toggleDrawer: () => setOpen(!isOpen),
+        navigationDock: navDock.state,
+        topBarDock: topDock.state,
       }),
-      [drawerAvailable, isOpen, setOpen, cssScope, hasNav],
+      [drawerAvailable, isOpen, setOpen, cssScope, hasNav, navDock.state, topDock.state],
     );
 
     /**
@@ -467,7 +512,8 @@ export function createAppShellEngine() {
         previous.focus();
     }, [isOpen, drawerStyle]);
 
-    const background = paintColors.background;
+    // `transparent`: the window's own backdrop shows between the regions.
+    const background = backgroundMode === 'transparent' ? 'transparent' : paintColors.background;
 
     // ---- pinned slots -------------------------------------------------------
     // `compact` is the phone case the slot exists for: the bar appears exactly
@@ -589,9 +635,22 @@ export function createAppShellEngine() {
     const dockedNav = navInFlow && flowSidebar?.surface === 'docked';
     const navFlush = navInFlow && (dockedNav || plainFrame);
     const regionOuter = framed || (navInFlow && !navFlush) ? gutter : 0;
+    // `frameInset` moves the framed region's window edges, one at a time; the
+    // gutter between the regions and around the panels stays `gutter`.
+    const frameEdge = (edge: AppShellEdge) => {
+      const declared = frameInset?.[edge];
+      return panelHost && regionOuter > 0 && declared !== undefined && Number.isFinite(declared)
+        ? Math.max(0, declared)
+        : regionOuter;
+    };
+    const outerTop = frameEdge('top');
+    const outerBottom = frameEdge('bottom');
+    const outerStart = frameEdge('start');
+    const outerEnd = frameEdge('end');
     const externalTopHeight = showTopBar ? topBarHeight : 0;
     // The reveal drawer insets the sliding page by 12 while it is open.
-    const regionInset = feedRevealed ? 12 : regionOuter;
+    const regionInsetTop = feedRevealed ? 12 : outerTop;
+    const regionInsetBottom = feedRevealed ? 12 : outerBottom;
     const regionFlow: AppShellRegionValue['flow'] =
       mode === 'document' ? 'document' : mode === 'container' ? 'container' : 'bounded';
     const region = useMemo<AppShellRegionValue>(
@@ -600,8 +659,8 @@ export function createAppShellEngine() {
         framed,
         gutter,
         viewportInset: {
-          top: externalTopHeight + regionInset,
-          bottom: regionInset,
+          top: externalTopHeight + regionInsetTop,
+          bottom: regionInsetBottom,
         },
         // A bounded panel's content owns its edge (`useBottomEdgeInset`); a
         // growing one reserves the bar under its last row.
@@ -615,7 +674,8 @@ export function createAppShellEngine() {
         framed,
         gutter,
         externalTopHeight,
-        regionInset,
+        regionInsetTop,
+        regionInsetBottom,
         mode,
         contentReserve,
         feedRevealed,
@@ -628,6 +688,15 @@ export function createAppShellEngine() {
     // Both keep the same alignment, gutter ownership and mounted host tree.
     const [measuredNavigationWidth, setMeasuredNavigationWidth] = useState<number | null>(null);
     const navigationWidth = navInFlow ? (measuredNavigationWidth ?? sidebarMetrics.expanded) : 0;
+    // The row's gap after the navigation. Panels keep their gutter off a docked
+    // nav's hairline; a canvas runs to the edge.
+    const rowGap = canvas
+      ? 0
+      : dockedNav
+        ? panelHost
+          ? regionOuter
+          : 0
+        : Math.max(0, navigationGap ?? columnGap);
     const rowNavigationGap = !navInFlow
       ? 0
       : dockedNav
@@ -733,7 +802,7 @@ export function createAppShellEngine() {
       </SurfaceLevelProvider>
     );
 
-    const topBarNode = (cssScope ? topBar != null : showTopBar) ? (
+    const topBarContent = (cssScope ? topBar != null : showTopBar) ? (
       <AppShellTopBar
         visibility={topBarVisibility}
         insetTop={ownsSafeArea ? 0 : undefined}
@@ -744,6 +813,41 @@ export function createAppShellEngine() {
         {topBar}
       </AppShellTopBar>
     ) : null;
+    const topDocked = topDock.enabled && topBarContent != null;
+    const topSlotStyle = useDockSlotStyle(
+      'top',
+      topDock,
+      topDocked && topBarHeight > 0 ? topBarHeight : null,
+      0,
+    );
+    const topBarNode = topDocked ? (
+      <Animated.View
+        testID={testID ? `${testID}-top-bar-slot` : undefined}
+        style={[
+          { flexShrink: 0 },
+          topSlotStyle ?? (topDock.hidden ? { height: 0 } : null),
+          topDock.hidden || topDock.phase !== 'closed' ? { zIndex: 1 } : null,
+        ]}
+      >
+        <DockHost
+          axis="top"
+          dock={topDock}
+          size={topBarHeight > 0 ? topBarHeight : null}
+          origin={{ start: 0, top: 0, bottom: 0 }}
+          chrome={navigationChrome}
+          testID={testID ? `${testID}-top-bar-host` : undefined}
+        >
+          {topBarContent}
+        </DockHost>
+        <DockEdgeStrip
+          axis="top"
+          dock={topDock}
+          testID={testID ? `${testID}-top-bar-edge` : undefined}
+        />
+      </Animated.View>
+    ) : (
+      topBarContent
+    );
 
     // The default header renders whenever it has something to show — a menu
     // button alone counts, so a page without a title can still open the drawer.
@@ -1029,21 +1133,75 @@ export function createAppShellEngine() {
     // its own hairline is the separator, so the shell gives up its start and
     // vertical padding around that column rather than framing it like a card
     // (`dockedNav`, above).
-    const navRegion =
-      cssScope && hasNav && flowSidebar ? (
-        <View
-          testID={testID ? `${testID}-navigation` : undefined}
-          {...{ dataSet: { bloomShellNav: cssScope } }}
-          style={[
-            {
-              flexShrink: 0,
-              '--bloom-nav-overlay-surface': navigationChrome.surface,
-              '--bloom-nav-overlay-border': navigationChrome.border,
-              '--bloom-nav-overlay-shadow': navigationChrome.shadow,
-            } as WebCssStyle,
-            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
-          ]}
+    // Where the row places its first child, from the window's edges: a docked
+    // navigation's peek floats `inset` from the window, not from its slot.
+    const rowPadStart = panelHost
+      ? navFlush
+        ? 0
+        : outerStart
+      : dockedNav || canvas || plainFrame
+        ? 0
+        : gutter;
+    const rowPadTop = panelHost
+      ? navFlush
+        ? 0
+        : outerTop
+      : dockedNav || canvas || plainFrame
+        ? 0
+        : gutter;
+    const rowPadBottom = panelHost
+      ? navFlush
+        ? 0
+        : outerBottom
+      : dockedNav || canvas || plainFrame
+        ? 0
+        : gutter;
+    const canvasNavPad = !doc && canvas && !dockedNav;
+    const navHostWidth = navContentWidth + (canvasNavPad ? gutter : 0);
+    // Hidden, a flush navigation leaves the frame's own start inset behind,
+    // so the content's edge lands where it would with no navigation at all.
+    const navHiddenExtent = navFlush && panelHost && framed ? outerStart : 0;
+    const navSlotStyle = useDockSlotStyle(
+      'start',
+      navDock,
+      navDocked ? navHostWidth + rowGap : null,
+      navHiddenExtent,
+    );
+    const navPeekLayer =
+      navDocked && (navDock.hidden || navDock.phase !== 'closed') ? { zIndex: 1 } : null;
+    const navOrigin = { start: rowPadStart, top: rowPadTop, bottom: rowPadBottom };
+    const dockedNavigation = (content: React.ReactNode, size: number | string) => (
+      <>
+        <DockHost
+          axis="start"
+          dock={navDock}
+          size={size}
+          origin={navOrigin}
+          chrome={navigationChrome}
+          testID={testID ? `${testID}-navigation-host` : undefined}
         >
+          {content}
+        </DockHost>
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: 'absolute',
+            top: -rowPadTop,
+            bottom: -rowPadBottom,
+            insetInlineStart: -rowPadStart,
+          }}
+        >
+          <DockEdgeStrip
+            axis="start"
+            dock={navDock}
+            testID={testID ? `${testID}-navigation-edge` : undefined}
+          />
+        </View>
+      </>
+    );
+    const cssNavigationModes =
+      cssScope && flowSidebar ? (
+        <>
           <View
             {...{ dataSet: { bloomShellNavMode: 'panel' } }}
             aria-hidden={cssShell?.mode !== 'panel'}
@@ -1060,29 +1218,73 @@ export function createAppShellEngine() {
           >
             {safeNavigation(<SidebarSlot {...flowSidebar} variant="rail" />)}
           </View>
-        </View>
-      ) : navInFlow && flowSidebar ? (
+        </>
+      ) : null;
+    const navRegion =
+      cssScope && hasNav && flowSidebar ? (
         <View
           testID={testID ? `${testID}-navigation` : undefined}
+          {...{ dataSet: { bloomShellNav: cssScope } }}
+          style={[
+            {
+              flexShrink: 0,
+              '--bloom-nav-overlay-surface': navigationChrome.surface,
+              '--bloom-nav-overlay-border': navigationChrome.border,
+              '--bloom-nav-overlay-shadow': navigationChrome.shadow,
+            } as WebCssStyle,
+            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+            navPeekLayer,
+          ]}
+        >
+          {navDock.resolved
+            ? dockedNavigation(cssNavigationModes, 'var(--bloom-nav-content-width)')
+            : cssNavigationModes}
+        </View>
+      ) : navInFlow && flowSidebar ? (
+        <Animated.View
+          testID={testID ? `${testID}-navigation` : undefined}
           onLayout={
-            Platform.OS === 'web'
+            Platform.OS === 'web' || navDocked
               ? undefined
               : (event) => setMeasuredNavigationWidth(event.nativeEvent.layout.width)
           }
           style={[
             { flexShrink: 0 },
             doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
-            !doc && canvas && !dockedNav
+            canvasNavPad && !navDocked
               ? {
                   paddingTop: gutter,
                   paddingBottom: gutter,
                   paddingInlineStart: gutter,
                 }
               : null,
+            navSlotStyle,
+            navPeekLayer,
           ]}
         >
-          {safeNavigation(<SidebarSlot {...flowSidebar} />)}
-        </View>
+          {navDocked
+            ? dockedNavigation(
+                canvasNavPad ? (
+                  <View
+                    style={{
+                      flexGrow: 1,
+                      flexShrink: 1,
+                      flexBasis: 0,
+                      minHeight: 0,
+                      paddingTop: gutter,
+                      paddingBottom: gutter,
+                      paddingInlineStart: gutter,
+                    }}
+                  >
+                    {safeNavigation(<SidebarSlot {...flowSidebar} />)}
+                  </View>
+                ) : (
+                  safeNavigation(<SidebarSlot {...flowSidebar} />)
+                ),
+                navHostWidth,
+              )
+            : safeNavigation(<SidebarSlot {...flowSidebar} />)}
+        </Animated.View>
       ) : null;
 
     // ---- the page region, per variant ---------------------------------------
@@ -1095,7 +1297,7 @@ export function createAppShellEngine() {
     // on the web does not draw.
     const bodyInset = panelHost
       ? navFlush
-        ? { paddingTop: regionOuter, paddingBottom: regionOuter }
+        ? { paddingTop: outerTop, paddingBottom: outerBottom }
         : {}
       : plainFrame
         ? { paddingTop: gutter, paddingBottom: gutter }
@@ -1332,14 +1534,8 @@ export function createAppShellEngine() {
     const rowStyle: WebCssStyle = {
       flexDirection: 'row',
       ...(contentAligned ? { justifyContent: 'center' } : {}),
-      gap: canvas
-        ? 0
-        : dockedNav
-          ? // Panels keep their gutter off a docked nav's hairline.
-            panelHost
-            ? regionOuter
-            : 0
-          : Math.max(0, navigationGap ?? columnGap),
+      // A docked navigation carries the gap in its own slot, so it closes with it.
+      gap: navDocked ? 0 : rowGap,
       // A canvas runs to the window's edge, so the row keeps no padding at all
       // and each region carries its own (the nav below, the aside in `canvasBody`).
       // A docked nav keeps only the END padding. Spelled in longhands, never the
@@ -1352,9 +1548,16 @@ export function createAppShellEngine() {
               paddingTop: 0,
               paddingBottom: 0,
               paddingInlineStart: 0,
-              paddingInlineEnd: regionOuter,
+              paddingInlineEnd: outerEnd,
             }
-          : { padding: regionOuter }
+          : outerTop === outerBottom && outerTop === outerStart && outerTop === outerEnd
+            ? { padding: outerTop }
+            : {
+                paddingTop: outerTop,
+                paddingBottom: outerBottom,
+                paddingInlineStart: outerStart,
+                paddingInlineEnd: outerEnd,
+              }
         : dockedNav
           ? {
               paddingTop: 0,
@@ -1366,6 +1569,23 @@ export function createAppShellEngine() {
       backgroundColor: background,
     };
 
+    const docks = [
+      { axis: 'start' as const, dock: navDock },
+      { axis: 'top' as const, dock: topDock },
+    ];
+    // While a dock moves, the regions it resizes follow its one progress
+    // property frame by frame; their own layout transitions would chase it.
+    const dockMoving = Platform.OS === 'web' && (navDock.moving || topDock.moving);
+    const rootData = (frameScope: string | null) =>
+      frameScope || dockMoving
+        ? {
+            dataSet: {
+              ...(frameScope ? { bloomShellFrame: frameScope } : {}),
+              ...(dockMoving ? { bloomDockMoving: 'true' } : {}),
+            },
+          }
+        : {};
+
     if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
       return safeFrame(
         <AppShellProvider value={shell}>
@@ -1374,11 +1594,12 @@ export function createAppShellEngine() {
           {withFrameSwipe(
             <View
               {...dirProps}
+              {...rootData(null)}
               testID={testID}
               onLayout={onLayout}
               style={[
                 frame,
-                revealTransition,
+                dockRootStyle(docks, revealTransition) ?? revealTransition,
                 {
                   overflow:
                     Platform.OS === 'web' ? (isOpen ? WEB_OVERFLOW_CLIP : 'visible') : 'hidden',
@@ -1557,9 +1778,15 @@ export function createAppShellEngine() {
           {withFrameSwipe(
             <View
               {...dirProps}
+              {...rootData(null)}
               testID={testID}
               onLayout={onLayout}
-              style={[frame, { flexDirection: 'column', backgroundColor: background }, style]}
+              style={[
+                frame,
+                { flexDirection: 'column', backgroundColor: background },
+                dockRootStyle(docks),
+                style,
+              ]}
             >
               {topBarNode}
               <View
@@ -1585,10 +1812,10 @@ export function createAppShellEngine() {
         {withFrameSwipe(
           <View
             {...dirProps}
-            {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
+            {...rootData(cssScope)}
             testID={testID}
             onLayout={cssScope ? undefined : onLayout}
-            style={[frame, rowStyle, style]}
+            style={[frame, rowStyle, dockRootStyle(docks), style]}
           >
             {navRegion}
             {drawerRegion}
