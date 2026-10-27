@@ -919,6 +919,7 @@ function QuestionnaireComponent({
   onComplete,
   onDismiss,
   advanceDelay = 180,
+  footer = true,
   labels,
   style,
   testID,
@@ -1164,6 +1165,14 @@ function QuestionnaireComponent({
             {q.question}
           </Text>
         </View>
+        {q.detail != null ? (
+          <View
+            testID={rowTestID('detail')}
+            style={{ paddingLeft: 2, paddingRight: onDismiss ? 28 : 0 }}
+          >
+            {q.detail}
+          </View>
+        ) : null}
         <View
           role="group"
           aria-labelledby={interactive ? headingId : undefined}
@@ -1329,54 +1338,56 @@ function QuestionnaireComponent({
             />
           ) : null}
 
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: 16,
-              paddingTop: 2,
-            }}
-          >
-            <StepPills
-              questions={questions}
-              step={step}
-              onSelect={goTo}
-              label={text.steps}
-              palette={palette}
-              testID={testID ? `${testID}-step` : undefined}
-            />
+          {footer ? (
             <View
               style={{
                 flexDirection: 'row',
-                flexShrink: 0,
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                gap: 8,
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                gap: 16,
+                paddingTop: 2,
               }}
             >
-              <Button
-                size="sm"
-                disabled={field.disabled || step === 0}
-                onPress={() => goTo(step - 1)}
-                testID={testID ? `${testID}-previous` : undefined}
-                appearance="subtle"
-                tone="neutral"
+              <StepPills
+                questions={questions}
+                step={step}
+                onSelect={goTo}
+                label={text.steps}
+                palette={palette}
+                testID={testID ? `${testID}-step` : undefined}
+              />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexShrink: 0,
+                  alignItems: 'center',
+                  justifyContent: 'flex-end',
+                  gap: 8,
+                }}
               >
-                {text.previous}
-              </Button>
-              <Button
-                size="sm"
-                disabled={field.disabled}
-                onPress={() => finish(answersRef.current)}
-                testID={testID ? `${testID}-next` : undefined}
-                appearance="solid"
-                tone="accent"
-              >
-                {isLast ? text.complete : text.next}
-              </Button>
+                <Button
+                  size="sm"
+                  disabled={field.disabled || step === 0}
+                  onPress={() => goTo(step - 1)}
+                  testID={testID ? `${testID}-previous` : undefined}
+                  appearance="subtle"
+                  tone="neutral"
+                >
+                  {text.previous}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={field.disabled}
+                  onPress={() => finish(answersRef.current)}
+                  testID={testID ? `${testID}-next` : undefined}
+                  appearance="solid"
+                  tone="accent"
+                >
+                  {isLast ? text.complete : text.next}
+                </Button>
+              </View>
             </View>
-          </View>
+          ) : null}
         </SurfaceLevelProvider>
       </FieldConstraintScope>
     </View>

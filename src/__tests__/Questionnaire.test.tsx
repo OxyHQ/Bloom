@@ -200,6 +200,60 @@ describe('Questionnaire', () => {
       });
     }
   });
+
+  it('draws a question detail between the prompt and the answers', () => {
+    const { getByTestId, toJSON } = renderQ(
+      <Questionnaire
+        testID="q"
+        select="single"
+        questions={[
+          {
+            id: 'read',
+            question: 'Let Alia read this tab?',
+            detail: 'Cell Biology Notes',
+            options: [{ value: 'allow', label: 'Allow' }],
+          },
+        ]}
+      />,
+    );
+    expect(getByTestId('q-detail')).toBeTruthy();
+    const tree = JSON.stringify(toJSON());
+    expect(tree.indexOf('Let Alia read this tab?')).toBeLessThan(
+      tree.indexOf('Cell Biology Notes'),
+    );
+    expect(tree.indexOf('Cell Biology Notes')).toBeLessThan(tree.indexOf('Allow'));
+  });
+
+  it('drops the step pills and Previous / Next with footer={false}, and a pick still completes', () => {
+    jest.useFakeTimers();
+    const onComplete = jest.fn();
+    const { getByTestId, queryByTestId } = renderQ(
+      <Questionnaire
+        testID="q"
+        select="single"
+        footer={false}
+        onComplete={onComplete}
+        questions={[
+          {
+            id: 'read',
+            question: 'Let Alia read this tab?',
+            options: [
+              { value: 'allow', label: 'Allow' },
+              { value: 'deny', label: "Don't Allow" },
+            ],
+          },
+        ]}
+      />,
+    );
+    expect(queryByTestId('q-next')).toBeNull();
+    expect(queryByTestId('q-previous')).toBeNull();
+    expect(queryByTestId('q-step-0')).toBeNull();
+    pressHost(getByTestId('q-option-deny'));
+    act(() => {
+      jest.advanceTimersByTime(180);
+    });
+    expect(onComplete).toHaveBeenCalledWith({ read: { values: ['deny'] } });
+  });
 });
 
 it('resolves choice chrome against the actual custom backing', () => {

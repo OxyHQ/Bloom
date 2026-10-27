@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.54.0
+
+### Added
+
+- **agent-chat: `AgentChatHistory` can be a chat panel's history.** `framed={false}` (what the workspace already used inside) is public: the rail fills its container and paints nothing. `query` / `onQueryChange` draw the conversation-list search pill, filtering nothing themselves; a thread's `group` captions contiguous runs ("Today", "Previous 7 Days") in place of "Recent"; `onEndReached` (once per approach, `onEndReachedThreshold` 200) and `after` page a long history. Astro's chat sidebar drew all of this by hand beside a rail that could not.
+- **questionnaire: `detail` on a question and `footer={false}`.** `detail` draws what the question is about between the prompt and the answers; `footer={false}` drops the step pills and Previous / Next for one `single` question that a pick answers. Together they make an agent's tool approval (Allow, Always Allow in This Chat, Don't Allow, over the tabs it would open) the same docked question card as any other, where Astro had drawn its own.
+
+### Consumers
+
+Bump to 15.54.0. Defaults are unchanged.
+
 ## 15.51.0
 
 ### Added

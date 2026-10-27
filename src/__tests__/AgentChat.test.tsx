@@ -293,6 +293,87 @@ describe('AgentChatActions', () => {
 });
 
 describe('AgentChatHistory', () => {
+  it('fills its container unframed, painting nothing of its own', () => {
+    const { getByTestId, queryByTestId } = renderIn(
+      <AgentChatHistory testID="h" threads={THREADS} framed={false} />,
+    );
+    const rail = resolvedStyle(getByTestId('h').props.style);
+    expect(rail.width).toBe('100%');
+    expect(rail.borderRadius).toBeUndefined();
+    expect(rail.backgroundColor).toBeUndefined();
+    expect(queryByTestId('h-new')).toBeTruthy();
+  });
+
+  it('captions contiguous groups in the order given, instead of Recent', () => {
+    const threads: AgentChatThread[] = [
+      { id: 'g1', title: 'One', updatedAt: NOW, group: 'Today' },
+      { id: 'g2', title: 'Two', updatedAt: NOW, group: 'Today' },
+      { id: 'g3', title: 'Three', updatedAt: NOW - 86_400_000, group: 'Yesterday' },
+    ];
+    const { getAllByText, queryByText, toJSON } = renderIn(
+      <AgentChatHistory testID="h" threads={threads} />,
+    );
+    expect(queryByText('Recent')).toBeNull();
+    expect(getAllByText('Today')).toHaveLength(1);
+    expect(getAllByText('Yesterday')).toHaveLength(1);
+    const order = JSON.stringify(toJSON());
+    expect(order.indexOf('Today')).toBeLessThan(order.indexOf('Two'));
+    expect(order.indexOf('Two')).toBeLessThan(order.indexOf('Yesterday'));
+    expect(order.indexOf('Yesterday')).toBeLessThan(order.indexOf('Three'));
+  });
+
+  it('reports the search text and clears it, filtering nothing itself', () => {
+    const onQueryChange = jest.fn();
+    const { getByTestId, getByText } = renderIn(
+      <AgentChatHistory
+        testID="h"
+        threads={THREADS}
+        query="pro"
+        onQueryChange={onQueryChange}
+        labels={{ search: 'Search chats' }}
+      />,
+    );
+    const input = getByTestId('h-search-input');
+    expect(input.props.placeholder).toBe('Search chats');
+    expect(input.props.value).toBe('pro');
+    fireEvent.changeText(input, 'prod');
+    expect(onQueryChange).toHaveBeenLastCalledWith('prod');
+    pressHost(getByTestId('h-search-clear'));
+    expect(onQueryChange).toHaveBeenLastCalledWith('');
+    expect(getByText('Names')).toBeTruthy();
+  });
+
+  it('asks for the next page once per approach to the end, and draws `after` instead of the empty line', () => {
+    const onEndReached = jest.fn();
+    const { getByTestId, getByText, queryByText, UNSAFE_getByType } = renderIn(
+      <AgentChatHistory
+        testID="h"
+        threads={[]}
+        onEndReached={onEndReached}
+        after={<Native.Text>Loading more</Native.Text>}
+      />,
+    );
+    expect(getByText('Loading more')).toBeTruthy();
+    expect(queryByText('Chats you start show up here.')).toBeNull();
+    expect(getByTestId('h')).toBeTruthy();
+    const scroller = UNSAFE_getByType(Native.ScrollView);
+    const at = (y: number) => ({
+      nativeEvent: {
+        contentOffset: { x: 0, y },
+        contentSize: { width: 260, height: 1000 },
+        layoutMeasurement: { width: 260, height: 400 },
+      },
+    });
+    fireEvent.scroll(scroller, at(0));
+    expect(onEndReached).not.toHaveBeenCalled();
+    fireEvent.scroll(scroller, at(450));
+    fireEvent.scroll(scroller, at(500));
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+    fireEvent.scroll(scroller, at(0));
+    fireEvent.scroll(scroller, at(500));
+    expect(onEndReached).toHaveBeenCalledTimes(2);
+  });
+
   it('keeps the rail geometry: 260 wide, radius 24, padding 12, gap 24', () => {
     const { getByTestId } = renderIn(<AgentChatHistory testID="h" threads={THREADS} />);
     expect(resolvedStyle(getByTestId('h').props.style)).toMatchObject({

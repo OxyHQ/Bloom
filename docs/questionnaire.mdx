@@ -54,6 +54,22 @@ The card fills its container's width. It holds only interaction state; sending t
 
 Keyed by question id: `{ values, other? }` — the selected option values in OPTION order (not press order), plus `other` while the free-text row is selected. `step` / `answers` are controllable (`defaultStep` / `defaultAnswers` otherwise); `onStepChange` and `onAnswersChange` report every change, `onComplete` fires with every answer when the last question is answered (Next on the last step reads "Done").
 
+## What a question is about, and a question with nothing to step through
+
+A question's `detail` sits between the prompt and the answers, 2px in like the prompt: the tabs a tool asks to open, the file it would delete. It takes text or any node; the card's gap spaces it.
+
+`footer={false}` drops the step pills and Previous / Next. It is for one `single` question answered by picking a row — an approval an agent docks over the composer (Allow, Always Allow in This Chat, Don't Allow): picking already completes it, so the footer had nothing left to do but say "Step 1". The digit keys still pick. A `multiple` question, or one with an "Other" row, still needs Next; keep the footer there.
+
+```tsx
+<Questionnaire
+  select="single"
+  footer={false}
+  advanceDelay={0}
+  questions={[{ id: call.id, question: 'Let Alia read this tab?', detail: <TabList tabs={call.tabs} />, options: APPROVAL }]}
+  onComplete={(answers) => answer(call.id, answers[call.id]?.values[0])}
+/>
+```
+
 ## Geometry
 
 | Part | Value |
@@ -104,7 +120,7 @@ Same layout, paint and motion; no hover (a held press paints the pressed state),
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `questions` | `QuestionnaireQuestion[]` | — | `{ id, question, select?, options: { value, label, description? }[], other?, stepLabel? }`. |
+| `questions` | `QuestionnaireQuestion[]` | — | `{ id, question, detail?, select?, options: { value, label, description? }[], other?, stepLabel? }`. |
 | `select?` | `'single' \| 'multiple'` | `'multiple'` | Mode for questions that don't set their own. |
 | `step?` / `defaultStep?` | `number` | `0` | Visible question (zero-based), controlled / initial. |
 | `onStepChange?` | `(step) => void` | — | Every step change. |
@@ -113,8 +129,9 @@ Same layout, paint and motion; no hover (a held press paints the pressed state),
 | `onComplete?` | `(answers) => void` | — | The last question was answered. |
 | `onDismiss?` | `() => void` | — | Shows the corner dismiss. |
 | `advanceDelay?` | `number` | `180` | ms a single-select pick stays visible before advancing. |
+| `footer?` | `boolean` | `true` | `false` drops the step pills and Previous / Next, for a lone `single` question answered by picking. |
 | `labels?` | `{ previous?, next?, complete?, other?, otherPlaceholder?, dismiss?, steps? }` | English | Fixed strings. |
 | `style?` | `StyleProp<ViewStyle>` | — | Card style. Override padding with longhands. |
-| `testID?` | `string` | — | Also derives `-option-<value>`, `-other`, `-other-input`, `-other-toggle`, `-dismiss`, `-step-<i>`, `-previous`, `-next`. |
+| `testID?` | `string` | — | Also derives `-detail`, `-option-<value>`, `-other`, `-other-input`, `-other-toggle`, `-dismiss`, `-step-<i>`, `-previous`, `-next`. |
 
 The questionnaire paints the shared solid Surface material on its existing keyboard/ref host. Contextual fill, custom background overrides and the published surface variable agree; keyboard navigation and question transitions keep their original nodes.

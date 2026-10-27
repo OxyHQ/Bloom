@@ -1,7 +1,14 @@
 import { ScrollArea } from '../layout/ScrollArea';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
-import { Pressable, TextInput, View, type TextStyle } from 'react-native';
+import {
+  Pressable,
+  TextInput,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  type TextStyle,
+} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -12,6 +19,7 @@ import Animated, {
 import Svg, { Path } from 'react-native-svg';
 
 import { Avatar } from '../avatar';
+import { ChatSearchField } from '../chat-list/ChatSearchField';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { RiAddLine } from '../icons/remix/RiAddLine';
@@ -232,6 +240,31 @@ function RowMenu({
         ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function GroupCaption({
+  children,
+  palette,
+  first = true,
+}: {
+  children: string;
+  palette: AgentChatPalette;
+  first?: boolean;
+}) {
+  return (
+    <Text
+      variant="body-2-medium"
+      style={{
+        paddingLeft: 8,
+        paddingRight: 8,
+        paddingBottom: 4,
+        paddingTop: first ? 0 : 12,
+        color: palette.textTertiary,
+      }}
+    >
+      {children}
+    </Text>
   );
 }
 
@@ -700,11 +733,16 @@ export function AgentChatHistoryBase({
   accountItems,
   onLogOut,
   formatAge: formatAgeProp,
+  query,
+  onQueryChange,
+  onEndReached,
+  onEndReachedThreshold = 200,
+  after,
   labels,
   style,
   testID,
   framed = true,
-}: AgentChatHistoryProps & { framed?: boolean }) {
+}: AgentChatHistoryProps) {
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const { messages } = useMessages(AGENT_CHAT_MESSAGES);
@@ -725,6 +763,19 @@ export function AgentChatHistoryBase({
   );
   const count = threads.length;
   const exportLabel = l.exportCount(count);
+  const grouped = threads.some((thread) => thread.group != null);
+  const nearEnd = useRef(false);
+  const onScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (!onEndReached) return;
+      const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+      const near =
+        contentOffset.y + layoutMeasurement.height >= contentSize.height - onEndReachedThreshold;
+      if (near && !nearEnd.current) onEndReached();
+      nearEnd.current = near;
+    },
+    [onEndReached, onEndReachedThreshold],
+  );
 
   const rail: WebCssStyle = {
     width: framed ? RAIL_WIDTH : '100%',
@@ -761,41 +812,58 @@ export function AgentChatHistoryBase({
         </Text>
       </HoverRow>
 
+      {onQueryChange ? (
+        <ChatSearchField
+          testID={testID ? `${testID}-search` : undefined}
+          value={query ?? ''}
+          onChangeText={onQueryChange}
+          onClear={() => onQueryChange('')}
+          placeholder={labels?.search}
+          style={{ marginTop: -12 }}
+        />
+      ) : null}
+
       <ScrollArea
         style={{ flex: 1, minHeight: 0 }}
         contentContainerStyle={{ flexDirection: 'column', gap: 4 }}
+        onScroll={onEndReached ? onScroll : undefined}
+        scrollEventThrottle={onEndReached ? 64 : undefined}
       >
-        <Text
-          variant="body-2-medium"
-          style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 4, color: palette.textTertiary }}
-        >
-          {l.recent}
-        </Text>
+        {grouped ? null : <GroupCaption palette={palette}>{l.recent}</GroupCaption>}
         {count === 0 ? (
-          <Text
-            variant="body-2-regular"
-            style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
-          >
-            {l.empty}
-          </Text>
+          after ? null : (
+            <Text
+              variant="body-2-regular"
+              style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
+            >
+              {l.empty}
+            </Text>
+          )
         ) : (
-          threads.map((thread) => (
-            <ThreadRow
-              key={thread.id}
-              testID={testID ? `${testID}-thread-${thread.id}` : undefined}
-              thread={thread}
-              active={thread.id === activeId}
-              disabled={disabled}
-              onSelect={onSelect}
-              onRename={onRename}
-              onToggleUnread={onToggleUnread}
-              onDelete={onDelete}
-              formatAge={formatAge}
-              labels={l}
-              palette={palette}
-            />
+          threads.map((thread, index) => (
+            <Fragment key={thread.id}>
+              {grouped && thread.group != null && thread.group !== threads[index - 1]?.group ? (
+                <GroupCaption palette={palette} first={index === 0}>
+                  {thread.group}
+                </GroupCaption>
+              ) : null}
+              <ThreadRow
+                testID={testID ? `${testID}-thread-${thread.id}` : undefined}
+                thread={thread}
+                active={thread.id === activeId}
+                disabled={disabled}
+                onSelect={onSelect}
+                onRename={onRename}
+                onToggleUnread={onToggleUnread}
+                onDelete={onDelete}
+                formatAge={formatAge}
+                labels={l}
+                palette={palette}
+              />
+            </Fragment>
           ))
         )}
+        {after}
       </ScrollArea>
 
       {account || onExport ? (

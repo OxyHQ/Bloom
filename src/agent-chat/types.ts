@@ -65,6 +65,13 @@ export interface AgentChatThread {
   /** Epoch ms of the last message; drives the compact age badge (`now`, `34m`, `5h`, `3d`). */
   updatedAt: number;
   unread?: boolean;
+  /**
+   * The section the row belongs to ("Today", "Previous 7 Days"). Contiguous
+   * threads with the same group share one caption, in the order given: the
+   * rail neither sorts nor groups for you. With any group set, the captions
+   * replace the single "Recent" one.
+   */
+  group?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -188,6 +195,8 @@ export interface AgentChatHistoryLabels {
   newChat?: string;
   /** `'Recent'` in English. */
   recent?: string;
+  /** The search field's placeholder. The search field's own localized `'Search'` by default. */
+  search?: string;
   /** `'Chats you start show up here.'` in English. */
   empty?: string;
   /** `'Rename'` in English. */
@@ -238,6 +247,25 @@ export interface AgentChatHistoryProps {
   onLogOut?: () => void;
   /** Compact age badge. Default: `relativeTime` in the locale's words (`now`, `34m`, `5h`, `3d`). */
   formatAge?: (at: number) => string;
+  /**
+   * The search field's text. With `onQueryChange` the rail draws a search
+   * field above the threads; it does not filter for you, so pass the matching
+   * `threads` (and an `empty` label that says nothing matched).
+   */
+  query?: string;
+  onQueryChange?: (query: string) => void;
+  /** The reader came near the end of the list: load the next page of threads. */
+  onEndReached?: () => void;
+  /** Distance from the end that fires `onEndReached`, px. Default `200`. */
+  onEndReachedThreshold?: number;
+  /** Under the last row: a loading line while a page arrives. With it, the empty text is not drawn. */
+  after?: ReactNode;
+  /**
+   * Paint the rail as its own 260-wide card. Default `true`. `false` fills its
+   * container and paints nothing, for a history shown inside a panel that
+   * already owns the surface (a chat sidebar's history view).
+   */
+  framed?: boolean;
   labels?: AgentChatHistoryLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
