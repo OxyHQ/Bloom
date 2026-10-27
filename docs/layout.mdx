@@ -22,6 +22,27 @@ On web the grip uses pointer capture and CSS variables for its pointer position;
 movement does not require a React update or a new bounds read on every event.
 Focus-visible and reduced-motion behavior live in its shared stylesheet.
 
+`variant` chooses how it draws:
+
+| `variant` | Draws | Strip (`thickness`) |
+| --- | --- | --- |
+| `grip` (default) | a 15×25 grip with three lines that follows the pointer along the edge, at full presence under the pointer, focus or a drag (150ms fade) | 20 |
+| `pill` | a 4×36 bar, radius 2, centred on the separator in the foreground colour (`colors.text`): nothing at rest, 32% under the pointer or keyboard focus, 55% while dragging (150ms fade) | 11 |
+
+The pill is a split's divider, measured on a desktop browser's split view: a 7px
+gap, a strip that reaches 2px into each pane, and the bar centred in it.
+`thickness` sets the strip's depth across the separator, centred on it; AppShell
+passes the gap plus 4 (`panelLayout.resizeHandle: 'pill'`). The bar is a leaf
+with no material in it, so it may fade itself. On the web its states are CSS
+(`:hover`, `:focus-visible`, the drag attribute) with no React update; native
+holds hover (pointer enter and leave, and react-native-macos's mouse events)
+and the drag in state. Its strip is placed with logical insets, so it follows
+the end edge in RTL; the panel engine mirrors the drag. Reduced motion drops the
+fade. Stories: **Composition/Layout/Resize Handle**, and **App Shell / Window ›
+Pill Dividers**. Gates: `ResizeHandlePill.test.tsx`, and in Chromium
+`scripts/verify-peek-fade-and-pill.mjs` (size, centring in the gap, the three
+states, a drag, RTL, reduced motion).
+
 `ScrollSurface` combines ScrollArea, its own scroll-metrics scope and the shared
 header EdgeScrim. `fadeBottom` adds the lower edge, and `surface` chooses the
 backing color. `className` lays out the viewport's outer host;

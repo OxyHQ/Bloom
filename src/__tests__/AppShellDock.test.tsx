@@ -10,6 +10,7 @@
  */
 import React from 'react';
 import * as ReactNative from 'react-native';
+import * as spec from '../motion/spec';
 import { act, render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
@@ -18,7 +19,14 @@ import { PortalOutlet, PortalProvider } from '../portal';
 import { AppShell, AppShellPanel, useAppShell } from '../app-shell';
 import type { AppShellContextValue } from '../app-shell/context';
 import type { AppShellProps } from '../app-shell/types';
-import { DOCK_DEFAULTS, dockExtent, dockOffset, peekOffset, resolveDock } from '../app-shell/dock';
+import {
+  DOCK_DEFAULTS,
+  dockExtent,
+  dockOffset,
+  peekFadeTarget,
+  peekOffset,
+  resolveDock,
+} from '../app-shell/dock';
 import { RiHomeLine } from '../icons/remix';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -120,6 +128,42 @@ describe('dock geometry', () => {
     expect(custom.peek).toMatchObject({ inset: 10, edge: 8, radius: 12, appearance: 'plain' });
     expect(custom.motion.hide).toEqual({ duration: 100 });
   });
+
+  it("fades a peek only when asked, on the slide's own motion unless given its own", () => {
+    expect(resolveDock({ peek: true })!.peek!.fade).toBe(false);
+    const follows = resolveDock({
+      peek: { fade: true },
+      motion: { peekIn: { duration: 180, easing: [0.215, 0.61, 0.355, 1] } },
+    })!;
+    expect(follows.peek!.fade).toBe(true);
+    expect(follows.motion.peekFadeIn).toEqual({ duration: 180, easing: [0.215, 0.61, 0.355, 1] });
+    expect(follows.motion.peekFadeOut).toEqual(DOCK_DEFAULTS.motion.peekOut);
+    const own = resolveDock({
+      peek: { fade: true },
+      motion: { peekFadeIn: { duration: 90 }, peekFadeOut: { response: 0.1, dampingRatio: 1 } },
+    })!;
+    expect(own.motion.peekFadeIn).toEqual({ duration: 90 });
+    expect(own.motion.peekFadeOut).toEqual({ response: 0.1, dampingRatio: 1 });
+    expect(own.motion.peekIn).toEqual(DOCK_DEFAULTS.motion.peekIn);
+  });
+
+  it("fades only the peek's own opening and closing", () => {
+    const dock = resolveDock({ peek: { fade: true } });
+    const at = (hidden: boolean, phase: 'closed' | 'open' | 'closing', settledHidden = true) =>
+      peekFadeTarget(dock, { hidden, phase, settledHidden });
+    expect(at(false, 'closed', false)).toEqual({ presence: 1, motion: null });
+    expect(at(true, 'closed', false)).toEqual({ presence: 1, motion: null });
+    expect(at(true, 'closed')).toEqual({ presence: 0, motion: null });
+    expect(at(true, 'open')).toEqual({ presence: 1, motion: dock!.motion.peekFadeIn });
+    expect(at(true, 'closing')).toEqual({ presence: 0, motion: dock!.motion.peekFadeOut });
+    expect(
+      peekFadeTarget(resolveDock({ peek: true }), {
+        hidden: true,
+        phase: 'closed',
+        settledHidden: true,
+      }),
+    ).toEqual({ presence: 1, motion: null });
+  });
 });
 
 describe('AppShell sidebar.dock (native)', () => {
@@ -187,6 +231,29 @@ describe('AppShell sidebar.dock (native)', () => {
     expect(peeks).toEqual([true, false]);
     expect(shell!.navigationDock.peeking).toBe(false);
     expect(style(screen, 'shell-navigation-host')).toMatchObject({ top: 0, bottom: 0 });
+  });
+
+  it('fades a fading peek in with the slide and out again, on the host itself', () => {
+    jest.useFakeTimers();
+    const animate = jest.spyOn(spec, 'animateWithSpec');
+    const fadeIn = { duration: 180, easing: [0.215, 0.61, 0.355, 1] as const };
+    const ui = () =>
+      windowShell(
+        {},
+        { peek: { fade: true }, defaultHidden: true, motion: { peekIn: fadeIn, peekOut: fadeIn } },
+      );
+    const screen = render(ui());
+    expect(style(screen, 'shell-navigation-host').opacity).toBe(1);
+    act(() => shell!.navigationDock.peek(true));
+    expect(animate).toHaveBeenCalledWith(expect.anything(), 1, fadeIn, expect.anything());
+    settle(screen, ui);
+    expect(style(screen, 'shell-navigation-host').opacity).toBe(1);
+    act(() => shell!.navigationDock.peek(false));
+    act(() => jest.advanceTimersByTime(DOCK_DEFAULTS.peek.hideDelay));
+    expect(animate).toHaveBeenCalledWith(expect.anything(), 0, fadeIn, expect.anything());
+    settle(screen, ui);
+    // Out of the peek it is whole again, wherever it is.
+    expect(style(screen, 'shell-navigation-host').opacity).toBe(1);
   });
 
   it('docks from a peek in place', () => {

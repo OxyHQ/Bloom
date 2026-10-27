@@ -7,6 +7,7 @@ export type ResponsivePanelAxis =
   | ({ base?: PanelAxis } & Partial<Record<Breakpoint, PanelAxis>>);
 import type { AppShellBreakpoint, AppShellPanelProps } from './types';
 import type { MotionSpec } from '../motion/spec';
+import type { ResizeHandleVariant } from '../layout/types';
 
 export interface PanelNavigationEntry {
   key: string;
@@ -121,6 +122,13 @@ export interface AppShellPanelLayout {
    */
   spans?: Readonly<Record<string, number>>;
   onSpansChange?: (spans: Readonly<Record<string, number>>) => void;
+  /**
+   * How the resize handles between panels draw: `grip` (default), a grip that
+   * follows the pointer along the edge; `pill`, a 4×36 bar centred in the gap
+   * that shows under the pointer and while dragging, its hit strip the gap
+   * plus 2px of each pane.
+   */
+  resizeHandle?: ResizeHandleVariant;
   /** Edge targets for a drag the application owns (a tab, a file, a card). */
   drop?: AppShellPanelDrop;
 }

@@ -46,9 +46,26 @@ export interface ScrollBarProps {
   insets?: { start?: number; end?: number };
 }
 
+/**
+ * How a resize handle draws:
+ * - `grip` (default): a 15×25 grip with three lines that follows the pointer
+ *   along the edge, on a 20px strip straddling it — a panel's edge.
+ * - `pill`: a 4×36 bar, radius 2, centred on the separator in the foreground
+ *   colour, at 32% under the pointer or keyboard focus and 55% while dragging,
+ *   and nothing at rest — the divider between a split's panes.
+ */
+export type ResizeHandleVariant = 'grip' | 'pill';
+
 export interface ResizeHandleProps {
   /** Separator orientation; horizontal separators resize panel heights. */
   orientation?: 'vertical' | 'horizontal';
+  /** How the handle draws. Default `grip`. */
+  variant?: ResizeHandleVariant;
+  /**
+   * Depth of the hit strip across the separator, centred on it, px. Default 20
+   * for `grip` and 11 for `pill` (a 7px gap and 2px of each pane).
+   */
+  thickness?: number;
   /** Pointer went down on the grip. */
   onResizeStart?: () => void;
   /** Distance along the resize axis from the drag start, px. */

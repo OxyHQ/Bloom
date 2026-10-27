@@ -197,7 +197,8 @@ A motion that was measured stays a measurement: `MotionSpec` is either a
 `SpringSpec` — `{ response, dampingRatio }`, the period of the undamped
 oscillation in seconds and 1 for no overshoot — or the existing timing shape
 `{ duration, easing: [x1, y1, x2, y2] }`. Components that take motion as data
-(`AppShell`'s dock, `AutoHideBar`, panel drop zones) accept either.
+(`AppShell`'s dock and its peek's fade, `AutoHideBar`, panel drop zones) accept
+either.
 
 ```tsx
 import { animateWithSpec, motionCss, springProgressAt } from '@oxy.so/bloom/motion';

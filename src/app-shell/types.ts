@@ -58,6 +58,13 @@ export interface AppShellDockPeek {
    * `plain` paints nothing, for content that draws its own backing.
    */
   appearance?: 'surface' | 'plain';
+  /**
+   * Fade the floating region in as it slides in and out as it slides out:
+   * its backing and its content, piece by piece, with any material inside
+   * following through its surface presence (never an opacity on a material
+   * host or its ancestors). Default false: it slides without fading.
+   */
+  fade?: boolean;
 }
 
 /** Motion as data (`@oxy.so/bloom/motion` `MotionSpec`): a spring or a timed curve. */
@@ -70,6 +77,10 @@ export interface AppShellDockMotion {
   peekIn?: MotionSpec;
   /** The peek sliding out. Default: 150 ms, cubic-bezier(0.645, 0.045, 0.355, 1). */
   peekOut?: MotionSpec;
+  /** The peek fading in, with `peek.fade`. Default: `peekIn`, so the fade follows the slide. */
+  peekFadeIn?: MotionSpec;
+  /** The peek fading out, with `peek.fade`. Default: `peekOut`. */
+  peekFadeOut?: MotionSpec;
 }
 
 /**
