@@ -18,6 +18,11 @@ export interface QuestionnaireQuestion {
   question: string;
   /** Overrides the card-level `select` for this question. */
   select?: QuestionnaireSelect;
+  /**
+   * What the question is about, drawn between the prompt and the answers: the
+   * tabs a tool would open, the file it would delete. Text or any node.
+   */
+  detail?: ReactNode;
   options: ReadonlyArray<QuestionnaireOption>;
   /** Adds a free-text "Other" row after the options; pass an object to reword it. */
   other?: boolean | { label?: string; placeholder?: string };
@@ -71,6 +76,13 @@ export interface QuestionnaireProps {
   onComplete?: (answers: QuestionnaireAnswers) => void;
   /** Shows the dismiss control in the corner and receives its press. */
   onDismiss?: () => void;
+  /**
+   * Draw the step pills and Previous / Next. Default `true`. `false` is for a
+   * lone `single` question that is answered by picking a row (an approval:
+   * Allow, Always Allow, Don't Allow): its footer has nothing left to do. A
+   * `multiple` question or an "Other" row still needs Next, so keep it there.
+   */
+  footer?: boolean;
   /** How long a single-select pick stays visible before the next question slides in (ms). Default `180`. */
   advanceDelay?: number;
   labels?: QuestionnaireLabels;
