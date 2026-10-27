@@ -1199,25 +1199,27 @@ export function createAppShellEngine() {
         </View>
       </>
     );
+    // Only the modes the compiled CSS can reach are rendered: a navigation with
+    // an explicit variant and no expanded tier is that variant at every width,
+    // so it mounts its content once instead of once per mode.
+    const reachableNavModes: readonly ('panel' | 'rail')[] =
+      panelFrom !== undefined
+        ? ['panel', 'rail']
+        : [sidebar?.variant === 'rail' ? 'rail' : 'panel'];
     const cssNavigationModes =
       cssScope && flowSidebar ? (
         <>
-          <View
-            {...{ dataSet: { bloomShellNavMode: 'panel' } }}
-            aria-hidden={cssShell?.mode !== 'panel'}
-            {...(cssShell?.mode !== 'panel' ? { inert: true } : {})}
-            style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
-          >
-            {safeNavigation(<SidebarSlot {...flowSidebar} variant="panel" />)}
-          </View>
-          <View
-            {...{ dataSet: { bloomShellNavMode: 'rail' } }}
-            aria-hidden={cssShell?.mode !== 'rail'}
-            {...(cssShell?.mode !== 'rail' ? { inert: true } : {})}
-            style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
-          >
-            {safeNavigation(<SidebarSlot {...flowSidebar} variant="rail" />)}
-          </View>
+          {reachableNavModes.map((mode) => (
+            <View
+              key={mode}
+              {...{ dataSet: { bloomShellNavMode: mode } }}
+              aria-hidden={cssShell?.mode !== mode}
+              {...(cssShell?.mode !== mode ? { inert: true } : {})}
+              style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
+            >
+              {safeNavigation(<SidebarSlot {...flowSidebar} variant={mode} />)}
+            </View>
+          ))}
         </>
       ) : null;
     const navRegion =

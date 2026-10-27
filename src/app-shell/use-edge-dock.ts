@@ -220,6 +220,7 @@ export function useEdgeDock(
         ? {
             available: enabled,
             hidden,
+            moving,
             setHidden,
             toggleHidden: () => setHidden(!storedHidden),
             peeking: phase !== 'closed',
@@ -228,7 +229,18 @@ export function useEdgeDock(
             peekProgress,
           }
         : NO_DOCK,
-    [resolved, enabled, hidden, setHidden, storedHidden, phase, peek, progress, peekProgress],
+    [
+      resolved,
+      enabled,
+      hidden,
+      moving,
+      setHidden,
+      storedHidden,
+      phase,
+      peek,
+      progress,
+      peekProgress,
+    ],
   );
 
   return {

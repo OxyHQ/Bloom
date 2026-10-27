@@ -125,8 +125,29 @@ describe('dock geometry', () => {
       peek: { inset: 10, edge: Number.NaN, appearance: 'plain' },
       motion: { show: { duration: 100 } },
     })!;
-    expect(custom.peek).toMatchObject({ inset: 10, edge: 8, radius: 12, appearance: 'plain' });
+    expect(custom.peek).toMatchObject({
+      inset: { top: 10, bottom: 10, start: 10, end: 10 },
+      edge: 8,
+      radius: 12,
+      appearance: 'plain',
+      chrome: {},
+    });
     expect(custom.motion.hide).toEqual({ duration: 100 });
+  });
+
+  it('resolves a per-edge inset, each missing or invalid edge at the default', () => {
+    expect(resolveDock({ peek: { inset: { top: 4, start: 6, end: 6 } } })!.peek!.inset).toEqual({
+      top: 4,
+      bottom: 5,
+      start: 6,
+      end: 6,
+    });
+    expect(resolveDock({ peek: { inset: { top: -3, end: Number.NaN } } })!.peek!.inset).toEqual({
+      top: 0,
+      bottom: 5,
+      start: 5,
+      end: 5,
+    });
   });
 
   it("fades a peek only when asked, on the slide's own motion unless given its own", () => {
@@ -231,6 +252,60 @@ describe('AppShell sidebar.dock (native)', () => {
     expect(peeks).toEqual([true, false]);
     expect(shell!.navigationDock.peeking).toBe(false);
     expect(style(screen, 'shell-navigation-host')).toMatchObject({ top: 0, bottom: 0 });
+  });
+
+  it('places a peek by its own edges and paints the backing it is given, its shadow outside the clip', () => {
+    const shadow = '0px 6px 20px rgba(0, 0, 0, 0.2)';
+    const screen = render(
+      windowShell(
+        {},
+        {
+          peek: {
+            inset: { top: 4, bottom: 9, start: 6 },
+            chrome: { surface: '#f4e9ee', border: '#d8c8d0', borderWidth: 0.5, shadow },
+          },
+          defaultHidden: true,
+        },
+      ),
+    );
+    act(() => shell!.navigationDock.peek(true));
+    const host = style(screen, 'shell-navigation-host');
+    expect(host).toMatchObject({ top: 4, bottom: 9, insetInlineStart: 6, borderRadius: 12 });
+    expect(host.overflow).toBeUndefined();
+    expect(style(screen, 'shell-navigation-host-clip')).toMatchObject({
+      borderRadius: 12,
+      overflow: 'hidden',
+    });
+    const backing = screen
+      .getByTestId('shell-navigation-host-content', { includeHiddenElements: true })
+      .children.find(
+        (child) =>
+          typeof child !== 'string' &&
+          resolvedStyle(child.props.style).backgroundColor === '#f4e9ee',
+      );
+    expect(backing).toBeTruthy();
+    expect(
+      resolvedStyle((backing as unknown as { props: { style: unknown } }).props.style),
+    ).toMatchObject({
+      borderColor: '#d8c8d0',
+      borderWidth: 0.5,
+      boxShadow: shadow,
+    });
+  });
+
+  it('leaves a manual peek to its host: the pointer leaving the region does not close it', () => {
+    jest.useFakeTimers();
+    const screen = render(windowShell({}, { peek: { trigger: 'manual' }, defaultHidden: true }));
+    expect(screen.queryByTestId('shell-navigation-edge')).toBeNull();
+    act(() => shell!.navigationDock.peek(true));
+    const host = screen.getByTestId('shell-navigation-host', { includeHiddenElements: true });
+    expect(host.props.onPointerLeave).toBeUndefined();
+    expect(host.props.onPointerEnter).toBeUndefined();
+    act(() => jest.advanceTimersByTime(1000));
+    expect(shell!.navigationDock.peeking).toBe(true);
+    act(() => shell!.navigationDock.peek(false));
+    act(() => jest.advanceTimersByTime(DOCK_DEFAULTS.peek.hideDelay + 500));
+    expect(shell!.navigationDock.peeking).toBe(false);
   });
 
   it('fades a fading peek in with the slide and out again, on the host itself', () => {

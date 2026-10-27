@@ -62,12 +62,18 @@ export type {
   PanelNavigationController,
   PanelNavigationOptions,
 } from './panel-layout-types';
-export type { AppShellContextValue, AppShellPanelValue } from './context';
+export type { AppShellContextValue, AppShellDockState, AppShellPanelValue } from './context';
 export { NotificationBell } from './NotificationBell';
 export { ProOfferCard } from './ProOfferCard';
 
 export type {
   AppShellSidebarProps,
+  AppShellDock,
+  AppShellDockMotion,
+  AppShellDockPeek,
+  AppShellDockPeekChrome,
+  AppShellEdge,
+  AppShellEdges,
   AppShellNavigationPlacement,
   AppShellNavigationItem,
   AppShellBarVisibility,

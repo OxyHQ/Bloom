@@ -34,6 +34,12 @@ export interface AppShellDockState {
   available: boolean;
   /** Out of the layout right now. */
   hidden: boolean;
+  /**
+   * Hiding or showing is under way: true from the change until its motion
+   * lands. For work that should wait for the region's room to settle (laying
+   * out pages once instead of on every frame of the slide).
+   */
+  moving: boolean;
   setHidden: (hidden: boolean) => void;
   toggleHidden: () => void;
   /** Floating over the content (also while it slides out). */
@@ -57,6 +63,7 @@ export interface AppShellDockState {
 export const NO_DOCK: AppShellDockState = {
   available: false,
   hidden: false,
+  moving: false,
   setHidden: () => {},
   toggleHidden: () => {},
   peeking: false,

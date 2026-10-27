@@ -38,17 +38,37 @@ export type AppShellEdge = 'top' | 'bottom' | 'start' | 'end';
 /** A length per window edge. */
 export type AppShellEdges = Partial<Record<AppShellEdge, number>>;
 
+/** The paint of a peek's `surface` backing. */
+export interface AppShellDockPeekChrome {
+  /** Its fill. */
+  surface?: string;
+  /** Its edge colour. */
+  border?: string;
+  /** Its edge width. Default 1. */
+  borderWidth?: number;
+  /** A `box-shadow` string. */
+  shadow?: string;
+}
+
 /**
  * How a hidden region comes back while the pointer is at its edge: a floating
  * copy of the SAME mounted content, over the page, which never moves.
  */
 export interface AppShellDockPeek {
-  /** `hover` (default): Bloom's edge strip opens it. `manual`: only `useAppShell()`'s `peek()` does. */
+  /**
+   * `hover` (default): Bloom's edge strip opens it and the pointer leaving the
+   * floating region closes it. `manual`: only `useAppShell()`'s `peek()` opens
+   * and closes it, for a host that tracks the pointer itself (a native window
+   * edge watcher with its own hold region).
+   */
   trigger?: 'hover' | 'manual';
   /** Depth of the hover strip along the edge. Default 8. */
   edge?: number;
-  /** The floating panel's distance from the window's edges. Default 5. */
-  inset?: number;
+  /**
+   * The floating panel's distance from the window's edges: one number for
+   * every edge, or per edge (logical `start` / `end`). Default 5.
+   */
+  inset?: number | AppShellEdges;
   /** The floating panel's corner radius. Default 12. */
   radius?: number;
   /** How long the pointer may be away before it slides out, ms. Default 120. */
@@ -58,6 +78,13 @@ export interface AppShellDockPeek {
    * `plain` paints nothing, for content that draws its own backing.
    */
   appearance?: 'surface' | 'plain';
+  /**
+   * The `surface` backing's paint, for a region whose own palette is not the
+   * theme's (a window tinted by its profile). Each field defaults to the
+   * navigation's panel chrome; the shadow falls outside the region's rounded
+   * clip.
+   */
+  chrome?: AppShellDockPeekChrome;
   /**
    * Fade the floating region in as it slides in and out as it slides out:
    * its backing and its content, piece by piece, with any material inside

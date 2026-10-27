@@ -2,6 +2,26 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.57.0
+
+### Added
+
+- **app-shell: `useAppShell()`'s `navigationDock.moving` / `topBarDock.moving`.** True from a hide or show until its motion lands, so an app can lay its pages out once when the region's room has settled instead of on every frame of the slide.
+- **app-shell: a peek's own backing and per-edge inset (`peek.chrome`, `peek.inset` as `{ top, bottom, start, end }`).** `chrome` gives the `surface` backing its `surface`, `border`, `borderWidth` and `shadow` for a region whose palette is not the theme's (a window tinted by its profile); a desktop browser's top-strip peek sits 4 from the top and 6 from the sides. The dock types (`AppShellDock`, `AppShellDockPeek`, `AppShellDockPeekChrome`, `AppShellDockMotion`, `AppShellDockState`, `AppShellEdges`) are exported.
+
+### Changed
+
+- **app-shell: a `manual` peek is its host's to close.** With `peek.trigger: 'manual'` the floating region no longer closes when the pointer leaves it; the host that opened it (a native window edge watcher with its own hold region, the panel plus some slack) calls `peek(false)`. `hover` is unchanged.
+
+### Fixed
+
+- **app-shell: the peek's shadow is no longer cut at its edge.** The floating region clipped itself, backing and all; the content now clips inside it and the backing's shadow falls around the region.
+- **app-shell: a navigation with an explicit `variant` renders once on the web.** The CSS compositor mounted the navigation's content twice (a panel and a rail copy, one hidden by CSS) even when the rail could never show; a navigation whose variant never changes (no `navExpandedFrom` tier) now mounts only its own mode, halving its render work and its subscriptions.
+
+### Consumers
+
+Bump to 15.57.0. Everything is opt-in except the two fixes and the `manual` peek's close, whose only consumer (Astro) drives it from its edge watcher.
+
 ## 15.56.1
 
 ### Fixed

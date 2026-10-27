@@ -19,7 +19,14 @@ import type { PanelChrome } from '../styles/panel-chrome';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { useSurfacePresenceContent } from '../surface/use-surface-presence';
-import { dockExtent, dockOffset, peekFadeTarget, peekOffset, DOCK_DEFAULTS } from './dock';
+import {
+  dockExtent,
+  dockOffset,
+  peekFadeTarget,
+  peekOffset,
+  resolvePeekInsets,
+  DOCK_DEFAULTS,
+} from './dock';
 import type { EdgeDock } from './use-edge-dock';
 
 /**
@@ -191,16 +198,16 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
       : { ...opacity, transform: [{ translateY: offset }] };
   }, [floating, numericSize, measured, progress, peekProgress, flip, axis, fades, fadeProgress]);
 
-  const inset = peek?.inset ?? DOCK_DEFAULTS.peek.inset;
+  const inset = peek?.inset ?? resolvePeekInsets(DOCK_DEFAULTS.peek.inset);
   const radius = peek?.radius ?? DOCK_DEFAULTS.peek.radius;
   const placement: WebCssStyle =
     axis === 'start'
       ? floating
         ? {
             position: 'absolute',
-            top: inset - origin.top,
-            bottom: inset - origin.bottom,
-            insetInlineStart: inset - origin.start,
+            top: inset.top - origin.top,
+            bottom: inset.bottom - origin.bottom,
+            insetInlineStart: inset.start - origin.start,
             width: typeof size === 'number' ? size : cssLength(size ?? '0px'),
           }
         : {
@@ -213,14 +220,16 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
       : floating
         ? {
             position: 'absolute',
-            top: inset,
-            insetInlineStart: inset,
-            insetInlineEnd: inset,
+            top: inset.top,
+            insetInlineStart: inset.start,
+            insetInlineEnd: inset.end,
           }
         : size == null && !dock.hidden
           ? // Shown before its first measurement: in flow, so the slot takes its height.
             { position: 'relative' }
           : { position: 'absolute', top: 0, insetInlineStart: 0, insetInlineEnd: 0 };
+  const hover = peek?.trigger !== 'manual';
+  const backing = peek?.chrome ?? {};
 
   let motion: WebCssStyle | null = null;
   if (IS_WEB && dock.resolved) {
@@ -264,11 +273,11 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
       importantForAccessibility={away ? 'no-hide-descendants' : 'auto'}
       {...(IS_WEB && away ? { inert: true } : {})}
       pointerEvents={away ? 'none' : 'auto'}
-      onPointerEnter={floating ? () => dock.state.peek(true) : undefined}
-      onPointerLeave={floating ? () => dock.state.peek(false) : undefined}
+      onPointerEnter={floating && hover ? () => dock.state.peek(true) : undefined}
+      onPointerLeave={floating && hover ? () => dock.state.peek(false) : undefined}
       style={[
         placement,
-        floating ? { borderRadius: radius, overflow: 'hidden' } : null,
+        floating ? { borderRadius: radius } : null,
         motion,
         IS_WEB ? null : nativeStyle,
       ]}
@@ -289,15 +298,20 @@ export function DockHost({ axis, dock, size, origin, chrome, children, testID }:
                 insetInlineStart: 0,
                 insetInlineEnd: 0,
                 borderRadius: radius,
-                backgroundColor: chrome.surface,
-                borderWidth: 1,
-                borderColor: chrome.border,
-                boxShadow: chrome.shadow,
+                backgroundColor: backing.surface ?? chrome.surface,
+                borderWidth: backing.borderWidth ?? 1,
+                borderColor: backing.border ?? chrome.border,
+                boxShadow: backing.shadow ?? chrome.shadow,
               } as WebCssStyle
             }
           />
         ) : null}
-        {children}
+        <View
+          testID={testID ? `${testID}-clip` : undefined}
+          style={[CONTENT_STYLE, floating ? { borderRadius: radius, overflow: 'hidden' } : null]}
+        >
+          {children}
+        </View>
       </View>
     </Animated.View>
   );
