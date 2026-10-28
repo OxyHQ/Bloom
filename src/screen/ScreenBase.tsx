@@ -1,16 +1,25 @@
+import { useThemeRecipe } from '../theme/use-theme-paint';
+import { resolvePaintMode } from '../theme/paint';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { flattenWebStyle } from '../styles/flatten-web-style';
 import type { ComponentType } from 'react';
 import type { ScrollBarProps } from '../layout/types';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
 import type React from 'react';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, View, StyleSheet } from 'react-native';
 import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import { useSharedValue } from 'react-native-reanimated';
-import { useSurfaceFillRecipe, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  useSurfaceFillRecipe,
+  useSurfaceLevelValue,
+  SurfaceLevelProvider,
+  surfaceFillVars,
+} from '../styles/surface-levels';
 import {
   WEB_POSITION_STICKY,
   WEB_SURFACE_STICKY_TOP,
@@ -82,7 +91,23 @@ export function createScreen(
     // On the page the canvas is the page fill. Inside a painted surface (a panel,
     // a sheet) that surface is already the paint, material and edge light included,
     // and an opaque canvas over it would hide both.
-    const onSurface = useSurfaceLevelValue() > 0;
+    const surfaceLevel = useSurfaceLevelValue();
+    const onSurface = surfaceLevel > 0;
+    const flatStyle = Platform.OS === 'web' ? flattenWebStyle(style) : StyleSheet.flatten(style);
+    const background = flatStyle?.backgroundColor;
+    const explicitFill =
+      typeof background === 'string' && background !== 'transparent' ? background : undefined;
+    const paintedSurface = useThemeRecipe((_theme, documentMode, preset) => {
+      const backing = resolvePaintMode(surfaceRecipe, documentMode, preset);
+      return explicitFill
+        ? resolveSurfaceMaterial({
+            fill: explicitFill,
+            parentFill: backing,
+            parentLevel: surfaceLevel,
+            paint: false,
+          }).publishedFill
+        : backing;
+    });
     const surfaceFill = onSurface ? 'transparent' : surfaceRecipe.paint;
     const parentScreen = useContext(ScreenContext);
     const parentViewport = useContext(ScreenViewportContext);
@@ -344,178 +369,191 @@ export function createScreen(
       </Footer>
     ) : null;
     return (
-      <ScreenActionOwnerContext.Provider value="route">
-        <ScreenHostContext.Provider value={host}>
-          {surfaceRecipe.sheet}
-          <ScreenNavigationContext.Provider
-            value={
-              navigationScope === 'inherit'
-                ? inheritedNavigation
-                : { ...navigation, bottomInset: value.bottomInset }
-            }
-          >
-            <ScreenContext.Provider value={value}>
-              <ScreenViewportContext.Provider
-                value={ownsViewport ? viewport.value : parentViewport}
-              >
-                <ScrollMetricsContext.Provider
-                  value={ownsViewport ? viewport.value.metrics : inheritedMetrics}
+      <SurfaceLevelProvider
+        level={surfaceLevel}
+        fill={paintedSurface.current}
+        fillModes={paintedSurface}
+      >
+        <ScreenActionOwnerContext.Provider value="route">
+          <ScreenHostContext.Provider value={host}>
+            {surfaceRecipe.sheet}
+            {paintedSurface.sheet}
+            <ScreenNavigationContext.Provider
+              value={
+                navigationScope === 'inherit'
+                  ? inheritedNavigation
+                  : { ...navigation, bottomInset: value.bottomInset }
+              }
+            >
+              <ScreenContext.Provider value={value}>
+                <ScreenViewportContext.Provider
+                  value={ownsViewport ? viewport.value : parentViewport}
                 >
-                  <ScrollOffsetProvider value={ownsViewport ? value.scrollY : inheritedOffset}>
-                    <View
-                      {...props}
-                      testID={testID}
-                      style={[
-                        document
-                          ? {
-                              minHeight: pageMinHeight,
-                              width: '100%',
-                              position: 'relative',
-                              backgroundColor: surfaceFill,
-                            }
-                          : {
-                              flexGrow: 1,
-                              flexShrink: 1,
-                              flexBasis: contentSized ? 'auto' : 0,
-                              minHeight: 0,
-                              position: 'relative',
-                              backgroundColor: surfaceFill,
-                            },
-                        viewportCss,
-                        style,
-                      ]}
-                    >
-                      {ownWebViewport &&
-                      restoration &&
-                      host.restoreScroll !== false &&
-                      !(document && host.restoresDocument) ? (
-                        <ScreenViewportRestoration
-                          target={document ? 'window' : viewport.scrollRef}
-                          active={active}
-                          restoring={viewport.restoring}
-                        />
-                      ) : null}
-                      {headerNode}
+                  <ScrollMetricsContext.Provider
+                    value={ownsViewport ? viewport.value.metrics : inheritedMetrics}
+                  >
+                    <ScrollOffsetProvider value={ownsViewport ? value.scrollY : inheritedOffset}>
                       <View
-                        testID={testID ? `${testID}-content` : undefined}
-                        style={
+                        {...props}
+                        testID={testID}
+                        style={[
                           document
                             ? {
+                                minHeight: pageMinHeight,
+                                width: '100%',
                                 position: 'relative',
-                                zIndex: 0,
-                                flexGrow: 1,
-                                flexShrink: 0,
-                                paddingTop: reservedTop,
-                                paddingBottom: hasBottom
-                                  ? bottom + navigationEdge + contentClearance
-                                  : 0,
+                                backgroundColor: surfaceFill,
                               }
                             : {
-                                position: 'relative',
-                                zIndex: 0,
                                 flexGrow: 1,
                                 flexShrink: 1,
                                 flexBasis: contentSized ? 'auto' : 0,
                                 minHeight: 0,
-                                minWidth: 0,
-                                ...((ownsViewport && !ownWebViewport) || scroll === 'none'
-                                  ? {
-                                      paddingTop: reservedTop,
-                                      paddingBottom:
-                                        (keyboardFollow && scroll !== 'none') || bottomOverlaid
-                                          ? 0
-                                          : reservedBottom,
-                                    }
-                                  : {}),
-                              }
-                        }
+                                position: 'relative',
+                                backgroundColor: surfaceFill,
+                              },
+                          surfaceFillVars(paintedSurface.paint),
+                          viewportCss,
+                          style,
+                        ]}
                       >
-                        {/* Keep routed children at one tree position when scroll ownership
+                        {ownWebViewport &&
+                        restoration &&
+                        host.restoreScroll !== false &&
+                        !(document && host.restoresDocument) ? (
+                          <ScreenViewportRestoration
+                            target={document ? 'window' : viewport.scrollRef}
+                            active={active}
+                            restoring={viewport.restoring}
+                          />
+                        ) : null}
+                        {headerNode}
+                        <View
+                          testID={testID ? `${testID}-content` : undefined}
+                          style={
+                            document
+                              ? {
+                                  position: 'relative',
+                                  zIndex: 0,
+                                  flexGrow: 1,
+                                  flexShrink: 0,
+                                  paddingTop: reservedTop,
+                                  paddingBottom: hasBottom
+                                    ? bottom + navigationEdge + contentClearance
+                                    : 0,
+                                }
+                              : {
+                                  position: 'relative',
+                                  zIndex: 0,
+                                  flexGrow: 1,
+                                  flexShrink: 1,
+                                  flexBasis: contentSized ? 'auto' : 0,
+                                  minHeight: 0,
+                                  minWidth: 0,
+                                  ...((ownsViewport && !ownWebViewport) || scroll === 'none'
+                                    ? {
+                                        paddingTop: reservedTop,
+                                        paddingBottom:
+                                          (keyboardFollow && scroll !== 'none') || bottomOverlaid
+                                            ? 0
+                                            : reservedBottom,
+                                      }
+                                    : {}),
+                                }
+                          }
+                        >
+                          {/* Keep routed children at one tree position when scroll ownership
                             changes. Non-owning web wrappers create no layout boxes. */}
-                        {Platform.OS === 'web' ? (
-                          <View
-                            ref={
-                              ownWebViewport
-                                ? (viewport.scrollRef as React.Ref<React.ElementRef<typeof View>>)
-                                : undefined
-                            }
-                            {...{
-                              dataSet: ownWebViewport
-                                ? { bloomScreenViewport: document ? 'document' : 'element' }
-                                : undefined,
-                            }}
-                            testID={ownWebViewport && testID ? `${testID}-viewport` : undefined}
-                            style={
-                              ownWebViewport
-                                ? [
-                                    {
-                                      minHeight: 0,
-                                      minWidth: 0,
-                                      flexGrow: 1,
-                                      flexShrink: document ? 0 : 1,
-                                      flexBasis: document || contentSized ? 'auto' : 0,
-                                    },
-                                    {
-                                      overflowX: document ? 'visible' : 'hidden',
-                                      overflowY: document ? 'visible' : 'auto',
-                                      overscrollBehaviorY: document ? undefined : 'contain',
-                                      ...(document
-                                        ? {}
-                                        : { containerType: contentSized ? 'inline-size' : 'size' }),
-                                    } as WebCssStyle,
-                                  ]
-                                : { display: 'contents' }
-                            }
-                          >
+                          {Platform.OS === 'web' ? (
                             <View
                               ref={
                                 ownWebViewport
-                                  ? (viewport.contentRef as React.Ref<
-                                      React.ElementRef<typeof View>
-                                    >)
+                                  ? (viewport.scrollRef as React.Ref<React.ElementRef<typeof View>>)
                                   : undefined
                               }
-                              testID={
-                                ownWebViewport && testID ? `${testID}-scroll-content` : undefined
-                              }
+                              {...{
+                                dataSet: ownWebViewport
+                                  ? { bloomScreenViewport: document ? 'document' : 'element' }
+                                  : undefined,
+                              }}
+                              testID={ownWebViewport && testID ? `${testID}-viewport` : undefined}
                               style={
                                 ownWebViewport
-                                  ? {
-                                      minWidth: 0,
-                                      flexGrow: 1,
-                                      flexShrink: 0,
-                                      ...(!document
-                                        ? { paddingTop: reservedTop, paddingBottom: reservedBottom }
-                                        : {}),
-                                    }
+                                  ? [
+                                      {
+                                        minHeight: 0,
+                                        minWidth: 0,
+                                        flexGrow: 1,
+                                        flexShrink: document ? 0 : 1,
+                                        flexBasis: document || contentSized ? 'auto' : 0,
+                                      },
+                                      {
+                                        overflowX: document ? 'visible' : 'hidden',
+                                        overflowY: document ? 'visible' : 'auto',
+                                        overscrollBehaviorY: document ? undefined : 'contain',
+                                        ...(document
+                                          ? {}
+                                          : {
+                                              containerType: contentSized ? 'inline-size' : 'size',
+                                            }),
+                                      } as WebCssStyle,
+                                    ]
                                   : { display: 'contents' }
                               }
                             >
-                              {children}
+                              <View
+                                ref={
+                                  ownWebViewport
+                                    ? (viewport.contentRef as React.Ref<
+                                        React.ElementRef<typeof View>
+                                      >)
+                                    : undefined
+                                }
+                                testID={
+                                  ownWebViewport && testID ? `${testID}-scroll-content` : undefined
+                                }
+                                style={
+                                  ownWebViewport
+                                    ? {
+                                        minWidth: 0,
+                                        flexGrow: 1,
+                                        flexShrink: 0,
+                                        ...(!document
+                                          ? {
+                                              paddingTop: reservedTop,
+                                              paddingBottom: reservedBottom,
+                                            }
+                                          : {}),
+                                      }
+                                    : { display: 'contents' }
+                                }
+                              >
+                                {children}
+                              </View>
                             </View>
-                          </View>
-                        ) : (
-                          children
-                        )}
-                        {ownWebViewport && active && !document ? (
-                          <ScrollBar target={scrollbarTarget} />
-                        ) : null}
-                        {ownWebViewport && active && document && region?.flow !== 'document' ? (
-                          <ScrollBar
-                            target="document"
-                            insets={{ start: reservedTop, end: reservedBottom }}
-                          />
-                        ) : null}
+                          ) : (
+                            children
+                          )}
+                          {ownWebViewport && active && !document ? (
+                            <ScrollBar target={scrollbarTarget} />
+                          ) : null}
+                          {ownWebViewport && active && document && region?.flow !== 'document' ? (
+                            <ScrollBar
+                              target="document"
+                              insets={{ start: reservedTop, end: reservedBottom }}
+                            />
+                          ) : null}
+                        </View>
+                        {bottomNode}
                       </View>
-                      {bottomNode}
-                    </View>
-                  </ScrollOffsetProvider>
-                </ScrollMetricsContext.Provider>
-              </ScreenViewportContext.Provider>
-            </ScreenContext.Provider>
-          </ScreenNavigationContext.Provider>
-        </ScreenHostContext.Provider>
-      </ScreenActionOwnerContext.Provider>
+                    </ScrollOffsetProvider>
+                  </ScrollMetricsContext.Provider>
+                </ScreenViewportContext.Provider>
+              </ScreenContext.Provider>
+            </ScreenNavigationContext.Provider>
+          </ScreenHostContext.Provider>
+        </ScreenActionOwnerContext.Provider>
+      </SurfaceLevelProvider>
     );
   }
 

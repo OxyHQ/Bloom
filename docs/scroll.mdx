@@ -71,10 +71,23 @@ flag.
   leave the browser's own restoration disabled.
 
 
+When navigation collapses the document, the browser may clamp its offset to a
+shorter page's bottom before the outgoing screen blurs. Bloom preserves the
+previous offset only if that trusted offset exceeds the new maximum, the range
+shrank, and the observed position is at the new bottom. Merely measuring rows
+shorter than their estimates is not a navigation clamp: scrolling from above to
+the measured bottom must still be remembered.
+
 ## Layout changes are not navigation
 
 Changing a retained Screen from document flow to a bounded column transfers its
 live reading offset to the new owner; changing back transfers the latest offset.
+The transfer remains available until the incoming owner's router focus effect
+runs, including adapters that initialize navigation on a later commit. It expires
+when that Screen changes content identity, changes owner, blurs or unmounts, and
+is consumed once. Standalone Screens therefore cannot leave an offset for a
+future route on the shared window.
+
 This handoff belongs to Screen and does not need an application scroll listener,
 remount, snapshot reload or compensating scroll write. A new route or accepted
 workspace snapshot still follows the restoration rules above.

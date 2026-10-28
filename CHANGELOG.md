@@ -8,10 +8,22 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 
 - **platform-surface: the host platform's popups (`BloomProvider platform={…}`, `@oxy.so/bloom/platform-surface`).** An adapter reports what the platform can do (`capabilities`) and supplies the component that does it. With `popup-surface`, native `DropdownMenu` content is an anchored panel (`floating/PopupPanel`, the web menu panel's chrome) in the adapter's `PopupSurface`, which renders it in a popup of the platform in the same React tree. An OxyOS compositor popup can extend beyond the application window. `side` / `align` / `sideOffset` / `alignOffset` and the rows are unchanged, and the platform's dismissal closes the menu. Without an adapter, every family keeps its default presentation.
 - **Keyboard in a platform popup (`PopupSurfaceProps.onKey`).** The platform sends the keys pressed while its popup has focus as W3C key names; the panel keeps an active row (`floating/popup-navigation`), painted like hover and shared with the pointer. Arrows, Home/End and PageUp/PageDown move it, Enter/Space activate it, Escape/Tab close the menu, and typed characters find a row by its label (typeahead).
+- **Accessibility in a platform popup.** The popup surface carries the menu's role and label (named once). Screen-reader focus moves into the popup when it opens, as into a sheet, and back to the trigger when it closes.
 
 ### Consumers
 
 Bump to 15.61.0. No change unless an app registers a platform adapter.
+
+## 15.60.5
+
+### Fixed
+
+- **a11y: a text field is read where it is, on native.** `TextField`'s root box held no paint of its own, so Fabric flattened it, and its layers (`z_10` outline and ring, `z_20` input) were ordered by `zIndex` among the field's siblings. The input was then mounted after everything that follows the field in its parent, so a screen reader reached it after that content (in a form, after the next fields and buttons). The field box is now never flattened (`collapsable={false}`), so its layers stack inside it. Nothing changes visually or on web. Found by OxyOS's host accessibility tree.
+
+### Consumers
+
+Bump to 15.60.5. No API change.
+
 ## 15.60.2
 
 ### Fixed
