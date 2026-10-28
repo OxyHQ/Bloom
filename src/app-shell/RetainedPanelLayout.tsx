@@ -58,14 +58,19 @@ function boxStyle(box: RetainedBox): WebCssStyle {
   } as WebCssStyle;
 }
 
-const HIDDEN: WebCssStyle = {
+const BEHIND: WebCssStyle = {
   position: 'absolute',
   top: 0,
   bottom: 0,
   insetInlineStart: 0,
   insetInlineEnd: 0,
+  zIndex: 0,
+} as WebCssStyle;
+const HIDDEN: WebCssStyle = {
+  ...BEHIND,
   ...(IS_WEB ? { visibility: 'hidden' } : { opacity: 0 }),
 } as WebCssStyle;
+const SHOWN: ViewStyle = { zIndex: 1 };
 
 function RetainedHost({
   panel,
@@ -91,7 +96,9 @@ function RetainedHost({
       accessibilityElementsHidden={!shown}
       importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}
       pointerEvents={shown ? 'auto' : 'none'}
-      style={shown ? boxStyle(box) : HIDDEN}
+      style={
+        shown ? [boxStyle(box), SHOWN] : panel.hiddenPresentation === 'behind' ? BEHIND : HIDDEN
+      }
     >
       <AppShellPanelContext.Provider value={value}>
         <View style={CONTENT}>{panel.content as ReactNode}</View>

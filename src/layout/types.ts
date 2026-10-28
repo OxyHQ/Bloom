@@ -2,7 +2,7 @@ import type { BloomSize } from '../appearance';
 import type { ScrollHandlerProcessed } from 'react-native-reanimated';
 import type { ComponentRef, ReactNode, Ref, RefObject } from 'react';
 import type { MotionSpec } from '../motion/spec';
-import type { ScrollView, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
+import type { ScrollView, ScrollViewProps, StyleProp, View, ViewStyle } from 'react-native';
 
 /**
  * When the scrollbar is drawn:
@@ -114,6 +114,39 @@ export interface AutoHideBarMotion {
   hide?: MotionSpec;
   /** Coming back, revealed or peeked. Default ease-out-cubic over 200ms. */
   show?: MotionSpec;
+}
+
+/** What `useAutoHideBar` needs: an `AutoHideBar` without its bar, summary and body. */
+export type AutoHideBarOptions = Omit<
+  AutoHideBarProps,
+  'bar' | 'summary' | 'children' | 'style' | 'testID'
+>;
+
+/**
+ * One auto-hiding region's state and motion, from `useAutoHideBar`: hand it to
+ * `AutoHideBarBody` around the content it slides and to `AutoHideBarRegion`
+ * (or `AutoHideBarBand`) wherever the bar is drawn, including a bar shared by
+ * several bodies that follows the current one.
+ */
+export interface AutoHideBarController {
+  /** `shown`, `collapsed` to its strip, or `peek` (back over the body while hovered). */
+  mode: 'shown' | 'collapsed' | 'peek';
+  height: number;
+  strip: number;
+  hiddenBar: boolean;
+  label: string;
+  fill: string;
+  controls: {
+    stripHoverIn: () => void;
+    stripHoverOut: () => void;
+    barHoverIn: () => void;
+    barHoverOut: () => void;
+    reveal: () => void;
+  };
+  bodyRef: Ref<ComponentRef<typeof View>>;
+  /** The controls' and summary's presence (web fades them piece by piece). */
+  presence: Record<'controls' | 'summary', { presence: number; duration: number; easing: string }>;
+  styles: { body: unknown; band: unknown; controls: unknown; summary: unknown };
 }
 
 export interface AutoHideBarProps {

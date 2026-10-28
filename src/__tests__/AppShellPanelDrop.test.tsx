@@ -127,4 +127,27 @@ describe('panel drop zones', () => {
     expect(screen.getAllByText('Open beside', HIDDEN).length).toBe(2);
     expect(screen.getAllByText('Open after', HIDDEN).length).toBe(2);
   });
+
+  it('paint a translucent target as a translucent pane over the page when asked (dark)', () => {
+    const fills = (appearance?: 'translucent') => {
+      const screen = render(
+        <AppShell
+          testID="shell"
+          panelLayout={layout({ active: true, ...(appearance ? { appearance } : {}) })}
+        />,
+        { wrapper, createNodeMock },
+      );
+      lay(screen);
+      const zone = screen.UNSAFE_queryAllByProps({ testID: 'bloom-panel-drop-start' })[0]!;
+      const flat = ([] as unknown[]).concat(zone.props.style).flat(3) as Record<string, unknown>[];
+      const paint = Object.assign({}, ...flat.filter(Boolean));
+      screen.unmount();
+      return paint;
+    };
+    expect(fills('translucent')).toMatchObject({
+      backgroundColor: 'rgba(255, 236, 214, 0.04)',
+      borderColor: 'rgba(255, 255, 255, 0.08)',
+    });
+    expect(fills().backgroundColor).not.toBe('rgba(255, 236, 214, 0.04)');
+  });
 });

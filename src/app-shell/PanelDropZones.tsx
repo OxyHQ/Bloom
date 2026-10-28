@@ -15,6 +15,7 @@ import { animateWithSpec, motionDurationMs, type MotionSpec } from '../motion/sp
 import { hairlineOn, surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
+import { withAlpha } from '../theme/color-utils';
 import { Text } from '../typography/Typography';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { IS_WEB } from '../styles/platform';
@@ -52,6 +53,7 @@ interface PanelDropState {
   rtl: boolean;
   reducedMotion: boolean;
   labels: AppShellPanelDrop['labels'];
+  appearance: NonNullable<AppShellPanelDrop['appearance']>;
   motion: { slide: MotionSpec; grow: MotionSpec };
   accepts: (id: string) => boolean;
   visible: (id: string) => boolean;
@@ -147,6 +149,7 @@ export function usePanelDropCoordinator(
     onTargetChange.current?.(current);
   }, [current]);
   const labels = drop?.labels;
+  const appearance = drop?.appearance ?? 'surface';
   return useMemo(
     () =>
       active
@@ -159,6 +162,7 @@ export function usePanelDropCoordinator(
             rtl,
             reducedMotion,
             labels,
+            appearance,
             motion,
             accepts,
             visible,
@@ -175,6 +179,7 @@ export function usePanelDropCoordinator(
       rtl,
       reducedMotion,
       labels,
+      appearance,
       motion,
       accepts,
       visible,
@@ -271,19 +276,35 @@ function DropZone({
   const accent = resolveAccentColors(theme.colors, 'primary', 'subtle');
   const fill = surfaceFillOn(theme, parent);
   const quiet = surfaceTextOn(theme, fill);
-  const paint = active
-    ? {
-        fill: accent.background,
-        edge: accent.foreground,
-        dash: accent.foreground,
-        ink: accent.foreground,
-      }
-    : {
-        fill,
-        edge: hairlineOn(theme, parent),
-        dash: quiet.textGraphical,
-        ink: quiet.textSecondary,
-      };
+  const translucentInk = theme.isDark ? '#ffffff' : '#000000';
+  const paint =
+    state.appearance === 'translucent'
+      ? active
+        ? {
+            fill: withAlpha(theme.colors.primary, theme.isDark ? 0.16 : 0.12),
+            edge: withAlpha(translucentInk, 0.08),
+            dash: theme.colors.primary,
+            ink: theme.colors.primary,
+          }
+        : {
+            fill: theme.isDark ? 'rgba(255, 236, 214, 0.04)' : withAlpha('#ffffff', 0.45),
+            edge: withAlpha(translucentInk, 0.08),
+            dash: withAlpha(translucentInk, 0.1),
+            ink: withAlpha(translucentInk, theme.isDark ? 0.6 : 0.55),
+          }
+      : active
+        ? {
+            fill: accent.background,
+            edge: accent.foreground,
+            dash: accent.foreground,
+            ink: accent.foreground,
+          }
+        : {
+            fill,
+            edge: hairlineOn(theme, parent),
+            dash: quiet.textGraphical,
+            ink: quiet.textSecondary,
+          };
   const label =
     state.labels?.[edge] ??
     (side === 'left'

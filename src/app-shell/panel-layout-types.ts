@@ -67,6 +67,14 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
    * `spans[stack]`; each panel's share of it is `spans[id]`.
    */
   stack?: string;
+  /**
+   * With `retain`, how a panel with `visible: false` waits: `invisible`
+   * (default) over the whole region, not painted; `behind`, over the whole
+   * region under the shown panels, still painted, for content that draws
+   * itself when asked (a page that slides in during a gesture). Inert and out
+   * of the accessibility tree either way.
+   */
+  hiddenPresentation?: 'invisible' | 'behind';
   navigation?: PanelNavigationOptions;
 }
 /** A transient user action, not persisted selection or restoration state. */
@@ -176,6 +184,13 @@ export interface AppShellPanelDrop {
   preview?: { width: number; height: number };
   /** The target under the drag, or null. Called when it changes. */
   onTargetChange?: (target: PanelDropTarget | null) => void;
+  /**
+   * `surface` (default): an opaque step off the panel's fill, from the surface
+   * tokens. `translucent`: a pane over the page (white at 0.45, a 0.08
+   * edge and a 0.1 dash in the foreground's ink; the accent at 0.12 when
+   * active), a desktop browser's split targets over a live page.
+   */
+  appearance?: 'surface' | 'translucent';
   /** Overrides the localized names (`"Add left split"`…) by edge. */
   labels?: Partial<Record<PanelDropEdge, string>>;
   /** `slide`: arriving from past the panel's edge; `grow`: between stages. */
