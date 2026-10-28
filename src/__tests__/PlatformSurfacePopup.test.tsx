@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { act, fireEvent, render, renderHook } from '@testing-library/react-native';
 // Explicit native owner, not the web barrel.
@@ -132,5 +132,93 @@ describe('DropdownMenu (native) with a popup-surface adapter', () => {
     fireEvent.press(screen.getByTestId('trigger'));
     expect(screen.queryByTestId('platform-popup')).toBeNull();
     expect(popup).not.toHaveBeenCalled();
+  });
+});
+
+describe('DropdownMenu (native) keyboard in a platform popup', () => {
+  function Rows({ chosen }: { chosen: (row: string) => void }) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Pressable testID="trigger">
+            <Text>Open</Text>
+          </Pressable>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onPress={() => chosen('Reply')}>Reply</DropdownMenuItem>
+          <DropdownMenuItem disabled onPress={() => chosen('Forward')}>
+            Forward
+          </DropdownMenuItem>
+          <DropdownMenuItem onPress={() => chosen('Archive')}>Archive</DropdownMenuItem>
+          <DropdownMenuItem onPress={() => chosen('Move to folder')}>
+            Move to folder
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  function open(chosen: jest.Mock) {
+    const popup = jest.fn();
+    const screen = render(
+      <BloomProvider mode="light" platform={adapter(popup)}>
+        <Rows chosen={chosen} />
+      </BloomProvider>,
+    );
+    fireEvent.press(screen.getByTestId('trigger'));
+    const key = (name: string) =>
+      act(() => {
+        const props = popup.mock.calls[popup.mock.calls.length - 1]?.[0] as
+          | PopupSurfaceProps
+          | undefined;
+        props?.onKey?.(name);
+      });
+    return { screen, key };
+  }
+
+  it('moves an active row over enabled rows and activates it with Enter', () => {
+    const chosen = jest.fn();
+    const { screen, key } = open(chosen);
+    key('ArrowDown');
+    key('ArrowDown');
+    key('Enter');
+    // Reply, then Archive: the disabled Forward is skipped.
+    expect(chosen).toHaveBeenCalledTimes(1);
+    expect(chosen).toHaveBeenCalledWith('Archive');
+    expect(screen.queryByTestId('platform-popup')).toBeNull();
+  });
+
+  it('goes to the ends with Home and End', () => {
+    const chosen = jest.fn();
+    const { key } = open(chosen);
+    key('End');
+    key('Home');
+    key('Enter');
+    expect(chosen).toHaveBeenLastCalledWith('Reply');
+  });
+
+  it('finds a row by its first letters', () => {
+    const chosen = jest.fn();
+    const { key } = open(chosen);
+    key('m');
+    key('Enter');
+    expect(chosen).toHaveBeenCalledWith('Move to folder');
+  });
+
+  it('closes on Escape without activating anything', () => {
+    const chosen = jest.fn();
+    const { screen, key } = open(chosen);
+    key('ArrowDown');
+    key('Escape');
+    expect(chosen).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('platform-popup')).toBeNull();
+  });
+
+  it('does nothing on Enter before a row is active', () => {
+    const chosen = jest.fn();
+    const { screen, key } = open(chosen);
+    key('Enter');
+    expect(chosen).not.toHaveBeenCalled();
+    expect(screen.getByTestId('platform-popup')).toBeTruthy();
   });
 });

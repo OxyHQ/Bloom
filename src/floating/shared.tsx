@@ -1,5 +1,6 @@
 import { useMenuDensity } from './use-menu-density';
 import { useMenuRowAlignment } from './menu-row-alignment';
+import { KEYBOARD_ACTIVATION, usePopupNavigationRow } from './popup-navigation';
 /**
  * The menu ROW itself, and the pieces of its shape that both the row set and
  * BOTH sub-menu implementations need.
@@ -217,10 +218,21 @@ export function MenuRowShell({
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const palette = useMenuPalette();
   const density = useMenuDensity();
+  // In a platform popup the keyboard moves an active row (`popup-navigation`);
+  // Enter activates it as a press would.
+  const navigation = usePopupNavigationRow({
+    disabled: !!disabled,
+    label: accessibilityLabel ?? (typeof title === 'string' ? title : undefined),
+    activate: () => onPress?.(KEYBOARD_ACTIVATION),
+  });
   // `MENU_ITEM_INTERACTIVE` + `MENU_ITEM_ACTIVE`: hover, keyboard focus
   // and the current selection all paint the same `dropdown-item-hover-background`.
   const highlighted =
-    !disabled && ((!controlledHighlight && (hovered || focused)) || pressed || selected || current);
+    !disabled &&
+    ((!controlledHighlight && (hovered || focused || navigation.active)) ||
+      pressed ||
+      selected ||
+      current);
 
   const rowClass = cx(
     ROW_CLASS,
@@ -281,6 +293,7 @@ export function MenuRowShell({
           ? undefined
           : () => {
               onHoverIn();
+              navigation.hover();
               onHoverChange?.();
             }
       }

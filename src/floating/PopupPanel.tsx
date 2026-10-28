@@ -19,6 +19,7 @@ import { DEFAULT_ALIGN_OFFSET, DEFAULT_SIDE_OFFSET, MENU_WIDTH } from './constan
 import { useMenuPalette } from './menu-palette';
 import type { FloatingPositionProps } from './types';
 import { useMenuDensity } from './use-menu-density';
+import { usePopupNavigation } from './popup-navigation';
 
 /** `rounded-radius-16`, the web menu panel's corner. */
 const PANEL_RADIUS = 16;
@@ -30,6 +31,8 @@ export interface PopupPanelProps extends FloatingPositionProps {
   role: PopupSurfaceProps['role'];
   label?: string;
   onDismiss: (reason: PopupDismissReason) => void;
+  /** Escape or Tab from the keyboard: the owner closes the popup. */
+  onClose: () => void;
   minWidth?: number;
   maxWidth?: number;
   maxHeight?: number;
@@ -49,6 +52,7 @@ export function PopupPanel({
   role,
   label,
   onDismiss,
+  onClose,
   minWidth = MENU_WIDTH,
   maxWidth,
   maxHeight,
@@ -59,6 +63,8 @@ export function PopupPanel({
 }: PopupPanelProps) {
   const palette = useMenuPalette();
   const density = useMenuDensity();
+  // The platform's keys move an active row among the panel's rows (`popup-navigation`).
+  const navigation = usePopupNavigation(onClose);
   return (
     <PopupSurface
       anchorRef={anchorRef}
@@ -69,6 +75,7 @@ export function PopupPanel({
       role={role}
       label={label}
       onDismiss={onDismiss}
+      onKey={navigation.onKey}
       testID={testID}
     >
       <StyledView
@@ -88,7 +95,7 @@ export function PopupPanel({
           style,
         ]}
       >
-        {children}
+        {navigation.provider(children)}
       </StyledView>
     </PopupSurface>
   );

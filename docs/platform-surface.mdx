@@ -38,7 +38,9 @@ unchanged.
 - Bloom's placement (`side`, `align`, `sideOffset`, `alignOffset`, the same
   `FloatingPositionProps` the web panel takes);
 - the content's `role` and accessible `label`;
-- `onDismiss`.
+- `onDismiss`;
+- `onKey` (optional to call): the keys pressed while the popup has keyboard
+  focus, as W3C `KeyboardEvent.key` names.
 
 It renders its `children` in a popup of the platform, **in the same React
 tree**, the way RN's `Modal` renders into another window. Providers, theme,
@@ -50,6 +52,15 @@ could not cross the window's clipping.
 - The platform closes the popup itself on an outside press, a refused grab, or
   its parent going away. `onDismiss(reason)` then closes the menu (`reason` is
   `'outside-press'`, `'denied'` or `'closed'`).
+- A native popup has no focusable rows, so the panel keeps an **active row**
+  (`floating/popup-navigation`), painted like hover: <kbd>↓</kbd>/<kbd>↑</kbd>
+  move it (the first press lands on the first or last row), <kbd>Home</kbd>/
+  <kbd>End</kbd> and <kbd>PageUp</kbd>/<kbd>PageDown</kbd> jump,
+  <kbd>Enter</kbd>/<kbd>Space</kbd> activate it, <kbd>Esc</kbd>/<kbd>Tab</kbd>
+  close the menu, and typed characters find the next row whose label starts
+  with them (typeahead, 500 ms). The pointer and the keyboard share the
+  highlight: hovering a row makes it active. A platform without a keyboard
+  never calls `onKey`, and nothing changes.
 - `usePopupSurface()` returns the component only when the capability is
   reported. An adapter that reports it without the component throws instead of
   silently falling back.

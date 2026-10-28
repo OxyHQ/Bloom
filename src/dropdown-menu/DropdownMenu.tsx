@@ -158,6 +158,7 @@ export function DropdownMenuContent({
           role="menu"
           label={label}
           onDismiss={() => menu.setOpen(false)}
+          onClose={() => menu.setOpen(false)}
           minWidth={minWidth}
           maxWidth={maxWidth}
           maxHeight={maxHeight}

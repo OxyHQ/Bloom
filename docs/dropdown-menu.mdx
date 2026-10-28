@@ -144,7 +144,7 @@ The web menu follows the ARIA menu-button pattern, and the same keys reach `Cont
 
 Whenever the menu closes with focus inside it — a row activated, <kbd>Esc</kbd>, <kbd>Tab</kbd> — focus returns to the trigger. A pointer open leaves focus where the pointer put it; a right-click opens a `ContextMenu` onto its first row (no ring is painted — rows highlight on `:focus-visible`), since the menu's keys need focus inside it.
 
-Before this the trigger opened the menu and focus stayed on it: the rows are portaled to the end of `<body>`, so the arrows had nothing to move, <kbd>Tab</kbd> walked on through the page behind the open menu, and <kbd>Space</kbd> pressed nothing (react-native-web presses a `menuitem`, `checkbox` or `radio` on <kbd>Enter</kbd> only). Verified in jest (`MenuKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`). Native is unchanged — the menu is a bottom sheet there.
+Before this the trigger opened the menu and focus stayed on it: the rows are portaled to the end of `<body>`, so the arrows had nothing to move, <kbd>Tab</kbd> walked on through the page behind the open menu, and <kbd>Space</kbd> pressed nothing (react-native-web presses a `menuitem`, `checkbox` or `radio` on <kbd>Enter</kbd> only). Verified in jest (`MenuKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`). Native is unchanged — the menu is a bottom sheet there — except in a platform popup, whose keys arrive through the adapter (`platform-surface.mdx`).
 
 ## Sub-menus: a flyout on web, an inline disclosure on native
 

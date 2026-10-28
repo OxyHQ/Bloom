@@ -37,6 +37,12 @@ export interface PopupSurfaceProps {
   label?: string;
   /** Called once when the platform closes the popup itself. */
   onDismiss: (reason: PopupDismissReason) => void;
+  /**
+   * Keys pressed while the popup has keyboard focus, as W3C `KeyboardEvent.key`
+   * names (`ArrowDown`, `Enter`, `Escape`, … or the typed character). A platform
+   * without a keyboard never calls it.
+   */
+  onKey?: (key: string) => void;
   testID?: string;
   /** The panel, sized by its own content. */
   children: ReactNode;
