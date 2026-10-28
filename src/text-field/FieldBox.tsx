@@ -90,7 +90,12 @@ function FieldBoxComponent({
   useInteractiveWebCss('bloom-field-box', FIELD_BOX_CSS);
   if (Platform.OS !== 'web')
     return (
+      // Never flattened: a field box is the stacking context of the field's layers (fill,
+      // ring, input, `z_10`/`z_20`). A flattened root let Fabric order those layers by
+      // `zIndex` among the field's SIBLINGS, so the input was mounted, and read by a screen
+      // reader, after the content that follows the field.
       <View
+        collapsable={false}
         testID={testID}
         style={[[baseStyle, style, stateStyle], pointerEventsStyle(pointerEvents)]}
       >

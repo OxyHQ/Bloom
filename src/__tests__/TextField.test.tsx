@@ -188,6 +188,21 @@ describe('TextField geometry', () => {
     expect(chrome.borderRadius).toBe(12);
   });
 
+  it("keeps the field's layers inside its own box, which is never flattened", () => {
+    const root = renderWithTheme(
+      <TextField>
+        <TextFieldInput label="Email" value="" onValueChange={() => {}} />
+      </TextField>,
+    );
+    // Fabric orders `zIndex` children among the siblings of their nearest MOUNTED parent; a
+    // flattened field root sent the input after the content following the field.
+    let box = root.getByLabelText('Email').parent;
+    while (box && !(String(box.type) === 'View' && box.props.collapsable === false))
+      box = box.parent;
+    expect(box).toBeTruthy();
+    expect(flat(box?.props.style).flexDirection).toBe('row');
+  });
+
   it('pins the geometry numbers', () => {
     expect(TEXT_FIELD_GEOMETRY).toMatchObject({
       xs: { height: 28, paddingHorizontal: 4 },
