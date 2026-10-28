@@ -40,6 +40,17 @@ A painted host keeps its background transparent and renders `SurfacePaint` as it
 
 Never give a material's host or any ancestor `opacity < 1` or a `filter` (even `blur(0px)`): on the web it becomes the backdrop root and the blur vanishes, then pops back. Disabled controls dim their content, strokes and the material's own presence (`SurfacePaint presence`, `--bloom-surface-presence`); hosts that appear and leave move with `transform` and fade the material through `--bloom-surface-presence` and their content in wrappers of its own (Notification, Announcement). Native keeps dimming the host: it has no backdrop filter.
 
+## Android decorative paint caching
+
+On Android, `SurfacePaint` requests a hardware texture for its childless rim/sheen
+layer. Scrolling can reuse that rasterized decoration instead of redrawing inset
+shadows on every frame. Content, layout, hit targets and accessibility remain on
+the normal host; plain fills without optical decoration do not request a texture.
+Changes to fill, geometry and optical props invalidate the paint layer. This
+trades some graphics memory for less RenderThread work, so device comparisons
+must include memory, rapid scrolling and theme/pressed-state changes. Web and iOS
+keep their existing rendering paths.
+
 ## Verification
 
 Check both modes, nested overlays, custom styles and responsive framing in Storybook. Test opening and dismissal with real pointer/keyboard events: paint-only tests cannot see covered targets. `surface-composition.test.ts` pins the migrated composition paths; existing interaction and layout suites remain authoritative. Native paint structure is tested separately; browser checks do not establish device coverage.
