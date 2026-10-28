@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.60.5
+
+### Fixed
+
+- **a11y: a text field is read where it is, on native.** `TextField`'s root box held no paint of its own, so Fabric flattened it, and its layers (`z_10` outline and ring, `z_20` input) were ordered by `zIndex` among the field's siblings. The input was then mounted after everything that follows the field in its parent, so a screen reader reached it after that content (in a form, after the next fields and buttons). The field box is now never flattened (`collapsable={false}`), so its layers stack inside it. Nothing changes visually or on web. Found by OxyOS's host accessibility tree.
+
+### Consumers
+
+Bump to 15.60.5. No API change.
+
 ## 15.60.2
 
 ### Fixed
