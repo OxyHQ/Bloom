@@ -9,9 +9,14 @@ import { getByText, queryByText } from '@testing-library/dom';
 import '@testing-library/jest-dom';
 
 import { Platform } from 'react-native';
+import { makeMutable } from 'react-native-reanimated';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Screen, useScreen, useScreenViewport } from '../screen';
-import { ScreenHostContext, type ScreenContextValue } from '../screen/context';
+import {
+  ScreenHostContext,
+  ScreenViewportContext,
+  type ScreenContextValue,
+} from '../screen/context';
 import { VirtualList, type VirtualListHandle } from '../list/index.web';
 
 // `@tanstack/react-virtual` measures rows via ResizeObserver + getBoundingClientRect,
@@ -488,7 +493,11 @@ describe('VirtualList retained row geometry', () => {
     const offsetHeight = jest
       .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
       .mockImplementation(function (this: HTMLElement) {
-        return Number(this.firstElementChild?.getAttribute('data-height') ?? 768);
+        return Number(
+          this.getAttribute('data-viewport-height') ??
+            this.firstElementChild?.getAttribute('data-height') ??
+            768,
+        );
       });
     const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
     restoreGeometry = () => {
@@ -499,6 +508,126 @@ describe('VirtualList retained row geometry', () => {
   afterEach(() => {
     restoreGeometry();
     ResizeObserverStub.instances.clear();
+  });
+  it('recovers an initially zero window viewport from its resize observation alone', () => {
+    const height = window.innerHeight;
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 0 });
+    try {
+      mount(list);
+      expect(container.querySelector('[data-index]')).toBeNull();
+      act(() => {
+        Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
+        window.dispatchEvent(new Event('resize'));
+      });
+      expect(getByText(container, 'Measured 0')).toBeInTheDocument();
+      act(() => ResizeObserverStub.deliverRows());
+      expectMeasuredRows();
+    } finally {
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
+    }
+  });
+  it('renders a short list when its parent scroll ref attaches after child layout effects', () => {
+    const scrollRef = React.createRef<HTMLDivElement>();
+    const metrics = {
+      scrollY: makeMutable(0),
+      contentHeight: makeMutable(920),
+      viewportHeight: makeMutable(768),
+    };
+    mount(
+      <div ref={scrollRef}>
+        <ScreenViewportContext.Provider
+          value={{ kind: 'element', active: true, scrollRef, metrics, scrollTo: () => {} }}
+        >
+          {list}
+        </ScreenViewportContext.Provider>
+      </div>,
+    );
+    expect(getByText(container, 'Measured 0')).toBeInTheDocument();
+    act(() => ResizeObserverStub.deliverRows());
+    expectMeasuredRows();
+  });
+  it('recovers a zero-height panel from its ResizeObserver without changing the list origin', () => {
+    const panel = document.createElement('div');
+    panel.setAttribute('data-viewport-height', '0');
+    document.body.append(panel);
+    const scrollRef = { current: panel };
+    const metrics = {
+      scrollY: makeMutable(0),
+      contentHeight: makeMutable(920),
+      viewportHeight: makeMutable(0),
+    };
+    try {
+      mount(
+        <ScreenViewportContext.Provider
+          value={{ kind: 'element', active: true, scrollRef, metrics, scrollTo: () => {} }}
+        >
+          {list}
+        </ScreenViewportContext.Provider>,
+      );
+      expect(container.querySelector('[data-index]')).toBeNull();
+      panel.setAttribute('data-viewport-height', '768');
+      act(() => {
+        for (const observer of ResizeObserverStub.instances) {
+          if (observer.targets.has(panel))
+            observer.callback(
+              [
+                {
+                  target: panel,
+                  contentRect: panel.getBoundingClientRect(),
+                  borderBoxSize: [{ inlineSize: 600, blockSize: 768 }],
+                  contentBoxSize: [],
+                  devicePixelContentBoxSize: [],
+                },
+              ],
+              observer,
+            );
+        }
+      });
+      expect(getByText(container, 'Measured 0')).toBeInTheDocument();
+      act(() => ResizeObserverStub.deliverRows());
+      expectMeasuredRows();
+    } finally {
+      panel.remove();
+    }
+  });
+  it('moves observers to a replacement element behind the same screen ref', () => {
+    const original = document.createElement('div');
+    const replacement = document.createElement('div');
+    document.body.append(original, replacement);
+    const scrollRef = { current: original };
+    const metrics = {
+      scrollY: makeMutable(0),
+      contentHeight: makeMutable(920),
+      viewportHeight: makeMutable(768),
+    };
+    const ui = () => (
+      <ScreenViewportContext.Provider
+        value={{ kind: 'element', active: true, scrollRef, metrics, scrollTo: () => {} }}
+      >
+        {list}
+      </ScreenViewportContext.Provider>
+    );
+    try {
+      mount(ui());
+      act(() => ResizeObserverStub.deliverRows());
+      expectMeasuredRows();
+      expect(
+        [...ResizeObserverStub.instances].some((observer) => observer.targets.has(original)),
+      ).toBe(true);
+      scrollRef.current = replacement;
+      mount(ui());
+      act(() => ResizeObserverStub.deliverRows());
+      expectMeasuredRows();
+      expect(
+        [...ResizeObserverStub.instances].some((observer) => observer.targets.has(original)),
+      ).toBe(false);
+      expect(
+        [...ResizeObserverStub.instances].some((observer) => observer.targets.has(replacement)),
+      ).toBe(true);
+    } finally {
+      original.remove();
+      replacement.remove();
+    }
   });
   it('keeps measured row heights on resize when the row boxes have not changed', () => {
     mount(list);

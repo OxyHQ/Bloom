@@ -139,6 +139,8 @@ wrapper. Returning to retained content or resizing the viewport preserves measur
 row heights; it must not reset unchanged rows to `estimatedItemSize`. Row resize
 observations update actual content changes. When a retained list changes between
 document and panel scrolling, its measurement refs attach to the new virtualizer.
+The adapter resolves the Screen scroll ref after commit, so a parent element that
+attaches after child layout effects is still observed without an unrelated render.
 
 `screen={{ active, restoration }}` binds the window to the Screen's chrome only
 when no Screen viewport already does; a Screen that owns its viewport drives

@@ -179,6 +179,14 @@ function VirtualListWebInner<T>(
   const viewport = useScreenViewport();
   const scroller = viewport?.kind === 'element' ? viewport.scrollRef : null;
   const active = viewport?.active !== false;
+  const [scrollElement, setScrollElement] = React.useState<HTMLElement | null>(null);
+  // Parent host refs attach after child layout effects. Publish the resolved
+  // element after commit so TanStack binds it even without another app render.
+  // Recheck each commit for replacement nodes and Activity resumes; unchanged
+  // elements retain the same state and all measured row sizes.
+  React.useEffect(() => {
+    setScrollElement((scroller?.current as HTMLElement | null | undefined) ?? null);
+  });
 
   // Pagination against that scroller: an end marker after the footer, observed
   // `onEndReachedThreshold` viewports early. A new row count re-arms it, so a
@@ -205,12 +213,12 @@ function VirtualListWebInner<T>(
     // No box: a retained screen at `display: none`. Its reading would be the
     // visible screen's scroll offset, stored as this list's origin.
     if (rect.width === 0 && rect.height === 0) return;
-    const owner = scroller?.current as HTMLElement | null | undefined;
+    const owner = scroller ? scrollElement : null;
     const top = owner
       ? rect.top - owner.getBoundingClientRect().top - owner.clientTop + owner.scrollTop
       : rect.top + window.scrollY;
     setScrollMargin((prev) => (prev !== top ? top : prev));
-  }, [scroller]);
+  }, [scroller, scrollElement]);
 
   // Read the wrapper's top offset synchronously after layout so the first
   // virtual frame already positions rows correctly. Re-run when the row count
@@ -245,7 +253,7 @@ function VirtualListWebInner<T>(
   const elementVirtualizer = useVirtualizer<HTMLElement, HTMLDivElement>({
     ...options,
     enabled: active && scroller !== null,
-    getScrollElement: () => (scroller?.current as HTMLElement | null | undefined) ?? null,
+    getScrollElement: () => scrollElement,
   });
   const virtualizer = scroller ? elementVirtualizer : windowVirtualizer;
 
@@ -266,12 +274,12 @@ function VirtualListWebInner<T>(
     const wrapper = wrapperRef.current;
     if (wrapper) observer?.observe(wrapper);
     if (wrapper?.parentElement) observer?.observe(wrapper.parentElement);
-    observer?.observe((scroller?.current as HTMLElement | null | undefined) ?? document.body);
+    observer?.observe((scroller ? scrollElement : null) ?? document.body);
     return () => {
       window.removeEventListener('resize', measureScrollMargin);
       observer?.disconnect();
     };
-  }, [measureScrollMargin, scroller, hasRows]);
+  }, [measureScrollMargin, scroller, scrollElement, hasRows]);
 
   React.useImperativeHandle(ref, () => {
     const scrollOwner = (top: number, animated?: boolean) => {
