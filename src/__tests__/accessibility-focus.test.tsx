@@ -25,9 +25,11 @@ import {
  * node looks like, and a null ref is indistinguishable from "the hook chose not
  * to fire". Without this every assertion below would pass for the wrong reason.
  */
-const nodeMock = { createNodeMock: () => ({}) };
+const node = {};
+const nodeMock = { createNodeMock: () => node };
 
-const setFocus = AccessibilityInfo.setAccessibilityFocus as jest.Mock;
+const setFocus = AccessibilityInfo.sendAccessibilityEvent as jest.Mock;
+const legacySetFocus = AccessibilityInfo.setAccessibilityFocus as jest.Mock;
 
 function Surface({ open }: { open: boolean }) {
   const ref = useAccessibilityFocus<React.ComponentRef<typeof View>>(open);
@@ -43,6 +45,7 @@ function Trigger({ open }: { open: boolean }) {
 beforeEach(() => {
   jest.useFakeTimers();
   setFocus.mockClear();
+  legacySetFocus.mockClear();
   Platform.OS = 'ios';
 });
 
@@ -64,6 +67,11 @@ describe('useAccessibilityFocus', () => {
       jest.advanceTimersByTime(50);
     });
     expect(setFocus).toHaveBeenCalledTimes(1);
+    // The view itself, through the renderer: never the deprecated tag-based API,
+    // whose Android path needs the legacy UIManager constants a bridgeless host
+    // may not install.
+    expect(setFocus).toHaveBeenCalledWith(node, 'focus');
+    expect(legacySetFocus).not.toHaveBeenCalled();
   });
 
   it('does nothing while the surface is closed', () => {

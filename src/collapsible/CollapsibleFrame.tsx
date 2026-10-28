@@ -1,12 +1,5 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import {
-  AccessibilityInfo,
-  Animated,
-  findNodeHandle,
-  TextInput,
-  View,
-  type LayoutChangeEvent,
-} from 'react-native';
+import { AccessibilityInfo, Animated, TextInput, View, type LayoutChangeEvent } from 'react-native';
 import { styled } from 'react-native-css';
 import { CollapsibleVisibilityContext, useCollapsibleVisibility } from './context';
 import type { CollapsibleFrameProps } from './frame-types';
@@ -55,9 +48,13 @@ function CollapsibleFrameComponent({
         : null);
     if (target && 'focus' in target && typeof target.focus === 'function') {
       target.focus();
-      const handle =
-        'measureInWindow' in target ? findNodeHandle(target as unknown as React.Component) : null;
-      if (handle != null) AccessibilityInfo.setAccessibilityFocus(handle);
+      // A native host view (web elements have no screen-reader cursor to move).
+      if ('measureInWindow' in target) {
+        AccessibilityInfo.sendAccessibilityEvent(
+          target as unknown as Parameters<typeof AccessibilityInfo.sendAccessibilityEvent>[0],
+          'focus',
+        );
+      }
     }
   }, [returnFocusRef, returnFocusId]);
   useLayoutEffect(() => {
