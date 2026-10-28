@@ -71,6 +71,13 @@ flag.
   leave the browser's own restoration disabled.
 
 
+When navigation collapses the document, the browser may clamp its offset to a
+shorter page's bottom before the outgoing screen blurs. Bloom preserves the
+previous offset only if that trusted offset exceeds the new maximum, the range
+shrank, and the observed position is at the new bottom. Merely measuring rows
+shorter than their estimates is not a navigation clamp: scrolling from above to
+the measured bottom must still be remembered.
+
 ## Layout changes are not navigation
 
 Changing a retained Screen from document flow to a bounded column transfers its

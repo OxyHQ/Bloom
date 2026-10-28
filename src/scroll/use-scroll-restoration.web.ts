@@ -220,15 +220,16 @@ export function useScrollRestoration(
         // offset recorded by earlier live saves (problem A). A genuine
         // scroll-to-top keeps the container scrollable and is saved normally.
         if (offset === 0 && maxOffset <= 0) return;
-        // A partial clamp: the reachable range SHRANK and the offset is sitting
-        // exactly at the new bottom. That is what the browser does to a tab
-        // whose document has been taken over by a shorter sibling — the two
-        // together are a signature a genuine scroll does not have, because
-        // reaching the bottom on your own does not shrink the page in the same
-        // breath. Suppressing keeps the pre-clamp offset, which on return
-        // simply clamps to the same place if the content really did shrink.
+        // A partial clamp moves an offset that no longer fits to the new
+        // bottom. Range shrink alone is insufficient: measured virtual rows
+        // can be shorter than their estimates while the user stays at the top
+        // and subsequently scrolls down to the new bottom. Only suppress if
+        // the last trusted offset (or the arrival target before any live save)
+        // actually exceeds that bottom. Keep that baseline across repeated
+        // clamp events so a second event cannot overwrite the original target.
         if (
           maxOffset < maxOffsetAtLastSave &&
+          (lastObservedOffset ?? targetOffset) > maxOffset &&
           Math.abs(offset - maxOffset) <= RESTORE_STICK_TOLERANCE_PX
         ) {
           return;

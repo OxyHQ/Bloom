@@ -873,6 +873,33 @@ describe('web scroll-restoration hook', () => {
       expect(window.scrollY).toBe(5000);
     });
 
+    it.each([0, 500])(
+      'persists scrolling from %i to the bottom after estimated row heights shrink',
+      (previousOffset) => {
+        const node = new FakeScrollNode();
+        const content = unseenContent();
+        // The virtual list first lays out estimated row heights. Measuring its
+        // rows then reduces the range while the reader remains above the end.
+        harness.show({ node, content, windowTarget: true });
+        if (previousOffset > 0) {
+          scrollY = previousOffset;
+          emitWindowScroll();
+        }
+        docHeight = DOC_VIEWPORT + 1109;
+        // A wheel reaches the measured bottom. No previous position was
+        // outside the new range, so this cannot be a browser clamp.
+        act(() => window.dispatchEvent(new Event('wheel')));
+        window.scrollTo(0, 1200);
+        emitWindowScroll();
+
+        harness.show({ node, content, windowTarget: true, focused: false });
+        scrollY = 0;
+        harness.show({ node, content, windowTarget: true });
+        act(() => frames.flushOneFrame());
+        expect(window.scrollY).toBe(1109);
+      },
+    );
+
     it('persists a GENUINE scroll to the very bottom when nothing shrank', () => {
       // The collision worth worrying about, and it does not fire: reaching the
       // bottom under your own steam does not shrink the page in the same
@@ -919,6 +946,28 @@ describe('web scroll-restoration hook', () => {
         frames.flushOneFrame();
       });
       expect(window.scrollY).toBe(1000);
+    });
+
+    it('saves the bottom again after the user scrolls up from a navigation clamp', () => {
+      const node = new FakeScrollNode();
+      const content = unseenContent();
+      harness.show({ node, content, windowTarget: true });
+      scrollY = 2000;
+      emitWindowScroll();
+      docHeight = DOC_VIEWPORT + 1109;
+      scrollY = 1109;
+      emitWindowScroll();
+      emitWindowScroll();
+
+      scrollY = 500;
+      emitWindowScroll();
+      scrollY = 1109;
+      emitWindowScroll();
+      harness.show({ node, content, windowTarget: true, focused: false });
+      scrollY = 0;
+      harness.show({ node, content, windowTarget: true });
+      act(() => frames.flushOneFrame());
+      expect(window.scrollY).toBe(1109);
     });
 
     it('still persists a GENUINE scroll to the top of a scrollable document', () => {
