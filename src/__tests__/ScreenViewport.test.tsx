@@ -149,6 +149,69 @@ it('retains declared content and scroll wrapper when its host changes document/c
   tree.rerender(ui('document'));
   expect(mounts).toHaveBeenCalledTimes(1);
 });
+it.each(['content', 'none'] as const)(
+  'retains a routed child while scroll ownership changes between auto and %s',
+  (unownedMode) => {
+    const mounts = jest.fn();
+    const unmounts = jest.fn();
+    function RoutedChild() {
+      useEffect(() => {
+        mounts();
+        return () => {
+          unmounts();
+        };
+      }, []);
+      return <View testID="routed-child" />;
+    }
+    const ui = (scroll: 'auto' | 'content' | 'none') =>
+      wrap(
+        <Screen scroll={scroll}>
+          <RoutedChild />
+        </Screen>,
+        'document',
+      );
+    const tree = render(ui('auto'));
+    tree.rerender(ui(unownedMode));
+    tree.rerender(ui('auto'));
+    expect(tree.getByTestId('routed-child')).toBeDefined();
+    expect(mounts).toHaveBeenCalledTimes(1);
+    expect(unmounts).not.toHaveBeenCalled();
+  },
+);
+
+it('restores inherited viewport ownership without remounting nested content', () => {
+  const mounts = jest.fn();
+  const observed = new Map<string, ReturnType<typeof useScreenViewport>>();
+  function Probe({ name }: { name: string }) {
+    observed.set(name, useScreenViewport());
+    useEffect(() => {
+      if (name === 'child') mounts();
+    }, [name]);
+    return <View />;
+  }
+  const ui = (scroll: 'auto' | 'content') =>
+    wrap(
+      <Screen scroll="auto" testID="parent">
+        <Probe name="parent" />
+        <Screen scroll={scroll} testID="nested">
+          <Probe name="child" />
+        </Screen>
+      </Screen>,
+      'document',
+    );
+  const tree = render(ui('content'));
+  expect(observed.get('child')).toBe(observed.get('parent'));
+  expect(tree.queryByTestId('nested-viewport')).toBeNull();
+  tree.rerender(ui('auto'));
+  expect(observed.get('child')?.kind).toBe('element');
+  expect(observed.get('child')).not.toBe(observed.get('parent'));
+  expect(tree.getByTestId('nested-viewport')).toBeDefined();
+  tree.rerender(ui('content'));
+  expect(observed.get('child')).toBe(observed.get('parent'));
+  expect(tree.queryByTestId('nested-viewport')).toBeNull();
+  expect(mounts).toHaveBeenCalledTimes(1);
+});
+
 it('uses the same metrics for document chrome and stops inactive screen writers', () => {
   let owner: ReturnType<typeof useScreenViewport>;
   let screen: ReturnType<typeof useScreen>;

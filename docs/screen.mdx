@@ -29,7 +29,10 @@ region; the same screen can render as a document page or inside a Deck column.
 
 On web, `scroll="auto"` uses the document in a document-flow host and one local
 viewport in a bounded host. `ScreenScrollView` reuses that owner; it never adds
-another scroller. Changing host flow preserves the screen's content tree and
+another scroller. Switching between `auto`, `content` and `none` on web also
+keeps descendants mounted: non-owning wrappers create no layout boxes and
+inherit the parent's viewport. A routed navigator can therefore survive a
+change in scroll ownership. Changing host flow preserves the screen's content tree and
 transfers its live reading offset between document and bounded owners before
 paint. This layout handoff is separate from navigating to or restoring a route.
 `headerPlacement="overlay"` lets a profile hero or media page extend under its
