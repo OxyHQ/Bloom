@@ -20,10 +20,39 @@ import { VirtualList, type VirtualListHandle } from '../list/index.web';
 // default 768px-tall window — exactly the path that regressed in production
 // (rows present, wrapper sized, but `getVirtualItems()` came back empty).
 class ResizeObserverStub {
-  constructor(_cb: ResizeObserverCallback) {}
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
+  static instances = new Set<ResizeObserverStub>();
+  readonly targets = new Set<Element>();
+  constructor(readonly callback: ResizeObserverCallback) {
+    ResizeObserverStub.instances.add(this);
+  }
+  observe(target: Element): void {
+    this.targets.add(target);
+  }
+  unobserve(target: Element): void {
+    this.targets.delete(target);
+  }
+  disconnect(): void {
+    this.targets.clear();
+  }
+  static deliverRows(): void {
+    for (const observer of ResizeObserverStub.instances) {
+      const entries = [...observer.targets]
+        .filter((target) => target.hasAttribute('data-index'))
+        .map((target) => ({
+          target,
+          contentRect: target.getBoundingClientRect(),
+          borderBoxSize: [
+            {
+              inlineSize: 600,
+              blockSize: Number(target.firstElementChild?.getAttribute('data-height')),
+            },
+          ],
+          contentBoxSize: [],
+          devicePixelContentBoxSize: [],
+        }));
+      if (entries.length) observer.callback(entries, observer);
+    }
+  }
 }
 globalThis.ResizeObserver = ResizeObserverStub;
 
@@ -432,5 +461,98 @@ describe('VirtualList (web) onEndReached', () => {
       Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
       Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
     }
+  });
+});
+
+describe('VirtualList retained row geometry', () => {
+  const heights = [140, 560, 220];
+  const rows = heights.map((height, index) => ({ id: String(index), height }));
+  const list = (
+    <VirtualList
+      data={rows}
+      estimatedItemSize={400}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <div data-height={item.height}>Measured {item.id}</div>}
+    />
+  );
+  const expectMeasuredRows = () => {
+    expect(container.querySelector('[data-index="1"]')).toHaveStyle({
+      transform: 'translateY(140px)',
+    });
+    expect(container.querySelector('[data-index="2"]')).toHaveStyle({
+      transform: 'translateY(700px)',
+    });
+  };
+  let restoreGeometry = () => {};
+  beforeEach(() => {
+    const offsetHeight = jest
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return Number(this.firstElementChild?.getAttribute('data-height') ?? 768);
+      });
+    const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    restoreGeometry = () => {
+      offsetHeight.mockRestore();
+      scrollTo.mockRestore();
+    };
+  });
+  afterEach(() => {
+    restoreGeometry();
+    ResizeObserverStub.instances.clear();
+  });
+  it('keeps measured row heights on resize when the row boxes have not changed', () => {
+    mount(list);
+    act(() => ResizeObserverStub.deliverRows());
+    expectMeasuredRows();
+    act(() => window.dispatchEvent(new Event('resize')));
+    expectMeasuredRows();
+  });
+  it('updates row positions when resized content reports a new height', () => {
+    mount(list);
+    act(() => ResizeObserverStub.deliverRows());
+    expectMeasuredRows();
+    getByText(container, 'Measured 0').setAttribute('data-height', '280');
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+      ResizeObserverStub.deliverRows();
+    });
+    expect(container.querySelector('[data-index="1"]')).toHaveStyle({
+      transform: 'translateY(280px)',
+    });
+    expect(container.querySelector('[data-index="2"]')).toHaveStyle({
+      transform: 'translateY(840px)',
+    });
+  });
+  it('measures retained rows with their new scroll owner after switching document and panel', () => {
+    const platform = Platform.OS;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
+    const ui = (kind: 'document' | 'element') => (
+      <BloomThemeProvider fonts={false}>
+        <ScreenHostContext.Provider value={{ active: true, kind }}>
+          <Screen scroll="auto">{list}</Screen>
+        </ScreenHostContext.Provider>
+      </BloomThemeProvider>
+    );
+    try {
+      mount(ui('document'));
+      act(() => ResizeObserverStub.deliverRows());
+      expectMeasuredRows();
+      mount(ui('element'));
+      act(() => ResizeObserverStub.deliverRows());
+      expectMeasuredRows();
+      mount(ui('document'));
+      act(() => ResizeObserverStub.deliverRows());
+      expectMeasuredRows();
+    } finally {
+      Object.defineProperty(Platform, 'OS', { configurable: true, value: platform });
+    }
+  });
+  it('keeps measured row heights when an Activity restores the same content', () => {
+    mount(<React.Activity mode="visible">{list}</React.Activity>);
+    act(() => ResizeObserverStub.deliverRows());
+    expectMeasuredRows();
+    mount(<React.Activity mode="hidden">{list}</React.Activity>);
+    mount(<React.Activity mode="visible">{list}</React.Activity>);
+    expectMeasuredRows();
   });
 });

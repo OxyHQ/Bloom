@@ -21,11 +21,9 @@
  *  1. `scrollMargin` (the wrapper's offset from the top of the scrolled content)
  *     is measured in a layout effect AND re-synced whenever the wrapper's box
  *     could have moved (see `measureScrollMargin`).
- *  2. An explicit post-mount recompute (`virtualizer.measure()`) forces the
- *     range to be recomputed once the real viewport height + offset are known —
- *     guaranteeing a short list mounts EVERY row in the first viewport even with
- *     zero further re-renders. Re-run on resize. It also picks up a panel
- *     element whose ref attaches after this list's first layout effects.
+ *  2. The virtualizer observes its viewport and each mounted row. Origin
+ *     re-syncs preserve measured heights: `measure()` invalidates the entire
+ *     size cache and does not remeasure rows whose boxes have not changed.
  *  3. The measured spacer is `Math.max(totalSize, lastItemEnd)`, so it always
  *     contains every absolutely-positioned row even when `scrollMargin` is
  *     momentarily stale; the document therefore always grows to the full content
@@ -45,7 +43,7 @@ import { useDocumentEndReached } from '../screen/use-document-end-reached';
 import { DEFAULT_END_REACHED_THRESHOLD } from '../screen/use-end-reached';
 import { useHeaderDockInset } from '../layout/header-dock';
 import { Z_INDEX } from '../styles/z-index';
-import { type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   defaultRangeExtractor,
@@ -251,21 +249,16 @@ function VirtualListWebInner<T>(
   });
   const virtualizer = scroller ? elementVirtualizer : windowVirtualizer;
 
-  // Explicit post-mount recompute + resize re-sync. The virtualizer can latch a
-  // frame where the scroller's rect read as 0 / `scrollMargin` was stale,
-  // leaving `getVirtualItems()` empty even though rows exist. A static list does
-  // not re-render enough to self-correct, so we force the range to recompute
-  // once the real viewport + offset are known — and again on every resize.
+  // Re-sync the list origin after mount and resize, including Activity effect
+  // resumes. Do not clear row measurements: unchanged boxes do not produce new
+  // ResizeObserver entries, so resetting their sizes leaves estimate-sized gaps
+  // or overlaps. The virtualizer's own observers update viewport and row sizes.
   const hasRows = count > 0;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `hasRows` is the trigger — the wrapper the observer watches exists only while there are rows.
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
-    const sync = () => {
-      measureScrollMargin();
-      virtualizer.measure();
-    };
-    sync();
-    window.addEventListener('resize', sync);
+    measureScrollMargin();
+    window.addEventListener('resize', measureScrollMargin);
     // The wrapper gains its box when a retained screen is shown again, and moves
     // without resizing when content above it grows (a header, an embed).
     const observer =
@@ -275,10 +268,10 @@ function VirtualListWebInner<T>(
     if (wrapper?.parentElement) observer?.observe(wrapper.parentElement);
     observer?.observe((scroller?.current as HTMLElement | null | undefined) ?? document.body);
     return () => {
-      window.removeEventListener('resize', sync);
+      window.removeEventListener('resize', measureScrollMargin);
       observer?.disconnect();
     };
-  }, [measureScrollMargin, virtualizer, scroller, hasRows]);
+  }, [measureScrollMargin, scroller, hasRows]);
 
   React.useImperativeHandle(ref, () => {
     const scrollOwner = (top: number, animated?: boolean) => {
@@ -297,19 +290,19 @@ function VirtualListWebInner<T>(
   // every row on every render; the cached callback is reused for the same key so
   // the ref only fires on real mount/unmount.
   const measureElement = virtualizer.measureElement;
-  const rowRefCallbacks = React.useRef(new Map<string, (node: HTMLDivElement | null) => void>());
-  const getRowRef = React.useCallback(
-    (key: string) => {
-      const cache = rowRefCallbacks.current;
+  const getRowRef = React.useMemo(() => {
+    // A different scroll owner uses a different virtualizer. Its rows must
+    // attach to that instance, even when their keys and DOM nodes are retained.
+    const cache = new Map<string, (node: HTMLDivElement | null) => void>();
+    return (key: string) => {
       const existing = cache.get(key);
       if (existing) return existing;
       if (cache.size > ROW_REF_CACHE_CAP) cache.clear();
       const cb = (node: HTMLDivElement | null) => measureElement(node);
       cache.set(key, cb);
       return cb;
-    },
-    [measureElement],
-  );
+    };
+  }, [measureElement]);
 
   const flatStyle = StyleSheet.flatten(style);
   const flatContentStyle = StyleSheet.flatten(contentContainerStyle) as CSSProperties | undefined;

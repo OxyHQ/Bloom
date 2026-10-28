@@ -135,7 +135,10 @@ A screen that is not in front (`Screen active={false}`, a hidden panel) leaves
 its list idle: rows measured at `display: none` would move a scroller the reader
 is still using elsewhere. The list's origin is re-read whenever its box could
 have moved — shown again, or content above it grew — never from a box-less
-wrapper.
+wrapper. Returning to retained content or resizing the viewport preserves measured
+row heights; it must not reset unchanged rows to `estimatedItemSize`. Row resize
+observations update actual content changes. When a retained list changes between
+document and panel scrolling, its measurement refs attach to the new virtualizer.
 
 `screen={{ active, restoration }}` binds the window to the Screen's chrome only
 when no Screen viewport already does; a Screen that owns its viewport drives
