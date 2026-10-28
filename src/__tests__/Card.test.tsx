@@ -268,3 +268,38 @@ it('shares radius precedence with Surface while preserving the actual card host'
   );
   expect(chromeOf(explicit.toJSON(), 'geometry').borderRadius).toBe(20);
 });
+
+it('keeps native press and disabled opacity on the host without a DOM presence controller', () => {
+  const onPress = jest.fn();
+  const screen = renderWithTheme(<Card testID="native-presence" onPress={onPress} />);
+  expect(chromeOf(screen.toJSON(), 'native-presence').opacity).toBeUndefined();
+  fireEvent(screen.getByTestId('native-presence'), 'pressIn');
+  expect(chromeOf(screen.toJSON(), 'native-presence').opacity).toBe(0.85);
+  fireEvent(screen.getByTestId('native-presence'), 'pressOut');
+  expect(chromeOf(screen.toJSON(), 'native-presence').opacity).toBeUndefined();
+  screen.rerender(
+    <BloomThemeProvider mode="light" colorPreset="oxy">
+      <Card testID="native-presence" onPress={onPress} disabled />
+    </BloomThemeProvider>,
+  );
+  expect(chromeOf(screen.toJSON(), 'native-presence').opacity).toBe(0.5);
+  expect(screen.getByTestId('native-presence').props.disabled).toBe(true);
+  expect(screen.getByTestId('native-presence').props.onPressIn).toBeUndefined();
+});
+
+it('forwards the native callback ref and clears it on unmount', () => {
+  const handle = { measure: jest.fn() };
+  const ref = jest.fn();
+  const screen = render(
+    <BloomThemeProvider mode="light" colorPreset="oxy">
+      <Card ref={ref} testID="callback-card" />
+    </BloomThemeProvider>,
+    {
+      createNodeMock: (element) =>
+        (element.props as { testID?: string }).testID === 'callback-card' ? handle : null,
+    },
+  );
+  expect(ref.mock.calls).toEqual([[handle]]);
+  screen.unmount();
+  expect(ref.mock.calls).toEqual([[handle], [null]]);
+});

@@ -52,3 +52,14 @@ So a surface that paints the material appears, leaves and dims through its **pre
 Native has no backdrop filter, so native hosts keep fading and dimming themselves with `opacity`. A host at full presence gets no `opacity` at all, so a caller's own `opacity` (a Card at `style={{ opacity: 0.4 }}`) still applies.
 
 Gates: `src/__tests__/backdrop-root.web.test.tsx` renders every file that paints the material at rest, pressed, disabled, opening and closing, and fails on any trigger on a host or an ancestor (inline, cascaded, a `@keyframes` that sets one, or a `:hover`/`:focus` rule that could); its census fails on a new painter that is neither rendered nor classified. `scripts/verify-backdrop-root.mjs` walks every Storybook story in Chromium, finds material hosts by their computed `::before`/`::after` backdrop filter, and samples every frame at rest, while hovering and pressing, and while overlay families open and close.
+
+
+### Native presence cost
+
+Native surfaces dim their host directly. DOM content-presence bookkeeping and
+host observation belong only to web; the platform is selected once when the
+module loads. Card preserves its forwarded native ref and press/disabled
+opacity, while web retains merged host observation and material-safe fading.
+SurfacePaint subscribes to the backing fill only on web, where tint compositing
+uses it. Keep native feed measurements and the web backdrop-root regression
+when changing these boundaries.
