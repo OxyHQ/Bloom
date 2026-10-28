@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.59.1
+
+### Fixed
+
+- **share-sheet: the title clears the sheet's drag handle.** `BottomSheet` draws its handle as an overlay (10px down, 5px tall) over the content, so `ShareSheet`'s heading sat under the pill. The sheet now keeps the same 20px top clearance a `SheetShell` body keeps below its handle, and 16px at the bottom.
+
+### Consumers
+
+Bump to 15.59.1. No API change.
+
 ## 15.59.0
 
 ### Added

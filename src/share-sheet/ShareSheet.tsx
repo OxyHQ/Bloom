@@ -39,6 +39,14 @@ const DISC = { sm: 44, md: 52, lg: 56 } as const;
 /** Placeholder tiles: two rows of the grid. */
 const PLACEHOLDERS = 8;
 
+/**
+ * Space left at the top for the sheet's drag handle, which `BottomSheet` draws
+ * as an overlay (10px down, 5px tall) over the content: the same 20px
+ * clearance a `SheetShell` body keeps below its handle. Without it the title
+ * sits under the pill.
+ */
+const HANDLE_CLEARANCE = 20;
+
 function ShareSheetComponent({
   title,
   search,
@@ -120,12 +128,15 @@ function ShareSheetComponent({
   }
 
   return (
-    <View style={[{ gap: 12, paddingBottom: 8 }, style]} testID={testID}>
+    <View
+      style={[{ gap: 12, paddingTop: HANDLE_CLEARANCE, paddingBottom: 16 }, style]}
+      testID={testID}
+    >
       {heading ? (
         <Text
           variant="body-semibold"
           role="heading"
-          style={{ color: colors.text, textAlign: 'center', paddingTop: 4 }}
+          style={{ color: colors.text, textAlign: 'center' }}
         >
           {heading}
         </Text>
