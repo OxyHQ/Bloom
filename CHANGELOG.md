@@ -2,6 +2,18 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.61.0
+
+### Added
+
+- **platform-surface: the host platform's popups (`BloomProvider platform={…}`, `@oxy.so/bloom/platform-surface`).** An adapter reports what the platform can do (`capabilities`) and supplies the component that does it. With `popup-surface`, native `DropdownMenu` content is an anchored panel (`floating/PopupPanel`, the web menu panel's chrome) in the adapter's `PopupSurface`, which renders it in a popup of the platform in the same React tree. An OxyOS compositor popup can extend beyond the application window. `side` / `align` / `sideOffset` / `alignOffset` and the rows are unchanged, and the platform's dismissal closes the menu. Without an adapter, every family keeps its default presentation.
+- **Keyboard in a platform popup (`PopupSurfaceProps.onKey`).** The platform sends the keys pressed while its popup has focus as W3C key names; the panel keeps an active row (`floating/popup-navigation`), painted like hover and shared with the pointer. Arrows, Home/End and PageUp/PageDown move it, Enter/Space activate it, Escape/Tab close the menu, and typed characters find a row by its label (typeahead).
+- **Accessibility in a platform popup.** The popup surface carries the menu's role and label (named once). Screen-reader focus moves into the popup when it opens, as into a sheet, and back to the trigger when it closes.
+
+### Consumers
+
+Bump to 15.61.0. No change unless an app registers a platform adapter.
+
 ## 15.60.5
 
 ### Fixed
