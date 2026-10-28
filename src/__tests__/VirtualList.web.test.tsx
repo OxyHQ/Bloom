@@ -759,9 +759,9 @@ describe('VirtualList retained row geometry', () => {
       act(() => ResizeObserverStub.deliverRows());
       mount(ui(true, 2));
       act(() => ResizeObserverStub.deliverRows());
-      expect(save.mock.calls.at(-1)?.[1].columns).toBe(1);
+      expect(save.mock.calls[save.mock.calls.length - 1]?.[1].columns).toBe(1);
       mount(ui(false, 2));
-      expect(save.mock.calls.at(-1)?.[1].columns).toBe(2);
+      expect(save.mock.calls[save.mock.calls.length - 1]?.[1].columns).toBe(2);
       mount(ui(true, 2));
       expect(container.querySelectorAll('[data-index]')).toHaveLength(2);
       mount(ui(true, 1));
