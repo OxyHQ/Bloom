@@ -20,6 +20,7 @@ import { useMenuPalette } from './menu-palette';
 import type { FloatingPositionProps } from './types';
 import { useMenuDensity } from './use-menu-density';
 import { usePopupNavigation } from './popup-navigation';
+import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 
 /** `rounded-radius-16`, the web menu panel's corner. */
 const PANEL_RADIUS = 16;
@@ -65,6 +66,10 @@ export function PopupPanel({
   const density = useMenuDensity();
   // The platform's keys move an active row among the panel's rows (`popup-navigation`).
   const navigation = usePopupNavigation(onClose);
+  // Screen-reader focus moves into the menu when it opens, as into a sheet (`SheetShell`); the
+  // panel is mounted only while open. The trigger takes it back on close
+  // (`TriggerSlot`'s `useRestoreAccessibilityFocus`).
+  const panelRef = useAccessibilityFocus<ComponentRef<typeof View>>(true);
   return (
     <PopupSurface
       anchorRef={anchorRef}
@@ -81,6 +86,7 @@ export function PopupPanel({
       {/* The popup surface carries the content's role and label; labelling the panel too
           would announce the menu's name twice. */}
       <StyledView
+        ref={panelRef}
         className={className}
         style={[
           styles.panel,

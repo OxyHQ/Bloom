@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { AccessibilityInfo, Pressable, Text, View } from 'react-native';
 import { act, fireEvent, render, renderHook } from '@testing-library/react-native';
 // Explicit native owner, not the web barrel.
 import {
@@ -121,6 +121,31 @@ describe('DropdownMenu (native) with a popup-surface adapter', () => {
     expect(props).toMatchObject({ role: 'menu', label: 'Message actions' });
     // The test surface renders a plain view, so any element named by the label is Bloom's own.
     expect(screen.queryAllByLabelText('Message actions')).toHaveLength(0);
+  });
+
+  it('moves screen-reader focus into the popup when it opens', () => {
+    jest.useFakeTimers();
+    const send = jest
+      .spyOn(AccessibilityInfo, 'sendAccessibilityEvent')
+      .mockImplementation(() => {});
+    const node = {};
+    try {
+      const screen = render(
+        <BloomProvider mode="light" platform={adapter(() => {})}>
+          <Menu />
+        </BloomProvider>,
+        { createNodeMock: () => node },
+      );
+      fireEvent.press(screen.getByTestId('trigger'));
+      act(() => {
+        jest.advanceTimersByTime(50);
+      });
+      expect(send).toHaveBeenCalledWith(node, 'focus');
+      expect(send).toHaveBeenCalledTimes(1);
+    } finally {
+      send.mockRestore();
+      jest.useRealTimers();
+    }
   });
 
   it('closes when a row is chosen and when the platform dismisses the popup', () => {
