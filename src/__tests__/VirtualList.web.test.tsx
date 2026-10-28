@@ -676,6 +676,102 @@ describe('VirtualList retained row geometry', () => {
       Object.defineProperty(Platform, 'OS', { configurable: true, value: platform });
     }
   });
+  it('ignores collapsed row measurements when data appends to an inactive screen', () => {
+    const metrics = {
+      scrollY: makeMutable(0),
+      contentHeight: makeMutable(1200),
+      viewportHeight: makeMutable(768),
+    };
+    const ui = (active: boolean, appended: boolean) => (
+      <ScreenViewportContext.Provider
+        value={{ kind: 'document', active, scrollRef: null, metrics, scrollTo: () => {} }}
+      >
+        <VirtualList
+          data={appended ? [...rows, { id: '3', height: 280 }] : rows}
+          estimatedItemSize={400}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <div data-height={active ? item.height : 0}>Hidden {item.id}</div>
+          )}
+        />
+      </ScreenViewportContext.Provider>
+    );
+    mount(ui(true, false));
+    act(() => ResizeObserverStub.deliverRows());
+    expectMeasuredRows();
+    mount(ui(false, true));
+    act(() => ResizeObserverStub.deliverRows());
+    expectMeasuredRows();
+    expect(
+      [...ResizeObserverStub.instances]
+        .flatMap((observer) => [...observer.targets])
+        .filter((node) => node.hasAttribute('data-index')),
+    ).toHaveLength(0);
+    mount(ui(true, true));
+    act(() => ResizeObserverStub.deliverRows());
+    expectMeasuredRows();
+    expect(container.querySelector('[data-index="3"]')).toHaveStyle({
+      transform: 'translateY(920px)',
+    });
+  });
+  it('preserves offscreen measurements when a retained Screen becomes inactive and resumes', () => {
+    const data = Array.from({ length: 60 }, (_, index) => ({
+      id: String(index),
+      height: heights[index % heights.length] ?? 140,
+    }));
+    const metrics = {
+      scrollY: makeMutable(0),
+      contentHeight: makeMutable(24000),
+      viewportHeight: makeMutable(768),
+    };
+    const ui = (active: boolean) => (
+      <ScreenViewportContext.Provider
+        value={{ kind: 'document', active, scrollRef: null, metrics, scrollTo: () => {} }}
+      >
+        <VirtualList
+          data={data}
+          estimatedItemSize={400}
+          overscan={1}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <div data-height={item.height}>Deep {item.id}</div>}
+        />
+      </ScreenViewportContext.Provider>
+    );
+    try {
+      mount(ui(true));
+      act(() => ResizeObserverStub.deliverRows());
+      for (const offset of [1800, 3600, 5400])
+        act(() => {
+          Object.defineProperty(window, 'scrollY', { configurable: true, value: offset });
+          window.dispatchEvent(new Event('scroll'));
+          ResizeObserverStub.deliverRows();
+        });
+      expect(container.querySelector('[data-index="0"]')).toBeNull();
+      const anchor = container.querySelector<HTMLDivElement>('[data-index]');
+      if (!anchor) throw new Error('Expected a mounted deep row');
+      const index = anchor.dataset.index;
+      const transform = anchor.style.transform;
+      mount(ui(false));
+      expect(
+        [...ResizeObserverStub.instances]
+          .flatMap((observer) => [...observer.targets])
+          .filter((node) => node.hasAttribute('data-index')),
+      ).toHaveLength(0);
+      jest.mocked(window.scrollTo).mockClear();
+      act(() => {
+        Object.defineProperty(window, 'scrollY', { configurable: true, value: 1200 });
+        window.dispatchEvent(new Event('scroll'));
+        ResizeObserverStub.deliverRows();
+      });
+      expect(window.scrollTo).not.toHaveBeenCalled();
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 5400 });
+      mount(ui(true));
+      act(() => ResizeObserverStub.deliverRows());
+      expect(container.querySelector(`[data-index="${index}"]`)).toHaveStyle({ transform });
+    } finally {
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
+    }
+  });
   it('keeps measured row heights when an Activity restores the same content', () => {
     mount(<React.Activity mode="visible">{list}</React.Activity>);
     act(() => ResizeObserverStub.deliverRows());

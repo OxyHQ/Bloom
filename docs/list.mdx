@@ -132,7 +132,9 @@ scroller, so the same call site works in a full-page route and in a side panel,
 and keeps working when a panel changes flow. There is no prop for it.
 
 A screen that is not in front (`Screen active={false}`, a hidden panel) leaves
-its list idle: rows measured at `display: none` would move a scroller the reader
+its list idle: its scroll owner and row observations detach while measured heights
+stay in the layout model. Disabling the virtualizer would erase offscreen heights
+and shift the reading position on return. Rows measured at `display: none` would move a scroller the reader
 is still using elsewhere. The list's origin is re-read whenever its box could
 have moved — shown again, or content above it grew — never from a box-less
 wrapper. Returning to retained content or resizing the viewport preserves measured

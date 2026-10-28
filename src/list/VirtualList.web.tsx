@@ -244,16 +244,19 @@ function VirtualListWebInner<T>(
     rangeExtractor,
     getItemKey: keyExtractor ? (row: number) => itemKey(firstItemOf(row)) : undefined,
   };
-  // Both are always called (hook order); only the one matching the scroller is
-  // enabled, so a panel switching flow keeps its list mounted.
+  // Enable only the model matching the scroller. Inactivity detaches its scroll
+  // owner instead of disabling it: TanStack clears offscreen measurements when
+  // disabled, which moves the saved reading position when a screen returns.
+  // A null owner disconnects its observers while preserving the layout model.
   const windowVirtualizer = useWindowVirtualizer<HTMLDivElement>({
     ...options,
-    enabled: active && !scroller,
+    enabled: !scroller,
+    getScrollElement: () => (active && !scroller && typeof window !== 'undefined' ? window : null),
   });
   const elementVirtualizer = useVirtualizer<HTMLElement, HTMLDivElement>({
     ...options,
-    enabled: active && scroller !== null,
-    getScrollElement: () => scrollElement,
+    enabled: scroller !== null,
+    getScrollElement: () => (active ? scrollElement : null),
   });
   const virtualizer = scroller ? elementVirtualizer : windowVirtualizer;
 
@@ -306,11 +309,15 @@ function VirtualListWebInner<T>(
       const existing = cache.get(key);
       if (existing) return existing;
       if (cache.size > ROW_REF_CACHE_CAP) cache.clear();
-      const cb = (node: HTMLDivElement | null) => measureElement(node);
+      const cb = (node: HTMLDivElement | null) => {
+        // Hidden rows may still receive data updates. Never measure their
+        // collapsed boxes; active refs reattach and observe real sizes on return.
+        if (!node || active) measureElement(node);
+      };
       cache.set(key, cb);
       return cb;
     };
-  }, [measureElement]);
+  }, [measureElement, active]);
 
   const flatStyle = StyleSheet.flatten(style);
   const flatContentStyle = StyleSheet.flatten(contentContainerStyle) as CSSProperties | undefined;
