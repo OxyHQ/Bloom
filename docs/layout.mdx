@@ -532,3 +532,26 @@ Gates: `auto-hide-bar.test.tsx` (modes, timers, motion maths and the CSS
 composition), `AutoHideBar.web.test.tsx` (inert/aria, the named strip, the
 one-layout FLIP through react-native-web). The native path is reasoned, not
 measured by Jest.
+
+
+### A bar drawn outside its body
+
+`useAutoHideBar(options)` holds one region's state and motion (the same
+options as `AutoHideBar`, without the bar, summary and body) and returns a
+controller. `AutoHideBarBody` slides the content it wraps; `AutoHideBarRegion`
+draws the band, the controls and the summary strip wherever its owner places
+it, `controller.height` tall from the top of its parent (`band={false}` leaves
+the band to `AutoHideBarBand`). A window that shares one toolbar across tabs
+gives each tab's body its own controller and draws a single region with the
+current one, so switching tabs never mounts a second toolbar:
+
+```tsx
+function Tab({ tab, current, publish }) {
+  const controller = useAutoHideBar({ collapsed: tab.scrolledDown, onReveal: () => reveal(tab.id) });
+  useLayoutEffect(() => { if (current) publish(controller); });
+  return <AutoHideBarBody controller={controller}><Page tab={tab} /></AutoHideBarBody>;
+}
+<AutoHideBarRegion controller={current} bar={<Toolbar />} summary={host} />
+```
+
+`AutoHideBar` itself is the hook, a body and a region in one box.

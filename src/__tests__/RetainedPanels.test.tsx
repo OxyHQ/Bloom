@@ -106,6 +106,19 @@ describe('retained panels (native)', () => {
     expect(hidden.props.importantForAccessibility).toBe('no-hide-descendants');
   });
 
+  it('keeps a hidden panel painted behind the shown ones when asked', () => {
+    const screen = render(
+      ui([{ id: 'a' }, { id: 'b', visible: false, hiddenPresentation: 'behind' }]),
+    );
+    const behind = style(screen, 'b');
+    expect(behind).toMatchObject({ position: 'absolute', top: 0, bottom: 0, zIndex: 0 });
+    expect(behind.opacity).toBeUndefined();
+    expect(style(screen, 'a')).toMatchObject({ zIndex: 1 });
+    const hidden = screen.getByTestId('shell-panels-retained-b', { includeHiddenElements: true });
+    expect(hidden.props.pointerEvents).toBe('none');
+    expect(hidden.props.importantForAccessibility).toBe('no-hide-descendants');
+  });
+
   it('commits proportional spans from a divider against where the drag began, within its minimum', () => {
     const changes: Readonly<Record<string, number>>[] = [];
     function Harness() {

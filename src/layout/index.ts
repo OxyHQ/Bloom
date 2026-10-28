@@ -36,5 +36,16 @@ export type { ScrollSurfaceProps } from './types';
 export { Toolbar } from './Toolbar';
 export type { ToolbarProps } from './types';
 
-export { AutoHideBar } from './AutoHideBar';
-export type { AutoHideBarMotion, AutoHideBarProps } from './types';
+export {
+  AutoHideBar,
+  AutoHideBarBand,
+  AutoHideBarBody,
+  AutoHideBarRegion,
+  useAutoHideBar,
+} from './AutoHideBar';
+export type {
+  AutoHideBarController,
+  AutoHideBarMotion,
+  AutoHideBarOptions,
+  AutoHideBarProps,
+} from './types';

@@ -25,7 +25,7 @@ import {
   SUMMARY_OPACITY,
 } from './auto-hide-bar-motion';
 import { LAYOUT_MESSAGES } from './messages';
-import type { AutoHideBarProps } from './types';
+import type { AutoHideBarController, AutoHideBarOptions, AutoHideBarProps } from './types';
 import { useAutoHideBarMode } from './use-auto-hide-bar';
 
 const DEFAULT_HEIGHT = 41;
@@ -52,9 +52,7 @@ const transition = (property: string, css: { duration: string; easing: string })
  * ends. Hovering the strip peeks the whole bar over the body, which does not
  * move. Web runs on CSS transitions, native on Reanimated, from the same specs.
  */
-export function AutoHideBar({
-  bar,
-  summary,
+export function useAutoHideBar({
   collapsed,
   height = DEFAULT_HEIGHT,
   collapsedHeight = DEFAULT_COLLAPSED_HEIGHT,
@@ -65,11 +63,7 @@ export function AutoHideBar({
   motion,
   background,
   revealLabel,
-  children,
-  style,
-  testID,
-}: AutoHideBarProps) {
-  const direction = useDirectionProps();
+}: AutoHideBarOptions): AutoHideBarController {
   const { messages } = useMessages(LAYOUT_MESSAGES);
   const surface = useSurfaceFill();
   const reducedMotion = useReducedMotion();
@@ -186,20 +180,18 @@ export function AutoHideBar({
   const summaryOpacity = interpolateStops(SUMMARY_OPACITY, barTarget);
   const controlsCss = composedCss(fadeSpec, CONTROLS_OPACITY, fromBar, barTarget, false);
   const summaryCss = composedCss(fadeSpec, SUMMARY_OPACITY, fromBar, barTarget, false);
-  const controlsRef = useRef<ComponentRef<typeof RNView>>(null);
-  const summaryRef = useRef<ComponentRef<typeof RNView>>(null);
-  // The bar may hold material controls: fade its pieces, never an ancestor of
-  // a material host (that would turn the material flat for the whole fade).
-  useSurfacePresenceContent(controlsRef, {
-    presence: controlsOpacity,
-    duration: Number.parseFloat(controlsCss.duration),
-    easing: controlsCss.easing,
-  });
-  useSurfacePresenceContent(summaryRef, {
-    presence: summaryOpacity,
-    duration: Number.parseFloat(summaryCss.duration),
-    easing: summaryCss.easing,
-  });
+  const presence = {
+    controls: {
+      presence: controlsOpacity,
+      duration: Number.parseFloat(controlsCss.duration),
+      easing: controlsCss.easing,
+    },
+    summary: {
+      presence: summaryOpacity,
+      duration: Number.parseFloat(summaryCss.duration),
+      easing: summaryCss.easing,
+    },
+  };
   const webControls: WebCssStyle = {
     ...surfacePresenceVars(controlsOpacity, Number.parseFloat(controlsCss.duration)),
     transform: [
@@ -233,7 +225,171 @@ export function AutoHideBar({
   const hiddenBar = mode === 'collapsed';
   const label = revealLabel ?? messages.showToolbar;
   const fill = background ?? surface;
+  return {
+    mode,
+    height,
+    strip,
+    hiddenBar,
+    label,
+    fill,
+    controls,
+    bodyRef,
+    presence,
+    styles: {
+      body: IS_WEB ? webBodyStyle : bodyStyle,
+      band: IS_WEB ? webBand : bandStyle,
+      controls: IS_WEB ? webControls : [geometryStyle, controlsFade],
+      summary: IS_WEB ? webSummary : summaryFade,
+    },
+  };
+}
 
+/** The body under an auto-hiding bar: laid out once per change and slid, never re-laid every frame. */
+export function AutoHideBarBody({
+  controller,
+  children,
+  testID,
+}: {
+  controller: AutoHideBarController;
+  children?: React.ReactNode;
+  testID?: string;
+}) {
+  return (
+    <Host
+      ref={controller.bodyRef}
+      testID={testID}
+      style={[
+        { position: 'absolute', insetInlineStart: 0, insetInlineEnd: 0, bottom: 0 },
+        controller.styles.body as never,
+      ]}
+    >
+      {children}
+    </Host>
+  );
+}
+
+/**
+ * The bar of an auto-hiding region, drawn wherever its owner places it: the
+ * band, the controls and the summary strip, `controller.height` tall from the
+ * top of its parent. One bar can follow whichever body's controller is current
+ * (a window toolbar shared by tabs).
+ */
+export function AutoHideBarRegion({
+  controller,
+  bar,
+  summary,
+  band = true,
+  testID,
+}: {
+  controller: AutoHideBarController;
+  bar: React.ReactNode;
+  summary?: React.ReactNode;
+  /** Paint the band behind the bar. Default true. */
+  band?: boolean;
+  testID?: string;
+}) {
+  const { controls, hiddenBar, height, strip, label, fill, styles } = controller;
+  const controlsRef = useRef<ComponentRef<typeof RNView>>(null);
+  const summaryRef = useRef<ComponentRef<typeof RNView>>(null);
+  // The bar may hold material controls: fade its pieces, never an ancestor of
+  // a material host (that would turn the material flat for the whole fade).
+  // The region owns them, so a region mounted after its controller fades too.
+  useSurfacePresenceContent(controlsRef, controller.presence.controls);
+  useSurfacePresenceContent(summaryRef, controller.presence.summary);
+  return (
+    <View
+      pointerEvents="box-none"
+      testID={testID ? `${testID}-bar` : undefined}
+      style={{ position: 'absolute', top: 0, insetInlineStart: 0, insetInlineEnd: 0, height }}
+    >
+      {band ? <AutoHideBarBand controller={controller} /> : null}
+      <View
+        onPointerEnter={controls.barHoverIn}
+        onPointerLeave={controls.barHoverOut}
+        {...({ onMouseEnter: controls.barHoverIn, onMouseLeave: controls.barHoverOut } as object)}
+        pointerEvents={hiddenBar ? 'none' : 'box-none'}
+        aria-hidden={hiddenBar || undefined}
+        accessibilityElementsHidden={hiddenBar}
+        importantForAccessibility={hiddenBar ? 'no-hide-descendants' : 'auto'}
+        {...(IS_WEB && hiddenBar ? { inert: true } : {})}
+        testID={testID ? `${testID}-controls` : undefined}
+        style={StyleSheet.absoluteFill}
+      >
+        <Host ref={controlsRef} style={[{ height }, styles.controls as never]}>
+          {bar}
+        </Host>
+      </View>
+      <Host
+        ref={summaryRef}
+        pointerEvents={hiddenBar ? 'auto' : 'none'}
+        aria-hidden={!hiddenBar || undefined}
+        accessibilityElementsHidden={!hiddenBar}
+        importantForAccessibility={hiddenBar ? 'auto' : 'no-hide-descendants'}
+        {...(IS_WEB && !hiddenBar ? { inert: true } : {})}
+        style={[
+          { position: 'absolute', top: 0, insetInlineStart: 0, insetInlineEnd: 0, height: strip },
+          styles.summary as never,
+        ]}
+      >
+        <Pressable
+          role="button"
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          onPress={controls.reveal}
+          onHoverIn={controls.stripHoverIn}
+          onHoverOut={controls.stripHoverOut}
+          testID={testID ? `${testID}-strip` : undefined}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingInlineStart: 12,
+            paddingInlineEnd: 12,
+          }}
+        >
+          {typeof summary === 'string' ? (
+            <Muted numberOfLines={1} style={{ fontSize: 11, lineHeight: 14, fontWeight: '500' }}>
+              {summary}
+            </Muted>
+          ) : (
+            summary
+          )}
+        </Pressable>
+      </Host>
+    </View>
+  );
+}
+
+/** The band behind an auto-hiding bar alone, for an owner that draws it apart from the controls. */
+export function AutoHideBarBand({ controller }: { controller: AutoHideBarController }) {
+  return (
+    <Host
+      pointerEvents="none"
+      style={[
+        {
+          position: 'absolute',
+          top: 0,
+          insetInlineStart: 0,
+          insetInlineEnd: 0,
+          height: controller.height,
+          backgroundColor: controller.fill,
+        },
+        controller.styles.band as never,
+      ]}
+    />
+  );
+}
+
+export function AutoHideBar({
+  bar,
+  summary,
+  children,
+  style,
+  testID,
+  ...options
+}: AutoHideBarProps) {
+  const direction = useDirectionProps();
+  const controller = useAutoHideBar(options);
   return (
     <View
       {...direction}
@@ -243,92 +399,10 @@ export function AutoHideBar({
         style,
       ]}
     >
-      <Host
-        ref={bodyRef}
-        testID={testID ? `${testID}-body` : undefined}
-        style={[
-          { position: 'absolute', insetInlineStart: 0, insetInlineEnd: 0, bottom: 0 },
-          IS_WEB ? webBodyStyle : bodyStyle,
-        ]}
-      >
+      <AutoHideBarBody controller={controller} testID={testID ? `${testID}-body` : undefined}>
         {children}
-      </Host>
-      <View
-        pointerEvents="box-none"
-        testID={testID ? `${testID}-bar` : undefined}
-        style={{ position: 'absolute', top: 0, insetInlineStart: 0, insetInlineEnd: 0, height }}
-      >
-        <Host
-          pointerEvents="none"
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              insetInlineStart: 0,
-              insetInlineEnd: 0,
-              height,
-              backgroundColor: fill,
-            },
-            IS_WEB ? webBand : bandStyle,
-          ]}
-        />
-        <View
-          onPointerEnter={controls.barHoverIn}
-          onPointerLeave={controls.barHoverOut}
-          {...({ onMouseEnter: controls.barHoverIn, onMouseLeave: controls.barHoverOut } as object)}
-          pointerEvents={hiddenBar ? 'none' : 'box-none'}
-          aria-hidden={hiddenBar || undefined}
-          accessibilityElementsHidden={hiddenBar}
-          importantForAccessibility={hiddenBar ? 'no-hide-descendants' : 'auto'}
-          {...(IS_WEB && hiddenBar ? { inert: true } : {})}
-          testID={testID ? `${testID}-controls` : undefined}
-          style={StyleSheet.absoluteFill}
-        >
-          <Host
-            ref={controlsRef}
-            style={[{ height }, IS_WEB ? webControls : [geometryStyle, controlsFade]]}
-          >
-            {bar}
-          </Host>
-        </View>
-        <Host
-          ref={summaryRef}
-          pointerEvents={hiddenBar ? 'auto' : 'none'}
-          aria-hidden={!hiddenBar || undefined}
-          accessibilityElementsHidden={!hiddenBar}
-          importantForAccessibility={hiddenBar ? 'auto' : 'no-hide-descendants'}
-          {...(IS_WEB && !hiddenBar ? { inert: true } : {})}
-          style={[
-            { position: 'absolute', top: 0, insetInlineStart: 0, insetInlineEnd: 0, height: strip },
-            IS_WEB ? webSummary : summaryFade,
-          ]}
-        >
-          <Pressable
-            role="button"
-            accessibilityRole="button"
-            accessibilityLabel={label}
-            onPress={controls.reveal}
-            onHoverIn={controls.stripHoverIn}
-            onHoverOut={controls.stripHoverOut}
-            testID={testID ? `${testID}-strip` : undefined}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingInlineStart: 12,
-              paddingInlineEnd: 12,
-            }}
-          >
-            {typeof summary === 'string' ? (
-              <Muted numberOfLines={1} style={{ fontSize: 11, lineHeight: 14, fontWeight: '500' }}>
-                {summary}
-              </Muted>
-            ) : (
-              summary
-            )}
-          </Pressable>
-        </Host>
-      </View>
+      </AutoHideBarBody>
+      <AutoHideBarRegion controller={controller} bar={bar} summary={summary} testID={testID} />
     </View>
   );
 }

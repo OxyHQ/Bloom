@@ -1401,6 +1401,9 @@ coordinates (what `measureInWindow` reports; the viewport on the web).
 - **Edges are logical.** `start` is the left in LTR and the right in RTL; the
   label names the side the user sees ("Add left split"…, localized; `labels`
   overrides per edge).
+- **Translucent.** `appearance: 'translucent'` paints a translucent pane over the page
+  instead (white at 0.45 with a 0.08 edge and a 0.1 dash in the foreground's
+  ink; the accent at 0.12 when active), a desktop browser's split targets.
 - **Paint.** A quiet step off the panel's fill with its hairline, a dashed inner
   border (2pt dashes of 6/6 resting, 2.33pt of 7/7 active), a split glyph and the
   label in the fill's secondary text; the active target turns the accent's
@@ -1458,6 +1461,10 @@ browser tab's page, an editor, a native view) never happen:
   combined weight and respect `minWidth` / `minHeight`. `resizeHandle` picks the
   look.
 - **Drop zones** (`drop`) work as on any split.
+- **A painted hidden panel.** `hiddenPresentation: 'behind'` keeps a hidden
+  panel painted under the shown ones (still inert and out of the accessibility
+  tree), for content that shows itself during a gesture, such as the page a
+  swipe brings in.
 - Retained panels paint nothing: the content draws its own surface. Give a
   panel the `surfaceColor` its content paints and its drop zones step off
   that fill, as they do off a painted panel. The mode

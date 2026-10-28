@@ -12,8 +12,13 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { AutoHideBar } from '../layout/AutoHideBar';
-import type { AutoHideBarProps } from '../layout/types';
+import {
+  AutoHideBar,
+  AutoHideBarBody,
+  AutoHideBarRegion,
+  useAutoHideBar,
+} from '../layout/AutoHideBar';
+import type { AutoHideBarController, AutoHideBarProps } from '../layout/types';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
@@ -116,4 +121,68 @@ it('drives the bar with CSS transitions, not per-frame styles', () => {
   expect(controls.style.transitionDuration).toBe('150ms');
   expect(controls.style.transform).toContain('scale(0.94)');
   expect(controls.style.getPropertyValue('--bloom-surface-presence')).toBe('0');
+});
+
+describe('a bar drawn outside its body', () => {
+  function Pane({
+    id,
+    collapsed,
+    publish,
+  }: {
+    id: string;
+    collapsed: boolean;
+    publish: (id: string, controller: AutoHideBarController) => void;
+  }) {
+    const controller = useAutoHideBar({ collapsed, peekDelay: 0, unpeekDelay: 0 });
+    publish(id, controller);
+    return (
+      <div style={{ position: 'relative', height: 300 }}>
+        <AutoHideBarBody controller={controller} testID={`body-${id}`}>
+          <p>Page {id}</p>
+        </AutoHideBarBody>
+      </div>
+    );
+  }
+  function Window({ current, collapsed }: { current: string; collapsed: Record<string, boolean> }) {
+    const controllers = React.useRef<Record<string, AutoHideBarController>>({});
+    const publish = (id: string, controller: AutoHideBarController) => {
+      controllers.current[id] = controller;
+    };
+    const [, rerender] = React.useState(0);
+    React.useLayoutEffect(() => rerender((n) => n + 1), [current, collapsed]);
+    const active = controllers.current[current];
+    return (
+      <>
+        <Pane id="a" collapsed={!!collapsed.a} publish={publish} />
+        <Pane id="b" collapsed={!!collapsed.b} publish={publish} />
+        {active ? (
+          <AutoHideBarRegion
+            controller={active}
+            bar={<button type="button">Back</button>}
+            summary="example.com"
+            testID="window"
+          />
+        ) : null}
+      </>
+    );
+  }
+  const show = (current: string, collapsed: Record<string, boolean>) =>
+    act(() =>
+      root.render(
+        <BloomThemeProvider>
+          <Window current={current} collapsed={collapsed} />
+        </BloomThemeProvider>,
+      ),
+    );
+
+  it('follows the current body: its mode and its strip, each body sliding on its own', () => {
+    show('a', { a: true });
+    expect(byTest('window-controls').hasAttribute('inert')).toBe(true);
+    expect(byTest('window-strip')).toBeTruthy();
+    expect(byTest('body-a').style.top).toBe('20px');
+    expect(byTest('body-b').style.top).toBe('41px');
+    show('b', { a: true });
+    expect(byTest('window-controls').hasAttribute('inert')).toBe(false);
+    expect(byTest('window-strip').parentElement!.style.opacity).toBe('0');
+  });
 });

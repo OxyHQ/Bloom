@@ -2,6 +2,18 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.59.0
+
+### Added
+
+- **layout: an auto-hiding bar drawn outside its body (`useAutoHideBar`, `AutoHideBarBody`, `AutoHideBarRegion`, `AutoHideBarBand`).** The hook holds one region's state and motion; the body slides the content it wraps; the region draws the band, controls and summary strip wherever its owner places it. One window toolbar shared across tabs follows the current tab's controller, so switching tabs never mounts a toolbar per tab. `AutoHideBar` is now the hook, a body and a region in one box (unchanged).
+- **app-shell: translucent drop zones (`panelLayout.drop.appearance: 'translucent'`).** A translucent pane over the page (white at 0.45, a 0.08 edge, a 0.1 dash in the foreground's ink, the accent at 0.12 when active), a desktop browser's split targets; `surface` stays the default.
+- **app-shell: a hidden retained panel painted behind (`hiddenPresentation: 'behind'`).** Still inert and out of the accessibility tree, under the shown panels, for content that shows itself during a gesture (the page a profile swipe brings in).
+
+### Consumers
+
+Bump to 15.59.0. Opt-in.
+
 ## 15.58.0
 
 ### Added
