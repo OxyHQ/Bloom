@@ -66,6 +66,25 @@ describe('FontLoader (native)', () => {
     expect(queryByText('content')).toBeNull();
   });
 
+  it('renders children in the system font when a font fails to load', () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    setUseFontsResult([false, new Error('Inter: file not found')]);
+    const { getByText, queryByText } = render(
+      <FontLoader enabled fallback={<Text>fallback</Text>}>
+        <Text>content</Text>
+      </FontLoader>,
+    );
+    expect(getByText('content')).toBeTruthy();
+    expect(queryByText('fallback')).toBeNull();
+    // Inter is not made the default: it may be the face that failed.
+    expect((Text as TextWithDefaults).defaultProps?.style).toBeUndefined();
+    // Reported once (the renderer's own deprecation notice may also log).
+    const reports = error.mock.calls.filter((call) => String(call[0]).startsWith('[bloom]'));
+    expect(reports).toHaveLength(1);
+    expect(String(reports[0]?.[0])).toContain('Inter: file not found');
+    error.mockRestore();
+  });
+
   it('renders children when disabled, regardless of load state', () => {
     setUseFontsResult([false, null]);
     const { getByText } = render(

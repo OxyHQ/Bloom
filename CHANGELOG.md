@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.60.1
+
+### Fixed
+
+- **fonts: a font that fails to load no longer leaves the app blank on native.** `FontLoader` gated rendering on `useFonts`' `loaded` alone, but `expo-font` reports a failure as an error and never as loaded, so one unreadable font file hid every screen for good. The gate now opens on the error too: the app renders in the system font, Inter is not made the default text font, and the failure is reported once with `console.error`.
+
+### Consumers
+
+Bump to 15.60.1. No API change.
+
 ## 15.59.2
 
 ### Fixed

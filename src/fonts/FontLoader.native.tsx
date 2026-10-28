@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Text, type TextProps, type TextStyle, type StyleProp } from 'react-native';
 import { useFonts } from 'expo-font';
 import { FONT_ASSETS } from './font-assets.native';
@@ -10,7 +10,10 @@ export interface FontLoaderProps {
    * run unconditionally per the Rules of Hooks).
    */
   enabled: boolean;
-  /** Rendered while native fonts load. Defaults to `null`. */
+  /**
+   * Rendered while native fonts load. Defaults to `null`. If a font fails to
+   * load, the children render anyway, in the system font.
+   */
   fallback?: React.ReactNode;
   children: React.ReactNode;
 }
@@ -87,9 +90,14 @@ function applyDefaultTextFont(): void {
  * Bloom default is prepended to any caller `defaultProps.style`, so
  * per-call `style` overrides (which React applies after `defaultProps`)
  * still take precedence.
+ *
+ * A font that fails to load must not hide the app: `useFonts` then reports an
+ * error and never `loaded`, so the gate opens on the error and the app
+ * renders in the system font (Inter is not made the default, since it may be
+ * the face that failed). The failure is reported once.
  */
 export function FontLoader({ enabled, fallback, children }: FontLoaderProps) {
-  const [loaded] = useFonts(FONT_ASSETS);
+  const [loaded, error] = useFonts(FONT_ASSETS);
   const defaultsApplied = useRef(false);
 
   if (loaded && !defaultsApplied.current) {
@@ -97,7 +105,15 @@ export function FontLoader({ enabled, fallback, children }: FontLoaderProps) {
     applyDefaultTextFont();
   }
 
+  useEffect(() => {
+    if (error) {
+      console.error(
+        `[bloom] Bloom's fonts failed to load; text renders in the system font. ${error.message}`,
+      );
+    }
+  }, [error]);
+
   if (!enabled) return <>{children}</>;
-  if (!loaded) return <>{fallback ?? null}</>;
+  if (!loaded && !error) return <>{fallback ?? null}</>;
   return <>{children}</>;
 }
