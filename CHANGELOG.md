@@ -10,7 +10,7 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 
 ### Consumers
 
-Bump to 15.55.1. No API change.
+Bump to 15.56.1. No API change.
 
 ## 15.56.0
 
