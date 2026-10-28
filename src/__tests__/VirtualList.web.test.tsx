@@ -10,6 +10,8 @@ import '@testing-library/jest-dom';
 
 import { Platform } from 'react-native';
 import { makeMutable } from 'react-native-reanimated';
+import { ScrollRestorationProvider } from '../scroll/context';
+import { ScrollOffsetStore } from '../scroll/store';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Screen, useScreen, useScreenViewport } from '../screen';
 import {
@@ -49,7 +51,10 @@ class ResizeObserverStub {
           borderBoxSize: [
             {
               inlineSize: 600,
-              blockSize: Number(target.firstElementChild?.getAttribute('data-height')),
+              blockSize: Number(
+                target.firstElementChild?.getAttribute('data-height') ??
+                  (target as HTMLElement).offsetHeight,
+              ),
             },
           ],
           contentBoxSize: [],
@@ -499,9 +504,29 @@ describe('VirtualList retained row geometry', () => {
             768,
         );
       });
-    const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const rect = jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(() => ({
+      x: 0,
+      y: -window.scrollY,
+      top: -window.scrollY,
+      bottom: 768 - window.scrollY,
+      left: 0,
+      right: 600,
+      width: 600,
+      height: 768,
+      toJSON: () => ({}),
+    }));
+    const scrollTo = jest
+      .spyOn(window, 'scrollTo')
+      .mockImplementation((optionsOrX?: ScrollToOptions | number, y?: number) => {
+        const top = typeof optionsOrX === 'number' ? y : optionsOrX?.top;
+        if (top !== undefined) {
+          Object.defineProperty(window, 'scrollY', { configurable: true, value: top });
+          window.dispatchEvent(new Event('scroll'));
+        }
+      });
     restoreGeometry = () => {
       offsetHeight.mockRestore();
+      rect.mockRestore();
       scrollTo.mockRestore();
     };
   });
@@ -674,6 +699,129 @@ describe('VirtualList retained row geometry', () => {
       expectMeasuredRows();
     } finally {
       Object.defineProperty(Platform, 'OS', { configurable: true, value: platform });
+    }
+  });
+  it('remeasures changed row sizes and identities when restored after a width change', () => {
+    const adapter = { useScreenContentId: () => '/feed', useScreenFocusEffect: () => {} };
+    const resized = [
+      { id: '2', height: 300 },
+      { id: '0', height: 280 },
+      { id: 'new', height: 200 },
+    ];
+    const width = window.innerWidth;
+    const ui = (data: typeof rows | null) => (
+      <ScrollRestorationProvider adapter={adapter}>
+        {data && (
+          <VirtualList
+            restorationKey="viewer-a:home"
+            data={data}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <div data-height={item.height}>{item.id}</div>}
+          />
+        )}
+      </ScrollRestorationProvider>
+    );
+    try {
+      mount(ui(rows));
+      act(() => ResizeObserverStub.deliverRows());
+      mount(ui(null));
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 600 });
+      mount(ui(resized));
+      act(() => ResizeObserverStub.deliverRows());
+      expect(container.querySelector('[data-index="1"]')).toHaveStyle({
+        transform: 'translateY(300px)',
+      });
+      expect(container.querySelector('[data-index="2"]')).toHaveStyle({
+        transform: 'translateY(580px)',
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    }
+  });
+  it('keeps snapshots tied to their row grouping when column count changes live', () => {
+    const save = jest.spyOn(ScrollOffsetStore.prototype, 'saveMeasurements');
+    const adapter = { useScreenContentId: () => '/feed', useScreenFocusEffect: () => {} };
+    const ui = (shown: boolean, columns: number) => (
+      <ScrollRestorationProvider adapter={adapter}>
+        {shown && (
+          <VirtualList
+            restorationKey="grid"
+            numColumns={columns}
+            data={rows}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <div data-height={item.height}>{item.id}</div>}
+          />
+        )}
+      </ScrollRestorationProvider>
+    );
+    try {
+      mount(ui(true, 1));
+      act(() => ResizeObserverStub.deliverRows());
+      mount(ui(true, 2));
+      act(() => ResizeObserverStub.deliverRows());
+      expect(save.mock.calls.at(-1)?.[1].columns).toBe(1);
+      mount(ui(false, 2));
+      expect(save.mock.calls.at(-1)?.[1].columns).toBe(2);
+      mount(ui(true, 2));
+      expect(container.querySelectorAll('[data-index]')).toHaveLength(2);
+      mount(ui(true, 1));
+      act(() => ResizeObserverStub.deliverRows());
+      expectMeasuredRows();
+    } finally {
+      save.mockRestore();
+    }
+  });
+  it('restores offscreen row sizes before the first range after an actual route unmount', () => {
+    const data = Array.from({ length: 60 }, (_, index) => ({
+      id: String(index),
+      height: heights[index % heights.length] ?? 140,
+    }));
+    const adapter = { useScreenContentId: () => '/feed', useScreenFocusEffect: () => {} };
+    const ui = (shown: boolean, identity = 'viewer-a:home') => (
+      <ScrollRestorationProvider adapter={adapter}>
+        {shown && (
+          <VirtualList
+            restorationKey={identity}
+            data={data}
+            estimatedItemSize={400}
+            overscan={1}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <div data-height={item.height}>Restored {item.id}</div>}
+          />
+        )}
+      </ScrollRestorationProvider>
+    );
+    try {
+      mount(ui(true));
+      act(() => ResizeObserverStub.deliverRows());
+      for (const offset of [1800, 3600, 5400])
+        act(() => {
+          Object.defineProperty(window, 'scrollY', { configurable: true, value: offset });
+          window.dispatchEvent(new Event('scroll'));
+          ResizeObserverStub.deliverRows();
+        });
+      const anchor = [...container.querySelectorAll<HTMLDivElement>('[data-index]')].find(
+        (node) => {
+          const top = Number.parseFloat(node.style.transform.replace('translateY(', ''));
+          return top >= window.scrollY && top < window.scrollY + window.innerHeight;
+        },
+      );
+      if (!anchor) throw new Error('Expected a mounted deep row');
+      const index = anchor.dataset.index;
+      const transform = anchor.style.transform;
+      const spacer = anchor.parentElement;
+      mount(ui(false));
+      expect(spacer?.isConnected).toBe(false);
+      mount(ui(true));
+      expect(container.querySelector(`[data-index="${index}"]`)).toHaveStyle({ transform });
+      mount(ui(true, 'viewer-b:home'));
+      expect(
+        container.querySelector<HTMLDivElement>(`[data-index="${index}"]`)?.style.transform,
+      ).not.toBe(transform);
+      mount(ui(true));
+      expect(container.querySelector(`[data-index="${index}"]`)).toHaveStyle({ transform });
+    } finally {
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
     }
   });
   it('ignores collapsed row measurements when data appends to an inactive screen', () => {

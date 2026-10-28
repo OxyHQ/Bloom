@@ -27,6 +27,12 @@ export type VirtualListSlot = ReactElement | (() => ReactElement | null) | null 
 export interface VirtualListProps<T> {
   /** Opt into the nearest Screen geometry/motion without wrapping this list in a ScrollView. */
   screen?: import('../screen/types').ScreenScrollOptions;
+  /**
+   * Web: retain measured row sizes across route unmounts in the nearest scroll
+   * restoration scope. Use the same viewer/content identity as scroll offsets.
+   * Combined with the route content id; native accepts it without extra behavior.
+   */
+  restorationKey?: string;
   /** Row data. */
   data?: readonly T[] | null;
   /** Renders one row. */

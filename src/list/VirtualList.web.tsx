@@ -37,6 +37,11 @@
  * `package.json`.
  */
 import * as React from 'react';
+import {
+  useOptionalScrollRestorationContext,
+  type ScrollRestorationContextValue,
+} from '../scroll/context';
+import { deriveScrollKey, type ScrollOffsetStore } from '../scroll/store';
 import { useScreenViewport } from '../screen/context';
 import { useScreenWindowScroll } from '../screen/use-screen-window-scroll';
 import { useDocumentEndReached } from '../screen/use-document-end-reached';
@@ -111,8 +116,12 @@ function packGrid<T>(
   return rows;
 }
 
+type RestorableListProps<T> = VirtualListProps<T> & {
+  measurementRestoration?: { store: ScrollOffsetStore; key: string };
+};
+
 function VirtualListWebInner<T>(
-  props: VirtualListProps<T>,
+  props: RestorableListProps<T>,
   ref: React.ForwardedRef<VirtualListHandle>,
 ) {
   const {
@@ -133,6 +142,7 @@ function VirtualListWebInner<T>(
     numColumns = 1,
     overrideItemLayout,
     testID,
+    measurementRestoration,
   } = props;
 
   const items = data ?? [];
@@ -227,6 +237,13 @@ function VirtualListWebInner<T>(
     measureScrollMargin();
   }, [measureScrollMargin, count]);
 
+  // Seed before the first virtual range and before scroll restoration runs.
+  // The outer boundary remounts only when restoration identity changes.
+  const [initialMeasurements] = React.useState(() => {
+    const snapshot = measurementRestoration?.store.readMeasurements(measurementRestoration.key);
+    return snapshot?.columns === numColumns ? snapshot.items : [];
+  });
+
   const estimate = estimatedItemSize ?? DEFAULT_ESTIMATED_ITEM_SIZE;
   const itemKey = (index: number) => {
     const item = items[index];
@@ -237,6 +254,7 @@ function VirtualListWebInner<T>(
   // ordinary batched render lags.
   const options = {
     count: rowCount,
+    initialMeasurementsCache: initialMeasurements,
     estimateSize: () => estimate,
     overscan: overscan ?? DEFAULT_OVERSCAN,
     scrollMargin,
@@ -259,6 +277,18 @@ function VirtualListWebInner<T>(
     getScrollElement: () => (active ? scrollElement : null),
   });
   const virtualizer = scroller ? elementVirtualizer : windowVirtualizer;
+  React.useLayoutEffect(
+    () => () => {
+      if (!measurementRestoration) return;
+      const items = virtualizer.takeSnapshot();
+      if (items.length)
+        measurementRestoration.store.saveMeasurements(measurementRestoration.key, {
+          columns: numColumns,
+          items,
+        });
+    },
+    [measurementRestoration, virtualizer, numColumns],
+  );
 
   // Re-sync the list origin after mount and resize, including Activity effect
   // resumes. Do not clear row measurements: unchanged boxes do not produce new
@@ -434,12 +464,12 @@ function VirtualListWebInner<T>(
 }
 
 const PlainVirtualList = React.forwardRef(VirtualListWebInner) as <T>(
-  props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> },
+  props: RestorableListProps<T> & { ref?: React.Ref<VirtualListHandle> },
 ) => React.ReactElement;
 function ScreenVirtualList<T>({
   forwardedRef,
   ...props
-}: VirtualListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
+}: RestorableListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
   // A Screen that owns its viewport already drives chrome from it; the list
   // binds the window only for a document-flow Screen without one.
   const viewport = useScreenViewport();
@@ -466,10 +496,44 @@ function ScreenVirtualList<T>({
     />
   );
 }
+function RestoredVirtualList<T>({
+  context,
+  forwardedRef,
+  ...props
+}: VirtualListProps<T> & {
+  context: ScrollRestorationContextValue;
+  forwardedRef: React.ForwardedRef<VirtualListHandle>;
+}) {
+  const contentId = context.adapter.useScreenContentId();
+  const key = deriveScrollKey(contentId, props.restorationKey);
+  const measurementRestoration = React.useMemo(
+    () => (key ? { store: context.store, key } : undefined),
+    [context.store, key],
+  );
+  return props.screen ? (
+    <ScreenVirtualList
+      key={JSON.stringify([key, props.numColumns ?? 1])}
+      {...props}
+      forwardedRef={forwardedRef}
+      measurementRestoration={measurementRestoration}
+    />
+  ) : (
+    <PlainVirtualList
+      key={JSON.stringify([key, props.numColumns ?? 1])}
+      {...props}
+      ref={forwardedRef}
+      measurementRestoration={measurementRestoration}
+    />
+  );
+}
 const VirtualList = React.forwardRef(function VirtualList<T>(
   props: VirtualListProps<T>,
   ref: React.ForwardedRef<VirtualListHandle>,
 ) {
+  const context = useOptionalScrollRestorationContext();
+  if (context && props.restorationKey !== undefined) {
+    return <RestoredVirtualList {...props} context={context} forwardedRef={ref} />;
+  }
   return props.screen ? (
     <ScreenVirtualList {...props} forwardedRef={ref} />
   ) : (

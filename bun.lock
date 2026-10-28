@@ -5,7 +5,7 @@
     "": {
       "name": "@oxy.so/bloom",
       "dependencies": {
-        "@tanstack/react-virtual": "^3.14.3",
+        "@tanstack/react-virtual": "^3.14.4",
         "react-native-css": "3.1.0-rc.0",
         "react-remove-scroll-bar": "^2.3.8",
       },

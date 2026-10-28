@@ -148,6 +148,22 @@ attaches after child layout effects is still observed without an unrelated rende
 when no Screen viewport already does; a Screen that owns its viewport drives
 the header and bar from it.
 
+## Restoring web lists after route unmounts
+
+Pass `restorationKey` when the router unmounts a list on departure. Use the same
+viewer/content identity that owns its scroll offset, including filters or tabs.
+The nearest scroll restoration scope combines it with the route content id and
+retains measured row sizes in memory. A returning list seeds its first virtual
+range before the saved offset is restored; stable item keys reconcile reordered
+or removed rows, and mounted rows still report changed sizes normally.
+
+The geometry shares the offset store's 256-key bound, history pruning, forget and
+reset lifecycle. It is not serialized into portable offset snapshots. Separate
+provider scopes and keys never share measurements. Changing the key or grid
+column count starts a different list layout. Without a restoration scope/key,
+the list keeps only its own mounted state. Native accepts the prop without
+adding a second restoration mechanism.
+
 ## Native: FlashList when installed
 
 `@shopify/flash-list` (v2) is an optional peer. Install it and every native
