@@ -430,42 +430,66 @@ export function createScreen(
                               }
                         }
                       >
-                        {ownWebViewport ? (
+                        {/* Keep routed children at one tree position when scroll ownership
+                            changes. Non-owning web wrappers create no layout boxes. */}
+                        {Platform.OS === 'web' ? (
                           <View
-                            ref={viewport.scrollRef as React.Ref<React.ElementRef<typeof View>>}
+                            ref={
+                              ownWebViewport
+                                ? (viewport.scrollRef as React.Ref<React.ElementRef<typeof View>>)
+                                : undefined
+                            }
                             {...{
-                              dataSet: { bloomScreenViewport: document ? 'document' : 'element' },
+                              dataSet: ownWebViewport
+                                ? { bloomScreenViewport: document ? 'document' : 'element' }
+                                : undefined,
                             }}
-                            testID={testID ? `${testID}-viewport` : undefined}
-                            style={[
-                              {
-                                minHeight: 0,
-                                minWidth: 0,
-                                flexGrow: 1,
-                                flexShrink: document ? 0 : 1,
-                                flexBasis: document || contentSized ? 'auto' : 0,
-                              },
-                              {
-                                overflowX: document ? 'visible' : 'hidden',
-                                overflowY: document ? 'visible' : 'auto',
-                                overscrollBehaviorY: document ? undefined : 'contain',
-                                ...(document
-                                  ? {}
-                                  : { containerType: contentSized ? 'inline-size' : 'size' }),
-                              } as WebCssStyle,
-                            ]}
+                            testID={ownWebViewport && testID ? `${testID}-viewport` : undefined}
+                            style={
+                              ownWebViewport
+                                ? [
+                                    {
+                                      minHeight: 0,
+                                      minWidth: 0,
+                                      flexGrow: 1,
+                                      flexShrink: document ? 0 : 1,
+                                      flexBasis: document || contentSized ? 'auto' : 0,
+                                    },
+                                    {
+                                      overflowX: document ? 'visible' : 'hidden',
+                                      overflowY: document ? 'visible' : 'auto',
+                                      overscrollBehaviorY: document ? undefined : 'contain',
+                                      ...(document
+                                        ? {}
+                                        : { containerType: contentSized ? 'inline-size' : 'size' }),
+                                    } as WebCssStyle,
+                                  ]
+                                : { display: 'contents' }
+                            }
                           >
                             <View
-                              ref={viewport.contentRef as React.Ref<React.ElementRef<typeof View>>}
-                              testID={testID ? `${testID}-scroll-content` : undefined}
-                              style={{
-                                minWidth: 0,
-                                flexGrow: 1,
-                                flexShrink: 0,
-                                ...(!document
-                                  ? { paddingTop: reservedTop, paddingBottom: reservedBottom }
-                                  : {}),
-                              }}
+                              ref={
+                                ownWebViewport
+                                  ? (viewport.contentRef as React.Ref<
+                                      React.ElementRef<typeof View>
+                                    >)
+                                  : undefined
+                              }
+                              testID={
+                                ownWebViewport && testID ? `${testID}-scroll-content` : undefined
+                              }
+                              style={
+                                ownWebViewport
+                                  ? {
+                                      minWidth: 0,
+                                      flexGrow: 1,
+                                      flexShrink: 0,
+                                      ...(!document
+                                        ? { paddingTop: reservedTop, paddingBottom: reservedBottom }
+                                        : {}),
+                                    }
+                                  : { display: 'contents' }
+                              }
                             >
                               {children}
                             </View>

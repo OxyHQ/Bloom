@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.59.2
+
+### Fixed
+
+- Preserve web `Screen` descendants when `scroll` changes between `auto`, `content` and `none`. Switching ownership previously remounted routed navigators, which could leave a profile's content empty on return. Non-owning wrappers are layout-transparent and inherit the parent viewport.
+
+### Consumers
+
+Bump to 15.59.2. No API change.
+
 ## 15.59.1
 
 ### Fixed
