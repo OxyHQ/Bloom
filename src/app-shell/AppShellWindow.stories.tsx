@@ -298,3 +298,77 @@ function TopStripWindow() {
 
 /** Tabs across the top: the strip is the top bar, the card starts right under it. */
 export const TopTabStrip: Story = { render: () => <TopStripWindow /> };
+
+const RETAINED = ['One', 'Two', 'Three', 'Four'];
+const pageDoc = (label: string) =>
+  `<body style="margin:0;font:15px system-ui;display:grid;place-items:center;height:100vh"><p>${label}: loaded <b id="n"></b> time(s)</p><script>const k='bloom-retained-${label}';const n=+(sessionStorage.getItem(k)||0)+1;sessionStorage.setItem(k,n);document.getElementById('n').textContent=n</script></body>`;
+
+function RetainedPage({ label }: { label: string }) {
+  const theme = useTheme();
+  return (
+    <View
+      style={{ flex: 1, borderRadius: 10, overflow: 'hidden', backgroundColor: theme.colors.card }}
+    >
+      <iframe
+        title={label}
+        srcDoc={pageDoc(label)}
+        style={{ border: 0, width: '100%', height: '100%' }}
+      />
+    </View>
+  );
+}
+
+function RetainedWindow() {
+  const [order, setOrder] = useState(RETAINED);
+  const [shown, setShown] = useState(3);
+  const [stacked, setStacked] = useState(false);
+  const [spans, setSpans] = useState<Readonly<Record<string, number>>>({});
+  const visible = order.slice(0, shown);
+  return (
+    <WindowBackdrop>
+      <View style={{ flexDirection: 'row', gap: 8, padding: 8 }}>
+        <Button onPress={() => setOrder((o) => [...o.slice(1), o[0]!])}>Rotate</Button>
+        <Button onPress={() => setShown((n) => (n % 4) + 1)}>Show {(shown % 4) + 1}</Button>
+        <Button onPress={() => setStacked((s) => !s)}>
+          {stacked ? 'Unstack' : 'Stack the last two'}
+        </Button>
+      </View>
+      <BloomScope panelRadius={10}>
+        <AppShell
+          testID="retained-window"
+          background="transparent"
+          header={null}
+          variant="feed"
+          scroll="fixed"
+          contentMaxWidth="none"
+          panelLayout={{
+            mode: 'split',
+            flow: 'bounded',
+            retain: true,
+            gap: 7,
+            resizeHandle: 'pill',
+            spans,
+            onSpansChange: setSpans,
+            panels: order.map((label) => ({
+              id: label,
+              visible: visible.includes(label),
+              stack: stacked && visible.indexOf(label) >= visible.length - 2 ? 'stack' : undefined,
+              resizable: true,
+              minWidth: 160,
+              minHeight: 120,
+              content: <RetainedPage label={label} />,
+            })),
+          }}
+        />
+      </BloomScope>
+    </WindowBackdrop>
+  );
+}
+
+/**
+ * Retained panels (`panelLayout.retain`): each page is an iframe that counts
+ * its own loads. Rotating the panels, stacking the last two, showing fewer and
+ * showing them again moves only geometry: every count stays at 1, and a
+ * hidden page keeps its size so it shows again at once.
+ */
+export const RetainedPanels: Story = { render: () => <RetainedWindow /> };

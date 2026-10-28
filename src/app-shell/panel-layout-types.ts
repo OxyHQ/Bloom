@@ -61,6 +61,12 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
    * In a deck, an explicit positive span shares spare room without shrinking the width basis.
    */
   span?: number;
+  /**
+   * With `retain`: panels sharing a `stack` id share one slot of the layout,
+   * stacked along the other axis in their array order. The slot's weight is
+   * `spans[stack]`; each panel's share of it is `spans[id]`.
+   */
+  stack?: string;
   navigation?: PanelNavigationOptions;
 }
 /** A transient user action, not persisted selection or restoration state. */
@@ -131,6 +137,17 @@ export interface AppShellPanelLayout {
   resizeHandle?: ResizeHandleVariant;
   /** Edge targets for a drag the application owns (a tab, a file, a card). */
   drop?: AppShellPanelDrop;
+  /**
+   * Retained content: every panel's content stays mounted as a child of one
+   * region, in the order its id was first seen, whatever the panels' order,
+   * stacks or visibility. Reordering, stacking (`stack`) and hiding change
+   * geometry only, so a page in an iframe never reloads and a native view
+   * never detaches; a hidden panel keeps the region's full size, invisible
+   * and inert, so it shows again without a relayout. Panels are laid out
+   * from their spans alone (proportional, `minWidth`/`minHeight` bound
+   * resizing) and paint nothing of their own. `split` mode, bounded flow.
+   */
+  retain?: boolean;
 }
 
 /** A panel edge, logical on the inline axis: `start` is the left in LTR, the right in RTL. */

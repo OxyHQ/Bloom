@@ -75,6 +75,7 @@ import {
   type ResolvedPanelTrack,
 } from './panel-layout';
 import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './PanelDropZones';
+import { RetainedPanelLayout } from './RetainedPanelLayout';
 import type {
   AppShellPanelDefinition,
   AppShellPanelLayout,
@@ -1246,6 +1247,8 @@ export function createPanelLayoutView(
   function PanelLayoutView(props: PanelLayoutViewProps) {
     const region = useAppShellRegion();
     const cssScope = useContext(PanelCssContext);
+    if (props.layout.retain)
+      return <RetainedPanelLayout layout={props.layout} gap={props.gap} testID={props.testID} />;
     if (props.layout.header === undefined) return <PanelLayoutTracks {...props} />;
     const document =
       props.layout.flow === 'document' && props.layout.mode !== 'deck' && Platform.OS === 'web';

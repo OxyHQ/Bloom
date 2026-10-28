@@ -2,6 +2,15 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.58.0
+
+### Added
+
+- **app-shell: retained panels (`panelLayout.retain`, panel `stack`).** Every panel's content stays mounted as a child of one region in the order its id was first seen; reordering panels, moving one into or out of a `stack` and hiding or showing it change only its box. Nothing remounts, no DOM node moves (an iframe is never taken out of the document, so its page never reloads) and a hidden panel keeps the region's full size, invisible and inert rather than `display: none`, so it shows again without a relayout. Boxes are fractions of the region plus fixed offsets, the same on the web and native, so a resizing region moves them with no JavaScript. Dividers commit proportional `spans` within `minWidth`/`minHeight`; drop zones and `resizeHandle` work as on any split. A desktop browser's tabs as split panes. Gates: an iframe sentinel (no iframe added to or removed from the document across rotate, stack, hide and return; fails when the region follows the panels' order), native mount counts, geometry and divider tests; the **Retained Panels** story.
+
+### Consumers
+
+Bump to 15.58.0. Opt-in.
 ## 15.57.0
 
 ### Added

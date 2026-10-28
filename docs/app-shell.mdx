@@ -1411,6 +1411,60 @@ coordinates (what `measureInWindow` reports; the viewport on the web).
 
 The **Panel Drop Zones** story sweeps a simulated drag across a two-pane split.
 
+### Retained panels
+
+`panelLayout.retain: true` keeps every panel's content mounted as a child of
+one region, keyed by its id, in the order the ids were first seen. Where a
+panel shows is geometry only, so the three things that cost a heavy panel (a
+browser tab's page, an editor, a native view) never happen:
+
+- **Moving a panel never remounts it.** Reordering `panels`, or moving one
+  into or out of a `stack`, changes its box and nothing else: its React tree,
+  native view and state stay where they are.
+- **Reordering never moves a DOM node.** The region's children keep their
+  first-seen order; a panel's place is its box. An iframe is never taken out
+  of the document, which is what reloads its page.
+- **A hidden panel keeps its size.** `visible: false` lays it over the whole
+  region, invisible (`visibility: hidden` on the web, opacity 0 on native),
+  inert, out of the accessibility tree and the pointer's way, never
+  `display: none`: its content keeps its layout, so showing it again is one
+  style change.
+
+```tsx
+<AppShell panelLayout={{
+  mode: 'split', flow: 'bounded', retain: true, gap: 7, resizeHandle: 'pill',
+  spans, onSpansChange: setSpans,
+  panels: tabs.map((tab) => ({
+    id: tab.id,
+    visible: shown.includes(tab.id),
+    stack: stacked.includes(tab.id) ? 'right' : undefined,
+    resizable: true, minWidth: 220, minHeight: 220,
+    content: <Page tab={tab} />,
+  })),
+  drop,
+}} />
+```
+
+- **Slots and stacks.** Visible panels take slots along the layout's `axis` in
+  array order; panels sharing a `stack` id share one slot, stacked along the
+  other axis. A slot's weight is `spans[id]` (`spans[stack]` for a stack) and a
+  stacked panel's share of its slot is `spans[id]`.
+- **Geometry without measuring.** Each edge is a fraction of the region plus a
+  fixed offset, written as a percentage inset and a margin (`retained-geometry.ts`),
+  identical on the web and native. A region that resizes (a window, a
+  navigation docking away) moves the panels with no JavaScript.
+- **Dividers** sit in every gap between slots and inside a stack, after a
+  `resizable` panel; a drag commits proportional `spans` that keep the pair's
+  combined weight and respect `minWidth` / `minHeight`. `resizeHandle` picks the
+  look.
+- **Drop zones** (`drop`) work as on any split.
+- Retained panels paint nothing: the content draws its own surface. The mode
+  is for `split` layouts with bounded flow; `deck`, document flow, a workspace
+  `header`, panel `navigation` and `floating` panels are not part of it.
+
+The **Retained Panels** story counts each iframe's loads while panels rotate,
+stack, hide and come back: every count stays at 1.
+
 ## A desktop window
 
 A desktop app's window is the same shell: the navigation flush to the window,
