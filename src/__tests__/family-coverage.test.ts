@@ -383,6 +383,9 @@ const NO_COMPONENT: readonly string[] = [
   'image-resolver',
   // A context Provider, a hook and the language table — no `.tsx`.
   'locale',
+  // An adapter type, a raw context Provider and hooks — no `.tsx`; the
+  // adapter's own component is the platform's, not Bloom's.
+  'platform-surface',
 ];
 
 const docStem = (family: string): string => DOC_ALIASES[family] ?? family;

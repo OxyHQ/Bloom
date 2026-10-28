@@ -2,6 +2,7 @@ import type { ServerStylePolicy } from '../styles/context';
 import type { ReactNode } from 'react';
 import type { ScrollRouterAdapter } from '../scroll/types';
 import type { ImageResolver } from '../image-resolver';
+import type { PlatformSurfaceAdapter } from '../platform-surface/types';
 import type { BloomThemeProviderProps } from '../theme';
 
 export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'children'> {
@@ -25,6 +26,13 @@ export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'child
    * Typically `(id, variant) => oxyServices.getFileDownloadUrl(id, variant)`.
    */
   imageResolver?: ImageResolver;
+  /**
+   * The host platform's surfaces (`@oxy.so/bloom/platform-surface`). An adapter
+   * reporting `popup-surface` turns native menus into anchored panels in the
+   * platform's popups (OxyOS compositor popups, which may extend beyond the
+   * window). Omitted, every family keeps its default presentation.
+   */
+  platform?: PlatformSurfaceAdapter;
   /** `false` disables haptic feedback app-wide (honored by every `useHaptics()` call). */
   haptics?: boolean;
   /**

@@ -1,0 +1,64 @@
+---
+title: Platform surfaces
+description: The host platform's popups, registered once at the root, so native menus can open beyond the window.
+order: 55
+---
+
+# Platform surfaces
+
+A native menu is a bottom sheet in an RN `Modal`: the right presentation on a
+phone. A platform with its own popup surfaces can do better: an OxyOS
+compositor popup is anchored to the trigger and may extend beyond the
+application window, over other applications. Bloom does not learn any
+platform's protocol. The app registers an **adapter** that reports what the
+platform can do and supplies the component that does it.
+
+```tsx
+import type { PlatformSurfaceAdapter } from '@oxy.so/bloom/platform-surface';
+
+const oxyos: PlatformSurfaceAdapter = {
+  platform: 'oxyos',
+  capabilities: new Set(['popup-surface']),
+  PopupSurface, // the platform's host component, below
+};
+
+<BloomProvider platform={oxyos}>
+  <App />
+</BloomProvider>
+```
+
+Without an adapter, or with one that does not report `popup-surface`, every
+family keeps its default presentation. Existing Android, iOS and web apps are
+unchanged.
+
+## `popup-surface`
+
+`PopupSurface` receives `PopupSurfaceProps`:
+- `anchorRef`: the trigger's view;
+- Bloom's placement (`side`, `align`, `sideOffset`, `alignOffset`, the same
+  `FloatingPositionProps` the web panel takes);
+- the content's `role` and accessible `label`;
+- `onDismiss`.
+
+It renders its `children` in a popup of the platform, **in the same React
+tree**, the way RN's `Modal` renders into another window. Providers, theme,
+locale and state reach the panel as they reach any child; a React portal alone
+could not cross the window's clipping.
+
+- The panel sizes itself; the platform places it and keeps it on screen. It
+  flips on the side axis and slides on the other.
+- The platform closes the popup itself on an outside press, a refused grab, or
+  its parent going away. `onDismiss(reason)` then closes the menu (`reason` is
+  `'outside-press'`, `'denied'` or `'closed'`).
+- `usePopupSurface()` returns the component only when the capability is
+  reported. An adapter that reports it without the component throws instead of
+  silently falling back.
+
+Today native `DropdownMenu` uses it: its content becomes `floating/PopupPanel`
+(the web menu panel's chrome: menu palette, 16px radius, hairline border, the
+266px floor) in the popup, with the same rows. The rest of the native overlay
+families still present through `dialog/SheetShell`.
+
+The OxyOS adapter, and the host component behind it, live with the OxyOS
+runtime (OxyHQ/OxyOS, `tools/rn-host-spike`): Bloom stays free of OxyOS,
+protocol and SDK imports.

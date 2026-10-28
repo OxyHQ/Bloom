@@ -6,6 +6,11 @@ import { BloomScope } from '../appearance';
  * and `Popover`): a menu is a bottom sheet on a phone and an anchored dropdown
  * on a pointer. The web fork (`DropdownMenu.web.tsx`) is the second half.
  *
+ * When the app registered a platform adapter that reports `popup-surface`
+ * (`BloomProvider platform={…}`), the content is instead an anchored panel in
+ * the platform's popup (`floating/PopupPanel`), which may extend beyond the
+ * window. The rows are the same.
+ *
  * The public API is Radix/shadcn's — `open` / `defaultOpen` / `onOpenChange` on
  * the root, `asChild` on the trigger — bridged onto `Dialog`'s IMPERATIVE
  * control by `floating/use-sheet-open-bridge`, never onto its controlled
@@ -18,6 +23,8 @@ import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
+import { PopupPanel } from '../floating/PopupPanel';
+import { usePopupSurface } from '../platform-surface/context';
 import { MENU_TRIGGER_POPUP } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
@@ -114,6 +121,13 @@ export function DropdownMenuContent({
   alignRows,
   size,
   label: labelProp,
+  side,
+  align,
+  sideOffset,
+  alignOffset,
+  minWidth,
+  maxWidth,
+  maxHeight,
   className,
   style,
   testID,
@@ -122,11 +136,42 @@ export function DropdownMenuContent({
   const common = useCommonMessages();
   const label = labelProp ?? common.menu;
   const menu = useDropdownMenu();
+  const PopupSurface = usePopupSurface();
   const { control, onSheetClose } = useSheetOpenBridge(menu.open, menu.setOpen);
   const surface = useMemo<MenuSurfaceContextValue>(
-    () => ({ close: () => menu.setOpen(false), presentation: 'sheet' }),
-    [menu],
+    () => ({ close: () => menu.setOpen(false), presentation: PopupSurface ? 'dropdown' : 'sheet' }),
+    [menu, PopupSurface],
   );
+
+  if (PopupSurface) {
+    // The platform's popup: mounted while open, closed by the platform on an
+    // outside press (or a refused grab), which closes the menu.
+    return menu.open ? (
+      <BloomScope size={size}>
+        <PopupPanel
+          PopupSurface={PopupSurface}
+          anchorRef={menu.anchorRef}
+          side={side}
+          align={align}
+          sideOffset={sideOffset}
+          alignOffset={alignOffset}
+          role="menu"
+          label={label}
+          onDismiss={() => menu.setOpen(false)}
+          minWidth={minWidth}
+          maxWidth={maxWidth}
+          maxHeight={maxHeight}
+          className={className}
+          style={style}
+          testID={testID}
+        >
+          <MenuSurfaceProvider value={surface}>
+            <MenuRowAlignmentScope enabled={alignRows}>{children}</MenuRowAlignmentScope>
+          </MenuSurfaceProvider>
+        </PopupPanel>
+      </BloomScope>
+    ) : null;
+  }
 
   return (
     <BloomScope size={size}>

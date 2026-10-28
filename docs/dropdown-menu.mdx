@@ -8,6 +8,8 @@ order: 14
 
 The menu that drops from a button. A bottom sheet on native, an anchored panel on web, one API on both.
 
+On a native platform with its own popups (an adapter reporting `popup-surface`, registered with `BloomProvider platform={…}`; see [Platform surfaces](./platform-surface)), the content is instead an anchored panel in the platform's popup, placed by `side` / `align` / `sideOffset` / `alignOffset` and free to extend beyond the window. An OxyOS compositor popup is one. The rows are the same.
+
 The parts are shadcn's, so a `@shadcn/ui` or `react-native-reusables` call site ports across unchanged: `DropdownMenu` owns the open state, `DropdownMenuTrigger` opens it, `DropdownMenuContent` is the surface, and the rows are `DropdownMenuItem`, `DropdownMenuCheckboxItem`, `DropdownMenuRadioGroup` / `DropdownMenuRadioItem`, `DropdownMenuLabel`, `DropdownMenuSeparator`, `DropdownMenuShortcut`, `DropdownMenuGroup` and the `DropdownMenuSub` trio.
 
 `ContextMenu` and `Menubar` publish the same row vocabulary under their own prefixes. They are one implementation, so a row behaves identically in all three.

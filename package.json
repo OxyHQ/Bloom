@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.60.2",
+  "version": "15.61.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -113,6 +113,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/image-resolver/index.d.ts",
         "default": "./lib/commonjs/image-resolver/index.js"
+      }
+    },
+    "./platform-surface": {
+      "react-native": {
+        "types": "./lib/typescript/module/platform-surface/index.d.ts",
+        "default": "./src/platform-surface/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/platform-surface/index.d.ts",
+        "default": "./lib/module/platform-surface/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/platform-surface/index.d.ts",
+        "default": "./lib/commonjs/platform-surface/index.js"
       }
     },
     "./locale": {
@@ -4118,6 +4132,9 @@
       ],
       "image-resolver": [
         "./lib/typescript/module/image-resolver/index.d.ts"
+      ],
+      "platform-surface": [
+        "./lib/typescript/module/platform-surface/index.d.ts"
       ],
       "locale": [
         "./lib/typescript/module/locale/index.d.ts"

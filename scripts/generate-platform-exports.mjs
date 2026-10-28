@@ -56,6 +56,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./surface', 'surface/index.ts'],
   ['./concentric', 'concentric/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
+  // The host platform's surfaces (`BloomProvider platform={…}`): a popup that
+  // may extend beyond the window, where the platform has one.
+  ['./platform-surface', 'platform-surface/index.ts'],
   // The locale Bloom's own strings and dates speak in (`LocaleProvider`).
   ['./locale', 'locale/index.ts'],
   ['./image-aspect-ratio-cache', 'image-aspect-ratio-cache/index.ts'],
