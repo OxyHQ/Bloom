@@ -106,32 +106,39 @@ describe('retained panels (native)', () => {
     expect(hidden.props.importantForAccessibility).toBe('no-hide-descendants');
   });
 
-  it('commits proportional spans from a divider, keeping the pair whole and its minimum', () => {
+  it('commits proportional spans from a divider against where the drag began, within its minimum', () => {
     const changes: Readonly<Record<string, number>>[] = [];
-    const screen = render(
-      ui(
+    function Harness() {
+      const [spans, setSpans] = React.useState<Readonly<Record<string, number>>>({ a: 1, b: 1 });
+      return ui(
         [
           { id: 'a', resizable: true, minWidth: 220 },
           { id: 'b', minWidth: 220 },
         ],
-        { a: 1, b: 1 },
-        (next) => changes.push(next),
-      ),
-    );
+        spans as Record<string, number>,
+        (next) => {
+          changes.push(next);
+          setSpans(next);
+        },
+      );
+    }
+    const screen = render(<Harness />);
     act(() =>
       screen
         .getByTestId('shell-panels-retained')
         .props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 1007, height: 800 } } }),
     );
-    const handle = screen.UNSAFE_getByType(ResizeHandle);
-    act(() => {
-      handle.props.onResizeStart();
-      handle.props.onResize(150);
-    });
-    const last = changes[changes.length - 1]!;
-    expect(last.a! + last.b!).toBeCloseTo(2, 9);
-    expect((last.a! / 2) * 1000).toBeCloseTo(650, 6);
-    act(() => handle.props.onResize(-900));
-    expect((changes[changes.length - 1]!.a! / 2) * 1000).toBeCloseTo(220, 6);
+    const handle = () => screen.UNSAFE_getByType(ResizeHandle);
+    const share = () => {
+      const last = changes[changes.length - 1]!;
+      return (last.a! / (last.a! + last.b!)) * 1000;
+    };
+    act(() => handle().props.onResizeStart());
+    act(() => handle().props.onResize(75));
+    act(() => handle().props.onResize(150));
+    expect(share()).toBeCloseTo(650, 6);
+    act(() => handle().props.onResize(-900));
+    expect(share()).toBeCloseTo(220, 6);
+    act(() => handle().props.onResizeEnd());
   });
 });

@@ -1458,7 +1458,9 @@ browser tab's page, an editor, a native view) never happen:
   combined weight and respect `minWidth` / `minHeight`. `resizeHandle` picks the
   look.
 - **Drop zones** (`drop`) work as on any split.
-- Retained panels paint nothing: the content draws its own surface. The mode
+- Retained panels paint nothing: the content draws its own surface. Give a
+  panel the `surfaceColor` its content paints and its drop zones step off
+  that fill, as they do off a painted panel. The mode
   is for `split` layouts with bounded flow; `deck`, document flow, a workspace
   `header`, panel `navigation` and `floating` panels are not part of it.
 

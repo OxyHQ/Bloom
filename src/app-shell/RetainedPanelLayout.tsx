@@ -96,7 +96,12 @@ function RetainedHost({
       <AppShellPanelContext.Provider value={value}>
         <View style={CONTENT}>{panel.content as ReactNode}</View>
       </AppShellPanelContext.Provider>
-      {shown ? <PanelDropZones panelId={panel.id} /> : null}
+      {shown ? (
+        <PanelDropZones
+          panelId={panel.id}
+          fill={typeof panel.surfaceColor === 'string' ? panel.surfaceColor : undefined}
+        />
+      ) : null}
     </View>
   );
 }
@@ -157,6 +162,7 @@ export function RetainedPanelLayout({
     [controlled, onSpansChange],
   );
   const size = useRef({ width: 0, height: 0 });
+  const dragStart = useRef<Record<string, Readonly<Record<string, number>>>>({});
   const visibleIds = useMemo(() => shown.map((panel) => panel.id), [shown]);
   const drop = usePanelDropCoordinator(layout.drop, visibleIds, rtl, reduced);
 
@@ -180,7 +186,7 @@ export function RetainedPanelLayout({
       );
     };
     const flip = !vertical && rtl ? -1 : 1;
-    let start = latest.current;
+    const key = `${boundary.before}|${boundary.after}`;
     const apply = (base: Readonly<Record<string, number>>, delta: number) =>
       commit(
         resizeRetainedSpans(base, keys, boundary.before, boundary.after, delta * flip, free(), {
@@ -211,7 +217,7 @@ export function RetainedPanelLayout({
         } as WebCssStyle);
     return (
       <View
-        key={`${boundary.before}|${boundary.after}`}
+        key={key}
         testID={testID ? `${testID}-retained-divider-${boundary.before}` : undefined}
         pointerEvents="box-none"
         style={[anchor, { zIndex: 1 }]}
@@ -224,9 +230,12 @@ export function RetainedPanelLayout({
           }
           label={lead.resizeLabel}
           onResizeStart={() => {
-            start = latest.current;
+            dragStart.current[key] = latest.current;
           }}
-          onResize={(delta) => apply(start, delta)}
+          onResize={(delta) => apply(dragStart.current[key] ?? latest.current, delta)}
+          onResizeEnd={() => {
+            delete dragStart.current[key];
+          }}
           onNudge={(delta) => apply(latest.current, delta)}
         />
       </View>
