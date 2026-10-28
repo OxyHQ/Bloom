@@ -157,9 +157,3 @@ Bloom renders React Native's `StatusBar` (`expo-status-bar` wraps the same
 component), so no extra package is needed. Its stack lets later mounts win,
 which means a status bar an app still renders overrides Bloom's until it is
 removed. Web renders nothing here; browser chrome follows `theme-color` above.
-
-A scope that changes the background palette also rebases inherited surface paint.
-It retains the enclosing elevation, but does not reuse an exact light backing
-under dark text tokens (or the reverse). Surfaces declared inside the scope still
-publish their own exact fill. The web scope publishes the corresponding ambient
-surface variable on its host; changing a scope preserves descendant identity.

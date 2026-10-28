@@ -399,3 +399,9 @@ themselves. Bloom's tab pager and native stack scenes (`stackSceneLayout`) do
 it already, so a route never passes `active` for that; pass it only for a
 screen your own code hides.
 
+
+The screen publishes its painted backing to descendant surfaces. An explicit
+`style.backgroundColor` overrides the enclosing surface; translucent colors
+are composited over that backing. This keeps neutral controls legible on a
+dark camera screen inside a light app. A color scope alone changes the palette,
+not the actual backing; nested surface elevation and prepaint modes are retained.

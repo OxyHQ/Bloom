@@ -69,10 +69,5 @@ export function useScope(
     [parent, active, state, colorPreset, mode, seed],
   );
   if (!parent) throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
-  return {
-    context: context!,
-    state,
-    vars: active ? state?.vars : undefined,
-    surfaceChanged: context?.theme.colors.background !== parent.theme.colors.background,
-  };
+  return { context: context!, state, vars: active ? state?.vars : undefined };
 }

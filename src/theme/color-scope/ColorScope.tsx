@@ -1,6 +1,4 @@
-import { SurfacePaletteBoundary } from '../../styles/surface-levels';
-import type React from 'react';
-import { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
+import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BloomThemeContext } from '../BloomThemeProvider';
@@ -8,7 +6,11 @@ import { ThemeScopeContext } from './context';
 import { useScope } from './use-scope';
 import type { BloomColorScopeTokens } from './types';
 import type { AppColorName } from '../color-presets';
-import { buildNativePresetStyle, getVariableContextProvider } from './style-builder';
+import {
+  buildNativePresetStyle,
+  buildScopeVars,
+  getVariableContextProvider,
+} from './style-builder';
 
 /**
  * The variables a scope publishes when it carries no preset of its own.
@@ -89,12 +91,7 @@ export function BloomColorScope({
   style,
   children,
 }: BloomColorScopeProps) {
-  const {
-    context,
-    state,
-    vars: nativeVars,
-    surfaceChanged,
-  } = useScope(colorPreset, mode, tokens, seed);
+  const { context, state, vars: nativeVars } = useScope(colorPreset, mode, tokens, seed);
   const VariableProvider = getVariableContextProvider();
 
   let content: React.ReactNode;
@@ -124,9 +121,7 @@ export function BloomColorScope({
 
   return (
     <BloomThemeContext.Provider value={context}>
-      <ThemeScopeContext.Provider value={state}>
-        <SurfacePaletteBoundary reset={surfaceChanged}>{scoped}</SurfacePaletteBoundary>
-      </ThemeScopeContext.Provider>
+      <ThemeScopeContext.Provider value={state}>{scoped}</ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
 }

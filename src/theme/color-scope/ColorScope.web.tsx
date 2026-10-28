@@ -1,4 +1,3 @@
-import { SurfacePaletteBoundary, useSurfaceLevelValue } from '../../styles/surface-levels';
 import type React from 'react';
 import { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 
@@ -78,9 +77,8 @@ export function BloomColorScope({
   style,
   children,
 }: BloomColorScopeProps) {
-  const { context, state, vars, surfaceChanged } = useScope(colorPreset, mode, tokens, seed);
-  const surfaceLevel = useSurfaceLevelValue();
-  const paint = useScopePaint(state, Boolean(vars), surfaceChanged ? surfaceLevel : undefined);
+  const { context, state, vars } = useScope(colorPreset, mode, tokens, seed);
+  const paint = useScopePaint(state, Boolean(vars));
   const varsStyle = paint.vars as React.CSSProperties | undefined;
 
   let content: React.ReactNode;
@@ -111,10 +109,8 @@ export function BloomColorScope({
   return (
     <BloomThemeContext.Provider value={context}>
       <ThemeScopeContext.Provider value={state}>
-        <SurfacePaletteBoundary reset={surfaceChanged}>
-          {paint.sheet}
-          {content}
-        </SurfacePaletteBoundary>
+        {paint.sheet}
+        {content}
       </ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
