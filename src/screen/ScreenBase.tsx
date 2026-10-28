@@ -1,6 +1,6 @@
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { resolvePaintMode } from '../theme/paint';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import type { ComponentType } from 'react';
 import type { ScrollBarProps } from '../layout/types';
@@ -99,7 +99,14 @@ export function createScreen(
       typeof background === 'string' && background !== 'transparent' ? background : undefined;
     const paintedSurface = useThemeRecipe((_theme, documentMode, preset) => {
       const backing = resolvePaintMode(surfaceRecipe, documentMode, preset);
-      return explicitFill ? resolveSurfaceFill(explicitFill, backing) : backing;
+      return explicitFill
+        ? resolveSurfaceMaterial({
+            fill: explicitFill,
+            parentFill: backing,
+            parentLevel: surfaceLevel,
+            paint: false,
+          }).publishedFill
+        : backing;
     });
     const surfaceFill = onSurface ? 'transparent' : surfaceRecipe.paint;
     const parentScreen = useContext(ScreenContext);
