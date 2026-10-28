@@ -100,6 +100,29 @@ describe('DropdownMenu (native) with a popup-surface adapter', () => {
     expect(props.anchorRef).toHaveProperty('current');
   });
 
+  it('names the menu once: the popup surface carries its role and label, the panel neither', () => {
+    const popup = jest.fn();
+    const screen = render(
+      <BloomProvider mode="light" platform={adapter(popup)}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Pressable testID="trigger">
+              <Text>Open</Text>
+            </Pressable>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent label="Message actions">
+            <DropdownMenuItem>Reply</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </BloomProvider>,
+    );
+    fireEvent.press(screen.getByTestId('trigger'));
+    const props = popup.mock.calls[popup.mock.calls.length - 1]?.[0] as PopupSurfaceProps;
+    expect(props).toMatchObject({ role: 'menu', label: 'Message actions' });
+    // The test surface renders a plain view, so any element named by the label is Bloom's own.
+    expect(screen.queryAllByLabelText('Message actions')).toHaveLength(0);
+  });
+
   it('closes when a row is chosen and when the platform dismisses the popup', () => {
     const popup = jest.fn();
     const select = jest.fn();

@@ -78,8 +78,9 @@ export function PopupPanel({
       onKey={navigation.onKey}
       testID={testID}
     >
+      {/* The popup surface carries the content's role and label; labelling the panel too
+          would announce the menu's name twice. */}
       <StyledView
-        accessibilityLabel={label}
         className={className}
         style={[
           styles.panel,

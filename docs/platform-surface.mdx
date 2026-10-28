@@ -37,7 +37,8 @@ unchanged.
 - `anchorRef`: the trigger's view;
 - Bloom's placement (`side`, `align`, `sideOffset`, `alignOffset`, the same
   `FloatingPositionProps` the web panel takes);
-- the content's `role` and accessible `label`;
+- the content's `role` and accessible `label`, which the popup carries (the panel inside it
+  is not labelled again, so the menu's name is announced once);
 - `onDismiss`;
 - `onKey` (optional to call): the keys pressed while the popup has keyboard
   focus, as W3C `KeyboardEvent.key` names.
