@@ -1,6 +1,10 @@
 import React from 'react';
 import { OverlayRoot } from '../overlay';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
+import { BloomColorScope } from '../theme/color-scope/ColorScope';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveButtonPalette } from '../button/shared';
+import { contrastRatio } from '../styles/color-contrast';
 import { useTheme } from '../theme/use-theme';
 import { BloomScope, useBloomAppearance } from '../appearance';
 import { Keyboard, Platform, View } from 'react-native';
@@ -432,3 +436,41 @@ it('floats an overlay bar over an auto screen and hands its height to the scroll
     paddingBottom: 72 + 16,
   });
 });
+
+it.each(['light', 'dark'] as const)(
+  'publishes the screen painted backing under an opposite %s palette',
+  (outer) => {
+    const inner = outer === 'light' ? 'dark' : 'light';
+    const background = inner === 'dark' ? '#000000' : '#ffffff';
+    let actual = '';
+    let contrast = 0;
+    function Probe() {
+      const theme = useTheme();
+      actual = useSurfaceFill();
+      const layer = useSurfaceLayer();
+      const paint = resolveButtonPalette(
+        'subtle',
+        theme,
+        'neutral',
+        undefined,
+        layer.fill,
+        'surface',
+      ).rest;
+      contrast = contrastRatio(paint.foreground, paint.background);
+      return null;
+    }
+    render(
+      <BloomThemeProvider mode={outer} fonts={false}>
+        <SurfaceLevelProvider level={1} fill={outer === 'light' ? '#ffffff' : '#000000'}>
+          <BloomColorScope mode={inner}>
+            <Screen style={{ backgroundColor: background }}>
+              <Probe />
+            </Screen>
+          </BloomColorScope>
+        </SurfaceLevelProvider>
+      </BloomThemeProvider>,
+    );
+    expect(actual).toBe(background);
+    expect(contrast).toBeGreaterThanOrEqual(4.5);
+  },
+);
