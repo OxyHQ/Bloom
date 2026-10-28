@@ -84,7 +84,7 @@ Router-agnostic `scroll/` core plus adapter imports no router; model: `docs/scro
 
 - Reset is arrival-scoped (twice loses data); restore is repeatable.
 - Suppress reset echo and restore writes via `echoOffset`; otherwise interrupted restore persists partial offsets.
-- **Window `canScroll()` must be honest.** Tab `display:none` collapses document and forces scrollY0 before blur; hardcoded true overwrites saved offsets. Detect partial clamp using BOTH shrinking range and offset at new maximum, compared to last SAVE, not last observation (Chrome emits two events/clamp).
+- **Window `canScroll()` must be honest.** Tab `display:none` collapses document and forces scrollY0 before blur; hardcoded true overwrites saved offsets. Detect partial clamp using shrinking range, offset at new maximum AND a prior trusted offset above that maximum, compared to last SAVE, not last observation (Chrome emits two events/clamp). Range shrink alone also happens as virtual rows replace estimates; a genuine first scroll to their measured bottom must save.
 - **Seed `restorePending` from store on first render.** Default false flashes wrong position before focus effect. Clear when stuck, frame budget exhausted, or user takes over. Hide with opacity0 until landed, never display:none (collapses document and clamps writes0). Web reports multi-frame restores only (reset synchronous); native reports every deferred write, including reset.
 
 ## Overlay (`overlay/`)
