@@ -132,14 +132,37 @@ scroller, so the same call site works in a full-page route and in a side panel,
 and keeps working when a panel changes flow. There is no prop for it.
 
 A screen that is not in front (`Screen active={false}`, a hidden panel) leaves
-its list idle: rows measured at `display: none` would move a scroller the reader
+its list idle: its scroll owner and row observations detach while measured heights
+stay in the layout model. Disabling the virtualizer would erase offscreen heights
+and shift the reading position on return. Rows measured at `display: none` would move a scroller the reader
 is still using elsewhere. The list's origin is re-read whenever its box could
 have moved — shown again, or content above it grew — never from a box-less
-wrapper.
+wrapper. Returning to retained content or resizing the viewport preserves measured
+row heights; it must not reset unchanged rows to `estimatedItemSize`. Row resize
+observations update actual content changes. When a retained list changes between
+document and panel scrolling, its measurement refs attach to the new virtualizer.
+The adapter resolves the Screen scroll ref after commit, so a parent element that
+attaches after child layout effects is still observed without an unrelated render.
 
 `screen={{ active, restoration }}` binds the window to the Screen's chrome only
 when no Screen viewport already does; a Screen that owns its viewport drives
 the header and bar from it.
+
+## Restoring web lists after route unmounts
+
+Pass `restorationKey` when the router unmounts a list on departure. Use the same
+viewer/content identity that owns its scroll offset, including filters or tabs.
+The nearest scroll restoration scope combines it with the route content id and
+retains measured row sizes in memory. A returning list seeds its first virtual
+range before the saved offset is restored; stable item keys reconcile reordered
+or removed rows, and mounted rows still report changed sizes normally.
+
+The geometry shares the offset store's 256-key bound, history pruning, forget and
+reset lifecycle. It is not serialized into portable offset snapshots. Separate
+provider scopes and keys never share measurements. Changing the key or grid
+column count starts a different list layout. Without a restoration scope/key,
+the list keeps only its own mounted state. Native accepts the prop without
+adding a second restoration mechanism.
 
 ## Native: FlashList when installed
 

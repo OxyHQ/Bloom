@@ -154,3 +154,46 @@ it('encodes separators and percent signs without emitting SQL-incompatible contr
   expect(restored.read('panel:entry\0screen%tab')).toBe(44);
   expect(new ScrollOffsetStore({ '%broken': 2 }).size).toBe(0);
 });
+
+describe('in-memory list measurement lifecycle', () => {
+  const snapshot = {
+    columns: 1,
+    items: [{ key: 'post-a', index: 0, start: 0, size: 140, end: 140, lane: 0 }],
+  };
+  it('isolates list identities and keeps measurements out of portable offsets', () => {
+    const store = new ScrollOffsetStore();
+    store.save('route\0viewer-a:feed', 120);
+    store.saveMeasurements('route\0viewer-a:feed', snapshot);
+    expect(store.readMeasurements('route\0viewer-a:feed')).toEqual(snapshot);
+    expect(store.readMeasurements('route\0viewer-b:feed')).toBeUndefined();
+    expect(store.snapshot()).toEqual({ 'route%00viewer-a%3Afeed': 120 });
+    expect(
+      new ScrollOffsetStore(store.snapshot()).readMeasurements('route\0viewer-a:feed'),
+    ).toBeUndefined();
+  });
+  it('evicts offsets and measurements together at the existing 256-key limit', () => {
+    const store = new ScrollOffsetStore();
+    store.save('first', 120);
+    const changed = jest.fn();
+    store.subscribe(changed);
+    store.saveMeasurements('first', snapshot);
+    for (let index = 0; index < 256; index++) store.saveMeasurements(String(index), snapshot);
+    expect(store.readMeasurements('first')).toBeUndefined();
+    expect(store.has('first')).toBe(false);
+    expect(changed).toHaveBeenCalledTimes(1);
+    expect(store.snapshot()).toEqual({});
+    expect(store.readMeasurements('255')).toEqual(snapshot);
+  });
+  it('drops measurements on forget, history pruning and full reset even without offsets', () => {
+    const store = new ScrollOffsetStore();
+    store.saveMeasurements('a\0feed', snapshot);
+    store.saveMeasurements('b\0feed', snapshot);
+    store.retainContentIds(['b']);
+    expect(store.readMeasurements('a\0feed')).toBeUndefined();
+    store.forget('b\0feed');
+    expect(store.readMeasurements('b\0feed')).toBeUndefined();
+    store.saveMeasurements('c\0feed', snapshot);
+    store.clear();
+    expect(store.readMeasurements('c\0feed')).toBeUndefined();
+  });
+});

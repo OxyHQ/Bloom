@@ -21,11 +21,9 @@
  *  1. `scrollMargin` (the wrapper's offset from the top of the scrolled content)
  *     is measured in a layout effect AND re-synced whenever the wrapper's box
  *     could have moved (see `measureScrollMargin`).
- *  2. An explicit post-mount recompute (`virtualizer.measure()`) forces the
- *     range to be recomputed once the real viewport height + offset are known —
- *     guaranteeing a short list mounts EVERY row in the first viewport even with
- *     zero further re-renders. Re-run on resize. It also picks up a panel
- *     element whose ref attaches after this list's first layout effects.
+ *  2. The virtualizer observes its viewport and each mounted row. Origin
+ *     re-syncs preserve measured heights: `measure()` invalidates the entire
+ *     size cache and does not remeasure rows whose boxes have not changed.
  *  3. The measured spacer is `Math.max(totalSize, lastItemEnd)`, so it always
  *     contains every absolutely-positioned row even when `scrollMargin` is
  *     momentarily stale; the document therefore always grows to the full content
@@ -39,13 +37,18 @@
  * `package.json`.
  */
 import * as React from 'react';
+import {
+  useOptionalScrollRestorationContext,
+  type ScrollRestorationContextValue,
+} from '../scroll/context';
+import { deriveScrollKey, type ScrollOffsetStore } from '../scroll/store';
 import { useScreenViewport } from '../screen/context';
 import { useScreenWindowScroll } from '../screen/use-screen-window-scroll';
 import { useDocumentEndReached } from '../screen/use-document-end-reached';
 import { DEFAULT_END_REACHED_THRESHOLD } from '../screen/use-end-reached';
 import { useHeaderDockInset } from '../layout/header-dock';
 import { Z_INDEX } from '../styles/z-index';
-import { type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   defaultRangeExtractor,
@@ -113,8 +116,12 @@ function packGrid<T>(
   return rows;
 }
 
+type RestorableListProps<T> = VirtualListProps<T> & {
+  measurementRestoration?: { store: ScrollOffsetStore; key: string };
+};
+
 function VirtualListWebInner<T>(
-  props: VirtualListProps<T>,
+  props: RestorableListProps<T>,
   ref: React.ForwardedRef<VirtualListHandle>,
 ) {
   const {
@@ -135,6 +142,7 @@ function VirtualListWebInner<T>(
     numColumns = 1,
     overrideItemLayout,
     testID,
+    measurementRestoration,
   } = props;
 
   const items = data ?? [];
@@ -181,6 +189,14 @@ function VirtualListWebInner<T>(
   const viewport = useScreenViewport();
   const scroller = viewport?.kind === 'element' ? viewport.scrollRef : null;
   const active = viewport?.active !== false;
+  const [scrollElement, setScrollElement] = React.useState<HTMLElement | null>(null);
+  // Parent host refs attach after child layout effects. Publish the resolved
+  // element after commit so TanStack binds it even without another app render.
+  // Recheck each commit for replacement nodes and Activity resumes; unchanged
+  // elements retain the same state and all measured row sizes.
+  React.useEffect(() => {
+    setScrollElement((scroller?.current as HTMLElement | null | undefined) ?? null);
+  });
 
   // Pagination against that scroller: an end marker after the footer, observed
   // `onEndReachedThreshold` viewports early. A new row count re-arms it, so a
@@ -207,12 +223,12 @@ function VirtualListWebInner<T>(
     // No box: a retained screen at `display: none`. Its reading would be the
     // visible screen's scroll offset, stored as this list's origin.
     if (rect.width === 0 && rect.height === 0) return;
-    const owner = scroller?.current as HTMLElement | null | undefined;
+    const owner = scroller ? scrollElement : null;
     const top = owner
       ? rect.top - owner.getBoundingClientRect().top - owner.clientTop + owner.scrollTop
       : rect.top + window.scrollY;
     setScrollMargin((prev) => (prev !== top ? top : prev));
-  }, [scroller]);
+  }, [scroller, scrollElement]);
 
   // Read the wrapper's top offset synchronously after layout so the first
   // virtual frame already positions rows correctly. Re-run when the row count
@@ -220,6 +236,13 @@ function VirtualListWebInner<T>(
   React.useLayoutEffect(() => {
     measureScrollMargin();
   }, [measureScrollMargin, count]);
+
+  // Seed before the first virtual range and before scroll restoration runs.
+  // The outer boundary remounts only when restoration identity changes.
+  const [initialMeasurements] = React.useState(() => {
+    const snapshot = measurementRestoration?.store.readMeasurements(measurementRestoration.key);
+    return snapshot?.columns === numColumns ? snapshot.items : [];
+  });
 
   const estimate = estimatedItemSize ?? DEFAULT_ESTIMATED_ITEM_SIZE;
   const itemKey = (index: number) => {
@@ -231,6 +254,7 @@ function VirtualListWebInner<T>(
   // ordinary batched render lags.
   const options = {
     count: rowCount,
+    initialMeasurementsCache: initialMeasurements,
     estimateSize: () => estimate,
     overscan: overscan ?? DEFAULT_OVERSCAN,
     scrollMargin,
@@ -238,34 +262,44 @@ function VirtualListWebInner<T>(
     rangeExtractor,
     getItemKey: keyExtractor ? (row: number) => itemKey(firstItemOf(row)) : undefined,
   };
-  // Both are always called (hook order); only the one matching the scroller is
-  // enabled, so a panel switching flow keeps its list mounted.
+  // Enable only the model matching the scroller. Inactivity detaches its scroll
+  // owner instead of disabling it: TanStack clears offscreen measurements when
+  // disabled, which moves the saved reading position when a screen returns.
+  // A null owner disconnects its observers while preserving the layout model.
   const windowVirtualizer = useWindowVirtualizer<HTMLDivElement>({
     ...options,
-    enabled: active && !scroller,
+    enabled: !scroller,
+    getScrollElement: () => (active && !scroller && typeof window !== 'undefined' ? window : null),
   });
   const elementVirtualizer = useVirtualizer<HTMLElement, HTMLDivElement>({
     ...options,
-    enabled: active && scroller !== null,
-    getScrollElement: () => (scroller?.current as HTMLElement | null | undefined) ?? null,
+    enabled: scroller !== null,
+    getScrollElement: () => (active ? scrollElement : null),
   });
   const virtualizer = scroller ? elementVirtualizer : windowVirtualizer;
+  React.useLayoutEffect(
+    () => () => {
+      if (!measurementRestoration) return;
+      const items = virtualizer.takeSnapshot();
+      if (items.length)
+        measurementRestoration.store.saveMeasurements(measurementRestoration.key, {
+          columns: numColumns,
+          items,
+        });
+    },
+    [measurementRestoration, virtualizer, numColumns],
+  );
 
-  // Explicit post-mount recompute + resize re-sync. The virtualizer can latch a
-  // frame where the scroller's rect read as 0 / `scrollMargin` was stale,
-  // leaving `getVirtualItems()` empty even though rows exist. A static list does
-  // not re-render enough to self-correct, so we force the range to recompute
-  // once the real viewport + offset are known — and again on every resize.
+  // Re-sync the list origin after mount and resize, including Activity effect
+  // resumes. Do not clear row measurements: unchanged boxes do not produce new
+  // ResizeObserver entries, so resetting their sizes leaves estimate-sized gaps
+  // or overlaps. The virtualizer's own observers update viewport and row sizes.
   const hasRows = count > 0;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `hasRows` is the trigger — the wrapper the observer watches exists only while there are rows.
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
-    const sync = () => {
-      measureScrollMargin();
-      virtualizer.measure();
-    };
-    sync();
-    window.addEventListener('resize', sync);
+    measureScrollMargin();
+    window.addEventListener('resize', measureScrollMargin);
     // The wrapper gains its box when a retained screen is shown again, and moves
     // without resizing when content above it grows (a header, an embed).
     const observer =
@@ -273,12 +307,12 @@ function VirtualListWebInner<T>(
     const wrapper = wrapperRef.current;
     if (wrapper) observer?.observe(wrapper);
     if (wrapper?.parentElement) observer?.observe(wrapper.parentElement);
-    observer?.observe((scroller?.current as HTMLElement | null | undefined) ?? document.body);
+    observer?.observe((scroller ? scrollElement : null) ?? document.body);
     return () => {
-      window.removeEventListener('resize', sync);
+      window.removeEventListener('resize', measureScrollMargin);
       observer?.disconnect();
     };
-  }, [measureScrollMargin, virtualizer, scroller, hasRows]);
+  }, [measureScrollMargin, scroller, scrollElement, hasRows]);
 
   React.useImperativeHandle(ref, () => {
     const scrollOwner = (top: number, animated?: boolean) => {
@@ -297,19 +331,23 @@ function VirtualListWebInner<T>(
   // every row on every render; the cached callback is reused for the same key so
   // the ref only fires on real mount/unmount.
   const measureElement = virtualizer.measureElement;
-  const rowRefCallbacks = React.useRef(new Map<string, (node: HTMLDivElement | null) => void>());
-  const getRowRef = React.useCallback(
-    (key: string) => {
-      const cache = rowRefCallbacks.current;
+  const getRowRef = React.useMemo(() => {
+    // A different scroll owner uses a different virtualizer. Its rows must
+    // attach to that instance, even when their keys and DOM nodes are retained.
+    const cache = new Map<string, (node: HTMLDivElement | null) => void>();
+    return (key: string) => {
       const existing = cache.get(key);
       if (existing) return existing;
       if (cache.size > ROW_REF_CACHE_CAP) cache.clear();
-      const cb = (node: HTMLDivElement | null) => measureElement(node);
+      const cb = (node: HTMLDivElement | null) => {
+        // Hidden rows may still receive data updates. Never measure their
+        // collapsed boxes; active refs reattach and observe real sizes on return.
+        if (!node || active) measureElement(node);
+      };
       cache.set(key, cb);
       return cb;
-    },
-    [measureElement],
-  );
+    };
+  }, [measureElement, active]);
 
   const flatStyle = StyleSheet.flatten(style);
   const flatContentStyle = StyleSheet.flatten(contentContainerStyle) as CSSProperties | undefined;
@@ -426,12 +464,12 @@ function VirtualListWebInner<T>(
 }
 
 const PlainVirtualList = React.forwardRef(VirtualListWebInner) as <T>(
-  props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> },
+  props: RestorableListProps<T> & { ref?: React.Ref<VirtualListHandle> },
 ) => React.ReactElement;
 function ScreenVirtualList<T>({
   forwardedRef,
   ...props
-}: VirtualListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
+}: RestorableListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
   // A Screen that owns its viewport already drives chrome from it; the list
   // binds the window only for a document-flow Screen without one.
   const viewport = useScreenViewport();
@@ -458,10 +496,44 @@ function ScreenVirtualList<T>({
     />
   );
 }
+function RestoredVirtualList<T>({
+  context,
+  forwardedRef,
+  ...props
+}: VirtualListProps<T> & {
+  context: ScrollRestorationContextValue;
+  forwardedRef: React.ForwardedRef<VirtualListHandle>;
+}) {
+  const contentId = context.adapter.useScreenContentId();
+  const key = deriveScrollKey(contentId, props.restorationKey);
+  const measurementRestoration = React.useMemo(
+    () => (key ? { store: context.store, key } : undefined),
+    [context.store, key],
+  );
+  return props.screen ? (
+    <ScreenVirtualList
+      key={JSON.stringify([key, props.numColumns ?? 1])}
+      {...props}
+      forwardedRef={forwardedRef}
+      measurementRestoration={measurementRestoration}
+    />
+  ) : (
+    <PlainVirtualList
+      key={JSON.stringify([key, props.numColumns ?? 1])}
+      {...props}
+      ref={forwardedRef}
+      measurementRestoration={measurementRestoration}
+    />
+  );
+}
 const VirtualList = React.forwardRef(function VirtualList<T>(
   props: VirtualListProps<T>,
   ref: React.ForwardedRef<VirtualListHandle>,
 ) {
+  const context = useOptionalScrollRestorationContext();
+  if (context && props.restorationKey !== undefined) {
+    return <RestoredVirtualList {...props} context={context} forwardedRef={ref} />;
+  }
   return props.screen ? (
     <ScreenVirtualList {...props} forwardedRef={ref} />
   ) : (

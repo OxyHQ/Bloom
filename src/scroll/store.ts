@@ -1,3 +1,5 @@
+import type { VirtualItem } from '@tanstack/react-virtual';
+
 /**
  * Pure, platform-agnostic core of the scroll-restoration primitive.
  *
@@ -61,8 +63,40 @@ export function deriveScrollKey(contentId: string | null, subKey?: string): stri
 /** URI-encoded keys keep internal separators portable across JSON stores, including SQL JSON. */
 export type ScrollRestorationSnapshot = Readonly<Record<string, number>>;
 
+/** In-memory layout seed; never included in the portable offset snapshot. */
+export interface ScrollMeasurementSnapshot {
+  columns: number;
+  items: VirtualItem[];
+}
+
 export class ScrollOffsetStore {
   private readonly offsets = new Map<string, number>();
+  private readonly measurements = new Map<string, ScrollMeasurementSnapshot>();
+  private readonly retainedKeys = new Map<string, true>();
+
+  private retainKey(key: string): boolean {
+    this.retainedKeys.delete(key);
+    this.retainedKeys.set(key, true);
+    if (this.retainedKeys.size > 256) {
+      const oldest = this.retainedKeys.keys().next().value;
+      if (oldest !== undefined) {
+        this.retainedKeys.delete(oldest);
+        const removedOffset = this.offsets.delete(oldest);
+        this.measurements.delete(oldest);
+        return removedOffset;
+      }
+    }
+    return false;
+  }
+
+  readMeasurements(key: string): ScrollMeasurementSnapshot | undefined {
+    return this.measurements.get(key);
+  }
+
+  saveMeasurements(key: string, snapshot: ScrollMeasurementSnapshot): void {
+    this.measurements.set(key, snapshot);
+    if (this.retainKey(key)) this.changed();
+  }
 
   private readonly listeners = new Set<() => void>();
   private readonly flushListeners = new Set<() => void>();
@@ -119,7 +153,7 @@ export class ScrollOffsetStore {
     if (this.offsets.get(key) === value) return;
     this.offsets.delete(key);
     this.offsets.set(key, value);
-    if (this.offsets.size > 256) this.offsets.delete(this.offsets.keys().next().value!);
+    this.retainKey(key);
     this.changed();
   }
 
@@ -144,6 +178,8 @@ export class ScrollOffsetStore {
 
   /** Drop a saved offset (e.g. when an entry is permanently removed). */
   forget(key: string): void {
+    this.retainedKeys.delete(key);
+    this.measurements.delete(key);
     if (this.offsets.delete(key)) this.changed();
   }
 
@@ -151,10 +187,11 @@ export class ScrollOffsetStore {
   retainContentIds(ids: readonly string[]): void {
     const allowed = new Set(ids);
     let changed = false;
-    for (const key of this.offsets.keys()) {
-      if (!allowed.has(key.split(COMPOSITE_KEY_SEPARATOR)[0]!)) {
-        this.offsets.delete(key);
-        changed = true;
+    for (const key of this.retainedKeys.keys()) {
+      if (!allowed.has(key.split(COMPOSITE_KEY_SEPARATOR)[0] ?? '')) {
+        this.retainedKeys.delete(key);
+        this.measurements.delete(key);
+        changed = this.offsets.delete(key) || changed;
       }
     }
     if (changed) this.changed();
@@ -162,6 +199,8 @@ export class ScrollOffsetStore {
 
   /** Clear every saved offset. Primarily for tests and full resets. */
   clear(): void {
+    this.retainedKeys.clear();
+    this.measurements.clear();
     if (!this.offsets.size) return;
     this.offsets.clear();
     this.changed();
