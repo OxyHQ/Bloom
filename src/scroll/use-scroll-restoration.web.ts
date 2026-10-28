@@ -41,6 +41,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useScrollRestorationContext } from './context';
+import { SCROLL_USER_TAKEOVER_EVENTS } from './constants';
 import { createScroller, resolveScrollTarget } from './scrollable.web';
 import { deriveScrollKey } from './store';
 import { takeScrollOwnerHandoff } from './owner-handoff';
@@ -104,7 +105,7 @@ const WEB_ON_SCROLL: ScrollRestorationBinding['onScroll'] = () => undefined;
  * covers a scrollbar drag and a touch-less press; `keydown` covers arrow/page
  * keys, and reaches us whenever focus is inside the scroller it would scroll.
  */
-const USER_TAKEOVER_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+const USER_TAKEOVER_EVENTS = SCROLL_USER_TAKEOVER_EVENTS;
 
 /**
  * Preserve and restore the scroll offset of `target` across navigation, keyed

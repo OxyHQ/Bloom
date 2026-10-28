@@ -5,9 +5,12 @@ import { animateMotion } from '../motion/recipes';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
 import type { ScrollRestorationTarget } from '../scroll/types';
 import type { ScreenContextValue } from './context';
-import { recordScrollOwnerHandoff, clearScrollOwnerHandoff } from '../scroll/owner-handoff';
+import { useOptionalScrollRestorationContext } from '../scroll/context';
+import { recordScrollOwnerHandoff } from '../scroll/owner-handoff';
 import type { ScreenViewportValue, ScreenHostValue } from './context';
 import { useRegisterScreenScroller } from './reselect';
+
+const useNoContentId = () => null;
 
 /** Observes the existing owner for chrome/restoration; never computes layout styles. */
 export function useScreenViewportBinding(
@@ -17,6 +20,12 @@ export function useScreenViewportBinding(
   reserved: number,
   host?: ScreenHostValue,
 ) {
+  const restoration = useOptionalScrollRestorationContext();
+  const useContentId =
+    Platform.OS === 'web'
+      ? (restoration?.adapter.useScreenContentId ?? useNoContentId)
+      : useNoContentId;
+  const contentId = useContentId();
   const ownRef = useRef<unknown>(null);
   const scrollRef = enabled && host?.scrollRef ? host.scrollRef : ownRef;
   const contentRef = useRef<unknown>(null);
@@ -34,36 +43,51 @@ export function useScreenViewportBinding(
   const active = useRef(screen.active);
   active.current = screen.active;
   const reducedMotion = useReducedMotion();
-  const owner = useRef<{ documentFlow: boolean; active: boolean; offset: number } | null>(null);
+  const owner = useRef<{
+    documentFlow: boolean;
+    active: boolean;
+    offset: number;
+    contentId: string | null;
+  } | null>(null);
   // A layout change can clamp the outgoing document before it dispatches its
   // scroll event. Transfer the last live offset, before paint, rather than
   // reading that now-collapsed owner or relying on a route navigation event.
   useLayoutEffect(() => {
     if (!enabled || !web || typeof window === 'undefined') return;
     const previous = owner.current;
-    if (previous && previous.documentFlow !== documentFlow && previous.active && screen.active) {
+    let releaseHandoff: (() => void) | undefined;
+    if (
+      previous &&
+      previous.contentId === contentId &&
+      previous.documentFlow !== documentFlow &&
+      previous.active &&
+      screen.active
+    ) {
       const element = scrollRef.current as HTMLElement | null;
       const target = documentFlow ? window : element;
-      if (target) recordScrollOwnerHandoff(target, previous.offset);
+      if (target) releaseHandoff = recordScrollOwnerHandoff(target, previous.offset);
       if (documentFlow) window.scrollTo({ top: previous.offset, behavior: 'instant' });
       else if (element) element.scrollTop = previous.offset;
     }
     owner.current = {
+      contentId,
       documentFlow,
       active: screen.active,
       offset: documentFlow
         ? window.scrollY
         : ((scrollRef.current as HTMLElement | null)?.scrollTop ?? 0),
     };
-  }, [enabled, web, documentFlow, screen.active, scrollRef]);
+    // A newly mounted router sidecar can focus on a later commit. Retain the
+    // transfer for this active owner lifetime instead of expiring it during
+    // the first passive phase. Departure, blur and unmount release it; unrelated
+    // screen/metrics renders do not. Restoration consumes it at most once.
+    return releaseHandoff;
+  }, [enabled, web, documentFlow, screen.active, scrollRef, contentId]);
   useEffect(() => {
     if (!enabled || !web || !screen.active || typeof window === 'undefined') return;
     const element = scrollRef.current as HTMLElement | null;
     const target = documentFlow ? window : element;
     if (!target) return;
-    // Descendant or shell restoration effects consume the transfer first. A
-    // standalone Screen has no restorer; never leave its offset for a future route.
-    clearScrollOwnerHandoff(target);
     let previous = documentFlow ? window.scrollY : element!.scrollTop;
     const update = () => {
       const node = documentFlow
