@@ -39,6 +39,7 @@ import { motionCss } from '../motion/spec';
 import { RiHomeLine } from '../icons/remix';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useSidebarMetrics } from '../sidebar/metrics';
+import { installConstructedStyleSheets } from './support/constructed-style-sheets';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -138,6 +139,7 @@ describe('the web dock', () => {
     act(() => shell!.navigationDock.setHidden(true));
     expect(node('shell').style.getPropertyValue('--bloom-nav-dock')).toBe('0');
     expect(node('shell').getAttribute('data-bloom-dock-moving')).toBe('true');
+    expect(shell!.navigationDock.moving).toBe(true);
     const host = node('shell-navigation-host');
     expect(host.getAttribute('aria-hidden')).toBe('true');
     expect(host.hasAttribute('inert')).toBe(true);
@@ -150,6 +152,7 @@ describe('the web dock', () => {
       node('shell').dispatchEvent(event);
     });
     expect(node('shell').hasAttribute('data-bloom-dock-moving')).toBe(false);
+    expect(shell!.navigationDock.moving).toBe(false);
     expect(node('shell-navigation-edge')).not.toBeNull();
   });
 
@@ -306,6 +309,64 @@ describe('the web dock', () => {
   it('lets the window show through a transparent shell', () => {
     mount({ background: 'transparent' });
     expect(node('shell').style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  });
+});
+
+describe('the navigation modes on the CSS compositor', () => {
+  const css = (globalThis as { CSS?: unknown }).CSS;
+  const sheets = installConstructedStyleSheets();
+  beforeAll(() => {
+    Object.defineProperty(globalThis, 'CSS', {
+      value: { supports: () => true },
+      configurable: true,
+    });
+    (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  });
+  afterAll(() => {
+    sheets.uninstall();
+    Object.defineProperty(globalThis, 'CSS', { value: css, configurable: true });
+    delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+  });
+
+  it('mounts a navigation whose variant never changes once, not once per mode', () => {
+    let renders = 0;
+    mount({
+      panelLayout: { mode: 'split', flow: 'bounded', panels: [{ id: 'page', content: <Probe /> }] },
+      sidebar: {
+        surface: 'plain',
+        variant: 'panel',
+        collapsed: false,
+        collapseDisabled: true,
+        width: 190,
+        render: () => {
+          renders++;
+          return <Rows />;
+        },
+        dock: { peek: true },
+      },
+    });
+    expect(container.querySelectorAll('[data-testid="rows"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-bloom-shell-nav-mode]')).toHaveLength(1);
+    expect(renders).toBeGreaterThan(0);
+  });
+
+  it('keeps both modes for a navigation that turns into a rail below its expanded tier', () => {
+    mount({
+      panelLayout: { mode: 'split', flow: 'bounded', panels: [{ id: 'page', content: <Probe /> }] },
+      navExpandedFrom: 'lg',
+      sidebar: {
+        items: NAV,
+        surface: 'plain',
+        collapsed: false,
+        collapseDisabled: true,
+        width: 190,
+      },
+    });
+    expect(container.querySelectorAll('[data-bloom-shell-nav-mode]')).toHaveLength(2);
   });
 });
 

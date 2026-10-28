@@ -1,5 +1,11 @@
 import type { MotionSpec } from '../motion/spec';
-import type { AppShellDock, AppShellDockMotion, AppShellDockPeek } from './types';
+import type {
+  AppShellDock,
+  AppShellDockMotion,
+  AppShellDockPeek,
+  AppShellDockPeekChrome,
+  AppShellEdges,
+} from './types';
 
 const PEEK_SHADOW_ROOM = 12;
 
@@ -28,18 +34,39 @@ export const DOCK_DEFAULTS = {
     hideDelay: 120,
     appearance: 'surface',
     fade: false,
+    chrome: {},
   } satisfies Required<AppShellDockPeek>,
   /** Past the window's edge by this much more than its own size, so its shadow leaves too. */
   shadowRoom: PEEK_SHADOW_ROOM,
 } as const;
 
+/** A peek's distance from each window edge, resolved. */
+export type PeekInsets = Required<AppShellEdges>;
+
+export interface ResolvedPeek extends Required<Omit<AppShellDockPeek, 'inset' | 'chrome'>> {
+  inset: PeekInsets;
+  chrome: AppShellDockPeekChrome;
+}
+
 export interface ResolvedDock {
   motion: Required<{ [K in keyof AppShellDockMotion]: MotionSpec }>;
-  peek: Required<AppShellDockPeek> | null;
+  peek: ResolvedPeek | null;
 }
 
 const finite = (value: number | undefined, fallback: number) =>
   value !== undefined && Number.isFinite(value) ? Math.max(0, value) : fallback;
+
+export function resolvePeekInsets(inset: AppShellDockPeek['inset']): PeekInsets {
+  const all = typeof inset === 'number' ? finite(inset, DOCK_DEFAULTS.peek.inset) : undefined;
+  const edges = typeof inset === 'object' && inset ? inset : {};
+  const edge = (value: number | undefined) => all ?? finite(value, DOCK_DEFAULTS.peek.inset);
+  return {
+    top: edge(edges.top),
+    bottom: edge(edges.bottom),
+    start: edge(edges.start),
+    end: edge(edges.end),
+  };
+}
 
 export function resolveDock(dock: AppShellDock | undefined): ResolvedDock | null {
   if (!dock) return null;
@@ -61,11 +88,12 @@ export function resolveDock(dock: AppShellDock | undefined): ResolvedDock | null
       ? {
           trigger: peek.trigger ?? defaults.trigger,
           edge: finite(peek.edge, defaults.edge),
-          inset: finite(peek.inset, defaults.inset),
+          inset: resolvePeekInsets(peek.inset),
           radius: finite(peek.radius, defaults.radius),
           hideDelay: finite(peek.hideDelay, defaults.hideDelay),
           appearance: peek.appearance ?? defaults.appearance,
           fade: peek.fade ?? defaults.fade,
+          chrome: peek.chrome ?? defaults.chrome,
         }
       : null,
   };

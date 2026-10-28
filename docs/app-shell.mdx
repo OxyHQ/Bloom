@@ -1467,12 +1467,13 @@ the top edge (a tab strip across the top of a window). Both take one
 | --- | --- | --- |
 | `hidden` / `defaultHidden` / `onHiddenChange` | shown | controllable |
 | `peek` | off | `true`, or `{ trigger, edge, inset, radius, hideDelay, appearance }` |
-| `peek.trigger` | `hover` | `manual`: only `useAppShell()`'s `peek()` opens it |
+| `peek.trigger` | `hover` | `manual`: only `useAppShell()`'s `peek()` opens and closes it |
 | `peek.edge` | 8 | depth of the hover strip along the edge |
-| `peek.inset` | 5 | the floating region's distance from the window's edges |
+| `peek.inset` | 5 | the floating region's distance from the window's edges: one number, or per edge (`{ top, bottom, start, end }`) |
 | `peek.radius` | 12 | its corner |
 | `peek.hideDelay` | 120 ms | how long the pointer may be away before it slides out |
 | `peek.appearance` | `surface` | the navigation's panel surface, border and shadow; `plain` paints nothing |
+| `peek.chrome` | the panel chrome | the `surface` backing's own `surface`, `border`, `borderWidth` and `shadow`, for a region tinted outside the theme |
 | `peek.fade` | `false` | the peek fades as it slides in and out (below) |
 | `onPeekChange` | | `true` as it opens, `false` once it has slid out |
 | `motion.show` / `motion.hide` | spring, response 0.215 s, ratio 0.79 | `MotionSpec` |
@@ -1532,12 +1533,19 @@ What it does:
   `scroll="document"` keeps it in place.
 
 `useAppShell()` returns `navigationDock` and `topBarDock`
-(`AppShellDockState`): `available`, `hidden`, `setHidden`, `toggleHidden`,
-`peeking`, `peek(open)` and, for side effects that follow the motion on native
+(`AppShellDockState`): `available`, `hidden`, `moving` (from a hide or show
+until its motion lands, for work that should wait for the region's room to
+settle), `setHidden`, `toggleHidden`, `peeking`, `peek(open)` and, for side effects that follow the motion on native
 (window buttons, a native view's frame), `progress` and `peekProgress` shared
 values. `peek(true)` slides it in now; `peek(false)` slides it out after
 `hideDelay` unless asked in again. A host that tracks the pointer itself (a
-native window edge watcher) sets `peek.trigger: 'manual'` and calls `peek()`.
+native window edge watcher) sets `peek.trigger: 'manual'` and calls `peek()`:
+the hover strip is gone and the pointer leaving the floating region no longer
+closes it, so the host's own hold region (the panel plus some slack) decides.
+
+The floating region rounds and clips its content; the `surface` backing sits
+under that clip, so its shadow falls around the region instead of being cut
+at its edge.
 
 On the web the hover strip and the floating region use pointer enter and leave.
 On a native platform without hover pointer events, drive `peek()` from the
