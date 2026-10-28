@@ -42,3 +42,24 @@ These silently verify the PUBLISHED package instead:
 
 **Assert what you test first:** resolved version plus a marker only the local build produces. **Never write over `node_modules/<pkg>`:** bun hardlinks its global cache, mutating it for every worktree/session.
 
+
+
+### A source mirror changes React Compiler coverage
+
+React Compiler's default `sources` predicate excludes filenames containing
+`node_modules`. The mirror lives in `bloom-local`, so a consumer with React
+Compiler enabled can compile mirrored Bloom as application code while leaving
+the published package uncompiled. Matching versions and source hashes do not
+prove matching compiled output.
+
+Measured on 2026-10-28 in Mention's native feed row-cost harness: the 15.59.3
+source mirror reported 270 hooks for a link-preview row; the published package
+reported 292, with the same 62 context reads. Transforming identical Card source
+under the two paths emitted `react/compiler-runtime` only for the mirror. The
+valid release comparison was published 15.59.2 → 15.59.3: 302 → 292 hooks and
+64 → 62 context reads, with all existing budgets unchanged.
+
+For performance comparisons, use the same compiler scope on both sides, or
+restore the mirror and run the final gate against the published package. Record
+which artifact was measured; never present a source-mirror improvement as a
+published-package result or adjust timing/budget gates to hide the difference.
