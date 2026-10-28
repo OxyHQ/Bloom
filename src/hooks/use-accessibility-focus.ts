@@ -15,12 +15,18 @@
  * it back.
  *
  * NATIVE ONLY, by construction rather than by omission. On web the browser owns
- * focus, Bloom's surfaces are real DOM in a portal, and
- * `AccessibilityInfo.setAccessibilityFocus` is a no-op there — so both hooks
- * return early rather than calling into a function that silently does nothing.
+ * focus and Bloom's surfaces are real DOM in a portal, so both hooks return
+ * early rather than asking the platform to move a cursor it does not have.
+ *
+ * The move is `AccessibilityInfo.sendAccessibilityEvent(view, 'focus')`, which
+ * goes through the renderer (Fabric's `sendAccessibilityEvent`). The deprecated
+ * `setAccessibilityFocus(reactTag)` takes React Native's legacy path instead,
+ * which on Android reads `UIManager.getConstants().AccessibilityEventTypes`: in
+ * a bridgeless app those constants exist only when the host installs the
+ * legacy UIManager constants, so closing any surface threw a TypeError.
  */
 import { useEffect, useRef } from 'react';
-import { AccessibilityInfo, findNodeHandle, Platform } from 'react-native';
+import { AccessibilityInfo, Platform } from 'react-native';
 
 /**
  * How long to wait before commanding the focus move, in ms.
@@ -43,17 +49,12 @@ const FOCUS_SETTLE_MS = 50;
  */
 const isNative = (): boolean => Platform.OS !== 'web';
 
-/**
- * The node handle for a ref'd component, or `null`.
- *
- * `findNodeHandle` is typed for the class-component era (`React.Component`),
- * while a ref to a modern host component resolves to a host instance that
- * satisfies it at runtime but not in the type. Narrowed here, once, so no caller
- * has to.
- */
-function nodeHandleOf(instance: unknown): number | null {
-  if (instance == null) return null;
-  return findNodeHandle(instance as React.Component) ?? null;
+type HostInstance = Parameters<typeof AccessibilityInfo.sendAccessibilityEvent>[0];
+
+/** Moves screen-reader focus to a mounted host view; nothing for an empty ref. */
+function focusView(instance: unknown): void {
+  if (instance == null) return;
+  AccessibilityInfo.sendAccessibilityEvent(instance as HostInstance, 'focus');
 }
 
 /**
@@ -68,10 +69,7 @@ export function useAccessibilityFocus<T>(open: boolean): React.RefObject<T | nul
 
   useEffect(() => {
     if (!isNative() || !open) return;
-    const timer = setTimeout(() => {
-      const handle = nodeHandleOf(ref.current);
-      if (handle != null) AccessibilityInfo.setAccessibilityFocus(handle);
-    }, FOCUS_SETTLE_MS);
+    const timer = setTimeout(() => focusView(ref.current), FOCUS_SETTLE_MS);
     return () => clearTimeout(timer);
   }, [open]);
 
@@ -94,10 +92,7 @@ export function useRestoreAccessibilityFocus(open: boolean, ref: React.RefObject
     if (!isNative() || !closing) return;
     // Let the surface finish unmounting first: moving the cursor to the trigger
     // while the surface is still in the tree lands it back inside the surface.
-    const timer = setTimeout(() => {
-      const handle = nodeHandleOf(ref.current);
-      if (handle != null) AccessibilityInfo.setAccessibilityFocus(handle);
-    }, FOCUS_SETTLE_MS);
+    const timer = setTimeout(() => focusView(ref.current), FOCUS_SETTLE_MS);
     return () => clearTimeout(timer);
   }, [open, ref]);
 }

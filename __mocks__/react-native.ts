@@ -287,6 +287,7 @@ export const AccessibilityInfo = {
   }),
   announceForAccessibility: (_message: string) => {},
   setAccessibilityFocus: jest.fn((_reactTag: number) => {}),
+  sendAccessibilityEvent: jest.fn((_view: unknown, _eventType: string) => {}),
 };
 
 /**

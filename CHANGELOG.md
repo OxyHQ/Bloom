@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.60.2
+
+### Fixed
+
+- **a11y: moving screen-reader focus no longer throws on bridgeless Android.** The focus pair (`useAccessibilityFocus`, `useRestoreAccessibilityFocus`) and `CollapsibleFrame` called the deprecated `AccessibilityInfo.setAccessibilityFocus(reactTag)`. On Android that path reads `UIManager.getConstants().AccessibilityEventTypes`, which a bridgeless app has only when the host installs React Native's legacy UIManager constants (off by default). Closing a menu, sheet or collapsible then threw a `TypeError` from the timer, and focus stayed where it was. They now call `AccessibilityInfo.sendAccessibilityEvent(view, 'focus')`, which goes through the renderer on both platforms.
+
+### Consumers
+
+Bump to 15.60.2. No API change.
+
 ## 15.60.1
 
 ### Fixed
