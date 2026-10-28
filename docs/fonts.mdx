@@ -77,6 +77,12 @@ unconditionally — per the Rules of Hooks the hook has to fire whether or not
 `<BloomThemeProvider fonts={false}>` is set — so all four are bundled into the
 native binary for every consumer that mounts `BloomThemeProvider`.
 
+The gate opens when the fonts load **or fail**. `useFonts` reports a failure
+as an error and never as loaded, so a gate on `loaded` alone left the whole app
+blank when any one file could not be read. On a failure the app renders in the
+system font, Inter is not made the default (it may be the face that failed),
+and `FontLoader` reports the error once with `console.error`.
+
 On web, `apply-font-faces.web.ts` injects one `@font-face` rule per family (the
 two variable faces declare their weight ranges) plus the `--bloom-font-*`
 variables. That half *is* gated on the `fonts` prop (default `true`).
