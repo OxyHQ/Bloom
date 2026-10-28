@@ -147,6 +147,9 @@ export const SurfacePaint = memo(function SurfacePaint({
   return (
     <View
       testID={testID}
+      // Only decorative paint owns a texture; content keeps its normal rendering.
+      // Android invalidates this layer when fill/geometry/optics props change.
+      renderToHardwareTextureAndroid={Platform.OS === 'android' && (rim || sheen)}
       style={[
         [
           StyleSheet.absoluteFill,
