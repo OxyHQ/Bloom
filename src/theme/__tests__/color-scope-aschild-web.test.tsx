@@ -16,11 +16,17 @@
 // Asserting on the cloned PROP would pass either way round, so this renders
 // through React DOM into jsdom and reads the committed element back.
 
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { BloomThemeProvider } from '../BloomThemeProvider';
 import { BloomColorScope } from '../color-scope/ColorScope.web';
+import {
+  SurfaceLevelProvider,
+  SURFACE_FILL_VAR,
+  resolveSurfaceLevel,
+} from '../../styles/surface-levels';
+import { buildTheme } from '../build-theme';
 
 // React only treats `act` as a real batching boundary when the environment
 // says so; without this every render logs "not configured to support act(...)"
@@ -82,4 +88,22 @@ describe('BloomColorScope asChild on web', () => {
     // Nested, not flattened: react-native-web resolves the nesting itself.
     expect(received).toContainEqual([{ opacity: 0.5 }]);
   });
+});
+
+it('replaces an outer light surface variable at a dark scope on the same DOM host', () => {
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="light" colorPreset="blue" fonts={false}>
+        <SurfaceLevelProvider level={1} fill="#ffffff">
+          <BloomColorScope mode="dark" asChild>
+            <div data-testid="scope" />
+          </BloomColorScope>
+        </SurfaceLevelProvider>
+      </BloomThemeProvider>,
+    ),
+  );
+  const scoped = container.querySelector<HTMLElement>('[data-testid="scope"]');
+  expect(scoped?.style.getPropertyValue(SURFACE_FILL_VAR)).toBe(
+    resolveSurfaceLevel(buildTheme('blue', 'dark'), 1).background,
+  );
 });

@@ -322,6 +322,29 @@ export function SurfaceLevelProvider({
   return createElement(SurfaceLevelContext.Provider, { value }, children);
 }
 
+/** A new palette cannot inherit an exact backing from the enclosing palette.
+ * Keep its elevation; explicit surfaces inside the scope publish their own fill.
+ * Always mount the provider so asynchronous scope changes retain descendants.
+ */
+export function SurfacePaletteBoundary({
+  reset,
+  children,
+}: {
+  reset: boolean;
+  children?: ReactNode;
+}) {
+  const inherited = useContext(SurfaceLevelContext);
+  const rebased = useMemo<AmbientSurface>(
+    () => ({ level: inherited.level, fill: null }),
+    [inherited.level],
+  );
+  return createElement(
+    SurfaceLevelContext.Provider,
+    { value: reset ? rebased : inherited },
+    children,
+  );
+}
+
 /** The ambient rung, as a number. `0` when nothing published one. */
 export function useSurfaceLevelValue(): SurfaceLevel {
   return useContext(SurfaceLevelContext).level;
