@@ -170,7 +170,14 @@ export function useEnteredPresence(open: boolean, mounted = true): boolean {
  * content) is handed back before the frame paints.
  * No-op on native, where the host fades itself.
  */
-export function useSurfacePresenceContent(
+// Platform is fixed for this module's lifetime. Native dims the host directly;
+// it must not allocate the web DOM controller's refs, map or effects per surface.
+export const useSurfacePresenceContent: (
+  target: unknown,
+  options: SurfacePresenceContentOptions,
+) => void = Platform.OS === 'web' ? useWebSurfacePresenceContent : () => {};
+
+function useWebSurfacePresenceContent(
   target: unknown,
   {
     presence,

@@ -18,6 +18,10 @@ import {
 } from './shared';
 import { useSurfaceFill } from '../styles/surface-levels';
 
+// Backing participates only in web compositing. Native uses the supplied tint
+// directly, so it does not subscribe every painted surface to the backing tree.
+const useCompositeBacking = Platform.OS === 'web' ? useSurfaceFill : () => 'transparent';
+
 const WEB_PAINT_CSS = `
 .bloom-surface-paint { isolation: isolate; overflow: clip; overflow-clip-margin: 1px; }
 ${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)', 'var(--bloom-surface-paint-transition, background-color 0s)')}
@@ -102,7 +106,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
   const optics = opticsRecipe.paint;
   const isWeb = Platform.OS === 'web';
-  const contextBacking = useSurfaceFill();
+  const contextBacking = useCompositeBacking();
   const resolvedFill = resolveSurfaceTint(
     composite && isWeb && fill !== undefined
       ? compositeOnto(fill, backing ?? contextBacking)

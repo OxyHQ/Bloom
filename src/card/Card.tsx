@@ -3,9 +3,9 @@ import { useThemeRecipe } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { resolveSurfaceLayer } from '../surface/use-surface-layer';
 import { ConcentricView } from '../concentric';
-import { mergeRefs } from '../hooks/merge-refs';
+import { useSurfacePresenceRef } from '../surface/use-surface-presence-ref';
 import { DISABLED_OPACITY } from '../styles/tokens';
-import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
+import { surfacePresenceStyle } from '../surface/use-surface-presence';
 import { ConcentricProvider } from '../concentric/ConcentricProvider';
 import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
 import { surfaceStyle } from '../shapes/surface-style';
@@ -168,9 +168,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
     // opacity: on the web that would make the card a backdrop root and turn its
     // material flat while dimmed (`surface/use-surface-presence.ts`).
     const presence = disabled ? DISABLED_OPACITY : pressed && onPress ? PRESSED_PRESENCE : 1;
-    const [host, setHost] = React.useState<ComponentRef<typeof View> | null>(null);
-    const hostRef = React.useMemo(() => mergeRefs([ref, setHost]), [ref]);
-    useSurfacePresenceContent(host, { presence });
+    const hostRef = useSurfacePresenceRef(ref, presence);
 
     const containerStyle = useMemo((): ViewStyle => {
       const defaults = VARIANT_DEFAULTS[appearance];
