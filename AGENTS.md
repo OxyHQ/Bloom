@@ -139,7 +139,7 @@ BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via appl
 - Native has NO per-surface blur: expo-blur couples blur/tint; BlurView under its own BlurTargetView can SIGSEGV Android. Never wrap the app in a blur target. Only `BlurWindow` inside Modal publishes one; native blur lives in overlay Backdrop/ProgressiveBlur.
 - Blur pane is `inset:0` inside the host to preserve rounding. Sharing a filter does not remove per-surface compositor cost: verify dense/large/nested panes.
 - Material self-clips; native outer shadows must not (iOS clipsToBounds removes them). Card clips native content separately while preserving caller layout; web keeps one content node.
-- **No opacity<1/filter (even `blur(0px)`)/mask/clip-path on a material host or ancestor** (backdrop root: blur vanishes). Use presence: `surface/use-surface-presence.ts`; gates `backdrop-root.web.test.tsx`, `verify-backdrop-root.mjs`.
+- **No opacity<1/filter (even `blur(0px)`)/mask/clip-path on a material host or ancestor** (backdrop root: blur vanishes). Use presence (`surface/use-surface-presence.ts`; a piece gaining a host mid-fade is handed back); gates `backdrop-root.web.test.tsx`, `verify-backdrop-root.mjs`.
 - Read PAINTED pixels, not possibly unused computed background-color. Capture full viewport before cropping (Chromium screenshot clip can trim backdrop input), reload into canvas/sample. Contrast floors are independent literals, not derived from tested alpha.
 
 ## Avatar runtime

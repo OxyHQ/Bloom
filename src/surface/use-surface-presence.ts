@@ -165,7 +165,9 @@ export function useEnteredPresence(open: boolean, mounted = true): boolean {
  * surface that mounts at 0 and opens to 1 fades in, rather than out and back).
  * At 1 the content is handed back exactly as it was once the fade has run.
  * Inline styles this sets are restored only where React has not written the
- * property since, and content that mounts while dimmed is dimmed too.
+ * property since, and content that mounts while dimmed is dimmed too. A piece
+ * that comes to hold a material host mid-fade (React reused its node for new
+ * content) is handed back before the frame paints.
  * No-op on native, where the host fades itself.
  */
 export function useSurfacePresenceContent(
@@ -197,15 +199,31 @@ export function useSurfacePresenceContent(
     if (settle.current) clearTimeout(settle.current);
     settle.current = null;
     if (value >= 1 && map.size === 0) return;
-    applyPresence(root, map, value, !animate, motion);
+    applyPresence(root, map, value, animate ? 'animate' : 'instant', motion);
+    // Content that changes while the presence is below 1, or still rising to it,
+    // is reconciled before the frame paints: a piece that now holds a material
+    // host is handed back (it would be a backdrop root over it) and its pieces
+    // take the presence instead. Classes count, since one can make a host.
+    const observer =
+      typeof MutationObserver === 'undefined'
+        ? null
+        : new MutationObserver(() => applyPresence(root, map, value, 'mutation', motion));
+    observer?.observe(root, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    });
     if (value >= 1) {
-      settle.current = setTimeout(() => restorePresence(map, blur), animate ? duration + 32 : 0);
-      return;
+      settle.current = setTimeout(
+        () => {
+          observer?.disconnect();
+          restorePresence(map, blur);
+        },
+        animate ? duration + 32 : 0,
+      );
     }
-    if (typeof MutationObserver === 'undefined') return;
-    const observer = new MutationObserver(() => applyPresence(root, map, value, true, motion));
-    observer.observe(root, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    return () => observer?.disconnect();
   }, [isWeb, target, value, duration, easing, blur]);
 
   const exitRef = useRef({ exit, easing, blur });
@@ -223,7 +241,7 @@ export function useSurfacePresenceContent(
         if (!root.isConnected) return;
         for (const [key, val] of Object.entries(surfacePresenceVars(0, leave.exit)))
           root.style.setProperty(key, String(val));
-        applyPresence(root, new Map(), 0, false, {
+        applyPresence(root, new Map(), 0, 'animate', {
           duration: leave.exit,
           easing: leave.easing,
           blur: leave.blur,
@@ -234,14 +252,23 @@ export function useSurfacePresenceContent(
   );
 }
 
+type PresenceMode = 'animate' | 'instant' | 'mutation';
+
+/**
+ * `animate` transitions every piece to `value`; `instant` lands it there;
+ * `mutation` (content changed under a surface that is fading or dimmed) lands
+ * new pieces and leaves those already headed for `value` to finish.
+ */
 function applyPresence(
   root: HostNode,
   map: Map<HostNode, Touched>,
   value: number,
-  instant: boolean,
+  mode: PresenceMode,
   { duration, easing, blur }: { duration: number; easing: string; blur: number },
 ): void {
   const timing = `${duration}ms ${easing}`;
+  const targets = surfacePresenceTargets(root);
+  releaseStaleTargets(map, new Set(targets));
   const touch = (node: HostNode): Touched => {
     let entry = map.get(node);
     if (!entry) {
@@ -260,14 +287,18 @@ function applyPresence(
     }
     return entry;
   };
-  for (const node of surfacePresenceTargets(root)) {
+  let landed = false;
+  for (const node of targets) {
     if (!(node instanceof HTMLElement)) continue;
-    if (value >= 1 && instant && !map.has(node)) continue;
+    if (value >= 1 && mode !== 'animate' && !map.has(node)) continue;
     const entry = touch(node);
+    const opacity = String(entry.base * value);
+    if (mode === 'mutation' && entry.setOpacity === opacity) continue;
+    const instant = mode !== 'animate';
     node.style.transition = instant
       ? 'none'
       : [`opacity ${timing}`, blur > 0 ? `filter ${timing}` : null].filter(Boolean).join(', ');
-    entry.setOpacity = String(entry.base * value);
+    entry.setOpacity = opacity;
     node.style.opacity = entry.setOpacity;
     if (blur > 0) {
       entry.setFilter = value >= 1 ? 'none' : `blur(${blur * (1 - value)}px)`;
@@ -275,7 +306,10 @@ function applyPresence(
     }
     // Committed now, so a presence that changes before the next frame (a
     // surface placed in the same pass it mounted in) still transitions from here.
-    if (instant) void getComputedStyle(node).opacity;
+    if (instant) {
+      void getComputedStyle(node).opacity;
+      landed = true;
+    }
   }
   // A nested material host's layers already follow the inherited presence; its
   // shadow cannot, so a host that is gone drops it too (a shadow and `none`
@@ -286,12 +320,36 @@ function applyPresence(
       if (!(host instanceof HTMLElement)) continue;
       if (value > 0 && !map.has(host)) continue;
       const entry = touch(host);
-      host.style.transition = instant ? 'none' : `box-shadow ${timing}`;
-      entry.setShadow = value > 0 ? entry.boxShadow : 'none';
+      const shadow = value > 0 ? entry.boxShadow : 'none';
+      if (mode === 'mutation' && entry.setShadow === shadow) continue;
+      host.style.transition = mode === 'animate' ? `box-shadow ${timing}` : 'none';
+      entry.setShadow = shadow;
       host.style.boxShadow = entry.setShadow;
+      if (mode !== 'animate') landed = true;
     }
   }
-  if (instant) flushMaterialLayers(root);
+  if (landed || mode === 'instant') flushMaterialLayers(root);
+}
+
+/**
+ * Hands back, at once, every faded piece that is no longer one: it now holds a
+ * material host (content swapped into a reused node), sits inside another
+ * piece, or has left the surface. A piece left fading over a host it has come
+ * to hold is a backdrop root for the rest of the fade.
+ */
+function releaseStaleTargets(map: Map<HostNode, Touched>, targets: Set<Element>): void {
+  for (const [node, entry] of map) {
+    if (targets.has(node) || !entry.setOpacity) continue;
+    const transition = node.style.transition;
+    node.style.transition = 'none';
+    if (node.style.opacity === entry.setOpacity) node.style.opacity = entry.opacity;
+    if (entry.setFilter && node.style.filter === entry.setFilter) node.style.filter = entry.filter;
+    void getComputedStyle(node).opacity;
+    node.style.transition = entry.setShadow ? transition : entry.transition;
+    entry.setOpacity = '';
+    entry.setFilter = '';
+    if (!entry.setShadow) map.delete(node);
+  }
 }
 
 function restorePresence(map: Map<HostNode, Touched>, blur: number): void {

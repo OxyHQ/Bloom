@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.56.1
+
+### Fixed
+
+- **surface presence: content that changes while a surface fades no longer turns a material inside it flat.** `useSurfacePresenceContent` fades each piece of a surface's content that holds no material host. When content changed during a fade, React could reuse a faded piece's node for new content that did hold one. The piece kept its fading `opacity` and `filter` and became a backdrop root over the new host. A hover card whose profile finished loading as it closed, for example, drew its Follow button without blur for the rest of the close. In Chromium this failed on 5 of 10 close timings from 40 to 150 ms before the load, and on 5 of 5 runs of `verify-backdrop-root.mjs` on that story. Each change is now reconciled before the frame paints. A piece that has come to hold a host is handed back at once, and its own pieces take the presence instead. Class changes count, and content that changes while the presence is still rising to 1 is covered too. Pieces already headed for the presence finish their fade instead of jumping to its end.
+
+### Consumers
+
+Bump to 15.56.1. No API change.
+
 ## 15.56.0
 
 ### Added
