@@ -156,6 +156,43 @@ export interface SeedScopeOptions {
  * ambient region behind album/artist artwork — without re-theming the whole app.
  */
 export function buildSeedScopeVars(options: SeedScopeOptions): Record<string, string> {
+  const key = cacheKey(options);
+  let tokens = CACHE.get(key);
+  if (tokens !== undefined) {
+    // Refresh recency: Map iterates in insertion order, so re-insert on hit.
+    CACHE.delete(key);
+  } else {
+    tokens = solveSeedScopeVars(options);
+  }
+  CACHE.set(key, tokens);
+  if (CACHE.size > CACHE_LIMIT) CACHE.delete(CACHE.keys().next().value as string);
+  // A copy: callers have always received a map of their own.
+  return { ...tokens };
+}
+
+/**
+ * The policy tokens on top of the role colours (`buildPolicyTokens`, its accent
+ * hues) are recomputed for every call, and every `BloomColorScope` with a seed
+ * resolves its seed twice when it mounts (the theme object and the scope vars).
+ * On the OxyOS host a launcher of scoped cards spent over a third of its opening
+ * here, for the same few seeds. Results are pure functions of the options, so they
+ * are kept, bounded as `generateRoleColors`' are.
+ */
+const CACHE_LIMIT = 128;
+const CACHE = new Map<string, Readonly<Record<string, string>>>();
+
+function cacheKey(o: SeedScopeOptions): string {
+  return JSON.stringify([
+    o.seed,
+    o.mode,
+    o.variant ?? null,
+    o.contrastLevel ?? null,
+    o.secondarySeed ?? null,
+    o.tertiarySeed ?? null,
+  ]);
+}
+
+function solveSeedScopeVars(options: SeedScopeOptions): Record<string, string> {
   const roles = generateRoleColors({
     seed: options.seed,
     // A seed with no chroma has no colour for a chromatic variant to work with,
