@@ -89,7 +89,7 @@ jobs:
       # release; the release itself runs no tests.
       - name: Workspace packages typecheck and test
         run: |
-          for package in packages/bloom-text packages/bloom-editor; do
+          for package in packages/bloom-text packages/bloom-editor packages/color; do
             (cd "$package" && bun run typescript && bun run test)
           done
       - name: Generated sources are committed

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [],
+    "rootDir": "../../src/theme/color-engine",
+    "outDir": "lib/types",
+    "declaration": true,
+    "emitDeclarationOnly": true
+  },
+  "include": [],
+  "files": ["../../src/theme/color-engine/index.ts"]
+}
