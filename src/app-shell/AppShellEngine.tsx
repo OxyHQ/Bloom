@@ -62,6 +62,7 @@ import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-s
 import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
 import type { AppShellEdge, AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
+import { useRoomChanged } from './use-room-changed';
 import { useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
@@ -867,8 +868,13 @@ export function createAppShellEngine() {
     const asideReadingWidth = asideShown ? asideWidth + readingGap : 0;
     const targetReadingWidth = stretchReading ? availableReadingWidth : contentWidth;
     const readingWidth = useSharedValue(targetReadingWidth);
+    // The shell resized (its window or container): the envelope lands at once, as
+    // the panels do (`useRoomChanged`); the navigation or a reading width changing
+    // still moves it. `resized` is read, not followed.
+    const resized = useRoomChanged(String(width));
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` qualifies the change
     useEffect(() => {
-      animateMotion(readingWidth, targetReadingWidth, 'expand', reducedMotion);
+      animateMotion(readingWidth, targetReadingWidth, 'expand', reducedMotion || resized);
     }, [readingWidth, targetReadingWidth, reducedMotion]);
     const readingEnvelopeStyle = useAnimatedStyle(
       () =>
