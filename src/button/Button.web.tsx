@@ -7,6 +7,7 @@ import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { useButtonLayout } from './use-button-layout.web';
 import { useLongPress } from './use-long-press.web';
 import { resolveSurfaceOptics, surfaceOpticsVars } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import type { GestureResponderEvent, View } from 'react-native';
 import { surfaceMaterialCss } from '../surface/web-material';
 import type { LinkButtonProps } from './types';
@@ -310,6 +311,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           : resolveButtonPalette(appearance, modeTheme, tone, colors, layer.fill, material);
       return {
         palette,
+        backing: layer.fill,
         optics: resolveSurfaceOptics(modeTheme.isDark),
         shadow: palette.shadow ? BUTTON_SHADOW[modeTheme.isDark ? 'dark' : 'light'] : 'none',
       };
@@ -355,6 +357,10 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
         ['--bloom-btn-bg' as string]: (togglePressed && !loading ? palette.active : palette.rest)
           .background,
+        ['--bloom-surface-solid' as string]: resolveSurfaceMaterial({
+          fill: (togglePressed && !loading ? palette.active : palette.rest).background,
+          parentFill: paintRecipe.paint.backing,
+        }).solidFill,
         ['--bloom-btn-bg-hover' as string]: palette.hover.background,
         ['--bloom-btn-bg-active' as string]: palette.active.background,
         ['--bloom-btn-bg-disabled' as string]: palette.disabled.background,

@@ -28,6 +28,8 @@ export function resolveSurfaceMaterial({
     painted,
     paintFill,
     publishedFill,
+    /** The opaque body with transparency reduced: the published fill, or nothing unpainted. */
+    solidFill: painted ? publishedFill : 'transparent',
     level: level ?? (painted ? (Math.min(parentLevel + 1, 3) as SurfaceLevel) : parentLevel),
     vars: surfaceFillVars(visible ? publishedFill : undefined),
   };

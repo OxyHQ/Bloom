@@ -109,6 +109,56 @@ it('shares one glass material across Surface and disabled Button', () => {
   );
 });
 
+it('paints every host opaque with no backdrop filter while transparency is reduced', () => {
+  act(() =>
+    root.render(
+      <>
+        <Surface fill="rgb(9, 20, 30)" testID="surface">
+          <span>Panel</span>
+        </Surface>
+        <SurfacePaint fill="rgb(12, 34, 56)" />
+        <Button>Continue</Button>
+      </>,
+    ),
+  );
+  const surfaceCss = document.getElementById('bloom-surface-web-css')!.textContent!;
+  const buttonCss = document.getElementById('bloom-button-web-css')!.textContent!;
+  for (const [css, host] of [
+    [surfaceCss, '.bloom-surface--material'],
+    [buttonCss, '.bloom-btn--surface'],
+  ]) {
+    const reducedByAttribute = css;
+    const reducedBySystem = css.split('@media (prefers-reduced-transparency: reduce) {')[1] ?? '';
+    for (const [sheet, scope] of [
+      [reducedByAttribute, `:root[data-bloom-transparency="reduced"] ${host}`],
+      [reducedBySystem, host],
+    ]) {
+      const rule = (selector: string) => sheet.split(`${selector} {`)[1]?.split('}')[0];
+      const body = rule(`${scope}::before`);
+      expect(body).toContain('backdrop-filter: none;');
+      expect(body).toContain('-webkit-backdrop-filter: none;');
+      expect(body).toMatch(/background-color: var\(--bloom-surface-solid, /);
+      expect(rule(`${scope}::after`)).toContain('backdrop-filter: none;');
+    }
+    expect(css).toContain('@media (prefers-reduced-transparency: reduce)');
+  }
+  // The opaque body is the fill the host already publishes to its content.
+  const surface = container.querySelector('[data-testid="surface"]') as HTMLElement;
+  expect(surface.style.getPropertyValue('--bloom-surface-solid')).toBe(
+    resolveSurfaceFill(resolveSurfaceTint('rgb(9, 20, 30)'), '#ffffff'),
+  );
+  const paint = container.querySelector('.bloom-surface-paint') as HTMLElement;
+  expect(paint.style.getPropertyValue('--bloom-surface-solid')).toBe(
+    resolveSurfaceFill(resolveSurfaceTint('rgb(12, 34, 56)'), '#ffffff'),
+  );
+});
+
+it('gives an unpainted surface no opaque body to inherit', () => {
+  act(() => root.render(<Surface fill="transparent" testID="clear" />));
+  const surface = container.querySelector('[data-testid="clear"]') as HTMLElement;
+  expect(surface.style.getPropertyValue('--bloom-surface-solid')).toBe('transparent');
+});
+
 it('retains caller colour with subtle translucency beneath the optical edge', () => {
   act(() => root.render(<Surface fill="rgb(9, 20, 30)" testID="solid" />));
   const surface = container.querySelector('[data-testid="solid"]') as HTMLElement;

@@ -28,7 +28,12 @@ import { FontLoader } from '../fonts/FontLoader';
 
 import { useAmbientThemeState } from './ambient-store';
 
-import { applyDarkClass, applyDocumentTheme, applyVarsToDocument } from './apply-dark-class';
+import {
+  applyDarkClass,
+  applyDocumentTheme,
+  applyReducedTransparency,
+  applyVarsToDocument,
+} from './apply-dark-class';
 import { buildTheme } from './build-theme';
 import { ThemeScopeContext, type ScopeState } from './color-scope/context';
 import { buildThemeFromSeed } from './build-theme-from-seed';
@@ -176,6 +181,15 @@ export interface BloomThemeProviderProps {
    * preset — so clearing it restores the app's default theme.
    */
   seed?: string;
+
+  /**
+   * Reduce transparency app-wide, as the system accessibility setting does: every
+   * surface paints an opaque body with no backdrop blur. Web only; native surfaces
+   * are already opaque. The system's `prefers-reduced-transparency` applies
+   * whatever this says. Set it for a display whose GPU cannot afford a backdrop
+   * filter per surface every frame (a Cast receiver, an ambient frame).
+   */
+  reduceTransparency?: boolean;
 
   children: React.ReactNode;
 }
@@ -343,6 +357,7 @@ export function BloomThemeProvider({
   secondaryColor,
   tertiaryColor,
   seed,
+  reduceTransparency = false,
   prepaintTheme,
   children,
 }: BloomThemeProviderProps) {
@@ -553,6 +568,10 @@ export function BloomThemeProvider({
     prepaintTheme?.persistKey,
     colorPreset,
   ]);
+
+  useIsomorphicLayoutEffect(() => {
+    applyReducedTransparency(reduceTransparency);
+  }, [reduceTransparency]);
 
   // Native only: publish the same vars into react-native-css's GLOBAL root
   // variable family so they reach the ENTIRE app tree — navigator screens and

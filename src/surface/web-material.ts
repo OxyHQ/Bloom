@@ -18,6 +18,20 @@ const STRAIGHT = 0.75;
 const CORNER_REACH_PX = 12;
 const CORNER = 0.27;
 
+/**
+ * The root attribute that turns transparency down, written by the theme provider's
+ * `reduceTransparency` (`theme/apply-dark-class.ts`), beside the dark class.
+ */
+export const REDUCED_TRANSPARENCY_ATTRIBUTE = 'data-bloom-transparency';
+
+/**
+ * The opaque body each host paints when transparency is reduced: the colour it
+ * already publishes to the content on it (`--bloom-surface`), its tint
+ * composited onto its parent. Every host sets it on itself, so none inherits an
+ * enclosing surface's.
+ */
+const SURFACE_SOLID_VAR = '--bloom-surface-solid';
+
 const MATERIAL_HOSTS = new Set<string>();
 
 /**
@@ -52,9 +66,30 @@ export function materialHostSelector(): string {
  * mask: a line along the border (the box minus its padding box) kept near the top
  * and bottom, strongest where it runs flat and dimmer through each corner, plus
  * the glow within 8px of the top and bottom.
+ *
+ * With transparency reduced (the provider's `reduceTransparency`, or the
+ * system's `prefers-reduced-transparency`) neither layer filters the backdrop:
+ * the body paints `solid` opaque and the edge light is gone. That is the same
+ * colour native paints, and on a slow GPU it is the difference between a
+ * backdrop filter per surface every frame and none (measured on a Chromecast:
+ * 7 fps with the filter, 16 without).
  */
-export function surfaceMaterialCss(selector: string, fill: string, transition = 'none'): string {
+export function surfaceMaterialCss(
+  selector: string,
+  fill: string,
+  transition = 'none',
+  solid = `var(${SURFACE_SOLID_VAR}, ${fill})`,
+): string {
   MATERIAL_HOSTS.add(selector);
+  const reduced = (host: string) => `${host}::before {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: ${solid};
+}
+${host}::after {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}`;
   const presence = 'opacity var(--bloom-surface-presence-ms, 0ms) ease-out';
   const layerTransition = transition === 'none' ? presence : `${transition}, ${presence}`;
   const y = `min(var(--bloom-surface-corner-y, 16px), 50%, ${CORNER_REACH_PX}px)`;
@@ -93,5 +128,9 @@ ${selector}::after {
   mask-clip: border-box, border-box, padding-box, border-box;
   mask-origin: border-box;
   mask-composite: add, intersect, exclude;
+}
+${reduced(`:root[${REDUCED_TRANSPARENCY_ATTRIBUTE}="reduced"] ${selector}`)}
+@media (prefers-reduced-transparency: reduce) {
+${reduced(selector)}
 }`;
 }

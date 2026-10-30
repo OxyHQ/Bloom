@@ -40,8 +40,28 @@ afterEach(() => {
   document.head.innerHTML = '';
   document.documentElement.removeAttribute('style');
   document.documentElement.classList.remove('dark');
+  document.documentElement.removeAttribute('data-bloom-transparency');
   document.body.removeAttribute('style');
   Platform.OS = originalOS;
+});
+
+it('marks the document while transparency is reduced, and clears it when it is not', () => {
+  act(() =>
+    root.render(
+      <BloomThemeProvider reduceTransparency>
+        <span />
+      </BloomThemeProvider>,
+    ),
+  );
+  expect(document.documentElement.getAttribute('data-bloom-transparency')).toBe('reduced');
+  act(() =>
+    root.render(
+      <BloomThemeProvider>
+        <span />
+      </BloomThemeProvider>,
+    ),
+  );
+  expect(document.documentElement.hasAttribute('data-bloom-transparency')).toBe(false);
 });
 
 function expectDocument(mode: 'light' | 'dark', background: string) {

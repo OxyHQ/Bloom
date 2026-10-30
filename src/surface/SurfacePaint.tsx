@@ -125,6 +125,7 @@ export const SurfacePaint = memo(function SurfacePaint({
       ...geometry,
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': paintFill ?? resolvedFill,
+      '--bloom-surface-solid': compositeOnto(paintFill ?? resolvedFill, backing ?? contextBacking),
       ...(transition ? { '--bloom-surface-paint-transition': transition } : null),
       ...(presence === undefined ? null : { '--bloom-surface-presence': String(presence) }),
       ...(presenceMs === undefined ? null : { '--bloom-surface-presence-ms': `${presenceMs}ms` }),

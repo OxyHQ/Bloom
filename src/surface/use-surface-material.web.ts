@@ -1,6 +1,7 @@
 import { useContext, useMemo } from 'react';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
+import { useSurfaceFill } from '../styles/surface-levels';
 import type { WebCssStyle } from '../styles/web-view-style';
 import {
   resolveSurfaceOptics,
@@ -8,6 +9,7 @@ import {
   SURFACE_VARS_OFF,
   surfaceOpticsVars,
 } from './shared';
+import { resolveSurfaceMaterial } from './resolve-surface-material';
 import { surfaceMaterialCss } from './web-material';
 
 /**
@@ -34,19 +36,23 @@ export function useSurfaceMaterial(
   useInteractiveWebCss(id, css);
   const theme = useContext(BloomThemeContext)?.theme;
   const optics = paintOptics ?? resolveSurfaceOptics(theme?.isDark ?? false);
+  const backing = useSurfaceFill();
   return useMemo(() => {
     if (!enabled) return SURFACE_VARS_OFF;
     const { '--bloom-surface-highlight-filter': highlight, ...vars } = surfaceOpticsVars(
       optics,
       radius,
     );
+    const tint = paintFill ?? resolveSurfaceTint(fill);
     return {
       backgroundColor: 'transparent',
-      '--bloom-surface-fill': paintFill ?? resolveSurfaceTint(fill),
+      '--bloom-surface-fill': tint,
+      '--bloom-surface-solid': resolveSurfaceMaterial({ fill: tint, parentFill: backing })
+        .solidFill,
       ...vars,
       ...(framing === 'responsive'
         ? { '--bloom-framed-highlight-filter': highlight }
         : { '--bloom-surface-highlight-filter': highlight }),
     };
-  }, [optics, fill, paintFill, enabled, radius, framing]);
+  }, [optics, fill, paintFill, enabled, radius, framing, backing]);
 }
