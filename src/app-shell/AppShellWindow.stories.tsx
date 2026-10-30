@@ -477,9 +477,11 @@ function MailPane({ title, list }: { title: string; list?: boolean }) {
 /**
  * Panes and nothing else, as a mail application without a sidebar: no shell
  * header, no top bar. The shell hands the window's corner to its panels: they
- * fill the window, the first pane's header keeps the controls' room inside its
- * own bar, and every pane header along the window's top edge moves the window.
- * The frame and the content below the headers do not move.
+ * fill the window and start at its top edge, each pane's header row is the
+ * window's 52 pt toolbar (its title centred on the controls, 26 down), their
+ * top corners take the window's 16 pt radius, the first pane's header keeps
+ * the controls' room inside its own bar, and every pane header moves the
+ * window. The content below the headers does not move.
  */
 export const PanesAsTitleArea: Story = {
   render: () => (
@@ -499,7 +501,10 @@ export const PanesAsTitleArea: Story = {
   ),
 };
 
-/** The same panes in a deck: the first keeps the room, every header moves the window. */
+/**
+ * The same panes in a deck: at the window's top edge, each header the window's
+ * toolbar, the first keeping the room; every header moves the window.
+ */
 export const DeckAsTitleArea: Story = {
   render: () => (
     <StoryWindow width={1000} height={600}>
@@ -522,7 +527,7 @@ export const DeckAsTitleArea: Story = {
 /**
  * A single Screen as the whole application, no shell: it is the window's
  * content, so it draws the controls in its corner and its header is the
- * window's title area.
+ * window's 52 pt toolbar, its title centred on the controls.
  */
 export const ScreenAsWindow: Story = {
   render: () => (
