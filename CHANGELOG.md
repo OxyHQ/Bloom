@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.71.2
+
+### Fixed
+
+- **A desktop window on native takes a pointer's geometry, not a phone's.** `useTouchInput` (`styles/pointer.ts`) was true on every native platform, so an OxyOS window drew a phone's controls: every context menu, dropdown and menubar row 44pt tall, selects and items at touch size. A platform that reports the `window` capability runs the application in a window a pointer drives; there `useTouchInput` is false and menus take the compact 28px `md` rows, as fine-pointer web does. Phones, and platforms without a window, are unchanged. Pinned by `touch-input.test.tsx`.
+
+### Consumers
+
+Bump to 15.71.2. On OxyOS, menus, selects and items become desktop-sized. No prop changes; nothing changes on iOS, Android or the web.
+
 ## 15.71.1
 
 ### Fixed

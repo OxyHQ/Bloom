@@ -220,7 +220,7 @@ On WEB none of this applies — the browser owns focus and the hooks return earl
 
 Every row is one pressable node built from Bloom's `styled()` primitives, shared by all three menu families through `floating/shared.tsx` — so the disabled treatment, the destructive colour, the pointer highlight and the ARIA state stay in one place and a fix lands in every menu at once.
 
-`appearance/control-geometry.ts` owns the size recipes; `floating/constants.ts` owns shared chrome. Rows resolve their size through BloomScope, including across portals. Normal md uses 28px rows and 14/20 regular labels; section labels use 12/16 medium and shortcuts use the caption ramp. Native and coarse-pointer web keep at least 44px targets. Typography is applied as TYPE_SCALE + Inter by `floating/menu-type.ts`; caller text classes retain precedence.
+`appearance/control-geometry.ts` owns the size recipes; `floating/constants.ts` owns shared chrome. Rows resolve their size through BloomScope, including across portals. Normal md uses 28px rows and 14/20 regular labels; section labels use 12/16 medium and shortcuts use the caption ramp. Native and coarse-pointer web keep at least 44px targets; a desktop window on native (a platform reporting the `window` capability, an OxyOS window) is pointer-driven and takes the compact rows, as fine-pointer web does (`styles/pointer.ts` `useTouchInput`). Typography is applied as TYPE_SCALE + Inter by `floating/menu-type.ts`; caller text classes retain precedence.
 
 Every part takes a `className` and APPENDS it to its own, so a layout class cannot strip the chrome. Two utilities for one property are then resolved by Tailwind's own emission order, exactly as in any shadcn consumer; `style` remains the unambiguous override.
 
