@@ -297,7 +297,10 @@ The context is what makes a desktop panel work: `window.scrollY` never moves ins
 ## The window's title area
 
 In a `Screen` header that is the window's chrome ([Window](/docs/window)) the
-bar starts at the larger of its side inset and the room the window's controls
+bar is the window's toolbar row: `windowToolbarHeight(metrics)` tall (52 on
+OxyOS), with no vertical padding and no safe area above it, so its row is
+centred on the window's controls whatever the presentation or density. It
+starts at the larger of its side inset and the room the window's controls
 take from its leading edge, so its background, scrim and hairline still run
 under the controls. A centred title clears the room as well. On the web the
 side inset is an `!important` stylesheet rule, so the room is a custom property

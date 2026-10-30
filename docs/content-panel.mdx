@@ -49,7 +49,7 @@ the shadow is what makes it a panel lifted off it.
 | `framed`           | whether the panel draws a surface at all                   |
 | `framedFrom`       | the breakpoint it starts framing at — `500` `640` `768` `1024` |
 | `showStickyFrame`  | whether the frame persists behind sticky content           |
-| `surfaceStyle` / `surfaceClassName` | the surface itself                        |
+| `surfaceStyle` / `surfaceClassName` | the surface itself; physical per-corner radii (`borderTopLeftRadius`…) in `surfaceStyle` shape the clip and the material too, the other corners keep the panel's radius (a pane along a window's top edge) |
 | `surfaceColor`     | what the panel tells its content it is painted in — only when `surfaceClassName`/`surfaceStyle` repainted it |
 | `contentStyle` / `contentClassName` | the column inside it                      |
 | `maskColor`        | the colour the gutter mask fades to                        |

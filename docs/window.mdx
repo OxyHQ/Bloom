@@ -113,20 +113,33 @@ and nothing of its own at the corner (no sidebar, no top bar, no header) hands
 the corner to its panels:
 
 - **The panels fill the window**, rather than a reading envelope centred in
-  it, so the first is at the corner. The frame keeps its insets; nothing moves
-  by the room.
+  it, so the first is at the corner, and they **start at the window's top
+  edge**: the frame's top inset is 0 there, its start, end and bottom insets
+  stay. Nothing moves by the room.
+- **Each pane's header row is the window's toolbar**: as tall as twice the
+  controls' centre line (`windowToolbarHeight(metrics)`, 52 on OxyOS, whose
+  centres are 26 down), with no vertical padding and no safe area, so every
+  title row is centred on the controls. The controls never move; the panes
+  come to them.
+- **Their top corners are concentric with the window's**: Bloom's concentric
+  rule (the window's radius less the smaller gap beside the corner) with a top
+  gap of 0 gives the window's own radius (`metrics.radius`, 16 on OxyOS), so a
+  pane at the top leading corner has the window's curve there and nothing
+  pokes out under the controls. The bottom corners keep the panel's radius.
+  `ContentPanel` takes per-corner radii from `surfaceStyle` for its clip and
+  its material.
 - **The panel at the top leading corner** keeps the controls' room in its
   header: `room.leading` less where the panel already starts (the frame's
-  start inset), and only while the panel starts above `room.top`.
+  start inset).
 - **Every panel header along the window's top edge** is a drag region (side by
   side, a deck, retained panels whose box touches the top). Stacked, only the
   top one is. A collapsed layout's shown panel is at the corner. A floating
   panel is a dialog: none.
-- **The frame's band above the panels** (its top inset) moves the window too.
 - **A layout `header`** spans the panels: it is the chrome, and the panels
   below it keep nothing.
-- The controls are drawn once, by the shell. Full screen: none of this.
-  `windowControls="overlay"`: no room and no drag.
+- The controls are drawn once, by the shell. Full screen: none of this; the
+  frame, bars and corners are as without windows. `windowControls="overlay"`:
+  no room, no drag, no toolbar geometry.
 
 The header is a panel route's `Screen` header (`header={<PageHeader …/>}`): the
 `Screen` makes its header slot the drag region (as chrome it takes the presses
@@ -143,9 +156,11 @@ A `Screen` that nothing else holds the corner for — no shell, no settings
 layout, no outer `Screen`, no dialog or sheet (`ScreenScope`) — is the window's
 content: it draws the controls in its corner (once; a `Screen` inside it is
 not at the corner) and its header is the chrome above, with the whole
-`room.leading`.
+`room.leading`, the window's toolbar row at the window's top.
 
-Gates: `AppShellWindowPanels.test.tsx` (split, deck, collapsed, stacked,
+Gates: `AppShellWindowPanels.test.tsx` (the toolbar row centred on the
+controls' centre line, the top frame inset 0 only for panes touching the top,
+the concentric top corners; split, deck, collapsed, stacked,
 retained, a layout header, a panel without a `Screen`, nested, a `Screen` as
 the window, right to left, full screen without remounting the routes, and
 without the capability the same markup), `ScreenWindowChrome.web.test.tsx`
