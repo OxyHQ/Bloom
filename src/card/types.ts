@@ -91,12 +91,24 @@ export interface CardTitleProps {
   children?: React.ReactNode;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
+  /**
+   * Utilities for the text (`font-display` sets it in BlomusModernus). A utility
+   * replaces only the default it names: the colour paired with the card's fill
+   * stays unless the className sets one.
+   */
+  className?: string;
 }
 
 export interface CardDescriptionProps {
   children?: React.ReactNode;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
+  /**
+   * Utilities for the text (`font-display` sets it in BlomusModernus). A utility
+   * replaces only the default it names: the colour paired with the card's fill
+   * stays unless the className sets one.
+   */
+  className?: string;
 }
 
 export interface SelectionCardProps {

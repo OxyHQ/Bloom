@@ -34,7 +34,8 @@ import { resolveBloomColors } from '../appearance/colors';
  * requires a new appearance name.
  */
 import React, { type ComponentRef, memo, useMemo, useContext } from 'react';
-import { StyleSheet, Text, type View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from '../typography';
 
 import { styled } from 'react-native-css';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -61,6 +62,7 @@ import type {
   CardDescriptionProps,
 } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
+import { typographyDefaultsWhenNoClassName } from '../typography/defaults';
 
 /** How present a card stays while it is pressed. */
 const PRESSED_PRESENCE = 0.85;
@@ -396,18 +398,24 @@ const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => 
   </ConcentricView>
 );
 
-const CardTitleComponent: React.FC<CardTitleProps> = ({ children, style, numberOfLines }) => {
+const CardTitleComponent: React.FC<CardTitleProps> = ({
+  children,
+  style,
+  numberOfLines,
+  className,
+}) => {
   const theme = useTheme();
   const foreground = useContext(CardForegroundContext);
   return (
     <Text
+      {...(className ? { className } : {})}
       style={[
-        {
+        typographyDefaultsWhenNoClassName(className, {
           fontSize: 17,
           fontWeight: '600',
           color: foreground ?? theme.colors.text,
           lineHeight: 22,
-        },
+        }),
         style,
       ]}
       numberOfLines={numberOfLines}
@@ -421,17 +429,19 @@ const CardDescriptionComponent: React.FC<CardDescriptionProps> = ({
   children,
   style,
   numberOfLines,
+  className,
 }) => {
   const theme = useTheme();
   const foreground = useContext(CardForegroundContext);
   return (
     <Text
+      {...(className ? { className } : {})}
       style={[
-        {
+        typographyDefaultsWhenNoClassName(className, {
           fontSize: 14,
           color: foreground ?? theme.colors.textSecondary,
           lineHeight: 20,
-        },
+        }),
         style,
       ]}
       numberOfLines={numberOfLines}

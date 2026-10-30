@@ -17,7 +17,7 @@ import type { StyleProp, TextStyle } from 'react-native';
 const VARIANT_PREFIX = '(?:[\\w-]+:)*';
 
 const SIZE_TOKEN =
-  /^(?:xs|sm|base|lg|[1-9]xl|title-[123]-(?:regular|medium|semibold|bold)|\[(?:length:)?-?[\d.]+(?:px|rem|em|%|pt|vw|vh)\])(?:\/.+)?$/;
+  /^(?:xs|sm|base|lg|[1-9]?xl|title-[123]-(?:regular|medium|semibold|bold)|\[(?:length:)?-?[\d.]+(?:px|rem|em|%|pt|vw|vh)\])(?:\/.+)?$/;
 
 /** `text-left`, `text-wrap`, … set neither a size nor a colour. */
 const NON_COLOR_TEXT_TOKEN =
