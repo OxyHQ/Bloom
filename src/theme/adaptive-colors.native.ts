@@ -8,6 +8,17 @@ import type { ThemeColors } from './types';
  * `null` into the dependency map when it is not, so an app without the optional
  * `expo-router` peer loses the adaptive palette and nothing else.
  *
+ * The literal names `Color`'s OWN module, `expo-router/build/color/index.js` (published
+ * by expo-router's `exports` as `./build/*.js`), never the package root. An
+ * optional dependency is linked whenever the package is INSTALLED, not only
+ * when the app uses it: `require('expo-router')` resolved the router's root
+ * index and put the whole router (322 modules, about 1.4 MB unminified:
+ * navigation, linking, screens) into every native bundle that imports Bloom's
+ * theme, for apps that never route with it and whose tree merely has it. The
+ * `color` module depends on `react-native` and expo-router's native module
+ * alone, and it is the very object the root re-exports, so the palette is
+ * unchanged.
+ *
  * The specifier was previously bound to a local `const` first. That still
  * worked — Metro evaluates the constant — but the literal is what the rule can
  * be stated and checked as, and it does not rest on a constant-folding pass
@@ -85,7 +96,7 @@ function getAndroidColors(): AdaptiveColors | null {
       warnAdaptiveColorsUnavailable('this bundle has no CommonJS `require`');
       return null;
     }
-    const { Color } = require('expo-router');
+    const { Color } = require('expo-router/build/color/index.js');
     const d = Color.android.dynamic;
     return {
       background: c(d.surface),
@@ -138,7 +149,7 @@ function getIOSColors(): AdaptiveColors | null {
       warnAdaptiveColorsUnavailable('this bundle has no CommonJS `require`');
       return null;
     }
-    const { Color } = require('expo-router');
+    const { Color } = require('expo-router/build/color/index.js');
     const i = Color.ios;
     return {
       background: c(i.systemBackground),
