@@ -64,6 +64,7 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
         ]}
       >
         <SurfacePaint
+          floating
           fill={fill}
           radius={geometry.radius}
           shape={shape}

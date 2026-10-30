@@ -28,9 +28,39 @@ The shared implementation lives in `surface/optics.ts` (the measured looks), `su
 
 Hosts set the material's variables through `surfaceOpticsVars(optics, radius)` on every painting element, so none inherits an enclosing surface's values. A host clips with `overflow: clip; overflow-clip-margin: 1px` rather than `hidden`: an exact clip cuts the layers' antialiased edge and Chromium does not antialias it. Its corners are always round on web: Chromium drops every mask inside an element clipped with a non-round `corner-shape`, which would turn the edge into a flat brightening of the whole surface. No blend modes either: a sibling with `mix-blend-mode` switches the body's backdrop filter off.
 
-Native paints a single view: tint as `backgroundColor`, and the edge line and its glow as inset `boxShadow`s (`inset 0 ±1px 0` lines over `inset 0 ±8px 5.18px -5.18px` glows in light mode). Never paint the glow as an `experimental_backgroundImage` gradient: React Native's parser drops a whole gradient for one `calc()` stop (every native surface lost its glow that way), and a gradient with fixed `px` stops crashes the Android emulator's SwiftShader renderer (a SIGSEGV in its render thread on the first frame, measured with six stops and with four). There is no per-surface `BlurView` on native. A surface's own shadow belongs on the outer node; do not clip the native outer node if it needs a shadow.
+Native paints a single view: tint as `backgroundColor`, and the edge line and its glow as inset `boxShadow`s (`inset 0 ±1px 0` lines over `inset 0 ±8px 5.18px -5.18px` glows in light mode). Never paint the glow as an `experimental_backgroundImage` gradient: React Native's parser drops a whole gradient for one `calc()` stop (every native surface lost its glow that way), and a gradient with fixed `px` stops crashes the Android emulator's SwiftShader renderer (a SIGSEGV in its render thread on the first frame, measured with six stops and with four). No in-flow native surface has a `BlurView`, and no Android one at all (see *iOS: the system's material under floating surfaces* below). A surface's own shadow belongs on the outer node; do not clip the native outer node if it needs a shadow.
 
 `Surface` has no press, disabled, loading or business state. Controls such as Button own those states and consume the **same paint** directly: `SurfacePaint` for universal components, `surfaceMaterialCss` and `useSurfaceMaterial` for web hosts. A `Screen` inside a painted surface leaves its canvas transparent, so the surface's material and edge stay visible.
+
+## iOS: the system's material under floating surfaces
+
+On iOS a surface that floats over content (`SurfacePaint floating`) draws the
+system's material under its tint, as the web's material does: a
+`UIVisualEffectView` (expo-blur's `BlurView`, `surface/SurfaceBlur.tsx`) with the
+thinnest system material, light or dark by the theme, then the tint at the web's
+72% (`SURFACE_TINT_OPACITY`; an explicit alpha is kept), then the edge light, all
+clipped to the surface's shape. The blur and its saturation are the platform's;
+the tint and the edge stay Bloom's. The floating surfaces are an equality in
+`surface-ios-blur.test.tsx`, each with its reason: `BlurIsland`, the tab bar's
+capsule (so `BottomBar`'s), `BottomSheet`'s panel, `Dialog`'s panels and centred
+card, toasts, native tooltips and the composer's popover.
+
+- **In-flow surfaces stay one opaque view.** A card in a feed has nothing moving
+  behind it, and a `UIVisualEffectView` per row is an offscreen pass per row.
+- **Android and OxyOS never blur a surface.** A `BlurView` inside its own blur
+  target crashes Android's render thread ([Blur](./blur.mdx)); their floating
+  surfaces stay opaque, so iOS and Android floating surfaces differ by design.
+- **A `composite` fill keeps the opaque paint:** its token is made to read over
+  the surface.
+- **With transparency reduced** (or contrast increased) the floating surface is
+  the opaque view every other native surface paints, with no blur mounted.
+  Only floating surfaces read the switch, so in-flow ones pay nothing for it.
+- The colour a floating surface publishes to its content stays its opaque fill:
+  the text on it is measured against what reduced transparency paints exactly.
+
+Not run on a device here: the gate is the Jest suite above, and the checklist
+for a device is the striped-backdrop scenario in
+[the study](./surface-material-study.mdx) (phase 3).
 
 ## Reduced transparency
 

@@ -916,6 +916,7 @@ export const BottomSheetBase = forwardRef(
                     ]}
                   >
                     <SurfacePaint
+                      floating
                       fill={paintFill}
                       shape={{ curve: SURFACE_SHAPES.panel.curve }}
                       radius={surfaceRadius}

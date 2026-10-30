@@ -28,6 +28,8 @@ const CLASSIFIED: Readonly<Record<string, string>> = {
     'The material itself: its reduced rule is keyed on the document attribute the provider writes, and on the web media query.',
   'surface/baked-material.ts':
     "Reads an ancestor's `backdropFilter` to stay live under it; sets none itself, and bakes nothing while transparency is reduced (the material's own reduced rules win over the baked ones).",
+  'surface/SurfaceBlur.tsx':
+    "Mounted only by SurfacePaint's floating iOS paint, which reads `useReducedTransparency()` and mounts no blur while it is reduced.",
   'blur/blur-target.tsx':
     'Imports `BlurTargetView` only, the container a blur points at. It blurs nothing.',
   'styles/web-view-style.ts': 'The `WebCssStyle` type declaring the property.',

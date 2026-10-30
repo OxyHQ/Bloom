@@ -13,12 +13,15 @@ import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import {
   compositeOnto,
   resolveSurfaceTint,
+  translucentTint,
   resolveSurfaceOptics,
   surfaceContrastEdge,
   surfaceOpticsVars,
 } from './shared';
 import { SURFACE_HAIRLINE_VAR } from './web-material';
 import { useBakedMaterial } from './baked-material';
+import { SurfaceBlur } from './SurfaceBlur';
+import { useReducedTransparency } from '../theme/reduced-transparency';
 import { useIncreasedContrast } from '../theme/increased-contrast';
 import { useSurfaceFill } from '../styles/surface-levels';
 
@@ -35,9 +38,10 @@ ${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)', 
  * The material under a surface's content: tint, sheen and rim.
  *
  * Web adds a backdrop blur beneath them. Native paints one `View` (tint as
- * `backgroundColor`, rim and sheen as inset `boxShadow`s):
- * no SVG, no layout state, no per-surface blur. A `BlurView` inside a surface
- * can SIGSEGV on Android, so native blur lives only in `overlay/` `Backdrop`.
+ * `backgroundColor`, rim and sheen as inset `boxShadow`s): no SVG, no layout
+ * state. On iOS a `floating` surface also has the system's material under its
+ * tint (`SurfaceBlur`). Nowhere else on native: a `BlurView` inside a surface
+ * can SIGSEGV on Android, and an in-flow surface has nothing moving behind it.
  */
 export const SurfacePaint = memo(function SurfacePaint({
   fill,
@@ -54,9 +58,19 @@ export const SurfacePaint = memo(function SurfacePaint({
   transition,
   presence,
   presenceMs,
+  floating = false,
   testID,
 }: {
   sheen?: boolean;
+  /**
+   * The surface floats over content that moves or differs under it: a bar,
+   * an island, a sheet, a dialog, a toast, a tooltip. On iOS it then draws the
+   * system's material (a `UIVisualEffectView`) under a translucent tint, as the
+   * web's material does, unless transparency is reduced. Nothing changes on
+   * the web (where every material filters its backdrop) or on Android.
+   * A `composite` fill keeps the opaque paint: its token reads over the surface.
+   */
+  floating?: boolean;
   /**
    * The inset highlight rim. A host that draws its own border turns this off,
    * or the two read as one double stroke.
@@ -172,6 +186,31 @@ export const SurfacePaint = memo(function SurfacePaint({
       </>
     );
   }
+  // Increased contrast: a 1px hairline that holds 3:1 against the body replaces
+  // the edge light. A border, not a shadow, so every renderer draws it (OxyOS's
+  // host draws no box shadows).
+  const edge: ViewStyle | null =
+    increasedContrast && rim
+      ? { borderWidth: 1, borderColor: surfaceContrastEdge(paintFill ?? resolvedFill, text) }
+      : !increasedContrast && (rim || sheen)
+        ? {
+            boxShadow: [rim ? optics.rim : null, sheen ? optics.sheenShadow : null]
+              .filter(Boolean)
+              .join(', '),
+          }
+        : null;
+  const body = fill === undefined ? 'transparent' : resolvedFill;
+  if (Platform.OS === 'ios' && floating && !composite && fill !== undefined) {
+    return (
+      <FloatingIosPaint
+        testID={testID}
+        geometry={geometry}
+        body={body}
+        edge={edge}
+        presence={presence}
+      />
+    );
+  }
   return (
     <View
       testID={testID}
@@ -184,23 +223,8 @@ export const SurfacePaint = memo(function SurfacePaint({
           geometry,
           {
             overflow: 'hidden',
-            backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
-            // Increased contrast: a 1px hairline that holds 3:1 against the
-            // body replaces the edge light. A border, not a shadow, so every
-            // renderer draws it (OxyOS's host draws no box shadows).
-            ...(increasedContrast && rim
-              ? {
-                  borderWidth: 1,
-                  borderColor: surfaceContrastEdge(paintFill ?? resolvedFill, text),
-                }
-              : null),
-            ...(!increasedContrast && (rim || sheen)
-              ? {
-                  boxShadow: [rim ? optics.rim : null, sheen ? optics.sheenShadow : null]
-                    .filter(Boolean)
-                    .join(', '),
-                }
-              : null),
+            backgroundColor: body,
+            ...edge,
             ...(presence === undefined ? null : { opacity: presence }),
           },
         ],
@@ -209,3 +233,63 @@ export const SurfacePaint = memo(function SurfacePaint({
     />
   );
 });
+
+/**
+ * A floating surface on iOS: the system's material, the tint over it at the
+ * web's `SURFACE_TINT_OPACITY` (an explicit alpha is kept), then the edge on
+ * top, all clipped to the surface's shape. With transparency reduced (or
+ * contrast increased, which reduces it) it is the opaque paint every other
+ * native surface draws: the colour the surface publishes to its content.
+ * Only a floating surface reads the switch, so in-flow surfaces pay nothing.
+ */
+function FloatingIosPaint({
+  testID,
+  geometry,
+  body,
+  edge,
+  presence,
+}: {
+  testID?: string;
+  geometry: ViewStyle;
+  body: string;
+  edge: ViewStyle | null;
+  presence?: number;
+}) {
+  const reduced = useReducedTransparency();
+  const opacity = presence === undefined ? null : { opacity: presence };
+  if (reduced) {
+    return (
+      <View
+        testID={testID}
+        style={[
+          [
+            StyleSheet.absoluteFill,
+            geometry,
+            { overflow: 'hidden', backgroundColor: body },
+            edge,
+            opacity,
+          ],
+          pointerEventsStyle('none'),
+        ]}
+      />
+    );
+  }
+  return (
+    <View
+      testID={testID}
+      style={[
+        [StyleSheet.absoluteFill, geometry, { overflow: 'hidden' }, opacity],
+        pointerEventsStyle('none'),
+      ]}
+    >
+      <SurfaceBlur />
+      <View
+        testID={testID ? `${testID}-tint` : undefined}
+        style={[
+          [StyleSheet.absoluteFill, geometry, { backgroundColor: translucentTint(body) }, edge],
+          pointerEventsStyle('none'),
+        ]}
+      />
+    </View>
+  );
+}

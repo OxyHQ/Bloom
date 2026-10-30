@@ -187,7 +187,7 @@ export function ComposerPopover({
         ]}
       >
         {paintsSurface ? (
-          <SurfacePaint fill={fill as string} radius={panelStyle?.borderRadius ?? 16} />
+          <SurfacePaint floating fill={fill as string} radius={panelStyle?.borderRadius ?? 16} />
         ) : null}
         {paintsSurface && panelStyle?.overflow === 'hidden' ? (
           <View style={{ overflow: 'hidden', borderRadius: panelStyle.borderRadius }}>

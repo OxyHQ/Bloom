@@ -324,6 +324,7 @@ export const CenteredCard = forwardRef(
             >
               {surfaceMaterial === 'flat' ? null : (
                 <SurfacePaint
+                  floating
                   fill={paintFill}
                   shape={{ curve: SURFACE_SHAPES.dialog.curve }}
                   radius={radius}

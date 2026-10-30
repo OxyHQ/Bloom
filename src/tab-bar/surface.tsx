@@ -8,7 +8,7 @@ import type { TabBarSurfaceProps } from './shared';
 export function TabBarSurface({ theme, paintFill, style }: TabBarSurfaceProps) {
   return (
     <Animated.View style={[[StyleSheet.absoluteFill, style], pointerEventsStyle('none')]}>
-      <SurfacePaint fill={theme.blurTint} paintFill={paintFill} radius={999} />
+      <SurfacePaint floating fill={theme.blurTint} paintFill={paintFill} radius={999} />
     </Animated.View>
   );
 }

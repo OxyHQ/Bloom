@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.71.0
+
+### Changed
+
+- **iOS: floating surfaces draw the system's material.** `SurfacePaint floating` (BlurIsland, the tab bar's capsule and so `BottomBar`, `BottomSheet`'s panel, `Dialog`'s panels and centred card, toasts, native tooltips, the composer's popover) draws a `UIVisualEffectView` (expo-blur's `BlurView`, the thinnest system material, light or dark by the theme) under its tint at the web's 72%, with the edge light on top, clipped to its shape. In-flow surfaces stay one opaque view; Android and OxyOS never blur a surface; a `composite` fill stays opaque; with transparency reduced or contrast increased a floating surface is opaque again with no blur mounted. The floating callers are an equality in `surface-ios-blur.test.tsx`.
+
+### Consumers
+
+Bump to 15.71.0. iOS menus, sheets, dialogs, toasts, islands and the bottom bar become frosted over the app instead of opaque tiles. No prop changes. A test that counts every `BlurView` under a floating Bloom surface on iOS sees one more per surface.
+
 ## 15.70.0
 
 ### Changed
