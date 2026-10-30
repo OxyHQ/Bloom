@@ -29,6 +29,10 @@ Bump to 15.64.0. Nothing else changes.
 
 - **menubar: a closed menu's content is mounted.** Without the capability, a closed menu's (and a closed submenu's) content is mounted headless beside its panel, so its shortcuts work: its rows register and render nothing. A component that is not a row placed in a menu is now mounted while the menu is closed.
 
+### Fixed
+
+- **PageHeader's `data-*` hooks on the web.** The root's three hooks were separate `dataSet` spreads, so only `data-bloom-page-header-presentation` reached the DOM: the compact density's 12 px side inset never applied on the web (native drew it). `dataHooks()` sets several at once.
+
 ### Consumers
 
 No change unless an app's runtime registers a platform adapter that reports `window` or `menu-bar`, or a menu declares a `shortcut`.

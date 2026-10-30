@@ -3,7 +3,7 @@ import { pointerEventsStyle } from '../styles/pointer-events';
 import { StyledView } from '../styles/styled-primitives';
 import { memo, useContext, useEffect, useRef, useState } from 'react';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
-import { dataHook } from '../styles/data-hook';
+import { dataHook, dataHooks } from '../styles/data-hook';
 import {
   Platform,
   StyleSheet,
@@ -696,9 +696,11 @@ function PageHeaderComponent({
       ) : null}
       <View
         {...directionProps}
-        {...dataHook('bloomPageHeader')}
-        {...dataHook('bloomPageHeaderDensity', density)}
-        {...dataHook('bloomPageHeaderPresentation', presentation)}
+        {...dataHooks({
+          bloomPageHeader: '',
+          bloomPageHeaderDensity: density,
+          bloomPageHeaderPresentation: presentation,
+        })}
         testID={testID}
         onLayout={onContainerLayout}
         style={[
@@ -738,9 +740,7 @@ function PageHeaderComponent({
           <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
             <StyledView
               {...(windowRoom > 0
-                ? isWeb
-                  ? { dataSet: { bloomPageHeaderBar: '', bloomPageHeaderWindow: '' } }
-                  : {}
+                ? dataHooks({ bloomPageHeaderBar: '', bloomPageHeaderWindow: '' })
                 : dataHook('bloomPageHeaderBar'))}
               className={
                 navigationPresentation || windowToolbar > 0
