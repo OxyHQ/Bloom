@@ -29,6 +29,8 @@ export interface PopupPanelProps extends FloatingPositionProps {
   /** The adapter's popup component (`usePopupSurface()`). */
   PopupSurface: ComponentType<PopupSurfaceProps>;
   anchorRef: RefObject<ComponentRef<typeof View> | null>;
+  /** A point in the anchor to open at (a context menu's press), instead of its frame. */
+  point?: PopupSurfaceProps['point'];
   role: PopupSurfaceProps['role'];
   label?: string;
   onDismiss: (reason: PopupDismissReason) => void;
@@ -46,6 +48,7 @@ export interface PopupPanelProps extends FloatingPositionProps {
 export function PopupPanel({
   PopupSurface,
   anchorRef,
+  point,
   side = 'bottom',
   align = 'start',
   sideOffset = DEFAULT_SIDE_OFFSET,
@@ -73,6 +76,7 @@ export function PopupPanel({
   return (
     <PopupSurface
       anchorRef={anchorRef}
+      point={point}
       side={side}
       align={align}
       sideOffset={sideOffset}

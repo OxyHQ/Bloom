@@ -19,7 +19,14 @@ import type { BloomSize } from '../appearance';
  *  - `context` — the contexts those rows read.
  */
 import type { ComponentRef } from 'react';
-import type { GestureResponderEvent, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
+import type {
+  AccessibilityRole,
+  GestureResponderEvent,
+  StyleProp,
+  TextStyle,
+  View,
+  ViewStyle,
+} from 'react-native';
 
 import type { MenuFocusIntent } from './menu-keyboard';
 import type { WebAriaProps } from '../styles/styled-primitives';
@@ -195,7 +202,8 @@ export interface TriggerHandleProps {
   onLongPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
   accessibilityLabel?: string;
-  accessibilityRole?: 'button';
+  /** `button`, unless an `asChild` child states its own role, which it keeps. */
+  accessibilityRole?: AccessibilityRole;
   'aria-expanded'?: boolean;
   /**
    * The trigger's id, so an enclosing `Field`'s label can point at it.

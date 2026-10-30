@@ -35,6 +35,10 @@ unchanged.
 
 `PopupSurface` receives `PopupSurfaceProps`:
 - `anchorRef`: the trigger's view;
+- `point` (optional): a point in the anchor, in layout pixels from its top-left
+  corner, to place the popup against instead of the anchor's frame (a context
+  menu opens where the pointer pressed); placement applies to it as to a frame
+  of no size;
 - Bloom's placement (`side`, `align`, `sideOffset`, `alignOffset`, the same
   `FloatingPositionProps` the web panel takes);
 - the content's `role` and accessible `label`, which the popup carries (the panel inside it
@@ -68,7 +72,9 @@ could not cross the window's clipping.
 
 Today native `DropdownMenu` uses it: its content becomes `floating/PopupPanel`
 (the web menu panel's chrome: menu palette, 16px radius, hairline border, the
-266px floor) in the popup, with the same rows. The rest of the native overlay
+266px floor) in the popup, with the same rows. Native `ContextMenu` uses it
+too: the secondary button (or a long press) opens its panel at the press, the
+trigger the anchor and the press its `point`. The rest of the native overlay
 families still present through `dialog/SheetShell`.
 
 ## `window`
@@ -205,6 +211,10 @@ Without it Bloom listens on the `document` where there is one (the web). React
 Native has no window-wide key event (`onKeyDown` reaches only the focused view
 and its ancestors), so a native runtime that supplies no `keyboard` has no
 menu shortcuts. `usePlatformKeyboard()` returns it, or null.
+
+Both menus' shortcuts and an application's own keys (`useWindowKeys`,
+[`Kbd`](/docs/bloom/main/kbd)) come from this one source per window
+(`kbd/window-keys`), menus first.
 
 The OxyOS adapter, and the host component behind it, live with the OxyOS
 runtime (OxyHQ/OxyOS, `tools/rn-host-spike`): Bloom stays free of OxyOS,

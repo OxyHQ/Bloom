@@ -61,6 +61,35 @@ nothing. Binding keys belongs to the app or the surface that owns the key
 handling — the same reason [`Command`](/docs/bloom/main/command)'s `shortcut`
 field is a hint rather than a binding.
 
+## Listening to keys: `useWindowKeys`
+
+`Kbd` binds nothing; an application that acts on keys of its own — a file
+list's arrows, Return and Space, typing a name to select it — listens with
+`useWindowKeys` from the same subpath:
+
+```tsx
+import { isCommandKey, useWindowKeys } from '@oxy.so/bloom/kbd';
+
+useWindowKeys((event) => {
+  if (event.key === 'ArrowDown') {
+    selectNext(event.shiftKey);
+    return true; // taken: it goes no further
+  }
+  return false;
+});
+```
+
+- The keys are the window's, wherever focus is, from the platform adapter's
+  `keyboard` (a native host), else the DOM's `window` (the web), else none.
+- A `Menubar`'s shortcut hears a key first: a command declared there (`Mod+O`)
+  runs its item and never reaches the handler.
+- Not offered while a text field has focus (it types there) or an anchored
+  menu, list or dialog is open (its own keys), unless `whileTyping` asks for
+  them: the field's owner, taking only what the field does not act on (Escape
+  to cancel an edit). `enabled: false` stops listening.
+- `isCommandKey(event)` is the platform's command modifier on a key's or a
+  pointer's event: ⌘ on Apple platforms, Ctrl elsewhere, as `Mod` in a chord.
+
 ## Where it earns its place
 
 - A [`Command`](/docs/bloom/main/command) row, showing the shortcut for the

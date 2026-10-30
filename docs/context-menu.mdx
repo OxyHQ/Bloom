@@ -48,7 +48,7 @@ import {
 
 On web the menu anchors to the CLICK POINT, not to the trigger's box: right-clicking the bottom-right corner of a large card opens the menu there, not under the card's top-left. A click point is a zero-area anchor, which the same fit / flip / clamp arithmetic every other Bloom surface uses already handles.
 
-On native there is no cursor to anchor to, so a long press presents the same bottom sheet `DropdownMenu` uses.
+On native there is no cursor to anchor to, so a long press presents the same bottom sheet `DropdownMenu` uses. A native platform with popups (an adapter reporting [`popup-surface`](/docs/bloom/main/platform-surface), a desktop) has one: there the secondary button (a W3C `pointerdown` with `button` 2) opens the menu where it pressed, in the platform's popup, as does a long press. The innermost trigger takes the press, so an item's menu opens rather than its list's. An `asChild` child that states its own role (a list item, a list) keeps it, without a menu button's `aria-haspopup` and `aria-expanded`: a region that opens a context menu is not a button.
 
 The native trigger (without `asChild`) times the hold off raw touch events and never takes the touch responder. On Android the responder's view intercepts every later move of its touch, so a `Pressable` trigger kept a horizontal `ScrollView` inside it — a code block in a chat turn — from scrolling. Taps still reach whatever the content makes pressable; a drag past 10dp, an early lift or a scroller taking the touch cancels the hold, and assistive tech opens the menu through the `longpress` accessibility action. With `asChild` your own element takes the long press, responder and all.
 

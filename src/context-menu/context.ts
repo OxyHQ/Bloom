@@ -7,7 +7,8 @@
  * trigger hands an anchor in when it opens, rather than publishing a ref for the
  * surface to measure later.
  */
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type ComponentRef, type RefObject } from 'react';
+import type { View } from 'react-native';
 
 import type { MenuFocusIntent } from '../floating/menu-keyboard';
 import type { FloatingAnchor } from '../floating/types';
@@ -22,8 +23,13 @@ export interface ContextMenuContextValue {
    */
   openAt: (anchor: FloatingAnchor | null) => void;
   close: () => void;
-  /** Where the surface anchors. `null` on native and while closed. */
+  /**
+   * Where the surface anchors, in the window's (the viewport's) coordinates.
+   * `null` while closed, and on native without the platform's popups (a sheet).
+   */
   anchor: FloatingAnchor | null;
+  /** Native: the trigger's wrapper, which a platform popup is anchored to. */
+  triggerRef?: RefObject<ComponentRef<typeof View> | null>;
   /** Web only: the row focus lands on when the menu opens (`menu-keyboard.ts`). */
   focusIntent?: MenuFocusIntent;
 }
