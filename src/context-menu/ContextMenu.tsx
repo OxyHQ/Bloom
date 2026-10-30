@@ -137,6 +137,7 @@ export function ContextMenuContent({
   return (
     <BloomScope size={size}>
       <SheetShell
+        anchored
         control={control}
         label={label}
         onClose={onSheetClose}

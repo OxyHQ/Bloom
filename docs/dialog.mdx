@@ -167,7 +167,7 @@ A native window presents as a desktop when it runs on macOS or Windows, or when 
 | Dismissal | backdrop press, Escape (macOS), Back (Android) | the same, and dragging down |
 | Backdrop | the shared dim | dimmed to 0.7 |
 
-`SheetShell`, which presents native `Select`, `DropdownMenu`, `ContextMenu`, `Popover`, `HoverCard` and `Menubar`, follows the same rule: on a desktop window it is the centred card without a drag handle.
+`SheetShell` follows the same rule for a picker: a native `Select` on a desktop window is the centred card without a drag handle. Content that belongs under its trigger passes `anchored` and keeps its sheet: `DropdownMenu`, `ContextMenu`, `Menubar`, `Popover` and `HoverCard`. A centred card would detach a menu from the trigger that opened it, and a menu bar's menus most of all. Bloom has no in-window anchored panel on native yet; a platform adapter with `popup-surface` anchors them in the platform's popup.
 
 The native card presents in its own RN `<Modal>`, as the sheet does. On macOS, react-native-macos sends the Modal's `onRequestClose` for Escape, and that request is a user dismissal: `dismissOnBackdrop={false}` refuses it, as it refuses a backdrop press.
 

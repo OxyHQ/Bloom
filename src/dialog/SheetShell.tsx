@@ -44,6 +44,13 @@ export interface SheetShellProps {
   /** Style overrides applied to the inner padded content container. */
   contentStyle?: StyleProp<ViewStyle>;
   contentTestID?: string;
+  /**
+   * The content belongs under the trigger that opened it (a menu, a menu bar's
+   * menu, a popover, a hover card). A centred card would detach it from that
+   * trigger, so on a desktop window it keeps the sheet; Bloom has no in-window
+   * anchored panel on native (the platform's popup is `popup-surface`).
+   */
+  anchored?: boolean;
   children?: React.ReactNode;
 }
 
@@ -61,6 +68,7 @@ export function SheetShell({
   contentClassName,
   contentStyle,
   contentTestID,
+  anchored = false,
   children,
 }: SheetShellProps) {
   const theme = useTheme();
@@ -73,10 +81,12 @@ export function SheetShell({
   // instead of four times.
   const [presented, setPresented] = useState(false);
   const bodyRef = useAccessibilityFocus<ComponentRef<typeof View>>(presented);
-  // A desktop window presents the menu, select or popover as the web presents
-  // a dialog: a centred card, with no drag handle, Escape closing it.
+  // A desktop window presents a picker (Select) as the web presents a dialog:
+  // a centred card, with no drag handle, Escape closing it. Anchored content
+  // keeps the sheet.
   const desktopSession = useDesktopPresentationSession(false);
   const { hold: holdDesktop, release: releaseDesktop } = desktopSession;
+  const desktop = !anchored && desktopSession.desktop;
 
   const callQueuedCallbacks = useCallback(() => {
     const queued = closeCallbacks.current;
@@ -127,7 +137,7 @@ export function SheetShell({
 
   const content = (
     <Context.Provider value={context}>
-      {desktopSession.desktop ? null : <SheetHandle onPress={() => close()} />}
+      {desktop ? null : <SheetHandle onPress={() => close()} />}
       {header}
       <StyledView
         // Deliberately NOT `accessible`: collapsing the body into one
@@ -150,7 +160,7 @@ export function SheetShell({
     </Context.Provider>
   );
 
-  if (desktopSession.desktop) {
+  if (desktop) {
     return (
       <CenteredCard
         material={material}

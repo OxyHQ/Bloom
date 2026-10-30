@@ -85,6 +85,7 @@ export function HoverCardContent({ children, label: labelProp, style }: HoverCar
 
   return (
     <SheetShell
+      anchored
       control={control}
       label={label}
       onClose={onSheetClose}

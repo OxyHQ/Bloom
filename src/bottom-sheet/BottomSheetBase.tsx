@@ -699,6 +699,8 @@ export const BottomSheetBase = forwardRef(
     // with both `left` and `right` at `left` once `maxWidth` caps it, so every
     // native sheet in a window wider than its cap sat in the bottom-LEFT corner
     // (an iPad, a Mac, an Android desktop window) while the web centred it.
+    // A sheet its window can hold keeps the static edge insets, so it draws
+    // exactly as it always has; only a capped one takes the centring insets.
     const sheetMaxWidth =
       typeof flatSurfaceStyle?.maxWidth === 'number' ? flatSurfaceStyle.maxWidth : SHEET_MAX_WIDTH;
     const sheetSideInset = sheetSideInsetFor(screenWidth, sheetMaxWidth, detached);
@@ -875,7 +877,9 @@ export const BottomSheetBase = forwardRef(
                 // fill — web CSS under the sheet reads the sheet's
                 // colour, not the colour of whatever it opened over.
                 surfaceFillVars(surfaceFill),
-                { left: sheetSideInset, right: sheetSideInset },
+                ...(sheetSideInset === sheetEdgeGap(detached)
+                  ? []
+                  : [{ left: sheetSideInset, right: sheetSideInset }]),
                 sheetMarginStyle,
                 sheetStyle,
                 sheetHeightStyle,
@@ -950,13 +954,16 @@ export const DETACHED_SHEET_SIDE_GAP = 16;
  * `windowWidth` wide: the detached sheet's 16 side gap on a narrow window (a
  * flush sheet touches both edges), half the room the cap leaves on a wide one.
  */
+function sheetEdgeGap(detached: boolean): number {
+  return detached ? DETACHED_SHEET_SIDE_GAP : 0;
+}
+
 export function sheetSideInsetFor(
   windowWidth: number,
   maxWidth: number,
   detached: boolean,
 ): number {
-  const edge = detached ? DETACHED_SHEET_SIDE_GAP : 0;
-  return Math.max(edge, (windowWidth - maxWidth) / 2);
+  return Math.max(sheetEdgeGap(detached), (windowWidth - maxWidth) / 2);
 }
 
 const styles = StyleSheet.create({
@@ -971,11 +978,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     maxWidth: SHEET_MAX_WIDTH,
+    alignSelf: 'center',
+    marginHorizontal: 'auto',
   },
   sheetDetached: {
+    left: DETACHED_SHEET_SIDE_GAP,
+    right: DETACHED_SHEET_SIDE_GAP,
     ...surfaceStyle({ ...SURFACE_SHAPES.panel, radius: 24 }),
   },
   sheetNormal: {
+    left: 0,
+    right: 0,
     ...surfaceStyle(SURFACE_SHAPES.sheet),
   },
   /** Legacy (non-manualActivation) handle: decorative overlay only. */

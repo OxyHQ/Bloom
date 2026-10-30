@@ -19,6 +19,9 @@ import { presentsAsDesktop } from '../dialog/placement';
 import { SheetShell } from '../dialog/SheetShell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { hostNodes, resolvedStyle } from './support/rendered-style';
+import { declaration } from './support/menubar-declaration';
+import * as MenubarParts from '../menubar';
+import { PortalOutlet, PortalProvider } from '../portal';
 
 const MAC_WINDOW = { width: 1360, height: 860, scale: 2, fontScale: 1 };
 const PHONE_WINDOW = { width: 375, height: 812, scale: 3, fontScale: 1 };
@@ -212,13 +215,13 @@ describe('CenteredCard lifecycle', () => {
 });
 
 describe('native SheetShell', () => {
-  function OpenShell() {
+  function OpenShell({ anchored }: { anchored?: boolean }) {
     const control = useDialogControl();
     React.useEffect(() => {
       control.open();
     }, [control]);
     return (
-      <SheetShell control={control} label="Menu">
+      <SheetShell control={control} label="Menu" anchored={anchored}>
         <Text>Rename</Text>
       </SheetShell>
     );
@@ -235,6 +238,37 @@ describe('native SheetShell', () => {
     expect(view.UNSAFE_queryByType(CenteredCard)).not.toBeNull();
     expect(view.queryByHintText('Tap to close')).toBeNull();
     expect(view.getByText('Rename')).toBeTruthy();
+  });
+
+  it('keeps anchored content (a menu, a popover) in its sheet on macOS', () => {
+    Platform.OS = 'macos';
+    windowSize = MAC_WINDOW;
+    const view = render(
+      <BloomThemeProvider fonts={false}>
+        <OpenShell anchored />
+      </BloomThemeProvider>,
+    );
+    expect(view.UNSAFE_queryByType(CenteredCard)).toBeNull();
+    expect(view.UNSAFE_queryByProps({ detached: true })).not.toBeNull();
+    expect(view.getByText('Rename')).toBeTruthy();
+  });
+
+  it("opens a menu bar's menus as anchored content, never as a centred card", () => {
+    Platform.OS = 'macos';
+    windowSize = MAC_WINDOW;
+    const view = render(
+      <BloomThemeProvider fonts={false}>
+        <PortalProvider>
+          {declaration(MenubarParts, {}, {}, { defaultValue: 'file' })}
+          <PortalOutlet />
+        </PortalProvider>
+      </BloomThemeProvider>,
+    );
+    expect(view.UNSAFE_queryAllByType(SheetShell).length).toBeGreaterThan(0);
+    for (const shell of view.UNSAFE_queryAllByType(SheetShell)) {
+      expect(shell.props.anchored).toBe(true);
+    }
+    expect(view.UNSAFE_queryByType(CenteredCard)).toBeNull();
   });
 
   it('keeps the sheet and its handle on a phone', () => {
