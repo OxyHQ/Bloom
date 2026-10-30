@@ -25,9 +25,17 @@ Bump to 15.69.0. Nothing changes for a person with neither setting on. Native `S
 
 - **`CardTitle` and `CardDescription` take `className`.** `font-display` sets a card's text in BlomusModernus, and any utility replaces only the default it names: the colour paired with the card's fill (a `tone`/`appearance` card's foreground) stays unless the className sets a colour.
 
+- **platform-surface: the person's files (`files`, `usePlatformFiles()`).** An adapter may supply `PlatformFiles`, which is not a capability, the same as `keyboard`. It gives the person's places (`PlatformPlace`: the home, its standard folders that exist, the mounted volumes) and the platform's shared Trash: `trash`, `trashed` (`PlatformTrashedItem`), `restore`, `erase`, `emptyTrash`, `watchPlaces`, `watchTrash`. Each answers per item (`PlatformFileOutcome`, `PlatformFileError`). Every URI is `file://`, read and changed through `expo-file-system`. Null without it. OxyOS ADR 0028.
+
+### Changed
+
+- **A `BloomProvider` with no `platform` keeps the adapter around it.** The runtime that runs an application registers the platform's adapter (`PlatformSurfaceProvider`). The application's own provider used to replace it with none, and now keeps it. A `platform` of its own still replaces it for its subtree.
+
 ### Fixed
 
 - **Card titles and descriptions are set in Bloom's type, not the system font.** They rendered react-native's own `Text`, so on iOS and Android every card title and description was in the system face while every other Bloom text was Inter. They now render Bloom's `Text` (Inter, or BlomusModernus with `font-display`). Web is unchanged: the page's face was already Inter.
+- **On the web, a right-click on a context-menu trigger inside another opens only the inner menu.** An item's menu inside a list with a menu of its own used to be replaced by the list's.
+- **`WindowDragRegion` lays out by its `className` on every native platform.** It rendered React Native's plain `View`, so classes styled it only where the application's NativeWind polyfill applied, and a toolbar fell apart into a column on OxyOS, where Bloom is outside that polyfill.
 - **`text-xl` is a size.** The utility reader took `text-lg` and `text-2xl` as sizes but `text-xl` as a colour, so a `Text` with `text-xl` lost its default colour and kept its default size. It now drops the size and line height and keeps the colour, like every other size.
 
 ### Consumers
@@ -40,9 +48,12 @@ Bump to 15.68.0. On native, card titles and descriptions change from the system 
 
 - **Weather glyphs, and `wifi-off-line`.** Fourteen Remix Icon 4.9.1 glyphs, so a weather condition has its own picture instead of the nearest stand-in: `RiCloudyLine`, `RiSunCloudyLine`, `RiMoonCloudyLine`, `RiMoonClearLine`, `RiRainyLine`, `RiDrizzleLine`, `RiShowersLine`, `RiHeavyShowersLine`, `RiThunderstormsLine`, `RiSnowyLine`, `RiHailLine`, `RiMistLine`, `RiFoggyLine`, and `RiWifiOffLine` for a screen that lost its connection. Added with `scripts/add-remix-icons.mjs`, each `@oxy.so/bloom/icons/Ri<Name>` like the rest.
 
+- **kbd: `useWindowKeys` and `isCommandKey`.** An application's own keys come from the window's key source, the one menus' shortcuts use: the adapter's `keyboard`, else the DOM's. They arrive after the menus' shortcuts, and never while a text field or a menu has the keys, unless the caller asks with `whileTyping`. `isCommandKey` is Bloom's command modifier (⌘ on Apple platforms, Ctrl elsewhere) for a pointer's or a key's event. Shipped in 15.67.0 (#524).
+- **Native `ContextMenu` in the platform's popup at the press.** With `popup-surface`, it opens on the secondary button (or a long press) where it was pressed, anchored at that point of the trigger (`PopupSurfaceProps.point`). A phone keeps the sheet. A trigger's child that states its role keeps it (`TriggerSlot`). Shipped in 15.67.0 (#524).
+
 ### Consumers
 
-Bump to 15.67.0. New glyphs only.
+Bump to 15.67.0. New glyphs, window keys and native context menus at the press.
 
 ## 15.66.0
 
