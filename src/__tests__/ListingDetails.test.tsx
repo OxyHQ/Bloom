@@ -452,6 +452,13 @@ describe('ReviewCard', () => {
     expect(byTestId('rv-text').getAttribute('style')).toContain('-webkit-line-clamp: 3');
     expect(queryTestId('rv-toggle')).toBeNull();
   });
+
+  it("draws the review's own title above its text only when it has one", () => {
+    mount(<ReviewCard name="Inês" heading="Quiet street" text="Short." testID="rv" />);
+    expect(byTestId('rv-heading').textContent).toBe('Quiet street');
+    mount(<ReviewCard name="Inês" text="Short." testID="rv" />);
+    expect(queryTestId('rv-heading')).toBeNull();
+  });
 });
 
 describe('ListingSection', () => {

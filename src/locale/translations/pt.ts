@@ -1214,6 +1214,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   rated: (v) => `Avaliado com ${v} de 5`,
   ratedWithReviews: (v, r) => `Avaliado com ${v} de 5, ${r}`,
   star: (n) => plural('pt', n, { one: '{n} estrela', other: '{n} estrelas' }),
+  outOfFive: 'de 5',
+  noRatings: 'Ainda sem avaliações',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

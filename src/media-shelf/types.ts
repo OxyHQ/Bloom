@@ -4,9 +4,29 @@ import type { StyleProp, ViewStyle } from 'react-native';
 /**
  * `row` — one horizontally scrolling line of items (web: prev/next buttons in
  * the header, snapping, hidden scrollbar). `grid` — the items wrapped into
- * `rows` rows of as many columns as fit the container.
+ * `rows` rows of as many columns as fit the container. `paged` — a
+ * horizontally scrolling run of whole COLUMNS sized from the track's measured
+ * width, `rows` items stacked in each, that pages one screenful of columns at
+ * a time (a store's shelves of three app rows per column).
  */
-export type ShelfLayout = 'row' | 'grid';
+export type ShelfLayout = 'row' | 'grid' | 'paged';
+
+/**
+ * Where an item sits in a `paged` or `grid` shelf, for an item that draws
+ * something according to it — a row separator under every row but the last of
+ * its column, say. `null` outside those layouts.
+ */
+export interface ShelfCell {
+  layout: 'grid' | 'paged';
+  /** The item's row in its column (`paged`) or the grid's row (`grid`), from 0. */
+  row: number;
+  /** Rows per column (`paged`) or rows shown (`grid`). */
+  rows: number;
+  /** The item's column, from 0. */
+  column: number;
+  /** No item follows this one in its column. */
+  lastInColumn: boolean;
+}
 
 export interface ShelfProps {
   /** The section heading. Also names the region and the prev/next buttons. */
@@ -30,14 +50,29 @@ export interface ShelfProps {
    * omitted). Grid: ignored — see `minItemWidth`.
    */
   itemWidth?: number;
-  /** Grid: the narrowest a column may get before one fewer column is used. Default `160`. */
+  /**
+   * Grid and paged: the narrowest a column may get before one fewer column is
+   * used. Default `160`.
+   */
   minItemWidth?: number;
-  /** Grid: how many rows are shown; later items are dropped. Default `1`. Pass `Infinity` to show all. */
+  /**
+   * Grid: how many rows are shown; later items are dropped. Default `1`. Pass
+   * `Infinity` to show all. Paged: how many items are stacked in each column
+   * (every item is shown). Default `1`.
+   */
   rows?: number;
+  /**
+   * Paged: how much of the next column stays in view at the trailing edge of a
+   * page, so a touch reader can see there is more. Default `0` — whole pages,
+   * paged by the header's buttons.
+   */
+  peek?: number;
   /** Space between items, both axes. Default `16` on web, `12` on native. */
   gap?: number;
+  /** Grid and paged: the space between the rows of a column. Default `gap`. */
+  rowGap?: number;
   /**
-   * Horizontal padding kept inside the scroll track (row) so the first item
+   * Horizontal padding kept inside the scroll track (row, paged) so the first item
    * lines up with the page gutter while the row still scrolls edge to edge.
    * Default `0`.
    */

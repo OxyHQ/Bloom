@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.65.0",
+  "version": "15.66.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3855,6 +3855,48 @@
         "default": "./lib/commonjs/ambient-photo/index.js"
       }
     },
+    "./lockup": {
+      "react-native": {
+        "types": "./lib/typescript/module/lockup/index.d.ts",
+        "default": "./src/lockup/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/lockup/index.d.ts",
+        "default": "./lib/module/lockup/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/lockup/index.d.ts",
+        "default": "./lib/commonjs/lockup/index.js"
+      }
+    },
+    "./fact-strip": {
+      "react-native": {
+        "types": "./lib/typescript/module/fact-strip/index.d.ts",
+        "default": "./src/fact-strip/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/fact-strip/index.d.ts",
+        "default": "./lib/module/fact-strip/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/fact-strip/index.d.ts",
+        "default": "./lib/commonjs/fact-strip/index.js"
+      }
+    },
+    "./expandable-text": {
+      "react-native": {
+        "types": "./lib/typescript/module/expandable-text/index.d.ts",
+        "default": "./src/expandable-text/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/expandable-text/index.d.ts",
+        "default": "./lib/module/expandable-text/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/expandable-text/index.d.ts",
+        "default": "./lib/commonjs/expandable-text/index.js"
+      }
+    },
     "./design-tokens/theme.css": "./src/design-tokens/theme.css",
     "./design-tokens/tokens.json": "./src/design-tokens/tokens.json",
     "./package.json": "./package.json"
@@ -4900,6 +4942,15 @@
       ],
       "ambient-photo": [
         "./lib/typescript/module/ambient-photo/index.d.ts"
+      ],
+      "lockup": [
+        "./lib/typescript/module/lockup/index.d.ts"
+      ],
+      "fact-strip": [
+        "./lib/typescript/module/fact-strip/index.d.ts"
+      ],
+      "expandable-text": [
+        "./lib/typescript/module/expandable-text/index.d.ts"
       ]
     }
   }

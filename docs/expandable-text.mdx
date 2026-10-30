@@ -1,0 +1,46 @@
+---
+title: Expandable Text
+description: Text clamped to a few lines, with a control to read the rest — drawn only when something is hidden.
+order: 66
+---
+
+# ExpandableText
+
+Text clamped to `numberOfLines`, and a control to read the rest.
+
+```tsx
+import { ExpandableText } from '@oxy.so/bloom/expandable-text';
+
+<ExpandableText toggle="inline">{app.description}</ExpandableText>   // "… More"
+<ExpandableText numberOfLines={4}>{review.text}</ExpandableText>     // "Show more" / "Show less"
+```
+
+## Measured, never guessed
+
+Whether the text **is** clamped is measured: an invisible, unclamped copy is laid
+out behind the text and the two heights compared, identically on web and native.
+The control is drawn only when something is hidden — a short description has no
+"More". The copy is hidden from assistive technology.
+
+## Two toggles
+
+| `toggle` | control | after pressing |
+| --- | --- | --- |
+| `below` (default) | "Show more" under the text: `body-semibold`, underlined, in the reading colour | "Show less" collapses it again |
+| `inline` | "More" in the accent at the end of the last visible line, over a 32px fade of the text into the actual backing | the whole text, and the control goes: what was opened stays open |
+
+The inline control is one line tall and centred on the last line; on web the
+fade is a gradient into the surface fill behind the text, on native that fill
+backs the control. Its words are `moreLabel` / `lessLabel`, localised by default
+("Show more", "Show less", "More").
+
+| prop | decides |
+| --- | --- |
+| `numberOfLines` | lines while collapsed, default 3; `0` never clamps |
+| `variant` / `color` / `textStyle` | the text's ramp step (`body-regular`), colour (text-primary) and style |
+| `expanded` / `defaultExpanded` / `onExpandedChange` | controlled or not |
+| `testID` / `toggleTestID` | the text's and the control's (default `${testID}-toggle`) |
+
+The control carries `aria-expanded` on web and `accessibilityState.expanded` on
+native. `ReviewCard` ([Listing details](/docs/bloom/main/listing-details)) draws its
+review text with it.

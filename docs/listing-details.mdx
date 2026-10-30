@@ -232,7 +232,9 @@ breakdown (`RatingBar` with a 16px category icon, `display` defaulting to
 ## `ReviewCard`
 
 Avatar (48) + name + secondary line; five 10px stars (one image, "Rated 5 out of 5")
-and the date; the text clamped to `numberOfLines` (default 4, `0` never clamps).
+and the date; the review's own `heading` (headline-semibold, 4 above the text) when
+it has one; the text clamped to `numberOfLines` (default 4, `0` never clamps),
+drawn by [ExpandableText](/docs/bloom/main/expandable-text).
 
 "Show more" is drawn only when the text IS clamped. That is measured, not guessed from
 the string's length: an invisible, unclamped copy is laid out behind the text and the

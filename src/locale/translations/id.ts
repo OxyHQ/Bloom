@@ -1167,6 +1167,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   rated: (v) => `Rating ${v} dari 5`,
   ratedWithReviews: (v, r) => `Rating ${v} dari 5, ${r}`,
   star: (n) => plural('id', n, { other: '{n} bintang' }),
+  outOfFive: 'dari 5',
+  noRatings: 'Belum ada rating',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

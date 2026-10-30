@@ -377,6 +377,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./tab-pager/expo-router', 'tab-pager/expo-router/index.ts'],
   ['./progressive-blur', 'progressive-blur/index.ts'],
   ['./ambient-photo', 'ambient-photo/index.ts'],
+  ['./lockup', 'lockup/index.ts'],
+  ['./fact-strip', 'fact-strip/index.ts'],
+  ['./expandable-text', 'expandable-text/index.ts'],
 ]);
 
 /**

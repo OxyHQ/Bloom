@@ -1308,6 +1308,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
       many: '{n} звёзд',
       other: '{n} звезды',
     }),
+  outOfFive: 'из 5',
+  noRatings: 'Оценок пока нет',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

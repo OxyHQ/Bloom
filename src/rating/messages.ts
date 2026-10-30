@@ -17,6 +17,10 @@ export interface RatingMessages {
   ratedWithReviews: (value: string, reviews: string) => string;
   /** `RatingInput`'s name for one star: "4 stars". */
   star: (value: number, max: number) => string;
+  /** `RatingSummary`: the scale under the average, "out of 5". */
+  outOfFive: string;
+  /** `RatingSummary` with no ratings yet. */
+  noRatings: string;
 }
 
 export const RATING_MESSAGES: MessageCatalog<RatingMessages> = defineMessages<RatingMessages>(
@@ -27,5 +31,7 @@ export const RATING_MESSAGES: MessageCatalog<RatingMessages> = defineMessages<Ra
     rated: (v) => `Rated ${v} out of 5`,
     ratedWithReviews: (v, r) => `Rated ${v} out of 5, ${r}`,
     star: (n) => plural('en', n, { one: '{n} star', other: '{n} stars' }),
+    outOfFive: 'out of 5',
+    noRatings: 'No ratings yet',
   },
 );

@@ -34,11 +34,14 @@ import {
   MEDIA_SHELF_CSS,
   MEDIA_SHELF_STYLE_ID,
   SHELF_GAP,
+  shelfColumns,
   shelfGridColumns,
   shelfOverflow,
+  shelfPageColumns,
   shelfPageTarget,
   type ShelfScroll,
 } from './shared';
+import { ShelfCellContext } from './context';
 import type { ShelfProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
@@ -54,11 +57,16 @@ import { IS_WEB } from '../styles/platform';
  *   gap         12 between header and items
  *   row         one horizontal line, `gap` 16 (web) / 12 (native)
  *   grid        `rows` rows of as many ≥ `minItemWidth` columns as fit
+ *   paged       whole columns of `rows` items, as many ≥ `minItemWidth` as fit
+ *               the measured track less its insets and `peek`; a page is
+ *               exactly those columns and their gaps
  *
  * Web row: a hidden scrollbar, items snap to their start, and round secondary
  * prev/next buttons sit in the header, each disabled at its end and both
  * hidden while nothing overflows. Native row: a plain horizontal `ScrollView`
- * (snapping per item when `itemWidth` is given).
+ * (snapping per item when `itemWidth` is given). Paged is the row's track with
+ * computed column widths: the buttons step one page, a column snaps to the
+ * start on web and native, and each item learns its place (`useShelfCell`).
  *
  * "Show all" is `text-secondary` and turns `text` on hover — colour only. The
  * title is a heading (`aria-level`, default 2); with `onTitlePress` it is also
@@ -79,7 +87,9 @@ function ShelfComponent({
   itemWidth,
   minItemWidth = 160,
   rows = 1,
+  peek = 0,
   gap = SHELF_GAP,
+  rowGap: rowGapProp,
   contentInset = 0,
   headingLevel = 2,
   previousLabel: previousLabelProp,
@@ -101,6 +111,7 @@ function ShelfComponent({
   const ring = useMemo(() => resolveButtonRamps(theme).accent[500], [theme]);
 
   const items = Children.toArray(children);
+  const rowGap = rowGapProp ?? gap;
 
   // ---- row scrolling -------------------------------------------------------
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
@@ -129,7 +140,9 @@ function ShelfComponent({
 
   const onTrackLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      scroll.current = { ...scroll.current, viewport: event.nativeEvent.layout.width };
+      const width = event.nativeEvent.layout.width;
+      scroll.current = { ...scroll.current, viewport: width };
+      setTrackWidth((current) => (Math.abs(current - width) < 0.5 ? current : width));
       refresh();
     },
     [refresh],
@@ -143,14 +156,19 @@ function ShelfComponent({
     [refresh],
   );
 
+  // ---- paged -----------------------------------------------------------------
+  const [trackWidth, setTrackWidth] = useState(0);
+  const paged = shelfPageColumns(trackWidth, { minItemWidth, gap, inset: contentInset, peek });
+  const pageSize = layout === 'paged' ? paged.page : undefined;
+
   const page = useCallback(
     (direction: -1 | 1) => {
       scrollRef.current?.scrollTo({
-        x: shelfPageTarget(scroll.current, direction),
+        x: shelfPageTarget(scroll.current, direction, pageSize),
         animated: !reducedMotion,
       });
     },
-    [reducedMotion],
+    [reducedMotion, pageSize],
   );
 
   // ---- grid ----------------------------------------------------------------
@@ -161,7 +179,8 @@ function ShelfComponent({
   }, []);
   const grid = shelfGridColumns(gridWidth, minItemWidth, gap);
 
-  const showArrows = IS_WEB && layout === 'row' && (overflow.previous || overflow.next);
+  const showArrows =
+    IS_WEB && (layout === 'row' || layout === 'paged') && (overflow.previous || overflow.next);
 
   const header = (
     <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 16 }}>
@@ -253,7 +272,7 @@ function ShelfComponent({
     body = (
       <View
         onLayout={onGridLayout}
-        style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: gap, rowGap: gap }}
+        style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: gap, rowGap }}
         testID={testID ? `${testID}-grid` : undefined}
       >
         {grid.columns > 0
@@ -262,13 +281,18 @@ function ShelfComponent({
                 key={(child as { key?: React.Key }).key ?? index}
                 style={{ width: grid.itemWidth, minWidth: 0 }}
               >
-                {child}
+                <ShelfCellContext.Provider
+                  value={gridCell(index, grid.columns, Math.min(limit, items.length))}
+                >
+                  {child}
+                </ShelfCellContext.Provider>
               </View>
             ))
           : null}
       </View>
     );
   } else {
+    const snapWidth = layout === 'paged' ? paged.itemWidth : itemWidth;
     const trackStyle: WebCssStyle = {
       marginLeft: -contentInset,
       marginRight: -contentInset,
@@ -284,9 +308,9 @@ function ShelfComponent({
         onScroll={onScroll}
         onLayout={onTrackLayout}
         onContentSizeChange={onContentSizeChange}
-        decelerationRate={!IS_WEB && itemWidth ? 'fast' : undefined}
-        snapToInterval={!IS_WEB && itemWidth ? itemWidth + gap : undefined}
-        snapToAlignment={!IS_WEB && itemWidth ? 'start' : undefined}
+        decelerationRate={!IS_WEB && snapWidth ? 'fast' : undefined}
+        snapToInterval={!IS_WEB && snapWidth ? snapWidth + gap : undefined}
+        snapToAlignment={!IS_WEB && snapWidth ? 'start' : undefined}
         style={trackStyle}
         contentContainerStyle={{
           gap,
@@ -296,15 +320,35 @@ function ShelfComponent({
         }}
         testID={testID ? `${testID}-track` : undefined}
       >
-        {items.map((child, index) => (
-          <View
-            key={(child as { key?: React.Key }).key ?? index}
-            {...webDataSet({ bloomShelfItem: '' })}
-            style={itemWidth ? { width: itemWidth } : undefined}
-          >
-            {child}
-          </View>
-        ))}
+        {layout === 'paged'
+          ? paged.columns > 0
+            ? shelfColumns(items, rows).map((column, columnIndex) => (
+                <View
+                  key={columnKey(column, columnIndex)}
+                  {...webDataSet({ bloomShelfItem: '' })}
+                  style={{ width: paged.itemWidth, gap: rowGap }}
+                  testID={testID ? `${testID}-column` : undefined}
+                >
+                  {column.map((child, row) => (
+                    <ShelfCellContext.Provider
+                      key={(child as { key?: React.Key }).key ?? row}
+                      value={pagedCell(row, rows, columnIndex, column.length)}
+                    >
+                      {child}
+                    </ShelfCellContext.Provider>
+                  ))}
+                </View>
+              ))
+            : null
+          : items.map((child, index) => (
+              <View
+                key={(child as { key?: React.Key }).key ?? index}
+                {...webDataSet({ bloomShelfItem: '' })}
+                style={itemWidth ? { width: itemWidth } : undefined}
+              >
+                {child}
+              </View>
+            ))}
       </ScrollArea>
     );
   }
@@ -320,6 +364,36 @@ function ShelfComponent({
       {body}
     </View>
   );
+}
+
+/** The place of item `index` in a grid of `columns` showing `count` items. */
+function gridCell(index: number, columns: number, count: number) {
+  const row = Math.floor(index / columns);
+  const rows = Math.ceil(count / columns);
+  return {
+    layout: 'grid' as const,
+    row,
+    rows,
+    column: index % columns,
+    lastInColumn: index + columns >= count,
+  };
+}
+
+/** The place of the `row`th item of a paged column holding `length` items. */
+function pagedCell(row: number, rows: number, column: number, length: number) {
+  return {
+    layout: 'paged' as const,
+    row,
+    rows: Math.max(1, Math.floor(Number.isFinite(rows) ? rows : 1)),
+    column,
+    lastInColumn: row === length - 1,
+  };
+}
+
+/** A column's key: its first item's, so a column keeps its identity as items are added. */
+function columnKey(column: readonly React.ReactNode[], index: number): React.Key {
+  const first = column[0] as { key?: React.Key } | undefined;
+  return first?.key != null ? `column-${String(first.key)}` : index;
 }
 
 function ShelfTitle({

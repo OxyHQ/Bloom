@@ -359,6 +359,12 @@ export { ProgressiveBlur } from './progressive-blur';
 export type { ProgressiveBlurProps } from './progressive-blur';
 export { AmbientPhoto } from './ambient-photo';
 export type { AmbientPhotoProps } from './ambient-photo';
+export { Lockup, LockupSkeleton } from './lockup';
+export type { LockupProps, LockupSize, LockupSkeletonProps } from './lockup';
+export { FactStrip } from './fact-strip';
+export type { FactStripItem, FactStripProps } from './fact-strip';
+export { ExpandableText } from './expandable-text';
+export type { ExpandableTextProps, ExpandableTextToggle } from './expandable-text';
 export { VirtualList } from './list';
 export type {
   VirtualListHandle,
@@ -443,7 +449,7 @@ export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
 // Data display
 export * from './card';
 export * from './badge';
-export { Rating, RatingBar, RatingInput } from './rating';
+export { Rating, RatingBar, RatingInput, RatingSummary } from './rating';
 export type {
   RatingBarProps,
   RatingCountStyle,
@@ -962,10 +968,18 @@ export type {
   SongCardArtist,
   SongCardProps,
 } from './media-card';
-export { FilterChips, Shelf, ShelfSkeleton, shelfGridColumns } from './media-shelf';
+export {
+  FilterChips,
+  Shelf,
+  ShelfSkeleton,
+  shelfGridColumns,
+  shelfPageColumns,
+  useShelfCell,
+} from './media-shelf';
 export type {
   FilterChipOption,
   FilterChipsProps,
+  ShelfCell,
   ShelfLayout,
   ShelfProps,
   ShelfSkeletonProps,

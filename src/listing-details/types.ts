@@ -249,6 +249,8 @@ export interface ReviewCardProps {
   rating?: number;
   /** Pre-formatted ("March 2026", "2 weeks ago"). */
   date?: string;
+  /** The review's own title, drawn above its text in `headline-semibold`. */
+  heading?: string;
   text: string;
   /** Clamp the text to this many lines until expanded. Default `4`; `0` never clamps. */
   numberOfLines?: number;
