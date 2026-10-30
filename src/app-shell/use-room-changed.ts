@@ -2,9 +2,10 @@ import { useEffect, useRef } from 'react';
 
 /**
  * Whether this render lays out for another room than the last one committed:
- * `room` keys the sizes a layout is resolved from (the group's measured width,
- * the shell's, the axis they give). A window or container resizing changes it;
- * a panel shown, hidden or resized by the user does not.
+ * `room` keys the sizes a layout is resolved from (a panel group's measured
+ * width, the shell's, the axis they give; the shell's width for its reading
+ * envelope). A window or container resizing changes it; a panel shown, hidden
+ * or resized by the user does not.
  *
  * Geometry the room changed lands at once, as a live resize lays a window out
  * (macOS, Android's multi-window resize): panes animating toward a size the
