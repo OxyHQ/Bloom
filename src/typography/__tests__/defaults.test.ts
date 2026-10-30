@@ -22,6 +22,14 @@ describe('typography defaults', () => {
     ).toEqual({ fontSize: 13 });
   });
 
+  it('reads text-xl as a size, like text-lg and text-2xl, never as a colour', () => {
+    for (const size of ['text-lg', 'text-xl', 'text-2xl', 'md:text-xl']) {
+      expect(
+        typographyDefaultsWhenNoClassName(size, { fontSize: 13, lineHeight: 20, color: 'red' }),
+      ).toEqual({ color: 'red' });
+    }
+  });
+
   it('keeps colour and size under an unrelated className (the invisible dark-mode text bug)', () => {
     expect(
       typographyDefaultsWhenNoClassName('mt-2 text-center flex-1', {

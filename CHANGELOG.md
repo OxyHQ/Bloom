@@ -2,6 +2,21 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.68.0
+
+### Added
+
+- **`CardTitle` and `CardDescription` take `className`.** `font-display` sets a card's text in BlomusModernus, and any utility replaces only the default it names: the colour paired with the card's fill (a `tone`/`appearance` card's foreground) stays unless the className sets a colour.
+
+### Fixed
+
+- **Card titles and descriptions are set in Bloom's type, not the system font.** They rendered react-native's own `Text`, so on iOS and Android every card title and description was in the system face while every other Bloom text was Inter. They now render Bloom's `Text` (Inter, or BlomusModernus with `font-display`). Web is unchanged: the page's face was already Inter.
+- **`text-xl` is a size.** The utility reader took `text-lg` and `text-2xl` as sizes but `text-xl` as a colour, so a `Text` with `text-xl` lost its default colour and kept its default size. It now drops the size and line height and keeps the colour, like every other size.
+
+### Consumers
+
+Bump to 15.68.0. On native, card titles and descriptions change from the system face to Inter, the face of the rest of the UI.
+
 ## 15.67.0
 
 ### Added
