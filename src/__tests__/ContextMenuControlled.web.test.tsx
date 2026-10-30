@@ -414,7 +414,12 @@ describe('ContextMenu (web) — a trigger inside another', () => {
     ) as HTMLElement;
     act(() => {
       item.dispatchEvent(
-        new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 20, clientY: 30 }),
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 20,
+          clientY: 30,
+        }),
       );
     });
     flush();
