@@ -65,7 +65,7 @@ Controls use canonical sizes and the shared visual scope. Removed aliases and mi
 
 ## Flat controls
 
-`material="flat"` bypasses Surface paint while keeping the Button's geometry, semantic tone, interaction states, loading and accessibility. Solid fills use their exact semantic pair (or the explicit `colors` pair); subtle fills preserve their alpha, and outlines use the semantic border. There is no sheen, rim, blur, refraction or material shadow. `appearance="plain"` remains unfilled with either material.
+`material="flat"` bypasses Surface paint while keeping the Button's geometry, semantic tone, interaction states, loading and accessibility. Solid fills use their exact semantic pair (or the explicit `colors` pair); subtle fills preserve their alpha, and outlines use the semantic border. There is no edge light, blur or material shadow. `appearance="plain"` remains unfilled with either material.
 
 ```tsx
 <Button material="flat" colors={{ background: '#5433eb', foreground: '#ffffff' }} onPress={buy}>Buy</Button>
@@ -73,9 +73,9 @@ Controls use canonical sizes and the shared visual scope. Removed aliases and mi
 
 ## Shared surface material
 
-With the default `material="surface"`, surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's 90%-opaque body, gradient and specular rim, over one backdrop blur on web. `appearance="plain"` and `LinkButton` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
+With the default `material="surface"`, surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's material ([Surface](./surface.mdx)): on the web an opaque fill at 72% over a frosted backdrop with an edge of light, on native the fill opaque with the same edge. `appearance="plain"` and `LinkButton` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
 
-Accent/status/brand colours keep their semantic foreground pairs. Neutral, semantic and disabled defaults use the same 90%-opaque fills. Explicit caller transparency is preserved. Loading retains its rest paint. The optional `colors={{ background, foreground }}` pair supports branded controls without changing geometry. Native uses one SVG; web uses a decorative pseudo-element. Geometry has no optical offsets.
+Accent/status/brand colours keep their semantic foreground pairs. Neutral, semantic and disabled defaults use the same material fills. Explicit caller transparency is preserved. Loading retains its rest paint. The optional `colors={{ background, foreground }}` pair supports branded controls without changing geometry. Native paints one view; web uses decorative pseudo-elements. Geometry has no optical offsets.
 
 Button forwards its ref to the interactive node (the native View handle or the actual web button/anchor), so menus can anchor to it without a layout wrapper. Optional `onLayout` reports React Native's layout shape on both platforms; web installs a resize observer only when that callback is supplied. Press-in/out, cancellation and long press share the base gesture lifecycle. String labels keep the typography defaults; custom content can supply icons, animated glyphs or a composed row. Accessibility visibility props support controls that fade out without leaving an invisible focus target.
 

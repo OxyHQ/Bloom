@@ -152,8 +152,8 @@ step off the PAGE and land on exactly the panel's own fill (1.000:1, no shell).
 
 ## Flat content surface
 
-`PopoverContent material="flat"` omits the floating panel's optical tint, sheen,
-rim and refraction. Its authored `style.backgroundColor` paints directly and is
+`PopoverContent material="flat"` omits the floating panel's material: its tint, blur
+and edge light. Its authored `style.backgroundColor` paints directly and is
 published as the descendant surface backing. On native the owning bottom sheet
 uses the same flat fill. Padding, radius, shadow and keyboard/placement behavior
 are unchanged; the default `material="surface"` preserves the standard treatment.

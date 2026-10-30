@@ -127,7 +127,7 @@ is a `button` (the default).
 
 ## Clipping
 
-`Card` uses the shared Surface material (90%-opaque body, gradient, rim and web refraction), with the shared `appearance` and `tone` vocabulary. On native, the outer node keeps its shadow unclipped; an inner content node clips cover images and receives resolved padding, gap and child layout. Web retains one content layout node, where CSS overflow clips children without clipping the box shadow, preserving utility-class layout.
+`Card` uses the shared Surface material ([Surface](./surface.mdx): a 72% body over a frosted backdrop and an edge light on web, opaque with the same edge on native), with the shared `appearance` and `tone` vocabulary. On native, the outer node keeps its shadow unclipped; an inner content node clips cover images and receives resolved padding, gap and child layout. Web retains one content layout node, where CSS overflow clips children without clipping the box shadow, preserving utility-class layout.
 A surface that must *not* clip — because it has an Android elevation, or
 because a child deliberately overflows — opts out through `style`:
 
@@ -165,7 +165,7 @@ other card.
 
 Neutral, non-plain cards keep `colors.card` on the page and derive nested fills from the actual parent surface. The published level caps at three; the fill continues to step from its parent, so deeper cards do not collapse into the same colour. Children receive both the resolved fill through `SurfaceLevelProvider` and its web CSS variable.
 
-Explicit style backgrounds (including resolved class utilities) take precedence. Default fills use 90% opacity; explicit caller alpha is preserved. Translucent paint is composited against the known parent only when publishing its estimate for descendants; it cannot describe the exact refracted backdrop.
+Explicit style backgrounds (including resolved class utilities) take precedence. Default fills paint at 72% on the web and opaque on native; explicit caller alpha is preserved. Translucent paint is composited against the known parent only when publishing its estimate for descendants; it cannot describe the exact blurred backdrop.
 
 `appearance="plain"` adds neither material nor a hierarchy step. Its transparent background preserves the inherited fill. An explicit background on a plain card updates the published fill at the current level.
 

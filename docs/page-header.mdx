@@ -207,7 +207,7 @@ container-width geometry.
 
 - Default minimum height 56; compact minimum 32. Default side inset 16 below `sm`, 24 from `sm`; compact inset 12 — measured against the header's **container**, not the window, so a narrow desktop panel gets the narrow inset.
 - Islands are 36 tall (a 34 control plus the hairline), 8 apart. The back capsule carries 4px of hit slop on every side, which makes it a 44pt target with nothing beside it to steal from. **A grouped item is 34 × 34 with no slop** — items in a group are adjacent, and slop on one overlaps its neighbour. Where the 44pt floor matters for every action, give each one its own island instead of grouping them.
-- Island material: the shared Surface body, sheen and rim. Default fills use 90% opacity; the web blur shows through. See [Blur](/docs/blur).
+- Island material: the shared Surface material. Default fills paint at 72% on the web, where the blur shows through, and opaque on native. See [Surface](./surface.mdx).
 - Title `headline-medium` text-primary, subtitle `body-2-regular` secondary. Both truncate to one line.
 - `bar`: background `background/full` (card; dark neutral-925), separator 1px (neutral-200; dark neutral-800), shadow `shadow-xs` once scrolled.
 - No press scale. Every fade is scroll-linked, not timed, so there is no motion to reduce.
@@ -277,12 +277,12 @@ The context is what makes a desktop panel work: `window.scrollY` never moves ins
 - The container carries no landmark role. `role="banner"` would be one banner per header, and an app shell already owns the page's banner; a page header inside `main` is not a landmark in HTML either.
 - The back button is named by `backLabel`. Its island carries no `role="group"` — a group of one is a container a screen reader steps into for nothing.
 - The gradient is `pointerEvents: none` and is not in the accessibility tree. The bar and the actions row are `box-none`, so the gaps between islands stay transparent to touch — a floating header covers content it does not own, and an invisible rectangle that swallowed presses across the screen would be total and silent.
-- Reduced-transparency preferences are not currently read. Default island bodies use 90% opacity; explicit alpha remains a caller choice.
+- Islands follow reduced transparency through the shared material (opaque bodies, no backdrop filter). Explicit alpha remains a caller choice.
 
 ## Platform notes
 
-- **Web.** Shared Surface CSS uses one backdrop blur with a 90%-opaque body, sheen and rim. There is no SVG displacement; without backdrop-filter support, the body and decorative rim remain.
-- **iOS and Android.** Shared SurfacePaint draws the body, sheen and rim without refraction or inline blur. Outer shadows remain unclipped.
+- **Web.** Shared Surface CSS: a 72% body over a frosted backdrop and a masked edge light. There is no SVG displacement; without backdrop-filter support, the body and decorative rim remain.
+- **iOS and Android.** Shared SurfacePaint draws the body opaque, with the edge light as inset shadows and no per-surface blur. Outer shadows remain unclipped.
 
 ![The floating header over a list, light](./page-header-islands.png)
 

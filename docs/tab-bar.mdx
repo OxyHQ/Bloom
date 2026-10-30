@@ -354,7 +354,7 @@ Every color comes from the active `BloomThemeProvider` preset and mode — there
 | `activeTint` | `colors.text` | Label and glyph of the tab the highlight is over. |
 | `inactiveTint` | `colors.textSecondary` | Label and glyph of every other tab. |
 | `highlight` | `colors.contrast50` | The sliding highlight pill. |
-| `blurTint` | `colors.card` (painted at 90% opacity) | Tint of the capsule material. |
+| `blurTint` | `colors.card` (72% on web, opaque on native) | Tint of the capsule material. |
 
 Override any subset with the `theme` prop; the rest keep their token-derived values.
 
@@ -443,6 +443,6 @@ Types: `TabBarItem`, `TabBarProps`, `TabBarButtonProps`, `TabBarTheme`, `Minimiz
 
 ## Shared surface material
 
-The capsule uses one shared Surface material. Web paints a backdrop blur under the 90%-opaque body with the shared sheen and rim; native paints the same body, sheen and rim without a per-surface blur. The bar publishes the composited tint estimate to descendants. Animated capsule sizing and gestures stay on their existing hosts.
+The capsule uses one shared Surface material. Web paints the body at 72% over a frosted backdrop with the shared edge light; native paints the body opaque with the same edge and no per-surface blur. The bar publishes the composited tint estimate to descendants. Animated capsule sizing and gestures stay on their existing hosts.
 
 `material` and `theme.solidFallback` were removed. `theme.blurTint` is a tint override, not a separate material. Standalone `TabBar` retains its optional screen-edge blur; `BottomBar` disables that band because it owns its own backdrop treatment.
