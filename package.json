@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.62.0",
+  "version": "15.63.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3822,6 +3822,25 @@
         "default": "./lib/commonjs/progressive-blur/index.js"
       }
     },
+    "./ambient-photo": {
+      "react-native": {
+        "types": "./lib/typescript/module/ambient-photo/index.d.ts",
+        "default": "./src/ambient-photo/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/ambient-photo/index.web.d.ts",
+        "import": "./lib/module/ambient-photo/index.web.js",
+        "require": "./lib/commonjs/ambient-photo/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/ambient-photo/index.d.ts",
+        "default": "./lib/module/ambient-photo/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/ambient-photo/index.d.ts",
+        "default": "./lib/commonjs/ambient-photo/index.js"
+      }
+    },
     "./design-tokens/theme.css": "./src/design-tokens/theme.css",
     "./design-tokens/tokens.json": "./src/design-tokens/tokens.json",
     "./package.json": "./package.json"
@@ -4861,6 +4880,9 @@
       ],
       "progressive-blur": [
         "./lib/typescript/module/progressive-blur/index.d.ts"
+      ],
+      "ambient-photo": [
+        "./lib/typescript/module/ambient-photo/index.d.ts"
       ]
     }
   }
