@@ -1,6 +1,6 @@
 ---
 title: Platform surfaces
-description: The host platform's popups and windows, registered once at the root, so native menus can open beyond the window and a desktop window gets its controls.
+description: The host platform's popups, windows, menu bar and keys, registered once at the root, so native menus can open beyond the window, a desktop window gets its controls and an application's menus can live in the platform's bar.
 order: 55
 ---
 
@@ -99,6 +99,66 @@ reads it through `@oxy.so/bloom/window` ([Window](/docs/window)): `AppShell`
 and `SettingsLayout` keep the controls' room and draw them where `controls` is
 `bloom`. `usePlatformWindow()` returns the window only when the capability is
 reported, and an adapter that reports it without a window throws.
+
+## `menu-bar`
+
+The platform shows the active window's menus in a bar of its own: OxyOS's
+top bar, a Mac's `NSMenu`. The adapter supplies it (`menuBar:
+PlatformMenuBar`), and a `Menubar` then draws nothing in the window: it
+describes its menus and runs the item the person chooses there
+([Menubar](/docs/menubar)).
+
+```ts
+interface PlatformMenuBar {
+  setMenus(menus: readonly PlatformMenu[]): void;   // the window's menus now; [] for none
+  onActivate(listener: (id: string) => void): () => void;
+}
+interface PlatformMenu { id: string; label: string; items: readonly PlatformMenuItem[] }
+type PlatformMenuItem =
+  | { kind: 'item'; id: string; label: string; enabled: boolean; shortcut?: string; checked?: boolean }
+  | { kind: 'submenu'; id: string; label: string; enabled: boolean; items: readonly PlatformMenuItem[] }
+  | { kind: 'separator' };
+```
+
+- Ids are Bloom's, stable while the entry is mounted and unique in the window.
+- `checked` is present on check items and on each item of a radio group.
+- `enabled` is false under a disabled menu or submenu too.
+- A group's label is an item that is never enabled.
+- `shortcut` is the chord in one canonical spelling: `Mod+Ctrl+Alt+Shift+Meta+<Key>`, the modifiers it has in that order, a letter in upper case, `Space` and `Plus` for those two, and otherwise a W3C `KeyboardEvent.key` name (`Enter`, `ArrowUp`, `F5`). `Mod` is ⌘ on Apple platforms and Ctrl elsewhere.
+
+The platform only shows a shortcut. Bloom matches the window's keys and runs
+the item itself, on every platform, so the platform must never run an item
+for a key of its own.
+
+`usePlatformMenuBar()` returns the bar only when the capability is reported;
+an adapter that reports it without `menuBar` throws.
+
+## `keyboard`
+
+Not a capability (it changes no presentation): the window's key presses, for
+a platform whose keys do not reach Bloom through a DOM `document`.
+
+```ts
+interface PlatformKeyboard {
+  subscribe(listener: (event: PlatformKeyEvent) => boolean): () => void;
+}
+interface PlatformKeyEvent {   // W3C KeyboardEvent's fields, as React Native's key events carry them
+  key: string; code?: string;
+  altKey: boolean; ctrlKey: boolean; metaKey: boolean; shiftKey: boolean;
+  repeat?: boolean; isComposing?: boolean;
+}
+```
+
+The platform calls the listener with each key press in the window **before**
+the focused view receives it, as a Mac's menu bar sees key equivalents first.
+It returns true when Bloom took the key (a menu's shortcut ran), and the
+platform then does not deliver it to the view. Bloom asks React Native which
+view has focus (`TextInput.State`) to leave a text field its editing keys.
+
+Without it Bloom listens on the `document` where there is one (the web). React
+Native has no window-wide key event (`onKeyDown` reaches only the focused view
+and its ancestors), so a native runtime that supplies no `keyboard` has no
+menu shortcuts. `usePlatformKeyboard()` returns it, or null.
 
 The OxyOS adapter, and the host component behind it, live with the OxyOS
 runtime (OxyHQ/OxyOS, `tools/rn-host-spike`): Bloom stays free of OxyOS,

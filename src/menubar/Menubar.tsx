@@ -24,18 +24,13 @@ import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useMenubarMenu } from './context';
+import { createMenubarContent, createMenubarRows } from './declared';
 import type { MenubarContentProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 
 export { Menubar, MenubarMenu, MenubarTrigger } from './MenubarBase';
 
-export function MenubarContent({
-  children,
-  size,
-  label: labelProp,
-  alignRows,
-  style,
-}: MenubarContentProps) {
+function MenubarPanel({ children, size, label: labelProp, alignRows, style }: MenubarContentProps) {
   const common = useCommonMessages();
   const density = useMenuDensity(size);
   const label = labelProp ?? common.menu;
@@ -62,7 +57,10 @@ export function MenubarContent({
   );
 }
 
-const rows = createMenuRows('Menubar', createInlineMenuSub);
+/** The menu's content: the panel above, or the declaration alone where it is not drawn. */
+export const MenubarContent = createMenubarContent(MenubarPanel);
+
+const rows = createMenubarRows(createMenuRows('Menubar', createInlineMenuSub));
 
 export const MenubarItem = rows.Item;
 export const MenubarCheckboxItem = rows.CheckboxItem;

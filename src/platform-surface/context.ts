@@ -1,5 +1,11 @@
 import { type ComponentType, createContext, useContext } from 'react';
-import type { PlatformSurfaceAdapter, PlatformWindow, PopupSurfaceProps } from './types';
+import type {
+  PlatformKeyboard,
+  PlatformMenuBar,
+  PlatformSurfaceAdapter,
+  PlatformWindow,
+  PopupSurfaceProps,
+} from './types';
 
 const PlatformSurfaceContext = createContext<PlatformSurfaceAdapter | null>(null);
 
@@ -41,4 +47,25 @@ export function usePlatformWindow(): PlatformWindow | null {
     );
   }
   return adapter.window;
+}
+
+/**
+ * The platform's menu bar when the adapter reports `menu-bar`, otherwise null
+ * (a `Menubar` draws itself in the window). An adapter that reports the
+ * capability without the bar throws, as `usePopupSurface` does.
+ */
+export function usePlatformMenuBar(): PlatformMenuBar | null {
+  const adapter = useContext(PlatformSurfaceContext);
+  if (!adapter?.capabilities.has('menu-bar')) return null;
+  if (!adapter.menuBar) {
+    throw new Error(
+      `Bloom: the ${adapter.platform} platform adapter reports 'menu-bar' without a menuBar.`,
+    );
+  }
+  return adapter.menuBar;
+}
+
+/** The adapter's source of the window's key presses, or null when it supplies none. */
+export function usePlatformKeyboard(): PlatformKeyboard | null {
+  return useContext(PlatformSurfaceContext)?.keyboard ?? null;
 }

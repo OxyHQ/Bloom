@@ -8,7 +8,7 @@
  * fails here, and so does one that draws anything for the headless
  * registration the bar now keeps of its items.
  */
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import * as Parts from '../menubar';

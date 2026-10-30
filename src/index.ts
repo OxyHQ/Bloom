@@ -88,11 +88,18 @@ export { ImageResolverProvider, useImageResolver, isImageUrl } from './image-res
 export type { ImageResolver } from './image-resolver';
 export {
   PlatformSurfaceProvider,
+  usePlatformKeyboard,
+  usePlatformMenuBar,
   usePlatformSurfaces,
   usePlatformWindow,
   usePopupSurface,
 } from './platform-surface';
 export type {
+  PlatformKeyboard,
+  PlatformKeyEvent,
+  PlatformMenu,
+  PlatformMenuBar,
+  PlatformMenuItem,
   PlatformSurfaceAdapter,
   PlatformWindow,
   PlatformWindowMetrics,

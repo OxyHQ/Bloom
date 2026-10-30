@@ -12,7 +12,8 @@
  * portal). Anything the bar's headless registration of its items drew would
  * show up here.
  */
-import React, { act } from 'react';
+import type React from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
