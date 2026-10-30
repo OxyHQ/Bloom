@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import {
+  useDesktopPresentation,
   useResolvedPlacement,
   type DialogPlacement,
   type ResponsiveDialogPlacement,
@@ -53,4 +54,26 @@ export function usePresentationSession(
     onPresentationOpen,
     onPresentationClosed,
   };
+}
+
+/**
+ * The desktop presentation (`useDesktopPresentation`) held for one complete
+ * open/exit session, like a responsive placement: a window resized across the
+ * breakpoint while the surface is open never swaps the centred card for the
+ * floating sheet under the user's draft, focus or scroll position.
+ *
+ * `hold()` when the surface opens, `release()` once its exit has finished.
+ */
+export function useDesktopPresentationSession(startOpen: boolean) {
+  const live = useDesktopPresentation();
+  const latest = useRef(live);
+  latest.current = live;
+  const [held, setHeld] = useState<boolean | null>(() => (startOpen ? live : null));
+  const hold = useCallback(() => {
+    setHeld((current) => current ?? latest.current);
+  }, []);
+  const release = useCallback(() => {
+    setHeld(null);
+  }, []);
+  return { desktop: held ?? live, hold, release };
 }

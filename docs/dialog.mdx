@@ -148,11 +148,32 @@ replacement open lost child state. The shared session owner prevents that swap
 without duplicate mounted dialogs or consumer state/scroll workarounds.
 
 Per-placement behavior:
-- `center` — DOM-portal modal (web) / detached floating card (native).
+- `center` — a centred modal card: a DOM-portal modal on web, and on native the same card in an RN `<Modal>` whenever the window [presents as a desktop](#desktop-windows). A native phone-width window keeps the detached floating card that rises from the bottom edge.
 - `left` / `right` — animated side-sheet anchored to that PHYSICAL viewport edge.
 - `start` / `end` — the same side-sheet on the LOGICAL edge: `start` is the left in a left-to-right layout and the right in a right-to-left one (`end` the reverse), read from `useIsRtl()`, and the panel slides in from that edge. The matching `inset` side applies (`inset.right` for `start` in RTL). On native the panel is positioned with `insetInlineStart`/`insetInlineEnd`, which Yoga resolves against `I18nManager` — a physical `left`/`right` would be swapped by React Native's default `swapLeftAndRightInRTL`. On web the drawer is portaled outside any `dir` context, so it takes the physical edge `useIsRtl()` names. An app that ships Arabic or Hebrew wants `start`/`end`: `{ base: 'bottom', md: 'start' }` is the mirrored store drawer.
 - `bottom` — reuses the cross-platform `BottomSheet` on BOTH web and native (drag-to-dismiss + internal scroll work everywhere). The shared surface owns scrolling by default; `scrollable={false}` delegates it to content with its own bounded scroller.
   The sheet is flush with the bottom of the window, so the Dialog ends its content with a spacer the height of the bottom safe area (the Android gesture bar, the iOS home indicator). This spacer is inside the scroll content. Content keeps its own padding; do not add `insets.bottom` yourself. Without the spacer, the last row sat under the gesture bar. A body taller than the sheet could not scroll it out, because the scroll range ended where the bar began.
+
+## Desktop windows
+
+A native window presents as a desktop when it runs on macOS or Windows, or when it is at least `md` (768px) wide: an iPad, an Android tablet or desktop window. There, `center` is the web's centred card, with the web's numbers:
+
+| | Desktop card (web and native) | Phone card (native) |
+|---|---|---|
+| Position | centred in the window | floating 16 above the bottom edge |
+| Width | `maxWidth`, default 480, with a 20px gutter | 16 from each edge, capped at 500 |
+| Height cap | `maxHeightRatio` of the window, default 0.9 | the window less the edge gaps |
+| Motion | zoom-in from 0.95 over 300ms, backdrop fade 150ms; 150ms ease-in out | spring slide-up |
+| Dismissal | backdrop press, Escape (macOS), Back (Android) | the same, and dragging down |
+| Backdrop | the shared dim | dimmed to 0.7 |
+
+`SheetShell` follows the same rule for a picker: a native `Select` on a desktop window is the centred card without a drag handle. Content that belongs under its trigger passes `anchored` and keeps its sheet: `DropdownMenu`, `ContextMenu`, `Menubar`, `Popover` and `HoverCard`. A centred card would detach a menu from the trigger that opened it, and a menu bar's menus most of all. Bloom has no in-window anchored panel on native yet; a platform adapter with `popup-surface` anchors them in the platform's popup.
+
+The native card presents in its own RN `<Modal>`, as the sheet does. On macOS, react-native-macos sends the Modal's `onRequestClose` for Escape, and that request is a user dismissal: `dismissOnBackdrop={false}` refuses it, as it refuses a backdrop press.
+
+The choice is held for the whole session, like a responsive placement. A dialog that opened as a card stays a card while its window is resized below `md`, and it opens as the floating sheet next time.
+
+Before this, a native `center` dialog was always the detached sheet. On a Mac it floated up from the bottom-left corner of the window (the Oxy sign-in sheet in Astro). Yoga does not centre an absolute view with auto margins, so a sheet capped narrower than its window sat on its left inset; `BottomSheet` now centres itself by its insets (see [Bottom sheet](/docs/bloom/main/bottom-sheet)).
 
 ## Nav header: the title beside the ✕
 

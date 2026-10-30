@@ -114,6 +114,7 @@ Two surfaces remain; CenteredDialog/ResponsiveSheet removed without shims. API/m
 - `surface.dismiss(result)` prop boundary is tested with mock Dialog: `surface-prompts.test.tsx`.
 - Guard disabled asChild in `cloneTrigger`, not only child (`docs/dropdown-menu.mdx`). Chrome masks an unguarded Pressable; Jest mock ignores disabled and catches it. Gates: `PopoverTriggerDisabled.test.tsx`, `scripts/verify-trigger-disabled.mjs`.
 - Native tooltip still cannot position inside sheets (`docs/tooltip.mdx`).
+- **Desktop windows (macOS/Windows/native ≥`md`): `center` + non-`anchored` `SheetShell` (Select) → `dialog/CenteredCard`**, held per session; menus/popovers pass `anchored` (never a centred card); no macOS checks in families. Yoga ignores auto margins on absolute `left`+`right` views (sheets sat bottom-LEFT): centre by insets. `docs/dialog.mdx`.
 
 ## Theme and design tokens
 

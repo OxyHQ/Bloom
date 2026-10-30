@@ -99,6 +99,8 @@ The blur and the dim always go away as fast as the sheet does under the finger: 
 </BottomSheet>
 ```
 
+A sheet grows to 800px, or to the `maxWidth` its `style` sets, and is centred in a wider window: its `left` and `right` are each half the room left over, never less than the detached sheet's 16 (0 for a flush sheet). It is centred by those insets, not by `marginHorizontal: 'auto'`. Yoga places an absolute view with both `left` and `right` at its `left` once a `maxWidth` caps it, so every native sheet in a wide window sat in the bottom-left corner (an iPad, a Mac, an Android desktop window) while the web centred it.
+
 <Callout variant="info" title="Dialog vs BottomSheet">
 If you just need a confirmation flow or a small custom panel, prefer [Dialog](/docs/bloom/main/dialog) — it cross-platforms to a centered modal on web. Reach for `BottomSheet` only when you need direct gesture / scroll control on native.
 </Callout>

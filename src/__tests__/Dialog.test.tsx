@@ -4,6 +4,7 @@ import { Modal, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { Dialog, useDialogControl } from '../dialog';
+import { CenteredCard } from '../dialog/CenteredCard';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -499,7 +500,7 @@ it('keeps a native imperative session through resize and chooses the new placeme
     width.mockReturnValue({ width: 320, height: 800, scale: 1, fontScale: 1 });
     screen.rerender(tree());
     expect(screen.getByText('Native draft')).toBe(draft);
-    expect(screen.UNSAFE_queryByProps({ detached: true })).not.toBeNull();
+    expect(screen.UNSAFE_queryByType(CenteredCard)).not.toBeNull();
     const callback = jest.fn();
     act(() => control.close(callback));
     act(() => jest.runOnlyPendingTimers());
@@ -508,6 +509,7 @@ it('keeps a native imperative session through resize and chooses the new placeme
     expect(screen.queryByText('Native draft')).toBeNull();
     act(() => control.open());
     expect(screen.getByText('Native draft')).toBeTruthy();
+    expect(screen.UNSAFE_queryByType(CenteredCard)).toBeNull();
     expect(screen.UNSAFE_queryByProps({ detached: true })).toBeNull();
   } finally {
     width.mockRestore();

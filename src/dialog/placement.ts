@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
 
 import { BREAKPOINTS } from '../styles/breakpoints';
 
@@ -153,4 +153,23 @@ export function useResolvedPlacement(
     }
     return placement.base;
   }, [placement, width]);
+}
+
+/**
+ * Whether a modal surface presents the way a desktop does: a centred card over
+ * a dimmed window, as the web renders `<Dialog placement="center">`, rather
+ * than a card floating up from the bottom edge.
+ *
+ * A desktop platform (macOS, Windows) always does; any other window does from
+ * the `md` breakpoint up, the same width at which a responsive placement such
+ * as `{ base: 'bottom', md: 'center' }` turns into a centred dialog.
+ */
+export function presentsAsDesktop(os: string, windowWidth: number): boolean {
+  return os === 'macos' || os === 'windows' || windowWidth >= BREAKPOINTS.md;
+}
+
+/** {@link presentsAsDesktop} for this platform and the current window. */
+export function useDesktopPresentation(): boolean {
+  const { width } = useWindowDimensions();
+  return presentsAsDesktop(Platform.OS, width);
 }

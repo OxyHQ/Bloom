@@ -1,7 +1,9 @@
 import {
+  useDesktopPresentationSession,
   usePresentationSession,
   type DialogPresentationLifecycle,
 } from './use-presentation-session';
+import { CenteredCard } from './CenteredCard';
 import { BloomColorScope } from '../theme/color-scope/ColorScope';
 import {
   DialogFrameContent,
@@ -64,6 +66,7 @@ import {
 import { DialogMorphContent, useDialogMorph } from './DialogMorph';
 import {
   ANIMATION_DURATION,
+  DEFAULT_CENTER_MAX_WIDTH,
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
@@ -91,10 +94,12 @@ const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
  *
  * `placement` selects the surface:
  *
- *   - `'center'` (default) / `'bottom'` — bloom's `BottomSheet` (`detached`
- *     for center: a floating, content-hugging card that degrades from sheet to
- *     centered card via the 500px cap; flush for bottom: a full-width sheet
- *     with a drag handle). Default behavior is unchanged.
+ *   - `'center'` (default) — on a desktop window (`useDesktopPresentation`:
+ *     macOS, Windows, or any window from the `md` breakpoint) the web's
+ *     centred card (`CenteredCard`); otherwise bloom's `BottomSheet` in
+ *     `detached` mode, a floating, content-hugging card.
+ *   - `'bottom'` — bloom's flush `BottomSheet`, a full-width sheet with a drag
+ *     handle.
  *   - `'left'` / `'right'` — an anchored side-sheet/drawer driven by
  *     reanimated. Exit animations are safe on native.
  *
@@ -153,9 +158,9 @@ export function Dialog({ placement, frame, children, header, ...props }: DialogP
 }
 
 /**
- * Native `center` and `left`/`right` placements. `center` uses bloom's
- * `BottomSheet` in `detached` mode (a floating, content-hugging card that
- * degrades from sheet to centered card via the 500px cap); the side placements
+ * Native `center` and `left`/`right` placements. `center` is the centred card
+ * on a desktop window and bloom's `BottomSheet` in `detached` mode (a floating,
+ * content-hugging card) on a phone; the side placements
  * use a reanimated drawer. These share one open/close lifecycle. The `bottom`
  * placement is handled separately by `DialogBottomSheet`.
  */
@@ -181,6 +186,8 @@ function CenteredOrSideDialog({
   placement,
   width = DEFAULT_SIDE_WIDTH,
   minSideGutter,
+  maxWidth = DEFAULT_CENTER_MAX_WIDTH,
+  maxHeightRatio,
   inset,
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
@@ -198,6 +205,12 @@ function CenteredOrSideDialog({
   const headerController = useDialogHeaderController();
   const scrollableResolved = scrollable ?? true;
   const { height: viewportHeight } = useWindowDimensions();
+  // A desktop window (macOS, Windows, or any window from the `md` breakpoint)
+  // presents the centred placement as the web does: a centred card, not a card
+  // floating up from the bottom edge — which on a wide window also sat at the
+  // bottom-LEFT, Yoga ignoring the auto margins that centre it on the web.
+  const desktopSession = useDesktopPresentationSession(!!(controlledOpen ?? startOpen));
+  const desktop = !isSide && desktopSession.desktop;
 
   // Size morphing across an in-place content swap. The detached centered card
   // is content-hugging, so animating its height reshapes it about its own
@@ -209,6 +222,7 @@ function CenteredOrSideDialog({
     enabled: morph !== false && !isSide,
     measurable: scrollableResolved && !isSide,
     maxHeight: viewportHeight,
+    maxWidth: desktop ? maxWidth : undefined,
   });
 
   // Imperative open state for the side placement. The centred BottomSheet owns
@@ -254,11 +268,15 @@ function CenteredOrSideDialog({
     }
   }, []);
 
+  const holdDesktop = desktopSession.hold;
+  const releaseDesktop = desktopSession.release;
+
   const open = useCallback(() => {
     onPresentationOpen?.();
+    holdDesktop();
     setSideOpen(true);
     ref.current?.present();
-  }, [onPresentationOpen]);
+  }, [onPresentationOpen, holdDesktop]);
 
   // A dismissal request (backdrop, pan-to-close, action button). In controlled
   // mode it asks the host to close via `onClose` (the host flips `open`); in
@@ -288,9 +306,10 @@ function CenteredOrSideDialog({
   // with `open` true.
   const handleDismiss = useCallback(() => {
     onPresentationClosed?.();
+    releaseDesktop();
     callQueuedCallbacks();
     if (!isControlledRef.current || controlledOpenRef.current) onCloseRef.current?.();
-  }, [callQueuedCallbacks, onPresentationClosed]);
+  }, [callQueuedCallbacks, onPresentationClosed, releaseDesktop]);
 
   // In controlled mode, mirror the `open` prop onto the underlying surface so
   // both modes share one lifecycle. The BottomSheet path presents/dismisses by
@@ -298,13 +317,14 @@ function CenteredOrSideDialog({
   useEffect(() => {
     if (!isControlled) return;
     if (controlledOpen) {
+      holdDesktop();
       setSideOpen(true);
       ref.current?.present();
     } else {
       setSideOpen(false);
       ref.current?.dismiss();
     }
-  }, [isControlled, controlledOpen]);
+  }, [isControlled, controlledOpen, holdDesktop]);
 
   useImperativeHandle(control?.ref, () => ({ open, close }), [open, close]);
 
@@ -325,6 +345,11 @@ function CenteredOrSideDialog({
   // animated style (`morphState.panelStyle` from `useAnimatedStyle`), so the
   // element type must admit an animated style, not just a plain `ViewStyle`.
   // It flows to `<BottomSheet style>`, which applies it to its outer Animated.View.
+  const cardStyle = useMemo<StyleProp<AnimatedStyle<ViewStyle>>>(
+    () => [{ backgroundColor: 'transparent' }, morphState.panelStyle],
+    [morphState.panelStyle],
+  );
+
   const sheetStyle = useMemo<StyleProp<AnimatedStyle<ViewStyle>>>(
     () => [
       {
@@ -411,6 +436,74 @@ function CenteredOrSideDialog({
     );
   }
 
+  const content = (
+    <Context.Provider value={context}>
+      <StyledView
+        testID={testID}
+        accessibilityLabel={label}
+        aria-labelledby={title ? titleId : undefined}
+        aria-describedby={description ? descriptionId : undefined}
+        className={panelClassName}
+        style={[
+          // Detached BottomSheet already adds `marginBottom: insets.bottom + 16`
+          // to the sheet container — the floating card sits ABOVE the
+          // system gesture bar, so we don't add `insets.bottom` here.
+          // Nav-header mode: the large title + screens own their padding.
+          header ? null : { padding: contentPadding },
+          { backgroundColor: 'transparent' },
+          scrollableResolved ? null : { flex: 1, minHeight: 0 },
+          style,
+          panelStyle,
+        ]}
+      >
+        {/* The morph layer is its own node INSIDE the class-name'd container:
+              a className'd component's `onLayout` never fires on web, and this
+              one has to measure the incoming frame. */}
+        <DialogMorphContent
+          morph={morphState}
+          style={scrollableResolved ? undefined : { flex: 1, minHeight: 0 }}
+        >
+          {header ? headerBody : bodyNode}
+        </DialogMorphContent>
+      </StyledView>
+    </Context.Provider>
+  );
+
+  if (desktop) {
+    return (
+      <CenteredCard
+        backdrop={backdrop}
+        transition={transition}
+        material={surfaceMaterial}
+        backgroundFill={String(
+          StyleSheet.flatten([style, panelStyle])?.backgroundColor ?? theme.colors.background,
+        )}
+        ref={ref}
+        open={isControlled ? controlledOpen : startOpen}
+        onDismiss={handleDismiss}
+        onDismissAttempt={onDismissAttempt}
+        maxWidth={maxWidth}
+        maxHeightRatio={maxHeightRatio}
+        scrollable={scrollableResolved}
+        scrollY={header ? headerController.scrollY : undefined}
+        headerOverlay={
+          header ? (
+            <DialogNavHeader
+              controller={headerController}
+              header={header}
+              onDismiss={close}
+              collapse={scrollableResolved}
+            />
+          ) : undefined
+        }
+        onLayout={morphState.onPanelLayout}
+        style={cardStyle}
+      >
+        {content}
+      </CenteredCard>
+    );
+  }
+
   return (
     <BottomSheet
       backdrop={backdrop}
@@ -455,36 +548,7 @@ function CenteredOrSideDialog({
       onLayout={morphState.onPanelLayout}
       style={sheetStyle}
     >
-      <Context.Provider value={context}>
-        <StyledView
-          testID={testID}
-          accessibilityLabel={label}
-          aria-labelledby={title ? titleId : undefined}
-          aria-describedby={description ? descriptionId : undefined}
-          className={panelClassName}
-          style={[
-            // Detached BottomSheet already adds `marginBottom: insets.bottom + 16`
-            // to the sheet container — the floating card sits ABOVE the
-            // system gesture bar, so we don't add `insets.bottom` here.
-            // Nav-header mode: the large title + screens own their padding.
-            header ? null : { padding: contentPadding },
-            { backgroundColor: 'transparent' },
-            scrollableResolved ? null : { flex: 1, minHeight: 0 },
-            style,
-            panelStyle,
-          ]}
-        >
-          {/* The morph layer is its own node INSIDE the class-name'd container:
-              a className'd component's `onLayout` never fires on web, and this
-              one has to measure the incoming frame. */}
-          <DialogMorphContent
-            morph={morphState}
-            style={scrollableResolved ? undefined : { flex: 1, minHeight: 0 }}
-          >
-            {header ? headerBody : bodyNode}
-          </DialogMorphContent>
-        </StyledView>
-      </Context.Provider>
+      {content}
     </BottomSheet>
   );
 }

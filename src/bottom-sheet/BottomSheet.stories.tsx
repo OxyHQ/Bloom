@@ -161,3 +161,24 @@ export const FlexScreen: Story = {
     );
   },
 };
+
+export const CappedInWideWindow: Story = {
+  parameters: { controls: { disable: true } },
+  render: function CappedInWideWindowStory() {
+    const ref = useRef<BottomSheetRef>(null);
+    return (
+      <>
+        <Button onPress={() => ref.current?.present()}>Open capped sheet</Button>
+        <BottomSheet ref={ref} detached style={{ maxWidth: 500 }}>
+          <View style={{ padding: 24, gap: 12 }}>
+            <Text style={{ fontSize: 20, fontWeight: '700' }}>Centred under its cap</Text>
+            <Text>
+              In a window wider than 500px the sheet keeps its cap and sits in the middle of the
+              bottom edge, on the web and on a native tablet or desktop window alike.
+            </Text>
+          </View>
+        </BottomSheet>
+      </>
+    );
+  },
+};

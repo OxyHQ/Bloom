@@ -85,7 +85,12 @@ function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<num
  * cross the Modal's native-window boundary, so pan gestures need their own root
  * here). No `<KeyboardProvider>`: see `SheetKeyboardSync`.
  */
-function NativeShell({ visible, onRequestClose, keyboardHeight, children }: BottomSheetShellProps) {
+export function NativeShell({
+  visible,
+  onRequestClose,
+  keyboardHeight,
+  children,
+}: BottomSheetShellProps) {
   return (
     <Modal
       visible={visible}

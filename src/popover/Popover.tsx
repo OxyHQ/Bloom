@@ -94,6 +94,7 @@ export function PopoverContent({
   return (
     <BloomScope size={size}>
       <SheetShell
+        anchored
         material={material}
         control={control}
         label={label}

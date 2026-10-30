@@ -44,6 +44,7 @@ function MenubarPanel({ children, size, label: labelProp, alignRows, style }: Me
   return (
     <BloomScope size={size}>
       <SheetShell
+        anchored
         control={control}
         label={label}
         onClose={onSheetClose}
