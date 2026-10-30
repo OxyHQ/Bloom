@@ -25,6 +25,23 @@ const CORNER = 0.27;
 export const REDUCED_TRANSPARENCY_ATTRIBUTE = 'data-bloom-transparency';
 
 /**
+ * The root attribute that turns contrast up (`more`), written by the theme
+ * provider's `increaseContrast` beside the transparency attribute. Increased
+ * contrast reduces transparency as well, so the provider writes both.
+ */
+export const INCREASED_CONTRAST_ATTRIBUTE = 'data-bloom-contrast';
+
+/**
+ * The edge each host draws when contrast is increased, instead of the edge
+ * light: a 1px line that holds 3:1 against its opaque body
+ * (`surfaceContrastEdge`). `transparent` for a host that draws its own border.
+ */
+export const SURFACE_HAIRLINE_VAR = '--bloom-surface-hairline';
+
+/** The browser's own requests for more contrast; either one turns it up. */
+const CONTRAST_MEDIA = ['(prefers-contrast: more)', '(forced-colors: active)'];
+
+/**
  * The opaque body each host paints when transparency is reduced: the colour it
  * already publishes to the content on it (`--bloom-surface`), its tint
  * composited onto its parent. Every host sets it on itself, so none inherits an
@@ -73,6 +90,11 @@ export function materialHostSelector(): string {
  * colour native paints, and on a slow GPU it is the difference between a
  * backdrop filter per surface every frame and none (measured on a Chromecast:
  * 7 fps with the filter, 16 without).
+ *
+ * With contrast increased (the provider's `increaseContrast`, or the system's
+ * `prefers-contrast: more` or `forced-colors`) the body is the same opaque
+ * colour, and the edge light becomes a plain 1px line in the host's
+ * `--bloom-surface-hairline`, with no mask and no backdrop filter.
  */
 export function surfaceMaterialCss(
   selector: string,
@@ -89,6 +111,12 @@ export function surfaceMaterialCss(
 ${host}::after {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}`;
+  const contrast = (host: string) => `${reduced(host)}
+${host}::after {
+  mask-image: none;
+  -webkit-mask-image: none;
+  border: 1px solid var(${SURFACE_HAIRLINE_VAR}, transparent);
 }`;
   const presence = 'opacity var(--bloom-surface-presence-ms, 0ms) ease-out';
   const layerTransition = transition === 'none' ? presence : `${transition}, ${presence}`;
@@ -132,5 +160,7 @@ ${selector}::after {
 ${reduced(`:root[${REDUCED_TRANSPARENCY_ATTRIBUTE}="reduced"] ${selector}`)}
 @media (prefers-reduced-transparency: reduce) {
 ${reduced(selector)}
-}`;
+}
+${contrast(`:root[${INCREASED_CONTRAST_ATTRIBUTE}="more"] ${selector}`)}
+${CONTRAST_MEDIA.map((query) => `@media ${query} {\n${contrast(selector)}\n}`).join('\n')}`;
 }

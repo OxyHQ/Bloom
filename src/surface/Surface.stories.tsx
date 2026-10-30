@@ -139,6 +139,29 @@ export const Material: Story = {
   render: () => <MaterialExample />,
 };
 
+/**
+ * The material with transparency reduced (the provider's `reduceTransparency`,
+ * iOS Reduce Transparency, `prefers-reduced-transparency`): opaque bodies, no
+ * backdrop filter, no edge light. The Material toolbar switches any story.
+ */
+export const ReducedTransparency: Story = {
+  parameters: { bloomScroll: 'document' },
+  globals: { material: 'reduced' },
+  render: () => <MaterialExample />,
+};
+
+/**
+ * The material with contrast increased (`increaseContrast`, iOS Increase
+ * Contrast, Android high-contrast text, `prefers-contrast: more`,
+ * `forced-colors`): opaque bodies edged with a hairline that holds 3:1. The
+ * outlined button keeps its own border instead.
+ */
+export const IncreasedContrast: Story = {
+  parameters: { bloomScroll: 'document' },
+  globals: { material: 'contrast' },
+  render: () => <MaterialExample />,
+};
+
 /** Only the exterior bands change; the background directly under the pane stays gray. */
 export const BackdropReflection: Story = {
   render: function Render() {

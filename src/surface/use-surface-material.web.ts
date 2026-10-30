@@ -7,10 +7,11 @@ import {
   resolveSurfaceOptics,
   resolveSurfaceTint,
   SURFACE_VARS_OFF,
+  surfaceContrastEdge,
   surfaceOpticsVars,
 } from './shared';
 import { resolveSurfaceMaterial } from './resolve-surface-material';
-import { surfaceMaterialCss } from './web-material';
+import { SURFACE_HAIRLINE_VAR, surfaceMaterialCss } from './web-material';
 
 /**
  * Move a web host fill into the shared body and edge paint; preserve layout and shadow.
@@ -36,6 +37,7 @@ export function useSurfaceMaterial(
   useInteractiveWebCss(id, css);
   const theme = useContext(BloomThemeContext)?.theme;
   const optics = paintOptics ?? resolveSurfaceOptics(theme?.isDark ?? false);
+  const text = theme?.colors.text;
   const backing = useSurfaceFill();
   return useMemo(() => {
     if (!enabled) return SURFACE_VARS_OFF;
@@ -44,15 +46,16 @@ export function useSurfaceMaterial(
       radius,
     );
     const tint = paintFill ?? resolveSurfaceTint(fill);
+    const solid = resolveSurfaceMaterial({ fill: tint, parentFill: backing }).solidFill;
     return {
       backgroundColor: 'transparent',
       '--bloom-surface-fill': tint,
-      '--bloom-surface-solid': resolveSurfaceMaterial({ fill: tint, parentFill: backing })
-        .solidFill,
+      '--bloom-surface-solid': solid,
+      [SURFACE_HAIRLINE_VAR]: text ? surfaceContrastEdge(solid, text) : 'transparent',
       ...vars,
       ...(framing === 'responsive'
         ? { '--bloom-framed-highlight-filter': highlight }
         : { '--bloom-surface-highlight-filter': highlight }),
     };
-  }, [optics, fill, paintFill, enabled, radius, framing, backing]);
+  }, [optics, fill, paintFill, enabled, radius, framing, backing, text]);
 }

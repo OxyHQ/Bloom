@@ -17,8 +17,8 @@ import { borderRadius } from '../styles/tokens';
 import { StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
-import { resolveSurfaceOptics, surfaceOpticsVars } from './shared';
-import { surfaceMaterialCss } from './web-material';
+import { resolveSurfaceOptics, surfaceContrastEdge, surfaceOpticsVars } from './shared';
+import { SURFACE_HAIRLINE_VAR, surfaceMaterialCss } from './web-material';
 import type { SurfaceProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
 
@@ -92,11 +92,12 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
         resolvePaintMode(parent, documentMode, documentPreset),
         parentLevel,
       );
-      return resolveSurfaceMaterial({
+      const resolved = resolveSurfaceMaterial({
         fill: override === undefined ? layer.fill : String(override),
         parentFill: layer.parentFill,
         parentLevel,
       });
+      return { ...resolved, hairline: surfaceContrastEdge(resolved.solidFill, theme.colors.text) };
     });
     const baseStyle: WebCssStyle = {
       ...surfaceOpticsVars(optics, geometry.radius ?? resolvedStyle?.borderRadius),
@@ -104,6 +105,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       backgroundColor: 'transparent',
       '--bloom-surface-fill': materialRecipe.paint.paintFill,
       '--bloom-surface-solid': materialRecipe.paint.solidFill,
+      [SURFACE_HAIRLINE_VAR]: materialRecipe.paint.hairline,
     };
     return (
       <>

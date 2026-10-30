@@ -1,7 +1,8 @@
 /**
  * Every blur Bloom draws follows ONE switch: reduced transparency, resolved
- * once by `BloomThemeProvider` from its `reduceTransparency` prop and the
- * platform's appearance (`appearance` capability).
+ * once by `BloomThemeProvider` from its `reduceTransparency` prop, the
+ * platform's appearance (`appearance` capability), the system's own setting and
+ * increased contrast, which implies it.
  *
  * The surface material follows it in CSS, through the document attribute the
  * provider writes (`surface/web-material.ts`; every material host, the window

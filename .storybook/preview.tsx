@@ -57,10 +57,17 @@ const withProviders: Decorator = (Story, context) => {
   const colorPreset = Object.prototype.hasOwnProperty.call(APP_COLOR_PRESETS, requestedPreset)
     ? requestedPreset
     : 'oxy';
+  // The accessibility appearance, as the system settings would ask for it.
+  const material = context.globals.material as 'standard' | 'reduced' | 'contrast' | undefined;
 
   return (
     <SafeAreaProvider>
-      <BloomThemeProvider mode={mode} colorPreset={colorPreset}>
+      <BloomThemeProvider
+        mode={mode}
+        colorPreset={colorPreset}
+        reduceTransparency={material === 'reduced'}
+        increaseContrast={material === 'contrast'}
+      >
         <PortalProvider>
           <AgentAvatarProvider runtimeUrl={CHARACTER_RUNTIME_URL}>
             <SurfaceProvider>
@@ -174,7 +181,7 @@ const preview: Preview = {
       },
     },
   },
-  initialGlobals: { theme: 'light', colorPreset: 'oxy' },
+  initialGlobals: { theme: 'light', colorPreset: 'oxy', material: 'standard' },
   globalTypes: {
     theme: {
       description: 'Theme mode for Bloom components',
@@ -184,6 +191,19 @@ const preview: Preview = {
         items: [
           { value: 'light', title: 'Light', icon: 'sun' },
           { value: 'dark', title: 'Dark', icon: 'moon' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+    material: {
+      description: 'Reduce transparency or increase contrast, as the system settings do',
+      toolbar: {
+        title: 'Material',
+        icon: 'contrast',
+        items: [
+          { value: 'standard', title: 'Standard' },
+          { value: 'reduced', title: 'Reduce transparency' },
+          { value: 'contrast', title: 'Increase contrast' },
         ],
         dynamicTitle: true,
       },

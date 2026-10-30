@@ -2,6 +2,23 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.69.0
+
+### Added
+
+- **Increased contrast (`BloomProvider increaseContrast`, `useIncreasedContrast()`).** A setting of its own, beside reduced transparency, which it implies: every surface paints its opaque body and edges it with a 1px hairline instead of the edge light. The hairline is `surfaceContrastEdge(body, text)`, the quietest mix of the body toward the theme's text that holds 3:1 against it (WCAG 1.4.11), measured on the opaque body each surface publishes, so it holds on every level, preset and mode. A host that draws its own border (`SurfacePaint rim={false}`, an outlined `Button`) keeps it. Web: `data-bloom-contrast="more"` on the root, the rule in `surfaceMaterialCss` for that attribute and for `prefers-contrast: more` and `forced-colors: active`, and each host's own `--bloom-surface-hairline`. Native: a 1px border on the paint view in place of the edge light's inset shadows, so every renderer draws it.
+- **The system's own settings.** `BloomThemeProvider` follows iOS Reduce Transparency and Increase Contrast, Android's high-contrast text, and the browser's `prefers-reduced-transparency`, `prefers-contrast: more` and `forced-colors`, as they change, OR'd with its props and the platform's appearance. A host that does not implement a query (OxyOS) leaves it off.
+- **platform-surface: `increaseContrast` in the `appearance` capability's state** (optional; absent is false).
+- **Storybook: a Material toolbar** (standard, reduce transparency, increase contrast), and the Surface stories `ReducedTransparency` and `IncreasedContrast`.
+
+### Changed
+
+- **`useReducedTransparency()` is true under the system's setting and under increased contrast too.** `Backdrop`, `ProgressiveBlur` and the hand-made web blurs therefore follow iOS Reduce Transparency and the browser's media query, not only the prop and the platform.
+
+### Consumers
+
+Bump to 15.69.0. Nothing changes for a person with neither setting on. Native `SurfacePaint` reads one more context (the contrast switch): a consumer budget that counts context reads per row moves by one per painted surface.
+
 ## 15.68.0
 
 ### Added

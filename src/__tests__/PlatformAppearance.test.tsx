@@ -120,11 +120,15 @@ describe('usePlatformAppearance', () => {
     );
     const hook = renderHook(() => usePlatformAppearanceState(), { wrapper });
     const first = hook.result.current;
-    expect(first).toEqual({ accent: 'blue', reduceTransparency: false });
+    expect(first).toEqual({ accent: 'blue', reduceTransparency: false, increaseContrast: false });
     act(() => appearance.set({}));
     expect(hook.result.current).toBe(first);
     act(() => appearance.set({ reduceTransparency: true }));
-    expect(hook.result.current).toEqual({ accent: 'blue', reduceTransparency: true });
+    expect(hook.result.current).toEqual({
+      accent: 'blue',
+      reduceTransparency: true,
+      increaseContrast: false,
+    });
     hook.unmount();
     expect(appearance.listenerCount()).toBe(0);
   });

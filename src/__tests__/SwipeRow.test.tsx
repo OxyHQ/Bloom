@@ -329,7 +329,14 @@ describe('useSwipeAvailable', () => {
     pointerCoarse = coarse;
     listeners = [];
     (window as { matchMedia?: unknown }).matchMedia = (query: string) => {
-      expect(query).toBe('(pointer: coarse)');
+      // The theme provider asks for the accessibility queries too: not this one.
+      if (query !== '(pointer: coarse)')
+        return {
+          matches: false,
+          media: query,
+          addEventListener: () => undefined,
+          removeEventListener: () => undefined,
+        };
       return {
         get matches() {
           return pointerCoarse;

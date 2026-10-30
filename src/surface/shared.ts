@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { parseRgba, withAlpha } from '../theme/color-utils';
+import { quietText } from '../styles/color-contrast';
 
 import {
   SURFACE_LOOKS,
@@ -133,6 +134,7 @@ export function surfaceOpticsVars(
 export const SURFACE_VARS_OFF: Record<string, string> = {
   '--bloom-surface-fill': 'transparent',
   '--bloom-surface-solid': 'transparent',
+  '--bloom-surface-hairline': 'transparent',
   '--bloom-surface-filter': 'none',
   '--bloom-surface-highlight-filter': 'none',
 };
@@ -187,4 +189,20 @@ export function compositeOnto(fill: string, backing: string): string {
 export function dimColor(color: string, factor: number): string {
   const parsed = parseRgba(color);
   return parsed ? `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, ${parsed.a * factor})` : color;
+}
+
+/**
+ * WCAG 1.4.11's floor for a graphical object against what is next to it: the
+ * hairline a surface draws when contrast is increased.
+ */
+export const SURFACE_CONTRAST_EDGE_RATIO = 3;
+
+/**
+ * The edge a surface draws when contrast is increased, instead of the edge
+ * light: the quietest mix of its body toward the theme's text that still holds
+ * {@link SURFACE_CONTRAST_EDGE_RATIO} against the body. A clear body has no edge.
+ */
+export function surfaceContrastEdge(body: string, text: string): string {
+  if (isClearFill(body)) return 'transparent';
+  return quietText(body, text, SURFACE_CONTRAST_EDGE_RATIO);
 }
