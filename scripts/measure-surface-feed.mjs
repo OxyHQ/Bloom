@@ -1,6 +1,10 @@
 /** Repeatable local A/B diagnostic, not a device-independent FPS promise.
- * 100 real composed posts. Disabling optical sampling is a measurement control,
- * never a second public material. Reports all runs, including frame outliers.
+ * 100 real composed posts. Three modes, each a measurement control and never a
+ * second public material: `baked` (the default: hosts on a known flat backdrop
+ * paint it as a colour, `src/surface/baked-material.ts`), `live` (every host
+ * filters its backdrop: `data-bloom-material-bake="off"` on the root) and `off`
+ * (no backdrop filter at all). Reports all runs, including frame outliers, and
+ * how many hosts filter their backdrop in each mode.
  */
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
@@ -44,17 +48,31 @@ try {
     ).length,
   }));
   const runs = [];
-  for (const optics of [true, false, false, true]) {
-    const override = optics
-      ? null
-      : await page.addStyleTag({
-          content:
-            '*::before { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; filter:none !important; }',
-        });
-    await page.evaluate(() => {
+  for (const mode of ['baked', 'live', 'off', 'off', 'live', 'baked']) {
+    const override =
+      mode === 'off'
+        ? await page.addStyleTag({
+            content:
+              '*::before, *::after { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; filter:none !important; }',
+          })
+        : null;
+    await page.evaluate((live) => {
+      if (live) document.documentElement.setAttribute('data-bloom-material-bake', 'off');
+      else document.documentElement.removeAttribute('data-bloom-material-bake');
       window.scrollTo(0, 0);
-      return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    });
+      return new Promise((r) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r))),
+      );
+    }, mode === 'live');
+    // Hosts whose material still reads its backdrop, over the whole feed.
+    const filtering = await page.evaluate(
+      () =>
+        [...document.querySelectorAll('body *')].filter(
+          (el) =>
+            getComputedStyle(el, '::before').backdropFilter !== 'none' ||
+            getComputedStyle(el, '::after').backdropFilter !== 'none',
+        ).length,
+    );
     const before = await metrics();
     const frames = await page.evaluate(async () => {
       const intervals = [];
@@ -76,7 +94,8 @@ try {
     const after = await metrics();
     const sorted = [...frames].sort((a, b) => a - b);
     runs.push({
-      optics,
+      mode,
+      filtering,
       frames: frames.length,
       p50Ms: sorted[Math.floor(sorted.length * 0.5)],
       p95Ms: sorted[Math.floor(sorted.length * 0.95)],

@@ -112,9 +112,13 @@ Sizes are rough: **S** is one small PR (a day or two), **M** is about a week wit
 
 ### Phase 0: make the documentation true (S, documentation only)
 
+**Done (#529), documentation only.**
+
 Correct the six stale statements listed under gap 6, using the code's numbers (72%, 24px, two backdrop passes). Keep one source of truth: [Surface](./surface.mdx) holds the numbers and the other pages link to it. Change no visuals.
 
 ### Phase 1: accessibility parity (S to M, no API change)
+
+**Done in 15.69.0 (#532).** As below, with one change: increased contrast also follows Android's high-contrast text.
 
 - **iOS Reduce Transparency.** The provider ORs `AccessibilityInfo.isReduceTransparencyEnabled()` (and its change event) into `reducedTransparency`, as it already does for the platform adapter. Today this changes only `Backdrop` and `ProgressiveBlur` on iOS. After phase 3 it also covers the surface material.
 - **Increased contrast.** Add a contrast switch beside transparency: `prefers-contrast: more` and `forced-colors: active` on the web, and Increase Contrast on iOS if a reliable signal exists (React Native has none built in; this needs checking). Under it the body paints `solidFill` and the edge light becomes a 1px hairline from `hairlineOn` (`styles/surface-levels.ts`), the same contract as reduce transparency. It is its own switch and its own document attribute (decision 5).
@@ -122,6 +126,8 @@ Correct the six stale statements listed under gap 6, using the code's numbers (7
 - **Tests.** Provider unit tests with `AccessibilityInfo` mocked (on, off, change event). A web story checked under `page.emulateMediaFeatures([{ name: 'prefers-contrast', value: 'more' }])` and `forced-colors`. Extend `reduced-transparency-census.test.ts` so that every material host follows the contrast switch too. Contrast floors stay independent literals (Bloom's rule).
 
 ### Phase 2: bake the web material where the backdrop is known (M, internal)
+
+**Done in 15.70.0.** One change from the plan below: the decision is made per instance, from the page, after a live first paint (`surface/baked-material.ts`), not by a census of callers. The same Card is in the flow of a canvas in one place and over a photo in another, which a list of callers cannot tell apart. Buttons and fields whose fill animates stay live. The pixel gate is `scripts/verify-surface-baked-material.mjs`; see [Surface](./surface.mdx), *Baked material*.
 
 When a surface is in the flow and its backing is opaque and painted by a known owner (the page background, a `Screen`, a panel, a parent `Surface`), its blurred backdrop is that backing's colour. The body's `blur saturate contrast brightness` and the edge's brightness can then be computed once in JavaScript and painted as plain colours, with no backdrop filter.
 

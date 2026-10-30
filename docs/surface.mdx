@@ -114,6 +114,57 @@ and page in both modes) and `increased-contrast.web.test.tsx` (the document
 attributes, the media queries from the first render, the CSS rule, the hairline
 each host sets).
 
+## Baked material (web)
+
+Where everything behind a material host is one flat colour, blurring it changes
+nothing, and the rest of the material's filter (saturate, contrast, brightness)
+is arithmetic on that colour. So the web computes the body once and paints it
+as a plain colour, with no backdrop filter for the compositor to run on every
+frame: the host is marked `data-bloom-material="baked"` and carries its body in
+`--bloom-surface-baked-body` (`surface/baked-material.ts`). The edge light
+becomes a `filter: brightness()` of the host's own layer, which reads no
+backdrop either. Same pixels: `scripts/verify-surface-baked-material.mjs`
+compares every story baked and live, in both modes, and fails on any pixel more
+than 2 levels apart off a host's antialiased outline (up to 11 on that outline,
+where the live edge light brightens the outline's mix with what is outside).
+
+The decision is made per instance, from the page, after the host has painted
+once live: the same Card sits on a page's canvas in one place and over a photo
+in another, which no list of callers can tell apart. Walking up from the host,
+the first thing that paints decides:
+
+- an element with an opaque, flat background (no image): bake on it;
+- a material host already baked (parents are done first): bake on its body;
+- anything else stays live: a translucent or image background, a live material
+  host, an element that floats out of the flow (`absolute`, `fixed`, `sticky`)
+  or that is a backdrop root, and the host itself floating.
+
+On the way, a positioned or transformed earlier sibling that overlaps the host
+keeps it live: it would paint behind it. A host starts live and is baked in the
+next frame, so a wrong guess could only cost the performance it saves, never
+show a wrong colour first. A host reruns when its fill or look changes (it
+unbakes before that commit paints), and every host when the document's theme,
+transparency or contrast changes. With transparency reduced nothing bakes: the
+bodies are already opaque.
+
+Registered: `Surface`, `SurfacePaint` (Card, Sidebar and the other families
+that use it) and `ContentPanel`. A `SurfacePaint` whose fill animates between
+states (`transition`: fields, chips, switches) and `Button` stay live: a baked
+body does not transition with the tint. Floating panels, menus, toasts and
+dialogs float, so they stay live by the rule.
+
+![The BakedAndLive story with every host live (above) and baked where it can be (below), light on the left and dark on the right: the same pixels; the two surfaces over the photo stay live](./surface-baked-material.png)
+
+`data-bloom-material-bake="off"` on the root keeps every host live: the
+control the pixel and performance checks compare against, never a second
+material. **System / Composition / Dense Feed** (100 posts,
+`scripts/measure-surface-feed.mjs`, headless Chrome 146 on a development build,
+2 s of scrolling, two runs each): live, 300 hosts filter their backdrop, 64 and
+87 frames, 95th percentile 33 and 50 ms, 32 and 49 frames over 32 ms; baked,
+100 hosts still filter (the buttons), 120 frames each, 95th percentile 16.8 ms,
+none over 32 ms; with every filter off, 120 and 121 frames. Software rendering:
+the ratio, not the numbers, is the evidence.
+
 ## Backdrop roots: never fade or filter a material host or its ancestors
 
 In Chromium an element with `opacity` below 1, any `filter` (`blur(0px)` included: only `none` is safe), a `mask`, a `clip-path`, a `mix-blend-mode` or a `backdrop-filter` of its own is the **backdrop root** of everything under it. A material host on or under one blurs only what that element painted: it turns flat and loses its edge light for as long as the trigger lasts, then pops back. Measured behind a striped page, a dialog's stripe contrast jumped to full (255) the instant it began closing, a tooltip rested at 66 because its entrance ended on `filter: blur(0px)`, and a menu flickered on every open and close.

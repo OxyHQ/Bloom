@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.70.0
+
+### Changed
+
+- **The web bakes the surface material where its backdrop is one known colour.** A material host whose backdrop is a flat, opaque colour (the page's canvas, a panel, a baked surface) paints its body as that one colour, computed once from the material's own filter, with no backdrop filter; the edge light becomes a brightness filter of the host's own layer. The same pixels: `scripts/verify-surface-baked-material.mjs` compares every story baked and live in both modes (no pixel more than 2 levels apart off a host's antialiased outline). Decided per instance from the page after a live first paint: a host over an image, a translucent fill, a floating ancestor or an overlapping positioned layer stays live, as do floating panels, buttons and fields whose fill animates. Measured on Dense Feed (100 posts, headless Chrome 146): 300 hosts filtering their backdrop → 100, and 64–87 frames in 2 s of scrolling → 120. `data-bloom-material-bake="off"` on the root keeps everything live, the measurement control.
+
+### Consumers
+
+Bump to 15.70.0. Nothing to change. A web page with many cards on a flat canvas composites far fewer backdrop filters while scrolling. A host baked over a background Bloom could not see (a canvas drawn by a script, a `z-index` layer under the flow) would show the computed colour; set `data-bloom-material-bake="off"` and report it.
+
 ## 15.69.1
 
 ### Fixed

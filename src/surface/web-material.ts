@@ -38,6 +38,24 @@ export const INCREASED_CONTRAST_ATTRIBUTE = 'data-bloom-contrast';
  */
 export const SURFACE_HAIRLINE_VAR = '--bloom-surface-hairline';
 
+/**
+ * A material host whose backdrop is known paints it baked
+ * (`surface/baked-material.ts`): this attribute, set to `baked`, and its body
+ * (the tint over the filtered backdrop) as one plain colour in
+ * `--bloom-surface-baked-body`.
+ */
+export const BAKED_MATERIAL_ATTRIBUTE = 'data-bloom-material';
+export const BAKED_BODY_VAR = '--bloom-surface-baked-body';
+
+/**
+ * `off` on the root keeps every material live: the measurement control for the
+ * baked material's pixel and performance gates, never a second material.
+ */
+export const BAKE_OFF_ATTRIBUTE = 'data-bloom-material-bake';
+
+/** Marks SurfacePaint's layer, which covers its host exactly. */
+export const PAINT_LAYER_ATTRIBUTE = 'data-bloom-paint-layer';
+
 /** The browser's own requests for more contrast; either one turns it up. */
 const CONTRAST_MEDIA = ['(prefers-contrast: more)', '(forced-colors: active)'];
 
@@ -107,11 +125,22 @@ export function surfaceMaterialCss(
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-color: ${solid};
+  background-image: none;
 }
 ${host}::after {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  background: none;
+  filter: none;
 }`;
+  // Baked: the body as one colour (a gradient layer would be dithered), and the
+  // edge light as this layer brightened, which reads no backdrop. `:where()`
+  // keeps the specificity of the live rules, so the reduced and contrast rules
+  // below still win.
+  const baked = `${selector}:where([${BAKED_MATERIAL_ATTRIBUTE}="baked"])`;
+  const bakedLayers = `  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: var(${BAKED_BODY_VAR});`;
   const contrast = (host: string) => `${reduced(host)}
 ${host}::after {
   mask-image: none;
@@ -156,6 +185,13 @@ ${selector}::after {
   mask-clip: border-box, border-box, padding-box, border-box;
   mask-origin: border-box;
   mask-composite: add, intersect, exclude;
+}
+${baked}::before {
+${bakedLayers}
+}
+${baked}::after {
+${bakedLayers}
+  filter: var(--bloom-surface-highlight-filter, ${SURFACE_HIGHLIGHT_FILTER});
 }
 ${reduced(`:root[${REDUCED_TRANSPARENCY_ATTRIBUTE}="reduced"] ${selector}`)}
 @media (prefers-reduced-transparency: reduce) {

@@ -286,3 +286,41 @@ export const PinnedTabs: Story = {
     );
   },
 };
+
+const PHOTO =
+  'radial-gradient(circle at 20% 30%, #f97316 0 18%, transparent 40%), radial-gradient(circle at 80% 70%, #0ea5e9 0 20%, transparent 42%), linear-gradient(135deg, #fde68a, #c4b5fd)';
+
+/**
+ * Where the web bakes the material and where it keeps it live. On the page's
+ * flat canvas, and on a baked surface, the backdrop is one colour: the material
+ * is computed once and paints the same pixels with no backdrop filter
+ * (`data-bloom-material="baked"`). Over a photo (an ancestor's background
+ * image, or a positioned layer behind an in-flow card) it stays live.
+ */
+export const BakedAndLive: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, padding: 32 }}>
+      <Surface testID="baked-canvas" style={{ padding: 20, width: 280, gap: 12 }}>
+        <Text variant="title-3-semibold">On the canvas</Text>
+        <Text>Baked: the backdrop is the flat page.</Text>
+        <Card testID="baked-nested" style={{ padding: 16 }}>
+          <Text>Baked on the surface's body.</Text>
+        </Card>
+      </Surface>
+      <div style={{ width: 300, padding: 20, borderRadius: 20, backgroundImage: PHOTO }}>
+        <Surface testID="live-ancestor-image" style={{ padding: 20, gap: 12 }}>
+          <Text variant="title-3-semibold">Over a background image</Text>
+          <Text>Live: an ancestor paints an image.</Text>
+        </Surface>
+      </div>
+      <div style={{ position: 'relative', width: 300, padding: 20 }}>
+        <div style={{ position: 'absolute', inset: 0, borderRadius: 20, backgroundImage: PHOTO }} />
+        <Surface testID="live-sibling-layer" style={{ padding: 20, gap: 12 }}>
+          <Text variant="title-3-semibold">Over a photo layer</Text>
+          <Text>Live: a positioned layer paints behind it.</Text>
+        </Surface>
+      </div>
+    </div>
+  ),
+};

@@ -3,7 +3,7 @@ import { ConcentricProvider } from '../concentric/ConcentricProvider';
 import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
 import { resolveSurfaceGeometry } from './resolve-surface-geometry';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { forwardRef, memo } from 'react';
+import React, { forwardRef, memo, useCallback, useRef } from 'react';
 import type { ComponentRef } from 'react';
 import { StyleSheet, type View } from 'react-native';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
@@ -19,6 +19,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { resolveSurfaceOptics, surfaceContrastEdge, surfaceOpticsVars } from './shared';
 import { SURFACE_HAIRLINE_VAR, surfaceMaterialCss } from './web-material';
+import { useBakedMaterial } from './baked-material';
 import type { SurfaceProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
 
@@ -80,6 +81,15 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
           }
         : baseGeometry;
     useInteractiveWebCss('bloom-surface-web-css', CSS);
+    const localRef = useRef<HTMLElement | null>(null);
+    const hostRef = useCallback(
+      (node: ComponentRef<typeof View> | null) => {
+        localRef.current = node as unknown as HTMLElement | null;
+        if (typeof ref === 'function') ref(node);
+        else if (ref) ref.current = node;
+      },
+      [ref],
+    );
     const override = fill ?? resolvedStyle?.backgroundColor;
     const material = useResolvedSurface({
       fill: override === undefined ? undefined : String(override),
@@ -99,6 +109,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       });
       return { ...resolved, hairline: surfaceContrastEdge(resolved.solidFill, theme.colors.text) };
     });
+    useBakedMaterial(localRef, material.painted, [materialRecipe.paint.paintFill, optics]);
     const baseStyle: WebCssStyle = {
       ...surfaceOpticsVars(optics, geometry.radius ?? resolvedStyle?.borderRadius),
       ...geometry.style,
@@ -114,7 +125,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
         <ServerStyleSheet id="bloom-surface-web-css" css={CSS} />
         <StyledView
           {...hostProps}
-          ref={ref}
+          ref={hostRef}
           className={['bloom-surface', material.painted ? 'bloom-surface--material' : '', className]
             .filter(Boolean)
             .join(' ')}
