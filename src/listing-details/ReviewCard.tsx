@@ -1,9 +1,8 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
-import { View, type LayoutChangeEvent } from 'react-native';
+import React, { memo, useMemo } from 'react';
+import { View } from 'react-native';
 
-import { Button } from '../button';
 import { Avatar } from '../avatar';
-import { useControllableState } from '../hooks/use-controllable-state';
+import { ExpandableText } from '../expandable-text';
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -22,11 +21,11 @@ import { IS_WEB } from '../styles/platform';
  *   meta       five 10px stars (filled text-primary, empty neutral-300 /
  *              dark neutral-700), "·", date body-2-medium; one accessible
  *              element for the stars ("Rated 5 out of 5")
+ *   heading    the review's own title, headline-semibold, 4 above the text
  *   text       body-regular, clamped to `numberOfLines` (4)
- *   show more  body-semibold underlined, drawn only when the text IS clamped —
- *              measured, not guessed from its length: an invisible unclamped
- *              copy is laid out behind the clamped text and the two heights
- *              compared. `aria-expanded` on web, `expanded` on native.
+ *   show more  `ExpandableText`'s link under the text: body-semibold underlined,
+ *              drawn only when the text IS clamped (measured, not guessed from
+ *              its length). `aria-expanded` on web, `expanded` on native.
  *   response   a radius-12 block (neutral-50, dark neutral-900), padding 16:
  *              title body-2-semibold, date caption-1-regular, text body-regular
  */
@@ -70,6 +69,7 @@ function ReviewCardComponent({
   subtitle,
   rating,
   date,
+  heading,
   text,
   numberOfLines = 4,
   showMoreLabel: showMoreLabelProp,
@@ -86,26 +86,6 @@ function ReviewCardComponent({
   const showLessLabel = showLessLabelProp ?? common.showLess;
   const theme = useTheme();
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);
-  const [expanded, setExpanded] = useControllableState({
-    value: expandedProp,
-    defaultValue: false,
-    onChange: onExpandedChange,
-  });
-
-  const clamps = numberOfLines > 0;
-  const [clampedHeight, setClampedHeight] = useState(0);
-  const [fullHeight, setFullHeight] = useState(0);
-  const onClampedLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      // Only the collapsed height says whether the text is clamped.
-      if (!expanded) setClampedHeight(Math.round(event.nativeEvent.layout.height));
-    },
-    [expanded],
-  );
-  const onFullLayout = useCallback((event: LayoutChangeEvent) => {
-    setFullHeight(Math.round(event.nativeEvent.layout.height));
-  }, []);
-  const truncatable = clamps && clampedHeight > 0 && fullHeight > clampedHeight + 1;
 
   return (
     <View style={[{ gap: 12 }, style]} testID={testID}>
@@ -154,47 +134,28 @@ function ReviewCardComponent({
         </View>
       ) : null}
 
-      <View style={{ gap: 8 }}>
-        <View style={{ overflow: 'hidden' }}>
-          <Text
-            variant="body-regular"
-            numberOfLines={clamps && !expanded ? numberOfLines : undefined}
-            onLayout={onClampedLayout}
-            style={{ color: palette.text }}
-            testID={testID ? `${testID}-text` : undefined}
-          >
-            {text}
-          </Text>
-          {clamps ? (
-            <View
-              pointerEvents="none"
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              {...(IS_WEB ? { 'aria-hidden': true } : null)}
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0 }}
-            >
-              <Text variant="body-regular" onLayout={onFullLayout}>
-                {text}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-        {truncatable ? (
-          <Button
-            appearance="plain"
-            linkTone="text"
-            underline="rest"
-            textVariant="body-semibold"
-            accessibilityLabel={expanded ? showLessLabel : showMoreLabel}
-            aria-expanded={expanded}
-            onPress={() => setExpanded(!expanded)}
-            style={{ alignSelf: 'flex-start' }}
-            testID={testID ? `${testID}-toggle` : undefined}
-          >
-            {expanded ? showLessLabel : showMoreLabel}
-          </Button>
-        ) : null}
-      </View>
+      {heading ? (
+        <Text
+          variant="headline-semibold"
+          style={{ color: palette.text, marginBottom: -8 }}
+          testID={testID ? `${testID}-heading` : undefined}
+        >
+          {heading}
+        </Text>
+      ) : null}
+
+      <ExpandableText
+        numberOfLines={numberOfLines}
+        color={palette.text}
+        moreLabel={showMoreLabel}
+        lessLabel={showLessLabel}
+        expanded={expandedProp}
+        onExpandedChange={onExpandedChange}
+        testID={testID ? `${testID}-text` : undefined}
+        toggleTestID={testID ? `${testID}-toggle` : undefined}
+      >
+        {text}
+      </ExpandableText>
 
       {hostResponse ? (
         <View

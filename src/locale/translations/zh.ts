@@ -1126,6 +1126,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   rated: (v) => `评分 ${v}（满分 5 分）`,
   ratedWithReviews: (v, r) => `评分 ${v}（满分 5 分），${r}`,
   star: (n) => plural('zh', n, { other: '{n} 星' }),
+  outOfFive: '满分 5 分',
+  noRatings: '暂无评分',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

@@ -300,3 +300,36 @@ export const Chips: Story = {
     );
   },
 };
+
+/**
+ * Paged: whole columns sized from the track — as many of at least 240 as fit —
+ * two tiles to a column, paged one screenful at a time. The narrow page keeps a
+ * 32px slice of the next column in view.
+ */
+export const Paged: Story = {
+  render: () => (
+    <>
+      <Page width={1280}>
+        <Shelf
+          title="Recently played"
+          layout="paged"
+          rows={2}
+          minItemWidth={240}
+          gap={8}
+          onShowAll={noop}
+        >
+          {RECENT.map((title, index) => (
+            <CompactTile key={title} seed={`paged-${index}`} title={title} />
+          ))}
+        </Shelf>
+      </Page>
+      <Page width={390}>
+        <Shelf title="Recently played" layout="paged" rows={2} minItemWidth={240} peek={32} gap={8}>
+          {RECENT.map((title, index) => (
+            <CompactTile key={title} seed={`paged-narrow-${index}`} title={title} />
+          ))}
+        </Shelf>
+      </Page>
+    </>
+  ),
+};

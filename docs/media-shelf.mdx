@@ -52,11 +52,13 @@ The English defaults below are localised: each is drawn in the app's language vi
 | `eyebrow` / `eyebrowAvatar` | a small line above the title ("Made for") with a 24px avatar (URL, ImageResolver id or image source) |
 | `onTitlePress` | makes the title a link; it underlines on hover |
 | `onShowAll` / `showAllLabel` | the "Show all" button on the right of the header (default text "Show all") |
-| `layout` | `'row'` (default) scrolls horizontally; `'grid'` wraps |
+| `layout` | `'row'` (default) scrolls horizontally; `'grid'` wraps; `'paged'` scrolls whole columns a page at a time |
 | `itemWidth` | row: the width each item is laid out at (items keep their own width when omitted) |
-| `minItemWidth` | grid: the narrowest a column may get, default `160` |
-| `rows` | grid: rows shown, default `1`; extra items are dropped. `Infinity` shows all |
+| `minItemWidth` | grid and paged: the narrowest a column may get, default `160` |
+| `rows` | grid: rows shown, default `1`; extra items are dropped. `Infinity` shows all. Paged: items stacked in each column, all shown |
+| `peek` | paged: how much of the next column stays in view at a page's trailing edge, default `0` |
 | `gap` | between items, default `16` on web and `12` on native |
+| `rowGap` | grid and paged: between the rows of a column, default `gap` |
 | `contentInset` | row: padding inside the track so it can scroll edge to edge while the first item lines up with the page gutter |
 | `headingLevel` | the heading's `aria-level`, default `2` |
 | `previousLabel` / `nextLabel` | the arrow buttons' names, default "Previous" / "Next", suffixed with the title |
@@ -65,6 +67,10 @@ The English defaults below are localised: each is drawn in the app's language vi
 **Row on web.** The scrollbar is hidden, items snap to their start (`scroll-snap-type`), and two round secondary buttons in the header page through the row by 90% of its width. Each disables at its end; both are hidden while nothing overflows, and on touch screens (`hover: none`), where a swipe already scrolls. Paging is not animated under reduced motion.
 
 **Row on native.** A plain horizontal `ScrollView`. With `itemWidth` it snaps one item at a time.
+
+**Paged.** The row's track, with its columns sized from the track's own measured width: as many columns of at least `minItemWidth` as fit in it less the two `contentInset`s and the `peek`, at least one, stretched to fill. Each column stacks `rows` items, top to bottom and then across, so items 0–2 of a three-row shelf are the first column. A page is exactly those columns and their gaps: the header's buttons step one page, to the next page boundary from wherever a swipe left the track, and a column snaps to its start (CSS on web, `snapToInterval` on native). With a `peek` the slice of the next column says there is more on a touch screen, where the buttons are hidden. Nothing renders until the first layout, as in the grid. The rule is exported as `shelfPageColumns(viewport, { minItemWidth, gap, inset, peek })`.
+
+**`useShelfCell()`.** Inside a `paged` or `grid` shelf each item can read where it sits — `{ layout, row, rows, column, lastInColumn }`, or `null` outside one. A row that separates itself from the next ([Lockup](/docs/bloom/main/lockup)'s divider) reads `lastInColumn` instead of the caller counting.
 
 **Grid.** The column count is computed from the container's measured width: as many columns of at least `minItemWidth` as fit, at least one, stretched to fill. Nothing renders until the first layout, so a grid never flashes at the wrong column count. The rule is exported as `shelfGridColumns(width, minItemWidth, gap)`.
 

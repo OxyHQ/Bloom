@@ -1,0 +1,55 @@
+---
+title: Fact Strip
+description: A row of facts under a product's header — a small label over a large value over a caption, with a hairline between them.
+order: 65
+---
+
+# FactStrip
+
+The row of facts under a product's header: its ratings, its category, when it
+was released, where it lives on the web.
+
+```tsx
+import { FactStrip } from '@oxy.so/bloom/fact-strip';
+
+<FactStrip
+  accessibilityLabel="About this app"
+  contentInset={20}
+  items={[
+    { key: 'ratings', label: '128 reviews', value: '4.6',
+      caption: <Rating value={4.6} variant="stars" showValue={false} starSize={11} size="sm" />,
+      onPress: scrollToReviews },
+    { key: 'category', label: 'Category', value: 'Productivity' },
+    { key: 'released', label: 'Released', value: '2026', caption: 'March' },
+  ]}
+/>
+```
+
+## Look
+
+| part | style |
+| --- | --- |
+| `label` | `caption-1-semibold`, text-secondary |
+| `value` | `title-2-bold`, text-secondary: a fact, not a heading |
+| `caption` | `caption-1-regular`, text-secondary |
+| column | at least `minItemWidth` (96), centred, padding 12 / 8 |
+| separator | 1 × 36, the hairline of the actual backing |
+
+A string `value` or `caption` is drawn in its style; a node (an icon, the
+stars) as given, centred in that line's height.
+
+## Width
+
+The facts share the width while they fit and keep `minItemWidth` once they do
+not, when the strip scrolls sideways on the shared `ScrollArea` (the one overlay
+bar on web, the system's on native). It never wraps into a ragged block.
+`contentInset` lines the first fact up with the page gutter while the strip
+still scrolls to the edges.
+
+## Semantics
+
+A list. Each fact is one list item named by the text it contains — the label,
+the value and the caption heard together — unless `accessibilityLabel` says
+otherwise. With `onPress` the fact is a button instead (jump to the ratings,
+open the developer), shrinking to 0.96 while held with Bloom's focus ring. The
+separators are decoration.

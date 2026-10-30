@@ -1146,6 +1146,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   rated: (v) => `5点中${v}点`,
   ratedWithReviews: (v, r) => `5点中${v}点、${r}`,
   star: (n) => plural('ja', n, { other: '星{n}つ' }),
+  outOfFive: '5点中',
+  noRatings: 'まだ評価はありません',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

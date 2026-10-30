@@ -116,6 +116,33 @@ Their defaults remain unchanged when classes are absent. Classes may customize
 paint and geometry, but the filled fraction stays derived from `value / max`.
 The bar remains one named progressbar; its visual labels are not announced twice.
 
+## `RatingSummary`
+
+```tsx
+import { RatingSummary } from '@oxy.so/bloom/rating';
+
+<RatingSummary average={app.rating.average} count={app.rating.count} distribution={app.ratingBreakdown} />
+```
+
+A product's ratings at a glance: the average beside the 5→1 distribution.
+
+| part | style |
+| --- | --- |
+| average | `display-2-bold`, text-primary, one decimal in the locale's digits |
+| scale | `body-2-semibold`, text-secondary ("out of 5") |
+| rows | 5…1 stars (8px glyphs, 1 apart, text-secondary, right-aligned in 44) beside a 4px `Meter` of that star's share; rows 3 apart |
+| count | `body-2-regular`, text-secondary, right-aligned under the bars ("128 reviews") |
+
+`distribution` is keyed 1 to 5 (absent keys are zero) and each bar is its key's
+share of `count`, so the bars always agree with the count under them. With
+`average: null` — nobody has rated it — only `noRatingsLabel` ("No ratings yet")
+is drawn: an empty distribution beside a "0.0" would say it was rated badly.
+
+The average and scale are one element named "Rated 4.6 out of 5, 128 reviews"
+(`accessibilityLabel` overrides it); each bar is a `progressbar` named by its
+stars ("4 stars") with its share as `aria-valuetext` ("12%"). `countLabel`,
+`outOfLabel` and `noRatingsLabel` override the localised words.
+
 ## `RatingInput`
 
 Hover previews are decorative: the radio owns pointer and touch interaction, so the first press selects even while its star changes from outline to filled. Preview alone never changes the chosen value.

@@ -1204,6 +1204,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   rated: (v) => `Noté ${v} sur 5`,
   ratedWithReviews: (v, r) => `Noté ${v} sur 5, ${r}`,
   star: (n) => plural('fr', n, { one: '{n} étoile', other: '{n} étoiles' }),
+  outOfFive: 'sur 5',
+  noRatings: 'Pas encore de notes',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

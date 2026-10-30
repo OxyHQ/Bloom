@@ -1164,6 +1164,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   rated: (v) => `5 में से ${v} रेटिंग`,
   ratedWithReviews: (v, r) => `5 में से ${v} रेटिंग, ${r}`,
   star: (n) => plural('hi', n, { one: '{n} स्टार', other: '{n} स्टार' }),
+  outOfFive: '5 में से',
+  noRatings: 'अभी तक कोई रेटिंग नहीं',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

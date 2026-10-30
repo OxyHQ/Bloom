@@ -1,0 +1,105 @@
+---
+title: Lockup
+description: A product as a store lists it — icon, name, a line about it and its action — in a list, a shelf or the head of its own page.
+order: 64
+---
+
+# Lockup
+
+A product, the way a store lists one: its icon, its name, a line about it, and
+its action. The same component is a row in a list, a cell in a shelf, a chart
+entry and the head of the product's own page.
+
+```tsx
+import { Lockup, LockupSkeleton } from '@oxy.so/bloom/lockup';
+import { Button } from '@oxy.so/bloom/button';
+import { Rating } from '@oxy.so/bloom/rating';
+
+<Lockup
+  title={app.name}
+  subtitle={app.tagline}
+  icon={app.icon}                      // ImageResolver id, URL or image source
+  caption={<Rating value={app.rating} count={app.count} size="sm" />}
+  onPress={() => router.push(`/app/${app.slug}`)}
+  action={<Button size="sm" appearance="subtle" tone="accent" onPress={open}>Open</Button>}
+/>
+
+<Lockup size="lg" title={app.name} subtitle={app.tagline} icon={app.icon} action={primaryAction} />
+
+{loading ? <LockupSkeleton /> : null}
+```
+
+## Sizes
+
+| `size` | icon | gap | row padding | title | subtitle | caption |
+| --- | --- | --- | --- | --- | --- | --- |
+| `sm` | 48 | 12 | 8 | `body-medium` | `body-2-regular` | `caption-1-regular` |
+| `md` (default) | 64 | 14 | 10 | `headline-medium` | `body-2-regular` | `caption-1-regular` |
+| `lg` | 128 | 20 | 0 | `title-1-bold`, two lines | `headline-regular`, two lines | `body-2-regular` |
+
+`md` is the normal size: a shelf of products, a list of results. `sm` is a dense
+list. `lg` is the head of a product's page: the action moves under the text (12
+below it, in a row with whatever else the page puts there), and the title is a
+heading (`headingLevel`, default 1).
+
+The title is text-primary; subtitle and caption text-secondary. A string
+`caption` is drawn in the caption style; a node (a `Rating`, a badge) as given.
+An absent subtitle or caption takes no line, so an unrated product's lockup is
+simply one line shorter rather than showing an empty rating.
+
+## The icon
+
+`icon` goes through `Avatar`, so a bare file id resolves through the app's
+`ImageResolver` (`iconVariant`, default `thumb`, `full` at `lg`); URLs and image
+sources pass through. The shape is the squircle (`iconShape`), with a 1px
+hairline of the actual backing so a white icon still has an edge on a white
+page. With no icon, or one that fails, the shape shows the title's initial. The
+icon is decoration to assistive technology: the title already names the product.
+
+## Link and action
+
+With `onPress` or `href`, the icon and text are **one link** (a real anchor on
+web with `href`; pass `onPress` too for a router, which prevents the browser's
+own navigation). It is named by the text it contains, unless `accessibilityLabel`
+says otherwise, and shrinks to 0.98 while held (`PressableScale`, off under
+reduced motion) with Bloom's focus ring.
+
+`action` is a **sibling** of that link, never inside it: a button nested in a
+link is invalid on the web and is heard as one control on native. Pass an
+ordinary `Button` — a small subtle accent pill reads as the product's action.
+An `lg` lockup is never a link as a whole, because its action sits inside its
+text column.
+
+## `rank`
+
+A chart position, drawn between the icon and the text in `headline-semibold`
+(`title-2-semibold` at `lg`), centred in a 24px column so every row's text
+starts at the same edge.
+
+## Dividers in a shelf
+
+`divider` draws a hairline from the text's start to the row's end, at the
+bottom of the row's padding. Inside a `paged` or `grid` [Shelf](/docs/bloom/main/media-shelf)
+with more than one row it defaults to every row but the last of its column —
+the lockup reads `useShelfCell()` — so a store shelf needs no index arithmetic:
+
+```tsx
+<Shelf title="Productivity" layout="paged" rows={3} minItemWidth={300} gap={20} rowGap={0}
+  onShowAll={openCategory}>
+  {apps.map((app) => <Lockup key={app.slug} title={app.name} subtitle={app.tagline} icon={app.icon} onPress={…} action={…} />)}
+</Shelf>
+```
+
+Outside a shelf, pass `divider` yourself (every row but the last of a list).
+
+## `LockupSkeleton`
+
+The same icon box, a bar per text line at that line's height, and the action's
+pill, all from the same metrics table, so nothing moves when the real lockup
+swaps in. `caption` draws the third line; `action={false}` drops the pill;
+`divider` defaults as above. One `aria-busy` group named "Loading" (localised).
+
+## Right-to-left
+
+The row, the rank column and the divider's start inset are logical: they mirror
+with the direction.

@@ -130,3 +130,29 @@ export interface RatingBarProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
+
+export interface RatingSummaryProps {
+  /**
+   * The average on a 5 scale, or `null` when nobody has rated it — never 0. A
+   * `null` average draws `noRatingsLabel` and no distribution: an unrated
+   * product has no rating, not a zero-star one.
+   */
+  average: number | null;
+  /** How many ratings the average and the distribution are made of. */
+  count: number;
+  /**
+   * How many ratings gave each whole star, keyed 1 to 5. Absent keys are zero.
+   * Each bar is its key's share of `count`.
+   */
+  distribution: Readonly<Partial<Record<number, number>>>;
+  /** The count's words under the bars. Default: the locale's "128 reviews". */
+  countLabel?: string;
+  /** The scale under the average (`"out of 5"` in English). */
+  outOfLabel?: string;
+  /** Drawn with no ratings (`"No ratings yet"` in English). */
+  noRatingsLabel?: string;
+  /** The summary's accessible name. Default: the locale's "Rated 4.5 out of 5, 128 reviews". */
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}

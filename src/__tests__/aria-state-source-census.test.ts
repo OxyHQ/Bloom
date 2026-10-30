@@ -245,6 +245,13 @@ const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'RadioHost'];
 // writes none. `DeliverySlotOption` always passes one — the window, what is
 // left of it and its surcharge, as one utterance — because a row built from
 // three separate Texts is three stops otherwise.
+//
+// `PressableScale` spreads every `Pressable` prop — `role` and
+// `accessibilityLabel` included — onto its one animated `StyledPressable`. Its
+// role-passing callers are `Lockup` (`role="link"`, named by the title,
+// subtitle and caption it contains, or the caller's `accessibilityLabel`) and
+// `FactStrip` (`role="button"`, named by the fact's label, value and caption,
+// or the item's `accessibilityLabel`).
 const NAME_DELEGATING_TAGS = [
   'Button',
   'Card',
@@ -253,6 +260,7 @@ const NAME_DELEGATING_TAGS = [
   'LinkButton',
   'MediaPressable',
   'MenuRowShell',
+  'PressableScale',
   'RadioHost',
 ];
 

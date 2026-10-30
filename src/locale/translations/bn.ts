@@ -1146,6 +1146,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   rated: (v) => `৫-এর মধ্যে ${v} রেটিং`,
   ratedWithReviews: (v, r) => `৫-এর মধ্যে ${v} রেটিং, ${r}`,
   star: (n) => plural('bn', n, { other: '{n} তারকা' }),
+  outOfFive: '৫-এর মধ্যে',
+  noRatings: 'এখনো কোনো রেটিং নেই',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

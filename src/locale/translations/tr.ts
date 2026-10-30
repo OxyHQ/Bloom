@@ -1158,6 +1158,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   rated: (v) => `5 üzerinden ${v} puan`,
   ratedWithReviews: (v, r) => `5 üzerinden ${v} puan, ${r}`,
   star: (n) => plural('tr', n, { other: '{n} yıldız' }),
+  outOfFive: '5 üzerinden',
+  noRatings: 'Henüz puan yok',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

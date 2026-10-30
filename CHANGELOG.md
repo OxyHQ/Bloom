@@ -2,6 +2,25 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.66.0
+
+### Added
+
+- **Lockup (`@oxy.so/bloom/lockup`).** A product as a store lists it: its icon (an `Avatar` in the squircle with a hairline, so an `ImageResolver` id, a URL or an image source), its name, a line about it, an optional third line (`caption`: a `Rating`, a category) and its `action`. `sm` (48 icon), `md` (64, the default) and `lg` (128, the head of a product's page, the title a heading and the action under the text). With `onPress` / `href` the icon and text are one link named by the text it contains (a real anchor on web), shrinking to 0.98 while held with Bloom's focus ring; the action is its sibling, never inside it. `rank` draws a chart position in a 24px column. `divider` is a hairline from the text's start to the row's end, defaulting inside a paged or grid shelf to every row but the last of its column. `LockupSkeleton` draws the same geometry while loading.
+- **FactStrip (`@oxy.so/bloom/fact-strip`).** The row of facts under a product's header: equal columns of a small label over a large value over a caption, a 36px hairline between them, scrolling sideways on the shared `ScrollArea` once the facts no longer fit at `minItemWidth` (96). A list whose facts are one item each, named by their contents; a fact with `onPress` is a button.
+- **ExpandableText (`@oxy.so/bloom/expandable-text`).** Text clamped to `numberOfLines` with a control drawn only when the text is measured as clamped: `toggle="below"` ("Show more" / "Show less" under the text) or `toggle="inline"` ("More" in the accent at the end of the last line, over a 32px fade into the actual backing, opening the rest for good). `aria-expanded` / `accessibilityState.expanded`; controlled or not. Translated in every Bloom language through the common words.
+- **RatingSummary (`@oxy.so/bloom/rating`).** The average (one decimal, in the locale's digits) and "out of 5" beside the 5→1 distribution: star glyphs over a 4px `Meter` per star, each its share of `count`, and the count under them. `average: null` draws "No ratings yet" and no distribution. The average is one element named "Rated 4.6 out of 5, 128 reviews"; each bar a `progressbar` named by its stars with its share. Translated in every Bloom language.
+- **Shelf `layout="paged"` and `useShelfCell()` (`@oxy.so/bloom/media-shelf`).** Whole columns sized from the track's measured width (as many of at least `minItemWidth` as fit less the insets and `peek`), `rows` items stacked in each, top to bottom and then across. The header's buttons step exactly one page to the next page boundary, a column snaps to its start on web and native, and `peek` keeps a slice of the next column in view. `rowGap` sets the space between a column's rows (grid too). Each item of a paged or grid shelf reads its place with `useShelfCell()` (`row`, `rows`, `column`, `lastInColumn`). `shelfPageColumns` is exported.
+
+### Changed
+
+- **`ReviewCard` draws its text with `ExpandableText`.** The same "Show more" / "Show less" link, measured the same way, and the same `-text` / `-toggle` test ids; the clamp is no longer a private copy.
+- **`ReviewCard` `heading`.** A review's own title, drawn above its text in `headline-semibold`; absent, nothing changes.
+
+### Consumers
+
+Bump to 15.66.0. New components and a new shelf layout; nothing else changes.
+
 ## 15.65.0
 
 ### Added

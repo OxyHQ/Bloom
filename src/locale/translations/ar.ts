@@ -1318,6 +1318,8 @@ const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
       many: '{n} نجمة',
       other: '{n} نجمة',
     }),
+  outOfFive: 'من 5',
+  noRatings: 'لا توجد تقييمات بعد',
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {

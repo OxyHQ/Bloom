@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Rating } from './Rating';
 import { RatingBar } from './RatingBar';
 import { RatingInput } from './RatingInput';
+import { RatingSummary } from './RatingSummary';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 
@@ -198,4 +199,26 @@ export const AuthoredSummary: Story = {
       <RatingBar label="Default" value={3} testID="default-rating" />
     </View>
   ),
+};
+
+/**
+ * A product's ratings at a glance: the average beside the distribution, and the
+ * same summary for a product nobody has rated yet.
+ */
+export const Summary: Story = {
+  render: function RatingSummaryStory() {
+    const theme = useTheme();
+    return (
+      <View
+        style={{ gap: 32, padding: 16, maxWidth: 480, backgroundColor: theme.colors.background }}
+      >
+        <RatingSummary
+          average={4.6}
+          count={1284}
+          distribution={{ 5: 921, 4: 240, 3: 70, 2: 21, 1: 32 }}
+        />
+        <RatingSummary average={null} count={0} distribution={{}} />
+      </View>
+    );
+  },
 };
