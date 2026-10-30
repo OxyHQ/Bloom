@@ -222,12 +222,14 @@ describe('a split panel layout with nothing else at the corner', () => {
   it('the panels fill the window rather than centring a reading envelope in it', () => {
     setWidth(1440);
     const windowed = shell(fakeWindow().adapter, { panelLayout: SPLIT });
-    // The whole window less the frame's two 16 insets.
-    expect(style(windowed, 'shell-content')).toMatchObject({ flexBasis: 1408, maxWidth: 1408 });
+    // The whole window less the frame's two 16 insets, as React lays it out at
+    // rest (the animated keys defer to it: `useRestingSize`).
+    const resting = { flexBasis: 'auto', maxWidth: '100%', flexGrow: 0 };
+    expect(style(windowed, 'shell-content')).toMatchObject({ ...resting, width: 1408 });
     windowed.unmount();
     // Without windows the envelope is the panels' own widths (340 + 8 + 360).
     const page = shell(undefined, { panelLayout: SPLIT });
-    expect(style(page, 'shell-content')).toMatchObject({ flexBasis: 708, maxWidth: 708 });
+    expect(style(page, 'shell-content')).toMatchObject({ ...resting, width: 708 });
   });
 
   it("keeps the room of the platform's own controls without drawing any", () => {

@@ -1122,7 +1122,10 @@ describe('AppShell nav sizing', () => {
       normal.unmount();
       const expanded = renderIn(shell('content-aside'));
       expect(expanded.queryByTestId('sidebar-collapse')?.props['aria-expanded']).toBe(before);
-      expect(resolvedStyle(expanded.getByTestId('shell-content').props.style).maxWidth).toBe(
+      // At rest the numeric content is React's `width` (`useRestingSize`); a
+      // compact region has no numeric width and no cap.
+      const content = resolvedStyle(expanded.getByTestId('shell-content').props.style);
+      expect(width < 768 ? content.maxWidth : content.width).toBe(
         width < 768 ? undefined : width >= 990 ? 970 : 620,
       );
       if (width >= 990) {

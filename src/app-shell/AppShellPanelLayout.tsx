@@ -55,6 +55,7 @@ import { PanelReorderHandle } from './PanelReorderHandle';
 import { usePanelReveal } from './use-panel-reveal';
 import { usePanelResize, type PanelResizePreview } from './use-panel-resize';
 import { useRoomChanged } from './use-room-changed';
+import { useRestingSize } from './use-resting-size';
 import { PanelCssContext, panelLayoutCss } from './panel-layout-css';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import {
@@ -451,15 +452,19 @@ export function createPanelLayoutView(
     const start = useRef(track.width);
     const reduced = useReducedMotion();
     const width = useSharedValue(track.width);
+    // The track's size along the axis is React's while it rests (the room changing
+    // lands it in the same commit) and the animated `width` only while it moves.
+    const main = useRestingSize(track.width, reduced || resized);
     useEffect(
       () =>
         registerResizePreview({
           read: () => width.value,
           update: (size) => {
+            main.moving.value = 1;
             width.value = size;
           },
         }),
-      [registerResizePreview, width],
+      [registerResizePreview, width, main.moving],
     );
     const leading = useSharedValue(track.gap);
     const opacity = useSharedValue(track.visible ? 1 : 0);
@@ -484,11 +489,14 @@ export function createPanelLayoutView(
     // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` qualifies the change
     useEffect(() => {
       if (cssScope) return;
+      const immediate = reduced || resized;
+      main.moving.value = immediate ? 0 : 1;
       animatePanelLayout(
         { width, gap: leading, opacity, scale: panelScale },
         { width: track.width, gap: track.gap, visible: track.visible },
         transition === 'exit-before-enter',
-        reduced || resized,
+        immediate,
+        immediate ? undefined : main.landed,
       );
     }, [
       track.width,
@@ -502,23 +510,43 @@ export function createPanelLayoutView(
       reduced,
       cssScope,
     ]);
+    // Along the axis a track is sized by its number unless the layout is not
+    // measured yet (it fills) or a vertical panel takes its natural height.
+    const numericMain = vertical
+      ? !(naturalHeight && track.visible) && !(!layoutReady && track.visible)
+      : !(!layoutReady && track.visible);
+    // React's sizes: the track's at rest, in the commit that changes them.
+    const restingSize = cssScope
+      ? null
+      : vertical
+        ? {
+            width: '100%' as const,
+            height: numericMain
+              ? main.rest
+              : naturalHeight && track.visible
+                ? ('auto' as const)
+                : ('100%' as const),
+          }
+        : { width: numericMain ? main.rest : ('100%' as const) };
+    // Reanimated's: the moving size (`flexBasis` overrides the resting one along
+    // the axis), the gap, the fade. At rest `flexBasis` is `auto`, which defers to
+    // the resting size: these values outlive the render (settled props), so none
+    // of them may depend on the room.
     const sizing = useAnimatedStyle(
       () =>
         cssScope
           ? {}
           : {
-              width: vertical || (!layoutReady && track.visible) ? ('100%' as const) : width.value,
-              height: vertical
-                ? !layoutReady && track.visible && !naturalHeight
-                  ? ('100%' as const)
-                  : naturalHeight && track.visible
-                    ? ('auto' as const)
-                    : width.value
-                : !track.visible && document
-                  ? opacity.value > 0.001
-                    ? lastHeight.value
-                    : 0
-                  : undefined,
+              flexBasis: numericMain && main.moving.value ? width.value : ('auto' as const),
+              ...(document && !vertical
+                ? {
+                    height: !track.visible
+                      ? opacity.value > 0.001
+                        ? lastHeight.value
+                        : 0
+                      : undefined,
+                  }
+                : null),
               marginInlineStart: vertical ? 0 : leading.value,
               marginTop: vertical ? leading.value : 0,
               ...(IS_WEB ? null : { opacity: opacity.value }),
@@ -527,13 +555,13 @@ export function createPanelLayoutView(
             },
       [
         width,
+        main.moving,
+        numericMain,
         leading,
         opacity,
         panelScale,
         lastHeight,
         vertical,
-        naturalHeight,
-        layoutReady,
         track.visible,
         document,
         cssScope,
@@ -644,6 +672,7 @@ export function createPanelLayoutView(
                 minHeight: vertical && naturalHeight ? (panel.minHeight ?? 0) : 0,
                 alignSelf: 'stretch',
               },
+              restingSize,
               sizing,
               !cssScope && IS_WEB ? surfacePresenceStyle(track.visible ? 1 : 0, fadeMs) : null,
               sticky

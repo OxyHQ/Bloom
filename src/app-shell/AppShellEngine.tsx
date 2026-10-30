@@ -63,6 +63,7 @@ import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } f
 import type { AppShellEdge, AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
 import { useRoomChanged } from './use-room-changed';
+import { useRestingSize } from './use-resting-size';
 import { useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
@@ -455,9 +456,18 @@ export function createAppShellEngine() {
 
     const reducedMotion = useReducedMotion();
     const spanProgress = useSharedValue(spanAside ? 1 : 0);
+    // Where the span rests is React's (the content's resting width below).
+    const spanRest = useRestingSize(spanAside ? 1 : 0, reducedMotion);
     useEffect(() => {
-      animateMotion(spanProgress, spanAside ? 1 : 0, 'expand', reducedMotion);
-    }, [spanAside, spanProgress, reducedMotion]);
+      spanRest.moving.value = reducedMotion ? 0 : 1;
+      animateMotion(
+        spanProgress,
+        spanAside ? 1 : 0,
+        'expand',
+        reducedMotion,
+        reducedMotion ? undefined : spanRest.landed,
+      );
+    }, [spanAside, spanProgress, reducedMotion, spanRest.moving, spanRest.landed]);
     const readingGap = Math.max(0, asideGap ?? columnGap);
     const readingGapStyle = useAnimatedStyle(
       () => ({
@@ -872,41 +882,81 @@ export function createAppShellEngine() {
     // the panels do (`useRoomChanged`); the navigation or a reading width changing
     // still moves it. `resized` is read, not followed.
     const resized = useRoomChanged(String(width));
+    // The reading width is React's while it rests, in the commit that changes it
+    // (`useRestingSize`): a window growing never shows the previous width.
+    const reading = useRestingSize(targetReadingWidth, reducedMotion || resized);
     // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` qualifies the change
     useEffect(() => {
-      animateMotion(readingWidth, targetReadingWidth, 'expand', reducedMotion || resized);
-    }, [readingWidth, targetReadingWidth, reducedMotion]);
-    const readingEnvelopeStyle = useAnimatedStyle(
-      () =>
-        numericReading && contentAligned
+      const immediate = reducedMotion || resized;
+      reading.moving.value = immediate ? 0 : 1;
+      animateMotion(
+        readingWidth,
+        targetReadingWidth,
+        'expand',
+        immediate,
+        immediate ? undefined : reading.landed,
+      );
+    }, [readingWidth, targetReadingWidth, reducedMotion, reading.moving, reading.landed]);
+    // The numeric envelope and content at rest, as React lays them out. While
+    // either width moves, the animated styles below size them (`flexBasis` over
+    // `width`, capped by `maxWidth`); at rest those keys hold `auto` and `100%`,
+    // which defer to these. Reanimated hands an animated style's last values back
+    // to React as the view's final style, so none may depend on the room.
+    const restingEnvelope =
+      numericReading && contentAligned
+        ? { flexGrow: 0, width: reading.rest + asideReadingWidth }
+        : null;
+    const restingContent = numericReading
+      ? { flexGrow: 0, width: reading.rest + asideReadingWidth * spanRest.rest }
+      : null;
+    const readingEnvelopeStyle = useAnimatedStyle(() => {
+      if (numericReading && contentAligned) {
+        const size = readingWidth.value + asideReadingWidth;
+        return reading.moving.value
+          ? { flexBasis: size, maxWidth: size }
+          : { flexBasis: 'auto' as const, maxWidth: '100%' as const };
+      }
+      // Off the numeric path (a compact region), the plain layout's own values,
+      // so none of the numeric path's outlives it.
+      return Platform.OS === 'web'
+        ? {}
+        : contentAligned
           ? {
-              flexGrow: 0,
-              flexBasis: readingWidth.value + asideReadingWidth,
-              maxWidth: readingWidth.value + asideReadingWidth,
+              flexBasis: stretchReading ? ('100%' as const) : contentWidth + asideReadingWidth,
+              maxWidth: stretchReading ? ('100%' as const) : contentWidth + asideReadingWidth,
             }
-          : {},
-      [numericReading, contentAligned, readingWidth, asideReadingWidth],
-    );
+          : { flexBasis: 0, maxWidth: '100%' as const };
+    }, [
+      numericReading,
+      contentAligned,
+      readingWidth,
+      reading.moving,
+      asideReadingWidth,
+      stretchReading,
+      contentWidth,
+    ]);
     const contentSpanStyle = useAnimatedStyle(() => {
       const extra = asideReadingWidth * spanProgress.value;
-      return numericReading
-        ? {
-            flexGrow: 0,
-            flexBasis: readingWidth.value + extra,
-            maxWidth: readingWidth.value + extra,
-          }
-        : {
-            flexBasis: stretchReading ? ('100%' as const) : contentWidth + extra,
-            maxWidth: stretchReading
-              ? compactRegion
-                ? undefined
-                : ('100%' as const)
-              : contentWidth + extra,
-          };
+      if (numericReading) {
+        const size = readingWidth.value + extra;
+        return reading.moving.value || spanRest.moving.value
+          ? { flexBasis: size, maxWidth: size }
+          : { flexBasis: 'auto' as const, maxWidth: '100%' as const };
+      }
+      return {
+        flexBasis: stretchReading ? ('100%' as const) : contentWidth + extra,
+        maxWidth: stretchReading
+          ? compactRegion
+            ? undefined
+            : ('100%' as const)
+          : contentWidth + extra,
+      };
     }, [
       numericReading,
       compactRegion,
       readingWidth,
+      reading.moving,
+      spanRest.moving,
       asideReadingWidth,
       spanProgress,
       stretchReading,
@@ -1493,6 +1543,7 @@ export function createAppShellEngine() {
             ...bodyInset,
           },
           fixed ? { minHeight: 0 } : null,
+          restingEnvelope,
           readingGapStyle,
           readingEnvelopeStyle,
         ]}
@@ -1514,6 +1565,7 @@ export function createAppShellEngine() {
               minWidth: 0,
             },
             doc ? null : { alignSelf: 'stretch' },
+            restingContent,
             contentSpanStyle,
           ]}
         >

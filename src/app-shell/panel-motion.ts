@@ -1,6 +1,7 @@
 import {
   Easing,
   cancelAnimation,
+  runOnJS,
   withDelay,
   withTiming,
   type SharedValue,
@@ -22,6 +23,8 @@ export function animatePanelLayout(
   target: { width: number; gap: number; visible: boolean },
   ordered: boolean,
   reduced: boolean,
+  /** The width's animation finished at `target.width` (`useRestingSize`'s `landed`). */
+  onWidthLanded?: (width: number) => void,
 ) {
   'worklet';
   for (const value of [values.width, values.gap, values.opacity, values.scale])
@@ -38,7 +41,9 @@ export function animatePanelLayout(
     ordered && target.visible && values.opacity.value < 1 ? PANEL_ENTER_DELAY_MS : 0;
   values.width.value = withDelay(
     geometryDelay,
-    withTiming(target.width, { duration: PANEL_LAYOUT_MS, easing: ease }),
+    withTiming(target.width, { duration: PANEL_LAYOUT_MS, easing: ease }, (finished) => {
+      if (finished && onWidthLanded) runOnJS(onWidthLanded)(target.width);
+    }),
   );
   values.gap.value = withDelay(
     geometryDelay,

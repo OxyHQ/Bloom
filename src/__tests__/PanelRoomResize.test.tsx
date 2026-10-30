@@ -17,6 +17,7 @@ import type { AppShellPanelLayout } from '../app-shell/panel-layout-types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PlatformSurfaceProvider } from '../platform-surface/context';
 import { fakeWindow } from './support/fake-window';
+import { resolvedStyle } from './support/rendered-style';
 
 function setWidth(width: number) {
   jest
@@ -102,4 +103,37 @@ it("a window's reading envelope follows its resize at once too", () => {
   expect(
     animate.mock.calls.map(([, target, intent, immediate]) => [target, intent, immediate]),
   ).toEqual([[1168, 'expand', true]]);
+});
+
+describe('the commit that resizes a window', () => {
+  // What React commits for the new size is what the window shows: a width that
+  // came from an animated value would be the previous one until the next frame.
+  const size = (screen: ReturnType<typeof render>, id: string) => {
+    const box = resolvedStyle(screen.getByTestId(id).props.style);
+    return { width: box.width, flexBasis: box.flexBasis };
+  };
+
+  it.each([
+    [1200, 1440, 1092, 1408],
+    [1440, 1200, 852, 1168],
+  ])('from %i to %i lays the panes and the envelope out at once', (from, to, detail, content) => {
+    setWidth(from);
+    const screen = render(ui(true, true));
+    setWidth(to);
+    screen.rerender(ui(true, true));
+    expect(size(screen, 'shell-panels-detail')).toEqual({ width: detail, flexBasis: 'auto' });
+    expect(size(screen, 'shell-panels-inbox')).toEqual({ width: 340, flexBasis: 'auto' });
+    expect(size(screen, 'shell-content')).toEqual({ width: content, flexBasis: 'auto' });
+  });
+
+  it('a panel hidden lands its neighbour at its new width once the motion ends', () => {
+    setWidth(1440);
+    const screen = render(ui(true, true));
+    screen.rerender(ui(false, true));
+    // jest's timing ends at once: React then rests at the motion's target (the
+    // whole window, alone), while the animated size hands over at the same value.
+    const detail = size(screen, 'shell-panels-detail');
+    expect(detail.width).toBe(1440);
+    expect([1440, 'auto']).toContain(detail.flexBasis);
+  });
 });
