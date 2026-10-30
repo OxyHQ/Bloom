@@ -93,7 +93,7 @@ describe('ComposerPanel', () => {
     );
     // A page-level Surface takes the card role; native has no blur under it to
     // transmit through, so it paints that role opaque (the web's material is the
-    // same fill at 90% over a backdrop blur — surface-fill.test).
+    // same fill at 72% over a backdrop blur — surface-fill.test).
     expect(fill).toBe(colors.card);
   });
 

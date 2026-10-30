@@ -76,7 +76,7 @@ export const LONG_PRESS_MIN_DURATION = 500;
  *
  *   - the two tints are the standard foreground pair;
  *   - the highlight is `contrast50`, the token meant for a subtle raised fill;
- *   - the card token is painted at 90% opacity; explicit tint alpha is preserved;
+ *   - the card token is painted at 72% on the web (opaque on native); explicit tint alpha is preserved;
  *
  * Overrides are coalesced key by key (not spread) so an explicit `undefined` in
  * a partial can never punch a hole in the resolved theme.

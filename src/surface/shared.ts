@@ -144,11 +144,11 @@ export const SURFACE_VARS_OFF: Record<string, string> = {
 export const SURFACE_TINT_OPACITY = 0.72;
 
 /**
- * One subtle material: retain explicit alpha; on the web, opaque fills transmit
- * ten percent through the backdrop blur beneath them. Native has no blur under a
- * surface (a `BlurView` inside one can SIGSEGV on Android), so a transmitted
- * tenth would show the content behind unblurred — a bar's labels over a post's
- * text — and an opaque fill stays opaque there.
+ * One subtle material: retain explicit alpha; on the web, opaque fills keep
+ * `SURFACE_TINT_OPACITY` and let the rest of the frosted backdrop through. Native
+ * has no blur under a surface (a `BlurView` inside one can SIGSEGV on Android), so
+ * a transmitted share would show the content behind unblurred (a bar's labels
+ * over a post's text), and an opaque fill stays opaque there.
  */
 export function resolveSurfaceTint(fill: string): string {
   if (Platform.OS !== 'web') return fill;

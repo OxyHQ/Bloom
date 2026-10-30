@@ -4,7 +4,7 @@ import type { StyleProp, ViewStyle, ViewProps } from 'react-native';
 
 export interface SurfaceProps extends Omit<ViewProps, 'style' | 'children'> {
   children?: ReactNode;
-  /** Tint source. Opaque colours use 90% opacity; supplied alpha is preserved. */
+  /** Tint source. On the web opaque colours paint at 72% over the frosted backdrop; native keeps them opaque. Supplied alpha is preserved. */
   fill?: string;
   /** Radius shared by host and paint. Explicit prop wins over style.borderRadius, then default 20. */
   radius?: number | 'concentric';

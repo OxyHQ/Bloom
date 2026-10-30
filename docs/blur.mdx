@@ -5,9 +5,9 @@ description: The shared blur-and-tint material, floating islands and the safe An
 
 # Blur
 
-Surface provides one shared material: a 90%-opaque tinted body with a sheen and rim, over a single backdrop blur on web. Explicit caller alpha is preserved. Native paints the same tint, sheen and rim in one view and has no per-surface blur. See [Surface](./surface.mdx) and [Button](./button.mdx).
+Surface provides one shared material. On the web an opaque fill paints at 72% over the frosted backdrop, with an edge of light along the top and bottom; native paints the fill opaque, with the same edge as inset shadows, and has no per-surface blur. Explicit caller alpha is preserved. See [Surface](./surface.mdx) and [Button](./button.mdx).
 
-There is no displacement, SVG filter or SVG gradient in the material. The only backdrop pass per surface is one CSS `backdrop-filter: blur(8px)` on web.
+There is no displacement, SVG filter or SVG gradient in the material. On the web each surface has two backdrop passes: the body (`blur(24px)` with the measured saturation, contrast and brightness) and the edge light (a brightness filter through a mask). The numbers live in `surface/optics.ts` and [Surface](./surface.mdx).
 
 ## Material checks
 
