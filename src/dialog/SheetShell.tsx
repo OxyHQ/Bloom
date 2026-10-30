@@ -27,7 +27,9 @@ import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { StyledView } from '../styles/styled-primitives';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
+import { CenteredCard } from './CenteredCard';
 import { Context } from './context';
+import { useDesktopPresentationSession } from './use-presentation-session';
 import type { DialogControlProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 
@@ -71,6 +73,10 @@ export function SheetShell({
   // instead of four times.
   const [presented, setPresented] = useState(false);
   const bodyRef = useAccessibilityFocus<ComponentRef<typeof View>>(presented);
+  // A desktop window presents the menu, select or popover as the web presents
+  // a dialog: a centred card, with no drag handle, Escape closing it.
+  const desktopSession = useDesktopPresentationSession(false);
+  const { hold: holdDesktop, release: releaseDesktop } = desktopSession;
 
   const callQueuedCallbacks = useCallback(() => {
     const queued = closeCallbacks.current;
@@ -87,9 +93,10 @@ export function SheetShell({
   }, []);
 
   const open = useCallback(() => {
+    holdDesktop();
     setPresented(true);
     ref.current?.present();
-  }, []);
+  }, [holdDesktop]);
 
   const close = useCallback<DialogControlProps['close']>((cb) => {
     if (typeof cb === 'function') {
@@ -100,9 +107,10 @@ export function SheetShell({
 
   const handleDismiss = useCallback(() => {
     setPresented(false);
+    releaseDesktop();
     callQueuedCallbacks();
     onClose?.();
-  }, [callQueuedCallbacks, onClose]);
+  }, [callQueuedCallbacks, onClose, releaseDesktop]);
 
   useImperativeHandle(control.ref, () => ({ open, close }), [open, close]);
 
@@ -116,6 +124,47 @@ export function SheetShell({
     }),
     [theme.colors.background],
   );
+
+  const content = (
+    <Context.Provider value={context}>
+      {desktopSession.desktop ? null : <SheetHandle onPress={() => close()} />}
+      {header}
+      <StyledView
+        // Deliberately NOT `accessible`: collapsing the body into one
+        // accessibility element would make its rows unreachable, and the
+        // focus move below would land on the group instead of the first row.
+        ref={bodyRef}
+        // The platform's own dismiss gesture — a two-finger Z scrub under
+        // VoiceOver, a back gesture under TalkBack. Without it a screen-reader
+        // user has to find the drag handle to leave a sheet, and the handle is
+        // a 4dp pill. Android's hardware back is already covered: every Bloom
+        // sheet is an RN `<Modal>`, whose `onRequestClose` it fires.
+        onAccessibilityEscape={() => close()}
+        accessibilityLabel={label}
+        className={contentClassName}
+        testID={contentTestID}
+        style={[styles.body, { backgroundColor: 'transparent' }, contentStyle]}
+      >
+        {children}
+      </StyledView>
+    </Context.Provider>
+  );
+
+  if (desktopSession.desktop) {
+    return (
+      <CenteredCard
+        material={material}
+        backgroundFill={String(
+          StyleSheet.flatten(contentStyle)?.backgroundColor ?? theme.colors.background,
+        )}
+        ref={ref}
+        onDismiss={handleDismiss}
+        accessibilityLabel={label}
+      >
+        {content}
+      </CenteredCard>
+    );
+  }
 
   return (
     <BottomSheet
@@ -138,28 +187,7 @@ export function SheetShell({
       // menu, select, popover and context menu.
       showHandle={false}
     >
-      <Context.Provider value={context}>
-        <SheetHandle onPress={() => close()} />
-        {header}
-        <StyledView
-          // Deliberately NOT `accessible`: collapsing the body into one
-          // accessibility element would make its rows unreachable, and the
-          // focus move below would land on the group instead of the first row.
-          ref={bodyRef}
-          // The platform's own dismiss gesture — a two-finger Z scrub under
-          // VoiceOver, a back gesture under TalkBack. Without it a screen-reader
-          // user has to find the drag handle to leave a sheet, and the handle is
-          // a 4dp pill. Android's hardware back is already covered: every Bloom
-          // sheet is an RN `<Modal>`, whose `onRequestClose` it fires.
-          onAccessibilityEscape={() => close()}
-          accessibilityLabel={label}
-          className={contentClassName}
-          testID={contentTestID}
-          style={[styles.body, { backgroundColor: 'transparent' }, contentStyle]}
-        >
-          {children}
-        </StyledView>
-      </Context.Provider>
+      {content}
     </BottomSheet>
   );
 }

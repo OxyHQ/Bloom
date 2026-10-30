@@ -675,3 +675,27 @@ function FullscreenDemo() {
   );
 }
 export const Fullscreen: Story = { render: () => <FullscreenDemo /> };
+
+export const DesktopWindow: Story = {
+  args: { title: 'Sign in', description: 'Use your Oxy account' },
+  render: function DesktopWindowDemo(args) {
+    const control = useDialogControl();
+    return (
+      <>
+        <Button onPress={() => control.open()}>Sign in</Button>
+        <Dialog
+          {...args}
+          control={control}
+          placement={{ base: 'bottom', md: 'center' }}
+          maxWidth={420}
+          dismissOnBackdrop={false}
+        >
+          <TextField>
+            <TextFieldInput label="Email or username" placeholder="you@example.com" />
+          </TextField>
+          <Button onPress={() => control.close()}>Continue</Button>
+        </Dialog>
+      </>
+    );
+  },
+};

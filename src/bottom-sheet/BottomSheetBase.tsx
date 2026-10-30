@@ -107,7 +107,7 @@ export const BottomSheetBase = forwardRef(
     // The WINDOW, re-read on every change: an iPad split view, a resizable
     // iOS 27 window and an Android desktop window all change it without a
     // rotation.
-    const { height: screenHeight } = useWindowDimensions();
+    const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     // Seed from the controlled `open` prop so a sheet that should be open is
     // visible on its FIRST commit (no present()-in-effect race) — this is what
     // lets a responsive Dialog survive a resize placement swap without going blank.
@@ -695,6 +695,13 @@ export const BottomSheetBase = forwardRef(
       level: 0,
     });
     const { paintFill, publishedFill: surfaceFill } = material;
+    // Centred by its insets, not by auto margins: Yoga places an absolute view
+    // with both `left` and `right` at `left` once `maxWidth` caps it, so every
+    // native sheet in a window wider than its cap sat in the bottom-LEFT corner
+    // (an iPad, a Mac, an Android desktop window) while the web centred it.
+    const sheetMaxWidth =
+      typeof flatSurfaceStyle?.maxWidth === 'number' ? flatSurfaceStyle.maxWidth : SHEET_MAX_WIDTH;
+    const sheetSideInset = sheetSideInsetFor(screenWidth, sheetMaxWidth, detached);
     const surfaceRadius =
       flatSurfaceStyle?.borderRadius ?? flatSurfaceStyle?.borderTopLeftRadius ?? 24;
     const surfaceCorners: ViewStyle = {
@@ -868,6 +875,7 @@ export const BottomSheetBase = forwardRef(
                 // fill — web CSS under the sheet reads the sheet's
                 // colour, not the colour of whatever it opened over.
                 surfaceFillVars(surfaceFill),
+                { left: sheetSideInset, right: sheetSideInset },
                 sheetMarginStyle,
                 sheetStyle,
                 sheetHeightStyle,
@@ -931,6 +939,26 @@ export const BottomSheetBase = forwardRef(
 
 BottomSheetBase.displayName = 'BottomSheetBase';
 
+/** The widest a sheet grows when its style sets no `maxWidth`. */
+export const SHEET_MAX_WIDTH = 800;
+
+/** The edge gap a detached sheet keeps on each side of a narrow window. */
+export const DETACHED_SHEET_SIDE_GAP = 16;
+
+/**
+ * The `left` / `right` inset that centres a sheet of `maxWidth` in a window
+ * `windowWidth` wide: the detached sheet's 16 side gap on a narrow window (a
+ * flush sheet touches both edges), half the room the cap leaves on a wide one.
+ */
+export function sheetSideInsetFor(
+  windowWidth: number,
+  maxWidth: number,
+  detached: boolean,
+): number {
+  const edge = detached ? DETACHED_SHEET_SIDE_GAP : 0;
+  return Math.max(edge, (windowWidth - maxWidth) / 2);
+}
+
 const styles = StyleSheet.create({
   backdrop: {
     // Geometry only: the colour and the dim level belong to `Backdrop`.
@@ -942,18 +970,12 @@ const styles = StyleSheet.create({
   sheet: {
     position: 'absolute',
     bottom: 0,
-    maxWidth: 800,
-    alignSelf: 'center',
-    marginHorizontal: 'auto',
+    maxWidth: SHEET_MAX_WIDTH,
   },
   sheetDetached: {
-    left: 16,
-    right: 16,
     ...surfaceStyle({ ...SURFACE_SHAPES.panel, radius: 24 }),
   },
   sheetNormal: {
-    left: 0,
-    right: 0,
     ...surfaceStyle(SURFACE_SHAPES.sheet),
   },
   /** Legacy (non-manualActivation) handle: decorative overlay only. */

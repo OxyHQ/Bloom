@@ -2,17 +2,7 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
-## 15.64.0
-
-### Added
-
-- **`ColorEngine.seedsFromRgbBytes(bytes, channels?, options?)`.** Ranked seed colours straight from a decoded image's raw bytes (R, G, B, optionally alpha, per pixel), the buffer an image library returns. The same ranking as `seedsFromImagePixels` over the packed pixels. Also in `@oxy.so/color` 1.1.0, where servers that seed a theme from a photo use it instead of each packing pixels by hand.
-
-### Consumers
-
-Bump to 15.64.0. Nothing else changes.
-
-## Unreleased
+## 15.65.0
 
 ### Added
 
@@ -36,11 +26,24 @@ Bump to 15.64.0. Nothing else changes.
 
 ### Fixed
 
+- **A native `Dialog` with `placement="center"` presents on a desktop window as the web does.** On macOS, on Windows, and in any native window from the `md` breakpoint (768) up, it is a centred card in its own RN `<Modal>` with the web card's numbers: `maxWidth` (default 480) with a 20px gutter, `maxHeightRatio` of the window (0.9), the hairline border and `shadow-m`, a zoom-in from 0.95 over 300ms behind a 150ms backdrop fade, a 150ms ease-in exit, and the shared dim. A backdrop press, Escape (react-native-macos sends the Modal's `onRequestClose`) and Android Back close it, and `dismissOnBackdrop={false}` refuses all three. It used to be the phone's detached sheet, which on a Mac floated up from the window's bottom-left corner (the Oxy sign-in sheet in Astro). A phone-width window keeps the detached sheet. The choice is held for the whole open/exit session, like a responsive placement.
+- **`SheetShell` (native `Select`, `DropdownMenu`, `ContextMenu`, `Popover`, `HoverCard`, `Menubar`) presents as the same centred card on a desktop window**, without the drag handle.
+- **`BottomSheet` is centred in a window wider than its cap on native.** It is placed by `left`/`right` insets of half the room left over (at least 16 detached, 0 flush) instead of `marginHorizontal: 'auto'`, which Yoga ignores for an absolute view with both insets: every native sheet in a wide window sat in the bottom-left corner while the web centred it.
 - **PageHeader's `data-*` hooks on the web.** The root's three hooks were separate `dataSet` spreads, so only `data-bloom-page-header-presentation` reached the DOM: the compact density's 12 px side inset never applied on the web (native drew it). `dataHooks()` sets several at once.
 
 ### Consumers
 
-No change unless an app's runtime registers a platform adapter that reports `window`, `menu-bar` or `appearance`, a menu declares a `shortcut`, or an app passes `reduceTransparency` (its backdrops and progressive blurs now draw their tint alone).
+Bump to 15.65.0. No change unless an app's runtime registers a platform adapter that reports `window`, `menu-bar` or `appearance`, a menu declares a `shortcut`, or an app passes `reduceTransparency` (its backdrops and progressive blurs now draw their tint alone). Native apps on a Mac, a Windows PC, a tablet or a wide Android window get centred dialogs and menus and centred sheets with no change; phones are unchanged. Nothing changes on the web. The `window` additions change nothing unless an app's runtime registers a platform adapter that reports `window`.
+
+## 15.64.0
+
+### Added
+
+- **`ColorEngine.seedsFromRgbBytes(bytes, channels?, options?)`.** Ranked seed colours straight from a decoded image's raw bytes (R, G, B, optionally alpha, per pixel), the buffer an image library returns. The same ranking as `seedsFromImagePixels` over the packed pixels. Also in `@oxy.so/color` 1.1.0, where servers that seed a theme from a photo use it instead of each packing pixels by hand.
+
+### Consumers
+
+Bump to 15.64.0. Nothing else changes.
 
 ## 15.63.0
 
