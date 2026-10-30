@@ -21,19 +21,16 @@ it: the screen that shows it then themes itself without reading pixels.
 
 ```ts
 import sharp from 'sharp';
-import { argbFromRgb, hexFromArgb, seedsFromImagePixels } from '@oxy.so/color';
+import { hexFromArgb, seedsFromRgbBytes } from '@oxy.so/color';
 
-const { data } = await sharp(bytes)
+const thumbnail = await sharp(bytes)
+  .rotate()
   .resize(48, 48, { fit: 'cover' })
   .removeAlpha()
   .raw()
-  .toBuffer({ resolveWithObject: true });
+  .toBuffer();
 
-const pixels: number[] = [];
-for (let i = 0; i < data.length; i += 3) {
-  pixels.push(argbFromRgb(data[i] ?? 0, data[i + 1] ?? 0, data[i + 2] ?? 0));
-}
-const seeds = seedsFromImagePixels(pixels).slice(0, 3).map(hexFromArgb);
+const seeds = seedsFromRgbBytes(thumbnail).slice(0, 3).map(hexFromArgb);
 // best first, as '#rrggbb'
 ```
 
@@ -52,7 +49,7 @@ roles.primary; // 'rgb(255 181 160)', a CSS colour
 
 ## Surface
 
-`seedsFromImagePixels`, `seedHexFromImagePixels`, `quantizeImage`,
+`seedsFromRgbBytes`, `seedsFromImagePixels`, `seedHexFromImagePixels`, `quantizeImage`,
 `generateRoleColors`, `argbFromRgb`, `argbFromHex`, `hexFromArgb`,
 `redFromArgb`, `greenFromArgb`, `blueFromArgb`, and the types `RoleColors`,
 `GenerateOptions`, `RoleName`, `SchemeVariant`, `AccentSources`.

@@ -8,7 +8,7 @@
  * scores the palette for theme suitability. Feed the top result straight into
  * `generateRoleColors({ seed })`.
  */
-import { hexFromArgb } from './color-utils';
+import { argbFromRgb, hexFromArgb } from './color-utils';
 import { labDistance, labFromInt, type LabPoint } from './lab-point-provider';
 import { quantizeWu } from './quantizer-wu';
 import { countByColor } from './quantizer-map';
@@ -64,6 +64,28 @@ export function quantizeImage(pixels: number[], maxColors = 128): Map<number, nu
  */
 export function seedsFromImagePixels(pixels: number[], options?: ScoreOptions): number[] {
   return score(quantizeImage(pixels), options);
+}
+
+/**
+ * Ranked seed candidates from raw image bytes: the buffer an image library
+ * hands back for a decoded (ideally thumbnail-sized) image, `channels` bytes
+ * per pixel in R, G, B order. A fourth channel (alpha) is skipped, as are
+ * trailing bytes that do not make a whole pixel.
+ *
+ * This is the server's entry point — sharp's `.raw().toBuffer()` is exactly
+ * this shape — so every service that seeds a theme from a photo packs pixels
+ * the same way instead of each writing its own loop.
+ */
+export function seedsFromRgbBytes(
+  bytes: Uint8Array,
+  channels: 3 | 4 = 3,
+  options?: ScoreOptions,
+): number[] {
+  const pixels: number[] = [];
+  for (let offset = 0; offset + channels <= bytes.length; offset += channels) {
+    pixels.push(argbFromRgb(bytes[offset] ?? 0, bytes[offset + 1] ?? 0, bytes[offset + 2] ?? 0));
+  }
+  return seedsFromImagePixels(pixels, options);
 }
 
 /** The single best seed colour from an image, as `#rrggbb`. */
