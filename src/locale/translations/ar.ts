@@ -3273,6 +3273,12 @@ const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
   noPeople: 'لم يُعثر على أحد',
 };
 
+const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
+  close: 'إغلاق',
+  minimize: 'تصغير',
+  zoom: 'تكبير',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'تغيير الغلاف',
@@ -3503,6 +3509,7 @@ const translations: Translations = {
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
+  WINDOW_MESSAGES,
 };
 
 export default translations;

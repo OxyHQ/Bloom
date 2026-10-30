@@ -2,6 +2,19 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## Unreleased
+
+### Added
+
+- **platform-surface: the `window` capability.** An adapter that reports `window` supplies the application's window (`PlatformWindow`): who draws its controls (`bloom` or `platform`), where they are and the room they take (`metrics`), its state (`active`, `maximized`, `fullscreen`, an external store) and its actions (`close`, `minimize`, `zoom`, `startMove`). `usePlatformWindow()` throws for a reported capability without a window. OxyOS ADR 0016.
+- **window: `useWindow`, `useWindowControlsRoom`, `WindowControls`, `WindowDragRegion` (`@oxy.so/bloom/window`).** The controls are three bubbles of the surface material where the platform's metrics put them: red, yellow and green on the active window, neutral on an inactive one, their symbols under the pointer, a press shrinking to 88 % and springing back. A drag region moves the window from a press no control inside takes and zooms it on a double press. Without the capability: no controls, no room, a plain `View`. Translated in every Bloom language.
+- **AppShell keeps the window controls' room (`windowControls`: `auto` | `overlay`).** A sidebar in flow starts below the room, the controls at its top and its top band the drag region; without one, the top bar or the header starts after it and moves the window; `overlay` floats the controls on a plate of the surface material over full-bleed content; full screen has neither. `Sidebar windowControlsRoom` keeps the room inside the panel's surface. A shell inside a shell is not at the corner.
+- **settings-modal: `SettingsLayout`.** The rail, the pages, the narrow-width navigation, `onBeforeLeave` and the saved toast without the modal, laid out from its own measured width, for an application window or a panel. `onClose` is optional (no close button without it; `SettingsModalPageNavigation.onClose` is optional). As a window's content its rail keeps the controls' room and moves the window. `SettingsModal` is the modal around it, with the same output. `settingsLayoutFor` and the `SettingsLayoutProps` and `SettingsModalLayout` types are exported.
+
+### Consumers
+
+No change unless an app's runtime registers a platform adapter that reports `window`.
+
 ## 15.63.0
 
 ### Added

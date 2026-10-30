@@ -33,10 +33,12 @@ import {
   SelectValue,
 } from '../select';
 import { Switch } from '../switch';
+import { StoryWindow } from '../window/WindowControls.stories';
 import {
   SettingsCard,
   SettingsDateField,
   SettingsGeneralPage,
+  SettingsLayout,
   SettingsModal,
   SettingsProfilePage,
   SettingsRow,
@@ -700,6 +702,40 @@ export const WideTrailingControl: Story = {
           </SettingsRow>
         </SettingsCard>
       </View>
+    );
+  },
+};
+
+/**
+ * The same settings as an application window (`SettingsLayout`): no modal and
+ * no close button, since the window closes itself. The window's controls sit
+ * at the rail's top, which keeps their room and moves the window.
+ */
+export const AsAWindow: Story = {
+  parameters: { layout: 'centered', controls: { disable: true } },
+  render: function AsAWindowStory() {
+    const pages = usePages();
+    return (
+      <StoryWindow width={900} height={600}>
+        <SettingsLayout groups={GROUPS} pages={pages} defaultPage="general" testID="settings" />
+      </StoryWindow>
+    );
+  },
+};
+
+/**
+ * A narrow window: the layout follows its own width, not the screen's, and
+ * goes to the section list with a page pushed over it. The header keeps the
+ * controls' room at its leading edge.
+ */
+export const AsANarrowWindow: Story = {
+  parameters: { layout: 'centered', controls: { disable: true } },
+  render: function AsANarrowWindowStory() {
+    const pages = usePages();
+    return (
+      <StoryWindow width={520} height={640}>
+        <SettingsLayout groups={GROUPS} pages={pages} testID="settings" />
+      </StoryWindow>
     );
   },
 };

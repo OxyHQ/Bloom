@@ -66,6 +66,11 @@ import { useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
 import { usePanelInteraction } from './use-panel-interaction';
+import { Z_INDEX } from '../styles/z-index';
+import { useWindow } from '../window/use-window';
+import { useWindowCornerTaken, WindowCornerProvider } from '../window/context';
+import { WindowControls } from '../window/WindowControls';
+import { WindowDragRegion } from '../window/WindowDragRegion';
 import { closingOnChoice } from './drawer-choice';
 import {
   DRAWER_EASE as REVEAL_EASE,
@@ -189,6 +194,7 @@ export function createAppShellEngine() {
     topBarDock,
     frameInset,
     background: backgroundMode = 'page',
+    windowControls = 'auto',
     bottomBar,
     bottomBarVisibility = 'compact',
     reserveBottomBarSpace = true,
@@ -217,6 +223,10 @@ export function createAppShellEngine() {
     const [asideHeight, setAsideHeight] = useState(0);
     const { width, onLayout } = useShellWidth();
     const insets = useShellInsets();
+    const platformWindow = useWindow();
+    // A shell inside another region that holds the window's corner (a nested
+    // shell, a pane) is not at the corner: it is laid out as without windows.
+    const appWindow = useWindowCornerTaken() ? null : platformWindow;
     const ownsSafeArea = safeArea && Platform.OS !== 'web';
     const mode = resolveScrollMode(variant, scroll);
     const doc = mode === 'document';
@@ -552,6 +562,15 @@ export function createAppShellEngine() {
         node
       );
 
+    // The shell's root. Descendants are not at the window's corner while this
+    // shell holds it.
+    const shellRoot = (node: React.ReactElement) =>
+      appWindow != null ? (
+        <WindowCornerProvider value>{safeFrame(node)}</WindowCornerProvider>
+      ) : (
+        safeFrame(node)
+      );
+
     const safeNavigation = (node: React.ReactElement) =>
       navigationBottomInset ? (
         <View style={{ flexShrink: 0, paddingBottom: navigationBottomInset }}>{node}</View>
@@ -648,6 +667,81 @@ export function createAppShellEngine() {
     const outerStart = frameEdge('start');
     const outerEnd = frameEdge('end');
     const externalTopHeight = showTopBar ? topBarHeight : 0;
+    // A DOCKED nav is flush to the window: it takes the shell's whole height and
+    // its own hairline is the separator, so the shell gives up its start and
+    // vertical padding around that column rather than framing it like a card
+    // (`dockedNav`, above).
+    // Where the row places its first child, from the window's edges: a docked
+    // navigation's peek floats `inset` from the window, not from its slot.
+    const rowPadStart = panelHost
+      ? navFlush
+        ? 0
+        : outerStart
+      : dockedNav || canvas || plainFrame
+        ? 0
+        : gutter;
+    const rowPadTop = panelHost
+      ? navFlush
+        ? 0
+        : outerTop
+      : dockedNav || canvas || plainFrame
+        ? 0
+        : gutter;
+    const rowPadBottom = panelHost
+      ? navFlush
+        ? 0
+        : outerBottom
+      : dockedNav || canvas || plainFrame
+        ? 0
+        : gutter;
+    const canvasNavPad = !doc && canvas && !dockedNav;
+    // Hidden, a flush navigation leaves the frame's own start inset behind,
+    // so the content's edge lands where it would with no navigation at all.
+    const navHiddenExtent = navFlush && panelHost && framed ? outerStart : 0;
+
+    // ---- the window's controls ---------------------------------------------
+    // With the platform's `window` capability the controls sit in the window's
+    // top leading corner, always in the same place, and ONE region keeps their
+    // room: a top bar in flow above everything, else a sidebar in flow (its
+    // content below the room, its top band the drag region), else the header
+    // (after the room, and itself the drag region). `overlay` keeps none and
+    // floats the controls on a plate; a full-screen window has neither.
+    const windowChrome = appWindow != null && !appWindow.fullscreen;
+    const room = windowChrome && windowControls === 'auto' ? appWindow.metrics.room : null;
+    const topBarRoom = room != null && showTopBar;
+    const topBarKeepsRoom = topBarRoom && !topDock.hidden;
+    // The same mounted sidebar is the one that peeks, so it keeps the room
+    // while its dock hides it; the header keeps it then.
+    const navRoom =
+      room != null && navInFlow && !topBarKeepsRoom
+        ? Math.max(0, room.top - rowPadTop - (canvasNavPad ? gutter : 0))
+        : 0;
+    const headerRoom =
+      room != null && !topBarKeepsRoom && !(navInFlow && !navDock.hidden)
+        ? Math.max(0, room.leading - rowPadStart - (navInFlow ? navHiddenExtent : 0))
+        : 0;
+    const navSidebar =
+      flowSidebar && navRoom > 0 ? { ...flowSidebar, windowControlsRoom: navRoom } : flowSidebar;
+    const windowControlsNode =
+      windowChrome && appWindow.controls === 'bloom' ? (
+        // The window's own corner: the shell is the window's content. A
+        // document scrolls the shell, so there the corner is the viewport's.
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: doc ? WEB_POSITION_FIXED : 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: Z_INDEX.floating,
+          }}
+        >
+          <WindowControls
+            plate={windowControls === 'overlay'}
+            testID={testID ? `${testID}-window-controls` : undefined}
+          />
+        </View>
+      ) : null;
     // The reveal drawer insets the sliding page by 12 while it is open.
     const regionInsetTop = feedRevealed ? 12 : outerTop;
     const regionInsetBottom = feedRevealed ? 12 : outerBottom;
@@ -810,7 +904,16 @@ export function createAppShellEngine() {
         onHeightChange={setTopBarHeight}
         testID={testID ? `${testID}-top-bar` : undefined}
       >
-        {topBar}
+        {topBarRoom ? (
+          <WindowDragRegion
+            testID={testID ? `${testID}-top-bar-drag` : undefined}
+            style={{ paddingInlineStart: room.leading }}
+          >
+            {topBar}
+          </WindowDragRegion>
+        ) : (
+          topBar
+        )}
       </AppShellTopBar>
     ) : null;
     const topDocked = topDock.enabled && topBarContent != null;
@@ -861,7 +964,7 @@ export function createAppShellEngine() {
     // header at all (it draws its own bar, or its own nav control). `??` would
     // have taken `null` as "nothing given" and drawn the default one under the
     // page's own — which is how a second hamburger appeared on a phone.
-    const headerNode =
+    const shellHeader =
       header !== undefined ? (
         header
       ) : title != null || breadcrumb != null || actions != null || menuInHeader ? (
@@ -876,6 +979,18 @@ export function createAppShellEngine() {
           testID={testID ? `${testID}-header` : undefined}
         />
       ) : null;
+    // Without a sidebar in flow the header is the window's toolbar.
+    const headerNode =
+      shellHeader != null && headerRoom > 0 ? (
+        <WindowDragRegion
+          testID={testID ? `${testID}-header-drag` : undefined}
+          style={{ paddingInlineStart: headerRoom }}
+        >
+          {shellHeader}
+        </WindowDragRegion>
+      ) : (
+        shellHeader
+      );
 
     // Longhands: the nodes carrying `fill` keep their DOM node across a `scroll`
     // switch, and some also spell flex longhands of their own (`flexFill`).
@@ -1129,38 +1244,7 @@ export function createAppShellEngine() {
     );
     const veilStyle = useAnimatedStyle(() => ({ opacity: revealAmount.value }), [revealAmount]);
 
-    // A DOCKED nav is flush to the window: it takes the shell's whole height and
-    // its own hairline is the separator, so the shell gives up its start and
-    // vertical padding around that column rather than framing it like a card
-    // (`dockedNav`, above).
-    // Where the row places its first child, from the window's edges: a docked
-    // navigation's peek floats `inset` from the window, not from its slot.
-    const rowPadStart = panelHost
-      ? navFlush
-        ? 0
-        : outerStart
-      : dockedNav || canvas || plainFrame
-        ? 0
-        : gutter;
-    const rowPadTop = panelHost
-      ? navFlush
-        ? 0
-        : outerTop
-      : dockedNav || canvas || plainFrame
-        ? 0
-        : gutter;
-    const rowPadBottom = panelHost
-      ? navFlush
-        ? 0
-        : outerBottom
-      : dockedNav || canvas || plainFrame
-        ? 0
-        : gutter;
-    const canvasNavPad = !doc && canvas && !dockedNav;
     const navHostWidth = navContentWidth + (canvasNavPad ? gutter : 0);
-    // Hidden, a flush navigation leaves the frame's own start inset behind,
-    // so the content's edge lands where it would with no navigation at all.
-    const navHiddenExtent = navFlush && panelHost && framed ? outerStart : 0;
     const navSlotStyle = useDockSlotStyle(
       'start',
       navDock,
@@ -1217,7 +1301,7 @@ export function createAppShellEngine() {
               {...(cssShell?.mode !== mode ? { inert: true } : {})}
               style={{ width: '100%', flexGrow: 1, flexShrink: 1, flexBasis: 0, minHeight: 0 }}
             >
-              {safeNavigation(<SidebarSlot {...flowSidebar} variant={mode} />)}
+              {safeNavigation(<SidebarSlot {...navSidebar} variant={mode} />)}
             </View>
           ))}
         </>
@@ -1266,10 +1350,10 @@ export function createAppShellEngine() {
                   paddingInlineStart: gutter,
                 }}
               >
-                {safeNavigation(<SidebarSlot {...flowSidebar} />)}
+                {safeNavigation(<SidebarSlot {...navSidebar} />)}
               </View>
             ) : (
-              safeNavigation(<SidebarSlot {...flowSidebar} />)
+              safeNavigation(<SidebarSlot {...navSidebar} />)
             ),
             navHostWidth,
           )}
@@ -1294,7 +1378,7 @@ export function createAppShellEngine() {
               : null,
           ]}
         >
-          {safeNavigation(<SidebarSlot {...flowSidebar} />)}
+          {safeNavigation(<SidebarSlot {...navSidebar} />)}
         </View>
       ) : null;
 
@@ -1598,7 +1682,7 @@ export function createAppShellEngine() {
         : {};
 
     if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
-      return safeFrame(
+      return shellRoot(
         <AppShellProvider value={shell}>
           {navigationRecipe.sheet}
           <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
@@ -1772,6 +1856,7 @@ export function createAppShellEngine() {
                 )}
               </Animated.View>
               {overlay}
+              {windowControlsNode}
             </View>,
           )}
         </AppShellProvider>,
@@ -1782,7 +1867,7 @@ export function createAppShellEngine() {
     // edge without escaping the frame's padding. Without one the root stays the
     // row it has always been, so nothing about an existing shell moves.
     if (topBarNode || (Platform.OS === 'web' && cssLayout != null)) {
-      return safeFrame(
+      return shellRoot(
         <AppShellProvider value={shell}>
           {navigationRecipe.sheet}
           <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
@@ -1810,13 +1895,14 @@ export function createAppShellEngine() {
               </View>
               {overlay}
               {bars}
+              {windowControlsNode}
             </View>,
           )}
         </AppShellProvider>,
       );
     }
 
-    return safeFrame(
+    return shellRoot(
       <AppShellProvider value={shell}>
         {navigationRecipe.sheet}
         <ServerStyleSheet id={`${cssScope}-shell`} css={cssShell?.css ?? ''} />
@@ -1833,6 +1919,7 @@ export function createAppShellEngine() {
             {body}
             {overlay}
             {bars}
+            {windowControlsNode}
           </View>,
         )}
       </AppShellProvider>,

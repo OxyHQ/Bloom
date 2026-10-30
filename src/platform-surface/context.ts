@@ -1,5 +1,5 @@
 import { type ComponentType, createContext, useContext } from 'react';
-import type { PlatformSurfaceAdapter, PopupSurfaceProps } from './types';
+import type { PlatformSurfaceAdapter, PlatformWindow, PopupSurfaceProps } from './types';
 
 const PlatformSurfaceContext = createContext<PlatformSurfaceAdapter | null>(null);
 
@@ -25,4 +25,20 @@ export function usePopupSurface(): ComponentType<PopupSurfaceProps> | null {
     );
   }
   return adapter.PopupSurface;
+}
+
+/**
+ * The adapter's window when it reports `window`, otherwise null (a browser
+ * tab, a phone). An adapter that reports the capability without the window
+ * throws, as `usePopupSurface` does.
+ */
+export function usePlatformWindow(): PlatformWindow | null {
+  const adapter = useContext(PlatformSurfaceContext);
+  if (!adapter?.capabilities.has('window')) return null;
+  if (!adapter.window) {
+    throw new Error(
+      `Bloom: the ${adapter.platform} platform adapter reports 'window' without a window.`,
+    );
+  }
+  return adapter.window;
 }

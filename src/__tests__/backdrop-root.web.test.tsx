@@ -100,6 +100,9 @@ import { ToastContent } from '../toast/ToastContent';
 import { RiHomeLine } from '../icons/remix/RiHomeLine';
 import { RiLinkM } from '../icons/remix/RiLinkM';
 import { RiSettings6Line } from '../icons/remix/RiSettings6Line';
+import { PlatformSurfaceProvider } from '../platform-surface/context';
+import { WindowControls } from '../window/WindowControls';
+import { fakeWindow } from './support/fake-window';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -512,6 +515,15 @@ const SUBJECTS: Record<string, Subject> = {
         accessibilityLabel="Alerts"
         disabled={state === 'disabled'}
       />
+    ),
+  },
+  'window/WindowControls.tsx': {
+    states: ['rest', 'pressed'],
+    render: () => (
+      <PlatformSurfaceProvider value={fakeWindow().adapter}>
+        <WindowControls />
+        <WindowControls plate />
+      </PlatformSurfaceProvider>
     ),
   },
   'tab-bar/TabBarBase.tsx': {

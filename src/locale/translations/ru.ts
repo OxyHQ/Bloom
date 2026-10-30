@@ -3217,6 +3217,12 @@ const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
   noPeople: 'Никого не найдено',
 };
 
+const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
+  close: 'Закрыть',
+  minimize: 'Свернуть',
+  zoom: 'Изменить масштаб',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Изменить обложку',
@@ -3447,6 +3453,7 @@ const translations: Translations = {
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
+  WINDOW_MESSAGES,
 };
 
 export default translations;

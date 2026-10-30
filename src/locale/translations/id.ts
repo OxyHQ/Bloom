@@ -2881,6 +2881,12 @@ const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
   noPeople: 'Tidak ada yang ditemukan',
 };
 
+const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
+  close: 'Tutup',
+  minimize: 'Minimalkan',
+  zoom: 'Perbesar',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Ganti sampul',
@@ -3111,6 +3117,7 @@ const translations: Translations = {
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
+  WINDOW_MESSAGES,
 };
 
 export default translations;

@@ -2833,6 +2833,12 @@ const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
   noPeople: '見つかりませんでした',
 };
 
+const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
+  close: '閉じる',
+  minimize: '最小化',
+  zoom: 'ズーム',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'カバーを変更',
@@ -3063,6 +3069,7 @@ const translations: Translations = {
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
+  WINDOW_MESSAGES,
 };
 
 export default translations;

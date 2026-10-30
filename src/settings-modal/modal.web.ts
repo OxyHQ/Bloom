@@ -13,7 +13,7 @@
  * the modal — and a lazy modal chunk sharing `Select` with another lazy chunk
  * hoisted it into the first-paint common chunk.
  */
-export { SettingsModal } from './SettingsModal.web';
+export { SettingsLayout, SettingsModal } from './SettingsModal.web';
 export {
   SettingsCard,
   SettingsRow,
@@ -21,12 +21,14 @@ export {
   SettingsSectionLabel,
   SettingsValueField,
 } from './SettingsRows';
-export { useSettingsSavedToast } from './context';
+export { settingsLayoutFor, useSettingsSavedToast } from './context';
 
 export type {
   SettingsCardProps,
   SettingsIcon,
+  SettingsLayoutProps,
   SettingsModalLabels,
+  SettingsModalLayout,
   SettingsModalPage,
   SettingsModalPageNavigation,
   SettingsModalProps,

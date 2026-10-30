@@ -1,0 +1,99 @@
+---
+title: Window
+description: The application's window where the platform has windows — its controls, their room and the regions that move it — and nothing where it has none.
+order: 56
+---
+
+# Window
+
+On a desktop an application's window has controls (close, minimize, zoom) in
+its top leading corner, and no title bar: the content is the whole window and
+is arranged around them. The platform's adapter says whether there is such a
+window (the `window` capability of [platform surfaces](/docs/platform-surface)),
+who draws its controls and where they are. Bloom keeps their room, draws them
+where the platform asks, and makes the empty chrome move the window.
+
+An application declares nothing but its shape. `AppShell` and `SettingsLayout`
+do all of this themselves; the pieces below are for a layout of its own.
+
+```tsx
+import {
+  useWindow,
+  useWindowControlsRoom,
+  WindowControls,
+  WindowDragRegion,
+} from '@oxy.so/bloom/window';
+```
+
+Without the capability (a browser tab, a phone, a desktop runtime whose
+adapter reports none) every one of them is nothing at all: no controls, a room
+of zero, a drag region that is a plain `View`.
+
+## `useWindow()`
+
+The window's state and the actions on it, or `null` without the capability:
+
+- `active`, `maximized`, `fullscreen`, re-rendered as the platform reports them;
+- `controls`: `bloom` (Bloom draws them, as on OxyOS) or `platform` (the
+  platform draws its own, as a Mac does, and Bloom only keeps their room);
+- `metrics`: the controls' box and their room, from the window's top and its
+  leading edge, and the window's corner radius;
+- `close()`, `minimize()`, `zoom()` (maximize or restore) and `startMove()`.
+
+## `useWindowControlsRoom()`
+
+`{ top, leading }`: the room the controls take, whoever draws them, and zero
+without the capability or while the window is full screen. `leading` is the
+left in a left-to-right locale and the right in a right-to-left one, so keep
+it with `paddingInlineStart`, never `paddingLeft`.
+
+## `WindowControls`
+
+Three bubbles of the surface material where `metrics.controls` puts them,
+measured from the box it is mounted in, which must be the window's own corner
+(the root of the window's content). The platform's numbers decide the
+geometry: three targets spaced evenly across the controls' width, each a 14 px
+disc in a 20 px target. On OxyOS the discs are 4 apart with their centres 26
+from the top and the first 24 from the leading edge.
+
+- On the active window they are tinted red, yellow and green (the `error`,
+  `warning` and `success` tokens), on an inactive one neutral.
+- The pointer over the group shows their symbols (×, −, and zoom's).
+- A press shrinks a bubble to 88 % and springs it back as it acts. Reduced
+  motion lands at once.
+- Each is a button named "Close", "Minimize" and "Zoom" in the app's locale
+  (`closeLabel`, `minimizeLabel`, `zoomLabel` win).
+- `plate` floats them on a plate of the surface material, for full-bleed
+  content (a photo, a video, a map) that keeps no room for them.
+
+It draws nothing without the capability, where `controls` is `platform`, and
+while the window is full screen.
+
+## `WindowDragRegion`
+
+A `View` that is the window's empty chrome: a press on it that no control
+inside takes starts a move of the window (`startMove()`, from the press being
+handled), and a second press within 500 ms zooms it. It asks for the press in
+the responder system's bubble phase (`onStartShouldSetResponder`), which asks
+the deepest view first, so a button, a field or any pressable inside takes its
+own presses. Text and plain boxes take none, so a press on a toolbar's title
+moves the window.
+
+## Who keeps the room
+
+The corner has one owner. `AppShell` (see `windowControls` in
+[App shell](/docs/app-shell)) and `SettingsLayout` (see
+[Settings modal](/docs/settings-modal)) take it when they are the window's
+content: they draw the controls and keep their room. A shell or a settings
+layout inside one of them is a panel, away from the corner, and is laid out as
+without windows.
+
+A page that sets `AppShell header={null}` owns the corner itself when nothing
+else is there (no sidebar in flow, no top bar): its own toolbar keeps
+`useWindowControlsRoom()` and is a `WindowDragRegion`.
+
+Gates: `Window.test.tsx` (the hooks, the controls' geometry, colour, symbols,
+labels and actions, the drag region's press and double press),
+`WindowDragRegion.web.test.tsx` (react-native-web's real responder system: a
+pressable inside the region keeps its press), `AppShellWindow.test.tsx` and
+`SettingsLayout.test.tsx` (each shape).

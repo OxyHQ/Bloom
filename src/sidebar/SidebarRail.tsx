@@ -13,6 +13,7 @@ import type { SidebarNavItem, SidebarProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
 import { sidebarItemAction } from './use-sidebar-shortcuts';
+import { WindowDragRegion } from '../window/WindowDragRegion';
 
 /** The rail's fixed width. */
 export const SIDEBAR_RAIL_WIDTH = 80;
@@ -41,6 +42,7 @@ export function SidebarRail({
   secondaryItems = [],
   selected,
   onNavigate,
+  windowControlsRoom = 0,
   accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
@@ -96,10 +98,23 @@ export function SidebarRail({
           flexShrink: 0,
           flexDirection: 'column',
           backgroundColor: palette.flat,
+          ...(windowControlsRoom > 0 ? { paddingTop: windowControlsRoom } : null),
         },
         style,
       ]}
     >
+      {windowControlsRoom > 0 ? (
+        <WindowDragRegion
+          testID={`${testID ?? 'sidebar'}-window-band`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            height: windowControlsRoom,
+            insetInlineStart: 0,
+            insetInlineEnd: 0,
+          }}
+        />
+      ) : null}
       <View
         testID={`${testID ?? 'sidebar'}-main-region`}
         style={{

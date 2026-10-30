@@ -81,6 +81,23 @@ Every layout uses `PageHeader` as the opaque `bar` presentation (the floating is
 
 Pages with `fullBleed: true` own their scrolling and insets. A `content` render callback receives `{ onBack, backLabel, onClose, closeLabel }` and owns its header too: `onBack` returns to sections on compact screens and is absent beside the desktop rail. Render that action in the page’s existing header to avoid a second title. A full-bleed page with static React content keeps the compact shell’s back header. The default page layout continues to use its shared `PageHeader`.
 
+## `SettingsLayout`: the same settings as a window or a panel
+
+`SettingsLayout` is everything inside the modal without the modal: the rail, the pages, the compact list → page navigation, `onBeforeLeave` and the saved toast, with `useSettingsSavedToast()` and `useSettingsLayout()` working as they do in the modal. `SettingsModal` is the modal around it (portal, overlay, keyboard, backdrop, motion, the 871×614 sizing), with the same output as before the split.
+
+```tsx
+import { SettingsLayout } from '@oxy.so/bloom/settings-modal';
+
+<SettingsLayout groups={groups} pages={pages} />
+```
+
+- **Its layout follows its own measured width**, not the window's: in a box narrower than 640 it is the section list with a page pushed over it, below 900 the narrower rail. It takes the window's width until its first layout, so a layout that spans the window is right on frame one. `layout` lets a host decide instead (the modal decides from the window, since its own size does).
+- **`onClose` is optional.** Without it there is no close button, and a full-bleed page's `content` callback receives no `onClose` (`SettingsModalPageNavigation.onClose` is optional): an application window closes itself.
+- **As a window's content** (`windowControls="auto"`, the default, where the platform has windows; see [Window](/docs/window)) the rail keeps the window controls' room at its top, the controls sit there, and that band moves the window. Narrower than 640, the header keeps their room at its leading edge instead. A layout inside a region that already holds the window's corner (an `AppShell`) is a panel and keeps nothing; `windowControls="none"` says so anywhere else.
+- The saved toast sits inside the box, 32 above its bottom edge, instead of straddling it.
+
+The **Settings Modal / As a window** and **As a narrow window** stories draw both.
+
 ## Why it is not a `Dialog`
 
 This shell differs from `Dialog`'s centered card in every load-bearing way: black 70% backdrop with no blur, 24px radius on `background/full`, a fixed 871×614 size, a fade + scale-from-0.85 + 4px blur on `cubic-bezier(0.32, 0.72, 0, 1)`, and a **Saved toast that straddles the panel's bottom edge** — outside the panel's clip, which `Dialog`'s card owns. So the shell is built from the same authorities `Dialog` uses — `Portal`, `OverlayRoot` (the one stacking rank) and `Backdrop` (the pointer-events contract) — and accepts `Dialog`'s `control`.

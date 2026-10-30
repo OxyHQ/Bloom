@@ -2760,6 +2760,12 @@ const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
   noPeople: '未找到任何人',
 };
 
+const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
+  close: '关闭',
+  minimize: '最小化',
+  zoom: '缩放',
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: '更换封面',
@@ -2989,6 +2995,7 @@ const translations: Translations = {
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
+  WINDOW_MESSAGES,
 };
 
 export default translations;

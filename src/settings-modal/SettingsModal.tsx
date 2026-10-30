@@ -1,5 +1,8 @@
 import { Screen, ScreenScrollView } from '../screen/index';
 import { ScrollArea } from '../layout/ScrollArea';
-import { createSettingsModal } from './SettingsModalBase';
+import { createSettings } from './SettingsModalBase';
 
-export const SettingsModal = createSettingsModal({ Screen, ScreenScrollView }, ScrollArea);
+export const { SettingsModal, SettingsLayout } = createSettings(
+  { Screen, ScreenScrollView },
+  ScrollArea,
+);

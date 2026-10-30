@@ -443,6 +443,14 @@ export interface SidebarProps {
   /** Rendered inside a mobile drawer: always expanded, close button instead of collapse. */
   mobile?: boolean;
   onClose?: () => void;
+  /**
+   * The height of the window's controls' room at the top of this panel
+   * (`@oxy.so/bloom/window`), when the panel sits in the window's top leading
+   * corner. The panel's content starts below it, and the band is a window drag
+   * region. `AppShell` sets it on its in-flow sidebar; a `render` sidebar
+   * receives it with the rest of its props. Default 0.
+   */
+  windowControlsRoom?: number;
 
   /** The landmark's accessible name (`"Sidebar"` in English). */
   accessibilityLabel?: string;

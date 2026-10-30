@@ -1,4 +1,4 @@
-export { SettingsModal } from './SettingsModal';
+export { SettingsLayout, SettingsModal } from './SettingsModal';
 export {
   SettingsCard,
   SettingsRow,
@@ -11,7 +11,7 @@ export { SettingsPlanCard, SettingsGeneralPage, SettingsProfilePage } from './Se
 export { SettingsPlanArt } from './SettingsArt';
 export { SettingsToolsPage, SettingsServerList } from './SettingsTools';
 export { SettingsStoragePage } from './SettingsStorage';
-export { useSettingsSavedToast } from './context';
+export { settingsLayoutFor, useSettingsSavedToast } from './context';
 
 export type {
   SettingsCardProps,
@@ -19,9 +19,11 @@ export type {
   SettingsFileKind,
   SettingsGeneralPageProps,
   SettingsIcon,
+  SettingsLayoutProps,
   SettingsMcpServer,
   SettingsMenuAction,
   SettingsModalLabels,
+  SettingsModalLayout,
   SettingsModalPage,
   SettingsModalPageNavigation,
   SettingsModalProps,

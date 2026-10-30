@@ -3,7 +3,7 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
-export { SettingsModal } from './SettingsModal.web';
+export { SettingsLayout, SettingsModal } from './SettingsModal.web';
 export {
   SettingsCard,
   SettingsRow,
@@ -16,7 +16,7 @@ export { SettingsPlanCard, SettingsGeneralPage, SettingsProfilePage } from './Se
 export { SettingsPlanArt } from './SettingsArt';
 export { SettingsToolsPage, SettingsServerList } from './SettingsTools';
 export { SettingsStoragePage } from './SettingsStorage';
-export { useSettingsSavedToast } from './context';
+export { settingsLayoutFor, useSettingsSavedToast } from './context';
 
 export type {
   SettingsCardProps,
@@ -24,9 +24,11 @@ export type {
   SettingsFileKind,
   SettingsGeneralPageProps,
   SettingsIcon,
+  SettingsLayoutProps,
   SettingsMcpServer,
   SettingsMenuAction,
   SettingsModalLabels,
+  SettingsModalLayout,
   SettingsModalPage,
   SettingsModalPageNavigation,
   SettingsModalProps,

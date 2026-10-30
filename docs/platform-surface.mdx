@@ -1,6 +1,6 @@
 ---
 title: Platform surfaces
-description: The host platform's popups, registered once at the root, so native menus can open beyond the window.
+description: The host platform's popups and windows, registered once at the root, so native menus can open beyond the window and a desktop window gets its controls.
 order: 55
 ---
 
@@ -70,6 +70,35 @@ Today native `DropdownMenu` uses it: its content becomes `floating/PopupPanel`
 (the web menu panel's chrome: menu palette, 16px radius, hairline border, the
 266px floor) in the popup, with the same rows. The rest of the native overlay
 families still present through `dialog/SheetShell`.
+
+## `window`
+
+The application runs in a desktop window with controls in its top leading
+corner. The adapter supplies the window (`window: PlatformWindow`):
+
+```ts
+interface PlatformWindow {
+  readonly controls: 'bloom' | 'platform';   // who draws them
+  readonly metrics: {
+    controls: { start: number; top: number; width: number; height: number }; // leading-relative
+    room: { top: number; leading: number };
+    radius: number;
+  };
+  getState(): { active: boolean; maximized: boolean; fullscreen: boolean };
+  subscribe(listener: () => void): () => void;
+  close(): void;      // the application's close request
+  minimize(): void;
+  zoom(): void;       // maximize or restore
+  startMove(): void;  // from the press being handled
+}
+```
+
+`getState()` and `subscribe()` are an external store, read with
+`useSyncExternalStore`; a fresh but equal state object is not a change. Bloom
+reads it through `@oxy.so/bloom/window` ([Window](/docs/window)): `AppShell`
+and `SettingsLayout` keep the controls' room and draw them where `controls` is
+`bloom`. `usePlatformWindow()` returns the window only when the capability is
+reported, and an adapter that reports it without a window throws.
 
 The OxyOS adapter, and the host component behind it, live with the OxyOS
 runtime (OxyHQ/OxyOS, `tools/rn-host-spike`): Bloom stays free of OxyOS,

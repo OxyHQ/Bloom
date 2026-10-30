@@ -1518,6 +1518,37 @@ window's own backdrop between them. Nothing about it is positioned by hand.
 The **App Shell / Window** stories draw this window: docked, split, hidden, and
 with tabs across the top.
 
+### The window's controls
+
+Where the platform has windows (the `window` capability, [Window](/docs/window))
+the window has no title bar and its controls sit in its top leading corner,
+always in the same place. The shell keeps their room; the application declares
+nothing but its shape (`windowControls`, default `auto`):
+
+- **A sidebar in flow** starts its content below their room: the controls sit
+  at its top, inside its surface, and that band moves the window. The shell
+  hands the room to the sidebar as `windowControlsRoom` (less the frame's own
+  top inset); a `render` sidebar receives it with the rest of its props and
+  keeps it itself, with a `WindowDragRegion` band.
+- **Without one** (none, hidden by its dock, or collapsed into a drawer), a
+  `topBar` in flow starts after their room (`room.leading`), or else the header
+  does (less the frame's start inset), and it moves the window. A
+  `header={null}` page owns that corner itself.
+- **A top bar across the window** (`topBarVisibility="always"` above a sidebar)
+  is the one that keeps the room; the sidebar below it keeps none.
+- **`windowControls="overlay"`**: full-bleed content keeps no room, and the
+  controls float over it on a plate of the surface material.
+- **Full screen**: no controls and no room.
+
+The controls are drawn once, at the shell's top leading corner (the viewport's,
+with document scroll), so a shell with the capability is the window's content.
+A shell inside another one is not at the corner and keeps nothing. Without the
+capability the shell renders exactly what it rendered before
+(`AppShellWindow.test.tsx` compares the markup).
+
+The two-second fade of the controls over playing media (ADR 0016) is not part
+of this shell yet.
+
 ### Dock and peek
 
 `sidebar.dock` lets the in-flow navigation leave the layout entirely — the

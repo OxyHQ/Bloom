@@ -2,14 +2,9 @@ import { createContext, useContext, useMemo } from 'react';
 
 import { useTheme } from '../theme/use-theme';
 import { resolveSettingsPalette, type SettingsPalette } from './palette';
+import type { SettingsModalLayout } from './types';
 
-/**
- * How much room the modal has, from the window width:
- *   `compact`  < 640 — full screen, list → page navigation, rows stack
- *   `medium`   < 900 — side by side, narrower rail and insets
- *   `regular`         — the 871×614 panel
- */
-export type SettingsModalLayout = 'compact' | 'medium' | 'regular';
+export type { SettingsModalLayout };
 
 export const SETTINGS_COMPACT_MAX = 640;
 export const SETTINGS_MEDIUM_MAX = 900;

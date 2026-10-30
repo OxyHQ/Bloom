@@ -7,8 +7,12 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
  *
  * - `popup-surface`: an anchored panel in a surface of the platform's own (an
  *   OxyOS compositor popup), which may extend beyond the application window.
+ * - `window`: the application runs in a desktop window that has controls
+ *   (close, minimize, zoom) in its top leading corner, and can be moved,
+ *   zoomed and minimized. Bloom keeps the controls' room and, where the
+ *   platform asks it to, draws them (`@oxy.so/bloom/window`).
  */
-export type SurfaceCapability = 'popup-surface';
+export type SurfaceCapability = 'popup-surface' | 'window';
 
 /** Why the platform closed a popup without the application asking. */
 export type PopupDismissReason =
@@ -49,6 +53,62 @@ export interface PopupSurfaceProps {
 }
 
 /**
+ * Where a window's controls are, the same for every application on the
+ * platform. Lengths are in layout pixels from the window's top and from its
+ * LEADING edge: the left in a left-to-right locale, the right in a
+ * right-to-left one.
+ */
+export interface PlatformWindowMetrics {
+  /** The controls' group: three targets of equal size, evenly spaced across `width`. */
+  readonly controls: {
+    readonly start: number;
+    readonly top: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  /** The room the content keeps clear for them. */
+  readonly room: { readonly top: number; readonly leading: number };
+  /** The window's corner radius, for panels concentric with it. */
+  readonly radius: number;
+}
+
+/** What the platform tells a window about itself. */
+export interface PlatformWindowState {
+  /** The active window: it, or one of its popups or dialogs, has the keyboard focus. */
+  readonly active: boolean;
+  /** Zoomed to fill the work area. */
+  readonly maximized: boolean;
+  /** Full screen: no controls and no room. */
+  readonly fullscreen: boolean;
+}
+
+/**
+ * The application's window, with the `window` capability. Its state is an
+ * external store (`getState` + `subscribe`, as `useSyncExternalStore` reads
+ * it); the actions are requests the platform carries out.
+ */
+export interface PlatformWindow {
+  /**
+   * Who draws the controls: `bloom` draws them inside the application, in the
+   * platform's place (OxyOS); `platform` draws its own (a Mac's traffic
+   * lights, a browser's over an installed web application) and Bloom only
+   * keeps their room.
+   */
+  readonly controls: 'bloom' | 'platform';
+  readonly metrics: PlatformWindowMetrics;
+  getState(): PlatformWindowState;
+  /** Calls `listener` whenever `getState()` changes; returns the unsubscribe. */
+  subscribe(listener: () => void): () => void;
+  /** The application's close request (the close control). */
+  close(): void;
+  minimize(): void;
+  /** Maximize, or restore the frame the window had. */
+  zoom(): void;
+  /** Start an interactive move from the press being handled. */
+  startMove(): void;
+}
+
+/**
  * A host platform's surfaces, registered with `BloomProvider platform={…}`.
  *
  * Bloom stays free of any platform's protocol: an adapter reports what it can
@@ -66,4 +126,6 @@ export interface PlatformSurfaceAdapter {
    * the panel as they reach any child. Mounted while the popup is open.
    */
   readonly PopupSurface?: ComponentType<PopupSurfaceProps>;
+  /** Required with `window`: the application's window. */
+  readonly window?: PlatformWindow;
 }
