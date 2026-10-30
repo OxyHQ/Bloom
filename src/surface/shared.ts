@@ -154,6 +154,14 @@ export const SURFACE_TINT_OPACITY = 0.72;
  */
 export function resolveSurfaceTint(fill: string): string {
   if (Platform.OS !== 'web') return fill;
+  return translucentTint(fill);
+}
+
+/**
+ * An opaque fill at `SURFACE_TINT_OPACITY`, for a body with a blur under it (the
+ * web's, and an iOS floating surface's); an explicit alpha is kept.
+ */
+export function translucentTint(fill: string): string {
   const parsed = parseRgba(fill);
   return parsed?.a === 1 ? withAlpha(fill, SURFACE_TINT_OPACITY) : fill;
 }

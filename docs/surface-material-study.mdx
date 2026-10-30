@@ -127,7 +127,7 @@ Correct the six stale statements listed under gap 6, using the code's numbers (7
 
 ### Phase 2: bake the web material where the backdrop is known (M, internal)
 
-**Done in 15.70.0.** One change from the plan below: the decision is made per instance, from the page, after a live first paint (`surface/baked-material.ts`), not by a census of callers. The same Card is in the flow of a canvas in one place and over a photo in another, which a list of callers cannot tell apart. Buttons and fields whose fill animates stay live. The pixel gate is `scripts/verify-surface-baked-material.mjs`; see [Surface](./surface.mdx), *Baked material*.
+**Done in 15.70.0 (#535).** One change from the plan below: the decision is made per instance, from the page, after a live first paint (`surface/baked-material.ts`), not by a census of callers. The same Card is in the flow of a canvas in one place and over a photo in another, which a list of callers cannot tell apart. Buttons and fields whose fill animates stay live. The pixel gate is `scripts/verify-surface-baked-material.mjs`; see [Surface](./surface.mdx), *Baked material*.
 
 When a surface is in the flow and its backing is opaque and painted by a known owner (the page background, a `Screen`, a panel, a parent `Surface`), its blurred backdrop is that backing's colour. The body's `blur saturate contrast brightness` and the edge's brightness can then be computed once in JavaScript and painted as plain colours, with no backdrop filter.
 
@@ -141,6 +141,8 @@ When a surface is in the flow and its backing is opaque and painted by a known o
   - The backdrop-root gates keep running unchanged.
 
 ### Phase 3: a real material on iOS for floating surfaces (M, internal)
+
+**Done in 15.71.0.** As below; the blur is the thinnest system material (`systemUltraThinMaterial`, light or dark by the theme) at full intensity, under Bloom's tint at 72%. Not run on an iPhone or iPad yet: this development machine has no iOS simulator. The device checklist below is still to do.
 
 On iOS only, floating and docked surfaces mount an expo-blur `BlurView` (a `UIVisualEffectView`) under the tint, inside the paint layer that already clips to the host's shape. These are the menus and popovers (`FloatingPanel`), `Tooltip`, toasts, `Dialog` panels, `BottomBar`, `BlurIsland`, the tab bar capsule and the window controls. The tint then uses `SURFACE_TINT_OPACITY`, as on the web, because there is now a blur under it. With transparency reduced, the `BlurView` is not mounted and the body is `solidFill`. In-flow surfaces (cards in a feed) stay `tint`. A `UIVisualEffectView` per feed row is the kind of offscreen pass that makes scrolling drop frames, and over an opaque page it shows nothing (gap 4).
 

@@ -159,7 +159,7 @@ export function ToastContent({
       ]}
     >
       {paintsSurface ? (
-        <SurfacePaint fill={fill} radius={customSurface?.borderRadius ?? G.radius} />
+        <SurfacePaint floating fill={fill} radius={customSurface?.borderRadius ?? G.radius} />
       ) : null}
       {backgroundComponent}
       <View

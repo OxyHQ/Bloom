@@ -1153,7 +1153,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                  "type": "View",
                  "props": {
                   "ref": null,
-                  "renderToHardwareTextureAndroid": false,
                   "style": [
                    [
                     {
@@ -1168,17 +1167,71 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                      "borderCurve": "circular"
                     },
                     {
-                     "overflow": "hidden",
-                     "backgroundColor": "rgb(199 246 255)",
-                     "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
-                    }
+                     "overflow": "hidden"
+                    },
+                    null
                    ],
                    {
                     "pointerEvents": "none"
                    }
                   ]
                  },
-                 "children": null
+                 "children": [
+                  {
+                   "type": "BlurView",
+                   "props": {
+                    "intensity": 100,
+                    "tint": "systemUltraThinMaterialLight",
+                    "style": [
+                     [
+                      {
+                       "position": "absolute",
+                       "left": 0,
+                       "right": 0,
+                       "top": 0,
+                       "bottom": 0
+                      },
+                      null
+                     ],
+                     {
+                      "pointerEvents": "none"
+                     }
+                    ]
+                   },
+                   "children": null
+                  },
+                  {
+                   "type": "View",
+                   "props": {
+                    "ref": null,
+                    "style": [
+                     [
+                      {
+                       "position": "absolute",
+                       "left": 0,
+                       "right": 0,
+                       "top": 0,
+                       "bottom": 0
+                      },
+                      {
+                       "borderRadius": 20,
+                       "borderCurve": "circular"
+                      },
+                      {
+                       "backgroundColor": "rgba(199, 246, 255, 0.72)"
+                      },
+                      {
+                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                      }
+                     ],
+                     {
+                      "pointerEvents": "none"
+                     }
+                    ]
+                   },
+                   "children": null
+                  }
+                 ]
                 }
                ]
               }
@@ -2014,7 +2067,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                  "type": "View",
                  "props": {
                   "ref": null,
-                  "renderToHardwareTextureAndroid": false,
                   "style": [
                    [
                     {
@@ -2029,17 +2081,71 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                      "borderCurve": "circular"
                     },
                     {
-                     "overflow": "hidden",
-                     "backgroundColor": "rgb(199 246 255)",
-                     "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
-                    }
+                     "overflow": "hidden"
+                    },
+                    null
                    ],
                    {
                     "pointerEvents": "none"
                    }
                   ]
                  },
-                 "children": null
+                 "children": [
+                  {
+                   "type": "BlurView",
+                   "props": {
+                    "intensity": 100,
+                    "tint": "systemUltraThinMaterialLight",
+                    "style": [
+                     [
+                      {
+                       "position": "absolute",
+                       "left": 0,
+                       "right": 0,
+                       "top": 0,
+                       "bottom": 0
+                      },
+                      null
+                     ],
+                     {
+                      "pointerEvents": "none"
+                     }
+                    ]
+                   },
+                   "children": null
+                  },
+                  {
+                   "type": "View",
+                   "props": {
+                    "ref": null,
+                    "style": [
+                     [
+                      {
+                       "position": "absolute",
+                       "left": 0,
+                       "right": 0,
+                       "top": 0,
+                       "bottom": 0
+                      },
+                      {
+                       "borderRadius": 20,
+                       "borderCurve": "circular"
+                      },
+                      {
+                       "backgroundColor": "rgba(199, 246, 255, 0.72)"
+                      },
+                      {
+                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                      }
+                     ],
+                     {
+                      "pointerEvents": "none"
+                     }
+                    ]
+                   },
+                   "children": null
+                  }
+                 ]
                 }
                ]
               }
@@ -3326,7 +3432,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                  "type": "View",
                  "props": {
                   "ref": null,
-                  "renderToHardwareTextureAndroid": false,
                   "style": [
                    [
                     {
@@ -3341,17 +3446,71 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                      "borderCurve": "circular"
                     },
                     {
-                     "overflow": "hidden",
-                     "backgroundColor": "rgb(199 246 255)",
-                     "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
-                    }
+                     "overflow": "hidden"
+                    },
+                    null
                    ],
                    {
                     "pointerEvents": "none"
                    }
                   ]
                  },
-                 "children": null
+                 "children": [
+                  {
+                   "type": "BlurView",
+                   "props": {
+                    "intensity": 100,
+                    "tint": "systemUltraThinMaterialLight",
+                    "style": [
+                     [
+                      {
+                       "position": "absolute",
+                       "left": 0,
+                       "right": 0,
+                       "top": 0,
+                       "bottom": 0
+                      },
+                      null
+                     ],
+                     {
+                      "pointerEvents": "none"
+                     }
+                    ]
+                   },
+                   "children": null
+                  },
+                  {
+                   "type": "View",
+                   "props": {
+                    "ref": null,
+                    "style": [
+                     [
+                      {
+                       "position": "absolute",
+                       "left": 0,
+                       "right": 0,
+                       "top": 0,
+                       "bottom": 0
+                      },
+                      {
+                       "borderRadius": 20,
+                       "borderCurve": "circular"
+                      },
+                      {
+                       "backgroundColor": "rgba(199, 246, 255, 0.72)"
+                      },
+                      {
+                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                      }
+                     ],
+                     {
+                      "pointerEvents": "none"
+                     }
+                    ]
+                   },
+                   "children": null
+                  }
+                 ]
                 }
                ]
               }

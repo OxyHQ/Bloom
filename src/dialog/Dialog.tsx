@@ -800,6 +800,7 @@ function SideSheet({
       >
         {presentation !== 'custom' && surfaceMaterial !== 'flat' && (
           <SurfacePaint
+            floating
             fill={paintFill}
             shape={{ curve: SURFACE_SHAPES.dialog.curve }}
             radius={panelRadius}

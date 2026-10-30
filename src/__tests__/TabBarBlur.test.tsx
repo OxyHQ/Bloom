@@ -96,8 +96,16 @@ function children(node: ReactTestRendererJSON): ReactTestRendererJSON[] {
   return (node.children ?? []).filter(isJsonNode);
 }
 
+/**
+ * The band's layers. The capsule floats, so on iOS (the mock's platform) its
+ * own material is a `BlurView` too (`surface/SurfaceBlur.tsx`, the system's
+ * thinnest material): that one is the capsule's, not the band's.
+ */
 function blurLayers(tree: RenderedTree): ReactTestRendererJSON[] {
-  return hostNodes(tree).filter((node) => node.type === 'BlurView');
+  return hostNodes(tree).filter(
+    (node) =>
+      node.type === 'BlurView' && !String(node.props.tint ?? '').startsWith('systemUltraThin'),
+  );
 }
 
 function intensities(tree: RenderedTree): unknown[] {

@@ -343,7 +343,11 @@ function Bubble({
               });
             }}
           >
-            <SurfacePaint fill={palette.surface} radius={TOOLTIP_SIZES[size].borderRadius} />
+            <SurfacePaint
+              floating
+              fill={palette.surface}
+              radius={TOOLTIP_SIZES[size].borderRadius}
+            />
             <SurfaceLevelProvider level={1} fill={publishedFill}>
               {children}
             </SurfaceLevelProvider>
