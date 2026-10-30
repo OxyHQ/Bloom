@@ -48,6 +48,7 @@ import type { PageHeaderProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { useDirectionProps } from '../hooks/use-is-rtl';
+import { useWindowChrome } from '../window/context';
 
 /**
  * `PageHeader`: a screen's top chrome.
@@ -139,6 +140,12 @@ const PAGE_HEADER_LAYOUT_CSS = `
 }
 [data-bloom-page-header-start="center"] {
   inset-inline-start: var(--bloom-page-header-inset) !important;
+}
+[data-bloom-page-header-bar][data-bloom-page-header-window] {
+  padding-inline-start: max(var(--bloom-page-header-inset), var(--bloom-page-header-window-room, 0px)) !important;
+}
+[data-bloom-page-header-window] > [data-bloom-page-header-start="center"] {
+  inset-inline-start: max(var(--bloom-page-header-inset), var(--bloom-page-header-window-room, 0px)) !important;
 }
 [data-bloom-page-header-end] {
   inset-inline-end: var(--bloom-page-header-inset) !important;
@@ -237,6 +244,14 @@ function PageHeaderComponent({
       (barEmpty ? 0 : navigationPresentation ? NAVIGATION_HEIGHT : compact ? 32 : BAR_HEIGHT);
   const sideInset =
     compact || navigationPresentation ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
+  // The window's title area (a Screen's header along the window's top edge,
+  // `@oxy.so/bloom/window`): the bar keeps the controls' room at its leading
+  // edge, inside its own background, as a desktop toolbar does. The room
+  // already holds the gap after the controls, so it replaces the side inset
+  // rather than adding to it.
+  const windowChrome = useWindowChrome();
+  const windowRoom = positionedByScreen && windowChrome ? windowChrome.leading : 0;
+  const barStart = Math.max(sideInset, windowRoom);
 
   const onContainerLayout = (e: LayoutChangeEvent) => {
     const nextWidth = e.nativeEvent.layout.width;
@@ -456,7 +471,8 @@ function PageHeaderComponent({
   const centered = titleAlign === 'center';
   const hasStart = onBack != null || leading != null;
   const hasEnd = actions != null;
-  const startWidth = hasStart ? startMeasure : 0;
+  // A centred title also clears the controls' room past the side inset.
+  const startWidth = (hasStart ? startMeasure : 0) + (barStart - sideInset);
   const endWidth = hasEnd ? endMeasure : 0;
   const measuredSides = useRef({ start: 0, end: 0 });
   const onStartLayout = (e: LayoutChangeEvent) => {
@@ -703,7 +719,11 @@ function PageHeaderComponent({
         {barEmpty ? null : (
           <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
             <StyledView
-              {...dataHook('bloomPageHeaderBar')}
+              {...(windowRoom > 0
+                ? isWeb
+                  ? { dataSet: { bloomPageHeaderBar: '', bloomPageHeaderWindow: '' } }
+                  : {}
+                : dataHook('bloomPageHeaderBar'))}
               className={
                 navigationPresentation ? 'py-0' : compact ? 'min-h-8 py-0' : 'min-h-14 py-2'
               }
@@ -711,7 +731,12 @@ function PageHeaderComponent({
                 [
                   styles.bar,
                   navigationPresentation && { gap: 2, minHeight: NAVIGATION_HEIGHT },
-                  !isWeb && { paddingLeft: sideInset, paddingRight: sideInset },
+                  isWeb
+                    ? windowRoom > 0 &&
+                      ({ '--bloom-page-header-window-room': `${windowRoom}px` } as WebCssStyle)
+                    : windowRoom > 0
+                      ? { paddingInlineStart: barStart, paddingInlineEnd: sideInset }
+                      : { paddingLeft: sideInset, paddingRight: sideInset },
                 ],
                 pointerEventsStyle(floating ? 'box-none' : undefined),
               ]}
@@ -723,7 +748,7 @@ function PageHeaderComponent({
                   [
                     styles.start,
                     centered
-                      ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: sideInset } : {}) }
+                      ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: barStart } : {}) }
                       : styles.startFill,
                   ],
                   pointerEventsStyle(floating ? 'box-none' : undefined),

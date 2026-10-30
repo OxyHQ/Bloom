@@ -34,6 +34,10 @@ import { ScreenContext, ScreenNavigationContext } from '../screen/context';
  * form inside a sheet that padded itself for a tab bar it is drawn over ends in
  * a band of empty space.
  *
+ * It is not the window's corner either: a `Screen` inside draws no window
+ * controls and keeps no room for them, unless its host hands it the window's
+ * chrome inside the scope (a panel along the window's top edge).
+ *
  * Bloom's own overlay surfaces mount it (`DialogBody`, `BottomSheetBase`), so a
  * consumer gets this by using them. It is exported for a surface Bloom does not
  * own — an app's own full-screen route presented over another.
@@ -44,6 +48,7 @@ import { BottomEdgeProvider } from './bottom-edge';
 import { ScrollMetricsContext } from './scroll-metrics';
 import { ScrollOffsetProvider } from './scroll-offset';
 import { TopEdgeProvider } from './top-edge';
+import { WindowChromeProvider, WindowCornerProvider } from '../window/context';
 
 export function ScreenScope({
   children,
@@ -69,7 +74,11 @@ export function ScreenScope({
                 {/* null means no scroller has claimed this scope yet. */}
                 <ScrollMetricsContext.Provider value={null}>
                   <ScrollOffsetProvider value={null}>
-                    <BloomScope controlDensity="default">{children}</BloomScope>
+                    <WindowCornerProvider value>
+                      <WindowChromeProvider value={null}>
+                        <BloomScope controlDensity="default">{children}</BloomScope>
+                      </WindowChromeProvider>
+                    </WindowCornerProvider>
                   </ScrollOffsetProvider>
                 </ScrollMetricsContext.Provider>
               </BottomEdgeProvider>

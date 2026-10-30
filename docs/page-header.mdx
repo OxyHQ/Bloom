@@ -294,6 +294,16 @@ The context is what makes a desktop panel work: `window.scrollY` never moves ins
 
 **Not verified on a device.** The historical measurements above are Chrome on Linux. Native geometry, safe-area padding and scroll linkage still need device verification; native SurfacePaint does not refract the backdrop.
 
+## The window's title area
+
+In a `Screen` header that is the window's chrome ([Window](/docs/window)) the
+bar starts at the larger of its side inset and the room the window's controls
+take from its leading edge, so its background, scrim and hairline still run
+under the controls. A centred title clears the room as well. On the web the
+side inset is an `!important` stylesheet rule, so the room is a custom property
+(`--bloom-page-header-window-room`) that a more specific rule reads, never an
+inline padding. Anywhere else the header is unchanged.
+
 ## Not included
 
 - **iOS large title.** A large title that collapses into the bar needs to live inside the scroll content (so it scrolls under the chrome) while the chrome lives outside it; a standalone header cannot own both without making content move at twice the scroll speed on native. `Dialog`'s own header ([Dialog](/docs/dialog)) does it because the Dialog owns its scroller.

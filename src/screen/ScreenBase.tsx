@@ -21,6 +21,7 @@ import {
   surfaceFillVars,
 } from '../styles/surface-levels';
 import {
+  WEB_POSITION_FIXED,
   WEB_POSITION_STICKY,
   WEB_SURFACE_STICKY_TOP,
   WEB_VIEWPORT_HEIGHT,
@@ -47,6 +48,17 @@ import { ScreenActionOwnerContext, useScreenActionClaim } from '../app-shell/scr
 import type { ScreenProps } from './types';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 import type { ScreenKeyboardComponents } from './keyboard-components';
+import { usePlatformWindow } from '../platform-surface/context';
+import { useWindowFullscreen } from '../window/use-window';
+import {
+  useWindowChrome,
+  useWindowCornerTaken,
+  WindowChromeProvider,
+  WindowCornerProvider,
+  type WindowChrome,
+} from '../window/context';
+import { WindowControls } from '../window/WindowControls';
+import { WindowDragRegion } from '../window/WindowDragRegion';
 
 export function createScreen(
   ScrollBar: ComponentType<ScrollBarProps>,
@@ -123,6 +135,31 @@ export function createScreen(
           : incomingHost,
       [incomingHost, parentScreen],
     );
+    // ---- the window's chrome (OxyOS ADR 0016) -------------------------------
+    // With the platform's `window` capability, a Screen nothing else holds the
+    // window's corner for (no shell, no settings layout, no other screen, no
+    // overlay) IS the window's content: it draws the controls in its corner
+    // and its header is the window's title area. Inside a shell, the shell may
+    // hand that chrome down (a panel along the window's top edge): the first
+    // Screen there takes it. Either way the header row moves the window and
+    // keeps the controls' room at its leading edge (`PageHeader` keeps it in
+    // its own bar); the content below is untouched.
+    // Not `useWindow()`: a screen re-renders when the window enters or leaves
+    // full screen, not each time it is activated.
+    const platformWindow = usePlatformWindow();
+    const fullscreen = useWindowFullscreen();
+    const cornerTaken = useWindowCornerTaken();
+    const handedChrome = useWindowChrome();
+    const windowContent = platformWindow != null && !cornerTaken && !parentScreen;
+    const windowChromeShown = platformWindow != null && !fullscreen;
+    const ownChrome = useMemo<WindowChrome | null>(
+      () =>
+        windowContent && windowChromeShown && platformWindow
+          ? { leading: platformWindow.metrics.room.leading }
+          : null,
+      [windowContent, windowChromeShown, platformWindow],
+    );
+    const windowChrome = windowChromeShown ? (ownChrome ?? handedChrome) : null;
     const ownsViewport = scroll === 'auto';
     const contentSized = host.sizing === 'content';
     const reservesChrome = ownsViewport || scroll === 'none';
@@ -297,20 +334,55 @@ export function createScreen(
       transitionDuration: 'var(--bloom-panel-inset-duration, 0ms)',
       transitionTimingFunction: 'ease-in-out',
     };
+    const headerSlotStyle = document
+      ? documentHeaderStyle
+      : ({ position: 'absolute', top: 0, left: 0, right: 0, zIndex: Z_INDEX.floating } as const);
     const headerNode = header ? (
-      <View
-        testID={testID ? `${testID}-header` : undefined}
-        pointerEvents="box-none"
-        onLayout={(event) => setTop(event.nativeEvent.layout.height)}
-        style={
-          document
-            ? documentHeaderStyle
-            : { position: 'absolute', top: 0, left: 0, right: 0, zIndex: Z_INDEX.floating }
-        }
-      >
-        <ScreenHeaderContext.Provider value={value}>{header}</ScreenHeaderContext.Provider>
-      </View>
+      platformWindow != null ? (
+        // The same node whether or not it is the window's chrome right now (a
+        // full-screen window, a panel that leaves the top edge), so the header
+        // is never remounted. As chrome it takes the presses nothing inside
+        // takes, so it is no longer `box-none`.
+        <WindowDragRegion
+          disabled={windowChrome == null}
+          testID={testID ? `${testID}-header` : undefined}
+          pointerEvents={windowChrome == null ? 'box-none' : undefined}
+          onLayout={(event) => setTop(event.nativeEvent.layout.height)}
+          style={headerSlotStyle}
+        >
+          <WindowChromeProvider value={windowChrome}>
+            <ScreenHeaderContext.Provider value={value}>{header}</ScreenHeaderContext.Provider>
+          </WindowChromeProvider>
+        </WindowDragRegion>
+      ) : (
+        <View
+          testID={testID ? `${testID}-header` : undefined}
+          pointerEvents="box-none"
+          onLayout={(event) => setTop(event.nativeEvent.layout.height)}
+          style={headerSlotStyle}
+        >
+          <ScreenHeaderContext.Provider value={value}>{header}</ScreenHeaderContext.Provider>
+        </View>
+      )
     ) : null;
+    // The controls, once, in the window's corner: this screen's when it is the
+    // window's content. A document scrolls the screen, so there the corner is
+    // the viewport's.
+    const windowControlsNode =
+      ownChrome != null && platformWindow?.controls === 'bloom' ? (
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: document ? WEB_POSITION_FIXED : 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: Z_INDEX.floating,
+          }}
+        >
+          <WindowControls testID={testID ? `${testID}-window-controls` : undefined} />
+        </View>
+      ) : null;
     const localBottom =
       bottomBar ??
       (primaryAction ? (
@@ -368,7 +440,7 @@ export function createScreen(
         </ScreenFooterContext.Provider>
       </Footer>
     ) : null;
-    return (
+    const screen = (
       <SurfaceLevelProvider
         level={surfaceLevel}
         fill={paintedSurface.current}
@@ -545,6 +617,7 @@ export function createScreen(
                           ) : null}
                         </View>
                         {bottomNode}
+                        {windowControlsNode}
                       </View>
                     </ScrollOffsetProvider>
                   </ScrollMetricsContext.Provider>
@@ -555,6 +628,12 @@ export function createScreen(
         </ScreenActionOwnerContext.Provider>
       </SurfaceLevelProvider>
     );
+    if (platformWindow == null) return screen;
+    // The chrome stops at this screen's header: its content (a nested screen,
+    // a shell) is below it. While it is the window's content nothing inside is
+    // at the corner.
+    const content = <WindowChromeProvider value={null}>{screen}</WindowChromeProvider>;
+    return windowContent ? <WindowCornerProvider value>{content}</WindowCornerProvider> : content;
   }
 
   return Screen;

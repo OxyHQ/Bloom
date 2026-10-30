@@ -47,6 +47,15 @@ without the capability or while the window is full screen. `leading` is the
 left in a left-to-right locale and the right in a right-to-left one, so keep
 it with `paddingInlineStart`, never `paddingLeft`.
 
+## `useWindowHeaderRoom()`
+
+In the region that is the window's chrome — the header of a `Screen` along
+the window's top edge, or the content of a panel there with no `Screen` of its
+own — the room its top bar keeps clear for the controls, from its own leading
+edge; 0 everywhere else. `PageHeader` keeps it itself, inside its bar; a header
+of an application's own keeps it with `paddingInlineStart` (see
+[Panes as the title area](#panes-as-the-title-area)).
+
 ## `WindowControls`
 
 Three bubbles of the surface material where `metrics.controls` puts them,
@@ -79,6 +88,10 @@ the deepest view first, so a button, a field or any pressable inside takes its
 own presses. Text and plain boxes take none, so a press on a toolbar's title
 moves the window.
 
+`disabled` makes it the plain `View`: a slot that is the window's chrome only
+some of the time (a header in a full-screen window) keeps one tree, so its
+content is never remounted.
+
 ## Who keeps the room
 
 The corner has one owner. `AppShell` (see `windowControls` in
@@ -88,9 +101,55 @@ content: they draw the controls and keep their room. A shell or a settings
 layout inside one of them is a panel, away from the corner, and is laid out as
 without windows.
 
-A page that sets `AppShell header={null}` owns the corner itself when nothing
-else is there (no sidebar in flow, no top bar): its own toolbar keeps
-`useWindowControlsRoom()` and is a `WindowDragRegion`.
+A page that sets `AppShell header={null}` without panels owns the corner
+itself when nothing else is there (no sidebar in flow, no top bar): its own
+toolbar keeps `useWindowControlsRoom()` and is a `WindowDragRegion`.
+
+### Panes as the title area
+
+As in a desktop mail or notes application with panes and no sidebar, each
+pane's toolbar is the window's title area. An `AppShell` with a panel layout
+and nothing of its own at the corner (no sidebar, no top bar, no header) hands
+the corner to its panels:
+
+- **The panels fill the window**, rather than a reading envelope centred in
+  it, so the first is at the corner. The frame keeps its insets; nothing moves
+  by the room.
+- **The panel at the top leading corner** keeps the controls' room in its
+  header: `room.leading` less where the panel already starts (the frame's
+  start inset), and only while the panel starts above `room.top`.
+- **Every panel header along the window's top edge** is a drag region (side by
+  side, a deck, retained panels whose box touches the top). Stacked, only the
+  top one is. A collapsed layout's shown panel is at the corner. A floating
+  panel is a dialog: none.
+- **The frame's band above the panels** (its top inset) moves the window too.
+- **A layout `header`** spans the panels: it is the chrome, and the panels
+  below it keep nothing.
+- The controls are drawn once, by the shell. Full screen: none of this.
+  `windowControls="overlay"`: no room and no drag.
+
+The header is a panel route's `Screen` header (`header={<PageHeader …/>}`): the
+`Screen` makes its header slot the drag region (as chrome it takes the presses
+nothing inside takes, rather than letting them through) and `PageHeader` keeps
+the room inside its own bar, so its background runs under the controls. The
+room already holds the gap after the controls, so the bar starts at the larger
+of its side inset and the room; a centred title clears it too. A header of an
+application's own reads `useWindowHeaderRoom()`; a panel without a `Screen`
+reads it in its content and wraps its own toolbar in a `WindowDragRegion`.
+
+### A `Screen` as the window
+
+A `Screen` that nothing else holds the corner for — no shell, no settings
+layout, no outer `Screen`, no dialog or sheet (`ScreenScope`) — is the window's
+content: it draws the controls in its corner (once; a `Screen` inside it is
+not at the corner) and its header is the chrome above, with the whole
+`room.leading`.
+
+Gates: `AppShellWindowPanels.test.tsx` (split, deck, collapsed, stacked,
+retained, a layout header, a panel without a `Screen`, nested, a `Screen` as
+the window, right to left, full screen without remounting the routes, and
+without the capability the same markup), `ScreenWindowChrome.web.test.tsx`
+(react-native-web's responder system and the bar's stylesheet).
 
 Gates: `Window.test.tsx` (the hooks, the controls' geometry, colour, symbols,
 labels and actions, the drag region's press and double press),

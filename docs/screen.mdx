@@ -354,6 +354,20 @@ Screen's browser entry explicitly binds the browser ScrollBar, color scope and
 restoration hook. Shared factories receive these bindings instead of relying on
 a bundler to resolve bare relative imports to `.web` files.
 
+### The window's title area
+
+Where the platform has windows ([Window](/docs/window)), a Screen's header can
+be the window's chrome: in a panel along the window's top edge that its
+`AppShell` hands the corner to, or when the Screen itself is the window's
+content (nothing else holds the corner: no shell, no settings layout, no outer
+Screen, no dialog). The header slot then moves the window from any press
+nothing inside takes (it is no longer `box-none`), and the `PageHeader` in it
+keeps the controls' room inside its bar. A Screen that is the window draws the
+controls too. Only the header changes; the content and its insets do not. The
+slot is one node either way, so a full-screen window keeps the header mounted.
+The first Screen takes the chrome; its content (a nested Screen, a shell) is
+below the header and gets none.
+
 ## Reselect
 
 Pressing the place the reader is already on — the bar item or sidebar row of the

@@ -4,6 +4,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BloomScope } from '../appearance';
 import { Button } from '../button';
+import { Card as BloomCard, CardDescription, CardHeader, CardTitle } from '../card';
+import { PageHeader } from '../page-header';
+import { Screen, ScreenScrollView } from '../screen';
 import { RiAddLine, RiLayoutGridLine, RiSideBarLine } from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -423,3 +426,108 @@ function RetainedWindow() {
  * hidden page keeps its size so it shows again at once.
  */
 export const RetainedPanels: Story = { render: () => <RetainedWindow /> };
+
+const MESSAGES = [
+  { id: 'a', title: 'Design review', body: 'The panes are the window’s title area.' },
+  { id: 'b', title: 'Release notes', body: 'Every pane header moves the window.' },
+  { id: 'c', title: 'Roadmap', body: 'The first one keeps the controls’ room.' },
+  { id: 'd', title: 'Docs', body: 'Nothing below a header moves.' },
+];
+
+/** A pane: a Screen with its PageHeader, as an application's route renders it. */
+function MailPane({ title, list }: { title: string; list?: boolean }) {
+  return (
+    <Screen
+      header={
+        <PageHeader
+          title={title}
+          presentation="bar"
+          border="always"
+          actions={
+            list ? undefined : (
+              <Button size="sm" appearance="plain" leadingIcon={RiAddLine}>
+                Reply
+              </Button>
+            )
+          }
+        />
+      }
+    >
+      <ScreenScrollView contentContainerStyle={{ padding: 12, gap: 8 }}>
+        {list ? (
+          MESSAGES.map((message) => (
+            <BloomCard key={message.id}>
+              <CardHeader>
+                <CardTitle>{message.title}</CardTitle>
+                <CardDescription>{message.body}</CardDescription>
+              </CardHeader>
+            </BloomCard>
+          ))
+        ) : (
+          <Text variant="body-regular">
+            Press a pane header’s empty part or its title to move the window, twice to zoom it. The
+            buttons in it keep their presses.
+          </Text>
+        )}
+      </ScreenScrollView>
+    </Screen>
+  );
+}
+
+/**
+ * Panes and nothing else, as a mail application without a sidebar: no shell
+ * header, no top bar. The shell hands the window's corner to its panels: they
+ * fill the window, the first pane's header keeps the controls' room inside its
+ * own bar, and every pane header along the window's top edge moves the window.
+ * The frame and the content below the headers do not move.
+ */
+export const PanesAsTitleArea: Story = {
+  render: () => (
+    <StoryWindow width={1000} height={600}>
+      <AppShell
+        testID="window"
+        panelLayout={{
+          mode: 'split',
+          gap: 8,
+          panels: [
+            { id: 'inbox', width: 340, content: <MailPane title="Inbox" list /> },
+            { id: 'detail', content: <MailPane title="Design review" /> },
+          ],
+        }}
+      />
+    </StoryWindow>
+  ),
+};
+
+/** The same panes in a deck: the first keeps the room, every header moves the window. */
+export const DeckAsTitleArea: Story = {
+  render: () => (
+    <StoryWindow width={1000} height={600}>
+      <AppShell
+        testID="window"
+        panelLayout={{
+          mode: 'deck',
+          gap: 8,
+          panels: ['Inbox', 'Today', 'Later'].map((title, index) => ({
+            id: title,
+            width: 380,
+            content: <MailPane title={title} list={index === 0} />,
+          })),
+        }}
+      />
+    </StoryWindow>
+  ),
+};
+
+/**
+ * A single Screen as the whole application, no shell: it is the window's
+ * content, so it draws the controls in its corner and its header is the
+ * window's title area.
+ */
+export const ScreenAsWindow: Story = {
+  render: () => (
+    <StoryWindow width={720} height={480}>
+      <MailPane title="Notes" />
+    </StoryWindow>
+  ),
+};

@@ -1536,6 +1536,10 @@ nothing but its shape (`windowControls`, default `auto`):
   `header={null}` page owns that corner itself.
 - **A top bar across the window** (`topBarVisibility="always"` above a sidebar)
   is the one that keeps the room; the sidebar below it keeps none.
+- **Panels and nothing else** (no sidebar, top bar or header): the panels are
+  the window's title area. They fill the window, the first one's header keeps
+  the room, and every panel header along the top edge moves the window
+  ([Panes as the title area](/docs/window#panes-as-the-title-area)).
 - **`windowControls="overlay"`**: full-bleed content keeps no room, and the
   controls float over it on a plate of the surface material.
 - **Full screen**: no controls and no room.

@@ -68,7 +68,12 @@ import { useCssShellLayout } from './shell-layout-css';
 import { usePanelInteraction } from './use-panel-interaction';
 import { Z_INDEX } from '../styles/z-index';
 import { useWindow } from '../window/use-window';
-import { useWindowCornerTaken, WindowCornerProvider } from '../window/context';
+import {
+  useWindowCornerTaken,
+  WindowChromeProvider,
+  WindowCornerProvider,
+  type WindowChrome,
+} from '../window/context';
 import { WindowControls } from '../window/WindowControls';
 import { WindowDragRegion } from '../window/WindowDragRegion';
 import { closingOnChoice } from './drawer-choice';
@@ -722,6 +727,50 @@ export function createAppShellEngine() {
         : 0;
     const navSidebar =
       flowSidebar && navRoom > 0 ? { ...flowSidebar, windowControlsRoom: navRoom } : flowSidebar;
+    // Nothing of the shell's own at the corner (no top bar, no navigation in
+    // flow, no header): the shell hands the window's chrome to its panels, as
+    // a desktop application's panes are its title area. The panel layout gives
+    // it to the panels along the window's top edge, and the first one keeps
+    // the controls' room in its header. The frame and the panels do not move:
+    // the room is measured from where the region already starts, and only
+    // while the region starts beside the controls (above `room.top`). A
+    // centred reading envelope is not at the corner, so it gets nothing.
+    const shellHeaderShown =
+      header !== undefined
+        ? header != null
+        : title != null ||
+          breadcrumb != null ||
+          actions != null ||
+          (drawerAvailable && !showTopBar);
+    const contentChromeLeading =
+      room != null &&
+      panelHost &&
+      !showTopBar &&
+      !navInFlow &&
+      !shellHeaderShown &&
+      (stretchReading || !centred)
+        ? rowPadTop < room.top
+          ? Math.max(0, room.leading - rowPadStart)
+          : 0
+        : null;
+    const contentChrome = useMemo<WindowChrome | null>(
+      () => (contentChromeLeading == null ? null : { leading: contentChromeLeading }),
+      [contentChromeLeading],
+    );
+    // The frame's band above the panels is the window's empty chrome too.
+    const windowTopBand =
+      contentChrome != null && rowPadTop > 0 && !doc ? (
+        <WindowDragRegion
+          testID={testID ? `${testID}-window-band` : undefined}
+          style={{
+            position: 'absolute',
+            top: 0,
+            height: rowPadTop,
+            insetInlineStart: 0,
+            insetInlineEnd: 0,
+          }}
+        />
+      ) : null;
     const windowControlsNode =
       windowChrome && appWindow.controls === 'bloom' ? (
         // The window's own corner: the shell is the window's content. A
@@ -852,7 +901,13 @@ export function createAppShellEngine() {
     ]);
 
     const regionChildren = panelHost ? (
-      <AppShellRegionContext.Provider value={region}>{pageChildren}</AppShellRegionContext.Provider>
+      <AppShellRegionContext.Provider value={region}>
+        {platformWindow != null ? (
+          <WindowChromeProvider value={contentChrome}>{pageChildren}</WindowChromeProvider>
+        ) : (
+          pageChildren
+        )}
+      </AppShellRegionContext.Provider>
     ) : (
       pageChildren
     );
@@ -1856,6 +1911,7 @@ export function createAppShellEngine() {
                 )}
               </Animated.View>
               {overlay}
+              {windowTopBand}
               {windowControlsNode}
             </View>,
           )}
@@ -1895,6 +1951,7 @@ export function createAppShellEngine() {
               </View>
               {overlay}
               {bars}
+              {windowTopBand}
               {windowControlsNode}
             </View>,
           )}
@@ -1919,6 +1976,7 @@ export function createAppShellEngine() {
             {body}
             {overlay}
             {bars}
+            {windowTopBand}
             {windowControlsNode}
           </View>,
         )}
