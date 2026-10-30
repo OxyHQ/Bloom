@@ -47,6 +47,14 @@ import {
 import { ContentPanelNestingContext, useContentPanelNestingGuard } from './context';
 import { usePanelSurfaceFill } from './shared';
 import type { ContentPanelFramedBreakpoint, ContentPanelProps } from './types';
+import { cornersStyle, cornerValues, styledCorners } from '../concentric/geometry';
+
+const PHYSICAL_CORNERS = [
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomRightRadius',
+  'borderBottomLeftRadius',
+] as const;
 
 /**
  * Width (in px) of the WEB sticky gutter-mask box-shadow ring. Exported for
@@ -116,11 +124,25 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     : rawFill && paintsSurface
       ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill
       : rawFill;
-  const radius = StyleSheet.flatten(surfaceStyle)?.borderRadius ?? panelShape.radius;
+  const flatSurface = StyleSheet.flatten(surfaceStyle);
+  const radius = flatSurface?.borderRadius ?? panelShape.radius;
   const isFramed = framed ?? width >= framedFrom;
+  // Corners of their own in `surfaceStyle` (a panel along a window's top edge
+  // takes the window's concentric radius there): the content clip and the
+  // material follow them too, the others keep the panel's radius.
+  const ownCorners =
+    isFramed &&
+    typeof radius === 'number' &&
+    flatSurface &&
+    PHYSICAL_CORNERS.some((key) => flatSurface[key] != null)
+      ? cornersStyle(
+          styledCorners({ ...flatSurface, borderRadius: radius }) ?? cornerValues(radius),
+        )
+      : null;
   const geometry = {
     ...resolveShapeStyle({ curve: panelShape.curve }),
     borderRadius: isFramed ? radius : 0,
+    ...ownCorners,
   };
 
   // Tri-state: `undefined` → responsive (breakpoint-gated), `true` → always
@@ -187,7 +209,12 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         ]}
       >
         {paintsSurface ? (
-          <SurfacePaint fill={defaultFill!} radius={radius} shape={{ curve: panelShape.curve }} />
+          <SurfacePaint
+            fill={defaultFill!}
+            radius={radius}
+            shape={{ curve: panelShape.curve }}
+            {...(ownCorners ? { geometryStyle: ownCorners } : null)}
+          />
         ) : null}
         <StyledView
           testID="content-panel-content"

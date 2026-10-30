@@ -79,6 +79,7 @@ import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './Pa
 import { RetainedPanelLayout } from './RetainedPanelLayout';
 import { usePlatformWindow } from '../platform-surface/context';
 import { useWindowChrome, WindowChromeProvider, type WindowChrome } from '../window/context';
+import { windowEdgeTopCorners } from '../window/geometry';
 import type {
   AppShellPanelDefinition,
   AppShellPanelLayout,
@@ -311,7 +312,14 @@ export function createPanelLayoutView(
   }) {
     const layoutReady = useShellLayoutReady();
     // One tree whether or not the panel holds the window's chrome right now.
-    const windowed = usePlatformWindow() != null;
+    const platformWindow = usePlatformWindow();
+    const windowed = platformWindow != null;
+    // Along the window's top edge the panel's top corners are concentric with
+    // the window's own.
+    const windowCorners =
+      windowChrome != null && platformWindow != null
+        ? windowEdgeTopCorners(platformWindow.metrics)
+        : null;
     const panelRef = useRef<ComponentRef<typeof View>>(null);
     const dragOffset = useSharedValue(0);
     const dragLayer = useSharedValue(0);
@@ -604,6 +612,8 @@ export function createPanelLayoutView(
                   ),
                 }
               : undefined,
+            // Only along a window's top edge, so the style is unchanged elsewhere.
+            ...(windowCorners ? [windowCorners] : []),
           ]}
           contentStyle={FILL}
         >
@@ -1238,7 +1248,11 @@ export function createPanelLayoutView(
                 scrollable={false}
                 overlaySizing={document ? 'viewport' : 'panel'}
                 overlayInset={document ? region?.viewportInset : undefined}
-                surfaceStyle={FILL}
+                surfaceStyle={
+                  groupWindowChrome && platformWindow
+                    ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
+                    : FILL
+                }
                 contentStyle={FILL}
               >
                 {content}
@@ -1280,6 +1294,8 @@ export function createPanelLayoutView(
   function PanelLayoutView(props: PanelLayoutViewProps) {
     const region = useAppShellRegion();
     const cssScope = useContext(PanelCssContext);
+    const handedWindowChrome = useWindowChrome();
+    const platformWindow = usePlatformWindow();
     if (props.layout.retain)
       return <RetainedPanelLayout layout={props.layout} gap={props.gap} testID={props.testID} />;
     if (props.layout.header === undefined) return <PanelLayoutTracks {...props} />;
@@ -1304,7 +1320,11 @@ export function createPanelLayoutView(
         scrollable={false}
         overlaySizing={document ? 'viewport' : 'panel'}
         overlayInset={document ? region?.viewportInset : undefined}
-        surfaceStyle={FILL}
+        surfaceStyle={
+          handedWindowChrome && platformWindow
+            ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
+            : FILL
+        }
         contentStyle={FILL}
       >
         {workspace}

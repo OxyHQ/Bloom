@@ -48,7 +48,9 @@ import type { PageHeaderProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { useDirectionProps } from '../hooks/use-is-rtl';
+import { usePlatformWindow } from '../platform-surface/context';
 import { useWindowChrome } from '../window/context';
+import { windowToolbarHeight } from '../window/geometry';
 
 /**
  * `PageHeader`: a screen's top chrome.
@@ -201,7 +203,7 @@ function PageHeaderComponent({
   const surfaceRecipe = useSurfaceFillRecipe();
   const surfaceFill = surfaceRecipe.paint;
   const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_INSETS);
-  const padTop = (safeArea ?? !isWeb) ? insets.top : 0;
+  const safeTop = (safeArea ?? !isWeb) ? insets.top : 0;
 
   // Web container queries own width, including during divider drags. Native
   // measures its own box; the window is its first-render seed only.
@@ -238,19 +240,35 @@ function PageHeaderComponent({
     onBack == null &&
     screenActions == null &&
     hostActions == null;
+  // The window's title area (a Screen's header along the window's top edge,
+  // `@oxy.so/bloom/window`). The bar is the window's toolbar row: it starts
+  // at the window's top (a window has no safe area) and is as tall as the
+  // toolbar, so its row is centred on the window's controls; and it keeps the
+  // controls' room at its leading edge, inside its own background, as a
+  // desktop toolbar does. The room already holds the gap after the controls,
+  // so it replaces the side inset rather than adding to it.
+  const windowChrome = useWindowChrome();
+  const platformWindow = usePlatformWindow();
+  const windowToolbar =
+    positionedByScreen && windowChrome && platformWindow && !barEmpty
+      ? windowToolbarHeight(platformWindow.metrics)
+      : 0;
+  const windowRoom = positionedByScreen && windowChrome ? windowChrome.leading : 0;
+  const padTop = windowToolbar > 0 ? 0 : safeTop;
   const height =
     measuredHeight ||
     padTop +
-      (barEmpty ? 0 : navigationPresentation ? NAVIGATION_HEIGHT : compact ? 32 : BAR_HEIGHT);
+      (barEmpty
+        ? 0
+        : windowToolbar > 0
+          ? windowToolbar
+          : navigationPresentation
+            ? NAVIGATION_HEIGHT
+            : compact
+              ? 32
+              : BAR_HEIGHT);
   const sideInset =
     compact || navigationPresentation ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
-  // The window's title area (a Screen's header along the window's top edge,
-  // `@oxy.so/bloom/window`): the bar keeps the controls' room at its leading
-  // edge, inside its own background, as a desktop toolbar does. The room
-  // already holds the gap after the controls, so it replaces the side inset
-  // rather than adding to it.
-  const windowChrome = useWindowChrome();
-  const windowRoom = positionedByScreen && windowChrome ? windowChrome.leading : 0;
   const barStart = Math.max(sideInset, windowRoom);
 
   const onContainerLayout = (e: LayoutChangeEvent) => {
@@ -725,12 +743,18 @@ function PageHeaderComponent({
                   : {}
                 : dataHook('bloomPageHeaderBar'))}
               className={
-                navigationPresentation ? 'py-0' : compact ? 'min-h-8 py-0' : 'min-h-14 py-2'
+                navigationPresentation || windowToolbar > 0
+                  ? 'py-0'
+                  : compact
+                    ? 'min-h-8 py-0'
+                    : 'min-h-14 py-2'
               }
               style={[
                 [
                   styles.bar,
-                  navigationPresentation && { gap: 2, minHeight: NAVIGATION_HEIGHT },
+                  navigationPresentation
+                    ? { gap: 2, minHeight: windowToolbar || NAVIGATION_HEIGHT }
+                    : windowToolbar > 0 && { minHeight: windowToolbar },
                   isWeb
                     ? windowRoom > 0 &&
                       ({ '--bloom-page-header-window-room': `${windowRoom}px` } as WebCssStyle)

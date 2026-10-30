@@ -22,7 +22,7 @@ import { PortalOutlet, PortalProvider } from '../portal';
 import { Screen } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useWindowHeaderRoom } from '../window';
-import { fakeWindow } from './support/fake-window';
+import { fakeWindow, WINDOW_METRICS } from './support/fake-window';
 import { resolvedStyle } from './support/rendered-style';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
@@ -97,6 +97,41 @@ const barStart = (screen: Rendered, id: string) => {
   const bar = style(screen, `${id}-bar-bar`);
   return bar.paddingInlineStart ?? bar.paddingLeft;
 };
+/** Where the controls' centre line is, from the window's top: 26 on OxyOS. */
+const CONTROLS_CENTRE = WINDOW_METRICS.controls.top + WINDOW_METRICS.controls.height / 2;
+/**
+ * Where a PageHeader's row is centred, from the window's top: every top
+ * offset of the boxes above it (padding, margin, `top`) plus half its row,
+ * which has no vertical padding of its own as the window's toolbar.
+ */
+const titleRowCentre = (screen: Rendered, id: string) => {
+  const bar = screen.getByTestId(`${id}-bar-bar`);
+  const own = resolvedStyle(bar.props.style);
+  let offset = 0;
+  for (let node = bar.parent; node; node = node.parent) {
+    if (typeof node.type !== 'string') continue;
+    const box = resolvedStyle(node.props.style);
+    const value = (key: string) => (typeof box[key] === 'number' ? (box[key] as number) : 0);
+    offset +=
+      (typeof box.paddingTop === 'number' ? box.paddingTop : value('padding')) +
+      (typeof box.marginTop === 'number' ? box.marginTop : value('margin')) +
+      value('top');
+  }
+  return offset + (own.minHeight as number) / 2;
+};
+/** The physical corners a panel's surface is drawn with. */
+const corners = (screen: Rendered, panel: string) => {
+  const surface = screen
+    .getByTestId(`shell-panels-${panel}-surface-bounds`)
+    .findByProps({ testID: 'content-panel-surface' });
+  const box = resolvedStyle(surface.props.style);
+  return [
+    box.borderTopLeftRadius ?? box.borderRadius,
+    box.borderTopRightRadius ?? box.borderRadius,
+    box.borderBottomRightRadius ?? box.borderRadius,
+    box.borderBottomLeftRadius ?? box.borderRadius,
+  ];
+};
 /** The host tree as markup, with React's per-root `useId` values made comparable. */
 const markup = (screen: Rendered) =>
   JSON.stringify(screen.toJSON()).replace(/-r[0-9a-z]+-/g, '-r-');
@@ -135,21 +170,53 @@ describe('a split panel layout with nothing else at the corner', () => {
     expect(barStart(screen, 'detail')).toBe(24);
   });
 
-  it('the content below the header is untouched and the frame does not move', () => {
+  it("the panes start at the window's top edge; the other frame insets stay", () => {
     setWidth(1440);
-    const screen = shell(fakeWindow().adapter, { panelLayout: SPLIT });
+    const windowed = shell(fakeWindow().adapter, { panelLayout: SPLIT });
+    expect(style(windowed, 'shell')).toMatchObject({
+      paddingTop: 0,
+      paddingBottom: 16,
+      paddingInlineStart: 16,
+      paddingInlineEnd: 16,
+    });
     // The first panel starts at the region's edge, with no room of the controls'.
-    const panel = style(screen, 'shell-panels-inbox');
+    const panel = style(windowed, 'shell-panels-inbox');
     expect(panel.marginInlineStart ?? 0).toBe(0);
     expect(panel.paddingInlineStart).toBeUndefined();
-    expect(style(screen, 'inbox-content').paddingInlineStart).toBeUndefined();
-    // The frame's band above the panels moves the window too.
-    expect(style(screen, 'shell-window-band')).toMatchObject({
-      position: 'absolute',
-      top: 0,
-      height: 16,
-    });
-    expect(screen.getByTestId('shell-window-band').props.onStartShouldSetResponder()).toBe(true);
+    expect(style(windowed, 'inbox-content').paddingInlineStart).toBeUndefined();
+    windowed.unmount();
+    // Without windows the frame is the same on every side.
+    expect(style(shell(undefined, { panelLayout: SPLIT }), 'shell')).toMatchObject({ padding: 16 });
+  });
+
+  it("every pane's title row is the window's toolbar, centred on the controls", () => {
+    setWidth(1440);
+    const screen = shell(fakeWindow().adapter, { panelLayout: SPLIT });
+    expect(CONTROLS_CENTRE).toBe(26);
+    for (const id of ['inbox', 'detail']) {
+      expect(style(screen, `${id}-bar-bar`).minHeight).toBe(52);
+      expect(titleRowCentre(screen, id)).toBe(CONTROLS_CENTRE);
+    }
+  });
+
+  it("the panes' top corners are concentric with the window's; the bottom ones stay", () => {
+    setWidth(1440);
+    const windowed = shell(fakeWindow().adapter, { panelLayout: SPLIT });
+    // Top gap 0: the window's own 16 radius. The panel's own radius below.
+    const [, , bottom] = corners(windowed, 'inbox');
+    expect(bottom).not.toBe(WINDOW_METRICS.radius);
+    expect(corners(windowed, 'inbox')).toEqual([16, 16, bottom, bottom]);
+    expect(corners(windowed, 'detail')).toEqual([16, 16, bottom, bottom]);
+    // The content's clip and the material follow the same corners.
+    const content = resolvedStyle(
+      windowed
+        .getByTestId('shell-panels-inbox-surface-bounds')
+        .findByProps({ testID: 'content-panel-content' }).props.style,
+    );
+    expect(content).toMatchObject({ borderTopLeftRadius: 16, borderTopRightRadius: 16 });
+    windowed.unmount();
+    const page = shell(undefined, { panelLayout: SPLIT });
+    expect(corners(page, 'inbox')).toEqual([bottom, bottom, bottom, bottom]);
   });
 
   it('the panels fill the window rather than centring a reading envelope in it', () => {
@@ -186,7 +253,9 @@ describe('full screen', () => {
     const { window, adapter } = fakeWindow({ state: { fullscreen: true } });
     const screen = shell(adapter, { panelLayout: SPLIT });
     expect(screen.queryByTestId('shell-window-controls')).toBeNull();
-    expect(screen.queryByTestId('shell-window-band')).toBeNull();
+    // Full screen is laid out as without windows: the frame and the bars as before.
+    expect(style(screen, 'shell')).toMatchObject({ padding: 16 });
+    expect(style(screen, 'inbox-bar-bar').minHeight).toBeUndefined();
     expect(barStart(screen, 'inbox')).toBe(24);
     expect(moves(screen, 'inbox')).toBe(false);
     expect(moves(screen, 'detail')).toBe(false);
@@ -195,6 +264,8 @@ describe('full screen', () => {
 
     act(() => window.set({ fullscreen: false }));
     expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(style(screen, 'shell').paddingTop).toBe(0);
+    expect(titleRowCentre(screen, 'inbox')).toBe(CONTROLS_CENTRE);
     expect(barStart(screen, 'inbox')).toBe(72);
     expect(moves(screen, 'inbox')).toBe(true);
     expect(moves(screen, 'detail')).toBe(true);
@@ -243,6 +314,13 @@ describe('other panel shapes', () => {
     expect(moves(screen, 'inbox')).toBe(true);
     expect(barStart(screen, 'detail')).toBe(24);
     expect(moves(screen, 'detail')).toBe(false);
+    // Only the top pane touches the window's top: its toolbar and corners are
+    // the window's; the one below keeps its own bar and corners.
+    expect(titleRowCentre(screen, 'inbox')).toBe(CONTROLS_CENTRE);
+    expect(style(screen, 'detail-bar-bar').minHeight).toBeUndefined();
+    const [, , bottom] = corners(screen, 'inbox');
+    expect(corners(screen, 'inbox')).toEqual([16, 16, bottom, bottom]);
+    expect(corners(screen, 'detail')).toEqual([bottom, bottom, bottom, bottom]);
   });
 
   it('retained panels: the corner panel keeps the room, its neighbour moves the window', () => {
@@ -345,7 +423,6 @@ describe('the corner has one owner', () => {
     );
     expect(screen.getAllByLabelText('Close')).toHaveLength(1);
     expect(screen.queryByTestId('inner-window-controls')).toBeNull();
-    expect(screen.queryByTestId('inner-window-band')).toBeNull();
     expect(barStart(screen, 'inbox')).toBe(24);
     expect(moves(screen, 'inbox')).toBe(false);
   });
@@ -365,6 +442,7 @@ describe('a Screen that is the window', () => {
     expect(style(screen, 'root-window-controls')).toMatchObject({ top: 16, insetInlineStart: 14 });
     expect(barStart(screen, 'root')).toBe(88);
     expect(moves(screen, 'root')).toBe(true);
+    expect(titleRowCentre(screen, 'root')).toBe(CONTROLS_CENTRE);
   });
 
   it('a screen nested in its content is not at the corner', () => {
@@ -429,10 +507,9 @@ describe('right to left', () => {
     expect(bar.paddingLeft).toBeUndefined();
     expect(bar.paddingRight).toBeUndefined();
     expect(style(screen, 'shell-window-controls')).toMatchObject({ insetInlineStart: 14 });
-    expect(style(screen, 'shell-window-band')).toMatchObject({
-      insetInlineStart: 0,
-      insetInlineEnd: 0,
-    });
+    expect(style(screen, 'shell')).toMatchObject({ paddingInlineStart: 16, paddingInlineEnd: 16 });
+    // Both top corners take the window's radius, so they mirror unchanged.
+    expect(corners(screen, 'inbox').slice(0, 2)).toEqual([16, 16]);
   });
 });
 
@@ -482,7 +559,6 @@ describe('without the window capability', () => {
       const screen = mount(adapter, ui());
       expect(markup(screen)).toBe(before);
       expect(screen.queryByLabelText('Close')).toBeNull();
-      expect(screen.queryByTestId('shell-window-band')).toBeNull();
       screen.unmount();
     }
   });
