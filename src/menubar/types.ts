@@ -42,10 +42,28 @@ export interface MenubarMenuProps {
 export type MenubarTriggerProps = OverlayTriggerProps;
 export type MenubarContentProps = MenuSurfaceProps;
 
-export type MenubarItemProps = MenuRowProps;
-export type MenubarCheckboxItemProps = MenuCheckboxRowProps;
+/**
+ * A command's shortcut, as a key chord: `Mod+N`, `Mod+Shift+Z`, `Alt+F4`.
+ * `Mod` is the platform's command modifier: ⌘ on Apple platforms, Ctrl
+ * elsewhere (OxyOS included). The other modifiers are `Ctrl`, `Alt`, `Shift`
+ * and `Meta`; the key is one character or a key name (`Enter`, `ArrowUp`,
+ * `F5`, `Space`, `Plus`).
+ */
+export interface MenubarShortcutProp {
+  /**
+   * The item's key chord. Pressing it runs the item, on every platform, with or
+   * without the menu open or a bar showing it; the row draws it for the
+   * platform (`⌘N` on a Mac, `Ctrl+N` elsewhere) as its trailing hint, unless
+   * the row has a `trailing` of its own. A focused text field keeps the keys it
+   * edits with (`Mod+C`, `Mod+V`, …).
+   */
+  shortcut?: string;
+}
+
+export interface MenubarItemProps extends MenuRowProps, MenubarShortcutProp {}
+export interface MenubarCheckboxItemProps extends MenuCheckboxRowProps, MenubarShortcutProp {}
 export type MenubarRadioGroupProps = MenuRadioGroupProps;
-export type MenubarRadioItemProps = MenuRadioRowProps;
+export interface MenubarRadioItemProps extends MenuRadioRowProps, MenubarShortcutProp {}
 export type MenubarLabelProps = MenuLabelProps;
 export type MenubarShortcutProps = MenuShortcutProps;
 export type MenubarGroupProps = MenuGroupProps;

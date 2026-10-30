@@ -19,7 +19,6 @@ import {
   MenubarItem,
   MenubarMenu,
   MenubarSeparator,
-  MenubarShortcut,
   MenubarTrigger,
 } from '@oxy.so/bloom/menubar';
 
@@ -27,7 +26,7 @@ import {
   <MenubarMenu value="file">
     <MenubarTrigger>File</MenubarTrigger>
     <MenubarContent>
-      <MenubarItem trailing={<MenubarShortcut>⌘N</MenubarShortcut>} onPress={newTab}>
+      <MenubarItem shortcut="Mod+T" onPress={newTab}>
         New tab
       </MenubarItem>
       <MenubarItem onPress={open}>Open…</MenubarItem>
@@ -75,6 +74,52 @@ Pressing an open menu's trigger closes it.
 `MenubarItem`, `MenubarCheckboxItem`, `MenubarRadioGroup` / `MenubarRadioItem`, `MenubarLabel`, `MenubarSeparator`, `MenubarShortcut`, `MenubarGroup`, and `MenubarSub` / `MenubarSubTrigger` / `MenubarSubContent`.
 
 Sub-menus fly out beside their trigger row on web and render as an inline disclosure on native — see [DropdownMenu](/docs/bloom/main/dropdown-menu).
+
+## Shortcuts
+
+`MenubarItem`, `MenubarCheckboxItem` and `MenubarRadioItem` take a `shortcut`: a key chord, `+`-separated modifiers and then one key.
+
+```tsx
+<MenubarItem shortcut="Mod+N" onPress={newDocument}>New</MenubarItem>
+<MenubarItem shortcut="Mod+Shift+Z" onPress={redo}>Redo</MenubarItem>
+<MenubarCheckboxItem shortcut="Mod+Shift+D" checked={dense} onCheckedChange={setDense}>
+  Dense rows
+</MenubarCheckboxItem>
+```
+
+- **The modifiers**, in any case and any order: `Mod`, the platform's command modifier (⌘ on Apple platforms, Ctrl elsewhere, OxyOS included), `Ctrl`, `Alt`, `Shift` and `Meta` (⌘ on a Mac, the Windows or Super key elsewhere). The key is one character, or a key name (`Enter`, `Escape`, `Tab`, `Backspace`, `Delete`, `Home`, `End`, `PageUp`, `PageDown`, the arrows as `ArrowUp`…, `F1`–`F24`), with `Space` and `Plus` for those two. A chord that is none of these warns in development and gives the item no shortcut.
+- **The row draws it** for the platform as its trailing hint: `⌘N` and `⇧⌘Z` on a Mac (⌃⌥⇧⌘, then the key), `Ctrl+N` and `Ctrl+Shift+Z` elsewhere. A row's own `trailing` wins. `MenubarShortcut` is still the drawn-only hint (`trailing={<MenubarShortcut>⌘N</MenubarShortcut>}`): its text is not a chord and runs nothing.
+- **Pressing it runs the item** exactly as pressing its row does (a check item toggles, a radio item selects, an open menu closes unless the item `keepOpen`), on every platform, whether its menu is open or closed and whether or not any bar shows it. A held chord runs it once. A disabled item's chord (or one in a disabled menu or submenu) runs nothing and is left to the page.
+- **Who takes a key.** A menu's chord comes before the focused control, as a Mac's key equivalents do, except:
+  - a focused text field keeps what it edits with: every key without Ctrl, Alt or Meta; moving and deleting (the arrows, Home, End, Page Up and Down, Backspace, Delete) with any modifiers; `Mod+C`, `Mod+X`, `Mod+V`, `Mod+A`, `Mod+Z` and `Mod+Shift+Z`; and on Apple platforms Option alone, which types characters. An Edit menu's Copy item acts through the field (the application's own `onPress`);
+  - while a menu or a list is open, a key without Ctrl, Alt or Meta is that menu's (its arrows, its typeahead);
+  - a key something before it took (`defaultPrevented`), and an input method's composition.
+
+  A chord that ran an item is consumed, so the browser's own `Ctrl+N` or `Ctrl+S` does not also happen.
+- **Where the keys come from.** On the web, the page's `keydown` in the capture phase (a bubble listener never hears a key typed in a text field: react-native-web's `TextInput` stops them). On native, the platform adapter's `keyboard` ([Platform surfaces](/docs/bloom/main/platform-surface)): React Native has no window-wide key event, so a native app whose runtime supplies no key source has no shortcuts; its menus still work by pressing.
+- Several bars in one window share the keys: the first mounted bar with the chord runs it, once.
+
+Matching reads the character typed (`event.key`), and the physical key (`code`) where that character is not the key's name: under Alt (a Mac's Option+N types `˜`), Shift with a digit, and a non-Latin layout. A symbol that needs Shift to be typed (`Mod+?`) matches without `Shift` in the chord; a letter, digit or named key wants exactly the modifiers declared.
+
+## A platform's menu bar (`menu-bar`)
+
+Where the platform shows the active window's menus in a bar of its own (OxyOS's top bar, a Mac's), its adapter reports `menu-bar` ([Platform surfaces](/docs/bloom/main/platform-surface), OxyOS ADR 0021). The application's declaration does not change.
+
+- **`Menubar` draws nothing in the window.** It gives the platform a description of its menus (`PlatformMenuBar.setMenus`): each menu's label, and its items, check items (`checked`), radio items (each `checked` or not), separators and submenus, with each item's label (its text), `enabled` and its chord (`Mod+Shift+Z`, the one canonical spelling). A group's `MenubarLabel` is an item that is never enabled. `MenubarGroup` and `MenubarRadioGroup` are their items.
+- **It describes again whenever the description changes**, once for the commit that changed it however many items changed, never per item and not when it came out the same. Unmounted, it gives the platform `[]`.
+- **An item chosen in the platform's bar** (`onActivate(id)`) runs exactly as a press on its row would, once. A disabled item, an id it no longer has and a menu's own id run nothing.
+- **Ids** are Bloom's (`bloom-menu-…`), stable while the item is mounted, unique in the window.
+- **One bar per window.** The platform shows one set of menus, so the first `Menubar` mounted publishes; another mounted while it is publishes nothing, runs no shortcut and warns in development, and takes over (publishing its own menus) when the first unmounts. Declare the window's menus in one `Menubar`.
+
+### How the bar knows its declaration
+
+Each part registers itself with its bar while it is mounted: a trigger its menu (its label, `disabled`), an item its kind, label, state, chord and a `run` that calls the part's own current handler, so `onPress`, `onCheckedChange` and `onValueChange` stay the application's closures. With the capability the whole declaration is mounted **headless**: the parts register and render nothing. Without it, a closed menu's (or submenu's) content is mounted headless beside its panel, so its shortcuts work while it is closed; open, the rows draw exactly as before and register too.
+
+The description keeps the declared order: each container (the bar, a menu's content, a group, a submenu's content) records its children's positions, arrays and fragments flattened into them, so an item that mounts later between two others is described between them. Items rendered by one custom component share its position and keep the order they mounted in.
+
+A menu's content is its rows. Something else placed in one (a bare `View` or `Text`) is mounted with the declaration, so it would draw where the declaration is mounted headless, and it is not part of the description.
+
+The labels are the text under each part (strings and numbers, through element children, without a `MenubarShortcut` hint), else its `accessibilityLabel` (an item) or `label` (a trigger). Text a custom component renders is not seen; give such a row an `accessibilityLabel`.
 
 ## Keyboard (web)
 

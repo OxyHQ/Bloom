@@ -10,6 +10,7 @@
 import { createContext, useContext } from 'react';
 
 import type { OverlayShellContextValue } from '../floating/types';
+import type { MenubarRegistry } from './registry';
 
 export interface MenubarContextValue {
   /** The `value` of the menu currently open, or `undefined` when none is. */
@@ -41,4 +42,42 @@ export function useMenubarMenu(): OverlayShellContextValue {
     throw new Error('MenubarTrigger and MenubarContent must be rendered inside a <MenubarMenu>.');
   }
   return value;
+}
+
+/**
+ * Where a declared part sits in its bar's declaration, for the part to
+ * register itself (`declared.tsx`).
+ *
+ * `headless` is the declaration mounted to be KNOWN rather than drawn: with
+ * the `menu-bar` capability the whole bar is, and without it a closed menu's
+ * content is (so its shortcuts work while it is closed). A headless part
+ * registers and draws nothing.
+ */
+export interface MenubarScope {
+  readonly registry: MenubarRegistry;
+  readonly headless: boolean;
+  /** The menu or submenu the parts here are in; null directly in the bar. */
+  readonly parent: string | null;
+  /** The position here in the declaration (see `registry.ts`). */
+  readonly path: readonly number[];
+  /**
+   * The menu or submenu whose trigger is here: a `MenubarTrigger` registers its
+   * `MenubarMenu`, a `MenubarSubTrigger` its `MenubarSub`.
+   */
+  readonly owner?: {
+    readonly kind: 'menu' | 'submenu';
+    readonly id: string;
+    readonly parent: string | null;
+    readonly path: readonly number[];
+  };
+}
+
+const MenubarScopeContext = createContext<MenubarScope | null>(null);
+MenubarScopeContext.displayName = 'BloomMenubarScopeContext';
+
+export const MenubarScopeProvider = MenubarScopeContext.Provider;
+
+/** The part's place in its bar's declaration; null outside a `Menubar`. */
+export function useMenubarScope(): MenubarScope | null {
+  return useContext(MenubarScopeContext);
 }

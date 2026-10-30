@@ -14,7 +14,7 @@
  * neutral module naming a forked target resolves to NATIVE in every bundler
  * that is not Metro and no gate would report it.
  */
-import React, { type ComponentRef, useMemo, useRef } from 'react';
+import React, { type ComponentRef, useCallback, useMemo, useRef, useState } from 'react';
 import { StyleSheet, type View as RNView } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { FIELD_REST_BORDER_WIDTH } from '../styles/field-border';
@@ -34,11 +34,33 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import { useMenuFocusIntent, useMenuTriggerKeys } from '../floating/menu-keyboard';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { StyledText, StyledView } from '../styles/styled-primitives';
-import { MenubarMenuProvider, MenubarProvider, useMenubar, useMenubarMenu } from './context';
+import { usePlatformMenuBar } from '../platform-surface/context';
+import {
+  type MenubarScope,
+  MenubarMenuProvider,
+  MenubarProvider,
+  MenubarScopeProvider,
+  useMenubar,
+  useMenubarMenu,
+  useMenubarScope,
+} from './context';
+import { DeclaredChildren, textOf, useMenuEntry } from './declared';
+import { MenubarRegistry, nextMenuEntryId } from './registry';
 import type { MenubarMenuProps, MenubarProps, MenubarTriggerProps } from './types';
+import { useMenuShortcuts } from './use-menu-shortcuts';
+import { usePublishMenus } from './use-publish-menus';
 import { useMessages } from '../locale/messages';
 import { MENUBAR_MESSAGES } from './messages';
 
+const noHint = () => false;
+
+/**
+ * The bar. Without the `menu-bar` capability it draws itself in the window, as
+ * it always has. With it, it draws nothing: its declaration is mounted
+ * headless, described to the platform's bar (`use-publish-menus.ts`), and an
+ * item chosen there runs here. Either way each item's shortcut runs it
+ * (`use-menu-shortcuts.ts`).
+ */
 export function Menubar({
   children,
   value,
@@ -57,11 +79,37 @@ export function Menubar({
     onChange: onValueChange,
   });
   const context = useMemo(() => ({ value: openValue, setValue }), [openValue, setValue]);
+  const menuBar = usePlatformMenuBar();
+  const [registry] = useState(() => new MenubarRegistry());
+  const publishing = usePublishMenus(registry, menuBar);
+  // A shortcut runs its item as a press on the row would, so an open menu
+  // closes after it unless the item keeps it open.
+  const onShortcut = useCallback(
+    (entry: { keepOpen?: boolean }) => {
+      if (!entry.keepOpen && openValue !== undefined) setValue(undefined);
+    },
+    [openValue, setValue],
+  );
+  useMenuShortcuts(registry, menuBar === null || publishing, onShortcut);
+  const scope = useMemo<MenubarScope>(
+    () => ({ registry, headless: menuBar !== null, parent: null, path: [] }),
+    [registry, menuBar],
+  );
   const palette = useMenuPalette();
   const barPaint = {
     borderColor: palette.trigger.border,
     boxShadow: palette.trigger.shadow,
   };
+
+  if (menuBar) {
+    return (
+      <MenubarProvider value={context}>
+        <MenubarScopeProvider value={scope}>
+          <DeclaredChildren>{children}</DeclaredChildren>
+        </MenubarScopeProvider>
+      </MenubarProvider>
+    );
+  }
 
   return (
     <MenubarProvider value={context}>
@@ -86,7 +134,7 @@ export function Menubar({
             composite
           />
         ) : null}
-        {children}
+        <MenubarScopeProvider value={scope}>{children}</MenubarScopeProvider>
       </StyledView>
     </MenubarProvider>
   );
@@ -94,6 +142,19 @@ export function Menubar({
 
 export function MenubarMenu({ children, value }: MenubarMenuProps) {
   const bar = useMenubar();
+  const scope = useMenubarScope();
+  const [id] = useState(nextMenuEntryId);
+  // Its trigger registers it (it carries the menu's label and state); the
+  // parts inside it are in it.
+  const inner = useMemo<MenubarScope | null>(
+    () =>
+      scope && {
+        ...scope,
+        parent: id,
+        owner: { kind: 'menu', id, parent: null, path: scope.path },
+      },
+    [scope, id],
+  );
   const anchorRef = useRef<ComponentRef<typeof RNView> | null>(null);
   const { setValue } = bar;
   const focusIntent = useMenuFocusIntent();
@@ -108,10 +169,34 @@ export function MenubarMenu({ children, value }: MenubarMenuProps) {
     [bar.value, value, setValue, focusIntent],
   );
 
-  return <MenubarMenuProvider value={context}>{children}</MenubarMenuProvider>;
+  return (
+    <MenubarMenuProvider value={context}>
+      {inner ? <MenubarScopeProvider value={inner}>{children}</MenubarScopeProvider> : children}
+    </MenubarMenuProvider>
+  );
 }
 
-export function MenubarTrigger({
+/**
+ * A menu's trigger: it names its menu and says whether it can open, so it is
+ * what registers the menu with the bar. Headless it draws nothing.
+ */
+export function MenubarTrigger(props: MenubarTriggerProps) {
+  const scope = useMenubarScope();
+  const owner = scope?.owner?.kind === 'menu' ? scope.owner : undefined;
+  useMenuEntry(owner ? scope : null, {
+    kind: 'menu',
+    id: owner?.id,
+    parent: null,
+    path: owner?.path,
+    label: textOf(props.children, noHint) || (props.label ?? ''),
+    enabled: !props.disabled,
+    shortcut: null,
+  });
+  if (scope?.headless) return null;
+  return <MenubarTriggerButton {...props} />;
+}
+
+function MenubarTriggerButton({
   children,
   asChild,
   disabled,

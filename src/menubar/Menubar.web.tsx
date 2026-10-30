@@ -28,12 +28,13 @@ import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
 import { cx } from '../floating/shared';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useMenubarMenu } from './context';
+import { createMenubarContent, createMenubarRows } from './declared';
 import type { MenubarContentProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 
 export { Menubar, MenubarMenu, MenubarTrigger } from './MenubarBase';
 
-export function MenubarContent({
+function MenubarPanel({
   children,
   alignRows,
   size,
@@ -102,7 +103,10 @@ export function MenubarContent({
   );
 }
 
-const rows = createMenuRows('Menubar', createFlyoutMenuSub);
+/** The menu's content: the panel above, or the declaration alone where it is not drawn. */
+export const MenubarContent = createMenubarContent(MenubarPanel);
+
+const rows = createMenubarRows(createMenuRows('Menubar', createFlyoutMenuSub));
 
 export const MenubarItem = rows.Item;
 export const MenubarCheckboxItem = rows.CheckboxItem;

@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { isApplePlatform } from '../kbd/chord';
 
 /**
  * A shortcut as the sidebar displays it — `⌥⌃1`, `⌘K`, `Ctrl+Shift+P` — parsed
@@ -35,17 +35,6 @@ const WORDS: Record<string, keyof Omit<SidebarShortcut, 'key'>> = {
   opt: 'alt',
   shift: 'shift',
 };
-
-/** Whether the command modifier is ⌘: macOS, iOS and iPadOS. */
-export function isApplePlatform(): boolean {
-  if (Platform.OS === 'ios' || Platform.OS === 'macos') return true;
-  if (Platform.OS !== 'web' || typeof navigator === 'undefined') return false;
-  const platform =
-    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
-    navigator.platform ??
-    '';
-  return /mac|iphone|ipad|ipod/i.test(platform) || /Mac OS X/.test(navigator.userAgent ?? '');
-}
 
 const APPLE_GLYPHS: Record<string, string> = {
   mod: '⌘',
