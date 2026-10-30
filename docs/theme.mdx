@@ -31,7 +31,11 @@ defaults. Use controlled `colorPreset` or `mode` when the app owns that value:
 ```
 
 Here the preset stays orange even if storage contains a different preference;
-mode remains user-selectable. Controlled props take precedence over hydration.
+mode remains user-selectable. On a platform with an accent of its own (the
+`appearance` capability, OxyOS), an app that sets no preset takes the system's
+accent; any of the above is the app's own colour and wins, unless the app passes
+`followSystemAccent` ([Platform surfaces](./platform-surface.mdx), *Whose
+colour*). Controlled props take precedence over hydration.
 Use `onColorPresetChange` and `onModeChange` to receive requested changes when
 controlling values from application state.
 

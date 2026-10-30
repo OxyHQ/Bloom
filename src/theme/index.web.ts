@@ -33,6 +33,7 @@ export { buildThemeFromSeed, buildColorsFromSeed } from './build-theme-from-seed
 export type { SeedAccents } from './build-theme-from-seed';
 export { THEME_GRADIENTS } from './gradients';
 export { useTheme, useThemeColor, useBloomTheme } from './use-theme';
+export { useReducedTransparency } from './reduced-transparency';
 export { useAmbientTheme, ambientTheme } from './ambient-store';
 export type {
   AmbientThemeState,

@@ -25,8 +25,13 @@ Bump to 15.64.0. Nothing else changes.
 - **menubar: a platform's menu bar.** With `menu-bar`, `Menubar` draws nothing in the window: the same declaration is mounted headless and described to the platform, again once per commit that changes it (never per item, not when it is the same), `[]` when it unmounts; an item chosen there runs exactly as a press on its row would (a check item toggles, a radio item selects; a disabled one does not run). Ids are stable while an item is mounted. The first `Menubar` mounted in a window publishes; another warns in development and takes over when it unmounts. Without the capability the bar draws exactly as before.
 - **menubar: shortcuts as chords (`shortcut` on `MenubarItem`, `MenubarCheckboxItem`, `MenubarRadioItem`).** `shortcut="Mod+N"`: `Mod` is ⌘ on Apple platforms and Ctrl elsewhere. The row draws it for the platform (`⌘N`, `⇧⌘Z`; `Ctrl+N`, `Ctrl+Shift+Z`) unless it has its own `trailing`. Pressing it runs the item on every platform, with its menu open or closed and with or without a bar: from the page's keys on the web (capture phase, so it works in a text field), from the adapter's `keyboard` natively. A focused text field keeps the keys it edits with (`Mod+C/X/V/A/Z`, `Mod+Shift+Z`, typing, moving, deleting); an open menu keeps keys without Ctrl, Alt or Meta.
 
+- **platform-surface: the `appearance` capability.** An adapter that reports `appearance` supplies the platform's appearance (`PlatformAppearance`: `getState()` → `{ accent, reduceTransparency }`, `subscribe`), an external store every application follows at once. Light or dark stays React Native's `Appearance`. `usePlatformAppearance()` throws for a reported capability without an appearance; `usePlatformAppearanceState()` reads it. OxyOS ADR 0019.
+- **theme: the platform's accent seeds the palette; `followSystemAccent`.** An app with no colour preset of its own (no `colorPreset`, `defaultColorPreset` or chosen preset) draws the platform's accent, a preset name; an app's own colour wins, as an app's tint does on a Mac, unless it passes `followSystemAccent`. A name Bloom does not know is no accent. The accent is never persisted, and `resetTheme()` returns to it.
+- **theme: `useReducedTransparency()`.** Whether transparency is reduced app-wide (`reduceTransparency`, or the platform's appearance). The surface material follows it through the document attribute, the window controls included; `Backdrop` and `ProgressiveBlur` draw their blur's tint with nothing blurred; the hand-made web blurs (spoiler cover, AI chat actions and toast, model picker fade, radar chart disc) paint opaque. `reduced-transparency-census.test.ts` keeps every blur on the one switch.
+
 ### Changed
 
+- **`reduceTransparency` reaches the blurs drawn in JavaScript, native included.** `Backdrop` and `ProgressiveBlur` (both forks) and the hand-made web blurs now follow it, not only the web material. Without the prop or the capability every tree is identical.
 - **menubar: a closed menu's content is mounted.** Without the capability, a closed menu's (and a closed submenu's) content is mounted headless beside its panel, so its shortcuts work: its rows register and render nothing. A component that is not a row placed in a menu is now mounted while the menu is closed.
 
 ### Fixed
@@ -35,7 +40,7 @@ Bump to 15.64.0. Nothing else changes.
 
 ### Consumers
 
-No change unless an app's runtime registers a platform adapter that reports `window` or `menu-bar`, or a menu declares a `shortcut`.
+No change unless an app's runtime registers a platform adapter that reports `window`, `menu-bar` or `appearance`, a menu declares a `shortcut`, or an app passes `reduceTransparency` (its backdrops and progressive blurs now draw their tint alone).
 
 ## 15.63.0
 

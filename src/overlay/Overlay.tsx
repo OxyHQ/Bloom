@@ -46,7 +46,8 @@ import { createContext, memo, useContext, useMemo } from 'react';
 import { BlurView } from 'expo-blur';
 
 import { useIsRtl } from '../hooks/use-is-rtl';
-import { backdropDimStyle, clampBackdropNumber } from './backdrop-paint';
+import { backdropDimStyle, blurTintColor, clampBackdropNumber } from './backdrop-paint';
+import { useReducedTransparency } from '../theme/reduced-transparency';
 import { useWindowedBlurTarget } from '../blur/blur-target';
 import {
   Platform,
@@ -266,6 +267,11 @@ interface BackdropLayerProps {
    * the app's own window must not receive it.
    */
   blurTarget?: ReturnType<typeof useWindowedBlurTarget>;
+  /**
+   * Transparency is reduced: the blur layer is its tint alone, a plain view
+   * with nothing blurred under it (`blurTintColor`), under the same dim.
+   */
+  reduced: boolean;
   blurIntensity: number;
   blurTint: 'light' | 'dark' | 'default';
   dimStyle: ViewStyle;
@@ -282,6 +288,7 @@ interface BackdropLayerProps {
  */
 function AnimatedBackdropLayers({
   blurTarget,
+  reduced,
   progress,
   blurIntensity,
   blurTint,
@@ -302,7 +309,19 @@ function AnimatedBackdropLayers({
 
   return (
     <>
-      {blurIntensity > 0 ? (
+      {blurIntensity > 0 && reduced ? (
+        <Animated.View
+          style={[
+            [
+              StyleSheet.absoluteFill,
+              { backgroundColor: blurTintColor(blurTint, blurIntensity) },
+              layerStyle,
+              blurFade,
+            ],
+            pointerEventsStyle('none'),
+          ]}
+        />
+      ) : blurIntensity > 0 ? (
         <AnimatedBlurView
           intensity={blurIntensity}
           tint={blurTint}
@@ -343,6 +362,7 @@ function AnimatedBackdropLayers({
  */
 function StaticBackdropLayers({
   blurTarget,
+  reduced,
   blurIntensity,
   blurTint,
   dimStyle,
@@ -352,7 +372,19 @@ function StaticBackdropLayers({
 }: BackdropLayerProps) {
   return (
     <>
-      {blurIntensity > 0 ? (
+      {blurIntensity > 0 && reduced ? (
+        <View
+          style={[
+            [
+              StyleSheet.absoluteFill,
+              { backgroundColor: blurTintColor(blurTint, blurIntensity) },
+              layerStyle,
+              { opacity: staticOpacity },
+            ],
+            pointerEventsStyle('none'),
+          ]}
+        />
+      ) : blurIntensity > 0 ? (
         <BlurView
           intensity={blurIntensity}
           tint={blurTint}
@@ -415,6 +447,7 @@ export const Backdrop = memo(function Backdrop({
   // `undefined` unless this backdrop is inside a declared separate native
   // window. On Android that is the difference between a real blur and a crash.
   const blurTarget = useWindowedBlurTarget();
+  const reduced = useReducedTransparency();
 
   // The press target must stay a pure hit box. Two things a caller's `style`
   // can carry would break the visuals if honoured there:
@@ -431,6 +464,7 @@ export const Backdrop = memo(function Backdrop({
 
   const layerProps: BackdropLayerProps = {
     blurTarget,
+    reduced,
     blurIntensity: clampBackdropNumber(blurIntensity, BACKDROP_BLUR_INTENSITY, 100),
     blurTint,
     dimStyle: backdropDimStyle(resolvedDimColor, dimGradient, rtl),

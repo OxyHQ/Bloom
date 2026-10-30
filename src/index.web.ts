@@ -93,6 +93,8 @@ export { ImageResolverProvider, useImageResolver, isImageUrl } from './image-res
 export type { ImageResolver } from './image-resolver';
 export {
   PlatformSurfaceProvider,
+  usePlatformAppearance,
+  usePlatformAppearanceState,
   usePlatformKeyboard,
   usePlatformMenuBar,
   usePlatformSurfaces,
@@ -100,6 +102,8 @@ export {
   usePopupSurface,
 } from './platform-surface';
 export type {
+  PlatformAppearance,
+  PlatformAppearanceState,
   PlatformKeyboard,
   PlatformKeyEvent,
   PlatformMenu,

@@ -1,6 +1,6 @@
 ---
 title: Platform surfaces
-description: The host platform's popups, windows, menu bar and keys, registered once at the root, so native menus can open beyond the window, a desktop window gets its controls and an application's menus can live in the platform's bar.
+description: The host platform's popups, windows, menu bar, keys and appearance, registered once at the root, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar and every application follows the system's accent and reduce transparency.
 order: 55
 ---
 
@@ -132,6 +132,52 @@ for a key of its own.
 
 `usePlatformMenuBar()` returns the bar only when the capability is reported;
 an adapter that reports it without `menuBar` throws.
+
+## `appearance`
+
+The platform has an appearance for every application beyond light or dark, as
+OxyOS's Settings does (OxyOS ADR 0019, decision 4) and a Mac's accent colour and
+Reduce transparency do. The adapter supplies it (`appearance:
+PlatformAppearance`):
+
+```ts
+interface PlatformAppearance {
+  getState(): { accent: string | null; reduceTransparency: boolean };
+  subscribe(listener: () => void): () => void;
+}
+```
+
+- **Light or dark is not part of it.** React Native's `Appearance` and
+  `useColorScheme` carry that, and `mode="system"` already follows them.
+- **An external store**, as the window's state is: a fresh but equal state is
+  not a change. `BloomThemeProvider` reads it once for the whole app
+  (`usePlatformAppearanceState()`), so a change applies at once, with no restart.
+- **`accent`** is the name of one of Bloom's colour presets (`APP_COLOR_PRESETS`:
+  `oxy`, `blue`, `purple`, `pink`, `red`, `orange`, `yellow`, `green`, `gray`,
+  …). It is the palette's preset, under the rule below. A name Bloom does not
+  know is no accent: the app keeps its own colour, never an error.
+- **`reduceTransparency`** draws every blurred material opaque, as
+  `BloomProvider reduceTransparency` does ([Surface](/docs/surface), *Reduced
+  transparency*).
+
+`usePlatformAppearance()` returns the appearance only when the capability is
+reported; an adapter that reports it without `appearance` throws.
+
+### Whose colour: the app's or the system's
+
+As on a Mac, an app follows the system's accent unless it has a colour of its
+own (its tint):
+
+| The app | Its palette |
+| --- | --- |
+| sets no preset (no `colorPreset`, `defaultColorPreset`, `prepaintTheme.defaultColorPreset`, nothing chosen or persisted) | the platform's accent; `oxy` without one |
+| has its own colour: `colorPreset`, `defaultColorPreset`, or a preset the person chose with `setColorPreset` (persisted or not) | its own; the platform's accent never replaces a brand |
+| has its own and passes `followSystemAccent` | the platform's accent, its own wherever there is none (or an unknown one) |
+
+A dynamic `seed` (or `useAmbientTheme`) still themes the whole app from that
+colour. `useBloomTheme().colorPreset` is the preset drawn, the accent included.
+The accent is never persisted as the app's choice, and `resetTheme()` returns an
+app with no default to following it.
 
 ## `keyboard`
 

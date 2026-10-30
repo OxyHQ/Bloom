@@ -15,8 +15,13 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
  *   own (the top of the screen, as on a Mac). A `Menubar` then draws nothing in
  *   the window: it describes its menus to the platform (`PlatformMenuBar`) and
  *   runs the item the person chooses there.
+ * - `appearance`: the platform has an appearance of its own for every
+ *   application (`PlatformAppearance`): an accent colour, which seeds Bloom's
+ *   palette, and whether transparency is reduced, which draws every blurred
+ *   material opaque. Light or dark is not part of it: React Native's
+ *   `Appearance` already carries that.
  */
-export type SurfaceCapability = 'popup-surface' | 'window' | 'menu-bar';
+export type SurfaceCapability = 'popup-surface' | 'window' | 'menu-bar' | 'appearance';
 
 /** Why the platform closed a popup without the application asking. */
 export type PopupDismissReason =
@@ -213,6 +218,31 @@ export interface PlatformKeyboard {
   subscribe(listener: (event: PlatformKeyEvent) => boolean): () => void;
 }
 
+/** What the platform's appearance is now (`PlatformAppearance.getState`). */
+export interface PlatformAppearanceState {
+  /**
+   * The person's accent, by the name of one of Bloom's colour presets
+   * (`APP_COLOR_PRESETS`: `oxy`, `blue`, `purple`, `pink`, …), or null for
+   * none. A name Bloom does not know is treated as none.
+   */
+  readonly accent: string | null;
+  /** Draw every blurred material opaque, with no backdrop blur. */
+  readonly reduceTransparency: boolean;
+}
+
+/**
+ * The platform's appearance, with the `appearance` capability: what it asks
+ * every application to look like beyond light or dark (which React Native's
+ * `Appearance` and `useColorScheme` carry). An external store (`getState` +
+ * `subscribe`, as `useSyncExternalStore` reads it): a change applies at once,
+ * with no restart.
+ */
+export interface PlatformAppearance {
+  getState(): PlatformAppearanceState;
+  /** Calls `listener` whenever `getState()` changes; returns the unsubscribe. */
+  subscribe(listener: () => void): () => void;
+}
+
 /**
  * A host platform's surfaces, registered with `BloomProvider platform={…}`.
  *
@@ -235,6 +265,8 @@ export interface PlatformSurfaceAdapter {
   readonly window?: PlatformWindow;
   /** Required with `menu-bar`: the platform's bar that shows this window's menus. */
   readonly menuBar?: PlatformMenuBar;
+  /** Required with `appearance`: the accent and reduce transparency every application follows. */
+  readonly appearance?: PlatformAppearance;
   /** The window's key presses, where they do not arrive through a DOM `document`. */
   readonly keyboard?: PlatformKeyboard;
 }
