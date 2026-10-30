@@ -1,6 +1,7 @@
 import { resolvePaintMode } from '../theme/paint';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
+import { useReducedTransparency } from '../theme/reduced-transparency';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/progressive-blur.tsx
  * (MIT © 2026 David Mokos).
@@ -33,6 +34,10 @@ import type { ProgressiveBlurProps } from './types';
  * through its style compiler — the same route `Dialog.web.tsx` uses for its
  * `animation` shorthand. Nothing here needs `@keyframes` or a pseudo-class, so
  * there is no stylesheet to inject and nothing a consumer could forget to wire.
+ *
+ * With transparency reduced (`useReducedTransparency()`) the element filters
+ * nothing: the masked tail in the surface's colour is all that is left, as on
+ * native, where the blur's own tint stays and nothing is blurred under it.
  */
 export function ProgressiveBlur({
   style,
@@ -41,6 +46,7 @@ export function ProgressiveBlur({
   ...rest
 }: ProgressiveBlurProps) {
   const surfaceFill = useSurfaceFillRecipe();
+  const reduced = useReducedTransparency();
   const recipe = useThemeRecipe((_theme, documentMode, documentPreset) =>
     buildTailGradient(resolvePaintMode(surfaceFill, documentMode, documentPreset), direction),
   );
@@ -52,8 +58,7 @@ export function ProgressiveBlur({
   // form of each.
   const webStyle: WebCssStyle = {
     pointerEvents: 'none',
-    backdropFilter: filter,
-    WebkitBackdropFilter: filter,
+    ...(reduced ? null : { backdropFilter: filter, WebkitBackdropFilter: filter }),
     maskImage: mask,
     WebkitMaskImage: mask,
     backgroundImage: recipe.paint,

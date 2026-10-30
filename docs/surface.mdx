@@ -34,7 +34,8 @@ Native paints a single view: tint as `backgroundColor`, and the edge line and it
 
 ## Reduced transparency
 
-With `BloomProvider reduceTransparency`, or when the system asks for
+With `BloomProvider reduceTransparency`, a platform appearance that asks for it
+(the `appearance` capability), or when the browser reports
 `prefers-reduced-transparency: reduce`, no surface filters its backdrop. The body
 paints opaque and the edge light, itself a backdrop filter, is gone. The opaque
 colour is the one the surface already publishes to its content (its tint
@@ -49,6 +50,28 @@ Each host sets `--bloom-surface-solid` on itself (`transparent` when it paints n
 material), so none inherits an enclosing surface's. Measured on a Chromecast
 (Chrome 90) over a slowly moving photo: 7 fps with a backdrop filter per card,
 16 without.
+
+The provider resolves the switch once (the prop or the platform) and publishes
+it twice: the document attribute for the material's CSS, and
+`useReducedTransparency()` for what blurs in JavaScript. Every material host
+follows the attribute with nothing of its own (Button, Card, Sidebar,
+`BlurIsland`, floating panels, the window controls' bubbles and plate). The rest
+read the hook:
+
+- `Backdrop`'s blur becomes its tint alone (`blurTintColor`: the colour expo-blur
+  lays over the blur, Android's on Android and OxyOS, the web's elsewhere) under
+  the same dim. A dimming backdrop stays a dim, never an opaque sheet over the
+  app, as a Mac keeps the dimming behind a sheet.
+- `ProgressiveBlur`'s native layers become their tint; the web fork drops its
+  backdrop filter and keeps its masked tail.
+- The hand-made web blurs paint opaque: the spoiler cover takes native's opaque
+  scrim, the AI chat's frosted actions and frame toast their ink, the model
+  picker's scroll fade its wash alone, the radar chart's centre disc its inner
+  surface.
+
+`reduced-transparency-census.test.ts` keeps it one switch: a file that sets a
+backdrop filter or imports `expo-blur` reads the hook or is classified with a
+reason. The browser's media query reaches only the material's CSS.
 
 ## Backdrop roots: never fade or filter a material host or its ancestors
 

@@ -39,6 +39,7 @@ import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { lerp, useChartProgress } from './use-chart-progress';
 import { useResolvedBloomLocale } from '../locale/context';
+import { useReducedTransparency } from '../theme/reduced-transparency';
 
 /** One axis of a radar: its category `label` plus one numeric field per series. */
 export type RadarPoint = { label: string } & Record<string, number | string>;
@@ -302,14 +303,17 @@ export function RadarChartCard({
     : '0 1px 1px 0 rgb(0 0 0 / 0.05)';
   // `bg-background-inner-default backdrop-blur-[2px]`: in dark mode the inner surface is
   // canonical inner surface at 60%, so the polygon shows through, softened.
+  // Reduced transparency: the inner surface opaque, in both modes, with nothing blurred.
+  const reduced = useReducedTransparency();
   const discStyle = useMemo<WebCssStyle>(() => {
+    if (reduced) return { backgroundColor: palette.inner };
     const n800 = parseRgba(palette.inner);
     const backgroundColor =
       theme.isDark && n800 ? `rgba(${n800.r}, ${n800.g}, ${n800.b}, 0.6)` : palette.inner;
     return Platform.OS === 'web'
       ? { backgroundColor, backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)' }
       : { backgroundColor };
-  }, [theme, palette.inner]);
+  }, [theme, palette.inner, reduced]);
 
   const geometryFor = (width: number, height: number) => {
     const frame = polarFrame(width, height, 0.5, overlayLegend ? 0.44 : 0.5, MARGIN);

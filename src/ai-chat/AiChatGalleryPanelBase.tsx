@@ -41,6 +41,7 @@ import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useAiChatPlatform } from './context';
 import { ButtonGroupItem } from '../button-group';
+import { useReducedTransparency } from '../theme/reduced-transparency';
 
 const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_QUINT_CSS = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -152,14 +153,20 @@ function ScrimAction({
   palette: AiChatPalette;
 }) {
   const [hovered, setHovered] = useState(false);
+  // Reduced transparency: an opaque chip, its hover a step lighter, nothing blurred.
+  const reduced = useReducedTransparency();
   const style: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 4,
     borderRadius: 6,
-    backgroundColor: withAlpha(palette.neutral[950], hovered ? 0.65 : 0.45),
-    backdropFilter: 'blur(4px)',
-    WebkitBackdropFilter: 'blur(4px)',
+    ...(reduced
+      ? { backgroundColor: palette.neutral[hovered ? 800 : 950] }
+      : {
+          backgroundColor: withAlpha(palette.neutral[950], hovered ? 0.65 : 0.45),
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+        }),
     '--bloom-ai-chat-ring': palette.ring,
   };
   return (

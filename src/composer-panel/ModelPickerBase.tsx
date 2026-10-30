@@ -43,6 +43,7 @@ import { useComposerWebCss } from './web-hooks';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useReducedTransparency } from '../theme/reduced-transparency';
 
 /** CSS `ease`, the chevrons' 200ms turn. */
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -157,6 +158,8 @@ function ProviderMark({
  * over 200ms once the list has scrolled.
  */
 function ScrollFade({ visible, palette }: { visible: boolean; palette: ComposerPalette }) {
+  // Reduced transparency: the wash alone, as native draws it, with nothing blurred.
+  const reduced = useReducedTransparency();
   const base: WebCssStyle = {
     position: 'absolute',
     top: 0,
@@ -195,9 +198,13 @@ function ScrollFade({ visible, palette }: { visible: boolean; palette: ComposerP
     };
     return (
       <View pointerEvents="none" style={base}>
-        <View style={layer(1, 'black 0%, black 45%, transparent 100%')} />
-        <View style={layer(3, 'black 0%, black 25%, transparent 75%')} />
-        <View style={layer(8, 'black 0%, transparent 50%')} />
+        {reduced ? null : (
+          <>
+            <View style={layer(1, 'black 0%, black 45%, transparent 100%')} />
+            <View style={layer(3, 'black 0%, black 25%, transparent 75%')} />
+            <View style={layer(8, 'black 0%, transparent 50%')} />
+          </>
+        )}
         <View style={wash} />
       </View>
     );

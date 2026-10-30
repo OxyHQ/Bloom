@@ -34,6 +34,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { useReducedTransparency } from '../theme/reduced-transparency';
 
 /**
  * The pieces every block in `message-media` is built from.
@@ -497,7 +498,8 @@ export interface SpoilerCoverProps {
  * the look the affordance wants. On NATIVE it is OPAQUE, and deliberately so: a
  * real blur there needs `expo-blur`, an optional peer this family does not take,
  * and a translucent cover with no blur behind it would show the photo it exists
- * to hide. A spoiler that half-works is not a spoiler.
+ * to hide. A spoiler that half-works is not a spoiler. With transparency reduced
+ * (`useReducedTransparency()`) the web cover is the native one, opaque.
  */
 export const SpoilerCover = memo(function SpoilerCover({
   label,
@@ -506,6 +508,8 @@ export const SpoilerCover = memo(function SpoilerCover({
   radii,
   testID,
 }: SpoilerCoverProps) {
+  const reduced = useReducedTransparency();
+  const frosted = IS_WEB && !reduced;
   const corners = radii ?? {
     topLeft: radius,
     topRight: radius,
@@ -524,8 +528,8 @@ export const SpoilerCover = memo(function SpoilerCover({
     borderTopRightRadius: corners.topRight,
     borderBottomLeftRadius: corners.bottomLeft,
     borderBottomRightRadius: corners.bottomRight,
-    backgroundColor: IS_WEB ? 'rgba(0, 0, 0, 0.35)' : paint.spoilerScrim,
-    ...(IS_WEB ? { backdropFilter: 'blur(18px)' } : null),
+    backgroundColor: frosted ? 'rgba(0, 0, 0, 0.35)' : paint.spoilerScrim,
+    ...(frosted ? { backdropFilter: 'blur(18px)' } : null),
   };
   return (
     <View pointerEvents="none" style={cover} testID={testID}>

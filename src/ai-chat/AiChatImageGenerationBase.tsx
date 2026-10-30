@@ -23,6 +23,7 @@ import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useReducedTransparency } from '../theme/reduced-transparency';
 
 const FRAME_WIDTH = 200;
 const FRAME_HEIGHT = 250;
@@ -361,6 +362,7 @@ function FrameToast({
   palette: AiChatPalette;
 }) {
   const reducedMotion = useReducedMotion();
+  const reduced = useReducedTransparency();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     const target = leaving ? 0 : 1;
@@ -378,6 +380,7 @@ function FrameToast({
     }),
     [progress],
   );
+  // Reduced transparency: the toast is opaque, with nothing blurred under it.
   const surface: WebCssStyle = {
     position: 'absolute',
     left: 12,
@@ -388,9 +391,13 @@ function FrameToast({
     paddingRight: 10,
     paddingTop: 6,
     paddingBottom: 6,
-    backgroundColor: withAlpha(palette.neutral[950], 0.8),
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
+    ...(reduced
+      ? { backgroundColor: palette.neutral[950] }
+      : {
+          backgroundColor: withAlpha(palette.neutral[950], 0.8),
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }),
   };
   return (
     <Animated.View role="status" style={[surface, animated]}>

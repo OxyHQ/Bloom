@@ -7,6 +7,8 @@ import { BlurView } from 'expo-blur';
 import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useReducedTransparency } from '../theme/reduced-transparency';
+import { blurTintColor } from '../overlay/backdrop-paint';
 import { buildTailGradient, LAYER_HEIGHTS } from './shared';
 import type { ProgressiveBlurProps } from './types';
 
@@ -21,6 +23,10 @@ import type { ProgressiveBlurProps } from './types';
  * `LAYER_HEIGHTS`). A soft gradient in the theme's page color smooths the tail
  * and keeps overlaid content legible.
  *
+ * With transparency reduced (`useReducedTransparency()`) each layer is its
+ * tint alone, a plain view at the colour the blur view lays over what it
+ * blurs, so the band and its tail look the same with nothing blurred.
+ *
  * The web fork replaces the whole stack with one masked `backdrop-filter`:
  * `experimental_backgroundImage` is dropped silently by react-native-web, and
  * ten stacked backdrop passes would be far more expensive than the one the
@@ -34,18 +40,31 @@ export function ProgressiveBlur({
 }: ProgressiveBlurProps) {
   const { isDark } = useTheme();
   const surfaceFill = useSurfaceFill();
+  const reduced = useReducedTransparency();
   const anchor = direction === 'top' ? styles.anchorTop : styles.anchorBottom;
+  const tint = isDark ? 'dark' : 'light';
 
   return (
     <View {...rest} style={[styles.root, style]}>
-      {LAYER_HEIGHTS.map((height) => (
-        <BlurView
-          key={height}
-          tint={isDark ? 'dark' : 'light'}
-          intensity={intensity}
-          style={[styles.layer, anchor, { height }]}
-        />
-      ))}
+      {LAYER_HEIGHTS.map((height) =>
+        reduced ? (
+          <View
+            key={height}
+            style={[
+              styles.layer,
+              anchor,
+              { height, backgroundColor: blurTintColor(tint, intensity) },
+            ]}
+          />
+        ) : (
+          <BlurView
+            key={height}
+            tint={tint}
+            intensity={intensity}
+            style={[styles.layer, anchor, { height }]}
+          />
+        ),
+      )}
       <View
         style={[
           StyleSheet.absoluteFill,

@@ -38,7 +38,7 @@ import { buildTheme } from './build-theme';
 import { ThemeScopeContext, type ScopeState } from './color-scope/context';
 import { buildThemeFromSeed } from './build-theme-from-seed';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
-import type { AppColorName } from './color-presets';
+import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
 import { buildScopeVars, getVariableContextProvider } from './color-scope/style-builder';
 import { applyVarsToRootVariables } from './native-root-vars';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -58,6 +58,8 @@ import type { Theme, ThemeMode } from './types';
 import { PrepaintThemeContext } from './prepaint/context';
 import { applyPrepaintMode, themePaintVars, type BloomThemeBootstrapConfig } from './prepaint';
 import { getPrepaintPalette } from './prepaint-palettes';
+import { ReducedTransparencyProvider } from './reduced-transparency';
+import { usePlatformAppearanceState } from '../platform-surface/use-platform-appearance';
 
 const DEFAULT_PRESET: AppColorName = 'oxy';
 const DEFAULT_MODE: ThemeMode = 'system';
@@ -113,12 +115,30 @@ export interface BloomThemeProviderProps {
   prepaintTheme?: BloomThemeBootstrapConfig;
   /** Controlled mode. Omit to use Bloom's internal state (with optional persistence). */
   mode?: ThemeMode;
-  /** Controlled color preset. Omit to use Bloom's internal state. */
+  /**
+   * Controlled color preset. Omit to use Bloom's internal state. Like
+   * `defaultColorPreset`, it is the app's own colour, which the platform's accent
+   * does not replace unless `followSystemAccent` is set.
+   */
   colorPreset?: AppColorName;
   /** Initial mode when uncontrolled and nothing is persisted yet. */
   defaultMode?: ThemeMode;
-  /** Initial color preset when uncontrolled and nothing is persisted yet. */
+  /**
+   * Initial color preset when uncontrolled and nothing is persisted yet: the
+   * app's own colour (its brand). Omitted, the app has none and follows the
+   * platform's accent (the `appearance` capability) where there is one, else
+   * `oxy`. A preset chosen with `setColorPreset` is the app's own too, until
+   * `resetTheme`.
+   */
   defaultColorPreset?: AppColorName;
+  /**
+   * Follow the platform's accent (the `appearance` capability) even though the
+   * app has a colour of its own: the accent wins over `colorPreset`,
+   * `defaultColorPreset` and a chosen preset, which stay the colour wherever the
+   * platform has no accent or one Bloom does not know. Default `false`: an app's
+   * own colour is its brand, as an app's own tint is on a Mac.
+   */
+  followSystemAccent?: boolean;
 
   onModeChange?: (mode: ThemeMode) => void;
   onColorPresetChange?: (preset: AppColorName) => void;
@@ -184,10 +204,13 @@ export interface BloomThemeProviderProps {
 
   /**
    * Reduce transparency app-wide, as the system accessibility setting does: every
-   * surface paints an opaque body with no backdrop blur. Web only; native surfaces
-   * are already opaque. The system's `prefers-reduced-transparency` applies
-   * whatever this says. Set it for a display whose GPU cannot afford a backdrop
-   * filter per surface every frame (a Cast receiver, an ambient frame).
+   * surface paints an opaque body with no backdrop blur, and the blurs drawn in
+   * JavaScript (`Backdrop`, `ProgressiveBlur`) paint their tint without blurring
+   * (`useReducedTransparency()`). On the web the system's
+   * `prefers-reduced-transparency` reduces the surface material whatever this
+   * says; the platform's appearance (the `appearance` capability) reduces all of
+   * it. Set it for a display whose GPU cannot afford a backdrop filter per
+   * surface every frame (a Cast receiver, an ambient frame).
    */
   reduceTransparency?: boolean;
 
@@ -198,7 +221,10 @@ interface ThemeStateOptions {
   controlledMode?: ThemeMode;
   controlledPreset?: AppColorName;
   defaultMode: ThemeMode;
-  defaultPreset: AppColorName;
+  /** The app's own default; undefined when it has none. */
+  defaultPreset: AppColorName | undefined;
+  /** What the app shows with no preset of its own, reported by `resetTheme`. */
+  fallbackPreset: AppColorName;
   persistKey?: string;
   storage?: BloomThemeStorage;
   onModeChange?: (mode: ThemeMode) => void;
@@ -207,7 +233,8 @@ interface ThemeStateOptions {
 
 interface ThemeStateResult {
   mode: ThemeMode;
-  colorPreset: AppColorName;
+  /** The app's own preset (controlled, chosen, persisted or default); undefined when it has none. */
+  colorPreset: AppColorName | undefined;
   setMode: (mode: ThemeMode) => void;
   setColorPreset: (preset: AppColorName) => void;
   resetTheme: () => void;
@@ -219,6 +246,7 @@ function useThemeState({
   controlledPreset,
   defaultMode,
   defaultPreset,
+  fallbackPreset,
   persistKey,
   storage,
   onModeChange,
@@ -241,7 +269,7 @@ function useThemeState({
     value: controlledMode,
     defaultValue: initialMode,
   });
-  const [colorPreset, setPresetInternal] = useControllableState<AppColorName>({
+  const [colorPreset, setPresetInternal] = useControllableState<AppColorName | undefined>({
     value: controlledPreset,
     defaultValue: initialPreset,
   });
@@ -322,8 +350,9 @@ function useThemeState({
       onModeChangeRef.current?.(defaultMode);
     }
     if (controlledPreset === undefined) {
+      // Back to the app's own default, or to none: the platform's accent again.
       setPresetInternal(defaultPreset);
-      onColorPresetChangeRef.current?.(defaultPreset);
+      onColorPresetChangeRef.current?.(defaultPreset ?? fallbackPreset);
     }
     void removePersistedTheme(persistKey, storage);
   }, [
@@ -331,6 +360,7 @@ function useThemeState({
     controlledPreset,
     defaultMode,
     defaultPreset,
+    fallbackPreset,
     setModeInternal,
     setPresetInternal,
     persistKey,
@@ -338,6 +368,13 @@ function useThemeState({
   ]);
 
   return { mode, colorPreset, setMode, setColorPreset, resetTheme, hydrated };
+}
+
+/** The preset an accent names, or null for none and for a name Bloom does not know. */
+function presetNamed(accent: string | null | undefined): AppColorName | null {
+  return accent && (APP_COLOR_NAMES as readonly string[]).includes(accent)
+    ? (accent as AppColorName)
+    : null;
 }
 
 export function BloomThemeProvider({
@@ -358,13 +395,20 @@ export function BloomThemeProvider({
   tertiaryColor,
   seed,
   reduceTransparency = false,
+  followSystemAccent = false,
   prepaintTheme,
   children,
 }: BloomThemeProviderProps) {
   const persistKey = requestedPersistKey ?? prepaintTheme?.persistKey;
   const defaultMode = requestedDefaultMode ?? prepaintTheme?.defaultMode ?? DEFAULT_MODE;
-  const defaultColorPreset =
-    requestedDefaultPreset ?? prepaintTheme?.defaultColorPreset ?? DEFAULT_PRESET;
+  // The app's own default colour; undefined when it has none.
+  const defaultColorPreset = requestedDefaultPreset ?? prepaintTheme?.defaultColorPreset;
+  // The platform's appearance (the `appearance` capability), or null. Light or
+  // dark is not in it: React Native's `useColorScheme` below carries that.
+  const platformAppearance = usePlatformAppearanceState();
+  const systemPreset = presetNamed(platformAppearance?.accent);
+  const fallbackPreset = systemPreset ?? DEFAULT_PRESET;
+  const reducedTransparency = reduceTransparency || platformAppearance?.reduceTransparency === true;
   const rnScheme = useRNColorScheme();
   const clientReady = useSyncExternalStore(
     subscribeHydration,
@@ -409,7 +453,7 @@ export function BloomThemeProvider({
 
   const {
     mode: liveMode,
-    colorPreset: livePreset,
+    colorPreset: appPreset,
     setMode,
     setColorPreset,
     resetTheme,
@@ -419,6 +463,7 @@ export function BloomThemeProvider({
     controlledPreset,
     defaultMode,
     defaultPreset: defaultColorPreset,
+    fallbackPreset,
     persistKey,
     storage,
     onModeChange,
@@ -428,6 +473,13 @@ export function BloomThemeProvider({
   // A web adapter may be asynchronous. Keep the head-selected palette until
   // its saved state is ready instead of briefly publishing the default theme.
   const serverPaint = prepaint && (!clientReady || !hydrated);
+
+  // The preset drawn. An app's own colour wins over the platform's accent, as an
+  // app's own tint does on a Mac; with none, or with `followSystemAccent`, the
+  // accent is the palette's seed. An accent Bloom does not know is no accent.
+  const livePreset: AppColorName =
+    (followSystemAccent ? (systemPreset ?? appPreset) : (appPreset ?? systemPreset)) ??
+    DEFAULT_PRESET;
 
   // The document cannot know localStorage or the browser's OS preference.
   // Match its raw semantic theme on the first hydration render; paired CSS paint
@@ -570,8 +622,8 @@ export function BloomThemeProvider({
   ]);
 
   useIsomorphicLayoutEffect(() => {
-    applyReducedTransparency(reduceTransparency);
-  }, [reduceTransparency]);
+    applyReducedTransparency(reducedTransparency);
+  }, [reducedTransparency]);
 
   // Native only: publish the same vars into react-native-css's GLOBAL root
   // variable family so they reach the ENTIRE app tree — navigator screens and
@@ -613,9 +665,11 @@ export function BloomThemeProvider({
   const content = (
     <PrepaintThemeContext.Provider value={prepaint ? prepaintTheme : undefined}>
       <ThemeScopeContext.Provider value={scopeState}>
-        <FontLoader enabled={fonts} fallback={onFontsLoading}>
-          {isGated ? (onHydrating ?? null) : children}
-        </FontLoader>
+        <ReducedTransparencyProvider value={reducedTransparency}>
+          <FontLoader enabled={fonts} fallback={onFontsLoading}>
+            {isGated ? (onHydrating ?? null) : children}
+          </FontLoader>
+        </ReducedTransparencyProvider>
       </ThemeScopeContext.Provider>
     </PrepaintThemeContext.Provider>
   );

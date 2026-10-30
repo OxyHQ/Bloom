@@ -32,16 +32,23 @@ the runtime's locale; a component's own `locale` prop still wins. See
 
 Pass `reduceTransparency` to reduce transparency app-wide, as the system
 accessibility setting of that name does: every surface paints an opaque body and
-no backdrop filter (see [Surface](/docs/surface)). Use it on a display whose GPU
-cannot afford a backdrop filter per surface every frame, such as a Cast receiver
-or an ambient photo frame. The system's `prefers-reduced-transparency` applies
-without it. Native surfaces are already opaque.
+no backdrop filter, and the blurs drawn in JavaScript (`Backdrop`,
+`ProgressiveBlur`) draw their tint with nothing blurred (see
+[Surface](/docs/surface)). Use it on a display whose GPU cannot afford a backdrop
+filter per surface every frame, such as a Cast receiver or an ambient photo
+frame. On the web the system's `prefers-reduced-transparency` reduces the surface
+material without it; a platform's appearance (the `appearance` capability of
+`platform`) reduces all of it. Native surfaces are already opaque.
 
 ```tsx
 <BloomProvider reduceTransparency>
   <Frame />
 </BloomProvider>
 ```
+
+With a `platform` that reports `appearance`, an app with no colour preset of its
+own takes the platform's accent; `followSystemAccent` makes an app with one take
+it too ([Platform surfaces](/docs/platform-surface), *Whose colour*).
 
 Pass `back` to give every route screen a working Back, configured once. A
 `PageHeader` positioned by a route's `Screen` offers it without an `onBack`: back

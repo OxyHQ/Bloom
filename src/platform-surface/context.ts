@@ -1,5 +1,6 @@
 import { type ComponentType, createContext, useContext } from 'react';
 import type {
+  PlatformAppearance,
   PlatformKeyboard,
   PlatformMenuBar,
   PlatformSurfaceAdapter,
@@ -63,6 +64,23 @@ export function usePlatformMenuBar(): PlatformMenuBar | null {
     );
   }
   return adapter.menuBar;
+}
+
+/**
+ * The platform's appearance when the adapter reports `appearance`, otherwise
+ * null (the application keeps its own accent, and transparency follows only
+ * `reduceTransparency` and the web's media query). An adapter that reports the
+ * capability without the appearance throws, as `usePopupSurface` does.
+ */
+export function usePlatformAppearance(): PlatformAppearance | null {
+  const adapter = useContext(PlatformSurfaceContext);
+  if (!adapter?.capabilities.has('appearance')) return null;
+  if (!adapter.appearance) {
+    throw new Error(
+      `Bloom: the ${adapter.platform} platform adapter reports 'appearance' without an appearance.`,
+    );
+  }
+  return adapter.appearance;
 }
 
 /** The adapter's source of the window's key presses, or null when it supplies none. */
