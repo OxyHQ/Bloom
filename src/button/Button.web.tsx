@@ -6,10 +6,10 @@ import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { useButtonLayout } from './use-button-layout.web';
 import { useLongPress } from './use-long-press.web';
-import { resolveSurfaceOptics, surfaceOpticsVars } from '../surface/shared';
+import { resolveSurfaceOptics, surfaceContrastEdge, surfaceOpticsVars } from '../surface/shared';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import type { GestureResponderEvent, View } from 'react-native';
-import { surfaceMaterialCss } from '../surface/web-material';
+import { SURFACE_HAIRLINE_VAR, surfaceMaterialCss } from '../surface/web-material';
 import type { LinkButtonProps } from './types';
 import React, {
   type ComponentRef,
@@ -328,6 +328,10 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
 
     const containerStyle = useMemo((): CSSProperties => {
       const shadow = paintRecipe.paint.shadow;
+      const solidFill = resolveSurfaceMaterial({
+        fill: (togglePressed && !loading ? palette.active : palette.rest).background,
+        parentFill: paintRecipe.paint.backing,
+      }).solidFill;
       const base: CSSProperties = {
         ['--bloom-btn-height' as string]: `${geometry.height}px`,
         ['--bloom-btn-padding' as string]: `${geometry.paddingHorizontal}px`,
@@ -357,10 +361,12 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
         ['--bloom-btn-bg' as string]: (togglePressed && !loading ? palette.active : palette.rest)
           .background,
-        ['--bloom-surface-solid' as string]: resolveSurfaceMaterial({
-          fill: (togglePressed && !loading ? palette.active : palette.rest).background,
-          parentFill: paintRecipe.paint.backing,
-        }).solidFill,
+        ['--bloom-surface-solid' as string]: solidFill,
+        // A button that draws its own border keeps it as its edge.
+        [SURFACE_HAIRLINE_VAR as string]:
+          palette.borderWidth > 0
+            ? 'transparent'
+            : surfaceContrastEdge(solidFill, theme.colors.text),
         ['--bloom-btn-bg-hover' as string]: palette.hover.background,
         ['--bloom-btn-bg-active' as string]: palette.active.background,
         ['--bloom-btn-bg-disabled' as string]: palette.disabled.background,
@@ -408,6 +414,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       geometry,
       palette,
       theme.isDark,
+      theme.colors.text,
       paintRecipe.paint,
       isSquare,
       wide,

@@ -2,7 +2,10 @@ import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import type { ExplicitAccents } from './preset-vars';
 import { getResolvedTokens } from './token-registry';
-import { REDUCED_TRANSPARENCY_ATTRIBUTE } from '../surface/web-material';
+import {
+  INCREASED_CONTRAST_ATTRIBUTE,
+  REDUCED_TRANSPARENCY_ATTRIBUTE,
+} from '../surface/web-material';
 
 export function applyDarkClass(resolved: 'light' | 'dark') {
   if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -19,6 +22,17 @@ export function applyReducedTransparency(reduced: boolean) {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return;
   if (reduced) document.documentElement.setAttribute(REDUCED_TRANSPARENCY_ATTRIBUTE, 'reduced');
   else document.documentElement.removeAttribute(REDUCED_TRANSPARENCY_ATTRIBUTE);
+}
+
+/**
+ * Mark the document while contrast is increased: every material host draws its
+ * hairline edge instead of the edge light (`surface/web-material.ts`). Called
+ * only by the app-wide provider, beside `applyReducedTransparency`.
+ */
+export function applyIncreasedContrast(increased: boolean) {
+  if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+  if (increased) document.documentElement.setAttribute(INCREASED_CONTRAST_ATTRIBUTE, 'more');
+  else document.documentElement.removeAttribute(INCREASED_CONTRAST_ATTRIBUTE);
 }
 
 /**

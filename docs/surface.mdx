@@ -35,8 +35,9 @@ Native paints a single view: tint as `backgroundColor`, and the edge line and it
 ## Reduced transparency
 
 With `BloomProvider reduceTransparency`, a platform appearance that asks for it
-(the `appearance` capability), or when the browser reports
-`prefers-reduced-transparency: reduce`, no surface filters its backdrop. The body
+(the `appearance` capability), the system's own setting (iOS Reduce
+Transparency; the browser's `prefers-reduced-transparency: reduce`), or with
+contrast increased (below), no surface filters its backdrop. The body
 paints opaque and the edge light, itself a backdrop filter, is gone. The opaque
 colour is the one the surface already publishes to its content (its tint
 composited onto its parent, `resolveSurfaceMaterial().solidFill`), so the text and
@@ -51,8 +52,8 @@ material), so none inherits an enclosing surface's. Measured on a Chromecast
 (Chrome 90) over a slowly moving photo: 7 fps with a backdrop filter per card,
 16 without.
 
-The provider resolves the switch once (the prop or the platform) and publishes
-it twice: the document attribute for the material's CSS, and
+The provider resolves the switch once (the prop, the platform's appearance or the
+system's setting) and publishes it twice: the document attribute for the material's CSS, and
 `useReducedTransparency()` for what blurs in JavaScript. Every material host
 follows the attribute with nothing of its own (Button, Card, Sidebar,
 `BlurIsland`, floating panels, the window controls' bubbles and plate). The rest
@@ -71,7 +72,47 @@ read the hook:
 
 `reduced-transparency-census.test.ts` keeps it one switch: a file that sets a
 backdrop filter or imports `expo-blur` reads the hook or is classified with a
-reason. The browser's media query reaches only the material's CSS.
+reason. The material's CSS also carries the browser's media queries itself, so
+it is right from the first paint, before any script has run; the hook follows
+the same queries once the provider has mounted.
+
+## Increased contrast
+
+With `BloomProvider increaseContrast`, a platform appearance that asks for it
+(`increaseContrast` in the `appearance` capability's state), or the system's own
+setting (iOS Increase Contrast, Android's high-contrast text, the browser's
+`prefers-contrast: more` or `forced-colors: active`), transparency is reduced as
+above **and** every surface edges its opaque body with a 1px hairline instead of
+the edge light. It is a separate switch from reduced transparency: reducing
+transparency alone keeps the surfaces edgeless, as a Mac does.
+
+The hairline is `surfaceContrastEdge(body, text)`: the quietest mix of the body
+toward the theme's text that still holds 3:1 against the body (WCAG 1.4.11,
+`SURFACE_CONTRAST_EDGE_RATIO`). It is measured against the opaque body the
+surface publishes, so it holds on every level, in every preset, light and dark.
+A host that draws its own border (`SurfacePaint rim={false}`, an outlined
+`Button`) keeps that border as its edge and draws no hairline.
+
+- **Web.** The provider writes `data-bloom-contrast="more"` beside
+  `data-bloom-transparency="reduced"`; `surfaceMaterialCss` carries the rule for
+  the attribute and both media queries. The `::after` layer drops its mask and
+  backdrop filter and draws `border: 1px solid var(--bloom-surface-hairline)`.
+  Each host sets `--bloom-surface-hairline` on itself, as it sets
+  `--bloom-surface-solid`. In `forced-colors` the browser recolours that border
+  to the system's own; the line stays.
+- **Native.** `SurfacePaint` drops the inset shadows of the edge light and draws
+  the hairline as a 1px border on its paint view, so every renderer draws it,
+  the OxyOS host included. The body was already opaque.
+- `useIncreasedContrast()` reads the switch; `useReducedTransparency()` is true
+  whenever it is.
+
+![The Material story with prefers-contrast: more, before (left) and after (right), light above and dark below](./surface-increased-contrast.png)
+
+Gates: `increased-contrast.test.tsx` (the iOS and Android settings as they
+change, the prop, the native hairline, the 3:1 floor over every preset's card
+and page in both modes) and `increased-contrast.web.test.tsx` (the document
+attributes, the media queries from the first render, the CSS rule, the hairline
+each host sets).
 
 ## Backdrop roots: never fade or filter a material host or its ancestors
 

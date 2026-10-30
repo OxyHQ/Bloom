@@ -26,14 +26,16 @@ export function usePlatformAppearanceState(): PlatformAppearanceState | null {
     const next = platform.getState();
     const accent = typeof next.accent === 'string' ? next.accent : null;
     const reduceTransparency = next.reduceTransparency === true;
+    const increaseContrast = next.increaseContrast === true;
     const previous = last.current;
     if (
       previous &&
       previous.accent === accent &&
-      previous.reduceTransparency === reduceTransparency
+      previous.reduceTransparency === reduceTransparency &&
+      previous.increaseContrast === increaseContrast
     )
       return previous;
-    last.current = { accent, reduceTransparency };
+    last.current = { accent, reduceTransparency, increaseContrast };
     return last.current;
   }, [platform]);
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);

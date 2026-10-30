@@ -29,6 +29,7 @@ export type { SeedAccents } from './build-theme-from-seed';
 export { THEME_GRADIENTS } from './gradients';
 export { useTheme, useThemeColor, useBloomTheme } from './use-theme';
 export { useReducedTransparency } from './reduced-transparency';
+export { useIncreasedContrast } from './increased-contrast';
 export { useAmbientTheme, ambientTheme } from './ambient-store';
 export type {
   AmbientThemeState,

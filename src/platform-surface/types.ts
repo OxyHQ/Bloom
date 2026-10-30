@@ -236,6 +236,11 @@ export interface PlatformAppearanceState {
   readonly accent: string | null;
   /** Draw every blurred material opaque, with no backdrop blur. */
   readonly reduceTransparency: boolean;
+  /**
+   * Increase contrast: reduce transparency, and edge every surface with a
+   * hairline that holds 3:1 against its body. Optional; absent is false.
+   */
+  readonly increaseContrast?: boolean;
 }
 
 /**

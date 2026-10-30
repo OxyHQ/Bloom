@@ -32,6 +32,7 @@ import {
   applyDarkClass,
   applyDocumentTheme,
   applyReducedTransparency,
+  applyIncreasedContrast,
   applyVarsToDocument,
 } from './apply-dark-class';
 import { buildTheme } from './build-theme';
@@ -59,6 +60,8 @@ import { PrepaintThemeContext } from './prepaint/context';
 import { applyPrepaintMode, themePaintVars, type BloomThemeBootstrapConfig } from './prepaint';
 import { getPrepaintPalette } from './prepaint-palettes';
 import { ReducedTransparencyProvider } from './reduced-transparency';
+import { IncreasedContrastProvider } from './increased-contrast';
+import { useSystemAccessibility } from './system-accessibility';
 import { usePlatformAppearanceState } from '../platform-surface/use-platform-appearance';
 
 const DEFAULT_PRESET: AppColorName = 'oxy';
@@ -213,6 +216,17 @@ export interface BloomThemeProviderProps {
    * surface every frame (a Cast receiver, an ambient frame).
    */
   reduceTransparency?: boolean;
+
+  /**
+   * Increase contrast app-wide, as the system accessibility setting does. It
+   * reduces transparency too, and every surface draws a hairline edge that
+   * holds 3:1 against its body instead of the edge light
+   * (`useIncreasedContrast()`). The system's own setting (iOS Increase Contrast,
+   * Android's high-contrast text, the browser's `prefers-contrast: more` or
+   * `forced-colors`) and the platform's appearance increase it whatever this
+   * says.
+   */
+  increaseContrast?: boolean;
 
   children: React.ReactNode;
 }
@@ -395,6 +409,7 @@ export function BloomThemeProvider({
   tertiaryColor,
   seed,
   reduceTransparency = false,
+  increaseContrast = false,
   followSystemAccent = false,
   prepaintTheme,
   children,
@@ -408,7 +423,16 @@ export function BloomThemeProvider({
   const platformAppearance = usePlatformAppearanceState();
   const systemPreset = presetNamed(platformAppearance?.accent);
   const fallbackPreset = systemPreset ?? DEFAULT_PRESET;
-  const reducedTransparency = reduceTransparency || platformAppearance?.reduceTransparency === true;
+  // The system's own settings, the platform adapter's and the app's: any one
+  // turns it on. Increased contrast reduces transparency as well.
+  const system = useSystemAccessibility();
+  const increasedContrast =
+    increaseContrast || platformAppearance?.increaseContrast === true || system.increaseContrast;
+  const reducedTransparency =
+    reduceTransparency ||
+    platformAppearance?.reduceTransparency === true ||
+    system.reduceTransparency ||
+    increasedContrast;
   const rnScheme = useRNColorScheme();
   const clientReady = useSyncExternalStore(
     subscribeHydration,
@@ -623,7 +647,8 @@ export function BloomThemeProvider({
 
   useIsomorphicLayoutEffect(() => {
     applyReducedTransparency(reducedTransparency);
-  }, [reducedTransparency]);
+    applyIncreasedContrast(increasedContrast);
+  }, [reducedTransparency, increasedContrast]);
 
   // Native only: publish the same vars into react-native-css's GLOBAL root
   // variable family so they reach the ENTIRE app tree — navigator screens and
@@ -666,9 +691,11 @@ export function BloomThemeProvider({
     <PrepaintThemeContext.Provider value={prepaint ? prepaintTheme : undefined}>
       <ThemeScopeContext.Provider value={scopeState}>
         <ReducedTransparencyProvider value={reducedTransparency}>
-          <FontLoader enabled={fonts} fallback={onFontsLoading}>
-            {isGated ? (onHydrating ?? null) : children}
-          </FontLoader>
+          <IncreasedContrastProvider value={increasedContrast}>
+            <FontLoader enabled={fonts} fallback={onFontsLoading}>
+              {isGated ? (onHydrating ?? null) : children}
+            </FontLoader>
+          </IncreasedContrastProvider>
         </ReducedTransparencyProvider>
       </ThemeScopeContext.Provider>
     </PrepaintThemeContext.Provider>

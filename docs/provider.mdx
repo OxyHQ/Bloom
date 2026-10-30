@@ -36,9 +36,16 @@ no backdrop filter, and the blurs drawn in JavaScript (`Backdrop`,
 `ProgressiveBlur`) draw their tint with nothing blurred (see
 [Surface](/docs/surface)). Use it on a display whose GPU cannot afford a backdrop
 filter per surface every frame, such as a Cast receiver or an ambient photo
-frame. On the web the system's `prefers-reduced-transparency` reduces the surface
-material without it; a platform's appearance (the `appearance` capability of
-`platform`) reduces all of it. Native surfaces are already opaque.
+frame. The system's own setting (iOS Reduce Transparency, the browser's
+`prefers-reduced-transparency`) and a platform's appearance (the `appearance`
+capability of `platform`) reduce it too. Native surfaces are already opaque.
+
+Pass `increaseContrast` to increase contrast app-wide, as the system setting
+does: transparency is reduced, and every surface edges its body with a 1px
+hairline that holds 3:1 against it (see [Surface](/docs/surface), *Increased
+contrast*). iOS Increase Contrast, Android's high-contrast text, the browser's
+`prefers-contrast: more` and `forced-colors`, and the platform's appearance turn
+it on without the prop.
 
 ```tsx
 <BloomProvider reduceTransparency>

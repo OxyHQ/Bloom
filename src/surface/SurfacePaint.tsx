@@ -14,8 +14,11 @@ import {
   compositeOnto,
   resolveSurfaceTint,
   resolveSurfaceOptics,
+  surfaceContrastEdge,
   surfaceOpticsVars,
 } from './shared';
+import { SURFACE_HAIRLINE_VAR } from './web-material';
+import { useIncreasedContrast } from '../theme/increased-contrast';
 import { useSurfaceFill } from '../styles/surface-levels';
 
 // Backing participates only in web compositing. Native uses the supplied tint
@@ -103,8 +106,14 @@ export const SurfacePaint = memo(function SurfacePaint({
     ...surfaceStyle(shape ?? { curve: 'round' }, direction),
     ...geometryStyle,
   };
-  const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
+  const opticsRecipe = useThemeRecipe((theme) => ({
+    ...resolveSurfaceOptics(theme.isDark),
+    text: theme.colors.text,
+  }));
   const optics = opticsRecipe.paint;
+  // Colour arithmetic reads the concrete theme, never a prepaint variable.
+  const text = opticsRecipe.current.text;
+  const increasedContrast = useIncreasedContrast();
   const isWeb = Platform.OS === 'web';
   const contextBacking = useCompositeBacking();
   const resolvedFill = resolveSurfaceTint(
@@ -116,6 +125,7 @@ export const SurfacePaint = memo(function SurfacePaint({
     if (isWeb) adoptStyleSheet('bloom-surface-paint-web-css', WEB_PAINT_CSS);
   }, [isWeb]);
   if (isWeb) {
+    const solid = compositeOnto(paintFill ?? resolvedFill, backing ?? contextBacking);
     const paintStyle: WebCssStyle = {
       position: 'absolute',
       top: 0,
@@ -125,7 +135,9 @@ export const SurfacePaint = memo(function SurfacePaint({
       ...geometry,
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': paintFill ?? resolvedFill,
-      '--bloom-surface-solid': compositeOnto(paintFill ?? resolvedFill, backing ?? contextBacking),
+      '--bloom-surface-solid': solid,
+      // A host that draws its own border (`rim={false}`) keeps it as its edge.
+      [SURFACE_HAIRLINE_VAR]: rim ? surfaceContrastEdge(solid, text) : 'transparent',
       ...(transition ? { '--bloom-surface-paint-transition': transition } : null),
       ...(presence === undefined ? null : { '--bloom-surface-presence': String(presence) }),
       ...(presenceMs === undefined ? null : { '--bloom-surface-presence-ms': `${presenceMs}ms` }),
@@ -158,7 +170,16 @@ export const SurfacePaint = memo(function SurfacePaint({
           {
             overflow: 'hidden',
             backgroundColor: fill === undefined ? 'transparent' : resolvedFill,
-            ...(rim || sheen
+            // Increased contrast: a 1px hairline that holds 3:1 against the
+            // body replaces the edge light. A border, not a shadow, so every
+            // renderer draws it (OxyOS's host draws no box shadows).
+            ...(increasedContrast && rim
+              ? {
+                  borderWidth: 1,
+                  borderColor: surfaceContrastEdge(paintFill ?? resolvedFill, text),
+                }
+              : null),
+            ...(!increasedContrast && (rim || sheen)
               ? {
                   boxShadow: [rim ? optics.rim : null, sheen ? optics.sheenShadow : null]
                     .filter(Boolean)

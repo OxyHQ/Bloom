@@ -148,7 +148,11 @@ PlatformAppearance`):
 
 ```ts
 interface PlatformAppearance {
-  getState(): { accent: string | null; reduceTransparency: boolean };
+  getState(): {
+    accent: string | null;
+    reduceTransparency: boolean;
+    increaseContrast?: boolean;
+  };
   subscribe(listener: () => void): () => void;
 }
 ```
@@ -165,6 +169,9 @@ interface PlatformAppearance {
 - **`reduceTransparency`** draws every blurred material opaque, as
   `BloomProvider reduceTransparency` does ([Surface](/docs/surface), *Reduced
   transparency*).
+- **`increaseContrast`** (optional) reduces transparency and edges every surface
+  with a hairline, as `BloomProvider increaseContrast` does
+  ([Surface](/docs/surface), *Increased contrast*).
 
 `usePlatformAppearance()` returns the appearance only when the capability is
 reported; an adapter that reports it without `appearance` throws.
