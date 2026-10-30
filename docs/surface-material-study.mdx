@@ -5,7 +5,7 @@ description: What react-native-screens' new sheet background effects do, how Blo
 
 # Surface material study
 
-A study, not a contract. Nothing here has changed yet. The [Surface](./surface.mdx) page describes the material as it is today. This page compares it with a recent change in react-native-screens and proposes improvements, each with a cost, a test and a decision for the owner.
+**Status: decided (2026-10-30).** The owner approved phases 0 to 3 and deferred phase 4 to the GPU path; phase 5 remains a proposal that needs its own ADRs; see [Decisions](#decisions). The [Surface](./surface.mdx) page describes the material as it is; this page records why it changes and in what order. It compares Bloom's material with a recent change in react-native-screens and lists each improvement with its cost and its test.
 
 Sources, read on 2026-10-30:
 
@@ -117,7 +117,7 @@ Correct the six stale statements listed under gap 6, using the code's numbers (7
 ### Phase 1: accessibility parity (S to M, no API change)
 
 - **iOS Reduce Transparency.** The provider ORs `AccessibilityInfo.isReduceTransparencyEnabled()` (and its change event) into `reducedTransparency`, as it already does for the platform adapter. Today this changes only `Backdrop` and `ProgressiveBlur` on iOS. After phase 3 it also covers the surface material.
-- **Increased contrast.** Add a contrast switch beside transparency: `prefers-contrast: more` and `forced-colors: active` on the web, and Increase Contrast on iOS if a reliable signal exists (React Native has none built in; this needs checking). Under it the body paints `solidFill` and the edge light becomes a 1px hairline from `hairlineOn` (`styles/surface-levels.ts`), the same contract as reduce transparency. Whether this is a second document attribute or the same `reduced` path plus a hairline is decision 5.
+- **Increased contrast.** Add a contrast switch beside transparency: `prefers-contrast: more` and `forced-colors: active` on the web, and Increase Contrast on iOS if a reliable signal exists (React Native has none built in; this needs checking). Under it the body paints `solidFill` and the edge light becomes a 1px hairline from `hairlineOn` (`styles/surface-levels.ts`), the same contract as reduce transparency. It is its own switch and its own document attribute (decision 5).
 - **Before and after.** No change by default. With the setting on, iOS overlays lose their blurred dim (as the web already does), and under increased contrast every surface becomes opaque with a visible hairline.
 - **Tests.** Provider unit tests with `AccessibilityInfo` mocked (on, off, change event). A web story checked under `page.emulateMediaFeatures([{ name: 'prefers-contrast', value: 'more' }])` and `forced-colors`. Extend `reduced-transparency-census.test.ts` so that every material host follows the contrast switch too. Contrast floors stay independent literals (Bloom's rule).
 
@@ -139,14 +139,16 @@ When a surface is in the flow and its backing is opaque and painted by a known o
 On iOS only, floating and docked surfaces mount an expo-blur `BlurView` (a `UIVisualEffectView`) under the tint, inside the paint layer that already clips to the host's shape. These are the menus and popovers (`FloatingPanel`), `Tooltip`, toasts, `Dialog` panels, `BottomBar`, `BlurIsland`, the tab bar capsule and the window controls. The tint then uses `SURFACE_TINT_OPACITY`, as on the web, because there is now a blur under it. With transparency reduced, the `BlurView` is not mounted and the body is `solidFill`. In-flow surfaces (cards in a feed) stay `tint`. A `UIVisualEffectView` per feed row is the kind of offscreen pass that makes scrolling drop frames, and over an opaque page it shows nothing (gap 4).
 
 - **Android is unchanged.** The crash rule stands: no `BlurView` inside the app's own target. Bloom's existing `BlurWindow` boundary stays the only Android path.
-- **Look.** expo-blur couples blur strength and tint. Rather than adopt a `system*Material` tint and lose Bloom's measured look, use the `BlurView` for the blur alone (a low-tint intensity, with Bloom's tint painted over it). Then compare it with the web's 24px with screenshots, in light and dark. Exactly what "the same look" means on iOS is decision 2.
+- **Look.** expo-blur couples blur strength and tint. Rather than adopt a `system*Material` tint and lose Bloom's measured look, use the `BlurView` for the blur alone (a low-tint intensity, with Bloom's tint painted over it). Then compare it with the web's 24px with screenshots, in light and dark. Floating surfaces only (decision 2).
 - **Before and after.** iOS menus, sheets, toasts and the bottom bar change from opaque tiles to frosted panels that let colour through, as the web's already do. Cards look the same.
 - **Tests.**
   - A native census test asserting that `BlurView` mounts only for floating renditions, only on iOS, and never under reduced transparency.
   - An adaptation of react-native-screens' scenario checklist: a striped backdrop, each floating family open over it, light and dark, Reduce Transparency on and off, the setting changed while a menu is open. Run it on an iPhone and an iPad.
   - Instruments: count offscreen passes and check scrolling frame times on the Mention feed with a menu open.
 
-### Phase 4: the edge and shadows on OxyOS (M, OxyOS repository)
+### Phase 4: the edge and shadows on OxyOS (M, OxyOS repository; deferred)
+
+**Not approved now.** The owner deferred this phase to the GPU path: shadows are drawn when composition and drawing move to the GPU, not added to the CPU host. Until then OxyOS draws surfaces as flat tints, and the description below is kept for that work.
 
 Teach the Bloom host to draw React Native's `boxShadow`: inset shadows (Bloom's rim lines and glows) and outer ones (the `floating` elevation). It can reuse `blurPlanes` for the Gaussian, cache each shadow by size, radius and shadow string (most never change between frames), and extend damage by each shadow's reach. Until then, the host reports `boxShadow` as unsupported once, as it does for an image's `blurRadius`.
 
@@ -161,14 +163,16 @@ This is the direct translation of the post: let the platform draw the material b
 - **iOS native sheets.** If Bloom ever presents iOS sheets through react-native-screens' `FormSheet`, it should pass `backgroundEffect: { type: 'color', color: solidFill }`, or `'none'` with Bloom's own paint. Otherwise Liquid Glass's highlight and edge would draw on top of Bloom's material, which is exactly issue #4605. `BottomSheet` is an RN `Modal` today, so this does not apply yet.
 - **Android.** From API 31, a `Dialog` window can ask SurfaceFlinger to blur what is behind it (`Window.setBackgroundBlurRadius`, when `WindowManager.isCrossWindowBlurEnabled()` is true; the system turns it off in some power states). This would give `BottomSheet`'s `Modal` window a real backdrop without a `BlurTargetView`. It needs native code, which React Native's `Modal` does not expose.
 
-## Decisions for the owner
+## Decisions
 
-1. **Keep one material and no selector?** Recommended: yes. Do not add react-native-screens' `effect` union, or its 20 styles, to `Surface`. `fill` already covers `color` and `none`. The renditions above are internal.
-2. **Should iOS look different from Android?** Phase 3 makes iOS floating surfaces frosted while Android's stay opaque, because Android cannot blur them safely. The alternative is to keep every native surface opaque for parity.
-3. **Liquid Glass.** Bloom 9.0 removed `expo-glass-effect`. Recommended: keep it removed for Bloom's own surfaces. Bloom's measured material is the brand, and react-native-screens shows that `UIGlassEffect` cannot even be set as a sheet's background. Phase 5's native-sheet note only stops Liquid Glass from drawing over Bloom.
-4. **Baking on the web.** Phase 2 replaces live blur with a computed colour for in-flow surfaces, which is right as long as the backing is truly opaque and static. The census and the pixel gate are the guard. Accept the trade?
-5. **Increased contrast.** One switch with reduce transparency (simpler), or a separate one that also adds the hairline (closer to Apple)?
-6. **OxyOS order.** Draw `boxShadow` on the CPU host now (phase 4), or wait for the GPU path and the compositor material ADR (phase 5)?
+Decided by the owner on 2026-10-30.
+
+1. **One material, no selector.** `Surface` gains no `effect` prop and no style list. `fill` already covers `color` and `none`; the renditions are internal.
+2. **iOS draws a real system blur under floating surfaces only; Android stays opaque.** iOS and Android floating surfaces look different, because Android cannot blur them safely. In-flow surfaces stay a tint on both.
+3. **No Liquid Glass.** `expo-glass-effect` stays out of Bloom, as decided in 9.0. Bloom's measured material is the look.
+4. **The web bakes the material for in-flow surfaces on a known, opaque backing.** The census and the pixel script (phase 2) are the guard.
+5. **Increased contrast is its own setting, and it adds a hairline.** It is separate from reduce transparency. Under it the body is opaque and the edge light becomes a 1px hairline (phase 1).
+6. **OxyOS shadows wait for the GPU path.** Phase 4 is not done on the CPU host.
 
 ## Not proposed
 
