@@ -40,6 +40,14 @@ export type PopupDismissReason =
 export interface PopupSurfaceProps {
   /** The view the popup is anchored to (the trigger). */
   anchorRef: RefObject<ComponentRef<typeof View> | null>;
+  /**
+   * A point in the anchor, in layout pixels from its top-left corner, that the
+   * popup is placed against instead of the anchor's frame: a context menu opens
+   * where the pointer was pressed. `side`, `align` and the offsets apply to it
+   * as to a frame of no size. A platform that cannot place a popup at a point
+   * never reports `popup-surface` to a context menu.
+   */
+  point?: { x: number; y: number };
   side: FloatingSide;
   align: FloatingAlign;
   sideOffset: number;

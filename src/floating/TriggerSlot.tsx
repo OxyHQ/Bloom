@@ -32,7 +32,13 @@ import React, {
   useContext,
   useEffect,
 } from 'react';
-import { StyleSheet, type View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  type PointerEvent,
+  type View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { mergeRefs } from '../hooks/merge-refs';
@@ -49,8 +55,16 @@ export interface TriggerSlotProps {
   children?: React.ReactNode;
   /** Open handler + a11y state, merged onto whatever ends up rendering. */
   handle: TriggerHandleProps;
-  /** Measured by the web forks to position the surface. Unused on native. */
+  /**
+   * The wrapper, measured by the web forks to position the surface, and on
+   * native the anchor of a platform popup.
+   */
   anchorRef?: React.RefObject<ComponentRef<typeof View> | null>;
+  /**
+   * A W3C pointer press anywhere in the trigger, heard on the wrapper as it
+   * bubbles: native `ContextMenu` opens on the secondary button.
+   */
+  onPointerDown?: (event: PointerEvent) => void;
   /** Classes for the wrapper box — the node the parent lays out. */
   className?: string;
   /** Style for the wrapper box. The child styles itself. */
@@ -94,8 +108,13 @@ function cloneTrigger(children: React.ReactNode, handle: TriggerHandleProps): Re
   // `View` or a custom control that forwards `onPress` does not, so `disabled`
   // held or leaked depending on the child's type. Read both sides here instead.
   const isDisabled = handle.disabled === true || childProps.disabled === true;
+  // A child that states what it is (a list's item, a list) stays that: a
+  // region that opens a context menu is not a button because it does, and has
+  // none of a menu button's state (`aria-haspopup`, `aria-expanded`) either.
+  const ownRole = childProps.accessibilityRole !== undefined;
+  const { 'aria-haspopup': _popup, 'aria-expanded': _expanded, ...buttonless } = handle;
   return cloneElement(child, {
-    ...handle,
+    ...(ownRole ? buttonless : handle),
     // Compose rather than overwrite: the child's own handler runs first, then
     // ours opens the surface.
     //
@@ -132,6 +151,7 @@ function cloneTrigger(children: React.ReactNode, handle: TriggerHandleProps): Re
           },
     // A label the caller already wrote is more specific than the family's.
     accessibilityLabel: childProps.accessibilityLabel ?? handle.accessibilityLabel,
+    accessibilityRole: childProps.accessibilityRole ?? handle.accessibilityRole,
     disabled: isDisabled ? true : childProps.disabled,
   });
 }
@@ -143,6 +163,7 @@ export function TriggerSlot({
   children,
   handle,
   anchorRef,
+  onPointerDown,
   className,
   style,
   testID,
@@ -170,6 +191,7 @@ export function TriggerSlot({
     <StyledView
       ref={mergeRefs([ownRef, anchorRef])}
       collapsable={false}
+      onPointerDown={onPointerDown}
       className={className}
       style={[styles.wrap, style]}
       testID={testID}
