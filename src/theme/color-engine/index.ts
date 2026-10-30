@@ -8,7 +8,8 @@
  * contrast level — the same dynamic theming MaterialKolor does, but ours.
  *
  * This barrel is the engine's PUBLIC surface — `@oxy.so/bloom/theme` publishes it
- * whole, as the `ColorEngine` namespace. Keep it to what a consumer deriving a
+ * whole, as the `ColorEngine` namespace, and `@oxy.so/color` (`packages/color`)
+ * is the same barrel built with no React, for servers and build scripts. Keep it to what a consumer deriving a
  * theme actually calls; the ports underneath (`Hct`, `TonalPalette`,
  * `DynamicScheme`, `ColorRole`, `Roles`, `buildScheme`, `quantizeWu`, `score`)
  * are implementation and are imported from their own modules by the handful of

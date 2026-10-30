@@ -122,7 +122,7 @@ Two surfaces remain; CenteredDialog/ResponsiveSheet removed without shims. API/m
 BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via applyColorPresetVars (never raw HSL triples). getResolvedTokens feeds BOTH platforms. Presets: APP_COLOR_PRESETS keys. BloomColorScope emits canonical --x and Tailwind --color-x. Contract: `docs/design-tokens.mdx`.
 
 - buildSeedScopeVars withScopeAliases/ROLE vocabulary hazard is import-graph gated (same docs).
-- ColorEngine is a NAMESPACE, published by `theme/color-engine/index.ts`; ports are internal. useTheme/BloomThemeProvider/tokens stay flat for fleet consumers; raw argbFromHex/quantizeImage maths have no external consumers.
+- ColorEngine is a NAMESPACE, published by `theme/color-engine/index.ts`; ports are internal. `packages/color` (`@oxy.so/color`) bundles that SAME barrel with no React for servers: never a second copy of the engine. useTheme/BloomThemeProvider/tokens stay flat for fleet consumers; raw argbFromHex/quantizeImage maths have no external UI consumers.
 - `design-tokens/tokens.json` is GENERATED, never hand-edited.
 - **Surfaces use `styles/surface-levels.ts`, not ramp stops.** surfaceFillOn/hairlineOn/surfaceTextOn take the ACTUAL parent fill; painting containers publish SurfaceLevelProvider (FloatingPanel/QueuePanel). n[800] put dark TextField exactly on menu (1.000:1) and tab rail on queue (ΔE0): valid markup, invisible chrome. Gates: `surface-levels.test.ts`, `surface-level-adoption.test.ts`.
 - Quiet labels use quietText(surface,text,floor), or quietTextOver([...]) for multiple fills. n[400] cleared page AA but measured2.42:1 on chart card. textTertiary IS textSecondary/--muted-foreground: one role, one color, since fixed third grey cannot cover all surfaces.
