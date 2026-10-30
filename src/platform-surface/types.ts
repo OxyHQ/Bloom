@@ -252,7 +252,100 @@ export interface PlatformAppearance {
 }
 
 /**
- * A host platform's surfaces, registered with `BloomProvider platform={…}`.
+ * One of the person's places (`PlatformFiles.places`): their home, a standard
+ * folder in it, or a volume mounted for them (a USB stick, a card).
+ */
+export interface PlatformPlace {
+  readonly kind:
+    | 'home'
+    | 'desktop'
+    | 'documents'
+    | 'downloads'
+    | 'pictures'
+    | 'music'
+    | 'videos'
+    | 'volume';
+  /** The name the platform gives it: the folder's own, a volume's label. */
+  readonly name: string;
+  /** The folder's `file://` URI, as `expo-file-system`'s `Directory` takes it. */
+  readonly uri: string;
+}
+
+/** An item in the Trash (`PlatformFiles.trashed`). */
+export interface PlatformTrashedItem {
+  /** Its `file://` URI in the Trash: what `restore` and `erase` take. */
+  readonly uri: string;
+  /** Its name where it was. */
+  readonly name: string;
+  readonly isDirectory: boolean;
+  /** Where it was, as a `file://` URI; null when the Trash no longer says. */
+  readonly originalUri: string | null;
+  /** When it was put in the Trash, in milliseconds since the epoch; null when the Trash does not say. */
+  readonly deletedAt: number | null;
+  /** Its size in bytes; null for a folder. */
+  readonly size: number | null;
+  /** When its content last changed, in milliseconds since the epoch. */
+  readonly lastModified: number | null;
+}
+
+/**
+ * Why the platform did not do something to an item:
+ *
+ * - `not-found`: nothing is there;
+ * - `exists`: an item with that name is already where it would go (an item is
+ *   never put back over another);
+ * - `refused`: the platform does not let an application change it (the home
+ *   itself, a volume's root, anything outside the person's files);
+ * - `denied`: the file system did not allow it;
+ * - `io`: anything else the file system answered.
+ */
+export type PlatformFileError = 'not-found' | 'exists' | 'refused' | 'denied' | 'io';
+
+/**
+ * What came of one item of a request about several: `result` is where the
+ * item is now (its URI in the Trash after `trash`, where it was put back after
+ * `restore`, its old URI in the Trash after `erase`).
+ */
+export type PlatformFileOutcome =
+  | { readonly uri: string; readonly ok: true; readonly result: string }
+  | { readonly uri: string; readonly ok: false; readonly error: PlatformFileError };
+
+/**
+ * The person's files beyond what `expo-file-system` reaches, for a platform
+ * that has them: their places (a desktop's home, standard folders and
+ * volumes) and the Trash every file manager on it shares. Optional and not a
+ * capability (it changes no presentation). Without it an application has the
+ * folders `expo-file-system` gives it (`Paths.document`) and deletes as that
+ * API does, for good.
+ *
+ * Every URI is `file://`, as `expo-file-system` takes and gives them: an
+ * application reads and changes what a place holds through that API, and
+ * watches it with `Directory.watch`.
+ */
+export interface PlatformFiles {
+  /** The person's places now: their home, the standard folders in it that exist, the volumes. */
+  places(): Promise<readonly PlatformPlace[]>;
+  /** Calls `listener` when the places change (a volume mounted or gone); returns the unsubscribe. */
+  watchPlaces(listener: () => void): () => void;
+  /** Puts items in the Trash; each outcome's `result` is the item's URI there. */
+  trash(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
+  /** What the Trash holds. */
+  trashed(): Promise<readonly PlatformTrashedItem[]>;
+  /** Calls `listener` when what the Trash holds changes; returns the unsubscribe. */
+  watchTrash(listener: () => void): () => void;
+  /** Puts items in the Trash back where they were, never over an item there now. */
+  restore(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
+  /** Deletes items in the Trash for good. */
+  erase(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
+  /** Deletes everything in the Trash for good. */
+  emptyTrash(): Promise<void>;
+}
+
+/**
+ * A host platform's surfaces, registered with `BloomProvider platform={…}`
+ * (or `PlatformSurfaceProvider`) by the runtime that runs the application. A
+ * `BloomProvider` with no `platform` of its own keeps the one around it, so an
+ * application's own provider never hides its runtime's adapter.
  *
  * Bloom stays free of any platform's protocol: an adapter reports what it can
  * do and supplies the components that do it. A capability the adapter does
@@ -277,4 +370,6 @@ export interface PlatformSurfaceAdapter {
   readonly appearance?: PlatformAppearance;
   /** The window's key presses, where they do not arrive through a DOM `document`. */
   readonly keyboard?: PlatformKeyboard;
+  /** The person's places and the Trash, where the platform has them. */
+  readonly files?: PlatformFiles;
 }

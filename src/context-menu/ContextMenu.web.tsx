@@ -129,6 +129,10 @@ export function ContextMenuTrigger({
     if (typeof element?.addEventListener !== 'function') return;
 
     const onContextMenu = (event: MouseEvent) => {
+      // A trigger inside this one (an item in a list that has a menu of its
+      // own) already opened its menu for this press: the event bubbles here
+      // after it, and opening this one too would replace the item's menu.
+      if (event.defaultPrevented) return;
       event.preventDefault();
       // A context menu takes focus on its first row however it opened — the
       // right-click is the only way in, and without focus in the panel its

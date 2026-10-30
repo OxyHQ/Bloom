@@ -1,6 +1,7 @@
 import { type ComponentType, createContext, useContext } from 'react';
 import type {
   PlatformAppearance,
+  PlatformFiles,
   PlatformKeyboard,
   PlatformMenuBar,
   PlatformSurfaceAdapter,
@@ -86,4 +87,9 @@ export function usePlatformAppearance(): PlatformAppearance | null {
 /** The adapter's source of the window's key presses, or null when it supplies none. */
 export function usePlatformKeyboard(): PlatformKeyboard | null {
   return useContext(PlatformSurfaceContext)?.keyboard ?? null;
+}
+
+/** The person's places and the Trash, or null when the platform supplies none (`PlatformFiles`). */
+export function usePlatformFiles(): PlatformFiles | null {
+  return useContext(PlatformSurfaceContext)?.files ?? null;
 }

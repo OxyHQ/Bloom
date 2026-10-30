@@ -389,3 +389,42 @@ describe('ContextMenu (web) — uncontrolled stays as it was', () => {
     expect(document.activeElement).toBe(trigger);
   });
 });
+
+describe('ContextMenu (web) — a trigger inside another', () => {
+  it('opens only the inner menu for a right-click on the inner trigger', () => {
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger testID="folder" label="Folder">
+          <ContextMenu>
+            <ContextMenuTrigger testID="item" label="Item">
+              <Text>report.pdf</Text>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem>Rename</ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem>New Folder</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    const item = document.querySelector<HTMLElement>(
+      '[data-testid="item"] [aria-haspopup]',
+    ) as HTMLElement;
+    act(() => {
+      item.dispatchEvent(
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 20,
+          clientY: 30,
+        }),
+      );
+    });
+    flush();
+    expect(rowNamed('Rename')).not.toBeNull();
+    expect(rowNamed('New Folder')).toBeNull();
+    expect(menuPanels()).toHaveLength(1);
+  });
+});

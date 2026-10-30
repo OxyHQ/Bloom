@@ -8,7 +8,7 @@ import { BlurTargetProvider } from '../blur/blur-target';
 import { BottomEdgeProvider } from '../layout/bottom-edge';
 import { TopEdgeProvider } from '../layout/top-edge';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
-import { PlatformSurfaceProvider } from '../platform-surface/context';
+import { PlatformSurfaceProvider, usePlatformSurfaces } from '../platform-surface/context';
 import { LocaleProvider } from '../locale/context';
 import { BloomHapticsProvider } from '../hooks/use-haptics';
 import { AgentAvatarProvider } from '../agent-avatar/AgentAvatarProvider';
@@ -42,12 +42,16 @@ export function BloomProvider({
   // The root screen host: what a route's first Screen inherits when no panel
   // re-hosts it. Overlays and nested screens start from a fresh host.
   const host = useMemo(() => ({ active: true, back }), [back]);
+  // The runtime that runs the application registers its platform's adapter
+  // around it; the application's own provider, with no `platform` of its own,
+  // keeps that one rather than hiding it.
+  const surroundingPlatform = usePlatformSurfaces();
   return (
     // `value` is passed unconditionally (null when unset) so toggling a resolver
     // never changes the tree shape and remounts everything below it.
     <ServerStyleContext.Provider value={ssrStyles}>
       <ImageResolverProvider value={imageResolver ?? null}>
-        <PlatformSurfaceProvider value={platform ?? null}>
+        <PlatformSurfaceProvider value={platform ?? surroundingPlatform}>
           {/* The locale for everything below, the font-loading screen included. */}
           <LocaleProvider locale={locale}>
             <BloomThemeProvider {...themeProps}>
