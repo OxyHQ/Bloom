@@ -89,7 +89,8 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * `md:` parts — whole class strings are selected per mode instead).
  */
 import type React from 'react';
-import { memo, useInsertionEffect } from 'react';
+import { memo, useInsertionEffect, useRef } from 'react';
+import { useBakedMaterial } from '../surface/baked-material';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { StyleSheet, useWindowDimensions, type ViewStyle } from 'react-native';
 
@@ -275,6 +276,13 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     framed === undefined ? 'responsive' : 'always',
   );
 
+  // The panel is the page's canvas for the cards on it: baked, they bake on it.
+  const materialRef = useRef<HTMLElement | null>(null);
+  useBakedMaterial(materialRef, paintsSurface, [
+    materialRecipe?.paint.paintFill,
+    opticsRecipe?.paint,
+  ]);
+
   // A painted panel's edge is the material's own light; a hairline over it would hide it.
   const frameBorder = paintsSurface ? 'border border-transparent' : 'border border-border';
 
@@ -389,6 +397,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
 ${surfaceMaterialCss('[data-bloom-panel-material]', 'var(--bloom-surface-fill)')}`}
       />
       <StyledView
+        ref={materialRef as never}
         testID="content-panel-surface"
         {...{
           dataSet: {
