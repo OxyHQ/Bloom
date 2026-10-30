@@ -132,6 +132,7 @@ export function surfaceOpticsVars(
 /** Every material variable at rest, for a host that paints no material. */
 export const SURFACE_VARS_OFF: Record<string, string> = {
   '--bloom-surface-fill': 'transparent',
+  '--bloom-surface-solid': 'transparent',
   '--bloom-surface-filter': 'none',
   '--bloom-surface-highlight-filter': 'none',
 };

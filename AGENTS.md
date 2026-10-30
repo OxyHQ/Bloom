@@ -134,7 +134,7 @@ BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via appl
 
 `Surface` owns material; Button/Card/Sidebar/BlurIsland reuse its paint without changing semantics. `blur/` owns grouping and Android blur targets. Details: `docs/surface.mdx`.
 
-- ONE material: 90%-opaque body + sheen/rim + one web backdrop blur; no selector. Button `material="flat"` bypasses paint; BottomBar's blur band is independent. Preserve foreground pairs/caller alpha and publish fill composited against actual backing.
+- ONE material: 90%-opaque body + sheen/rim + one web backdrop blur; no selector. Reduced transparency (prop/system) is document state: each host's own opaque `--bloom-surface-solid`, no filters. Button `material="flat"` bypasses paint; BottomBar's blur band is independent. Preserve foreground pairs/caller alpha and publish fill composited against actual backing.
 - NO SVG filter/displacement/gradient: per-surface refraction cost GPU and failed outside Chromium. Web: `backdrop-filter: blur(8px)` (`SURFACE_BLUR_PX`, `surfaceMaterialCss`). Native: ONE View, tint + inset `boxShadow` rim/glow, no gradient (`calc()` stop: dropped; `px` stops: emulator SIGSEGV).
 - Native has NO per-surface blur: expo-blur couples blur/tint; BlurView under its own BlurTargetView can SIGSEGV Android. Never wrap the app in a blur target. Only `BlurWindow` inside Modal publishes one; native blur lives in overlay Backdrop/ProgressiveBlur.
 - Blur pane is `inset:0` inside the host to preserve rounding. Sharing a filter does not remove per-surface compositor cost: verify dense/large/nested panes.

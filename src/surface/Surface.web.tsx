@@ -103,6 +103,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       ...geometry.style,
       backgroundColor: 'transparent',
       '--bloom-surface-fill': materialRecipe.paint.paintFill,
+      '--bloom-surface-solid': materialRecipe.paint.solidFill,
     };
     return (
       <>

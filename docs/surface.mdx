@@ -32,6 +32,24 @@ Native paints a single view: tint as `backgroundColor`, and the edge line and it
 
 `Surface` has no press, disabled, loading or business state. Controls such as Button own those states and consume the **same paint** directly: `SurfacePaint` for universal components, `surfaceMaterialCss` and `useSurfaceMaterial` for web hosts. A `Screen` inside a painted surface leaves its canvas transparent, so the surface's material and edge stay visible.
 
+## Reduced transparency
+
+With `BloomProvider reduceTransparency`, or when the system asks for
+`prefers-reduced-transparency: reduce`, no surface filters its backdrop. The body
+paints opaque and the edge light, itself a backdrop filter, is gone. The opaque
+colour is the one the surface already publishes to its content (its tint
+composited onto its parent, `resolveSurfaceMaterial().solidFill`), so the text and
+controls on it are measured against what is painted. It is the colour native
+paints, so web and native look the same.
+
+The provider marks the document with `data-bloom-transparency="reduced"`, beside
+the `dark` class, and `surfaceMaterialCss` carries the rule for both that
+attribute and the media query, so every host follows it with no prop of its own.
+Each host sets `--bloom-surface-solid` on itself (`transparent` when it paints no
+material), so none inherits an enclosing surface's. Measured on a Chromecast
+(Chrome 90) over a slowly moving photo: 7 fps with a backdrop filter per card,
+16 without.
+
 ## Backdrop roots: never fade or filter a material host or its ancestors
 
 In Chromium an element with `opacity` below 1, any `filter` (`blur(0px)` included: only `none` is safe), a `mask`, a `clip-path`, a `mix-blend-mode` or a `backdrop-filter` of its own is the **backdrop root** of everything under it. A material host on or under one blurs only what that element painted: it turns flat and loses its edge light for as long as the trigger lasts, then pops back. Measured behind a striped page, a dialog's stripe contrast jumped to full (255) the instant it began closing, a tooltip rested at 66 because its entrance ended on `filter: blur(0px)`, and a menu flickered on every open and close.

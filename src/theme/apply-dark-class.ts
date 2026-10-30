@@ -2,11 +2,23 @@ import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import type { ExplicitAccents } from './preset-vars';
 import { getResolvedTokens } from './token-registry';
+import { REDUCED_TRANSPARENCY_ATTRIBUTE } from '../surface/web-material';
 
 export function applyDarkClass(resolved: 'light' | 'dark') {
   if (Platform.OS === 'web' && typeof document !== 'undefined') {
     document.documentElement.classList.toggle('dark', resolved === 'dark');
   }
+}
+
+/**
+ * Mark the document while transparency is reduced: the surface material's CSS
+ * (`surface/web-material.ts`) paints every body opaque and drops its backdrop
+ * filters under this attribute. Called only by the app-wide provider.
+ */
+export function applyReducedTransparency(reduced: boolean) {
+  if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+  if (reduced) document.documentElement.setAttribute(REDUCED_TRANSPARENCY_ATTRIBUTE, 'reduced');
+  else document.documentElement.removeAttribute(REDUCED_TRANSPARENCY_ATTRIBUTE);
 }
 
 /**

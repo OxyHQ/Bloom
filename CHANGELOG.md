@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.62.0
+
+### Added
+
+- **Reduce transparency (`BloomProvider reduceTransparency`).** Like the system accessibility setting of that name: every surface paints an opaque body and no backdrop filter, and the edge light (itself a backdrop filter) is gone. The body is the colour the surface already publishes to its content, its tint composited onto its parent, so text and nested controls are measured against exactly what is painted. The system's `prefers-reduced-transparency: reduce` does the same with no prop. The provider marks the document with `data-bloom-transparency="reduced"` (next to the `dark` class), and the one material CSS (`surface/web-material.ts`) carries the rule, so every host follows it: Surface, SurfacePaint (Card, BlurIsland and the rest), Button, floating panels, tooltips and content panels. Each host sets its own `--bloom-surface-solid`, so none inherits an enclosing surface's. Web only: native surfaces were already opaque, so web, Cast and native now paint the same. Measured on a Chromecast (Chrome 90): 7 fps with a backdrop filter per card over a moving photo, 16 without.
+
+### Consumers
+
+Bump to 15.62.0. Nothing changes unless an app sets `reduceTransparency` or the system asks for reduced transparency. An app that injected its own CSS to switch the surface blur off (the HA photo frame did) should set the prop instead.
+
 ## 15.61.0
 
 ### Added
