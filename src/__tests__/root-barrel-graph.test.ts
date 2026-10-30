@@ -14,9 +14,13 @@ import { dirname, join, relative, resolve } from 'node:path';
  * reads identically to an oversight (and `image-resolver`, `scroll`, `overlay`
  * and four others WERE oversights).
  *
- * Only STATIC imports count. `theme/adaptive-colors.native.ts` names `expo-router`
- * inside a `require()` in a try block — Metro marks that dependency optional and
- * links nothing — so a scan that counted every specifier would report the
+ * Only STATIC imports count. `theme/adaptive-colors.native.ts` names
+ * `expo-router/build/color/index.js` inside a `require()` in a try block. Metro marks
+ * that dependency optional: it is linked when expo-router is installed and
+ * written as `null` when it is not, so it can never fail a build, which is what
+ * this gate guards. What an installed optional dependency costs is a separate
+ * gate (`optional-peer-imports.test.ts`: it names `Color`'s own module, never
+ * the router's root). A scan that counted every specifier would report the
  * barrel as already linking expo-router and this gate would be unfalsifiable.
  */
 

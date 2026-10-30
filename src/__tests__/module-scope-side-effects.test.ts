@@ -93,8 +93,9 @@ function platformSiblings(file: string): string[] {
 }
 
 /**
- * STATIC specifiers only. `theme/adaptive-colors.native.ts` names `expo-router` inside a
- * `require()` in a try block; Metro links nothing for it, and neither does this.
+ * STATIC specifiers only. `theme/adaptive-colors.native.ts` names `expo-router/build/color/index.js`
+ * inside a `require()` in a try block: an optional dependency, which this scan, like the
+ * static graph, does not follow.
  */
 function staticRelativeSpecifiers(text: string): string[] {
   const stripped = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');

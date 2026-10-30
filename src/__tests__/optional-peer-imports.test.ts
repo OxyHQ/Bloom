@@ -515,3 +515,75 @@ describe('no require() resolves through a variable specifier', () => {
     expect(referencing).toEqual([]);
   });
 });
+
+// (3) OPTIONAL REQUIRE OF A HEAVY ROOT — silent, and paid by apps that never
+// use the peer. Metro writes `null` only for a MISSING optional dependency; an
+// installed one is linked like any other, with everything its module reaches.
+// So an optional require costs what its specifier's module reaches, for every
+// app whose tree has the package — a transitive install is enough. Bloom's
+// theme read `Color` through `require('expo-router')`, and the router's root
+// index linked 322 modules (~1.4 MB unminified: navigation, linking, screens)
+// into every native bundle importing the theme, measured on a minimal
+// `BloomProvider` + `Button` app. `Color` has a module of its own.
+
+/**
+ * Peers whose root reaches far more than any boundary reads, each with the
+ * module a boundary names instead and the export it reads there.
+ */
+const HEAVY_ROOTS: { peer: string; instead: string; exportName: string; why: string }[] = [
+  {
+    peer: 'expo-router',
+    instead: 'expo-router/build/color/index.js',
+    exportName: 'Color',
+    why: "the root index is the whole router; `Color` is its own module, published by expo-router's `exports` (`./build/*.js`), and the very object the root re-exports",
+  },
+];
+
+describe('optional requires name the module they read, never a heavy root', () => {
+  const files = sourceFiles(SRC);
+  const optional = files.flatMap((file) =>
+    requireCalls(parse(file))
+      .filter(({ metroOptional, specifier }) => metroOptional && specifier !== null)
+      .map(({ specifier, line }) => ({
+        file: file.slice(SRC.length + 1),
+        line,
+        specifier: specifier as string,
+      })),
+  );
+
+  it('never optionally requires a heavy root', () => {
+    const offenders = optional
+      .filter(({ specifier }) => HEAVY_ROOTS.some(({ peer }) => specifier === peer))
+      .map(
+        ({ file, line, specifier }) =>
+          `${file}:${line}  require('${specifier}') links the whole package whenever it is installed; name '${
+            HEAVY_ROOTS.find(({ peer }) => peer === specifier)?.instead
+          }'`,
+      );
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('reads the adaptive palette from the module listed (positive control)', () => {
+    // If the scan stopped seeing requires, "no heavy root" would hold of nothing.
+    expect(
+      optional
+        .filter(({ file }) => file === 'theme/adaptive-colors.native.ts')
+        .map((r) => r.specifier),
+    ).toEqual(['expo-router/build/color/index.js', 'expo-router/build/color/index.js']);
+  });
+
+  it.each(HEAVY_ROOTS)(
+    '$instead is published by $peer and exports $exportName',
+    ({ instead, exportName }) => {
+      // Node's resolution honours the package's `exports`, so this fails if the
+      // installed version stops publishing the path; the source must name the export.
+      const resolved = require.resolve(instead, { paths: [join(SRC, '..')] });
+      expect(readFileSync(resolved, 'utf8')).toMatch(
+        new RegExp(
+          `exports, "${exportName}"|exports\\.${exportName}\\b|export \\{[^}]*\\b${exportName}\\b`,
+        ),
+      );
+    },
+  );
+});

@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.71.1
+
+### Fixed
+
+- **The theme no longer links the whole of `expo-router` into native bundles.** The adaptive palette (Material You, iOS dynamic colours) reads `expo-router`'s `Color` through an optional `require`, and an optional dependency is linked whenever the package is installed, not only when the app uses it. It named the package root, so every native bundle importing Bloom's theme carried the router's root index and everything it reaches (322 expo-router modules; navigation, linking, screens), including apps that never route with expo-router and merely have it in their tree. It now names `Color`'s own module, `expo-router/build/color/index.js`, published by expo-router's `exports` (`./build/*.js`) and the very object the root re-exports, so the palette is unchanged. A minimal `BloomProvider` + `Button` app for a non-router platform: 4,111 modules to 3,698, and 10.72 MB to 10.11 MB minified.
+- A gate in `optional-peer-imports.test.ts`: an optional `require` names the module it reads, never a heavy root, and the module it names must be published by the installed package.
+
+### Consumers
+
+Bump to 15.71.1. Nothing to change: apps that use expo-router link it from their own routes as before; apps that do not stop carrying it.
+
 ## 15.71.0
 
 ### Changed
