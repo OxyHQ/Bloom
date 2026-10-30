@@ -31,8 +31,10 @@ export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'child
    * reporting `popup-surface` turns native menus into anchored panels in the
    * platform's popups (OxyOS compositor popups, which may extend beyond the
    * window); one reporting `window` makes the app's window chrome Bloom's
-   * (`@oxy.so/bloom/window`: its controls and their room). Omitted, every
-   * family keeps its default presentation.
+   * (`@oxy.so/bloom/window`: its controls and their room). Omitted, the
+   * adapter of a provider around this one applies (the runtime's, which
+   * registers it with `PlatformSurfaceProvider`), and without one every family
+   * keeps its default presentation.
    */
   platform?: PlatformSurfaceAdapter;
   /** `false` disables haptic feedback app-wide (honored by every `useHaptics()` call). */

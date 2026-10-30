@@ -1,6 +1,6 @@
 ---
 title: Platform surfaces
-description: The host platform's popups, windows, menu bar, keys and appearance, registered once at the root, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar and every application follows the system's accent and reduce transparency.
+description: The host platform's popups, windows, menu bar, keys, appearance and the person's files, registered once at the root by the runtime, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar, every application follows the system's accent and reduce transparency, and a file manager reaches the person's places and Trash.
 order: 55
 ---
 
@@ -215,6 +215,50 @@ menu shortcuts. `usePlatformKeyboard()` returns it, or null.
 Both menus' shortcuts and an application's own keys (`useWindowKeys`,
 [`Kbd`](/docs/bloom/main/kbd)) come from this one source per window
 (`kbd/window-keys`), menus first.
+
+## `files`
+
+Not a capability either: the person's files beyond what `expo-file-system`
+reaches, for a platform that has them. A file manager needs two things that
+API does not have, and a desktop has both:
+
+```ts
+interface PlatformFiles {
+  places(): Promise<readonly PlatformPlace[]>;       // the home, its standard folders, the volumes
+  watchPlaces(listener: () => void): () => void;     // a volume mounted or gone
+  trash(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
+  trashed(): Promise<readonly PlatformTrashedItem[]>;
+  watchTrash(listener: () => void): () => void;
+  restore(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
+  erase(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
+  emptyTrash(): Promise<void>;
+}
+```
+
+- **Places:** the person's home (`kind: 'home'`), the standard folders in it
+  that exist (`desktop`, `documents`, `downloads`, `pictures`, `music`,
+  `videos`) and the volumes mounted for them (`volume`, by their label).
+- **The Trash** is the platform's, the one every file manager on it shares (on
+  OxyOS the freedesktop.org Trash): `trash` puts items in it, `trashed` lists
+  what it holds with where each was and when, `restore` puts items back where
+  they were (never over an item there now), `erase` deletes them for good and
+  `emptyTrash` deletes everything. A request about several items answers each
+  (`PlatformFileOutcome`), so one that fails never hides what came of the rest.
+
+Every URI is `file://`: what a place holds is read, changed and watched through
+`expo-file-system` (`Directory.list`, `File.move`, `Directory.watch`), the same
+API on every platform. `usePlatformFiles()` returns the adapter's `files`, or
+null: then an application has the folders `expo-file-system` gives it
+(`Paths.document`) and deletes as that API does, for good, saying so.
+
+## Who registers the adapter
+
+The runtime that runs the application: the web build's, a native runtime's,
+the OxyOS Bloom host's, never the application. It wraps the application in
+`PlatformSurfaceProvider` (or a `BloomProvider platform={…}`), and the
+application's own `BloomProvider`, with no `platform` of its own, keeps that
+adapter for everything below it. A `platform` given to an inner provider
+replaces the outer one for its subtree.
 
 The OxyOS adapter, and the host component behind it, live with the OxyOS
 runtime (OxyHQ/OxyOS, `tools/rn-host-spike`): Bloom stays free of OxyOS,
