@@ -14,16 +14,16 @@ import { useWindow } from './use-window';
  * BUBBLE phase (`onStartShouldSetResponder`), which asks the deepest view
  * first: any button, field or other pressable inside takes its own presses,
  * and only a press on the region itself (or on text and boxes that take
- * none) reaches it. Without the `window` capability, and while the window is
- * full screen, it is just the `View`.
+ * none) reaches it. Without the `window` capability, while the window is
+ * full screen, and while `disabled`, it is just the `View`.
  */
 export const WindowDragRegion: RefComponent<WindowDragRegionProps> = forwardRef<
   ComponentRef<typeof View>,
   WindowDragRegionProps
->(function WindowDragRegion({ children, ...props }, ref) {
+>(function WindowDragRegion({ children, disabled = false, ...props }, ref) {
   const appWindow = useWindow();
   const lastPress = useRef<number | null>(null);
-  if (!appWindow || appWindow.fullscreen)
+  if (!appWindow || appWindow.fullscreen || disabled)
     return (
       <View ref={ref} {...props}>
         {children}

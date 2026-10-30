@@ -23,6 +23,9 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { AppShellPanelContext } from './context';
 import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './PanelDropZones';
 import type { AppShellPanelDefinition, AppShellPanelLayout } from './panel-layout-types';
+import { WINDOW_TOP_EDGE } from './panel-layout';
+import { usePlatformWindow } from '../platform-surface/context';
+import { useWindowChrome, WindowChromeProvider, type WindowChrome } from '../window/context';
 import {
   resizeRetainedSpans,
   retainedGeometry,
@@ -72,15 +75,35 @@ const HIDDEN: WebCssStyle = {
 } as WebCssStyle;
 const SHOWN: ViewStyle = { zIndex: 1 };
 
+const atZero = (edge: RetainedEdge) => edge.fraction === 0 && edge.offset === 0;
+
+/**
+ * The window's chrome a retained panel holds: along the region's top edge its
+ * header moves the window, and at the leading top corner it also keeps the
+ * controls' room. Hidden, it holds none.
+ */
+function retainedWindowChrome(
+  chrome: WindowChrome | null,
+  box: RetainedBox | undefined,
+): WindowChrome | null {
+  if (chrome == null || box === undefined || !atZero(box.top)) return null;
+  return atZero(box.start) ? chrome : WINDOW_TOP_EDGE;
+}
+
 function RetainedHost({
   panel,
   box,
   alone,
+  windowed,
+  windowChrome,
   testID,
 }: {
   panel: AppShellPanelDefinition;
   box: RetainedBox | undefined;
   alone: boolean;
+  /** The platform has windows: one tree whether or not this panel holds the chrome. */
+  windowed: boolean;
+  windowChrome: WindowChrome | null;
   testID?: string;
 }) {
   const shown = box !== undefined;
@@ -101,7 +124,13 @@ function RetainedHost({
       }
     >
       <AppShellPanelContext.Provider value={value}>
-        <View style={CONTENT}>{panel.content as ReactNode}</View>
+        {windowed ? (
+          <WindowChromeProvider value={windowChrome}>
+            <View style={CONTENT}>{panel.content as ReactNode}</View>
+          </WindowChromeProvider>
+        ) : (
+          <View style={CONTENT}>{panel.content as ReactNode}</View>
+        )}
       </AppShellPanelContext.Provider>
       {shown ? (
         <PanelDropZones
@@ -124,6 +153,8 @@ export function RetainedPanelLayout({
 }) {
   const rtl = useIsRtl();
   const reduced = useReducedMotion();
+  const windowed = usePlatformWindow() != null;
+  const handedWindowChrome = useWindowChrome();
   const axis =
     typeof layout.axis === 'object'
       ? (layout.axis.base ?? 'horizontal')
@@ -264,6 +295,8 @@ export function RetainedPanelLayout({
             panel={byId.get(id)!}
             box={geometry.boxes[id]}
             alone={shown.length === 1}
+            windowed={windowed}
+            windowChrome={retainedWindowChrome(handedWindowChrome, geometry.boxes[id])}
             testID={testID}
           />
         ))}

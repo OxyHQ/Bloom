@@ -69,6 +69,7 @@ import { PanelNavigation, PanelScrollScope } from './PanelNavigation';
 import {
   applyPanelSpans,
   isFlexiblePanel,
+  panelWindowChrome,
   resolvePanelAxis,
   resolvePanelTracks,
   splitPairSpans,
@@ -76,6 +77,9 @@ import {
 } from './panel-layout';
 import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './PanelDropZones';
 import { RetainedPanelLayout } from './RetainedPanelLayout';
+import { usePlatformWindow } from '../platform-surface/context';
+import { useWindowChrome, WindowChromeProvider, type WindowChrome } from '../window/context';
+import { windowEdgeTopCorners } from '../window/geometry';
 import type {
   AppShellPanelDefinition,
   AppShellPanelLayout,
@@ -277,6 +281,7 @@ export function createPanelLayoutView(
     onNudge,
     registerResizePreview,
     hasNext,
+    windowChrome,
     testID,
   }: {
     panel: AppShellPanelDefinition;
@@ -301,9 +306,20 @@ export function createPanelLayoutView(
     onNudge: (delta: number) => void;
     registerResizePreview: (preview: PanelResizePreview) => () => void;
     hasNext: boolean;
+    /** The window's chrome this panel holds, if any (`panelWindowChrome`). */
+    windowChrome: WindowChrome | null;
     testID?: string;
   }) {
     const layoutReady = useShellLayoutReady();
+    // One tree whether or not the panel holds the window's chrome right now.
+    const platformWindow = usePlatformWindow();
+    const windowed = platformWindow != null;
+    // Along the window's top edge the panel's top corners are concentric with
+    // the window's own.
+    const windowCorners =
+      windowChrome != null && platformWindow != null
+        ? windowEdgeTopCorners(platformWindow.metrics)
+        : null;
     const panelRef = useRef<ComponentRef<typeof View>>(null);
     const dragOffset = useSharedValue(0);
     const dragLayer = useSharedValue(0);
@@ -552,7 +568,13 @@ export function createPanelLayoutView(
         <ScreenScope inheritBottomEdge={document || underBar} inheritNavigation={underBar}>
           <ScreenHostContext.Provider value={navigation ? { ...host, navigation } : host}>
             <ScrollMetricsContext.Provider value={metrics}>
-              <ScrollOffsetProvider value={scrollY}>{content}</ScrollOffsetProvider>
+              <ScrollOffsetProvider value={scrollY}>
+                {windowed ? (
+                  <WindowChromeProvider value={windowChrome}>{content}</WindowChromeProvider>
+                ) : (
+                  content
+                )}
+              </ScrollOffsetProvider>
             </ScrollMetricsContext.Provider>
           </ScreenHostContext.Provider>
         </ScreenScope>
@@ -590,6 +612,8 @@ export function createPanelLayoutView(
                   ),
                 }
               : undefined,
+            // Only along a window's top edge, so the style is unchanged elsewhere.
+            ...(windowCorners ? [windowCorners] : []),
           ]}
           contentStyle={FILL}
         >
@@ -952,6 +976,24 @@ export function createPanelLayoutView(
       return () => observer?.disconnect();
     }, [cssScope, cssRules, layout.panels]);
     const visible = tracks.filter((track) => track.visible);
+    const handedWindowChrome = useWindowChrome();
+    const platformWindow = usePlatformWindow();
+    // A web page deck scrolls the document from the shell's own start edge (the
+    // frame gives up its start inset), so its first panel is at the window's
+    // edge and keeps the whole room.
+    const deckRoom =
+      handedWindowChrome != null && documentHorizontal && platformWindow != null
+        ? platformWindow.metrics.room.leading
+        : null;
+    const groupWindowChrome = useMemo<WindowChrome | null>(
+      () => (deckRoom == null ? handedWindowChrome : { leading: deckRoom }),
+      [deckRoom, handedWindowChrome],
+    );
+    const windowChrome = panelWindowChrome(
+      groupWindowChrome,
+      layout.panels.map((_, index) => tracks[index] ?? { visible: false }),
+      vertical,
+    );
     const visibleKey = visible.map((track) => track.id).join('\n');
     // biome-ignore lint/correctness/useExhaustiveDependencies: keyed by the visible ids
     const visibleIds = useMemo(() => (visibleKey ? visibleKey.split('\n') : []), [visibleKey]);
@@ -1123,6 +1165,7 @@ export function createPanelLayoutView(
             joined={joined}
             gap={actualGap}
             hasNext={visible[visible.length - 1]?.id !== panel.id}
+            windowChrome={windowChrome[index] ?? null}
             onResizeStart={() => resize.start(panel)}
             onResize={(value) => resize.resize(panel, value)}
             onResizeEnd={resize.end}
@@ -1205,7 +1248,11 @@ export function createPanelLayoutView(
                 scrollable={false}
                 overlaySizing={document ? 'viewport' : 'panel'}
                 overlayInset={document ? region?.viewportInset : undefined}
-                surfaceStyle={FILL}
+                surfaceStyle={
+                  groupWindowChrome && platformWindow
+                    ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
+                    : FILL
+                }
                 contentStyle={FILL}
               >
                 {content}
@@ -1247,6 +1294,8 @@ export function createPanelLayoutView(
   function PanelLayoutView(props: PanelLayoutViewProps) {
     const region = useAppShellRegion();
     const cssScope = useContext(PanelCssContext);
+    const handedWindowChrome = useWindowChrome();
+    const platformWindow = usePlatformWindow();
     if (props.layout.retain)
       return <RetainedPanelLayout layout={props.layout} gap={props.gap} testID={props.testID} />;
     if (props.layout.header === undefined) return <PanelLayoutTracks {...props} />;
@@ -1271,7 +1320,11 @@ export function createPanelLayoutView(
         scrollable={false}
         overlaySizing={document ? 'viewport' : 'panel'}
         overlayInset={document ? region?.viewportInset : undefined}
-        surfaceStyle={FILL}
+        surfaceStyle={
+          handedWindowChrome && platformWindow
+            ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
+            : FILL
+        }
         contentStyle={FILL}
       >
         {workspace}

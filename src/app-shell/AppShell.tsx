@@ -452,6 +452,23 @@ export function createAppShell(
     const scope = panelCssScope(useId());
     const cssLayout = useShellCssLayout();
     const layout = props.panelLayout!;
+    // A window's panels with nothing of the shell's own at its corner (no
+    // sidebar, top bar or header) are the window's content: they fill it, as
+    // a desktop application's panes do, and the first one is at the corner
+    // (its header keeps the controls' room), rather than a reading envelope
+    // centred in the window with the controls over an empty band.
+    const platformWindow = useWindow();
+    const windowCornerTaken = useWindowCornerTaken();
+    const windowPanels =
+      platformWindow != null &&
+      !windowCornerTaken &&
+      props.sidebar == null &&
+      props.topBar == null &&
+      props.header == null &&
+      props.title == null &&
+      props.breadcrumb == null &&
+      props.actions == null;
+    const fillWidth = props.contentMaxWidth === 'none' || windowPanels;
     const gap =
       layout.gap ??
       (layout.appearance === 'joined' ? 1 : (props.gutter ?? APP_SHELL_DEFAULTS.gutter));
@@ -469,12 +486,12 @@ export function createAppShell(
       scroll: document ? 'document' : props.scroll === 'page' ? 'page' : 'fixed',
       aside: undefined,
       contentSpan: undefined,
-      contentWidth: deck || props.contentMaxWidth === 'none' ? undefined : envelope,
-      contentMaxWidth: deck ? 'none' : props.contentMaxWidth,
+      contentWidth: deck || fillWidth ? undefined : envelope,
+      contentMaxWidth: deck || windowPanels ? 'none' : props.contentMaxWidth,
       children: PanelLayoutView ? (
         <PanelLayoutView
           layout={layout}
-          fillWidth={props.contentMaxWidth === 'none'}
+          fillWidth={fillWidth}
           shellWidth={width}
           gap={gap}
           testID={props.testID ? `${props.testID}-panels` : undefined}

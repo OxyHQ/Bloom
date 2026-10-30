@@ -55,6 +55,12 @@ export interface WindowDragRegionProps
     | 'onResponderTerminationRequest'
   > {
   children?: ReactNode;
+  /**
+   * Move nothing: the region is its plain `View`, so a slot that is the
+   * window's chrome only some of the time keeps one tree either way. Default
+   * false.
+   */
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

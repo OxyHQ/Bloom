@@ -1,4 +1,4 @@
-export { useWindow, useWindowControlsRoom } from './use-window';
+export { useWindow, useWindowControlsRoom, useWindowHeaderRoom } from './use-window';
 export { WindowControls } from './WindowControls';
 export { WindowDragRegion } from './WindowDragRegion';
 export type {

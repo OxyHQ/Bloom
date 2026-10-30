@@ -1,3 +1,4 @@
+import type { WindowChrome } from '../window/context';
 import { breakpointPx } from './constants';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import type { AppShellPanelDefinition, AppShellPanelLayout, PanelAxis } from './panel-layout-types';
@@ -224,4 +225,31 @@ export function splitPairSpans(
   if (!(pixels > 0) || !(total > 0)) return {};
   const share = Math.max(0, Math.min(1, firstSize / pixels));
   return { [first.id]: total * share, [second.id]: total * (1 - share) };
+}
+
+/** A panel along the window's top edge, away from the controls: its header moves the window. */
+export const WINDOW_TOP_EDGE: WindowChrome = { leading: 0 };
+
+/**
+ * The window's chrome for each panel (`window/context`): the first shown panel
+ * is at the window's corner and keeps the controls' room; side by side, every
+ * other shown panel is along the window's top edge too. Stacked, only the top
+ * one is. A floating panel is a dialog, away from both.
+ */
+export function panelWindowChrome(
+  chrome: WindowChrome | null,
+  tracks: readonly Pick<ResolvedPanelTrack, 'visible' | 'floating'>[],
+  vertical: boolean,
+): (WindowChrome | null)[] {
+  const shown = (index: number) => !!tracks[index]?.visible && !tracks[index]?.floating;
+  const first = chrome ? tracks.findIndex((_, index) => shown(index)) : -1;
+  return tracks.map((_, index) =>
+    chrome == null || !shown(index)
+      ? null
+      : index === first
+        ? chrome
+        : vertical
+          ? null
+          : WINDOW_TOP_EDGE,
+  );
 }
