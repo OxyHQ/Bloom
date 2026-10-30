@@ -17,7 +17,12 @@
  */
 export type { SchemeVariant, AccentSources } from './scheme-variants';
 export type { RoleName } from './color-roles';
-export { quantizeImage, seedsFromImagePixels, seedHexFromImagePixels } from './seed-from-image';
+export {
+  quantizeImage,
+  seedsFromImagePixels,
+  seedsFromRgbBytes,
+  seedHexFromImagePixels,
+} from './seed-from-image';
 export {
   argbFromRgb,
   redFromArgb,

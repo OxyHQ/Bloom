@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.64.0
+
+### Added
+
+- **`ColorEngine.seedsFromRgbBytes(bytes, channels?, options?)`.** Ranked seed colours straight from a decoded image's raw bytes (R, G, B, optionally alpha, per pixel), the buffer an image library returns. The same ranking as `seedsFromImagePixels` over the packed pixels. Also in `@oxy.so/color` 1.1.0, where servers that seed a theme from a photo use it instead of each packing pixels by hand.
+
+### Consumers
+
+Bump to 15.64.0. Nothing else changes.
+
 ## Unreleased
 
 ### Added

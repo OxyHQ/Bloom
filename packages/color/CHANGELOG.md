@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+### Added
+
+- **`seedsFromRgbBytes(bytes, channels?, options?)`**: ranked seeds from a decoded image's raw bytes, `channels` (3, or 4 with alpha skipped) per pixel. sharp's `.raw().toBuffer()` goes straight in; the same ranking as `seedsFromImagePixels` over the packed pixels. Bloom 15.64.0 ships the same function in `ColorEngine`.
+
 ## 1.0.0
 
 ### Added

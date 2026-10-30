@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/color",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Bloom's colour engine with no React: theme roles from any seed colour, and seed colours from an image's pixels. For servers and build scripts.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
