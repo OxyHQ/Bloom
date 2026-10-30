@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.67.0
+
+### Added
+
+- **Weather glyphs, and `wifi-off-line`.** Fourteen Remix Icon 4.9.1 glyphs, so a weather condition has its own picture instead of the nearest stand-in: `RiCloudyLine`, `RiSunCloudyLine`, `RiMoonCloudyLine`, `RiMoonClearLine`, `RiRainyLine`, `RiDrizzleLine`, `RiShowersLine`, `RiHeavyShowersLine`, `RiThunderstormsLine`, `RiSnowyLine`, `RiHailLine`, `RiMistLine`, `RiFoggyLine`, and `RiWifiOffLine` for a screen that lost its connection. Added with `scripts/add-remix-icons.mjs`, each `@oxy.so/bloom/icons/Ri<Name>` like the rest.
+
+### Consumers
+
+Bump to 15.67.0. New glyphs only.
+
 ## 15.66.0
 
 ### Added
