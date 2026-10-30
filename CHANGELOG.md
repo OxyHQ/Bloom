@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.69.1
+
+### Fixed
+
+- **`Code` on web hands its props to the DOM properly.** It built the `<code>` element by hand and spread every `TextProps` onto it, so `testID` reached the DOM as a raw attribute (React warned "does not recognize the `testID` prop on a DOM element", for example in `OxyDeviceSignIn`), `accessibilityLabel` and `numberOfLines` did nothing, and a style array was spread by index instead of applied. Both platforms now render React Native's `Text`; on web `role="code"` makes react-native-web emit the same `<code>`, with `data-testid`, `aria-label`, line clamping and every style entry translated. The look is unchanged: JetBrains Mono, the text colour, 0.92em on web and 13 on native.
+
+### Consumers
+
+Bump to 15.69.1. Nothing to change.
+
 ## 15.69.0
 
 ### Added
