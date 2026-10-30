@@ -1,0 +1,177 @@
+---
+title: Surface material study
+description: What react-native-screens' new sheet background effects do, how Bloom's Surface material compares on web, iOS, Android and the OxyOS host, and a phased plan to improve it without changing the Surface API.
+---
+
+# Surface material study
+
+A study, not a contract. Nothing here has changed yet. The [Surface](./surface.mdx) page describes the material as it is today. This page compares it with a recent change in react-native-screens and proposes improvements, each with a cost, a test and a decision for the owner.
+
+Sources, read on 2026-10-30:
+
+- The post: [x.com/kmichalikk/status/2116160694349598747](https://x.com/kmichalikk/status/2116160694349598747), read through X's public syndication endpoint. Its four replies could not be read: they need a signed-in session, and the public mirrors are offline.
+- The repository: [software-mansion/react-native-screens](https://github.com/software-mansion/react-native-screens) `main` at `ec16f25b`, MIT licence. The relevant pull requests are #5111 (commit `7ee39d239`), #5007 (commit `593ab2084`) and their tests.
+- Bloom `main` at `280830e4` (15.66.0), and OxyOS `main` at `07e84ae` (`tools/rn-host-spike`, ADRs 0011, 0016 and 0019).
+
+## The post
+
+Konrad Michalik, a react-native-screens maintainer, posted on 2026-10-30: react-native-screens "v5 form sheets now have background effects", the work of Tomasz Boroń. The 19-second video shows an iPhone over a magenta-to-orange gradient, with one `effect` value per shot:
+
+| `effect` | What the sheet shows |
+|---|---|
+| `'automatic'` | iOS 26 Liquid Glass. The sheet is almost invisible over the gradient. |
+| `{ type: 'blur', style: 'systemUltraThinMaterial' }` | A thin frost. The gradient's colours come through, barely softened. |
+| `{ type: 'blur', style: 'systemMaterial' }` | A light, milky frost. The colours are pale pink and cream. |
+| `{ type: 'blur', style: 'systemThickMaterialDark' }` | A dark, thick frost. The colours become a brown-to-plum tint. |
+| `{ type: 'color', color: '#001a72' }` | A flat, opaque navy sheet. |
+| `'none'` | No material. Only the grabber is drawn; the gradient shows through untouched. |
+| `'none'`, with a gradient drawn by the sheet's content | The sheet's own content paints a white-to-pink gradient. No system material sits under it. |
+
+"v5" is the library's new component generation (`FormSheet`), not a package version. The feature is in nightly builds (`4.31.0-nightly-20261029`).
+
+## What react-native-screens does
+
+**It draws nothing itself.** There is no shader, no Skia, no WebGL and no CSS. The whole feature is one UIKit property: on iOS 26.1 and later, `UISheetPresentationController.backgroundEffect` replaces the material that UIKit draws behind a sheet. react-native-screens chooses which `UIVisualEffect` to put there:
+
+- `automatic`: `nil`, so UIKit keeps its own material. On iOS 26 that is Liquid Glass, with its edge and its interactive highlight.
+- `none`: `[UIColorEffect effectWithColor:UIColor.clearColor]`. UIKit draws no material at all.
+- `color`: a `UIColorEffect` with the given colour, opaque or translucent.
+- `blur`: a `UIBlurEffect` with any of the 20 `UIBlurEffect.Style` cases.
+
+See `ios/react/modals/form-sheet/conversion/RNSConversions-FormSheet.mm` (`RNSFormSheetBackgroundEffectFromProps`) and the one line in `RNSFormSheetConfigurationApplicator.mm` that assigns it. The blur, the vibrancy, the Liquid Glass and their cost all belong to the system compositor, which draws them on the GPU. There is no JavaScript work per frame.
+
+What it does well is mostly API design and discipline, and that is the part Bloom can use:
+
+1. **The platform owns the material, and `automatic` is the default.** The library does not imitate the system's material. It hands over to it and only replaces it when asked. When iOS changes its material (iOS 26 changed it to Liquid Glass), the default follows with no release.
+2. **Material and fill are separate.** UIKit draws the material behind the sheet's container. An opaque `nativeContainerStyle.backgroundColor` hides it, but replacing it still matters: Liquid Glass draws its interactive highlight above the content, so a sheet with an opaque background still flares under the finger (issue #4605). An opaque fill does not make the material free or invisible.
+3. **The choice is explicit, never inferred.** #5007 rejected an earlier attempt (#4986) that inferred the material from the background colour's alpha. react-navigation always gives sheets an opaque theme colour, so inferring would have silently changed every existing sheet.
+4. **One public union, flattened for codegen.** The public type is `'automatic' | 'none' | { type: 'color', color } | { type: 'blur', style }` (`FormSheet.types.ts`). `resolveNativeBackgroundEffect` (`FormSheetUtils.ts`) flattens it into three codegen props: an enum, a colour and a blur style. An invalid value logs an error and falls back to `automatic`, in JavaScript and again in native code.
+5. **Capability gates, and no-ops elsewhere.** Native code is guarded by an SDK check at compile time and an `@available(iOS 26.1, *)` check at run time. Below iOS 26.1, on tvOS and visionOS, and on Android (whose setters are empty), the prop does nothing. On the web, `FormSheet` itself is unsupported (`FormSheet.web.tsx` returns `null` and warns).
+6. **Changes apply in place.** Changing the effect while the sheet is open calls `setNeedsAppearanceUpdate`; the sheet is not presented again. The older `Screen` path keeps the effect and colour it last applied and skips identical updates. A `DynamicColorIOS` colour goes to `UIColorEffect` unresolved, so UIKit switches it between light and dark itself, without a round trip through JavaScript.
+7. **It says what it does not do.** The PR explains why `UIGlassEffect` and `UIVibrancyEffect` are not offered: assigned through `backgroundEffect`, the first draws nothing and the second is a saturation filter, not a background. Per-detent effects are left for later.
+8. **Its test is a checklist over a busy backdrop.** `apps/src/tests/single-feature-tests/form-sheet/test-form-sheet-background-effect-ios/` has a screen with a striped background, pickers for every value (including all 20 blur styles), an opaque container option, and changes made while the sheet is open. Its `scenario.md` is a manual checklist that was run on iOS 26.5 and 27.0, on iPhone and iPad.
+
+It has no accessibility code of its own. It relies on UIKit: when Reduce Transparency is on, the system materials are drawn opaque (to be confirmed on a device for `backgroundEffect`; it is the documented behaviour of `UIVisualEffectView`).
+
+### Licence
+
+react-native-screens is MIT. Bloom could copy its code if it kept the copyright notice, recorded in `NOTICE` under third-party components. Nothing here is worth copying, though. The code is a mapping onto UIKit calls and the ideas are API design. **Reimplement the ideas and copy no source.** If a future step does port a file (for example the 20-case blur style mapping), its header names the origin and `NOTICE` gains the MIT entry, as Bloom's licence requires of vendored material.
+
+## Bloom's Surface today
+
+One material, no selector. Bloom 9.0 chose this and 15.49.0 (#481) measured it again. Every painting family uses it: 53 files paint through `SurfacePaint` and 8 through `useSurfaceMaterial`/`surfaceMaterialCss`, across about 45 families. Product apps do not use `Surface` directly. Atlas, Inbox and Mention have no `Surface` import at all; they get the material through `Card`, `Button`, `BottomBar`, `Dialog`, menus and the other families.
+
+| Platform | Body | Edge | Blur |
+|---|---|---|---|
+| Web | `::before`: the tint (an opaque fill at 72%, `SURFACE_TINT_OPACITY`) over `blur(24px) saturate() contrast() brightness()`, measured separately in light and dark (`optics.ts`, `materialFilter`). | `::after`: a second `backdrop-filter` (brightness) shown through a composite mask: a 1.25px line, falling off through the corners, plus a glow 8px deep (`web-material.ts`). | Two backdrop passes per surface. |
+| iOS, Android | One `View`. The fill stays opaque (#468): with no blur under it, a translucent fill showed the text behind it. | Inset `boxShadow`s: ±1px lines and a glow at ±8px (`shared.ts`, `nativeGlow`). | None per surface. Android crashes when a `BlurView` sits inside its own target, so blur lives only in `Backdrop`/`ProgressiveBlur`, behind `BlurWindow`. |
+| OxyOS host | The tint only. | **Not drawn.** The host draws no `boxShadow` at all, inset or outer (no `boxShadow` anywhere in `tools/rn-host-spike`, and no "unsupported" report either). | Only expo-blur views with a target, as a Gaussian on the CPU (`renderer.cpp` `drawBlurred`, reduced for wide radii, ADR 0011). |
+
+Accessibility is a strength. `BloomProvider reduceTransparency`, the platform `appearance` capability (OxyOS reports it since OxyOS #139) and the web's `prefers-reduced-transparency` all turn every material opaque. The opaque colour is `solidFill`, the same colour the surface publishes to its content, so contrast is measured against what is painted. `reduced-transparency-census.test.ts` keeps it a single switch.
+
+What Bloom does better than react-native-screens: it works on the web; its edge light is measured; descendants read the composited fill (`SurfaceLevelProvider`), so text contrast holds on every level; reduce transparency is a tested switch rather than a platform side effect; and the backdrop-root gates (`backdrop-root.web.test.tsx`, `scripts/verify-backdrop-root.mjs`) catch a class of flicker that most libraries ship.
+
+### Gaps found while reading
+
+1. **iOS has no material.** The Android crash is the reason native surfaces have no blur, but iOS has no such crash. `UIVisualEffectView` needs no target, and expo-blur, already a required peer, wraps it. On iOS, menus, toasts, the bottom bar and dialogs are opaque tiles, where the platform's own chrome is frosted.
+2. **Bloom never reads the iOS Reduce Transparency setting.** React Native exposes it (`AccessibilityInfo.isReduceTransparencyEnabled()` and the `reduceTransparencyChanged` event). The provider reads only its prop and the platform adapter (`BloomThemeProvider.tsx`, `reducedTransparency`). This matters as soon as iOS gets real blur.
+3. **No increased-contrast mode.** Nothing reads `prefers-contrast: more` or `forced-colors` on the web, or Increase Contrast on iOS. Apple's materials become more opaque and gain a border under Increase Contrast.
+4. **The web pays for blur it cannot show.** A card in a feed sits on an opaque page or panel fill that never moves under it. Blurring a flat colour gives the same flat colour, but every such card still runs two backdrop passes. This is react-native-screens' point 2 in reverse: hiding the material does not make it free. The Chromecast measurement on the [Surface](./surface.mdx) page (7 fps with a filter per card, 16 without) is the cost.
+5. **OxyOS loses the edge and every shadow.** The rim, the glow, and the outer `floating` shadows of islands, menus and cards are missing. Outer shadows would also need the host's damage (`damage.cpp`) extended by their reach, as ADR 0005 already describes.
+6. **The documentation disagrees with the code.** `AGENTS.md`, [Blur](./blur.mdx), [Bottom bar](./bottom-bar.mdx), the `fill` prop's comment in `surface/types.ts` and a comment in `shared.ts` still say the body is 90% opaque over `blur(8px)`, with one backdrop pass. The code says 72%, `SURFACE_BLUR_PX = 24`, and two passes (body and edge). [Surface](./surface.mdx) and [Material composition](./material-composition.mdx) are correct.
+
+## What to adopt
+
+The idea worth taking is not the 20-style picker. It is react-native-screens' **structure**: separate the material from the fill, and give the material one explicit, per-platform resolution. Its default, `automatic`, lets each platform draw what it draws best. The fallbacks (`none`, `color`) are explicit, never inferred.
+
+Bloom already has most of the vocabulary, under other names:
+
+| react-native-screens | Bloom today |
+|---|---|
+| `'color'` | `fill` with alpha (preserved as given), or an opaque `fill` on native |
+| `'none'` | `fill="transparent"` (`isClearFill`: the host paints no material) |
+| `'automatic'` | The one material. Only the web has a real backdrop. |
+| `{ type: 'blur', style }` | No equivalent, and none proposed (see decision 1) |
+
+The proposal keeps the public `Surface` API as it is (`fill`, `radius`, `cornerCurve`, `style`, `className`, the passthrough props). It adds **one internal resolver** beside `resolveSurfaceMaterial` that decides, per host, how the one material is drawn:
+
+```ts
+type SurfaceRendition =
+  | 'backdrop' // web: the live ::before/::after material
+  | 'baked' // web: the same look, computed over a known, opaque, static backing
+  | 'platform' // iOS: UIVisualEffectView under the tint (expo-blur)
+  | 'tint' // Android, OxyOS: the fill, with the rim and glow as inset shadows
+  | 'solid'; // reduced transparency: solidFill, no backdrop at all
+```
+
+The inputs are already in context: the platform, `useReducedTransparency()`, the parent's published fill and level (`SurfaceLevelProvider`), and whether the host floats (overlay, docked chrome) or sits in the flow. Families pass the last one, because they know it: a `FloatingPanel` floats, and a `SettingsList` group does not. Callers never pass it. `Surface` itself defaults to `backdrop` on the web, as today.
+
+## Plan
+
+Sizes are rough: **S** is one small PR (a day or two), **M** is about a week with gates, **L** is several weeks or needs an ADR.
+
+### Phase 0: make the documentation true (S, documentation only)
+
+Correct the six stale statements listed under gap 6, using the code's numbers (72%, 24px, two backdrop passes). Keep one source of truth: [Surface](./surface.mdx) holds the numbers and the other pages link to it. Change no visuals.
+
+### Phase 1: accessibility parity (S to M, no API change)
+
+- **iOS Reduce Transparency.** The provider ORs `AccessibilityInfo.isReduceTransparencyEnabled()` (and its change event) into `reducedTransparency`, as it already does for the platform adapter. Today this changes only `Backdrop` and `ProgressiveBlur` on iOS. After phase 3 it also covers the surface material.
+- **Increased contrast.** Add a contrast switch beside transparency: `prefers-contrast: more` and `forced-colors: active` on the web, and Increase Contrast on iOS if a reliable signal exists (React Native has none built in; this needs checking). Under it the body paints `solidFill` and the edge light becomes a 1px hairline from `hairlineOn` (`styles/surface-levels.ts`), the same contract as reduce transparency. Whether this is a second document attribute or the same `reduced` path plus a hairline is decision 5.
+- **Before and after.** No change by default. With the setting on, iOS overlays lose their blurred dim (as the web already does), and under increased contrast every surface becomes opaque with a visible hairline.
+- **Tests.** Provider unit tests with `AccessibilityInfo` mocked (on, off, change event). A web story checked under `page.emulateMediaFeatures([{ name: 'prefers-contrast', value: 'more' }])` and `forced-colors`. Extend `reduced-transparency-census.test.ts` so that every material host follows the contrast switch too. Contrast floors stay independent literals (Bloom's rule).
+
+### Phase 2: bake the web material where the backdrop is known (M, internal)
+
+When a surface is in the flow and its backing is opaque and painted by a known owner (the page background, a `Screen`, a panel, a parent `Surface`), its blurred backdrop is that backing's colour. The body's `blur saturate contrast brightness` and the edge's brightness can then be computed once in JavaScript and painted as plain colours, with no backdrop filter.
+
+- **Mechanism.** An internal `rendition: 'baked'` path through `SurfacePaint` and `surfaceMaterialCss`, selected by the in-flow families: Card in lists, SettingsList groups, fields, chips and the like. The edge stays a masked layer, but its colour is fixed, not a `backdrop-filter`. Floating and sticky surfaces, and any surface over media (images, video, `AmbientPhoto`, a `ProgressiveBlur`), stay `backdrop`. A census, built like `reduced-transparency-census.test.ts`, classifies every `SurfacePaint` caller as floating, in-flow or over media, with a reason. An unclassified caller fails it.
+- **Accuracy.** Do not trust the formula alone. Browsers disagree on the colour space they apply filter shorthands in. Fit the computed colour against Chromium, WebKit and Gecko screenshots of the live material, over the same backing, in light and dark.
+- **Before and after.** Feeds, settings and forms should look identical, within one or two levels per channel. Pages with dozens of cards stop compositing dozens of backdrop layers. Surfaces over photos and every overlay are unchanged.
+- **Tests.**
+  - `scripts/verify-surface-baked-material.mjs`: renders each in-flow story twice (forced `backdrop`, then `baked`), captures the whole viewport (the [Surface](./surface.mdx) rule: crop afterwards), and fails if any pixel differs by more than 2 levels.
+  - A story with a card over a photo, which must stay `backdrop`.
+  - Performance: count the elements whose computed `::before` has a `backdrop-filter` on the Social and Home Dashboard template stories, before and after (the target is a drop to the floating ones), and record frame times on the Chromecast that produced 7 and 16 fps, over the same moving photo.
+  - The backdrop-root gates keep running unchanged.
+
+### Phase 3: a real material on iOS for floating surfaces (M, internal)
+
+On iOS only, floating and docked surfaces mount an expo-blur `BlurView` (a `UIVisualEffectView`) under the tint, inside the paint layer that already clips to the host's shape. These are the menus and popovers (`FloatingPanel`), `Tooltip`, toasts, `Dialog` panels, `BottomBar`, `BlurIsland`, the tab bar capsule and the window controls. The tint then uses `SURFACE_TINT_OPACITY`, as on the web, because there is now a blur under it. With transparency reduced, the `BlurView` is not mounted and the body is `solidFill`. In-flow surfaces (cards in a feed) stay `tint`. A `UIVisualEffectView` per feed row is the kind of offscreen pass that makes scrolling drop frames, and over an opaque page it shows nothing (gap 4).
+
+- **Android is unchanged.** The crash rule stands: no `BlurView` inside the app's own target. Bloom's existing `BlurWindow` boundary stays the only Android path.
+- **Look.** expo-blur couples blur strength and tint. Rather than adopt a `system*Material` tint and lose Bloom's measured look, use the `BlurView` for the blur alone (a low-tint intensity, with Bloom's tint painted over it). Then compare it with the web's 24px with screenshots, in light and dark. Exactly what "the same look" means on iOS is decision 2.
+- **Before and after.** iOS menus, sheets, toasts and the bottom bar change from opaque tiles to frosted panels that let colour through, as the web's already do. Cards look the same.
+- **Tests.**
+  - A native census test asserting that `BlurView` mounts only for floating renditions, only on iOS, and never under reduced transparency.
+  - An adaptation of react-native-screens' scenario checklist: a striped backdrop, each floating family open over it, light and dark, Reduce Transparency on and off, the setting changed while a menu is open. Run it on an iPhone and an iPad.
+  - Instruments: count offscreen passes and check scrolling frame times on the Mention feed with a menu open.
+
+### Phase 4: the edge and shadows on OxyOS (M, OxyOS repository)
+
+Teach the Bloom host to draw React Native's `boxShadow`: inset shadows (Bloom's rim lines and glows) and outer ones (the `floating` elevation). It can reuse `blurPlanes` for the Gaussian, cache each shadow by size, radius and shadow string (most never change between frames), and extend damage by each shadow's reach. Until then, the host reports `boxShadow` as unsupported once, as it does for an image's `blurRadius`.
+
+- **Before and after.** Surfaces on OxyOS gain their top and bottom edge light and their glow. Islands, menus and cards gain their shadows. Flat tiles become the same layered look as Android.
+- **Tests.** A `regress.py` scenario that checks the pixel rows at a surface's top edge (the line), 4px in (the glow) and outside an island (its shadow), plus timing on the development machine. The ThinkPad measurement is for the OxyOS owner to schedule.
+
+### Phase 5: platform-owned materials (L, needs ADRs)
+
+This is the direct translation of the post: let the platform draw the material behind a whole window or popup, and let Bloom say which one it wants.
+
+- **OxyOS.** ADR 0011 records that the compositor composes no blur. A compositor-side material for popups (`popup-surface`) and windows would be blurred once on the GPU (Vulkan, ADR 0004), across window boundaries, as a Mac draws a menu's material. Bloom would then draw that popup's panel body clear. In Bloom, this is a new optional field on the platform adapter (for example, `material: 'automatic' | 'none' | { color }` on the popup surface). It is additive: an adapter without it changes nothing.
+- **iOS native sheets.** If Bloom ever presents iOS sheets through react-native-screens' `FormSheet`, it should pass `backgroundEffect: { type: 'color', color: solidFill }`, or `'none'` with Bloom's own paint. Otherwise Liquid Glass's highlight and edge would draw on top of Bloom's material, which is exactly issue #4605. `BottomSheet` is an RN `Modal` today, so this does not apply yet.
+- **Android.** From API 31, a `Dialog` window can ask SurfaceFlinger to blur what is behind it (`Window.setBackgroundBlurRadius`, when `WindowManager.isCrossWindowBlurEnabled()` is true; the system turns it off in some power states). This would give `BottomSheet`'s `Modal` window a real backdrop without a `BlurTargetView`. It needs native code, which React Native's `Modal` does not expose.
+
+## Decisions for the owner
+
+1. **Keep one material and no selector?** Recommended: yes. Do not add react-native-screens' `effect` union, or its 20 styles, to `Surface`. `fill` already covers `color` and `none`. The renditions above are internal.
+2. **Should iOS look different from Android?** Phase 3 makes iOS floating surfaces frosted while Android's stay opaque, because Android cannot blur them safely. The alternative is to keep every native surface opaque for parity.
+3. **Liquid Glass.** Bloom 9.0 removed `expo-glass-effect`. Recommended: keep it removed for Bloom's own surfaces. Bloom's measured material is the brand, and react-native-screens shows that `UIGlassEffect` cannot even be set as a sheet's background. Phase 5's native-sheet note only stops Liquid Glass from drawing over Bloom.
+4. **Baking on the web.** Phase 2 replaces live blur with a computed colour for in-flow surfaces, which is right as long as the backing is truly opaque and static. The census and the pixel gate are the guard. Accept the trade?
+5. **Increased contrast.** One switch with reduce transparency (simpler), or a separate one that also adds the hairline (closer to Apple)?
+6. **OxyOS order.** Draw `boxShadow` on the CPU host now (phase 4), or wait for the GPU path and the compositor material ADR (phase 5)?
+
+## Not proposed
+
+- SVG displacement, refraction or `feTurbulence`. Bloom 9.0 removed them because of their GPU cost per surface and because they failed outside Chromium.
+- A `BlurView` per surface on Android, or an app-root blur target. Both crash (see [Blur](./blur.mdx)).
+- Skia, WebGL or WebGPU shaders for the material. The web's `backdrop-filter` and iOS's `UIVisualEffectView` are composited by the platform. A shader would need a snapshot of the backdrop, which React Native cannot give cheaply, and would cost more than either.
