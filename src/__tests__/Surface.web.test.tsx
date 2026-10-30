@@ -123,16 +123,18 @@ it('paints every host opaque with no backdrop filter while transparency is reduc
   );
   const surfaceCss = document.getElementById('bloom-surface-web-css')!.textContent!;
   const buttonCss = document.getElementById('bloom-button-web-css')!.textContent!;
-  for (const [css, host] of [
+  const hosts: readonly (readonly [css: string, host: string])[] = [
     [surfaceCss, '.bloom-surface--material'],
     [buttonCss, '.bloom-btn--surface'],
-  ]) {
+  ];
+  for (const [css, host] of hosts) {
     const reducedByAttribute = css;
     const reducedBySystem = css.split('@media (prefers-reduced-transparency: reduce) {')[1] ?? '';
-    for (const [sheet, scope] of [
+    const scopes: readonly (readonly [sheet: string, scope: string])[] = [
       [reducedByAttribute, `:root[data-bloom-transparency="reduced"] ${host}`],
       [reducedBySystem, host],
-    ]) {
+    ];
+    for (const [sheet, scope] of scopes) {
       const rule = (selector: string) => sheet.split(`${selector} {`)[1]?.split('}')[0];
       const body = rule(`${scope}::before`);
       expect(body).toContain('backdrop-filter: none;');
