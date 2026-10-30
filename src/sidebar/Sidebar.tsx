@@ -73,6 +73,7 @@ import { SidebarPlanCard } from './SidebarPlanCard';
 import { SidebarOnboardingCard } from './SidebarOnboardingCard';
 import { SidebarPrimaryAction } from './SidebarPrimaryAction';
 import { SidebarRail } from './SidebarRail';
+import { WindowDragRegion } from '../window/WindowDragRegion';
 import { SidebarScrollArea } from './SidebarScrollArea';
 import { TreeDragProvider } from './SidebarTreeDrag';
 import { SidebarTreeSection } from './SidebarTreeSection';
@@ -215,6 +216,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   collapseDisabled = false,
   mobile = false,
   onClose,
+  windowControlsRoom = 0,
   accessibilityLabel: accessibilityLabelProp,
   collapseLabel: collapseLabelProp,
   expandLabel: expandLabelProp,
@@ -977,7 +979,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 overflow: surface === 'plain' ? 'hidden' : 'visible',
-                paddingTop: expandedPadding,
+                paddingTop:
+                  windowControlsRoom > 0
+                    ? Math.max(expandedPadding, windowControlsRoom)
+                    : expandedPadding,
                 paddingBottom: expandedPadding,
               },
               chrome,
@@ -993,6 +998,18 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 paintFill={materialRecipe.paint.paintFill}
                 shape={{ curve: panelShape.curve }}
                 radius={customSurface?.borderRadius ?? (surface === 'card' ? panelShape.radius : 0)}
+              />
+            ) : null}
+            {windowControlsRoom > 0 ? (
+              <WindowDragRegion
+                testID={`${testID ?? 'sidebar'}-window-band`}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  height: windowControlsRoom,
+                  insetInlineStart: 0,
+                  insetInlineEnd: 0,
+                }}
               />
             ) : null}
             <View

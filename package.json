@@ -129,6 +129,20 @@
         "default": "./lib/commonjs/platform-surface/index.js"
       }
     },
+    "./window": {
+      "react-native": {
+        "types": "./lib/typescript/module/window/index.d.ts",
+        "default": "./src/window/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/window/index.d.ts",
+        "default": "./lib/module/window/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/window/index.d.ts",
+        "default": "./lib/commonjs/window/index.js"
+      }
+    },
     "./locale": {
       "react-native": {
         "types": "./lib/typescript/module/locale/index.d.ts",
@@ -4154,6 +4168,9 @@
       ],
       "platform-surface": [
         "./lib/typescript/module/platform-surface/index.d.ts"
+      ],
+      "window": [
+        "./lib/typescript/module/window/index.d.ts"
       ],
       "locale": [
         "./lib/typescript/module/locale/index.d.ts"

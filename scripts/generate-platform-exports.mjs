@@ -59,6 +59,9 @@ const SUBPATHS = /** @type {const} */ ([
   // The host platform's surfaces (`BloomProvider platform={…}`): a popup that
   // may extend beyond the window, where the platform has one.
   ['./platform-surface', 'platform-surface/index.ts'],
+  // The application's window where the platform has windows (`window`
+  // capability): its controls, their room and its drag regions.
+  ['./window', 'window/index.ts'],
   // The locale Bloom's own strings and dates speak in (`LocaleProvider`).
   ['./locale', 'locale/index.ts'],
   ['./image-aspect-ratio-cache', 'image-aspect-ratio-cache/index.ts'],

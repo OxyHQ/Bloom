@@ -40,6 +40,11 @@ import {
   ScreenActionScope,
   useScreenActionClaimed,
 } from './screen-action';
+import { Z_INDEX } from '../styles/z-index';
+import { useWindow } from '../window/use-window';
+import { useWindowCornerTaken, WindowCornerProvider } from '../window/context';
+import { WindowControls } from '../window/WindowControls';
+import { WindowDragRegion } from '../window/WindowDragRegion';
 
 /**
  * A navigation selection the app does not handle itself goes to the sidebar
@@ -119,10 +124,13 @@ export function createAppShell(
     children,
     contentMaxWidth = 1300,
     overlay,
+    windowControls = 'auto',
     style,
     testID,
   }: AppShellProps) {
     const { width: windowWidth } = useShellViewport();
+    const platformWindow = useWindow();
+    const appWindow = useWindowCornerTaken() ? null : platformWindow;
     const actionClaimed = useScreenActionClaimed();
     const [containerWidth, setContainerWidth] = useState<number | null>(null);
     const width = containerWidth ?? windowWidth;
@@ -179,7 +187,20 @@ export function createAppShell(
       placement === 'bottom' && (items.length > 0 || primaryAction) ? (
         <NavigationBottom {...shellProps} />
       ) : undefined;
-    return (
+    // The window's controls, as the engine places them: the sidebar in flow
+    // keeps their room at its top, else the header after them.
+    const windowChrome = appWindow != null && !appWindow.fullscreen;
+    const room = windowChrome && windowControls === 'auto' ? appWindow.metrics.room : null;
+    const navigationShown = placement !== 'bottom' && (sidebar != null || navigation != null);
+    const navigationInset = docked ? 0 : 12;
+    const navRoom = room != null && navigationShown ? Math.max(0, room.top - navigationInset) : 0;
+    const headerRoom = room != null && !navigationShown ? room.leading : 0;
+    const screenHeader =
+      header ??
+      (title ? (
+        <PageHeader title={title} subtitle={breadcrumb} actions={actions} sticky={false} />
+      ) : null);
+    const root = (
       <View
         onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
         testID={testID}
@@ -195,8 +216,8 @@ export function createAppShell(
             style={{
               flexShrink: 0,
               minHeight: 0,
-              paddingTop: docked ? 0 : 12,
-              paddingBottom: docked ? 0 : 12,
+              paddingTop: navigationInset,
+              paddingBottom: navigationInset,
               paddingLeft: docked ? 0 : navigationPadding,
               paddingRight: docked ? 0 : navigationPadding,
               gap: 12,
@@ -223,6 +244,7 @@ export function createAppShell(
                 }
                 testID={testID ? `${testID}-sidebar` : sidebar?.testID}
                 style={[{ flex: 1, minHeight: 0, height: undefined }, sidebar?.style]}
+                {...(navRoom > 0 ? { windowControlsRoom: navRoom } : null)}
               />
             )}
           </ResponsiveNavigation>
@@ -235,10 +257,16 @@ export function createAppShell(
             testID={testID ? `${testID}-screen` : undefined}
             style={{ minWidth: 0 }}
             header={
-              header ??
-              (title ? (
-                <PageHeader title={title} subtitle={breadcrumb} actions={actions} sticky={false} />
-              ) : null)
+              screenHeader != null && headerRoom > 0 ? (
+                <WindowDragRegion
+                  testID={testID ? `${testID}-header-drag` : undefined}
+                  style={{ paddingInlineStart: headerRoom }}
+                >
+                  {screenHeader}
+                </WindowDragRegion>
+              ) : (
+                screenHeader
+              )
             }
             bottomBar={bottom}
             primaryAction={
@@ -268,9 +296,23 @@ export function createAppShell(
             {overlay}
           </Screen>
         </ScreenActionOwnerContext.Provider>
+        {windowChrome && appWindow.controls === 'bloom' ? (
+          <View
+            pointerEvents="box-none"
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: Z_INDEX.floating }}
+          >
+            <WindowControls
+              plate={windowControls === 'overlay'}
+              testID={testID ? `${testID}-window-controls` : undefined}
+            />
+          </View>
+        ) : null}
       </View>
     );
+    // Descendants are not at the corner while this shell holds it.
+    return appWindow != null ? <WindowCornerProvider value>{root}</WindowCornerProvider> : root;
   }
+
   /** Translate navigation convenience props into the one document/layout engine. */
   function EngineNavigationShell(props: AppShellProps) {
     const {

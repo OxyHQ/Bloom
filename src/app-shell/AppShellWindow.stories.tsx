@@ -7,6 +7,8 @@ import { Button } from '../button';
 import { RiAddLine, RiLayoutGridLine, RiSideBarLine } from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useWindowControlsRoom, WindowDragRegion } from '../window';
+import { StoryWindow } from '../window/WindowControls.stories';
 import { AppShell, useAppShell } from './index';
 import type { ResizeHandleVariant } from '../layout/types';
 import type { AppShellDock } from './types';
@@ -23,8 +25,23 @@ type Story = StoryObj<typeof AppShell>;
 const SIDEBAR_WIDTH = 190;
 const ROWS = ['Inbox', 'Calendar', 'Docs', 'Design review', 'Release notes', 'Roadmap'];
 
-/** A window backdrop the transparent shell lets through. */
+/**
+ * A desktop window (the `window` capability, its controls Bloom's) whose
+ * backdrop the transparent shell lets through.
+ */
 function WindowBackdrop({ children }: { children: React.ReactNode }) {
+  const theme = useTheme();
+  return (
+    <StoryWindow width={1100} height={640}>
+      <View style={{ flex: 1, backgroundColor: theme.isDark ? '#2a191f' : '#e9e4e6' }}>
+        {children}
+      </View>
+    </StoryWindow>
+  );
+}
+
+/** The same backdrop without a window: the shell below a toolbar of the page's own. */
+function PlainBackdrop({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   return (
     <View
@@ -38,11 +55,19 @@ function WindowBackdrop({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SidebarContent({ action }: { action?: boolean }) {
+/**
+ * A sidebar of its own (`render`): the shell hands it the controls' room, which
+ * it keeps at its top as the window's drag region.
+ */
+function SidebarContent({ action, room }: { action?: boolean; room: number }) {
   const theme = useTheme();
   const { navigationDock } = useAppShell();
   return (
-    <View testID="window-sidebar" style={{ flex: 1, paddingTop: 46, paddingHorizontal: 6, gap: 3 }}>
+    <View
+      testID="window-sidebar"
+      style={{ flex: 1, paddingTop: room, paddingHorizontal: 6, gap: 3 }}
+    >
+      <WindowDragRegion style={{ position: 'absolute', top: 0, left: 0, right: 0, height: room }} />
       {action ? (
         <Button testID="window-new-tab" size="sm" leadingIcon={RiAddLine}>
           New tab
@@ -74,17 +99,25 @@ function SidebarContent({ action }: { action?: boolean }) {
   );
 }
 
-function Card({ label }: { label: string }) {
+/** The frame's start inset around the cards. */
+const FRAME_START = 7;
+
+function Card({ label, first }: { label: string; first: boolean }) {
   const { navigationDock } = useAppShell();
+  // `header={null}`: the page owns the window's corner. With the sidebar
+  // hidden the first card's toolbar is there, so it keeps the controls' room.
+  const room = useWindowControlsRoom();
+  const cornered = first && navigationDock.hidden;
   return (
     <View style={{ flex: 1 }}>
-      <View
+      <WindowDragRegion
         style={{
           height: 41,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 8,
-          paddingHorizontal: 6,
+          paddingInlineStart: cornered ? Math.max(6, room.leading - FRAME_START) : 6,
+          paddingInlineEnd: 6,
         }}
       >
         <Button
@@ -97,7 +130,7 @@ function Card({ label }: { label: string }) {
           onPress={navigationDock.toggleHidden}
         />
         <Text>{label}</Text>
-      </View>
+      </WindowDragRegion>
       <View style={{ flex: 1, padding: 16 }}>
         <Text variant="body-regular">
           Hide the sidebar, then rest the pointer on the window's start edge: the same sidebar
@@ -132,14 +165,16 @@ function Window({
           navFrom={0}
           framedFrom={0}
           contentMaxWidth="none"
-          frameInset={{ top: 6, end: 7, bottom: 7, start: 7 }}
+          frameInset={{ top: 6, end: 7, bottom: 7, start: FRAME_START }}
           sidebar={{
             surface: 'plain',
             variant: 'panel',
             collapsed: false,
             collapseDisabled: true,
             width: SIDEBAR_WIDTH,
-            render: () => <SidebarContent action={action} />,
+            render: (props) => (
+              <SidebarContent action={action} room={props.windowControlsRoom ?? 0} />
+            ),
             dock: { peek: true, ...dock },
           }}
           panelLayout={{
@@ -147,11 +182,11 @@ function Window({
             flow: 'bounded',
             gap: 7,
             resizeHandle,
-            panels: panes.map((label) => ({
+            panels: panes.map((label, index) => ({
               id: label,
               minWidth: 220,
               resizable: true,
-              content: <Card label={label} />,
+              content: <Card label={label} first={index === 0} />,
             })),
           }}
         />
@@ -162,8 +197,9 @@ function Window({
 
 /**
  * A desktop browser's window: a transparent shell over the window's backdrop,
- * a flush 190-wide sidebar, one content card 6/7/7 from the window's edges
- * with radius 10. The sidebar hides on a spring (response 0.215 s, damping
+ * a flush 190-wide sidebar under the window's controls (the shell keeps their
+ * room at its top), one content card 6/7/7 from the window's edges with
+ * radius 10. The sidebar hides on a spring (response 0.215 s, damping
  * ratio 0.79) as the card's start edge follows it, and peeks back from the
  * start edge on its own spring (0.185 s, 0.77).
  */
@@ -213,6 +249,8 @@ export const HiddenSidebar: Story = {
 function Strip() {
   const theme = useTheme();
   const { topBarDock } = useAppShell();
+  // The shell keeps the controls' room before the strip and makes it the
+  // window's drag region.
   return (
     <View
       testID="window-strip"
@@ -221,7 +259,7 @@ function Strip() {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
-        paddingHorizontal: 86,
+        paddingInlineEnd: 6,
       }}
     >
       {['Home', 'Mail', 'Docs'].map((tab, index) => (
@@ -257,6 +295,26 @@ function Strip() {
   );
 }
 
+/** The page under the strip; hidden, the strip leaves the window's corner to it. */
+function StripPage({ hidden, onToggle }: { hidden: boolean; onToggle: () => void }) {
+  const room = useWindowControlsRoom();
+  return (
+    <View
+      style={{
+        flex: 1,
+        padding: 16,
+        paddingTop: hidden ? Math.max(16, room.top - 6) : 16,
+        gap: 12,
+      }}
+    >
+      <Button testID="show-strip" onPress={onToggle}>
+        {hidden ? 'Show tabs' : 'Hide tabs'}
+      </Button>
+      <Text>Hidden, the strip peeks from the top edge.</Text>
+    </View>
+  );
+}
+
 function TopStripWindow() {
   const [hidden, setHidden] = useState(false);
   return (
@@ -279,14 +337,7 @@ function TopStripWindow() {
             panels: [
               {
                 id: 'page',
-                content: (
-                  <View style={{ flex: 1, padding: 16, gap: 12 }}>
-                    <Button testID="show-strip" onPress={() => setHidden(!hidden)}>
-                      {hidden ? 'Show tabs' : 'Hide tabs'}
-                    </Button>
-                    <Text>Hidden, the strip peeks from the top edge.</Text>
-                  </View>
-                ),
+                content: <StripPage hidden={hidden} onToggle={() => setHidden(!hidden)} />,
               },
             ],
           }}
@@ -296,7 +347,7 @@ function TopStripWindow() {
   );
 }
 
-/** Tabs across the top: the strip is the top bar, the card starts right under it. */
+/** Tabs across the top: the strip is the top bar, after the controls; the card starts right under it. */
 export const TopTabStrip: Story = { render: () => <TopStripWindow /> };
 
 const RETAINED = ['One', 'Two', 'Three', 'Four'];
@@ -325,7 +376,7 @@ function RetainedWindow() {
   const [spans, setSpans] = useState<Readonly<Record<string, number>>>({});
   const visible = order.slice(0, shown);
   return (
-    <WindowBackdrop>
+    <PlainBackdrop>
       <View style={{ flexDirection: 'row', gap: 8, padding: 8 }}>
         <Button onPress={() => setOrder((o) => [...o.slice(1), o[0]!])}>Rotate</Button>
         <Button onPress={() => setShown((n) => (n % 4) + 1)}>Show {(shown % 4) + 1}</Button>
@@ -361,7 +412,7 @@ function RetainedWindow() {
           }}
         />
       </BloomScope>
-    </WindowBackdrop>
+    </PlainBackdrop>
   );
 }
 

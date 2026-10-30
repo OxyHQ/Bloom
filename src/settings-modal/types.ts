@@ -37,7 +37,8 @@ export interface SettingsModalPageNavigation {
   /** Returns to the section list on compact screens; absent when the rail is visible. */
   onBack?: () => void;
   backLabel: string;
-  onClose: () => void;
+  /** The close request; absent where nothing closes the settings (a `SettingsLayout` without `onClose`). */
+  onClose?: () => void;
   closeLabel: string;
 }
 
@@ -91,6 +92,52 @@ export interface SettingsModalProps {
   /** Compact layout: start at the section list (default) or open the selected page directly. Resets on each open. */
   initialView?: 'navigation' | 'page';
   labels?: SettingsModalLabels;
+  testID?: string;
+}
+
+/**
+ * How much room the settings have, from the width of their box (the window's
+ * for `SettingsModal`, the layout's own for `SettingsLayout`):
+ *   `compact`  < 640 — full screen, list → page navigation, rows stack
+ *   `medium`   < 900 — side by side, narrower rail and insets
+ *   `regular`         — the 871×614 panel
+ */
+export type SettingsModalLayout = 'compact' | 'medium' | 'regular';
+
+/**
+ * `SettingsLayout`: the settings without the modal around them — the rail, the
+ * pages, the narrow-width navigation and the saved toast — for an application
+ * window or a panel.
+ */
+export interface SettingsLayoutProps {
+  /** The close request. Without it there is no close button (a window closes itself). */
+  onClose?: () => void;
+  /** Veto an internal leave intention before it changes content. */
+  onBeforeLeave?: (reason: 'close' | 'navigation' | 'page') => boolean;
+  groups: SettingsNavGroup[];
+  pages: Record<string, SettingsModalPage>;
+  /** Controlled current page. */
+  page?: string;
+  /** The page shown first. Defaults to the first navigable row. */
+  defaultPage?: string;
+  onPageChange?: (page: string) => void;
+  /** Compact layout: start at the section list (default) or on the selected page. */
+  initialView?: 'navigation' | 'page';
+  /**
+   * The layout, when the host decides it. Default: from the layout's own
+   * MEASURED width (the window's until the first layout), never the window's.
+   */
+  layout?: SettingsModalLayout;
+  /**
+   * `auto` (default): where the platform has windows (`@oxy.so/bloom/window`),
+   * the layout is the window's content — the window's controls sit at the
+   * rail's top, which keeps their room and moves the window; narrow, the
+   * header keeps their room at its leading edge. `none`: the layout is a panel
+   * inside an application, away from the window's corner.
+   */
+  windowControls?: 'auto' | 'none';
+  labels?: SettingsModalLabels;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 

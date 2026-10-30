@@ -86,9 +86,17 @@ export type { BloomIconComponent } from './icons/icon-component';
 // App-wide plumbing (pure JS — no peer beyond what this barrel already links)
 export { ImageResolverProvider, useImageResolver, isImageUrl } from './image-resolver';
 export type { ImageResolver } from './image-resolver';
-export { PlatformSurfaceProvider, usePlatformSurfaces, usePopupSurface } from './platform-surface';
+export {
+  PlatformSurfaceProvider,
+  usePlatformSurfaces,
+  usePlatformWindow,
+  usePopupSurface,
+} from './platform-surface';
 export type {
   PlatformSurfaceAdapter,
+  PlatformWindow,
+  PlatformWindowMetrics,
+  PlatformWindowState,
   PopupDismissReason,
   PopupSurfaceProps,
   SurfaceCapability,
@@ -253,6 +261,7 @@ export * from './cover-header';
 export * from './important-alerts-card';
 export * from './patient-info-card';
 export * from './sidebar';
+export * from './window';
 export * from './app-shell';
 export * from './page-header';
 export * from './page-footer';

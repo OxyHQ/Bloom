@@ -391,6 +391,23 @@ export interface AppShellEngineProps {
    */
   frameInset?: AppShellEdges;
   /**
+   * Where the window's controls go, when the platform has windows (the
+   * `window` capability of `@oxy.so/bloom/platform-surface`). The controls
+   * never move; the content keeps their room:
+   *
+   * - `auto` (default): a sidebar in flow starts its content below their
+   *   room, with the controls at its top and its top band a drag region.
+   *   Without one (no sidebar, a hidden one or a drawer), a shown `topBar`, or
+   *   else the header, starts after their room and is the drag region. A
+   *   `header={null}` page owns that corner itself (`useWindowControlsRoom`).
+   * - `overlay`: full-bleed content (a photo, a video, a map) keeps no room;
+   *   the controls float over it on a plate of the surface material.
+   *
+   * A full-screen window shows no controls and keeps no room. Without the
+   * capability (a browser tab, a phone) the prop changes nothing.
+   */
+  windowControls?: 'auto' | 'overlay';
+  /**
    * `page` (default) paints the theme's page background behind the regions.
    * `transparent` paints nothing, so a window's own backdrop (a native
    * material, a wallpaper, a tint the host draws) shows between them.
