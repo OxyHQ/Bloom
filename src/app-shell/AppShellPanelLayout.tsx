@@ -54,6 +54,7 @@ import { usePanelReorder } from './use-panel-reorder';
 import { PanelReorderHandle } from './PanelReorderHandle';
 import { usePanelReveal } from './use-panel-reveal';
 import { usePanelResize, type PanelResizePreview } from './use-panel-resize';
+import { useRoomChanged } from './use-room-changed';
 import { PanelCssContext, panelLayoutCss } from './panel-layout-css';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import {
@@ -282,6 +283,7 @@ export function createPanelLayoutView(
     registerResizePreview,
     hasNext,
     windowChrome,
+    resized,
     testID,
   }: {
     panel: AppShellPanelDefinition;
@@ -308,6 +310,8 @@ export function createPanelLayoutView(
     hasNext: boolean;
     /** The window's chrome this panel holds, if any (`panelWindowChrome`). */
     windowChrome: WindowChrome | null;
+    /** This layout answers the group's room changing (`useRoomChanged`): no motion. */
+    resized: boolean;
     testID?: string;
   }) {
     const layoutReady = useShellLayoutReady();
@@ -474,13 +478,17 @@ export function createPanelLayoutView(
       duration: fadeMs,
       easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
     });
+    // A track the room changed lands at once, as a live resize lays a window out;
+    // only a change of the layout itself (a panel shown, hidden or resized) moves.
+    // `resized` is read, not followed: its turning back is no new geometry.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` qualifies the change
     useEffect(() => {
       if (cssScope) return;
       animatePanelLayout(
         { width, gap: leading, opacity, scale: panelScale },
         { width: track.width, gap: track.gap, visible: track.visible },
         transition === 'exit-before-enter',
-        reduced,
+        reduced || resized,
       );
     }, [
       track.width,
@@ -892,6 +900,9 @@ export function createPanelLayoutView(
     const room = vertical
       ? Math.max(0, (measuredHeight ?? window.height) - (document ? 0 : bottomEdge))
       : width;
+    const resized = useRoomChanged(
+      `${room}|${width}|${shellWidth}|${vertical ? 'v' : 'h'}|${layoutReady ? 1 : 0}`,
+    );
     const tracks = cssScope
       ? cssState.tracks
       : resolvePanelTracks(
@@ -1166,6 +1177,7 @@ export function createPanelLayoutView(
             gap={actualGap}
             hasNext={visible[visible.length - 1]?.id !== panel.id}
             windowChrome={windowChrome[index] ?? null}
+            resized={resized}
             onResizeStart={() => resize.start(panel)}
             onResize={(value) => resize.resize(panel, value)}
             onResizeEnd={resize.end}
