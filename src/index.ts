@@ -337,6 +337,8 @@ export {
 export type { ContentPanelProps, ContentPanelFramedBreakpoint } from './content-panel';
 export { ProgressiveBlur } from './progressive-blur';
 export type { ProgressiveBlurProps } from './progressive-blur';
+export { AmbientPhoto } from './ambient-photo';
+export type { AmbientPhotoProps } from './ambient-photo';
 export { VirtualList } from './list';
 export type {
   VirtualListHandle,

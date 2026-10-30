@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.63.0
+
+### Added
+
+- **AmbientPhoto (`@oxy.so/bloom/ambient-photo`).** A full-bleed photo for a screen nobody is operating (a photo frame, a lock screen, an idle TV). A new `source` is fetched and decoded first, then cross-fades in over the photo on screen (`fadeMs`, 2500), and a resting photo zooms in slowly (`drift`, `driftMs` 42000, `driftScale` 1.04; off under the system's reduced motion). `onShown` reports each photo as it starts to appear, so a theme seeded from it changes with it. Only the newest of several photos asked for while one loaded is shown; one that cannot load leaves the current photo on screen. Decorative: hidden from assistive technology and the pointer.
+- The web fork keeps what was measured on a Chromecast (Chrome 90): decode before the fade, `will-change` only while it runs, the photo that faded out lets go of its image, and the drift is a compositor-only Web Animation. Native fades and scales each `BloomImage` layer on the UI thread, holds at most two photos, and unmounts the covered one after the fade.
+
+### Consumers
+
+Bump to 15.63.0. New family; nothing else changes.
+
 ## 15.62.0
 
 ### Added

@@ -342,6 +342,8 @@ export {
 export type { ContentPanelProps, ContentPanelFramedBreakpoint } from './content-panel/index.web';
 export { ProgressiveBlur } from './progressive-blur/index.web';
 export type { ProgressiveBlurProps } from './progressive-blur/index.web';
+export { AmbientPhoto } from './ambient-photo/index.web';
+export type { AmbientPhotoProps } from './ambient-photo/index.web';
 export { VirtualList } from './list/index.web';
 export type {
   VirtualListHandle,

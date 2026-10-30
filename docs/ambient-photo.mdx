@@ -1,0 +1,68 @@
+---
+title: AmbientPhoto
+description: A full-bleed photo that cross-fades to the next and drifts slowly, for an ambient display.
+order: 73
+---
+
+# AmbientPhoto
+
+A full-bleed photo for a screen nobody is operating: a photo frame, a lock
+screen, an idle TV. Give it a new `source` and the next photo is fetched and
+decoded first, then cross-fades in over the one on screen. While a photo rests
+it zooms in very slowly (the drift). It fills its box with `cover` and is
+decorative: hidden from assistive technology and from the pointer.
+
+```tsx
+import { AmbientPhoto } from '@oxy.so/bloom/ambient-photo';
+
+<AmbientPhoto
+  source={photo.url}
+  onShown={(url) => setThemeSeedFor(url)}
+/>
+```
+
+The component shows what it is given and keeps no playlist: the caller decides
+which photo comes next and when (a timer, a server push). A `source` that
+cannot load leaves the current photo on screen. When several photos are asked
+for while one is still loading, only the newest is shown.
+
+## Props
+
+| prop         | default | decides                                                         |
+| ------------ | ------- | ---------------------------------------------------------------- |
+| `source`     | —       | The photo URI. `null` keeps the current photo.                   |
+| `fadeMs`     | 2500    | Length of the cross-fade.                                        |
+| `drift`      | `true`  | Whether a resting photo zooms in slowly.                         |
+| `driftMs`    | 42000   | Length of the drift.                                             |
+| `driftScale` | 1.04    | How far the drift zooms.                                         |
+| `onShown`    | —       | Called with each photo's URI the moment it starts fading in.     |
+
+`onShown` fires when the photo starts to appear, so a theme seeded from the
+photo (`BloomProvider seed`) changes with it rather than after the fade.
+
+The system's reduced-motion setting stops the drift; the cross-fade stays.
+
+## Cost on a slow device
+
+Measured on a Chromecast (Chrome 90), and kept in the web fork:
+
+- A photo is decoded (`HTMLImageElement.decode()`) before it starts to fade in,
+  so decoding never lands on the first frame of the fade.
+- `will-change` is set only while a fade runs. Left on, it kept two full-screen
+  layers as textures on a device with little memory.
+- The layer that faded out lets go of its image, so only one decoded
+  full-screen photo is held at rest.
+- The drift is a Web Animation on `transform`, which the compositor runs. Every
+  step of zoom past 1 rasterizes more pixels than the screen holds for the
+  whole drift; 1.04 reads the same as more.
+
+Serve photos at the screen's size (an Oxy Files variant): a 4000 px photo makes
+the device resample it on every frame of the drift.
+
+On native, each photo is a `BloomImage` in its own layer, faded and scaled on
+the UI thread. At most two photos are held, and the covered one is unmounted
+once the fade is over.
+
+Put cards over the photo as siblings, not children. On web a fading ancestor
+would make every surface above it lose its backdrop (see
+[Surface](/docs/surface)); with transparency reduced there is none to lose.

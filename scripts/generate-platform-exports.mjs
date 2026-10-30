@@ -373,6 +373,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./tab-pager', 'tab-pager/index.ts'],
   ['./tab-pager/expo-router', 'tab-pager/expo-router/index.ts'],
   ['./progressive-blur', 'progressive-blur/index.ts'],
+  ['./ambient-photo', 'ambient-photo/index.ts'],
 ]);
 
 /**
@@ -464,6 +465,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   // entry already resolves per platform). Listing it here would trip
   // `assertWebSourceExists()`.
   './progressive-blur',
+  './ambient-photo',
   // Its web layout is a `<Slot/>`, which is what keeps the native pager (and
   // `react-native-pager-view`) out of every web bundle.
   './tab-pager/expo-router',
