@@ -21,7 +21,7 @@ it: the screen that shows it then themes itself without reading pixels.
 
 ```ts
 import sharp from 'sharp';
-import { hexFromArgb, seedsFromImagePixels } from '@oxy.so/color';
+import { argbFromRgb, hexFromArgb, seedsFromImagePixels } from '@oxy.so/color';
 
 const { data } = await sharp(bytes)
   .resize(48, 48, { fit: 'cover' })
@@ -31,7 +31,7 @@ const { data } = await sharp(bytes)
 
 const pixels: number[] = [];
 for (let i = 0; i < data.length; i += 3) {
-  pixels.push((0xff << 24) | (data[i]! << 16) | (data[i + 1]! << 8) | data[i + 2]!);
+  pixels.push(argbFromRgb(data[i] ?? 0, data[i + 1] ?? 0, data[i + 2] ?? 0));
 }
 const seeds = seedsFromImagePixels(pixels).slice(0, 3).map(hexFromArgb);
 // best first, as '#rrggbb'
