@@ -78,6 +78,7 @@ import type {
   QuestionnaireSelect,
 } from './types';
 import { IS_WEB } from '../styles/platform';
+import { UNSET } from '../styles/animated-style';
 
 /**
  * The questions an agent asks before it commits to a plan, one at a time, as
@@ -1027,7 +1028,7 @@ function QuestionnaireComponent({
     [height, reducedMotion],
   );
   const viewportStyle = useAnimatedStyle(
-    () => (height.value < 0 ? {} : { height: height.value }),
+    () => ({ height: height.value < 0 ? UNSET : height.value }),
     [height],
   );
 

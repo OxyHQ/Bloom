@@ -16,6 +16,7 @@ import Animated, {
   type AnimatedStyle,
 } from 'react-native-reanimated';
 import { StyledView } from '../styles/styled-primitives';
+import { UNSET } from '../styles/animated-style';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 const DURATION = 320;
@@ -125,7 +126,7 @@ function BoardPresence({
   const slotStyle = useAnimatedStyle(() => {
     const p = Math.min(1, Math.max(0, progress.value));
     return {
-      height: height.value > 0 ? (height.value + 6) * p : undefined,
+      height: height.value > 0 ? (height.value + 6) * p : UNSET,
       paddingBottom: 6 * p,
     };
   }, [height, progress]);

@@ -27,6 +27,8 @@ Failures: ~/Oxy/AGENTS.md. Direction/freeze (two regressions)/trade-offs: docs/m
 
 Web loaders: RNW Animated JS-frame renders can starve Suspense retries. Use CSS; docs/skeleton.mdx
 
+Worklet styles write every key every run (value or `UNSET`): native drops `undefined`/missing keys, keeping the old value. Gate `animated-style-resets.test.ts`; docs/motion.mdx
+
 ## Web fork CSS
 
 - Web forks self-inject required CSS. Consumer-global CSS is insufficient: missing animation-name silently kills motion

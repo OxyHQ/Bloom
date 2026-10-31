@@ -1122,8 +1122,9 @@ describe('AppShell nav sizing', () => {
       normal.unmount();
       const expanded = renderIn(shell('content-aside'));
       expect(expanded.queryByTestId('sidebar-collapse')?.props['aria-expanded']).toBe(before);
+      // A compact region has no cap: its animated style writes it as UNSET (null).
       expect(resolvedStyle(expanded.getByTestId('shell-content').props.style).maxWidth).toBe(
-        width < 768 ? undefined : width >= 990 ? 970 : 620,
+        width < 768 ? null : width >= 990 ? 970 : 620,
       );
       if (width >= 990) {
         const aside = expanded.getByTestId('shell-aside', { includeHiddenElements: true });

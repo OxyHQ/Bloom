@@ -91,6 +91,7 @@ import {
   DRAWER_MS as REVEAL_MS,
   useDrawerSwipe,
 } from './use-drawer-swipe';
+import { UNSET } from '../styles/animated-style';
 
 /**
  * The page frame — one engine, four shapes (`variant`).
@@ -485,7 +486,7 @@ export function createAppShellEngine() {
         width: asideWidth * (1 - spanProgress.value),
         opacity: 1 - spanProgress.value,
         overflow: spanProgress.value > 0 ? ('hidden' as const) : ('visible' as const),
-        maxHeight: spanProgress.value >= 1 ? 0 : undefined,
+        maxHeight: spanProgress.value >= 1 ? 0 : UNSET,
       }),
       [asideWidth, spanProgress],
     );
@@ -947,7 +948,7 @@ export function createAppShellEngine() {
             flexBasis: stretchReading ? ('100%' as const) : contentWidth + extra,
             maxWidth: stretchReading
               ? compactRegion
-                ? undefined
+                ? UNSET
                 : ('100%' as const)
               : contentWidth + extra,
           };

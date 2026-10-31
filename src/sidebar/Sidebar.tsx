@@ -87,6 +87,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { UNSET } from '../styles/animated-style';
 
 /**
  * `Sidebar` — the floating app rail, expanded or collapsed.
@@ -391,7 +392,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const hasHeader = header != null || toolbar != null;
   const contentMorph = useAnimatedStyle(
     () => ({
-      height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : undefined,
+      height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : UNSET,
       ...(IS_WEB ? null : { opacity: 1 - progress.value }),
       marginTop: treeShown || hasHeader ? 0 : 24 * (1 - progress.value),
     }),

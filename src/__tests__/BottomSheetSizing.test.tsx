@@ -84,13 +84,15 @@ it.each([undefined, 'content'] as const)(
       </BottomSheetBase>
     );
     const view = render(draw(), { wrapper });
-    expect(panel(view.toJSON()).height).toBeUndefined();
+    // Intrinsic: the animated style writes no height as UNSET (null), never `undefined`.
+    expect(panel(view.toJSON()).height).toBeNull();
     expect(panel(view.toJSON()).maxHeight).toBe(776);
     act(() => {
       keyboard.value = 200;
     });
     view.rerender(draw());
-    expect(panel(view.toJSON()).height).toBeUndefined();
+    // Intrinsic: the animated style writes no height as UNSET (null), never `undefined`.
+    expect(panel(view.toJSON()).height).toBeNull();
     expect(panel(view.toJSON()).maxHeight).toBe(576);
     view.rerender(draw({ height: 300 }));
     expect(panel(view.toJSON()).height).toBe(300);
@@ -125,7 +127,7 @@ it('lets the native screen and its sole scroller contribute content size below t
     </BottomSheet>
   );
   const view = render(draw('content'), { wrapper });
-  expect(panel(view.toJSON()).height).toBeUndefined();
+  expect(panel(view.toJSON()).height).toBeNull();
   expect(panel(view.toJSON()).maxHeight).toBe(732);
   expect(resolvedStyle(view.getByTestId('native-screen').props.style).flexBasis).toBe('auto');
   expect(resolvedStyle(view.getByTestId('native-scroll').props.style).flexBasis).toBe('auto');

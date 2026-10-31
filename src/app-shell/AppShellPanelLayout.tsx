@@ -86,6 +86,7 @@ import type {
   AppShellPanelLayout,
   PanelNavigationController,
 } from './panel-layout-types';
+import { UNSET } from '../styles/animated-style';
 
 /** How far a split's pill divider reaches into each pane beside its gap, px. */
 const RESIZE_HANDLE_PANE_REACH = 2;
@@ -365,18 +366,16 @@ export function createPanelLayoutView(
         }),
       [registerReorder, panel.id, dragOffset, dragLayer],
     );
-    const reorderStyle = useAnimatedStyle(
-      () =>
-        dragLayer.value
-          ? {
-              transform: vertical
-                ? [{ translateY: dragOffset.value }]
-                : [{ translateX: dragOffset.value }],
-              zIndex: dragLayer.value,
-            }
-          : {},
-      [dragLayer, dragOffset, vertical],
-    );
+    // Every key on every run (`styles/animated-style.ts`): a dragged track lands
+    // back at no offset and at its resting stacking order.
+    const restingZIndex = panel.resizable && hasNext && track.visible && !alone ? 1 : 0;
+    const reorderStyle = useAnimatedStyle(() => {
+      const offset = dragLayer.value ? dragOffset.value : 0;
+      return {
+        transform: vertical ? [{ translateY: offset }] : [{ translateX: offset }],
+        zIndex: dragLayer.value || restingZIndex,
+      };
+    }, [dragLayer, dragOffset, vertical, restingZIndex]);
     const region = useAppShellRegion();
     const theme = useTheme();
     const rtl = useIsRtl();
@@ -520,12 +519,12 @@ export function createPanelLayoutView(
                   ? opacity.value > 0.001
                     ? lastHeight.value
                     : 0
-                  : undefined,
+                  : UNSET,
               marginInlineStart: vertical ? 0 : leading.value,
               marginTop: vertical ? leading.value : 0,
               ...(IS_WEB ? null : { opacity: opacity.value }),
               transform: [{ scale: panelScale.value }],
-              maxHeight: !track.visible && opacity.value <= 0.001 ? 0 : undefined,
+              maxHeight: !track.visible && opacity.value <= 0.001 ? 0 : UNSET,
             },
       [
         width,

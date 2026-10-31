@@ -50,6 +50,7 @@ import { useTheme } from '../theme/use-theme';
 import { SheetKeyboardProvider } from './context';
 import type { BottomSheetRef, BottomSheetBaseProps } from './types';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
+import { UNSET } from '../styles/animated-style';
 
 const SPRING_CONFIG = {
   reduceMotion: MOTION_RECIPES.expand.reduceMotion,
@@ -626,7 +627,7 @@ export const BottomSheetBase = forwardRef(
       );
       return {
         maxHeight: availableHeight,
-        height: sizing === 'fill' ? availableHeight : undefined,
+        height: sizing === 'fill' ? availableHeight : UNSET,
       };
     }, [sizing, topGap, detachedGap, screenHeightSV, keyboardHeight]);
 
