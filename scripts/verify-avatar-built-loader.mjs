@@ -111,6 +111,7 @@ try {
           registered,
           paintedPixels,
           activeAtlasScissor: stats.activeAtlasScissor,
+          asyncFitReadback: stats.asyncFitReadback,
           fitPasses: stats.fitPasses,
           sharedPoseCopies: stats.sharedPoseCopies,
         };
@@ -120,6 +121,7 @@ try {
     assert.equal(result.registered, true);
     assert(result.paintedPixels > 100);
     assert.equal(result.activeAtlasScissor, true);
+    assert.equal(result.asyncFitReadback, true);
     assert(result.fitPasses > 0);
     assert.equal(typeof result.sharedPoseCopies, 'number');
     report.cases.push({ entry, ...result });
