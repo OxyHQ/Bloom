@@ -124,8 +124,13 @@ export type { BloomLanguage } from './locale';
 // `hasAspectRatio` are exactly the collision-prone shape the namespace rule
 // covers.
 export * as ImageAspectRatio from './image-aspect-ratio-cache';
-export { ScrollRestorationProvider, useScrollRestoration } from './scroll/index.web';
+export {
+  DocumentScrollRestorationBoundary,
+  ScrollRestorationProvider,
+  useScrollRestoration,
+} from './scroll/index.web';
 export type {
+  DocumentScrollRestorationBoundaryProps,
   ScreenFocusEffect,
   ScrollableHandle,
   ScrollRestorationBinding,
