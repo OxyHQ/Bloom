@@ -4,22 +4,21 @@ import type { EditorRenderProps } from './avatar-contract';
 import type { CompleteEditorRecipe as EditorRecipe } from './avatar/recipe';
 import { createCatalogAssetResolver } from './avatar/catalog-assets';
 import { createCatalogMotion } from './avatar/catalog-motion-factory';
+import {
+  avatarPresentationFrozen as frozen,
+  createAvatarSlotController,
+  type AvatarSlotState,
+} from './avatar-controller';
 
-type Entry = {
+type Entry = AvatarSlotState & {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
-  props: EditorRenderProps;
-  ready: boolean;
-  visible: boolean;
-  dirty: boolean;
-  painted: boolean;
   size: number;
   width: number;
   height: number;
   onReady?: () => void;
 };
 const pools = new Set<EditorPool>();
-const frozen = (p: EditorRenderProps) => !!(p.paused || p.portrait || p.reduced);
 const sizeFor = (canvas: HTMLCanvasElement) => {
   const width = canvas.clientWidth;
   return width <= 64 ? 64 : width <= 128 ? 128 : 320;
@@ -232,10 +231,6 @@ class EditorPool {
       await wait(this.engine.setPreset(index, recipe.preset));
       this.engine.resetAppearance(index);
       this.engine.idle(index);
-      let currentPreset = recipe.preset;
-      let currentColor: string | undefined;
-      let previous = initial;
-      let presentation = initial;
       let ownsPointer = false;
       let hovered = false;
       const pointerOptions = {
@@ -276,88 +271,20 @@ class EditorPool {
         },
         pointerOptions,
       );
-      const applyPresentation = () => {
-        entry.props = presentation;
-        pointerOptions.enabled = !!presentation.interactive && !frozen(presentation);
-        this.engine.setInstancePaused(index, frozen(presentation) || !entry.visible);
-        this.engine.setInstanceRendering(
-          index,
-          entry.visible && (!frozen(presentation) || entry.dirty || !entry.painted),
-        );
-      };
-      const setPresentation = (props: EditorRenderProps) => {
-        if (disposed) return;
-        presentation = props;
-        applyPresentation();
-      };
-      const update = async (
-        props: EditorRenderProps,
-        next: EditorRecipe,
-        isCurrent = () => true,
-        superseded?: Promise<void>,
-      ) => {
-        if (disposed) return;
-        setPresentation(props);
-        const startWork =
-          props.workingKey !== previous.workingKey && props.workingKey !== undefined;
-        let workPrepared = false;
-        // Optional activity preparation can finish into the asset cache, but a
-        // newer character/action must not wait behind its network request.
-        const prepareWork = () => {
-          const prepared = wait(this.engine.prepareWork(index));
-          return superseded ? Promise.race([prepared, superseded.then(() => false)]) : prepared;
-        };
-        try {
-          if (startWork && currentPreset === next.preset) {
-            workPrepared = await prepareWork();
-            if (disposed || !workPrepared || !isCurrent()) return;
-          }
-          entry.ready = false;
-          if (currentPreset !== next.preset) {
-            await wait(this.engine.setPreset(index, next.preset));
-            if (disposed) return;
-            currentPreset = next.preset;
-            this.engine.idle(index);
-            // Every avatar looks around on its own; nothing else was ever asked of the gaze.
-            this.engine.setWander(index, true);
-            this.engine.setGaze(index, 0.5, 0.5);
-          }
-          if (!isCurrent()) {
-            entry.ready = true;
-            applyPresentation();
-            return;
-          }
-          if (currentColor !== next.color) {
-            if (next.color) this.engine.setColor(index, next.color);
-            else this.engine.clearColor(index);
-            currentColor = next.color;
-          }
-          if (startWork) {
-            if (!workPrepared) workPrepared = await prepareWork();
-            if (disposed) return;
-            if (!workPrepared || !isCurrent()) {
-              entry.ready = true;
-              applyPresentation();
-              return;
-            }
-            this.engine.work(index, false, props.workingCycles);
-          }
-          if (
-            props.entranceKey !== previous.entranceKey &&
-            props.entranceKey !== undefined &&
-            !frozen(presentation)
-          )
-            this.engine.entrance(index);
-          if (props.reactionKey !== previous.reactionKey && props.reactionKey !== undefined)
-            this.engine.react(index);
-          previous = props;
-          entry.ready = entry.dirty = true;
-          applyPresentation();
-        } catch (error) {
-          dispose();
-          throw error;
-        }
-      };
+      const { update, setPresentation } = createAvatarSlotController(
+        this.engine,
+        index,
+        entry,
+        recipe,
+        {
+          isDisposed: () => disposed,
+          wait,
+          dispose,
+          onPresentation: (props) => {
+            pointerOptions.enabled = !!props.interactive && !frozen(props);
+          },
+        },
+      );
       await update(initial, recipe);
       this.observer.observe(canvas);
       resize = new ResizeObserver(([change]) => {
