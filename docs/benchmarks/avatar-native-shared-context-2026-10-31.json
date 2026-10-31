@@ -1,0 +1,520 @@
+{
+  "date": "2026-10-31",
+  "status": "Source package physical audit completed; final packed-package installation audit pending and must be recorded separately.",
+  "device": {
+    "model": "Pixel 8a",
+    "android": 16,
+    "gpu": "Mali-G715",
+    "physicalDpr": 2.625,
+    "batteryTemperatureC": {
+      "baseline": 39.8,
+      "nativeFirst": 39.5,
+      "nativeEnd": 39.9
+    },
+    "androidThermalStatus": 1,
+    "thermalNote": "Light thermal status throughout measured sequence; ambient temperature and device-wide background work were not controlled."
+  },
+  "workload": {
+    "preset": "blue_beret",
+    "count": 8,
+    "paintFormula": "bodyColor = hex(0x46719b + index*10007), index0..7",
+    "animation": "Live authored idle, no initial work/reaction keys",
+    "avatarCssOrDp": 112,
+    "sizeBucket": 128,
+    "backingPixelsPerAvatar": 192,
+    "rendererPixelRatio": 1.5,
+    "offscreenMsaaSamples": 4,
+    "frameLimit": 60
+  },
+  "before": {
+    "runtimeCommit": "e0fee324",
+    "artifact": "Built public runtime.mjs served from baseline worktree. Isolated Java Android Activity with8 independent WebViews/documents/contexts.",
+    "allEightReady": true,
+    "lostContexts": 0,
+    "active": {
+      "elapsedMs": [
+        5346.899999976158,
+        5346.5,
+        5346.399999976158,
+        5346.199999988079,
+        5346.400000035763,
+        5346.399999976158,
+        5346.300000011921,
+        5346.300000011921
+      ],
+      "fps": [
+        36.843778638253646,
+        37.0335733657533,
+        36.847224300628184,
+        36.84860274595774,
+        37.03426604793423,
+        37.03426604834711,
+        37.03495875644062,
+        37.03495875644062
+      ],
+      "trianglesPerAvatar": [
+        18804,
+        18804,
+        18804,
+        18804,
+        18804,
+        18804,
+        18804,
+        18804
+      ]
+    },
+    "pausedFps": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "counter": "Engine submitted animation frames. This is an upper bound on distinct avatar presentation updates, not an Android compositor callback.",
+    "activePssKiB": {
+      "host": 320492,
+      "renderer": 176017,
+      "combined": 496509,
+      "association": "Only one WebView renderer appeared with the freshly launched benchmark Activity; it disappeared when only that test package was force-stopped."
+    },
+    "cpuProfile": {
+      "scope": "V8 sampling through one document of the shared renderer thread. Never sum duplicated per-document DevTools TaskDuration.",
+      "durationApproxMs": 5000,
+      "sampledSelfMs": {
+        "drawImage": 259.118,
+        "tick": 110.419,
+        "texSubImage2D": 82.989,
+        "bufferSubData": 39.513
+      },
+      "caveat": "Sampled JS/native-call time, not GPU execution time or total device CPU."
+    }
+  },
+  "afterSourcePackage": {
+    "artifact": "Actual NativeAvatar wrapper + shared pool/controllers + native swap ACK, queue bound2. React Native/Hermes debug APK with Metro JS from local package source, not yet installed tarball.",
+    "engineIncludes": "First-fit delivery fix8d525c26; exact pose-sharing cache not included in these native samples.",
+    "apkSha256": "6c75cd690dfe5f877333e8f7ccccc6cedbd76c5fb107556b93b06c39fac6693f",
+    "counter": "Android TextureView.SurfaceTextureListener.onSurfaceTextureUpdated, independently read for every visible view. Not engine onFrame or queued swap count.",
+    "samples": [
+      {
+        "id": "native8-active1",
+        "warmupMs": 5000,
+        "elapsedMs": 5026.4597600102425,
+        "contextsBefore": 1,
+        "contextsAfter": 1,
+        "views": [
+          {
+            "ordinal": 1,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 222,
+            "fps": 44.16627419684101
+          },
+          {
+            "ordinal": 2,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 218,
+            "fps": 43.3704854725736
+          },
+          {
+            "ordinal": 3,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 216,
+            "fps": 42.9725911104399
+          },
+          {
+            "ordinal": 4,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 214,
+            "fps": 42.574696748306195
+          },
+          {
+            "ordinal": 5,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 210,
+            "fps": 41.77890802403879
+          },
+          {
+            "ordinal": 6,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 202,
+            "fps": 40.18733057550398
+          },
+          {
+            "ordinal": 7,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 195,
+            "fps": 38.79470030803602
+          },
+          {
+            "ordinal": 8,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 187,
+            "fps": 37.20312285950121
+          }
+        ]
+      },
+      {
+        "id": "native8-active2",
+        "warmupMs": 2000,
+        "elapsedMs": 5004.240195989609,
+        "contextsBefore": 1,
+        "contextsAfter": 1,
+        "views": [
+          {
+            "ordinal": 1,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 290,
+            "fps": 57.950855403065106
+          },
+          {
+            "ordinal": 2,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 289,
+            "fps": 57.75102486719247
+          },
+          {
+            "ordinal": 3,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 288,
+            "fps": 57.55119433131983
+          },
+          {
+            "ordinal": 4,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 284,
+            "fps": 56.75187218782928
+          },
+          {
+            "ordinal": 5,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 279,
+            "fps": 55.752719508466086
+          },
+          {
+            "ordinal": 6,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 266,
+            "fps": 53.15492254212179
+          },
+          {
+            "ordinal": 7,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 253,
+            "fps": 50.55712557577749
+          },
+          {
+            "ordinal": 8,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 251,
+            "fps": 50.15746450403221
+          }
+        ]
+      },
+      {
+        "id": "native8-paused",
+        "warmupMs": 3000,
+        "elapsedMs": 5013.140017032623,
+        "contextsBefore": 1,
+        "contextsAfter": 1,
+        "views": [
+          {
+            "ordinal": 1,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 2,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 3,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 4,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 5,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 6,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 7,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 8,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          }
+        ]
+      },
+      {
+        "id": "native0-disposed",
+        "warmupMs": 1500,
+        "elapsedMs": 1509.674480021,
+        "contextsBefore": 0,
+        "contextsAfter": 0,
+        "views": []
+      },
+      {
+        "id": "native8-steady10s",
+        "warmupMs": 15000,
+        "elapsedMs": 10007.457565009594,
+        "contextsBefore": 1,
+        "contextsAfter": 1,
+        "views": [
+          {
+            "ordinal": 1,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 573,
+            "fps": 57.25729999630038
+          },
+          {
+            "ordinal": 2,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 573,
+            "fps": 57.25729999630038
+          },
+          {
+            "ordinal": 3,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 573,
+            "fps": 57.25729999630038
+          },
+          {
+            "ordinal": 4,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 573,
+            "fps": 57.25729999630038
+          },
+          {
+            "ordinal": 5,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 573,
+            "fps": 57.25729999630038
+          },
+          {
+            "ordinal": 6,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 573,
+            "fps": 57.25729999630038
+          },
+          {
+            "ordinal": 7,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 573,
+            "fps": 57.25729999630038
+          },
+          {
+            "ordinal": 8,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 573,
+            "fps": 57.25729999630038
+          }
+        ]
+      },
+      {
+        "id": "native12-capacity",
+        "warmupMs": 10000,
+        "elapsedMs": 5008.19616997242,
+        "contextsBefore": 1,
+        "contextsAfter": 1,
+        "views": [
+          {
+            "ordinal": 1,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 2,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 3,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 4,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 5,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 6,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 7,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 8,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 9,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 10,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 11,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          },
+          {
+            "ordinal": 12,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 286,
+            "fps": 57.106389265413895
+          }
+        ]
+      }
+    ],
+    "activePssKiB": {
+      "first": 373532,
+      "afterRemountSteady": 385240,
+      "processScope": "Only the isolated React Native app; no WebView renderer process exists for this arm."
+    }
+  },
+  "interpretation": [
+    "The first native5-second window ranged37.2\u201344.2fps; the second ranged50.2\u201358.0. After explicit unmount/remount and15-second warmup, all8 surfaces delivered573 updates over10.007seconds (57.257fps). Preserve this cold/warm distinction.",
+    "A separate12-avatar capacity sample delivered57.106 actual updates/s on every visible surface with one context. This is not the matched8-avatar performance comparison.",
+    "Pausing8 avatars produced exactly zero updates on every surface across5seconds. Unmounting all avatars removed all views and contexts.",
+    "PSS snapshots were22\u201325% below baseline combined host+renderer, but Java WebView and RN debug harness overhead differ. These are snapshots, not peaks or whole-device memory.",
+    "Both rendering paths use192 backing pixels per avatar and MSAA4. Old WebView copies192 to224-pixel Canvas2D then displays at294 physical pixels; native presents192 directly into a294-pixel TextureView. Composited pixels are not claimed identical across these different scaling chains."
+  ]
+}
