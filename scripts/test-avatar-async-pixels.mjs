@@ -85,3 +85,23 @@ for (const mode of [
     assert.equal(state.readFramebuffer, framebuffer);
     assert.equal(state.packBuffer, pack);
   });
+
+test('streaming readback reuses the caller-owned destination and accepts the default framebuffer', async () => {
+  const { gl, state } = context('success'),
+    destination = new Uint8Array(16);
+  const task = readPixelsAsync(gl, null, 0, 0, 2, 2, 30000, destination);
+  assert.equal(await task.promise, destination);
+  assert.deepEqual(destination, new Uint8Array(16).fill(17));
+  assert.equal(state.deletedBuffers, 1);
+  assert.equal(state.deletedFences, 1);
+});
+
+test('invalid streaming destination fails before allocating GPU objects', async () => {
+  const { gl, state } = context('success');
+  await assert.rejects(
+    readPixelsAsync(gl, null, 0, 0, 2, 2, 30000, new Uint8Array(4)).promise,
+    /wrong length/,
+  );
+  assert.equal(state.deletedBuffers, 0);
+  assert.equal(state.deletedFences, 0);
+});

@@ -2,12 +2,13 @@
  * polled without waiting on the UI thread. Every exit owns its GL cleanup. */
 export function readPixelsAsync(
   gl: WebGL2RenderingContext,
-  framebuffer: WebGLFramebuffer,
+  framebuffer: WebGLFramebuffer | null,
   x: number,
   y: number,
   width: number,
   height: number,
   timeoutMs = 30000,
+  destination?: Uint8Array,
 ) {
   let buffer: WebGLBuffer | null = null;
   let sync: WebGLSync | null = null;
@@ -30,6 +31,8 @@ export function readPixelsAsync(
       reject(error instanceof Error ? error : new Error(String(error)));
     };
     try {
+      if (destination && destination.length !== width * height * 4)
+        throw new Error('Avatar readback destination has the wrong length');
       buffer = gl.createBuffer();
       if (!buffer) throw new Error('Avatar readback buffer allocation failed');
       const previousFramebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING);
@@ -59,7 +62,7 @@ export function readPixelsAsync(
             timer = setTimeout(poll, 4);
             return;
           }
-          const pixels = new Uint8Array(width * height * 4);
+          const pixels = destination ?? new Uint8Array(width * height * 4);
           const previous = gl.getParameter(gl.PIXEL_PACK_BUFFER_BINDING);
           try {
             gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buffer);
