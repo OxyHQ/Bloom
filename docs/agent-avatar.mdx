@@ -96,7 +96,15 @@ lazy loading.
 ## Stills
 
 `Avatar account={bot}` (see [Avatar](/docs/avatar)) draws a character as a cached still below
-profile size. The still pipeline renders a paused `portrait` through this same runtime, one at a
+profile size. Inside `AgentAvatarProvider` (including `BloomProvider`), native
+`AgentAvatar`/`CharacterAvatar` previews with explicit `portrait` and no `interactive` also
+use this cache: shape and eye selectors share one drawing document instead of retaining a
+WebView for every frozen thumbnail. Temporarily `paused` live avatars retain their renderer;
+web portraits and standalone native avatars without a provider retain their existing path.
+Eye-only previews have separate cache identities, and persistent images are namespaced by
+runtime URL. Images render through `BloomImage`, preserving the outer accessible label and
+layout. `onReady` fires after image loading, and snapshot capture returns the presented PNG;
+failed stills use the existing translated unavailable state. The still pipeline renders a paused `portrait` through this same runtime, one at a
 time, into an invisible fixed-size box (web) or one hidden WebView (native), reads the canvas back
 once and caches the PNG by content. Native retains the same WebView document throughout a
 burst of requests: the runtime module, decoded donors and compatible GL pool survive between
@@ -177,13 +185,19 @@ checks do not establish native crowd performance. Physical Android and iOS integ
 remains necessary for that claim. Software GL browser tests likewise do not establish laptop
 FPS, and browser CPU throttling is not a substitute for measuring a low-end mobile GPU.
 
-A separate reliability gap remains under native memory pressure: the live avatar bridge
-currently handles its JavaScript protocol but does not subscribe to Android
-`onRenderProcessGone` or WKWebView `onContentProcessDidTerminate`. These are real OS process
-termination events, including memory reclamation; they are different from a runtime-reported
-rendering error. A live avatar may therefore need remounting after its WebView process dies.
-The still queue's deadline can release and replace a stalled document, but it does not prove
-live-avatar recovery. See the [WebView event reference](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#onrenderprocessgone).
+The native bridge handles Android `onRenderProcessGone` and WKWebView
+`onContentProcessDidTerminate`, which can report OS memory reclamation as well as crashes.
+It settles pending captures, remounts once using the latest character/action props, and
+ignores messages from the previous document. This restores the character, not its lost
+animation phase: `reactionKey`/`workingKey` are edge-triggered requests, not persistent activity
+state, and already-consumed actions are not artificially replayed. A second process loss
+before 30 seconds of stable readiness uses the translated unavailable state. Thirty stable
+seconds after recovery, or changing the runtime, resets the recovery budget so a later
+independent OS reclamation can recover too. A native
+page load error also reports unavailable. The shared still host fails an interrupted request
+and replaces the document for the next job, without repeatedly retrying the failed job.
+These lifecycle transitions are tested with native event mocks; physical OS process-kill
+recovery remains to be validated. See the [WebView event reference](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#onrenderprocessgone).
 
 `className` and `style` apply to the outer layout node. `label` defaults to the
 translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel`
