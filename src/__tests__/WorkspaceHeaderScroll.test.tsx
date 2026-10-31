@@ -210,6 +210,56 @@ it('keeps a retained panel mounted and clears only a top-edge panel', () => {
   expect(unmounted).not.toHaveBeenCalled();
 });
 
+it('keeps workspace clearance while a retained route loses and regains focus', () => {
+  const mounts = jest.fn();
+  const unmounts = jest.fn();
+  function Page({ active }: { active: boolean }) {
+    React.useEffect(() => {
+      mounts();
+      return unmounts;
+    }, []);
+    return (
+      <Screen active={active} scroll="content">
+        <ActiveProbe />
+        <ScreenScrollView testID="focused-body">
+          <Text>Page</Text>
+        </ScreenScrollView>
+      </Screen>
+    );
+  }
+  function ActiveProbe() {
+    return <Text testID="focused-state">{String(useScreen().active)}</Text>;
+  }
+  const app = (active: boolean) =>
+    wrap(
+      <AppShell
+        testID="shell"
+        scroll="page"
+        header={null}
+        panelLayout={{
+          header,
+          headerPlacement: 'scroll-under',
+          panels: [{ id: 'main', content: <Page active={active} /> }],
+        }}
+      />,
+    );
+  const tree = render(app(true));
+  fireEvent(tree.getByTestId('shell-panels-workspace-header'), 'layout', {
+    nativeEvent: { layout: { width: 390, height: 64, x: 0, y: 0 } },
+  });
+  tree.rerender(app(false));
+  expect(tree.getByTestId('focused-state', { includeHiddenElements: true }).props.children).toBe(
+    'false',
+  );
+  tree.rerender(app(true));
+  expect(tree.getByTestId('focused-state').props.children).toBe('true');
+  expect(
+    resolvedStyle(tree.getByTestId('focused-body').props.contentContainerStyle).paddingTop,
+  ).toBe(64);
+  expect(mounts).toHaveBeenCalledTimes(1);
+  expect(unmounts).not.toHaveBeenCalled();
+});
+
 it('does not carry workspace header clearance into an isolated Screen scope', () => {
   function ContextProbe() {
     return (
