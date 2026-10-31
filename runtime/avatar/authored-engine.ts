@@ -26,8 +26,6 @@ import {
   type AuthoredAsset,
   type AuthoredPart,
 } from './catalog';
-import pileUrl from './assets/furPile.bin?url';
-import cardsUrl from './assets/furCards.bin?url';
 import ltc1Url from './assets/furLTC1.bin?url';
 import ltc2Url from './assets/furLTC2.bin?url';
 
@@ -78,6 +76,7 @@ type InstanceState = {
   wander?: { next: number; step: number };
   pose?: AuthoredMotionPose[];
   poseSampler?: AuthoredMotionSampler;
+  poseSampleTime?: number;
   reactionGaze?: {
     motion: MotionState;
     yaw: number;
@@ -114,7 +113,7 @@ export class AuthoredAvatarEngine {
   private assets = new Map<string, LoadedAsset>();
   private pendingAssets = new Map<string, Promise<LoadedAsset>>();
   private assetClaims = new Map<string, number>();
-  private defaultPreset: AvatarPreset;
+  private defaultPreset: string;
   private resolveAsset?: (key: string, detail: 'low' | 'high') => Promise<ResolvedAvatarAsset>;
   private allowPoseOverrides: boolean;
   private assetLoader: typeof loadAuthoredAsset;
@@ -157,7 +156,7 @@ export class AuthoredAvatarEngine {
     fragmentShader: `precision highp float;
       in vec2 uv; out vec4 color;
       uniform sampler2D image; uniform vec2 surface;
-      uniform vec4 grid; uniform sampler2D fits;
+      uniform vec4 grid; uniform highp sampler2D fits;
       void main(){
         vec2 pixel=vec2(uv.x,1.-uv.y)*surface;
         vec2 cell=floor((pixel-surface*.5)/grid.x+grid.yz*.5);
@@ -249,7 +248,7 @@ export class AuthoredAvatarEngine {
     options: {
       count?: number;
       size?: number;
-      preset?: AvatarPreset;
+      preset?: string;
       maxFrameRate?: number;
       poseOverrides?: boolean;
       assetLoader?: typeof loadAuthoredAsset;
@@ -295,10 +294,10 @@ export class AuthoredAvatarEngine {
     this.loaded = this.load();
   }
   private async load() {
-    const textures = await Promise.all([pileUrl, cardsUrl, ltc1Url, ltc2Url].map(binary));
+    const textures = await Promise.all([ltc1Url, ltc2Url].map(binary));
     if (this.disposed) return;
     this.textures = textures.map((data, i) => {
-      const spec = fixture.sourceTextures[i]!;
+      const spec = fixture.sourceTextures[i + 2]!;
       const floating = spec.type === 5126;
       const texture = new THREE.DataTexture(
         floating ? new Float32Array(data) : new Uint8Array(data),
@@ -307,10 +306,9 @@ export class AuthoredAvatarEngine {
         THREE.RGBAFormat,
         floating ? THREE.FloatType : THREE.UnsignedByteType,
       );
-      texture.wrapS = texture.wrapT = i === 0 ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+      texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
       texture.minFilter = texture.magFilter = THREE.LinearFilter;
-      texture.generateMipmaps = i < 2;
-      if (i < 2) texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.generateMipmaps = false;
       texture.needsUpdate = true;
       return texture;
     });
@@ -464,10 +462,8 @@ export class AuthoredAvatarEngine {
         studioLighting: { value: null },
         paletteField: { value: null },
         referencePalette: { value: null },
-        furPile: { value: this.textures[0] },
-        furCards: { value: this.textures[1] },
-        furLTC1: { value: this.textures[2] },
-        furLTC2: { value: this.textures[3] },
+        furLTC1: { value: this.textures[0] },
+        furLTC2: { value: this.textures[1] },
       },
       premultipliedAlpha: true,
       transparent: part.transparent ?? (part.fur || part.fields.coverage![0]! < 1),
@@ -1197,11 +1193,16 @@ export class AuthoredAvatarEngine {
         if (!state.pose || state.poseSampler !== sampler) {
           state.pose = sampler.createPose();
           state.poseSampler = sampler;
+          state.poseSampleTime = undefined;
         }
-        sampler.sample(
-          motion?.held ?? (motion ? this.time - motion.started : this.time + state.phase),
-          state.pose,
-        );
+        const sampleTime =
+          motion?.held ?? (motion ? this.time - motion.started : this.time + state.phase);
+        // Held neighbours still participate in the shared render, but their
+        // semantic pose is immutable until its sampler or clock changes.
+        if (state.poseSampleTime !== sampleTime) {
+          sampler.sample(sampleTime, state.pose);
+          state.poseSampleTime = sampleTime;
+        }
       }
       const reactionTiming =
         state.motion?.kind === 'reaction'

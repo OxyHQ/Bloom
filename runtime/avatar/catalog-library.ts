@@ -133,7 +133,6 @@ export function loadCatalogDonor(
         binary,
         false,
         undefined,
-        new Set(entry.selectedPartIds),
       );
       const pieces = source.parts.map((part) => {
         const meta = material.parts.find((p) => p.id === part.id)!;
