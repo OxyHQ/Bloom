@@ -6,13 +6,14 @@ const puppeteer = createRequire(import.meta.url)(
   process.env.BLOOM_PUPPETEER_MODULE || 'puppeteer-core',
 );
 const origin = process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6006';
+const built = process.env.AVATAR_BUILT_RUNTIME === '1';
 const browser = await puppeteer.launch({
   executablePath: process.env.CHROME_PATH,
   headless: true,
   protocolTimeout: 180000,
   args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
 });
-const report = { cases: [] };
+const report = { built, cases: [] };
 try {
   for (const scenario of process.env.AVATAR_LAZY_CASES?.split(',') ?? [
     'noop-latest',
@@ -42,49 +43,76 @@ try {
     );
     await page.goto(`${origin}/avatar-lazy-work.html`);
     await cdp.send('Fetch.disable');
-    await page.evaluate(async () => {
-      window.workRequests = [];
-      window.errors = 0;
-      window.holdWork = false;
-      window.failWork = false;
-      const fetchOriginal = window.fetch;
-      window.fetch = async (url, ...args) => {
-        if (
-          /\/@bloom-avatar-motion\/work\/|computer-geometry\.(?:bin|json)(?:\?|$)/.test(String(url))
-        ) {
-          workRequests.push(String(url));
-          if (holdWork) await window.workGate;
-          if (failWork) return new Response('Injected work fetch failure', { status: 503 });
+    await page.evaluate(
+      async ({ built }) => {
+        performance.setResourceTimingBufferSize(5000);
+        window.workRequests = [];
+        window.errors = 0;
+        window.holdWork = false;
+        window.failWork = false;
+        const fetchOriginal = window.fetch;
+        window.fetch = async (url, ...args) => {
+          if (
+            /\/@bloom-avatar-motion\/work\/|computer-geometry(?:-[^/]+)?\.(?:bin|json)(?:\?|$)|(?:packed|catalog)-motion-[^/]+-work-[^/]+\.bin/.test(
+              String(url),
+            )
+          ) {
+            workRequests.push(String(url));
+            if (holdWork) await window.workGate;
+            if (failWork) return new Response('Injected work fetch failure', { status: 503 });
+          }
+          return fetchOriginal(url, ...args);
+        };
+        const runtimeUrl = new URL(
+          built ? '/bloom-character/runtime.mjs' : '/runtime/avatar-runtime.ts',
+          location.href,
+        ).href;
+        if (built) {
+          const { loadCharacterRuntime } = await import(
+            '/src/agent-avatar/character-runtime-module.ts'
+          );
+          window.runtime = await loadCharacterRuntime(runtimeUrl);
+        } else window.runtime = await import(runtimeUrl);
+        const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
+        window.resolveCharacter = resolveAvatarCharacter;
+        if (built) {
+          await runtime.diagnostics();
+          const poolUrl = performance
+            .getEntriesByType('resource')
+            .map((entry) => entry.name)
+            .find((url) => /\/chunks\/avatar-pool-[^/]+\.mjs(?:\?|$)/.test(url));
+          if (!poolUrl) throw Error('Built loader did not fetch its actual pool module');
+          window.pool = await import(poolUrl);
+        } else {
+          const source = await (await fetch(runtimeUrl)).text();
+          window.pool = await import(
+            new URL(source.match(/import\(["']([^"']*avatar-pool[^"']*)["']\)/)[1], runtimeUrl).href
+          );
         }
-        return fetchOriginal(url, ...args);
-      };
-      window.runtime = await import('/runtime/avatar-runtime.ts');
-      const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
-      window.resolveCharacter = resolveAvatarCharacter;
-      const source = await (await fetch('/runtime/avatar-runtime.ts')).text();
-      window.pool = await import(source.match(/import\(["']([^"']*avatar-pool[^"']*)["']\)/)[1]);
-      window.props = {
-        character: resolveAvatarCharacter({ preset: 'blue_beret' }),
-        reduced: false,
-        interactive: true,
-      };
-      window.canvases = [];
-      window.controllers = [];
-      window.ready = 0;
-      await Promise.all(
-        [0, 1].map(async (index) => {
-          const canvas = document.createElement('canvas');
-          canvas.style.cssText = 'width:64px;height:64px';
-          canvases[index] = canvas;
-          document.body.append(canvas);
-          controllers[index] = await runtime.createAvatar(canvas, props, {
-            onReady: () => ready++,
-            onError: () => window.errors++,
-          });
-        }),
-      );
-      window.diag = () => pool.editorPoolDiagnostics();
-    });
+        window.props = {
+          character: resolveAvatarCharacter({ preset: 'blue_beret' }),
+          reduced: false,
+          interactive: true,
+        };
+        window.canvases = [];
+        window.controllers = [];
+        window.ready = 0;
+        await Promise.all(
+          [0, 1].map(async (index) => {
+            const canvas = document.createElement('canvas');
+            canvas.style.cssText = 'width:64px;height:64px';
+            canvases[index] = canvas;
+            document.body.append(canvas);
+            controllers[index] = await runtime.createAvatar(canvas, props, {
+              onReady: () => ready++,
+              onError: () => window.errors++,
+            });
+          }),
+        );
+        window.diag = () => pool.editorPoolDiagnostics();
+      },
+      { built },
+    );
     await page.waitForFunction(() => ready === 2 && diag()[0].stats.frames > 3, { timeout: 90000 });
     assert.equal(
       await page.evaluate(() => workRequests.length),
