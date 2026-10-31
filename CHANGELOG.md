@@ -2,6 +2,19 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.79.3
+
+### Fixed
+
+- Window controls keep their space beside compact sidebars, including shells with explicit navigation placement. Stateful headers survive fullscreen and navigation changes.
+- Compact descriptor panels publish the backing they actually paint, matching the equivalent JSX panel composition.
+- Web decks using document scrolling no longer clip overflowing columns when the shell uses an overlay drawer. Contained decks keep their own scroll viewport.
+- Web meters remain visible over surface material.
+
+### Consumers
+
+No API changes. Existing compositions pick up these fixes when updating Bloom.
+
 ## 15.79.2
 
 ### Fixed
