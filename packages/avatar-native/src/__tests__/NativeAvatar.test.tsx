@@ -19,6 +19,7 @@ jest.mock('../pool', () => ({ attachNativeAvatar: () => Promise.resolve(mockAtta
 jest.mock('../bridge', () => ({
   NativeView: (props: object) => require('react').createElement('NativeGPU', props),
 }));
+const mockError = jest.fn();
 let tree: ReactTestRenderer;
 const host = () =>
   tree.root.findAll(
@@ -32,7 +33,7 @@ beforeEach(async () => {
       <NativeAvatar
         runtimeUrl="https://example.test/runtime.mjs"
         value={{ character: 'blue', reduced: false, interactive: true }}
-        onError={jest.fn()}
+        onError={mockError}
       />,
     );
   });
@@ -60,4 +61,13 @@ it('does not react on a cancelled drag and forwards cancellation without final c
   });
   expect(mockAttachment.pointerEnd).toHaveBeenLastCalledWith(undefined, undefined);
   expect(mockAttachment.react).not.toHaveBeenCalled();
+});
+
+it('settles a native surface allocation failure once and ignores events from the removed view', () => {
+  const failed = tree.root.findByType('NativeGPU' as any).props.onSurfaceError;
+  act(() => failed());
+  expect(mockError).toHaveBeenCalledTimes(1);
+  expect(tree.root.findAllByType('NativeGPU' as any)).toHaveLength(0);
+  act(() => failed());
+  expect(mockError).toHaveBeenCalledTimes(1);
 });

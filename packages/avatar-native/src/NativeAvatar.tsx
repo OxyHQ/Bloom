@@ -18,6 +18,7 @@ export function NativeAvatar(props: NativeAvatarProps) {
   const latest = useRef(props);
   latest.current = props;
   const attachment = useRef<NativeAttachment | undefined>(undefined);
+  const fail = useRef<() => void>(() => {});
   const [surface, setSurface] = useState<{ contextId: number; surfaceId: number }>();
   const [size, setSize] = useState({ width: 0, height: 0 });
   const dimensions = useRef(size);
@@ -32,6 +33,14 @@ export function NativeAvatar(props: NativeAvatarProps) {
   useEffect(() => {
     if (!hasSize) return;
     const abort = new AbortController();
+    const failCurrent = () => {
+      if (abort.signal.aborted) return;
+      abort.abort();
+      attachment.current = undefined;
+      setSurface(undefined);
+      latest.current.onError();
+    };
+    fail.current = failCurrent;
     void attachNativeAvatar(
       props.runtimeUrl,
       latest.current.value,
@@ -41,13 +50,7 @@ export function NativeAvatar(props: NativeAvatarProps) {
         onReady: () => {
           if (!abort.signal.aborted) latest.current.onReady?.();
         },
-        onError: () => {
-          if (abort.signal.aborted) return;
-          abort.abort();
-          attachment.current = undefined;
-          setSurface(undefined);
-          latest.current.onError();
-        },
+        onError: failCurrent,
         onCapabilities: (value) => latest.current.onCapabilities?.(value),
       },
       abort.signal,
@@ -68,6 +71,7 @@ export function NativeAvatar(props: NativeAvatarProps) {
     return () => {
       abort.abort();
       attachment.current = undefined;
+      if (fail.current === failCurrent) fail.current = () => {};
       setSurface(undefined);
     };
   }, [props.runtimeUrl, hasSize]);
@@ -139,6 +143,9 @@ export function NativeAvatar(props: NativeAvatarProps) {
           style={{ flex: 1 }}
           contextId={surface.contextId}
           surfaceId={surface.surfaceId}
+          onSurfaceError={() => {
+            if (attachment.current?.surfaceId === surface.surfaceId) fail.current();
+          }}
           onSurfaceReady={(event: { nativeEvent: { visible: boolean } }) => {
             if (attachment.current?.surfaceId !== surface.surfaceId) return;
             attachment.current.visibility(event.nativeEvent.visible);
