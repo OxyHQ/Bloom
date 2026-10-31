@@ -332,6 +332,7 @@ export function createScreenScrollView(
       };
     }, [active, onLayout, viewport]);
     const contentRef = useRef<ComponentRef<typeof View>>(null);
+    const viewportContentRef = useRef<ComponentRef<typeof View>>(null);
     useImperativeHandle(forwardedRef, () => {
       const handle: DocumentScrollHandle = {
         scrollTo: (y, _x, animated) => {
@@ -354,7 +355,8 @@ export function createScreenScrollView(
         // as the window — so a call site written for native restores here too.
         getScrollableNode: () =>
           (viewport?.scrollRef?.current as Element | null) ?? documentScroller(),
-        getInnerViewNode: () => contentRef.current,
+        getInnerViewNode: () =>
+          viewport?.kind === 'element' ? viewportContentRef.current : contentRef.current,
       };
       // Callers type this ref as a `ScrollView`; the window answers the part of
       // it a page drives. Through `unknown` because the node getters return the
@@ -379,20 +381,29 @@ export function createScreenScrollView(
       },
       [active, tracksEnd, onContentSizeChange],
     );
+    const handleNaturalLayout = useCallback(
+      (event: LayoutChangeEvent) => {
+        if (active && tracksEnd) setContentHeight(event.nativeEvent.layout.height);
+      },
+      [active, tracksEnd],
+    );
+    const handleViewportContentLayout = useCallback(
+      (event: LayoutChangeEvent) => {
+        if (active)
+          onContentSizeChange?.(event.nativeEvent.layout.width, event.nativeEvent.layout.height);
+      },
+      [active, onContentSizeChange],
+    );
     // The panel owns this element viewport. Its persistent workspace header
     // overlays the viewport, so reserve it in scroll content rather than
     // moving the viewport down. Document scroll remains in normal flow.
     const workspaceInset = viewport?.kind === 'element' ? (screen.workspaceTopInset ?? 0) : 0;
-    const contentStyle = StyleSheet.flatten(contentContainerStyle);
-    const inset = workspaceInset && !contentContainerClassName
-      ? { paddingTop: workspaceInset + paddingEdge(contentStyle, 'paddingTop') }
-      : null;
     const content = (
       <StyledView
-        ref={contentRef}
+        ref={viewport?.kind === 'element' ? undefined : contentRef}
         className={contentContainerClassName}
-        style={[contentContainerStyle, inset]}
-        onLayout={handleContentLayout}
+        style={contentContainerStyle}
+        onLayout={viewport?.kind === 'element' ? handleNaturalLayout : handleContentLayout}
       >
         {children}
         {tracksEnd ? (
@@ -401,9 +412,16 @@ export function createScreenScrollView(
       </StyledView>
     );
     return (
-      <View
+      <StyledView
         {...props}
-        onLayout={!viewport && active ? onLayout : undefined}
+        ref={viewport?.kind === 'element' ? viewportContentRef : undefined}
+        onLayout={
+          viewport?.kind === 'element'
+            ? handleViewportContentLayout
+            : !viewport && active
+              ? onLayout
+              : undefined
+        }
         style={[
           { flexGrow: 1 },
           style,
@@ -411,8 +429,10 @@ export function createScreenScrollView(
           restoration?.restorePending ? { opacity: 0 } : null,
         ]}
       >
-        {viewport?.kind === 'element' && contentContainerClassName ? <View style={{ paddingTop: workspaceInset }}>{content}</View> : content}
-      </View>
+        <View style={{ flexGrow: 1, flexShrink: 1, minHeight: 0, paddingTop: workspaceInset }}>
+          {content}
+        </View>
+      </StyledView>
     );
   }
 

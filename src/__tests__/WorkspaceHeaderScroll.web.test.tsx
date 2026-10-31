@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { act } from 'react';
+import { act, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -113,24 +113,47 @@ it('reserves workspace clearance in an existing element viewport without replaci
       contentSized: false,
       documentScroll: false,
     }) as ScreenContextValue;
-  const app = (inset: number) => (
+  let mounts = 0;
+  function Child() {
+    const [value, setValue] = useState('draft');
+    useEffect(() => {
+      mounts++;
+    }, []);
+    return (
+      <input
+        data-testid="content"
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+      />
+    );
+  }
+  const app = (inset: number, classed: boolean, kind: 'element' | 'document' = 'element') => (
     <ScreenContext.Provider value={screen(inset)}>
-      <ScreenViewportContext.Provider value={viewport}>
-        <ScreenScrollView contentContainerClassName="p-4">
-          <div data-testid="content">Child</div>
+      <ScreenViewportContext.Provider value={{ ...viewport, kind }}>
+        <ScreenScrollView
+          contentContainerClassName={classed ? 'p-4 flex-1 justify-end' : undefined}
+        >
+          <Child />
         </ScreenScrollView>
       </ScreenViewportContext.Provider>
     </ScreenContext.Provider>
   );
   try {
-    act(() => root.render(app(64)));
+    act(() => root.render(app(64, true)));
     const child = container.querySelector('[data-testid="content"]') as HTMLElement;
     const content = child.parentElement!;
     expect(content.className).toContain('p-4');
     expect(content.parentElement?.style.paddingTop).toBe('64px');
-    act(() => root.render(app(0)));
+    act(() => root.render(app(0, false)));
     expect(container.querySelector('[data-testid="content"]')).toBe(child);
     expect(content.parentElement?.style.paddingTop).toBe('0px');
+    expect(mounts).toBe(1);
+    act(() => root.render(app(0, false, 'document')));
+    expect(container.querySelector('[data-testid="content"]')).toBe(child);
+    expect(mounts).toBe(1);
+    act(() => root.render(app(64, true, 'element')));
+    expect(container.querySelector('[data-testid="content"]')).toBe(child);
+    expect(mounts).toBe(1);
   } finally {
     act(() => root.unmount());
     container.remove();

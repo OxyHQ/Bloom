@@ -8,7 +8,12 @@ import { Platform, View, type ScrollView } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Screen, ScreenScrollView, useScreen } from '../screen';
-import type { ScreenContextValue } from '../screen/context';
+import {
+  ScreenHostContext,
+  ScreenViewportContext,
+  type ScreenContextValue,
+  type ScreenViewportValue,
+} from '../screen/context';
 import { ScrollRestorationProvider, useScrollRestoration } from '../scroll/index.web';
 import type { ScreenFocusEffect, ScrollRouterAdapter } from '../scroll/types';
 import { resolvedStyle } from './support/rendered-style';
@@ -201,6 +206,42 @@ it('restores the window through the same ref-based binding a native page uses', 
 });
 
 describe('onEndReached in document flow', () => {
+  it('rearms from growing natural content inside a bounded element viewport', () => {
+    const onEndReached = jest.fn();
+    const viewport = {
+      kind: 'element',
+      active: true,
+      scrollRef: { current: document.createElement('div') },
+      scrollTo: jest.fn(),
+      metrics: {
+        scrollY: { value: 0 },
+        contentHeight: { value: 0 },
+        viewportHeight: { value: 400 },
+      },
+    } as ScreenViewportValue;
+    const tree = render(
+      wrap(
+        <ScreenHostContext.Provider value={{ active: true, workspaceTopInset: 64 }}>
+          <Screen>
+            <ScreenViewportContext.Provider value={viewport}>
+              <ScreenScrollView onEndReached={onEndReached}>
+                <View testID="row" />
+              </ScreenScrollView>
+            </ScreenViewportContext.Provider>
+          </Screen>
+        </ScreenHostContext.Provider>,
+      ),
+      domNodes,
+    );
+    const content = hostParent(tree.getByTestId('row'));
+    fireEvent(content, 'layout', { nativeEvent: { layout: { width: 300, height: 40 } } });
+    liveObserver().report(true);
+    fireEvent(content, 'layout', { nativeEvent: { layout: { width: 300, height: 80 } } });
+    liveObserver().report(true);
+    fireEvent(content, 'layout', { nativeEvent: { layout: { width: 300, height: 120 } } });
+    liveObserver().report(true);
+    expect(onEndReached).toHaveBeenCalledTimes(3);
+  });
   function page(onEndReached?: () => void, threshold?: number) {
     return wrap(
       <Screen documentScroll>
