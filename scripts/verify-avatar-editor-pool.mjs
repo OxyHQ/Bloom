@@ -325,6 +325,8 @@ try {
   await page.waitForFunction(
     () => diag()[0]?.stats.renderedInstances === 5 && diag()[0].stats.frames > 5,
   );
+  const allLiveFrame = await page.evaluate(() => diag()[0].stats.frames);
+  await page.waitForFunction((frame) => diag()[0].stats.frames > frame + 1, {}, allLiveFrame);
   const fullTriangles = await page.evaluate(() => diag()[0].stats.triangles);
   report.retainedPresentations = await page.evaluate(() => diag().map((pool) => pool.presentation));
   if (process.env.AVATAR_EXPECT_PRESENTER)
@@ -341,7 +343,11 @@ try {
       ),
     );
   });
-  await page.waitForFunction(() => diag()[0].stats.renderedInstances === 1);
+  await page.waitForFunction(
+    (full) => diag()[0].stats.renderedInstances === 1 && diag()[0].stats.triangles < full / 2,
+    { timeout: 10000 },
+    fullTriangles,
+  );
   assert(
     (await page.evaluate(() => diag()[0].stats.triangles)) < fullTriangles / 2,
     'Retained slots remove actual geometry submissions',
@@ -428,14 +434,59 @@ try {
     hiddenFrames,
   );
   report.cases.push('resume-and-offscreen-return-restore-the-original-slot');
-  await page.evaluate(() => {
+  const hadWebGPUTarget = await page.evaluate(() => diag()[0]?.presentation?.webgpuTargets > 0);
+  const retainedBeforeDispose = hadWebGPUTarget
+    ? await page.evaluate(() => avatarPNGSnapshot(retainedCanvases[4]))
+    : undefined;
+  await page.evaluate((keepGPUCanvas) => {
     retainedControllers.forEach((c) => {
       c.dispose();
     });
-    retainedCanvases.forEach((c) => {
-      c.remove();
+    retainedCanvases.forEach((c, index) => {
+      if (!keepGPUCanvas || index !== 4) c.remove();
     });
-  });
+  }, hadWebGPUTarget);
+  if (hadWebGPUTarget) {
+    assert.deepEqual(await page.evaluate(() => diag()), []);
+    assert.deepEqual(
+      await page.evaluate(() => avatarPNGSnapshot(retainedCanvases[4])),
+      retainedBeforeDispose,
+      'Disposing the final GPU slot retains its actual destination PNG',
+    );
+    const duringReattach = await page.evaluate(async () => {
+      window.reattachReady = 0;
+      const attachment = pool.attachEditorAvatar(
+        retainedCanvases[4],
+        props,
+        { ...recipe, color: '#ff11dd' },
+        () => {
+          reattachReady++;
+        },
+      );
+      const during = avatarPNGSnapshot(retainedCanvases[4]);
+      window.reattached = await attachment;
+      return await during;
+    });
+    assert.deepEqual(
+      duringReattach,
+      retainedBeforeDispose,
+      'Same-canvas singleton keeps old PNG while loading',
+    );
+    await page.waitForFunction(
+      async (previous) =>
+        reattachReady === 1 &&
+        diag()[0]?.presentation?.webgpuTargets === 1 &&
+        diag()[0].presentation.webgpuFrames > 0 &&
+        (await avatarPNGSnapshot(retainedCanvases[4])).sha256 !== previous.sha256,
+      { timeout: 90000 },
+      retainedBeforeDispose,
+    );
+    report.cases.push('retained-webgpu-canvas-reattaches-as-a-singleton-with-fresh-pixels');
+    await page.evaluate(() => {
+      reattached.dispose();
+      retainedCanvases[4].remove();
+    });
+  }
   assert.deepEqual(await page.evaluate(() => diag()), []);
   assert.equal(await page.$$eval('[data-avatar-renderer]', (x) => x.length), 0);
   assert.deepEqual(report.errors, []);
