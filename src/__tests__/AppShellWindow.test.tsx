@@ -394,6 +394,71 @@ describe('with the window capability', () => {
     expect(unmounted).not.toHaveBeenCalled();
   });
 
+  it('preserves a stateful engine header across fullscreen', () => {
+    setWidth(1440);
+    const mounted = jest.fn();
+    function Header() {
+      const [value, setValue] = useState('Initial');
+      useEffect(() => {
+        mounted();
+      }, []);
+      return (
+        <ReactNative.TextInput testID="engine-header-draft" value={value} onChangeText={setValue} />
+      );
+    }
+    const { adapter, window } = fakeWindow();
+    const screen = shell(adapter, {
+      scroll: 'fixed',
+      navigationPlacement: 'sidebar',
+      header: <Header />,
+      sidebar: { items: NAV, size: 'sm', collapsed: true, surface: 'docked' },
+    });
+    fireEvent.changeText(screen.getByTestId('engine-header-draft'), 'Unsent');
+    act(() => window.set({ fullscreen: true }));
+    expect(screen.getByTestId('engine-header-draft').props.value).toBe('Unsent');
+    act(() => window.set({ fullscreen: false }));
+    expect(screen.getByTestId('engine-header-draft').props.value).toBe('Unsent');
+    expect(mounted).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves an engine header while a narrow sidebar collapses and expands', () => {
+    setWidth(1440);
+    const mounted = jest.fn();
+    function Header() {
+      const [value, setValue] = useState('Initial');
+      useEffect(() => {
+        mounted();
+      }, []);
+      return (
+        <ReactNative.TextInput testID="engine-header-draft" value={value} onChangeText={setValue} />
+      );
+    }
+    const { adapter } = fakeWindow();
+    const view = (collapsed: boolean) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <PlatformSurfaceProvider value={adapter}>
+          <PortalProvider>
+            <AppShell
+              testID="shell"
+              scroll="fixed"
+              navigationPlacement="sidebar"
+              header={<Header />}
+              sidebar={{ items: NAV, size: 'sm', collapsed, surface: 'docked' }}
+            />
+            <PortalOutlet />
+          </PortalProvider>
+        </PlatformSurfaceProvider>
+      </BloomThemeProvider>
+    );
+    const screen = render(view(false));
+    fireEvent.changeText(screen.getByTestId('engine-header-draft'), 'Unsent');
+    screen.rerender(view(true));
+    expect(screen.getByTestId('engine-header-draft').props.value).toBe('Unsent');
+    screen.rerender(view(false));
+    expect(screen.getByTestId('engine-header-draft').props.value).toBe('Unsent');
+    expect(mounted).toHaveBeenCalledTimes(1);
+  });
+
   it('the adaptive shell respects an explicit null header when the page owns the corner', () => {
     setWidth(390);
     const screen = shell(fakeWindow().adapter, {

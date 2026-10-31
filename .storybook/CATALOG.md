@@ -109,9 +109,11 @@ isolation and toolbar preset behavior; `scripts/verify-color-scope.mjs <url>`
 checks nested scopes and overlays. These scripts use `@playwright/test` (or the
 module supplied by `BLOOM_PLAYWRIGHT_MODULE`).
 
-The accompanying SelectionCard examples add one group and two stories: the final
-index contains **275 groups and 1,580 stories**. All 1,578 original IDs remain
-present with the same import path and exported story name.
+At that audit, the accompanying SelectionCard examples brought the index to
+**275 groups and 1,580 stories**, with all 1,578 original IDs still present at
+the same import path and export. The index measured on 2026-10-31 at candidate
+`7fda36e2` has **291 groups and 1,673 stories**; that count alone does not verify
+every older ID.
 
 ## Interactive composition examples
 

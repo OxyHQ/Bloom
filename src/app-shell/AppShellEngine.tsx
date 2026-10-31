@@ -28,6 +28,7 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { SidebarSlot } from './SidebarSlot';
+import { pointerEventsStyle } from '../styles/pointer-events';
 import { animateMotion } from '../motion/recipes';
 import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -1166,23 +1167,32 @@ export function createAppShellEngine() {
         />
       ) : null;
     // Without a sidebar in flow the header is the window's toolbar.
+    const headerBesideNavigation = navInFlow && !navDock.hidden;
     const headerNode =
-      shellHeader != null &&
-      navInFlow &&
-      !navDock.hidden &&
-      (headerRoom > 0 || navigationRoomCss != null) ? (
-        <View
-          testID={testID ? `${testID}-header-clearance` : undefined}
-          style={{ paddingInlineStart: navigationRoomCss ?? headerRoom } as WebCssStyle}
-        >
-          {shellHeader}
-        </View>
-      ) : shellHeader != null && headerRoom > 0 ? (
+      shellHeader != null && platformWindow != null ? (
         <WindowDragRegion
-          testID={testID ? `${testID}-header-drag` : undefined}
-          style={{ paddingInlineStart: headerRoom }}
+          disabled={headerBesideNavigation || headerRoom <= 0}
+          testID={
+            !headerBesideNavigation && headerRoom > 0 && testID
+              ? `${testID}-header-drag`
+              : undefined
+          }
+          style={
+            !headerBesideNavigation && headerRoom > 0
+              ? { paddingInlineStart: headerRoom }
+              : pointerEventsStyle('box-none')
+          }
         >
-          {shellHeader}
+          <View
+            testID={testID ? `${testID}-header-clearance` : undefined}
+            style={
+              {
+                paddingInlineStart: headerBesideNavigation ? (navigationRoomCss ?? headerRoom) : 0,
+              } as WebCssStyle
+            }
+          >
+            {shellHeader}
+          </View>
         </WindowDragRegion>
       ) : (
         shellHeader
