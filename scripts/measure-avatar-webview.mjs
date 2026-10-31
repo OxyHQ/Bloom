@@ -1,8 +1,15 @@
 /** Runs against a dedicated Android WebView target. Never closes the browser or other targets. */
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 const debug = process.env.AVATAR_WEBVIEW_DEBUG || 'http://localhost:9340';
 const output = process.env.AVATAR_WEBVIEW_OUTPUT || '.local/avatar-webview';
+const fixtureUrl =
+  process.env.AVATAR_WEBVIEW_FIXTURE_URL ||
+  new URL(
+    `/@fs${resolve('scripts/fixtures/avatar/native-benchmark.html')}`,
+    'http://127.0.0.1:6008',
+  ).href;
 const targets = await (await fetch(`${debug}/json`)).json();
 const target = targets.find((t) => t.type === 'page' && /native-benchmark\.html/.test(t.url));
 assert(target, 'Dedicated Bloom benchmark WebView target must already be open');
@@ -16,6 +23,13 @@ await new Promise((resolve, reject) => {
 let nextId = 0;
 const pending = new Map();
 const errors = [];
+socket.addEventListener('close', () => {
+  for (const call of pending.values()) {
+    clearTimeout(call.timeout);
+    call.reject(new Error('Dedicated WebView target closed during the test'));
+  }
+  pending.clear();
+});
 socket.addEventListener('message', ({ data }) => {
   const message = JSON.parse(data);
   if (message.id) {
@@ -68,7 +82,7 @@ try {
   for (const origin of origins)
     for (const count of (process.env.AVATAR_WEBVIEW_COUNTS || '1,12').split(',').map(Number)) {
       await send('Page.navigate', {
-        url: 'http://127.0.0.1:6008/scripts/fixtures/avatar/native-benchmark.html',
+        url: fixtureUrl,
       });
       await wait(1000);
       const initial = await evaluate(
@@ -212,11 +226,8 @@ try {
         );
         await writeFile(`${output}/report.json`, JSON.stringify(report, null, 2) + '\n');
       }
-      const screenshot = await send('Page.captureScreenshot', { format: 'png', fromSurface: true });
-      await writeFile(
-        `${output}/${new URL(origin).port}-${count}.png`,
-        Buffer.from(screenshot.data, 'base64'),
-      );
+      // Android WebView may leave Page.captureScreenshot pending indefinitely.
+      // Capture the dedicated host externally with adb exec-out screencap instead.
       await evaluate(() => {
         controllers.forEach((c) => c.dispose());
         if (pool.editorPoolDiagnostics().length) throw Error('Pool leak');
