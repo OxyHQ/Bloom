@@ -2,6 +2,10 @@ import type { ScrollRestorationSnapshot } from './store';
 import type { ReactNode, RefObject } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
+export interface DocumentScrollRestorationBoundaryProps {
+  children: ReactNode;
+}
+
 /**
  * Anything `useScrollRestoration` knows how to read/write a vertical scroll
  * offset from. The hook accepts a ref to one of these:

@@ -4,9 +4,11 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { ScrollRestorationProvider } from './context';
+export { DocumentScrollRestorationBoundary } from './DocumentScrollRestorationBoundary';
 export { useScrollRestoration } from './use-scroll-restoration.web';
 
 export type {
+  DocumentScrollRestorationBoundaryProps,
   ScreenFocusEffect,
   ScrollableHandle,
   ScrollRestorationBinding,
