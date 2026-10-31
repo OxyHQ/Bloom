@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { usePredictiveBackRuntime } from './use-predictive-back-runtime';
+import { isPredictiveBackAvailable } from './PredictiveBackHost';
 import { useSharedValue } from 'react-native-reanimated';
 import { animateMotion } from '../../motion/recipes';
 import { useRouter, usePathname, type Href } from '../../panel-routing/expo-router';
@@ -73,8 +74,6 @@ export function TabPagerProvider({
   navigationScopeKey,
   children,
 }: TabPagerProviderProps) {
-  const navigation = useNavigation();
-  usePredictiveBackRuntime(navigation);
   const router = useRouter();
   const pathname = usePathname();
   const destinations = useMemo(
@@ -240,9 +239,17 @@ export function TabPagerProvider({
 
   return (
     <TabPagerContext.Provider value={value}>
+      {isPredictiveBackAvailable() && <NativeBackRuntime />}
       <TabPagerActiveContext.Provider value={active}>
         <TabPagerChromeContext.Provider value={chrome}>{children}</TabPagerChromeContext.Provider>
       </TabPagerActiveContext.Provider>
     </TabPagerContext.Provider>
   );
+}
+
+/** Preserve default provider compatibility outside a focused navigation context. */
+function NativeBackRuntime() {
+  const navigation = useNavigation();
+  usePredictiveBackRuntime(navigation);
+  return null;
 }
