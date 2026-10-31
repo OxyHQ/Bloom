@@ -1627,7 +1627,7 @@ What it does:
   the card's start edge and the sidebar's far edge stay within 0.1 pt of the
   spring's closed form, hiding and showing.
 - Native centred panel envelopes animate `width` with an automatic flex basis.
-  Reanimated documents `flexBasis` as unsupported on native. In a 400 pt OxyOS
+  Reanimated [documents `flexBasis` as unsupported on Android and iOS](https://docs.swmansion.com/react-native-reanimated/docs/guides/supported-properties/#flexbasis). In a 400 pt OxyOS
   window the panel remained 136 pt after its computed basis reached 323 pt;
   an isolated host control also retained its old width with a React state update
   to basis, while updating width worked. The initial estimate uses the sidebar's
