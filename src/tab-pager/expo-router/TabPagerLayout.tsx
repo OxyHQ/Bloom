@@ -17,6 +17,7 @@ import { TabPager } from './TabPager';
 import { TabPagesHost } from './TabPagesHost';
 import { tabBackPreview } from './back-preview';
 import { supportsPredictiveNavigation } from './predictive-navigation';
+import { loadPagerView } from './pager-view-module';
 import { isPredictiveBackAvailable } from './PredictiveBackHost';
 
 const isBackBlocked = () => hasBackOwner() || hasActiveOverlays();
@@ -56,8 +57,15 @@ export function TabPagerLayout() {
     backBehavior: 'history',
   });
   const focused = useIsFocused();
+  const candidatePreview = tabBackPreview(state);
+  const canDelegateTabBack =
+    (state.history?.length ?? 0) <= 1 ||
+    (candidatePreview !== null &&
+      model.indexOf(candidatePreview.from) >= 0 &&
+      model.indexOf(candidatePreview.to) >= 0 &&
+      loadPagerView() !== null);
   const nativeBackAvailable =
-    isPredictiveBackAvailable() && supportsPredictiveNavigation(navigation);
+    isPredictiveBackAvailable() && supportsPredictiveNavigation(navigation) && canDelegateTabBack;
   const blocked = useSyncExternalStore(subscribeBackBlocked, isBackBlocked, () => false);
   // biome-ignore lint/correctness/useExhaustiveDependencies: a navigator RESET replaces its native ownership key even if the helpers object is retained.
   useEffect(() => {

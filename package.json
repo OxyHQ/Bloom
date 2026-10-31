@@ -3940,7 +3940,8 @@
     "app.plugin.js",
     "!android/build",
     "!android/.gradle",
-    "!android/src/test"
+    "!android/src/test",
+    "!android/src/predictiveTest"
   ],
   "workspaces": [
     "packages/*"

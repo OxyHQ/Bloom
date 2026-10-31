@@ -31,6 +31,15 @@ class PredictiveBackCallbackTest {
     fun acknowledge() = session.cancel()
   }
 
+  @Test fun destinationWithoutANativeTagStillConsumesAndCommitsBackOnce() {
+    val test = Harness()
+    test.owner = BackPreviewSession.Owner("history-with-unresolved-view", 0)
+    test.start(); test.finish(); test.finish()
+    assertEquals(1, test.completions.size)
+    assertEquals(0, test.systemBacks)
+    assertEquals(0, test.completions.single().first.destinationTag)
+  }
+
   @Test fun secondGestureRemainsIgnoredIfFirstAcknowledgementArrivesBeforeItsEnd() {
     val test = Harness()
     test.start(); test.finish()

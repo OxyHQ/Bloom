@@ -4,6 +4,7 @@ if (project.extensions.findByName('kotlin') == null) {
 }
 
 def predictiveBackEnabled = providers.gradleProperty('bloom.predictiveBackEnabled').orNull == 'true'
+apply from: file('predictive-back-contract.gradle')
 
 android {
   namespace 'so.oxy.bloom'
@@ -14,6 +15,10 @@ android {
   sourceSets {
     main.java.srcDir(predictiveBackEnabled ? 'src/predictive/java' : 'src/legacy/java')
     main.kotlin.srcDir(predictiveBackEnabled ? 'src/predictive/java' : 'src/legacy/java')
+    if (predictiveBackEnabled) {
+      test.java.srcDir('src/predictiveTest/java')
+      test.kotlin.srcDir('src/predictiveTest/java')
+    }
   }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17

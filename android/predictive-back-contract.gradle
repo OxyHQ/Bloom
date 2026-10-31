@@ -1,0 +1,28 @@
+// Public API supplied by the Screens project, independently of its autolink name.
+// Validation is opt-in and waits until every library has published its metadata.
+if (providers.gradleProperty('bloom.predictiveBackEnabled').orNull == 'true') {
+  gradle.projectsEvaluated {
+    def capabilityName = 'rnscreens.nativeBackOwnership'
+    def publishers = rootProject.allprojects.findAll {
+      it.extensions.extraProperties.has(capabilityName)
+    }
+    if (publishers.size() != 1) {
+      throw new GradleException(
+        '[Bloom] predictive Back requires exactly one React Native Screens project ' +
+        'publishing rnscreens.nativeBackOwnership API 1. Found ' + publishers.size() +
+        '. Install the compatible Screens source/backport; the Gradle flag alone cannot add its adapter.'
+      )
+    }
+    def owner = publishers.first()
+    def capability = owner.extensions.extraProperties.get(capabilityName)
+    if (!(capability instanceof Map) ||
+        !(capability.get('apiVersion') instanceof Integer) || capability.get('apiVersion') != 1 ||
+        !(capability.get('enabled') instanceof Boolean) || capability.get('enabled') != true) {
+      throw new GradleException(
+        '[Bloom] ' + owner.path + ' must publish rnscreens.nativeBackOwnership ' +
+        '[apiVersion: 1, enabled: true]. Install compatible Screens source and set ' +
+        'rnscreens.nativeBackOwnershipEnabled=true.'
+      )
+    }
+  }
+}
