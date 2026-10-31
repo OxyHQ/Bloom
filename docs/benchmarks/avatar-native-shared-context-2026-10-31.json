@@ -1,6 +1,6 @@
 {
   "date": "2026-10-31",
-  "status": "Source package physical audit completed; final packed-package installation audit pending and must be recorded separately.",
+  "status": "Final real tarball identity and bounded lifecycle/appearance audit complete. Native timing is scoped to authored blue idle; mixed work is appearance/lifecycle coverage only.",
   "device": {
     "model": "Pixel 8a",
     "android": 16,
@@ -33,46 +33,16 @@
     "lostContexts": 0,
     "active": {
       "elapsedMs": [
-        5346.899999976158,
-        5346.5,
-        5346.399999976158,
-        5346.199999988079,
-        5346.400000035763,
-        5346.399999976158,
-        5346.300000011921,
-        5346.300000011921
+        5346.899999976158, 5346.5, 5346.399999976158, 5346.199999988079, 5346.400000035763,
+        5346.399999976158, 5346.300000011921, 5346.300000011921
       ],
       "fps": [
-        36.843778638253646,
-        37.0335733657533,
-        36.847224300628184,
-        36.84860274595774,
-        37.03426604793423,
-        37.03426604834711,
-        37.03495875644062,
-        37.03495875644062
+        36.843778638253646, 37.0335733657533, 36.847224300628184, 36.84860274595774,
+        37.03426604793423, 37.03426604834711, 37.03495875644062, 37.03495875644062
       ],
-      "trianglesPerAvatar": [
-        18804,
-        18804,
-        18804,
-        18804,
-        18804,
-        18804,
-        18804,
-        18804
-      ]
+      "trianglesPerAvatar": [18804, 18804, 18804, 18804, 18804, 18804, 18804, 18804]
     },
-    "pausedFps": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
+    "pausedFps": [0, 0, 0, 0, 0, 0, 0, 0],
     "counter": "Engine submitted animation frames. This is an upper bound on distinct avatar presentation updates, not an Android compositor callback.",
     "activePssKiB": {
       "host": 320492,
@@ -516,5 +486,413 @@
     "Pausing8 avatars produced exactly zero updates on every surface across5seconds. Unmounting all avatars removed all views and contexts.",
     "PSS snapshots were22\u201325% below baseline combined host+renderer, but Java WebView and RN debug harness overhead differ. These are snapshots, not peaks or whole-device memory.",
     "Both rendering paths use192 backing pixels per avatar and MSAA4. Old WebView copies192 to224-pixel Canvas2D then displays at294 physical pixels; native presents192 directly into a294-pixel TextureView. Composited pixels are not claimed identical across these different scaling chains."
-  ]
+  ],
+  "afterPackedPackage": {
+    "artifact": "Actual installed tarball, React Native debug/Hermes app, no duplicate local Expo module. Same body pigments and backing as source sample.",
+    "steadySample": {
+      "id": "native8-packed10s",
+      "warmupMs": 5000,
+      "elapsedMs": 10007.716965019703,
+      "compatible": null,
+      "contextsBefore": 1,
+      "contextsAfter": 1,
+      "views": [
+        {
+          "ordinal": 1,
+          "visible": true,
+          "physicalWidth": 294,
+          "physicalHeight": 294,
+          "updates": 590,
+          "fps": 58.95450501470476
+        },
+        {
+          "ordinal": 2,
+          "visible": true,
+          "physicalWidth": 294,
+          "physicalHeight": 294,
+          "updates": 590,
+          "fps": 58.95450501470476
+        },
+        {
+          "ordinal": 3,
+          "visible": true,
+          "physicalWidth": 294,
+          "physicalHeight": 294,
+          "updates": 590,
+          "fps": 58.95450501470476
+        },
+        {
+          "ordinal": 4,
+          "visible": true,
+          "physicalWidth": 294,
+          "physicalHeight": 294,
+          "updates": 590,
+          "fps": 58.95450501470476
+        },
+        {
+          "ordinal": 5,
+          "visible": true,
+          "physicalWidth": 294,
+          "physicalHeight": 294,
+          "updates": 590,
+          "fps": 58.95450501470476
+        },
+        {
+          "ordinal": 6,
+          "visible": true,
+          "physicalWidth": 294,
+          "physicalHeight": 294,
+          "updates": 590,
+          "fps": 58.95450501470476
+        },
+        {
+          "ordinal": 7,
+          "visible": true,
+          "physicalWidth": 294,
+          "physicalHeight": 294,
+          "updates": 590,
+          "fps": 58.95450501470476
+        },
+        {
+          "ordinal": 8,
+          "visible": true,
+          "physicalWidth": 294,
+          "physicalHeight": 294,
+          "updates": 588,
+          "fps": 58.754659234993895
+        }
+      ]
+    },
+    "timingApkSha256": "551c1b69b48189c7c3987a52b3038129dfd0bd472a963347e0771b4d17703e47",
+    "timingManifestSha256": "0a0cbd2980067cfba4e3cdcb3937b7a94d10f683ae5ba3e658d0b98d29157f50",
+    "runtimeSha256": "35bf00c8c12573b00bb8e1f3b3384394291636f2ef90e31bee73353cd7dd6d08",
+    "temperatureCApproxAfter": 39.9,
+    "note": "Packed warm repeat58.8\u201359.0 fps. Final package below changes manifest and native error/lifecycle guards; runtime.cjs hash is unchanged. Timing is not rerun against final APK."
+  },
+  "finalArtifact": {
+    "checkpoint": "6adb842b",
+    "installedApkSha256": "de0bc13f319b21ddca2ea282a4326e6230b33105b4f4a7d286e64a34ff498922",
+    "tarballSha256": "30847358eab737c6fefc6040ad28f16dbade12dd931da61c48b46c44f12a4331",
+    "manifestSha256": "d1ea587ff18938a4acba56bb5d9a0e18cbd8d2e836434f74d6326ffc24168a65",
+    "runtimeSha256": "35bf00c8c12573b00bb8e1f3b3384394291636f2ef90e31bee73353cd7dd6d08",
+    "compatible": true,
+    "lifecycle": [
+      {
+        "id": "final-packed-paused",
+        "warmupMs": 1500,
+        "elapsedMs": 1511.7260749936104,
+        "compatible": true,
+        "contextsBefore": 1,
+        "contextsAfter": 1,
+        "views": [
+          {
+            "ordinal": 1,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 2,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 3,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 4,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 5,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 6,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 7,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 8,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          }
+        ]
+      },
+      {
+        "id": "final-packed-offscreen",
+        "warmupMs": 1500,
+        "elapsedMs": 1511.9746910333633,
+        "compatible": true,
+        "contextsBefore": 1,
+        "contextsAfter": 1,
+        "views": [
+          {
+            "ordinal": 1,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 2,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 3,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 4,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 5,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 6,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 7,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 8,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 9,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 10,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 11,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          },
+          {
+            "ordinal": 12,
+            "visible": false,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 0,
+            "fps": 0.0
+          }
+        ]
+      },
+      {
+        "id": "final-packed-resume",
+        "warmupMs": 1500,
+        "elapsedMs": 1606.2510579824448,
+        "compatible": true,
+        "contextsBefore": 1,
+        "contextsAfter": 1,
+        "views": [
+          {
+            "ordinal": 1,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 2,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 3,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 4,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 5,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 6,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 7,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 8,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 9,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 10,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 11,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          },
+          {
+            "ordinal": 12,
+            "visible": true,
+            "physicalWidth": 294,
+            "physicalHeight": 294,
+            "updates": 17,
+            "fps": 10.583650616456621
+          }
+        ]
+      },
+      {
+        "id": "final-packed-disposed",
+        "warmupMs": 1500,
+        "elapsedMs": 1007.6144610047339,
+        "compatible": true,
+        "contextsBefore": 0,
+        "contextsAfter": 0,
+        "views": []
+      }
+    ]
+  },
+  "appearance": {
+    "mixed": "All8 authored plus heart/cyclops/crown, six-lobed flower/todd/monocle, cloud/oval, and clippo eyes/bow. Actual Android composite inspected on light/dark rounded cards, idle and work; all12 visible after load. Reaction snapshot inspected for first authored avatar. No claim of pixel equality across display scaling paths.",
+    "workTransient": "An earlier stale-manifest mixed-work screenshot had4 missing authored cells and error. Excluded; final compatible=true screenshot has all12 without error. Initial command metadata saw8 while replacements loaded, so it is not a ready-time or performance measurement.",
+    "snapshot": {
+      "width": 294,
+      "height": 294,
+      "transparentPixels": 42884,
+      "partialAlphaPixels": 5005,
+      "opaquePixels": 38547
+    },
+    "coldFirstFrame": {
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "nontransparentPixels": 17341,
+      "comparedPixels": 36864,
+      "glError": 0,
+      "fitPasses": 1,
+      "backingPixelsPerAvatar": 192
+    },
+    "fixture": "scripts/fixtures/avatar/shared-native"
+  }
 }
