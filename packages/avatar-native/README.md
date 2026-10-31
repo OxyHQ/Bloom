@@ -59,8 +59,8 @@ implemented based on the Android proof.
 ## Integration contract
 
 Install this companion and its declared peers in the native application, then rebuild
-that application's native binary. It is a private package in this repository, not a
-published npm release. Ordinary Bloom remains usable without it. Bloom accepts companion ABI version 1; the
+that application's native binary. Use the companion version whose exported runtime
+revision is hosted by your provider. Ordinary Bloom remains usable without it. Bloom accepts companion ABI version 1; the
 companion also requires native module ABI 1. Installing new JavaScript without the
 matching native rebuild cannot silently use an incompatible binary. Bloom's optional
 literal `require` selects the adapter only on Android and only after the hosted
