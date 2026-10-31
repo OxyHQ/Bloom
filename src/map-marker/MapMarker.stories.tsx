@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { resolveButtonRamps } from '../button/shared';
-import { BloomThemeProvider } from '../theme';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MapClusterMarker } from './MapClusterMarker';
@@ -424,17 +424,17 @@ function StatesBody() {
 /** The map in dark mode. */
 export const Dark: Story = {
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <MapDemo />
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 
 /** Every state in dark mode. */
 export const DarkStates: Story = {
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <StatesBody />
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };

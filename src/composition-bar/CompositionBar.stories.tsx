@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { CompositionBar } from './index';
 import type { CompositionCategory } from './index';
-import { BloomThemeProvider } from '../theme';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 
 const CATEGORIES: CompositionCategory[] = [
   { key: 'content', name: 'Content', amount: 320, color: '#6366F1' },
@@ -42,22 +42,22 @@ type Story = StoryObj<typeof CompositionBar>;
 export const Light: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <BloomThemeProvider mode="light">
+    <BloomColorScope style={{ display: 'contents' }} mode="light">
       <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
         <Demo />
       </View>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 
 export const Dark: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <View style={{ maxWidth: '100%', padding: 24, width: 360, backgroundColor: '#000' }}>
         <Demo />
       </View>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 
@@ -65,10 +65,10 @@ export const Empty: Story = {
   args: { hintLabel: 'No data yet' },
   parameters: { controls: { include: ['hintLabel'] } },
   render: (args) => (
-    <BloomThemeProvider mode="light">
+    <BloomColorScope style={{ display: 'contents' }} mode="light">
       <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
         <CompositionBar {...args} categories={[]} selectedKey={null} onSelect={() => {}} />
       </View>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };

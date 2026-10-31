@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiPushpinLine } from '../icons/remix';
 import { ContactMessage, ImageMessage, LocationMessage, PollMessage } from '../message-media';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CallSummaryRow } from './CallSummaryRow';
@@ -54,15 +54,14 @@ function Surface({ width, children }: { width: number; children: React.ReactNode
 
 /** The same block in both modes, side by side — every colour here flips. */
 function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
+      <BloomColorScope style={{ display: 'contents' }} mode="light">
         {children}
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
+      </BloomColorScope>
+      <BloomColorScope style={{ display: 'contents' }} mode="dark">
         {children}
-      </BloomThemeProvider>
+      </BloomColorScope>
     </View>
   );
 }

@@ -267,7 +267,6 @@ export function createPanelLayoutView(
     transition,
     resizeHandle,
     cssScope,
-    cssFraming,
     visibilityReady,
     index,
     getSize,
@@ -294,7 +293,6 @@ export function createPanelLayoutView(
     transition: AppShellPanelLayout['transition'];
     resizeHandle: AppShellPanelLayout['resizeHandle'];
     cssScope: string | null;
-    cssFraming: boolean;
     visibilityReady: boolean;
     index: number;
     getSize: () => number;
@@ -324,7 +322,7 @@ export function createPanelLayoutView(
     // Along the window's top edge the panel's top corners are concentric with
     // the window's own.
     const windowCorners =
-      windowChrome != null && platformWindow != null
+      windowChrome != null && windowChrome.topEdge !== false && platformWindow != null
         ? windowEdgeTopCorners(platformWindow.metrics)
         : null;
     const panelRef = useRef<ComponentRef<typeof View>>(null);
@@ -588,6 +586,9 @@ export function createPanelLayoutView(
           </ScreenHostContext.Provider>
         </ScreenScope>
       );
+      // The surface publishes its painted backing to descendants. The CSS
+      // compositor can hide the frame, so it must not force a framed backing
+      // while the enclosing region is actually compact.
       const framed = region?.framed ?? true;
       const surface = joined ? (
         <View style={FILL}>
@@ -605,7 +606,7 @@ export function createPanelLayoutView(
           chrome={panel.chrome}
           surfaceClassName={panel.surfaceClassName}
           surfaceColor={panel.surfaceColor}
-          framed={cssScope && cssFraming ? true : framed}
+          framed={framed}
           maskColor={region?.maskColor}
           errorBoundary={panel.errorBoundary}
           fill={!document}
@@ -1171,7 +1172,6 @@ export function createPanelLayoutView(
               ) : undefined
             }
             cssScope={cssScope}
-            cssFraming={!eligibilityFromGroup}
             visibilityReady={visibilityReady && trackById.has(panel.id)}
             index={index}
             getSize={() => resize.size(panel.id)}
@@ -1267,13 +1267,13 @@ export function createPanelLayoutView(
             {joined && !surfaceOwned ? (
               <ContentPanel
                 appearance={layout.appearance === 'plain' ? 'plain' : undefined}
-                framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
+                framed={region?.framed ?? true}
                 fill={!document}
                 scrollable={false}
                 overlaySizing={document ? 'viewport' : 'panel'}
                 overlayInset={document ? region?.viewportInset : undefined}
                 surfaceStyle={
-                  groupWindowChrome && platformWindow
+                  groupWindowChrome && groupWindowChrome.topEdge !== false && platformWindow
                     ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
                     : FILL
                 }
@@ -1339,13 +1339,13 @@ export function createPanelLayoutView(
     return joined ? (
       <ContentPanel
         appearance={props.layout.appearance === 'plain' ? 'plain' : undefined}
-        framed={cssScope && !props.eligibilityFromGroup ? true : (region?.framed ?? true)}
+        framed={region?.framed ?? true}
         fill={!document}
         scrollable={false}
         overlaySizing={document ? 'viewport' : 'panel'}
         overlayInset={document ? region?.viewportInset : undefined}
         surfaceStyle={
-          handedWindowChrome && platformWindow
+          handedWindowChrome && handedWindowChrome.topEdge !== false && platformWindow
             ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
             : FILL
         }

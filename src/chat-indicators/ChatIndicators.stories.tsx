@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -10,7 +10,7 @@ import { TypingDots } from './TypingDots';
 import { UnreadBadge } from './UnreadBadge';
 import type { MessageDeliveryStatus, PresenceStatus, StoryRingState } from './types';
 import { Avatar } from '../avatar';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 
@@ -51,18 +51,17 @@ function Surface({ children }: { children: React.ReactNode }) {
  * default one and the toolbar's preset switch would stop reaching these.
  */
 function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
     <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
       <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 340 }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
+        <BloomColorScope style={{ display: 'contents' }} mode="light">
           <Surface>{children}</Surface>
-        </BloomThemeProvider>
+        </BloomColorScope>
       </View>
       <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 340 }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
+        <BloomColorScope style={{ display: 'contents' }} mode="dark">
           <Surface>{children}</Surface>
-        </BloomThemeProvider>
+        </BloomColorScope>
       </View>
     </View>
   );

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ContextMenuItem, ContextMenuSeparator } from '../context-menu';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LibraryItem } from './LibraryItem';
@@ -369,7 +369,7 @@ export const Mobile: Story = {
 
 export const Dark: Story = {
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <Page>
         <InteractivePanel />
         <LibraryPanel
@@ -386,6 +386,6 @@ export const Dark: Story = {
           style={{ height: 720 }}
         />
       </Page>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };

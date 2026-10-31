@@ -143,6 +143,13 @@ a screen reader gets, since the bar itself conveys nothing.
 
 ## Visual reveal
 
+On web, the Meter track is positioned relative so its paint stays above a
+preceding material layer inside a Card. A static DOM track had correct dimensions,
+colors and ARIA values but its background painted below that layer. Keep this
+positioning when changing the web renderer. `scripts/verify-meter-material.mjs`
+samples the painted fill and track inside the Color Roles story in both modes
+at phone and desktop widths; computed background colors alone miss this failure.
+
 `Meter` accepts `reveal={{ visible, once, duration, delay, easing }}`. This is opt-in and independent of `value`: `aria-valuenow`, `aria-valuemax`, `valueText` and the accessible label continue to describe the real measurement during the empty state, delay and animation. `RatingBar` forwards the same prop to its Meter.
 
 Before visibility, the fill is empty. Visibility starts a width animation on both platforms; native uses the Animated JS driver because width is a layout property. `once:true` retains the revealed state when visibility later becomes false. Defaults are `once:false`, duration 300ms, delay 0 and CSS ease (`[.25,.1,.25,1]`). Easing accepts four finite cubic-bezier coordinates with x coordinates in `[0,1]`. Delays and durations are nonnegative milliseconds.

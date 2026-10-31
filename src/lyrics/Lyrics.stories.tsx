@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LyricsPreviewCard, LyricsView, type LyricLine } from './index';
@@ -217,7 +217,7 @@ export const PreviewCard: Story = {
 /** Dark mode: the neutral and artwork variants side by side. */
 export const Dark: Story = {
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <Page>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
           <View style={{ flexGrow: 1, flexBasis: 300 }}>
@@ -231,6 +231,6 @@ export const Dark: Story = {
           <PreviewDemo />
         </View>
       </Page>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };

@@ -421,6 +421,17 @@ describe('the CSS compositor', () => {
     expect(compile(false)).toContain('--bloom-nav-width:190px;--bloom-nav-gap:0px;');
   });
 
+  it('animates the shared navigation width once and leaves dock motion in control', () => {
+    const css = compile(true);
+    expect(css).toContain(
+      "@property --bloom-nav-width{syntax:'<length>';inherits:true;initial-value:0px}",
+    );
+    expect(css).toContain('--bloom-nav-width 380ms cubic-bezier(.4,0,.2,1)');
+    expect(css).not.toContain('transition:width 380ms');
+    expect(css).toContain('[data-bloom-dock-moving]');
+    expect(css).toContain('transition:none!important');
+  });
+
   it('frames each edge on its own and never centres a filled envelope', () => {
     const css = compile(true);
     expect(css).toContain('--bloom-frame-end:7px');

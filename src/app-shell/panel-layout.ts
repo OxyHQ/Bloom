@@ -248,8 +248,10 @@ export function panelWindowChrome(
       ? null
       : index === first
         ? chrome
-        : vertical
+        : chrome.topEdge === false
           ? null
-          : WINDOW_TOP_EDGE,
+          : vertical
+            ? null
+            : WINDOW_TOP_EDGE,
   );
 }
