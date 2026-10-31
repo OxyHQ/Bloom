@@ -18,6 +18,9 @@ type SlotEngine = Pick<
   AuthoredAvatarEngine,
   | 'prepareWork'
   | 'setPreset'
+  | 'getInstancePreset'
+  | 'hasPreset'
+  | 'cancelPresetChange'
   | 'idle'
   | 'setWander'
   | 'setGaze'
@@ -48,6 +51,7 @@ export function createAvatarSlotController(
   let currentColor: string | undefined;
   let previous = state.props;
   let presentation = state.props;
+  const pendingPresets = new Set<Promise<void>>();
   const applyPresentation = () => {
     state.props = presentation;
     host.onPresentation?.(presentation);
@@ -70,6 +74,7 @@ export function createAvatarSlotController(
   ) => {
     if (host.isDisposed()) return;
     setPresentation(props);
+    currentPreset = engine.getInstancePreset(index) ?? currentPreset;
     const startWork = props.workingKey !== previous.workingKey && props.workingKey !== undefined;
     let workPrepared = false;
     // Preparation may populate the shared cache, but a newer character or
@@ -83,11 +88,61 @@ export function createAvatarSlotController(
         workPrepared = await prepareWork();
         if (host.isDisposed() || !workPrepared || !isCurrent()) return;
       }
-      state.ready = false;
       if (currentPreset !== next.preset) {
-        await host.wait(engine.setPreset(index, next.preset));
-        if (host.isDisposed()) return;
-        currentPreset = next.preset;
+        const waitFor = (promise: Promise<unknown>) => {
+          const completed = host.wait(promise).then(() => true);
+          return superseded ? Promise.race([completed, superseded.then(() => false)]) : completed;
+        };
+        const supersedePreset = () => {
+          if (host.isDisposed()) {
+            pendingPresets.clear();
+            return;
+          }
+          engine.cancelPresetChange(index);
+          currentPreset = engine.getInstancePreset(index) ?? currentPreset;
+          state.ready = true;
+          applyPresentation();
+        };
+        // Shared fetches keep serving neighbors, but rapid edits may own only
+        // two unfinished cold requests. Cached choices always bypass this wait.
+        while (!engine.hasPreset(next.preset) && pendingPresets.size >= 2) {
+          if (!(await waitFor(Promise.race(pendingPresets))) || !isCurrent()) {
+            supersedePreset();
+            return;
+          }
+          if (host.isDisposed()) {
+            pendingPresets.clear();
+            return;
+          }
+        }
+        state.ready = false;
+        const change = engine.setPreset(
+          index,
+          next.preset,
+          () => !host.isDisposed() && isCurrent(),
+        );
+        let tracked: Promise<void>;
+        tracked = change
+          .then(
+            () => {},
+            () => {},
+          )
+          .finally(() => pendingPresets.delete(tracked));
+        pendingPresets.add(tracked);
+        if (!(await waitFor(change))) {
+          supersedePreset();
+          return;
+        }
+        if (host.isDisposed()) {
+          pendingPresets.clear();
+          return;
+        }
+        currentPreset = engine.getInstancePreset(index) ?? currentPreset;
+        if (!isCurrent()) {
+          state.ready = true;
+          applyPresentation();
+          return;
+        }
         engine.idle(index);
         engine.setWander(index, true);
         engine.setGaze(index, 0.5, 0.5);
@@ -124,6 +179,18 @@ export function createAvatarSlotController(
       state.ready = state.dirty = true;
       applyPresentation();
     } catch (error) {
+      if (host.isDisposed()) {
+        pendingPresets.clear();
+        return;
+      }
+      if (!isCurrent()) {
+        engine.cancelPresetChange(index);
+        currentPreset = engine.getInstancePreset(index) ?? currentPreset;
+        state.ready = true;
+        applyPresentation();
+        return;
+      }
+      pendingPresets.clear();
       host.dispose();
       throw error;
     }

@@ -45,9 +45,14 @@ function fixture() {
       'setInstanceRendering',
     ].map((name) => [name, (...args) => calls.push([name, ...args])]),
   );
+  let preset = recipe.preset;
+  engine.getInstancePreset = () => preset;
+  engine.hasPreset = (key) => key === recipe.preset;
+  engine.cancelPresetChange = () => {};
   engine.prepareWork = async () => true;
   engine.setPreset = async (...args) => {
     calls.push(['setPreset', ...args]);
+    if (!args[2] || args[2]()) preset = args[1];
   };
   const dispose = () => {
     disposed = true;
@@ -310,4 +315,82 @@ test('failure disposes once and subsequent updates are inert', async () => {
   assert.equal(f.controller.update({ ...f.initial, reactionKey: 2 }), undefined);
   assert.deepEqual(f.errors, ['error']);
   assert.deepEqual(f.disposals, ['host', 'slot']);
+});
+
+test('cold preset work is bounded, cached intent bypasses it, and failed stale work releases capacity', async () => {
+  const f = fixture();
+  const requests = new Map(),
+    started = [],
+    cached = new Set([f.recipe.preset]);
+  let actual = f.recipe.preset;
+  f.engine.getInstancePreset = () => actual;
+  f.engine.hasPreset = (key) => cached.has(key);
+  f.engine.setPreset = async (_index, key, isCurrent) => {
+    started.push(key);
+    if (!cached.has(key)) {
+      const request = deferred();
+      requests.set(key, request);
+      await request.promise;
+      cached.add(key);
+    }
+    if (isCurrent()) actual = key;
+  };
+  const errors = [];
+  const reconciler = createAvatarReconciler(
+    f.initial,
+    { ...f.controller, dispose: f.dispose },
+    {
+      resolveRecipe: (props) => ({ ...f.recipe, preset: props.key ?? f.recipe.preset }),
+      onError: () => errors.push('error'),
+    },
+  );
+  const flush = async () => {
+    for (let i = 0; i < 30; i++) await Promise.resolve();
+  };
+  reconciler.update({ ...f.initial, key: 'a' });
+  await flush();
+  reconciler.update({ ...f.initial, key: 'b' });
+  await flush();
+  reconciler.update({ ...f.initial, key: 'c' });
+  await flush();
+  assert.deepEqual(started, ['a', 'b']);
+  await reconciler.update({ ...f.initial, key: f.recipe.preset, reactionKey: 1 });
+  assert.equal(actual, f.recipe.preset);
+  assert.equal(f.calls.filter(([name]) => name === 'react').length, 1);
+  const latest = reconciler.update({ ...f.initial, key: 'c' });
+  await flush();
+  assert.deepEqual(started, ['a', 'b']);
+  requests.get('a').reject(new Error('obsolete asset failure'));
+  await flush();
+  assert.deepEqual(started, ['a', 'b', 'c']);
+  requests.get('c').resolve();
+  await latest;
+  assert.equal(actual, 'c');
+  requests.get('b').reject(new Error('second obsolete failure'));
+  await flush();
+  assert.equal(actual, 'c');
+  assert.deepEqual(errors, []);
+  assert.equal(f.calls.filter(([name]) => name === 'dispose').length, 0);
+  reconciler.dispose();
+});
+
+test('superseded preset rejection never disposes the current host', async () => {
+  const f = fixture(),
+    load = deferred(),
+    superseded = deferred();
+  f.engine.setPreset = () => load.promise;
+  let current = true;
+  const change = f.controller.update(
+    f.initial,
+    { ...f.recipe, preset: 'alfred' },
+    () => current,
+    superseded.promise,
+  );
+  // The failed promise may win the race, but its intent is already obsolete.
+  load.reject(new Error('stale failed load'));
+  current = false;
+  superseded.resolve();
+  await change;
+  assert.equal(f.state.ready, true);
+  assert.equal(f.calls.filter(([name]) => name === 'dispose').length, 0);
 });
