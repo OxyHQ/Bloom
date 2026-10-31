@@ -53,14 +53,24 @@ export function displayFaceFamily(weight: unknown): string {
     : DISPLAY_FACE_FAMILIES.regular;
 }
 
+/** The Bold cut, at the weight the caller asked for. */
+const BOLD_CUT: TextStyle = { fontFamily: DISPLAY_FACE_FAMILIES.bold };
+
 /**
  * The Bold cut, requested at its own weight. Chromium synthesizes bold only
- * when the requested weight exceeds the face's by more than 200, Android's
- * text stack (minikin) at a difference of 200 or more, so a `font-black` (900)
- * on the 700 cut would be thickened on Android alone. Asking for the face's own
- * weight draws the outlines the web draws.
+ * when the requested weight exceeds the face's by MORE than 200; Android's text
+ * stack (minikin) at a difference of 200 or more. So at 900 (`font-black`) on
+ * the 700 cut, Android alone would thicken the outlines; asking for 700 there
+ * draws what the web draws. Below 900 neither synthesizes and the weight stays
+ * the caller's.
  */
-const BOLD_CUT: TextStyle = { fontFamily: DISPLAY_FACE_FAMILIES.bold, fontWeight: '700' };
+const BOLD_CUT_AT_FACE_WEIGHT: TextStyle = {
+  fontFamily: DISPLAY_FACE_FAMILIES.bold,
+  fontWeight: '700',
+};
+
+/** Android synthesizes bold on the 700 cut from this requested weight up. */
+const ANDROID_SYNTHESIS_ON_BOLD_CUT = 900;
 
 interface Face {
   family?: unknown;
@@ -96,5 +106,7 @@ export function withDisplayFaceCut(style: StyleProp<TextStyle>): StyleProp<TextS
   const face: Face = {};
   readFace(style, face);
   if (face.family !== DISPLAY_FACE_FAMILIES.regular) return style;
-  return displayFaceFamily(face.weight) === DISPLAY_FACE_FAMILIES.bold ? [style, BOLD_CUT] : style;
+  const weight = numericFontWeight(face.weight);
+  if (displayFaceFamily(weight) !== DISPLAY_FACE_FAMILIES.bold) return style;
+  return [style, weight >= ANDROID_SYNTHESIS_ON_BOLD_CUT ? BOLD_CUT_AT_FACE_WEIGHT : BOLD_CUT];
 }

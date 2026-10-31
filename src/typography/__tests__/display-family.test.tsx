@@ -106,8 +106,8 @@ describe('native draws the display cut the web’s font matching picks', () => {
     const { family: drawn, weight } = face(<Text variant={variant}>Title</Text>);
     const wanted = TYPE_SCALE[variant].fontWeight as string;
     expect(drawn).toBe(cutFor(wanted));
-    // The Bold cut is asked for at its own weight, so nothing is synthesized.
-    expect(weight).toBe(drawn === 'BlomusModernus-Bold' ? '700' : wanted);
+    // The variant's weight is kept: neither platform synthesizes below 900.
+    expect(weight).toBe(wanted);
   });
 
   it('draws medium on the Regular cut and semibold on the Bold one (CSS: 500 → 400, 600 → 700)', () => {
@@ -115,11 +115,12 @@ describe('native draws the display cut the web’s font matching picks', () => {
     expect(family({ variant: 'display-1-semibold' })).toBe('BlomusModernus-Bold');
   });
 
-  it('sets H1–H6 in the Bold cut: their scale is 600 and up', () => {
-    for (const Heading of [H1, H2, H3, H4, H5, H6]) {
+  it('sets H1–H6 in the Bold cut at their own weights (800, then 600)', () => {
+    expect(face(<H1>Title</H1>)).toEqual({ family: 'BlomusModernus-Bold', weight: '800' });
+    for (const Heading of [H2, H3, H4, H5, H6]) {
       expect(face(<Heading>Title</Heading>)).toEqual({
         family: 'BlomusModernus-Bold',
-        weight: '700',
+        weight: '600',
       });
     }
   });
@@ -152,10 +153,15 @@ describe('native draws the display cut the web’s font matching picks', () => {
     );
   });
 
-  it('asks for 700 on the Bold cut even at 800 and 900', () => {
-    for (const fontWeight of ['800', '900', 'heavy', 'black'] as const) {
+  it('asks for 700 on the Bold cut at 900, where Android alone would synthesize', () => {
+    for (const fontWeight of ['900', 'black', 900] as const) {
       expect(face(<Text style={{ fontFamily: 'BlomusModernus', fontWeight }}>Title</Text>)).toEqual(
         { family: 'BlomusModernus-Bold', weight: '700' },
+      );
+    }
+    for (const fontWeight of ['800', 'heavy'] as const) {
+      expect(face(<Text style={{ fontFamily: 'BlomusModernus', fontWeight }}>Title</Text>)).toEqual(
+        { family: 'BlomusModernus-Bold', weight: fontWeight },
       );
     }
   });

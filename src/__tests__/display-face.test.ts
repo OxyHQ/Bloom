@@ -54,8 +54,10 @@ describe('withDisplayFaceCut reads the style a native text node is finally given
       resolvedClass,
       [null, { fontFamily: 'BlomusModernus' }, false, undefined],
     ];
-    expect(withDisplayFaceCut(style)).toEqual([
-      style,
+    expect(withDisplayFaceCut(style)).toEqual([style, { fontFamily: 'BlomusModernus-Bold' }]);
+    const black: StyleProp<TextStyle> = [style, { fontWeight: 900 }];
+    expect(withDisplayFaceCut(black)).toEqual([
+      black,
       { fontFamily: 'BlomusModernus-Bold', fontWeight: '700' },
     ]);
     const lighter: StyleProp<TextStyle> = [style, { fontWeight: '400' }];
