@@ -104,7 +104,8 @@ describe('the floating callers', () => {
     'bottom-sheet/BottomSheetBase.tsx': "The sheet's panel, over the app in its own window.",
     'dialog/CenteredCard.tsx': "The centred dialog's card, over the dimmed app.",
     'dialog/Dialog.tsx': "The side and bottom dialogs' panel, over the dimmed app.",
-    'floating/PopupPanel.tsx': "A menu's panel in the platform's popup, over whatever is beneath it.",
+    'floating/PopupPanel.tsx':
+      "A menu's panel in the platform's popup, over whatever is beneath it.",
     'tab-bar/surface.tsx': "The tab bar's capsule (BottomBar's too), over scrolling content.",
     'toast/ToastContent.tsx': 'A toast, over whatever the app shows.',
     'tooltip/Tooltip.tsx': 'A tooltip bubble, over the content it explains.',
