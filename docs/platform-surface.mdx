@@ -49,7 +49,10 @@ unchanged.
 - Bloom's placement (`side`, `align`, `sideOffset`, `alignOffset`, the same
   `FloatingPositionProps` the web panel takes);
 - the content's `role` and accessible `label`, which the popup carries (the panel inside it
-  is not labelled again, so the menu's name is announced once);
+  is not labelled again, so the menu's name is announced once). A `tooltip` (the native
+  `Tooltip`'s bubble) is a hint, not a control: the platform shows it while it is mounted
+  without taking the pointer or the keyboard (no grab; presses pass through it) and closes it
+  itself only with its parent;
 - `onDismiss`;
 - `onKey` (optional to call): the keys pressed while the popup has keyboard
   focus, as W3C `KeyboardEvent.key` names.

@@ -80,6 +80,17 @@ A bubble near a screen edge is nudged back into view, so `position="top"` on an
 element at the top of the viewport still renders somewhere readable rather than
 off screen.
 
+## On a platform with popups
+
+With a platform adapter reporting `popup-surface` (a desktop: OxyOS), the native bubble is in
+the platform's popup (`role: 'tooltip'`), anchored to `TooltipTrigger`'s view on the requested
+side, centred, its caret pointing at it, `TOOLTIP_OFFSET` from it. The popup may extend past the
+trigger's window or panel: a dock's icon sits in a strip as tall as the dock, which clips anything
+drawn above it in the window. It takes no input — no backdrop, presses and the pointer pass
+through — so a hover-opened tooltip never takes the hover from its trigger. It waits for no measurement of the trigger (the platform places it), so it shows in the render
+that asks for it. The platform keeps it on screen; it closes when `visible` goes false or the platform closes its parent. Pinned by
+`TooltipPlatformPopup.test.tsx`.
+
 ## Two platform notes
 
 The **web** tooltip is not portaled and takes no rank in the overlay stack; the

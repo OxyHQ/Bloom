@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.84.0
+
+### Added
+
+- **The native `Tooltip` in the platform's popup.** With an adapter reporting `popup-surface` (a desktop: OxyOS), the bubble is in a popup of the platform's, anchored to `TooltipTrigger`'s view on the requested side, centred, its caret pointing at it, instead of the window's portal. It may extend past the trigger's window or panel: a dock's name label above its icon was clipped by the dock's strip. `PopupSurfaceProps.role` gains `'tooltip'`: the platform shows it without taking the pointer or the keyboard (no grab, presses pass through it) and closes it only with its parent. Placed by the platform, it waits for no measurement of its trigger: it shows in the render that asks for it. Documented in `docs/tooltip.mdx` and `docs/platform-surface.mdx`; pinned by `TooltipPlatformPopup.test.tsx`.
+
+### Consumers
+
+Only adds: without `popup-surface` the native tooltip is the portal's bubble as before. An adapter's `PopupSurface` must show a `tooltip` without a grab.
+
 ## 15.82.1
 
 ### Fixed

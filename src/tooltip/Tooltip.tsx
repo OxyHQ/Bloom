@@ -16,6 +16,8 @@ import Animated, { Easing, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SurfacePaint } from '../surface/SurfacePaint';
+import { usePopupSurface } from '../platform-surface/context';
+import type { PopupSurfaceProps } from '../platform-surface/types';
 import { useMenuPalette } from '../floating/menu-palette';
 import { atoms as a } from '../styles';
 import { OverlayRoot } from '../overlay';
@@ -50,6 +52,8 @@ type TargetContextType = {
   targetMeasurements: TargetMeasurements | undefined;
   setTargetMeasurements: (measurements: TargetMeasurements) => void;
   shouldMeasure: boolean;
+  /** The trigger's view: a platform popup is anchored to it. */
+  targetRef: React.RefObject<ComponentRef<typeof View> | null>;
 };
 
 const TooltipContext = createContext<TooltipContextType>({
@@ -63,6 +67,7 @@ const TargetContext = createContext<TargetContextType>({
   targetMeasurements: undefined,
   setTargetMeasurements: () => {},
   shouldMeasure: false,
+  targetRef: { current: null },
 });
 TargetContext.displayName = 'TargetContext';
 
@@ -86,8 +91,12 @@ export function Tooltip({
   const [targetMeasurements, setTargetMeasurements] = useState<TargetMeasurements | undefined>(
     undefined,
   );
+  const targetRef = useRef<ComponentRef<typeof View>>(null);
+  // In the platform's popup the platform places the bubble against the trigger: nothing to measure,
+  // so a request is shown at once, in the render that asks for it.
+  const placedByPlatform = usePopupSurface() !== null;
 
-  if (requestVisible && !visible && targetMeasurements) {
+  if (requestVisible && !visible && (targetMeasurements || placedByPlatform)) {
     setVisible(true);
   } else if (!requestVisible && visible) {
     setVisible(false);
@@ -102,9 +111,10 @@ export function Tooltip({
     () => ({
       targetMeasurements,
       setTargetMeasurements,
-      shouldMeasure: requestVisible,
+      shouldMeasure: requestVisible && !placedByPlatform,
+      targetRef,
     }),
-    [requestVisible, targetMeasurements, setTargetMeasurements],
+    [requestVisible, placedByPlatform, targetMeasurements, setTargetMeasurements],
   );
 
   return (
@@ -115,9 +125,8 @@ export function Tooltip({
 }
 
 export function TooltipTrigger({ children }: { children: React.ReactNode }) {
-  const { shouldMeasure, setTargetMeasurements } = useContext(TargetContext);
+  const { shouldMeasure, setTargetMeasurements, targetRef } = useContext(TargetContext);
   const [hasLayedOut, setHasLayedOut] = useState(false);
-  const targetRef = useRef<ComponentRef<typeof View>>(null);
 
   useEffect(() => {
     if (!shouldMeasure || !hasLayedOut) return;
@@ -148,10 +157,31 @@ export function TooltipContent({
 }) {
   const size = useTooltipSize(sizeProp);
   const { position, visible, onVisibleChange } = useContext(TooltipContext);
-  const { targetMeasurements } = useContext(TargetContext);
+  const { targetMeasurements, targetRef } = useContext(TargetContext);
+  const PopupSurface = usePopupSurface();
   const requestClose = useCallback(() => {
     onVisibleChange(false);
   }, [onVisibleChange]);
+
+  // The platform's popups (a desktop: OxyOS's compositor popup): the bubble in a popup of its own
+  // anchored to the trigger, which may extend beyond the trigger's window or panel (a dock's icon
+  // in a strip as tall as the dock). It takes no input: presses and the pointer pass through it,
+  // as a desktop's tooltip, so it has no backdrop.
+  if (PopupSurface) {
+    if (!visible) return null;
+    return (
+      <PopupTooltip
+        PopupSurface={PopupSurface}
+        anchorRef={targetRef}
+        label={label}
+        size={size}
+        position={position}
+        requestClose={requestClose}
+      >
+        {children}
+      </PopupTooltip>
+    );
+  }
 
   if (!visible || !targetMeasurements) return null;
 
@@ -191,12 +221,7 @@ function Bubble({
   requestClose: () => void;
   targetMeasurements: TargetMeasurements;
 }) {
-  const parentFill = useSurfaceFill();
-  const palette = useMenuPalette();
-  const publishedFill = resolveSurfaceMaterial({
-    fill: palette.surface,
-    parentFill: parentFill,
-  }).publishedFill;
+  const { palette, publishedFill, style: bubbleStyle } = useBubbleStyle(size);
   const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   const dimensions = useWindowDimensions();
   const [bubbleMeasurements, setBubbleMeasurements] = useState<
@@ -326,16 +351,7 @@ function Bubble({
               1px `border-button-default`, `shadow-dropdown`, `sm` 10/6 padding
               on an 8px corner or `md` 12/8 on 10px. */}
           <View
-            style={{
-              paddingHorizontal: TOOLTIP_SIZES[size].paddingHorizontal,
-              paddingVertical: TOOLTIP_SIZES[size].paddingVertical,
-              borderRadius: TOOLTIP_SIZES[size].borderRadius,
-              borderWidth: 1,
-              borderColor: palette.border,
-              backgroundColor: 'transparent',
-              ...surfaceFillVars(publishedFill),
-              boxShadow: palette.shadow,
-            }}
+            style={bubbleStyle}
             onLayout={(e) => {
               setBubbleMeasurements({
                 width: e.nativeEvent.layout.width,
@@ -364,6 +380,94 @@ function Bubble({
     </>
   );
 }
+
+/** The bubble's surface, its border and shadow: the same in a portal and in a platform popup. */
+function useBubbleStyle(size: TooltipSize) {
+  const parentFill = useSurfaceFill();
+  const palette = useMenuPalette();
+  const publishedFill = resolveSurfaceMaterial({
+    fill: palette.surface,
+    parentFill: parentFill,
+  }).publishedFill;
+  return {
+    palette,
+    publishedFill,
+    style: {
+      paddingHorizontal: TOOLTIP_SIZES[size].paddingHorizontal,
+      paddingVertical: TOOLTIP_SIZES[size].paddingVertical,
+      borderRadius: TOOLTIP_SIZES[size].borderRadius,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: 'transparent',
+      ...surfaceFillVars(publishedFill),
+      boxShadow: palette.shadow,
+    },
+  };
+}
+
+/**
+ * The bubble in the platform's popup, `TOOLTIP_OFFSET` from its trigger on the requested side,
+ * centred on it, its caret pointing at it. The platform keeps the popup on screen.
+ */
+function PopupTooltip({
+  PopupSurface,
+  anchorRef,
+  children,
+  label,
+  size,
+  position,
+  requestClose,
+}: {
+  PopupSurface: React.ComponentType<PopupSurfaceProps>;
+  anchorRef: React.RefObject<ComponentRef<typeof View> | null>;
+  children: React.ReactNode;
+  label: string;
+  size: TooltipSize;
+  position: TooltipContextType['position'];
+  requestClose: () => void;
+}) {
+  const { palette, publishedFill, style } = useBubbleStyle(size);
+  // The caret is outside the bubble, overlapping its 1px border; the popup holds both, the caret
+  // centred under (or over) the centred bubble.
+  const caret = (
+    <View style={POPUP_CARET}>
+      <TooltipCaret
+        position={position}
+        fill={palette.surface}
+        stroke={palette.border}
+        style={{ marginTop: position === 'top' ? -1 : 1 }}
+      />
+    </View>
+  );
+  return (
+    <PopupSurface
+      anchorRef={anchorRef}
+      side={position}
+      align="center"
+      sideOffset={TOOLTIP_OFFSET - ARROW_DEPTH}
+      alignOffset={0}
+      role="tooltip"
+      label={label}
+      onDismiss={requestClose}
+    >
+      {/* As wide as the widest bubble, the bubble centred in it and hugging its text: the popup's
+          content is laid out where its trigger is, which may be narrower than the text. */}
+      <View style={POPUP_TOOLTIP} accessible accessibilityLabel={label}>
+        {position === 'bottom' && caret}
+        <View style={style}>
+          <SurfacePaint floating fill={palette.surface} radius={TOOLTIP_SIZES[size].borderRadius} />
+          <SurfaceLevelProvider level={1} fill={publishedFill}>
+            {children}
+          </SurfaceLevelProvider>
+        </View>
+        {position === 'top' && caret}
+      </View>
+    </PopupSurface>
+  );
+}
+
+const POPUP_TOOLTIP = { width: BUBBLE_MAX_WIDTH, alignItems: 'center' } as const;
+const POPUP_CARET = { height: ARROW_DEPTH, alignSelf: 'stretch', alignItems: 'center' } as const;
 
 function opposite(position: 'top' | 'bottom'): string {
   switch (position) {
