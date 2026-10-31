@@ -178,6 +178,15 @@ Bloom before drawing. Unknown or incomplete recipes fall back to the image/initi
 the explicit `character` prop remains typed as `AvatarCharacter`. A nonblank service
 `name.displayName` takes precedence over the structured full name and handle.
 
+`useAvatarRendererCapabilities().sharedLiveRendering` reports whether the current
+provider can share live rendering across many independent avatars. It is true on
+web, and on Android only after the installed companion confirms the provider's
+runtime manifest. It remains false while that check is pending, on iOS and without
+the companion. A consumer may use it to select `motion="always"` for small bot
+accounts and retain `auto` on the fallback topology, without inspecting private
+renderers or mounting many WebViews during compatibility checks. It does not
+override reduced motion or promise a particular frame rate.
+
 1. **Character**: an explicit `character` prop, else a bot account's `character`. `character={null}`
    opts out and draws the image path. A remote or federated bot has no character and keeps its
    remote `avatar`. An invalid stored character is not an error: that avatar falls to its image,

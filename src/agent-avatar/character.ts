@@ -134,12 +134,11 @@ export function resolveAvatarCharacter(character: AvatarCharacter): ResolvedAvat
  * instead of a throw, so one bad stored character costs its own row the character and not the
  * screen that lists it.
  */
-export function tryResolveAvatarCharacter(
-  character: AvatarCharacter | null | undefined,
-): ResolvedAvatarCharacter | undefined {
-  if (!character) return undefined;
+export function tryResolveAvatarCharacter(character: unknown): ResolvedAvatarCharacter | undefined {
+  if (!character || typeof character !== 'object' || Array.isArray(character)) return undefined;
   try {
-    return resolveAvatarCharacter(character);
+    // The resolver checks each consumed field before constructing its result.
+    return resolveAvatarCharacter(character as AvatarCharacter);
   } catch {
     return undefined;
   }

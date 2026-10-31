@@ -1,6 +1,7 @@
 export { AgentAvatar } from './AgentAvatar';
 export { AgentAvatarProvider } from './AgentAvatarProvider';
 export { BLOOM_CHARACTER_RUNTIME_URL } from './context';
+export { useAvatarRendererCapabilities } from './use-avatar-renderer-capabilities';
 export type { AgentAvatarProps, AgentAvatarProviderProps } from './types';
 
 // One model: a character. `resolveAvatarCharacter` fills it in, `parseAvatarCharacter`
