@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import { readFile, readdir, rm, cp, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
+import { avatarMotionTransport } from './avatar-motion-transport.mjs';
 import { avatarSurfaceTransport } from './avatar-surface-transport.mjs';
 const output = resolve(process.env.AVATAR_RUNTIME_OUTPUT || '.local/character-runtime-build');
 if (!output.startsWith(resolve('.local') + '/'))
@@ -14,7 +15,7 @@ await build({
   configFile: false,
   base: './',
   publicDir: false,
-  plugins: [avatarSurfaceTransport()],
+  plugins: [avatarSurfaceTransport(), avatarMotionTransport()],
   build: {
     outDir: output,
     emptyOutDir: true,
