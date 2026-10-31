@@ -75,6 +75,14 @@ export default {
 };
 ```
 
+Applications using Expo's experimental native stack also need the
+[React Native Screens ownership adapter](https://github.com/software-mansion/react-native-screens/pull/5118)
+or its reviewed, version-pinned 4.30 backport. The plugin's
+`rnscreens.nativeBackOwnershipEnabled` property selects that adapter; setting the
+property does not add its code to an unpatched Screens package. Install the
+compatible RN, Expo and Screens source integrations together before enabling
+native ownership. This preserves JavaScript overlay priority above pushed routes.
+
 The Expo router must expose `registerNativeBackNavigation` and
 `dispatchWithResult` on navigator helpers. Bloom registers the tabs navigator
 only when both that public router contract and the native host exist. Older
