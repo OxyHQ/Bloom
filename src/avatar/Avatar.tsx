@@ -1,7 +1,8 @@
 import { pointerEventsStyles } from '../styles/pointer-events';
 import { useContext } from 'react';
 import { BloomAppearanceContext } from '../appearance/context';
-import React, { memo, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, Pressable, Platform } from 'react-native';
 import type { TextStyle } from 'react-native';
 import { imageSourcesKey } from './source-key';
@@ -106,14 +107,24 @@ function ShapeFallback({
 function AvatarImageContent({
   primarySource,
   fallbackSource,
+  onImageError,
   ...placeholder
 }: React.ComponentProps<typeof ShapeFallback> & {
   primarySource?: ImageSource;
   fallbackSource?: ImageSource;
+  onImageError?: () => void;
 }) {
   const [stage, setStage] = useState<'primary' | 'fallback' | 'placeholder'>(
     primarySource ? 'primary' : fallbackSource ? 'fallback' : 'placeholder',
   );
+  const currentStage = useRef(stage);
+  const mounted = useRef(false);
+  useLayoutEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const source =
     stage === 'primary' ? primarySource : stage === 'fallback' ? fallbackSource : undefined;
   if (!source) return <ShapeFallback {...placeholder} />;
@@ -124,15 +135,14 @@ function AvatarImageContent({
       shape={placeholder.shape}
       size={placeholder.size}
       alt={placeholder.alt}
-      onError={() =>
-        setStage((current) =>
-          current !== stage
-            ? current
-            : stage === 'primary' && fallbackSource
-              ? 'fallback'
-              : 'placeholder',
-        )
-      }
+      onError={() => {
+        // Native image events may arrive after replacement or more than once.
+        if (!mounted.current || currentStage.current !== stage) return;
+        const next = stage === 'primary' && fallbackSource ? 'fallback' : 'placeholder';
+        currentStage.current = next;
+        setStage(next);
+        if (stage === 'primary') onImageError?.();
+      }}
     />
   );
 }
@@ -142,6 +152,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   uri,
   variant = 'thumb',
   fallbackSource,
+  onImageError,
   size: sizeProp,
   color,
   initials,
@@ -294,6 +305,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
           key={imageSourcesKey(primarySource, fallbackSource)}
           primarySource={primarySource}
           fallbackSource={fallbackSource}
+          onImageError={onImageError}
           {...placeholderProps}
         />
       )}

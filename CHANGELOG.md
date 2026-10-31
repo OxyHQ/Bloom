@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.78.3
+
+### Fixed
+
+- `Avatar.onImageError` reports a failure of the current primary photo so consumers can disable photo-dependent actions such as zoom. Avatar keeps ownership of its fallback; fallback images and characters do not emit this event. Duplicate and stale errors from replaced or unmounted photos are ignored.
+
+### Consumers
+
+Use `onImageError` to disable actions for the failed photo, and clear that consumer state when its source changes. Existing avatars require no changes. The character runtime and native companion are unchanged.
+
 ## 15.78.2
 
 ### Fixed
