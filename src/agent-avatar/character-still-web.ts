@@ -28,30 +28,44 @@ export const renderWebStill: StillBackend = async ({ runtimeUrl, character, css 
   box.append(canvas);
   document.body.append(box);
   let controller: Controller | undefined;
+  let finished = false;
+  let timeout!: ReturnType<typeof setTimeout>;
+  const deadline = new Promise<never>((_resolve, reject) => {
+    timeout = setTimeout(() => reject(new Error('Still timed out')), PAINT_TIMEOUT_MS);
+  });
   try {
-    const runtime = await loadCharacterRuntime<RuntimeModule>(runtimeUrl);
+    const runtime = await Promise.race([loadCharacterRuntime<RuntimeModule>(runtimeUrl), deadline]);
     let painted!: () => void;
     let failed!: (reason: Error) => void;
     const ready = new Promise<void>((resolve, reject) => {
       painted = resolve;
       failed = reject;
     });
-    const timeout = setTimeout(() => failed(new Error('Still timed out')), PAINT_TIMEOUT_MS);
-    try {
-      controller = await runtime.createAvatar(
+
+    const created = runtime
+      .createAvatar(
         canvas,
         { character, paused: true, portrait: true, reduced: true },
         { onError: () => failed(new Error('Still failed')), onReady: painted },
-      );
-      await ready;
-    } finally {
-      clearTimeout(timeout);
-    }
+      )
+      .then((instance) => {
+        if (finished) {
+          instance.dispose();
+          return instance;
+        }
+        controller = instance;
+        return instance;
+      });
+    // A hung asset load must not block the entire still queue past the timeout.
+    // The controller may arrive after a failure; release it in the continuation.
+    await Promise.race([Promise.all([created, ready]), deadline]);
     const uri = canvas.toDataURL('image/png');
     return uri.startsWith('data:image/png;base64,') ? uri : null;
   } catch {
     return null;
   } finally {
+    clearTimeout(timeout);
+    finished = true;
     if (lingering) {
       clearTimeout(lingering.timer);
       release(lingering);
@@ -59,7 +73,14 @@ export const renderWebStill: StillBackend = async ({ runtimeUrl, character, css 
     }
     if (controller) {
       const held = { controller, box };
-      lingering = { ...held, timer: setTimeout(() => release(held), LINGER_MS) };
+      const retained = {
+        ...held,
+        timer: setTimeout(() => {
+          release(held);
+          if (lingering === retained) lingering = undefined;
+        }, LINGER_MS),
+      };
+      lingering = retained;
     } else box.remove();
   }
 };

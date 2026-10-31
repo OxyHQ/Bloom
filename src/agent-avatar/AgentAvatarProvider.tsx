@@ -68,17 +68,30 @@ export function AgentAvatarProvider({
       Platform.OS === 'web'
         ? renderWebStill
         : (job) =>
-            new Promise((resolve) =>
-              setNativeJob({
+            new Promise((resolve) => {
+              const nextJob: NativeStillJob = {
                 ...job,
                 done: (uri) => {
-                  setNativeJob((current) => (current?.key === job.key ? null : current));
+                  setNativeJob((current) => (current === nextJob ? null : current));
                   resolve(uri);
                 },
-              }),
-            );
+              };
+              setNativeJob(nextJob);
+            });
     return createCharacterStills({ runtimeUrl, storage: stillStorage, backend });
   }, [runtimeUrl, stillStorage]);
+  const mountedCache = useRef<typeof stills | null>(null);
+  useEffect(() => {
+    mountedCache.current = stills;
+    return () => {
+      mountedCache.current = null;
+      // StrictMode replays effects on the same cache. Dispose after that replay, but
+      // before an obsolete provider can continue draining work in a later task.
+      queueMicrotask(() => {
+        if (mountedCache.current !== stills) stills.dispose();
+      });
+    };
+  }, [stills]);
   const value = useMemo(
     () => ({ runtimeUrl, reportCapabilities, stills }),
     [runtimeUrl, reportCapabilities, stills],
@@ -88,7 +101,9 @@ export function AgentAvatarProvider({
     <CharacterRuntimeContext.Provider value={value}>
       <CharacterCapabilitiesContext.Provider value={catalog}>
         {children}
-        {Platform.OS === 'web' ? null : <CharacterStillHost job={nativeJob} />}
+        {Platform.OS === 'web' ? null : (
+          <CharacterStillHost job={nativeJob?.runtimeUrl === runtimeUrl ? nativeJob : null} />
+        )}
       </CharacterCapabilitiesContext.Provider>
     </CharacterRuntimeContext.Provider>
   );

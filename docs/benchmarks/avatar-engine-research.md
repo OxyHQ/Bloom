@@ -814,3 +814,81 @@ context, one packed motion load per preset, and disposal. No original engine is
 loaded by the independent renderer.
 
 #### Editor adoption and cleanup — 2026-10-12
+
+### Avatar efficiency investigation — 2026-10-31
+
+This section records a new investigation without replacing the earlier measurements,
+renderer fidelity or shader hazards. The user explicitly authorized removing the hair
+material and geometry to improve performance; this is a deliberate visual change, not a
+claim that a cheaper image is pixel-identical. Body shapes, parts, pigment, gaze and authored
+actions remain the shared runtime's responsibilities. Cached still identity advances to
+version 2 so persisted portraits cannot keep the previous hair appearance.
+
+#### External approaches and what they actually establish
+
+- [The comparison gallery](https://libraries.dev/bots) and its
+  [public renderer](https://github.com/Jakubantalik/Libraries.dev/tree/main/packages/bot-avatars)
+  use Canvas 2D with 2.5D volume assembled from heightfield slices. Surface preparation is
+  shared by shape, lighting, style and tier (192/320/512); the cache is limited to 24 entries.
+  A shared animation scheduler, offscreen/hidden-document suspension and DPR capped at 2
+  avoid multiplying scheduling and raster cost while retaining independent rigs and gaze.
+  These are useful ownership patterns, not evidence that translating arbitrary 3D parts
+  and authored motion into that representation is free. Its 0.2.2 startup waits for bakes
+  before revealing avatars, with a four-second ceiling; the smooth reveal alone does not
+  measure loading time. No renderer code was copied.
+- The [native port's own documentation](https://github.com/Jakubantalik/Libraries.dev/blob/main/packages/bot-avatars/ports/react-native/bot-avatars-native/README.md)
+  describes Skia and Reanimated, a JavaScript rig producing one packed array for the UI
+  runtime, and a shared-canvas sheet. Its reported 18-avatar plastic example improves from
+  44 to 58 FPS **in a simulator**. This is the upstream author's measurement, not Bloom's,
+  and does not establish physical low-end Android, thermals or equivalent fabric rendering.
+  The port is not distributed as an npm package.
+- [Rive's Canvas/WebGL guidance](https://rive.app/docs/runtimes/web/canvas-vs-webgl)
+  recommends shared offscreen rendering for multiple 2D instances. Its separate
+  [experimental GPU canvas/3D guidance](https://rive.app/docs/runtimes/web/gpu-canvas)
+  requires an individual context per canvas with offscreen sharing disabled. Changing
+  libraries therefore does not automatically remove context ownership costs.
+- [Three.js multiple-scene guidance](https://threejs.org/manual/pages/multiple-scenes.html)
+  explains why separate WebGL contexts cannot share GPU resources. Bloom's web document
+  already pools live scenes by resolution. The remaining native WebView boundary cannot
+  be removed by sharing only a JavaScript frame callback.
+- [Baked animation textures](https://doc.babylonjs.com/features/featuresDeepDive/animation/baked_texture_animations/)
+  move repeated animation work from CPU to GPU and texture memory. The documented
+  blending/interpolation limitations make this a trade-off requiring action and gaze
+  fidelity checks, not a transparent replacement for the present arbitrary compositions.
+- [WebGL best practices](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices)
+  support batching, avoiding synchronous GPU queries and explicit GPU resource release.
+  They also record mobile precision hazards, including explicit high-precision floating
+  texture samplers on iOS. [Android material guidance](https://developer.android.com/games/optimize/materials)
+  and [vertex data guidance](https://developer.android.com/games/optimize/vertex-data-management)
+  emphasize overdraw, bandwidth, memory and shader work: high desktop FPS cannot establish
+  that the same scene is inexpensive on an ARM mobile GPU.
+- [OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)
+  can move canvas work off the UI thread. It does not remove the scene's GPU drawing,
+  geometry, texture memory or overdraw; moving a bottleneck is not eliminating it.
+
+#### Integration defects and corrections
+
+The native still host previously used `key={job.key}`. A sequential queue therefore kept
+only one WebView mounted at once **but recreated its document for every distinct still**.
+A test that counted simultaneous views passed while missing repeated module, donor and GPU
+preparation. The corrected host retains the same WebView and source object for a burst,
+keeps the preceding paused scene until the successor paints, and releases the host after
+1.5 seconds idle. Capture identities reject late results; capture waits for both first paint
+and controller creation. Tests now count actual mounts/unmounts and execute the generated
+bridge with independent fake controllers, including early readiness and late completion.
+This establishes resource ownership, not physical-device speed.
+
+Cancelled queued requests previously never settled. Provider teardown could also leave its
+queue draining. The cache now settles cancelled queued requests with `null`, discards queued
+work on disposal and ignores late results; an already running backend may complete, but
+cannot repopulate a disposed cache. Native teardown removes the drawing document. Web still
+jobs have a 15-second deadline including runtime loading and creation; controllers that arrive
+later are disposed. The runtime module loader also expires a hung request, removes the script
+and permits a retry without letting an old callback delete the newer request. Failed native
+module documents are replaced before the next queued character uses them.
+
+Live native avatars still own separate WebViews. A future shared live surface must own
+native positioning, clipping, stacking and input, or use a native renderer with equivalent
+geometry and motion. Physical Android/iOS crowds, low-memory behavior and sustained thermal
+runs remain required before claiming efficient live crowds on inexpensive phones. Browser
+software rendering and CPU throttling do not stand in for these measurements.
