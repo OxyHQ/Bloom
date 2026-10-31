@@ -34,6 +34,11 @@ const eyeProfiles = rawEyeProfiles.presets as unknown as Partial<
   Record<AvatarPreset, Record<'0' | '1', Record<string, EyeGazeProfile>>>
 >;
 type Vectors = Record<string, number[]>;
+// These joints are immutable identity transforms. Three accepts their flattened
+// representation directly instead of copying 24 Matrix4 objects on every draw.
+const identityJoints = Float32Array.from({ length: 24 * 16 }, (_, index) =>
+  index % 16 % 5 === 0 ? 1 : 0,
+);
 function uniforms(values: Vectors) {
   return Object.fromEntries(
     Object.entries(values).map(([key, value]) => [
@@ -566,7 +571,7 @@ export class AuthoredAvatarEngine {
         d: { value: uniforms(part.fields) },
         skin: {
           value: {
-            joints: Array.from({ length: 24 }, () => new THREE.Matrix4()),
+            joints: identityJoints,
           },
         },
         crowdProjection: { value: new THREE.Matrix4() },
