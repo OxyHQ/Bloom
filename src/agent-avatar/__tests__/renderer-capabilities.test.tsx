@@ -4,10 +4,16 @@ import { CharacterRuntimeContext } from '../context';
 import { useAvatarRendererCapabilities } from '../use-avatar-renderer-capabilities';
 
 const mockCompatibility = jest.fn<Promise<boolean>, [string]>();
+const mockLookup = jest.fn();
 let mockAvailable = true;
 jest.mock('../native-avatar-adapter', () => {
   const adapter = { isRuntimeCompatible: (url: string) => mockCompatibility(url) };
-  return { nativeAvatarAdapter: () => (mockAvailable ? adapter : null) };
+  return {
+    nativeAvatarAdapter: () => {
+      mockLookup();
+      return mockAvailable ? adapter : null;
+    },
+  };
 });
 const originalPlatform = Platform.OS;
 afterEach(() => {
@@ -17,6 +23,7 @@ beforeEach(() => {
   Platform.OS = 'android';
   mockAvailable = true;
   mockCompatibility.mockReset();
+  mockLookup.mockClear();
 });
 
 it('keeps native capability false until the current provider manifest is compatible', async () => {
@@ -65,6 +72,24 @@ it('reports pooled web support without requiring a native adapter', () => {
   const { result } = renderHook(useAvatarRendererCapabilities);
   expect(result.current.sharedLiveRendering).toBe(true);
   expect(mockCompatibility).not.toHaveBeenCalled();
+  expect(mockLookup).not.toHaveBeenCalled();
+});
+
+it('does not load or query the native adapter when no character needs a capability', async () => {
+  mockCompatibility.mockResolvedValue(true);
+  const { result, rerender } = renderHook(
+    ({ enabled }) => useAvatarRendererCapabilities({ enabled }),
+    { initialProps: { enabled: false } },
+  );
+  expect(result.current.sharedLiveRendering).toBe(false);
+  expect(mockLookup).not.toHaveBeenCalled();
+  expect(mockCompatibility).not.toHaveBeenCalled();
+  rerender({ enabled: true });
+  expect(result.current.sharedLiveRendering).toBe(false);
+  await act(async () => {});
+  expect(result.current.sharedLiveRendering).toBe(true);
+  rerender({ enabled: false });
+  expect(result.current.sharedLiveRendering).toBe(false);
 });
 
 it('treats a rejected compatibility request as unavailable', async () => {
