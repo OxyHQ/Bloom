@@ -98,6 +98,7 @@ it('replaces every Bun workspace link with the same packed snapshot and restores
   const nested = ['packages/accounts', 'packages/services', 'packages/alia'].map((p) =>
     join(consumer, p, 'node_modules/@oxy.so/bloom'),
   );
+  nested.push(join(consumer, 'node_modules/.bun/node_modules/@oxy.so/bloom'));
   for (const path of nested) {
     mkdirSync(dirname(path), { recursive: true });
     symlinkSync(relative(dirname(path), target), path);
