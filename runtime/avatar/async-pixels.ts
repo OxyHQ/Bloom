@@ -7,6 +7,7 @@ export function readPixelsAsync(
   y: number,
   width: number,
   height: number,
+  timeoutMs = 30000,
 ) {
   let buffer: WebGLBuffer | null = null;
   let sync: WebGLSync | null = null;
@@ -45,6 +46,7 @@ export function readPixelsAsync(
       sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
       if (!sync) throw new Error('Avatar readback fence allocation failed');
       gl.flush();
+      const started = performance.now();
       const poll = () => {
         if (settled) return;
         try {
@@ -52,6 +54,8 @@ export function readPixelsAsync(
           const status = gl.clientWaitSync(sync!, 0, 0);
           if (status === gl.WAIT_FAILED) throw new Error('Avatar readback fence failed');
           if (status === gl.TIMEOUT_EXPIRED) {
+            if (performance.now() - started >= timeoutMs)
+              throw new Error('Avatar readback fence timed out');
             timer = setTimeout(poll, 4);
             return;
           }

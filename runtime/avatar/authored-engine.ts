@@ -278,6 +278,9 @@ export class AuthoredAvatarEngine {
   private visibilityChanged = () => {
     this.previousTime = 0;
     if (this.hidden() || !this.inViewport || this.contextLost) {
+      // Hidden time must neither consume a readback deadline nor retain GPU
+      // staging buffers. Visibility resumption requests a fresh reference fit.
+      this.cancelFitReads();
       this.cancelFrame();
       this.raf = 0;
     } else this.invalidate();
