@@ -1,11 +1,11 @@
 import React from 'react';
-import * as ReactNative from 'react-native';
 import { Modal, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { Dialog, useDialogControl } from '../dialog';
 import { CenteredCard } from '../dialog/CenteredCard';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { mockWindowSize } from './support/window-size';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -221,9 +221,7 @@ describe('native centred Dialog: startOpen and dismissOnBackdrop', () => {
   afterEach(() => jest.restoreAllMocks());
 
   function setViewportWidth(width: number) {
-    jest
-      .spyOn(ReactNative, 'useWindowDimensions')
-      .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+    mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
   }
 
   it('an uncontrolled startOpen centred dialog is open on mount', () => {
@@ -475,8 +473,7 @@ describe('DialogAction loading', () => {
 
 it('keeps a native imperative session through resize and chooses the new placement after complete close', () => {
   jest.useFakeTimers();
-  const width = jest.spyOn(ReactNative, 'useWindowDimensions');
-  width.mockReturnValue({ width: 1000, height: 800, scale: 1, fontScale: 1 });
+  let window = mockWindowSize({ width: 1000, height: 800, scale: 1, fontScale: 1 });
   let control!: ReturnType<typeof useDialogControl>;
   const closed = jest.fn();
   const tree = () => (
@@ -497,7 +494,8 @@ it('keeps a native imperative session through resize and chooses the new placeme
     const screen = render(tree());
     act(() => control.open());
     const draft = screen.getByText('Native draft');
-    width.mockReturnValue({ width: 320, height: 800, scale: 1, fontScale: 1 });
+    window.mockRestore();
+    window = mockWindowSize({ width: 320, height: 800, scale: 1, fontScale: 1 });
     screen.rerender(tree());
     expect(screen.getByText('Native draft')).toBe(draft);
     expect(screen.UNSAFE_queryByType(CenteredCard)).not.toBeNull();
@@ -512,7 +510,7 @@ it('keeps a native imperative session through resize and chooses the new placeme
     expect(screen.UNSAFE_queryByType(CenteredCard)).toBeNull();
     expect(screen.UNSAFE_queryByProps({ detached: true })).toBeNull();
   } finally {
-    width.mockRestore();
+    window.mockRestore();
     jest.useRealTimers();
   }
 });

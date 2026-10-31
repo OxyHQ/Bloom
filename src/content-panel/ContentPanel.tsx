@@ -33,7 +33,8 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  */
 import React, { memo } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { StyleSheet, useWindowDimensions } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { useWindowWidthClass } from '../hooks/use-width-class';
 
 import { useOptionalPanelChrome, usePanelShape } from '../styles/panel-chrome';
 import { surfaceStyle as resolveShapeStyle } from '../shapes/surface-style';
@@ -109,7 +110,8 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
   const defaultFill = rawFill;
-  const { width } = useWindowDimensions();
+  // The window at the framing breakpoint only: never a re-render per pixel.
+  const width = useWindowWidthClass([framedFrom]);
   const parentFill = useOptionalSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
   const isPlain = appearance === 'plain';

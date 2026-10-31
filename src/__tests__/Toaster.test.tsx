@@ -15,6 +15,7 @@ import { toast, ToastOutlet } from '../toast';
 import { toastStore } from '../toast/toast-store';
 import { HOVER_LEAVE_GRACE, resetStackHoverForTests } from '../toast/use-stack-hover';
 import type { ToasterProps, ToastPosition } from '../toast/types';
+import { mockWindowSize } from './support/window-size';
 
 /**
  * `ToastHost` (the web/default file jest resolves) portals through Bloom's DOM
@@ -922,9 +923,7 @@ describe('ToastOutlet', () => {
       // A 1280px viewport caps the row at TOAST_MAX_ROW_WIDTH, so the strip starts
       // at 328. Measured from the WINDOW it would start at 1220 and this tap would
       // land in the row body — the failure mode the row-relative math exists for.
-      jest
-        .spyOn(ReactNative, 'useWindowDimensions')
-        .mockReturnValue({ width: 1280, height: 900, scale: 1, fontScale: 1 });
+      mockWindowSize({ width: 1280, height: 900, scale: 1, fontScale: 1 });
 
       const rendered = renderOutlet({ enableStacking: true, closeButton: true });
       show(() => {

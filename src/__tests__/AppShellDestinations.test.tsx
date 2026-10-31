@@ -9,6 +9,7 @@ import { Screen, useScreenReselectHandler } from '../screen';
 import type { AppDestination } from '../tab-pager';
 import { TabPagerProvider } from '../tab-pager/expo-router/TabPagerProvider';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { mockWindowSize } from './support/window-size';
 
 const mockRouter = {
   canDismiss: () => false,
@@ -41,9 +42,7 @@ function renderShell(
   drawer?: { onDrawerOpenChange: (open: boolean) => void },
   screenAction?: ReactElement,
 ) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
   return render(
     <BloomThemeProvider mode="light">
       <PortalProvider>

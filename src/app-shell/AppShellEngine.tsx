@@ -5,7 +5,14 @@ import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { BottomEdgeProvider } from '../layout/bottom-edge';
 import type React from 'react';
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import {
+  Dimensions,
+  Platform,
+  Pressable,
+  View,
+  type LayoutChangeEvent,
+  type ViewStyle,
+} from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -22,7 +29,6 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { SidebarSlot } from './SidebarSlot';
 import { animateMotion } from '../motion/recipes';
-import { animateWithSpec } from '../motion/spec';
 import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import {
@@ -69,9 +75,8 @@ import {
   type ScrollMode,
 } from './layout';
 import type { AppShellEdge, AppShellEngineProps } from './types';
-import { useShellWidth } from './use-shell-width';
+import { useMeasuredSizeClass, useWindowSizeWhile } from '../hooks/use-width-class';
 import { useRoomChanged } from './use-room-changed';
-import { useShellViewport } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext } from './panel-layout-css';
 import { useCssShellLayout } from './shell-layout-css';
 import { usePanelInteraction } from './use-panel-interaction';
@@ -92,6 +97,7 @@ import {
   useDrawerSwipe,
 } from './use-drawer-swipe';
 import { UNSET } from '../styles/animated-style';
+import { IS_WEB } from '../styles/platform';
 
 /**
  * The page frame — one engine, four shapes (`variant`).
@@ -234,9 +240,9 @@ export function createAppShellEngine() {
     const cardRecipe = useThemeRecipe((palette) => palette.colors.card);
     const navigationRecipe = useThemeRecipe(resolvePanelChrome);
     const navigationChrome = navigationRecipe.paint;
-    const { height: viewportHeight } = useShellViewport();
+    // Only a web document's sticky aside is placed from the viewport's height.
+    const viewportHeight = useWindowSizeWhile(Platform.OS === 'web').height;
     const [asideHeight, setAsideHeight] = useState(0);
-    const { width, onLayout } = useShellWidth();
     const insets = useShellInsets();
     const platformWindow = useWindow();
     // A shell inside another region that holds the window's corner (a nested
@@ -293,6 +299,29 @@ export function createAppShellEngine() {
     const automaticNavigation =
       navFrom === undefined && navExpandedFrom === undefined && sidebar?.variant === undefined;
     const panelFrom = navExpandedFrom ?? (automaticNavigation ? 'lg' : undefined);
+    const sidebarMetrics = useAppShellSidebarMetrics(sidebar);
+    // The room the expanded navigation needs beside the reading measure (and
+    // the aside, when it is drawn) before it collapses for capacity.
+    const expandedRequired = (withAside: boolean) =>
+      sidebarMetrics.expanded +
+      contentWidth +
+      (withAside ? asideWidth + Math.max(0, asideGap ?? columnGap) : 0) +
+      Math.max(0, navigationGap ?? columnGap) +
+      gutter * 2;
+    // The shell's own width decides only at thresholds: the breakpoints of its
+    // navigation, frame and aside, and the expanded navigation's capacity. A
+    // resize re-renders the shell when it crosses one, never on every pixel;
+    // everything that follows the room is flex (`useMeasuredSizeClass`).
+    const tierThresholds = [navFrom, navExpandedFrom, framedFrom, asideFrom, panelFrom]
+      .filter((tier) => tier !== undefined)
+      .map((tier) => breakpointPx(tier));
+    const shellSize = useMeasuredSizeClass([
+      ...Object.values(BREAKPOINTS),
+      ...tierThresholds,
+      expandedRequired(false),
+      expandedRequired(true),
+    ]);
+    const width = shellSize.width;
     const nativeNavVariant =
       panelFrom !== undefined
         ? width >= breakpointPx(panelFrom)
@@ -306,7 +335,6 @@ export function createAppShellEngine() {
         : panelFrom !== undefined || nativeNavVariant === 'rail'
           ? 'sm'
           : 'lg');
-    const sidebarMetrics = useAppShellSidebarMetrics(sidebar);
     const revealOffset = sidebarMetrics.expanded + 12;
     // How far `reveal`'s moving part travels from closed to open, which is how
     // far a `drawerSwipe` finger travels: the PAGE (feed's a further 12).
@@ -410,15 +438,9 @@ export function createAppShellEngine() {
     const asideShown = asideBeside && !asideEmpty;
     // Reserve the reading measure and the aside actually drawn, rather than
     // measuring the already-shrunk content (which would oscillate on resize).
-    const preferredContent = contentWidth;
-    const expandedRequired =
-      sidebarMetrics.expanded +
-      preferredContent +
-      (asideShown ? asideWidth + Math.max(0, asideGap ?? columnGap) : 0) +
-      Math.max(0, navigationGap ?? columnGap) +
-      gutter * 2;
     const capacityCollapsed =
-      cssShell?.capacityCollapsed ?? (navVariant !== 'rail' && width < expandedRequired);
+      cssShell?.capacityCollapsed ??
+      (navVariant !== 'rail' && width < expandedRequired(asideShown));
     const flowSidebar = sidebar
       ? {
           ...sidebar,
@@ -514,6 +536,18 @@ export function createAppShellEngine() {
     // `drawerSwipe` is a native gesture: the web keeps its press-only drawer.
     const swipeEnabled = drawerSwipe && hasNav && Platform.OS !== 'web';
     const swipeOverlay = swipeEnabled && drawerStyle === 'overlay';
+    // A right-to-left swipe reads its start-edge strip from the frame's far
+    // side: the frame's exact width, kept where the gesture reads it, and only
+    // then (it changes nothing that renders).
+    const frameWidth = useSharedValue(Dimensions.get('window').width);
+    const measureShell = shellSize.onLayout;
+    const onShellLayout = useCallback(
+      (event: LayoutChangeEvent) => {
+        measureShell(event);
+        if (swipeEnabled && rtl) frameWidth.value = event.nativeEvent.layout.width;
+      },
+      [measureShell, swipeEnabled, rtl, frameWidth],
+    );
 
     const revealInteractionOpen = isOpen && drawerStyle === 'reveal';
     const revealDrawerRef = usePanelInteraction(revealInteractionOpen, revealInteractionOpen, () =>
@@ -856,11 +890,6 @@ export function createAppShellEngine() {
         reserveBottomBarSpace,
       ],
     );
-    // Native animates a numeric reading envelope. Web uses NativeWind CSS flex
-    // transitions against its actual siblings, with no navigation measurement.
-    // Both keep the same alignment, gutter ownership and mounted host tree.
-    const [measuredNavigationWidth, setMeasuredNavigationWidth] = useState<number | null>(null);
-    const navigationWidth = navInFlow ? (measuredNavigationWidth ?? sidebarMetrics.expanded) : 0;
     // The row's gap after the navigation. Panels keep their gutter off a docked
     // nav's hairline; a canvas runs to the edge.
     const rowGap = canvas
@@ -870,88 +899,114 @@ export function createAppShellEngine() {
           ? regionOuter
           : 0
         : Math.max(0, navigationGap ?? columnGap);
-    const rowNavigationGap = !navInFlow
-      ? 0
-      : dockedNav
-        ? panelHost
-          ? regionOuter
-          : 0
-        : Math.max(0, navigationGap ?? columnGap);
-    // The frame's own start and end edges (`frameInset`, else the gutter): a
-    // flush navigation owns the start edge.
-    const rowHorizontalPadding = panelHost
-      ? (navFlush ? 0 : outerStart) + outerEnd
-      : canvas
-        ? 0
-        : gutter * (dockedNav ? 1 : 2);
-    const availableReadingWidth = Math.max(
-      0,
-      width - navigationWidth - rowNavigationGap - rowHorizontalPadding,
-    );
+    // The reading envelope is flex, natively as on the web: a filling envelope
+    // grows into whatever room the row leaves it (beside the navigation, as a
+    // dock slides it closed, inside the gutters), and a capped one is its
+    // reading width, shrinking with the room below it. No measured width is an
+    // input, so a window resizing lays it out in Yoga's pass with no
+    // JavaScript. What moves on native is the reading width itself (a panel
+    // shown or hidden changes the panels' envelope): it animates from one width
+    // to the other, the room still capping it.
     const numericReading = Platform.OS !== 'web' && panelHost && centred && !compactRegion;
-    // A docked navigation's slot closes from its width (and the row gap it
-    // carries) to what it leaves of the frame: hidden, a filling envelope takes
-    // that room too. It moves on the dock's own motion, from the same moment as
-    // the slot's, so the content's edge and the navigation's far side stay
-    // together, as the web's flex keeps them.
-    const navDockRoom =
-      navDocked && stretchReading && navDock.hidden
-        ? Math.max(0, navigationWidth + rowNavigationGap - navHiddenExtent)
-        : 0;
     const asideReadingWidth = asideShown ? asideWidth + readingGap : 0;
-    const targetReadingWidth = stretchReading ? availableReadingWidth + navDockRoom : contentWidth;
-    const readingWidth = useSharedValue(targetReadingWidth);
-    // The shell resized (its window or container): the envelope lands at once, as
-    // the panels do (`useRoomChanged`); the navigation or a reading width changing
-    // still moves it. `resized` is read, not followed.
-    const resized = useRoomChanged(String(width));
-    const docking = useRoomChanged(String(navDock.hidden));
-    const dockSpec =
-      docking && navDock.resolved
-        ? navDock.hidden
-          ? navDock.resolved.motion.hide
-          : navDock.resolved.motion.show
-        : null;
-    // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` and the dock's motion qualify the change
+    const readingGroupWidth = contentWidth + asideReadingWidth;
+    const readingWidth = useSharedValue(contentWidth);
+    // A breakpoint the shell's resize crossed lands at once (`useRoomChanged`);
+    // the reading width changing still moves. `resized` is read, not followed.
+    // Keyed by the shell's exact measured width: a layout change never changes
+    // it (its class can, the thresholds following the content's width).
+    const resized = useRoomChanged(String(shellSize.read()?.width ?? width));
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` qualifies the change
     useEffect(() => {
-      if (dockSpec && !resized) {
-        animateWithSpec(
-          readingWidth,
-          targetReadingWidth,
-          dockSpec,
-          reducedMotion || navDock.instant,
-        );
-        return;
+      animateMotion(readingWidth, contentWidth, 'expand', reducedMotion || resized);
+    }, [readingWidth, contentWidth, reducedMotion]);
+    // Every key on every run (`styles/animated-style.ts`); off native's numeric
+    // envelope it writes what the static style below does.
+    const readingEnvelopeStyle = useAnimatedStyle(() => {
+      // The web's envelope is its stylesheet's and the static style's: a key
+      // written here, even as UNSET, would override them.
+      if (IS_WEB) return {};
+      // Native's numeric envelope, wherever the row aligns it: filling, it
+      // grows into the row's room; capped, it is its reading width, shrinking
+      // with the room below it. Its basis is its `width` under `flexBasis:
+      // auto` (a definite width is read again on every layout; a `flexBasis`
+      // that changes keeps the size Yoga computed before, as the panels note).
+      if (numericReading) {
+        if (stretchReading)
+          return {
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: 'auto' as const,
+            width: 0,
+            maxWidth: UNSET,
+            minWidth: 0,
+          };
+        const group = readingWidth.value + asideReadingWidth;
+        return {
+          flexGrow: 0,
+          flexShrink: 1,
+          flexBasis: 'auto' as const,
+          width: group,
+          maxWidth: group,
+          minWidth: 0,
+        };
       }
-      animateMotion(readingWidth, targetReadingWidth, 'expand', reducedMotion || resized);
-    }, [readingWidth, targetReadingWidth, reducedMotion]);
-    const readingEnvelopeStyle = useAnimatedStyle(
-      () =>
-        numericReading && contentAligned
-          ? {
-              flexGrow: 0,
-              flexBasis: readingWidth.value + asideReadingWidth,
-              maxWidth: readingWidth.value + asideReadingWidth,
-            }
-          : {},
-      [numericReading, contentAligned, readingWidth, asideReadingWidth],
-    );
-    const contentSpanStyle = useAnimatedStyle(() => {
-      const extra = asideReadingWidth * spanProgress.value;
-      return numericReading
+      // Otherwise what the static style below writes, or nothing.
+      if (!contentAligned)
+        return {
+          flexGrow: UNSET,
+          flexShrink: UNSET,
+          flexBasis: UNSET,
+          width: UNSET,
+          maxWidth: UNSET,
+          minWidth: UNSET,
+        };
+      return stretchReading
         ? {
-            flexGrow: 0,
-            flexBasis: readingWidth.value + extra,
-            maxWidth: readingWidth.value + extra,
+            flexGrow: 1,
+            flexShrink: UNSET,
+            flexBasis: '100%' as const,
+            width: UNSET,
+            maxWidth: '100%' as const,
+            minWidth: UNSET,
           }
         : {
-            flexBasis: stretchReading ? ('100%' as const) : contentWidth + extra,
-            maxWidth: stretchReading
-              ? compactRegion
-                ? UNSET
-                : ('100%' as const)
-              : contentWidth + extra,
+            flexGrow: 0,
+            flexShrink: UNSET,
+            flexBasis: contentWidth + asideReadingWidth,
+            width: UNSET,
+            maxWidth: contentWidth + asideReadingWidth,
+            minWidth: UNSET,
           };
+    }, [
+      numericReading,
+      contentAligned,
+      stretchReading,
+      readingWidth,
+      contentWidth,
+      asideReadingWidth,
+    ]);
+    const contentSpanStyle = useAnimatedStyle(() => {
+      const extra = asideReadingWidth * spanProgress.value;
+      // Native's numeric column: its basis is its `width` (see the envelope).
+      if (numericReading) {
+        if (stretchReading)
+          return { flexGrow: 1, flexBasis: 'auto' as const, width: 0, maxWidth: UNSET };
+        const reading = readingWidth.value + extra;
+        return { flexGrow: 0, flexBasis: 'auto' as const, width: reading, maxWidth: reading };
+      }
+      // A width the numeric column wrote is native's to take back; the web's
+      // column never has one (a key written there would override its CSS).
+      const noWidth = IS_WEB ? null : { width: UNSET };
+      if (stretchReading)
+        return {
+          flexGrow: 1,
+          flexBasis: '100%' as const,
+          ...noWidth,
+          maxWidth: compactRegion ? UNSET : ('100%' as const),
+        };
+      const reading = contentWidth + extra;
+      return { flexGrow: 0, flexBasis: reading, ...noWidth, maxWidth: reading };
     }, [
       numericReading,
       compactRegion,
@@ -1156,7 +1211,12 @@ export function createAppShellEngine() {
           accessibilityElementsHidden={spanAside}
           importantForAccessibility={spanAside ? 'no-hide-descendants' : 'auto'}
           {...(Platform.OS === 'web' && spanAside ? { inert: true } : {})}
-          onLayout={(event) => setAsideHeight(event.nativeEvent.layout.height)}
+          // Only a web document's sticky aside is placed from its height.
+          onLayout={
+            Platform.OS === 'web' && doc
+              ? (event) => setAsideHeight(event.nativeEvent.layout.height)
+              : undefined
+          }
           style={[
             { width: asideWidth, flexShrink: 0 },
             doc
@@ -1270,7 +1330,7 @@ export function createAppShellEngine() {
       open: isOpen,
       closeOnFrame: drawerStyle === 'reveal',
       rtl,
-      frameWidth: width,
+      frameWidth,
       travel: drawerStyle === 'reveal' ? revealTravel : overlayTravel,
       progress: reveal,
       start: swipeStart,
@@ -1478,11 +1538,6 @@ export function createAppShellEngine() {
       ) : navInFlow && flowSidebar ? (
         <View
           testID={testID ? `${testID}-navigation` : undefined}
-          onLayout={
-            Platform.OS === 'web'
-              ? undefined
-              : (event) => setMeasuredNavigationWidth(event.nativeEvent.layout.width)
-          }
           style={[
             { flexShrink: 0 },
             doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
@@ -1501,7 +1556,6 @@ export function createAppShellEngine() {
 
     // ---- the page region, per variant ---------------------------------------
     /** `feed` / `focus`: a fixed reading column, centred in what the nav leaves. */
-    const readingGroupWidth = contentWidth + (asideShown ? asideWidth + readingGap : 0);
     // The region's own vertical gutter, when the row gives it none (a flush nav).
     // A property of the NAVIGATION, not of who scrolls: native resolves every
     // shell to container scroll, and gating this on `document` left native
@@ -1808,7 +1862,7 @@ export function createAppShellEngine() {
               {...dirProps}
               {...rootData(null)}
               testID={testID}
-              onLayout={onLayout}
+              onLayout={onShellLayout}
               style={[
                 frame,
                 dockRootStyle(docks, revealTransition) ?? revealTransition,
@@ -1993,7 +2047,7 @@ export function createAppShellEngine() {
               {...dirProps}
               {...rootData(null)}
               testID={testID}
-              onLayout={onLayout}
+              onLayout={onShellLayout}
               style={[
                 frame,
                 { flexDirection: 'column', backgroundColor: background },
@@ -2028,7 +2082,7 @@ export function createAppShellEngine() {
             {...dirProps}
             {...rootData(cssScope)}
             testID={testID}
-            onLayout={cssScope ? undefined : onLayout}
+            onLayout={cssScope ? undefined : onShellLayout}
             style={[frame, rowStyle, dockRootStyle(docks), style]}
           >
             {navRegion}

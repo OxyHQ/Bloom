@@ -51,7 +51,9 @@ import type { AppShellPanelProps, AppShellPanelsProps } from './types';
 import { useMessages } from '../locale/messages';
 import { APP_SHELL_MESSAGES } from './messages';
 import { useShellCssLayout } from './use-shell-viewport';
-import { useShellWidth } from './use-shell-width';
+import { useMeasuredSizeClass } from '../hooks/use-width-class';
+import { panelLayoutWidthThresholds } from './panel-layout';
+import type { AppShellPanelLayout } from './panel-layout-types';
 import { PanelCssContext, panelCssScope } from './panel-layout-css';
 import type { PanelLayoutViewProps } from './AppShellPanelLayout';
 
@@ -250,7 +252,6 @@ export function createAppShellPanels(
           maskColor: parentFill ?? inheritedRegion.maskColor,
         }
       : inheritedRegion;
-    const { width, onLayout } = useShellWidth();
     const scope = panelCssScope(useId());
     const { messages } = useMessages(APP_SHELL_MESSAGES);
     const css = useShellCssLayout();
@@ -272,6 +273,22 @@ export function createAppShellPanels(
       !region.framed
         ? 1
         : region.gutter);
+    const panelLayout: AppShellPanelLayout = {
+      panels,
+      appearance,
+      collapseBelow,
+      activePanel: show,
+      widths,
+      onWidthsChange,
+      spans,
+      onSpansChange,
+      flow: 'bounded',
+      horizontalScroll: 'contained',
+      gap,
+      ...layout,
+    };
+    // The frame's width decides only the axis, at the layout's breakpoints.
+    const { width, onLayout } = useMeasuredSizeClass(panelLayoutWidthThresholds(panelLayout));
     const box =
       region.flow === 'document'
         ? {
@@ -296,20 +313,7 @@ export function createAppShellPanels(
               <AppShellRegionContext.Provider value={{ ...region, flow: 'bounded' }}>
                 <PanelLayoutView
                   eligibilityFromGroup
-                  layout={{
-                    panels,
-                    appearance,
-                    collapseBelow,
-                    activePanel: show,
-                    widths,
-                    onWidthsChange,
-                    spans,
-                    onSpansChange,
-                    flow: 'bounded',
-                    horizontalScroll: 'contained',
-                    gap,
-                    ...layout,
-                  }}
+                  layout={panelLayout}
                   shellWidth={width}
                   gap={gap}
                   testID={testID}

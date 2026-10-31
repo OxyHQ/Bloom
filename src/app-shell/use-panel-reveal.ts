@@ -17,7 +17,7 @@ export function usePanelReveal({
   enabled: boolean;
   scope: string | null;
   panels: readonly AppShellPanelDefinition[];
-  tracks: readonly ResolvedPanelTrack[];
+  tracks: readonly Pick<ResolvedPanelTrack, 'id' | 'visible'>[];
   reducedMotion: boolean;
 }) {
   const consumed = useRef<PanelRevealRequest | undefined>(undefined);

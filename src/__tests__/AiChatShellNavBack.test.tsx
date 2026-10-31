@@ -1,20 +1,10 @@
-/**
- * Android back with the phone's nav drawer open closes the DRAWER, and opening
- * the drawer puts the keyboard away.
- *
- * Found on a Pixel 8a with Bloom 4.23.0: the shell registered a hardware-back
- * handler for the panel drawer only, so back with the navigation drawer open
- * fell through to the activity and closed the app. The nav drawer now joins
- * `usePanelInteraction` like the panel; this pins that it takes back while
- * open, and hands it on once closed.
- */
-import React from 'react';
 import { Text } from 'react-native';
 import * as ReactNative from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { AiChatShell } from '../ai-chat';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { mockWindowSize } from './support/window-size';
 
 type BackListener = Parameters<typeof ReactNative.BackHandler.addEventListener>[1];
 /** What React Native hands a back listener; nothing here reads it. */
@@ -27,9 +17,7 @@ beforeEach(() => {
   listeners = [];
   os = ReactNative.Platform.OS;
   ReactNative.Platform.OS = 'android';
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width: 400, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width: 400, height: 900, scale: 1, fontScale: 1 });
   jest.spyOn(ReactNative.BackHandler, 'addEventListener').mockImplementation((_name, listener) => {
     listeners.push(listener);
     return {

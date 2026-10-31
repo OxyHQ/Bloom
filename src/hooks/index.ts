@@ -14,6 +14,13 @@ export { useGutters } from './use-gutters';
 export type { Gutter, Gutters } from './use-gutters';
 export { useImagePreload, preloadImage } from './use-image-preload';
 export { useContainerWidth } from './use-container-width';
+export {
+  quantizeWidth,
+  useMeasuredSizeClass,
+  useWindowBreakpoint,
+  useWindowSizeWhile,
+  useWindowWidthClass,
+} from './use-width-class';
 export { moveItem, dragTarget, dragShift } from './list-reorder';
 export { useIsRtl } from './use-is-rtl';
 export { useAppForeground } from './use-app-state';

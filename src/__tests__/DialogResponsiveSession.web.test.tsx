@@ -1,11 +1,14 @@
 /** @jest-environment jsdom */
-import React, { act, useEffect, useState } from 'react';
+import { act, useEffect, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 let mockWidth = 1000;
-jest.mock('react-native', () => ({
-  ...jest.requireActual('react-native-web'),
-  useWindowDimensions: () => ({ width: mockWidth, height: 800, scale: 1, fontScale: 1 }),
-}));
+// The window at `mockWidth`, both ways Bloom reads it (`hooks/use-width-class.ts`).
+jest.mock('react-native', () => {
+  const web = jest.requireActual('react-native-web');
+  const size = () => ({ width: mockWidth, height: 800, scale: 1, fontScale: 1 });
+  const Dimensions = { get: size, addEventListener: () => ({ remove() {} }) };
+  return { ...web, useWindowDimensions: size, Dimensions };
+});
 jest.mock('../bottom-sheet', () => jest.requireActual('../bottom-sheet/index.web'));
 import { Dialog, useDialogControl } from '../dialog/index.web';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

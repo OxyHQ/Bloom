@@ -16,7 +16,6 @@
  * position or size (the shape of the feedback, wherever it would come from).
  */
 import React from 'react';
-import * as ReactNative from 'react-native';
 import { StyleSheet, Text as RNText } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
@@ -27,6 +26,7 @@ import { SettingsModal } from '../settings-modal';
 import { OverlayInertBoundary, PortalOutlet, PortalProvider } from '../portal';
 import { Dialog } from '../dialog/Dialog';
 import { useDialogControl } from '../dialog/context';
+import { mockWindowSize } from './support/window-size';
 
 jest.mock('../settings-modal/modal-portal', () => ({
   ModalPortal: jest.requireActual('../portal').Portal,
@@ -46,7 +46,7 @@ const SCREEN_PX = 1080;
 const roundPx = (value: number) => Math.floor(value + 0.5);
 
 function renderOpenModal(initialView: 'navigation' | 'page') {
-  jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
+  mockWindowSize({
     width: SCREEN_PX / DENSITY,
     height: 2400 / DENSITY,
     scale: DENSITY,

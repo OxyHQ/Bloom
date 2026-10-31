@@ -10,7 +10,6 @@ import {
 } from 'react';
 import {
   StyleSheet,
-  useWindowDimensions,
   View,
   type LayoutChangeEvent,
   type NativeScrollEvent,
@@ -19,6 +18,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { useWindowSizeWhile } from '../hooks/use-width-class';
 import Animated, {
   type AnimatedStyle,
   Easing,
@@ -132,9 +132,11 @@ export const CenteredCard = forwardRef(
     const motion = useSurfaceTransition(transition);
     const theme = useTheme();
     const insets = useCssSafeAreaInsets(useSafeAreaInsets());
-    const { height: windowHeight } = useWindowDimensions();
     const [visible, setVisible] = useState(() => open ?? false);
     const [rendered, setRendered] = useState(() => open ?? false);
+    // The window only while the card is up: a closed dialog re-renders nothing
+    // as the window resizes.
+    const { height: windowHeight } = useWindowSizeWhile(rendered || visible || open === true);
     const presence = useSharedValue(0);
     const backdropProgress = useSharedValue(0);
     const keyboardHeight = useSharedValue(0);

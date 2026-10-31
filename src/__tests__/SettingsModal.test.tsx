@@ -1,6 +1,5 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, { useState } from 'react';
-import * as ReactNative from 'react-native';
 import { Text as RNText } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
@@ -25,6 +24,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { resolvedStyle } from './support/rendered-style';
 import { useDialogControl } from '../dialog/context';
 import type { DialogControlProps } from '../dialog/types';
+import { mockWindowSize } from './support/window-size';
 
 // The web portal is a react-dom portal (no DOM here); render in place.
 jest.mock('../settings-modal/modal-portal', () => ({
@@ -82,9 +82,7 @@ function Controlled({ onClose }: { onClose?: () => void }) {
 
 /** The modal's layout comes from the window width; jest's mock window is a 375px phone. */
 function setWindow(width: number, height: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height, scale: 1, fontScale: 1 });
 }
 
 beforeEach(() => {

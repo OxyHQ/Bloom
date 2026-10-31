@@ -18,6 +18,7 @@ import {
   hashContributionCell,
 } from '../chart-cards/contributions-cells';
 import { resolveChartCardPalette } from '../chart-cards/palette';
+import { mockWindowSize } from './support/window-size';
 
 const STATS = [
   { value: '9B', label: 'Lifetime tokens' },
@@ -78,9 +79,7 @@ describe('contribution cells', () => {
 
 describe('ContributionsCard', () => {
   beforeEach(() => {
-    jest
-      .spyOn(ReactNative, 'useWindowDimensions')
-      .mockReturnValue({ width: 1024, height: 768, scale: 2, fontScale: 1 });
+    mockWindowSize({ width: 1024, height: 768, scale: 2, fontScale: 1 });
   });
   afterEach(() => jest.restoreAllMocks());
 

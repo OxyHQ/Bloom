@@ -54,9 +54,10 @@ export function createYogaHostRenderer() {
       const input = [
         `${nodes.length} ${Number(rtl)}`,
         ...nodes.map(({ node, parent }) => {
-          const styles = Object.entries(resolvedStyle(node.props.style)).filter(
-            ([key, value]) => geometry.test(key) && value != null,
-          );
+          const styles = Object.entries(resolvedStyle(node.props.style))
+            // React Native's logical inline edges are Yoga's start and end.
+            .map(([key, value]) => [key.replace(/Inline(Start|End)$/, '$1'), value] as const)
+            .filter(([key, value]) => geometry.test(key) && value != null);
           return `${parent} ${node.type === 'Text' ? textWidth : -1} 20 ${styles.length}\n${styles.map(([key, value]) => `${key} ${value}`).join('\n')}`;
         }),
       ].join('\n');

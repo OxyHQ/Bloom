@@ -8,16 +8,13 @@ import { useBloomTheme } from '../theme';
 import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { resolvedStyle } from './support/rendered-style';
 import { Screen } from '../screen';
+import { mockWindowSize } from './support/window-size';
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BloomThemeProvider mode="light" colorPreset="teal">
     {children}
   </BloomThemeProvider>
 );
-beforeEach(() =>
-  jest
-    .spyOn(Native, 'useWindowDimensions')
-    .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 }),
-);
+beforeEach(() => mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 }));
 afterEach(() => jest.restoreAllMocks());
 describe('root modular panels', () => {
   it('reports visibility as resolved on native layout hosts', () => {
@@ -132,9 +129,7 @@ describe('root modular panels', () => {
     };
     const screen = render(<AppShell testID="shell" panelLayout={layout} />, { wrapper });
     expect(mounts).toHaveBeenCalledTimes(1);
-    jest
-      .spyOn(Native, 'useWindowDimensions')
-      .mockReturnValue({ width: 900, height: 900, scale: 1, fontScale: 1 });
+    mockWindowSize({ width: 900, height: 900, scale: 1, fontScale: 1 });
     screen.rerender(<AppShell testID="shell" panelLayout={layout} />);
     fireEvent(screen.getByTestId('shell-panels'), 'layout', {
       nativeEvent: { layout: { width: 800, height: 700, x: 0, y: 0 } },

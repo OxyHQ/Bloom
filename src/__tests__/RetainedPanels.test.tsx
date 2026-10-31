@@ -3,7 +3,6 @@
  * mounted, whatever happens to the panels' order, stacks or visibility.
  */
 import React, { useEffect } from 'react';
-import * as ReactNative from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -12,6 +11,7 @@ import { AppShell, useAppShellPanel } from '../app-shell';
 import type { AppShellPanelDefinition } from '../app-shell/panel-layout-types';
 import { resolvedStyle } from './support/rendered-style';
 import { ResizeHandle } from '../layout/ResizeHandle';
+import { mockWindowSize } from './support/window-size';
 
 const mounts: Record<string, number> = {};
 const unmounts: Record<string, number> = {};
@@ -64,9 +64,7 @@ const style = (screen: ReturnType<typeof render>, id: string) =>
 beforeEach(() => {
   for (const key of Object.keys(mounts)) delete mounts[key];
   for (const key of Object.keys(unmounts)) delete unmounts[key];
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width: 1280, height: 800, scale: 1, fontScale: 1 });
+  mockWindowSize({ width: 1280, height: 800, scale: 1, fontScale: 1 });
 });
 afterEach(() => jest.restoreAllMocks());
 

@@ -75,7 +75,7 @@ export function usePanelReorder({
   nativeScroll,
 }: {
   layout: AppShellPanelLayout;
-  tracks: readonly ResolvedPanelTrack[];
+  tracks: readonly Pick<ResolvedPanelTrack, 'id' | 'visible' | 'floating'>[];
   vertical: boolean;
   documentHorizontal: boolean;
   scope: string | null;

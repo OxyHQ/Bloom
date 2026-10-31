@@ -4,17 +4,15 @@
  * horizontal content and vertical scrolling to their existing responders.
  * Historical gesture thresholds remain recorded in docs/ai-chat.mdx.
  */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, TextInput } from 'react-native';
-import * as ReactNative from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { AiChatShell, AiChatMobileHeader } from '../ai-chat';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { mockWindowSize } from './support/window-size';
 
 beforeEach(() => {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width: 390, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width: 390, height: 900, scale: 1, fontScale: 1 });
 });
 afterEach(() => jest.restoreAllMocks());
 

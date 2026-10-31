@@ -3,7 +3,6 @@ import { surfaceFillOn } from '../styles/surface-levels';
 import { resolveSurfaceTint } from '../surface/shared';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
-import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { AuthCard, AuthMediaCarousel } from '../auth-card';
@@ -13,6 +12,7 @@ import { resolveButtonPalette } from '../button/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(
@@ -24,9 +24,7 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 
 describe('AuthCard', () => {
   function withViewport(width: number) {
-    return jest
-      .spyOn(ReactNative, 'useWindowDimensions')
-      .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+    return mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
   }
 
   afterEach(() => jest.restoreAllMocks());

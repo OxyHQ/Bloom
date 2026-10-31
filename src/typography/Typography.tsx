@@ -5,9 +5,9 @@ import {
   Platform,
   StyleSheet,
   type TextStyle,
-  useWindowDimensions,
   View,
 } from 'react-native';
+import { useWindowWidthClass } from '../hooks/use-width-class';
 
 import { useThemePaint } from '../theme/use-theme-paint';
 import { fontFamilies } from '../fonts/tokens';
@@ -183,6 +183,9 @@ H5.displayName = 'H5';
 export const H6 = createHeadingElement({ level: 6 });
 H6.displayName = 'H6';
 
+/** The window's width decides a paragraph's and a quotation's spacing at `sm` only. */
+const SM_WIDTH = [BREAKPOINTS.sm];
+
 /** `mt-3 leading-7 sm:mt-6`, over the base `text-base`. */
 const DEFAULT_PARAGRAPH_TYPOGRAPHY: TextStyle = {
   fontSize: 16,
@@ -190,7 +193,7 @@ const DEFAULT_PARAGRAPH_TYPOGRAPHY: TextStyle = {
 };
 
 export function P({ style, className, ...rest }: TextProps) {
-  const { width } = useWindowDimensions();
+  const width = useWindowWidthClass(SM_WIDTH);
   const extraProps: Record<string, unknown> = Platform.OS === 'web' ? { role: 'paragraph' } : {};
   const paragraphDefaults = typographyDefaultsWhenNoClassName(className, {
     ...DEFAULT_PARAGRAPH_TYPOGRAPHY,
@@ -316,7 +319,7 @@ Muted.displayName = 'Muted';
  */
 export function Blockquote({ children, style, textStyle, testID }: BlockquoteProps) {
   const colors = useThemePaint();
-  const { width } = useWindowDimensions();
+  const width = useWindowWidthClass(SM_WIDTH);
   const wide = width >= BREAKPOINTS.sm;
   const extraProps: Record<string, unknown> = Platform.OS === 'web' ? { role: 'blockquote' } : {};
 

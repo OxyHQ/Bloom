@@ -7,7 +7,7 @@ import type { ScrollBarProps } from '../layout/types';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
 import type React from 'react';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
 import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -198,15 +198,32 @@ export function createScreen(
     );
     const { collapseProgress, collapseTarget, activeScrollerId } = navigation;
     const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS);
-    const [measuredTop, setTop] = useState<number | null>(null);
-    const [measuredBottom, setBottom] = useState<number | null>(null);
+    const [measuredTop, setMeasuredTop] = useState<number | null>(null);
+    const [measuredBottom, setMeasuredBottom] = useState<number | null>(null);
+    // Their heights, told on every layout (a window resizing lays them out
+    // again at the same height): only a new height is a new state.
+    const lastTop = useRef<number | null>(null);
+    const lastBottom = useRef<number | null>(null);
+    const setTop = (height: number) => {
+      if (lastTop.current === height) return;
+      lastTop.current = height;
+      setMeasuredTop(height);
+    };
+    const setBottom = (height: number) => {
+      if (lastBottom.current === height) return;
+      lastBottom.current = height;
+      setMeasuredBottom(height);
+    };
     const top =
       measuredTop ?? headerHeight ?? 56 + (Platform.OS === 'web' ? 0 : (insets?.top ?? 0));
     const bottom = measuredBottom ?? bottomBarHeight ?? 58 + windowEdgeGap(insets?.bottom ?? 0);
     const keyboardVisible = useKeyboardVisible();
+    // A desktop window's keys are physical: there is no on-screen keyboard for
+    // its bars to follow (and following one subscribes to every resize).
     const keyboardFollow =
       getKeyboardComponents !== null &&
       Platform.OS !== 'web' &&
+      platformWindow == null &&
       bottomBarKeyboardBehavior === 'follow';
     const hasBottom =
       (!keyboardVisible || bottomBarKeyboardBehavior !== 'hide') &&

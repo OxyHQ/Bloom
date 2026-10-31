@@ -1,11 +1,4 @@
-import React, {
-  cloneElement,
-  isValidElement,
-  useMemo,
-  useState,
-  useId,
-  type ComponentType,
-} from 'react';
+import { cloneElement, isValidElement, useMemo, useState, useId, type ComponentType } from 'react';
 import { Linking, Platform, View } from 'react-native';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { useScreen } from '../screen/context';
@@ -24,9 +17,9 @@ import { flushSidebarAtEveryWidth, resolveScrollMode } from './layout';
 import { AppShellMenuButton } from './AppShellMenuButton';
 import { breakpointPx } from './constants';
 import type { PanelLayoutViewProps } from './AppShellPanelLayout';
-import { panelEnvelope } from './panel-layout';
-import { useShellWidth } from './use-shell-width';
-import { useShellCssLayout, useShellViewport } from './use-shell-viewport';
+import { panelEnvelope, panelLayoutWidthThresholds } from './panel-layout';
+import { useMeasuredSizeClass } from '../hooks/use-width-class';
+import { useShellCssLayout } from './use-shell-viewport';
 import { PanelCssContext, PanelCssLayoutContext, panelCssScope } from './panel-layout-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
@@ -128,24 +121,29 @@ export function createAppShell(
     style,
     testID,
   }: AppShellProps) {
-    const { width: windowWidth } = useShellViewport();
     const platformWindow = useWindow();
     const appWindow = useWindowCornerTaken() ? null : platformWindow;
     const actionClaimed = useScreenActionClaimed();
-    const [containerWidth, setContainerWidth] = useState<number | null>(null);
-    const width = containerWidth ?? windowWidth;
     const { colors } = useTheme();
-    const placement = resolveNavigationPlacement(width, navigationPlacement);
     const sidebarMetrics = useAppShellSidebarMetrics(sidebar);
     const [userCollapsed, setUserCollapsed] = useState(sidebar?.defaultCollapsed ?? false);
     const navigationPadding = APP_SHELL_DEFAULTS.dashboardGutter;
     const contentPadding = APP_SHELL_DEFAULTS.gutter;
-    const capacityCollapsed =
-      width <
+    const expandedRequired =
       sidebarMetrics.expanded +
-        APP_SHELL_DEFAULTS.contentWidth +
-        navigationPadding * 2 +
-        contentPadding * 2;
+      APP_SHELL_DEFAULTS.contentWidth +
+      navigationPadding * 2 +
+      contentPadding * 2;
+    // Its own width, read at the thresholds it decides at (the placement's
+    // breakpoints, the room the expanded sidebar needs): a resize re-renders
+    // the shell only when it crosses one.
+    const { width, onLayout: onRootLayout } = useMeasuredSizeClass([
+      BREAKPOINTS.md,
+      BREAKPOINTS.lg,
+      expandedRequired,
+    ]);
+    const placement = resolveNavigationPlacement(width, navigationPlacement);
+    const capacityCollapsed = width < expandedRequired;
 
     // One navigation model supplies every placement. Existing sidebar data is also accepted.
     const items =
@@ -202,7 +200,7 @@ export function createAppShell(
       ) : null);
     const root = (
       <View
-        onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
+        onLayout={onRootLayout}
         testID={testID}
         style={[
           { flex: 1, minHeight: 0, flexDirection: 'row', backgroundColor: colors.background },
@@ -327,10 +325,7 @@ export function createAppShell(
       scroll = 'document',
       testID,
     } = props;
-    const window = useShellViewport();
     const actionClaimed = useScreenActionClaimed();
-    const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
-    const width = measuredWidth ?? window.width;
     // A desktop window never takes a phone's bottom bar on its own: `auto`
     // keeps the navigation in the window at every size it can take.
     const inWindow = useWindow() != null && !useWindowCornerTaken();
@@ -343,6 +338,11 @@ export function createAppShell(
           : 0);
     const navExpandedFrom =
       props.navExpandedFrom ?? (navigationPlacement === 'auto' ? 'lg' : undefined);
+    // Its own width at the two placement thresholds only.
+    const { width, onLayout: onScreenLayout } = useMeasuredSizeClass([
+      breakpointPx(navFrom),
+      ...(navExpandedFrom !== undefined ? [breakpointPx(navExpandedFrom)] : []),
+    ]);
     const placement =
       width < breakpointPx(navFrom)
         ? 'bottom'
@@ -413,7 +413,7 @@ export function createAppShell(
           navigationScope="shared"
           documentScroll={document}
           testID={testID ? `${testID}-screen` : undefined}
-          onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
+          onLayout={onScreenLayout}
         >
           <AppShellEngine
             {...(props as AppShellEngineProps)}
@@ -451,10 +451,13 @@ export function createAppShell(
   }
   const AdaptiveAppShell = AppShell;
   function ModularAppShell(props: AppShellProps) {
-    const { width, onLayout } = useShellWidth();
     const scope = panelCssScope(useId());
     const cssLayout = useShellCssLayout();
     const layout = props.panelLayout!;
+    // The shell's width decides only which panels are eligible and the axis,
+    // at the layout's breakpoints: it re-renders when one is crossed, never on
+    // every pixel of a resize (Yoga sizes the panels).
+    const { width, onLayout } = useMeasuredSizeClass(panelLayoutWidthThresholds(layout));
     // A window's panels with nothing of the shell's own above them (no top
     // bar or header, and no sidebar or one flush to the window at every width)
     // are the window's content: they fill it, as a desktop application's panes

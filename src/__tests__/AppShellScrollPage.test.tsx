@@ -15,6 +15,7 @@ import type { ScreenContextValue } from '../screen/context';
 import { useMinimizeState } from '../tab-bar/context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 
@@ -32,9 +33,7 @@ function renderIn(ui: React.ReactElement) {
   return render(frame(ui));
 }
 function setWidth(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 const scrollViews = (screen: ReturnType<typeof renderIn>) =>
   screen.UNSAFE_root.findAll(

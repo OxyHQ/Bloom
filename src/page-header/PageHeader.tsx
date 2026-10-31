@@ -4,13 +4,8 @@ import { StyledView } from '../styles/styled-primitives';
 import { memo, useContext, useEffect, useRef, useState } from 'react';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { dataHook, dataHooks } from '../styles/data-hook';
-import {
-  Platform,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-  type LayoutChangeEvent,
-} from 'react-native';
+import { Platform, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { useMeasuredSizeClass } from '../hooks/use-width-class';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -123,6 +118,8 @@ const DEFAULT_THRESHOLD = 20;
  * the lesser of the two wrongs and the one a reader can still use.
  */
 const MIN_CENTERED_TITLE_WIDTH = 96;
+/** The widths the header decides at: its inset (`sm`) and its actions (`sm`, `xl`). */
+const HEADER_WIDTHS = [BREAKPOINTS.sm, BREAKPOINTS.xl];
 
 /** Container queries own continuous web width changes; React only measures content. */
 const PAGE_HEADER_LAYOUT_CSS = `
@@ -207,11 +204,13 @@ function PageHeaderComponent({
 
   // Web container queries own width, including during divider drags. Native
   // measures its own box; the window is its first-render seed only.
-  const windowWidth = useWindowDimensions().width;
-  const [measuredWidth, setMeasuredWidth] = useState(0);
+  // Its width decides only at the breakpoints of its inset and its actions; a
+  // resize re-renders it when it crosses one (`useMeasuredSizeClass`). A
+  // centred title's insets follow the room natively (the spacers below).
+  const measured = useMeasuredSizeClass(HEADER_WIDTHS);
   const [measuredHeight, setMeasuredHeight] = useState(0);
   const lastHeight = useRef(0);
-  const width = measuredWidth || windowWidth;
+  const width = measured.width;
   // Web starts conservatively until its own box is known. Continuous panel
   // resizing stays in CSS; React sees only a crossing of the action breakpoint.
   const [actionsCompact, setActionsCompact] = useState(isWeb || width < BREAKPOINTS.sm);
@@ -273,7 +272,7 @@ function PageHeaderComponent({
 
   const onContainerLayout = (e: LayoutChangeEvent) => {
     const nextWidth = e.nativeEvent.layout.width;
-    if (!isWeb) setMeasuredWidth(nextWidth);
+    if (!isWeb) measured.onLayout(e);
     const nextCompact = nextWidth < BREAKPOINTS.sm;
     if (lastActionsCompact.current !== nextCompact) {
       lastActionsCompact.current = nextCompact;
@@ -514,10 +513,21 @@ function PageHeaderComponent({
         '--bloom-page-header-side-width': `${Math.max(startWidth, endWidth)}px`,
       }
     : null;
-  const centerInset = Math.min(
-    Math.max(startWidth, endWidth) + ROW_GAP,
-    Math.max(0, (width - 2 * sideInset - MIN_CENTERED_TITLE_WIDTH) / 2),
-  );
+  // A centred title clears the wider side, and gives that clearance up evenly
+  // as the room narrows until the title has its minimum width: the web's
+  // `clamp()` margins (above), as flex on native. Two spacers of the clearance
+  // shrink alike around a title that keeps its minimum, so Yoga resolves it in
+  // the pass that lays the window out.
+  const centerClearance = Math.max(startWidth, endWidth) + ROW_GAP;
+  const centerSpacer = (side: 'before' | 'after') =>
+    !isWeb ? (
+      <View
+        testID={testID ? `${testID}-center-${side}` : undefined}
+        // Its basis as a `width` (shrinking): Yoga reads a definite width on
+        // every layout, where a changed `flexBasis` keeps the size it computed.
+        style={{ flexGrow: 0, flexShrink: 1, width: centerClearance, minWidth: 0 }}
+      />
+    ) : null;
 
   const titleBlock =
     title != null || subtitle != null ? (
@@ -784,13 +794,18 @@ function PageHeaderComponent({
                 {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
                 {centered ? null : titleBlock}
               </View>
+              {centered && titleBlock ? centerSpacer('before') : null}
               {centered && titleBlock ? (
                 <View
                   {...dataHook('bloomPageHeaderCenter')}
                   style={[
                     [
                       styles.centerSlot,
-                      !isWeb && { marginLeft: centerInset, marginRight: centerInset },
+                      !isWeb && {
+                        flexBasis: MIN_CENTERED_TITLE_WIDTH,
+                        flexGrow: 1,
+                        flexShrink: 0,
+                      },
                     ],
                     pointerEventsStyle('box-none'),
                   ]}
@@ -799,6 +814,7 @@ function PageHeaderComponent({
                   {titleBlock}
                 </View>
               ) : null}
+              {centered && titleBlock ? centerSpacer('after') : null}
               {centered ? (
                 <View
                   {...dataHook('bloomPageHeaderEnd')}

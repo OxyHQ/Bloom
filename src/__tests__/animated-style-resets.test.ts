@@ -51,7 +51,8 @@ function animatedStyles(source: string): { line: number; body: string }[] {
 // keyed on, a style passed only while enabled). Each with the reason; an
 // EQUALITY, so a fixed or moved one fails until it is removed here.
 const EMPTY_BRANCH_ALLOWED: Record<string, string> = {
-  'app-shell/AppShellEngine.tsx': 'overlayDrawerStyle: its view is mounted only under swipeOverlay',
+  'app-shell/AppShellEngine.tsx':
+    'overlayDrawerStyle: its view is mounted only under swipeOverlay; readingEnvelopeStyle: IS_WEB',
   'app-shell/AppShellPanelLayout.tsx': 'sizing: cssScope is fixed for the layout instance',
   'app-shell/EdgeDock.tsx':
     'useDockSlotStyle returns its style only while enabled; peek progress is a fixed prop',

@@ -29,6 +29,7 @@ import { AppShell } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
+import { mockWindowSize } from './support/window-size';
 
 let foreground = '';
 function Foreground() {
@@ -199,11 +200,7 @@ describe('the pill resize handle', () => {
 });
 
 describe('a split with pill dividers', () => {
-  beforeEach(() =>
-    jest
-      .spyOn(Native, 'useWindowDimensions')
-      .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 }),
-  );
+  beforeEach(() => mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 }));
   const split = (extra: Partial<AppShellPanelLayout>): AppShellPanelLayout => ({
     mode: 'split',
     gap: 7,

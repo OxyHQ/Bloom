@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform } from 'react-native';
+import { useWindowWidthClass } from '../hooks/use-width-class';
 
 import { BREAKPOINTS } from '../styles/breakpoints';
 
@@ -69,6 +70,9 @@ const RESPONSIVE_KEYS = [
   ['md', BREAKPOINT_MD],
   ['sm', BREAKPOINT_SM],
 ] as const;
+
+const RESPONSIVE_WIDTHS = RESPONSIVE_KEYS.map(([, minWidth]) => minWidth);
+const DESKTOP_WIDTHS = [BREAKPOINTS.md];
 
 /** Default side-sheet width (px) on wide screens. */
 export const DEFAULT_SIDE_WIDTH = 460;
@@ -140,7 +144,9 @@ export function resolveSideSheetWidth(
 export function useResolvedPlacement(
   placement: ResponsiveDialogPlacement | undefined,
 ): DialogPlacement {
-  const { width } = useWindowDimensions();
+  // The window at the placement's breakpoints only: a resize re-renders the
+  // dialog (open or not) when it crosses one, never on every pixel.
+  const width = useWindowWidthClass(RESPONSIVE_WIDTHS);
 
   return useMemo<DialogPlacement>(() => {
     if (placement === undefined) return 'center';
@@ -170,6 +176,5 @@ export function presentsAsDesktop(os: string, windowWidth: number): boolean {
 
 /** {@link presentsAsDesktop} for this platform and the current window. */
 export function useDesktopPresentation(): boolean {
-  const { width } = useWindowDimensions();
-  return presentsAsDesktop(Platform.OS, width);
+  return presentsAsDesktop(Platform.OS, useWindowWidthClass(DESKTOP_WIDTHS));
 }

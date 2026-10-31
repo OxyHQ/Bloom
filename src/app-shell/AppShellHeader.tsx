@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View } from 'react-native';
+import { useWindowWidthClass } from '../hooks/use-width-class';
 
 import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
@@ -39,7 +40,7 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
   // being narrower than `lg`. Inside an `AppShell` it is TOLD, from the shell's
   // own measured width and `navFrom` — the header must not second-guess a
   // decision the shell already made against a different number.
-  const { width } = useWindowDimensions();
+  const width = useWindowWidthClass(MENU_WIDTHS);
   const showMenu = onMenuPress != null && (showMenuProp ?? width < BREAKPOINTS.lg);
 
   return (
@@ -97,6 +98,9 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
     </View>
   );
 };
+
+/** The window's width decides the menu button at `lg` only. */
+const MENU_WIDTHS = [BREAKPOINTS.lg];
 
 export const AppShellHeader = memo(AppShellHeaderComponent);
 AppShellHeader.displayName = 'AppShellHeader';

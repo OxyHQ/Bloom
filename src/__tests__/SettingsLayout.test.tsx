@@ -1,12 +1,3 @@
-/**
- * `SettingsLayout`: the settings without the modal (OxyOS ADR 0016), so the
- * same settings are a modal, an application window or a panel. Its layout
- * follows its OWN measured width, not the window's; without `onClose` there is
- * no close button; as a window's content its rail keeps the window controls'
- * room at its top and moves the window. `SettingsModal`'s own suites run
- * unchanged against the shell around it.
- */
-import * as ReactNative from 'react-native';
 import { Text as RNText } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
@@ -26,6 +17,7 @@ import { useSettingsLayout } from '../settings-modal/context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { fakeWindow } from './support/fake-window';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const GROUPS: SettingsNavGroup[] = [
   {
@@ -54,9 +46,7 @@ const PAGES = {
 };
 
 function setWindow(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 800, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 800, scale: 1, fontScale: 1 });
 }
 
 afterEach(() => {

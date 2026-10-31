@@ -32,6 +32,8 @@ const originalOS = Platform.OS;
 beforeEach(() => {
   windowSize = PHONE_WINDOW;
   jest.spyOn(ReactNative, 'useWindowDimensions').mockImplementation(() => windowSize);
+  // Bloom's breakpoint reads (`hooks/use-width-class.ts`) see the same window.
+  jest.spyOn(ReactNative.Dimensions, 'get').mockImplementation(() => windowSize);
   jest.useFakeTimers();
 });
 

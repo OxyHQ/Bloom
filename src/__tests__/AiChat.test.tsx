@@ -4,7 +4,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import * as Native from 'react-native';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 jest.mock('react-native-reanimated', () => {
@@ -51,6 +51,7 @@ import { buildTheme } from '../theme/build-theme';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { pressHost } from './support/press-host';
+import { mockWindowSize } from './support/window-size';
 
 function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(<BloomThemeProvider mode={mode}>{ui}</BloomThemeProvider>);
@@ -727,9 +728,7 @@ describe('AiChatShell sidebar width ownership', () => {
   it.each([undefined, 72])(
     'uses the shared sidebar region width with an explicit collapsed override (%s)',
     (width) => {
-      const dimensions = jest
-        .spyOn(Native, 'useWindowDimensions')
-        .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+      const dimensions = mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 });
       try {
         const { getByTestId } = renderIn(
           <AiChatShell
