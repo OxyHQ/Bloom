@@ -115,7 +115,7 @@ function ColorSystemLab({
   const { colors } = useTheme();
   const [authenticated, setAuthenticated] = useState(true);
   const [familyFilter, setFamilyFilter] = useState<RecipeFamilyFilter>('all');
-  const [pairingFilter, setPairingFilter] = useState<RecipePairingFilter>('curated');
+  const [pairingFilter, setPairingFilter] = useState<RecipePairingFilter>('all');
   const visibleRecipes = COLOR_RECIPES.filter(
     (recipe) =>
       (familyFilter === 'all' || recipe.family === familyFilter) &&
@@ -132,11 +132,11 @@ function ColorSystemLab({
       <View style={styles.page}>
         <View style={styles.labHeader}>
           <View style={styles.labHeading}>
-            <Text style={styles.labEyebrow}>BLOOM COLOR LAB · MENTION INTERFACE</Text>
-            <Text style={styles.labTitle}>More energy, less pastel</Text>
+            <Text style={styles.labEyebrow}>BLOOM COLOR · REGISTERED PRESETS</Text>
+            <Text style={styles.labTitle}>Color presets and semantic roles</Text>
             <Text style={styles.labDescription}>
-              The same Mention structure applied to {COLOR_RECIPES.length} dynamic recipes. Large
-              surfaces stay neutral while identity and action carry the saturated colour.
+              Every entry is a registered colorPreset from COLOR_PRESET_REGISTRY. Compare resolved
+              roles in light and dark, then apply the selection to the same Mention composition.
             </Text>
             <Button
               href="./?path=/story/foundations-color-roles-in-context--first-direction"
@@ -147,29 +147,37 @@ function ColorSystemLab({
             >
               Open colour roles in context
             </Button>
+            <Button
+              href="./?path=/story/foundations-color--modes"
+              target="_top"
+              appearance="outline"
+              tone="neutral"
+              style={{ alignSelf: 'flex-start' }}
+            >
+              Root mode and local scopes
+            </Button>
           </View>
           <View style={styles.legend}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-              <Text style={styles.legendText}>Identity: selection, navigation and brand</Text>
+              <Text style={styles.legendText}>Identity: primary · tone="accent"</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: colors.tertiary }]} />
-              <Text style={styles.legendText}>Action: one dominant CTA in each context</Text>
+              <Text style={styles.legendText}>Action: tertiary · tone="action"</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.textSecondary }]} />
-              <Text style={styles.legendText}>
-                Hierarchy: flow, spacing and radius without decorative boxes
-              </Text>
+              <View style={[styles.legendDot, { backgroundColor: colors.secondary }]} />
+              <Text style={styles.legendText}>Support: secondary · tone="support"</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.paletteMapHeader}>
-          <Text style={styles.paletteMapTitle}>{COLOR_RECIPES.length} directions to compare</Text>
+          <Text style={styles.paletteMapTitle}>{COLOR_RECIPES.length} registered presets</Text>
           <Text style={styles.paletteMapDescription}>
-            Filter by family or curated/derived pairing. Every card shows light and dark.
+            Curated pairings pin the action seed; some also pin support. Derived pairings generate
+            both from identity. Both are official presets. Every card shows light and dark.
           </Text>
         </View>
 
@@ -293,6 +301,7 @@ function ColorSystemLab({
             size="sm"
             tone="neutral"
             appearance={globals.theme === 'dark' ? 'subtle' : 'solid'}
+            pressed={globals.theme !== 'dark'}
             onPress={() => updateGlobals({ theme: 'light' })}
           >
             Light mode
@@ -301,6 +310,7 @@ function ColorSystemLab({
             size="sm"
             tone="neutral"
             appearance={globals.theme === 'dark' ? 'solid' : 'subtle'}
+            pressed={globals.theme === 'dark'}
             onPress={() => updateGlobals({ theme: 'dark' })}
           >
             Dark mode

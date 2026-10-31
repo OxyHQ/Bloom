@@ -148,7 +148,7 @@ function Workspace({ direction }: Pick<PreviewArgs, 'direction'>) {
                         <Badge content="In progress" tone={support} appearance="subtle" />
                       </View>
                       <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 22 }}>
-                        A clearer home for everything we are building. The first direction is ready
+                        A clearer home for everything we are building. The project update is ready
                         for a closer look.
                       </Text>
                       <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
@@ -234,7 +234,7 @@ function Workspace({ direction }: Pick<PreviewArgs, 'direction'>) {
                             textDecorationLine: done ? 'line-through' : 'none',
                           }}
                         >
-                          Review the first direction
+                          Review the project update
                         </Text>
                         <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
                           Maya · Today at 14:00
@@ -258,6 +258,7 @@ function Workspace({ direction }: Pick<PreviewArgs, 'direction'>) {
 }
 
 export const FirstDirection: StoryObj<PreviewArgs> = {
+  name: 'Semantic roles and a single accent',
   render: function Render(args) {
     const [, updateArgs] = useArgs<PreviewArgs>();
     return <ColorRolesPreview args={args} updateArgs={updateArgs} />;
@@ -285,7 +286,7 @@ function ColorRolesPreview({
     >
       <View style={{ gap: 12 }}>
         <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>
-          Color roles · first direction
+          Semantic roles in a composed screen
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {presets.map((preset) => (
@@ -294,6 +295,7 @@ function ColorRolesPreview({
               size="sm"
               tone="neutral"
               appearance={args.preset === preset ? 'subtle' : 'plain'}
+              pressed={args.preset === preset}
               onPress={() => updateArgs({ preset })}
             >
               {preset}
@@ -304,6 +306,7 @@ function ColorRolesPreview({
             size="sm"
             tone="neutral"
             appearance={args.direction === 'roles' ? 'subtle' : 'plain'}
+            pressed={args.direction === 'roles'}
             onPress={() => updateArgs({ direction: 'roles' })}
           >
             Color roles
@@ -312,15 +315,28 @@ function ColorRolesPreview({
             size="sm"
             tone="neutral"
             appearance={args.direction === 'single-accent' ? 'subtle' : 'plain'}
+            pressed={args.direction === 'single-accent'}
             onPress={() => updateArgs({ direction: 'single-accent' })}
           >
             Single accent
           </Button>
         </View>
         <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-          Switch palettes and compare the same components. Light / dark follows the Storybook
-          toolbar.
+          Identity uses primary / tone=accent, support uses secondary / tone=support, and action
+          uses tertiary / tone=action. Single accent keeps the same components while assigning
+          actions to identity and support to neutral. BloomColorScope changes the local preset;
+          light and dark still follow the toolbar.
         </Text>
+        <Button
+          href="./?path=/story/foundations-color-system-playground--playground"
+          target="_top"
+          size="sm"
+          tone="neutral"
+          appearance="outline"
+          style={{ alignSelf: 'flex-start' }}
+        >
+          Explore registered presets
+        </Button>
       </View>
       <BloomColorScope colorPreset={args.preset} style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <Workspace direction={args.direction} />
