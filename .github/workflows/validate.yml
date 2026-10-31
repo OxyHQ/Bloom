@@ -171,7 +171,7 @@ jobs:
         with:
           gradle-version: '9.4.1'
       - run: bun install --frozen-lockfile --ignore-scripts
-      - run: sdkmanager 'platforms;android-36' 'ndk;27.1.12297006' 'cmake;3.30.5'
+      - run: sdkmanager 'platforms;android-36' 'platforms;android-37' 'build-tools;37.0.0' 'ndk;27.1.12297006' 'cmake;3.30.5'
       - name: Hermes source prerequisites
         if: matrix.variant == 'predictive'
         run: sudo apt-get update && sudo apt-get install -y libicu-dev

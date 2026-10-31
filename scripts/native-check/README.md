@@ -16,7 +16,7 @@ This is a test fixture, excluded from the published Bloom package. Consumers nee
 the supported source backport and a native rebuild; shipping a JS patch alongside
 a precompiled React Native AAR cannot provide these APIs.
 
-With JDK 17+, Android SDK 36, NDK 27.1.12297006 and Gradle 9.4.1:
+With JDK 17+, Android SDKs 36/37, Build Tools 37.0.0, NDK 27.1.12297006 and Gradle 9.4.1:
 
 ```sh
 # Default compatibility; never apply the fixture patch first.
