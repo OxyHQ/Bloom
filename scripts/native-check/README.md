@@ -30,3 +30,20 @@ gradle -p scripts/native-check -Pbloom.predictiveBackEnabled=true :bloom:testDeb
 Callback tests cover cancellation, completion acknowledgement, invalidation and
 rapid overlapping gestures. They do not replace device validation of retained
 page drawing, platform IME priority or system-home preview.
+
+## Declared minimum React Native compatibility
+
+The `legacy` fixture uses the official React Native 0.73.0 template's versions:
+JDK 17, Gradle 8.3, AGP 8.1.1, Kotlin 1.8.0, compile SDK 34 and host min SDK 21.
+It resolves the actual published React Native 0.73.0 AAR, compiles the production
+default sources, and checks the merged library manifest retains the host's API 21
+floor. No native predictive source or RN API substitution is used in this gate.
+The new host remains opt-in and requires the newer patched source build above.
+
+```sh
+gradle -p scripts/native-check/legacy :bloom:compileDebugKotlin :bloom:processDebugManifest
+python3 scripts/native-check/legacy/verify-manifest.py
+```
+
+Use Gradle 8.3 and JDK 17 for this fixture; Kotlin 1.8.0 does not support JDK 21's
+default JVM target. Install platform 34 and Build Tools 33.0.1 (AGP default) / 34.0.0.
