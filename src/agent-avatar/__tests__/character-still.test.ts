@@ -108,6 +108,7 @@ describe('the still cache', () => {
     await flush();
     running.cancel();
     queued.cancel();
+    expect(await queued.promise).toBeNull();
     jobs[0]!.resolve(URI('a'));
     await running.promise;
     await flush();
@@ -198,4 +199,42 @@ describe('the still cache', () => {
       expect(stored).toHaveLength(96);
     });
   });
+});
+
+it('disposes queued requests and ignores a late backend result', async () => {
+  const { backend, jobs } = deferredBackend();
+  const stills = createCharacterStills({ runtimeUrl: 'u', backend });
+  const key = stillKey(blue, 64, 1);
+  const first = stills.request(key, blue, 64, 1);
+  const second = stills.request(stillKey(alfred, 64, 1), alfred, 64, 1);
+  await flush();
+  stills.dispose();
+  expect(await Promise.all([first.promise, second.promise])).toEqual([null, null]);
+  jobs[0]!.resolve(URI('late'));
+  await flush();
+  expect(stills.peek(key)).toBeUndefined();
+  expect(jobs).toHaveLength(1);
+  expect(await stills.request(key, blue, 64, 1).promise).toBeNull();
+});
+
+it('does not start rendering after disposal during a storage read', async () => {
+  let read!: (value: null) => void;
+  const backend = jest.fn(async () => URI('unexpected'));
+  const stills = createCharacterStills({
+    runtimeUrl: 'u',
+    backend,
+    storage: {
+      getItem: () =>
+        new Promise((resolve) => {
+          read = resolve;
+        }),
+      setItem() {},
+    },
+  });
+  const request = stills.request(stillKey(blue, 64, 1), blue, 64, 1);
+  stills.dispose();
+  read(null);
+  expect(await request.promise).toBeNull();
+  await flush();
+  expect(backend).not.toHaveBeenCalled();
 });
