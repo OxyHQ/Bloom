@@ -1,0 +1,35 @@
+apply plugin: 'com.android.library'
+if (project.extensions.findByName('kotlin') == null) {
+  apply plugin: 'org.jetbrains.kotlin.android'
+}
+
+def predictiveBackEnabled = providers.gradleProperty('bloom.predictiveBackEnabled').orNull == 'true'
+apply from: file('predictive-back-contract.gradle')
+
+android {
+  namespace 'so.oxy.bloom'
+  compileSdkVersion rootProject.ext.has('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 36
+  defaultConfig {
+    minSdkVersion rootProject.ext.has('minSdkVersion') ? rootProject.ext.minSdkVersion : 24
+  }
+  sourceSets {
+    main.java.srcDir(predictiveBackEnabled ? 'src/predictive/java' : 'src/legacy/java')
+    main.kotlin.srcDir(predictiveBackEnabled ? 'src/predictive/java' : 'src/legacy/java')
+    if (predictiveBackEnabled) {
+      test.java.srcDir('src/predictiveTest/java')
+      test.kotlin.srcDir('src/predictiveTest/java')
+    }
+  }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+}
+
+dependencies {
+  implementation 'com.facebook.react:react-android'
+  implementation 'androidx.activity:activity-ktx:1.9.3'
+  implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+  testImplementation 'junit:junit:4.13.2'
+  testImplementation 'org.robolectric:robolectric:4.15.1'
+}

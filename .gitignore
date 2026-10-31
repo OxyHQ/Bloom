@@ -6,3 +6,14 @@ storybook-static/
 
 # Local reference harnesses and measurements are not package source.
 .local/
+
+# Native build output and local compilation harness.
+android/build/
+android/.gradle/
+.native-check/
+scripts/native-check/.gradle/
+scripts/native-check/build/
+scripts/native-check/legacy/.gradle/
+scripts/native-check/legacy/build/
+scripts/native-check/app/build/
+scripts/native-check/.kotlin/

@@ -1,0 +1,30 @@
+buildscript {
+  repositories { google(); mavenCentral() }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:9.2.1'
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21'
+    if (providers.gradleProperty('bloom.predictiveBackEnabled').orNull == 'true') {
+      classpath 'com.facebook.react:react-native-gradle-plugin'
+    }
+  }
+}
+ext {
+  compileSdkVersion = 37
+  minSdkVersion = 24
+  targetSdkVersion = 36
+  ndkVersion = '27.1.12297006'
+}
+allprojects {
+  repositories { google(); mavenCentral() }
+  configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+      if (details.requested.group == 'com.facebook.react') details.useVersion('0.88.0')
+      // Match the integrating Expo app, including AndroidX dispatcher semantics.
+      if (details.requested.group == 'androidx.activity') details.useVersion('1.11.0')
+    }
+  }
+}
+
+if (providers.gradleProperty('bloom.predictiveBackEnabled').orNull == 'true') {
+  apply plugin: 'com.facebook.react.rootproject'
+}
