@@ -80,6 +80,6 @@ if (!process.env.AVATAR_RUNTIME_OUTPUT) {
   );
   await writeFile(
     resolve(destination, 'README.md'),
-    '# Avatar runtime\n\nGenerated from `runtime/` by `bun run build:avatar-runtime`. Host this whole directory at `/bloom-character/`, or configure AgentAvatarProvider with the absolute URL of `runtime.mjs`. Geometry and motion load on demand; files under assets/ and chunks/ must keep their relative paths. Selectors render isolated parts through this engine. `manifest.json` pins every deployed file.\n\nThis is the sole avatar engine. It uses a shared WebGL scene per browser document, with no WASM, workers, SVG renderer or compatibility fallback. Native can use the optional shared GPU companion when its bundled code matches this full manifest; otherwise it uses the optional WebView bridge.\n',
+    '# Avatar runtime\n\nGenerated from `runtime/` by `bun run build:avatar-runtime`. Host this whole directory at `/bloom-character/`, or configure AgentAvatarProvider with the absolute URL of `runtime.mjs`. Geometry and motion load on demand; files under assets/ and chunks/ must keep their relative paths. Selectors render isolated parts through this engine. `manifest.json` pins every deployed file.\n\nThis is the sole avatar engine. It uses a shared WebGL scene per browser document, with no WASM, workers, SVG renderer or compatibility fallback. Native can use the optional shared GPU adapter when its bundled code matches this full manifest; otherwise it uses the optional WebView bridge.\n',
   );
 }

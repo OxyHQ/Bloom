@@ -1,6 +1,0 @@
-{
-  "extends": "../../tsconfig.json",
-  "compilerOptions": { "noEmit": true },
-  "include": ["src", "../../runtime/vite-env.d.ts"],
-  "exclude": ["lib", "node_modules"]
-}

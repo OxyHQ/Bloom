@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { NativeAvatar, isRuntimeCompatible } from '@oxy.so/bloom-avatar-native';
+import { NativeAvatar, isRuntimeCompatible } from './node_modules/@oxy.so/bloom/src/agent-avatar/native';
 import { probeColdFrame } from './NativeAudit';
-import { bridge } from '@oxy.so/bloom-avatar-native/src/bridge';
+import { bridge } from './node_modules/@oxy.so/bloom/src/agent-avatar/native/bridge';
 const character = {
   preset: 'blue_beret',
   shape: 'six_lobed_flower',

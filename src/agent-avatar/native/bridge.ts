@@ -1,18 +1,35 @@
-import 'expo-gl';
-import { requireNativeModule, requireNativeViewManager } from 'expo-modules-core';
 import type { NativeBridge, ExpoContext } from './types';
+
+// Literal requires directly inside try preserve Metro optional-peer resolution.
+let modules: typeof import('expo-modules-core');
+try {
+  const glVersion = require('expo-gl/package.json') as { version?: string };
+  const coreVersion = require('expo-modules-core/package.json') as { version?: string };
+  if (glVersion.version !== '58.0.3' || !coreVersion.version?.startsWith('58.'))
+    throw Error('Unsupported Expo graphics bindings');
+  require('expo-gl');
+  modules = require('expo-modules-core');
+} catch {
+  throw Error('Bloom native avatars require the optional Expo GL bindings');
+}
 
 type NativeModule = Omit<NativeBridge, 'present'> & {
   abiVersion: number;
+  available?: boolean;
   present(id: number, framebuffer: number, tiles: number[][], ticket: number): void;
   addListener(
     event: 'onPresented',
     callback: (event: { ticket: number; ids?: number[]; error?: string }) => void,
   ): { remove(): void };
 };
-const native = requireNativeModule<NativeModule>('BloomAvatarGPU');
+const native = modules.requireNativeModule<NativeModule>('BloomAvatarGPU');
+// The original complete ABI 1 module predates this flag; only the new stub says false.
+if (native.available === false)
+  throw Error('Bloom native avatars require an Expo GL enabled native build');
 if (native.abiVersion !== 1)
   throw Error('Bloom native avatar module requires a native rebuild (ABI 1)');
+// Reading this export must evaluate the guards even with Metro inlineRequires.
+export const isAvailable = true;
 let nextTicket = 0;
 const pending = new Map<
   number,
@@ -64,9 +81,9 @@ export const bridge: NativeBridge = {
       }
     }),
 };
-export const NativeView = requireNativeViewManager('BloomAvatarGPU');
+export const NativeView = modules.requireNativeViewManager('BloomAvatarGPU');
 
-/** The companion owns the native context so it can present several surfaces.
+/** Bloom owns the native context so it can present several surfaces.
  * Expo 58 registers that context's JSI object in this same per-runtime registry. */
 export async function createContext() {
   const id = await bridge.createContext();

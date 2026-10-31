@@ -659,6 +659,12 @@ function buildExportsField() {
     out[name] = entry;
   }
 
+  // Neutral revision metadata has no React, native graphics or engine imports.
+  out['./agent-avatar/runtime-revision'] = {
+    types: './assets/character-native/runtime-revision.d.cts',
+    default: './assets/character-native/runtime-revision.cjs',
+  };
+
   // Static CSS artifact for Tailwind v4 / NativeWind CSS-first consumers.
   // Generated from bloomThemeCss() by scripts/generate-theme-css.ts and
   // verified in src/__tests__/design-tokens.test.ts. Shipped from `src/`
@@ -716,6 +722,7 @@ function buildTypesVersionsField() {
     if (name === '.') continue;
     map[name.slice(2)] = [computePaths(entrySrc).libTypesModule];
   }
+  map['agent-avatar/runtime-revision'] = ['./assets/character-native/runtime-revision.d.cts'];
   return { '*': map };
 }
 

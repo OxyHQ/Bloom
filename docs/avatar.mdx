@@ -193,14 +193,14 @@ the explicit `character` prop remains typed as `AvatarCharacter`. A nonblank ser
 
 `useAvatarRendererCapabilities().sharedLiveRendering` reports whether the current
 provider can share live rendering across many independent avatars. It is true on
-web, and on Android only after the installed companion confirms the provider's
+web, and on Android only after the integrated native adapter confirms the provider's
 runtime manifest. It remains false while that check is pending, on iOS and without
-the companion. A consumer may use it to select `motion="always"` for small bot
+the native adapter. A consumer may use it to select `motion="always"` for small bot
 accounts and retain `auto` on the fallback topology, without inspecting private
 renderers or mounting many WebViews during compatibility checks. It does not
 override reduced motion or promise a particular frame rate.
 Pass `{ enabled: false }` when no valid bot character needs that decision: the
-hook then loads no native companion and sends no manifest request. Human-only
+hook then loads no native adapter and sends no manifest request. Human-only
 lists should not initialize an avatar renderer merely to choose their motion policy.
 
 1. **Character**: an explicit `character` prop, else a bot account's `character`. `character={null}`

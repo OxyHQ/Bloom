@@ -1,7 +1,13 @@
+---
+title: Native avatars
+description: Bloom shared native rendering and build requirements.
+---
+
 # Bloom native avatar GPU adapter
 
-This optional Android adapter is intentionally separate from
-Bloom: installing ordinary Bloom must not autolink a native graphics dependency.
+The Android adapter is part of `@oxy.so/bloom`. There is no additional avatar
+package to install or publish. Expo autolinks Bloom’s native module; applications
+without the optional graphics peer retain the existing fallback.
 The adapter uses the existing avatar engine, assets, shaders and motion controllers.
 It does not stream screenshots or substitute images for live animation.
 
@@ -33,7 +39,7 @@ below uses the actual shared avatar engine. An iOS presenter is not implemented 
 
 - [Expo GL](https://docs.expo.dev/versions/latest/sdk/gl-view/) retains the WebGL2 API and
   therefore the existing custom GLSL material equations. Its headless context alone has
-  no native presentation; this companion supplies the GPU surfaces.
+  no native presentation; Bloom supplies the GPU surfaces.
 - [React Native WebGPU](https://wcandillon.github.io/react-native-webgpu/docs/getting-started/canvas)
   can configure multiple native canvases with one device; its default Android TextureView
   supports ordinary alpha composition. This is a viable alternative backend, but
@@ -58,15 +64,22 @@ implemented based on the Android proof.
 
 ## Integration contract
 
-Install this companion and its declared peers in the native application, then rebuild
-that application's native binary. Use the companion version whose exported runtime
-revision is hosted by your provider. Ordinary Bloom remains usable without it. Bloom accepts companion ABI version 1; the
-companion also requires native module ABI 1. Installing new JavaScript without the
-matching native rebuild cannot silently use an incompatible binary. Bloom's optional
-literal `require` selects the adapter only on Android and only after the hosted
-`manifest.json` matches the compiled adapter's complete expected manifest, including
-`runtime.mjs`, every code chunk, and every binary asset. A missing module, another
-runtime revision, or an unavailable manifest retains the existing WebView route.
+Install Bloom and `expo-gl@58.0.3` in the Expo 58 / React Native 0.88 application,
+then rebuild its native binary. No registration call or app plugin is required.
+The module uses Expo's resolved autolinking graph: source builds depend on the linked
+GL project, precompiled builds use its selected Maven publication. Missing, excluded
+or incompatible GL selects an availability-only module with no GL dependency, view
+or rendering context. Older Expo hosts use their core Gradle helpers and the same unavailable registration;
+the optional peer ranges do not reject an older installed GL/core used elsewhere.
+Non-Expo React Native CLI autolinking is disabled for this Expo
+module, so ordinary RN consumers can keep their existing renderer.
+
+Bloom loads its internal adapter only on Android, checks the installed GL 58.0.3/core 58
+bindings, native ABI 1 and availability,
+and selects shared rendering only after the hosted `manifest.json` matches its complete
+expected manifest, including `runtime.mjs`, every code chunk and every binary asset.
+A missing module, another runtime revision or an unavailable manifest retains the existing
+WebView route. Installing JavaScript alone does not enable a module absent from the binary.
 Concurrent checks share one request. Failed checks expire after five seconds; successful
 checks expire after one minute for later mounts. A running adapter remains on its
 bundled code revision. Production hosting must use immutable versioned directories or
@@ -74,9 +87,9 @@ retain the pinned files for the lifetime of released native applications.
 
 The native build first compiles a fresh browser runtime from the same checkout into
 `.local/avatar-native-compatible-web`, verifies native asset hashes against it, and
-writes its complete manifest into the companion. The regular tracked web runtime must
+writes its complete manifest into Bloom’s generated native assets. The regular tracked web runtime must
 be regenerated from those same inputs before deployment. A code-only shader/controller
-change invalidates compatibility even when asset hashes are unchanged. The companion
+change invalidates compatibility even when asset hashes are unchanged. Bloom
 pins Expo GL 58.0.3 because its context registry and native GLContext integration are
 internal APIs. Updating that peer requires another API, pixel and lifecycle audit.
 
@@ -85,7 +98,7 @@ a hash into application code. It loads no React or native modules and works in
 Node CommonJS/ESM, web bundlers and Metro:
 
 ```ts
-import { AVATAR_RUNTIME_REVISION } from '@oxy.so/bloom-avatar-native/runtime-revision';
+import { AVATAR_RUNTIME_REVISION } from '@oxy.so/bloom/agent-avatar/runtime-revision';
 
 const characterRuntimeUrl =
   `https://alia.onl/bloom-character/releases/${AVATAR_RUNTIME_REVISION}/runtime.mjs`;
@@ -132,5 +145,5 @@ two batches outstanding; a single batch serialized work at approximately 186–1
 These are development-build observations, not a cross-device performance guarantee.
 All twelve paused views held their counters unchanged across four five-second samples.
 Formal comparison and remaining lifecycle evidence belong in the repository benchmark
-report. iOS continues through the existing WebView renderer; this package currently
+report. iOS continues through the existing WebView renderer; Bloom currently
 contains no iOS presenter.

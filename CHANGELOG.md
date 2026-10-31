@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.88.0
+
+### Changed
+
+- Android shared avatar rendering is included in Bloom, with automatic Expo module registration and the same engine, visuals and lifecycle. The separate avatar package has been removed. Install the optional Expo GL peer and rebuild the application to enable the shared native path; absent or excluded GL keeps a compile-safe fallback.
+- The neutral `@oxy.so/bloom/agent-avatar/runtime-revision` export identifies the complete matching hosted runtime without loading React or native graphics.
+
+### Consumers
+
+Remove the former standalone avatar dependency, import the runtime revision from Bloom, and rebuild native applications. Keep immutable runtime hosting for installed app revisions. Web and unsupported native platforms retain their existing behavior.
+
 ## 15.87.0
 
 ### Fixed
@@ -161,7 +172,7 @@ No API changes. A panel shown with `visible: true` appears without waiting for a
 
 ### Consumers
 
-No API changes. Existing `onImageError` handlers keep their contract. The character runtime and native companion are unchanged.
+No API changes. Existing `onImageError` handlers keep their contract. The character runtime and native adapter are unchanged.
 
 ## 15.79.0
 
@@ -182,7 +193,7 @@ No API changes.
 
 ### Consumers
 
-Use `onImageError` to disable actions for the failed photo, and clear that consumer state when its source changes. Existing avatars require no changes. The character runtime and native companion are unchanged.
+Use `onImageError` to disable actions for the failed photo, and clear that consumer state when its source changes. Existing avatars require no changes. The character runtime and native adapter are unchanged.
 
 ## 15.78.2
 
@@ -214,7 +225,7 @@ No API changes. Set `<html dir="rtl">` for RTL web layouts.
 
 ### Added
 
-- **An optional Android native GPU companion** shares the existing renderer across independent native views on Expo 58 / React Native 0.88. It requires Expo GL 58.0.3, a native rebuild and hosting the complete runtime revision matching the companion's manifest. Ordinary Bloom keeps its existing WebView fallback; iOS has no shared native presenter yet.
+- **An optional Android native GPU adapter** shares the existing renderer across independent native views on Expo 58 / React Native 0.88. It requires Expo GL 58.0.3, a native rebuild and hosting the complete runtime revision matching the adapter’s manifest. Ordinary Bloom keeps its existing WebView fallback; iOS has no shared native presenter yet.
 - **`AvatarGroup.motion`** forwards `auto`, `always` or `never` through every layout. `Avatar.account` accepts and validates the account service's string-key character DTO and structured `name.displayName`; invalid recipes retain image/initial fallback. Existing defaults and reduced-motion precedence remain unchanged.
 
 ### Fixed
@@ -224,7 +235,7 @@ No API changes. Set `<html dir="rtl">` for RTL web layouts.
 
 ### Consumers
 
-Self-hosters replace the **complete** generated `assets/character-runtime/` directory alongside Bloom. Native companion adopters retain an immutable versioned runtime directory for installed application revisions and rebuild their native binary. `motion="always"` explicitly animates small account avatars; reduced motion still wins. Physical comparisons, browser-specific scaled-pixel quantization and remaining limits are recorded in `docs/benchmarks/avatar-web-efficiency.md` and `docs/benchmarks/avatar-engine-research.md`; benchmark results are scoped observations, not universal frame-rate guarantees.
+Self-hosters replace the **complete** generated `assets/character-runtime/` directory alongside Bloom. Native adapter adopters retain an immutable versioned runtime directory for installed application revisions and rebuild their native binary. `motion="always"` explicitly animates small account avatars; reduced motion still wins. Physical comparisons, browser-specific scaled-pixel quantization and remaining limits are recorded in `docs/benchmarks/avatar-web-efficiency.md` and `docs/benchmarks/avatar-engine-research.md`; benchmark results are scoped observations, not universal frame-rate guarantees.
 
 ## 15.77.0
 

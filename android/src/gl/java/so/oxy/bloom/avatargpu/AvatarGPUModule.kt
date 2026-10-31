@@ -52,7 +52,7 @@ class AvatarGPUModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("BloomAvatarGPU")
     Events("onPresented")
-    Constants("abiVersion" to 1)
+    Constants("abiVersion" to 1, "available" to true)
     AsyncFunction("createContext") { promise: Promise ->
       check(!destroyed.get())
       val manager = appContext.registry.getModule<GLModule>() ?: error("ExpoGL missing")

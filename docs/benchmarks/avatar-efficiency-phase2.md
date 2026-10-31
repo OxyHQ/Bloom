@@ -131,23 +131,24 @@ this CPU saving alone does not establish a production FPS improvement.
 
 ## Native adoption and remaining scope
 
-The optional Android companion renders this same engine into a framebuffer and presents
+The measured Android adapter renders this same engine into a framebuffer and presents
 its tiles into independently composed native surfaces with GPU blits. Native composition
 continues to own clipping, transforms and scrolling. There is no per-frame screenshot
 transfer through JavaScript. One-time crop fitting and explicitly requested snapshots
 can still read pixels.
 
-This path requires installing the private companion and its declared peers, rebuilding
+That historical audit installed a separate native artifact. The current integrated path
+requires Bloom with its graphics peer, rebuilding
 the application's native binary, and serving the matching complete runtime manifest.
 It is not enabled fleet-wide merely by updating Bloom JavaScript. Size buckets preserve
 the existing 64/128/320 resolution policy instead of promoting every small avatar to a
 large hero's backing size. The package, capability checks and installation contract are
-documented in the [native companion](../../packages/avatar-native/README.md).
+documented in the [native adapter](../native-avatars.mdx).
 
 The Android presenter does not establish iOS support. Without a compatible installed
 adapter, the existing WebView route remains available and its per-document live-context
 limit remains relevant. Physical native results must identify whether they measure the
-isolated engine, the companion or the final React Native component; those are distinct
+isolated engine, the measured native artifact or the final React Native component; those are distinct
 claims.
 
 The physical Pixel 8a audit used authored idle at 192 backing pixels and MSAA 4:
@@ -157,7 +158,7 @@ The physical Pixel 8a audit used authored idle at 192 backing pixels and MSAA 4:
 | Eight independent WebViews | 36.84–37.03 frames/s each | Engine submissions; an upper bound on presentation |
 | Eight shared native surfaces, warmed after remount | 57.26 updates/s each | Actual surface updates over 10 seconds; one context |
 | Twelve shared native surfaces | 57.11 updates/s each | Separate capacity sample over five seconds; one context |
-| Installed companion tarball, eight surfaces | 58.75–58.95 updates/s | Warm repeat; same engine binary as the final lifecycle audit |
+| Installed native artifact from that audit, eight surfaces | 58.75–58.95 updates/s | Warm repeat; same engine binary as the final lifecycle audit |
 
 The initial native windows were slower (37.2–44.2, then 50.2–58.0 updates/s), so the
 warmed results do not describe cold startup. PSS snapshots were 373,532–385,240 KiB
