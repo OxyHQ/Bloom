@@ -147,13 +147,18 @@ function NativeCharacter({
   const observeSnapshot = useContext(AvatarSnapshotObserver);
   const WebView = characterWebView();
   const ref = useRef<CharacterWebViewHandle>(null);
+  const [generation, setGeneration] = useState(0);
+  const recovery = useRef({ runtimeUrl, used: false });
+  const recoveryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(recoveryTimer.current), [runtimeUrl]);
+  if (recovery.current.runtimeUrl !== runtimeUrl) recovery.current = { runtimeUrl, used: false };
   const captures = useRef(new Map<number, (snapshot: AvatarSnapshot | null) => void>());
   const nextCapture = useRef(0);
   useEffect(() => {
     observeSnapshot?.(
       () =>
         new Promise((resolve) => {
-          if (!ref.current) {
+          if (!ref.current || !activeSource.current) {
             resolve(null);
             return;
           }
@@ -181,29 +186,56 @@ function NativeCharacter({
     };
   }, [observeSnapshot, runtimeUrl]);
   const initial = useRef(value);
+  initial.current = value;
   const source = useMemo(
     () => ({
       html: characterHtml(runtimeUrl, initial.current),
       baseUrl: runtimeUrl,
     }),
-    [runtimeUrl],
+    [runtimeUrl, generation],
   );
+  const activeSource = useRef<typeof source | null>(source);
+  activeSource.current = source;
+  const readySource = useRef<typeof source | null>(null);
+  const processTerminated = () => {
+    if (activeSource.current !== source) return;
+    activeSource.current = null;
+    clearTimeout(recoveryTimer.current);
+    recoveryTimer.current = undefined;
+    for (const finish of captures.current.values()) finish(null);
+    captures.current.clear();
+    if (recovery.current.used) {
+      onError();
+      return;
+    }
+    recovery.current.used = true;
+    setGeneration((current) => current + 1);
+  };
   useEffect(() => {
     if (!WebView) onError();
   }, [WebView, onError]);
   const send = () =>
-    ref.current?.injectJavaScript(`window.updateCharacter?.(${scriptJson(value)}); true;`);
+    ref.current?.injectJavaScript(
+      `window.updateCharacter?.(${scriptJson(initial.current)}); true;`,
+    );
   useEffect(send, [value]);
   if (!WebView) return null;
   return (
     <WebView
+      key={`${runtimeUrl}:${generation}`}
       ref={ref}
       source={source}
       style={{ flex: 1, backgroundColor: 'transparent' }}
       scrollEnabled={false}
       javaScriptEnabled
       originWhitelist={['*']}
+      onError={() => {
+        if (activeSource.current === source) onError();
+      }}
+      onRenderProcessGone={processTerminated}
+      onContentProcessDidTerminate={processTerminated}
       onMessage={(event) => {
+        if (activeSource.current !== source) return;
         if (event.nativeEvent.data.startsWith('snapshot:')) {
           try {
             const { id, uri } = JSON.parse(event.nativeEvent.data.slice(9));
@@ -220,8 +252,18 @@ function NativeCharacter({
           } catch {
             onError();
           }
-        } else if (event.nativeEvent.data === 'ready') onReady?.();
-        else if (event.nativeEvent.data === 'error') onError();
+        } else if (event.nativeEvent.data === 'ready') {
+          if (readySource.current === source) return;
+          readySource.current = source;
+          onReady?.();
+          if (recovery.current.used) {
+            clearTimeout(recoveryTimer.current);
+            recoveryTimer.current = setTimeout(() => {
+              if (activeSource.current === source) recovery.current.used = false;
+              recoveryTimer.current = undefined;
+            }, 30_000);
+          }
+        } else if (event.nativeEvent.data === 'error') onError();
         else if (event.nativeEvent.data === 'loaded') send();
       }}
     />
@@ -307,6 +349,7 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
       {runtimeUrl && !failed ? (
         cachedPortrait ? (
           <NativePortrait
+            key={runtimeUrl}
             character={resolved}
             size={size}
             previewPart={props.previewPart}

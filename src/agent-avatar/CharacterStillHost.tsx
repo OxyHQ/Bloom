@@ -109,6 +109,10 @@ function StillRender({
       });
     };
   }, [job, WebView, send, onFailure]);
+  const processTerminated = () => {
+    broken.current = true;
+    active.current?.finish(null, true);
+  };
   if (!WebView) return null;
   return (
     <View
@@ -131,6 +135,9 @@ function StillRender({
         scrollEnabled={false}
         javaScriptEnabled
         originWhitelist={['*']}
+        onError={processTerminated}
+        onRenderProcessGone={processTerminated}
+        onContentProcessDidTerminate={processTerminated}
         onMessage={(event) => {
           const data = event.nativeEvent.data;
           if (data === 'loaded') {
@@ -142,7 +149,8 @@ function StillRender({
           } else if (data.startsWith('capabilities:')) {
             try {
               const { id, value } = JSON.parse(data.slice(13));
-              if (active.current?.id === id) active.current.job.onCapabilities?.(value);
+              const current = active.current;
+              if (current && current.id === id) current.job.onCapabilities?.(value);
             } catch {
               /* Invalid reports cannot supply another job's catalog. */
             }
