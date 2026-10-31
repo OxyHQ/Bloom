@@ -1,3 +1,4 @@
+import { createAvatarReconciler } from './avatar-controller';
 import { resolveCompleteEditorRecipe } from './avatar/recipe';
 import type { EditorRenderProps } from './avatar-contract';
 import type { CharacterCapabilities } from '../src/agent-avatar/context';
@@ -29,58 +30,13 @@ export async function createAvatar(
     callbacks.onError,
     pending.signal,
   );
-  callbacks.onCapabilities?.(recipe.capabilities);
-  let latest = initial;
-  let applied = initial;
-  let disposed = false;
-  let running: Promise<void> | undefined;
-  let supersedeUpdate: (() => void) | undefined;
-  const reconcile = async () => {
-    while (!disposed && applied !== latest) {
-      const props = latest;
-      const next = resolveCompleteEditorRecipe(props);
-      let supersede!: () => void;
-      const superseded = new Promise<void>((resolve) => {
-        supersede = resolve;
-      });
-      supersedeUpdate = supersede;
-      await current.update(props, next, () => !disposed && latest === props, superseded);
-      if (supersedeUpdate === supersede) supersedeUpdate = undefined;
-      if (!disposed && latest === props) callbacks.onCapabilities?.(next.capabilities);
-      applied = props;
-    }
-  };
-  return {
-    update(props) {
-      if (disposed) return;
-      const changed = latest !== props;
-      latest = props;
-      if (changed) supersedeUpdate?.();
-      // Presentation constraints must not queue behind an optional action fetch.
-      current.setPresentation(props);
-      if (!running)
-        running = reconcile()
-          .catch(() => {
-            if (!disposed) {
-              disposed = true;
-              pending.abort();
-              current.dispose();
-              callbacks.onError();
-            }
-          })
-          .finally(() => {
-            running = undefined;
-          });
-      return running;
-    },
-    dispose() {
-      if (disposed) return;
-      disposed = true;
-      supersedeUpdate?.();
-      pending.abort();
-      current.dispose();
-    },
-  };
+  return createAvatarReconciler(initial, current, {
+    resolveRecipe: resolveCompleteEditorRecipe,
+    initialRecipe: recipe,
+    onCapabilities: callbacks.onCapabilities,
+    onError: callbacks.onError,
+    onDispose: () => pending.abort(),
+  });
 }
 
 if (typeof document !== 'undefined') {
