@@ -945,6 +945,12 @@ provider isolation and the family/documentation gates. The self-contained Node s
 passed 279 tests across 15 files, including exact motion transport and authored JSON parity,
 geometry transport, shared-transform sampling, catalog layout/fitting and material rules.
 
+After adopting the native still selectors and process recovery, the expanded native/avatar,
+creator and family/documentation Jest union passed 23 suites and 159 tests. A subsequent
+13-test focused run also passed, including the added fake-timer check that 30 stable seconds
+restore the recovery budget and teardown removes its timer. These tests exercise mocked native
+events and renderer ownership; they do not prove physical process-kill recovery or native FPS.
+
 The broader `node --test --test-concurrency=2 scripts/test-avatar-*.mjs` invocation was also
 attempted: 31 files produced 428 test results, with 296 passes and 132 failures. The failures
 were missing historical `.local/` captures (`ENOENT`) in 16 scripts; examples include
@@ -976,3 +982,53 @@ card backgrounds, scrolling, pointer input and Modal windows remain separate com
 owners, while sending measured bounds over the bridge each frame would add latency. A
 future backend would need shared GPU resources with native composable output views and
 physical lifecycle validation; this change does not declare that problem solved.
+
+
+#### Physical Android: shared document and separate native WebViews
+
+The [curated 2026-10-31 evidence](./avatar-efficiency-2026-10-31.json) records device,
+revision, per-run counters, network scope and exclusions. The baseline is `798d6513`;
+optimized steady-state samples precede the final controller-supersession fixes, which do
+not change the measured idle workload. These are short diagnostics, not fleet guarantees.
+
+In one physical Android WebView, 12 canvases shared a GPU context. With only one active
+avatar, submitted triangles fell from 273,268 to 18,804 while FPS remained 59.88 to 59.83.
+With all 12 active, both versions likewise remained near 60 FPS (59.90 to 59.88). This
+establishes reduced drawing work for retained portraits, not an FPS gain or performance
+of the native per-avatar WebView integration. Desktop throttling repetitions are retained
+in the JSON, including their large variation; they do not support a universal FPS claim.
+
+A Pixel 8a with Mali-G715 also ran the distributed ESM runtime in a small native Android
+harness with **one visible WebView per live avatar**. This reproduces the document/context
+boundary; it is not the React Native compositor or the new native still-selector route.
+Eight instances used the same blue preset, each with a 128 × 128 CSS-pixel viewport. Device
+DPR was 2.625; the engine capped its pixel ratio at 1.5 (192 backing pixels per avatar).
+The optimized build disables redundant antialiasing on the default framebuffer; the
+offscreen color target retains 4× MSAA. This change in context settings is part of the
+measured implementation. It does not disable antialiasing for the avatar output.
+
+| Eight visible live WebViews | Before | After |
+| --- | ---: | ---: |
+| Measured active FPS across hosts, approximately 5 seconds | 36.33–36.34 | 36.32–36.53 |
+| Maximum initial readiness across eight hosts | 6,484.5 ms | 3,799.6 ms |
+| Binary network bytes per host, CDP encoded length | 7,880,216 | 1,038,012 |
+| Active host + renderer PSS snapshot | 715,938 KiB | 485,561 KiB |
+| Paused frame advancement | 0 | 0 |
+
+There is **no measured live-frame-rate gain** in this topology. The observed cold binary
+transfer decreased 86.8%, maximum readiness decreased 41.4%, and the one active PSS snapshot
+decreased 32.2%. These are individual paired runs, not repeated statistical estimates.
+Network capture disabled the HTTP cache and includes CDP's encoded overhead; it excludes
+other resource types and must not be described as total page download. PSS is a snapshot,
+not a peak or a guarantee for other devices. The active samples recorded 38.1 °C battery
+temperature on both sides; the later optimized paused sample reached 38.4 °C with thermal
+status 1. This is not a sustained thermal test.
+
+Nine visible 128 × 128 WebViews then exposed a separate limit: both builds retained eight
+ready renderers and one lost WebGL context. The failed view reported `isContextLost() === true`,
+zero engine frames and suspension, despite every document being visible. Reducing meshes
+and transfer did not remove that native context boundary. The selector change avoids nine
+frozen WebViews by using one capture host and images; its ownership is tested in Jest, while
+physical performance of the React Native selector wrapper remains unmeasured. A production
+live-native shared renderer, iOS/low-end ARM validation, and physical OS process-kill tests
+remain outstanding.

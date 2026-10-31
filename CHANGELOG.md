@@ -17,7 +17,7 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 
 ### Consumers
 
-No character or action prop changes. Self-hosted consumers must replace the complete generated `assets/character-runtime/` directory alongside the updated library. Native live avatars still use one WebView each; physical-device validation of multiple native live views and OS process-kill recovery remains outstanding. Measurement scope and implementation details are recorded in `docs/agent-avatar.mdx` and `docs/benchmarks/avatar-engine-research.md`.
+No character or action prop changes. Self-hosted consumers must replace the complete generated `assets/character-runtime/` directory alongside the updated library. Native live avatars still use one WebView each: a physical Pixel 8a test found a lost WebGL context at nine visible live WebViews both before and after these changes. Static selectors now avoid that topology; live-native context sharing, iOS integration and physical OS process-kill recovery remain outstanding. Measurement scope and implementation details are recorded in `docs/agent-avatar.mdx` and `docs/benchmarks/avatar-engine-research.md`.
 
 ## 15.77.0
 
