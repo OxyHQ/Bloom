@@ -1,6 +1,7 @@
 /** Original authored assets and material equations, rendered by an independent
  * Three scene. Captured semantic clips are separate from the fixed reference fixture. */
 import * as THREE from 'three';
+import { readPixelsAsync } from './async-pixels';
 import { boundBodyPigment } from '../../src/agent-avatar/body-pigment';
 import type { AuthoredMotionPose, AuthoredMotionSampler } from './motion';
 import { AvatarPoseSharing } from './pose-sharing';
@@ -37,7 +38,7 @@ type Vectors = Record<string, number[]>;
 // These joints are immutable identity transforms. Three accepts their flattened
 // representation directly instead of copying 24 Matrix4 objects on every draw.
 const identityJoints = Float32Array.from({ length: 24 * 16 }, (_, index) =>
-  index % 16 % 5 === 0 ? 1 : 0,
+  (index % 16) % 5 === 0 ? 1 : 0,
 );
 function uniforms(values: Vectors) {
   return Object.fromEntries(
@@ -248,6 +249,9 @@ export class AuthoredAvatarEngine {
   private attributesDirty = true;
   private cropCache = new Map<string, number[]>();
   private fitsDirty = true;
+  private fitGeneration = 0;
+  private fitReads: ReturnType<typeof readPixelsAsync>[] = [];
+  private renderFailure: Error | null = null;
   private fitPending = true;
   private backingPixels = 320;
   private poseObject = new THREE.Object3D();
@@ -279,6 +283,7 @@ export class AuthoredAvatarEngine {
     } else this.invalidate();
   };
   private onContextLost = () => {
+    this.cancelFitReads();
     this.contextLost = true;
     this.visibilityChanged();
   };
@@ -289,6 +294,7 @@ export class AuthoredAvatarEngine {
   };
   private pixels: number;
   private onFrame?: () => void;
+  private onError?: (error: Error) => void;
   readonly loaded: Promise<void>;
   constructor(
     private canvas: HTMLCanvasElement | null,
@@ -302,6 +308,7 @@ export class AuthoredAvatarEngine {
       lazyWork?: boolean;
       host?: AvatarEngineHost;
       onFrame?: () => void;
+      onError?: (error: Error) => void;
       resolveAsset?: (
         key: string,
         detail: 'low' | 'high',
@@ -313,6 +320,7 @@ export class AuthoredAvatarEngine {
     if (!canvas && !this.host) throw Error('Avatar engine requires a canvas or a render host');
     this.allowPoseOverrides = options.poseOverrides ?? false;
     this.onFrame = options.onFrame;
+    this.onError = options.onError;
     this.resolveAsset = options.resolveAsset;
     this.lazyWork = options.lazyWork ?? false;
     this.assetLoader = options.assetLoader ?? loadAuthoredAsset;
@@ -1192,6 +1200,7 @@ export class AuthoredAvatarEngine {
   }
   private resize() {
     if (this.disposed) return;
+    this.cancelFitReads();
     this.attributesDirty = true;
     this.fitsDirty = true;
     const scale = this.pixels <= 64 ? 1 : this.pixels <= 128 ? 1.5 : 2;
@@ -1315,6 +1324,7 @@ export class AuthoredAvatarEngine {
   }
   private tick = (timestamp: number) => {
     this.raf = 0;
+    if (this.fitReads.length || this.renderFailure) return;
     if (this.disposed || !this.ready || this.hidden() || !this.inViewport || this.contextLost)
       return;
     if (this.states.every((state) => state.rendering === false)) {
@@ -1760,7 +1770,7 @@ export class AuthoredAvatarEngine {
       // must never be delivered as the requested live or held pose, including
       // when every clock is paused and would otherwise schedule no next frame.
       this.fitPasses++;
-      this.invalidate();
+      if (!this.fitReads.length) this.invalidate();
       return;
     }
     const ratio = this.renderer.getPixelRatio();
@@ -1842,60 +1852,40 @@ export class AuthoredAvatarEngine {
     // reaction/work would consume the entire wall-clock gap on its first frame.
     else this.previousTime = 0;
   };
-  private updateCrops() {
-    if (!this.fitsDirty) return;
+  private cancelFitReads() {
+    this.fitGeneration++;
+    for (const read of this.fitReads) read.cancel();
+    this.fitReads = [];
+  }
+  private fittedCrop(pixels: Uint8Array, size: number, fallback: number[]) {
+    let minX = size,
+      minY = size,
+      maxX = -1,
+      maxY = -1;
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++) {
+        if (pixels[((size - y - 1) * size + x) * 4 + 3]! <= 24) continue;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    if (maxX < minX) return fallback;
+    const extent = Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
+    return [
+      (minX + maxX - extent) / (2 * size),
+      (minY + maxY - extent) / (2 * size),
+      extent / size,
+      extent / size,
+    ];
+  }
+  private applyCachedFits() {
     let changed = false;
     const size = this.backingPixels;
-    const ratio = this.renderer.getPixelRatio();
     this.states.forEach((state, index) => {
       if (state.rendering === false) return;
-      const key = `${state.preset}:${this.detail}:${size}`;
-      let crop = this.cropCache.get(key);
-      if (!crop) {
-        const left = Math.round(
-          (this.width * ratio) / 2 +
-            ((index % this.cols) - Math.min(this.count, this.cols) / 2) * size,
-        );
-        const top = Math.round(
-          (this.height * ratio) / 2 + (Math.floor(index / this.cols) - this.rows / 2) * size,
-        );
-        const pixels = new Uint8Array(size * size * 4);
-        this.renderer.readRenderTargetPixels(
-          this.colorTarget,
-          left,
-          this.colorTarget.height - top - size,
-          size,
-          size,
-          pixels,
-        );
-        let minX = size,
-          minY = size,
-          maxX = -1,
-          maxY = -1;
-        for (let y = 0; y < size; y++)
-          for (let x = 0; x < size; x++) {
-            if (pixels[((size - y - 1) * size + x) * 4 + 3]! <= 24) continue;
-            minX = Math.min(minX, x);
-            maxX = Math.max(maxX, x);
-            minY = Math.min(minY, y);
-            maxY = Math.max(maxY, y);
-          }
-        if (maxX < minX) {
-          // An intentionally empty preview (for example, no eyes) has no
-          // measurable silhouette. Its authored crop is valid and prevents
-          // an endless reference-fit loop for an otherwise ready blank image.
-          crop = this.asset(state.preset)!.source.material.crop.slice();
-        } else {
-          const extent = Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
-          crop = [
-            (minX + maxX - extent) / (2 * size),
-            (minY + maxY - extent) / (2 * size),
-            extent / size,
-            extent / size,
-          ];
-        }
-        this.cropCache.set(key, crop);
-      }
+      const crop = this.cropCache.get(`${state.preset}:${this.detail}:${size}`);
+      if (!crop) return;
       const values = this.fits.image.data as Float32Array;
       if (crop.some((v, channel) => Math.abs(values[index * 4 + channel]! - v) > 1e-7)) {
         values.set(crop, index * 4);
@@ -1909,12 +1899,104 @@ export class AuthoredAvatarEngine {
     );
     this.fitsDirty = this.fitPending;
   }
+  private updateCrops() {
+    if (!this.fitsDirty || this.fitReads.length) return;
+    const size = this.backingPixels;
+    const ratio = this.renderer.getPixelRatio();
+    const captures = new Map<string, { left: number; bottom: number; fallback: number[] }>();
+    this.states.forEach((state, index) => {
+      if (state.rendering === false) return;
+      const key = `${state.preset}:${this.detail}:${size}`;
+      if (this.cropCache.has(key) || captures.has(key)) return;
+      const left = Math.round(
+        (this.width * ratio) / 2 +
+          ((index % this.cols) - Math.min(this.count, this.cols) / 2) * size,
+      );
+      const top = Math.round(
+        (this.height * ratio) / 2 + (Math.floor(index / this.cols) - this.rows / 2) * size,
+      );
+      captures.set(key, {
+        left,
+        bottom: this.colorTarget.height - top - size,
+        fallback: this.asset(state.preset)!.source.material.crop.slice(),
+      });
+    });
+    if (!captures.size) {
+      this.applyCachedFits();
+      return;
+    }
+    if (this.host) {
+      // ExpoGL does not provide the web PBO readback operations. Its host keeps
+      // the existing synchronous one-time fit, not an exception-based fallback.
+      for (const [key, capture] of captures) {
+        const pixels = new Uint8Array(size * size * 4);
+        this.renderer.readRenderTargetPixels(
+          this.colorTarget,
+          capture.left,
+          capture.bottom,
+          size,
+          size,
+          pixels,
+        );
+        this.cropCache.set(key, this.fittedCrop(pixels, size, capture.fallback));
+      }
+      this.applyCachedFits();
+      return;
+    }
+    const generation = this.fitGeneration;
+    const gl = this.renderer.getContext() as WebGL2RenderingContext;
+    const { __webglFramebuffer: framebuffer } = this.renderer.properties.get(this.colorTarget) as {
+      __webglFramebuffer: WebGLFramebuffer;
+    };
+    const pending = captures.entries();
+    const results: { key: string; crop: number[] }[] = [];
+    const drain = async () => {
+      for (const [key, capture] of pending) {
+        if (this.disposed || generation !== this.fitGeneration) return;
+        const read = readPixelsAsync(gl, framebuffer, capture.left, capture.bottom, size, size);
+        this.fitReads.push(read);
+        try {
+          const pixels = await read.promise;
+          results.push({ key, crop: this.fittedCrop(pixels, size, capture.fallback) });
+        } finally {
+          const index = this.fitReads.indexOf(read);
+          if (index >= 0) this.fitReads.splice(index, 1);
+        }
+      }
+    };
+    // Bound temporary GPU storage to two tiles even for a large cold catalog.
+    // Rendering stays suspended so the source framebuffer remains unchanged.
+    void Promise.all([drain(), drain()])
+      .then(() => {
+        if (this.disposed || generation !== this.fitGeneration) return;
+        this.fitReads = [];
+        for (const { key, crop } of results) this.cropCache.set(key, crop);
+        this.applyCachedFits();
+        this.invalidate();
+      })
+      .catch((error: unknown) => {
+        if (this.disposed || generation !== this.fitGeneration) return;
+        if (gl.isContextLost()) {
+          this.onContextLost();
+          return;
+        }
+        this.cancelFitReads();
+        this.renderFailure = error instanceof Error ? error : new Error(String(error));
+        this.cancelFrame();
+        this.raf = 0;
+        this.onError?.(this.renderFailure);
+      });
+  }
+
   stats() {
     return {
       ready: this.ready,
       surfaceFinish: 'smooth',
       retainedCanvasCulling: true,
       activeAtlasScissor: true,
+      asyncFitReadback: !this.host,
+      pendingFitReads: this.fitReads.length,
+      renderFailure: this.renderFailure?.message ?? null,
       renderedPixels: this.renderBounds.z * this.renderBounds.w,
       atlasPixels: this.colorTarget.width * this.colorTarget.height,
       renderBounds: this.renderBounds.toArray(),
@@ -2001,6 +2083,7 @@ export class AuthoredAvatarEngine {
     };
   }
   dispose() {
+    this.cancelFitReads();
     if (this.disposed) return;
     this.disposed = true;
     this.cancelFrame();

@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-31",
+  "scope": "Fresh SwiftShader browsers; sync method from6adb842b on identical current engine (including flat joint uniforms);128CSS/DPR1 one authored blue preset. Shader disk cache disabled. CPU heartbeat and first delivered readiness, not warm FPS or physical-device result.",
+  "cases": [
+    {
+      "asyncFit": false,
+      "readyMs": 655,
+      "maxHeartbeatGapMs": 586,
+      "longtasks": [
+        {
+          "start": 318.5,
+          "duration": 584
+        }
+      ],
+      "records": {
+        "readPixels": {
+          "count": 1,
+          "ms": 379.9000000357628,
+          "max": 379.9000000357628
+        }
+      },
+      "fitPasses": 1
+    },
+    {
+      "asyncFit": true,
+      "readyMs": 859.2000000476837,
+      "maxHeartbeatGapMs": 346.89999997615814,
+      "longtasks": [
+        {
+          "start": 313.60000002384186,
+          "duration": 345
+        }
+      ],
+      "records": {
+        "readPixels": {
+          "count": 1,
+          "ms": 0,
+          "max": 0
+        },
+        "clientWaitSync": {
+          "count": 104,
+          "ms": 2.399999976158142,
+          "max": 0.10000002384185791
+        },
+        "getBufferSubData": {
+          "count": 1,
+          "ms": 0.09999996423721313,
+          "max": 0.09999996423721313
+        }
+      },
+      "fitPasses": 1
+    },
+    {
+      "asyncFit": true,
+      "readyMs": 608.6000000238419,
+      "maxHeartbeatGapMs": 188.69999998807907,
+      "longtasks": [
+        {
+          "start": 295.5,
+          "duration": 186
+        }
+      ],
+      "records": {
+        "readPixels": {
+          "count": 1,
+          "ms": 0,
+          "max": 0
+        },
+        "clientWaitSync": {
+          "count": 83,
+          "ms": 1.600000023841858,
+          "max": 0.10000002384185791
+        },
+        "getBufferSubData": {
+          "count": 1,
+          "ms": 0,
+          "max": 0
+        }
+      },
+      "fitPasses": 1
+    },
+    {
+      "asyncFit": false,
+      "readyMs": 922.8000000119209,
+      "maxHeartbeatGapMs": 892.6999999880791,
+      "longtasks": [
+        {
+          "start": 289.5,
+          "duration": 863
+        }
+      ],
+      "records": {
+        "readPixels": {
+          "count": 1,
+          "ms": 626.3999999761581,
+          "max": 626.3999999761581
+        }
+      },
+      "fitPasses": 1
+    }
+  ]
+}

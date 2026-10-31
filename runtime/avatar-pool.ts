@@ -17,6 +17,7 @@ type Entry = AvatarSlotState & {
   width: number;
   height: number;
   onReady?: () => void;
+  onRenderError?: () => void;
 };
 const pools = new Set<EditorPool>();
 const sizeFor = (canvas: HTMLCanvasElement) => {
@@ -51,6 +52,9 @@ class EditorPool {
         lazyWork: true,
         resolveAsset: createCatalogAssetResolver(createCatalogMotion),
         onFrame: () => this.paint(),
+        onError: () => {
+          for (const entry of [...this.entries]) entry?.onRenderError?.();
+        },
       });
     } catch (error) {
       this.stage.remove();
@@ -222,6 +226,11 @@ class EditorPool {
       rejectAbort?.(aborted());
     };
     const abort = () => dispose();
+    entry.onRenderError = () => {
+      if (disposed) return;
+      dispose();
+      onError?.();
+    };
     signal?.addEventListener('abort', abort, { once: true });
     const wait = <T>(promise: Promise<T>) => Promise.race([promise, interrupted]);
     try {
