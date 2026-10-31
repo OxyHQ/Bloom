@@ -67,6 +67,23 @@ microbenchmarks, not total frame CPU, GPU time or FPS. The independent and singl
 results were effectively unchanged. Full samples and mutation checks are recorded in
 the [pose-sharing evidence](./avatar-pose-sharing-2026-10-31.json).
 
+## Less allocation when decoding geometry
+
+Index decoding now concatenates typed ranges directly, or reuses a matching single
+range from the immutable asset buffer already retained by the vertices. It avoids
+creating an array of boxed numbers per range, flattening those arrays, and converting
+the flattened result back to a typed buffer. Draw order and Three's index-width rule,
+including the reserved primitive-restart value 65535, remain identical.
+
+All 671 source and catalog parts, comprising 5,450,982 indices, match the previous
+decoder byte for byte and use the same component types. Seven alternating warmed
+Node runs measured a median of 171.39 ms before and 3.19 ms after for this operation
+across the complete catalog. This excludes file reads, other geometry setup and
+shader compilation; a real scene loads only its required assets. It is neither a
+whole-startup nor an FPS result. The [decode measurements](./avatar-index-decode-2026-10-31.json)
+retain the individual samples; `scripts/test-avatar-index-buffer.mjs` checks all
+assets and synthetic width/empty-range boundaries.
+
 ## First presentation and shared controllers
 
 The alpha-fit pass previously delivered its neutral reference pose as the first image,
