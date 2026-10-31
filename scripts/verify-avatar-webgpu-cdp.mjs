@@ -40,7 +40,7 @@ try {
       const result = await page.evaluate((options) => __avatarWebGPUFixture.captureHeld(options), {
         kind,
         time,
-        images: true,
+        images: process.env.AVATAR_CAPTURE_ALL_IMAGES === '1' ? 'all' : true,
       });
       const sourcePixels = cssSize === 64 ? 64 : cssSize === 320 ? 512 : 192;
       assert.equal(
