@@ -126,6 +126,28 @@ limit remains relevant. Physical native results must identify whether they measu
 isolated engine, the companion or the final React Native component; those are distinct
 claims.
 
+The physical Pixel 8a audit used authored idle at 192 backing pixels and MSAA 4:
+
+| Workload | Observed result | Counter and scope |
+| --- | --- | --- |
+| Eight independent WebViews | 36.84–37.03 frames/s each | Engine submissions; an upper bound on presentation |
+| Eight shared native surfaces, warmed after remount | 57.26 updates/s each | Actual surface updates over 10 seconds; one context |
+| Twelve shared native surfaces | 57.11 updates/s each | Separate capacity sample over five seconds; one context |
+| Installed companion tarball, eight surfaces | 58.75–58.95 updates/s | Warm repeat; same engine binary as the final lifecycle audit |
+
+The initial native windows were slower (37.2–44.2, then 50.2–58.0 updates/s), so the
+warmed results do not describe cold startup. PSS snapshots were 373,532–385,240 KiB
+for the RN debug host versus 496,509 KiB for the Java host plus WebView renderer;
+their different host overhead prevents treating this 22–25% difference as a universal
+memory saving. The paths also have different final compositor scaling chains; raw
+engine fidelity does not establish identical final screen pixels across those chains.
+
+The final compatible package passed cold first-frame equality, paused/offscreen zero
+updates, resume of all twelve mixed surfaces, snapshots, and complete context/view
+cleanup. Mixed work was an appearance/lifecycle check, not a performance benchmark.
+Artifact hashes, timing-versus-final-package distinctions and reproducible fixtures
+are recorded in the [physical native audit](./avatar-native-shared-context-2026-10-31.json).
+
 ## Verification boundaries
 
 - 57 source-rendering cases compare 45,936,640 pixels with zero changed RGBA values,
