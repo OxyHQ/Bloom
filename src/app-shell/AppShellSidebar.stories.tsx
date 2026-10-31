@@ -131,13 +131,27 @@ export const Adaptive: Story = {
   },
 };
 
+/** Panel descriptors with an explicit navigation placement share the window corner. */
+export const ExplicitPlacement: Story = {
+  render: function ExplicitPlacement(args) {
+    const [, updateArgs] = useArgs();
+    return (
+      <SidebarPreview
+        args={args}
+        composition="explicit-placement"
+        onCollapsedChange={(collapsed) => updateArgs({ collapsed })}
+      />
+    );
+  },
+};
+
 function SidebarPreview({
   args,
   onCollapsedChange,
   composition = 'panels',
 }: {
   args: PlaygroundArgs;
-  composition?: 'panels' | 'adaptive';
+  composition?: 'panels' | 'adaptive' | 'explicit-placement';
   onCollapsedChange: (collapsed: boolean) => void;
 }) {
   const [selected, setSelected] = useState<'home' | 'calendar' | 'settings'>('home');
@@ -194,8 +208,9 @@ function SidebarPreview({
         testID="sidebar-playground"
         header={null}
         navigationAlign="content"
-        navFrom={0}
-        framedFrom={0}
+        {...(composition === 'explicit-placement'
+          ? { navigationPlacement: args.variant === 'rail' ? 'rail' : 'sidebar' }
+          : { navFrom: 0, framedFrom: 0 })}
         contentMaxWidth="none"
         sidebar={sidebar}
         panelLayout={{

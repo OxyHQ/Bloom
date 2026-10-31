@@ -6,6 +6,35 @@ const { chromium, expect } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || '@pl
 const base = process.argv[2] || 'http://localhost:6006';
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 try {
+  // Explicit navigation placement uses a Screen scope around the compositor;
+  // the shell still owns the window corner and the real sidebar remains clickable.
+  {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto(
+      `${base}/iframe.html?id=composition-app-shell-sidebar-playground--explicit-placement&args=size:sm;surface:docked;variant:panel;collapsed:true;window:oxyos`,
+      { waitUntil: 'domcontentloaded', timeout: 120000 },
+    );
+    const controls = page.getByTestId('sidebar-playground-window-controls');
+    const band = page.getByTestId('sidebar-window-band');
+    const expand = page.getByRole('button', { name: 'Expand sidebar', exact: true });
+    await expect(controls).toHaveCount(1, { timeout: 120000 });
+    await expect(page.getByTestId('sidebar-playground-screen-window-controls')).toHaveCount(0);
+    await expect(band).toHaveCSS('height', '52px', { timeout: 120000 });
+    const [buttons, trigger] = await Promise.all([controls.boundingBox(), expand.boundingBox()]);
+    assert.ok(buttons && trigger, 'window controls and sidebar trigger have bounds');
+    assert.ok(
+      trigger.y >= buttons.y + buttons.height,
+      'sidebar trigger clears the window controls',
+    );
+    await expand.click();
+    await expect(page.getByRole('button', { name: 'Collapse sidebar', exact: true })).toBeVisible();
+    assert.deepEqual(errors, []);
+    console.log({ explicitPlacement: true, passed: true });
+    await page.close();
+  }
+
   // The adaptive shell uses a Reanimated mapper without the worklets plugin.
   // Its clearance must follow the measured navigation host in both directions.
   for (const direction of ['ltr', 'rtl']) {
