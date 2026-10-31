@@ -379,6 +379,27 @@ export function createScreenScrollView(
       },
       [active, tracksEnd, onContentSizeChange],
     );
+    // The panel owns this element viewport. Its persistent workspace header
+    // overlays the viewport, so reserve it in scroll content rather than
+    // moving the viewport down. Document scroll remains in normal flow.
+    const workspaceInset = viewport?.kind === 'element' ? (screen.workspaceTopInset ?? 0) : 0;
+    const contentStyle = StyleSheet.flatten(contentContainerStyle);
+    const inset = workspaceInset && !contentContainerClassName
+      ? { paddingTop: workspaceInset + paddingEdge(contentStyle, 'paddingTop') }
+      : null;
+    const content = (
+      <StyledView
+        ref={contentRef}
+        className={contentContainerClassName}
+        style={[contentContainerStyle, inset]}
+        onLayout={handleContentLayout}
+      >
+        {children}
+        {tracksEnd ? (
+          <View ref={endRef} pointerEvents="none" aria-hidden style={END_SENTINEL_STYLE} />
+        ) : null}
+      </StyledView>
+    );
     return (
       <View
         {...props}
@@ -390,17 +411,7 @@ export function createScreenScrollView(
           restoration?.restorePending ? { opacity: 0 } : null,
         ]}
       >
-        <StyledView
-          ref={contentRef}
-          className={contentContainerClassName}
-          style={contentContainerStyle}
-          onLayout={handleContentLayout}
-        >
-          {children}
-          {tracksEnd ? (
-            <View ref={endRef} pointerEvents="none" aria-hidden style={END_SENTINEL_STYLE} />
-          ) : null}
-        </StyledView>
+        {viewport?.kind === 'element' && contentContainerClassName ? <View style={{ paddingTop: workspaceInset }}>{content}</View> : content}
       </View>
     );
   }

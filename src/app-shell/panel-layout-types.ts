@@ -97,6 +97,12 @@ export interface AppShellPanelLayout {
    * hide it while preserving the content tree of a workspace with a header.
    */
   header?: ReactNode;
+  /**
+   * `scroll-under` keeps the workspace header above bounded panels while their
+   * scroll content clears it; web document layouts keep an inset header.
+   * Defaults to `inset`.
+   */
+  headerPlacement?: 'inset' | 'scroll-under';
   /** Access the existing viewport for domain gestures, without nesting another scroller. */
   viewportRef?: Ref<AppShellPanelViewport>;
   onViewportScroll?: (offset: { x: number; y: number }) => void;

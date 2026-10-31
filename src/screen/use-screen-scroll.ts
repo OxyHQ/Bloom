@@ -24,6 +24,7 @@ type ScreenScrollState = Pick<
   | 'contentInsetsHandled'
   | 'bottomInsetHandled'
   | 'topInset'
+  | 'workspaceTopInset'
   | 'bottomInset'
 >;
 
@@ -117,7 +118,7 @@ export function useScreenScroll({
     onScroll,
     scrollerId: id,
     contentInsets: {
-      top: screen.contentInsetsHandled ? 0 : screen.topInset,
+      top: (screen.contentInsetsHandled ? 0 : screen.topInset) + (screen.workspaceTopInset ?? 0),
       bottom: (screen.bottomInsetHandled ?? screen.contentInsetsHandled) ? 0 : screen.bottomInset,
     },
     scrollY: screen.scrollY,

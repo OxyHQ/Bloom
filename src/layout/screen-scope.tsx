@@ -1,6 +1,7 @@
 import { BloomScope } from '../appearance/BloomScope';
 import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
 import { ScreenContext, ScreenNavigationContext } from '../screen/context';
+import { WorkspaceHeaderInsetContext } from '../screen/context';
 /**
  * A surface that is its OWN screen, for the two contracts that are screen-scoped.
  *
@@ -69,6 +70,7 @@ export function ScreenScope({
     [sizing],
   );
   return (
+    <WorkspaceHeaderInsetContext.Provider value={null}>
     <ScreenHostContext.Provider value={host}>
       <ScreenViewportContext.Provider value={null}>
         <ScreenContext.Provider value={null}>
@@ -91,5 +93,6 @@ export function ScreenScope({
         </ScreenContext.Provider>
       </ScreenViewportContext.Provider>
     </ScreenHostContext.Provider>
+    </WorkspaceHeaderInsetContext.Provider>
   );
 }

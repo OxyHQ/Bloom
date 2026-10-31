@@ -36,6 +36,7 @@ import { useOptionalScrollRestorationContext } from '../scroll/context';
 import { ScreenContext } from '../screen/context';
 import { ScreenReselectScope } from '../screen/reselect';
 import { ScreenHostContext } from '../screen/context';
+import { WorkspaceHeaderInsetContext } from '../screen/context';
 import type { ScreenProps } from '../screen/types';
 import { ResizeHandle } from '../layout/ResizeHandle';
 import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
@@ -291,6 +292,7 @@ export function createPanelLayoutView(
     vertical,
     naturalHeight,
     track,
+    workspaceTopEdge,
     alone,
     document: documentFlow,
     joined,
@@ -319,6 +321,7 @@ export function createPanelLayoutView(
     vertical: boolean;
     naturalHeight: boolean;
     track: PanelFlexTrack;
+    workspaceTopEdge: boolean;
     alone: boolean;
     document: boolean;
     joined: boolean;
@@ -404,6 +407,9 @@ export function createPanelLayoutView(
     const floatingOpen = !!track.floating && !!panel.floating?.open && panel.visible !== false;
     const sticky = !!panel.sticky && document && !vertical;
     const parent = React.useContext(ScreenContext);
+    const workspaceHeader = useContext(WorkspaceHeaderInsetContext);
+    const workspaceHeaderInset = workspaceHeader?.scrollInset ?? 0;
+    const workspaceViewportInset = workspaceHeader?.viewportInset ?? 0;
     const active =
       panel.visible !== false && (track.visible || floatingOpen) && (parent?.active ?? true);
     const screenRef = useRef<unknown>(null);
@@ -434,6 +440,8 @@ export function createPanelLayoutView(
       () => ({
         active,
         back,
+        workspaceTopInset: workspaceTopEdge && !track.floating ? workspaceHeaderInset : 0,
+        workspaceViewportInset: track.floating ? 0 : workspaceViewportInset,
         restoresDocument: document,
         kind: (Platform.OS !== 'web' ? 'native' : document ? 'document' : 'element') as
           | 'native'
@@ -457,6 +465,9 @@ export function createPanelLayoutView(
       [
         active,
         back,
+        workspaceTopEdge,
+        workspaceHeaderInset,
+        workspaceViewportInset,
         document,
         metrics,
         panel.headerActions,
@@ -730,13 +741,23 @@ export function createPanelLayoutView(
           fill={!document}
           scrollable={false}
           overlaySizing={document && !vertical ? 'viewport' : 'panel'}
-          overlayInset={document && !vertical ? region?.viewportInset : undefined}
+          overlayInset={
+            document && !vertical && region
+              ? {
+                  ...region.viewportInset,
+                  top: region.viewportInset.top + workspaceViewportInset,
+                }
+              : undefined
+          }
           surfaceStyle={[
             FILL,
             document && !vertical && !sticky && region
               ? {
                   minHeight: webViewportHeightMinus(
-                    region.viewportInset.top + region.viewportInset.bottom + region.bottomReserve,
+                    region.viewportInset.top +
+                      region.viewportInset.bottom +
+                      region.bottomReserve +
+                      workspaceViewportInset,
                   ),
                 }
               : undefined,
@@ -771,7 +792,7 @@ export function createPanelLayoutView(
                     position: WEB_POSITION_STICKY,
                     alignSelf: 'flex-start',
                     top: Math.min(
-                      region?.viewportInset.top ?? 0,
+                      (region?.viewportInset.top ?? 0) + workspaceViewportInset,
                       viewportHeight -
                         stickyHeight -
                         (region?.viewportInset.bottom ?? 0) -
@@ -1320,6 +1341,7 @@ export function createPanelLayoutView(
               dimensions[panel.id] === undefined
             }
             track={trackById.get(panel.id) ?? { ...CSS_TRACK, id: panel.id, visible: false }}
+            workspaceTopEdge={!vertical || panel.id === visible.find((item) => !item.floating)?.id}
             alone={visible.length === 1}
             document={document}
             joined={joined}
@@ -1445,25 +1467,50 @@ export function createPanelLayoutView(
       </PanelDropProvider>
     );
   }
+  function WorkspaceHeaderTracks({
+    children,
+    enabled,
+  }: {
+    children: React.ReactNode;
+    enabled: boolean;
+  }) {
+    const screen = useContext(ScreenContext);
+    const height = screen?.topInset ?? 0;
+    const scrollInset = enabled ? height : 0;
+    const viewportInset = Platform.OS === 'web' ? height : 0;
+    const value = useMemo(() => ({ scrollInset, viewportInset }), [scrollInset, viewportInset]);
+    return (
+      <WorkspaceHeaderInsetContext.Provider value={value}>
+        {children}
+      </WorkspaceHeaderInsetContext.Provider>
+    );
+  }
   function PanelLayoutView(props: PanelLayoutViewProps) {
     const region = useAppShellRegion();
     const cssScope = useContext(PanelCssContext);
     const handedWindowChrome = useWindowChrome();
     const platformWindow = usePlatformWindow();
-    if (props.layout.retain)
+    if (props.layout.retain && props.layout.header === undefined)
       return <RetainedPanelLayout layout={props.layout} gap={props.gap} testID={props.testID} />;
     if (props.layout.header === undefined) return <PanelLayoutTracks {...props} />;
     const document =
       props.layout.flow === 'document' && props.layout.mode !== 'deck' && Platform.OS === 'web';
     const joined = props.layout.appearance === 'joined' || props.layout.appearance === 'plain';
+    const scrollUnder = !document && props.layout.headerPlacement === 'scroll-under';
     const workspace = (
       <Screen
-        scroll="none"
+        scroll={scrollUnder ? 'content' : 'none'}
         documentScroll={document}
         header={props.layout.header}
         testID={props.testID ? `${props.testID}-workspace` : undefined}
       >
-        <PanelLayoutTracks {...props} surfaceOwned={joined} />
+        <WorkspaceHeaderTracks enabled={scrollUnder}>
+          {props.layout.retain ? (
+            <RetainedPanelLayout layout={props.layout} gap={props.gap} testID={props.testID} />
+          ) : (
+            <PanelLayoutTracks {...props} surfaceOwned={joined} />
+          )}
+        </WorkspaceHeaderTracks>
       </Screen>
     );
     return joined ? (

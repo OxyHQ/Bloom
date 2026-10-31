@@ -279,6 +279,12 @@ The gesture joins the bar's gesture race only when you pass the prop. Without it
 
 For a complete screen, prefer `AppShell` or `Screen` with `BottomBar`: navigation and the primary action share one row, blur and motion signal. The standalone `TabBar` below remains useful for custom compositions. `embedded` removes its positioning and safe-area ownership; `minimizeProgress` can share a screen motion value. Width is measured from the actual parent on layout.
 
+When passed to `AppShell.bottomBar`, a floating `TabBar` participates in the
+shell's measured slot automatically. It retains its pill and blur, and the slot
+owns the bottom safe area once. No fixed-height wrapper or `embedded` override is
+needed. Outside the slot, standalone and explicitly embedded behavior stay the
+same.
+
 The bar floats over your content (`position: absolute`), so nothing accounts for it. `useTabBarFootprint()` returns the space it physically occupies above the bottom of the window — its own height plus its own bottom offset, and nothing else:
 
 ```tsx
