@@ -16,7 +16,7 @@ await send('Page.enable');
 await send('Page.navigate', { url: fixture });
 await wait(700);
 const initial = await evaluate(
-  async ({ origin, count, kind, size, compact }) => {
+  async ({ origin, count, kind, size, compact, source }) => {
     performance.setResourceTimingBufferSize(10000);
     document.body.style.margin = compact ? '4px' : '8px';
     const main = document.querySelector('main');
@@ -29,7 +29,7 @@ const initial = await evaluate(
       },
     };
     const started = performance.now(),
-      url = `${origin}/bloom-character/runtime.mjs`;
+      url = `${origin}${source ? '/runtime/avatar-runtime.ts' : '/bloom-character/runtime.mjs'}`;
     await import(url);
     window.runtime = globalThis[Symbol.for('bloom.character.runtimes')].get(url);
     if (!runtime) throw Error('Missing registered runtime');
@@ -138,7 +138,14 @@ const initial = await evaluate(
     };
     return { readyMs: performance.now() - started, ...(await auditRead()) };
   },
-  { origin, count, kind, size, compact: !!process.env.COMPACT },
+  {
+    origin,
+    count,
+    kind,
+    size,
+    compact: !!process.env.COMPACT,
+    source: process.env.AVATAR_RUNTIME_SOURCE === '1',
+  },
 );
 if (process.env.SETUP_ONLY) {
   console.log(JSON.stringify(initial));
@@ -180,6 +187,7 @@ await writeFile(
     {
       id,
       origin,
+      runtimeArtifact: process.env.AVATAR_RUNTIME_SOURCE === '1' ? 'source' : 'built',
       count,
       kind,
       size,
