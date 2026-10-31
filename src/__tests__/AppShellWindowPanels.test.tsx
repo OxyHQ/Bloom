@@ -387,6 +387,73 @@ const DESKTOP: Partial<AppShellProps> = {
 const FLUSH = { items: NAV, surface: 'plain' as const, variant: 'panel' as const, width: 190 };
 
 describe('panes beside a sidebar flush to the window', () => {
+  it('keeps the window corner with the shell when navigationPlacement selects its engine path', () => {
+    setWidth(900);
+    const { navFrom: _navFrom, framedFrom: _framedFrom, ...desktop } = DESKTOP;
+    const screen = shell(fakeWindow().adapter, {
+      ...desktop,
+      navigationPlacement: 'sidebar',
+      sidebar: { ...FLUSH, surface: 'docked', size: 'sm', collapsed: true },
+    });
+    expect(screen.getAllByLabelText('Close')).toHaveLength(1);
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.queryByTestId('shell-screen-window-controls')).toBeNull();
+    expect(style(screen, 'sidebar-window-band').height).toBe(52);
+    expect(barStart(screen, 'inbox')).toBeGreaterThanOrEqual(24);
+  });
+
+  it('does not reclaim a window corner already owned by an enclosing shell', () => {
+    setWidth(900);
+    const screen = shell(fakeWindow().adapter, {
+      title: 'Outer',
+      children: (
+        <AppShell
+          testID="nested"
+          navigationPlacement="sidebar"
+          sidebar={{ ...FLUSH, surface: 'docked', size: 'sm', collapsed: true }}
+          header={null}
+          contentMaxWidth="none"
+          panelLayout={SPLIT}
+        />
+      ),
+    });
+    expect(screen.getAllByLabelText('Close')).toHaveLength(1);
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.queryByTestId('nested-window-controls')).toBeNull();
+    expect(screen.queryByTestId('sidebar-window-band')).toBeNull();
+  });
+
+  it('the engine path removes its controls and room in fullscreen and restores both', () => {
+    setWidth(900);
+    const { adapter, window } = fakeWindow();
+    const screen = shell(adapter, {
+      ...DESKTOP,
+      navigationPlacement: 'sidebar',
+      sidebar: { ...FLUSH, surface: 'docked', size: 'sm', collapsed: true },
+    });
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+    act(() => window.set({ fullscreen: true }));
+    expect(screen.queryByTestId('shell-window-controls')).toBeNull();
+    expect(screen.queryByTestId('sidebar-window-band')).toBeNull();
+    act(() => window.set({ fullscreen: false }));
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+  });
+
+  it('the engine path keeps overlay controls without reserving sidebar room', () => {
+    setWidth(900);
+    const screen = shell(fakeWindow().adapter, {
+      ...DESKTOP,
+      navigationPlacement: 'sidebar',
+      windowControls: 'overlay',
+      sidebar: { ...FLUSH, surface: 'docked', size: 'sm', collapsed: true },
+    });
+    expect(screen.getAllByLabelText('Close')).toHaveLength(1);
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.queryByTestId('shell-screen-window-controls')).toBeNull();
+    expect(screen.queryByTestId('sidebar-window-band')).toBeNull();
+  });
   it('keeps the controls clearance in the first title row beside a narrow sidebar', () => {
     setWidth(1100);
     const screen = shell(fakeWindow().adapter, {

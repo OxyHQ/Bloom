@@ -378,7 +378,8 @@ export function createAppShell(
     const width = measuredWidth ?? window.width;
     // A desktop window never takes a phone's bottom bar on its own: `auto`
     // keeps the navigation in the window at every size it can take.
-    const inWindow = useWindow() != null && !useWindowCornerTaken();
+    const cornerTaken = useWindowCornerTaken();
+    const inWindow = useWindow() != null && !cornerTaken;
     const navFrom =
       props.navFrom ??
       (navigationPlacement === 'bottom'
@@ -453,44 +454,50 @@ export function createAppShell(
         : undefined;
     return (
       <ScreenActionOwnerContext.Provider value="shell">
-        <Screen
-          active={active}
-          navigationScope="shared"
-          documentScroll={document}
-          testID={testID ? `${testID}-screen` : undefined}
-          onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
-        >
-          <AppShellEngine
-            {...(props as AppShellEngineProps)}
-            scroll={engineScroll}
-            sidebar={mappedSidebar}
-            navFrom={navFrom}
-            navExpandedFrom={navExpandedFrom}
-            header={
-              props.header !== undefined ? (
-                props.header
-              ) : props.title ? (
-                <PageHeader
-                  title={props.title}
-                  subtitle={props.breadcrumb}
-                  actions={props.actions}
-                  leading={<AppShellMenuButton accessibilityLabel={props.drawerOpenLabel} />}
-                />
-              ) : undefined
-            }
-            bottomBar={props.bottomBar !== undefined ? props.bottomBar : bottom}
-            bottomBarVisibility={props.bottomBarVisibility ?? 'compact'}
-            floatingAction={
-              props.floatingAction !== undefined ? (
-                props.floatingAction
-              ) : primaryAction &&
-                !actionClaimed &&
-                (!compact || !hasNavigation || props.bottomBar !== undefined) ? (
-                <Fab {...primaryAction} />
-              ) : undefined
-            }
-          />
-        </Screen>
+        {/* This Screen supplies navigation scope; the engine inside owns the
+            window corner. Preserve any claim made by an enclosing host. */}
+        <WindowCornerProvider value>
+          <Screen
+            active={active}
+            navigationScope="shared"
+            documentScroll={document}
+            testID={testID ? `${testID}-screen` : undefined}
+            onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
+          >
+            <WindowCornerProvider value={cornerTaken}>
+              <AppShellEngine
+                {...(props as AppShellEngineProps)}
+                scroll={engineScroll}
+                sidebar={mappedSidebar}
+                navFrom={navFrom}
+                navExpandedFrom={navExpandedFrom}
+                header={
+                  props.header !== undefined ? (
+                    props.header
+                  ) : props.title ? (
+                    <PageHeader
+                      title={props.title}
+                      subtitle={props.breadcrumb}
+                      actions={props.actions}
+                      leading={<AppShellMenuButton accessibilityLabel={props.drawerOpenLabel} />}
+                    />
+                  ) : undefined
+                }
+                bottomBar={props.bottomBar !== undefined ? props.bottomBar : bottom}
+                bottomBarVisibility={props.bottomBarVisibility ?? 'compact'}
+                floatingAction={
+                  props.floatingAction !== undefined ? (
+                    props.floatingAction
+                  ) : primaryAction &&
+                    !actionClaimed &&
+                    (!compact || !hasNavigation || props.bottomBar !== undefined) ? (
+                    <Fab {...primaryAction} />
+                  ) : undefined
+                }
+              />
+            </WindowCornerProvider>
+          </Screen>
+        </WindowCornerProvider>
       </ScreenActionOwnerContext.Provider>
     );
   }
