@@ -1,4 +1,6 @@
 {
+  "sourceModuleSHA256": "887e542e49219d54b01ce07b9f667e6412768d8eee43e56ae34ce41fffe3b5e3",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
   "adapterInfo": [
     {
       "vendor": "nvidia",
@@ -29,6 +31,7 @@
     ]
   },
   "retention": true,
+  "retainedAfterTwoFrames": true,
   "sparseMatchesFull": true,
   "recovery": [
     true,
