@@ -61,21 +61,29 @@ lifecycle behavior; those require native integration and device acceptance.
 
 Enable the config plugin together with the source-build requirement, then run
 prebuild and rebuild the Android binary. An OTA update cannot add a native host
-or change ReactAndroid's dispatcher implementation.
+or change ReactAndroid's dispatcher implementation. The Android config flag
+sets the manifest's `enableOnBackInvokedCallback`; the Bloom plugin configures
+the native library source sets. Both are required.
 
 ```js
-plugins: [
-  ['expo-build-properties', { android: { buildReactNativeFromSource: true } }],
-  ['@oxy.so/bloom', { predictiveBack: true }],
-]
+export default {
+  android: { predictiveBackGestureEnabled: true },
+  plugins: [
+    ['expo-build-properties', { android: { buildReactNativeFromSource: true } }],
+    ['@oxy.so/bloom', { predictiveBack: true }],
+  ],
+};
 ```
 
 The Expo router must expose `registerNativeBackNavigation` and
 `dispatchWithResult` on navigator helpers. Bloom registers the tabs navigator
 only when both that public router contract and the native host exist. Older
 routers/binaries retain their existing JavaScript Back handling. Overlays and
-compact drawers temporarily release the registration, so a non-dismissable
-overlay cannot accidentally send Back past an underlying tab history.
+compact drawers temporarily release the registration and suppress the tab
+preview. Overlay consumers still follow the existing `onRequestClose` contract:
+a dismissible overlay closes itself on Back, while an intentionally blocking
+overlay consumes Back. Merely registering overlay paint order does not supply a
+close handler or prevent the ordinary JavaScript fallback from navigating.
 
 Pass the current authority scope to the shared provider when account switching
 does not unmount the navigation tree:
