@@ -105,6 +105,30 @@ cannot hold up a replacement character or start a stale action. A completion-mic
 race that could lose an update immediately following a no-op update is also covered.
 The still-image cache version changes so old first-frame captures cannot survive the fix.
 
+## Web startup responsiveness
+
+The one-time alpha fit now uses a web pixel-pack buffer and a GPU fence. The UI polls
+completion without a blocking GPU wait, then applies the same alpha threshold and
+crop equations before delivering the requested pose. At most two tiles occupy temporary
+readback buffers. Preset/layout changes, disposal and context loss cancel obsolete reads;
+all success, cancellation and failure paths release buffers and fences. A failed read
+settles the affected pool entries through their error callback. The injected native host
+explicitly retains synchronous fitting because its GL bridge lacks these web operations.
+
+In an alternating fresh-browser SwiftShader diagnostic, the synchronous fit control had
+maximum heartbeat gaps of 586 and 893 ms; asynchronous fitting had gaps of 347 and 189 ms.
+The blocking `readPixels` calls took 380 and 626 ms in the control, versus effectively
+zero at submission with a fence and at most 0.1 ms copying the completed buffer. Other
+first-render work still caused long tasks. First delivery was 655/923 ms for the control
+and 859/609 ms for the asynchronous path: this is UI unblocking, **not** a demonstrated
+startup-time or warm-FPS gain. The [individual samples](./avatar-async-fit-2026-10-31.json)
+and `scripts/measure-avatar-fit-readback.mjs` preserve the isolated comparison.
+
+Separately, immutable joint matrices now arrive at Three as the same 384 flattened
+floats. An actual `WebGLUniforms` test confirms byte-identical uploads while eliminating
+24 `Matrix4.toArray` calls per draw. GPU upload count and shader equations stay unchanged;
+this CPU saving alone does not establish a production FPS improvement.
+
 ## Native adoption and remaining scope
 
 The optional Android companion renders this same engine into a framebuffer and presents
