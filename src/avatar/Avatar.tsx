@@ -102,6 +102,33 @@ function ShapeFallback({
   );
 }
 
+/** Only a caller observing primary failures needs duplicate/unmount protection. */
+function ObservedAvatarImage({
+  onError,
+  onImageError,
+  ...image
+}: React.ComponentProps<typeof ShapeImage> & { onImageError: () => void }) {
+  const request = useRef({ mounted: false, reported: false });
+  useLayoutEffect(() => {
+    request.current.mounted = true;
+    return () => {
+      request.current.mounted = false;
+    };
+  }, []);
+  return (
+    <ShapeImage
+      {...image}
+      onError={(error) => {
+        if (!request.current.mounted || request.current.reported) return;
+        request.current.reported = true;
+        // Queue fallback before notifying the caller, even if it throws or rerenders.
+        onError?.(error);
+        onImageError();
+      }}
+    />
+  );
+}
+
 /** Keyed by resolved source values, so failed images retry only when their request changes. */
 function AvatarImageContent({
   primarySource,
@@ -116,33 +143,27 @@ function AvatarImageContent({
   const [stage, setStage] = useState<'primary' | 'fallback' | 'placeholder'>(
     primarySource ? 'primary' : fallbackSource ? 'fallback' : 'placeholder',
   );
-  const currentStage = useRef(stage);
-  const mounted = useRef(false);
-  useLayoutEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
   const source =
     stage === 'primary' ? primarySource : stage === 'fallback' ? fallbackSource : undefined;
   if (!source) return <ShapeFallback {...placeholder} />;
-  return (
-    <ShapeImage
-      key={stage}
-      source={source}
-      shape={placeholder.shape}
-      size={placeholder.size}
-      alt={placeholder.alt}
-      onError={() => {
-        // Native image events may arrive after replacement or more than once.
-        if (!mounted.current || currentStage.current !== stage) return;
-        const next = stage === 'primary' && fallbackSource ? 'fallback' : 'placeholder';
-        currentStage.current = next;
-        setStage(next);
-        if (stage === 'primary') onImageError?.();
-      }}
-    />
+  const image = {
+    source,
+    shape: placeholder.shape,
+    size: placeholder.size,
+    alt: placeholder.alt,
+    onError: () =>
+      setStage((current) =>
+        current !== stage
+          ? current
+          : stage === 'primary' && fallbackSource
+            ? 'fallback'
+            : 'placeholder',
+      ),
+  };
+  return stage === 'primary' && onImageError ? (
+    <ObservedAvatarImage key={stage} {...image} onImageError={onImageError} />
+  ) : (
+    <ShapeImage key={stage} {...image} />
   );
 }
 

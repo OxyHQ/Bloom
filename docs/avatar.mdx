@@ -22,6 +22,13 @@ opening its full-size version. Avatar still owns the fallback image and initials
 their failures and character rendering do not emit this callback. Replacing the
 photo starts a new request and ignores late errors from the previous one.
 
+Only a primary photo with `onImageError` mounts an observer: one component with
+one ref and one layout effect. Photos without the callback, fallback images and
+initials allocate none of that observation lifecycle. Adding or removing the
+callback can remount the image node, but preserves the current fallback stage;
+it does not retry a failed primary or resurrect a failed fallback. Replacing one
+callback function with another keeps the observer mounted.
+
 ## Initials fallback
 
 ```tsx

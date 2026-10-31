@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.79.1
+
+### Changed
+
+- Avatar photo-error observation now allocates its lifecycle only when `onImageError` is supplied and the primary photo is shown. Ordinary photos, fallbacks and initials avoid the extra hooks. Duplicate, stale and reentrant notifications remain guarded, including when a callback throws; toggling observation preserves the fallback state and silhouette.
+
+### Consumers
+
+No API changes. Existing `onImageError` handlers keep their contract. The character runtime and native companion are unchanged.
+
 ## 15.79.0
 
 ### Changed
