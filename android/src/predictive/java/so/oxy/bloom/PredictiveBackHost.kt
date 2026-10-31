@@ -1,6 +1,5 @@
 package so.oxy.bloom
 
-import java.util.concurrent.atomic.AtomicInteger
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.os.Build
@@ -8,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.MotionEvent
 import androidx.activity.BackEventCompat
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.findViewTreeOnBackPressedDispatcherOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -34,20 +32,17 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
   var settledGestureId = 0
     set(value) {
       field = value
-      if (value == gestureId && session.committed) {
+      if (value == callback.gestureId && session.committed) {
         session.cancel()
         invalidate()
         updateEligibility()
       }
     }
-  private var gestureId = 0
   private val session = BackPreviewSession()
   private var lifecycleOwner: LifecycleOwner? = null
   private var destination: View? = null
   private var resolvedDestinationTag = 0
   private var initialized = false
-  private var gestureStarted = false
-  private var invalidatedGesture = false
   private var edge = BackEventCompat.EDGE_LEFT
   private var animator: ValueAnimator? = null
   private var registered = false
@@ -55,48 +50,20 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
   private val ownershipListener = Runnable { updateEligibility() }
   private val lifecycleObserver = LifecycleEventObserver { _, _ -> updateEligibility() }
 
-  private val callback = object : OnBackPressedCallback(false) {
-    override fun handleOnBackStarted(event: BackEventCompat) {
-      if (session.committed) return
-      animator?.cancel()
-      session.cancel()
-      gestureId = nextGestureId.incrementAndGet()
-      gestureStarted = true
-      invalidatedGesture = false
-      edge = event.swipeEdge
-      currentOwner()?.let(session::begin)
-    }
-    override fun handleOnBackProgressed(event: BackEventCompat) {
-      if (!invalidatedGesture) {
-        session.progress(event.progress)
-        invalidate()
-      }
-    }
-    override fun handleOnBackCancelled() {
-      if (session.committed) return
-      gestureStarted = false
-      invalidatedGesture = false
-      animateTo(0f) { session.cancel(); invalidate(); updateEligibility() }
-    }
-    override fun handleOnBackPressed() {
-      if (session.committed) return
-      // A hardware button has no start event. A late completion of an invalidated
-      // edge gesture must never be mistaken for a new hardware press.
-      if (invalidatedGesture) { gestureStarted = false; invalidatedGesture = false; return }
-      val owner = currentOwner() ?: return
-      if (!gestureStarted) { gestureId = nextGestureId.incrementAndGet(); session.begin(owner) }
-      gestureStarted = false
+  private val callback = PredictiveBackCallback(
+    session = session,
+    currentOwner = ::currentOwner,
+    onStart = { swipeEdge -> animator?.cancel(); edge = swipeEdge },
+    onProgress = { invalidate() },
+    onCancel = { animateTo(0f) { session.cancel(); invalidate(); updateEligibility() } },
+    onCommit = { owner, gestureId ->
       val dispatcher = UIManagerHelper.getEventDispatcher(reactContext)
-      if (dispatcher == null) { session.cancel(); invalidate(); return }
-      if (session.commit(owner) == null) return
-      // Keep consuming Back until JS acknowledges this completed transition;
-      // otherwise a second gesture could fall through and finish the activity.
-      invalidate()
-      dispatcher.dispatchEvent(BackCommittedEvent(UIManagerHelper.getSurfaceId(this@PredictiveBackHost), id, owner.key, gestureId))
-    }
-  }
-
-  companion object { private val nextGestureId = AtomicInteger() }
+      if (dispatcher == null) false else {
+        dispatcher.dispatchEvent(BackCommittedEvent(UIManagerHelper.getSurfaceId(this), id, owner.key, gestureId))
+        true
+      }
+    },
+  )
 
   init { clipChildren = true; clipToPadding = true; initialized = true }
 
@@ -144,7 +111,7 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
     destination = null
     resolvedDestinationTag = 0
     session.cancel()
-    invalidatedGesture = gestureStarted
+    callback.invalidateGesture()
   }
 
   private fun currentOwner(): BackPreviewSession.Owner? {
@@ -166,7 +133,7 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
     session.cancel()
     destination = null
     resolvedDestinationTag = 0
-    invalidatedGesture = gestureStarted
+    callback.invalidateGesture()
     invalidate()
     updateEligibility()
   }
@@ -176,7 +143,7 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
     if (session.owner != null && owner != session.owner) {
       animator?.cancel()
       session.cancel()
-      invalidatedGesture = gestureStarted
+      callback.invalidateGesture()
       invalidate()
     }
     callback.isEnabled = owner != null
