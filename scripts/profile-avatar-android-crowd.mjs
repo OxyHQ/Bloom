@@ -207,5 +207,10 @@ console.log(
     gpuTimer: after.gpuTimer,
   }),
 );
-if (!process.env.KEEP) await evaluate(() => controllers.forEach((c) => c.dispose()));
+if (!process.env.KEEP)
+  await evaluate(() =>
+    controllers.forEach((c) => {
+      c.dispose();
+    }),
+  );
 socket.close();

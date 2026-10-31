@@ -1,0 +1,4486 @@
+{
+  "date": "2026-10-31",
+  "status": "Experimental presentation candidates; no production adoption is implied",
+  "device": {
+    "model": "Pixel 8a",
+    "os": "Android 16",
+    "gpu": "Mali-G715",
+    "dpr": 2.625,
+    "webview": "148.0.7778.120",
+    "standaloneChromium": "159.0.8135.0",
+    "physicalLowEndCertification": false
+  },
+  "artifacts": {
+    "builtBaseline": "6adb842b",
+    "builtRuntimeSHA256": "bb28d2de1742d67f4b4a26657c1cc4d5755ac8480e5b23c31e3fab617beea712",
+    "sourceWebGPUAndStorybook": "4c74f958 = 6adb842b + ad60350d flat immutable joint uniforms",
+    "standaloneAPKOrigin": "https://storage.googleapis.com/chromium-browser-snapshots/Android_Arm64/1732145/chrome-android.zip",
+    "standaloneAPKSHA256": "436f0d3f5b13f3a52c987bc687bddd1939e441914761e4593821933103245b70",
+    "PBOFixtureSHA256": "64d5a2dc8cb1f117cd78fa84155b89daefbb13ada22dc165410a0f038f2a2d18",
+    "PBOReadbackHelperSHA256": "4268edfce91be5265d221a007e21322974836f220a8e8aa081ae620c17ac5b6b",
+    "WebGPUFixtureSHA256": "11a76390da3feb514283d8726142ddb4d68c66c8d90fdbc934b223d9cbf18bb5"
+  },
+  "protocol": [
+    "Dedicated authorized test hosts, same physical device; no global settings/flags changed.",
+    "Timing canvases never read before measurements. Fidelity pages/readbacks occur separately or after all timings.",
+    "Actual elapsed time is the denominator; saturated hosts delay setTimeout.",
+    "Engine submissions, full destination batches, GPU completion and document RAF are distinct counters; none proves compositor presentation.",
+    "Adjacent controls bound short-term drift. One device, short windows and changing thermal state limit generalization.",
+    "WebView and standalone Chromium differ in version and graphics backend; cross-host values are not controlled browser-only causal estimates."
+  ],
+  "invalidPresentationAblation": {
+    "scope": "WebView24 authored96CSS/192output. INVALID output diagnostic only; original WebGL render workload remains, explicit gl.flush; methods restored.",
+    "windows": [
+      {
+        "mode": "normal",
+        "elapsedMs": 3082.899999976158,
+        "engineFrameDelta": 84,
+        "engineFramesPerSecond": 27.247072561759907,
+        "calls": {
+          "clearRect": 2016,
+          "drawImage": 2016
+        },
+        "glError": 0
+      },
+      {
+        "mode": "noDraw",
+        "elapsedMs": 3017.800000011921,
+        "engineFrameDelta": 147,
+        "engineFramesPerSecond": 48.71098150951664,
+        "calls": {
+          "clearRect": 3528,
+          "drawImage": 3528
+        },
+        "glError": 0
+      },
+      {
+        "mode": "noPresentation",
+        "elapsedMs": 3003.899999976158,
+        "engineFrameDelta": 180,
+        "engineFramesPerSecond": 59.922101268826744,
+        "calls": {
+          "clearRect": 4320,
+          "drawImage": 4320
+        },
+        "glError": 0
+      },
+      {
+        "mode": "normal",
+        "elapsedMs": 3082.5,
+        "engineFrameDelta": 80,
+        "engineFramesPerSecond": 25.952960259529604,
+        "calls": {
+          "clearRect": 1920,
+          "drawImage": 1920
+        },
+        "glError": 0
+      }
+    ]
+  },
+  "copyOverwriteRejected": [
+    {
+      "mode": "direct",
+      "elapsedMs": 5067.300000011921,
+      "engineFrameDelta": 125,
+      "engineFramesPerSecond": 24.667969135378986
+    },
+    {
+      "mode": "copy",
+      "elapsedMs": 5154.899999976158,
+      "engineFrameDelta": 79,
+      "engineFramesPerSecond": 15.325224543708972
+    },
+    {
+      "mode": "direct",
+      "elapsedMs": 5071.800000011921,
+      "engineFrameDelta": 126,
+      "engineFramesPerSecond": 24.84325091677587
+    }
+  ],
+  "alternateDestinations": [
+    {
+      "id": "bitmaprenderer-authored24",
+      "count": 24,
+      "cssSize": 96,
+      "visible": 24,
+      "ready": 24,
+      "elapsedMs": 5263.300000011921,
+      "engineFrameDelta": 68,
+      "engineFramesPerSecond": 12.919651169389164,
+      "raf": {
+        "count": 71,
+        "medianMs": 75.20000000000073,
+        "p95Ms": 83.70000000000073,
+        "maxMs": 208.8000000000011
+      },
+      "errors": [],
+      "presentation": {
+        "mode": "bitmap",
+        "supported": true,
+        "draws": 5697,
+        "transfers": 5697,
+        "frames": 271,
+        "drawMs": 707.3999997377396,
+        "transferMs": 435.70000088214874,
+        "errors": [],
+        "fallbacks": 0,
+        "pending": 0,
+        "scratch": [
+          192,
+          192
+        ]
+      }
+    },
+    {
+      "id": "bitmaprenderer-blue64",
+      "count": 64,
+      "cssSize": 64,
+      "visible": 64,
+      "ready": 64,
+      "elapsedMs": 5586.899999976158,
+      "engineFrameDelta": 29,
+      "engineFramesPerSecond": 5.190713991681211,
+      "raf": {
+        "count": 30,
+        "medianMs": 192,
+        "p95Ms": 375.7000000000007,
+        "maxMs": 461.1000000000022
+      },
+      "errors": [],
+      "presentation": {
+        "mode": "bitmap",
+        "supported": true,
+        "draws": 7781,
+        "transfers": 7781,
+        "frames": 155,
+        "drawMs": 1019.1000036001205,
+        "transferMs": 659.5999962687492,
+        "errors": [],
+        "fallbacks": 0,
+        "pending": 0,
+        "scratch": [
+          128,
+          128
+        ]
+      }
+    },
+    {
+      "id": "offscreen-authored24",
+      "count": 24,
+      "cssSize": 96,
+      "visible": 24,
+      "ready": 24,
+      "elapsedMs": 5093.600000023842,
+      "engineFrameDelta": 126,
+      "engineFramesPerSecond": 24.73692476822095,
+      "raf": {
+        "count": 129,
+        "medianMs": 41.79999999999927,
+        "p95Ms": 50.29999999999927,
+        "maxMs": 75.39999999999964
+      },
+      "errors": [],
+      "presentation": {
+        "supported": true,
+        "draws": 10274,
+        "frames": 466,
+        "drawMs": 346.00000113248825,
+        "clearMs": 751.0999985933304,
+        "errors": [],
+        "fallbacks": 0,
+        "destinations": 24
+      }
+    },
+    {
+      "id": "offscreen-blue64",
+      "count": 64,
+      "cssSize": 64,
+      "visible": 64,
+      "ready": 64,
+      "elapsedMs": 5170.099999964237,
+      "engineFrameDelta": 57,
+      "engineFramesPerSecond": 11.024931819576851,
+      "raf": {
+        "count": 61,
+        "medianMs": 83.79999999999927,
+        "p95Ms": 125.20000000000073,
+        "maxMs": 167.39999999999782
+      },
+      "errors": [],
+      "presentation": {
+        "supported": true,
+        "draws": 16252,
+        "frames": 314,
+        "drawMs": 439.30000019073486,
+        "clearMs": 1094.3999993801117,
+        "errors": [],
+        "fallbacks": 0,
+        "destinations": 64
+      }
+    }
+  ],
+  "persistentOffscreenFidelity": {
+    "comparedPixels": 665600,
+    "changedPixels": 0,
+    "cases": [
+      {
+        "size": 64,
+        "index": 0,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 7775,
+        "partialAlphaPixels": 2633,
+        "directSha256": "3634f7ef06e80102c976cf9624ae2427690110392ad1f5b438a09b47c6c98449",
+        "offscreenSha256": "3634f7ef06e80102c976cf9624ae2427690110392ad1f5b438a09b47c6c98449"
+      },
+      {
+        "size": 64,
+        "index": 1,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 8217,
+        "partialAlphaPixels": 2743,
+        "directSha256": "200833452768705ee4cdf26bc51efe79298e51cbb7daf7f7847b684445720e56",
+        "offscreenSha256": "200833452768705ee4cdf26bc51efe79298e51cbb7daf7f7847b684445720e56"
+      },
+      {
+        "size": 64,
+        "index": 2,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 8239,
+        "partialAlphaPixels": 2581,
+        "directSha256": "75f6f948a2ef7c2f18b3a92fed6bfeeed03ad8c1855bc34141212181d474fb70",
+        "offscreenSha256": "75f6f948a2ef7c2f18b3a92fed6bfeeed03ad8c1855bc34141212181d474fb70"
+      },
+      {
+        "size": 64,
+        "index": 3,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 7924,
+        "partialAlphaPixels": 2772,
+        "directSha256": "6cc6286d46aa8769263f6af0921592b2254b3fc3c180ddbbcbdefd235ffbdb28",
+        "offscreenSha256": "6cc6286d46aa8769263f6af0921592b2254b3fc3c180ddbbcbdefd235ffbdb28"
+      },
+      {
+        "size": 64,
+        "index": 4,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 7424,
+        "partialAlphaPixels": 2612,
+        "directSha256": "0f1ec0971ab5bbc1f5d11b021eb0633453dc23c5d9cd0bfdcded756bb8540df3",
+        "offscreenSha256": "0f1ec0971ab5bbc1f5d11b021eb0633453dc23c5d9cd0bfdcded756bb8540df3"
+      },
+      {
+        "size": 64,
+        "index": 5,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 11179,
+        "partialAlphaPixels": 2001,
+        "directSha256": "451314a36ce228bd10aad474dd8747052691359e72240addee85518ef09f1d9f",
+        "offscreenSha256": "451314a36ce228bd10aad474dd8747052691359e72240addee85518ef09f1d9f"
+      },
+      {
+        "size": 64,
+        "index": 6,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 9156,
+        "partialAlphaPixels": 2376,
+        "directSha256": "da02f28d41cbb2e754c14d8cccac5e9edb815421a9dcb90d579a7a8fb4b4dd02",
+        "offscreenSha256": "da02f28d41cbb2e754c14d8cccac5e9edb815421a9dcb90d579a7a8fb4b4dd02"
+      },
+      {
+        "size": 64,
+        "index": 7,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 8227,
+        "partialAlphaPixels": 3289,
+        "directSha256": "8aa193654a78620b8d2656d16169e002387a84d1fa4ac31f429e55125da22fa9",
+        "offscreenSha256": "8aa193654a78620b8d2656d16169e002387a84d1fa4ac31f429e55125da22fa9"
+      },
+      {
+        "size": 64,
+        "index": 8,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 9954,
+        "partialAlphaPixels": 2382,
+        "directSha256": "77cbae9c4fa169b570dc7c5dc16589d05f17860b8ed18b06fda2bad67f7abe7d",
+        "offscreenSha256": "77cbae9c4fa169b570dc7c5dc16589d05f17860b8ed18b06fda2bad67f7abe7d"
+      },
+      {
+        "size": 64,
+        "index": 9,
+        "width": 128,
+        "height": 128,
+        "comparedPixels": 16384,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 7725,
+        "partialAlphaPixels": 2715,
+        "directSha256": "f2641811d999e39e98a5e1447d0f48075b7b08ca97b0d8da38a2486f742d239d",
+        "offscreenSha256": "f2641811d999e39e98a5e1447d0f48075b7b08ca97b0d8da38a2486f742d239d"
+      },
+      {
+        "size": 112,
+        "index": 0,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 26178,
+        "partialAlphaPixels": 2708,
+        "directSha256": "e4ebc4494de3920740debcb709c46b0e0927f6755f286bb34f14bfbfe78e1e4a",
+        "offscreenSha256": "e4ebc4494de3920740debcb709c46b0e0927f6755f286bb34f14bfbfe78e1e4a"
+      },
+      {
+        "size": 112,
+        "index": 1,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 27098,
+        "partialAlphaPixels": 3013,
+        "directSha256": "a93fa1690efd9700c4260df34b0afe21156c049d64d974a2f6f5bb7679524220",
+        "offscreenSha256": "a93fa1690efd9700c4260df34b0afe21156c049d64d974a2f6f5bb7679524220"
+      },
+      {
+        "size": 112,
+        "index": 2,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 26923,
+        "partialAlphaPixels": 2654,
+        "directSha256": "579b34537c03054a2775a7aa74167d8c2a5c5de1d3a1e2ea535860b8a10a266d",
+        "offscreenSha256": "579b34537c03054a2775a7aa74167d8c2a5c5de1d3a1e2ea535860b8a10a266d"
+      },
+      {
+        "size": 112,
+        "index": 3,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 26068,
+        "partialAlphaPixels": 2951,
+        "directSha256": "7b2564f67eb744ea9a24776d4a975a5751ac695949ccfbf9474ee863e499974e",
+        "offscreenSha256": "7b2564f67eb744ea9a24776d4a975a5751ac695949ccfbf9474ee863e499974e"
+      },
+      {
+        "size": 112,
+        "index": 4,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 24510,
+        "partialAlphaPixels": 2610,
+        "directSha256": "1cf51efe4dc0273b6cdeab147daa8392b11547439f01b9d8f42e7227d7bec88f",
+        "offscreenSha256": "1cf51efe4dc0273b6cdeab147daa8392b11547439f01b9d8f42e7227d7bec88f"
+      },
+      {
+        "size": 112,
+        "index": 5,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 35518,
+        "partialAlphaPixels": 2157,
+        "directSha256": "b18eb96a5e81838add6a06c4b02f5a6349521557036b41a5ce98012ec8521600",
+        "offscreenSha256": "b18eb96a5e81838add6a06c4b02f5a6349521557036b41a5ce98012ec8521600"
+      },
+      {
+        "size": 112,
+        "index": 6,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 29619,
+        "partialAlphaPixels": 2490,
+        "directSha256": "d12879d894a0d1bd78c1bf119a2bba0c3087ce8d3adb0b3129c988cbc2ab8601",
+        "offscreenSha256": "d12879d894a0d1bd78c1bf119a2bba0c3087ce8d3adb0b3129c988cbc2ab8601"
+      },
+      {
+        "size": 112,
+        "index": 7,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 27570,
+        "partialAlphaPixels": 3997,
+        "directSha256": "5bbd3342ed03cb2e3eb488a0f023a63d5e4109785414c218bd383ccafc3afaed",
+        "offscreenSha256": "5bbd3342ed03cb2e3eb488a0f023a63d5e4109785414c218bd383ccafc3afaed"
+      },
+      {
+        "size": 112,
+        "index": 8,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 32316,
+        "partialAlphaPixels": 2507,
+        "directSha256": "7e3fcd7dbb5202b9282d70ac8ed9669b040a77eeb25b6c5f128fb7c9616ce881",
+        "offscreenSha256": "7e3fcd7dbb5202b9282d70ac8ed9669b040a77eeb25b6c5f128fb7c9616ce881"
+      },
+      {
+        "size": 112,
+        "index": 9,
+        "width": 224,
+        "height": 224,
+        "comparedPixels": 50176,
+        "changedPixels": 0,
+        "pixelsOver8": 0,
+        "maxChannelDifference": 0,
+        "transparentPixels": 25607,
+        "partialAlphaPixels": 2816,
+        "directSha256": "6010e2033b94f6e9ac9e1988314c16fd577c1417c43410ab9d21e92371563630",
+        "offscreenSha256": "6010e2033b94f6e9ac9e1988314c16fd577c1417c43410ab9d21e92371563630"
+      }
+    ],
+    "pngPairParity": [
+      {
+        "size": 64,
+        "differentChannels": 0,
+        "maxChannelDifference": 0
+      },
+      {
+        "size": 112,
+        "differentChannels": 0,
+        "maxChannelDifference": 0
+      }
+    ],
+    "limitation": "Local adversarial gate observed initial onReady PNG 300x150 transparent in4/4 cases; physical eventual parity does not resolve that asynchronous placeholder contract. Not accepted production default."
+  },
+  "cpuAtlasRoundtrip": {
+    "method": "createImageBitmap(atlas,premultiplyAlpha:none), then createImageBitmap(first,premultiplyAlpha:premultiply), then original-size Canvas2D draws. First bitmap closed; bounded pending work.",
+    "windows": [
+      {
+        "scene": "webview-cpu-roundtrip64",
+        "mode": "direct",
+        "elapsedMs": 6953.800000011921,
+        "destinationDelta": 896,
+        "fullDestinationBatchesPerSecond": 2.0132876988087087,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 0,
+        "errors": [],
+        "synchronousBitmapMs": 0,
+        "counterBoundaryCaveat": "64 first experiment diagnostics and probe snapshot span approximately2 extra batches; rate is indicative.24/Storybook counters are synchronously aligned."
+      },
+      {
+        "scene": "webview-cpu-roundtrip64",
+        "mode": "bitmap",
+        "elapsedMs": 5175.300000011921,
+        "destinationDelta": 6848,
+        "fullDestinationBatchesPerSecond": 20.675129944110203,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 1,
+        "errors": [],
+        "synchronousBitmapMs": 2368.000000298023,
+        "counterBoundaryCaveat": "64 first experiment diagnostics and probe snapshot span approximately2 extra batches; rate is indicative.24/Storybook counters are synchronously aligned."
+      },
+      {
+        "scene": "webview-cpu-roundtrip64",
+        "mode": "direct",
+        "elapsedMs": 6552.600000023842,
+        "destinationDelta": 896,
+        "fullDestinationBatchesPerSecond": 2.1365564813889235,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 0,
+        "errors": [],
+        "synchronousBitmapMs": 0,
+        "counterBoundaryCaveat": "64 first experiment diagnostics and probe snapshot span approximately2 extra batches; rate is indicative.24/Storybook counters are synchronously aligned."
+      },
+      {
+        "scene": "webview-cpu-roundtrip24",
+        "mode": "direct",
+        "elapsedMs": 5001.899999976158,
+        "destinationDelta": 3360,
+        "fullDestinationBatchesPerSecond": 27.98936404179758,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 0,
+        "errors": [],
+        "synchronousBitmapMs": 0
+      },
+      {
+        "scene": "webview-cpu-roundtrip24",
+        "mode": "bitmap",
+        "elapsedMs": 5083.300000011921,
+        "destinationDelta": 2208,
+        "fullDestinationBatchesPerSecond": 18.098479334248275,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 1,
+        "errors": [],
+        "synchronousBitmapMs": 4102.699999809265
+      },
+      {
+        "scene": "webview-cpu-roundtrip24",
+        "mode": "direct",
+        "elapsedMs": 5014.899999976158,
+        "destinationDelta": 3048,
+        "fullDestinationBatchesPerSecond": 25.32453289210229,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 0,
+        "errors": [],
+        "synchronousBitmapMs": 0
+      },
+      {
+        "scene": "webview-cpu-roundtrip-story",
+        "mode": "direct",
+        "elapsedMs": 5000.699999988079,
+        "destinationDelta": 2032,
+        "fullDestinationBatchesPerSecond": 50.792888995661706,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 0,
+        "errors": [],
+        "synchronousBitmapMs": 0,
+        "raf": {
+          "count": 258,
+          "medianMs": 16.799999999999272,
+          "p95Ms": 25.100000000000364,
+          "maxMs": 33.399999999999636
+        },
+        "documentRafPerSecond": 51.59277701134142,
+        "mounted": 48,
+        "visible": 8
+      },
+      {
+        "scene": "webview-cpu-roundtrip-story",
+        "mode": "bitmap",
+        "elapsedMs": 5048,
+        "destinationDelta": 1488,
+        "fullDestinationBatchesPerSecond": 36.84627575277337,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 1,
+        "errors": [],
+        "synchronousBitmapMs": 3439.7000002861023,
+        "raf": {
+          "count": 186,
+          "medianMs": 25.099999999998545,
+          "p95Ms": 33.5,
+          "maxMs": 41.69999999999709
+        },
+        "documentRafPerSecond": 36.84627575277337,
+        "mounted": 48,
+        "visible": 8
+      },
+      {
+        "scene": "webview-cpu-roundtrip-story",
+        "mode": "direct",
+        "elapsedMs": 5000.100000023842,
+        "destinationDelta": 2016,
+        "fullDestinationBatchesPerSecond": 50.398992019919284,
+        "staleDestinations": 0,
+        "fallbackFrames": 0,
+        "maximumPending": 0,
+        "errors": [],
+        "synchronousBitmapMs": 0,
+        "raf": {
+          "count": 289,
+          "medianMs": 16.700000000000728,
+          "p95Ms": 25.100000000002183,
+          "maxMs": 25.200000000000728
+        },
+        "documentRafPerSecond": 57.79884402284394,
+        "mounted": 48,
+        "visible": 8
+      }
+    ],
+    "limitation": "Steady injection after ready, not production lifecycle/first-ready proof. None alone fails scaled fidelity; only repremultiplied variant is considered.",
+    "physicalFidelity": {
+      "scope": "Same stage/args/frame,10mixed paused actors8authored+2catalog, explicit capture after timings.",
+      "cases": [
+        {
+          "cssSize": 64,
+          "cells": [
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 128,
+              "height": 128,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            }
+          ]
+        },
+        {
+          "cssSize": 112,
+          "cells": [
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            },
+            {
+              "width": 224,
+              "height": 224,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "absolute": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "webgpu": {
+    "scope": "Standalone Chromium159, SOURCE4c74f958 engine identical in both arms;24 all-visible authored8recipes,96CSS,192output,960x960 atlas;64 all-visibleblue64CSS,128output,512x512atlas; max2GPUbatches, no frame dropping.",
+    "windows": [
+      {
+        "id": "chromium-webgpu-2",
+        "count": 2,
+        "mode": "webgpu",
+        "elapsedMs": 5001.100000023842,
+        "completedDelta": 299,
+        "completedPerSecond": 59.78684689339837,
+        "destinationsDelta": 598,
+        "maxPending": 2,
+        "errors": [],
+        "viewport": [
+          411,
+          732,
+          2.625
+        ],
+        "outputPixels": [
+          192,
+          192
+        ],
+        "atlasPixels": [
+          384,
+          192
+        ],
+        "layout": null
+      },
+      {
+        "id": "chromium-direct-24",
+        "count": 24,
+        "mode": "direct",
+        "elapsedMs": 5001.399999976158,
+        "completedDelta": 92,
+        "completedPerSecond": 18.394849442243885,
+        "destinationsDelta": 2208,
+        "maxPending": 0,
+        "errors": [],
+        "viewport": [
+          411,
+          732,
+          2.625
+        ],
+        "outputPixels": [
+          192,
+          192
+        ],
+        "atlasPixels": [
+          960,
+          960
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 24
+        }
+      },
+      {
+        "id": "chromium-webgpu-24",
+        "count": 24,
+        "mode": "webgpu",
+        "elapsedMs": 5009.300000011921,
+        "completedDelta": 165,
+        "completedPerSecond": 32.9387339547656,
+        "destinationsDelta": 3984,
+        "maxPending": 2,
+        "errors": [],
+        "viewport": [
+          411,
+          732,
+          2.625
+        ],
+        "outputPixels": [
+          192,
+          192
+        ],
+        "atlasPixels": [
+          960,
+          960
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 24
+        }
+      },
+      {
+        "id": "chromium-webgpu24-repeat",
+        "count": 24,
+        "mode": "webgpu",
+        "elapsedMs": 5004.899999976158,
+        "completedDelta": 147,
+        "completedPerSecond": 29.371216208255962,
+        "destinationsDelta": 3528,
+        "maxPending": 2,
+        "errors": [],
+        "viewport": [
+          411,
+          732,
+          2.625
+        ],
+        "outputPixels": [
+          192,
+          192
+        ],
+        "atlasPixels": [
+          960,
+          960
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 24
+        }
+      },
+      {
+        "id": "chromium-webgpu-direct64",
+        "count": 64,
+        "mode": "direct",
+        "elapsedMs": 5003.100000023842,
+        "completedDelta": 39,
+        "completedPerSecond": 7.7951669964250465,
+        "destinationsDelta": 2496,
+        "maxPending": 0,
+        "errors": [],
+        "viewport": [
+          411,
+          732,
+          2.625
+        ],
+        "outputPixels": [
+          128,
+          128
+        ],
+        "atlasPixels": [
+          512,
+          512
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 55
+        }
+      },
+      {
+        "id": "chromium-webgpu64",
+        "count": 64,
+        "mode": "webgpu",
+        "elapsedMs": 5001.5,
+        "completedDelta": 85,
+        "completedPerSecond": 16.99490152954114,
+        "destinationsDelta": 5440,
+        "maxPending": 2,
+        "errors": [],
+        "viewport": [
+          411,
+          732,
+          2.625
+        ],
+        "outputPixels": [
+          128,
+          128
+        ],
+        "atlasPixels": [
+          512,
+          512
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 55
+        }
+      },
+      {
+        "id": "chromium-webgpu-direct64-return",
+        "count": 64,
+        "mode": "direct",
+        "elapsedMs": 5004.699999988079,
+        "completedDelta": 38,
+        "completedPerSecond": 7.592862709071576,
+        "destinationsDelta": 2432,
+        "maxPending": 0,
+        "errors": [],
+        "viewport": [
+          411,
+          732,
+          2.625
+        ],
+        "outputPixels": [
+          128,
+          128
+        ],
+        "atlasPixels": [
+          512,
+          512
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 55
+        }
+      }
+    ],
+    "ui": [
+      {
+        "id": "chromium-direct24-ui",
+        "elapsedMs": 5016.900000035763,
+        "documentRafPerSecond": 17.939364946353013,
+        "rafIntervals": {
+          "count": 90,
+          "medianMs": 58.39999999999418,
+          "p95Ms": 58.89999999999418,
+          "maxMs": 66.89999999999418
+        },
+        "timer16msIntervals": {
+          "count": 250,
+          "medianMs": 16.69999998807907,
+          "p95Ms": 32.60000002384186,
+          "maxMs": 37
+        }
+      },
+      {
+        "id": "chromium-webgpu24-ui",
+        "elapsedMs": 5009.5,
+        "documentRafPerSecond": 59.48697474797884,
+        "rafIntervals": {
+          "count": 298,
+          "medianMs": 16.700000000000728,
+          "p95Ms": 16.80000000000291,
+          "maxMs": 33.39999999999782
+        },
+        "timer16msIntervals": {
+          "count": 294,
+          "medianMs": 16.399999976158142,
+          "p95Ms": 19.600000023841858,
+          "maxMs": 52.299999952316284
+        }
+      },
+      {
+        "id": "chromium-webgpu64-ui",
+        "elapsedMs": 5002.300000011921,
+        "documentRafPerSecond": 59.172780520819344,
+        "rafIntervals": {
+          "count": 296,
+          "medianMs": 16.700000000000728,
+          "p95Ms": 16.900000000001455,
+          "maxMs": 33.39999999999782
+        },
+        "timer16msIntervals": {
+          "count": 269,
+          "medianMs": 16.399999976158142,
+          "p95Ms": 28.100000023841858,
+          "maxMs": 55.89999997615814
+        }
+      }
+    ],
+    "limitation": "GPU-completed batches are not Android compositor presentation. No production controller/lifecycle integration yet.",
+    "physicalFidelity": {
+      "status": "PASS12/12 exact PNG immediate and delayed after removing incorrect per-tile UV clamp",
+      "scope": "Same stage and onFrame reference; native DPR2.625 preserved with defaultViewport:null.10mixed actors:8authored+2catalog,4sizes x3actions. Earlier accidental DPR1 run excluded.",
+      "firstClampedCandidateRejected": [
+        {
+          "cssSize": 64,
+          "sourceTile": 64,
+          "kind": "idle",
+          "time": 0.5,
+          "cells": 10,
+          "outputSize": 128,
+          "pixels": 163840,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 77872,
+          "errors": []
+        },
+        {
+          "cssSize": 64,
+          "sourceTile": 64,
+          "kind": "reaction",
+          "time": 0.35,
+          "cells": 10,
+          "outputSize": 128,
+          "pixels": 163840,
+          "pngChanged": 12,
+          "submittedPNGChanged": 12,
+          "maxPNGAlphaDifference": 36,
+          "rawCanvas2DInteropChanged": 76482,
+          "errors": []
+        },
+        {
+          "cssSize": 64,
+          "sourceTile": 64,
+          "kind": "work",
+          "time": 1.5,
+          "cells": 10,
+          "outputSize": 128,
+          "pixels": 163840,
+          "pngChanged": 146,
+          "submittedPNGChanged": 146,
+          "maxPNGAlphaDifference": 12,
+          "rawCanvas2DInteropChanged": 76929,
+          "errors": []
+        },
+        {
+          "cssSize": 96,
+          "sourceTile": 192,
+          "kind": "idle",
+          "time": 0.5,
+          "cells": 10,
+          "outputSize": 192,
+          "pixels": 368640,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 158088,
+          "errors": []
+        },
+        {
+          "cssSize": 96,
+          "sourceTile": 192,
+          "kind": "reaction",
+          "time": 0.35,
+          "cells": 10,
+          "outputSize": 192,
+          "pixels": 368640,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 154695,
+          "errors": []
+        },
+        {
+          "cssSize": 96,
+          "sourceTile": 192,
+          "kind": "work",
+          "time": 1.5,
+          "cells": 10,
+          "outputSize": 192,
+          "pixels": 368640,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 156981,
+          "errors": []
+        },
+        {
+          "cssSize": 112,
+          "sourceTile": 192,
+          "kind": "idle",
+          "time": 0.5,
+          "cells": 10,
+          "outputSize": 224,
+          "pixels": 501760,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 219049,
+          "errors": []
+        },
+        {
+          "cssSize": 112,
+          "sourceTile": 192,
+          "kind": "reaction",
+          "time": 0.35,
+          "cells": 10,
+          "outputSize": 224,
+          "pixels": 501760,
+          "pngChanged": 12,
+          "submittedPNGChanged": 12,
+          "maxPNGAlphaDifference": 18,
+          "rawCanvas2DInteropChanged": 214369,
+          "errors": []
+        },
+        {
+          "cssSize": 112,
+          "sourceTile": 192,
+          "kind": "work",
+          "time": 1.5,
+          "cells": 10,
+          "outputSize": 224,
+          "pixels": 501760,
+          "pngChanged": 73,
+          "submittedPNGChanged": 73,
+          "maxPNGAlphaDifference": 5,
+          "rawCanvas2DInteropChanged": 217119,
+          "errors": []
+        },
+        {
+          "cssSize": 320,
+          "sourceTile": 512,
+          "kind": "idle",
+          "time": 0.5,
+          "cells": 10,
+          "outputSize": 640,
+          "pixels": 4096000,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 1735676,
+          "errors": []
+        },
+        {
+          "cssSize": 320,
+          "sourceTile": 512,
+          "kind": "reaction",
+          "time": 0.35,
+          "cells": 10,
+          "outputSize": 640,
+          "pixels": 4096000,
+          "pngChanged": 24,
+          "submittedPNGChanged": 24,
+          "maxPNGAlphaDifference": 26,
+          "rawCanvas2DInteropChanged": 1697909,
+          "errors": []
+        },
+        {
+          "cssSize": 320,
+          "sourceTile": 512,
+          "kind": "work",
+          "time": 1.5,
+          "cells": 10,
+          "outputSize": 640,
+          "pixels": 4096000,
+          "pngChanged": 329,
+          "submittedPNGChanged": 329,
+          "maxPNGAlphaDifference": 9,
+          "rawCanvas2DInteropChanged": 1729022,
+          "errors": []
+        }
+      ],
+      "final": [
+        {
+          "cssSize": 64,
+          "sourceTile": 64,
+          "kind": "idle",
+          "time": 0.5,
+          "cells": 10,
+          "outputSize": 128,
+          "pixels": 163840,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 77872,
+          "errors": []
+        },
+        {
+          "cssSize": 64,
+          "sourceTile": 64,
+          "kind": "reaction",
+          "time": 0.35,
+          "cells": 10,
+          "outputSize": 128,
+          "pixels": 163840,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 76482,
+          "errors": []
+        },
+        {
+          "cssSize": 64,
+          "sourceTile": 64,
+          "kind": "work",
+          "time": 1.5,
+          "cells": 10,
+          "outputSize": 128,
+          "pixels": 163840,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 76929,
+          "errors": []
+        },
+        {
+          "cssSize": 96,
+          "sourceTile": 192,
+          "kind": "idle",
+          "time": 0.5,
+          "cells": 10,
+          "outputSize": 192,
+          "pixels": 368640,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 158088,
+          "errors": []
+        },
+        {
+          "cssSize": 96,
+          "sourceTile": 192,
+          "kind": "reaction",
+          "time": 0.35,
+          "cells": 10,
+          "outputSize": 192,
+          "pixels": 368640,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 154695,
+          "errors": []
+        },
+        {
+          "cssSize": 96,
+          "sourceTile": 192,
+          "kind": "work",
+          "time": 1.5,
+          "cells": 10,
+          "outputSize": 192,
+          "pixels": 368640,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 156981,
+          "errors": []
+        },
+        {
+          "cssSize": 112,
+          "sourceTile": 192,
+          "kind": "idle",
+          "time": 0.5,
+          "cells": 10,
+          "outputSize": 224,
+          "pixels": 501760,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 219049,
+          "errors": []
+        },
+        {
+          "cssSize": 112,
+          "sourceTile": 192,
+          "kind": "reaction",
+          "time": 0.35,
+          "cells": 10,
+          "outputSize": 224,
+          "pixels": 501760,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 214369,
+          "errors": []
+        },
+        {
+          "cssSize": 112,
+          "sourceTile": 192,
+          "kind": "work",
+          "time": 1.5,
+          "cells": 10,
+          "outputSize": 224,
+          "pixels": 501760,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 217119,
+          "errors": []
+        },
+        {
+          "cssSize": 320,
+          "sourceTile": 512,
+          "kind": "idle",
+          "time": 0.5,
+          "cells": 10,
+          "outputSize": 640,
+          "pixels": 4096000,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 1735676,
+          "errors": []
+        },
+        {
+          "cssSize": 320,
+          "sourceTile": 512,
+          "kind": "reaction",
+          "time": 0.35,
+          "cells": 10,
+          "outputSize": 640,
+          "pixels": 4096000,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 1697909,
+          "errors": []
+        },
+        {
+          "cssSize": 320,
+          "sourceTile": 512,
+          "kind": "work",
+          "time": 1.5,
+          "cells": 10,
+          "outputSize": 640,
+          "pixels": 4096000,
+          "pngChanged": 0,
+          "submittedPNGChanged": 0,
+          "maxPNGAlphaDifference": 0,
+          "rawCanvas2DInteropChanged": 1729022,
+          "errors": []
+        }
+      ],
+      "rawCanvasInterop": "Canvas2D.drawImage(WebGPUcanvas) yields transparent pixels after presentation while PNG and screenshot contain image. Immediate-submit PNG and post-completion PNG agree. This browser interoperability hazard remains separate from visible PNG fidelity."
+    }
+  },
+  "smallCanvasHypothesis": {
+    "source": "https://chromium.googlesource.com/chromium/src/+/refs/tags/148.0.7778.120/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc",
+    "thresholdPixels": 16512,
+    "destinationPixels": 16384,
+    "interpretation": "Version-matched source has minimum accelerated2D area behind small-canvas feature guards. Observed128-square cliff is consistent; actual acceleration state was not directly observed. No padding, inflated resolution or feature flag is proposed."
+  },
+  "pboAtlas": {
+    "scope": "WebView148, same source4c74f958 engine both arms. Async readback helper from candidate6007; one atlas PBO readback, CPU vertical flip/unpremultiply, CPU scratch, original Canvas2D draws. All visible; fresh canvases per arm; no pre-timing reads.",
+    "temperatureAfterPairCelsius": 40.2,
+    "thermalStatusAfterPair": 1,
+    "windows": [
+      {
+        "id": "webview-pbo-direct24",
+        "mode": "direct",
+        "count": 24,
+        "outputBacking": [
+          192,
+          192
+        ],
+        "atlas": [
+          960,
+          960
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            914,
+            2.625
+          ],
+          "visible": 24
+        },
+        "elapsedMs": 5000.5,
+        "completedDelta": 141,
+        "completedPerSecond": 28.197180281971804,
+        "destinationDelta": 3384,
+        "globalRAF": {
+          "frames": 141,
+          "maximumGap": 50.100000000000364,
+          "fps": 28.197180281971804
+        },
+        "staleDelta": 0,
+        "maxPending": 0,
+        "errors": [],
+        "captureCallMs": 0,
+        "convertMs": 0,
+        "putMs": 0,
+        "drawMs": 79.0
+      },
+      {
+        "id": "webview-pbo24",
+        "mode": "pbo",
+        "count": 24,
+        "outputBacking": [
+          192,
+          192
+        ],
+        "atlas": [
+          960,
+          960
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            914,
+            2.625
+          ],
+          "visible": 24
+        },
+        "elapsedMs": 5008.600000023842,
+        "completedDelta": 120,
+        "completedPerSecond": 23.95879087957289,
+        "destinationDelta": 2880,
+        "globalRAF": {
+          "frames": 439,
+          "maximumGap": 41.69999999999982,
+          "fps": 87.64924330110415
+        },
+        "staleDelta": 0,
+        "maxPending": 2,
+        "errors": [],
+        "captureCallMs": 35.700000405311584,
+        "convertMs": 1146.8000003695488,
+        "putMs": 187.49999970197678,
+        "drawMs": 54.10000014305115
+      },
+      {
+        "id": "webview-pbo-direct24-return",
+        "mode": "direct",
+        "count": 24,
+        "outputBacking": [
+          192,
+          192
+        ],
+        "atlas": [
+          960,
+          960
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            914,
+            2.625
+          ],
+          "visible": 24
+        },
+        "elapsedMs": 5014.800000011921,
+        "completedDelta": 141,
+        "completedPerSecond": 28.116774347863288,
+        "destinationDelta": 3384,
+        "globalRAF": {
+          "frames": 141,
+          "maximumGap": 42.400000000000546,
+          "fps": 28.116774347863288
+        },
+        "staleDelta": 0,
+        "maxPending": 0,
+        "errors": [],
+        "captureCallMs": 0,
+        "convertMs": 0,
+        "putMs": 0,
+        "drawMs": 65.29999977350235
+      },
+      {
+        "id": "webview-pbo-direct64",
+        "mode": "direct",
+        "count": 64,
+        "outputBacking": [
+          128,
+          128
+        ],
+        "atlas": [
+          512,
+          512
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            914,
+            2.625
+          ],
+          "visible": 64
+        },
+        "elapsedMs": 6029.800000011921,
+        "completedDelta": 10,
+        "completedPerSecond": 1.6584297986633436,
+        "destinationDelta": 640,
+        "globalRAF": {
+          "frames": 10,
+          "maximumGap": 634.6999999999989,
+          "fps": 1.6584297986633436
+        },
+        "staleDelta": 0,
+        "maxPending": 0,
+        "errors": [],
+        "captureCallMs": 0,
+        "convertMs": 0,
+        "putMs": 0,
+        "drawMs": 11.99999988079071
+      },
+      {
+        "id": "webview-pbo64",
+        "mode": "pbo",
+        "count": 64,
+        "outputBacking": [
+          128,
+          128
+        ],
+        "atlas": [
+          512,
+          512
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            914,
+            2.625
+          ],
+          "visible": 64
+        },
+        "elapsedMs": 5054.199999988079,
+        "completedDelta": 163,
+        "completedPerSecond": 32.25040560333672,
+        "destinationDelta": 10432,
+        "globalRAF": {
+          "frames": 162,
+          "maximumGap": 41.899999999999636,
+          "fps": 32.052550354236494
+        },
+        "staleDelta": 0,
+        "maxPending": 2,
+        "errors": [],
+        "captureCallMs": 55.799999833106995,
+        "convertMs": 491.09999990463257,
+        "putMs": 47.20000010728836,
+        "drawMs": 122.50000065565109
+      },
+      {
+        "id": "webview-pbo-direct64-return",
+        "mode": "direct",
+        "count": 64,
+        "outputBacking": [
+          128,
+          128
+        ],
+        "atlas": [
+          512,
+          512
+        ],
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            914,
+            2.625
+          ],
+          "visible": 64
+        },
+        "elapsedMs": 5756.800000011921,
+        "completedDelta": 10,
+        "completedPerSecond": 1.7370761534149688,
+        "destinationDelta": 640,
+        "globalRAF": {
+          "frames": 10,
+          "maximumGap": 609.8999999999996,
+          "fps": 1.7370761534149688
+        },
+        "staleDelta": 0,
+        "maxPending": 0,
+        "errors": [],
+        "captureCallMs": 0,
+        "convertMs": 0,
+        "putMs": 0,
+        "drawMs": 20.499999821186066
+      }
+    ],
+    "limitation": "Isolated fixture, no production pool/lifecycle integration.24 regresses completed avatar throughput while global UI RAF improves;64 gains strongly. Counters are destination-completed batches, not compositor frames.",
+    "firstPhysicalFidelity": {
+      "status": "INVALID reused-destination fidelity protocol; repeated getImageData changes Canvas2D acceleration. Fresh112work gives0RGBA/PNG. Preserved as measured test hazard, not a production regression.",
+      "cases": [
+        {
+          "mode": "pbo",
+          "cssSize": 64,
+          "kind": "idle",
+          "time": 0.5,
+          "sourceTile": 64,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2633
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2633
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2743
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2743
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2581
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2581
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2772
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2772
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2612
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2612
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2001
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2001
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2376
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2376
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3289
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3289
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 64,
+          "kind": "reaction",
+          "time": 0.35,
+          "sourceTile": 64,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2336
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2336
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2911
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2911
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2381
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2381
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2754
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2754
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2620
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2620
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2192
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2192
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2408
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2408
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3289
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3289
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 64,
+          "kind": "work",
+          "time": 1.5,
+          "sourceTile": 64,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3973
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3973
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3856
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3856
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3953
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3953
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3912
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3912
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4309
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4309
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2993
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2993
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4405
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4405
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3716
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3716
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 96,
+          "kind": "idle",
+          "time": 0.5,
+          "sourceTile": 192,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1411
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1411
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1645
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1645
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1443
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1443
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1570
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1570
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1451
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1451
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1067
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1067
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1361
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1361
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2135
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2135
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 96,
+          "kind": "reaction",
+          "time": 0.35,
+          "sourceTile": 192,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 27,
+                "maxChannel": 1,
+                "partialAlpha": 1281
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1281
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 64,
+                "maxChannel": 1,
+                "partialAlpha": 1755
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1755
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 36,
+                "maxChannel": 1,
+                "partialAlpha": 1342
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1342
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 28,
+                "maxChannel": 1,
+                "partialAlpha": 1532
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1532
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 24,
+                "maxChannel": 1,
+                "partialAlpha": 1474
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1474
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 10,
+                "maxChannel": 1,
+                "partialAlpha": 1114
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1114
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 26,
+                "maxChannel": 1,
+                "partialAlpha": 1366
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1366
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 61,
+                "maxChannel": 1,
+                "partialAlpha": 2132
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2132
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 96,
+          "kind": "work",
+          "time": 1.5,
+          "sourceTile": 192,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 41,
+                "maxChannel": 1,
+                "partialAlpha": 5209
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5209
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 53,
+                "maxChannel": 1,
+                "partialAlpha": 4912
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4912
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 57,
+                "maxChannel": 1,
+                "partialAlpha": 5513
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5513
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 47,
+                "maxChannel": 1,
+                "partialAlpha": 4810
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4810
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 98,
+                "maxChannel": 1,
+                "partialAlpha": 5775
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5775
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 28,
+                "maxChannel": 1,
+                "partialAlpha": 3680
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3680
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 49,
+                "maxChannel": 1,
+                "partialAlpha": 5690
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5690
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 67,
+                "maxChannel": 1,
+                "partialAlpha": 4599
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4599
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 112,
+          "kind": "idle",
+          "time": 0.5,
+          "sourceTile": 192,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2708
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2708
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3013
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3013
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2654
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2654
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2951
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2951
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2610
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2610
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2157
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2157
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2490
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2490
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3997
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3997
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 112,
+          "kind": "reaction",
+          "time": 0.35,
+          "sourceTile": 192,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 52,
+                "maxChannel": 1,
+                "partialAlpha": 2400
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2400
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 106,
+                "maxChannel": 1,
+                "partialAlpha": 3223
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3223
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 61,
+                "maxChannel": 1,
+                "partialAlpha": 2461
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2461
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 47,
+                "maxChannel": 1,
+                "partialAlpha": 2810
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2810
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 40,
+                "maxChannel": 1,
+                "partialAlpha": 2657
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2657
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 36,
+                "maxChannel": 1,
+                "partialAlpha": 2308
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2308
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 41,
+                "maxChannel": 1,
+                "partialAlpha": 2505
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2505
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 125,
+                "maxChannel": 1,
+                "partialAlpha": 3994
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3994
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 112,
+          "kind": "work",
+          "time": 1.5,
+          "sourceTile": 192,
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 14242,
+                "maxChannel": 255,
+                "partialAlpha": 7789
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 14235,
+                "maxChannel": 255,
+                "partialAlpha": 7789
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 13887,
+                "maxChannel": 255,
+                "partialAlpha": 7346
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 13884,
+                "maxChannel": 255,
+                "partialAlpha": 7346
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 13667,
+                "maxChannel": 255,
+                "partialAlpha": 8114
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 13643,
+                "maxChannel": 255,
+                "partialAlpha": 8114
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 14257,
+                "maxChannel": 255,
+                "partialAlpha": 7240
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 14248,
+                "maxChannel": 255,
+                "partialAlpha": 7240
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 15094,
+                "maxChannel": 255,
+                "partialAlpha": 8440
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 15086,
+                "maxChannel": 255,
+                "partialAlpha": 8440
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 9548,
+                "maxChannel": 255,
+                "partialAlpha": 5671
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 9538,
+                "maxChannel": 255,
+                "partialAlpha": 5671
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 16156,
+                "maxChannel": 255,
+                "partialAlpha": 8476
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 16144,
+                "maxChannel": 255,
+                "partialAlpha": 8476
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 13426,
+                "maxChannel": 255,
+                "partialAlpha": 6945
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 13412,
+                "maxChannel": 255,
+                "partialAlpha": 6945
+              }
+            }
+          ],
+          "errors": []
+        }
+      ]
+    },
+    "thresholdWebView": {
+      "scope": "Blue authored64CSS,128output, fresh pages perarm; count4/8/16, directthenPBO,2s warmup+3.5s actual sample. No physical1/2claim and no universal cross-device threshold inferred.",
+      "windows": [
+        {
+          "count": 4,
+          "mode": "direct",
+          "elapsedMs": 3537,
+          "completedDelta": 154,
+          "completedPerSecond": 43.539722929035904,
+          "globalRAF": {
+            "frames": 154,
+            "maximumGap": 33.400000000000546,
+            "fps": 43.539722929035904
+          },
+          "maxPending": 0,
+          "staleDelta": 0,
+          "errors": [],
+          "outputBacking": [
+            128,
+            128
+          ]
+        },
+        {
+          "count": 4,
+          "mode": "pbo",
+          "elapsedMs": 3500.400000035763,
+          "completedDelta": 210,
+          "completedPerSecond": 59.993143640113836,
+          "globalRAF": {
+            "frames": 419,
+            "maximumGap": 8.5,
+            "fps": 119.70060564384619
+          },
+          "maxPending": 2,
+          "staleDelta": 0,
+          "errors": [],
+          "outputBacking": [
+            128,
+            128
+          ]
+        },
+        {
+          "count": 8,
+          "mode": "direct",
+          "elapsedMs": 3580.699999988079,
+          "completedDelta": 79,
+          "completedPerSecond": 22.062725165543892,
+          "globalRAF": {
+            "frames": 79,
+            "maximumGap": 58.600000000000364,
+            "fps": 22.062725165543892
+          },
+          "maxPending": 0,
+          "staleDelta": 0,
+          "errors": [],
+          "outputBacking": [
+            128,
+            128
+          ]
+        },
+        {
+          "count": 8,
+          "mode": "pbo",
+          "elapsedMs": 3506.699999988079,
+          "completedDelta": 210,
+          "completedPerSecond": 59.88536230664553,
+          "globalRAF": {
+            "frames": 419,
+            "maximumGap": 8.5,
+            "fps": 119.48555622135466
+          },
+          "maxPending": 2,
+          "staleDelta": 0,
+          "errors": [],
+          "outputBacking": [
+            128,
+            128
+          ]
+        },
+        {
+          "count": 16,
+          "mode": "direct",
+          "elapsedMs": 3616.899999976158,
+          "completedDelta": 48,
+          "completedPerSecond": 13.27103320531848,
+          "globalRAF": {
+            "frames": 48,
+            "maximumGap": 91.89999999999964,
+            "fps": 13.27103320531848
+          },
+          "maxPending": 0,
+          "staleDelta": 0,
+          "errors": [],
+          "outputBacking": [
+            128,
+            128
+          ]
+        },
+        {
+          "count": 16,
+          "mode": "pbo",
+          "elapsedMs": 3507.400000035763,
+          "completedDelta": 210,
+          "completedPerSecond": 59.87341050289638,
+          "globalRAF": {
+            "frames": 420,
+            "maximumGap": 8.5,
+            "fps": 119.74682100579275
+          },
+          "maxPending": 2,
+          "staleDelta": 0,
+          "errors": [],
+          "outputBacking": [
+            128,
+            128
+          ]
+        }
+      ]
+    },
+    "physicalFidelityFreshDestinations": {
+      "status": "PASS9/9 exact RGBA and decoded immediate PNG",
+      "protocol": "New fixture/destination canvases before EACH pose. Same-stage same-onFrame reference.8authored x64/96/112CSS xidle/reaction/work, physicalDPR2.625. No repeated destination reads before capture.",
+      "cases": [
+        {
+          "mode": "pbo",
+          "cssSize": 64,
+          "kind": "idle",
+          "time": 0.5,
+          "sourceTile": 64,
+          "rawAtlas": {
+            "pixels": 36864,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 14997,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2633
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2633
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2743
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2743
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2581
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2581
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2772
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2772
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2612
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2612
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2001
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2001
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2376
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2376
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3289
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3289
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 64,
+          "kind": "reaction",
+          "time": 0.35,
+          "sourceTile": 64,
+          "rawAtlas": {
+            "pixels": 36864,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 14726,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2336
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2336
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2911
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2911
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2381
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2381
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2754
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2754
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2620
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2620
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2192
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2192
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2408
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2408
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3289
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3289
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 64,
+          "kind": "work",
+          "time": 1.5,
+          "sourceTile": 64,
+          "rawAtlas": {
+            "pixels": 36864,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 14711,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3973
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3973
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3856
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3856
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3953
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3953
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3912
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3912
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4309
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4309
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2993
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2993
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4405
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4405
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3716
+              },
+              "png": {
+                "pixels": 16384,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3716
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 96,
+          "kind": "idle",
+          "time": 0.5,
+          "sourceTile": 192,
+          "rawAtlas": {
+            "pixels": 331776,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 128437,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1411
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1411
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1645
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1645
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1443
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1443
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1570
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1570
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1451
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1451
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1067
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1067
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1361
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1361
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2135
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2135
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 96,
+          "kind": "reaction",
+          "time": 0.35,
+          "sourceTile": 192,
+          "rawAtlas": {
+            "pixels": 331776,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 125802,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1281
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1281
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1755
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1755
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1342
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1342
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1532
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1532
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1474
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1474
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1114
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1114
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1366
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 1366
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2132
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2132
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 96,
+          "kind": "work",
+          "time": 1.5,
+          "sourceTile": 192,
+          "rawAtlas": {
+            "pixels": 331776,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 126072,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5209
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5209
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4912
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4912
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5513
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5513
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4810
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4810
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5775
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5775
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3680
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3680
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5690
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5690
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4599
+              },
+              "png": {
+                "pixels": 36864,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 4599
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 112,
+          "kind": "idle",
+          "time": 0.5,
+          "sourceTile": 192,
+          "rawAtlas": {
+            "pixels": 331776,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 128437,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2708
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2708
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3013
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3013
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2654
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2654
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2951
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2951
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2610
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2610
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2157
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2157
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2490
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2490
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3997
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3997
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 112,
+          "kind": "reaction",
+          "time": 0.35,
+          "sourceTile": 192,
+          "rawAtlas": {
+            "pixels": 331776,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 125802,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2400
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2400
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3223
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3223
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2461
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2461
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2810
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2810
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2657
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2657
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2308
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2308
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2505
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 2505
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3994
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 3994
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "mode": "pbo",
+          "cssSize": 112,
+          "kind": "work",
+          "time": 1.5,
+          "sourceTile": 192,
+          "rawAtlas": {
+            "pixels": 331776,
+            "invalidPremultiplied": 0,
+            "nonzeroAlpha": 126072,
+            "maximumExcess": 0
+          },
+          "cells": [
+            {
+              "index": 0,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 7789
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 7789
+              }
+            },
+            {
+              "index": 1,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 7346
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 7346
+              }
+            },
+            {
+              "index": 2,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 8114
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 8114
+              }
+            },
+            {
+              "index": 3,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 7240
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 7240
+              }
+            },
+            {
+              "index": 4,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 8440
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 8440
+              }
+            },
+            {
+              "index": 5,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5671
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 5671
+              }
+            },
+            {
+              "index": 6,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 8476
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 8476
+              }
+            },
+            {
+              "index": 7,
+              "rgba": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 6945
+              },
+              "png": {
+                "pixels": 50176,
+                "changed": 0,
+                "maxChannel": 0,
+                "partialAlpha": 6945
+              }
+            }
+          ],
+          "errors": []
+        }
+      ]
+    }
+  },
+  "sameChromium64Comparison": {
+    "scope": "Fresh pages, same4c74f958 engine,64blue64CSS/128output all64visible. Margin/gap0 ensures704px content fits732px viewport. Same shaders/output resolution; only presentation differs.",
+    "windows": [
+      {
+        "id": "chromium-all64-direct",
+        "mode": "direct",
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 64
+        },
+        "elapsedMs": 5000.899999976158,
+        "completedDelta": 46,
+        "completedPerSecond": 9.198344298070209,
+        "globalRAF": {
+          "frames": 46,
+          "maximumGap": 125.5,
+          "fps": 9.198344298070209
+        },
+        "maxPending": 0,
+        "errors": []
+      },
+      {
+        "id": "chromium-all64-pbo",
+        "mode": "pbo",
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 64
+        },
+        "elapsedMs": 5094.600000023842,
+        "completedDelta": 68,
+        "completedPerSecond": 13.347465944270752,
+        "globalRAF": {
+          "frames": 79,
+          "maximumGap": 100.5,
+          "fps": 15.506614847020431
+        },
+        "maxPending": 2,
+        "errors": []
+      },
+      {
+        "id": "chromium-all64-webgpu",
+        "mode": "webgpu",
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 64
+        },
+        "elapsedMs": 5001,
+        "completedDelta": 90,
+        "completedPerSecond": 17.99640071985603,
+        "globalRAF": null,
+        "maxPending": 2,
+        "errors": []
+      },
+      {
+        "id": "chromium-all64-direct-return",
+        "mode": "direct",
+        "layout": {
+          "hidden": false,
+          "viewport": [
+            411,
+            732,
+            2.625
+          ],
+          "visible": 64
+        },
+        "elapsedMs": 5002.100000023842,
+        "completedDelta": 40,
+        "completedPerSecond": 7.9966414105694295,
+        "globalRAF": {
+          "frames": 40,
+          "maximumGap": 150.3000000000011,
+          "fps": 7.9966414105694295
+        },
+        "maxPending": 0,
+        "errors": []
+      }
+    ]
+  }
+}
