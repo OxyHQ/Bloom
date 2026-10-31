@@ -62,7 +62,7 @@ function EmptyStateComponent({
   const { messages } = useMessages(EMPTY_STATE_MESSAGES);
   const surface = useSurfaceFillRecipe();
   const recipe = useThemeRecipe((theme, documentMode, documentPreset) =>
-    resolveEmptyStatePaint(theme, resolvePaintMode(surface, documentMode, documentPreset)),
+    resolveEmptyStatePaint(theme, resolvePaintMode(surface, documentMode, documentPreset)), [],
   );
   const paint = recipe.paint;
   const g = EMPTY_STATE_GEOMETRY[variant];

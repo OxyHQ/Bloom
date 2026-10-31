@@ -48,7 +48,7 @@ export function ProgressiveBlur({
   const surfaceFill = useSurfaceFillRecipe();
   const reduced = useReducedTransparency();
   const recipe = useThemeRecipe((_theme, documentMode, documentPreset) =>
-    buildTailGradient(resolvePaintMode(surfaceFill, documentMode, documentPreset), direction),
+    buildTailGradient(resolvePaintMode(surfaceFill, documentMode, documentPreset), direction), [],
   );
 
   const filter = `blur(${intensity * WEB_BLUR_PER_INTENSITY}px)`;

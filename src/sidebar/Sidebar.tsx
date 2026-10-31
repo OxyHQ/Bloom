@@ -264,7 +264,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const clearSearchLabel = clearSearchLabelProp ?? messages.clearSearch;
   const noResultsLabel = noResultsLabelProp ?? messages.noResults;
   const modesLabel = modesLabelProp ?? messages.mode;
-  const paletteRecipe = useThemeRecipe(resolveSidebarPalette);
+  const paletteRecipe = useThemeRecipe(resolveSidebarPalette, []);
   const palette = paletteRecipe.paint;
   const parentRecipe = useSurfaceFillRecipe();
   const parentFill = useSurfaceFill();
@@ -292,7 +292,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             : resolvePaintMode(paletteRecipe, documentMode, documentPreset).panel,
       parentFill: resolvePaintMode(parentRecipe, documentMode, documentPreset),
       paint: paintsSurface,
-    }),
+    }), [],
   )!;
   const publishedPaint = materialRecipe.paint.publishedFill;
   const { size: scopedSize } = useBloomAppearance(

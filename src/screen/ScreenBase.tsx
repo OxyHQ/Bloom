@@ -119,7 +119,7 @@ export function createScreen(
             paint: false,
           }).publishedFill
         : backing;
-    });
+    }, []);
     const surfaceFill = onSurface ? 'transparent' : surfaceRecipe.paint;
     const parentScreen = useContext(ScreenContext);
     const parentViewport = useContext(ScreenViewportContext);

@@ -315,7 +315,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         optics: resolveSurfaceOptics(modeTheme.isDark),
         shadow: palette.shadow ? BUTTON_SHADOW[modeTheme.isDark ? 'dark' : 'light'] : 'none',
       };
-    });
+    }, []);
     const palette = paintRecipe.paint.palette;
     const withPaint = (node: ReactElement) => (
       <>

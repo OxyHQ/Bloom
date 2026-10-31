@@ -317,7 +317,7 @@ function PageHeaderComponent({
     separator: theme.colors.borderLight,
     textSecondary: theme.colors.textSecondary,
     shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
-  }));
+  }), []);
   const paint = paintRecipe.paint;
 
   // ── The scroll owner ──────────────────────────────────────────────────────

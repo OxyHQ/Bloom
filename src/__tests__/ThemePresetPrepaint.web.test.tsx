@@ -69,7 +69,7 @@ function Probe() {
   const recipe = useThemeRecipe((theme) => ({
     fill: theme.colors.background,
     border: theme.colors.primary,
-  }));
+  }), []);
   const { colorPreset } = useBloomTheme();
   return (
     <>
@@ -207,7 +207,7 @@ it.each([undefined, '#1f8a73'])(
     function Child() {
       const parent = useSurfaceFillRecipe();
       const material = useThemeRecipe((theme, mode, preset) =>
-        surfaceFillOn(theme, resolvePaintMode(parent, mode, preset)),
+        surfaceFillOn(theme, resolvePaintMode(parent, mode, preset)), [],
       );
       observed = {
         yellow: material.resolvePreset('yellow', 'dark'),
@@ -221,7 +221,7 @@ it.each([undefined, '#1f8a73'])(
       );
     }
     function Parent() {
-      const fill = useThemeRecipe((theme) => theme.colors.background);
+      const fill = useThemeRecipe((theme) => theme.colors.background, []);
       return (
         <>
           {fill.sheet}
@@ -308,7 +308,7 @@ it('retains the head-selected palette while an asynchronous web adapter restores
 
 it('does not generate any server preset CSS for a raw backing recipe whose sheet is unused', async () => {
   function RawBacking() {
-    const recipe = useThemeRecipe((theme) => theme.colors.background);
+    const recipe = useThemeRecipe((theme) => theme.colors.background, []);
     return <main data-backing={recipe.current}>Raw backing owner</main>;
   }
   function RawFixture() {

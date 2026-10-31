@@ -124,7 +124,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   const opticsRecipe = useThemeRecipe((theme) => ({
     ...resolveSurfaceOptics(theme.isDark),
     text: theme.colors.text,
-  }));
+  }), []);
   const optics = opticsRecipe.paint;
   // Colour arithmetic reads the concrete theme, never a prepaint variable.
   const text = opticsRecipe.current.text;

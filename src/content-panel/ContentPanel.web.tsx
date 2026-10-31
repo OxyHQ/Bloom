@@ -225,10 +225,10 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         ? radius
         : `${typeof radius === 'number' ? radius : panelShape.radius}px`,
   };
-  const chromeRecipe = useThemeRecipe(resolvePanelChrome);
+  const chromeRecipe = useThemeRecipe(resolvePanelChrome, []);
   const panelChrome = chromeRecipe?.paint;
   const opticsRecipe = useThemeRecipe((theme, documentMode, documentPreset) =>
-    resolveSurfaceOptics(theme.isDark),
+    resolveSurfaceOptics(theme.isDark), [],
   );
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
@@ -239,7 +239,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
       ? customFill
       : rawFill === undefined
         ? undefined
-        : theme.colors.card,
+        : theme.colors.card, [],
   );
   const defaultFill = rawFill;
   const { width } = useWindowDimensions();
@@ -264,7 +264,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     if (!fill || !paintsSurface || !parent)
       return { publishedFill: fill, paintFill: fill ?? 'transparent' };
     return resolveSurfaceMaterial({ fill, parentFill: parent });
-  });
+  }, []);
   const materialStyle = useSurfaceMaterial(
     '[data-bloom-panel-material]',
     'bloom-content-panel-material',

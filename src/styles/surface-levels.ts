@@ -408,6 +408,6 @@ export function useSurfaceFillRecipe() {
     (theme, documentMode, documentPreset) =>
       (fillModes ? resolvePaintMode(fillModes, documentMode, documentPreset) : undefined) ??
       fill ??
-      levelBackground(theme, level),
+      levelBackground(theme, level), [],
   );
 }

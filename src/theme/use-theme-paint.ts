@@ -1,4 +1,4 @@
-import { createElement, useContext, useId, useMemo } from 'react';
+import { createElement, type DependencyList, useCallback, useContext, useId, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { useTheme } from './use-theme';
 import { ThemeScopeContext } from './color-scope/context';
@@ -8,17 +8,31 @@ import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
 import { ServerStyleSheetFactory } from '../styles/ServerStyleSheetFactory';
 import type { Theme, ThemeColors } from './types';
 
-/** Internal boundary: colour arithmetic runs on RGB, the owner emits its sheet. */
+/**
+ * Internal boundary: colour arithmetic runs on RGB, the owner emits its sheet.
+ *
+ * `deps` are what `resolve` reads besides its arguments, as `useMemo`'s are
+ * (Biome checks them: `biome.json`). The recipe is the same object for as long
+ * as the theme and those stay the same, so a recipe published through context
+ * (a `SurfaceLevelProvider`'s `fillModes`) or handed to another recipe changes
+ * only when its paint does. Keyed on `resolve` itself, every caller's inline
+ * function made a new recipe at every render: a Screen drawing again (its
+ * bottom bar's text changing) published new fill modes and redrew everything
+ * that reads its surface, the whole header and toolbar with it.
+ */
 export function useThemeRecipe<T>(
   resolve: (theme: Theme, documentMode: 'light' | 'dark', documentPreset?: AppColorName) => T,
+  deps: DependencyList,
 ) {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the caller's deps, checked at each call
+  const resolver = useCallback(resolve, deps);
   const theme = useTheme();
   const scope = useContext(ThemeScopeContext);
   const config = usePrepaintThemeConfig();
   const id = `bloom-paint-${useId().replace(/[^a-zA-Z0-9_-]/g, '_')}`;
   const recipe = useMemo(() => {
     const mode = scope?.rootMode ?? theme.mode ?? (theme.isDark ? 'dark' : 'light');
-    const current = resolve(theme, mode);
+    const current = resolver(theme, mode);
     const enabled = Platform.OS === 'web' && Boolean(config && scope);
     const presetValues = new Map<string, { value: T }>();
     const resolvePreset = (preset: AppColorName, documentMode: 'light' | 'dark') => {
@@ -29,7 +43,7 @@ export function useThemeRecipe<T>(
       const palette =
         scope.resolvePreset?.(preset, scope.fixedMode ?? documentMode) ??
         scope.resolveMode(scope.fixedMode ?? documentMode);
-      const value = resolve(palette.theme, documentMode, preset);
+      const value = resolver(palette.theme, documentMode, preset);
       presetValues.set(key, { value });
       return value;
     };
@@ -44,8 +58,8 @@ export function useThemeRecipe<T>(
         clientCss: () => '',
       };
     }
-    const light = resolve(scope.resolveMode(scope.fixedMode ?? 'light').theme, 'light');
-    const dark = resolve(scope.resolveMode(scope.fixedMode ?? 'dark').theme, 'dark');
+    const light = resolver(scope.resolveMode(scope.fixedMode ?? 'light').theme, 'light');
+    const dark = resolver(scope.resolveMode(scope.fixedMode ?? 'dark').theme, 'dark');
     const lightVars: Record<string, string> = {};
     const darkVars: Record<string, string> = {};
     const persisted = Boolean(config.persistKey);
@@ -67,24 +81,34 @@ export function useThemeRecipe<T>(
       return presetPaintCss(variants, config.defaultColorPreset ?? 'oxy', config.defaultMode);
     };
     return { current, light, dark, paint, resolvePreset, serverCss, clientCss };
-  }, [theme, scope, config, id, resolve]);
-  return {
-    current: recipe.current,
-    light: recipe.light,
-    dark: recipe.dark,
-    paint: recipe.paint,
-    resolvePreset: recipe.resolvePreset,
-    sheet:
-      Platform.OS === 'web' && config && scope
+  }, [theme, scope, config, id, resolver]);
+  const isSheetShown = Platform.OS === 'web' && Boolean(config && scope);
+  const isLiveReady = scope?.prepaintReady !== false;
+  const isServerReused = Boolean(config?.persistKey);
+  const sheet = useMemo(
+    () =>
+      isSheetShown
         ? createElement(ServerStyleSheetFactory, {
             id,
             server: recipe.serverCss,
             client: recipe.clientCss,
-            liveReady: scope.prepaintReady !== false,
-            reuseServer: Boolean(config.persistKey),
+            liveReady: isLiveReady,
+            reuseServer: isServerReused,
           })
         : null,
-  };
+    [isSheetShown, id, recipe, isLiveReady, isServerReused],
+  );
+  return useMemo(
+    () => ({
+      current: recipe.current,
+      light: recipe.light,
+      dark: recipe.dark,
+      paint: recipe.paint,
+      resolvePreset: recipe.resolvePreset,
+      sheet,
+    }),
+    [recipe, sheet],
+  );
 }
 
 /** Semantic colours for final styles; useTheme() retains RGB for colour math. */

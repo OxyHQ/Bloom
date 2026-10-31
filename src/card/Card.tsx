@@ -236,7 +236,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
         borderColor: tone === 'neutral' ? palette.colors.border : modePaint.border,
         foreground: modePaint.foreground,
       };
-    });
+    }, []);
     const outerStyle: ViewStyle = {
       ...resolved,
       ...paintRecipe.paint.vars,

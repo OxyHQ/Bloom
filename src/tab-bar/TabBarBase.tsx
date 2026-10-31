@@ -252,7 +252,7 @@ function TabBarBody({
         parentFill: resolvePaintMode(parentRecipe, documentMode, documentPreset),
       }),
     };
-  });
+  }, []);
   const publishedFill = resolveSurfaceMaterial({
     fill: theme.blurTint,
     parentFill: layer.parentFill,
