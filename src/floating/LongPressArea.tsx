@@ -21,7 +21,7 @@
  * Assistive tech reaches the menu through the `longpress` accessibility action
  * (TalkBack's double-tap-and-hold, VoiceOver's actions rotor).
  */
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { View, type AccessibilityActionEvent, type GestureResponderEvent } from 'react-native';
 
 import type { TriggerHandleProps } from './types';
@@ -56,6 +56,11 @@ export function LongPressArea({
     origin.current = null;
   }, []);
   useEffect(() => cancel, [cancel]);
+  useLayoutEffect(() => {
+    // Invalidate the hold at the disabling commit, even if it is re-enabled
+    // before the original timer would have fired.
+    if (disabled) cancel();
+  }, [cancel, disabled]);
 
   const onTouchStart = useCallback(
     (event: GestureResponderEvent) => {

@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.78.2
+
+### Fixed
+
+- Disabling a native context-menu trigger during a hold now cancels that hold, even if the trigger is enabled again before the original timer ends. Assistive long-press actions remain unavailable while disabled.
+
+### Consumers
+
+No API changes.
+
 ## 15.78.1
 
 ### Fixed
