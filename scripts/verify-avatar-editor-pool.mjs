@@ -2,16 +2,26 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { installAvatarPNGSnapshots } from './fixtures/avatar/png-snapshot.mjs';
 const require = createRequire(import.meta.url);
 const puppeteer = require(process.env.BLOOM_PUPPETEER_MODULE || 'puppeteer-core');
-const browser = await puppeteer.launch({
-  executablePath: process.env.CHROME_PATH,
-  headless: true,
-  args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
-});
+const connected = Boolean(process.env.AVATAR_BROWSER_URL);
+const browser = connected
+  ? await puppeteer.connect({
+      browserURL: process.env.AVATAR_BROWSER_URL,
+      defaultViewport: null,
+      protocolTimeout: 180000,
+    })
+  : await puppeteer.launch({
+      executablePath: process.env.CHROME_PATH,
+      headless: true,
+      args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
+    });
+const ownedPages = [];
 const report = { cases: [], errors: [], infrastructure: [] };
 try {
   const page = await browser.newPage();
+  ownedPages.push(page);
   page.on('pageerror', (e) => {
     if (e.message === 'WebSocket closed without opened.' && e.stack?.includes('/@vite/client:'))
       report.infrastructure.push({ message: e.message, stack: e.stack });
@@ -36,6 +46,7 @@ try {
     `${process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6006'}/editor-pool-check.html`,
   );
   await cdp.send('Fetch.disable');
+  await page.evaluate(installAvatarPNGSnapshots);
   await page.evaluate(async () => {
     window.runtime = await import('/runtime/avatar-runtime.ts');
     const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
@@ -137,21 +148,27 @@ try {
     { timeout: 90000 },
   );
   assert.equal(await page.evaluate(() => diag()[0].stats.contexts), 1);
+  report.presentations = await page.evaluate(() => diag().map((pool) => pool.presentation));
+  if (process.env.AVATAR_EXPECT_PRESENTER && process.env.AVATAR_EXPECT_PRESENTER !== 'pbo')
+    assert(
+      report.presentations.some((p) => p?.[`${process.env.AVATAR_EXPECT_PRESENTER}Frames`] > 0),
+      'Requested backend must actually submit frames',
+    );
   await page.evaluate(async () => {
     await Promise.all(controllers.map((c) => c.update({ ...props, paused: true }, recipe)));
   });
   await new Promise((r) => setTimeout(r, 300));
-  const paused = await page.evaluate(() => ({
+  const paused = await page.evaluate(async () => ({
     frames: diag()[0].stats.frames,
-    images: canvases.map((c) => c.toDataURL()),
+    images: await avatarPNGSnapshots(canvases),
   }));
   await new Promise((r) => setTimeout(r, 300));
-  const pausedAgain = await page.evaluate(() => ({
+  const pausedAgain = await page.evaluate(async () => ({
     frames: diag()[0].stats.frames,
-    images: canvases.map((c) => c.toDataURL()),
+    images: await avatarPNGSnapshots(canvases),
   }));
   assert.equal(pausedAgain.frames, paused.frames);
-  assert(paused.images.every((image, i) => image === pausedAgain.images[i]));
+  assert.deepEqual(pausedAgain.images, paused.images);
   report.cases.push('two-independent-paused-previews-are-quiescent');
   await page.evaluate(async () => {
     await Promise.all(controllers.map((c) => c.update(props, recipe)));
@@ -309,6 +326,14 @@ try {
     () => diag()[0]?.stats.renderedInstances === 5 && diag()[0].stats.frames > 5,
   );
   const fullTriangles = await page.evaluate(() => diag()[0].stats.triangles);
+  report.retainedPresentations = await page.evaluate(() => diag().map((pool) => pool.presentation));
+  if (process.env.AVATAR_EXPECT_PRESENTER)
+    assert(
+      report.retainedPresentations.some(
+        (p) => p?.[`${process.env.AVATAR_EXPECT_PRESENTER}Frames`] > 0,
+      ),
+      'Five-avatar burst must actually submit through the requested backend',
+    );
   await page.evaluate(async () => {
     await Promise.all(
       retainedControllers.map((controller, i) =>
@@ -321,25 +346,30 @@ try {
     (await page.evaluate(() => diag()[0].stats.triangles)) < fullTriangles / 2,
     'Retained slots remove actual geometry submissions',
   );
-  const retainedPictures = await page.evaluate(() => retainedCanvases.map((c) => c.toDataURL()));
+  const retainedPictures = await page.evaluate(() => avatarPNGSnapshots(retainedCanvases));
   await new Promise((r) => setTimeout(r, 500));
-  const laterPictures = await page.evaluate(() => retainedCanvases.map((c) => c.toDataURL()));
+  const laterPictures = await page.evaluate(() => avatarPNGSnapshots(retainedCanvases));
   for (const i of [0, 1, 3, 4])
-    assert.equal(laterPictures[i], retainedPictures[i], `Retained slot ${i} stays pixel-identical`);
+    assert.deepEqual(
+      laterPictures[i],
+      retainedPictures[i],
+      `Retained slot ${i} stays pixel-identical`,
+    );
   report.cases.push('middle-live-slot-compacts-gpu-work-and-preserves-retained-pixels');
   await page.evaluate(async () => {
     retainedRecipes[4] = { ...retainedRecipes[4], color: '#ff0000' };
     await retainedControllers[4].update({ ...props, paused: true }, retainedRecipes[4]);
   });
   await page.waitForFunction(
-    (previous) =>
-      retainedCanvases[4].toDataURL() !== previous && diag()[0].stats.renderedInstances === 1,
+    async (previous) =>
+      (await avatarPNGSnapshot(retainedCanvases[4])).sha256 !== previous.sha256 &&
+      diag()[0].stats.renderedInstances === 1,
     {},
     retainedPictures[4],
   );
-  const recolored = await page.evaluate(() => retainedCanvases.map((c) => c.toDataURL()));
+  const recolored = await page.evaluate(() => avatarPNGSnapshots(retainedCanvases));
   for (const i of [0, 1, 3])
-    assert.equal(
+    assert.deepEqual(
       recolored[i],
       retainedPictures[i],
       `Repaint does not replace retained neighbor ${i}`,
@@ -356,8 +386,9 @@ try {
     await retainedControllers[4].update({ ...props, paused: true }, retainedRecipes[4]);
   });
   await page.waitForFunction(
-    (previous) =>
-      retainedCanvases[4].toDataURL() !== previous && diag()[0].stats.renderedInstances === 0,
+    async (previous) =>
+      (await avatarPNGSnapshot(retainedCanvases[4])).sha256 !== previous.sha256 &&
+      diag()[0].stats.renderedInstances === 0,
     {},
     recolored[4],
   );
@@ -412,5 +443,7 @@ try {
 } finally {
   await mkdir('.local/avatar-editor-pool', { recursive: true });
   await writeFile('.local/avatar-editor-pool/report.json', `${JSON.stringify(report, null, 2)}\n`);
-  await browser.close();
+  for (const page of ownedPages) if (!page.isClosed()) await page.close();
+  if (connected) await browser.disconnect();
+  else await browser.close();
 }

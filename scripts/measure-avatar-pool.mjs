@@ -87,8 +87,20 @@ try {
           lost: 0,
           active: false,
           intervals: [],
+          globalRafIntervals: [],
+          globalRafFrames: 0,
           last: new Map(),
         };
+        let lastRaf = 0;
+        const observeRaf = (time) => {
+          if (audit.active) {
+            audit.globalRafFrames++;
+            if (lastRaf) audit.globalRafIntervals.push(time - lastRaf);
+          }
+          lastRaf = time;
+          requestAnimationFrame(observeRaf);
+        };
+        requestAnimationFrame(observeRaf);
         const rect = HTMLCanvasElement.prototype.getBoundingClientRect;
         HTMLCanvasElement.prototype.getBoundingClientRect = function (...args) {
           if (audit.active) audit.rectReads++;
@@ -410,6 +422,8 @@ try {
           draws: 0,
           active: true,
           intervals: [],
+          globalRafIntervals: [],
+          globalRafFrames: 0,
           last: new Map(),
         });
         return { time: performance.now(), pools: pool.editorPoolDiagnostics() };
@@ -463,6 +477,7 @@ try {
         after.pools.reduce((s, p) => s + p.stats.frames, 0) -
         before.pools.reduce((s, p) => s + p.stats.frames, 0);
       const intervals = after.audit.intervals.sort((a, b) => a - b);
+      const rafIntervals = after.audit.globalRafIntervals.sort((a, b) => a - b);
       const summary = {
         count,
         mode,
@@ -470,6 +485,12 @@ try {
         elapsedMs: after.time - before.time,
         frames,
         fps: frames / ((after.time - before.time) / 1000),
+        globalRaf: {
+          frames: after.audit.globalRafFrames,
+          perSecond: (after.audit.globalRafFrames * 1000) / (after.time - before.time),
+          medianGapMs: rafIntervals[Math.floor(rafIntervals.length / 2)] ?? null,
+          p95GapMs: rafIntervals[Math.floor(rafIntervals.length * 0.95)] ?? null,
+        },
         mainThreadMs: (afterMetrics.TaskDuration - beforeMetrics.TaskDuration) * 1000,
         scriptMs: (afterMetrics.ScriptDuration - beforeMetrics.ScriptDuration) * 1000,
         cpuProfile,
@@ -496,7 +517,7 @@ try {
           }),
         ),
         network: after.network,
-        audit: { ...after.audit, intervals: undefined },
+        audit: { ...after.audit, intervals: undefined, globalRafIntervals: undefined },
         presentationGapP95: intervals[Math.floor(intervals.length * 0.95)] ?? null,
         pools: after.pools.map(({ stats, ...p }) => ({
           ...p,
@@ -512,6 +533,12 @@ try {
           count,
           mode,
           fps: summary.fps,
+          globalRaf: {
+            frames: after.audit.globalRafFrames,
+            perSecond: (after.audit.globalRafFrames * 1000) / (after.time - before.time),
+            medianGapMs: rafIntervals[Math.floor(rafIntervals.length / 2)] ?? null,
+            p95GapMs: rafIntervals[Math.floor(rafIntervals.length * 0.95)] ?? null,
+          },
           mainThreadMs: summary.mainThreadMs,
           copies: summary.audit.copies,
           rectReads: summary.audit.rectReads,
