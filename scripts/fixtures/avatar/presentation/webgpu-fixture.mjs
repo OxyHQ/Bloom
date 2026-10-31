@@ -9,6 +9,7 @@ export async function startWebGPUPresentationFixture({
   kind = 'authored',
   engineRoot = '/runtime',
   sourceRevision = 'unspecified',
+  allowFallbackAdapter = false,
 } = {}) {
   await globalThis.__avatarWebGPUFixture?.dispose();
   const root = engineRoot;
@@ -46,7 +47,8 @@ export async function startWebGPUPresentationFixture({
       drawMs: 0,
     },
     callback = () => {},
-    disposed = false;
+    disposed = false,
+    captureRequest;
   let device,
     pipeline,
     texture,
@@ -56,10 +58,18 @@ export async function startWebGPUPresentationFixture({
     contexts,
     format,
     textureWidth = 0,
-    textureHeight = 0;
+    textureHeight = 0,
+    adapterInfo;
   if (mode === 'webgpu') {
     const adapter = await navigator.gpu?.requestAdapter();
     if (!adapter) throw Error('WebGPU adapter unavailable');
+    adapterInfo = {
+      vendor: adapter.info?.vendor,
+      architecture: adapter.info?.architecture,
+      isFallbackAdapter: adapter.info?.isFallbackAdapter,
+    };
+    if (adapterInfo.isFallbackAdapter === true && !allowFallbackAdapter)
+      throw Error('Software WebGPU adapter excluded from this hardware experiment');
     device = await adapter.requestDevice();
     device.addEventListener('uncapturederror', (event) => errors.push(String(event.error)));
     device.lost.then((info) => {
@@ -128,7 +138,17 @@ export async function startWebGPUPresentationFixture({
     'lime_headphones',
   ];
   for (let index = 0; index < count; index++) {
-    await engine.setPreset(index, kind === 'blue' ? 'blue_beret' : presets[index % presets.length]);
+    const catalogs = [
+      { shape: 'heart', eyes: 'cyclops', eyewear: 'none', accessory: 'crown' },
+      { shape: 'six_lobed_flower', eyes: 'todd', eyewear: 'monocle', accessory: 'none' },
+    ];
+    const preset =
+      kind === 'mixed' && index % 10 >= 8
+        ? 'catalog:' + JSON.stringify(catalogs[(index % 10) - 8])
+        : kind === 'blue'
+          ? 'blue_beret'
+          : presets[index % presets.length];
+    await engine.setPreset(index, preset);
     engine.setColor(index, '#' + (0x46719b + index * 10007).toString(16).padStart(6, '0'));
     engine.idle(index);
   }
@@ -147,6 +167,128 @@ export async function startWebGPUPresentationFixture({
     if (disposed) return;
     metrics.frames++;
     const tile = stage.width / columns;
+    const capture = captureRequest;
+    captureRequest = undefined;
+    const references = capture
+      ? canvases.map((canvas, index) => {
+          const target = document.createElement('canvas');
+          target.width = canvas.width;
+          target.height = canvas.height;
+          target
+            .getContext('2d')
+            .drawImage(
+              stage,
+              (index % columns) * tile,
+              Math.floor(index / columns) * tile,
+              tile,
+              tile,
+              0,
+              0,
+              target.width,
+              target.height,
+            );
+          return target;
+        })
+      : null;
+    const finishCapture = async () => {
+      if (!capture) return;
+      try {
+        await new Promise(requestAnimationFrame);
+        const read = (canvas) => {
+          const target = document.createElement('canvas');
+          target.width = canvas.width;
+          target.height = canvas.height;
+          const context = target.getContext('2d');
+          context.drawImage(canvas, 0, 0);
+          return context.getImageData(0, 0, target.width, target.height).data;
+        };
+        const compare = (a, b) => {
+          let changed = 0,
+            maxChannel = 0,
+            maxAlpha = 0,
+            maxPremult = 0,
+            absolute = 0,
+            alphaPixels = 0;
+          for (let i = 0; i < a.length; i += 4) {
+            let change = 0;
+            for (let c = 0; c < 4; c++) {
+              const difference = Math.abs(a[i + c] - b[i + c]);
+              change = Math.max(change, difference);
+              maxChannel = Math.max(maxChannel, difference);
+              absolute += difference;
+            }
+            if (change) changed++;
+            if (a[i + 3]) alphaPixels++;
+            maxAlpha = Math.max(maxAlpha, Math.abs(a[i + 3] - b[i + 3]));
+            for (let c = 0; c < 3; c++)
+              maxPremult = Math.max(
+                maxPremult,
+                Math.abs(
+                  Math.round((a[i + c] * a[i + 3]) / 255) - Math.round((b[i + c] * b[i + 3]) / 255),
+                ),
+              );
+          }
+          return {
+            pixels: a.length / 4,
+            changed,
+            maxChannel,
+            maxAlpha,
+            maxPremult,
+            absolute,
+            alphaPixels,
+          };
+        };
+        const cells = [];
+        for (let index = 0; index < count; index++) {
+          const reference = references[index],
+            canvas = canvases[index],
+            expected = read(reference),
+            actual = read(canvas),
+            png = canvas.toDataURL('image/png'),
+            image = new Image();
+          image.src = png;
+          await image.decode();
+          const decoded = document.createElement('canvas');
+          decoded.width = image.width;
+          decoded.height = image.height;
+          decoded.getContext('2d').drawImage(image, 0, 0);
+          let submittedPNG;
+          if (capture.submittedPNGs) {
+            const submittedImage = new Image();
+            submittedImage.src = capture.submittedPNGs[index];
+            await submittedImage.decode();
+            const submitted = document.createElement('canvas');
+            submitted.width = submittedImage.width;
+            submitted.height = submittedImage.height;
+            submitted.getContext('2d').drawImage(submittedImage, 0, 0);
+            submittedPNG = compare(expected, read(submitted));
+          }
+          cells.push({
+            index,
+            width: canvas.width,
+            height: canvas.height,
+            rgba: compare(expected, actual),
+            png: compare(expected, read(decoded)),
+            submittedPNG,
+            ...(capture.images && index === 0
+              ? { referencePNG: reference.toDataURL('image/png'), actualPNG: png }
+              : {}),
+          });
+        }
+        capture.resolve({
+          mode,
+          sourceRevision,
+          cssSize,
+          sourceTile: tile,
+          kind: capture.kind,
+          time: capture.time,
+          cells,
+          errors: [...errors],
+        });
+      } catch (error) {
+        capture.reject(error);
+      }
+    };
     if (mode === 'direct') {
       for (let index = 0; index < count; index++) {
         const canvas = canvases[index],
@@ -167,7 +309,9 @@ export async function startWebGPUPresentationFixture({
         metrics.drawMs += performance.now() - start;
         metrics.destinations++;
       }
+      if (capture) capture.submittedPNGs = canvases.map((canvas) => canvas.toDataURL('image/png'));
       metrics.completed++;
+      void finishCapture();
       return;
     }
     if (pending.size >= 2) throw Error('Presenter backpressure exceeded');
@@ -230,11 +374,15 @@ export async function startWebGPUPresentationFixture({
       metrics.destinations++;
     }
     device.queue.submit([encoder.finish()]);
+    if (capture) capture.submittedPNGs = canvases.map((canvas) => canvas.toDataURL('image/png'));
     metrics.submissions++;
     let task;
     task = device.queue
       .onSubmittedWorkDone()
-      .then(() => metrics.completed++)
+      .then(() => {
+        metrics.completed++;
+        void finishCapture();
+      })
       .catch((error) => errors.push(String(error)))
       .finally(() => {
         pending.delete(task);
@@ -256,7 +404,7 @@ export async function startWebGPUPresentationFixture({
     viewport: [innerWidth, innerHeight, devicePixelRatio],
     backing: canvases.map((c) => [c.width, c.height]),
     stage: [stage.width, stage.height],
-    adapter: device?.adapterInfo,
+    adapter: adapterInfo,
     ...metrics,
     pending: pending.size,
     errors: [...errors],
@@ -264,6 +412,36 @@ export async function startWebGPUPresentationFixture({
   });
   globalThis.__avatarWebGPUFixture = {
     read,
+    async captureHeld({ kind = 'idle', time = 0.5, images = false } = {}) {
+      if (captureRequest) throw Error('Capture already pending');
+      engine.setPaused(true);
+      await Promise.all(pending);
+      if (kind === 'work') await Promise.all(canvases.map((_, index) => engine.prepareWork(index)));
+      return await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          captureRequest = undefined;
+          reject(Error('Held capture timed out'));
+        }, 15000);
+        captureRequest = {
+          kind,
+          time,
+          images,
+          resolve: (value) => {
+            clearTimeout(timer);
+            resolve(value);
+          },
+          reject: (error) => {
+            clearTimeout(timer);
+            reject(error);
+          },
+        };
+        for (let index = 0; index < count; index++) {
+          engine.setWander(index, false);
+          engine.setMotionFrame(index, kind, time);
+        }
+        invalidate(true);
+      });
+    },
     async sample(duration = 5000) {
       const before = read(),
         start = performance.now();
@@ -272,6 +450,8 @@ export async function startWebGPUPresentationFixture({
     },
     async dispose() {
       disposed = true;
+      captureRequest?.reject(Error('Fixture disposed'));
+      captureRequest = undefined;
       engine.setPaused(true);
       engine.invalidate = invalidate;
       await Promise.all(pending);
