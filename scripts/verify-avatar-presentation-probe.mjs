@@ -80,6 +80,16 @@ try {
     baseline,
     'Bitmap must preserve held RGBA exactly',
   );
+  const heldCapture = await page.evaluate(async () => {
+    const result = __avatarPresentationProbe.captureNextFrame();
+    controllers.forEach((controller) => controller.update({ ...props }));
+    return await result;
+  });
+  assert.equal(heldCapture.cells.length, 4);
+  assert(
+    heldCapture.cells.every((cell) => !cell.rgba.changed && !cell.png.changed),
+    'Same-frame source references must match actual destination and PNG',
+  );
   await page.evaluate(() => {
     const native = createImageBitmap;
     window.releases = [];

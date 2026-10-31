@@ -93,8 +93,9 @@ export async function startWebGPUPresentationFixture({
       var output:Out;output.position=vec4f(positions[i],0,1);output.uv=uvs[i];return output;
     }
     @fragment fn fragment(input:Out)->@location(0) vec4f {
-      let halfPixel=vec2f(.5)/vec2f(textureDimensions(atlas));
-      let uv=clamp(rect.xy+input.uv*rect.zw,rect.xy+halfPixel,rect.xy+rect.zw-halfPixel);
+      // Canvas2D drawImage filters across source-rectangle boundaries inside
+      // the same image. Only the original atlas boundary clamps.
+      let uv=rect.xy+input.uv*rect.zw;
       return textureSample(atlas,linearSampler,uv);
     }
   `,
