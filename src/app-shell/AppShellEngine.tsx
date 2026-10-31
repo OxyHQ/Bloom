@@ -889,7 +889,8 @@ export function createAppShellEngine() {
     // transitions against its actual siblings, with no navigation measurement.
     // Both keep the same alignment, gutter ownership and mounted host tree.
     const [measuredNavigationWidth, setMeasuredNavigationWidth] = useState<number | null>(null);
-    const navigationWidth = navInFlow ? (measuredNavigationWidth ?? sidebarMetrics.expanded) : 0;
+    const navHostWidth = navContentWidth + (canvasNavPad ? gutter : 0);
+    const navigationWidth = navInFlow ? (measuredNavigationWidth ?? navHostWidth) : 0;
     // The row's gap after the navigation. Panels keep their gutter off a docked
     // nav's hairline; a canvas runs to the edge.
     const rowNavigationGap = !navInFlow
@@ -950,21 +951,45 @@ export function createAppShellEngine() {
         numericReading && contentAligned
           ? {
               flexGrow: 0,
-              flexBasis: readingWidth.value + asideReadingWidth,
+              flexBasis: 'auto' as const,
+              width: readingWidth.value + asideReadingWidth,
               maxWidth: readingWidth.value + asideReadingWidth,
             }
-          : {},
-      [numericReading, contentAligned, readingWidth, asideReadingWidth],
+          : {
+              width: UNSET,
+              flexGrow: contentAligned && !stretchReading ? 0 : 1,
+              flexBasis: contentAligned
+                ? stretchReading
+                  ? ('100%' as const)
+                  : contentWidth + asideReadingWidth
+                : 0,
+              maxWidth: contentAligned
+                ? stretchReading
+                  ? ('100%' as const)
+                  : contentWidth + asideReadingWidth
+                : UNSET,
+            },
+      [
+        numericReading,
+        contentAligned,
+        readingWidth,
+        asideReadingWidth,
+        stretchReading,
+        contentWidth,
+      ],
     );
     const contentSpanStyle = useAnimatedStyle(() => {
       const extra = asideReadingWidth * spanProgress.value;
       return numericReading
         ? {
             flexGrow: 0,
-            flexBasis: readingWidth.value + extra,
+            flexBasis: 'auto' as const,
+            width: readingWidth.value + extra,
             maxWidth: readingWidth.value + extra,
           }
         : {
+            width: UNSET,
+            flexGrow: stretchReading ? 1 : 0,
             flexBasis: stretchReading ? ('100%' as const) : contentWidth + extra,
             maxWidth: stretchReading
               ? compactRegion
@@ -1391,7 +1416,6 @@ export function createAppShellEngine() {
     );
     const veilStyle = useAnimatedStyle(() => ({ opacity: revealAmount.value }), [revealAmount]);
 
-    const navHostWidth = navContentWidth + (canvasNavPad ? gutter : 0);
     const navSlotStyle = useDockSlotStyle(
       'start',
       navDock,
@@ -1547,6 +1571,7 @@ export function createAppShellEngine() {
     const centredBody = (
       <AnimatedLayoutView
         className={READING_TRANSITION}
+        testID={testID ? `${testID}-reading-envelope` : undefined}
         {...(Platform.OS === 'web'
           ? { dataSet: { bloomReadingEnvelope: cssScope ?? 'legacy' } }
           : {})}
