@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
+import ts from 'typescript';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -86,6 +87,22 @@ try {
     { cwd: extracted, encoding: 'utf8' },
   );
   assert.equal(imported, expectedRevision);
+  for (const moduleResolution of [
+    ts.ModuleResolutionKind.Node10,
+    ts.ModuleResolutionKind.NodeNext,
+    ts.ModuleResolutionKind.Bundler,
+  ]) {
+    const resolved = ts.resolveModuleName(
+      '@oxy.so/bloom-avatar-native/runtime-revision',
+      resolve(extracted, 'consumer.ts'),
+      { moduleResolution },
+      ts.sys,
+    ).resolvedModule;
+    assert.equal(
+      resolved?.resolvedFileName,
+      resolve(packageDirectory, 'lib/runtime-revision.d.cts'),
+    );
+  }
 } finally {
   rmSync(extracted, { recursive: true, force: true });
 }
