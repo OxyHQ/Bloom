@@ -594,7 +594,9 @@ describe('the screen reader as one menu of the bar replaces another', () => {
       fireEvent.press(screen.getByText('Help'));
       settle();
       // Help's menu replaced by File's (the pointer), then by Help's again (→): no title is focused.
-      fireEvent(screen.getByTestId('file'), 'pointerMove', { nativeEvent: { pointerType: 'mouse' } });
+      fireEvent(screen.getByTestId('file'), 'pointerMove', {
+        nativeEvent: { pointerType: 'mouse' },
+      });
       settle();
       platform.press('ArrowRight');
       settle();
