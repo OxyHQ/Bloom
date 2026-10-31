@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.79.0
+
+### Changed
+
+- Native surfaces no longer allocate the ref and effect used only to bake web materials. Web rendering and native increased-contrast behavior are unchanged.
+
+### Consumers
+
+No API changes.
+
 ## 15.78.3
 
 ### Fixed
