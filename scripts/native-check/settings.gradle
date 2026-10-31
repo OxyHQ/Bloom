@@ -2,6 +2,8 @@ pluginManagement {
   repositories { google(); mavenCentral(); gradlePluginPortal() }
   includeBuild('../../node_modules/@react-native/gradle-plugin')
 }
+// Also expose the plugin as a composite dependency for ReactAndroid's buildscript.
+includeBuild('../../node_modules/@react-native/gradle-plugin')
 rootProject.name = 'bloom-native-check'
 include ':bloom'
 project(':bloom').projectDir = file('../../android')
