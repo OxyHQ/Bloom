@@ -2,18 +2,27 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { installAvatarPNGSnapshots } from './fixtures/avatar/png-snapshot.mjs';
 const puppeteer = createRequire(import.meta.url)(
   process.env.BLOOM_PUPPETEER_MODULE || 'puppeteer-core',
 );
 const origin = process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6006';
 const built = process.env.AVATAR_BUILT_RUNTIME === '1';
-const browser = await puppeteer.launch({
-  executablePath: process.env.CHROME_PATH,
-  headless: true,
-  protocolTimeout: 180000,
-  args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
-});
-const report = { built, cases: [] };
+const connected = Boolean(process.env.AVATAR_BROWSER_URL);
+const browser = connected
+  ? await puppeteer.connect({
+      browserURL: process.env.AVATAR_BROWSER_URL,
+      defaultViewport: null,
+      protocolTimeout: 180000,
+    })
+  : await puppeteer.launch({
+      executablePath: process.env.CHROME_PATH,
+      headless: true,
+      protocolTimeout: 180000,
+      args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
+    });
+const ownedPages = [];
+const report = { built, cases: [], presentations: [] };
 try {
   for (const scenario of process.env.AVATAR_LAZY_CASES?.split(',') ?? [
     'noop-latest',
@@ -26,6 +35,7 @@ try {
     'failure',
   ]) {
     const page = await browser.newPage();
+    ownedPages.push(page);
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.setViewport({ width: 640, height: 480, deviceScaleFactor: 1 });
@@ -43,6 +53,7 @@ try {
     );
     await page.goto(`${origin}/avatar-lazy-work.html`);
     await cdp.send('Fetch.disable');
+    await page.evaluate(installAvatarPNGSnapshots);
     await page.evaluate(
       async ({ built }) => {
         performance.setResourceTimingBufferSize(5000);
@@ -114,6 +125,13 @@ try {
       { built },
     );
     await page.waitForFunction(() => ready === 2 && diag()[0].stats.frames > 3, { timeout: 90000 });
+    const presentations = await page.evaluate(() => diag().map((pool) => pool.presentation));
+    report.presentations.push({ scenario, presentations });
+    if (process.env.AVATAR_EXPECT_PRESENTER)
+      assert(
+        presentations.some((p) => p?.[`${process.env.AVATAR_EXPECT_PRESENTER}Frames`] > 0),
+        'Requested backend must actually submit frames',
+      );
     assert.equal(
       await page.evaluate(() => workRequests.length),
       0,
@@ -185,10 +203,10 @@ try {
         });
       }, scenario);
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const frozenPicture = await page.evaluate(() => canvases[0].toDataURL());
+      const frozenPicture = await page.evaluate(() => avatarPNGSnapshot(canvases[0]));
       await new Promise((resolve) => setTimeout(resolve, 300));
-      assert.equal(
-        await page.evaluate(() => canvases[0].toDataURL()),
+      assert.deepEqual(
+        await page.evaluate(() => avatarPNGSnapshot(canvases[0])),
         frozenPicture,
         'Pause/reduced applies before the pending fetch completes',
       );
@@ -253,5 +271,7 @@ try {
 } finally {
   await mkdir('.local/avatar-lazy-work', { recursive: true });
   await writeFile('.local/avatar-lazy-work/report.json', `${JSON.stringify(report, null, 2)}\n`);
-  await browser.close();
+  for (const page of ownedPages) if (!page.isClosed()) await page.close();
+  if (connected) await browser.disconnect();
+  else await browser.close();
 }
