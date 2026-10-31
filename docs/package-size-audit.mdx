@@ -1,0 +1,67 @@
+---
+title: Package size audit
+description: Measured package contents and the compatibility constraints on reducing them.
+---
+
+# Package size audit
+
+Baseline: Bloom 15.76.0 (`85b661c9`), built with `bun run build` and packed
+with `bun pm pack --ignore-scripts`. The tarball contains 26,879 files,
+295.15 MiB uncompressed and 124.89 MiB compressed. These are a point-in-time
+measurement, not a package size budget.
+
+To reproduce on a built checkout (the file is written outside the repository):
+
+```sh
+bun run build
+bun pm pack --ignore-scripts --filename /tmp/bloom-size-audit.tgz --quiet
+python3 - <<'PY'
+import collections, os, tarfile
+path = '/tmp/bloom-size-audit.tgz'
+groups = collections.defaultdict(lambda: [0, 0])
+with tarfile.open(path, 'r:gz') as archive:
+    for entry in archive:
+        if not entry.isfile():
+            continue
+        parts = entry.name.split('/')
+        group = '/'.join(parts[1:3]) if len(parts) > 2 and parts[1] in ('assets', 'lib') else parts[1]
+        groups[group][0] += 1
+        groups[group][1] += entry.size
+print(f'compressed: {os.path.getsize(path) / 1048576:.2f} MiB')
+for name, (count, size) in sorted(groups.items(), key=lambda item: -item[1][1]):
+    print(f'{name}: {count} files, {size / 1048576:.2f} MiB')
+PY
+```
+
+| Packed path | Files | Uncompressed |
+| --- | ---: | ---: |
+| `assets/character-runtime` | 421 | 212.40 MiB |
+| `lib/commonjs` | 5,822 | 26.82 MiB |
+| `lib/module` | 5,822 | 23.76 MiB |
+| `src` | 2,941 | 16.47 MiB |
+| `lib/typescript` | 11,590 | 13.26 MiB |
+| `docs` | 276 | 2.20 MiB |
+
+The avatar runtime alone compresses to 100.40 MiB in a separate `tar -czf`
+measurement. It is not an optional set of orphan files: all 417 files under its
+`assets/` directory are named in the generated runtime modules, and none are
+byte-identical. Apps normally load the hosted runtime, but the published package
+also promises the complete directory to self-hosting consumers. The manifest
+and `scripts/verify-avatar-cutover.mjs` enforce its completeness and hashes.
+
+The JavaScript trees contain 5,804 source maps totalling 20.85 MiB; the two
+declaration trees contain 5,794 declaration maps totalling 4.12 MiB. Dropping
+them would reduce size but remove source-level debugging or declaration mapping,
+so this audit does not recommend it as a transparent packaging change. Metro
+resolves runtime code from `src`, while browser and Node export conditions use
+the built trees. The commonjs and module declaration files are mostly byte
+identical, but their enclosing `package.json` files declare different module
+types; merging them requires NodeNext consumer validation, not just a hash
+comparison.
+
+No compatible removal was established by this audit. A separate experiment
+could measure geometry compression or a separately distributed avatar runtime,
+including decoded startup cost, all avatar recipes, self-hosted paths, Metro,
+web and native bridge consumers. A package split must retain or deliberately
+migrate the documented self-hosting contract; removing the runtime directory
+from this package today would break it.
