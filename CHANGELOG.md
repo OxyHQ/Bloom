@@ -2,6 +2,24 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.81.0
+
+### Added
+
+- `DocumentScrollRestorationBoundary` lets an app declare that it or a route owns document scroll restoration, so the compositor does not compete with that owner.
+
+### Fixed
+
+- Window controls keep their space beside compact sidebars, including shells with explicit navigation placement. Stateful headers survive fullscreen and navigation changes.
+- Native panel reading widths follow sidebar collapse and window resizing.
+- Compact descriptor panels publish the backing they actually paint, matching the equivalent JSX panel composition.
+- Web decks using document scrolling no longer clip overflowing columns when the shell uses an overlay drawer. Contained decks keep their own scroll viewport.
+- Web meters remain visible over surface material.
+
+### Consumers
+
+Existing compositions pick up the fixes when updating Bloom. Hosts that restore the document themselves can wrap their shell in `DocumentScrollRestorationBoundary`.
+
 ## 15.80.1
 
 ### Fixed
