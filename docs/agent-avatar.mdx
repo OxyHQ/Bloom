@@ -66,14 +66,17 @@ The runtime URL defaults to `BLOOM_CHARACTER_RUNTIME_URL`, the SDK's hosted copy
 (`https://alia.onl/bloom-character/runtime.mjs`, CORS open), on web and native alike, so an app
 that does not self-host the runtime needs no setup. To self-host, serve the package's complete
 `assets/character-runtime/` directory and pass its absolute URL to `BloomProvider
-characterRuntimeUrl` or `AgentAvatarProvider runtimeUrl`. Native needs the optional
-`react-native-webview` peer. Missing assets or an unavailable bridge produce an explicit translated
+characterRuntimeUrl` or `AgentAvatarProvider runtimeUrl`. The native WebView route and
+shared still-capture host need the optional `react-native-webview` peer. Android live avatars
+can instead use the separately installed native GPU companion described below. Missing assets or an unavailable bridge produce an explicit translated
 unavailable state. Geometry and motion load lazily; keep the generated chunks
 and assets beside the entry point with their original relative paths.
 
 `bun run build` builds the runtime before the library, then verifies all runtime
 files and their hashes against the actual package file list. For runtime-only
-work use `bun run build:avatar-runtime`. `manifest.json` records the generated
+work use `bun run build:avatar-runtime`; it builds both the browser runtime and the native
+companion factory/expected manifest from the same source. `bun run build:avatar-native` can
+regenerate only the companion after a fresh source browser build. `manifest.json` records the generated
 files. Build output replaces the entire runtime directory; old files and selector
 PNGs cannot silently survive an incremental build.
 Production avatars load the selected geometry and idle/reaction motion first. Computer
@@ -88,8 +91,10 @@ relocating the original Float64 channel bytes without rounding or resampling. Th
 source bundles remain frozen fidelity evidence. The public character and action API is
 unchanged; runtime diagnostic tooling can still request a complete eager rig.
 
-The source lives outside `src/` so Three and browser-only code never enter
-Metro's native import graph. Vite application output preserves `createAvatar`
+The source lives outside `src/` so Three and browser-only code do not enter ordinary
+Bloom consumers' native import graph. The optional native companion explicitly bundles the
+same engine for Hermes, with shader strings and external asset URLs; it does not evaluate
+remote JavaScript or install global DOM shims. Vite application output preserves `createAvatar`
 and external binary assets; library mode would inline these assets and defeat
 lazy loading.
 
@@ -119,7 +124,9 @@ retried; a failed native document is replaced for subsequent work.
 Unmounting the provider or replacing its runtime disposes that cache's queued work. Cancelled
 queued requests settle with `null`; late results cannot repopulate a disposed cache. These are
 resource-lifetime guarantees, not native frame-rate measurements. `AgentAvatar` takes `onReady`,
-called when the renderer has painted its first picture.
+called when the renderer has painted its first picture. The alpha-fit measurement pass
+is preparation only: readiness and capture wait for the requested pose. Persistent still
+cache version 3 invalidates images made before this first-presentation correction.
 
 ## Editing and proportions
 
@@ -176,20 +183,43 @@ quiescent scenes stop requesting animation frames. Geometry donors are immutable
 and cached within a byte budget; fitted geometry and GPU ownership are released
 with the last live scene. There is no cached animation sprite playback.
 
-Live native avatars still use separate WebView documents: they cannot share the web
-document's GPU context or decoded geometry across avatars. The shared still host does not
-change that live-renderer boundary. Sharing live native rendering would require a shared
-surface that owns native positioning, clipping and input, or a native renderer port; merely
-sharing a JavaScript scheduler cannot share these documents' GPU resources. Web correctness
-checks do not establish native crowd performance. A physical Pixel 8a test with nine native
-WebViews found one lost WebGL context both before and after the engine changes, despite all
-nine views being visible; eight remained ready. The native still-selector route avoids this
-topology, but live native crowds retain the limitation. The benchmark appendix records the
-separate shared-document and multiple-WebView protocols. iOS integration and sustained thermal
-validation remain outstanding. Software GL browser tests likewise do not establish laptop
-FPS, and browser CPU throttling is not a substitute for measuring a low-end mobile GPU.
+The optional `@oxy.so/bloom-avatar-native` companion now supplies an Android shared GPU
+backend. It is a private, installable package in this repository, not a published release;
+see [its integration and build contract](../packages/avatar-native/README.md). Install its
+archive and declared peers, rebuild the application's native binary, and keep the normal
+Bloom API. Bloom requires companion ABI 1 and selects it only when the configured runtime's
+complete manifest matches the bundled engine. An absent module or incompatible host retains
+the WebView route. The neutral web facade cannot load the companion's native dependency graph.
 
-The native bridge handles Android `onRenderProcessGone` and WKWebView
+Matching size buckets and runtime URLs share an engine, GPU context, decoded assets and atlas
+across providers. Each live destination remains an independently laid-out native TextureView;
+GPU blits preserve native clipping, transforms and input without streaming pixels through
+JavaScript. Pools contain at most sixteen instances, reduced by driver limits; additional
+instances open another pool. Initial 64/128/320 size buckets avoid promoting every icon to a
+hero's resolution. Resizing an existing group preserves its motion state and may promote that
+group to its largest remaining member. Detail, material equations and 4× MSAA are unchanged.
+
+The native host uses the same slot and latest-intent controllers as the browser. Offscreen,
+background, paused and reduced-motion avatars retain their pose. A recreated surface requests
+one fresh frame even while paused; readiness waits for a successful destination swap. At most
+two presentation batches are outstanding, allowing CPU/GPU overlap without a growing frame
+queue. Pointer cancellation clears ownership and gaze; a release moved six logical pixels or
+more does not trigger a tap reaction. Snapshot observation captures the retained native image
+on request and encodes PNG off the GL thread. Context/surface disposal drains submitted work;
+allocation and EGL presentation failures reach the existing unavailable state. Native context
+loss does not yet have automatic recovery. iOS has no native presenter in this companion.
+
+The fallback live route still creates separate WebView documents and retains its topology
+limit. A physical Pixel 8a test with nine WebViews found one lost WebGL context both before
+and after phase1, despite all nine views being visible; eight remained ready. The shared still
+host and Android native GPU backend address different parts of that topology. This historical
+observation is preserved in the [research appendix](benchmarks/avatar-engine-research.md).
+The [phase2 report](benchmarks/avatar-efficiency-phase2.mdx) separates unchanged-pixel browser
+checks, physical Android measurements and remaining validation. Software GL, CPU throttling
+and one physical phone do not establish office-PC, ARM-laptop, low-end-phone, iOS or sustained
+thermal performance.
+
+The WebView fallback bridge handles Android `onRenderProcessGone` and WKWebView
 `onContentProcessDidTerminate`, which can report OS memory reclamation as well as crashes.
 It settles pending captures, remounts once using the latest character/action props, and
 ignores messages from the previous document. This restores the character, not its lost
