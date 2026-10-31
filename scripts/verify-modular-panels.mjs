@@ -109,6 +109,114 @@ try {
       'page does not take over column vertical scroll',
     );
     console.log('PASS deck: horizontal/vertical scroll and independent route restoration');
+
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await story('deck-scroll-modes', 'deck-scroll-modes-panels');
+    assert.ok(
+      await page.evaluate(() => document.scrollingElement.scrollWidth > innerWidth),
+      'overlay document deck reaches document',
+    );
+    await test('deck-drawer-mode').click();
+    await page.waitForTimeout(300);
+    assert.ok(
+      await page.evaluate(() => document.scrollingElement.scrollWidth > innerWidth),
+      'reveal document deck reaches document',
+    );
+    await page.setViewportSize({ width: 600, height: 900 });
+    await page.getByRole('button', { name: 'Open navigation', exact: true }).click();
+    await page.waitForTimeout(500);
+    assert.equal(
+      await test('deck-scroll-modes').evaluate((node) => getComputedStyle(node).overflow),
+      'clip',
+    );
+    await page.getByRole('button', { name: 'Close navigation', exact: true }).evaluate((button) => {
+      button.addEventListener(
+        'click',
+        () => {
+          const root = document.querySelector('[data-testid="deck-scroll-modes"]');
+          const started = performance.now();
+          window.__deckClipSamples = [];
+          const sample = () => {
+            const elapsed = performance.now() - started;
+            window.__deckClipSamples.push({ elapsed, overflow: getComputedStyle(root).overflow });
+            if (elapsed < 600) requestAnimationFrame(sample);
+          };
+          sample();
+        },
+        { once: true, capture: true },
+      );
+    });
+    await page.getByRole('button', { name: 'Close navigation', exact: true }).click();
+    await page.waitForTimeout(750);
+    const clipSamples = await page.evaluate(() => window.__deckClipSamples);
+    assert.ok(
+      clipSamples.some((sample) => sample.overflow === 'clip'),
+      'closing reveal remains clipped',
+    );
+    assert.ok(
+      clipSamples
+        .filter((sample) => sample.elapsed < 200)
+        .every((sample) => sample.overflow === 'clip'),
+      'closing reveal does not release clip early',
+    );
+    assert.equal(
+      await test('deck-scroll-modes').evaluate((node) => getComputedStyle(node).overflow),
+      'visible',
+      'closed reveal restores document overflow',
+    );
+    await page.setViewportSize({ width: 1280, height: 680 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await test('deck-drawer-mode').click();
+    await test('deck-scroll-mode').click();
+    await page.waitForTimeout(400);
+    assert.ok(
+      await page.evaluate(() => document.scrollingElement.scrollWidth <= innerWidth),
+      'contained deck stays within document',
+    );
+    assert.ok(
+      await test('deck-scroll-modes-panels').evaluate((node) =>
+        [...node.querySelectorAll('*')].some(
+          (child) =>
+            getComputedStyle(child).overflowX === 'auto' && child.scrollWidth > child.clientWidth,
+        ),
+      ),
+      'contained deck owns its horizontal scroll',
+    );
+    await test('deck-scroll-mode').click();
+    await page.evaluate(() => {
+      document.documentElement.dir = 'rtl';
+    });
+    await page.waitForTimeout(400);
+    assert.ok(
+      await page.evaluate(() => document.scrollingElement.scrollWidth > innerWidth),
+      'RTL deck reaches document',
+    );
+    await page.evaluate(() => window.scrollTo({ left: -200, behavior: 'instant' }));
+    assert.ok(
+      await page.evaluate(() => window.scrollX < 0),
+      'RTL document scrolls toward its inline end',
+    );
+    await page.evaluate(() => {
+      document.documentElement.dir = 'ltr';
+      window.scrollTo(0, 0);
+    });
+    await test('deck-axis-mode').click();
+    await page.setViewportSize({ width: 800, height: 900 });
+    await page.waitForTimeout(500);
+    assert.ok(
+      await page.evaluate(() => document.scrollingElement.scrollWidth <= innerWidth),
+      'vertical responsive deck keeps document width',
+    );
+    const verticalFirst = await box('deck-scroll-modes-panels-Home');
+    const verticalSecond = await box('deck-scroll-modes-panels-Mentions');
+    assert.ok(verticalSecond.y > verticalFirst.y, 'responsive deck stacks below lg');
+    await page.setViewportSize({ width: 1280, height: 680 });
+    await page.waitForTimeout(500);
+    assert.ok(
+      await page.evaluate(() => document.scrollingElement.scrollWidth > innerWidth),
+      'responsive deck reaches document above lg',
+    );
+    console.log('PASS deck owners: overlay/reveal, contained, RTL and responsive axis');
   }
   await story('modular-inbox', 'modular-inbox-panels');
   const listId = 'modular-inbox-panels-list';
