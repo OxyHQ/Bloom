@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { decodeIndexBuffer } from './index-buffer';
 
 export const AVATAR_PRESETS = [
   'blue_beret',
@@ -157,15 +158,7 @@ export function decodeAuthoredAsset(
       'skinWeights',
       new THREE.Float32BufferAttribute(new Float32Array(record.vertices.count * 4), 4),
     );
-    geometry.setIndex(
-      record.indices.flatMap((range) =>
-        Array.from(
-          range.componentType === 'uint16'
-            ? new Uint16Array(binary, range.byteOffset, range.count)
-            : new Uint32Array(binary, range.byteOffset, range.count),
-        ),
-      ),
-    );
+    geometry.setIndex(new THREE.BufferAttribute(decodeIndexBuffer(binary, record.indices), 1));
     parts.push({
       geometry,
       id: record.id,
