@@ -2326,14 +2326,7 @@ float creatingCanvasShadow(vec2 uv, float progress) {
 }
 
 // BEGIN GENERATED FELIPE
-uniform highp sampler2D furPile,furCards,furLTC1,furLTC2;
-vec3 felipePilePerturb(vec2 uv,vec2 slope,vec3 n,vec3 dx,vec3 dy) {
-    // WebGL derivatives use an upward screen Y axis.
-    vec2 ux=dFdx(uv),uy=dFdy(uv);
-    vec3 u=cross(dy,n)*ux.x+cross(n,dx)*uy.x;
-    vec3 v=cross(dy,n)*ux.y+cross(n,dx)*uy.y;
-    return (u*slope.x+v*slope.y)*inversesqrt(max(max(dot(u,u),dot(v,v)),.00000001));
-}
+uniform highp sampler2D furLTC1,furLTC2;
 vec3 felipeDisplay(vec3 color) {
     const mat3 inputMatrix=mat3(vec3(.59719,.076,.0284),vec3(.35458,.90834,.13383),vec3(.04823,.01566,.83777));
     const mat3 outputMatrix=mat3(vec3(1.60475,-.10208,-.00327),vec3(-.53108,1.10813,-.07276),vec3(-.07367,-.00605,1.07602));
@@ -2408,30 +2401,10 @@ vec4 felipeMaterial(int material) {
     vec3 n=normalize(worldNormal),view=normalize(f.cameraPosition.xyz-worldPosition*f.cameraPosition.w);
     vec3 albedo=avatarColorRoughness.xyz*pigment,emission=vec3(0);float alpha=avatarComputerCoverage.x;
     float roughness=avatarColorRoughness.w;
-    if(material>0) {
-        roughness=1.;
-        if(material==2) {
-            vec4 fibers=texture(furCards,furSurface.xy);
-            float shortPile=fibers.g*furNormal.z*.65*(1.-smoothstep(.38,.72,furSurface.z));
-            float transmittance=(1.-fibers.a)*(1.-shortPile);
-            alpha*= (1.-pow(max(transmittance,0.),1.23*(1.+furNormal.z*1.5)))*furNormal.y;
-            // Fade the outermost tips continuously. The dense roots and body coat stay intact.
-            alpha*=1.-furNormal.z*smoothstep(.52,1.,furSurface.z)*.65;
-            if(alpha<.003)discard;
-            emission=albedo*.1;
-            albedo*=mix(.78,1.15,fibers.r)*mix(.745,1.195,smoothstep(0.,.75,furSurface.z))*furNormal.x;
-        } else {
-            vec3 weights=pow(abs(normalize(furNormal)),vec3(6.));weights/=max(dot(weights,vec3(1)),.0001);
-            vec3 p=furSurface.xyz/(d.fur.x/.018)*2.28;p.x+=.1*sin(p.y*1.8+p.z);
-            vec4 x=texture(furPile,p.zy),y=texture(furPile,p.xz),z=texture(furPile,p.xy);
-            float value=dot(vec3(x.r,y.r,z.r),weights);
-            albedo*=mix(.48,1.28,value)*.916;
-            vec3 dx=dFdx(worldPosition),dy=dFdy(worldPosition);
-            vec3 relief=felipePilePerturb(p.zy,x.gb*2.-1.,n,dx,dy)*weights.x+felipePilePerturb(p.xz,y.gb*2.-1.,n,dx,dy)*weights.y+felipePilePerturb(p.xy,z.gb*2.-1.,n,dx,dy)*weights.z;
-            n=normalize(n+relief*.7);
-        }
-    }
-    vec4 light=material==2 ? furLight : (material==1 ? furBodyLighting(n,view) : felipeLighting(n,view,worldPosition,roughness));
+    // Smooth matte body: retain pigment, studio lighting and live occlusion
+    // without fiber coverage, triplanar pile textures or derivative relief.
+    if(material>0) roughness=1.;
+    vec4 light=material==1 ? furBodyLighting(n,view) : felipeLighting(n,view,worldPosition,roughness);
     vec3 color=albedo*light.xyz+light.w;
     float occlusion=f.effects.y>0.?texture(ambientOcclusion,gl_FragCoord.xy*outputInverse).r:1.;
     color*=occlusion;
