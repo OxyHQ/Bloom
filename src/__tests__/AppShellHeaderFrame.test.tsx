@@ -57,3 +57,30 @@ it('extends only adjacent frame edges and keeps the header mounted when toggled'
   screen.rerender(view('frame', true, 'joined'));
   expect(screen.queryByTestId('shell-panels-header-span')).toBeNull();
 });
+
+it('does not extend a limited reading column', () => {
+  jest
+    .spyOn(Native, 'useWindowDimensions')
+    .mockReturnValue({ width: 1200, height: 600, scale: 1, fontScale: 1 });
+  const screen = render(
+    <BloomThemeProvider fonts={false}>
+      <AppShell
+        testID="shell"
+        variant="feed"
+        framedFrom={0}
+        gutter={8}
+        header={null}
+        contentMaxWidth={400}
+        panelLayout={{
+          header: <Native.Text>Header</Native.Text>,
+          headerSpan: 'frame',
+          panels: [{ id: 'main', content: <Native.Text>Page</Native.Text> }],
+        }}
+      />
+    </BloomThemeProvider>,
+  );
+  expect(resolvedStyle(screen.getByTestId('shell-panels-header-span').props.style)).toMatchObject({
+    marginStart: 0,
+    marginEnd: 0,
+  });
+});
