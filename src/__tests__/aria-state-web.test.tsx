@@ -798,6 +798,26 @@ describe('progressbars announce their value', () => {
     expect(el.getAttribute('aria-valuetext')).toBe('50, Good');
   });
 
+  it('MeterRing, indeterminate, with its stop control', () => {
+    const c = mount(
+      <MeterRing
+        value={0}
+        indeterminate
+        accessibilityLabel="Installing Notes"
+        onStop={() => {}}
+        stopLabel="Stop installing Notes"
+        testID="r"
+      />,
+    );
+    const el = byTestId(c, 'r');
+    expect(el.getAttribute('role')).toBe('progressbar');
+    expect(el.getAttribute('aria-valuenow')).toBeNull();
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    const stop = byTestId(c, 'r-stop');
+    expect(stop.getAttribute('role')).toBe('button');
+    expect(stop.getAttribute('aria-label')).toBe('Stop installing Notes');
+  });
+
   it('StatBar', () => {
     const c = mount(<StatBar label="Storage" value={30} max={120} testID="sb" />);
     const el = byRole(c, 'progressbar');

@@ -166,7 +166,7 @@ export interface MeterDecorativeProps extends MeterGeometryProps {
 export type AnyMeterProps = MeterProps | MeterDecorativeProps;
 
 /** The same measurement drawn as a ring. */
-export interface MeterRingProps {
+interface MeterRingBaseProps {
   /** Current value. Clamped into `[0, max]`. */
   value: number;
   /** @default 1 */
@@ -208,9 +208,27 @@ export interface MeterRingProps {
    * @default 0
    */
   transitionMs?: number;
+  /**
+   * The amount is not known yet — a download that has not started, a step that
+   * reports none: a quarter of the ring turns around it, and the progressbar
+   * reports no value (`aria-valuenow` absent, `aria-busy`), which is what makes
+   * it indeterminate to assistive technology. `value` is not drawn meanwhile.
+   * @default false
+   */
+  indeterminate?: boolean;
   /** Centred content — the score, a glyph. Hidden from assistive technology. */
   children?: ReactNode;
   /** Container style override. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
+
+/**
+ * {@link MeterRing}'s props. `onStop` makes the ring the control that stops what
+ * it measures, as an app store's download ring is: a stop square in its centre
+ * and the whole ring pressable, named by `stopLabel` ("Stop downloading Notes"),
+ * which it then requires. Without it the ring is not interactive. `children` are
+ * not drawn with it.
+ */
+export type MeterRingProps = MeterRingBaseProps &
+  ({ onStop?: undefined; stopLabel?: undefined } | { onStop: () => void; stopLabel: string });

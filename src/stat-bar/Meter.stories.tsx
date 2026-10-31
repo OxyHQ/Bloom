@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -215,6 +216,69 @@ export const Animated: Story = {
               {value}
             </Text>
           </MeterRing>
+        </Section>
+      </View>
+    );
+  },
+};
+
+/**
+ * A download ring: indeterminate while the amount is not known, its share once
+ * it is, and with `onStop` the control that stops it (its stop square).
+ */
+export const DownloadRing: Story = {
+  render: function DownloadRingStory() {
+    const [fraction, setFraction] = useState<number | null>(null);
+    const [stopped, setStopped] = useState(0);
+    useEffect(() => {
+      const id = setInterval(
+        () => setFraction((f) => (f === null ? 0 : f >= 1 ? null : Math.min(1, f + 0.1))),
+        500,
+      );
+      return () => clearInterval(id);
+    }, []);
+    return (
+      <View style={{ gap: 28, width: 480, maxWidth: '100%' }}>
+        <Section title="Indeterminate, then its share (it cycles)">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+            <MeterRing
+              value={fraction ?? 0}
+              indeterminate={fraction === null}
+              size={28}
+              thickness={2.5}
+              accessibilityLabel="Installing Notes"
+            />
+            <MeterRing
+              value={fraction ?? 0}
+              indeterminate={fraction === null}
+              size={32}
+              thickness={2.5}
+              accessibilityLabel="Downloading Notes"
+              onStop={() => setStopped((n) => n + 1)}
+              stopLabel="Stop downloading Notes"
+            />
+          </View>
+        </Section>
+        <Section title={`With a stop square — stopped ${stopped} times`}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+            <MeterRing
+              value={0.35}
+              size={44}
+              thickness={3}
+              accessibilityLabel="Downloading"
+              onStop={() => setStopped((n) => n + 1)}
+              stopLabel="Stop downloading"
+            />
+            <MeterRing
+              value={0}
+              indeterminate
+              size={44}
+              thickness={3}
+              accessibilityLabel="Waiting"
+              onStop={() => setStopped((n) => n + 1)}
+              stopLabel="Stop waiting"
+            />
+          </View>
         </Section>
       </View>
     );

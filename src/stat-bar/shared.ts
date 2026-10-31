@@ -63,7 +63,10 @@ export function meterFraction(value: number, max: number): number {
 //  the DOM — react-native-css consumes it into `style`), and the DURATION rides
 //  in on a custom property so one stylesheet serves every caller instead of one
 //  sheet per duration. `adoptStyleSheet` uses a CONSTRUCTED sheet, so a
-//  `style-src 'self'` policy cannot drop the rules (see AGENTS.md).
+//  `style-src 'self'` policy cannot drop the rules (see AGENTS.md). An
+//  indeterminate ring turns the same way (`data-bloom-meter-spin`): it is an
+//  activity indicator, so it keeps turning under reduced motion, as the
+//  spinner does.
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-meter-web-css';
@@ -71,8 +74,18 @@ const STYLE_ID = 'bloom-meter-web-css';
 export const METER_DURATION_VAR = '--bloom-meter-ms';
 const FILL = '[data-bloom-meter-fill]';
 const ARC = '[data-bloom-meter-arc] circle:last-child';
+const SPIN = '[data-bloom-meter-spin]';
+/** One turn of an indeterminate ring, in ms: the same on native (MeterRing.tsx). */
+export const METER_SPIN_MS = 1000;
 
 const CSS = `
+@keyframes bloomMeterSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+${SPIN} {
+  animation: bloomMeterSpin ${METER_SPIN_MS}ms linear infinite;
+}
 ${FILL} {
   transition: width var(${METER_DURATION_VAR}, 0ms) ease-out;
 }
