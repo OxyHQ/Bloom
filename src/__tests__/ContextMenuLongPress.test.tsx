@@ -106,3 +106,36 @@ it('offers the hold to assistive tech as the longpress action', () => {
   fireEvent(area, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
   expect(onOpenChange).toHaveBeenCalledWith(true);
 });
+
+it('cancels a hold when the trigger becomes disabled, even if it is enabled again', () => {
+  const onOpenChange = jest.fn();
+  const menu = (disabled: boolean) => (
+    <ContextMenu onOpenChange={onOpenChange}>
+      <ContextMenuTrigger label="Message actions" disabled={disabled}>
+        <Text>Message</Text>
+      </ContextMenuTrigger>
+    </ContextMenu>
+  );
+  const screen = render(menu(false));
+  fireEvent(screen.getByLabelText('Message actions'), 'touchStart', at(100));
+  screen.rerender(menu(true));
+  const disabledArea = screen.getByLabelText('Message actions');
+  expect(disabledArea.props.accessibilityState.disabled).toBe(true);
+  expect(disabledArea.props.accessibilityActions).toBeUndefined();
+  act(() => {
+    disabledArea.props.onAccessibilityAction({ nativeEvent: { actionName: 'longpress' } });
+    jest.advanceTimersByTime(LONG_PRESS_MS);
+  });
+  expect(onOpenChange).not.toHaveBeenCalled();
+
+  screen.rerender(menu(false));
+  fireEvent(screen.getByLabelText('Message actions'), 'touchStart', at(100));
+  screen.rerender(menu(true));
+  screen.rerender(menu(false));
+  act(() => jest.advanceTimersByTime(LONG_PRESS_MS));
+  expect(onOpenChange).not.toHaveBeenCalled();
+
+  fireEvent(screen.getByLabelText('Message actions'), 'touchStart', at(100));
+  act(() => jest.advanceTimersByTime(LONG_PRESS_MS));
+  expect(onOpenChange).toHaveBeenCalledWith(true);
+});
