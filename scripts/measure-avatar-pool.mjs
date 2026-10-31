@@ -69,6 +69,7 @@ try {
     );
     await page.evaluateOnNewDocument(
       ({ bitmapCopy, diagnostic }) => {
+        performance.setResourceTimingBufferSize(10000);
         window.audit = {
           copies: 0,
           copyMs: 0,
@@ -315,16 +316,14 @@ try {
           renderer: gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER),
           contextAttributes: gl.getContextAttributes(),
           gpuTimerSupported: !!gl.getExtension('EXT_disjoint_timer_query_webgl2'),
-          network: performance
-            .getEntriesByType('resource')
-            .reduce(
-              (s, e) => ({
-                requests: s.requests + 1,
-                decodedBytes: s.decodedBytes + e.decodedBodySize,
-                transferBytes: s.transferBytes + e.transferSize,
-              }),
-              { requests: 0, decodedBytes: 0, transferBytes: 0 },
-            ),
+          network: performance.getEntriesByType('resource').reduce(
+            (s, e) => ({
+              requests: s.requests + 1,
+              decodedBytes: s.decodedBytes + e.decodedBodySize,
+              transferBytes: s.transferBytes + e.transferSize,
+            }),
+            { requests: 0, decodedBytes: 0, transferBytes: 0 },
+          ),
         };
       });
       const afterMetrics = await metrics();
