@@ -10,6 +10,9 @@ const counts = (process.env.AVATAR_POOL_COUNTS || '1,24').split(',').map(Number)
 const modes = (process.env.AVATAR_POOL_MODES || 'active,one-active,offscreen,paused').split(',');
 const presetMode = process.env.AVATAR_POOL_PRESETS || 'blue';
 const diagnostic = process.env.AVATAR_DIAGNOSTIC || '';
+const gpuProfile = process.env.AVATAR_GPU_PROFILE || '';
+const size = Number(process.env.AVATAR_POOL_SIZE || 112);
+const dpr = Number(process.env.AVATAR_POOL_DPR || 1);
 const duration = Number(process.env.AVATAR_SAMPLE_MS || 5000);
 const warmup = Number(process.env.AVATAR_WARMUP_MS || 5000);
 const browser = process.env.AVATAR_BROWSER_URL
@@ -23,8 +26,10 @@ const browser = process.env.AVATAR_BROWSER_URL
 const report = {
   conditions: {
     origin,
-    size: 112,
-    dpr: 1,
+    size,
+    dpr,
+    gpuProfile,
+    cpuProfile: process.env.AVATAR_CPU_PROFILE === '1',
     duration,
     warmup,
     presetMode,
@@ -49,9 +54,9 @@ try {
         errors.push(message.text());
     });
     await page.setViewport({
-      width: 1200,
-      height: Math.max(800, Math.ceil(count / 8) * 112 + 32),
-      deviceScaleFactor: 1,
+      width: Math.max(1200, 8 * size + 32),
+      height: Math.max(800, Math.ceil(count / 8) * size + 32),
+      deviceScaleFactor: dpr,
     });
     const cdp = await page.createCDPSession();
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: report.conditions.throttle });
@@ -144,10 +149,32 @@ try {
                   const data = args[at];
                   if (data) {
                     const offset = Number(args[at + 1]) || 0;
-                    const elements =
+                    let elements =
                       name.startsWith('buffer') && args[at + 2]
                         ? args[at + 2]
                         : data.length - offset;
+                    if (name === 'texSubImage2D' && at === 8) {
+                      const components =
+                        args[6] === gl.RGBA
+                          ? 4
+                          : args[6] === gl.RGB
+                            ? 3
+                            : args[6] === gl.RG
+                              ? 2
+                              : 1;
+                      elements = Math.min(elements, args[4] * args[5] * components);
+                    }
+                    if (name === 'texImage2D' && at === 8) {
+                      const components =
+                        args[6] === gl.RGBA
+                          ? 4
+                          : args[6] === gl.RGB
+                            ? 3
+                            : args[6] === gl.RG
+                              ? 2
+                              : 1;
+                      elements = Math.min(elements, args[3] * args[4] * components);
+                    }
                     audit.uploadBytes += elements * data.BYTES_PER_ELEMENT;
                   }
                 }
@@ -176,19 +203,88 @@ try {
     await cdp.send('Fetch.disable');
     const start = performance.now();
     await page.evaluate(
-      async ({ count, presetMode, hideStrands, diagnostic }) => {
+      async ({ count, presetMode, hideStrands, diagnostic, gpuProfile, size }) => {
         window.runtime = await import('/runtime/avatar-runtime.ts');
         const source = await (await fetch('/runtime/avatar-runtime.ts')).text();
         const poolUrl = source.match(/import\(["']([^"']*avatar-pool[^"']*)["']\)/)[1];
         const poolSource = await (await fetch(poolUrl)).text();
         const engineUrl = poolSource.match(/from ["']([^"']*authored-engine[^"']*)["']/)[1];
         window.diagnosticApplications = 0;
-        if (hideStrands || diagnostic) {
+        window.gpuSamples = [];
+        window.gpuDisjointSamples = 0;
+        if (hideStrands || diagnostic || gpuProfile) {
           const { AuthoredAvatarEngine } = await import(engineUrl);
           const material = AuthoredAvatarEngine.prototype.material;
           AuthoredAvatarEngine.prototype.material = function (part, ...rest) {
             diagnosticApplications++;
             const result = material.call(this, part, ...rest);
+            if (gpuProfile && !this.profileInstalled) {
+              this.profileInstalled = true;
+              const renderer = this.renderer,
+                gl = renderer.getContext();
+              const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2');
+              if (!ext)
+                throw Error('GPU timer extension unavailable; cannot infer GPU times from CPU');
+              const pending = [];
+              let inQuery = false;
+              const collect = () => {
+                if (gl.getParameter(ext.GPU_DISJOINT_EXT)) {
+                  gpuDisjointSamples += pending.length;
+                  pending.splice(0).forEach(({ query }) => {
+                    gl.deleteQuery(query);
+                  });
+                  return;
+                }
+                while (
+                  pending.length &&
+                  gl.getQueryParameter(pending[0].query, gl.QUERY_RESULT_AVAILABLE)
+                ) {
+                  const { query, label, record } = pending.shift();
+                  const milliseconds = gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6;
+                  if (record) gpuSamples.push({ label, milliseconds });
+                  gl.deleteQuery(query);
+                }
+              };
+              window.collectGpu = collect;
+              const measured = (label, call) => {
+                if (inQuery) return call();
+                collect();
+                const query = gl.createQuery(),
+                  record = audit.active;
+                inQuery = true;
+                gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
+                try {
+                  return call();
+                } finally {
+                  gl.endQuery(ext.TIME_ELAPSED_EXT);
+                  inQuery = false;
+                  pending.push({ query, label, record });
+                }
+              };
+              if (gpuProfile === 'resolve') {
+                const blit = gl.blitFramebuffer;
+                gl.blitFramebuffer = (...args) =>
+                  measured('MSAA-color-resolve', () => blit.apply(gl, args));
+              } else {
+                const render = renderer.render;
+                renderer.render = (...args) => {
+                  const target = renderer.getRenderTarget();
+                  const label =
+                    target === this.depthTarget
+                      ? 'depth'
+                      : target === this.colorTarget
+                        ? 'color-including-resolve'
+                        : target === this.occlusion.sampled
+                          ? 'AO-sample'
+                          : target === this.occlusion.resolved
+                            ? 'AO-resolve'
+                            : target === null
+                              ? 'present'
+                              : 'other';
+                  return measured(label, () => render.apply(renderer, args));
+                };
+              }
+            }
             if (hideStrands && part.fur) result.visible = false;
             if (diagnostic.includes('msaa0')) this.colorTarget.samples = 0;
             if (diagnostic.includes('noresolve')) this.colorTarget.resolveDepthBuffer = false;
@@ -197,7 +293,7 @@ try {
               const renderer = this.renderer,
                 depth = this.depthTarget,
                 render = renderer.render;
-              renderer.render = function (...args) {
+              renderer.render = (...args) => {
                 if (renderer.getRenderTarget() !== depth) return render.apply(renderer, args);
               };
               this.occlusion.render = () => null;
@@ -224,11 +320,12 @@ try {
         window.controllers = [];
         window.props = [];
         window.ready = 0;
+        document.querySelector('main').style.width = `${8 * size}px`;
         await Promise.all(
           Array.from({ length: count }, async (_, index) => {
             const canvas = document.createElement('canvas');
             canvas.dataset.index = index;
-            canvas.style.cssText = 'width:112px;height:112px;display:block';
+            canvas.style.cssText = `width:${size}px;height:${size}px;display:block`;
             document.querySelector('main').append(canvas);
             canvases[index] = canvas;
             const presets = [
@@ -259,7 +356,14 @@ try {
           }),
         );
       },
-      { count, presetMode, hideStrands: report.conditions.hideStrands, diagnostic },
+      {
+        count,
+        presetMode,
+        hideStrands: report.conditions.hideStrands,
+        diagnostic,
+        gpuProfile,
+        size,
+      },
     );
     await page.waitForFunction((count) => ready === count, { timeout: 120000 }, count);
     if (diagnostic || report.conditions.hideStrands)
@@ -289,7 +393,13 @@ try {
           ]),
         );
       const beforeMetrics = await metrics();
+      if (report.conditions.cpuProfile) {
+        await cdp.send('Profiler.enable');
+        await cdp.send('Profiler.setSamplingInterval', { interval: 1000 });
+        await cdp.send('Profiler.start');
+      }
       const before = await page.evaluate(() => {
+        window.gpuSamples = [];
         Object.assign(audit, {
           copies: 0,
           copyMs: 0,
@@ -307,6 +417,7 @@ try {
       await new Promise((r) => setTimeout(r, duration));
       const after = await page.evaluate(() => {
         audit.active = false;
+        window.collectGpu?.();
         const gl = document.querySelector('[data-avatar-renderer]').getContext('webgl2');
         const ext = gl.getExtension('WEBGL_debug_renderer_info');
         return {
@@ -316,6 +427,8 @@ try {
           renderer: gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER),
           contextAttributes: gl.getContextAttributes(),
           gpuTimerSupported: !!gl.getExtension('EXT_disjoint_timer_query_webgl2'),
+          gpuSamples,
+          gpuDisjointSamples,
           network: performance.getEntriesByType('resource').reduce(
             (s, e) => ({
               requests: s.requests + 1,
@@ -327,6 +440,25 @@ try {
         };
       });
       const afterMetrics = await metrics();
+      let cpuProfile;
+      if (report.conditions.cpuProfile) {
+        const { profile } = await cdp.send('Profiler.stop');
+        await writeFile(`${output}/cpu-${count}-${mode}.cpuprofile`, JSON.stringify(profile));
+        const nodes = new Map(profile.nodes.map((node) => [node.id, node]));
+        const times = new Map();
+        profile.samples.forEach((id, index) => {
+          times.set(id, (times.get(id) || 0) + profile.timeDeltas[index]);
+        });
+        cpuProfile = [...times]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 25)
+          .map(([id, microseconds]) => ({
+            function: nodes.get(id).callFrame.functionName,
+            url: nodes.get(id).callFrame.url,
+            line: nodes.get(id).callFrame.lineNumber + 1,
+            sampledSelfMs: microseconds / 1000,
+          }));
+      }
       const frames =
         after.pools.reduce((s, p) => s + p.stats.frames, 0) -
         before.pools.reduce((s, p) => s + p.stats.frames, 0);
@@ -340,10 +472,29 @@ try {
         fps: frames / ((after.time - before.time) / 1000),
         mainThreadMs: (afterMetrics.TaskDuration - beforeMetrics.TaskDuration) * 1000,
         scriptMs: (afterMetrics.ScriptDuration - beforeMetrics.ScriptDuration) * 1000,
+        cpuProfile,
         heapBytes: afterMetrics.JSHeapUsedSize,
         renderer: after.renderer,
         contextAttributes: after.contextAttributes,
         gpuTimerSupported: after.gpuTimerSupported,
+        gpuDisjointSamples: after.gpuDisjointSamples,
+        gpuTiming: Object.fromEntries(
+          [...new Set(after.gpuSamples.map((s) => s.label))].map((label) => {
+            const values = after.gpuSamples
+              .filter((s) => s.label === label)
+              .map((s) => s.milliseconds)
+              .sort((a, b) => a - b);
+            return [
+              label,
+              {
+                samples: values.length,
+                meanMs: values.reduce((s, v) => s + v, 0) / values.length,
+                medianMs: values[Math.floor(values.length / 2)],
+                p95Ms: values[Math.floor(values.length * 0.95)],
+              },
+            ];
+          }),
+        ),
         network: after.network,
         audit: { ...after.audit, intervals: undefined },
         presentationGapP95: intervals[Math.floor(intervals.length * 0.95)] ?? null,
@@ -367,7 +518,7 @@ try {
           triangles: summary.pools[0].stats.triangles,
         }),
       );
-      await writeFile(`${output}/report.json`, JSON.stringify(report, null, 2) + '\n');
+      await writeFile(`${output}/report.json`, `${JSON.stringify(report, null, 2)}\n`);
     }
     assert(
       await page.evaluate(() =>
@@ -381,8 +532,12 @@ try {
       'Every avatar is actually painted',
     );
     await page.evaluate(() => {
-      controllers.forEach((c) => c.dispose());
-      canvases.forEach((c) => c.remove());
+      controllers.forEach((c) => {
+        c.dispose();
+      });
+      canvases.forEach((c) => {
+        c.remove();
+      });
     });
     await new Promise((r) => setTimeout(r, 100));
     const cleanup = await page.evaluate(() => ({
@@ -400,7 +555,7 @@ try {
   report.failure = String(error.stack || error);
   throw error;
 } finally {
-  await writeFile(`${output}/report.json`, JSON.stringify(report, null, 2) + '\n');
+  await writeFile(`${output}/report.json`, `${JSON.stringify(report, null, 2)}\n`);
   if (process.env.AVATAR_KEEP_BROWSER === '1') browser.disconnect();
   else await browser.close();
 }
