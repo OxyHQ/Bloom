@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.77.0
+
+### Added
+
+- `useAppShellPanel().visibilityReady` tells panel consumers when the compositor has resolved their initial visibility. A consumer can wait for readiness and `active` before starting background work, while retaining the panel's state when it is hidden. The initial SSR tree and visibility remain unchanged.
+
+### Consumers
+
+Use `visibilityReady !== false && active !== false` when background work needs a visible panel; outside a panel the readiness value is true. Existing consumers need no changes.
+
 ## 15.76.0
 
 ### Added
