@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { boundBodyPigment } from '../../src/agent-avatar/body-pigment';
 import type { AuthoredMotionPose, AuthoredMotionSampler } from './motion';
+import { AvatarPoseSharing } from './pose-sharing';
 import { loadAuthoredMotion, type MotionKind, type MotionSamplers } from './motion-catalog';
 import { prepareCanonicalTuft } from './canonical-tuft';
 import { advanceMotion, type MotionState } from './motion-controller';
@@ -260,6 +261,7 @@ export class AuthoredAvatarEngine {
   private partWorld = new THREE.Matrix4();
   private partNormal = new THREE.Matrix4();
   private states: InstanceState[] = [];
+  private poseSharing = new AvatarPoseSharing();
   private observer?: ResizeObserver;
   private visibilityObserver?: IntersectionObserver;
   private inViewport = true;
@@ -1340,13 +1342,34 @@ export class AuthoredAvatarEngine {
     // Match the original's one-time alpha fit at each backing resolution. The
     // readback is per unique preset/resolution, never per instance or animated frame.
     const measureFit = this.fitPending;
+    this.poseSharing.beginFrame();
+    if (!measureFit) {
+      // Idle clocks have no pending action transition. Count exact duplicates
+      // before sampling; independent clocks keep the direct, copy-free path.
+      for (const state of this.states) {
+        const motion = state.motion;
+        if (
+          state.rendering === false ||
+          state.poseOverride ||
+          motion?.kind !== 'idle' ||
+          motion.pendingStart
+        )
+          continue;
+        const sampler = this.asset(state.preset)?.samplers?.idle;
+        if (!sampler) continue;
+        const sampleTime = motion.held ?? this.time - motion.started;
+        if (state.poseSampler !== sampler || state.poseSampleTime !== sampleTime)
+          this.poseSharing.register(sampler, sampleTime);
+      }
+    }
     const object = this.poseObject;
     let cameraChanged = false;
     for (const [stateIndex, state] of this.states.entries()) {
       if (state.rendering === false && !measureFit) continue;
+      const asset = this.asset(state.preset);
       object.position.set(
         0,
-        this.paused || measureFit || state.poseOverride || this.asset(state.preset)?.samplers
+        this.paused || measureFit || state.poseOverride || asset?.samplers
           ? 0
           : Math.sin(this.time * 1.8 + state.phase) * 0.025,
         0,
@@ -1354,7 +1377,7 @@ export class AuthoredAvatarEngine {
       object.rotation.set(
         measureFit ? 0 : -state.look.y * 0.12,
         measureFit ? 0 : state.look.x * 0.18,
-        this.paused || measureFit || state.poseOverride || this.asset(state.preset)?.samplers
+        this.paused || measureFit || state.poseOverride || asset?.samplers
           ? 0
           : Math.sin(this.time + state.phase) * 0.02,
       );
@@ -1395,13 +1418,8 @@ export class AuthoredAvatarEngine {
       }
       object.updateMatrix();
       state.matrix.copy(object.matrix);
-      if (
-        !state.poseOverride &&
-        this.asset(state.preset)?.samplers &&
-        !measureFit &&
-        (!this.paused || state.motion)
-      ) {
-        const samplers = this.asset(state.preset)!.samplers!;
+      if (!state.poseOverride && asset?.samplers && !measureFit && (!this.paused || state.motion)) {
+        const samplers = asset!.samplers!;
         const previousMotion = state.motion;
         state.motion = advanceMotion(state.motion, samplers, this.time);
         // Presentation activation must retain the gaze snapshot taken at input.
@@ -1423,14 +1441,12 @@ export class AuthoredAvatarEngine {
         // Held neighbours still participate in the shared render, but their
         // semantic pose is immutable until its sampler or clock changes.
         if (state.poseSampleTime !== sampleTime) {
-          sampler.sample(sampleTime, state.pose);
+          this.poseSharing.sample(sampler, sampleTime, state.pose);
           state.poseSampleTime = sampleTime;
         }
       }
       const reactionTiming =
-        state.motion?.kind === 'reaction'
-          ? this.asset(state.preset)?.samplers?.reactionGaze
-          : undefined;
+        state.motion?.kind === 'reaction' ? asset?.samplers?.reactionGaze : undefined;
       if (reactionTiming && state.motion) {
         if (state.reactionGaze?.motion !== state.motion) {
           state.reactionGaze = {
@@ -1476,11 +1492,11 @@ export class AuthoredAvatarEngine {
           this.pointerPivot.fromArray(neutral);
           this.rotatedPivot.copy(this.pointerPivot).applyMatrix4(this.pointerMatrix);
           this.pointerMatrix.setPosition(this.pointerPivot.sub(this.rotatedPivot));
-        } else if (this.asset(state.preset)?.source.preset !== 'blue_beret') {
+        } else if (asset?.source.preset !== 'blue_beret') {
           const body =
             state.poseOverride?.get('mesh:0')?.world ??
             (!this.paused || state.motion ? state.pose?.[0]?.world : undefined) ??
-            this.asset(state.preset)!.parts[0]!.material.uniforms.d!.value.world;
+            asset!.parts[0]!.material.uniforms.d!.value.world;
           this.pointerPivot.setFromMatrixPosition(body);
           this.rotatedPivot.copy(this.pointerPivot).applyMatrix4(this.pointerMatrix);
           this.pointerMatrix.setPosition(this.pointerPivot.sub(this.rotatedPivot));
@@ -1915,6 +1931,8 @@ export class AuthoredAvatarEngine {
       renderedInstances: this.states.filter((state) => state.rendering !== false).length,
       frames: this.frames,
       fitPasses: this.fitPasses,
+      poseEvaluations: this.poseSharing.evaluations,
+      sharedPoseCopies: this.poseSharing.copies,
       suspended: this.hidden() || !this.inViewport || this.contextLost,
       frameRateLimit: this.maxFrameRate === Infinity ? null : this.maxFrameRate,
       observedFrameRate: this.elapsed ? this.timedFrames / this.elapsed : 0,
