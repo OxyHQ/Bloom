@@ -149,3 +149,19 @@ it('replaces a failed module document before processing the next queued characte
   message(view, `snapshot:${JSON.stringify({ id: 1, uri: PNG })}`);
   expect(await second.promise).toBe(PNG);
 });
+
+it.each(['onRenderProcessGone', 'onContentProcessDidTerminate'])(
+  'fails the interrupted still on %s and processes the next job in a new document',
+  async (event) => {
+    const first = stills!.request(stillKey(blue, 64, 1), blue, 64, 1);
+    const second = stills!.request(stillKey(alfred, 64, 1), alfred, 64, 1);
+    await flush();
+    act(() => webViews(view)[0]!.props[event]());
+    expect(await first.promise).toBeNull();
+    await flush();
+    expect(mockMount).toHaveBeenCalledTimes(2);
+    message(view, 'loaded');
+    message(view, `snapshot:${JSON.stringify({ id: 1, uri: PNG })}`);
+    expect(await second.promise).toBe(PNG);
+  },
+);

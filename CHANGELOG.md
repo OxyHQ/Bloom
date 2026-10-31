@@ -11,11 +11,13 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 
 ### Fixed
 
-- **Native portrait queues reuse one WebView document.** Rendering several distinct portraits no longer reloads the runtime and rebuilds its document for each one. The host releases after the queue drains; identified captures reject stale completions. Cancelled requests settle, provider disposal stops queued work, and runtime loading/render deadlines release failed or stalled work so subsequent portraits can proceed.
+- **Native portrait selectors and queues share one WebView document.** Explicit noninteractive native portraits, including shape and eye selectors, render through the cached still pipeline. Temporarily paused live avatars retain their renderer. Rendering several distinct portraits no longer reloads the runtime and rebuilds its document for each one. The host releases after the queue drains; identified captures reject stale completions. Cancelled requests settle, provider disposal stops queued work, and runtime loading/render deadlines release failed or stalled work so subsequent portraits can proceed.
+
+- **Native WebView process loss has bounded recovery.** Android/iOS process termination settles pending captures and restores the live renderer with its latest props. Consecutive failure reports unavailable; 30 seconds of stable readiness renews the bounded recovery budget. Stale document events cannot complete a new capture. Interrupted still jobs fail and the next queued job receives a fresh document.
 
 ### Consumers
 
-No character or action prop changes. Self-hosted consumers must replace the complete generated `assets/character-runtime/` directory alongside the updated library. Native live avatars still use one WebView each and lack recovery handlers for OS WebView process termination; physical-device crowd validation remains outstanding. Measurement scope and implementation details are recorded in `docs/agent-avatar.mdx` and `docs/benchmarks/avatar-engine-research.md`.
+No character or action prop changes. Self-hosted consumers must replace the complete generated `assets/character-runtime/` directory alongside the updated library. Native live avatars still use one WebView each; physical-device validation of multiple native live views and OS process-kill recovery remains outstanding. Measurement scope and implementation details are recorded in `docs/agent-avatar.mdx` and `docs/benchmarks/avatar-engine-research.md`.
 
 ## 15.71.2
 

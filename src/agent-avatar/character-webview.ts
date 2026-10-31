@@ -10,6 +10,9 @@ type Props = {
   javaScriptEnabled: boolean;
   originWhitelist: string[];
   onMessage(event: { nativeEvent: { data: string } }): void;
+  onError?(): void;
+  onRenderProcessGone?(): void;
+  onContentProcessDidTerminate?(): void;
 };
 let cached: ComponentType<Props> | null | undefined;
 export function characterWebView() {
