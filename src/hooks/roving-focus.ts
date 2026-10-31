@@ -147,11 +147,9 @@ export function applyRovingTabIndex(
 /**
  * Keep the group's roving tab stop in step with its selection.
  *
- * Runs after EVERY render of the group, without deps, because the group
- * re-renders whenever an option's selection or `disabled` changes (both arrive
- * through the group's own props or its children), and a layout effect runs
- * after the children have committed the attributes it reads. It writes the DOM
- * only where a value differs, so an idle re-render costs one query.
+ * Runs after every group render and observes its options: a child can change
+ * independently, without a render of the group that owns the tab stop. The
+ * observer ignores `tabindex`, which this function writes itself.
  */
 export function useRovingTabIndex(
   getContainer: () => Element | null,
@@ -161,7 +159,19 @@ export function useRovingTabIndex(
 ): void {
   useLayoutEffect(() => {
     if (!IS_WEB) return;
-    applyRovingTabIndex(getContainer(), selector, isSelected, owner);
+    const container = getContainer();
+    applyRovingTabIndex(container, selector, isSelected, owner);
+    if (!container || typeof MutationObserver === 'undefined') return;
+    const observer = new MutationObserver(() => {
+      applyRovingTabIndex(container, selector, isSelected, owner);
+    });
+    observer.observe(container, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['aria-disabled', 'disabled', 'aria-selected', 'aria-checked'],
+    });
+    return () => observer.disconnect();
   });
 }
 

@@ -62,6 +62,8 @@ The group is ONE tab stop — the chosen segment — and the rest are reached wi
 
 Disabled segments are skipped, and a disabled group offers no tab stop at all. Selection follows focus in both modes — the control is a value, not a navigation. <kbd>Space</kbd> is Bloom's own: react-native-web presses a `radio` or `tab` on <kbd>Enter</kbd> only. Keys also clear the drag gesture's click suppression, so a key press is never swallowed as the tail of a drag. Native is unchanged.
 
+If a segment is removed or disabled independently, the tab stop moves to an enabled segment. This uses the browser's `MutationObserver`: in web environments without it, independently changed children need the parent group to render again before the tab stop updates.
+
 ## Right to left
 
 The segments follow the document's direction. When an app switches language at runtime and the direction flips, every segment moves but none changes size. Web's `onLayout` reports only size changes, so each segment measures itself again on the flip, and the thumb follows the selected segment.

@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.80.2
+
+### Fixed
+
+- On web, Tabs and SegmentedControl keep an enabled keyboard tab stop when a selected child disables or removes itself without rerendering the group. Groups remain independent when nested.
+
+### Consumers
+
+No API changes. In web environments without `MutationObserver`, independently changed children are reflected when their group next renders.
+
 ## 15.80.1
 
 ### Fixed

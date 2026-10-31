@@ -109,6 +109,8 @@ On web the strip is a `role="tablist"` — named by `label` — and follows the 
 
 Horizontal arrows follow the document direction: in RTL, Left advances and Right goes back. Like Bloom's `useIsRtl`, this reads `<html dir="rtl">`; nested `dir`, `dir="auto"`, and CSS-only direction overrides are not separate keyboard contexts.
 
+If a trigger is removed or disabled independently, the tab stop moves to an enabled trigger. This uses the browser's `MutationObserver`: in web environments without it, independently changed children need the parent strip to render again before the tab stop updates.
+
 Before this every tab was its own tab stop, the arrows did nothing, and there was no `tablist` at all — correct `role="tab"` and `aria-selected` on each trigger, which is why nothing flagged it. Native is unchanged: the strip stays a plain container there, since naming a native container would fold its tabs into one accessibility element. Verified in jest (`TabsSegmentedKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`).
 
 ## Look
