@@ -225,21 +225,24 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         ? radius
         : `${typeof radius === 'number' ? radius : panelShape.radius}px`,
   };
-  const chromeRecipe = useThemeRecipe(resolvePanelChrome);
+  const chromeRecipe = useThemeRecipe(resolvePanelChrome, []);
   const panelChrome = chromeRecipe?.paint;
-  const opticsRecipe = useThemeRecipe((theme, documentMode, documentPreset) =>
-    resolveSurfaceOptics(theme.isDark),
+  const opticsRecipe = useThemeRecipe(
+    (theme, documentMode, documentPreset) => resolveSurfaceOptics(theme.isDark),
+    [],
   );
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
   const parentRecipe = useSurfaceFillRecipe();
   const customFill = surfaceColor ?? StyleSheet.flatten(surfaceStyle)?.backgroundColor;
-  const fillRecipe = useThemeRecipe((theme) =>
-    typeof customFill === 'string'
-      ? customFill
-      : rawFill === undefined
-        ? undefined
-        : theme.colors.card,
+  const fillRecipe = useThemeRecipe(
+    (theme) =>
+      typeof customFill === 'string'
+        ? customFill
+        : rawFill === undefined
+          ? undefined
+          : theme.colors.card,
+    [customFill, rawFill],
   );
   const defaultFill = rawFill;
   const { width } = useWindowDimensions();
@@ -257,14 +260,17 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     : rawFill && paintsSurface
       ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill
       : rawFill;
-  const materialRecipe = useThemeRecipe((_theme, documentMode, documentPreset) => {
-    const fill = resolvePaintMode(fillRecipe, documentMode, documentPreset);
-    const parent = resolvePaintMode(parentRecipe, documentMode, documentPreset);
-    if (isPlain) return { publishedFill: parent, paintFill: 'transparent' };
-    if (!fill || !paintsSurface || !parent)
-      return { publishedFill: fill, paintFill: fill ?? 'transparent' };
-    return resolveSurfaceMaterial({ fill, parentFill: parent });
-  });
+  const materialRecipe = useThemeRecipe(
+    (_theme, documentMode, documentPreset) => {
+      const fill = resolvePaintMode(fillRecipe, documentMode, documentPreset);
+      const parent = resolvePaintMode(parentRecipe, documentMode, documentPreset);
+      if (isPlain) return { publishedFill: parent, paintFill: 'transparent' };
+      if (!fill || !paintsSurface || !parent)
+        return { publishedFill: fill, paintFill: fill ?? 'transparent' };
+      return resolveSurfaceMaterial({ fill, parentFill: parent });
+    },
+    [isPlain, parentRecipe, paintsSurface, fillRecipe],
+  );
   const materialStyle = useSurfaceMaterial(
     '[data-bloom-panel-material]',
     'bloom-content-panel-material',

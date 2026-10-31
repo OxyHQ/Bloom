@@ -299,23 +299,26 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
 
-    const paintRecipe = useThemeRecipe((modeTheme, documentMode, documentPreset) => {
-      const layer = resolveSurfaceLayer(
-        modeTheme,
-        resolvePaintMode(parentRecipe, documentMode, documentPreset),
-        parentLevel,
-      );
-      const palette =
-        isLink && linkTone != null && toneProp == null
-          ? resolveLinkButtonPalette(modeTheme, linkTone)
-          : resolveButtonPalette(appearance, modeTheme, tone, colors, layer.fill, material);
-      return {
-        palette,
-        backing: layer.fill,
-        optics: resolveSurfaceOptics(modeTheme.isDark),
-        shadow: palette.shadow ? BUTTON_SHADOW[modeTheme.isDark ? 'dark' : 'light'] : 'none',
-      };
-    });
+    const paintRecipe = useThemeRecipe(
+      (modeTheme, documentMode, documentPreset) => {
+        const layer = resolveSurfaceLayer(
+          modeTheme,
+          resolvePaintMode(parentRecipe, documentMode, documentPreset),
+          parentLevel,
+        );
+        const palette =
+          isLink && linkTone != null && toneProp == null
+            ? resolveLinkButtonPalette(modeTheme, linkTone)
+            : resolveButtonPalette(appearance, modeTheme, tone, colors, layer.fill, material);
+        return {
+          palette,
+          backing: layer.fill,
+          optics: resolveSurfaceOptics(modeTheme.isDark),
+          shadow: palette.shadow ? BUTTON_SHADOW[modeTheme.isDark ? 'dark' : 'light'] : 'none',
+        };
+      },
+      [isLink, parentRecipe, toneProp, parentLevel, colors, tone, material, linkTone, appearance],
+    );
     const palette = paintRecipe.paint.palette;
     const withPaint = (node: ReactElement) => (
       <>

@@ -322,12 +322,15 @@ function PageHeaderComponent({
     };
   }, [dock, height, coversContent]);
 
-  const paintRecipe = useThemeRecipe((theme, documentMode, documentPreset) => ({
-    background: resolvePaintMode(surfaceRecipe, documentMode, documentPreset),
-    separator: theme.colors.borderLight,
-    textSecondary: theme.colors.textSecondary,
-    shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
-  }));
+  const paintRecipe = useThemeRecipe(
+    (theme, documentMode, documentPreset) => ({
+      background: resolvePaintMode(surfaceRecipe, documentMode, documentPreset),
+      separator: theme.colors.borderLight,
+      textSecondary: theme.colors.textSecondary,
+      shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+    }),
+    [surfaceRecipe],
+  );
   const paint = paintRecipe.paint;
 
   // ── The scroll owner ──────────────────────────────────────────────────────

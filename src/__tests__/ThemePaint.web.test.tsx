@@ -35,10 +35,13 @@ const config = { defaultColorPreset: 'blue' as const, modeStorageKey: 'paint-mod
 function Probe({ id }: { id: string }) {
   const raw = useTheme();
   const colors = useThemePaint();
-  const recipe = useThemeRecipe((theme) => ({
-    sidebar: resolveSidebarPalette(theme),
-    optics: resolveSurfaceOptics(theme.isDark),
-  }));
+  const recipe = useThemeRecipe(
+    (theme) => ({
+      sidebar: resolveSidebarPalette(theme),
+      optics: resolveSurfaceOptics(theme.isDark),
+    }),
+    [],
+  );
   return (
     <>
       {recipe.sheet}
@@ -159,8 +162,9 @@ it('keeps a fixed light palette separate from its changing root backing', () => 
   };
   function Child() {
     const parent = useSurfaceFillRecipe();
-    const material = useThemeRecipe((theme, documentMode) =>
-      surfaceFillOn(theme, parent[documentMode]),
+    const material = useThemeRecipe(
+      (theme, documentMode) => surfaceFillOn(theme, parent[documentMode]),
+      [parent],
     );
     return <div data-light={material.light} data-dark={material.dark} />;
   }

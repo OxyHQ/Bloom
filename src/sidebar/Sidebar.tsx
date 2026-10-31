@@ -264,7 +264,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const clearSearchLabel = clearSearchLabelProp ?? messages.clearSearch;
   const noResultsLabel = noResultsLabelProp ?? messages.noResults;
   const modesLabel = modesLabelProp ?? messages.mode;
-  const paletteRecipe = useThemeRecipe(resolveSidebarPalette);
+  const paletteRecipe = useThemeRecipe(resolveSidebarPalette, []);
   const palette = paletteRecipe.paint;
   const parentRecipe = useSurfaceFillRecipe();
   const parentFill = useSurfaceFill();
@@ -282,17 +282,19 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const publishedFill = hasFill
     ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill
     : undefined;
-  const materialRecipe = useThemeRecipe((_theme, documentMode, documentPreset) =>
-    resolveSurfaceMaterial({
-      fill:
-        typeof customSurface?.backgroundColor === 'string'
-          ? customSurface.backgroundColor
-          : surface === 'plain'
-            ? 'transparent'
-            : resolvePaintMode(paletteRecipe, documentMode, documentPreset).panel,
-      parentFill: resolvePaintMode(parentRecipe, documentMode, documentPreset),
-      paint: paintsSurface,
-    }),
+  const materialRecipe = useThemeRecipe(
+    (_theme, documentMode, documentPreset) =>
+      resolveSurfaceMaterial({
+        fill:
+          typeof customSurface?.backgroundColor === 'string'
+            ? customSurface.backgroundColor
+            : surface === 'plain'
+              ? 'transparent'
+              : resolvePaintMode(paletteRecipe, documentMode, documentPreset).panel,
+        parentFill: resolvePaintMode(parentRecipe, documentMode, documentPreset),
+        paint: paintsSurface,
+      }),
+    [customSurface?.backgroundColor, surface, parentRecipe, paletteRecipe, paintsSurface],
   )!;
   const publishedPaint = materialRecipe.paint.publishedFill;
   const { size: scopedSize } = useBloomAppearance(

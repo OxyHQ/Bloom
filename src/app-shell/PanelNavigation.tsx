@@ -171,8 +171,9 @@ export function PanelScrollScope({
       },
     };
   }, [parent?.adapter]);
+  const focus = useMemo(() => ({ id, active }), [id, active]);
   return (
-    <FocusContext.Provider value={{ id, active }}>
+    <FocusContext.Provider value={focus}>
       <ScrollRestorationScope adapter={adapter}>{children}</ScrollRestorationScope>
     </FocusContext.Provider>
   );

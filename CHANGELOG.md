@@ -2,6 +2,15 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.85.1
+
+### Fixed
+
+- **What a Screen and a group of panels publish stays the same object while what it says does.** `useThemeRecipe` (internal) was keyed on its resolver, and every caller passed an inline function, so every render made a new recipe: a Screen drawing again with a new bottom bar published new fill modes through `SurfaceLevelProvider`, and React drew everything below that reads its surface again, the whole header and toolbar with it. It now takes a dependency list, as `useMemo` does (Biome's `useExhaustiveDependencies` checks every call: `biome.json`), and returns the same recipe, with its sheet, while the theme and those deps stay the same; it allocates no more hooks than before. `ScreenScope`'s host, `PanelScrollScope`'s focus, a panel host's and a sole panel's `AppShellPanelContext` value, and `AppShellPanels`' region (local and bounded, and the stand-in outside a shell) are memoized the same way. On OxyOS a click selecting an item in Stash drew 313 components and now draws 158, and the JavaScript it runs fell by about 40%. Pinned by `ContextValueStability.test.tsx`.
+
+### Consumers
+
+No API changes.
 ## 15.85.0
 
 ### Added

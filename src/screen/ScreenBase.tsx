@@ -109,17 +109,20 @@ export function createScreen(
     const background = flatStyle?.backgroundColor;
     const explicitFill =
       typeof background === 'string' && background !== 'transparent' ? background : undefined;
-    const paintedSurface = useThemeRecipe((_theme, documentMode, preset) => {
-      const backing = resolvePaintMode(surfaceRecipe, documentMode, preset);
-      return explicitFill
-        ? resolveSurfaceMaterial({
-            fill: explicitFill,
-            parentFill: backing,
-            parentLevel: surfaceLevel,
-            paint: false,
-          }).publishedFill
-        : backing;
-    });
+    const paintedSurface = useThemeRecipe(
+      (_theme, documentMode, preset) => {
+        const backing = resolvePaintMode(surfaceRecipe, documentMode, preset);
+        return explicitFill
+          ? resolveSurfaceMaterial({
+              fill: explicitFill,
+              parentFill: backing,
+              parentLevel: surfaceLevel,
+              paint: false,
+            }).publishedFill
+          : backing;
+      },
+      [explicitFill, surfaceRecipe, surfaceLevel],
+    );
     const surfaceFill = onSurface ? 'transparent' : surfaceRecipe.paint;
     const parentScreen = useContext(ScreenContext);
     const parentViewport = useContext(ScreenViewportContext);
