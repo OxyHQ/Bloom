@@ -161,7 +161,15 @@ describe('the still cache', () => {
     it('ignores a stored value that is not a PNG data URI', async () => {
       const { data, storage } = memoryStorage();
       const key = stillKey(blue, 64, 1);
-      data.set(`bloom:avatar-still:${key}`, 'https://evil.test/x.png');
+      const seed = createCharacterStills({
+        runtimeUrl: 'u',
+        storage,
+        backend: async () => URI('old'),
+      });
+      await seed.request(key, blue, 64, 1).promise;
+      await flush();
+      const storedKey = [...data.keys()].find((stored) => stored.endsWith(key))!;
+      data.set(storedKey, 'https://evil.test/x.png');
       const backend = jest.fn(async () => URI('fresh'));
       const stills = createCharacterStills({ runtimeUrl: 'u', storage, backend });
       expect(await stills.request(key, blue, 64, 1).promise).toBe(URI('fresh'));
@@ -237,4 +245,29 @@ it('does not start rendering after disposal during a storage read', async () => 
   expect(await request.promise).toBeNull();
   await flush();
   expect(backend).not.toHaveBeenCalled();
+});
+
+it('isolates persisted portraits by runtime URL and eye-only identity', async () => {
+  const data = new Map<string, string>();
+  const storage = {
+    getItem: async (key: string) => data.get(key) ?? null,
+    setItem: async (key: string, value: string) => {
+      data.set(key, value);
+    },
+  };
+  const key = stillKey(blue, 64, 1);
+  const first = createCharacterStills({
+    runtimeUrl: 'first',
+    storage,
+    backend: async () => URI('first'),
+  });
+  expect(await first.request(key, blue, 64, 1).promise).toBe(URI('first'));
+  await flush();
+  const second = createCharacterStills({
+    runtimeUrl: 'second',
+    storage,
+    backend: async () => URI('second'),
+  });
+  expect(await second.request(key, blue, 64, 1).promise).toBe(URI('second'));
+  expect(stillKey(blue, 64, 1, 'eyes')).not.toBe(key);
 });

@@ -1,5 +1,6 @@
 import type { BloomThemeStorage } from '../theme/persistence';
 import type { ResolvedAvatarCharacter } from './character';
+import type { CharacterCapabilities } from './context';
 
 /**
  * A still of a character: one PNG, drawn once by the shared runtime and kept by CONTENT.
@@ -25,6 +26,8 @@ export type StillJob = Readonly<{
   character: ResolvedAvatarCharacter;
   css: number;
   ratio: number;
+  previewPart?: 'eyes';
+  onCapabilities?(value: CharacterCapabilities): void;
 }>;
 /** Resolves a `data:image/png` URI, or `null` when the picture could not be made. */
 export type StillBackend = (job: StillJob) => Promise<string | null>;
@@ -41,6 +44,7 @@ export type CharacterStills = {
     character: ResolvedAvatarCharacter,
     css: number,
     ratio: number,
+    previewPart?: 'eyes',
   ): StillRequest;
 };
 
@@ -68,7 +72,12 @@ function hash(text: string): string {
  * in full are one picture), the render size and the density. Fixed field order, never the order
  * the caller happened to write the keys in.
  */
-export function stillKey(character: ResolvedAvatarCharacter, css: number, ratio: number): string {
+export function stillKey(
+  character: ResolvedAvatarCharacter,
+  css: number,
+  ratio: number,
+  previewPart?: 'eyes',
+): string {
   const { preset, shape, eyes, eyewear, accessory, paint, eyeSpacing, authored } = character;
   return hash(
     JSON.stringify([
@@ -83,6 +92,7 @@ export function stillKey(character: ResolvedAvatarCharacter, css: number, ratio:
       authored,
       css,
       ratio,
+      previewPart ?? null,
     ]),
   );
 }
@@ -103,11 +113,14 @@ export function createCharacterStills({
   runtimeUrl,
   storage,
   backend,
+  onCapabilities,
 }: {
   runtimeUrl: string;
   storage?: BloomThemeStorage;
   backend: StillBackend | null;
+  onCapabilities?(value: CharacterCapabilities): void;
 }): CharacterStills {
+  const storageNamespace = `${hash(runtimeUrl)}:`;
   const memory = new Map<string, string>();
   const pending = new Map<string, Pending>();
   const queue: Pending[] = [];
@@ -122,7 +135,7 @@ export function createCharacterStills({
 
   const readStored = async (key: string): Promise<string | null> => {
     try {
-      const stored = await storage?.getItem(KEY_PREFIX + key);
+      const stored = await storage?.getItem(KEY_PREFIX + storageNamespace + key);
       return typeof stored === 'string' && stored.startsWith('data:image/png;base64,')
         ? stored
         : null;
@@ -131,8 +144,9 @@ export function createCharacterStills({
     }
   };
 
-  const writeStored = async (key: string, uri: string) => {
+  const writeStored = async (contentKey: string, uri: string) => {
     if (!storage) return;
+    const key = storageNamespace + contentKey;
     try {
       const raw = await storage.getItem(INDEX_KEY);
       const parsed: unknown = raw ? JSON.parse(raw) : [];
@@ -189,7 +203,7 @@ export function createCharacterStills({
       if (uri) remember(key, uri);
       return uri;
     },
-    request(key, character, css, ratio) {
+    request(key, character, css, ratio, previewPart) {
       if (disposed) return { promise: Promise.resolve(null), cancel() {} };
       const cached = memory.get(key);
       if (cached) return { promise: Promise.resolve(cached), cancel() {} };
@@ -198,7 +212,17 @@ export function createCharacterStills({
         let settle!: (uri: string | null) => void;
         const promise = new Promise<string | null>((resolve) => (settle = resolve));
         entry = {
-          job: { key, runtimeUrl, character, css, ratio },
+          job: {
+            key,
+            runtimeUrl,
+            character,
+            css,
+            ratio,
+            previewPart,
+            onCapabilities: (value) => {
+              if (!disposed) onCapabilities?.(value);
+            },
+          },
           waiters: 0,
           started: false,
           promise,
