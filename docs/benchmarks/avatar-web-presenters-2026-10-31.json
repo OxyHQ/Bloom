@@ -125,10 +125,7 @@
         "errors": [],
         "fallbacks": 0,
         "pending": 0,
-        "scratch": [
-          192,
-          192
-        ]
+        "scratch": [192, 192]
       }
     },
     {
@@ -158,10 +155,7 @@
         "errors": [],
         "fallbacks": 0,
         "pending": 0,
-        "scratch": [
-          128,
-          128
-        ]
+        "scratch": [128, 128]
       }
     },
     {
@@ -1010,19 +1004,9 @@
         "destinationsDelta": 598,
         "maxPending": 2,
         "errors": [],
-        "viewport": [
-          411,
-          732,
-          2.625
-        ],
-        "outputPixels": [
-          192,
-          192
-        ],
-        "atlasPixels": [
-          384,
-          192
-        ],
+        "viewport": [411, 732, 2.625],
+        "outputPixels": [192, 192],
+        "atlasPixels": [384, 192],
         "layout": null
       },
       {
@@ -1035,26 +1019,12 @@
         "destinationsDelta": 2208,
         "maxPending": 0,
         "errors": [],
-        "viewport": [
-          411,
-          732,
-          2.625
-        ],
-        "outputPixels": [
-          192,
-          192
-        ],
-        "atlasPixels": [
-          960,
-          960
-        ],
+        "viewport": [411, 732, 2.625],
+        "outputPixels": [192, 192],
+        "atlasPixels": [960, 960],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 24
         }
       },
@@ -1068,26 +1038,12 @@
         "destinationsDelta": 3984,
         "maxPending": 2,
         "errors": [],
-        "viewport": [
-          411,
-          732,
-          2.625
-        ],
-        "outputPixels": [
-          192,
-          192
-        ],
-        "atlasPixels": [
-          960,
-          960
-        ],
+        "viewport": [411, 732, 2.625],
+        "outputPixels": [192, 192],
+        "atlasPixels": [960, 960],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 24
         }
       },
@@ -1101,26 +1057,12 @@
         "destinationsDelta": 3528,
         "maxPending": 2,
         "errors": [],
-        "viewport": [
-          411,
-          732,
-          2.625
-        ],
-        "outputPixels": [
-          192,
-          192
-        ],
-        "atlasPixels": [
-          960,
-          960
-        ],
+        "viewport": [411, 732, 2.625],
+        "outputPixels": [192, 192],
+        "atlasPixels": [960, 960],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 24
         }
       },
@@ -1134,26 +1076,12 @@
         "destinationsDelta": 2496,
         "maxPending": 0,
         "errors": [],
-        "viewport": [
-          411,
-          732,
-          2.625
-        ],
-        "outputPixels": [
-          128,
-          128
-        ],
-        "atlasPixels": [
-          512,
-          512
-        ],
+        "viewport": [411, 732, 2.625],
+        "outputPixels": [128, 128],
+        "atlasPixels": [512, 512],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 55
         }
       },
@@ -1167,26 +1095,12 @@
         "destinationsDelta": 5440,
         "maxPending": 2,
         "errors": [],
-        "viewport": [
-          411,
-          732,
-          2.625
-        ],
-        "outputPixels": [
-          128,
-          128
-        ],
-        "atlasPixels": [
-          512,
-          512
-        ],
+        "viewport": [411, 732, 2.625],
+        "outputPixels": [128, 128],
+        "atlasPixels": [512, 512],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 55
         }
       },
@@ -1200,26 +1114,12 @@
         "destinationsDelta": 2432,
         "maxPending": 0,
         "errors": [],
-        "viewport": [
-          411,
-          732,
-          2.625
-        ],
-        "outputPixels": [
-          128,
-          128
-        ],
-        "atlasPixels": [
-          512,
-          512
-        ],
+        "viewport": [411, 732, 2.625],
+        "outputPixels": [128, 128],
+        "atlasPixels": [512, 512],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 55
         }
       }
@@ -1639,21 +1539,11 @@
         "id": "webview-pbo-direct24",
         "mode": "direct",
         "count": 24,
-        "outputBacking": [
-          192,
-          192
-        ],
-        "atlas": [
-          960,
-          960
-        ],
+        "outputBacking": [192, 192],
+        "atlas": [960, 960],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            914,
-            2.625
-          ],
+          "viewport": [411, 914, 2.625],
           "visible": 24
         },
         "elapsedMs": 5000.5,
@@ -1677,21 +1567,11 @@
         "id": "webview-pbo24",
         "mode": "pbo",
         "count": 24,
-        "outputBacking": [
-          192,
-          192
-        ],
-        "atlas": [
-          960,
-          960
-        ],
+        "outputBacking": [192, 192],
+        "atlas": [960, 960],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            914,
-            2.625
-          ],
+          "viewport": [411, 914, 2.625],
           "visible": 24
         },
         "elapsedMs": 5008.600000023842,
@@ -1715,21 +1595,11 @@
         "id": "webview-pbo-direct24-return",
         "mode": "direct",
         "count": 24,
-        "outputBacking": [
-          192,
-          192
-        ],
-        "atlas": [
-          960,
-          960
-        ],
+        "outputBacking": [192, 192],
+        "atlas": [960, 960],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            914,
-            2.625
-          ],
+          "viewport": [411, 914, 2.625],
           "visible": 24
         },
         "elapsedMs": 5014.800000011921,
@@ -1753,21 +1623,11 @@
         "id": "webview-pbo-direct64",
         "mode": "direct",
         "count": 64,
-        "outputBacking": [
-          128,
-          128
-        ],
-        "atlas": [
-          512,
-          512
-        ],
+        "outputBacking": [128, 128],
+        "atlas": [512, 512],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            914,
-            2.625
-          ],
+          "viewport": [411, 914, 2.625],
           "visible": 64
         },
         "elapsedMs": 6029.800000011921,
@@ -1791,21 +1651,11 @@
         "id": "webview-pbo64",
         "mode": "pbo",
         "count": 64,
-        "outputBacking": [
-          128,
-          128
-        ],
-        "atlas": [
-          512,
-          512
-        ],
+        "outputBacking": [128, 128],
+        "atlas": [512, 512],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            914,
-            2.625
-          ],
+          "viewport": [411, 914, 2.625],
           "visible": 64
         },
         "elapsedMs": 5054.199999988079,
@@ -1829,21 +1679,11 @@
         "id": "webview-pbo-direct64-return",
         "mode": "direct",
         "count": 64,
-        "outputBacking": [
-          128,
-          128
-        ],
-        "atlas": [
-          512,
-          512
-        ],
+        "outputBacking": [128, 128],
+        "atlas": [512, 512],
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            914,
-            2.625
-          ],
+          "viewport": [411, 914, 2.625],
           "visible": 64
         },
         "elapsedMs": 5756.800000011921,
@@ -3057,10 +2897,7 @@
           "maxPending": 0,
           "staleDelta": 0,
           "errors": [],
-          "outputBacking": [
-            128,
-            128
-          ]
+          "outputBacking": [128, 128]
         },
         {
           "count": 4,
@@ -3076,10 +2913,7 @@
           "maxPending": 2,
           "staleDelta": 0,
           "errors": [],
-          "outputBacking": [
-            128,
-            128
-          ]
+          "outputBacking": [128, 128]
         },
         {
           "count": 8,
@@ -3095,10 +2929,7 @@
           "maxPending": 0,
           "staleDelta": 0,
           "errors": [],
-          "outputBacking": [
-            128,
-            128
-          ]
+          "outputBacking": [128, 128]
         },
         {
           "count": 8,
@@ -3114,10 +2945,7 @@
           "maxPending": 2,
           "staleDelta": 0,
           "errors": [],
-          "outputBacking": [
-            128,
-            128
-          ]
+          "outputBacking": [128, 128]
         },
         {
           "count": 16,
@@ -3133,10 +2961,7 @@
           "maxPending": 0,
           "staleDelta": 0,
           "errors": [],
-          "outputBacking": [
-            128,
-            128
-          ]
+          "outputBacking": [128, 128]
         },
         {
           "count": 16,
@@ -3152,10 +2977,7 @@
           "maxPending": 2,
           "staleDelta": 0,
           "errors": [],
-          "outputBacking": [
-            128,
-            128
-          ]
+          "outputBacking": [128, 128]
         }
       ]
     },
@@ -4398,11 +4220,7 @@
         "mode": "direct",
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 64
         },
         "elapsedMs": 5000.899999976158,
@@ -4421,11 +4239,7 @@
         "mode": "pbo",
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 64
         },
         "elapsedMs": 5094.600000023842,
@@ -4444,11 +4258,7 @@
         "mode": "webgpu",
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 64
         },
         "elapsedMs": 5001,
@@ -4463,11 +4273,7 @@
         "mode": "direct",
         "layout": {
           "hidden": false,
-          "viewport": [
-            411,
-            732,
-            2.625
-          ],
+          "viewport": [411, 732, 2.625],
           "visible": 64
         },
         "elapsedMs": 5002.100000023842,
