@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { NativeAvatar, isRuntimeCompatible } from './node_modules/@oxy.so/bloom/src/agent-avatar/native';
+import {
+  NativeAvatar,
+  isRuntimeCompatible,
+} from './node_modules/@oxy.so/bloom/src/agent-avatar/native';
 import { probeColdFrame } from './NativeAudit';
 import { bridge } from './node_modules/@oxy.so/bloom/src/agent-avatar/native/bridge';
 const character = {
