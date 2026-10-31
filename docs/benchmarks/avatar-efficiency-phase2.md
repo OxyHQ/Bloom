@@ -174,6 +174,12 @@ are recorded in the [physical native audit](./avatar-native-shared-context-2026-
 
 ## Verification boundaries
 
+- After the web readback, index and uniform changes, 44 fixed-pose cases compare
+  45,613,056 pixels against the original baseline with zero changed RGBA values.
+  Six browser readback-lifecycle cases cover cancellation, hidden/resume, context
+  restoration and failure; eight unit cases verify resource cleanup and deadlines.
+  The [core verification record](./avatar-web-core-verification-2026-10-31.json)
+  distinguishes these checks from the performance measurements.
 - 57 source-rendering cases compare 45,936,640 pixels with zero changed RGBA values,
   covering all eight authored presets and four catalog combinations at multiple sizes.
 - Four injected-host cases match browser output exactly, including transparency, sparse
