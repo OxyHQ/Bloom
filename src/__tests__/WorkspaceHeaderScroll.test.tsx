@@ -210,6 +210,31 @@ it('keeps a retained panel mounted and clears only a top-edge panel', () => {
   expect(unmounted).not.toHaveBeenCalled();
 });
 
+it('retained layouts keep the default workspace header inset outside the panel', () => {
+  const tree = render(
+    wrap(
+      <AppShell
+        testID="shell"
+        scroll="page"
+        header={null}
+        panelLayout={{
+          retain: true,
+          flow: 'bounded',
+          header,
+          panels: [{ id: 'main', content: <Route /> }],
+        }}
+      />,
+    ),
+  );
+  fireEvent(tree.getByTestId('shell-panels-workspace-header'), 'layout', {
+    nativeEvent: { layout: { width: 390, height: 64, x: 0, y: 0 } },
+  });
+  expect(
+    resolvedStyle(tree.getByTestId('shell-panels-workspace-content').props.style).paddingTop,
+  ).toBe(64);
+  expect(resolvedStyle(tree.getByTestId('body').props.contentContainerStyle).paddingTop).toBe(0);
+});
+
 it('keeps workspace clearance while a retained route loses and regains focus', () => {
   const mounts = jest.fn();
   const unmounts = jest.fn();
