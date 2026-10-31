@@ -427,6 +427,74 @@ describe('independent segmented children', () => {
 });
 
 describe('roving focus observation', () => {
+  it.each(['aria-selected', 'aria-checked'] as const)(
+    'updates the tab stop after an independent child changes %s',
+    async (attribute) => {
+      let chooseOther!: () => void;
+      const role = attribute === 'aria-checked' ? 'radio' : 'tab';
+      function Options() {
+        const [other, setOther] = React.useState(false);
+        chooseOther = () => setOther(true);
+        return (
+          <>
+            <button type="button" role={role} data-option {...{ [attribute]: !other }}>
+              First
+            </button>
+            <button type="button" role={role} data-option {...{ [attribute]: other }}>
+              Other
+            </button>
+          </>
+        );
+      }
+      function Group() {
+        const ref = React.useRef<HTMLDivElement>(null);
+        useRovingTabIndex(
+          () => ref.current,
+          '[data-option]',
+          (element) => element.getAttribute(attribute) === 'true',
+        );
+        return (
+          <div ref={ref}>
+            <Options />
+          </div>
+        );
+      }
+      mount(<Group />);
+      expect(tabStops(role).map((element) => element.textContent)).toEqual(['First']);
+      await act(async () => {
+        chooseOther();
+        await Promise.resolve();
+      });
+      expect(tabStops(role).map((element) => element.textContent)).toEqual(['Other']);
+    },
+  );
+
+  it('disconnects its observer on unmount', () => {
+    const disconnect = jest.spyOn(MutationObserver.prototype, 'disconnect');
+    function Group() {
+      const ref = React.useRef<HTMLDivElement>(null);
+      useRovingTabIndex(
+        () => ref.current,
+        '[data-option]',
+        () => false,
+      );
+      return (
+        <div ref={ref}>
+          <button type="button" data-option>
+            Option
+          </button>
+        </div>
+      );
+    }
+    try {
+      act(() => root.render(<Group />));
+      act(() => root.render(null));
+      expect(disconnect).toHaveBeenCalledTimes(1);
+    } finally {
+      disconnect.mockRestore();
+    }
+  });
+
   it('keeps nested changes within their own group', async () => {
     let disableInner!: () => void;
     const selected = (element: HTMLElement) => element.getAttribute('data-selected') === 'true';
