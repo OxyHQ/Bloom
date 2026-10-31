@@ -112,3 +112,11 @@ independently. Prevented, stale, unhandled and no-op results settle immediately;
 successful completion waits for the native pager's destination-selection event.
 Repeated completion events are ignored by gesture ID, and a prevented gesture
 does not disable a later retry against the same history.
+
+The opted Android build verifies the public Screens capability
+`rnscreens.nativeBackOwnership` after project evaluation. Exactly one Android
+project must publish an immutable map with integer `apiVersion: 1` and Boolean
+`enabled: true`. This follows the adapter's actual source selection and works
+with renamed autolink projects. Missing, disabled, unsupported or duplicate
+publishers fail the build; setting the property on stock Screens cannot silently
+enable an incomplete integration. Default Bloom builds do not require Screens.

@@ -24,7 +24,8 @@ gradle -p scripts/native-check :bloom:testDebugUnitTest --max-workers=2
 
 # In a separate clean installation:
 patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native < scripts/native-check/patches/react-native-0.88.0.patch
-gradle -p scripts/native-check -Pbloom.predictiveBackEnabled=true :bloom:testDebugUnitTest --max-workers=2
+patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native-screens < scripts/native-check/patches/react-native-screens-4.30.0.patch
+gradle -p scripts/native-check -Pbloom.predictiveBackEnabled=true -Prnscreens.nativeBackOwnershipEnabled=true :bloom:testDebugUnitTest :screensWithCustomAutolinkName:compileDebugKotlin :screensWithCustomAutolinkName:compileDebugJavaWithJavac --max-workers=2
 ```
 
 Callback tests cover cancellation, completion acknowledgement, invalidation and
@@ -47,3 +48,31 @@ python3 scripts/native-check/legacy/verify-manifest.py
 
 Use Gradle 8.3 and JDK 17 for this fixture; Kotlin 1.8.0 does not support JDK 21's
 default JVM target. Install platform 34 and Build Tools 33.0.1 (AGP default) / 34.0.0.
+
+## Screens capability and actual source compilation
+
+The predictive fixture also compiles official React Native Screens 4.30.0 with
+the ownership adapter from [Screens PR #5118](https://github.com/software-mansion/react-native-screens/pull/5118),
+commit `76cfa7b`.
+The exact fixture backport SHA-256 is
+`5b4e3d2eb483c5c4fca1b96abf17f11eabef45aa572b08b38bdd9df80670daf0`.
+It excludes Mention's unrelated root-replacement changes. The real Screens
+project deliberately has a custom Gradle name; its actual public marker satisfies
+Bloom's build contract. A minimal host application initializes the official React
+Gradle plugin, which generates Screens' native specifications from its real sources.
+The public settings plugin consumes an empty autolinking dependency list because
+this fixture explicitly includes both libraries in settings; it does not generate
+or compile an application package list. No substitute Screens or React Native
+classes are compiled.
+
+`python3 scripts/native-check/test-capability-contract.py` separately exercises
+the production Gradle validator with small metadata fixtures: default absence,
+opted absence, renamed publisher, disabled support, unsupported versions, wrong
+types and duplicate publishers. These are contract tests, not runtime substitutes.
+
+The opted gate also mounts the actual production host in a resumed AndroidX
+activity, with real React contexts and the public coordinator. After the normal
+gate passes, `verify-host-regression.py` restores the original tag-zero exclusion
+temporarily and requires the named host assertion to fail. It restores production
+source in `finally` and reruns the same test successfully. Compiler failures,
+missing reports and other exception types do not count as a killed regression.

@@ -116,12 +116,12 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
 
   private fun currentOwner(): BackPreviewSession.Owner? {
     if (coordinator?.isNativeNavigationEnabled != true || coordinator?.isJavaScriptEnabled != false ||
-      !registered || !previewEnabled || sessionKey.isEmpty() || destinationTag <= 0 ||
+      !registered || !previewEnabled || sessionKey.isEmpty() ||
       !isAttachedToWindow || !hasWindowFocus() || !isShown ||
       lifecycleOwner?.lifecycle?.currentState != Lifecycle.State.RESUMED) return null
     if (resolvedDestinationTag != destinationTag || destination == null) {
-      val manager = UIManagerHelper.getUIManagerForReactTag(reactContext, destinationTag) ?: return null
-      val target = try { manager.resolveView(destinationTag) } catch (_: IllegalViewOperationException) { null }
+      val manager = if (destinationTag > 0) UIManagerHelper.getUIManagerForReactTag(reactContext, destinationTag) else null
+      val target = try { manager?.resolveView(destinationTag) } catch (_: IllegalViewOperationException) { null }
       destination = target?.takeIf { it !== this }
       resolvedDestinationTag = destinationTag
     }
