@@ -27,11 +27,7 @@
       "baseline": {
         "rawSha256": "a67d3e18cdd3538a5d7cde3eedfb39c43e5e6732b5b7f468a6c510c15db5ce90",
         "seconds": 5.057799999952317,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 254,
         "engineFps": 50.21946300810523,
         "gpuCompletedFps": null,
@@ -48,11 +44,7 @@
       "candidate": {
         "rawSha256": "a931367726f9fd987fb420254b7bf918f7f00fd79f5d08e967eee805107926e4",
         "seconds": 5.0145,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 300,
         "engineFps": 59.82650314089142,
         "gpuCompletedFps": 60.02592481802772,
@@ -83,11 +75,7 @@
       "baseline": {
         "rawSha256": "1fa62e99b769f6112762579c4faad1418df055ac61029b89d5f56a25b3b10da8",
         "seconds": 5.054599999964237,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 223,
         "engineFps": 44.118228940287615,
         "gpuCompletedFps": null,
@@ -104,11 +92,7 @@
       "candidate": {
         "rawSha256": "cfe7a410af9361d8bee35c185e281915e93769d94a1f70916bb5769d85cc8e73",
         "seconds": 5.026399999976158,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 301,
         "engineFps": 59.88381346518935,
         "gpuCompletedFps": 59.88381346518935,
@@ -139,11 +123,7 @@
       "baseline": {
         "rawSha256": "d5896c5b7ca27c8d38d912d5249fe947080e51e5f2d7985e5486d0e1f41f1689",
         "seconds": 5.031100000023842,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 250,
         "engineFps": 49.69092246204911,
         "gpuCompletedFps": null,
@@ -160,11 +140,7 @@
       "candidate": {
         "rawSha256": "d629c1f489a1da8db76c6983fadc57e5eb27507abfb32a11c9fbc7f33374d116",
         "seconds": 5.018100000023842,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 300,
         "engineFps": 59.78358342770663,
         "gpuCompletedFps": 59.78358342770663,
@@ -195,11 +171,7 @@
       "baseline": {
         "rawSha256": "15f9eae697cf01dffa9b49efce08aee616b5a8f751633680d5422addb12f04c3",
         "seconds": 5.345800000011921,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 103,
         "engineFps": 19.267462306814753,
         "gpuCompletedFps": null,
@@ -216,11 +188,7 @@
       "candidate": {
         "rawSha256": "0a198c451345c9f8a2df8257a76a67f987d0fc9a71411c564e9f6f898b9aacab",
         "seconds": 5.036899999976158,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 258,
         "engineFps": 51.22198177474662,
         "gpuCompletedFps": 51.42051658782703,
@@ -251,11 +219,7 @@
       "baseline": {
         "rawSha256": "2c923b8babab7fb58c6ec7e27d31d069ec78c2110d612ebbde48d9b27c67e3ca",
         "seconds": 5.1275,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 121,
         "engineFps": 23.598244758654314,
         "gpuCompletedFps": null,
@@ -272,11 +236,7 @@
       "candidate": {
         "rawSha256": "d6dfee6a88ca84b090b09f1526559049347ea314b6e48e44f40ecce32fcffae0",
         "seconds": 5.055699999988079,
-        "viewport": [
-          411,
-          914,
-          2.625
-        ],
+        "viewport": [411, 914, 2.625],
         "engineFrames": 202,
         "engineFps": 39.95490238749853,
         "gpuCompletedFps": 39.95490238749853,

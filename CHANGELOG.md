@@ -6,18 +6,23 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 
 ### Changed
 
-- **Agent avatars use smooth 3D surfaces.** Hair strands and their pile/card textures are removed from the runtime and its generated transport. Body silhouettes, selected parts, pigment, gaze and authored actions remain live 3D. Persisted still portraits are invalidated so they adopt the new finish.
-- **Idle avatars load only the motion they need.** Computer geometry, its episode and its loop load on the first work request; shared preparation completes before the action's first presented frame. Motion transport retains exact Float64 channels and leaves the original animation fixtures intact. Paused portraits and offscreen pooled avatars stop contributing GPU instances while retaining their own painted output and action state.
+- **Avatar presentation shares GPU work across web canvases.** Capable multi-avatar pools use one WebGPU presenter; dense small Canvas2D destinations use one bounded asynchronous atlas readback when WebGPU is unavailable. Single fresh avatars keep the direct path. Both queues admit at most two batches, preserve animation clocks and existing resolution/MSAA, and report readiness after actual presentation. Retained and offscreen avatars omit geometry, crop uploads and restrict atlas passes to active bounds.
+- **Agent avatars use smooth 3D surfaces.** Hair strands and their pile/card textures are removed from rendering and transport. Body silhouettes, selected parts, pigment, gaze and authored actions remain live 3D. Persisted still portraits adopt the new finish.
+- **Cold loading and playback avoid redundant work.** Idle avatars defer Computer geometry and motion until requested. Exact typed index assembly, flat joint uniforms, duplicate-clock pose reuse and asynchronous web fitting reduce allocation and main-thread blocking without reducing animation cadence. Newer character requests supersede obsolete loading without cancelling shared asset requests.
+
+### Added
+
+- **An optional Android native GPU companion** shares the existing renderer across independent native views on Expo 58 / React Native 0.88. It requires Expo GL 58.0.3, a native rebuild and hosting the complete runtime revision matching the companion's manifest. Ordinary Bloom keeps its existing WebView fallback; iOS has no shared native presenter yet.
+- **`AvatarGroup.motion`** forwards `auto`, `always` or `never` through every layout. `Avatar.account` accepts and validates the account service's string-key character DTO and structured `name.displayName`; invalid recipes retain image/initial fallback. Existing defaults and reduced-motion precedence remain unchanged.
 
 ### Fixed
 
-- **Native portrait selectors and queues share one WebView document.** Explicit noninteractive native portraits, including shape and eye selectors, render through the cached still pipeline. Temporarily paused live avatars retain their renderer. Rendering several distinct portraits no longer reloads the runtime and rebuilds its document for each one. The host releases after the queue drains; identified captures reject stale completions. Cancelled requests settle, provider disposal stops queued work, and runtime loading/render deadlines release failed or stalled work so subsequent portraits can proceed.
-
-- **Native WebView process loss has bounded recovery.** Android/iOS process termination settles pending captures and restores the live renderer with its latest props. Consecutive failure reports unavailable; 30 seconds of stable readiness renews the bounded recovery budget. Stale document events cannot complete a new capture. Interrupted still jobs fail and the next queued job receives a fresh document.
+- The first delivered avatar frame now contains its requested pose after fitting, including cold native presentation. Deferred presentation cannot overwrite a newer direct frame, survive hiding or report stale readiness. GPU destinations retain their image across disposal and support reattachment to the same canvas.
+- Native portrait selectors and queues share one still-rendering document. Native WebView process loss has bounded recovery, settles captures and restores current props. One failed callback or obsolete asset request no longer strands other avatars in the pool.
 
 ### Consumers
 
-No character or action prop changes. Self-hosted consumers must replace the complete generated `assets/character-runtime/` directory alongside the updated library. Native live avatars still use one WebView each: a physical Pixel 8a test found a lost WebGL context at nine visible live WebViews both before and after these changes. Static selectors now avoid that topology; live-native context sharing, iOS integration and physical OS process-kill recovery remain outstanding. Measurement scope and implementation details are recorded in `docs/agent-avatar.mdx` and `docs/benchmarks/avatar-engine-research.md`.
+Self-hosters replace the **complete** generated `assets/character-runtime/` directory alongside Bloom. Native companion adopters retain an immutable versioned runtime directory for installed application revisions and rebuild their native binary. `motion="always"` explicitly animates small account avatars; reduced motion still wins. Physical comparisons, browser-specific scaled-pixel quantization and remaining limits are recorded in `docs/benchmarks/avatar-web-efficiency.md` and `docs/benchmarks/avatar-engine-research.md`; benchmark results are scoped observations, not universal frame-rate guarantees.
 
 ## 15.77.0
 
