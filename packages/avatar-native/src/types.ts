@@ -51,7 +51,10 @@ export type Engine = {
   loaded: Promise<void>;
   setCount(count: number): void;
   setSize(size: number): Promise<void>;
-  setPreset(index: number, preset: string): Promise<void>;
+  setPreset(index: number, preset: string, isCurrent?: () => boolean): Promise<void>;
+  getInstancePreset(index: number): string | undefined;
+  hasPreset(preset: string): boolean;
+  cancelPresetChange(index: number): void;
   resetAppearance(index: number): void;
   idle(index: number): void;
   setWander(index: number, value: boolean): void;
