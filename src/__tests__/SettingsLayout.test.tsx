@@ -1,4 +1,4 @@
-import { Text as RNText } from 'react-native';
+import { Platform, Text as RNText } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
@@ -15,6 +15,7 @@ import {
 } from '../settings-modal';
 import { useSettingsLayout } from '../settings-modal/context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { fakeKeyboard } from './support/fake-menu-bar';
 import { fakeWindow } from './support/fake-window';
 import { resolvedStyle } from './support/rendered-style';
 import { mockWindowSize } from './support/window-size';
@@ -183,11 +184,14 @@ describe('SettingsLayout', () => {
       expect(screen.queryByTestId('settings-rail-window-band')).toBeNull();
     });
 
-    it('puts the controls at the rail top, which keeps their room and moves the window', () => {
+    it('is composed by AppShell: the shell draws the controls at the rail top, which keeps their room and moves the window', () => {
       setWindow(1280);
       const { window, adapter } = fakeWindow();
       const screen = layout({}, adapter);
-      expect(screen.getByTestId('settings-window-controls')).toBeTruthy();
+      expect(screen.getByTestId('settings-shell')).toBeTruthy();
+      // Once: the shell's, never a second copy of the layout's own.
+      expect(screen.getByTestId('settings-shell-window-controls')).toBeTruthy();
+      expect(screen.queryByTestId('settings-window-controls')).toBeNull();
       const band = screen.getByTestId('settings-rail-window-band');
       expect(resolvedStyle(band.props.style).height).toBe(52);
       fireEvent(band, 'responderGrant');
@@ -230,13 +234,112 @@ describe('SettingsLayout', () => {
       );
       expect(screen.getAllByLabelText('Close')).toHaveLength(1);
       expect(screen.queryByTestId('settings-window-controls')).toBeNull();
+      expect(screen.queryByTestId('settings-shell')).toBeNull();
       expect(screen.queryByTestId('settings-rail-window-band')).toBeNull();
+    });
+
+    it('the page header is the window toolbar: back and forward in one group, through the pages visited', () => {
+      setWindow(1280);
+      const keyboard = fakeKeyboard();
+      const { adapter } = fakeWindow();
+      const changes: string[] = [];
+      const screen = layout(
+        { onPageChange: (page) => changes.push(page) },
+        { ...adapter, keyboard },
+      );
+      const group = () => screen.getByTestId('settings-header-history');
+      const back = () => screen.getByTestId('settings-header-history-back');
+      const forward = () => screen.getByTestId('settings-header-history-forward');
+      const disabled = (node: ReactTestInstance) =>
+        node.props.accessibilityState?.disabled === true || node.props['aria-disabled'] === true;
+      // One group holding both, its name the pair's; a lone back capsule is gone.
+      expect(group().props.accessibilityLabel).toBe('Back and forward');
+      expect(group().findByProps({ testID: 'settings-header-history-back' })).toBeTruthy();
+      expect(group().findByProps({ testID: 'settings-header-history-forward' })).toBeTruthy();
+      expect(screen.queryByTestId('settings-header-back')).toBeNull();
+      expect(screen.getAllByLabelText('Back')).toHaveLength(1);
+      expect(screen.getAllByLabelText('Forward')).toHaveLength(1);
+      // At the first page there is nowhere to go either way.
+      expect(disabled(back())).toBe(true);
+      expect(disabled(forward())).toBe(true);
+
+      fireEvent.press(screen.getByTestId('settings-nav-profile'));
+      expect(screen.getByText('profile body')).toBeTruthy();
+      expect(disabled(back())).toBe(false);
+      expect(disabled(forward())).toBe(true);
+
+      fireEvent.press(back());
+      expect(screen.getByText('general body')).toBeTruthy();
+      expect(disabled(back())).toBe(true);
+      expect(disabled(forward())).toBe(false);
+
+      fireEvent.press(forward());
+      expect(screen.getByText('profile body')).toBeTruthy();
+
+      // Mod+[ and Mod+] (⌘ here, Ctrl off Apple platforms) move through the same history.
+      const mod =
+        Platform.OS === 'ios' || Platform.OS === 'macos' ? { metaKey: true } : { ctrlKey: true };
+      let taken = false;
+      act(() => {
+        taken = keyboard.press({ key: '[', code: 'BracketLeft', ...mod });
+      });
+      expect(taken).toBe(true);
+      expect(screen.getByText('general body')).toBeTruthy();
+      act(() => {
+        taken = keyboard.press({ key: '[', code: 'BracketLeft', ...mod });
+      });
+      // Nowhere further back: the key is not taken.
+      expect(taken).toBe(false);
+      act(() => {
+        taken = keyboard.press({ key: ']', code: 'BracketRight', ...mod });
+      });
+      expect(taken).toBe(true);
+      expect(screen.getByText('profile body')).toBeTruthy();
+      expect(changes).toEqual(['profile', 'general', 'profile', 'general', 'profile']);
+    });
+
+    it('selecting a page drops the pages that were ahead', () => {
+      setWindow(1280);
+      const screen = layout({}, fakeWindow().adapter);
+      fireEvent.press(screen.getByTestId('settings-nav-profile'));
+      fireEvent.press(screen.getByTestId('settings-header-history-back'));
+      fireEvent.press(screen.getByTestId('settings-nav-general'));
+      // General is already shown: nothing visited, profile still ahead.
+      expect(
+        screen.getByTestId('settings-header-history-forward').props.accessibilityState?.disabled,
+      ).toBe(false);
+      fireEvent.press(screen.getByTestId('settings-nav-profile'));
+      expect(
+        screen.getByTestId('settings-header-history-forward').props.accessibilityState?.disabled,
+      ).toBe(true);
+    });
+
+    it('a guard that refuses keeps the page and the history', () => {
+      setWindow(1280);
+      let allow = true;
+      const screen = layout({ onBeforeLeave: () => allow }, fakeWindow().adapter);
+      fireEvent.press(screen.getByTestId('settings-nav-profile'));
+      allow = false;
+      fireEvent.press(screen.getByTestId('settings-header-history-back'));
+      expect(screen.getByText('profile body')).toBeTruthy();
+      expect(
+        screen.getByTestId('settings-header-history-back').props.accessibilityState?.disabled,
+      ).toBe(false);
+    });
+
+    it('without the capability the header has no history group', () => {
+      setWindow(1280);
+      const screen = layout({}, null);
+      fireEvent.press(screen.getByTestId('settings-nav-profile'));
+      expect(screen.queryByTestId('settings-header-history')).toBeNull();
+      expect(screen.queryByLabelText('Forward')).toBeNull();
     });
 
     it('full screen: neither controls nor room', () => {
       setWindow(1280);
       const screen = layout({}, fakeWindow({ state: { fullscreen: true } }).adapter);
       expect(screen.queryByTestId('settings-window-controls')).toBeNull();
+      expect(screen.queryByTestId('settings-shell-window-controls')).toBeNull();
       expect(screen.queryByTestId('settings-rail-window-band')).toBeNull();
     });
   });

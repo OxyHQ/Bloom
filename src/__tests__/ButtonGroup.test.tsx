@@ -17,6 +17,23 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 describe('ButtonGroup', () => {
+  it.each([false, true])(
+    'keeps its items its children in the mounted tree (separated: %s)',
+    (separated) => {
+      // Fabric flattens a view with no stacking context and mounts its children
+      // in the nearest ancestor that has one: a role and a label are not one.
+      const { getByTestId } = renderWithTheme(
+        <ButtonGroup testID="group" accessibilityLabel="Back and forward" separated={separated}>
+          <ButtonGroupItem iconOnly accessibilityLabel="Back" />
+          <ButtonGroupItem iconOnly accessibilityLabel="Forward" />
+        </ButtonGroup>,
+      );
+      const group = getByTestId('group');
+      expect(group.props.role).toBe('group');
+      expect(group.props.collapsable).toBe(false);
+    },
+  );
+
   it('is one rimmed surface with inset separators between items', () => {
     const { getByTestId, toJSON } = renderWithTheme(
       <View testID="host">

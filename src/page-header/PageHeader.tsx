@@ -46,6 +46,7 @@ import { useDirectionProps } from '../hooks/use-is-rtl';
 import { usePlatformWindow } from '../platform-surface/context';
 import { useWindowChrome } from '../window/context';
 import { windowToolbarHeight } from '../window/geometry';
+import { PageHeaderHistory } from './PageHeaderHistory';
 
 /**
  * `PageHeader`: a screen's top chrome.
@@ -227,18 +228,6 @@ function PageHeaderComponent({
   const positionedByScreen = screen != null && headerScreen === screen;
   const host = useContext(ScreenHostContext);
   const hostActions = positionedByScreen ? host.headerActions : undefined;
-  // `null` declines Back outright; an explicit callback wins over the host's.
-  const onBack =
-    screenOnBack === null
-      ? undefined
-      : (screenOnBack ?? (positionedByScreen ? resolveScreenBack(host) : undefined));
-  const barEmpty =
-    title == null &&
-    subtitle == null &&
-    leading == null &&
-    onBack == null &&
-    screenActions == null &&
-    hostActions == null;
   // The window's title area (a Screen's header along the window's top edge,
   // `@oxy.so/bloom/window`). The bar is the window's toolbar row: it starts
   // at the window's top (a window has no safe area) and is as tall as the
@@ -248,6 +237,27 @@ function PageHeaderComponent({
   // so it replaces the side inset rather than adding to it.
   const windowChrome = useWindowChrome();
   const platformWindow = usePlatformWindow();
+  // A window toolbar's history (its screen's panel `navigation`) is back AND
+  // forward in one group, at its root too (both disabled), as a desktop
+  // toolbar draws them; anywhere else the history is the lone Back below. An
+  // explicit `onBack`, or `null`, still wins.
+  const history =
+    positionedByScreen && screenOnBack === undefined && windowChrome && platformWindow
+      ? host.navigation
+      : undefined;
+  // `null` declines Back outright; an explicit callback wins over the host's.
+  const onBack =
+    screenOnBack === null || history
+      ? undefined
+      : (screenOnBack ?? (positionedByScreen ? resolveScreenBack(host) : undefined));
+  const barEmpty =
+    title == null &&
+    subtitle == null &&
+    leading == null &&
+    onBack == null &&
+    history == null &&
+    screenActions == null &&
+    hostActions == null;
   const windowToolbar =
     positionedByScreen && windowChrome && platformWindow && !barEmpty
       ? windowToolbarHeight(platformWindow.metrics)
@@ -486,7 +496,7 @@ function PageHeaderComponent({
   const [startMeasure, setStartMeasure] = useState(0);
   const [endMeasure, setEndMeasure] = useState(0);
   const centered = titleAlign === 'center';
-  const hasStart = onBack != null || leading != null;
+  const hasStart = onBack != null || history != null || leading != null;
   const hasEnd = actions != null;
   // A centred title also clears the controls' room past the side inset.
   const startWidth = (hasStart ? startMeasure : 0) + (barStart - sideInset);
@@ -791,6 +801,16 @@ function PageHeaderComponent({
                 testID={testID ? `${testID}-start` : undefined}
               >
                 {backButton}
+                {history ? (
+                  <BloomScope>
+                    <PageHeaderHistory
+                      navigation={history}
+                      active={screen?.active !== false && host.active !== false}
+                      backLabel={backLabel}
+                      testID={testID ? `${testID}-history` : undefined}
+                    />
+                  </BloomScope>
+                ) : null}
                 {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
                 {centered ? null : titleBlock}
               </View>

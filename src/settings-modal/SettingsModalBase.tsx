@@ -11,7 +11,15 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Pressable, StyleSheet, View, useWindowDimensions, type ScrollView } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+  type ScrollView,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -67,10 +75,18 @@ import { useWindow } from '../window/use-window';
 import { useWindowCornerTaken, WindowCornerProvider } from '../window/context';
 import { WindowControls } from '../window/WindowControls';
 import { WindowDragRegion } from '../window/WindowDragRegion';
+import type { AppShellProps } from '../app-shell/types';
+import type { PanelNavigationEntry, PanelNavigationState } from '../app-shell/panel-layout-types';
 
 export function createSettings(
   { Screen, ScreenScrollView }: ScreenComponents,
   ScrollArea: React.ComponentType<ScrollAreaProps>,
+  /**
+   * The composer `SettingsLayout`'s window is built with. Only the layout's
+   * entry passes it (`SettingsLayout.tsx`): the modal's must not link AppShell
+   * (`lean-entries.test.ts`), and a modal is never a window's content.
+   */
+  AppShell: React.ComponentType<AppShellProps> | null,
 ) {
   /**
    * A settings modal.
@@ -156,7 +172,8 @@ export function createSettings(
 
   /**
    * The navigation both hosts share: the current page (controlled or not), the
-   * compact list → page step and the leave guard.
+   * pages visited (back and forward, a window's history), the compact list →
+   * page step and the leave guard.
    */
   function useSettingsNavigation({
     groups,
@@ -169,10 +186,33 @@ export function createSettings(
     SettingsLayoutProps,
     'groups' | 'page' | 'defaultPage' | 'onPageChange' | 'onBeforeLeave'
   > & { initialView: 'navigation' | 'page' }) {
-    const [internalPage, setInternalPage] = useState<string | undefined>(
-      defaultPage ?? firstPage(groups),
+    const serial = useRef(0);
+    const entryFor = useCallback(
+      (page: string | undefined): PanelNavigationEntry => ({
+        key: `page-${++serial.current}`,
+        name: page ?? '',
+      }),
+      [],
     );
-    const currentPage = controlledPage ?? internalPage;
+    // The pages visited, as a panel's history: selecting one drops what was
+    // ahead and goes to it; back and forward move through them.
+    const [history, setHistory] = useState<PanelNavigationState>(() => ({
+      entries: [entryFor(controlledPage ?? defaultPage ?? firstPage(groups))],
+      index: 0,
+    }));
+    const latest = useRef(history);
+    latest.current = history;
+    const visited = history.entries[history.index]?.name || undefined;
+    const currentPage = controlledPage ?? visited;
+
+    // A controlled page moved by its owner, not through this history: it is
+    // the next place visited.
+    useEffect(() => {
+      if (controlledPage === undefined || controlledPage === visited) return;
+      const current = latest.current;
+      const entries = [...current.entries.slice(0, current.index + 1), entryFor(controlledPage)];
+      setHistory({ entries, index: entries.length - 1 });
+    }, [controlledPage, visited, entryFor]);
 
     // `compact` layout is two levels: the section list, then a page pushed over it.
     const [compactPageOpen, setCompactPageOpen] = useState(initialView === 'page');
@@ -185,31 +225,61 @@ export function createSettings(
       (reason: 'close' | 'navigation' | 'page') => beforeLeaveRef.current?.(reason) !== false,
       [],
     );
+    const onPageChangeRef = useRef(onPageChange);
+    onPageChangeRef.current = onPageChange;
 
     const defaultPageRef = useRef(defaultPage ?? firstPage(groups));
     defaultPageRef.current = defaultPage ?? firstPage(groups);
 
     /** Back to the default page and the initial view, as every open of the modal is. */
     const reset = useCallback(() => {
-      setInternalPage(defaultPageRef.current);
+      setHistory({ entries: [entryFor(defaultPageRef.current)], index: 0 });
       setCompactPageOpen(initialViewRef.current === 'page');
-    }, []);
+    }, [entryFor]);
 
     const selectPage = useCallback(
       (next: string) => {
         if (next !== currentPage && !mayLeave('page')) return;
-        if (controlledPage === undefined) setInternalPage(next);
+        if (next !== currentPage) {
+          const current = latest.current;
+          const entries = [...current.entries.slice(0, current.index + 1), entryFor(next)];
+          setHistory({ entries, index: entries.length - 1 });
+        }
         setCompactPageOpen(true);
-        onPageChange?.(next);
+        onPageChangeRef.current?.(next);
       },
-      [controlledPage, currentPage, onPageChange, mayLeave],
+      [currentPage, mayLeave, entryFor],
+    );
+
+    /** Moves to another place in the history (back, forward), guarded as a page change is. */
+    const navigate = useCallback(
+      (next: PanelNavigationState) => {
+        const current = latest.current;
+        if (next.index === current.index && next.entries === current.entries) return;
+        const page = next.entries[next.index]?.name;
+        const leaving = page !== current.entries[current.index]?.name;
+        if (leaving && !mayLeave('page')) return;
+        latest.current = next;
+        setHistory(next);
+        if (leaving && page) onPageChangeRef.current?.(page);
+      },
+      [mayLeave],
     );
 
     const requestNavigation = useCallback(() => {
       if (mayLeave('navigation')) setCompactPageOpen(false);
     }, [mayLeave]);
 
-    return { currentPage, compactPageOpen, mayLeave, reset, selectPage, requestNavigation };
+    return {
+      currentPage,
+      history,
+      navigate,
+      compactPageOpen,
+      mayLeave,
+      reset,
+      selectPage,
+      requestNavigation,
+    };
   }
 
   type SettingsNavigationState = ReturnType<typeof useSettingsNavigation>;
@@ -604,6 +674,44 @@ export function createSettings(
     const cornerTaken = useWindowCornerTaken();
     const appWindow = windowControls === 'auto' && !cornerTaken ? platformWindow : null;
     const windowChrome = appWindow != null && !appWindow.fullscreen;
+    // A window wide enough for the rail beside the page is composed as every
+    // Oxy application's window is: Bloom's AppShell, the rail its sidebar and
+    // the page its panel, whose history the page's header (the window's
+    // toolbar) goes back and forward through. The shell keeps the controls'
+    // room and draws them. Narrower, the section list and its pushed page.
+    if (AppShell != null && appWindow != null && layout !== 'compact') {
+      return (
+        <SettingsModalContext.Provider value={context}>
+          <View
+            {...dirProps}
+            onLayout={onLayout}
+            testID={testID}
+            style={[styles.layout, { backgroundColor: palette.full }, ringVars(palette), style]}
+          >
+            <SurfaceLevelProvider level={1} fill={palette.full}>
+              <SettingsWindow
+                layout={layout}
+                navigation={navigation}
+                groups={groups}
+                pages={pages}
+                labels={labels}
+                onClose={onClose ? requestClose : undefined}
+                palette={palette}
+                testID={testID}
+              />
+            </SurfaceLevelProvider>
+            <SavedToast
+              phase={savedPhase}
+              label={labels?.saved ?? messages.saved}
+              palette={palette}
+              reducedMotion={reducedMotion}
+              inset={TOAST_INSET}
+              testID={testID ? `${testID}-saved` : undefined}
+            />
+          </View>
+        </SettingsModalContext.Provider>
+      );
+    }
 
     const settings = (
       <SettingsModalContext.Provider value={context}>
@@ -644,6 +752,113 @@ export function createSettings(
       <WindowCornerProvider value>{settings}</WindowCornerProvider>
     ) : (
       settings
+    );
+  }
+
+  /**
+   * A settings window beside its rail: Bloom's AppShell, as Stash, Mention
+   * and Inbox compose their windows. The rail is the shell's sidebar (keeping
+   * the window controls' room the shell hands it), the page is one panel
+   * whose `navigation` is the pages visited, and the page's `PageHeader` is
+   * the window's toolbar: its title, and back and forward in one group.
+   */
+  function SettingsWindow({
+    layout,
+    navigation,
+    groups,
+    pages,
+    labels,
+    onClose,
+    palette,
+    testID,
+  }: {
+    layout: SettingsModalLayout;
+    navigation: SettingsNavigationState;
+    groups: SettingsNavGroup[];
+    pages: Record<string, SettingsModalPage>;
+    labels?: SettingsModalLabels;
+    onClose?: () => void;
+    palette: SettingsPalette;
+    testID?: string;
+  }) {
+    const common = useCommonMessages();
+    const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+    const { currentPage, history, navigate, selectPage } = navigation;
+    const closeLabel = labels?.close ?? messages.close;
+    const backLabel = labels?.back ?? common.back;
+    const railLabel = labels?.nav ?? messages.nav;
+    const railWidth = layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH;
+    const renderPage = (entry: PanelNavigationEntry) => {
+      const pageConfig = pages[entry.name];
+      const pageContent =
+        typeof pageConfig?.content === 'function'
+          ? pageConfig.content({ onBack: undefined, backLabel, onClose, closeLabel })
+          : pageConfig?.content;
+      return pageConfig?.fullBleed ? (
+        pageContent
+      ) : (
+        <PageScroller
+          header={{ title: pageConfig?.title ?? '', backLabel, closeLabel, onClose }}
+          key={entry.key}
+          inset={CONTENT_INSET[layout]}
+          insetTop={pageConfig?.compactTitle ? 6 : 12}
+          testID={testID}
+        >
+          {pageContent}
+        </PageScroller>
+      );
+    };
+    if (AppShell == null) return null;
+    return (
+      <AppShell
+        testID={testID ? `${testID}-shell` : undefined}
+        header={null}
+        background="transparent"
+        navigationAlign="content"
+        navigationGap={0}
+        gutter={0}
+        contentMaxWidth="none"
+        sidebar={{
+          surface: 'plain',
+          variant: 'panel',
+          // The rail's sections are its rows: it never shrinks to icons.
+          collapsed: false,
+          collapseDisabled: true,
+          width: railWidth,
+          render: ({ windowControlsRoom, style }) => (
+            <SettingsRail
+              // The region's height and width, as the shell gives its sidebar.
+              style={[styles.railFill, style]}
+              groups={groups}
+              page={currentPage}
+              onSelect={selectPage}
+              palette={palette}
+              label={railLabel}
+              layout={layout}
+              windowBand={windowControlsRoom ?? 0}
+              testID={testID}
+            />
+          ),
+        }}
+        panelLayout={{
+          mode: 'split',
+          flow: 'bounded',
+          appearance: 'plain',
+          panels: [
+            {
+              id: 'page',
+              chrome: 'none',
+              appearance: 'plain',
+              navigation: {
+                initialEntries: history.entries,
+                state: history,
+                onNavigationChange: navigate,
+                render: renderPage,
+              },
+            },
+          ],
+        }}
+      />
     );
   }
 
@@ -821,6 +1036,7 @@ export function createSettings(
     label,
     layout,
     windowBand = 0,
+    style,
     testID,
   }: {
     header?: SettingsHeaderProps;
@@ -832,6 +1048,8 @@ export function createSettings(
     layout: SettingsModalLayout;
     /** A window's sidebar: the controls' room at its top, which moves the window. */
     windowBand?: number;
+    /** The region's own geometry, when a shell holds the rail as its sidebar. */
+    style?: StyleProp<ViewStyle>;
     testID?: string;
   }) {
     const compact = layout === 'compact';
@@ -888,7 +1106,7 @@ export function createSettings(
           <View
             role="navigation"
             aria-label={label}
-            style={[styles.rail, { width: railWidth }, railLook]}
+            style={[styles.rail, { width: railWidth }, railLook, style]}
             testID={testID ? `${testID}-rail` : undefined}
           >
             <WindowDragRegion
@@ -908,7 +1126,11 @@ export function createSettings(
           <ScrollArea
             role="navigation"
             aria-label={label}
-            style={[compact ? styles.railCompact : [styles.rail, { width: railWidth }], railLook]}
+            style={[
+              compact ? styles.railCompact : [styles.rail, { width: railWidth }],
+              railLook,
+              style,
+            ]}
             contentContainerStyle={styles.railContent}
             contentInsetAdjustmentBehavior="never"
             automaticallyAdjustContentInsets={false}
@@ -1221,6 +1443,9 @@ export function createSettings(
     },
     railCompact: {
       flex: 1,
+    },
+    railFill: {
+      height: '100%',
     },
     railContentCompact: {
       paddingLeft: 16,

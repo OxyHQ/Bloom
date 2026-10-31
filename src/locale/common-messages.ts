@@ -11,6 +11,10 @@ export interface CommonMessages {
   dismiss: string;
   /** A navigation bar's back button. */
   back: string;
+  /** A navigation bar's forward button, Back's counterpart in a history. */
+  forward: string;
+  /** Names the one group of a toolbar's back and forward buttons. */
+  backAndForward: string;
   /** The same, where it reads as an action rather than a place ("Go back"). */
   goBack: string;
   /** Names a busy region or skeleton. */
@@ -58,6 +62,8 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = defineMessages<Co
     close: 'Close',
     dismiss: 'Dismiss',
     back: 'Back',
+    forward: 'Forward',
+    backAndForward: 'Back and forward',
     goBack: 'Go back',
     loading: 'Loading',
     more: 'More',

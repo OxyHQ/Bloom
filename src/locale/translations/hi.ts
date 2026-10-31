@@ -139,6 +139,8 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   close: 'बंद करें',
   dismiss: 'ख़ारिज करें',
   back: 'वापस',
+  forward: 'आगे',
+  backAndForward: 'पीछे और आगे',
   goBack: 'वापस जाएं',
   loading: 'लोड हो रहा है',
   more: 'और',

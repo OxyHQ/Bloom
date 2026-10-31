@@ -139,6 +139,8 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   close: '閉じる',
   dismiss: '非表示',
   back: '戻る',
+  forward: '進む',
+  backAndForward: '戻る/進む',
   goBack: '前に戻る',
   loading: '読み込み中',
   more: 'その他',

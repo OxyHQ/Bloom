@@ -149,6 +149,8 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   close: 'إغلاق',
   dismiss: 'تجاهل',
   back: 'رجوع',
+  forward: 'للأمام',
+  backAndForward: 'رجوع وللأمام',
   goBack: 'العودة',
   loading: 'جارٍ التحميل',
   more: 'المزيد',

@@ -307,6 +307,15 @@ side inset is an `!important` stylesheet rule, so the room is a custom property
 (`--bloom-page-header-window-room`) that a more specific rule reads, never an
 inline padding. Anywhere else the header is unchanged.
 
+**Its history is one group.** A window toolbar whose screen has a panel
+`navigation` ([Compose application layouts](/docs/bloom/main/compose-layouts))
+shows back and forward as one `ButtonGroup` at its leading edge (a Mac's
+Finder and System Settings), never the lone back capsule: each is disabled
+while its direction has nowhere to go, both at the history's root, and
+`Mod+[` / `Mod+]` move through the same history while the screen is in front
+(a menu declaring those chords hears them first). An explicit `onBack`, or
+`null`, still wins; off a window the history is the lone Back as before.
+
 ## Not included
 
 - **iOS large title.** A large title that collapses into the bar needs to live inside the scroll content (so it scrolls under the chrome) while the chrome lives outside it; a standalone header cannot own both without making content move at twice the scroll speed on native. `Dialog`'s own header ([Dialog](/docs/dialog)) does it because the Dialog owns its scroller.

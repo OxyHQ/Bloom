@@ -143,6 +143,8 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   close: 'Tutup',
   dismiss: 'Abaikan',
   back: 'Kembali',
+  forward: 'Maju',
+  backAndForward: 'Kembali dan maju',
   goBack: 'Kembali ke sebelumnya',
   loading: 'Memuat',
   more: 'Lainnya',
