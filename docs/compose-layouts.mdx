@@ -37,6 +37,12 @@ where the compositor reserves it once above all panel tracks. Each panel keeps
 its own content scroll owner; an indicator observes that owner without
 introducing another scroll container.
 
+For a separated workspace, `layout.headerSpan="frame"` lets its header extend
+over adjacent logical outer frame insets while the panels keep their frame. It
+does not cross navigation, its gap, an aside or a width-limited reading column.
+The default is `"panel"`. Joined and plain headers remain within their shared
+surface and do not extend over the frame.
+
 When native panel content should scroll underneath that persistent header, set
 `layout.headerPlacement="scroll-under"`. The header stays above the panel and
 its measured height is reserved inside the panel's `ScreenScrollView` or bound

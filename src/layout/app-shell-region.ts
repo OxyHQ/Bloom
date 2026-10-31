@@ -26,6 +26,8 @@ export interface AppShellRegionValue {
   framed: boolean;
   /** The gap between two framed panels — the same number as the outer gutter. */
   gutter: number;
+  /** Frame edges immediately adjacent to the panel region, in logical coordinates. */
+  headerFrameOutsets?: { start: number; end: number };
   /**
    * What a viewport-tall box in this region subtracts: the distance from the
    * viewport's top to the region's top (gutter, top bar) and from its bottom.
