@@ -7,13 +7,14 @@
  * distinction is the whole point for the accessibility half: a prop-level test
  * cannot see that react-native-web drops `accessibilityValue` on the floor.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { Meter, MeterRing, meterFraction, meterValue, resolveMeterColors } from '../stat-bar';
+import { stopSide } from '../stat-bar/MeterRing';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -288,6 +289,77 @@ describe('MeterRing', () => {
     expect(byTestId('r').textContent).toBe('50');
     const label = byTestId('r').querySelector('[aria-hidden="true"]');
     expect(label?.textContent).toBe('50');
+  });
+});
+
+describe('MeterRing as a download ring', () => {
+  it('indeterminate: a quarter of the ring turning, and no value reported', () => {
+    mount(
+      <MeterRing
+        value={0}
+        max={1}
+        indeterminate
+        size={28}
+        thickness={2.5}
+        accessibilityLabel="Installing Notes"
+        testID="r"
+      />,
+    );
+    const ring = byTestId('r');
+    expect(ring.getAttribute('role')).toBe('progressbar');
+    expect(ring.getAttribute('aria-label')).toBe('Installing Notes');
+    // No aria-valuenow is what makes a progressbar indeterminate.
+    expect(ring.getAttribute('aria-valuenow')).toBeNull();
+    expect(ring.getAttribute('aria-busy')).toBe('true');
+    const circumference = 2 * Math.PI * ((28 - 2.5) / 2);
+    const arc = ring.querySelectorAll('circle')[1]!;
+    expect(Number(arc.getAttribute('stroke-dashoffset'))).toBeCloseTo(circumference * 0.75, 3);
+    expect(arc.getAttribute('stroke-linecap')).toBe('round');
+    // On web the turn is CSS, keyed by a data attribute on the arc's box.
+    expect(byTestId('r-turning').getAttribute('data-bloom-meter-spin')).toBe('');
+  });
+
+  it('determinate again once the amount is known: its value, no turn', () => {
+    mount(<MeterRing value={0.4} max={1} accessibilityLabel="Installing Notes" testID="r" />);
+    expect(byTestId('r').getAttribute('aria-valuenow')).toBe('0.4');
+    expect(byTestId('r').getAttribute('aria-busy')).toBeNull();
+    expect(document.querySelector('[data-bloom-meter-spin]')).toBeNull();
+  });
+
+  it('onStop: a named stop button with its square in the centre, which stops it', () => {
+    const stop = jest.fn();
+    mount(
+      <MeterRing
+        value={0.5}
+        max={1}
+        size={30}
+        thickness={2}
+        fill="rgb(255, 0, 0)"
+        accessibilityLabel="Downloading Notes"
+        onStop={stop}
+        stopLabel="Stop downloading Notes"
+        testID="r"
+      >
+        <span>ignored</span>
+      </MeterRing>,
+    );
+    const button = byTestId('r-stop');
+    expect(button.getAttribute('role')).toBe('button');
+    expect(button.getAttribute('aria-label')).toBe('Stop downloading Notes');
+    const square = button.firstElementChild as HTMLElement;
+    expect(getComputedStyle(square).width).toBe(`${stopSide(30, 2)}px`);
+    // The square is the arc's colour.
+    expect(getComputedStyle(square).backgroundColor).toBe('rgb(255, 0, 0)');
+    // The square takes the centre: children are not drawn with it.
+    expect(byTestId('r').textContent).toBe('');
+    act(() => button.click());
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('a stop square a little over a third of the inside, never under 6 px', () => {
+    expect(stopSide(30, 2)).toBe(9);
+    expect(stopSide(56, 5)).toBe(17);
+    expect(stopSide(12, 2)).toBe(6);
   });
 });
 

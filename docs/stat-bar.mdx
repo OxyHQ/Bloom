@@ -40,6 +40,32 @@ with a label is `StatBar`; a bar inside a card is that card's business.
 `MeterRing` takes `size` (56) and `thickness` (5) instead of `height`/`width`,
 plus `cap` and centred `children`.
 
+### A download ring
+
+`MeterRing` is also the ring an app store shows while it installs: thin
+(`thickness` 2 to 3 at 28 to 32 px), `indeterminate` while the amount is not
+known, its `value` once it is, and with `onStop` the control that stops it.
+
+```tsx
+<MeterRing
+  value={fraction ?? 0}
+  indeterminate={fraction === null}
+  size={30}
+  thickness={2.5}
+  accessibilityLabel={`Installing ${name}`}
+  onStop={cancel}
+  stopLabel={`Stop installing ${name}`}
+/>
+```
+
+| Prop | What it does |
+| --- | --- |
+| `indeterminate` | a quarter of the ring turns, one turn a second (the native driver natively, CSS on web, still under reduced motion: it is an activity indicator); the progressbar reports no value (`aria-valuenow` absent, `aria-busy`) |
+| `onStop` / `stopLabel` | a stop square in the centre (a little over a third of the inside, the arc's colour) and the whole ring a button named `stopLabel`, which `onStop` requires; `children` are not drawn with it |
+
+Without `onStop` the ring is not interactive: draw no stop square for what
+cannot be stopped.
+
 ## The fill is the accent
 
 Three families used to paint the fill `theme.colors.text` — `RatingBar`,

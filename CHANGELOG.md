@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.86.0
+
+### Added
+
+- **`MeterRing` as a download ring.** `indeterminate`: while the amount is not known a quarter of the ring turns, one turn a second (the native driver natively, CSS on web, still under reduced motion, as an activity indicator), and the progressbar reports no value (`aria-valuenow` absent, `aria-busy`). `onStop` with `stopLabel`: a stop square in the centre (a little over a third of the inside, the arc's colour) and the whole ring a button named `stopLabel`, which the props' type then requires. The ring an app store shows while it installs is this one, rather than a ring drawn by each app. Documented in `docs/stat-bar.mdx` (A download ring), with a `DownloadRing` story; pinned by `Meter.test.tsx` and `aria-state-web.test.tsx`.
+
+### Consumers
+
+Only adds: a `MeterRing` without the new props is unchanged.
+
 ## 15.85.1
 
 ### Fixed

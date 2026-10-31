@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useMemo } from 'react';
-import { Platform, View } from 'react-native';
+import React, { memo, useEffect, useMemo, useRef } from 'react';
+import { Animated, Easing, Platform, Pressable, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 import { webDataSet } from '../styles/web-data';
@@ -7,6 +7,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import {
   METER_DURATION_VAR,
+  METER_SPIN_MS,
   adoptMeterStyleSheet,
   meterFraction,
   meterValue,
@@ -32,6 +33,13 @@ import type { MeterRingProps } from './types';
  * `aria-value*` props, for the reason spelled out on `Meter`. `children` are
  * hidden from assistive technology: the centred score is the same number
  * `aria-valuetext` already carries, and announcing it twice is noise.
+ *
+ * As an app store's download ring: `indeterminate` while the amount is not
+ * known (a quarter of the ring turns, the progressbar reports no value), and
+ * `onStop` makes the ring the control that stops it, a stop square in its
+ * centre, named by `stopLabel`. The turn runs on the native driver natively and
+ * in CSS on web (react-native-web has no native driver, and JavaScript frames
+ * there starve other work), one turn a second on both.
  */
 function MeterRingComponent({
   value,
@@ -44,18 +52,40 @@ function MeterRingComponent({
   accessibilityLabel,
   valueText,
   transitionMs = 0,
+  indeterminate = false,
+  onStop,
+  stopLabel,
   children,
   style,
   testID,
 }: MeterRingProps) {
   const theme = useTheme();
   const defaults = useMemo(() => resolveMeterColors(theme), [theme]);
+  const web = Platform.OS === 'web';
 
   useEffect(() => {
-    if (Platform.OS === 'web' && transitionMs > 0) adoptMeterStyleSheet();
-  }, [transitionMs]);
+    if (web && (transitionMs > 0 || indeterminate)) adoptMeterStyleSheet();
+  }, [web, transitionMs, indeterminate]);
 
-  const fraction = meterFraction(value, max);
+  // Natively, the indeterminate turn: one turn a second, on the native driver.
+  const turn = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (web || !indeterminate) return undefined;
+    turn.setValue(0);
+    const loop = Animated.loop(
+      Animated.timing(turn, {
+        toValue: 1,
+        duration: METER_SPIN_MS,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [web, indeterminate, turn]);
+
+  // Indeterminate, a quarter of the ring; otherwise the share measured.
+  const fraction = indeterminate ? 0.25 : meterFraction(value, max);
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
 
@@ -73,14 +103,31 @@ function MeterRingComponent({
       accessibilityLabel={accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}
-      aria-valuenow={meterValue(value, max)}
-      aria-valuetext={valueText}
+      aria-valuenow={indeterminate ? undefined : meterValue(value, max)}
+      aria-valuetext={indeterminate ? undefined : valueText}
+      aria-busy={indeterminate || undefined}
       testID={testID}
       style={[boxStyle, style]}
     >
-      <View
-        {...(transitionMs > 0 ? webDataSet({ bloomMeterArc: '' }) : null)}
-        style={{ position: 'absolute', top: 0, left: 0 }}
+      <Animated.View
+        {...(transitionMs > 0 && !indeterminate ? webDataSet({ bloomMeterArc: '' }) : null)}
+        {...(indeterminate && web ? webDataSet({ bloomMeterSpin: '' }) : null)}
+        testID={testID && indeterminate ? `${testID}-turning` : undefined}
+        style={[
+          { position: 'absolute', top: 0, left: 0, width: size, height: size },
+          indeterminate && !web
+            ? {
+                transform: [
+                  {
+                    rotate: turn.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '360deg'],
+                    }),
+                  },
+                ],
+              }
+            : null,
+        ]}
       >
         <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
           <Circle
@@ -105,8 +152,34 @@ function MeterRingComponent({
             testID={testID ? `${testID}-arc` : undefined}
           />
         </Svg>
-      </View>
-      {children != null ? (
+      </Animated.View>
+      {onStop ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={stopLabel}
+          onPress={onStop}
+          hitSlop={4}
+          testID={testID ? `${testID}-stop` : undefined}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: size,
+            height: size,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <View
+            style={{
+              width: stopSide(size, thickness),
+              height: stopSide(size, thickness),
+              borderRadius: Math.max(1, stopSide(size, thickness) / 6),
+              backgroundColor: fill ?? defaults.fill,
+            }}
+          />
+        </Pressable>
+      ) : children != null ? (
         <View
           aria-hidden
           importantForAccessibility="no-hide-descendants"
@@ -117,6 +190,14 @@ function MeterRingComponent({
       ) : null}
     </View>
   );
+}
+
+/**
+ * The stop square's side: a little over a third of the ring's inside, as an app
+ * store's download ring draws it, never under 6 px.
+ */
+export function stopSide(size: number, thickness: number): number {
+  return Math.max(6, Math.round((size - 2 * thickness) * 0.36));
 }
 
 export const MeterRing = memo(MeterRingComponent);
