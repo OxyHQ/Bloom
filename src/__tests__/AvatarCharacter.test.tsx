@@ -3,7 +3,7 @@ import type React from 'react';
 // is `ios` — so the rendered image is `__mocks__/expo-image.ts`'s component,
 // not react-native's `Image`.
 import { Image } from 'expo-image';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Avatar, AVATAR_LIVE_SIZE } from '../avatar';
@@ -62,6 +62,22 @@ beforeEach(() => {
 });
 
 describe('resolution order: character, then image, then initials', () => {
+  it('does not report a character still failure as a primary photo error', () => {
+    const onImageError = jest.fn();
+    const view = renderAvatar(
+      <Avatar
+        account={bot}
+        characterStill={{ uri: URI }}
+        motion="never"
+        onImageError={onImageError}
+      />,
+    );
+    const image = stillImages(view)[0];
+    expect(image).toBeDefined();
+    fireEvent(image!, 'error', { error: 'failed character still' });
+    expect(onImageError).not.toHaveBeenCalled();
+  });
+
   it('accepts account DTO string keys, validates them, and follows immutable account updates', () => {
     const account: { kind: string; character: { preset: string }; name: { displayName: string } } =
       {

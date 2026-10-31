@@ -9,6 +9,8 @@ import { PATHS, PATH_VIEW_BOX, resolve } from '../shapes';
 // is `ios` — so the rendered image is `__mocks__/expo-image.ts`'s component,
 // not react-native's `Image`.
 import { Image } from 'expo-image';
+import { Image as NativeImage, Platform } from 'react-native';
+import * as expoImageModule from '../image/expo-image-module';
 import { SQUIRCLE_PATH } from '../shapes/squircle-path';
 
 function renderAvatar(ui: React.ReactElement) {
@@ -206,6 +208,84 @@ describe('Avatar silhouette across source and fallback states', () => {
 });
 
 describe('Avatar semantic image request identity', () => {
+  it.each(['ios', 'web'] as const)('reports only the current primary failure once on %s', (os) => {
+    const previousOS = Platform.OS;
+    Platform.OS = os;
+    // This suite has already populated the native module cache. A real web
+    // bundle starts fresh and resolves BloomImage through the RNW path.
+    const webLoader =
+      os === 'web' ? jest.spyOn(expoImageModule, 'loadExpoImage').mockReturnValue(null) : undefined;
+    const imageType = os === 'web' ? NativeImage : Image;
+    const onImageError = jest.fn();
+    const wrap = (uri: string) => (
+      <React.StrictMode>
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Avatar
+            uri={uri}
+            fallbackSource={{ uri: 'https://example.com/fallback.png' }}
+            name="Ada"
+            onImageError={onImageError}
+          />
+        </BloomThemeProvider>
+      </React.StrictMode>
+    );
+    try {
+      const tree = render(wrap(URI));
+      const firstError = tree.UNSAFE_getByType(imageType).props.onError;
+      const error = { error: 'failed', nativeEvent: { error: 'failed' } };
+      act(() => {
+        firstError(error);
+        firstError(error);
+      });
+      expect(onImageError).toHaveBeenCalledTimes(1);
+      expect(tree.UNSAFE_getByType(imageType).props.source.uri).toContain('fallback.png');
+      fireEvent(tree.UNSAFE_getByType(imageType), 'error', error);
+      expect(onImageError).toHaveBeenCalledTimes(1);
+      expect(tree.getByText('A')).toBeTruthy();
+      tree.rerender(wrap('https://example.com/new.png'));
+      act(() => firstError(error));
+      expect(onImageError).toHaveBeenCalledTimes(1);
+      const nextError = tree.UNSAFE_getByType(imageType).props.onError;
+      act(() => nextError(error));
+      expect(onImageError).toHaveBeenCalledTimes(2);
+      tree.unmount();
+      act(() => nextError(error));
+      expect(onImageError).toHaveBeenCalledTimes(2);
+    } finally {
+      webLoader?.mockRestore();
+      Platform.OS = previousOS;
+    }
+  });
+
+  it('ignores a pending old photo error after replacement or removal', () => {
+    const onImageError = jest.fn();
+    const wrap = (uri?: string) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Avatar uri={uri} name="Ada" onImageError={onImageError} />
+      </BloomThemeProvider>
+    );
+    const tree = render(wrap(URI));
+    const oldError = tree.UNSAFE_getByType(Image).props.onError;
+    tree.rerender(wrap('https://example.com/new.png'));
+    act(() => oldError({ error: 'late' }));
+    expect(onImageError).not.toHaveBeenCalled();
+    const nextError = tree.UNSAFE_getByType(Image).props.onError;
+    tree.rerender(wrap());
+    act(() => nextError({ error: 'late' }));
+    expect(onImageError).not.toHaveBeenCalled();
+    expect(tree.getByText('A')).toBeTruthy();
+  });
+
+  it('does not report a missing primary or a failed fallback-only image', () => {
+    const onImageError = jest.fn();
+    const tree = renderAvatar(
+      <Avatar name="Ada" fallbackSource={{ uri: URI }} onImageError={onImageError} />,
+    );
+    fireEvent(tree.UNSAFE_getByType(Image), 'error', { error: 'failed' });
+    expect(onImageError).not.toHaveBeenCalled();
+    expect(tree.getByText('A')).toBeTruthy();
+  });
+
   it('does not retry failed primary/fallback when equivalent source objects are recreated', () => {
     const wrap = (reversed = false) => (
       <BloomThemeProvider mode="light" colorPreset="teal">

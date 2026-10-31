@@ -70,6 +70,8 @@ export interface AvatarProps {
   variant?: string;
   /** Fallback image source when source/uri is missing or errors (defaults to colored shape) */
   fallbackSource?: ImageSource;
+  /** Called once when the current primary photo fails. Fallback images and characters do not emit it. */
+  onImageError?: () => void;
   /**
    * Avatar size: a diameter in pixels, or one of the size rungs
    * (`'xs'` 20, `'sm'` 24, `'md'` 32, `'lg'` 36). Defaults to 40.

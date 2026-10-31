@@ -16,6 +16,12 @@ import { Avatar } from '@oxy.so/bloom';
 <Avatar uri="https://cloud.oxy.so/avatars/abc.png" size={48} />
 ```
 
+`onImageError={() => ...}` reports a failure of the current primary photo once
+per image request. Use it to disable an action that needs the photo, such as
+opening its full-size version. Avatar still owns the fallback image and initials;
+their failures and character rendering do not emit this callback. Replacing the
+photo starts a new request and ignores late errors from the previous one.
+
 ## Initials fallback
 
 ```tsx
