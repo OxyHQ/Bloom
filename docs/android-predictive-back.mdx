@@ -1,0 +1,50 @@
+---
+title: Android predictive Back
+description: Native ownership, retained page drawing, and Android build prerequisites.
+---
+
+# Android predictive Back
+
+Bloom's optional Android host draws an existing retained tab page behind the
+current pager. It does not duplicate, reparent, capture a bitmap of, or focus the
+destination. Screen activity and media permissions remain owned by the committed
+route. The native callback tracks progress; JavaScript receives one completion
+with the navigation session and a process-unique gesture ID. Cancelling never
+changes navigation history.
+
+The host is compiled only with `bloom.predictiveBackEnabled=true`. This requires
+React Native's public `ReactActivity.getBackNavigationCoordinator()` API and a
+ReactAndroid build that actually contains that API. Until an upstream release
+contains it, use the reviewed, version-pinned React Native source backport and
+Expo's `buildReactNativeFromSource` integration. A Java source patch beside an
+unmodified Maven AAR does not change the runtime. Default Bloom builds exclude
+the feature and keep existing JavaScript navigation unchanged.
+
+Native ownership is permitted only while the current screen is resumed, visible,
+window-focused, and the coordinator reports native navigation enabled with no
+JavaScript interceptors. Unknown JavaScript BackHandler subscriptions remain
+interceptors. A pushed native screen, overlay, app backgrounding, changed
+navigation session, changed destination, or resized viewport invalidates the
+preview. No reflection into React Native internals is used.
+
+The pager must admit and lay out the true historical destination before a gesture;
+it may be nonadjacent. Until that view is ready, the callback still completes the
+correct back action but displays the current page without a preview. This safe
+fallback is not evidence of successful predictive rendering. Physical acceptance
+must inspect the real destination, including a nonadjacent tab, and cancellation
+must preserve the source route, selection, focus, scroll and media state.
+
+A completed gesture holds the destination until JavaScript acknowledges its
+`gestureId` using `settledGestureId`. Rejected or prevented actions must acknowledge
+immediately; accepted tab changes acknowledge after the native pager has selected
+the destination. A navigation-session change also invalidates the drawing. The
+caller must retain the completed owner props during the accepted native handoff
+so an early React render cannot flash the old source. Cancellation animation
+respects Android's disabled animator setting.
+
+Run the Android unit tests and default compilation against the published React
+Native AAR, then compile and test the opted-in source set against the actual
+patched ReactAndroid source. Both variants are required; passing only the default
+variant does not compile the predictive host. Gesture-state unit tests alone do
+not verify Android dispatcher arbitration, retained-page drawing, or native
+lifecycle behavior; those require native integration and device acceptance.
