@@ -13,6 +13,8 @@
  */
 import { createContext, useContext } from 'react';
 
+import type { PopupSubmenu } from './popup-navigation';
+
 export interface MenuSurfaceContextValue {
   /** Dismiss the whole menu. Rows call it after activation. */
   close: () => void;
@@ -61,6 +63,8 @@ export function useMenuRadioGroup(): MenuRadioGroupContextValue {
 export interface MenuSubContextValue {
   open: boolean;
   setOpen: (next: boolean) => void;
+  /** The submenu as a platform popup's keyboard navigation follows it (`popup-navigation.tsx`). */
+  navigation?: PopupSubmenu;
 }
 
 const MenuSubContext = createContext<MenuSubContextValue | null>(null);

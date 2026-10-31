@@ -9,6 +9,13 @@
  * register in render order; the active row is highlighted, Enter or Space
  * activates it, and a pointer hovering a row makes it active, so the pointer and
  * the keyboard share one highlight.
+ *
+ * Submenus (an inline `SubTrigger` and its `SubContent`) take the keys the
+ * WAI-ARIA menu pattern, macOS and Android menus give them: → on a row with a
+ * submenu opens it and makes its first enabled row active (on a submenu already
+ * open, moves into it); ← inside a submenu, or Escape, closes it and makes the
+ * row that opened it active again. Escape anywhere else closes the menu. The web
+ * flyout's own keys are `menu-sub-flyout.tsx`'s.
  */
 import type React from 'react';
 import {
@@ -38,11 +45,25 @@ export const KEYBOARD_ACTIVATION = {
 /** How long typed characters accumulate into one typeahead query, in ms. */
 export const TYPEAHEAD_MS = 500;
 
+/**
+ * A submenu as navigation sees it: one object for the submenu's life, its fields kept current by
+ * its owner (`menu-sub-inline.tsx`'s `MenuSub`). The row that opens it registers it as its
+ * `submenu`; the rows inside it (under `PopupSubmenuScope`) register it as their `owner`.
+ */
+export interface PopupSubmenu {
+  open: boolean;
+  setOpen: (next: boolean) => void;
+}
+
 interface Row {
   id: number;
   disabled: boolean;
   label: string | undefined;
   activate: () => void;
+  /** The submenu this row opens, if it is a submenu's trigger. */
+  submenu: PopupSubmenu | undefined;
+  /** The submenu this row is inside, if any. */
+  owner: PopupSubmenu | null;
 }
 
 // Two contexts: the registry is stable for the panel's life, so a row registers once; the
@@ -54,6 +75,20 @@ interface Registry {
 
 const PopupNavigationContext = createContext<Registry | null>(null);
 const ActiveRowContext = createContext<number | null>(null);
+const PopupSubmenuContext = createContext<PopupSubmenu | null>(null);
+
+/** The rows rendered inside it are `submenu`'s, for navigation. */
+export function PopupSubmenuScope({
+  submenu,
+  children,
+}: {
+  submenu: PopupSubmenu | undefined;
+  children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <PopupSubmenuContext.Provider value={submenu ?? null}>{children}</PopupSubmenuContext.Provider>
+  );
+}
 
 let nextRowId = 0;
 
@@ -66,16 +101,20 @@ export function usePopupNavigationRow({
   disabled,
   label,
   activate,
+  submenu,
 }: {
   disabled: boolean;
   label: string | undefined;
   activate: () => void;
+  /** The submenu this row opens (a submenu's trigger). */
+  submenu?: PopupSubmenu;
 }): { active: boolean; hover: () => void } {
   const navigation = useContext(PopupNavigationContext);
   const activeId = useContext(ActiveRowContext);
+  const owner = useContext(PopupSubmenuContext);
   const id = useRef<number | null>(null);
   if (id.current === null) id.current = ++nextRowId;
-  const row = { id: id.current, disabled, label, activate };
+  const row = { id: id.current, disabled, label, activate, submenu, owner };
   const latest = useRef(row);
   latest.current = row;
   useEffect(() => {
@@ -89,6 +128,12 @@ export function usePopupNavigationRow({
       },
       get label() {
         return latest.current.label;
+      },
+      get submenu() {
+        return latest.current.submenu;
+      },
+      get owner() {
+        return latest.current.owner;
       },
       activate: () => latest.current.activate(),
     });
@@ -110,8 +155,14 @@ export function usePopupNavigation(onClose: () => void): {
   const rows = useRef<Row[]>([]);
   const [activeId, setActive] = useState<number | null>(null);
   const typed = useRef({ text: '', at: 0 });
+  // A submenu → opened, whose first enabled row becomes active as its rows register.
+  const entering = useRef<PopupSubmenu | null>(null);
   const register = useCallback((row: Row) => {
     rows.current = [...rows.current, row];
+    if (entering.current && row.owner === entering.current && !row.disabled) {
+      entering.current = null;
+      setActive(row.id);
+    }
     return () => {
       rows.current = rows.current.filter((other) => other !== row);
       setActive((active) => (active === row.id ? null : active));
@@ -127,7 +178,32 @@ export function usePopupNavigation(onClose: () => void): {
         const row = enabled[Math.max(0, Math.min(enabled.length - 1, to))];
         if (row) setActive(row.id);
       };
+      const current = enabled[index];
+      // Closes the submenu the active row is in, making the row that opened it active.
+      const leave = () => {
+        const owner = current?.owner;
+        if (!owner) return false;
+        const trigger = rows.current.find((row) => row.submenu === owner);
+        owner.setOpen(false);
+        if (trigger) setActive(trigger.id);
+        return true;
+      };
       switch (key) {
+        case 'ArrowRight': {
+          const submenu = current?.submenu;
+          if (!submenu) return;
+          if (submenu.open) {
+            const first = enabled.find((row) => row.owner === submenu);
+            if (first) setActive(first.id);
+            return;
+          }
+          entering.current = submenu;
+          submenu.setOpen(true);
+          return;
+        }
+        case 'ArrowLeft':
+          leave();
+          return;
         case 'ArrowDown':
           return move(index < 0 ? 0 : index + 1);
         case 'ArrowUp':
@@ -143,6 +219,8 @@ export function usePopupNavigation(onClose: () => void): {
           enabled[index]?.activate();
           return;
         case 'Escape':
+          if (leave()) return;
+          return onClose();
         case 'Tab':
           return onClose();
         default:

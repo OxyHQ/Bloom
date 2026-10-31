@@ -14,7 +14,7 @@ import { useMenuDensity } from './use-menu-density';
  * `FloatingPanel`, so a runtime branch would drag `react-dom` and the portal
  * into every native bundle.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
@@ -23,6 +23,7 @@ import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
 import { ROW_ICON_SIZE } from './constants';
 import { MenuSubProvider, useMenuSub } from './context';
+import { type PopupSubmenu, PopupSubmenuScope } from './popup-navigation';
 import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
 import type { MenuSubContentProps, MenuSubParts, MenuSubProps, MenuSubTriggerProps } from './types';
 
@@ -34,7 +35,15 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
       defaultValue: defaultOpen,
       onChange: onOpenChange,
     });
-    const context = useMemo(() => ({ open: isOpen, setOpen }), [isOpen, setOpen]);
+    // One object for the submenu's life, kept current: a platform popup's keyboard navigation
+    // knows the submenu by it (→ opens it, ← and Escape close it).
+    const navigation = useRef<PopupSubmenu>({ open: isOpen, setOpen }).current;
+    navigation.open = isOpen;
+    navigation.setOpen = setOpen;
+    const context = useMemo(
+      () => ({ open: isOpen, setOpen, navigation }),
+      [isOpen, setOpen, navigation],
+    );
     return <MenuSubProvider value={context}>{children}</MenuSubProvider>;
   }
   MenuSub.displayName = `${prefix}Sub`;
@@ -73,6 +82,7 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
         }
         title={title}
         onPress={() => sub.setOpen(!sub.open)}
+        submenu={sub.navigation}
         accessibilityLabel={accessibilityLabel}
         className={cx(SUB_TRIGGER_CLASS, className)}
         style={style}
@@ -97,7 +107,7 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
         style={style}
         testID={testID}
       >
-        {children}
+        <PopupSubmenuScope submenu={sub.navigation}>{children}</PopupSubmenuScope>
       </StyledView>
     );
   }

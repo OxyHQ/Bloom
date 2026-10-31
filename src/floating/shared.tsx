@@ -1,6 +1,6 @@
 import { useMenuDensity } from './use-menu-density';
 import { useMenuRowAlignment } from './menu-row-alignment';
-import { KEYBOARD_ACTIVATION, usePopupNavigationRow } from './popup-navigation';
+import { KEYBOARD_ACTIVATION, type PopupSubmenu, usePopupNavigationRow } from './popup-navigation';
 /**
  * The menu ROW itself, and the pieces of its shape that both the row set and
  * BOTH sub-menu implementations need.
@@ -156,6 +156,8 @@ export interface MenuRowShellProps {
   /** A plain-string child, rendered as the row's own label. */
   title?: string;
   onPress: (event: GestureResponderEvent) => void;
+  /** The submenu this row opens, for a platform popup's keyboard (`popup-navigation.tsx`). */
+  submenu?: PopupSubmenu;
   accessibilityLabel?: string;
   className?: string;
   style?: StyleProp<ViewStyle>;
@@ -204,6 +206,7 @@ export function MenuRowShell({
   trailing,
   title,
   onPress,
+  submenu,
   accessibilityLabel,
   className,
   style,
@@ -224,6 +227,7 @@ export function MenuRowShell({
     disabled: !!disabled,
     label: accessibilityLabel ?? (typeof title === 'string' ? title : undefined),
     activate: () => onPress?.(KEYBOARD_ACTIVATION),
+    submenu,
   });
   // `MENU_ITEM_INTERACTIVE` + `MENU_ITEM_ACTIVE`: hover, keyboard focus
   // and the current selection all paint the same `dropdown-item-hover-background`.
