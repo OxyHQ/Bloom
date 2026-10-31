@@ -1082,7 +1082,8 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
               ]
              },
              {
-              "maxHeight": 780
+              "maxHeight": 780,
+              "height": null
              },
              {
               "maxWidth": 500,
@@ -1996,7 +1997,8 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
               ]
              },
              {
-              "maxHeight": 780
+              "maxHeight": 780,
+              "height": null
              },
              {
               "maxWidth": 500,
@@ -3361,7 +3363,8 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
               ]
              },
              {
-              "maxHeight": 780
+              "maxHeight": 780,
+              "height": null
              },
              {
               "maxWidth": 500,

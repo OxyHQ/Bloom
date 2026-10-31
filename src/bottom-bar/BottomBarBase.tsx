@@ -29,6 +29,7 @@ import type { TabBarProps, TabBarButtonProps } from '../tab-bar/types';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
 import type { BottomBarProps } from './types';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
+import { UNSET } from '../styles/animated-style';
 
 interface Props extends BottomBarProps {
   Navigation: ComponentType<TabBarProps>;
@@ -158,7 +159,7 @@ export function BottomBarBase({
       ? Math.min(1, Math.max(0, reducedMotion ? Number(progress.value > 0.01) : progress.value))
       : 0;
     return {
-      ...(actionWidth == null ? {} : { width: actionWidth * (1 - amount) }),
+      width: actionWidth == null ? UNSET : actionWidth * (1 - amount),
       // Logical, and the CSS name rather than RN's `marginStart`: reanimated's
       // web writer hands a mapper's result to RNW's `createReactDOMStyle`,
       // which never rewrites `marginStart`, so the browser would drop it.

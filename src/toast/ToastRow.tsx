@@ -72,6 +72,7 @@ import { ToastSwipeHandler } from './ToastSwipeHandler';
 import { toastStore } from './toast-store';
 import type { ToasterProps, ToastPosition, ToastProps, ToastRef, ToastStyles } from './types';
 import { useToastPosition } from './use-toast-position';
+import { UNSET } from '../styles/animated-style';
 
 /** How much a wiggle grows the row, and for how long per half-cycle. */
 const WIGGLE_SCALE = 1.035;
@@ -258,7 +259,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
     const constrained = naturalHeight !== undefined && visibleHeight.value < naturalHeight - 0.5;
     return {
       // maxHeight (not a text transform) clips without squashing typography.
-      maxHeight: naturalHeight === undefined ? undefined : visibleHeight.value,
+      maxHeight: naturalHeight === undefined ? UNSET : visibleHeight.value,
       overflow: constrained ? 'hidden' : 'visible',
     };
   }, [visibleHeight, naturalHeight]);

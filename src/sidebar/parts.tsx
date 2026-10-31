@@ -30,6 +30,7 @@ import {
   surfaceRevealCss,
   useSurfacePresenceContent,
 } from '../surface/use-surface-presence';
+import { UNSET } from '../styles/animated-style';
 
 /** The `duration-300 ease-in-out` morph. */
 export const MORPH_MS = 300;
@@ -115,7 +116,7 @@ export function Collapsible({
     const p = progress.value;
     return {
       ...(IS_WEB ? null : { opacity: 1 - p }),
-      maxWidth: p >= 1 ? 0 : p <= 0 || natural.value === 0 ? undefined : natural.value * (1 - p),
+      maxWidth: p >= 1 ? 0 : p <= 0 || natural.value === 0 ? UNSET : natural.value * (1 - p),
     };
   }, [progress, natural]);
   const fade = useMorphPresence(!collapsed, 3);

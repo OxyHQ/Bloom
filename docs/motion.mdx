@@ -48,6 +48,23 @@ to settle before scrolling to a newly inserted panel. It cancels obsolete reques
 and excludes unrelated content animations; reduced-motion and nonanimated layouts
 do not incur an artificial delay. See [AppShell](/docs/bloom/main/app-shell).
 
+## A worklet style writes every key, every run
+
+Reanimated hands what a `useAnimatedStyle` worklet returns to native through
+`jsi::dynamicFromValue`, which drops every key whose value is `undefined`; a key
+a branch leaves out is never sent either. Either way the view keeps the last
+value the worklet gave that key, on Android, iOS and OxyOS alike. AppShell's
+detail panel, hidden with `maxHeight: 0` and shown again with
+`maxHeight: undefined`, stayed a zero-height line until something else
+committed (OxyOS `scenarios/panel-shown.json` reproduces it). Jest's Reanimated
+mock applies the style as React does, so no rendered test sees it.
+
+So a worklet returns the same keys on every run: an explicit value, or `UNSET`
+(`src/styles/animated-style.ts`, `null`, which Fabric resets to the prop's
+default). A branch that returns `{}` is allowed only where what decides it never
+changes while the view holds the style (`IS_WEB`, a prop the instance is fixed
+on); `src/__tests__/animated-style-resets.test.ts` holds the list as an equality.
+
 ## Continuous loading motion must not schedule React renders
 
 React Native Animated's JavaScript driver on web schedules a React update for

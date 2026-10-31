@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.79.2
+
+### Fixed
+
+- **An animated style no longer leaves a stale value on native.** Reanimated hands a worklet's style to native through `jsi::dynamicFromValue`, which drops every key whose value is `undefined`, so the key kept the last value the worklet gave it. AppShell's detail panel, hidden (`maxHeight: 0`) and then shown, stayed a zero-height line on Android, iOS and OxyOS. Every Bloom worklet now writes each key on every run, an explicit value or `UNSET` (`styles/animated-style.ts`, `null`, which Fabric resets to the prop's default): AppShell's panel tracks (their height, `maxHeight`, and a reordered track's offset and stacking once the drag ends), the aside's span and the compact reading column's cap, the bottom sheet's intrinsic height, the bottom bar's action width, the FAB label, the sidebar's content and labels, the toast viewport, the questionnaire viewport and the board presence slot. A source gate (`animated-style-resets.test.ts`) keeps `undefined` and key-dropping branches out of animated styles.
+
+### Consumers
+
+No API changes. A panel shown with `visible: true` appears without waiting for another commit.
+
 ## 15.79.1
 
 ### Changed

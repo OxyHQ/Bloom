@@ -10,6 +10,7 @@ import Animated, {
 import { animation } from '../styles/tokens';
 import type { TypeScaleVariant } from '../typography/scale';
 import { Text } from '../typography';
+import { UNSET } from '../styles/animated-style';
 
 /** Measures once per label layout; reversals start at the current visual width. */
 export function FabLabel({
@@ -45,7 +46,7 @@ export function FabLabel({
           ? naturalWidth.value * (1 - progress.value)
           : progress.value === 1
             ? 0
-            : undefined,
+            : UNSET,
       opacity: 1 - progress.value,
     }),
     [naturalWidth, progress],
