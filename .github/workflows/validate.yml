@@ -141,6 +141,53 @@ jobs:
       # worker and with FEWER workers, not with memory (AGENTS.md).
       - run: node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=4 --shard=${{ matrix.shard }}/5
 
+  android:
+    name: Android (${{ matrix.variant }})
+    needs: provenance
+    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [default, predictive]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.21.0'
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+        with:
+          gradle-version: '9.4.1'
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: sdkmanager 'platforms;android-36' 'ndk;27.1.12297006' 'cmake;3.30.5'
+      - name: Hermes source prerequisites
+        if: matrix.variant == 'predictive'
+        run: sudo apt-get update && sudo apt-get install -y libicu-dev
+      - name: Apply exact public API source backport
+        if: matrix.variant == 'predictive'
+        run: |
+          echo '16b6577b14184ca971fb19692930ab85936103880bf42ccbaafce8e93ccf0a51  scripts/native-check/patches/react-native-0.88.0.patch' | sha256sum -c -
+          patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native < scripts/native-check/patches/react-native-0.88.0.patch
+      - name: Compile production native source and run AndroidX callback tests
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          predictive=false
+          if [ "$VARIANT" = predictive ]; then predictive=true; fi
+          gradle -p scripts/native-check -Pbloom.predictiveBackEnabled="$predictive" :bloom:testDebugUnitTest --console=plain --max-workers=2
+
   # The one required check of the main merge queue: green only when every job
   # above is, so a skipped or cancelled shard can never read as a pass. The ONE
   # legitimate skip is a push whose exact SHA already passed this job in the
@@ -149,7 +196,7 @@ jobs:
   ci-complete:
     name: CI complete
     if: always()
-    needs: [provenance, build, tests]
+    needs: [provenance, build, tests, android]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -173,7 +220,7 @@ jobs:
             verified=
           fi
 
-          for job in build tests; do
+          for job in build tests android; do
             result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")"
             if [ "$verified" = true ]; then
               [ "$result" = skipped ] || failures+=("$job ran on a queue-verified push: $result")

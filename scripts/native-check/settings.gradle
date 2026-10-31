@@ -1,0 +1,15 @@
+pluginManagement {
+  repositories { google(); mavenCentral(); gradlePluginPortal() }
+  includeBuild('../../node_modules/@react-native/gradle-plugin')
+}
+rootProject.name = 'bloom-native-check'
+include ':bloom'
+project(':bloom').projectDir = file('../../android')
+if (providers.gradleProperty('bloom.predictiveBackEnabled').orNull == 'true') {
+  includeBuild('../../node_modules/react-native') {
+    dependencySubstitution {
+      substitute(module('com.facebook.react:react-android')).using(project(':packages:react-native:ReactAndroid'))
+      substitute(module('com.facebook.react:hermes-android')).using(project(':packages:react-native:ReactAndroid:hermes-engine'))
+    }
+  }
+}
