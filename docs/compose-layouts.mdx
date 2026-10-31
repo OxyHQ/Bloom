@@ -193,6 +193,13 @@ layout through shared CSS/container-query rules on web; applications do not
 measure the window and calculate column positions themselves. See
 [AppShell](/docs/bloom/main/app-shell) for exact sizing and collapse semantics.
 
+Retained panel content can use `useAppShellPanel()` to pause background work.
+Start work only when `active !== false && visibilityReady !== false`: on web,
+the first CSS layout must resolve before `active` reflects the actual panel
+visibility. `visibilityReady` is true outside a panel and for panel hosts with
+immediate visibility. It does not change the server-rendered panel tree, so
+keep meaningful content in the markup rather than gating the whole UI on it.
+
 For a three-column chat, the sidebar stays in the shell's navigation slot. The
 right panel can declare `floating: { below: 'xl', open, onOpenChange, label }`.
 Below that width it opens in Bloom's floating side sheet while the conversation stays

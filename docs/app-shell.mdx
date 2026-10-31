@@ -237,9 +237,12 @@ underneath) and nothing else: `header` (chrome spanning it), `scroll`,
   beside it counts — below which exactly ONE panel renders: the one `show` names,
   else the first. Mounted inline content is retained, inert and hidden from accessibility. Set `keepMounted` on a panel to mount it even while initially hidden.
 - **Controlled sizes.** Pass `widths` and `onWidthsChange` to the group using panel IDs as keys. These delegate to `panelLayout`'s existing size contract; `onWidthChange` on an individual panel also reports the settled width.
-- **`useAppShellPanel()`** inside a panel returns `{ id, alone, framed }`.
+- **`useAppShellPanel()`** inside a panel returns `{ id, alone, framed, visible, active, visibilityReady }`.
   `alone` is true while the group is collapsed (or has one panel): a panel shows
   its own way to the other one — a Map / List toggle — exactly then.
+  For background work in a retained panel, require `active !== false &&
+  visibilityReady !== false`. The latter is false until the first compositor
+  visibility read; it is true outside a panel and in immediately resolved hosts.
 - **`hideBelow`** on a trailing panel (a message's details) drops it below the
   group width it needs.
 

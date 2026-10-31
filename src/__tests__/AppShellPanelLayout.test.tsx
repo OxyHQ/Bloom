@@ -20,6 +20,15 @@ beforeEach(() =>
 );
 afterEach(() => jest.restoreAllMocks());
 describe('root modular panels', () => {
+  it('reports visibility as resolved on native layout hosts', () => {
+    function Probe() {
+      const panel = useAppShellPanel();
+      return <Native.Text testID="resolved">{String(panel.visibilityReady)}</Native.Text>;
+    }
+    const layout: AppShellPanelLayout = { panels: [{ id: 'main', content: <Probe /> }] };
+    const screen = render(<AppShell panelLayout={layout} />, { wrapper });
+    expect(screen.getByTestId('resolved').props.children).toBe('true');
+  });
   it('retains keyed subtrees through expansion, compact selection, mode and flow changes', () => {
     const mounts = jest.fn(),
       unmounts = jest.fn();

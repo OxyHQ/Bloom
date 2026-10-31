@@ -178,7 +178,9 @@ export function createAppShellPanels(
     const growing = region.flow !== 'bounded';
     const { top, bottom } = region.viewportInset;
     return (
-      <AppShellPanelContext.Provider value={{ id, alone: true, framed: region.framed }}>
+      <AppShellPanelContext.Provider
+        value={{ id, alone: true, framed: region.framed, visibilityReady: true }}
+      >
         <BloomColorScope colorPreset={colorPreset} asChild>
           <ContentPanel
             appearance={appearance}

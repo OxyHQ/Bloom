@@ -108,7 +108,14 @@ function RetainedHost({
 }) {
   const shown = box !== undefined;
   const value = useMemo(
-    () => ({ id: panel.id, alone, framed: true, visible: shown, active: shown }),
+    () => ({
+      id: panel.id,
+      alone,
+      framed: true,
+      visible: shown,
+      active: shown,
+      visibilityReady: true,
+    }),
     [panel.id, alone, shown],
   );
   return (
