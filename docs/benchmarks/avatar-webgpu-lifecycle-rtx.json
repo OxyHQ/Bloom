@@ -25,21 +25,13 @@
       "x": 63,
       "y": 63
     },
-    "size": [
-      66,
-      66
-    ]
+    "size": [66, 66]
   },
   "retention": true,
   "retainedAfterTwoFrames": true,
   "sparseMatchesFull": true,
-  "recovery": [
-    true,
-    false
-  ],
-  "failures": [
-    "Device was destroyed."
-  ],
+  "recovery": [true, false],
+  "failures": ["Device was destroyed."],
   "liveResources": 0,
   "glError": 0
 }
