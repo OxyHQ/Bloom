@@ -161,6 +161,7 @@ function MediaAlbumComponent({
   return (
     <View style={[{ width }, style ?? null]} testID={testID}>
       <View
+        collapsable={false}
         role="group"
         accessibilityLabel={groupName}
         style={{ width, height: layout.height, position: 'relative' }}

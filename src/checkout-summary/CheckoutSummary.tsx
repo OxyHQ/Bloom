@@ -169,6 +169,7 @@ function CheckoutSummaryComponent({
       ) : null}
 
       <View
+        collapsable={false}
         role="group"
         accessibilityLabel={accessibilityLabel ?? title ?? messages.orderSummary}
         testID={id('group')}

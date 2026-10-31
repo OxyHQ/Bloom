@@ -2,6 +2,20 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.87.0
+
+### Fixed
+
+- **Every native container with a grouping role keeps its children in the mounted tree.** About 200 views across 150 files were affected, among them navigation rails and sidebars (`SettingsLayout`'s rail, `Sidebar`), menus and menu bars, tab bars, radio and segmented groups, lists, tables, toolbars, regions and dialogs. They now set `collapsable={false}`, as `ButtonGroup` has since 15.85.0. React Native's renderer flattened each such view (a role and a label form no stacking context) and mounted its children in the ancestor above, so an assistive technology reading the mounted tree (OxyOS's, Android's TalkBack) found empty containers beside loose rows. `RadioGroupHost`, `Item` and `Notification`, whose roles come from props, keep their children too.
+
+### Added
+
+- `semantic-container-census.test.ts`: every native-reachable JSX element with a grouping role, or a role forwarded from a prop, keeps its children or is a classified component. The classification is an EQUALITY.
+
+### Consumers
+
+No API changes. Native trees gain the container views they declared; the web is unchanged.
+
 ## 15.86.0
 
 ### Added

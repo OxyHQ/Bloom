@@ -32,7 +32,7 @@ function NearbyPlacesComponent({
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
 
   return (
-    <View role="list" style={[{ width: '100%' }, style]} testID={testID}>
+    <View collapsable={false} role="list" style={[{ width: '100%' }, style]} testID={testID}>
       {items.map(({ icon: Icon, name, category, time, modeIcon: ModeIcon = RiWalkLine }, index) => (
         <View
           key={`${name}-${index}`}

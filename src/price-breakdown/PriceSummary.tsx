@@ -73,6 +73,7 @@ function PriceSummaryComponent({
     <View testID={testID} style={style}>
       {showLines ? (
         <View
+          collapsable={false}
           role="list"
           accessibilityLabel={accessibilityLabel}
           testID={testID ? `${testID}-lines` : undefined}

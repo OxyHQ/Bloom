@@ -144,6 +144,7 @@ function OrderStatusTimelineComponent({
 
   return (
     <View
+      collapsable={false}
       role="list"
       accessibilityLabel={accessibilityLabel}
       testID={testID}

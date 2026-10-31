@@ -186,6 +186,7 @@ function EvictionReportCardComponent({
 
       {household && household.length > 0 ? (
         <View
+          collapsable={false}
           role="list"
           style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}
           testID={id('household')}

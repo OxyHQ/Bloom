@@ -149,6 +149,7 @@ function ChatListComponent({
 
   return (
     <View
+      collapsable={false}
       role="list"
       accessibilityLabel={accessibilityLabel}
       {...(loading ? { 'aria-busy': true, accessibilityState: { busy: true } } : null)}

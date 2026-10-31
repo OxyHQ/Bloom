@@ -35,6 +35,7 @@ export function ToggleChipGroup<T extends string = string>({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="group"
       accessibilityLabel={accessibilityLabel}

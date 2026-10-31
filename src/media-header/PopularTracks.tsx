@@ -188,7 +188,7 @@ function PopularTracksComponent({
       <Text variant="title-1-bold" role="heading" aria-level={2} style={{ color: paint.text }}>
         {title}
       </Text>
-      <View role="list">
+      <View collapsable={false} role="list">
         {shown.map((track, i) => (
           <View role="listitem" key={track.id} testID={testID ? `${testID}-row-${i}` : undefined}>
             <TrackRow

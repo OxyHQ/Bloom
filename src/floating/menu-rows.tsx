@@ -238,6 +238,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
       <MenuRadioGroupProvider value={context}>
         {/* `gap-1` — the panel's own 4px row rhythm, carried into the group. */}
         <StyledView
+          collapsable={false}
           role={Platform.OS === 'web' ? 'group' : 'radiogroup'}
           className={useMenuDensity().groupClass}
         >
@@ -368,7 +369,12 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     // `group` is the ARIA role for a set of related menu rows; it carries no
     // state, so there is no `aria-*` counterpart to spell.
     return (
-      <StyledView role="group" className={cx(useMenuDensity().groupClass, className)} style={style}>
+      <StyledView
+        collapsable={false}
+        role="group"
+        className={cx(useMenuDensity().groupClass, className)}
+        style={style}
+      >
         {children}
       </StyledView>
     );

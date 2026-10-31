@@ -104,6 +104,7 @@ function BudgetPickerComponent({
       />
       {items.length > 0 ? (
         <View
+          collapsable={false}
           role="group"
           accessibilityLabel={presetsLabel}
           style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}

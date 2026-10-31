@@ -37,6 +37,7 @@ function LockupSkeletonComponent({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={accessibilityLabelProp ?? common.loading}
       aria-busy

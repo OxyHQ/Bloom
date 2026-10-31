@@ -234,6 +234,7 @@ function CartPanelComponent({
         <Divider color={paint.rule} />
         {hasLines ? (
           <View
+            collapsable={false}
             role="list"
             accessibilityLabel={accessibilityLabel}
             aria-label={accessibilityLabel}

@@ -285,6 +285,7 @@ function ListingPhotoGridComponent({
 
     body = (
       <View
+        collapsable={false}
         role="group"
         accessibilityLabel={accessibilityLabel}
         testID={testID ? `${testID}-grid` : undefined}

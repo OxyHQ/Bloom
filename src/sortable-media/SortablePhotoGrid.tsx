@@ -377,6 +377,7 @@ function SortablePhotoGridComponent({
       onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
     >
       <View
+        collapsable={false}
         ref={gridRef}
         role="list"
         accessibilityLabel={accessibilityLabel}

@@ -73,7 +73,7 @@ function EarningsPayoutRowComponent({
     // A `group`, not a bare column: `Item`'s non-pressable branch is
     // `role="none"`, on which an `aria-label` is not exposed at all — so the
     // composed name has to hang off something ARIA will read it from.
-    <View role="group" accessibilityLabel={name} style={style} testID={testID}>
+    <View collapsable={false} role="group" accessibilityLabel={name} style={style} testID={testID}>
       <Item
         onPress={onPress}
         accessibilityLabel={onPress ? name : undefined}

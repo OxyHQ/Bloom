@@ -229,7 +229,13 @@ function ActivityFeedComponent({
   };
 
   return (
-    <View role="list" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
+    <View
+      collapsable={false}
+      role="list"
+      accessibilityLabel={accessibilityLabel}
+      style={style}
+      testID={testID}
+    >
       {groups.map((group, index) => (
         <View key={group.day} style={{ marginTop: index === 0 ? 0 : ACTIVITY_ENTRY_GAP + 8 }}>
           {grouping === 'day' ? (

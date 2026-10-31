@@ -115,6 +115,7 @@ function StoriesRowComponent({
       testID={testID}
     >
       <View
+        collapsable={false}
         role="list"
         accessibilityLabel={accessibilityLabel}
         style={{ flexDirection: 'row', gap }}

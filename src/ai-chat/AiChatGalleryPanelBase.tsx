@@ -560,6 +560,7 @@ export function AiChatGalleryPanelBase({
 
   return (
     <View
+      collapsable={false}
       role="complementary"
       testID={testID}
       style={[

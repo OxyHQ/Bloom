@@ -381,6 +381,7 @@ export function PriceHistoryChart({
       )}
       {!empty && events.length > 0 ? (
         <View
+          collapsable={false}
           role="list"
           style={{
             flexDirection: 'row',

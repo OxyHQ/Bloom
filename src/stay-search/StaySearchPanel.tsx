@@ -30,6 +30,7 @@ function StaySearchPanelComponent({
   };
   return (
     <Surface
+      collapsable={false}
       testID={testID}
       role={accessibilityLabel ? 'dialog' : undefined}
       accessibilityLabel={accessibilityLabel}

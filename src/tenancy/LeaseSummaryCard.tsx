@@ -151,6 +151,7 @@ function LeaseSummaryCardComponent({
 
         {parties && parties.length > 0 ? (
           <View
+            collapsable={false}
             role="list"
             testID={id('parties')}
             style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 12 }}

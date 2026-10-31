@@ -32,6 +32,7 @@ function DateFlexibilityChipsComponent({
   const accessibilityLabel = accessibilityLabelProp ?? messages.dateFlexibility;
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={accessibilityLabel}
       testID={testID}

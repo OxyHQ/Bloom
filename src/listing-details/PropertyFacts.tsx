@@ -65,6 +65,7 @@ function PropertyFactsComponent({
   return (
     <View onLayout={onLayout} style={[{ width: '100%', gap: 24 }, style]} testID={testID}>
       <View
+        collapsable={false}
         role="list"
         accessibilityLabel={accessibilityLabel}
         testID={testID ? `${testID}-grid` : undefined}

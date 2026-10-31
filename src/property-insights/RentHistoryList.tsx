@@ -74,6 +74,7 @@ function RentHistoryListComponent({
 
   return (
     <View
+      collapsable={false}
       role="list"
       accessibilityLabel={accessibilityLabel}
       style={[{ width: '100%' }, style]}

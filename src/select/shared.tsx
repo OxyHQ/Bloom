@@ -201,7 +201,12 @@ export const SelectScrollProvider = SelectScrollContext.Provider;
 export function SelectGroup({ children, className, style }: SelectGroupProps) {
   // `group` carries no ARIA state, so there is no `aria-*` counterpart here.
   return (
-    <StyledView role="group" className={cx(useMenuDensity().groupClass, className)} style={style}>
+    <StyledView
+      collapsable={false}
+      role="group"
+      className={cx(useMenuDensity().groupClass, className)}
+      style={style}
+    >
       {children}
     </StyledView>
   );

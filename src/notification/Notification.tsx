@@ -209,6 +209,7 @@ function NotificationComponent({
 
   return (
     <Animated.View
+      collapsable={false}
       role={role ?? (status === 'error' ? 'alert' : 'status')}
       testID={testID}
       style={[

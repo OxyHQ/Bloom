@@ -409,7 +409,7 @@ function PriceEstimateComponent({
           {expanded ? (
             <View style={{ gap: 8 }} testID={testID ? `${testID}-reasons` : undefined}>
               {reasons && reasons.length > 0 ? (
-                <View role="list" style={{ gap: 6 }}>
+                <View collapsable={false} role="list" style={{ gap: 6 }}>
                   {reasons.map((reason, i) => (
                     <View
                       key={`${reason}-${i}`}

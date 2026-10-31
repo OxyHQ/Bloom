@@ -94,6 +94,7 @@ function RouteStopsComponent({
 
   const list = (
     <View
+      collapsable={false}
       role="list"
       accessibilityLabel={accessibilityLabel}
       testID={testID ? `${testID}-list` : undefined}

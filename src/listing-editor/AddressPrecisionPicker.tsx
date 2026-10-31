@@ -199,6 +199,7 @@ function AddressPrecisionPickerComponent({
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
     >
       <View
+        collapsable={false}
         role="radiogroup"
         nativeID={field.nativeID}
         aria-describedby={field.describedBy}

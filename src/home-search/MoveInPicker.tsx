@@ -84,6 +84,7 @@ function MoveInPickerComponent({
           testID={testID ? `${testID}-calendar` : undefined}
         />
         <View
+          collapsable={false}
           role="group"
           accessibilityLabel={labels.date}
           style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
@@ -95,6 +96,7 @@ function MoveInPickerComponent({
       <View style={{ gap: 12 }}>
         {heading(labels.contractLength)}
         <View
+          collapsable={false}
           role="group"
           accessibilityLabel={labels.contractLength}
           style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}

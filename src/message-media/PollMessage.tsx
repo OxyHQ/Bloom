@@ -313,6 +313,7 @@ function PollMessageComponent({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={question}
       // `maxWidth`: a bubble narrower than `width` (a phone, with the bubble's own

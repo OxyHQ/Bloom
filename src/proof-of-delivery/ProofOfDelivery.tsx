@@ -261,6 +261,7 @@ function ProofOfDeliveryComponent({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={accessibilityLabel}
       style={[{ gap: PROOF_GEOMETRY.gap }, style]}

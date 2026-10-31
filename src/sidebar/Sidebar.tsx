@@ -969,6 +969,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       <SidebarGeometryProvider value={geometry}>
         <CollapseProvider value={progress}>
           <AnimatedStyledView
+            collapsable={false}
             {...dirProps}
             className={className}
             role="complementary"
@@ -1071,6 +1072,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 >
                   {shownItems.length > 0 || !hasTree ? (
                     <Animated.View
+                      collapsable={false}
                       role="navigation"
                       style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}
                     >
@@ -1194,7 +1196,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 </Animated.View>
               ) : null}
               {shownSecondary.length > 0 ? (
-                <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, navInset]}>
+                <Animated.View
+                  collapsable={false}
+                  role="navigation"
+                  style={[{ width: '100%', gap: 4 }, navInset]}
+                >
                   {shownSecondary.map(renderRow)}
                 </Animated.View>
               ) : null}

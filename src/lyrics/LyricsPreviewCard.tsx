@@ -74,7 +74,13 @@ function LyricsPreviewCardComponent({
   };
 
   return (
-    <View role="region" accessibilityLabel={title} style={[cardStyle, style]} testID={testID}>
+    <View
+      collapsable={false}
+      role="region"
+      accessibilityLabel={title}
+      style={[cardStyle, style]}
+      testID={testID}
+    >
       <Text variant="headline-bold" style={{ color: palette.active }}>
         {title}
       </Text>

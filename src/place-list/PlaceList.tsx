@@ -88,6 +88,7 @@ function PlaceListComponent({
 
   return (
     <View
+      collapsable={false}
       role="list"
       accessibilityLabel={accessibilityLabel}
       style={[{ gap: gap * 2 }, style]}

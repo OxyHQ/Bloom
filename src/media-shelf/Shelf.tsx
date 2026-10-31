@@ -355,6 +355,7 @@ function ShelfComponent({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={title}
       style={[{ gap: 12, minWidth: 0 }, style]}

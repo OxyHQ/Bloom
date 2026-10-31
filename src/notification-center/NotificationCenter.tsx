@@ -270,7 +270,13 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
   const scrollStyle: ViewStyle = { maxHeight: 516, backgroundColor: palette.well };
 
   return (
-    <View role="region" accessibilityLabel={title} testID={testID} style={[sectionStyle, style]}>
+    <View
+      collapsable={false}
+      role="region"
+      accessibilityLabel={title}
+      testID={testID}
+      style={[sectionStyle, style]}
+    >
       <View
         style={{ gap: 12, paddingTop: 16, paddingLeft: 16, paddingRight: 16, paddingBottom: 6 }}
       >
@@ -368,7 +374,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
                 </Text>
               </View>
             ) : (
-              <View role="list" style={{ gap: 8 }}>
+              <View collapsable={false} role="list" style={{ gap: 8 }}>
                 {visible.map((item) => {
                   const unread = isUnread(item);
                   return (

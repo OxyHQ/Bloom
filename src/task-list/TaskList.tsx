@@ -522,7 +522,12 @@ function TaskSection({
       </Pressable>
 
       <Collapse open={open} reduce={reduce}>
-        <View role="list" aria-live="polite" style={{ marginTop: 2, marginLeft: STEPS_INDENT }}>
+        <View
+          collapsable={false}
+          role="list"
+          aria-live="polite"
+          style={{ marginTop: 2, marginLeft: STEPS_INDENT }}
+        >
           {task.steps.map((step, stepIndex) => {
             const unit = headIndex + 1 + stepIndex;
             if (revealed <= unit) return null;

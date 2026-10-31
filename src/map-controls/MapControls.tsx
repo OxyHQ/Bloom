@@ -70,6 +70,7 @@ function MapControlsComponent({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={labels?.group ?? messages.group}
       testID={testID}

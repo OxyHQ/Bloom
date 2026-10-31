@@ -297,6 +297,7 @@ export function InputOtp({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={groupName}
       aria-describedby={membership.describedBy}

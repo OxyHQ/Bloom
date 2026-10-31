@@ -235,6 +235,7 @@ const ItemComponent = function Item({
 
   return (
     <View
+      collapsable={false}
       accessibilityRole={
         accessibilityRole ?? (role === 'radio' || role === 'checkbox' ? role : 'none')
       }

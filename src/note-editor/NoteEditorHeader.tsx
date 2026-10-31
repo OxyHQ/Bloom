@@ -156,6 +156,7 @@ export function NoteEditorHeader({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={accessibilityLabel}
       style={[{ gap: 6 }, style]}

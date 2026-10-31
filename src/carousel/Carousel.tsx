@@ -198,6 +198,7 @@ const CarouselItemComponent = function CarouselItem({
 
   return (
     <View
+      collapsable={false}
       ref={itemRef}
       {...webDataSet({ bloomCarouselItem: '' })}
       role="group"
@@ -868,6 +869,7 @@ const CarouselComponent = function Carousel({
 
   return (
     <View
+      collapsable={false}
       role="group"
       {...webDataSet({ bloomCarousel: arrowsVisibility })}
       {...directionProps}

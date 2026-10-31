@@ -64,6 +64,7 @@ export function FeatureFilter<T extends string = HousingFeature>({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="group"
       accessibilityLabel={accessibilityLabel}

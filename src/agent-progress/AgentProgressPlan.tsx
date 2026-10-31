@@ -101,7 +101,7 @@ function AgentProgressPlanComponent({
               {title ?? messages.planTitle}
             </Text>
           </View>
-          <View role="list" style={styles.steps}>
+          <View collapsable={false} role="list" style={styles.steps}>
             {steps.map((step, index) => (
               <View key={`${index}-${step}`} role="listitem" style={styles.row}>
                 <View style={styles.iconBox}>
@@ -122,7 +122,12 @@ function AgentProgressPlanComponent({
             ))}
           </View>
           {pending && (
-            <View role="group" aria-label={messages.planDecision} style={styles.actions}>
+            <View
+              collapsable={false}
+              role="group"
+              aria-label={messages.planDecision}
+              style={styles.actions}
+            >
               <Button
                 appearance="solid"
                 tone="accent"

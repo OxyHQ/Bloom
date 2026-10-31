@@ -76,7 +76,13 @@ export function SelectionBar({
   };
 
   return (
-    <Surface role="toolbar" accessibilityLabel={countText} style={[surface, style]} testID={testID}>
+    <Surface
+      collapsable={false}
+      role="toolbar"
+      accessibilityLabel={countText}
+      style={[surface, style]}
+      testID={testID}
+    >
       <Text
         variant="body-semibold"
         aria-live="polite"

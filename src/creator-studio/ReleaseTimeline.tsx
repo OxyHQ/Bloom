@@ -98,6 +98,7 @@ function ReleaseTimelineComponent({
 
   return (
     <View
+      collapsable={false}
       onLayout={onLayout}
       role="list"
       accessibilityLabel={accessibilityLabel}

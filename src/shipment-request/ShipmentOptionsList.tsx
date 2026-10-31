@@ -122,6 +122,7 @@ function ShipmentOptionsListComponent({
         <View style={{ gap: 8 }}>
           <TextFieldLabel>{labels.access}</TextFieldLabel>
           <View
+            collapsable={false}
             role="radiogroup"
             accessibilityLabel={labels.access}
             style={{
@@ -155,6 +156,7 @@ function ShipmentOptionsListComponent({
         <View style={{ gap: 8 }}>
           <TextFieldLabel>{labels.window}</TextFieldLabel>
           <View
+            collapsable={false}
             role="radiogroup"
             accessibilityLabel={labels.window}
             style={{

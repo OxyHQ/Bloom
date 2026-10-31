@@ -426,6 +426,7 @@ function JobBoardComponent({
   } else if (shown.length === 0) {
     body = (
       <View
+        collapsable={false}
         role="group"
         accessibilityLabel={emptyTitle}
         style={{
@@ -493,6 +494,7 @@ function JobBoardComponent({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="group"
       accessibilityLabel={accessibilityLabel}

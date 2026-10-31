@@ -279,6 +279,7 @@ export function Table({
 
   const table = (
     <View
+      collapsable={false}
       role="table"
       accessibilityLabel={accessibilityLabel}
       testID={testID}
@@ -322,8 +323,9 @@ export function Table({
 export function TableHeader({ children, style, testID }: TableHeaderProps) {
   const { palette } = useTableContext();
   return (
-    <View role="rowgroup">
+    <View collapsable={false} role="rowgroup">
       <View
+        collapsable={false}
         role="row"
         testID={testID}
         style={[
@@ -434,7 +436,7 @@ export function TableBody({ children, emptyState, style, testID }: TableBodyProp
   const rows = Children.toArray(children).filter(isValidElement);
 
   return (
-    <View role="rowgroup" testID={testID} style={style}>
+    <View collapsable={false} role="rowgroup" testID={testID} style={style}>
       {rows.length === 0 && emptyState != null ? (
         <View
           style={{ height: EMPTY_STATE_HEIGHT, alignItems: 'center', justifyContent: 'center' }}
@@ -462,6 +464,7 @@ export function TableRow({ children, selected, style, testID }: TableRowProps) {
 
   return (
     <View
+      collapsable={false}
       role="row"
       // Only a row that takes part in selection announces it. Both spellings:
       // react-native-web reads only `aria-selected`, React Native reads

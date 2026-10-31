@@ -187,6 +187,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 style={{ flexShrink: 0 }}
               >
                 <StyledView
+                  collapsable={false}
                   role="group"
                   accessibilityLabel={messages.color}
                   testID="agent-avatar-color-selector"

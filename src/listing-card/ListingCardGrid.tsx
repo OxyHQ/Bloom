@@ -39,7 +39,7 @@ function ListingCardGridComponent({
   const { row, cell } = LAYOUT[density];
   return (
     <StyledView className="@container w-full" style={style} testID={testID}>
-      <StyledView role="list" className={row}>
+      <StyledView collapsable={false} role="list" className={row}>
         {Children.toArray(children)
           .filter(isValidElement)
           .map((child, index) => (

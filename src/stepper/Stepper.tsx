@@ -271,6 +271,7 @@ function StepperComponent({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="group"
       nativeID={field.nativeID}

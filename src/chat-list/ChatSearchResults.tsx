@@ -174,6 +174,7 @@ function ChatSearchResultsComponent({
   if (loading) {
     return (
       <View
+        collapsable={false}
         role="region"
         accessibilityLabel={accessibilityLabel}
         aria-busy
@@ -191,7 +192,13 @@ function ChatSearchResultsComponent({
   }
 
   return (
-    <View role="region" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
+    <View
+      collapsable={false}
+      role="region"
+      accessibilityLabel={accessibilityLabel}
+      style={style}
+      testID={testID}
+    >
       {groups.length === 0 ? (
         <View
           style={{
@@ -216,7 +223,7 @@ function ChatSearchResultsComponent({
               paddingHorizontal={geo.paddingHorizontal}
               testID={testID ? `${testID}-heading-${group.kind}` : undefined}
             />
-            <View role="list" accessibilityLabel={text[group.kind]}>
+            <View collapsable={false} role="list" accessibilityLabel={text[group.kind]}>
               {group.results.map((result) => (
                 <ResultRow
                   key={result.id}

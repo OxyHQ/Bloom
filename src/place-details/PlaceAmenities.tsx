@@ -109,6 +109,7 @@ function PlaceAmenitiesComponent({
 
   return (
     <View
+      collapsable={false}
       role="list"
       accessibilityLabel={accessibilityLabel}
       style={[{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, style]}

@@ -116,7 +116,11 @@ function DirectionsStepsComponent({
               </View>
             ) : null}
 
-            <View role="list" accessibilityLabel={legName || accessibilityLabel}>
+            <View
+              collapsable={false}
+              role="list"
+              accessibilityLabel={legName || accessibilityLabel}
+            >
               {leg.steps.map((step, stepIndex) => {
                 const current = currentStepId !== undefined && step.id === currentStepId;
                 const name = describeStep(step, { current, currentWord: currentLabel, messages });

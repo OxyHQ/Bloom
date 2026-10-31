@@ -44,7 +44,7 @@ function RecentlyPlayedListComponent({
   }
 
   return (
-    <View role="list" style={style} testID={testID}>
+    <View collapsable={false} role="list" style={style} testID={testID}>
       {items.map((track, index) => (
         <View key={`${track.id}-${index}`} role="listitem">
           <QueuePanelRow

@@ -56,7 +56,11 @@ function AmenityListComponent({
 
   return (
     <View onLayout={onLayout} style={[{ width: '100%', gap: 24 }, style]} testID={testID}>
-      <View role="list" style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: COLUMN_GAP }}>
+      <View
+        collapsable={false}
+        role="list"
+        style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: COLUMN_GAP }}
+      >
         {shown.map(({ label, icon: Icon, description, available = true }, index) => (
           <View
             key={`${label}-${index}`}

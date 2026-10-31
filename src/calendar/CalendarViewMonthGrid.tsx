@@ -454,6 +454,7 @@ export function CalendarViewMonthGrid({
 
   return (
     <View
+      collapsable={false}
       role="table"
       accessibilityLabel={messages.month}
       testID={testID}
@@ -472,6 +473,7 @@ export function CalendarViewMonthGrid({
       ]}
     >
       <View
+        collapsable={false}
         role="row"
         style={[
           { flexDirection: 'row', gap: dense ? 0 : GAP },
@@ -520,6 +522,7 @@ export function CalendarViewMonthGrid({
       <View style={dense ? { flex: 1, minHeight: 0 } : { gap: GAP }}>
         {weeks.map((week, row) => (
           <View
+            collapsable={false}
             key={dayKey(week[0]!.date)}
             role="row"
             style={[{ flexDirection: 'row', gap: dense ? 0 : GAP }, dense ? { flex: 1 } : null]}

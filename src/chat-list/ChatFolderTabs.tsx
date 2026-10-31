@@ -85,6 +85,7 @@ function ChatFolderTabsComponent({
         }}
       >
         <View
+          collapsable={false}
           role="tablist"
           accessibilityLabel={accessibilityLabel}
           style={{ flexDirection: 'row', gap }}

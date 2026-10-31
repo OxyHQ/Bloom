@@ -51,6 +51,7 @@ export function VoiceControls({
 
   return (
     <StyledView
+      collapsable={false}
       ref={ref}
       role="toolbar"
       aria-label={messages.controls}

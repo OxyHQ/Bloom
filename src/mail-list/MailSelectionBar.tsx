@@ -67,6 +67,7 @@ export function MailSelectionBar({
   return (
     <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
       <View
+        collapsable={false}
         role="toolbar"
         accessibilityLabel={text.selectedCount(count)}
         style={[

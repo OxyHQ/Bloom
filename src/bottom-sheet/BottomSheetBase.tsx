@@ -859,6 +859,7 @@ export const BottomSheetBase = forwardRef(
 
           <GestureDetector gesture={panGesture}>
             <Animated.View
+              collapsable={false}
               ref={sheetRef}
               // The semantic modal and keyboard boundary must include
               // the sticky header as well as the scrolling body.

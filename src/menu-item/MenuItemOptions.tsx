@@ -171,6 +171,7 @@ function MenuItemOptionsComponent({
       {header}
       {groups.length > 0 ? (
         <View
+          collapsable={false}
           role="group"
           accessibilityLabel={accessibilityLabel}
           aria-label={accessibilityLabel}

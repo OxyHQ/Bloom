@@ -68,6 +68,7 @@ function SharedMediaGridComponent({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={gridName}
       style={[{ width, flexDirection: 'row', flexWrap: 'wrap', gap }, style ?? null]}

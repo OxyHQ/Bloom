@@ -136,6 +136,7 @@ function DeliverySlotGroups({
     ))
   ) : (
     <View
+      collapsable={false}
       role="radiogroup"
       accessibilityLabel={field.accessibilityLabel}
       aria-describedby={field.describedBy}

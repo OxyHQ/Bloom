@@ -206,6 +206,7 @@ export function TrackList({
 
   return (
     <View
+      collapsable={false}
       role="grid"
       accessibilityLabel={accessibilityLabel}
       aria-multiselectable={selectable || undefined}
@@ -250,6 +251,7 @@ export function TrackList({
           <Fragment key={track.id}>
             {group ? (
               <View
+                collapsable={false}
                 role="row"
                 aria-rowindex={groupRow}
                 style={{
@@ -262,6 +264,7 @@ export function TrackList({
                 }}
               >
                 <View
+                  collapsable={false}
                   role={ROLE_GRIDCELL}
                   style={{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flex: 1 }}
                 >

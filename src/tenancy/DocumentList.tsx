@@ -77,7 +77,7 @@ function DocumentListComponent({
             </Text>
           </View>
         ) : (
-          <View role="list">
+          <View collapsable={false} role="list">
             {documents.map((document, index) => {
               const info = document.status ? TENANCY_DOCUMENT_STATUS[document.status] : null;
               const badge =

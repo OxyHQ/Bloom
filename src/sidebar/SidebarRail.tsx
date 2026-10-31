@@ -87,6 +87,7 @@ export function SidebarRail({
 
   return (
     <View
+      collapsable={false}
       {...dirProps}
       role="complementary"
       accessibilityLabel={accessibilityLabel}
@@ -153,7 +154,7 @@ export function SidebarRail({
               gap: 8,
             }}
           >
-            <View role="navigation" style={{ width: '100%', gap: 8 }}>
+            <View collapsable={false} role="navigation" style={{ width: '100%', gap: 8 }}>
               {items.map(renderItem)}
             </View>
           </SidebarScrollArea>
@@ -170,6 +171,7 @@ export function SidebarRail({
       </View>
       {secondaryItems.length > 0 ? (
         <View
+          collapsable={false}
           role="navigation"
           style={{ flexShrink: 0, paddingLeft: 8, paddingRight: 8, paddingBottom: 24, gap: 8 }}
         >

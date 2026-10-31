@@ -247,12 +247,13 @@ function SwitcherGrid({
 
   return (
     <View
+      collapsable={false}
       role="grid"
       accessibilityLabel={label}
       {...keyProps}
       style={{ width: GRID_WIDTH, gap: CELL_GAP }}
     >
-      <View role="row" style={{ flexDirection: 'row', gap: CELL_GAP }}>
+      <View collapsable={false} role="row" style={{ flexDirection: 'row', gap: CELL_GAP }}>
         {weekdays.map((weekday) => (
           <View
             key={weekday.long}
@@ -271,6 +272,7 @@ function SwitcherGrid({
       </View>
       {weeks.map((week) => (
         <View
+          collapsable={false}
           key={dayKey(week[0]!.date)}
           role="row"
           style={{ flexDirection: 'row', gap: CELL_GAP }}
