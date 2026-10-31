@@ -1546,7 +1546,11 @@ nothing but its shape (`windowControls`, default `auto`):
   at its top, inside its surface, and that band moves the window. The shell
   hands the room to the sidebar as `windowControlsRoom` (less the frame's own
   top inset); a `render` sidebar receives it with the rest of its props and
-  keeps it itself, with a `WindowDragRegion` band.
+  keeps it itself, with a `WindowDragRegion` band. When a narrow rail or
+  collapsed sidebar ends inside the controls' leading room, the adjacent header
+  keeps the remaining horizontal clearance. That clearance does not turn the
+  panel into a window title area. On web it follows the same animated navigation
+  width as the compositor.
 - **Without one** (none, hidden by its dock, or collapsed into a drawer), a
   `topBar` in flow starts after their room (`room.leading`), or else the header
   does (less the frame's start inset), and it moves the window. A
@@ -1564,7 +1568,10 @@ nothing but its shape (`windowControls`, default `auto`):
   ([Panes as the title area](/docs/window#panes-as-the-title-area)).
 - **`windowControls="overlay"`**: full-bleed content keeps no room, and the
   controls float over it on a plate of the surface material.
-- **Full screen**: no controls and no room.
+- **Full screen**: no controls and no room. The adaptive shell keeps its header
+  mounted while this changes, preserving local header state. Its measured
+  navigation host drives clearance through a shared value; the panel compositor
+  uses the same interpolated CSS width for navigation and header reservation.
 
 The controls are drawn once, at the shell's top leading corner (the viewport's,
 with document scroll), so a shell with the capability is the window's content.

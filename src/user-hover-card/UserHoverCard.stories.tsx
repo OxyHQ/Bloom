@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ActivityHeatmap } from '../activity-heatmap';
 import { Button } from '../button';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { UserHoverCard } from './UserHoverCard';
@@ -178,18 +178,17 @@ function DarkSurface({ children }: { children: React.ReactNode }) {
 export const Dark: Story = {
   parameters: { controls: { disable: true } },
   render: (_args, context) => (
-    <BloomThemeProvider
+    <BloomColorScope
+      style={{ display: 'contents' }}
       mode="dark"
       colorPreset={
-        context.globals.colorPreset as React.ComponentProps<
-          typeof BloomThemeProvider
-        >['colorPreset']
+        context.globals.colorPreset as React.ComponentProps<typeof BloomColorScope>['colorPreset']
       }
     >
       <DarkSurface>
         <MatrixGrid />
       </DarkSurface>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 

@@ -1,10 +1,10 @@
 import type React from 'react';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { Image, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Chip } from '../chip';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ChannelPostCard } from './ChannelPostCard';
@@ -160,18 +160,17 @@ function Surface({ children }: { children: React.ReactNode }) {
 }
 
 function BothModes({ children, min = 380 }: { children: React.ReactNode; min?: number }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
     <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
       <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
+        <BloomColorScope style={{ display: 'contents' }} mode="light">
           <Surface>{children}</Surface>
-        </BloomThemeProvider>
+        </BloomColorScope>
       </View>
       <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
+        <BloomColorScope style={{ display: 'contents' }} mode="dark">
           <Surface>{children}</Surface>
-        </BloomThemeProvider>
+        </BloomColorScope>
       </View>
     </View>
   );

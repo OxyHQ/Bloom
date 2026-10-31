@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -26,7 +26,7 @@ import { RiVideoOnLine } from '../icons/remix/RiVideoOnLine';
 import { RiVolumeMuteLine } from '../icons/remix/RiVolumeMuteLine';
 import { SettingsListGroup, SettingsListItem } from '../settings-list';
 import { Switch } from '../switch';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ChatBackground } from './ChatBackground';
@@ -128,18 +128,17 @@ function Surface({ children, padded = true }: { children: React.ReactNode; padde
 
 /** The same block in both modes, side by side — every colour here flips. */
 function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
     <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
       <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 380 }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
+        <BloomColorScope style={{ display: 'contents' }} mode="light">
           <Surface>{children}</Surface>
-        </BloomThemeProvider>
+        </BloomColorScope>
       </View>
       <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 380 }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
+        <BloomColorScope style={{ display: 'contents' }} mode="dark">
           <Surface>{children}</Surface>
-        </BloomThemeProvider>
+        </BloomColorScope>
       </View>
     </View>
   );

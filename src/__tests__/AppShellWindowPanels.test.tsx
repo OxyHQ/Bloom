@@ -387,6 +387,40 @@ const DESKTOP: Partial<AppShellProps> = {
 const FLUSH = { items: NAV, surface: 'plain' as const, variant: 'panel' as const, width: 190 };
 
 describe('panes beside a sidebar flush to the window', () => {
+  it('keeps the controls clearance in the first title row beside a narrow sidebar', () => {
+    setWidth(1100);
+    const screen = shell(fakeWindow().adapter, {
+      ...DESKTOP,
+      sidebar: { ...FLUSH, size: 'sm', collapsed: true },
+    });
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+    expect(barStart(screen, 'inbox')).toBe(44);
+    expect(moves(screen, 'inbox')).toBe(true);
+    expect(moves(screen, 'detail')).toBe(true);
+  });
+
+  it.each([false, true])(
+    'keeps ordinary joined-panel corners when clearance is not window chrome (workspace header=%s)',
+    (header) => {
+      setWidth(1100);
+      const { adapter, window } = fakeWindow();
+      const wideCorners = {
+        ...adapter,
+        window: { ...window, metrics: { ...window.metrics, radius: 31 } },
+      };
+      const screen = shell(wideCorners, {
+        ...DESKTOP,
+        sidebar: { ...FLUSH, surface: 'card', size: 'sm', collapsed: true },
+        panelLayout: { ...SPLIT, appearance: 'joined', ...(header ? { header: null } : {}) },
+      });
+      const surfaces = screen.getAllByTestId('content-panel-surface');
+      expect(surfaces).toHaveLength(1);
+      const panel = resolvedStyle(surfaces[0]!.props.style);
+      expect(panel.borderTopLeftRadius ?? panel.borderRadius).not.toBe(31);
+      expect(panel.borderTopRightRadius ?? panel.borderRadius).not.toBe(31);
+    },
+  );
+
   it('the sidebar holds the controls; every pane header moves the window and keeps no room', () => {
     setWidth(1100);
     const screen = shell(fakeWindow().adapter, { ...DESKTOP, sidebar: FLUSH });

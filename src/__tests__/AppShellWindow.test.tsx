@@ -7,9 +7,11 @@
  * shell renders exactly what it rendered before.
  */
 import * as ReactNative from 'react-native';
-import { act, render } from '@testing-library/react-native';
+import { useEffect, useState } from 'react';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { AppShell, AppShellPanel } from '../app-shell';
+import { panelWindowChrome } from '../app-shell/panel-layout';
 import type { AppShellProps } from '../app-shell/types';
 import { RiHomeLine } from '../icons/remix';
 import { PlatformSurfaceProvider } from '../platform-surface/context';
@@ -127,6 +129,45 @@ describe('with the window capability', () => {
       ),
     });
     expect(style(screen, 'sidebar-window-band').height).toBe(52);
+  });
+
+  it.each([
+    [
+      'small collapsed panel',
+      { variant: 'panel' as const, size: 'sm' as const, collapsed: true },
+      45,
+    ],
+    [
+      'medium collapsed panel',
+      { variant: 'panel' as const, size: 'md' as const, collapsed: true },
+      55,
+    ],
+    ['narrow rail', { variant: 'rail' as const, railWidth: 64 }, 64],
+    ['standard rail', { variant: 'rail' as const, railWidth: 80 }, 80],
+  ])('keeps remaining header room beside a %s', (_label, sidebar, width) => {
+    setWidth(1440);
+    const screen = shell(fakeWindow().adapter, {
+      title: 'Home',
+      navFrom: 0,
+      navigationGap: 0,
+      sidebar: { ...sidebar, surface: 'docked', items: NAV },
+    });
+    expect(style(screen, 'shell-header-clearance').paddingInlineStart).toBe(88 - width);
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+  });
+
+  it('passes horizontal clearance only to the first panel, without making later panels window chrome', () => {
+    const clearance = { leading: 43, topEdge: false };
+    expect(
+      panelWindowChrome(
+        clearance,
+        [
+          { visible: true, floating: false },
+          { visible: true, floating: false },
+        ],
+        false,
+      ),
+    ).toEqual([clearance, null]);
   });
 
   it('a toolbar application: the header starts after the room and moves the window', () => {
@@ -255,5 +296,114 @@ describe('with the window capability', () => {
     const phone = shell(fakeWindow().adapter, { navigation, scroll: 'auto', title: 'Home' });
     expect(phone.queryByTestId('shell-sidebar-window-band')).toBeNull();
     expect(style(phone, 'shell-header-drag').paddingInlineStart).toBe(88);
+  });
+
+  it.each([
+    [
+      'small panel',
+      { variant: 'panel' as const, size: 'sm' as const, collapsed: true },
+      'sidebar' as const,
+      43,
+    ],
+    [
+      'medium panel',
+      { variant: 'panel' as const, size: 'md' as const, collapsed: true },
+      'sidebar' as const,
+      33,
+    ],
+    ['narrow rail', { variant: 'rail' as const, railWidth: 64 }, 'rail' as const, 24],
+  ])(
+    'the adaptive shell keeps remaining room beside a %s',
+    (_name, sidebar, placement, clearance) => {
+      setWidth(1440);
+      const screen = shell(fakeWindow().adapter, {
+        title: 'Home',
+        scroll: 'auto',
+        navigationPlacement: placement,
+        sidebar: { ...sidebar, surface: 'docked', items: NAV },
+      });
+      expect(style(screen, 'shell-header-clearance').paddingInlineStart).toBe(clearance);
+      expect(screen.getByTestId('shell-sidebar-window-band')).toBeTruthy();
+    },
+  );
+
+  it('the adaptive shell drops navigation clearance without window chrome or in fullscreen', () => {
+    setWidth(1440);
+    const props: Partial<AppShellProps> = {
+      title: 'Home',
+      scroll: 'auto',
+      navigationPlacement: 'sidebar',
+      sidebar: { items: NAV, size: 'sm', collapsed: true, surface: 'docked' },
+    };
+    const ordinary = shell(undefined, props);
+    expect(ordinary.queryByTestId('shell-header-clearance')).toBeNull();
+    ordinary.unmount();
+    const { adapter, window } = fakeWindow();
+    const screen = shell(adapter, props);
+    expect(screen.getByTestId('shell-header-clearance')).toBeTruthy();
+    act(() => window.set({ fullscreen: true }));
+    expect(style(screen, 'shell-header-clearance').paddingInlineStart).toBe(0);
+  });
+
+  it('the adaptive shell follows the measured navigation host width', () => {
+    setWidth(1440);
+    const { adapter, window } = fakeWindow();
+    const screen = shell(adapter, {
+      title: 'Home',
+      scroll: 'auto',
+      navigationPlacement: 'sidebar',
+      sidebar: { items: NAV, size: 'sm', collapsed: true, surface: 'docked' },
+    });
+    act(() => {
+      screen.getByTestId('shell-navigation-sidebar-frame').props.onLayout({
+        nativeEvent: { layout: { x: 0, y: 0, width: 70, height: 900 } },
+      });
+      // The test animation mock evaluates styles on render; the real mapper
+      // reacts to the shared value without another React render.
+      window.set({ active: false });
+    });
+    expect(style(screen, 'shell-header-clearance').paddingInlineStart).toBe(18);
+  });
+
+  it('preserves a stateful adaptive header across fullscreen and navigation changes', () => {
+    setWidth(1440);
+    const mounted = jest.fn();
+    const unmounted = jest.fn();
+    function Header() {
+      const [value, setValue] = useState('Initial');
+      useEffect(() => {
+        mounted();
+        return unmounted;
+      }, []);
+      return <ReactNative.TextInput testID="header-draft" value={value} onChangeText={setValue} />;
+    }
+    const { adapter, window } = fakeWindow();
+    const screen = shell(adapter, {
+      scroll: 'auto',
+      navigationPlacement: 'auto',
+      header: <Header />,
+      sidebar: { items: NAV, size: 'sm', collapsed: true, surface: 'docked' },
+    });
+    fireEvent.changeText(screen.getByTestId('header-draft'), 'Unsent');
+    act(() => window.set({ fullscreen: true }));
+    expect(screen.getByTestId('header-draft').props.value).toBe('Unsent');
+    act(() => window.set({ fullscreen: false }));
+    setWidth(390);
+    act(() => window.set({ active: false }));
+    expect(screen.getByTestId('header-draft').props.value).toBe('Unsent');
+    expect(mounted).toHaveBeenCalledTimes(1);
+    expect(unmounted).not.toHaveBeenCalled();
+  });
+
+  it('the adaptive shell respects an explicit null header when the page owns the corner', () => {
+    setWidth(390);
+    const screen = shell(fakeWindow().adapter, {
+      scroll: 'auto',
+      title: 'Ignored',
+      header: null,
+    });
+    expect(screen.queryByText('Ignored')).toBeNull();
+    expect(screen.queryByTestId('shell-header-drag')).toBeNull();
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
   });
 });

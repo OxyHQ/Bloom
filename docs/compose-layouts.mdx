@@ -23,6 +23,14 @@ only where the product needs them.
 | `ScrollArea` / `ScrollBar` | Shared scrolling primitive / indicator | Independently scrolling content / existing viewport ref |
 | Application store | Account policy and durable persistence | Controlled histories, snapshot storage, conflict handling |
 
+Descriptor layouts and JSX panel groups publish the same painted surface to
+their descendants. In compact layouts that is the unframed fill; framed layouts
+publish the material's composite fill. The CSS compositor must not force the
+framed context while hiding the actual frame: doing so changed the background
+of a navigator inside joined panels when moving the same content to descriptors.
+`AppShellSsr.web.test.tsx` covers both APIs, appearances and header arrangements;
+consumer resize checks cover the transition between compact and framed layouts.
+
 A screen-specific header belongs to its `Screen`; its containing panel does not
 add another copy. Chrome spanning the workspace belongs in `layout.header`,
 where the compositor reserves it once above all panel tracks. Each panel keeps

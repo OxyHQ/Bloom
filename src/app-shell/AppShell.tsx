@@ -7,10 +7,15 @@ import React, {
   type ComponentType,
 } from 'react';
 import { Linking, Platform, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { BREAKPOINTS } from '../styles/breakpoints';
+import { useDirectionProps } from '../hooks/use-is-rtl';
+import { pointerEventsStyle } from '../styles/pointer-events';
 import { useScreen } from '../screen/context';
 import type { ScreenComponents } from '../screen/types';
 import { SidebarSlot } from './SidebarSlot';
+import { resolveSidebarGeometry } from '../sidebar/geometry';
+import { SIDEBAR_RAIL_WIDTH } from '../sidebar/SidebarRail';
 import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { APP_SHELL_DEFAULTS } from './constants';
 import { useTheme } from '../theme/use-theme';
@@ -135,6 +140,7 @@ export function createAppShell(
     const [containerWidth, setContainerWidth] = useState<number | null>(null);
     const width = containerWidth ?? windowWidth;
     const { colors } = useTheme();
+    const dirProps = useDirectionProps();
     const placement = resolveNavigationPlacement(width, navigationPlacement);
     const sidebarMetrics = useAppShellSidebarMetrics(sidebar);
     const [userCollapsed, setUserCollapsed] = useState(sidebar?.defaultCollapsed ?? false);
@@ -195,13 +201,39 @@ export function createAppShell(
     const navigationInset = docked ? 0 : 12;
     const navRoom = room != null && navigationShown ? Math.max(0, room.top - navigationInset) : 0;
     const headerRoom = room != null && !navigationShown ? room.leading : 0;
+    const fallbackNavigationWidth =
+      (placement === 'rail'
+        ? sidebar?.railWidth === undefined || !Number.isFinite(sidebar.railWidth)
+          ? SIDEBAR_RAIL_WIDTH
+          : Math.max(64, sidebar.railWidth)
+        : (sidebar?.collapsed ?? (capacityCollapsed || userCollapsed))
+          ? resolveSidebarGeometry(
+              sidebarMetrics,
+              sidebar?.surface ?? 'card',
+              !!sidebar?.primaryAction,
+              sidebar?.content != null,
+            ).collapsedWidth
+          : sidebarMetrics.expanded) + (docked ? 0 : navigationPadding * 2);
+    // The animated outer host is the actual width alongside Screen, including
+    // its padding and placement transition. Updating a shared value avoids a
+    // React render for every frame as that width changes.
+    const navigationWidth = useSharedValue(fallbackNavigationWidth);
+    const headerClearance = useAnimatedStyle(
+      () => ({
+        paddingInlineStart:
+          room != null && navigationShown ? Math.max(0, room.leading - navigationWidth.value) : 0,
+      }),
+      [room?.leading, navigationShown, navigationWidth],
+    );
     const screenHeader =
-      header ??
-      (title ? (
+      header !== undefined ? (
+        header
+      ) : title ? (
         <PageHeader title={title} subtitle={breadcrumb} actions={actions} sticky={false} />
-      ) : null);
+      ) : null;
     const root = (
       <View
+        {...dirProps}
         onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
         testID={testID}
         style={[
@@ -212,6 +244,9 @@ export function createAppShell(
         {placement !== 'bottom' && (sidebar || navigation) ? (
           <ResponsiveNavigation
             placement={placement}
+            onWidthChange={(nextWidth) => {
+              navigationWidth.value = nextWidth;
+            }}
             testID={testID ? `${testID}-navigation-${placement}` : undefined}
             style={{
               flexShrink: 0,
@@ -257,12 +292,22 @@ export function createAppShell(
             testID={testID ? `${testID}-screen` : undefined}
             style={{ minWidth: 0 }}
             header={
-              screenHeader != null && headerRoom > 0 ? (
+              screenHeader != null && platformWindow != null ? (
                 <WindowDragRegion
-                  testID={testID ? `${testID}-header-drag` : undefined}
-                  style={{ paddingInlineStart: headerRoom }}
+                  disabled={headerRoom <= 0}
+                  testID={headerRoom > 0 && testID ? `${testID}-header-drag` : undefined}
+                  style={
+                    headerRoom > 0
+                      ? { paddingInlineStart: headerRoom }
+                      : pointerEventsStyle('box-none')
+                  }
                 >
-                  {screenHeader}
+                  <Animated.View
+                    testID={testID ? `${testID}-header-clearance` : undefined}
+                    style={headerClearance}
+                  >
+                    {screenHeader}
+                  </Animated.View>
                 </WindowDragRegion>
               ) : (
                 screenHeader
