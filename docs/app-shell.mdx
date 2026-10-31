@@ -1626,6 +1626,12 @@ What it does:
   no JavaScript per frame. Measured in Chromium (`verify-app-shell-dock.mjs`):
   the card's start edge and the sidebar's far edge stay within 0.1 pt of the
   spring's closed form, hiding and showing.
+- Native centred panel envelopes animate `width` with an automatic flex basis.
+  Reanimated documents `flexBasis` as unsupported on native. In a 400 pt OxyOS
+  window the panel remained 136 pt after its computed basis reached 323 pt;
+  an isolated host control also retained its old width with a React state update
+  to basis, while updating width worked. The initial estimate uses the sidebar's
+  actual collapsed or rail geometry until its host is measured.
 - **The content stays mounted.** Hidden, it is inert, out of the accessibility
   tree and takes no pointer; its scroll position, editors and open state
   survive. The peek floats the SAME tree, `inset` from the window's edges, over
