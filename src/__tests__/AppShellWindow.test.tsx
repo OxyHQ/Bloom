@@ -139,9 +139,24 @@ describe('with the window capability', () => {
     expect(screen.queryByTestId('sidebar-window-band')).toBeNull();
   });
 
-  it('a sidebar collapsed into a drawer: the header keeps the room, with the menu after it', () => {
+  it('a narrow window keeps its sidebar in the window, never a drawer', () => {
     setWidth(700);
     const screen = shell(fakeWindow().adapter, { title: 'Home', sidebar: { items: NAV } });
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+    expect(screen.queryByTestId('shell-header-menu')).toBeNull();
+    screen.unmount();
+    // Without the capability the same shell is a phone's: a drawer below `md`.
+    const page = shell(undefined, { title: 'Home', sidebar: { items: NAV } });
+    expect(page.getByTestId('shell-header-menu')).toBeTruthy();
+  });
+
+  it('a sidebar an app puts in a drawer: the header keeps the room, with the menu after it', () => {
+    setWidth(700);
+    const screen = shell(fakeWindow().adapter, {
+      title: 'Home',
+      navFrom: 'lg',
+      sidebar: { items: NAV },
+    });
     expect(screen.queryByTestId('sidebar-window-band')).toBeNull();
     expect(style(screen, 'shell-header-drag').paddingInlineStart).toBe(76);
     expect(

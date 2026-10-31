@@ -199,10 +199,10 @@ export function createAppShellEngine() {
     contentWidth = D.contentWidth,
     contentSpan = 'content',
     gutter: gutterProp,
-    navFrom,
+    navFrom: navFromProp,
     navExpandedFrom,
     panels = false,
-    framedFrom,
+    framedFrom: framedFromProp,
     topBar,
     topBarVisibility = 'compact',
     topBarDock,
@@ -241,6 +241,11 @@ export function createAppShellEngine() {
     // A shell inside another region that holds the window's corner (a nested
     // shell, a pane) is not at the corner: it is laid out as without windows.
     const appWindow = useWindowCornerTaken() ? null : platformWindow;
+    // A desktop window is a desktop at every size it can take: its navigation
+    // stays in the window (it hides by its dock, or collapses to icons, never
+    // into a phone's drawer) and its panels stay framed. An explicit tier wins.
+    const navFrom = navFromProp ?? (appWindow != null ? 0 : undefined);
+    const framedFrom = framedFromProp ?? (appWindow != null ? 0 : undefined);
     // A window's panels with nothing of the shell's own above them (no top bar
     // or header, and a region that starts at the corner or beside a sidebar
     // flush to the window): they are the window's title area, as a desktop

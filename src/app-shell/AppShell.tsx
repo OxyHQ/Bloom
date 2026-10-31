@@ -331,11 +331,14 @@ export function createAppShell(
     const actionClaimed = useScreenActionClaimed();
     const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
     const width = measuredWidth ?? window.width;
+    // A desktop window never takes a phone's bottom bar on its own: `auto`
+    // keeps the navigation in the window at every size it can take.
+    const inWindow = useWindow() != null && !useWindowCornerTaken();
     const navFrom =
       props.navFrom ??
       (navigationPlacement === 'bottom'
         ? Number.MAX_SAFE_INTEGER
-        : navigationPlacement === 'auto'
+        : navigationPlacement === 'auto' && !inWindow
           ? 'md'
           : 0);
     const navExpandedFrom =
@@ -464,7 +467,7 @@ export function createAppShell(
       platformWindow != null &&
       !windowCornerTaken &&
       (props.sidebar == null ||
-        flushSidebarAtEveryWidth(props.sidebar, props.navFrom, props.navigationAlign)) &&
+        flushSidebarAtEveryWidth(props.sidebar, props.navFrom ?? 0, props.navigationAlign)) &&
       props.topBar == null &&
       props.header == null &&
       props.title == null &&

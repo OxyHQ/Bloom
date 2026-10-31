@@ -298,8 +298,9 @@ describe('other panel shapes', () => {
     const screen = shell(fakeWindow().adapter, {
       panelLayout: { ...SPLIT, collapseBelow: 'lg', activePanel: 'detail' },
     });
-    // A compact region has no frame inset: the whole room is the panel's.
-    expect(barStart(screen, 'detail')).toBe(88);
+    // A desktop window's panels stay framed however narrow: 72 of the 88 are
+    // the panel's own, past the frame's 16 inset.
+    expect(barStart(screen, 'detail')).toBe(72);
     expect(moves(screen, 'detail')).toBe(true);
     // The other one is not shown (nor mounted).
     expect(screen.queryByTestId('inbox-header')).toBeNull();
@@ -406,6 +407,15 @@ describe('panes beside a sidebar flush to the window', () => {
     }
   });
 
+  it('without tiers of its own, a window keeps a flush sidebar in flow: the panes are the title area', () => {
+    setWidth(700);
+    const { navFrom: _tier, framedFrom: _framed, ...untiered } = DESKTOP;
+    const screen = shell(fakeWindow().adapter, { ...untiered, sidebar: FLUSH });
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+    expect(moves(screen, 'inbox')).toBe(true);
+    expect(titleRowCentre(screen, 'inbox')).toBe(CONTROLS_CENTRE);
+  });
+
   it('a docked sidebar is flush too', () => {
     setWidth(1100);
     const screen = shell(fakeWindow().adapter, {
@@ -438,9 +448,9 @@ describe('panes beside a sidebar flush to the window', () => {
     expect(shown).toMatchObject({ flexBasis: 1100 - 190 - 7, maxWidth: 1100 - 190 - 7 });
   });
 
-  it('a sidebar that may become a drawer, or a card, keeps the corner to itself', () => {
+  it('a sidebar an app puts in a drawer, or a card, keeps the corner to itself', () => {
     setWidth(1100);
-    const drawer = shell(fakeWindow().adapter, { ...DESKTOP, navFrom: undefined, sidebar: FLUSH });
+    const drawer = shell(fakeWindow().adapter, { ...DESKTOP, navFrom: 'lg', sidebar: FLUSH });
     expect(moves(drawer, 'inbox')).toBe(false);
     expect(style(drawer, 'inbox-bar-bar').minHeight).toBeUndefined();
     drawer.unmount();
