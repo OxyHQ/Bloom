@@ -892,3 +892,41 @@ native positioning, clipping, stacking and input, or use a native renderer with 
 geometry and motion. Physical Android/iOS crowds, low-memory behavior and sustained thermal
 runs remain required before claiming efficient live crowds on inexpensive phones. Browser
 software rendering and CPU throttling do not stand in for these measurements.
+
+
+#### Optional activity loading
+
+The original production engine requested `loadAuthoredAsset(..., true)` for every character.
+Its packed motion combined idle, reaction, Computer and the repeating Computer loop; catalog
+composition also attached Computer before resolving its motion, even for a paused eye
+preview. These resources were eager despite the visible avatar being idle.
+
+The motion transport now splits base (idle/reaction/blink/gaze) from optional work
+(Computer/loop). Catalog libraries split each rig's work clip in the same way. Channel byte
+ranges are relocated directly, retaining Float64 bytes and intra-file sharing; no number is
+rounded or motion resampled. The surface renderer's unused strand tracks are omitted.
+Source bundles remain unchanged. The complete eager loader is retained for diagnostic
+and fidelity tooling; production scene ownership prepares work only when requested.
+
+| Source collection | Original combined bytes | Base transport bytes | Optional work bytes |
+| --- | ---: | ---: | ---: |
+| Eight authored motion bundles | 17,267,296 | 1,990,440 | 15,239,904 |
+| Ten catalog motion libraries | 40,051,136 | 12,740,064 | 27,227,384 |
+
+These are uncompressed sums over those collections, **not** bytes downloaded by every visit.
+Each character uses selected files. Splitting duplicates a few channels shared between base
+and work, so summing both transport columns is not an overall package-size claim. The base
+motion reduction is 88.5% for the authored collection and 68.2% for the catalog collection.
+Geometry and per-visit network totals require their own measurements.
+
+`node --test scripts/test-avatar-motion-transport.mjs` compares every retained field in all
+18 reconstructed bundles against the originals, verifies no work fetch during authored
+idle/reaction setup, deduplicates simultaneous work requests, retries a failed work fetch,
+and ensures upgrading does not mutate the base samplers or attach gaze twice. The original
+motion fidelity suite still validates all eight presets against authored JSON.
+
+Native process reclamation remains separate from render performance: the live bridge lacks
+Android `onRenderProcessGone` and WKWebView `onContentProcessDidTerminate` handlers. The
+[upstream event documentation](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#oncontentprocessdidterminate)
+explicitly describes OS memory reclamation/background termination. Timeout recovery for
+queued stills does not establish recovery of an already live native avatar.
