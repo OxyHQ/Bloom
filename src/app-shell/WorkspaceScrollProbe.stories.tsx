@@ -6,7 +6,7 @@ import { Screen, ScreenScrollView } from '../screen/index.web';
 
 const meta: Meta = {
   id: 'composition-workspace-scroll-probe',
-  title: 'Composition/Workspace/Scroll clearance',
+  title: 'Labs/Composition/Workspace scroll clearance',
 };
 export default meta;
 type Story = StoryObj;
@@ -48,5 +48,6 @@ function Probe({ inline }: { inline: boolean }) {
     </View>
   );
 }
+/** Regression fixture: tests bounded viewport clearance, class padding and draft preservation. */
 export const Bounded: Story = { render: () => <Probe inline /> };
 export const ClassPadding: Story = { render: () => <Probe inline={false} /> };
