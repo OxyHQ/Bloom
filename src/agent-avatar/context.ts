@@ -8,7 +8,7 @@ export const AvatarSnapshotObserver = createContext<
   ((capture: CaptureAvatarSnapshot | null) => void) | null
 >(null);
 /**
- * Where an app that does not host the 214 MB runtime loads it from: the SDK's own copy (CORS
+ * Where an app that does not self-host the runtime loads it from: the SDK's own copy (CORS
  * open). One constant, so no library invents its own; `BloomProvider characterRuntimeUrl` and
  * `AgentAvatarProvider runtimeUrl` replace it for an app that self-hosts.
  */

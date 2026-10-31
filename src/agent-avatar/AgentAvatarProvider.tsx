@@ -78,8 +78,13 @@ export function AgentAvatarProvider({
               };
               setNativeJob(nextJob);
             });
-    return createCharacterStills({ runtimeUrl, storage: stillStorage, backend });
-  }, [runtimeUrl, stillStorage]);
+    return createCharacterStills({
+      runtimeUrl,
+      storage: stillStorage,
+      backend,
+      onCapabilities: reportCapabilities,
+    });
+  }, [runtimeUrl, stillStorage, reportCapabilities]);
   const mountedCache = useRef<typeof stills | null>(null);
   useEffect(() => {
     mountedCache.current = stills;
