@@ -7,6 +7,7 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 ### Changed
 
 - Native surfaces no longer allocate the ref and effect used only to bake web materials. Web rendering and native increased-contrast behavior are unchanged.
+- Avatars use the press state already provided by `Pressable`, avoiding duplicate state and restoring normal opacity if an action is removed during a press.
 
 ### Consumers
 
