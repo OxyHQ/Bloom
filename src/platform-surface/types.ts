@@ -123,6 +123,24 @@ export interface PlatformWindow {
   zoom(): void;
   /** Start an interactive move from the press being handled. */
   startMove(): void;
+  /**
+   * The sizes the window can take: the platform never sizes it outside them
+   * (a resize by its edges stops at them, and zoom fills the work area only
+   * up to them). Replaces the last. Optional: a platform whose windows take
+   * any size leaves it out, and Bloom then asks nothing.
+   */
+  setSizeLimits?(limits: PlatformWindowSizeLimits): void;
+}
+
+/**
+ * The sizes a window can take, in layout pixels. A zero is no bound: no
+ * minimum beyond the platform's own, no maximum.
+ */
+export interface PlatformWindowSizeLimits {
+  readonly minWidth: number;
+  readonly minHeight: number;
+  readonly maxWidth: number;
+  readonly maxHeight: number;
 }
 
 /**

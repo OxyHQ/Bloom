@@ -21,6 +21,7 @@ export interface FakeWindow extends PlatformWindow {
   minimize: jest.Mock;
   zoom: jest.Mock;
   startMove: jest.Mock;
+  setSizeLimits: jest.Mock;
   /** What the platform would tell the window next. */
   set(next: Partial<PlatformWindowState>): void;
 }
@@ -50,6 +51,7 @@ export function fakeWindow(
     minimize: jest.fn(),
     zoom: jest.fn(),
     startMove: jest.fn(),
+    setSizeLimits: jest.fn(),
     set(next) {
       state = { ...state, ...next };
       for (const listener of listeners) listener();

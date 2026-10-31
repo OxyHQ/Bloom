@@ -19,7 +19,13 @@ import type { PlatformSurfaceAdapter } from '../platform-surface/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { useWindow, useWindowControlsRoom, WindowControls, WindowDragRegion } from '../window';
+import {
+  useWindow,
+  useWindowControlsRoom,
+  useWindowSizeLimits,
+  WindowControls,
+  WindowDragRegion,
+} from '../window';
 import { WINDOW_DOUBLE_PRESS_MS } from '../window/constants';
 import { resolvedStyle } from './support/rendered-style';
 import { fakeWindow, WINDOW_METRICS } from './support/fake-window';
@@ -129,6 +135,69 @@ describe('useWindowControlsRoom', () => {
     expect(
       renderHook(() => useWindowControlsRoom(), { wrapper: wrapper(adapter) }).result.current,
     ).toEqual({ top: 52, leading: 88 });
+  });
+});
+
+describe('useWindowSizeLimits', () => {
+  it('declares the sizes to the platform, follows them, and clears them when it leaves', () => {
+    const { window, adapter } = fakeWindow();
+    const hook = renderHook(
+      (limits: { minWidth: number; minHeight: number }) => useWindowSizeLimits(limits),
+      { wrapper: wrapper(adapter), initialProps: { minWidth: 600, minHeight: 380 } },
+    );
+    expect(window.setSizeLimits).toHaveBeenLastCalledWith({
+      minWidth: 600,
+      minHeight: 380,
+      maxWidth: 0,
+      maxHeight: 0,
+    });
+    // The same sizes again ask nothing more.
+    hook.rerender({ minWidth: 600, minHeight: 380 });
+    expect(window.setSizeLimits).toHaveBeenCalledTimes(1);
+    hook.rerender({ minWidth: 720.4, minHeight: 380 });
+    expect(window.setSizeLimits).toHaveBeenLastCalledWith({
+      minWidth: 720,
+      minHeight: 380,
+      maxWidth: 0,
+      maxHeight: 0,
+    });
+    hook.unmount();
+    expect(window.setSizeLimits).toHaveBeenLastCalledWith({
+      minWidth: 0,
+      minHeight: 0,
+      maxWidth: 0,
+      maxHeight: 0,
+    });
+  });
+
+  it('asks nothing without the capability or of a platform without limits', () => {
+    expect(() =>
+      renderHook(() => useWindowSizeLimits({ minWidth: 600 }), { wrapper: wrapper(null) }),
+    ).not.toThrow();
+    const { window, adapter } = fakeWindow();
+    const unlimited: PlatformSurfaceAdapter = {
+      ...adapter,
+      window: { ...window, setSizeLimits: undefined },
+    };
+    expect(() =>
+      renderHook(() => useWindowSizeLimits({ minWidth: 600 }), { wrapper: wrapper(unlimited) }),
+    ).not.toThrow();
+    expect(window.setSizeLimits).not.toHaveBeenCalled();
+  });
+
+  it('takes no negative, infinite or missing bound as one', () => {
+    const { window, adapter } = fakeWindow();
+    renderHook(
+      () =>
+        useWindowSizeLimits({ minWidth: -5, minHeight: Number.POSITIVE_INFINITY, maxWidth: 1600 }),
+      { wrapper: wrapper(adapter) },
+    );
+    expect(window.setSizeLimits).toHaveBeenLastCalledWith({
+      minWidth: 0,
+      minHeight: 0,
+      maxWidth: 1600,
+      maxHeight: 0,
+    });
   });
 });
 

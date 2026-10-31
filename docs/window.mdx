@@ -40,6 +40,25 @@ The window's state and the actions on it, or `null` without the capability:
   leading edge, and the window's corner radius;
 - `close()`, `minimize()`, `zoom()` (maximize or restore) and `startMove()`.
 
+## `useWindowSizeLimits({ minWidth, minHeight, maxWidth, maxHeight })`
+
+Declares the sizes the window can take, for as long as the caller is mounted,
+through the capability's `setSizeLimits`: the platform never sizes the window
+outside them (a resize by its edges stops at them; zoom fills the work area
+only up to them). Absent, zero, negative or infinite bounds are none; the
+numbers are rounded to whole layout pixels and a change asks again. Unmounted,
+the window takes any size again.
+
+An application's minimum is the smallest window its layout still holds
+together at: its sidebar and the narrowest content beside it, a toolbar whose
+controls all fit. One owner per window (the application's root layout): the
+last declared wins. Without the capability, or on a platform whose windows
+take any size, it asks nothing.
+
+```tsx
+useWindowSizeLimits({ minWidth: 640, minHeight: 400 });
+```
+
 ## `useWindowControlsRoom()`
 
 `{ top, leading }`: the room the controls take, whoever draws them, and zero
@@ -105,6 +124,27 @@ A page that sets `AppShell header={null}` without panels owns the corner
 itself when nothing else is there (no sidebar in flow, no top bar): its own
 toolbar keeps `useWindowControlsRoom()` and is a `WindowDragRegion`.
 
+### Panes beside a sidebar
+
+As in a desktop file manager or mail application, a sidebar flush to the
+window's start edge holds the controls at its top and the panes beside it are
+the window's title area. An `AppShell` whose sidebar is in the window at every
+width it can take (`navFrom={0}`) and flush to its edge (`surface: 'docked'`,
+or `'plain'` with `navigationAlign="content"`, the
+[desktop window](/docs/app-shell#a-desktop-window)), with no top bar or header,
+lays its panels out as [below](#panes-as-the-title-area), with one difference:
+
+- **While the sidebar is shown** it is at the corner, so the panels' headers
+  keep no room; each one along the window's top edge is still the window's
+  toolbar row (52 on OxyOS, centred on the controls) and moves the window.
+- **Hidden by its dock**, the first panel is at the corner and keeps the room
+  from where its frame now starts (`room.leading` less the frame's start
+  inset), as without a sidebar.
+
+A sidebar that may still become a drawer (no `navFrom={0}`) or a detached
+`card` keeps the corner to itself: the panels beside it are laid out as
+without windows.
+
 ### Panes as the title area
 
 As in a desktop mail or notes application with panes and no sidebar, each
@@ -161,12 +201,14 @@ not at the corner) and its header is the chrome above, with the whole
 Gates: `AppShellWindowPanels.test.tsx` (the toolbar row centred on the
 controls' centre line, the top frame inset 0 only for panes touching the top,
 the concentric top corners; split, deck, collapsed, stacked,
-retained, a layout header, a panel without a `Screen`, nested, a `Screen` as
-the window, right to left, full screen without remounting the routes, and
+retained, a layout header, a panel without a `Screen`, nested, beside a flush
+sidebar shown and hidden by its dock (and a drawer-able or card sidebar keeping
+the corner), a `Screen` as the window, right to left, full screen without remounting the routes, and
 without the capability the same markup), `ScreenWindowChrome.web.test.tsx`
 (react-native-web's responder system and the bar's stylesheet).
 
-Gates: `Window.test.tsx` (the hooks, the controls' geometry, colour, symbols,
+Gates: `Window.test.tsx` (the hooks, the size limits declared, followed and
+cleared, the controls' geometry, colour, symbols,
 labels and actions, the drag region's press and double press),
 `WindowDragRegion.web.test.tsx` (react-native-web's real responder system: a
 pressable inside the region keeps its press), `AppShellWindow.test.tsx` and

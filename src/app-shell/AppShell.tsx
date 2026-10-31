@@ -20,7 +20,7 @@ import type { FabProps } from '../fab/types';
 import { ResponsiveNavigation } from './ResponsiveNavigation';
 import type { AppShellProps, AppShellEngineProps, AppShellSidebarProps } from './types';
 import { createAppShellEngine } from './AppShellEngine';
-import { resolveScrollMode } from './layout';
+import { flushSidebarAtEveryWidth, resolveScrollMode } from './layout';
 import { AppShellMenuButton } from './AppShellMenuButton';
 import { breakpointPx } from './constants';
 import type { PanelLayoutViewProps } from './AppShellPanelLayout';
@@ -452,17 +452,19 @@ export function createAppShell(
     const scope = panelCssScope(useId());
     const cssLayout = useShellCssLayout();
     const layout = props.panelLayout!;
-    // A window's panels with nothing of the shell's own at its corner (no
-    // sidebar, top bar or header) are the window's content: they fill it, as
-    // a desktop application's panes do, and the first one is at the corner
-    // (its header keeps the controls' room), rather than a reading envelope
-    // centred in the window with the controls over an empty band.
+    // A window's panels with nothing of the shell's own above them (no top
+    // bar or header, and no sidebar or one flush to the window at every width)
+    // are the window's content: they fill it, as a desktop application's panes
+    // do, and the first one is at the corner or beside the sidebar (its header
+    // the window's toolbar), rather than a reading envelope centred in the
+    // window with the controls over an empty band.
     const platformWindow = useWindow();
     const windowCornerTaken = useWindowCornerTaken();
     const windowPanels =
       platformWindow != null &&
       !windowCornerTaken &&
-      props.sidebar == null &&
+      (props.sidebar == null ||
+        flushSidebarAtEveryWidth(props.sidebar, props.navFrom, props.navigationAlign)) &&
       props.topBar == null &&
       props.header == null &&
       props.title == null &&

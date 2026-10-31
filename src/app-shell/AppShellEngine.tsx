@@ -22,6 +22,7 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { SidebarSlot } from './SidebarSlot';
 import { animateMotion } from '../motion/recipes';
+import { animateWithSpec } from '../motion/spec';
 import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import {
@@ -59,7 +60,14 @@ import { SIDEBAR_RAIL_WIDTH } from '../sidebar/SidebarRail';
 import { ScreenNavigationContext, type ScreenNavigationState } from '../screen/context';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
 import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-shell-region';
-import { flexFill, resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
+import {
+  flexFill,
+  flushSidebarAtEveryWidth,
+  resolveScrollMode,
+  rootFrame,
+  stickyRail,
+  type ScrollMode,
+} from './layout';
 import type { AppShellEdge, AppShellEngineProps } from './types';
 import { useShellWidth } from './use-shell-width';
 import { useRoomChanged } from './use-room-changed';
@@ -233,20 +241,22 @@ export function createAppShellEngine() {
     // A shell inside another region that holds the window's corner (a nested
     // shell, a pane) is not at the corner: it is laid out as without windows.
     const appWindow = useWindowCornerTaken() ? null : platformWindow;
-    // A window's panels with nothing of the shell's own at its corner (no
-    // navigation, top bar or header, and a region that starts at the corner):
-    // they are the window's title area, as a desktop application's panes are.
-    // They start AT the window's top edge (no top frame inset; the start, end
-    // and bottom insets stay), so each pane's toolbar row is the window's
-    // toolbar, centred on the controls. Decided from the props alone, so the
-    // web's CSS frame and the native one agree.
+    // A window's panels with nothing of the shell's own above them (no top bar
+    // or header, and a region that starts at the corner or beside a sidebar
+    // flush to the window): they are the window's title area, as a desktop
+    // application's panes are. They start AT the window's top edge (no top
+    // frame inset; the start, end and bottom insets stay), so each pane's
+    // toolbar row is the window's toolbar, centred on the controls. Decided
+    // from the props alone, so the web's CSS frame and the native one agree.
     const windowPanels =
       appWindow != null &&
       !appWindow.fullscreen &&
       windowControls === 'auto' &&
       panels &&
       variant !== 'canvas' &&
-      (variant === 'focus' || sidebar == null) &&
+      (variant === 'focus' ||
+        sidebar == null ||
+        flushSidebarAtEveryWidth(sidebar, navFrom, navigationAlign)) &&
       topBar == null &&
       (header !== undefined
         ? header == null
@@ -765,15 +775,21 @@ export function createAppShellEngine() {
           breadcrumb != null ||
           actions != null ||
           (drawerAvailable && !showTopBar);
+    // Beside a flush sidebar the panels are along the window's top edge too:
+    // the sidebar holds the controls (no room in the panels' headers) until
+    // its dock hides it, when the first panel is at the corner and keeps the
+    // room from where its frame now starts, as the header would.
     const contentChromeLeading =
       windowPanels &&
       room != null &&
       panelHost &&
       !showTopBar &&
-      !navInFlow &&
+      !(navInFlow && !navFlush) &&
       !shellHeaderShown &&
       (stretchReading || !centred)
-        ? Math.max(0, room.leading - rowPadStart)
+        ? navInFlow && !navDock.hidden
+          ? 0
+          : Math.max(0, room.leading - rowPadStart - (navInFlow ? navHiddenExtent : 0))
         : null;
     const contentChrome = useMemo<WindowChrome | null>(
       () => (contentChromeLeading == null ? null : { leading: contentChromeLeading }),
@@ -855,8 +871,10 @@ export function createAppShellEngine() {
           ? regionOuter
           : 0
         : Math.max(0, navigationGap ?? columnGap);
+    // The frame's own start and end edges (`frameInset`, else the gutter): a
+    // flush navigation owns the start edge.
     const rowHorizontalPadding = panelHost
-      ? regionOuter * (navFlush ? 1 : 2)
+      ? (navFlush ? 0 : outerStart) + outerEnd
       : canvas
         ? 0
         : gutter * (dockedNav ? 1 : 2);
@@ -865,15 +883,40 @@ export function createAppShellEngine() {
       width - navigationWidth - rowNavigationGap - rowHorizontalPadding,
     );
     const numericReading = Platform.OS !== 'web' && panelHost && centred && !compactRegion;
+    // A docked navigation's slot closes from its width (and the row gap it
+    // carries) to what it leaves of the frame: hidden, a filling envelope takes
+    // that room too. It moves on the dock's own motion, from the same moment as
+    // the slot's, so the content's edge and the navigation's far side stay
+    // together, as the web's flex keeps them.
+    const navDockRoom =
+      navDocked && stretchReading && navDock.hidden
+        ? Math.max(0, navigationWidth + rowNavigationGap - navHiddenExtent)
+        : 0;
     const asideReadingWidth = asideShown ? asideWidth + readingGap : 0;
-    const targetReadingWidth = stretchReading ? availableReadingWidth : contentWidth;
+    const targetReadingWidth = stretchReading ? availableReadingWidth + navDockRoom : contentWidth;
     const readingWidth = useSharedValue(targetReadingWidth);
     // The shell resized (its window or container): the envelope lands at once, as
     // the panels do (`useRoomChanged`); the navigation or a reading width changing
     // still moves it. `resized` is read, not followed.
     const resized = useRoomChanged(String(width));
-    // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` qualifies the change
+    const docking = useRoomChanged(String(navDock.hidden));
+    const dockSpec =
+      docking && navDock.resolved
+        ? navDock.hidden
+          ? navDock.resolved.motion.hide
+          : navDock.resolved.motion.show
+        : null;
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` and the dock's motion qualify the change
     useEffect(() => {
+      if (dockSpec && !resized) {
+        animateWithSpec(
+          readingWidth,
+          targetReadingWidth,
+          dockSpec,
+          reducedMotion || navDock.instant,
+        );
+        return;
+      }
       animateMotion(readingWidth, targetReadingWidth, 'expand', reducedMotion || resized);
     }, [readingWidth, targetReadingWidth, reducedMotion]);
     const readingEnvelopeStyle = useAnimatedStyle(

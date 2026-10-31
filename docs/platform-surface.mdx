@@ -96,6 +96,7 @@ interface PlatformWindow {
   minimize(): void;
   zoom(): void;       // maximize or restore
   startMove(): void;  // from the press being handled
+  setSizeLimits?(limits: { minWidth: number; minHeight: number; maxWidth: number; maxHeight: number }): void; // 0 = no bound
 }
 ```
 
@@ -105,6 +106,8 @@ reads it through `@oxy.so/bloom/window` ([Window](/docs/window)): `AppShell`
 and `SettingsLayout` keep the controls' room and draw them where `controls` is
 `bloom`. `usePlatformWindow()` returns the window only when the capability is
 reported, and an adapter that reports it without a window throws.
+`setSizeLimits` is optional: a platform whose windows take any size leaves it
+out, and `useWindowSizeLimits` then asks nothing.
 
 ## `menu-bar`
 

@@ -2,6 +2,22 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.73.0
+
+### Added
+
+- **A desktop window's panes beside its sidebar are the window's title area.** An `AppShell` whose sidebar is in the window at every width (`navFrom={0}`) and flush to its edge (`surface: 'docked'`, or `'plain'` with `navigationAlign="content"`: the desktop window recipe), with no top bar or header, lays its panels out as panes with nothing at the corner already did: they start at the window's top edge, every pane header along it is the window's toolbar row (52 on OxyOS, centred on the controls) and moves the window. The sidebar keeps the controls' room while it is shown; hidden by its dock, the first pane's header keeps it, from where its frame now starts. A file manager or mail client's `Screen` + `PageHeader` routes need no `WindowDragRegion` or room arithmetic of their own. A sidebar that may still become a drawer, or a detached `card`, keeps the corner to itself, as before. Pinned in `AppShellWindowPanels.test.tsx` (shown, docked, hidden by its dock, drawer-able, card, full screen).
+- **`useWindowSizeLimits({ minWidth, minHeight, maxWidth, maxHeight })`** (`@oxy.so/bloom/window`) declares the sizes the application's window can take, through the `window` capability's new optional `setSizeLimits`: the platform never sizes the window outside them (a resize by its edges stops at them; zoom fills the work area only up to them). Zero, negative or infinite bounds are none; unmounting clears them. A platform without limits, or without windows, is asked nothing. Pinned in `Window.test.tsx`.
+
+### Fixed
+
+- **Native: hiding a docked sidebar gives its room to filling panes.** The reading envelope beside a docked navigation kept the shown navigation's width when the dock hid it, so a full-width pane stayed at its old width and was centred in the room left, the hidden sidebar's edge showing beside it. The envelope now takes the room the hidden navigation leaves, on the dock's own motion from the same moment as the slot's, so the pane's edge and the navigation's far side move together (the web's flex already did).
+- **Native: a filling envelope reads the frame's own start and end insets** (`frameInset`), not the gutter, so a desktop window's pane is exactly as wide as the room between its sidebar and the window's edge rather than a few points narrower and centred in it.
+
+### Consumers
+
+Bump to 15.73.0. A desktop window built on the recipe (`navFrom={0}`, a flush sidebar, `header={null}`) can drop its hand-made toolbar drag regions and room padding: each panel route's `Screen` header is the window's toolbar. Declare the window's minimum with `useWindowSizeLimits` where the layout stops holding together. Platform adapters may implement `window.setSizeLimits` (OxyOS: the compositor's `SetSizeLimits`).
+
 ## 15.72.0
 
 ### Added
