@@ -45,6 +45,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   container.remove();
+  document.documentElement.dir = '';
 });
 
 function mount(ui: React.ReactElement) {
@@ -155,6 +156,22 @@ describe('Tabs (web) — keyboard', () => {
     expect(focusedName()).toBe('Overview');
   });
 
+  it('moves horizontally in reading order after the language changes to RTL', () => {
+    const onChange = jest.fn();
+    mount(<ControlledTabs onChange={onChange} />);
+    act(() => named('tab', 'Overview').focus());
+    document.documentElement.dir = 'rtl';
+    press('ArrowLeft');
+    expect(focusedName()).toBe('Activity');
+    expect(onChange).toHaveBeenLastCalledWith('activity');
+    press('ArrowRight');
+    expect(focusedName()).toBe('Overview');
+    press('ArrowRight');
+    expect(focusedName()).toBe('Settings');
+    press('Home');
+    expect(focusedName()).toBe('Overview');
+  });
+
   it('ArrowUp/ArrowDown are not the strip’s — a horizontal tablist leaves them alone', () => {
     const onChange = jest.fn();
     mount(<ControlledTabs onChange={onChange} />);
@@ -220,6 +237,27 @@ function Segmented({
 }
 
 describe('SegmentedControl (web) — keyboard', () => {
+  it.each([
+    ['radio', 'radio'],
+    ['tabs', 'tab'],
+  ] as const)('type="%s" follows RTL for horizontal arrows', (type, role) => {
+    document.documentElement.dir = 'rtl';
+    const onChange = jest.fn();
+    mount(<Segmented type={type} onChange={onChange} />);
+    act(() => named(role, 'day').focus());
+    press('ArrowLeft');
+    expect(focusedName()).toBe('week');
+    expect(onChange).toHaveBeenLastCalledWith('week');
+    press('ArrowRight');
+    expect(focusedName()).toBe('day');
+    press('ArrowRight');
+    expect(focusedName()).toBe('year');
+    if (type === 'radio') {
+      press('ArrowDown');
+      expect(focusedName()).toBe('day');
+    }
+  });
+
   it.each([
     ['radio', 'radio'],
     ['tabs', 'tab'],

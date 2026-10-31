@@ -66,6 +66,8 @@ Disabled segments are skipped, and a disabled group offers no tab stop at all. S
 
 The segments follow the document's direction. When an app switches language at runtime and the direction flips, every segment moves but none changes size. Web's `onLayout` reports only size changes, so each segment measures itself again on the flip, and the thumb follows the selected segment.
 
+Horizontal arrows follow `<html dir>` as well: in RTL, Left advances and Right goes back. Nested `dir`, `dir="auto"`, and CSS-only direction overrides are not separate keyboard contexts. Vertical radio arrows keep their usual order.
+
 ## `label` names the group, and something has to
 
 "Light / Dark / System" without a group name announces as three unrelated radios;
