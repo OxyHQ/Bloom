@@ -2,13 +2,15 @@
 /**
  * Live-edit Bloom inside a consumer app, without publishing.
  *
- *   node scripts/mirror-into-consumer.mjs <consumer-root> [--into=<dir>] [--watch]
+ *   node scripts/mirror-into-consumer.mjs <consumer-root> [--into=<dir>] [--source=<checkout>] [--built | --watch]
  *   node scripts/mirror-into-consumer.mjs <consumer-root> --restore
  *
- * Mirrors this checkout's SOURCE into `<consumer-root>/bloom-local/` and points every
+ * By default mirrors the checkout's SOURCE into `<consumer-root>/bloom-local/` and points every
  * `node_modules/@oxy.so/bloom` under the consumer at it, so Metro serves what you edit here.
  * With `--watch` an edit under `src/` reaches the consumer in a moment; `--restore` puts the
  * published copies back.
+ * `--source` chooses another checkout; `--built` packs it without scripts into
+ * `bloom-local/node_modules/@oxy.so/bloom` instead, preserving package compiler scope.
  *
  * The mirror must sit inside what the consumer's Metro watches (its `projectRoot` or a
  * `watchFolders` entry), or Metro serves each file once and never sees an edit: pass `--into`.
@@ -22,7 +24,7 @@
  * the consumer, Bloom's bare imports resolve from the consumer's tree, exactly as an installed
  * copy's do.
  *
- * While mirrored the consumer's `tsc` reads Bloom's SOURCE (the map has no `types` entries) and
+ * With a source mirror the consumer's `tsc` reads Bloom's SOURCE (the map has no `types` entries) and
  * reports errors in it that the published `.d.ts` never do; run `--restore` before a typecheck
  * you mean to trust.
  *
@@ -36,6 +38,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  readlinkSync,
   renameSync,
   rmSync,
   statSync,
@@ -43,13 +46,20 @@ import {
   unlinkSync,
   writeFileSync,
   lstatSync,
+  mkdtempSync,
 } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const BLOOM = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [, , consumerArg, ...flags] = process.argv;
+const source = flags.find((flag) => flag.startsWith('--source='))?.slice('--source='.length);
+const BLOOM = source ? resolve(source) : resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const into = flags.find((flag) => flag.startsWith('--into='))?.slice('--into='.length);
+const built = flags.includes('--built');
+if (built && flags.includes('--watch')) throw new Error('--built cannot be combined with --watch');
 if (!consumerArg) {
   console.error('usage: mirror-into-consumer.mjs <consumer-root> [--watch | --restore]');
   process.exit(1);
@@ -57,7 +67,9 @@ if (!consumerArg) {
 const CONSUMER = resolve(consumerArg);
 // Where Metro WATCHES: a folder outside its `projectRoot` and `watchFolders` is read once and then
 // never seen to change. `--into=packages/app` for a monorepo whose watch folders are its packages.
-const MIRROR = join(into ? resolve(CONSUMER, into) : CONSUMER, 'bloom-local');
+const MIRROR_HOME = join(into ? resolve(CONSUMER, into) : CONSUMER, 'bloom-local');
+const BUILT_MIRROR = join(MIRROR_HOME, 'node_modules', '@oxy.so', 'bloom');
+const MIRROR = built ? BUILT_MIRROR : MIRROR_HOME;
 const KEPT = '.bloom-published';
 
 /** Every `node_modules/@oxy.so/bloom` under the consumer (root and each workspace package). */
@@ -91,17 +103,28 @@ const isLink = (p) => {
     return false;
   }
 };
+const existsOrLink = (p) => existsSync(p) || isLink(p);
+const linkTarget = (p) => (isLink(p) ? resolve(dirname(p), readlinkSync(p)) : null);
+const isMirrorLink = (p) => {
+  const target = linkTarget(p);
+  return target === MIRROR_HOME || target === BUILT_MIRROR;
+};
 
 if (flags.includes('--restore')) {
-  for (const install of bloomInstalls(CONSUMER)) {
+  const installs = bloomInstalls(CONSUMER);
+  for (const install of installs) {
+    if (isMirrorLink(install) && !existsOrLink(join(dirname(install), KEPT)))
+      throw new Error(`mirror link has no saved install: ${install}`);
+  }
+  for (const install of installs) {
     const kept = join(dirname(install), KEPT);
-    if (isLink(install) && existsSync(kept)) {
+    if (isMirrorLink(install) && existsOrLink(kept)) {
       unlinkSync(install);
       renameSync(kept, install);
       console.log(`restored ${relative(CONSUMER, install)}`);
     }
   }
-  rmSync(MIRROR, { recursive: true, force: true });
+  rmSync(MIRROR_HOME, { recursive: true, force: true });
   process.exit(0);
 }
 
@@ -186,19 +209,61 @@ function mirrorAll() {
   writeFileSync(join(MIRROR, 'package.json'), `${JSON.stringify(mirroredPackage(), null, 2)}\n`);
 }
 
-function linkInstalls() {
-  for (const install of bloomInstalls(CONSUMER)) {
-    if (isLink(install)) continue;
+function checkedInstalls() {
+  const installs = bloomInstalls(CONSUMER);
+  // Never delete or replace a saved installation: it may be another session's
+  // only copy. Check every location before changing any of them.
+  for (const install of installs) {
     const kept = join(dirname(install), KEPT);
-    rmSync(kept, { recursive: true, force: true });
+    if (isMirrorLink(install)) {
+      if (!existsOrLink(kept)) throw new Error(`mirror link has no saved install: ${install}`);
+      if (linkTarget(install) !== MIRROR)
+        throw new Error(`restore the existing mirror before switching modes: ${install}`);
+    } else if (existsOrLink(kept)) {
+      throw new Error(`saved install already exists: ${kept}`);
+    }
+  }
+  return installs;
+}
+function linkInstalls(installs) {
+  for (const install of installs) {
+    if (isMirrorLink(install)) continue;
+    const kept = join(dirname(install), KEPT);
     renameSync(install, kept);
     symlinkSync(relative(dirname(install), MIRROR), install);
     console.log(`linked ${relative(CONSUMER, install)} -> bloom-local`);
   }
 }
 
-mirrorAll();
-linkInstalls();
+const installs = checkedInstalls();
+if (built) {
+  const temporary = mkdtempSync(join(tmpdir(), 'bloom-mirror-pack-'));
+  try {
+    const result = JSON.parse(
+      execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', temporary], {
+        cwd: BLOOM,
+        encoding: 'utf8',
+      }),
+    );
+    const tarball = join(temporary, result[0].filename);
+    const hash = createHash('sha256').update(readFileSync(tarball)).digest('hex');
+    const marker = join(MIRROR_HOME, '.built-sha256');
+    const active = installs.some(isMirrorLink);
+    if (active && (!existsSync(marker) || readFileSync(marker, 'utf8') !== hash))
+      throw new Error('built snapshot changed; restore the existing mirror before replacing it');
+    if (!active) {
+      if (existsSync(MIRROR)) throw new Error(`built mirror already exists: ${MIRROR}`);
+      mkdirSync(MIRROR, { recursive: true });
+      execFileSync('tar', ['-xzf', tarball, '-C', MIRROR, '--strip-components=1']);
+      writeFileSync(marker, hash);
+    }
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+} else {
+  mirrorAll();
+}
+linkInstalls(installs);
 console.log(`mirrored ${relative(process.cwd(), BLOOM) || '.'} into ${MIRROR}`);
 
 if (flags.includes('--watch')) {

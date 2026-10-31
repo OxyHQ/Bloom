@@ -56,15 +56,18 @@ actual backend counters, so neither that copy hazard nor a silent fallback can
 produce a passing fidelity gate. These checks do not waive the separate scaled
 WebGPU differences observed in WebView 148.
 
-## Verifying a LOCAL Bloom build in a consumer (four silent wrong passes)
+## Verifying a LOCAL Bloom build in a consumer (five silent wrong passes)
 
 These silently verify the PUBLISHED package instead:
 
 - **`bun add file:<tgz|dir>` silently no-ops** when the installed version matches. Bump the local version, or symlink.
 - **Metro `resolver.extraNodeModules` is a FALLBACK:** a real `node_modules/@oxy.so/bloom` wins. **`expo export`/`expo start` disagree:** the dev server indexes only `projectRoot` + `watchFolders`; put the local copy inside the consumer repo, gitignored.
 - **Metro port is baked at BUILD time** (`-PreactNativeDevServerPort`, not `RCT_METRO_PORT`); emulators resolve it via host loopback, which `adb reverse` misses. Confirm it in `gradleResValues.xml`.
+- **Bun installs can be symlinks in several workspaces.** Skipping existing links left Accounts on published Bloom while another workspace could resolve the local copy. Verify the resolved version and local-only marker from each workspace that imports Bloom, not only the repository root.
 
 **Live-edit: `node scripts/mirror-into-consumer.mjs <consumer-root> --watch`** mirrors `src/` into `bloom-local` (`--into=<dir>`: inside what Metro WATCHES, else edits are never seen) and links `node_modules/@oxy.so/bloom` to it; restart Metro for NEW files, `--restore` before trusting a typecheck.
+
+For a built snapshot, use `--source=<checkout> --built`: the helper packs that checkout without scripts and installs the snapshot under `bloom-local/node_modules`, preserving the package's compiler scope. It saves each original install, including literal Bun symlink targets, and refuses to replace an existing backup. Repeat `--into` on `--restore`; restore before changing a built snapshot. A local snapshot is not a published-package verification.
 
 **Assert what you test first:** resolved version plus a marker only the local build produces. **Never write over `node_modules/<pkg>`:** bun hardlinks its global cache, mutating it for every worktree/session.
 
