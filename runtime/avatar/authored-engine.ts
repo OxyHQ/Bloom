@@ -226,6 +226,7 @@ export class AuthoredAvatarEngine {
   private disposed = false;
   private count = 1;
   private frames = 0;
+  private fitPasses = 0;
   private elapsed = 0;
   private timedFrames = 0;
   private ready = false;
@@ -1733,6 +1734,14 @@ export class AuthoredAvatarEngine {
     this.renderer.setRenderTarget(this.colorTarget);
     this.renderer.render(this.scene, this.camera);
     this.updateCrops();
+    if (measureFit) {
+      // Reference geometry is rendered only to measure its alpha bounds. It
+      // must never be delivered as the requested live or held pose, including
+      // when every clock is paused and would otherwise schedule no next frame.
+      this.fitPasses++;
+      this.invalidate();
+      return;
+    }
     const ratio = this.renderer.getPixelRatio();
     this.renderer.setScissor(
       this.renderBounds.x / ratio,
@@ -1850,14 +1859,20 @@ export class AuthoredAvatarEngine {
             minY = Math.min(minY, y);
             maxY = Math.max(maxY, y);
           }
-        if (maxX < minX) return;
-        const extent = Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
-        crop = [
-          (minX + maxX - extent) / (2 * size),
-          (minY + maxY - extent) / (2 * size),
-          extent / size,
-          extent / size,
-        ];
+        if (maxX < minX) {
+          // An intentionally empty preview (for example, no eyes) has no
+          // measurable silhouette. Its authored crop is valid and prevents
+          // an endless reference-fit loop for an otherwise ready blank image.
+          crop = this.asset(state.preset)!.source.material.crop.slice();
+        } else {
+          const extent = Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
+          crop = [
+            (minX + maxX - extent) / (2 * size),
+            (minY + maxY - extent) / (2 * size),
+            extent / size,
+            extent / size,
+          ];
+        }
         this.cropCache.set(key, crop);
       }
       const values = this.fits.image.data as Float32Array;
@@ -1899,6 +1914,7 @@ export class AuthoredAvatarEngine {
       count: this.count,
       renderedInstances: this.states.filter((state) => state.rendering !== false).length,
       frames: this.frames,
+      fitPasses: this.fitPasses,
       suspended: this.hidden() || !this.inViewport || this.contextLost,
       frameRateLimit: this.maxFrameRate === Infinity ? null : this.maxFrameRate,
       observedFrameRate: this.elapsed ? this.timedFrames / this.elapsed : 0,
