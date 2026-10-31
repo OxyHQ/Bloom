@@ -33,7 +33,15 @@ jest.mock('../runtime', () => ({
       host: EngineHost;
       setCount = jest.fn();
       setSize = jest.fn(async () => {});
-      setPreset = jest.fn(async () => {});
+      presets = new Map<number, string>();
+      cachedPresets = new Set<string>();
+      setPreset = jest.fn(async (index: number, preset: string, isCurrent = () => true) => {
+        this.cachedPresets.add(preset);
+        if (isCurrent()) this.presets.set(index, preset);
+      });
+      getInstancePreset = jest.fn((index: number) => this.presets.get(index));
+      hasPreset = jest.fn((preset: string) => this.cachedPresets.has(preset));
+      cancelPresetChange = jest.fn();
       beginPointer = jest.fn(() => 0);
       point = jest.fn();
       endPointer = jest.fn();
@@ -50,7 +58,9 @@ jest.mock('../runtime', () => ({
       work = jest.fn();
       entrance = jest.fn();
       react = jest.fn();
-      constructor(_: null, options: { host: EngineHost }) {
+      constructor(_: null, options: { host: EngineHost; preset: string }) {
+        this.presets.set(0, options.preset);
+        this.cachedPresets.add(options.preset);
         this.host = options.host;
         mockEngines.push(this);
       }
