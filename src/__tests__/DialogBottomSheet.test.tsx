@@ -62,6 +62,53 @@ function Harness({
 }
 
 describe('Dialog bottom placement delegates to BottomSheet', () => {
+  it('transitions between two sheets using the close callback', async () => {
+    let first: ReturnType<typeof useDialogControl> | undefined;
+    let second: ReturnType<typeof useDialogControl> | undefined;
+    const onClosed = jest.fn();
+    const onNext = jest.fn();
+    const { getByText, queryByText } = renderWithTheme(
+      <Harness>
+        {(firstControl) => {
+          first = firstControl;
+          return (
+            <Harness>
+              {(secondControl) => {
+                second = secondControl;
+                return (
+                  <>
+                    <Dialog control={firstControl} placement="bottom" onClose={onClosed}>
+                      <Text>First sheet</Text>
+                    </Dialog>
+                    <Dialog control={secondControl} placement="bottom">
+                      <Text>Second sheet</Text>
+                    </Dialog>
+                  </>
+                );
+              }}
+            </Harness>
+          );
+        }}
+      </Harness>,
+    );
+    await act(async () => {});
+
+    act(() => first?.open());
+    expect(getByText('First sheet')).toBeTruthy();
+    expect(queryByText('Second sheet')).toBeNull();
+    act(() => {
+      first?.close(() => {
+        onNext();
+        second?.open();
+      });
+    });
+    expect(onClosed).toHaveBeenCalledTimes(1);
+    expect(onNext).toHaveBeenCalledTimes(1);
+    expect(getByText('Second sheet')).toBeTruthy();
+    expect(queryByText('First sheet')).toBeNull();
+    await act(async () => {});
+  });
+
   it.each(['light', 'dark'] as const)(
     'paints the default bottom dialog body in %s mode',
     (mode) => {

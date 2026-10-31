@@ -30,6 +30,7 @@ import { Pressable, Text, TextInput } from 'react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Dialog } from '../dialog/Dialog.web';
+import { useDialogControl } from '../dialog/context';
 import { createSurfaceHost } from '../surfaces/SurfaceHost';
 import { present, getSnapshot, resetSurfaces } from '../surfaces/surface-store';
 import { BottomSheet } from '../bottom-sheet/BottomSheet.web';
@@ -139,6 +140,37 @@ const Row = ({ id }: { id: string }) => (
 );
 
 describe('Dialog.web keyboard and focus', () => {
+  it('moves focus to the next dialog opened from the close callback', () => {
+    function Handoff() {
+      const first = useDialogControl();
+      const second = useDialogControl();
+      React.useEffect(() => first.open(), [first]);
+      return (
+        <>
+          <Dialog control={first} placement="center" label="First dialog">
+            <Pressable
+              testID="next-dialog"
+              accessibilityRole="button"
+              onPress={() => first.close(() => second.open())}
+            >
+              <Text>Next</Text>
+            </Pressable>
+          </Dialog>
+          <Dialog control={second} placement="center" label="Second dialog">
+            <TextInput testID="second-input" accessibilityLabel="Second input" />
+          </Dialog>
+        </>
+      );
+    }
+
+    mount(<Handoff />);
+    expect(dialogNamed('First dialog').contains(document.activeElement)).toBe(true);
+    act(() => byTestId('next-dialog').click());
+    act(() => jest.runOnlyPendingTimers());
+    act(() => jest.runOnlyPendingTimers());
+    expect(dialogNamed('Second dialog').contains(document.activeElement)).toBe(true);
+  });
+
   it('moves focus into the dialog on open', () => {
     mount(
       <Controlled>
