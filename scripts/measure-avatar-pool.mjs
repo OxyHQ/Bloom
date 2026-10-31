@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { installAvatarPNGSnapshots } from './fixtures/avatar/png-snapshot.mjs';
 const require = createRequire(import.meta.url);
 const puppeteer = require(process.env.BLOOM_PUPPETEER_MODULE || 'puppeteer-core');
 const origin = process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6006';
@@ -23,6 +24,7 @@ const browser = process.env.AVATAR_BROWSER_URL
       protocolTimeout: 180000,
       args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
     });
+const ownedPages = [];
 const report = {
   conditions: {
     origin,
@@ -47,6 +49,7 @@ try {
   report.gpu = (await (await browser.target().createCDPSession()).send('SystemInfo.getInfo')).gpu;
   for (const count of counts) {
     const page = await browser.newPage();
+    ownedPages.push(page);
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (message) => {
@@ -213,6 +216,7 @@ try {
     );
     await page.goto(`${origin}/avatar-pool-measure.html`);
     await cdp.send('Fetch.disable');
+    await page.evaluate(installAvatarPNGSnapshots);
     const start = performance.now();
     await page.evaluate(
       async ({ count, presetMode, hideStrands, diagnostic, gpuProfile, size }) => {
@@ -547,17 +551,9 @@ try {
       );
       await writeFile(`${output}/report.json`, `${JSON.stringify(report, null, 2)}\n`);
     }
-    assert(
-      await page.evaluate(() =>
-        canvases.every((canvas) =>
-          canvas
-            .getContext('2d')
-            .getImageData(0, 0, canvas.width, canvas.height)
-            .data.some((value, i) => i % 4 === 3 && value > 20),
-        ),
-      ),
-      'Every avatar is actually painted',
-    );
+    const pictures = await page.evaluate(() => avatarPNGSnapshots(canvases));
+    assert.equal(pictures.length, count, 'Every avatar has a nonblank decoded PNG');
+    report.cases.at(-1).paintedPNGs = pictures;
     await page.evaluate(() => {
       controllers.forEach((c) => {
         c.dispose();
@@ -583,6 +579,7 @@ try {
   throw error;
 } finally {
   await writeFile(`${output}/report.json`, `${JSON.stringify(report, null, 2)}\n`);
+  for (const page of ownedPages) if (!page.isClosed()) await page.close();
   if (process.env.AVATAR_KEEP_BROWSER === '1') browser.disconnect();
   else await browser.close();
 }
