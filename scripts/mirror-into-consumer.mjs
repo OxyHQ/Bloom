@@ -113,8 +113,11 @@ const isMirrorLink = (p) => {
 if (flags.includes('--restore')) {
   const installs = bloomInstalls(CONSUMER);
   for (const install of installs) {
-    if (isMirrorLink(install) && !existsOrLink(join(dirname(install), KEPT)))
+    const kept = join(dirname(install), KEPT);
+    if (isMirrorLink(install) && !existsOrLink(kept))
       throw new Error(`mirror link has no saved install: ${install}`);
+    if (!isMirrorLink(install) && existsOrLink(kept))
+      throw new Error(`install changed while mirrored; restore manually: ${install}`);
   }
   for (const install of installs) {
     const kept = join(dirname(install), KEPT);
@@ -243,6 +246,7 @@ if (built) {
       execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', temporary], {
         cwd: BLOOM,
         encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
       }),
     );
     const tarball = join(temporary, result[0].filename);

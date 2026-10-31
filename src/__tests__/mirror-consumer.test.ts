@@ -82,11 +82,16 @@ it('refuses an existing backup instead of destroying it or changing the install'
 
 it('does not replace a different symlink during restore', () => {
   run(`--source=${source}`);
+  const replacement = join(root, 'replacement');
+  mkdirSync(replacement);
   rmSync(install);
-  symlinkSync(originalLink, install);
-  run('--restore');
-  expect(readlinkSync(install)).toBe(originalLink);
-  expect(lstatSync(join(dirname(install), '.bloom-published')).isSymbolicLink()).toBe(true);
+  symlinkSync(replacement, install);
+  const result = spawnSync(process.execPath, [script, consumer, '--restore'], { encoding: 'utf8' });
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toContain('install changed while mirrored');
+  expect(readlinkSync(install)).toBe(replacement);
+  expect(readlinkSync(join(dirname(install), '.bloom-published'))).toBe(originalLink);
+  expect(readFileSync(join(consumer, 'bloom-local/src/index.ts'), 'utf8')).toContain('localMarker');
 });
 
 it('replaces every Bun workspace link with the same packed snapshot and restores literal targets', () => {
