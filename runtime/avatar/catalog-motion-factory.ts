@@ -21,7 +21,7 @@ type Rig = {
   parts: PartIdentity[];
   idle: AuthoredMotionClip;
   reaction: AuthoredMotionClip;
-  work: AuthoredMotionClip;
+  work?: AuthoredMotionClip;
   returnNativeTime: number;
   sourceGround: number;
   sourceHeight: number;
@@ -36,16 +36,23 @@ type Library = {
   rigs: Rig[];
   materialCalibrated?: boolean;
 };
-const urls = import.meta.glob('./assets/catalog-motion/*.bin', {
+const baseUrls = import.meta.glob('./assets/catalog-motion/*.bin', {
   eager: true,
-  query: '?url',
+  query: '?url&avatar-motion=base',
+  import: 'default',
+}) as Record<string, string>;
+const workUrls = import.meta.glob('./assets/catalog-motion/*.bin', {
+  eager: true,
+  query: '?url&avatar-motion=work',
   import: 'default',
 }) as Record<string, string>;
 const pending = new Map<string, Promise<Library>>();
-async function library(preset: string) {
-  let result = pending.get(preset);
+async function readLibrary(preset: string, activities: boolean) {
+  const key = `${preset}:${activities ? 'work' : 'base'}`;
+  let result = pending.get(key);
   if (!result) {
     result = (async () => {
+      const urls = activities ? workUrls : baseUrls;
       const url = urls[`./assets/catalog-motion/${preset}.bin`];
       if (!url) throw Error(`Missing semantic catalog motion ${preset}`);
       const response = await fetch(url);
@@ -60,18 +67,34 @@ async function library(preset: string) {
         throw Error('Unvalidated catalog motion library');
       return value;
     })().catch((error) => {
-      pending.delete(preset);
+      pending.delete(key);
       throw error;
     });
-    pending.set(preset, result);
+    pending.set(key, result);
   }
   return result;
 }
+async function library(preset: string, activities: boolean) {
+  const base = await readLibrary(preset, false);
+  if (!activities) return base;
+  const work = await readLibrary(preset, true);
+  if (work.rigs.length !== base.rigs.length || work.workNativeStart !== base.workNativeStart)
+    throw Error('Catalog work does not match the base rig');
+  return {
+    ...base,
+    rigs: base.rigs.map((rig, index) => {
+      const clip = work.rigs[index]?.work;
+      if (!clip) throw Error('Missing catalog work rig');
+      return { ...rig, work: clip };
+    }),
+  };
+}
+
 function partId(fur: boolean, id: number) {
   return `${fur ? 'fur' : 'mesh'}:${id}`;
 }
-async function recipeLibrary(composed: ComposedCatalog, detail: 'low' | 'high') {
-  const data = await library(composed.body.signaturePreset);
+async function recipeLibrary(composed: ComposedCatalog, detail: 'low' | 'high', activities = true) {
+  const data = await library(composed.body.signaturePreset, activities);
   const asymmetric = composed.bindings.some(
     ({ part, sourcePart }) =>
       part.category === 'eyes' &&
@@ -79,7 +102,10 @@ async function recipeLibrary(composed: ComposedCatalog, detail: 'low' | 'high') 
       (composed.body.body.attachment === 'metal' || composed.body.body.label === 'metal'),
   );
   if (!asymmetric) return data;
-  const special = await library(detail === 'high' ? 'clippo-special' : 'clippo-special-low');
+  const special = await library(
+    detail === 'high' ? 'clippo-special' : 'clippo-special-low',
+    activities,
+  );
   if (composed.body.signaturePreset !== 'lime_frog')
     throw Error('Unobserved asymmetric Clippo signature');
   return { ...data, rigs: [...data.rigs, ...special.rigs] };
@@ -191,8 +217,10 @@ async function prepare(composed: ComposedCatalog, data: Library) {
     }
   const merge = (kind: 'idle' | 'reaction' | 'work') => {
     const first = data.rigs[0]![kind];
+    if (!first) throw Error(`Missing catalog ${kind} observation`);
     const parts = selected.map(({ rig, id, merged }) => {
       const clip = data.rigs[rig]![kind];
+      if (!clip) throw Error(`Missing catalog ${kind} rig`);
       if (
         clip.duration !== first.duration ||
         clip.times.length !== first.times.length ||
@@ -205,7 +233,7 @@ async function prepare(composed: ComposedCatalog, data: Library) {
     });
     for (const rig of new Set(selected.map((p) => p.rig))) {
       if (rig === 0) continue;
-      const parent = data.rigs[rig]![kind].parts.find((p) => p.id === 'mesh:0');
+      const parent = data.rigs[rig]![kind]?.parts.find((p) => p.id === 'mesh:0');
       if (!parent) throw Error('Missing catalog rig parent');
       parts.push({ ...parent, id: `mesh:parent${rig}` });
     }
@@ -230,12 +258,12 @@ async function prepare(composed: ComposedCatalog, data: Library) {
 export async function createCatalogMotion(
   composed: ComposedCatalog,
   detail: 'low' | 'high',
-  baseWork: AuthoredMotionSampler,
+  baseWork?: AuthoredMotionSampler,
 ): Promise<{
   samplers: MotionSamplers;
   eyeProfiles: Record<number, EyeGazeProfile>;
 }> {
-  const data = await recipeLibrary(composed, detail);
+  const data = await recipeLibrary(composed, detail, !!baseWork);
   const setup = await prepare(composed, data);
   const make = (kind: 'idle' | 'reaction' | 'work', base?: AuthoredMotionSampler) =>
     new CatalogRetargetSampler(
@@ -247,7 +275,7 @@ export async function createCatalogMotion(
     );
   const idle = make('idle'),
     reaction = make('reaction'),
-    work = make('work', baseWork);
+    work = baseWork ? make('work', baseWork) : undefined;
   const phase = (native: number) =>
     (((native - data.idleNativeStart) % idle.clip.duration) + idle.clip.duration) %
     idle.clip.duration;
@@ -257,10 +285,12 @@ export async function createCatalogMotion(
       reaction,
       work,
       reactionReturnTime: phase(data.rigs[0]!.returnNativeTime),
-      workReturn: {
-        time: work.clip.duration,
-        idleTime: phase(data.workNativeStart + work.clip.duration),
-      },
+      workReturn: work
+        ? {
+            time: work.clip.duration,
+            idleTime: phase(data.workNativeStart + work.clip.duration),
+          }
+        : undefined,
     },
     eyeProfiles: {},
   };
