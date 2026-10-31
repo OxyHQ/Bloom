@@ -368,6 +368,37 @@ describe('useHapticFeedback', () => {
     expect(performAndroidHapticsAsync).not.toHaveBeenCalled();
   });
 
+  it.each(['ios', 'android'] as const)(
+    'handles native rejections on %s without unhandled promises',
+    async (platform) => {
+      const catches: jest.SpyInstance[] = [];
+      const reject = () => {
+        const promise = Promise.reject(new Error('native feedback unavailable'));
+        catches.push(jest.spyOn(promise, 'catch'));
+        return promise;
+      };
+
+      ReactNative.Platform.OS = platform;
+      const { useHapticFeedback } = loadWithHaptics(() => ({
+        ImpactFeedbackStyle: STYLES,
+        NotificationFeedbackType: { Success: 'success', Error: 'error' },
+        impactAsync: reject,
+        selectionAsync: reject,
+        notificationAsync: reject,
+        performAndroidHapticsAsync: reject,
+      }));
+      const hook = renderHook(() => useHapticFeedback());
+      await act(async () => {
+        hook.result.current.tap();
+        hook.result.current.selection();
+        hook.result.current.error();
+        await Promise.resolve();
+      });
+      expect(catches).toHaveLength(3);
+      for (const caught of catches) expect(caught).toHaveBeenCalledTimes(1);
+    },
+  );
+
   it('honors the provider', () => {
     ReactNative.Platform.OS = 'ios';
     const { useHapticFeedback, BloomHapticsProvider, impactAsync } = loadWithHaptics();

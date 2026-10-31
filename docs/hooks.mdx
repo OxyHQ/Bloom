@@ -128,6 +128,10 @@ back to a light impact when the installed peer lacks those methods. The
 existing `useHaptics()` strength callback remains available for consumers that
 need it. Both APIs are inert on web and when haptics are disabled.
 
+`TabPagerBottomBar` uses `tap()` on selection. On Android with an older
+`expo-haptics` that lacks `performAndroidHapticsAsync`, this makes its feedback
+silent; navigation is unchanged. Install a compatible peer to restore feedback.
+
 ```tsx
 const haptics = useHapticFeedback();
 // After a user commits a change:
