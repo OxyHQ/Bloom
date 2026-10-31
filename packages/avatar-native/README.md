@@ -1,11 +1,11 @@
 # Bloom native avatar GPU adapter
 
-Private integration under development. This package is intentionally separate from
+This optional Android adapter is intentionally separate from
 Bloom: installing ordinary Bloom must not autolink a native graphics dependency.
 The adapter uses the existing avatar engine, assets, shaders and motion controllers.
 It does not stream screenshots or substitute images for live animation.
 
-The Android prototype creates one headless Expo GL context. Each independently laid-out
+The Android adapter creates one headless Expo GL context. Each independently laid-out
 native TextureView owns an EGL surface in that context. The existing engine renders its
 atlas, including 4× MSAA and its final presentation pass; native GPU framebuffer blits
 present the corresponding cell into each view. Native composition owns clipping,
@@ -27,8 +27,7 @@ use `import.meta`, inline binary assets or create global DOM replacements.
 The initial physical Pixel 8a proof rendered twelve independently composited native views
 from one context with MSAA 4×, transparent output, rotated cards, native press handling
 and unmount/remount. That first proof used animated test geometry; the subsequent integration described
-below uses the actual shared avatar engine. iOS presentation
-and packaging are not implemented yet.
+below uses the actual shared avatar engine. An iOS presenter is not implemented yet.
 
 ## Choice of backend
 
@@ -80,6 +79,23 @@ be regenerated from those same inputs before deployment. A code-only shader/cont
 change invalidates compatibility even when asset hashes are unchanged. The companion
 pins Expo GL 58.0.3 because its context registry and native GLContext integration are
 internal APIs. Updating that peer requires another API, pixel and lifecycle audit.
+
+Use the neutral public revision subpath to select immutable hosting without copying
+a hash into application code. It loads no React or native modules and works in
+Node CommonJS/ESM, web bundlers and Metro:
+
+```ts
+import { AVATAR_RUNTIME_REVISION } from '@oxy.so/bloom-avatar-native/runtime-revision';
+
+const characterRuntimeUrl =
+  `https://alia.onl/bloom-character/releases/${AVATAR_RUNTIME_REVISION}/runtime.mjs`;
+```
+
+The revision is SHA-256 of the **exact UTF-8 bytes** of the generated complete
+`asset-manifest.json`, including its final newline. The hosted `manifest.json`
+must have those same bytes; do not reserialize it. Upload the complete matching
+browser directory into that revision directory once and retain it for installed
+native clients. Runtime compatibility still compares every manifest file hash.
 
 Pools are shared across providers for one runtime URL directory and initial size bucket
 (64, 128 or 320 logical pixels). Equal-size instances share one context, renderer,

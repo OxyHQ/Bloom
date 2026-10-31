@@ -85,5 +85,14 @@ for (const filename of await readdir(resolve(output, 'assets'))) {
 }
 const manifest = JSON.stringify({ version: 1, entry: 'runtime.mjs', files }, null, 2) + '\n';
 await writeFile(resolve(destination, 'asset-manifest.json'), manifest);
+const revision = createHash('sha256').update(manifest).digest('hex');
+await writeFile(
+  resolve(destination, 'runtime-revision.cjs'),
+  `/** Generated from the exact UTF-8 asset-manifest.json bytes, including its final newline. */\nexports.AVATAR_RUNTIME_REVISION = ${JSON.stringify(revision)};\n`,
+);
+await writeFile(
+  resolve(destination, 'runtime-revision.d.cts'),
+  '/** SHA-256 of the complete hosted manifest bytes. */\nexport declare const AVATAR_RUNTIME_REVISION: string;\n',
+);
 await writeFile(resolve(webOutput, 'manifest.json'), manifest);
 console.log(`Native engine: ${Buffer.byteLength(wrapped)} bytes; external assets in ${output}`);

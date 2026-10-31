@@ -5,6 +5,28 @@
   "description": "Shared native GPU presentation for Bloom's existing avatar engine",
   "main": "src/index.ts",
   "react-native": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "react-native": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
+      "default": "./src/index.ts"
+    },
+    "./runtime-revision": {
+      "types": "./lib/runtime-revision.d.cts",
+      "default": "./lib/runtime-revision.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "runtime-revision": [
+        "lib/runtime-revision.d.cts"
+      ]
+    }
+  },
   "files": [
     "src/**",
     "!src/**/__tests__/**",
