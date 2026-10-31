@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.microedition.khronos.egl.EGLSurface
+import javax.microedition.khronos.egl.EGL10
 
 internal class AvatarGPUSession(val context: GLContext) {
   val closing = AtomicBoolean(false)
@@ -177,7 +178,7 @@ class AvatarGPUModule : Module() {
       main.post { views.clear(); imageEncoder.shutdown() }
     }
     View(AvatarGPUView::class) {
-      Events("onSurfaceReady", "onVisibilityChanged")
+      Events("onSurfaceReady", "onVisibilityChanged", "onSurfaceError")
       Prop("contextId") { view: AvatarGPUView, id: Int -> view.connect(sessions[id]) }
       Prop("surfaceId") { view: AvatarGPUView, id: Int ->
         views.remove(view.surfaceId, view)
@@ -212,6 +213,7 @@ class AvatarGPUView(context: Context, appContext: AppContext) : TextureView(cont
   private var attachedTexture: SurfaceTexture? = null
   var onWindowAttachment: ((Boolean) -> Unit)? = null
   private val onSurfaceReady by EventDispatcher()
+  private val onSurfaceError by EventDispatcher()
   private val onVisibilityChanged by EventDispatcher()
   private val visibleRect = Rect()
   private val beforeDraw = ViewTreeObserver.OnPreDrawListener { updateVisibility(); true }
@@ -252,9 +254,19 @@ class AvatarGPUView(context: Context, appContext: AppContext) : TextureView(cont
     binding = next
     session.context.runAsync {
       if (binding === next && !session.closing.get()) {
-        next.surface = session.context.createSurface(session.context.eglConfig, texture)
-        main.post {
-          if (binding === next) { updateVisibility(); onSurfaceReady(mapOf("visible" to visibleToUser)) }
+        try {
+          val surface = session.context.createSurface(session.context.eglConfig, texture)
+          check(surface != null && surface != EGL10.EGL_NO_SURFACE) {
+            "Avatar EGL surface allocation failed: " + EGL14.eglGetError()
+          }
+          next.surface = surface
+          main.post {
+            if (binding === next) { updateVisibility(); onSurfaceReady(mapOf("visible" to visibleToUser)) }
+          }
+        } catch (error: Exception) {
+          main.post {
+            if (binding === next) onSurfaceError(mapOf("message" to (error.message ?: "Avatar EGL surface allocation failed")))
+          }
         }
       }
     }
