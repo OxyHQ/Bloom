@@ -15,11 +15,14 @@
 // a platform split (`font-assets.web.ts` and the default `font-assets.ts` are
 // both empty) and why the web barrel reaches for `./font-assets.web`
 // explicitly rather than relying on bundler extension resolution.
+import { DISPLAY_FACE_FAMILIES } from './display-face';
 import type { FontAssetMap } from './tokens';
 
 export const FONT_ASSETS: FontAssetMap = {
-  BlomusModernus: require('./assets/BlomusModernus-Regular.ttf'),
-  'BlomusModernus-Bold': require('./assets/BlomusModernus-Bold.ttf'),
+  // The display face's two cuts, one family each: native picks the cut by
+  // family name (`display-face.ts`), where the web matches it by weight.
+  [DISPLAY_FACE_FAMILIES.regular]: require('./assets/BlomusModernus-Regular.ttf'),
+  [DISPLAY_FACE_FAMILIES.bold]: require('./assets/BlomusModernus-Bold.ttf'),
   Inter: require('./assets/InterVariable.ttf'),
   'JetBrains Mono': require('./assets/JetBrainsMono-Variable.ttf'),
 };

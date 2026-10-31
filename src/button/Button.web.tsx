@@ -328,8 +328,19 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
 
     const containerStyle = useMemo((): CSSProperties => {
       const shadow = paintRecipe.paint.shadow;
+      // The material's body is painted from `--bloom-btn-bg` (`::before`), never
+      // from the host's background, so the disabled paint has to arrive through
+      // it — as native's `paint` does. The disabled rule's own `background-color`
+      // lands on a host the material keeps transparent. Loading keeps its rest
+      // paint under the spinner (`aria-busy` is excluded from that rule too).
+      const bodyPaint =
+        disabled && !loading
+          ? palette.disabled
+          : togglePressed && !loading
+            ? palette.active
+            : palette.rest;
       const solidFill = resolveSurfaceMaterial({
-        fill: (togglePressed && !loading ? palette.active : palette.rest).background,
+        fill: bodyPaint.background,
         parentFill: paintRecipe.paint.backing,
       }).solidFill;
       const base: CSSProperties = {
@@ -359,8 +370,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         ['--bloom-btn-fg-active' as string]: palette.active.foreground,
         ['--bloom-btn-fg-disabled' as string]: palette.disabled.foreground,
         ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
-        ['--bloom-btn-bg' as string]: (togglePressed && !loading ? palette.active : palette.rest)
-          .background,
+        ['--bloom-btn-bg' as string]: bodyPaint.background,
         ['--bloom-surface-solid' as string]: solidFill,
         // A button that draws its own border keeps it as its edge.
         [SURFACE_HAIRLINE_VAR as string]:
@@ -421,6 +431,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       isIconVariant,
       isLink,
       togglePressed,
+      disabled,
       loading,
       className,
     ]);

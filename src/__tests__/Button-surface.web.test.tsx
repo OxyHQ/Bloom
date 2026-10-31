@@ -61,6 +61,42 @@ it.each(['solid', 'subtle', 'outline'] as const)(
     expect(BLOOM_BUTTON_CSS).toContain(SURFACE_HIGHLIGHT_FILTER);
   },
 );
+it.each(['solid', 'subtle', 'outline'] as const)(
+  'paints the disabled fill as the %s material body, as native does',
+  (appearance) => {
+    // The body is the `::before` layer, painted from `--bloom-btn-bg`; the host
+    // itself stays transparent under the material, so the disabled rule's
+    // `background-color` alone never showed: a disabled solid button kept its
+    // accent body on the web while native drew `palette.disabled`.
+    act(() => root.render(<Button appearance={appearance}>Enabled</Button>));
+    const rest = container.querySelector('button')!.style.getPropertyValue('--bloom-btn-bg');
+    act(() =>
+      root.render(
+        <Button appearance={appearance} disabled>
+          Disabled
+        </Button>,
+      ),
+    );
+    const button = container.querySelector('button')!;
+    const disabledFill = button.style.getPropertyValue('--bloom-btn-bg-disabled');
+    expect(disabledFill).toBe('rgba(239, 240, 239, 0.72)');
+    expect(rest).not.toBe(disabledFill);
+    expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe(disabledFill);
+    expect(BLOOM_BUTTON_CSS).toMatch(
+      /\.bloom-btn--surface::before \{[^}]*background-color: var\(--bloom-btn-bg\);/,
+    );
+
+    // Loading keeps its rest paint under the spinner, disabled or not.
+    act(() =>
+      root.render(
+        <Button appearance={appearance} disabled loading>
+          Disabled
+        </Button>,
+      ),
+    );
+    expect(container.querySelector('button')!.style.getPropertyValue('--bloom-btn-bg')).toBe(rest);
+  },
+);
 it('composites a built-in subtle tint before applying the shared tint', () => {
   act(() => root.render(<Button appearance="subtle">Subtle</Button>));
   const button = container.querySelector('button')!;

@@ -1,15 +1,19 @@
 import type React from 'react';
-import { memo } from 'react';
+import { type ComponentRef, type ComponentType, memo, type ReactNode, type Ref } from 'react';
 import {
+  Text as RNText,
   type TextProps as RNTextProps,
   Platform,
+  type StyleProp,
   StyleSheet,
   type TextStyle,
   View,
 } from 'react-native';
+import { styled } from 'react-native-css';
 import { useWindowWidthClass } from '../hooks/use-width-class';
 
 import { useThemePaint } from '../theme/use-theme-paint';
+import { DISPLAY_FACE_FAMILIES, withDisplayFaceCut } from '../fonts/display-face';
 import { fontFamilies } from '../fonts/tokens';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { space } from '../styles/tokens';
@@ -32,8 +36,9 @@ function fontFamilyStyle(kind: 'display' | 'sans' | 'mono'): { fontFamily: strin
   if (kind === 'mono') return { fontFamily: 'JetBrains Mono' };
   // On RN the literal family name is the only thing that matters; the .ttf is
   // registered via `useFonts(FONT_ASSETS)` in `FontLoader.native.tsx`. `sans`
-  // is Inter (the UI face); `display` keeps BlomusModernus.
-  if (kind === 'display') return { fontFamily: 'BlomusModernus' };
+  // is Inter (the UI face); `display` keeps BlomusModernus, named here by its
+  // Regular cut: `TextHost` swaps in the Bold cut once the weight is known.
+  if (kind === 'display') return { fontFamily: DISPLAY_FACE_FAMILIES.regular };
   return { fontFamily: 'Inter' };
 }
 
@@ -80,6 +85,33 @@ function textFamily(variant: string | undefined, className: string | undefined) 
   return display ? DISPLAY_FONT_FAMILY : SANS_FONT_FAMILY;
 }
 
+type TextHostProps = RNTextProps & { ref?: Ref<ComponentRef<typeof RNText>> };
+
+/**
+ * NATIVE ONLY: the text node, drawing the display face in the cut its weight
+ * selects (`fonts/display-face.ts`).
+ *
+ * It sits UNDER `styled()`, so the style it reads is the one `react-native-css`
+ * resolved from the className, followed by Bloom's inline defaults and the
+ * caller's style: a variant's weight, a heading's, a `font-bold` utility at any
+ * breakpoint or state, and an inline `fontWeight` all reach it. Text reading it
+ * above `styled()` would see the className as a string and miss every utility.
+ */
+function DisplayFaceText({ style, ...rest }: TextHostProps) {
+  return <RNText {...rest} style={withDisplayFaceCut(style)} />;
+}
+
+/**
+ * The web keeps `StyledText`: one `BlomusModernus` family with a 400 and a 700
+ * `@font-face`, matched by the browser.
+ */
+const TextHost: ComponentType<TextHostProps> =
+  Platform.OS === 'web'
+    ? StyledText
+    : styled(DisplayFaceText as (props: { style?: StyleProp<TextStyle> }) => ReactNode, {
+        className: 'style',
+      });
+
 const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
   fontSize: 13,
 };
@@ -96,7 +128,7 @@ const TextComponent = function Text({ children, style, className, variant, ...re
   const trimmedClassName = className?.trim() ? className : undefined;
 
   return (
-    <StyledText
+    <TextHost
       {...rest}
       {...(trimmedClassName ? { className: trimmedClassName } : {})}
       style={mergeTypographyStyle(
@@ -109,7 +141,7 @@ const TextComponent = function Text({ children, style, className, variant, ...re
       )}
     >
       {children}
-    </StyledText>
+    </TextHost>
   );
 };
 
