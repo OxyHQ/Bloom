@@ -81,18 +81,24 @@ export function useAccessibilityFocus<T>(open: boolean): React.RefObject<T | nul
  *
  * Fires on the `true -> false` edge only. A surface that was never open must not
  * steal the cursor on mount, which is what keying on `open` alone would do for
- * every closed menu on the screen.
+ * every closed menu on the screen. `restore` false at that edge leaves the
+ * cursor where it goes next: a menu bar's menu closed because the next one
+ * opened in its place, whose own surface takes the cursor.
  */
-export function useRestoreAccessibilityFocus(open: boolean, ref: React.RefObject<unknown>): void {
+export function useRestoreAccessibilityFocus(
+  open: boolean,
+  ref: React.RefObject<unknown>,
+  restore = true,
+): void {
   const wasOpen = useRef(open);
 
   useEffect(() => {
     const closing = wasOpen.current && !open;
     wasOpen.current = open;
-    if (!isNative() || !closing) return;
+    if (!isNative() || !closing || !restore) return;
     // Let the surface finish unmounting first: moving the cursor to the trigger
     // while the surface is still in the tree lands it back inside the surface.
     const timer = setTimeout(() => focusView(ref.current), FOCUS_SETTLE_MS);
     return () => clearTimeout(timer);
-  }, [open, ref]);
+  }, [open, ref, restore]);
 }

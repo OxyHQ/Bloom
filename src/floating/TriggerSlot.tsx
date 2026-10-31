@@ -71,6 +71,12 @@ export interface TriggerSlotProps {
    * while another of the bar's menus is open.
    */
   onPointerMove?: (event: PointerEvent) => void;
+  /**
+   * Whether the screen reader's focus comes back here as the surface closes
+   * (default). A menu bar's title closing because the next menu opened in its
+   * place leaves it to that menu.
+   */
+  restoreFocus?: boolean;
   /** Classes for the wrapper box — the node the parent lays out. */
   className?: string;
   /** Style for the wrapper box. The child styles itself. */
@@ -171,6 +177,7 @@ export function TriggerSlot({
   anchorRef,
   onPointerDown,
   onPointerMove,
+  restoreFocus = true,
   className,
   style,
   testID,
@@ -187,7 +194,7 @@ export function TriggerSlot({
   }, [reportPrimary, expanded]);
   useEffect(() => () => reportPrimary?.(false), [reportPrimary]);
   const ownRef = useRef<ComponentRef<typeof View> | null>(null);
-  useRestoreAccessibilityFocus(handle['aria-expanded'] === true, ownRef);
+  useRestoreAccessibilityFocus(handle['aria-expanded'] === true, ownRef, restoreFocus);
 
   const control = asChild ? (
     cloneTrigger(children, handle)

@@ -365,6 +365,9 @@ function MenubarTriggerButton({
       asChild={asChild}
       anchorRef={menu.anchorRef}
       onPointerMove={tracking ? onPointerMove : undefined}
+      // Closed because another menu of the bar opened in its place: the screen reader's focus is
+      // that menu's, never this title's.
+      restoreFocus={bar.value === undefined || menu.open}
       style={style}
       testID={testID}
       handle={{

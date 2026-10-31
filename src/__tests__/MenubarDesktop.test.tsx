@@ -569,6 +569,47 @@ describe('the screen reader in a menu driven from the keyboard', () => {
   });
 });
 
+describe('the screen reader as one menu of the bar replaces another', () => {
+  it('stays with the menu that opened: the closed title never takes it back; closing outright gives it back', () => {
+    jest.useFakeTimers();
+    const send = jest
+      .spyOn(AccessibilityInfo, 'sendAccessibilityEvent')
+      .mockImplementation(() => {});
+    const settle = () => act(() => jest.advanceTimersByTime(50));
+    try {
+      const platform = desktop();
+      const screen = render(
+        <BloomProvider mode="light" platform={platform.adapter}>
+          <Bar chosen={() => {}} />
+        </BloomProvider>,
+        {
+          createNodeMock: (element) => ({ testID: (element.props as { testID?: string }).testID }),
+        },
+      );
+      const titles = () =>
+        send.mock.calls
+          .filter(([, type]) => type === 'focus')
+          .map(([node]) => (node as { testID?: string }).testID)
+          .filter((id) => id === 'app' || id === 'file' || id === 'help');
+      fireEvent.press(screen.getByText('Help'));
+      settle();
+      // Help's menu replaced by File's (the pointer), then by Help's again (→): no title is focused.
+      fireEvent(screen.getByTestId('file'), 'pointerMove', { nativeEvent: { pointerType: 'mouse' } });
+      settle();
+      platform.press('ArrowRight');
+      settle();
+      expect(titles()).toEqual([]);
+      // Closed outright (Escape), the focus goes back to its title.
+      act(() => platform.popups.get('help-menu')?.onKey?.('Escape'));
+      settle();
+      expect(titles()).toEqual(['help']);
+    } finally {
+      send.mockRestore();
+      jest.useRealTimers();
+    }
+  });
+});
+
 describe('menubarKey', () => {
   it('is a no-op without the keyboard on the bar', () => {
     const setFocusValue = jest.fn();
