@@ -158,17 +158,17 @@ export async function startPBOAtlasFixture({
   const finishCapture = async (capture) => {
     if (!capture) return;
     try {
+      // Freeze every destination synchronously. PNG decoding must not let a
+      // later queued frame overwrite another destination before comparison.
+      const snapshots = canvases.map((canvas, index) => ({
+        actual: contexts[index].getImageData(0, 0, canvas.width, canvas.height).data,
+        png: canvas.toDataURL('image/png'),
+      }));
       const cells = [];
       for (let index = 0; index < count; index++) {
-        const canvas = canvases[index],
-          reference = capture.references[index];
-        const expected = reference
-          .getContext('2d')
-          .getImageData(0, 0, canvas.width, canvas.height).data;
-        const actual = contexts[index].getImageData(0, 0, canvas.width, canvas.height).data;
-        // Snapshot immediately after actual presentation, before another RAF.
-        const png = canvas.toDataURL('image/png'),
-          image = new Image();
+        const expected = capture.expected[index];
+        const { actual, png } = snapshots[index];
+        const image = new Image();
         image.src = png;
         await image.decode();
         const decoded = document.createElement('canvas');
@@ -188,6 +188,7 @@ export async function startPBOAtlasFixture({
         kind: capture.kind,
         time: capture.time,
         sourceTile: stage.width / columns,
+        rawAtlas: capture.rawAtlas,
         cells,
         errors: [...errors],
       });
@@ -200,6 +201,20 @@ export async function startPBOAtlasFixture({
     metrics.frames++;
     const capture = captureRequest;
     captureRequest = undefined;
+    const width = stage.width,
+      height = stage.height,
+      generation = epoch;
+    let read, started;
+    if (mode === 'pbo') {
+      if (pending.size >= 2) throw Error('PBO presenter exceeded its pending budget');
+      started = performance.now();
+      // Submit before any fidelity-only reference copies can consume the
+      // default drawing buffer; normal timing does not make those copies.
+      read = readPixelsAsync(gl, null, 0, 0, width, height);
+      metrics.captureCallMs += performance.now() - started;
+      metrics.submissions++;
+      reads.add(read);
+    }
     if (capture) {
       capture.references = canvases.map((canvas) => {
         const target = document.createElement('canvas');
@@ -212,6 +227,9 @@ export async function startPBOAtlasFixture({
         capture.references,
         capture.references.map((canvas) => canvas.getContext('2d')),
       );
+      capture.expected = capture.references.map(
+        (canvas) => canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data,
+      );
     }
     if (mode === 'direct') {
       const start = performance.now();
@@ -222,16 +240,6 @@ export async function startPBOAtlasFixture({
       void finishCapture(capture);
       return;
     }
-    if (pending.size >= 2) throw Error('PBO presenter exceeded its pending budget');
-    const width = stage.width,
-      height = stage.height,
-      generation = epoch,
-      started = performance.now();
-    // The WebGL default framebuffer is valid only within this presentation turn.
-    const read = readPixelsAsync(gl, null, 0, 0, width, height);
-    metrics.captureCallMs += performance.now() - started;
-    metrics.submissions++;
-    reads.add(read);
     const previous = lastCommit;
     let task;
     task = read.promise
@@ -246,6 +254,24 @@ export async function startPBOAtlasFixture({
           scratch.width = width;
           scratch.height = height;
           rgba = new ImageData(width, height);
+        }
+        if (capture) {
+          let invalidPremultiplied = 0,
+            nonzeroAlpha = 0,
+            maximumExcess = 0;
+          for (let i = 0; i < pixels.length; i += 4) {
+            const alpha = pixels[i + 3],
+              excess = Math.max(pixels[i], pixels[i + 1], pixels[i + 2]) - alpha;
+            nonzeroAlpha += Number(alpha !== 0);
+            invalidPremultiplied += Number(excess > 0);
+            maximumExcess = Math.max(maximumExcess, excess);
+          }
+          capture.rawAtlas = {
+            pixels: pixels.length / 4,
+            invalidPremultiplied,
+            nonzeroAlpha,
+            maximumExcess,
+          };
         }
         const convertStart = performance.now(),
           target = rgba.data;
