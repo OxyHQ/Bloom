@@ -1,0 +1,1461 @@
+{
+  "date": "2026-10-31",
+  "baselineCommit": "e0fee324",
+  "candidateCommit": "824f9457",
+  "scope": "Phase 2, smooth baseline versus lossless active-atlas scissors and populated upload ranges. Source runtime in Storybook; not a physical-device measurement or a published package comparison.",
+  "candidateNotes": [
+    "First57 pixel snapshots measured the scissor/upload implementation before the host-only getContext compatibility fix committed with824f9457. Host omitted: normal web path. Latest controller extraction was also exercised in the final lifecycle gates.",
+    "All timing samples use unchanged asset geometry, lights, shaders, animation, MSAA4 offscreen target and60fps frame limit. CSS64/128/320 with DPR2 is tested at the existing renderer backing resolution, not an increased quality setting.",
+    "Controller extraction gates rerun at213c18c2: final shared reconciler preserves the same shader/render path."
+  ],
+  "pixelFidelity": {
+    "method": "Full viewport PNG screenshots from fixed held poses, exact RGBA equality inside every actively presented logical cell, including edges. Inactive atlas storage is intentionally excluded; destination retained canvas immutability is checked by the editor lifecycle gate.",
+    "browser": "Linux Chrome146 SwiftShader",
+    "cases": 57,
+    "comparedPixels": 45936640,
+    "differentPixels": 0,
+    "maxChannelDifference": 0,
+    "caseNames": [
+      "authored-64-dpr1-base-idle",
+      "authored-64-dpr1-loaded-idle",
+      "authored-64-dpr1-reaction-entry",
+      "authored-64-dpr1-reaction",
+      "authored-64-dpr1-work-entry",
+      "authored-64-dpr1-work",
+      "authored-64-dpr1-eyes-gaze",
+      "authored-64-dpr1-held-pointer",
+      "authored-64-dpr1-sparse-first",
+      "authored-64-dpr1-sparse-interior",
+      "authored-64-dpr1-sparse-last",
+      "authored-64-dpr1-sparse-alternating",
+      "authored-64-dpr1-restored-all",
+      "authored-128-dpr2-base-idle",
+      "authored-128-dpr2-loaded-idle",
+      "authored-128-dpr2-reaction",
+      "authored-128-dpr2-work",
+      "authored-128-dpr2-eyes-gaze",
+      "authored-128-dpr2-held-pointer",
+      "authored-128-dpr2-sparse-first",
+      "authored-128-dpr2-sparse-interior",
+      "authored-128-dpr2-sparse-last",
+      "authored-128-dpr2-sparse-alternating",
+      "authored-128-dpr2-restored-all",
+      "authored-320-dpr2-base-idle",
+      "authored-320-dpr2-loaded-idle",
+      "authored-320-dpr2-reaction",
+      "authored-320-dpr2-work",
+      "authored-320-dpr2-eyes-gaze",
+      "authored-320-dpr2-held-pointer",
+      "authored-320-dpr2-sparse-first",
+      "authored-320-dpr2-sparse-interior",
+      "authored-320-dpr2-sparse-last",
+      "authored-320-dpr2-sparse-alternating",
+      "authored-320-dpr2-restored-all",
+      "catalog-128-dpr2-base-idle",
+      "catalog-128-dpr2-loaded-idle",
+      "catalog-128-dpr2-reaction",
+      "catalog-128-dpr2-work",
+      "catalog-128-dpr2-eyes-gaze",
+      "catalog-128-dpr2-held-pointer",
+      "catalog-128-dpr2-sparse-first",
+      "catalog-128-dpr2-sparse-interior",
+      "catalog-128-dpr2-sparse-last",
+      "catalog-128-dpr2-sparse-alternating",
+      "catalog-128-dpr2-restored-all",
+      "catalog-320-dpr2-base-idle",
+      "catalog-320-dpr2-loaded-idle",
+      "catalog-320-dpr2-reaction",
+      "catalog-320-dpr2-work",
+      "catalog-320-dpr2-eyes-gaze",
+      "catalog-320-dpr2-held-pointer",
+      "catalog-320-dpr2-sparse-first",
+      "catalog-320-dpr2-sparse-interior",
+      "catalog-320-dpr2-sparse-last",
+      "catalog-320-dpr2-sparse-alternating",
+      "catalog-320-dpr2-restored-all"
+    ],
+    "authoredPresetCount": 8,
+    "customCatalogRecipeCount": 4,
+    "inputs": [
+      "idle before and after deferred work loading",
+      "reaction",
+      "work",
+      "eye and gaze movement",
+      "held pointer drag",
+      "sparse first/interior/last/alternating slots",
+      "restore all slots"
+    ]
+  },
+  "hardwareControl": {
+    "environment": "Windows headless Chrome156, RTX5090 ANGLE D3D11, connected to dedicated test browser. This is a powerful GPU control, not a representative office or low-end device.",
+    "gpuTimingMethod": "EXT_disjoint_timer_query_webgl2, asynchronous availability polling, discard disjoint samples. Per-render-pass queries include uploads, GL command issue gaps and the color pass MSAA resolve; they do not isolate shader execution. Query instrumentation adds overhead.",
+    "samples": [
+      {
+        "id": "gpu-before",
+        "cssSize": 112,
+        "devicePixelRatio": 1,
+        "warmupMs": 2000,
+        "sampleMs": 3000,
+        "gpuTimerMode": "passes",
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "cases": [
+          {
+            "count": 1,
+            "mode": "active",
+            "fps": 59.63486140677579,
+            "frames": 179,
+            "elapsedMs": 3001.600000023842,
+            "mainThreadTaskMs": 237.06800000000007,
+            "drawImageSynchronousMs": 33.10000032186508,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 16384,
+            "renderedPixels": 16384,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 179,
+                "meanMs": 0.10395262569832407,
+                "medianMs": 0.09008,
+                "p95Ms": 0.146528
+              },
+              "AO-sample": {
+                "samples": 179,
+                "meanMs": 0.023795843575418984,
+                "medianMs": 0.020384,
+                "p95Ms": 0.02608
+              },
+              "AO-resolve": {
+                "samples": 179,
+                "meanMs": 0.007303865921787711,
+                "medianMs": 0.006464,
+                "p95Ms": 0.009856
+              },
+              "color-including-resolve": {
+                "samples": 179,
+                "meanMs": 0.03825358659217878,
+                "medianMs": 0.028704,
+                "p95Ms": 0.076736
+              },
+              "present": {
+                "samples": 179,
+                "meanMs": 0.007691441340782123,
+                "medianMs": 0.006944,
+                "p95Ms": 0.015328
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 1,
+            "mode": "one-active",
+            "fps": 59.92010652463382,
+            "frames": 180,
+            "elapsedMs": 3004,
+            "mainThreadTaskMs": 295.12899999999985,
+            "drawImageSynchronousMs": 48.3999999165535,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 16384,
+            "renderedPixels": 16384,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 179,
+                "meanMs": 0.09774105027932962,
+                "medianMs": 0.089504,
+                "p95Ms": 0.128704
+              },
+              "AO-sample": {
+                "samples": 179,
+                "meanMs": 0.02033662569832402,
+                "medianMs": 0.020224,
+                "p95Ms": 0.026784
+              },
+              "AO-resolve": {
+                "samples": 179,
+                "meanMs": 0.007690547486033517,
+                "medianMs": 0.006368,
+                "p95Ms": 0.010112
+              },
+              "color-including-resolve": {
+                "samples": 179,
+                "meanMs": 0.03242207821229049,
+                "medianMs": 0.02896,
+                "p95Ms": 0.055936
+              },
+              "present": {
+                "samples": 179,
+                "meanMs": 0.007503016759776537,
+                "medianMs": 0.006912,
+                "p95Ms": 0.014656
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 1,
+            "mode": "offscreen",
+            "fps": 59.52974824617357,
+            "frames": 179,
+            "elapsedMs": 3006.899999976158,
+            "mainThreadTaskMs": 250.26199999999997,
+            "drawImageSynchronousMs": 34.8999999165535,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 16384,
+            "renderedPixels": 16384,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 179,
+                "meanMs": 0.09912259217877094,
+                "medianMs": 0.08992,
+                "p95Ms": 0.139968
+              },
+              "AO-sample": {
+                "samples": 179,
+                "meanMs": 0.020613541899441343,
+                "medianMs": 0.020992,
+                "p95Ms": 0.024864
+              },
+              "AO-resolve": {
+                "samples": 179,
+                "meanMs": 0.007170860335195535,
+                "medianMs": 0.006368,
+                "p95Ms": 0.008864
+              },
+              "color-including-resolve": {
+                "samples": 179,
+                "meanMs": 0.04587191061452513,
+                "medianMs": 0.032576,
+                "p95Ms": 0.085824
+              },
+              "present": {
+                "samples": 179,
+                "meanMs": 0.008016983240223464,
+                "medianMs": 0.007424,
+                "p95Ms": 0.014432
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 24,
+            "mode": "active",
+            "fps": 59.603090037530144,
+            "frames": 179,
+            "elapsedMs": 3003.199999988079,
+            "mainThreadTaskMs": 797.555,
+            "drawImageSynchronousMs": 63.89999955892563,
+            "submittedUploadBytesPerFrame": 108672.0,
+            "submittedUploadCallsPerFrame": 108.0,
+            "trianglesPerFrame": 524236,
+            "renderedInstances": 24,
+            "atlasPixels": 409600,
+            "renderedPixels": 409600,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 179,
+                "meanMs": 1.3668785698324029,
+                "medianMs": 1.120864,
+                "p95Ms": 2.605984
+              },
+              "AO-sample": {
+                "samples": 179,
+                "meanMs": 0.025046346368715083,
+                "medianMs": 0.022048,
+                "p95Ms": 0.0304
+              },
+              "AO-resolve": {
+                "samples": 179,
+                "meanMs": 0.011898458100558663,
+                "medianMs": 0.009152,
+                "p95Ms": 0.025376
+              },
+              "color-including-resolve": {
+                "samples": 179,
+                "meanMs": 0.46951722905027915,
+                "medianMs": 0.353184,
+                "p95Ms": 1.37952
+              },
+              "present": {
+                "samples": 179,
+                "meanMs": 0.011409519553072624,
+                "medianMs": 0.009312,
+                "p95Ms": 0.01952
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 59.54955254713057,
+            "frames": 179,
+            "elapsedMs": 3005.899999976158,
+            "mainThreadTaskMs": 323.4870000000001,
+            "drawImageSynchronousMs": 45,
+            "submittedUploadBytesPerFrame": 50304.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 409600,
+            "renderedPixels": 409600,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 179,
+                "meanMs": 0.10391258100558656,
+                "medianMs": 0.101056,
+                "p95Ms": 0.122144
+              },
+              "AO-sample": {
+                "samples": 179,
+                "meanMs": 0.02106690502793296,
+                "medianMs": 0.020288,
+                "p95Ms": 0.025472
+              },
+              "AO-resolve": {
+                "samples": 179,
+                "meanMs": 0.008249921787709497,
+                "medianMs": 0.008736,
+                "p95Ms": 0.009696
+              },
+              "color-including-resolve": {
+                "samples": 179,
+                "meanMs": 0.04008062569832401,
+                "medianMs": 0.040128,
+                "p95Ms": 0.085664
+              },
+              "present": {
+                "samples": 179,
+                "meanMs": 0.012213810055865923,
+                "medianMs": 0.01088,
+                "p95Ms": 0.020704
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 24,
+            "mode": "offscreen",
+            "fps": 59.609044589519534,
+            "frames": 179,
+            "elapsedMs": 3002.900000035763,
+            "mainThreadTaskMs": 361.68299999999977,
+            "drawImageSynchronousMs": 36.89999973773956,
+            "submittedUploadBytesPerFrame": 50304.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 409600,
+            "renderedPixels": 409600,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 179,
+                "meanMs": 0.1136874189944134,
+                "medianMs": 0.103424,
+                "p95Ms": 0.12672
+              },
+              "AO-sample": {
+                "samples": 179,
+                "meanMs": 0.025867977653631285,
+                "medianMs": 0.021536,
+                "p95Ms": 0.028992
+              },
+              "AO-resolve": {
+                "samples": 179,
+                "meanMs": 0.00857760893854748,
+                "medianMs": 0.008832,
+                "p95Ms": 0.009728
+              },
+              "color-including-resolve": {
+                "samples": 179,
+                "meanMs": 0.06539637988826816,
+                "medianMs": 0.047296,
+                "p95Ms": 0.252992
+              },
+              "present": {
+                "samples": 179,
+                "meanMs": 0.011517675977653631,
+                "medianMs": 0.010176,
+                "p95Ms": 0.019744
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "gpu-after",
+        "cssSize": 112,
+        "devicePixelRatio": 1,
+        "warmupMs": 2000,
+        "sampleMs": 3000,
+        "gpuTimerMode": "passes",
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "cases": [
+          {
+            "count": 1,
+            "mode": "active",
+            "fps": 59.97001499250375,
+            "frames": 180,
+            "elapsedMs": 3001.5,
+            "mainThreadTaskMs": 121.38900000000002,
+            "drawImageSynchronousMs": 9.70000034570694,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 16384,
+            "renderedPixels": 16384,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.08192408888888887,
+                "medianMs": 0.075872,
+                "p95Ms": 0.13824
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.019454577777777773,
+                "medianMs": 0.017184,
+                "p95Ms": 0.023008
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.006372800000000007,
+                "medianMs": 0.00624,
+                "p95Ms": 0.006592
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.00842862222222222,
+                "medianMs": 0.006848,
+                "p95Ms": 0.012384
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.006350933333333337,
+                "medianMs": 0.006272,
+                "p95Ms": 0.00912
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 1,
+            "mode": "one-active",
+            "fps": 60.23895896452827,
+            "frames": 181,
+            "elapsedMs": 3004.699999988079,
+            "mainThreadTaskMs": 117.40100000000004,
+            "drawImageSynchronousMs": 7.899999558925629,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 16384,
+            "renderedPixels": 16384,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 181,
+                "meanMs": 0.08855902762430942,
+                "medianMs": 0.076864,
+                "p95Ms": 0.138016
+              },
+              "AO-sample": {
+                "samples": 181,
+                "meanMs": 0.01813020994475139,
+                "medianMs": 0.017088,
+                "p95Ms": 0.02224
+              },
+              "AO-resolve": {
+                "samples": 181,
+                "meanMs": 0.006381613259668513,
+                "medianMs": 0.006272,
+                "p95Ms": 0.006784
+              },
+              "color-including-resolve": {
+                "samples": 181,
+                "meanMs": 0.009040441988950277,
+                "medianMs": 0.006816,
+                "p95Ms": 0.013696
+              },
+              "present": {
+                "samples": 181,
+                "meanMs": 0.0062468950276243105,
+                "medianMs": 0.006304,
+                "p95Ms": 0.008768
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 1,
+            "mode": "offscreen",
+            "fps": 60.24096385494367,
+            "frames": 181,
+            "elapsedMs": 3004.600000023842,
+            "mainThreadTaskMs": 123.34899999999993,
+            "drawImageSynchronousMs": 8.999999940395355,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 16384,
+            "renderedPixels": 16384,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.08889742222222217,
+                "medianMs": 0.077184,
+                "p95Ms": 0.162624
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.01782648888888888,
+                "medianMs": 0.017152,
+                "p95Ms": 0.02224
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.006362844444444451,
+                "medianMs": 0.006272,
+                "p95Ms": 0.007776
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.00924817777777777,
+                "medianMs": 0.006848,
+                "p95Ms": 0.0408
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.006513422222222219,
+                "medianMs": 0.006688,
+                "p95Ms": 0.011136
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 24,
+            "mode": "active",
+            "fps": 60.281089721762065,
+            "frames": 181,
+            "elapsedMs": 3002.600000023842,
+            "mainThreadTaskMs": 264.60600000000005,
+            "drawImageSynchronousMs": 12.000000476837158,
+            "submittedUploadBytesPerFrame": 108672.0,
+            "submittedUploadCallsPerFrame": 108.0,
+            "trianglesPerFrame": 524236,
+            "renderedInstances": 24,
+            "atlasPixels": 409600,
+            "renderedPixels": 409600,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.9200323555555555,
+                "medianMs": 0.91104,
+                "p95Ms": 1.336704
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.02164355555555555,
+                "medianMs": 0.020096,
+                "p95Ms": 0.02752
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.010411022222222222,
+                "medianMs": 0.008864,
+                "p95Ms": 0.021312
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.22914684444444453,
+                "medianMs": 0.232992,
+                "p95Ms": 0.358784
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.007568533333333334,
+                "medianMs": 0.007648,
+                "p95Ms": 0.012896
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 59.902159804937845,
+            "frames": 180,
+            "elapsedMs": 3004.900000035763,
+            "mainThreadTaskMs": 131.19400000000005,
+            "drawImageSynchronousMs": 8.499999403953552,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 409600,
+            "renderedPixels": 18496,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.08735893333333335,
+                "medianMs": 0.079936,
+                "p95Ms": 0.15632
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.016706666666666644,
+                "medianMs": 0.016512,
+                "p95Ms": 0.017216
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.006390044444444441,
+                "medianMs": 0.006304,
+                "p95Ms": 0.00656
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.013920533333333334,
+                "medianMs": 0.01216,
+                "p95Ms": 0.017408
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.005055644444444446,
+                "medianMs": 0.004832,
+                "p95Ms": 0.007008
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 24,
+            "mode": "offscreen",
+            "fps": 59.90215980612605,
+            "frames": 180,
+            "elapsedMs": 3004.899999976158,
+            "mainThreadTaskMs": 132.8180000000001,
+            "drawImageSynchronousMs": 8.200000047683716,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 409600,
+            "renderedPixels": 18496,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.09815253333333332,
+                "medianMs": 0.081632,
+                "p95Ms": 0.171424
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.016928533333333325,
+                "medianMs": 0.016544,
+                "p95Ms": 0.021664
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.006461155555555556,
+                "medianMs": 0.006336,
+                "p95Ms": 0.007168
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.01553742222222222,
+                "medianMs": 0.012224,
+                "p95Ms": 0.05216
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.005361244444444442,
+                "medianMs": 0.004896,
+                "p95Ms": 0.010816
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "gpu64-before",
+        "cssSize": 64,
+        "devicePixelRatio": 2,
+        "warmupMs": 2000,
+        "sampleMs": 3000,
+        "gpuTimerMode": "passes",
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "cases": [
+          {
+            "count": 64,
+            "mode": "active",
+            "fps": 59.910134797803295,
+            "frames": 180,
+            "elapsedMs": 3004.5,
+            "mainThreadTaskMs": 417.81500000000005,
+            "drawImageSynchronousMs": 21.799999177455902,
+            "submittedUploadBytesPerFrame": 224256.0,
+            "submittedUploadCallsPerFrame": 108.0,
+            "trianglesPerFrame": 1397956,
+            "renderedInstances": 64,
+            "atlasPixels": 262144,
+            "renderedPixels": 262144,
+            "backingPixelsPerAvatar": 64,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.8246992000000001,
+                "medianMs": 0.782144,
+                "p95Ms": 1.369632
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.019516977777777784,
+                "medianMs": 0.01792,
+                "p95Ms": 0.0232
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.009160533333333333,
+                "medianMs": 0.007776,
+                "p95Ms": 0.014784
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.40621848888888884,
+                "medianMs": 0.33632,
+                "p95Ms": 0.682784
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.005859733333333333,
+                "medianMs": 0.004896,
+                "p95Ms": 0.009056
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 64,
+            "mode": "one-active",
+            "fps": 59.8702810577083,
+            "frames": 180,
+            "elapsedMs": 3006.5,
+            "mainThreadTaskMs": 180.02399999999997,
+            "drawImageSynchronousMs": 9.199999928474426,
+            "submittedUploadBytesPerFrame": 101376.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 262144,
+            "renderedPixels": 262144,
+            "backingPixelsPerAvatar": 64,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.12474311111111108,
+                "medianMs": 0.09776,
+                "p95Ms": 0.303872
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.016505777777777793,
+                "medianMs": 0.01584,
+                "p95Ms": 0.020928
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.006817599999999999,
+                "medianMs": 0.006624,
+                "p95Ms": 0.008032
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.013954311111111105,
+                "medianMs": 0.011936,
+                "p95Ms": 0.035296
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.007128000000000001,
+                "medianMs": 0.00704,
+                "p95Ms": 0.010848
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 64,
+            "mode": "offscreen",
+            "fps": 59.94005994005994,
+            "frames": 180,
+            "elapsedMs": 3003,
+            "mainThreadTaskMs": 158.447,
+            "drawImageSynchronousMs": 9.399999976158142,
+            "submittedUploadBytesPerFrame": 101376.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 262144,
+            "renderedPixels": 262144,
+            "backingPixelsPerAvatar": 64,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.10864728888888882,
+                "medianMs": 0.097792,
+                "p95Ms": 0.16032
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.017663466666666672,
+                "medianMs": 0.015744,
+                "p95Ms": 0.020896
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.006750399999999992,
+                "medianMs": 0.006592,
+                "p95Ms": 0.008192
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.012285866666666668,
+                "medianMs": 0.011008,
+                "p95Ms": 0.015392
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.006356977777777775,
+                "medianMs": 0.005344,
+                "p95Ms": 0.009408
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "gpu64-after",
+        "cssSize": 64,
+        "devicePixelRatio": 2,
+        "warmupMs": 2000,
+        "sampleMs": 3000,
+        "gpuTimerMode": "passes",
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "cases": [
+          {
+            "count": 64,
+            "mode": "active",
+            "fps": 59.90614703654746,
+            "frames": 180,
+            "elapsedMs": 3004.699999988079,
+            "mainThreadTaskMs": 366.274,
+            "drawImageSynchronousMs": 19.899999916553497,
+            "submittedUploadBytesPerFrame": 224256.0,
+            "submittedUploadCallsPerFrame": 108.0,
+            "trianglesPerFrame": 1397956,
+            "renderedInstances": 64,
+            "atlasPixels": 262144,
+            "renderedPixels": 262144,
+            "backingPixelsPerAvatar": 64,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.7874899555555555,
+                "medianMs": 0.7808,
+                "p95Ms": 1.158624
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.019784,
+                "medianMs": 0.018208,
+                "p95Ms": 0.026208
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.007986666666666673,
+                "medianMs": 0.007776,
+                "p95Ms": 0.008992
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.3425448888888889,
+                "medianMs": 0.317472,
+                "p95Ms": 0.574368
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.005294222222222223,
+                "medianMs": 0.004832,
+                "p95Ms": 0.007104
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 64,
+            "mode": "one-active",
+            "fps": 59.86430756927177,
+            "frames": 180,
+            "elapsedMs": 3006.800000011921,
+            "mainThreadTaskMs": 154.24799999999993,
+            "drawImageSynchronousMs": 9,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 262144,
+            "renderedPixels": 5184,
+            "backingPixelsPerAvatar": 64,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.09035715555555554,
+                "medianMs": 0.080448,
+                "p95Ms": 0.150528
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.015837511111111112,
+                "medianMs": 0.015648,
+                "p95Ms": 0.016448
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.00627360000000001,
+                "medianMs": 0.00624,
+                "p95Ms": 0.006496
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.012339377777777775,
+                "medianMs": 0.010944,
+                "p95Ms": 0.014112
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.004595199999999999,
+                "medianMs": 0.004128,
+                "p95Ms": 0.00656
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          },
+          {
+            "count": 64,
+            "mode": "offscreen",
+            "fps": 59.92409614464534,
+            "frames": 180,
+            "elapsedMs": 3003.800000011921,
+            "mainThreadTaskMs": 156.85599999999988,
+            "drawImageSynchronousMs": 8.500000059604645,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 262144,
+            "renderedPixels": 5184,
+            "backingPixelsPerAvatar": 64,
+            "gpuTiming": {
+              "depth": {
+                "samples": 180,
+                "meanMs": 0.10233706666666668,
+                "medianMs": 0.07952,
+                "p95Ms": 0.229664
+              },
+              "AO-sample": {
+                "samples": 180,
+                "meanMs": 0.015832533333333322,
+                "medianMs": 0.015616,
+                "p95Ms": 0.016288
+              },
+              "AO-resolve": {
+                "samples": 180,
+                "meanMs": 0.006268622222222228,
+                "medianMs": 0.00624,
+                "p95Ms": 0.006496
+              },
+              "color-including-resolve": {
+                "samples": 180,
+                "meanMs": 0.01261973333333332,
+                "medianMs": 0.010976,
+                "p95Ms": 0.022336
+              },
+              "present": {
+                "samples": 180,
+                "meanMs": 0.004505422222222218,
+                "medianMs": 0.004,
+                "p95Ms": 0.006656
+              }
+            },
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      }
+    ],
+    "interpretation": "Both versions maintain about60fps. In64 fully active avatars, upload bytes, atlas area and GPU depth median are essentially unchanged. Sparse workloads reduce submitted upload bytes and scissored pixels; do not infer a universal all-active speedup from the first24-avatar pair."
+  },
+  "softwareRenderer": {
+    "environment": "Linux headless Chrome146, ANGLE SwiftShader Vulkan software rendering; not a physical weak PC or phone. No CPU throttling.",
+    "samples": [
+      {
+        "id": "software-before",
+        "cssSize": 112,
+        "devicePixelRatio": 1,
+        "warmupMs": 2000,
+        "sampleMs": 4000,
+        "gpuTimerMode": "",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "cases": [
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 58.88811258661193,
+            "frames": 236,
+            "elapsedMs": 4007.599999964237,
+            "mainThreadTaskMs": 4008.853,
+            "drawImageSynchronousMs": 3714.600000023842,
+            "submittedUploadBytesPerFrame": 50304.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 409600,
+            "renderedPixels": 409600,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {},
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "software-after",
+        "cssSize": 112,
+        "devicePixelRatio": 1,
+        "warmupMs": 2000,
+        "sampleMs": 4000,
+        "gpuTimerMode": "",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "cases": [
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 40.340654414940765,
+            "frames": 162,
+            "elapsedMs": 4015.800000011921,
+            "mainThreadTaskMs": 3528.976,
+            "drawImageSynchronousMs": 3169.899999976158,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 409600,
+            "renderedPixels": 18496,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {},
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "software-after2",
+        "cssSize": 112,
+        "devicePixelRatio": 1,
+        "warmupMs": 5000,
+        "sampleMs": 5000,
+        "gpuTimerMode": "",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "cases": [
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 60.00558191473931,
+            "frames": 301,
+            "elapsedMs": 5016.199999988079,
+            "mainThreadTaskMs": 3216.6080000000006,
+            "drawImageSynchronousMs": 2873.9999999403954,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 409600,
+            "renderedPixels": 18496,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {},
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "software-before2",
+        "cssSize": 112,
+        "devicePixelRatio": 1,
+        "warmupMs": 5000,
+        "sampleMs": 5000,
+        "gpuTimerMode": "",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "cases": [
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 60.003189538599514,
+            "frames": 301,
+            "elapsedMs": 5016.399999976158,
+            "mainThreadTaskMs": 4960.436000000001,
+            "drawImageSynchronousMs": 4629.3000002503395,
+            "submittedUploadBytesPerFrame": 50304.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 409600,
+            "renderedPixels": 409600,
+            "backingPixelsPerAvatar": 128,
+            "gpuTiming": {},
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "software-dpr2-after",
+        "cssSize": 128,
+        "devicePixelRatio": 2,
+        "warmupMs": 5000,
+        "sampleMs": 5000,
+        "gpuTimerMode": "",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "cases": [
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 60.01754665830185,
+            "frames": 301,
+            "elapsedMs": 5015.199999988079,
+            "mainThreadTaskMs": 4406.907,
+            "drawImageSynchronousMs": 3839.9000002741814,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 921600,
+            "renderedPixels": 40000,
+            "backingPixelsPerAvatar": 192,
+            "gpuTiming": {},
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "software-dpr2-before",
+        "cssSize": 128,
+        "devicePixelRatio": 2,
+        "warmupMs": 5000,
+        "sampleMs": 5000,
+        "gpuTimerMode": "",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "cases": [
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 30.66392339946871,
+            "frames": 155,
+            "elapsedMs": 5054.800000011921,
+            "mainThreadTaskMs": 5134.321,
+            "drawImageSynchronousMs": 4724.800000190735,
+            "submittedUploadBytesPerFrame": 50304.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 921600.0,
+            "renderedPixels": 921600.0,
+            "backingPixelsPerAvatar": 192,
+            "gpuTiming": {},
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "software-dpr2-before2",
+        "cssSize": 128,
+        "devicePixelRatio": 2,
+        "warmupMs": 5000,
+        "sampleMs": 5000,
+        "gpuTimerMode": "",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "cases": [
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 14.47149701769825,
+            "frames": 74,
+            "elapsedMs": 5113.5,
+            "mainThreadTaskMs": 5248.377999999999,
+            "drawImageSynchronousMs": 4789.100000023842,
+            "submittedUploadBytesPerFrame": 50304.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 921600.0,
+            "renderedPixels": 921600.0,
+            "backingPixelsPerAvatar": 192,
+            "gpuTiming": {},
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      },
+      {
+        "id": "software-dpr2-after2",
+        "cssSize": 128,
+        "devicePixelRatio": 2,
+        "warmupMs": 5000,
+        "sampleMs": 5000,
+        "gpuTimerMode": "",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "cases": [
+          {
+            "count": 24,
+            "mode": "one-active",
+            "fps": 46.625620180635586,
+            "frames": 234,
+            "elapsedMs": 5018.699999988079,
+            "mainThreadTaskMs": 5052.006,
+            "drawImageSynchronousMs": 4400.799999833107,
+            "submittedUploadBytesPerFrame": 1920.0,
+            "submittedUploadCallsPerFrame": 12.0,
+            "trianglesPerFrame": 18804,
+            "renderedInstances": 1,
+            "atlasPixels": 921600,
+            "renderedPixels": 40000,
+            "backingPixelsPerAvatar": 192,
+            "gpuTiming": {},
+            "gpuDisjointSamples": 0,
+            "contextLost": 0
+          }
+        ]
+      }
+    ],
+    "interpretation": "Strong host/software variance. Initial2s-warm DPR1 pair58.9\u219240.3fps did not reproduce: reversed5s-warm pair both60fps. DPR2 repeated before30.66/14.47 versus after60.02/46.63fps supports a directional benefit under pixel pressure, not a stable multiplier or real-device guarantee. Team builds were coordinated away from measured samples; unrelated repositories were not isolated. Later process inspection found concurrent external TypeScript/Rust jobs, so global quiet cannot be established. A brief team Metro compile during finalafter startup ended before the5s warmup/sample window.",
+    "cpuCaveat": "DevTools TaskDuration and synchronous drawImage include waiting for rendering; these are not total-system CPU consumption. Software GPU process CPU is not included."
+  },
+  "verification": {
+    "editorPool": {
+      "passed": 14,
+      "errors": 0,
+      "scope": "Real WebGL retained canvas, sparse middle slot, paused recolor, offscreen/resume, work lifecycle, failure and disposal.",
+      "heldResizeClock": "Exact work motionTime held across resolution/LOD promotion; original live one-cycle assertion could expire during software shader compilation."
+    },
+    "lazyWork": {
+      "passed": 8,
+      "errors": 0,
+      "sourceCommit": "213c18c2",
+      "cases": [
+        "complete",
+        "same-reference",
+        "replace",
+        "pause",
+        "reduced",
+        "dispose",
+        "failure",
+        "noop-latest"
+      ],
+      "execution": "Seven original cases plus isolated new no-op/latest case; exact union equals script default eight scenarios."
+    },
+    "injectedHost": {
+      "cases": [
+        {
+          "name": "idle",
+          "differentPixels": 0,
+          "maxDifference": 0,
+          "comparedPixels": 147456,
+          "transparentPixels": 79226,
+          "partialAlphaPixels": 6077,
+          "width": 768,
+          "height": 192,
+          "backingPixelsPerAvatar": 192
+        },
+        {
+          "name": "work",
+          "differentPixels": 0,
+          "maxDifference": 0,
+          "comparedPixels": 147456,
+          "transparentPixels": 82938,
+          "partialAlphaPixels": 20495,
+          "width": 768,
+          "height": 192,
+          "backingPixelsPerAvatar": 192
+        },
+        {
+          "name": "sparse-middle",
+          "differentPixels": 0,
+          "maxDifference": 0,
+          "comparedPixels": 36864,
+          "transparentPixels": 21076,
+          "partialAlphaPixels": 1324,
+          "width": 768,
+          "height": 192,
+          "backingPixelsPerAvatar": 192
+        },
+        {
+          "name": "restore",
+          "differentPixels": 0,
+          "maxDifference": 0,
+          "comparedPixels": 147456,
+          "transparentPixels": 79226,
+          "partialAlphaPixels": 6077,
+          "width": 768,
+          "height": 192,
+          "backingPixelsPerAvatar": 192
+        }
+      ],
+      "errors": [],
+      "domObservers": 0,
+      "subscriptions": 1,
+      "unsubscriptions": 1
+    }
+  },
+  "reproduce": {
+    "pixels": "Capture baseline with BLOOM_STORYBOOK_URL and AVATAR_EQUIVALENCE_OUTPUT; run candidate with AVATAR_EQUIVALENCE_REFERENCE pointing to that folder. node scripts/verify-avatar-render-equivalence.mjs. Keep both origins and browser unchanged.",
+    "timing": "node scripts/measure-avatar-pool.mjs; AVATAR_POOL_COUNTS, AVATAR_POOL_SIZE, AVATAR_POOL_DPR, AVATAR_POOL_MODES, AVATAR_WARMUP_MS and AVATAR_SAMPLE_MS configure the workload. AVATAR_GPU_PROFILE=passes or resolve requires hardware timer extension; AVATAR_CPU_PROFILE=1 saves a cpuprofile. Run sequentially without other benchmarks/builds.",
+    "apiCensus": "node scripts/profile-avatar-gl-api.mjs records exact forwarded WebGL calls during startup, idle, prepareWork, work and dispose. This instrumentation is separate from timings."
+  },
+  "webglApiCensus": {
+    "methods": [
+      "activeTexture",
+      "attachShader",
+      "bindAttribLocation",
+      "bindBuffer",
+      "bindFramebuffer",
+      "bindRenderbuffer",
+      "bindTexture",
+      "bindVertexArray",
+      "blendEquation",
+      "blendFuncSeparate",
+      "blitFramebuffer",
+      "bufferData",
+      "bufferSubData",
+      "clear",
+      "clearColor",
+      "clearDepth",
+      "clearStencil",
+      "colorMask",
+      "compileShader",
+      "createBuffer",
+      "createFramebuffer",
+      "createProgram",
+      "createRenderbuffer",
+      "createShader",
+      "createTexture",
+      "createVertexArray",
+      "cullFace",
+      "deleteBuffer",
+      "deleteFramebuffer",
+      "deleteProgram",
+      "deleteRenderbuffer",
+      "deleteShader",
+      "deleteTexture",
+      "deleteVertexArray",
+      "depthFunc",
+      "depthMask",
+      "disable",
+      "drawArrays",
+      "drawBuffers",
+      "drawElements",
+      "drawElementsInstanced",
+      "enable",
+      "enableVertexAttribArray",
+      "framebufferRenderbuffer",
+      "framebufferTexture2D",
+      "frontFace",
+      "getActiveAttrib",
+      "getActiveUniform",
+      "getAttribLocation",
+      "getContextAttributes",
+      "getExtension",
+      "getParameter",
+      "getProgramInfoLog",
+      "getProgramParameter",
+      "getShaderInfoLog",
+      "getShaderPrecisionFormat",
+      "getUniformLocation",
+      "linkProgram",
+      "pixelStorei",
+      "readPixels",
+      "renderbufferStorage",
+      "renderbufferStorageMultisample",
+      "scissor",
+      "shaderSource",
+      "stencilMask",
+      "texImage2D",
+      "texImage3D",
+      "texParameteri",
+      "texStorage2D",
+      "texSubImage2D",
+      "uniform1i",
+      "uniform2f",
+      "uniform4f",
+      "uniformMatrix4fv",
+      "useProgram",
+      "vertexAttribDivisor",
+      "vertexAttribIPointer",
+      "vertexAttribPointer",
+      "viewport"
+    ],
+    "extensions": [
+      "EXT_color_buffer_float",
+      "WEBGL_clip_cull_distance",
+      "OES_texture_float_linear",
+      "EXT_color_buffer_half_float",
+      "EXT_texture_filter_anisotropic",
+      "WEBGL_lose_context"
+    ],
+    "errors": [],
+    "note": "Native backend requires actual API capability parity, including multisampled RGBA8/depth renderbuffers, framebuffer blit, float pose textures and instancing. An API name stub does not establish compatibility."
+  }
+}

@@ -201,8 +201,34 @@ try {
         hidden: document.hidden,
       }));
     const before = await Promise.all(sessions.map(read));
+    if (process.env.AVATAR_CPU_PROFILE === '1' && mode === 'active') {
+      await sessions[0].send('Profiler.enable');
+      await sessions[0].send('Profiler.setSamplingInterval', { interval: 1000 });
+      await sessions[0].send('Profiler.start');
+    }
     await pause(5000);
     const after = await Promise.all(sessions.map(read));
+    if (process.env.AVATAR_CPU_PROFILE === '1' && mode === 'active') {
+      const { profile } = await sessions[0].send('Profiler.stop');
+      await writeFile(`${output}/active.cpuprofile`, JSON.stringify(profile));
+      const nodes = new Map(profile.nodes.map((n) => [n.id, n])),
+        times = new Map();
+      profile.samples.forEach((id, i) => {
+        times.set(id, (times.get(id) || 0) + profile.timeDeltas[i]);
+      });
+      report.cpuProfile = {
+        scope:
+          'V8 sampling through first test document; shared renderer thread, not per-avatar CPU or compositor/GPU time.',
+        topSelf: [...times]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 30)
+          .map(([id, us]) => ({
+            function: nodes.get(id).callFrame.functionName,
+            url: nodes.get(id).callFrame.url,
+            sampledSelfMs: us / 1000,
+          })),
+      };
+    }
     const afterMetrics = await Promise.all(sessions.map(metrics));
     const hosts = after.map((a, i) => {
       assert.equal(a.hidden, false);
@@ -226,7 +252,7 @@ try {
         triangles: hosts.map((h) => h.stats.triangles),
       }),
     );
-    await writeFile(`${output}/report.json`, JSON.stringify(report, null, 2) + '\n');
+    await writeFile(`${output}/report.json`, `${JSON.stringify(report, null, 2)}\n`);
   }
   report.network = sessions.map((s) =>
     [...s.requests.values()].filter((r) => !/(javascript|html|css)/.test(r.mime)),
@@ -242,6 +268,6 @@ try {
   report.failure = String(error.stack || error);
   throw error;
 } finally {
-  await writeFile(`${output}/report.json`, JSON.stringify(report, null, 2) + '\n');
+  await writeFile(`${output}/report.json`, `${JSON.stringify(report, null, 2)}\n`);
   for (const session of sessions) session.socket.close();
 }
