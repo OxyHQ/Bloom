@@ -53,6 +53,10 @@ declare const require: (moduleName: string) => unknown;
 export interface HapticsLike {
   ImpactFeedbackStyle: Record<'Light' | 'Medium' | 'Heavy', string>;
   impactAsync(style?: string): Promise<void>;
+  selectionAsync?(): Promise<void>;
+  NotificationFeedbackType?: Record<'Success' | 'Error', string>;
+  notificationAsync?(type?: string): Promise<void>;
+  performAndroidHapticsAsync?(type: string): Promise<void>;
 }
 
 /** `undefined` until the first load attempt, then the module or `null`. */
