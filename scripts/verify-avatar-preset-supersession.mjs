@@ -13,18 +13,51 @@ const errors = [];
 try {
   const page = await browser.newPage();
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto(`${process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6007'}/iframe.html`);
-  const result = await page.evaluate(async () => {
+  const cdp = await page.createCDPSession();
+  await cdp.send('Fetch.enable', {
+    patterns: [{ urlPattern: '*avatar-preset-supersession.html' }],
+  });
+  cdp.on('Fetch.requestPaused', (event) =>
+    cdp.send('Fetch.fulfillRequest', {
+      requestId: event.requestId,
+      responseCode: 200,
+      responseHeaders: [{ name: 'Content-Type', value: 'text/html' }],
+      body: Buffer.from('<!doctype html><body></body>').toString('base64'),
+    }),
+  );
+  await page.goto(
+    `${process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6007'}/avatar-preset-supersession.html`,
+  );
+  await cdp.send('Fetch.disable');
+  const result = await page.evaluate(async (built) => {
     document.body.replaceChildren();
-    const runtimeUrl = '/runtime/avatar-runtime.ts';
-    const runtime = await import(runtimeUrl);
-    const source = await (await fetch(runtimeUrl)).text();
-    const pool = await import(
-      new URL(
-        source.match(/import\(["']([^"']*avatar-pool[^"']*)["']\)/)[1],
-        location.origin + runtimeUrl,
-      ).href
-    );
+    performance.setResourceTimingBufferSize(5000);
+    let runtime, pool;
+    if (built) {
+      const { loadCharacterRuntime } = await import(
+        '/src/agent-avatar/character-runtime-module.ts'
+      );
+      runtime = await loadCharacterRuntime(
+        new URL('/bloom-character/runtime.mjs', location.href).href,
+      );
+      await runtime.diagnostics();
+      const poolUrl = performance
+        .getEntriesByType('resource')
+        .map((entry) => entry.name)
+        .find((url) => /\/chunks\/avatar-pool-[^/]+\.mjs(?:\?|$)/.test(url));
+      if (!poolUrl) throw Error('Built loader did not load its actual pool module');
+      pool = await import(poolUrl);
+    } else {
+      const runtimeUrl = '/runtime/avatar-runtime.ts';
+      runtime = await import(runtimeUrl);
+      const source = await (await fetch(runtimeUrl)).text();
+      pool = await import(
+        new URL(
+          source.match(/import\(["']([^"']*avatar-pool[^"']*)["']\)/)[1],
+          location.origin + runtimeUrl,
+        ).href
+      );
+    }
     const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
     const wait = async (predicate, label) => {
       const start = performance.now();
@@ -136,6 +169,7 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 100));
     window.fetch = original;
     return {
+      built,
       ready,
       failures,
       requested: [...requested],
@@ -143,7 +177,7 @@ try {
       pigment,
       retained: true,
     };
-  });
+  }, process.env.AVATAR_BUILT_RUNTIME === '1');
   assert.equal(result.ready, 1);
   assert.equal(result.failures, 0);
   assert.equal(result.finalPools, 0);
