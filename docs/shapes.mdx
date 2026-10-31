@@ -36,7 +36,9 @@ over a sidebar distorts its corners; an SVG clip cannot mask sibling RN views.
 
 `Shapes.ImageSource` accepts a positive bundled asset ID or `{ uri, width?, height?, scale? }`.
 The URI must be directly loadable: a public or signed URL, a data URI, or a local URI.
-Optional dimensions and scale must be positive finite numbers. Source arrays and
+Optional dimensions and scale must be positive finite numbers. Metro web asset
+descriptors may also carry an enumerable `toString` function; Bloom ignores this
+metadata and reads the explicit URI without invoking the helper. Source arrays and
 request options (`headers`, `method`, `body`, `cache`) are rejected on every shape,
 including circles. SVG loaders do not support these options consistently across
 platforms; a native error detector successfully fetching an authenticated image

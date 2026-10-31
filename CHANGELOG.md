@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.80.1
+
+### Fixed
+
+- Avatar and Shapes.Image accept bundled images emitted by Metro for web, including its enumerable `toString` metadata. A valid primary photo no longer fails validation because its bundled fallback carries that helper. The helper is never invoked, equivalent image keys remain stable, and unsupported request options remain rejected.
+
+### Consumers
+
+No API changes. Existing imported image assets work as primary photos and fallbacks on every shape.
+
 ## 15.80.0
 
 ### Added

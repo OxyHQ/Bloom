@@ -133,7 +133,7 @@ length of the square space the path is drawn in, so a path written over a
 />
 ```
 
-Local assets, `{ uri }` objects and URLs all use the selected outline. Arrays and request options such as `headers`, `method`, `body` or `cache` are unsupported on every shape; use a directly accessible URL, signed URL, data URI or local asset. Optional descriptor metadata is `width`, `height` and `scale`. If the image and optional `fallbackSource` fail, the background behind the initials keeps that outline. An arbitrary `placeholderIcon` is centered above the fill; it is not masked, so size custom content to fit inside the silhouette.
+Local assets, `{ uri }` objects and URLs all use the selected outline. Arrays and request options such as `headers`, `method`, `body` or `cache` are unsupported on every shape; use a directly accessible URL, signed URL, data URI or local asset. Optional descriptor metadata is `width`, `height` and `scale`; Metro web assets may also carry a `toString` function, which is ignored without invocation and does not change the image request key. If the image and optional `fallbackSource` fail, the background behind the initials keeps that outline. An arbitrary `placeholderIcon` is centered above the fill; it is not masked, so size custom content to fit inside the silhouette.
 
 Every shape except `'circle'` clips through `react-native-svg`; a circle is
 drawn with `borderRadius`; a gradient ring still uses SVG. A `ring` follows
