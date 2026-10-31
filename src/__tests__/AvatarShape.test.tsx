@@ -40,6 +40,43 @@ function renderedViewBoxes(tree: ReturnType<typeof renderAvatar>): string[] {
 
 const URI = 'https://cloud.oxy.so/face.jpg';
 
+type AvatarFiber = {
+  type?: { name?: string } | string | null;
+  return: AvatarFiber | null;
+  child: AvatarFiber | null;
+  sibling: AvatarFiber | null;
+  stateNode?: { current?: AvatarFiber } | null;
+  memoizedState: { next: unknown } | null;
+};
+
+function photoHooks(tree: ReturnType<typeof renderAvatar>) {
+  let root = (tree.UNSAFE_root as unknown as { _fiber: AvatarFiber })._fiber;
+  while (root.return) root = root.return;
+  root = root.stateNode?.current ?? root;
+  const pending = [root];
+  let photo: AvatarFiber | undefined;
+  while (pending.length) {
+    const fiber = pending.pop()!;
+    if (typeof fiber.type !== 'string' && fiber.type?.name === 'AvatarImageContent') photo = fiber;
+    if (fiber.child) pending.push(fiber.child);
+    if (fiber.sibling && fiber !== root) pending.push(fiber.sibling);
+  }
+  if (!photo) throw new Error('Photo was not mounted');
+  let hooks = 0;
+  let observers = 0;
+  const descendants = [photo];
+  while (descendants.length) {
+    const fiber = descendants.pop()!;
+    if (typeof fiber.type === 'function') {
+      for (let hook = fiber.memoizedState; hook; hook = hook.next as typeof hook) hooks++;
+    }
+    if (typeof fiber.type !== 'string' && fiber.type?.name === 'ObservedAvatarImage') observers++;
+    if (fiber.child) descendants.push(fiber.child);
+    if (fiber.sibling && fiber !== photo) descendants.push(fiber.sibling);
+  }
+  return { hooks, observers };
+}
+
 describe('resolve', () => {
   it('resolves a circle to no outline so it stays off the SVG renderer', () => {
     expect(resolve('circle')).toBeNull();
@@ -208,6 +245,90 @@ describe('Avatar silhouette across source and fallback states', () => {
 });
 
 describe('Avatar semantic image request identity', () => {
+  it('only allocates observation lifecycle while a primary photo has a subscriber', () => {
+    const onImageError = jest.fn();
+    const wrap = (observe: boolean) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Avatar
+          uri={URI}
+          fallbackSource={{ uri: 'https://example.com/fallback.png' }}
+          name="Ada"
+          onImageError={observe ? onImageError : undefined}
+        />
+      </BloomThemeProvider>
+    );
+    const tree = render(wrap(false));
+    // The original photo path: its fallback state and ShapeImage's SVG ID only.
+    expect(photoHooks(tree)).toEqual({ hooks: 2, observers: 0 });
+    tree.rerender(wrap(true));
+    expect(photoHooks(tree)).toEqual({ hooks: 4, observers: 1 });
+    fireEvent(tree.UNSAFE_getByType(Image), 'error', { error: 'failed' });
+    expect(photoHooks(tree)).toEqual({ hooks: 2, observers: 0 });
+    expect(onImageError).toHaveBeenCalledTimes(1);
+    tree.rerender(wrap(false));
+    tree.rerender(wrap(true));
+    expect(photoHooks(tree)).toEqual({ hooks: 2, observers: 0 });
+    expect(tree.UNSAFE_getByType(Image).props.source.uri).toContain('fallback.png');
+  });
+
+  it('preserves the silhouette and failed-photo state when the observer is toggled', () => {
+    const onImageError = jest.fn();
+    const wrap = (observe: boolean) => (
+      <React.StrictMode>
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Avatar
+            uri={URI}
+            fallbackSource={{ uri: 'https://example.com/fallback.png' }}
+            name="Ada"
+            shape="heart"
+            size={48}
+            alt="Ada"
+            onImageError={observe ? onImageError : undefined}
+          />
+        </BloomThemeProvider>
+      </React.StrictMode>
+    );
+    const tree = render(wrap(true));
+    const oldError = tree.UNSAFE_getByType(Image).props.onError;
+    tree.rerender(wrap(false));
+    act(() => oldError({ error: 'late observer event' }));
+    expect(onImageError).not.toHaveBeenCalled();
+    expect(tree.UNSAFE_getByType('SvgImage' as never).props.href).toEqual({ uri: URI });
+    expect(renderedPaths(tree)).toContain(PATHS.heart);
+    expect(tree.UNSAFE_getByType('Svg' as never).props.width).toBe(48);
+    tree.rerender(wrap(true));
+    fireEvent(tree.UNSAFE_getByType(Image), 'error', { error: 'primary failed' });
+    expect(onImageError).toHaveBeenCalledTimes(1);
+    tree.rerender(wrap(false));
+    tree.rerender(wrap(true));
+    expect(tree.UNSAFE_getByType('SvgImage' as never).props.href).toEqual({
+      uri: 'https://example.com/fallback.png',
+    });
+    fireEvent(tree.UNSAFE_getByType(Image), 'error', { error: 'fallback failed' });
+    tree.rerender(wrap(false));
+    tree.rerender(wrap(true));
+    expect(tree.getByText('A')).toBeTruthy();
+    expect(renderedPaths(tree)).toContain(PATHS.heart);
+    expect(onImageError).toHaveBeenCalledTimes(1);
+  });
+
+  it('queues fallback before a reentrant or throwing observer is notified', () => {
+    let report!: (event: { error: string }) => void;
+    const onImageError = jest.fn(() => {
+      report({ error: 'reentrant' });
+      throw new Error('consumer failure');
+    });
+    const tree = renderAvatar(<Avatar uri={URI} name="Ada" onImageError={onImageError} />);
+    report = tree.UNSAFE_getByType(Image).props.onError;
+    act(() => {
+      expect(() => report({ error: 'failed' })).toThrow('consumer failure');
+    });
+    expect(onImageError).toHaveBeenCalledTimes(1);
+    expect(tree.getByText('A')).toBeTruthy();
+    act(() => report({ error: 'late after throw' }));
+    expect(onImageError).toHaveBeenCalledTimes(1);
+  });
+
   it.each(['ios', 'web'] as const)('reports only the current primary failure once on %s', (os) => {
     const previousOS = Platform.OS;
     Platform.OS = os;
