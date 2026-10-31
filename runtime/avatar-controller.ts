@@ -130,3 +130,77 @@ export function createAvatarSlotController(
   };
   return { update, setPresentation };
 }
+
+/** Serialize recipe commits while applying presentation constraints immediately.
+ * Both hosts use the same latest-intent and cancellation boundary. */
+export function createAvatarReconciler(
+  initial: EditorRenderProps,
+  slot: ReturnType<typeof createAvatarSlotController> & { dispose(): void },
+  callbacks: {
+    resolveRecipe(props: EditorRenderProps): EditorRecipe;
+    initialRecipe?: EditorRecipe;
+    onCapabilities?(value: EditorRecipe['capabilities']): void;
+    onError(): void;
+    onDispose?(): void;
+  },
+) {
+  let latest = initial;
+  let applied = initial;
+  let disposed = false;
+  let running: Promise<void> | undefined;
+  let supersedeUpdate: (() => void) | undefined;
+  callbacks.onCapabilities?.(
+    (callbacks.initialRecipe ?? callbacks.resolveRecipe(initial)).capabilities,
+  );
+  const dispose = () => {
+    if (disposed) return;
+    disposed = true;
+    supersedeUpdate?.();
+    callbacks.onDispose?.();
+    slot.dispose();
+  };
+  const reconcile = async () => {
+    while (!disposed && applied !== latest) {
+      const props = latest;
+      const next = callbacks.resolveRecipe(props);
+      let supersede!: () => void;
+      const superseded = new Promise<void>((resolve) => {
+        supersede = resolve;
+      });
+      supersedeUpdate = supersede;
+      await slot.update(props, next, () => !disposed && latest === props, superseded);
+      if (supersedeUpdate === supersede) supersedeUpdate = undefined;
+      if (!disposed && latest === props) callbacks.onCapabilities?.(next.capabilities);
+      applied = props;
+    }
+  };
+  const drain = async () => {
+    try {
+      // Even a no-op reconciliation yields a completion microtask. An update
+      // arriving after its loop exits must join this drain, rather than being
+      // stranded behind a still-truthy promise which is already completing.
+      do {
+        await reconcile();
+      } while (!disposed && applied !== latest);
+    } catch {
+      if (!disposed) {
+        dispose();
+        callbacks.onError();
+      }
+    } finally {
+      running = undefined;
+    }
+  };
+  return {
+    update(props: EditorRenderProps) {
+      if (disposed) return;
+      const changed = latest !== props;
+      latest = props;
+      if (changed) supersedeUpdate?.();
+      slot.setPresentation(props);
+      if (!running) running = drain();
+      return running;
+    },
+    dispose,
+  };
+}
