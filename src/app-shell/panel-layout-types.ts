@@ -99,7 +99,8 @@ export interface AppShellPanelLayout {
   header?: ReactNode;
   /**
    * `scroll-under` keeps the workspace header above native panels while their
-   * scroll content clears it; document-flow web keeps its inset header.
+   * scroll content clears it; web keeps its inset header in document and
+   * bounded layouts.
    * Defaults to `inset`.
    */
   headerPlacement?: 'inset' | 'scroll-under';

@@ -43,7 +43,7 @@ its measured height is reserved inside the panel's `ScreenScrollView` or bound
 `VirtualList`; an inset header remains the default. A route's own header stacks
 below the workspace header. Floating panels and isolated overlay scopes do not
 inherit its clearance. In a vertical layout only the first visible top panel
-clears it; on document-flow web the workspace header retains its inset flow.
+clears it; on web, both document and bounded layouts retain the inset header.
 The document panel's minimum height excludes the measured workspace header:
 a short 900 px page previously became 962 px tall under a 62 px header.
 
