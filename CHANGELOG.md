@@ -2,6 +2,27 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.80.0
+
+### Added
+
+- **`Menubar` is a desktop's menu bar on a native desktop.** With platform popups (`popup-surface`: an OxyOS window or its shell) each menu is the web's desktop menu in the platform's popup, hanging under its trigger with the web's menubar offsets, never a bottom sheet. Before, a native `Menubar` drew in the window opened phone sheets.
+- **The bar from the keyboard: `Menubar`'s `focusValue` / `onFocusValueChange`.** The owner puts the keyboard on a menu's title (a Mac's Control-F2, OxyOS's Super+F2); ← → then move across the titles (an open menu giving way to the next, on its first row; an open menu keeps → on a submenu's row and ← inside a submenu), ↓ / Return / Space open the focused menu on its first row and ↑ on its last, a letter jumps to a title, Escape leaves, and a row chosen leaves too. Keys come from the adapter's `keyboard` (native) or the document (web). The focused title is lit, and the screen reader's focus follows it; in a platform popup it follows the row the keys make active (never the pointer's hover), the panel no longer taking it first when the menu opens on a row. `MenubarMenu` takes `openFocus` as `DropdownMenu` does. Pinned by `MenubarDesktop.test.tsx`; reference story `Desktop menus`.
+- **The `pointer` capability**: a pointer drives the platform though Bloom is in no window there (a desktop's shell): controls take a desktop's geometry and menus a desktop's presentation, as `window` gives them.
+
+### Changed
+
+- **Submenus fly out on a native desktop.** In a platform popup a pointer drives (`window` or `pointer`), `DropdownMenuSub`, `ContextMenuSub` and `MenubarSub` are the web's flyout: a right chevron, opened by the pointer on its row (a row outside it closes it after the web's 300ms grace), its content a panel of its own in a popup of the platform's beside the row, one 2px seam off the parent panel, with the parent's keyboard navigation. Before, a desktop drew a phone's inline disclosure inside the menu. A sheet keeps the disclosure.
+- **A native popup panel is drawn as the web's.** `floating/PopupPanel` paints the menu surface as Bloom's material (`SurfacePaint`, as the web panel's material), its 1px edge transparent under it, with `shadow-dropdown`, and clips its rows' box as the web's scroller does (a separator ends at the rows' edges). Before, an opaque fill inside a grey hairline the web never draws, with separators reaching the panel's edge.
+
+### Fixed
+
+- **A `Menubar` controlled with `value={undefined}` closes.** `undefined` was read as uncontrolled, so a menu its owner closed stayed open; `value` and `focusValue` are controlled whenever passed.
+
+### Consumers
+
+Bump to 15.80.0. A native app or shell with platform popups gets desktop menus from the same declaration. A shell that drove its own bar's keys passes `focusValue` instead. An adapter for a desktop shell reports `pointer`.
+
 ## 15.79.2
 
 ### Fixed

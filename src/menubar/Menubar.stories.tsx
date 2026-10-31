@@ -139,6 +139,85 @@ export const Controlled: Story = {
 };
 
 /**
+ * A desktop menu bar driven from the keyboard, with the menus OxyOS's session
+ * bar shows for an application (an application menu, File and Edit): the
+ * reference its top bar is compared against, pixel for pixel. Focus the bar
+ * from the keyboard with the button (a Mac's Control-F2, OxyOS's Super+F2):
+ * ← → move across the menus, ↓ / Return open one on its first row, a letter
+ * jumps to a title, Escape leaves.
+ */
+export const DesktopMenus: Story = {
+  name: 'Desktop menus',
+  parameters: { controls: { disable: true } },
+  render: function DesktopMenusExample() {
+    const [open, setOpen] = useState<string | undefined>();
+    const [focus, setFocus] = useState<string | undefined>();
+    const [wrap, setWrap] = useState(false);
+    const [last, setLast] = useState('idle');
+    return (
+      <View style={{ padding: 40, gap: 16 }}>
+        <Pressable testID="focus-bar" onPress={() => setFocus('app')}>
+          <Text>Focus the bar from the keyboard</Text>
+        </Pressable>
+        <Text testID="result">{`last: ${last} · keyboard: ${focus ?? 'elsewhere'}`}</Text>
+        <Menubar
+          value={open}
+          onValueChange={setOpen}
+          focusValue={focus}
+          onFocusValueChange={setFocus}
+        >
+          <MenubarMenu value="app">
+            <MenubarTrigger testID="menubar-app">Allo</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem disabled>Acerca de Allo</MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onPress={() => setLast('hide')}>Ocultar Allo</MenubarItem>
+              <MenubarItem onPress={() => setLast('quit')}>Salir de Allo</MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+          <MenubarMenu value="file">
+            <MenubarTrigger testID="menubar-file">File</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem
+                onPress={() => setLast('new')}
+                trailing={<MenubarShortcut>Ctrl+N</MenubarShortcut>}
+              >
+                New
+              </MenubarItem>
+              <MenubarItem
+                onPress={() => setLast('open')}
+                trailing={<MenubarShortcut>Ctrl+O</MenubarShortcut>}
+              >
+                Open…
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarSub>
+                <MenubarSubTrigger>Open Recent</MenubarSubTrigger>
+                <MenubarSubContent>
+                  <MenubarItem onPress={() => setLast('notes')}>notes.txt</MenubarItem>
+                </MenubarSubContent>
+              </MenubarSub>
+            </MenubarContent>
+          </MenubarMenu>
+          <MenubarMenu value="edit">
+            <MenubarTrigger testID="menubar-edit">Edit</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem disabled trailing={<MenubarShortcut>Ctrl+Z</MenubarShortcut>}>
+                Undo
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarCheckboxItem checked={wrap} onCheckedChange={setWrap}>
+                Wrap Lines
+              </MenubarCheckboxItem>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
+      </View>
+    );
+  },
+};
+
+/**
  * The same declaration, with an adapter whose platform shows the menus in a
  * bar of its own (`menu-bar`, OxyOS ADR 0021). The `Menubar` draws nothing in
  * the page; the strip above stands in for the platform's bar: it draws the

@@ -10,12 +10,19 @@
  * activates it, and a pointer hovering a row makes it active, so the pointer and
  * the keyboard share one highlight.
  *
- * Submenus (an inline `SubTrigger` and its `SubContent`) take the keys the
- * WAI-ARIA menu pattern, macOS and Android menus give them: → on a row with a
- * submenu opens it and makes its first enabled row active (on a submenu already
- * open, moves into it); ← inside a submenu, or Escape, closes it and makes the
- * row that opened it active again. Escape anywhere else closes the menu. The web
- * flyout's own keys are `menu-sub-flyout.tsx`'s.
+ * Submenus (a `SubTrigger` and its `SubContent`, inline in a sheet or a
+ * flyout popup of their own on a desktop, `menu-sub-inline.tsx`) take the keys
+ * the WAI-ARIA menu pattern, macOS and Android menus give them: → on a row with
+ * a submenu opens it and makes its first enabled row active (on a submenu
+ * already open, moves into it); ← inside a submenu, or Escape, closes it and
+ * makes the row that opened it active again. Escape anywhere else closes the
+ * menu. A flyout's popup sends its keys here too: its rows are this panel's,
+ * registered through the same React tree. The web flyout's own keys are
+ * `menu-sub-flyout.tsx`'s.
+ *
+ * A flyout also follows the pointer as the web's does: hovering its row opens
+ * it, and hovering a row outside it closes it after `FLYOUT_CLOSE_MS`, long
+ * enough for the pointer to cross from its row to its panel.
  *
  * A menu opened from the keyboard starts with its first enabled row active (or its
  * last), as a Mac's does (the root's `openFocus`, through `MenuFocusIntent`); one
@@ -52,6 +59,12 @@ export const KEYBOARD_ACTIVATION = {
 export const TYPEAHEAD_MS = 500;
 
 /**
+ * How long a flyout stays open after the pointer moves onto a row outside it: the web flyout's
+ * grace (`menu-sub-flyout.tsx`), for the diagonal from its row to its panel.
+ */
+export const FLYOUT_CLOSE_MS = 300;
+
+/**
  * A submenu as navigation sees it: one object for the submenu's life, its fields kept current by
  * its owner (`menu-sub-inline.tsx`'s `MenuSub`). The row that opens it registers it as its
  * `submenu`; the rows inside it (under `PopupSubmenuScope`) register it as their `owner`.
@@ -59,6 +72,8 @@ export const TYPEAHEAD_MS = 500;
 export interface PopupSubmenu {
   open: boolean;
   setOpen: (next: boolean) => void;
+  /** Drawn beside its row in a popup of its own (a desktop), so the pointer opens it. */
+  flyout?: boolean;
 }
 
 interface Row {
@@ -77,10 +92,14 @@ interface Row {
 interface Registry {
   register: (row: Row) => () => void;
   setActive: (id: number | null) => void;
+  /** The pointer moved onto a row: it becomes active, and flyouts follow it. */
+  hover: (id: number) => void;
 }
 
 const PopupNavigationContext = createContext<Registry | null>(null);
 const ActiveRowContext = createContext<number | null>(null);
+/** Whether the active row was made so by the keyboard (not the pointer): the screen reader follows it. */
+const ActiveByKeysContext = createContext(false);
 const PopupSubmenuContext = createContext<PopupSubmenu | null>(null);
 
 /** The rows rendered inside it are `submenu`'s, for navigation. */
@@ -114,9 +133,10 @@ export function usePopupNavigationRow({
   activate: () => void;
   /** The submenu this row opens (a submenu's trigger). */
   submenu?: PopupSubmenu;
-}): { active: boolean; hover: () => void } {
+}): { active: boolean; byKeys: boolean; hover: () => void; inPopup: boolean } {
   const navigation = useContext(PopupNavigationContext);
   const activeId = useContext(ActiveRowContext);
+  const byKeys = useContext(ActiveByKeysContext);
   const owner = useContext(PopupSubmenuContext);
   const id = useRef<number | null>(null);
   if (id.current === null) id.current = ++nextRowId;
@@ -145,9 +165,10 @@ export function usePopupNavigationRow({
     });
   }, [navigation]);
   const hover = useCallback(() => {
-    if (navigation && !latest.current.disabled) navigation.setActive(latest.current.id);
+    if (navigation && !latest.current.disabled) navigation.hover(latest.current.id);
   }, [navigation]);
-  return { active: navigation !== null && activeId === id.current, hover };
+  const active = navigation !== null && activeId === id.current;
+  return { active, byKeys: active && byKeys, hover, inPopup: navigation !== null };
 }
 
 /**
@@ -156,15 +177,23 @@ export function usePopupNavigationRow({
  * the panel opens with one (an open from the keyboard), makes the first or last
  * enabled row active once the rows have registered.
  */
-export function usePopupNavigation(
-  onClose: () => void,
-  intent?: MenuFocusIntent,
-): {
+export interface PopupNavigation {
   provider: (children: React.ReactNode) => React.ReactElement;
   onKey: (key: string) => void;
-} {
+  /**
+   * Whether `onKey` would act on an arrow across (← or →) rather than leave it to the owner: →
+   * on a row that opens a submenu, ← inside a submenu. A menu bar moves to its next or previous
+   * menu with the keys the menu leaves.
+   */
+  takes: (key: 'ArrowLeft' | 'ArrowRight') => boolean;
+}
+
+export function usePopupNavigation(onClose: () => void, intent?: MenuFocusIntent): PopupNavigation {
   const rows = useRef<Row[]>([]);
   const [activeId, setActive] = useState<number | null>(null);
+  // The keyboard moved the active row last (the pointer's hover clears it): a screen reader's
+  // focus follows the row then, as VoiceOver's follows a menu's highlight, never the pointer.
+  const [byKeys, setByKeys] = useState(false);
   const typed = useRef({ text: '', at: 0 });
   // A submenu → opened, whose first enabled row becomes active as its rows register.
   const entering = useRef<PopupSubmenu | null>(null);
@@ -189,7 +218,47 @@ export function usePopupNavigation(
       setActive((active) => (active === row.id ? null : active));
     };
   }, []);
-  const registry = useMemo<Registry>(() => ({ register, setActive }), [register]);
+  // Flyouts the pointer left, closing once FLYOUT_CLOSE_MS has passed unless it comes back.
+  const closing = useRef(new Map<PopupSubmenu, ReturnType<typeof setTimeout>>());
+  useEffect(() => {
+    const timers = closing.current;
+    return () => {
+      for (const timer of timers.values()) clearTimeout(timer);
+      timers.clear();
+    };
+  }, []);
+  const hover = useCallback((id: number) => {
+    setActive(id);
+    setByKeys(false);
+    const row = rows.current.find((each) => each.id === id);
+    if (!row) return;
+    // The submenus the row is in, innermost first: each is open while the pointer is on it.
+    const within = new Set<PopupSubmenu>();
+    for (let owner = row.owner; owner && !within.has(owner); ) {
+      within.add(owner);
+      owner = rows.current.find((each) => each.submenu === owner)?.owner ?? null;
+    }
+    if (row.submenu) within.add(row.submenu);
+    for (const each of rows.current) {
+      const submenu = each.submenu;
+      if (!submenu?.flyout) continue;
+      const timer = closing.current.get(submenu);
+      if (within.has(submenu)) {
+        if (timer !== undefined) clearTimeout(timer);
+        closing.current.delete(submenu);
+      } else if (submenu.open && timer === undefined) {
+        closing.current.set(
+          submenu,
+          setTimeout(() => {
+            closing.current.delete(submenu);
+            submenu.setOpen(false);
+          }, FLYOUT_CLOSE_MS),
+        );
+      }
+    }
+    if (row.submenu?.flyout && !row.submenu.open && !row.disabled) row.submenu.setOpen(true);
+  }, []);
+  const registry = useMemo<Registry>(() => ({ register, setActive, hover }), [register, hover]);
   useEffect(() => {
     const edge = opening.current;
     if (!edge) return;
@@ -198,10 +267,12 @@ export function usePopupNavigation(
     if (!row) return;
     opening.current = null;
     setActive(row.id);
+    setByKeys(true);
   }, [registered]);
 
   const onKey = useCallback(
     (key: string) => {
+      setByKeys(true);
       const enabled = rows.current.filter((row) => !row.disabled);
       const index = enabled.findIndex((row) => row.id === activeId);
       const move = (to: number) => {
@@ -274,13 +345,35 @@ export function usePopupNavigation(
     [activeId, onClose],
   );
 
+  const takes = useCallback(
+    (key: 'ArrowLeft' | 'ArrowRight') => {
+      const current = rows.current.find((row) => row.id === activeId && !row.disabled);
+      return key === 'ArrowRight' ? current?.submenu !== undefined : current?.owner != null;
+    },
+    [activeId],
+  );
+
   const provider = useCallback(
     (children: React.ReactNode) => (
       <PopupNavigationContext.Provider value={registry}>
-        <ActiveRowContext.Provider value={activeId}>{children}</ActiveRowContext.Provider>
+        <ActiveRowContext.Provider value={activeId}>
+          <ActiveByKeysContext.Provider value={byKeys}>
+            <PopupKeysContext.Provider value={onKey}>{children}</PopupKeysContext.Provider>
+          </ActiveByKeysContext.Provider>
+        </ActiveRowContext.Provider>
       </PopupNavigationContext.Provider>
     ),
-    [registry, activeId],
+    [registry, activeId, byKeys, onKey],
   );
-  return { provider, onKey };
+  return { provider, onKey, takes };
+}
+
+const PopupKeysContext = createContext<((key: string) => void) | null>(null);
+
+/**
+ * The key handler of the popup panel around, for a flyout's popup: its keys go to the panel its
+ * rows are registered with. Null outside a popup panel.
+ */
+export function usePopupKeys(): ((key: string) => void) | null {
+  return useContext(PopupKeysContext);
 }

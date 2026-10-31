@@ -63,11 +63,13 @@ function subscribeCoarsePointer(notify: () => void) {
  * `window` capability (an OxyOS window) runs the application in a window a
  * pointer drives, so its menus, lists and controls take a desktop's compact
  * geometry, as they do on the web with a fine pointer. Without this, an OxyOS
- * window drew a phone's menus: every context menu row 44pt tall.
+ * window drew a phone's menus: every context menu row 44pt tall. A platform
+ * that reports `pointer` (a desktop's shell, which is in no window) is the
+ * same desktop.
  */
 export function useTouchInput() {
   const coarse = useSyncExternalStore(subscribeCoarsePointer, readCoarsePointer, () => false);
-  const isDesktopWindow = usePlatformSurfaces()?.capabilities.has('window') === true;
-  if (isDesktopWindow) return false;
+  const capabilities = usePlatformSurfaces()?.capabilities;
+  if (capabilities?.has('window') || capabilities?.has('pointer')) return false;
   return Platform.OS !== 'web' || coarse;
 }

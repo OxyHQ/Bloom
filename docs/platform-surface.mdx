@@ -70,12 +70,27 @@ could not cross the window's clipping.
   reported. An adapter that reports it without the component throws instead of
   silently falling back.
 
-Today native `DropdownMenu` uses it: its content becomes `floating/PopupPanel`
-(the web menu panel's chrome: menu palette, 16px radius, hairline border, the
-266px floor) in the popup, with the same rows. Native `ContextMenu` uses it
-too: the secondary button (or a long press) opens its panel at the press, the
-trigger the anchor and the press its `point`. The rest of the native overlay
-families still present through `dialog/SheetShell`.
+Today native `DropdownMenu`, `ContextMenu` and `Menubar` use it: their content
+becomes `floating/PopupPanel` in the popup (the web menu panel's chrome: the
+menu surface painted as Bloom's material, its 1px edge under it,
+`shadow-dropdown`, the 16px corner, the 266px floor), with the same rows.
+`ContextMenu`'s secondary button (or a long press) opens its panel at the
+press, the trigger the anchor and the press its `point`; each `Menubar` menu
+hangs under its trigger with the web's menubar offsets. Where a pointer drives
+the platform (`window` or `pointer`), a submenu flies out beside its row in a
+popup of its own, anchored to the row: its `PopupSurface` is rendered inside
+the menu's, so the platform knows it as the menu's child (OxyOS opens it on top
+of the menu's grab), and its `onKey` is the menu's own. The rest of the native
+overlay families still present through `dialog/SheetShell`.
+
+## `pointer`
+
+A pointer (a mouse, a touchpad) drives the platform, though Bloom is not in a
+window of its own there: a desktop's shell, its top bar and dock. Controls take
+a desktop's compact geometry (`useTouchInput()` is false: menu rows at their
+desktop height, no 44pt floor) and menus a desktop's presentation (submenus
+beside their rows), as `window` gives an application. An OxyOS adapter reports
+it everywhere.
 
 ## `window`
 

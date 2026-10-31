@@ -765,6 +765,7 @@ describe('every source file that paints the material is checked', () => {
     'button/Button.tsx': 'native Button: native has no backdrop filter',
     'dialog/Dialog.tsx': 'native Dialog: native has no backdrop filter',
     'dialog/CenteredCard.tsx': 'native centred card: native has no backdrop filter',
+    'floating/PopupPanel.tsx': "native platform popup's menu panel: native has no backdrop filter",
     'tooltip/Tooltip.tsx': 'native Tooltip: native has no backdrop filter',
     'surface/Surface.tsx': 'native Surface: native has no backdrop filter',
     'select/Select.tsx': 'native Select: native has no backdrop filter',

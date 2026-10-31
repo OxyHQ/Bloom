@@ -38,7 +38,7 @@ import { AccessibilityInfo, Platform } from 'react-native';
  * like the API not working. One frame is not reliably enough on a cold sheet
  * presentation; this is the smallest delay that survived both.
  */
-const FOCUS_SETTLE_MS = 50;
+export const FOCUS_SETTLE_MS = 50;
 
 /**
  * Read at the point of use rather than hoisted to a module constant. The value

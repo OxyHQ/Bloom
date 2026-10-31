@@ -25,6 +25,23 @@ export interface MenubarProps {
   /** Initial open menu when uncontrolled. Defaults to none open. */
   defaultValue?: string;
   onValueChange?: (value: string | undefined) => void;
+  /**
+   * The `value` of the menu whose title has the keyboard, the bar driven from
+   * it as a Mac's after Control-F2 (OxyOS's Super+F2); `undefined` when the
+   * keyboard is elsewhere. Controlled when supplied: the owner puts the keyboard
+   * on the bar by setting it (to the first menu's value, as a Mac does).
+   *
+   * While it is set: ← and → move across the menus (an open one giving way to
+   * the next, on its first row), ↓ / Return / Space open the focused menu on
+   * its first row and ↑ on its last, a letter moves to the menu whose title
+   * starts with it, and Escape leaves the bar. A row chosen leaves it too;
+   * Escape in an open menu closes the menu back to its title. The keys come
+   * from the platform's `keyboard` before anything else sees them (a native
+   * host), or from the document (the web).
+   */
+  focusValue?: string;
+  /** The keyboard moved across the bar, or left it (`undefined`). */
+  onFocusValueChange?: (value: string | undefined) => void;
   /** Accessible name for the bar. */
   label?: string;
   /** Appended to the bar's own classes — never substituted for them. */
@@ -37,6 +54,13 @@ export interface MenubarMenuProps {
   children?: React.ReactNode;
   /** Identifies this menu within the bar. Required — it IS the open state. */
   value: string;
+  /**
+   * Where the menu starts when it opens: its first or last enabled row active,
+   * as a Mac's menu opened from the keyboard does (`DropdownMenu`'s
+   * `openFocus`). Omitted, an open by a press starts with none. The bar's own
+   * keys (`focusValue`) ask for the first row themselves.
+   */
+  openFocus?: 'first' | 'last';
 }
 
 export type MenubarTriggerProps = OverlayTriggerProps;
