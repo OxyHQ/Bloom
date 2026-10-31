@@ -27,7 +27,11 @@ export function assertImageSource(source: unknown): asserts source is ImageSourc
       );
     });
     if (
-      keys.every((key) => allowed.has(key)) &&
+      // Metro web assets carry an enumerable toString helper. It is metadata,
+      // never a URI resolver: validate the explicit uri without invoking it.
+      keys.every(
+        (key) => allowed.has(key) || (key === 'toString' && typeof descriptor[key] === 'function'),
+      ) &&
       typeof descriptor.uri === 'string' &&
       descriptor.uri.trim() &&
       metadataValid

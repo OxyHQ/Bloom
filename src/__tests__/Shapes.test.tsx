@@ -105,6 +105,7 @@ describe('Portable image source contract', () => {
       { uri: 'https://example.com/a.png', method: 'POST' },
       { uri: 'https://example.com/a.png', body: 'x' },
       { uri: 'https://example.com/a.png', cache: 'reload' },
+      { uri: 'https://example.com/a.png', toString: 'not a function' },
       { uri: '' },
       { uri: 'data:image/png;base64,AA==', scale: NaN },
       0,
@@ -122,5 +123,20 @@ describe('Portable image source contract', () => {
       }),
     ).not.toThrow();
     expect(() => assertImageSource(23)).not.toThrow();
+  });
+
+  it('accepts Metro web asset metadata without invoking it or allowing request options', () => {
+    const assetToString = jest.fn(() => {
+      throw new Error('Asset metadata must not execute');
+    });
+    const asset = { uri: '/assets/avatar.jpg', width: 96, height: 96, toString: assetToString };
+    expect(Object.keys(asset)).toContain('toString');
+    expect(() => assertImageSource(asset)).not.toThrow();
+    for (const option of ['headers', 'method', 'body', 'cache', 'toJSON']) {
+      expect(() => assertImageSource({ ...asset, [option]: jest.fn() })).toThrow(
+        'Source arrays and request options',
+      );
+    }
+    expect(assetToString).not.toHaveBeenCalled();
   });
 });

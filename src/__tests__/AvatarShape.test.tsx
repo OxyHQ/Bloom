@@ -3,6 +3,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Avatar } from '../avatar';
+import { imageSourcesKey } from '../avatar/source-key';
 import { ImageResolverProvider } from '../image-resolver';
 import { PATHS, PATH_VIEW_BOX, resolve } from '../shapes';
 // `image/BloomImage` draws with expo-image on a device, and jest's `Platform.OS`
@@ -189,6 +190,59 @@ describe('Avatar ring follows the avatar outline', () => {
 });
 
 describe('Avatar silhouette across source and fallback states', () => {
+  it.each(['circle', 'heart'] as const)(
+    'accepts Metro web primary and fallback assets with a stable %s photo lifecycle',
+    (shape) => {
+      const assetToString = jest.fn(function (this: { uri: string }) {
+        return this.uri;
+      });
+      const primary = {
+        uri: '/assets/primary.jpg',
+        width: 96,
+        height: 96,
+        toString: assetToString,
+      };
+      const fallback = {
+        uri: '/assets/fallback.jpg',
+        width: 96,
+        height: 96,
+        toString: assetToString,
+      };
+      const plainPrimary = { uri: primary.uri, width: 96, height: 96 };
+      const plainFallback = { uri: fallback.uri, width: 96, height: 96 };
+      const onImageError = jest.fn();
+      const wrap = (source: typeof plainPrimary, fallbackSource: typeof plainFallback) => (
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Avatar
+            source={source}
+            fallbackSource={fallbackSource}
+            name="Ada"
+            shape={shape}
+            onImageError={onImageError}
+          />
+        </BloomThemeProvider>
+      );
+      expect(imageSourcesKey(primary, fallback)).toBe(imageSourcesKey(plainPrimary, plainFallback));
+      // A valid remote photo still validates its bundled fallback before painting.
+      const tree = render(wrap({ uri: URI, width: 96, height: 96 }, fallback));
+      expect(tree.UNSAFE_getByType(Image).props.source.uri).toBe(URI);
+      tree.rerender(wrap(primary, fallback));
+      expect(tree.UNSAFE_getByType(Image).props.source.uri).toBe(primary.uri);
+      fireEvent(tree.UNSAFE_getByType(Image), 'error', { nativeEvent: { error: 'failed' } });
+      expect(onImageError).toHaveBeenCalledTimes(1);
+      expect(tree.UNSAFE_getByType(Image).props.source.uri).toBe(fallback.uri);
+      // Metadata changes are not a new photo and must not retry a failed primary.
+      tree.rerender(wrap(plainPrimary, plainFallback));
+      expect(tree.UNSAFE_getByType(Image).props.source.uri).toBe(fallback.uri);
+      fireEvent(tree.UNSAFE_getByType(Image), 'error', { nativeEvent: { error: 'failed' } });
+      expect(tree.getByText('A')).toBeTruthy();
+      expect(onImageError).toHaveBeenCalledTimes(1);
+      if (shape === 'heart') expect(renderedPaths(tree)).toContain(PATHS.heart);
+      else expect(renderedPaths(tree)).toHaveLength(0);
+      expect(assetToString).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([{ uri: URI }, 42])('accepts object or local image sources: %p', (source) => {
     const tree = renderAvatar(
       <Avatar source={source} uri="https://ignored.example/image" shape="squircle" alt="Ada" />,
