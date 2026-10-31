@@ -8,13 +8,17 @@ import type { EyeGazeProfile } from './eye-gaze-controller';
 export type CatalogMotionResolver = (
   composed: ComposedCatalog,
   detail: 'low' | 'high',
-  work: AuthoredMotionSampler,
+  work?: AuthoredMotionSampler,
 ) => Promise<{ samplers: MotionSamplers; eyeProfiles: Record<number, EyeGazeProfile> }>;
 
 /** Asset ownership transfers to the renderer only after the complete rig loads.
  * A failed recipe releases its own geometry and never selects another backend. */
 export function createCatalogAssetResolver(resolveMotion: CatalogMotionResolver) {
-  return async (key: string, detail: 'low' | 'high'): Promise<ResolvedAvatarAsset> => {
+  return async (
+    key: string,
+    detail: 'low' | 'high',
+    activities = true,
+  ): Promise<ResolvedAvatarAsset> => {
     if (!key.startsWith('catalog:')) throw Error(`Unknown avatar asset: ${key}`);
     const recipe = JSON.parse(key.slice('catalog:'.length)) as CatalogRecipe;
     if (
@@ -26,9 +30,9 @@ export function createCatalogAssetResolver(resolveMotion: CatalogMotionResolver)
       throw Error('Invalid avatar catalog recipe');
     const composed = await composeCatalog(recipe, detail);
     try {
-      const work = await attachCatalogComputer(composed, recipe.shape);
+      const work = activities ? await attachCatalogComputer(composed, recipe.shape) : undefined;
       const { samplers, eyeProfiles } = await resolveMotion(composed, detail, work);
-      if (!samplers.idle || !samplers.reaction || !samplers.work)
+      if (!samplers.idle || !samplers.reaction || (activities && !samplers.work))
         throw Error('Incomplete avatar catalog animation');
       if (recipe.previewPart === 'eyes') {
         // Keep the rig/material indices intact, but never submit body, eyewear,
