@@ -76,6 +76,18 @@ files and their hashes against the actual package file list. For runtime-only
 work use `bun run build:avatar-runtime`. `manifest.json` records the generated
 files. Build output replaces the entire runtime directory; old files and selector
 PNGs cannot silently survive an incremental build.
+Production avatars load the selected geometry and idle/reaction motion first. Computer
+geometry, its episode and its repeating loop are optional resources: an idle-only scene or
+portrait does not fetch them. The first `workingKey` prepares that character's work assets
+before starting its first presented action frame. Preparation is shared by matching assets;
+existing idle/reaction samplers and other avatars' clocks remain independent. Once prepared,
+work assets stay available to that live scene for subsequent requests.
+
+`avatar-motion-transport.mjs` produces separate base/work files for development and builds,
+relocating the original Float64 channel bytes without rounding or resampling. The authored
+source bundles remain frozen fidelity evidence. The public character and action API is
+unchanged; runtime diagnostic tooling can still request a complete eager rig.
+
 The source lives outside `src/` so Three and browser-only code never enter
 Metro's native import graph. Vite application output preserves `createAvatar`
 and external binary assets; library mode would inline these assets and defeat
@@ -164,6 +176,14 @@ sharing a JavaScript scheduler cannot share these documents' GPU resources. Web 
 checks do not establish native crowd performance. Physical Android and iOS integration
 remains necessary for that claim. Software GL browser tests likewise do not establish laptop
 FPS, and browser CPU throttling is not a substitute for measuring a low-end mobile GPU.
+
+A separate reliability gap remains under native memory pressure: the live avatar bridge
+currently handles its JavaScript protocol but does not subscribe to Android
+`onRenderProcessGone` or WKWebView `onContentProcessDidTerminate`. These are real OS process
+termination events, including memory reclamation; they are different from a runtime-reported
+rendering error. A live avatar may therefore need remounting after its WebView process dies.
+The still queue's deadline can release and replace a stalled document, but it does not prove
+live-avatar recovery. See the [WebView event reference](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#onrenderprocessgone).
 
 `className` and `style` apply to the outer layout node. `label` defaults to the
 translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel`

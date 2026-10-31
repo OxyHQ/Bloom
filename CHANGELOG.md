@@ -2,6 +2,21 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## Unreleased
+
+### Changed
+
+- **Agent avatars use smooth 3D surfaces.** Hair strands and their pile/card textures are removed from the runtime and its generated transport. Body silhouettes, selected parts, pigment, gaze and authored actions remain live 3D. Persisted still portraits are invalidated so they adopt the new finish.
+- **Idle avatars load only the motion they need.** Computer geometry, its episode and its loop load on the first work request; shared preparation completes before the action's first presented frame. Motion transport retains exact Float64 channels and leaves the original animation fixtures intact. Paused portraits and offscreen pooled avatars stop contributing GPU instances while retaining their own painted output and action state.
+
+### Fixed
+
+- **Native portrait queues reuse one WebView document.** Rendering several distinct portraits no longer reloads the runtime and rebuilds its document for each one. The host releases after the queue drains; identified captures reject stale completions. Cancelled requests settle, provider disposal stops queued work, and runtime loading/render deadlines release failed or stalled work so subsequent portraits can proceed.
+
+### Consumers
+
+No character or action prop changes. Self-hosted consumers must replace the complete generated `assets/character-runtime/` directory alongside the updated library. Native live avatars still use one WebView each and lack recovery handlers for OS WebView process termination; physical-device crowd validation remains outstanding. Measurement scope and implementation details are recorded in `docs/agent-avatar.mdx` and `docs/benchmarks/avatar-engine-research.md`.
+
 ## 15.77.0
 
 ### Added
