@@ -16,6 +16,8 @@
 import { Platform } from 'react-native';
 import { useSyncExternalStore } from 'react';
 
+import { usePlatformSurfaces } from '../platform-surface/context';
+
 export const IS_WEB_TOUCH_DEVICE =
   Platform.OS === 'web' &&
   typeof window !== 'undefined' &&
@@ -53,8 +55,19 @@ function subscribeCoarsePointer(notify: () => void) {
   query.addListener(notify);
   return () => query.removeListener(notify);
 }
-/** Geometry and swipe affordances react when a mounted app changes input device. */
+/**
+ * Whether controls take a finger's geometry (44pt rows, swipe affordances).
+ * Geometry and swipe affordances react when a mounted app changes input device.
+ *
+ * Native is touch, except in a desktop window: a platform that reports the
+ * `window` capability (an OxyOS window) runs the application in a window a
+ * pointer drives, so its menus, lists and controls take a desktop's compact
+ * geometry, as they do on the web with a fine pointer. Without this, an OxyOS
+ * window drew a phone's menus: every context menu row 44pt tall.
+ */
 export function useTouchInput() {
   const coarse = useSyncExternalStore(subscribeCoarsePointer, readCoarsePointer, () => false);
+  const isDesktopWindow = usePlatformSurfaces()?.capabilities.has('window') === true;
+  if (isDesktopWindow) return false;
   return Platform.OS !== 'web' || coarse;
 }
