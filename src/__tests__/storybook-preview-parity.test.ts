@@ -27,7 +27,7 @@
 // that saw NO attributes at all would report, so every absence claim below sits
 // beside the list of attributes actually recovered from the same element.
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 
@@ -64,7 +64,7 @@ const MIN_PREVIEW_BYTES = 1500;
  */
 const REQUIRED_PROVIDERS: { name: string; from: string }[] = [
   { name: 'SafeAreaProvider', from: 'react-native-safe-area-context' },
-  { name: 'BloomThemeProvider', from: '../theme' },
+  { name: 'BloomProvider', from: '../provider' },
   { name: 'PortalProvider', from: '../portal' },
   { name: 'PortalOutlet', from: '../portal' },
   { name: 'SurfaceProvider', from: '../surfaces' },
@@ -158,7 +158,24 @@ function interfaceMembers(file: string, name: string): string[] {
 
 describe('Storybook preview mounts the shipping Bloom stack', () => {
   const usages = previewExists ? jsxUsages(parse(PREVIEW, previewSource)) : [];
-  const themeProviders = usages.filter((usage) => usage.name === 'BloomThemeProvider');
+  const themeProviders = usages.filter((usage) => usage.name === 'BloomProvider');
+
+  it('reserves the theme-only harness for the missing-provider contract demo', () => {
+    const stories = readdirSync(join(REPO, 'src'), { recursive: true })
+      .filter((file) => String(file).endsWith('.stories.tsx'))
+      .map(String);
+    expect(stories.length).toBeGreaterThan(100);
+    const isolated = stories.filter((file) =>
+      readFileSync(join(REPO, 'src', file), 'utf8').includes("bloomProvider: 'theme-only'"),
+    );
+    expect(isolated).toEqual(['provider/BloomProvider.stories.tsx']);
+    const globalThemeSamples = stories.filter((file) =>
+      jsxUsages(parse(file, readFileSync(join(REPO, 'src', file), 'utf8'))).some(
+        (usage) => usage.name === 'BloomThemeProvider',
+      ),
+    );
+    expect(globalThemeSamples).toEqual([]);
+  });
 
   // Vacuity floor. Everything else in this file is an ABSENCE claim, and an
   // absence is exactly what a missing file, an emptied file or a parse that
@@ -168,12 +185,12 @@ describe('Storybook preview mounts the shipping Bloom stack', () => {
   it('reads a real preview file and recovers its JSX', () => {
     expect(previewExists).toBe(true);
     expect(previewSource.length).toBeGreaterThanOrEqual(MIN_PREVIEW_BYTES);
-    expect(previewSource).toContain('BloomThemeProvider');
+    expect(previewSource).toContain('BloomProvider');
     expect(previewSource).toContain('SafeAreaProvider');
 
     // Exactly one theme provider: two would mean the assertions below could pass
     // against the wrong one.
-    expect(themeProviders.map((usage) => usage.name)).toEqual(['BloomThemeProvider']);
+    expect(themeProviders.map((usage) => usage.name)).toEqual(['BloomProvider']);
 
     // The attribute reader is alive on the element the next test measures —
     // without this, "no `fonts` attribute" and "attributes were never parsed"
@@ -224,14 +241,14 @@ describe('Storybook preview mounts the shipping Bloom stack', () => {
     expect(missing).toEqual([]);
   });
 
-  it('never disables a Bloom subsystem on <BloomThemeProvider>', () => {
+  it('never disables a Bloom subsystem on <BloomProvider>', () => {
     const offenders: string[] = [];
 
     for (const usage of themeProviders) {
       for (const { prop, why } of SUBSYSTEM_TOGGLES) {
         if (!usage.attributes.includes(prop)) continue;
         offenders.push(
-          `.storybook/preview.tsx:${usage.line}  <BloomThemeProvider ${prop}={…}> — leave it at ` +
+          `.storybook/preview.tsx:${usage.line}  <BloomProvider ${prop}={…}> — leave it at ` +
             `its default so the harness renders what a consumer gets: ${why}`,
         );
       }
@@ -242,7 +259,7 @@ describe('Storybook preview mounts the shipping Bloom stack', () => {
     expect({ offenders, scanned: themeProviders.length }).toEqual({ offenders: [], scanned: 1 });
   });
 
-  it('passes no spread props to <BloomThemeProvider>', () => {
+  it('passes no spread props to <BloomProvider>', () => {
     // A spread is not itself a bug — it is a blind spot. This scan reads names
     // off the JSX, so `{...opts}` would let a `fonts: false` through with every
     // assertion above still green. If one is ever needed, the check has to move
@@ -251,7 +268,7 @@ describe('Storybook preview mounts the shipping Bloom stack', () => {
       .filter((usage) => usage.spreads > 0)
       .map(
         (usage) =>
-          `.storybook/preview.tsx:${usage.line}  <BloomThemeProvider {...}> — this gate cannot ` +
+          `.storybook/preview.tsx:${usage.line}  <BloomProvider {...}> — this gate cannot ` +
           'see through a spread; pass the props explicitly',
       );
 

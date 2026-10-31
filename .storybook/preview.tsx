@@ -10,21 +10,17 @@ import { CHARACTER_RUNTIME_URL } from '../runtime/avatar-runtime';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AgentAvatarProvider } from '../src/agent-avatar/AgentAvatarProvider';
-import { BloomThemeProvider } from '../src/theme';
+import { BloomProvider } from '../src/provider';
+import { BloomThemeProvider } from '../src/theme/BloomThemeProvider';
 import { APP_COLOR_PRESETS, type AppColorName } from '../src/theme/color-presets';
 import { SurfaceProvider } from '../src/surfaces';
 import { PortalProvider, PortalOutlet } from '../src/portal';
 
 /**
- * Global decorator. Every Bloom story renders inside the full provider
- * stack consuming apps use:
- *
- *   <SafeAreaProvider>     safe-area insets
- *     <BloomThemeProvider>   theme + fonts
- *       <PortalProvider>     portal host (menus, tooltips)
- *         <SurfaceProvider>  the surface stack — alert()/confirm()/prompt()
- *           <story />
+ * Global decorator. BloomProvider owns the same universal composition state as
+ * consuming applications: theme, edge claims, screen host, locale, haptics,
+ * avatar runtime and scroll storage. Safe-area and visual outlets stay explicit.
+ * Without a router adapter, stories do not restore application routes.
  *
  * `SafeAreaProvider` is not optional: `BottomSheet` reads insets through
  * `useSafeAreaInsets`, which THROWS ("No safe area value available") outside a
@@ -34,7 +30,7 @@ import { PortalProvider, PortalOutlet } from '../src/portal';
  * Storybook web gate silently covered none of them. Consuming apps mount this
  * provider at their root; the decorator matches them.
  *
- * On web (where Storybook runs) BloomThemeProvider applies CSS variables and
+ * On web (where Storybook runs) BloomProvider applies CSS variables and
  * the dark class, so stories pick up theme palette colors immediately.
  *
  * `fonts` is left at its default (`true`) DELIBERATELY. This harness passed
@@ -60,43 +56,56 @@ const withProviders: Decorator = (Story, context) => {
   // The accessibility appearance, as the system settings would ask for it.
   const material = context.globals.material as 'standard' | 'reduced' | 'contrast' | undefined;
 
+  const content = (
+    <PortalProvider>
+      <SurfaceProvider>
+        <div
+          data-bloom-story-layout={context.parameters.layout ?? 'padded'}
+          data-bloom-story-view={context.viewMode}
+          data-bloom-story-scroll={documentScroll ? 'document' : 'contained'}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: context.parameters.layout === 'fullscreen' ? 'stretch' : 'flex-start',
+            width: '100%',
+            minWidth: 0,
+            minHeight:
+              documentScroll && context.parameters.layout === 'fullscreen' ? viewportHeight : 0,
+            ...(context.parameters.layout === 'fullscreen' && !documentScroll
+              ? { height: viewportHeight }
+              : {}),
+          }}
+        >
+          <Story />
+        </div>
+        <PortalOutlet />
+      </SurfaceProvider>
+    </PortalProvider>
+  );
   return (
     <SafeAreaProvider>
-      <BloomThemeProvider
-        mode={mode}
-        colorPreset={colorPreset}
-        reduceTransparency={material === 'reduced'}
-        increaseContrast={material === 'contrast'}
-      >
-        <PortalProvider>
-          <AgentAvatarProvider runtimeUrl={CHARACTER_RUNTIME_URL}>
-            <SurfaceProvider>
-              <div
-                data-bloom-story-layout={context.parameters.layout ?? 'padded'}
-                data-bloom-story-view={context.viewMode}
-                data-bloom-story-scroll={documentScroll ? 'document' : 'contained'}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: context.parameters.layout === 'fullscreen' ? 'stretch' : 'flex-start',
-                  width: '100%',
-                  minWidth: 0,
-                  minHeight:
-                    documentScroll && context.parameters.layout === 'fullscreen'
-                      ? viewportHeight
-                      : 0,
-                  ...(context.parameters.layout === 'fullscreen' && !documentScroll
-                    ? { height: viewportHeight }
-                    : {}),
-                }}
-              >
-                <Story />
-              </div>
-              <PortalOutlet />
-            </SurfaceProvider>
-          </AgentAvatarProvider>
-        </PortalProvider>
-      </BloomThemeProvider>
+      {/* Only the provider contract demo intentionally removes composition
+          state, so its missing-provider example still exercises the failure. */}
+      {context.parameters.bloomProvider === 'theme-only' ? (
+        <BloomThemeProvider
+          mode={mode}
+          colorPreset={colorPreset}
+          reduceTransparency={material === 'reduced'}
+          increaseContrast={material === 'contrast'}
+        >
+          {content}
+        </BloomThemeProvider>
+      ) : (
+        <BloomProvider
+          characterRuntimeUrl={CHARACTER_RUNTIME_URL}
+          mode={mode}
+          colorPreset={colorPreset}
+          reduceTransparency={material === 'reduced'}
+          increaseContrast={material === 'contrast'}
+        >
+          {content}
+        </BloomProvider>
+      )}
     </SafeAreaProvider>
   );
 };
@@ -132,8 +141,7 @@ const preview: Preview = {
           'Foundations',
           [
             'Color',
-            'Color Roles',
-            'Color System Playground',
+            ['Modes and Presets', 'Roles in Context', 'Explorer'],
             'Design Tokens',
             'Typography',
             'Fonts',

@@ -16,11 +16,12 @@ interface Props {
   children: (placement: Placement) => ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;
+  onWidthChange?: (width: number) => void;
 }
 const EASE = Easing.bezier(0.4, 0, 0.2, 1);
 
 /** A single navigation tree: fade out, replace at zero opacity, resize and reveal. */
-export function ResponsiveNavigation({ placement, children, style, testID }: Props) {
+export function ResponsiveNavigation({ placement, children, style, testID, onWidthChange }: Props) {
   const reducedMotion = useReducedMotion();
   const [shown, setShown] = useState(placement);
   const [transitioning, setTransitioning] = useState(false);
@@ -90,6 +91,9 @@ export function ResponsiveNavigation({ placement, children, style, testID }: Pro
   return (
     <Animated.View
       testID={testID ? `${testID}-frame` : undefined}
+      onLayout={
+        onWidthChange ? (event) => onWidthChange(event.nativeEvent.layout.width) : undefined
+      }
       style={[{ flexShrink: 0, minHeight: 0 }, frameStyle]}
     >
       <Animated.View style={[{ flex: 1, minHeight: 0, alignSelf: 'flex-start' }, contentStyle]}>

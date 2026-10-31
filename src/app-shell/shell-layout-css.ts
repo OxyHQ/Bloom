@@ -74,9 +74,10 @@ export function shellLayoutCss(scope: string, options: Options) {
     for (const key of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
       if (layout.axis[key]) thresholds.add(BREAKPOINTS[key]);
   const ranges = [...thresholds].sort((a, b) => a - b);
-  let css = `${frame}{padding-block-start:var(--bloom-frame-top)!important;padding-block-end:var(--bloom-frame-bottom)!important;padding-inline-start:var(--bloom-frame-alignment, var(--bloom-frame-start))!important;padding-inline-end:var(--bloom-frame-end)!important;gap:var(--bloom-nav-gap)!important;transition:padding-inline-start 380ms cubic-bezier(.4,0,.2,1)}
+  let css = `@property --bloom-nav-width{syntax:'<length>';inherits:true;initial-value:0px}
+${frame}{padding-block-start:var(--bloom-frame-top)!important;padding-block-end:var(--bloom-frame-bottom)!important;padding-inline-start:var(--bloom-frame-alignment, var(--bloom-frame-start))!important;padding-inline-end:var(--bloom-frame-end)!important;gap:var(--bloom-nav-gap)!important;transition:padding-inline-start 380ms cubic-bezier(.4,0,.2,1),--bloom-nav-width 380ms cubic-bezier(.4,0,.2,1)}
 ${root} [data-bloom-reading-envelope="${scope}"]{padding-block-start:var(--bloom-body-gutter-top)!important;padding-block-end:var(--bloom-body-gutter-bottom)!important}
-${root} [data-bloom-shell-nav="${scope}"]{display:var(--bloom-nav-display)!important;width:var(--bloom-nav-width)!important;flex-shrink:0;transition:width 380ms cubic-bezier(.4,0,.2,1)}
+${root} [data-bloom-shell-nav="${scope}"]{display:var(--bloom-nav-display)!important;width:var(--bloom-nav-width)!important;flex-shrink:0}
 ${root} [data-bloom-shell-nav="${scope}"] [data-bloom-shell-nav-mode="panel"]{display:var(--bloom-panel-nav-display)!important}
 ${root} [data-bloom-shell-nav="${scope}"] [data-bloom-shell-nav-mode="rail"]{display:var(--bloom-rail-nav-display)!important}
 ${root} [data-bloom-shell-nav="${scope}"] [data-bloom-shell-nav-mode] > *{width:100%!important}

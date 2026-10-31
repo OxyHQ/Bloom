@@ -761,10 +761,29 @@ export function createAppShellEngine() {
       room != null && navInFlow && !topBarKeepsRoom
         ? Math.max(0, room.top - rowPadTop - (canvasNavPad ? gutter : 0))
         : 0;
+    const rowGap = canvas
+      ? 0
+      : dockedNav
+        ? panelHost
+          ? regionOuter
+          : 0
+        : Math.max(0, navigationGap ?? columnGap);
+    const visibleNavigationExtent =
+      navInFlow && !navDock.hidden
+        ? navContentWidth + rowGap + (canvasNavPad ? gutter : 0)
+        : navInFlow
+          ? navHiddenExtent
+          : 0;
     const headerRoom =
-      room != null && !topBarKeepsRoom && !(navInFlow && !navDock.hidden)
-        ? Math.max(0, room.leading - rowPadStart - (navInFlow ? navHiddenExtent : 0))
+      room != null && !topBarKeepsRoom
+        ? Math.max(0, room.leading - rowPadStart - visibleNavigationExtent)
         : 0;
+    // CSS owns responsive navigation width on web. The registered length
+    // interpolates on the frame, so navigation and header share each frame's room.
+    const navigationRoomCss =
+      room != null && !topBarKeepsRoom && navInFlow && cssScope
+        ? `max(0px, ${room.leading}px - var(--bloom-frame-alignment, var(--bloom-frame-start, 0px)) - var(--bloom-nav-width, 0px) - var(--bloom-nav-gap, 0px))`
+        : undefined;
     const navSidebar =
       flowSidebar && navRoom > 0 ? { ...flowSidebar, windowControlsRoom: navRoom } : flowSidebar;
     // The window's panels (`windowPanels`, above) hold the window's chrome:
@@ -797,9 +816,19 @@ export function createAppShellEngine() {
           ? 0
           : Math.max(0, room.leading - rowPadStart - (navInFlow ? navHiddenExtent : 0))
         : null;
+    const sidebarContentClearance =
+      room != null && navInFlow && panelHost && !topBarKeepsRoom && !shellHeaderShown;
     const contentChrome = useMemo<WindowChrome | null>(
-      () => (contentChromeLeading == null ? null : { leading: contentChromeLeading }),
-      [contentChromeLeading],
+      () =>
+        contentChromeLeading != null
+          ? {
+              leading: navInFlow ? headerRoom : contentChromeLeading,
+              leadingCss: navInFlow ? navigationRoomCss : undefined,
+            }
+          : sidebarContentClearance && (headerRoom > 0 || navigationRoomCss != null)
+            ? { leading: headerRoom, leadingCss: navigationRoomCss, topEdge: false }
+            : null,
+      [contentChromeLeading, sidebarContentClearance, headerRoom, navigationRoomCss, navInFlow],
     );
     const windowControlsNode =
       windowChrome && appWindow.controls === 'bloom' ? (
@@ -863,20 +892,11 @@ export function createAppShellEngine() {
     const navigationWidth = navInFlow ? (measuredNavigationWidth ?? sidebarMetrics.expanded) : 0;
     // The row's gap after the navigation. Panels keep their gutter off a docked
     // nav's hairline; a canvas runs to the edge.
-    const rowGap = canvas
-      ? 0
-      : dockedNav
-        ? panelHost
-          ? regionOuter
-          : 0
-        : Math.max(0, navigationGap ?? columnGap);
     const rowNavigationGap = !navInFlow
       ? 0
-      : dockedNav
-        ? panelHost
-          ? regionOuter
-          : 0
-        : Math.max(0, navigationGap ?? columnGap);
+      : canvas && !dockedNav
+        ? Math.max(0, navigationGap ?? columnGap)
+        : rowGap;
     // The frame's own start and end edges (`frameInset`, else the gutter): a
     // flush navigation owns the start edge.
     const rowHorizontalPadding = panelHost
@@ -1098,7 +1118,17 @@ export function createAppShellEngine() {
       ) : null;
     // Without a sidebar in flow the header is the window's toolbar.
     const headerNode =
-      shellHeader != null && headerRoom > 0 ? (
+      shellHeader != null &&
+      navInFlow &&
+      !navDock.hidden &&
+      (headerRoom > 0 || navigationRoomCss != null) ? (
+        <View
+          testID={testID ? `${testID}-header-clearance` : undefined}
+          style={{ paddingInlineStart: navigationRoomCss ?? headerRoom } as WebCssStyle}
+        >
+          {shellHeader}
+        </View>
+      ) : shellHeader != null && headerRoom > 0 ? (
         <WindowDragRegion
           testID={testID ? `${testID}-header-drag` : undefined}
           style={{ paddingInlineStart: headerRoom }}

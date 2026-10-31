@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Text } from '../typography';
 import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { Carousel, CarouselItem } from './index';
 
 const meta: Meta<typeof Carousel> = {
@@ -269,7 +269,7 @@ function HoverArrowsDemo({
   const [index, setIndex] = useState(0);
   const [show, setShow] = useState(true);
   return (
-    <BloomThemeProvider mode={mode} colorPreset="oxy">
+    <BloomColorScope style={{ display: 'contents' }} mode={mode} colorPreset="oxy">
       <Frame width={440}>
         <Button testID="before-carousel" onPress={() => {}}>
           Before gallery
@@ -307,7 +307,7 @@ function HoverArrowsDemo({
           ))}
         </Carousel>
       </Frame>
-    </BloomThemeProvider>
+    </BloomColorScope>
   );
 }
 export const HoverArrowsLight: Story = {
@@ -328,7 +328,7 @@ function ArrowRecipeDemo({
   const [width, setWidth] = useState(440);
   const [count, setCount] = useState(3);
   return (
-    <BloomThemeProvider mode={mode} colorPreset="oxy">
+    <BloomColorScope style={{ display: 'contents' }} mode={mode} colorPreset="oxy">
       <Frame width={width}>
         <Button testID="recipe-before" onPress={() => {}}>
           Before gallery
@@ -364,7 +364,7 @@ function ArrowRecipeDemo({
         </Button>
         <Button onPress={() => setCount(1)}>Single photo</Button>
       </Frame>
-    </BloomThemeProvider>
+    </BloomColorScope>
   );
 }
 export const ArrowRecipeLight: Story = {

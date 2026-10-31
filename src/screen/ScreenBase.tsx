@@ -344,9 +344,11 @@ export function createScreen(
         // is never remounted. As chrome it takes the presses nothing inside
         // takes, so it is no longer `box-none`.
         <WindowDragRegion
-          disabled={windowChrome == null}
+          disabled={windowChrome == null || windowChrome.topEdge === false}
           testID={testID ? `${testID}-header` : undefined}
-          pointerEvents={windowChrome == null ? 'box-none' : undefined}
+          pointerEvents={
+            windowChrome == null || windowChrome.topEdge === false ? 'box-none' : undefined
+          }
           onLayout={(event) => setTop(event.nativeEvent.layout.height)}
           style={headerSlotStyle}
         >

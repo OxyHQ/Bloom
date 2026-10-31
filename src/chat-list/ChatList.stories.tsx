@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useContext, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -7,7 +7,7 @@ import { RiArchiveLine } from '../icons/remix/RiArchiveLine';
 import { RiCheckDoubleLine } from '../icons/remix/RiCheckDoubleLine';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiNotificationOffLine } from '../icons/remix/RiNotificationOffLine';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ChatFolderTabs } from './ChatFolderTabs';
@@ -276,15 +276,14 @@ function Surface({ children, width }: { children: React.ReactNode; width?: numbe
 
 /** The same block in both modes, side by side — every colour here flips. */
 function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
+      <BloomColorScope style={{ display: 'contents' }} mode="light">
         <Surface width={390}>{children}</Surface>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
+      </BloomColorScope>
+      <BloomColorScope style={{ display: 'contents' }} mode="dark">
         <Surface width={390}>{children}</Surface>
-      </BloomThemeProvider>
+      </BloomColorScope>
     </View>
   );
 }
@@ -371,14 +370,13 @@ export const ConversationsPhone: Story = {
 /** The same list as a 360px desktop pane beside the open conversation. */
 export const DesktopPane: Story = {
   render: function DesktopPaneStory() {
-    const preset = useContext(BloomThemeContext)?.colorPreset;
     const [selected, setSelected] = useState<string | undefined>('ines');
     return (
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
         {(['light', 'dark'] as const).map((mode) => (
-          <BloomThemeProvider key={mode} mode={mode} colorPreset={preset}>
+          <BloomColorScope style={{ display: 'contents' }} key={mode} mode={mode}>
             <PaneAndDetail selected={selected} onSelect={setSelected} />
-          </BloomThemeProvider>
+          </BloomColorScope>
         ))}
       </View>
     );
@@ -603,15 +601,14 @@ export const GroupAvatars: Story = {
 /** The search field with grouped results and the matched run highlighted. */
 export const Search: Story = {
   render: function SearchStory() {
-    const preset = useContext(BloomThemeContext)?.colorPreset;
     return (
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
         {(['light', 'dark'] as const).map((mode) => (
-          <BloomThemeProvider key={mode} mode={mode} colorPreset={preset}>
+          <BloomColorScope style={{ display: 'contents' }} key={mode} mode={mode}>
             <Surface width={390}>
               <SearchPane />
             </Surface>
-          </BloomThemeProvider>
+          </BloomColorScope>
         ))}
       </View>
     );

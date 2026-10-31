@@ -7,7 +7,7 @@ import type { AnyMeterProps } from './types';
 import { useMeterReveal } from './use-meter-reveal.web';
 
 const CSS = `@layer base {
-.bloom-meter-track { display:block; flex-shrink:0; box-sizing:border-box; width:var(--bloom-meter-width,100%); height:var(--bloom-meter-height); border-radius:var(--bloom-meter-radius); background:var(--bloom-meter-track); overflow:hidden; }
+.bloom-meter-track { position:relative; display:block; flex-shrink:0; box-sizing:border-box; width:var(--bloom-meter-width,100%); height:var(--bloom-meter-height); border-radius:var(--bloom-meter-radius); background:var(--bloom-meter-track); overflow:hidden; }
 .bloom-meter-fill { display:block; box-sizing:border-box; height:100%; border-radius:var(--bloom-meter-radius); background:var(--bloom-meter-fill); }
 .bloom-meter-fill[data-transition] { transition:width var(--bloom-meter-ms,0ms) var(--bloom-meter-easing,ease-out) var(--bloom-meter-delay,0ms); }
 @media(prefers-reduced-motion:reduce) { .bloom-meter-fill[data-transition] { transition:none; } }
