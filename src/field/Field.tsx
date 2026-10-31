@@ -94,6 +94,7 @@ const FieldComponent = function Field({
   return (
     <FieldControlProvider value={field}>
       <View
+        collapsable={false}
         style={[a.w_full, style]}
         testID={testID}
         // A group only when it holds several controls. A `group` around one

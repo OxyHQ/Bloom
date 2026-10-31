@@ -196,6 +196,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
 
   return (
     <View
+      collapsable={false}
       accessibilityRole={role}
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}

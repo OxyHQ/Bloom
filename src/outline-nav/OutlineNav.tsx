@@ -248,7 +248,13 @@ export function OutlineNav({
   const name = accessibilityLabel ?? labels.outline;
 
   return (
-    <View role="navigation" accessibilityLabel={name} style={style} testID={testID}>
+    <View
+      collapsable={false}
+      role="navigation"
+      accessibilityLabel={name}
+      style={style}
+      testID={testID}
+    >
       {!compact && (title ?? labels.outline) !== undefined ? (
         <Text
           variant="caption-1-medium"

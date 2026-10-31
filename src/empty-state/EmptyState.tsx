@@ -114,6 +114,7 @@ function EmptyStateComponent({
     <>
       {recipe.sheet}
       <View
+        collapsable={false}
         testID={testID}
         role="group"
         accessibilityLabel={accessibilityLabel ?? joinEmptyStateName([title, description])}
@@ -162,6 +163,7 @@ function EmptyStateComponent({
 
         {suggestions && suggestions.length > 0 ? (
           <View
+            collapsable={false}
             testID={id('suggestions')}
             role="group"
             accessibilityLabel={suggestionsLabel ?? messages.suggestions}

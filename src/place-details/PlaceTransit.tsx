@@ -145,6 +145,7 @@ function PlaceTransitComponent({
 
         {stop.lines && stop.lines.length > 0 ? (
           <View
+            collapsable={false}
             role="group"
             accessibilityLabel={messages.lines}
             style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingLeft: 38 }}
@@ -160,7 +161,7 @@ function PlaceTransitComponent({
             {emptyLabel}
           </Text>
         ) : (
-          <View role="list" style={{ gap: 2, paddingLeft: 38 }}>
+          <View collapsable={false} role="list" style={{ gap: 2, paddingLeft: 38 }}>
             {departures.map((departure, departureIndex) => (
               <View
                 key={departure.id}
@@ -218,6 +219,7 @@ function PlaceTransitComponent({
 
   return (
     <View
+      collapsable={false}
       role="list"
       accessibilityLabel={accessibilityLabel}
       style={[{ gap: PLACE_DETAILS_GEOMETRY.blockGap }, style]}

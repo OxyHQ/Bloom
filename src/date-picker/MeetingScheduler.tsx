@@ -190,7 +190,11 @@ function HourFormatToggle({
   shadow: string;
 }) {
   return (
-    <View role="radiogroup" style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 2 }}>
+    <View
+      collapsable={false}
+      role="radiogroup"
+      style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 2 }}
+    >
       {(['12h', '24h'] as const).map((label) => (
         <HourFormatOption
           key={label}
@@ -620,7 +624,12 @@ export function MeetingScheduler({
           {slotList}
         </ScrollArea>
       ) : (
-        <View role="radiogroup" accessibilityLabel={accessibilityLabel} style={{ gap: 8 }}>
+        <View
+          collapsable={false}
+          role="radiogroup"
+          accessibilityLabel={accessibilityLabel}
+          style={{ gap: 8 }}
+        >
           {slotList}
         </View>
       )}

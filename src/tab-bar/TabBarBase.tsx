@@ -686,7 +686,7 @@ function TabBarBody({
                 presenceMs={SELECTION_FADE.duration}
               />
             </Animated.View>
-            <View accessibilityRole="tablist" style={styles.itemRow}>
+            <View collapsable={false} accessibilityRole="tablist" style={styles.itemRow}>
               <SurfaceLevelProvider
                 level={layer.level}
                 fill={publishedFill}

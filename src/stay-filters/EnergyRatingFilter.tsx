@@ -194,6 +194,7 @@ function EnergyRatingFilterComponent({
   return (
     <View testID={testID} style={[{ gap: 12 }, style]}>
       <View
+        collapsable={false}
         role="radiogroup"
         accessibilityLabel={accessibilityLabel}
         aria-disabled={disabled || undefined}

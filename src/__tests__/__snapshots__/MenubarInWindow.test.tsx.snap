@@ -1057,6 +1057,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
           {
            "type": "Animated.View",
            "props": {
+            "collapsable": false,
             "ref": {
              "current": null
             },
@@ -1975,6 +1976,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
           {
            "type": "Animated.View",
            "props": {
+            "collapsable": false,
             "ref": {
              "current": null
             },
@@ -3344,6 +3346,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
           {
            "type": "Animated.View",
            "props": {
+            "collapsable": false,
             "ref": {
              "current": null
             },
@@ -3755,6 +3758,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                  "type": "View",
                  "props": {
                   "ref": null,
+                  "collapsable": false,
                   "role": "radiogroup",
                   "style": [
                    null,

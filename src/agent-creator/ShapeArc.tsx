@@ -209,6 +209,7 @@ export function ShapeArc({
     // stays for the moment before the handler attaches.
     <GestureDetector gesture={drag} touchAction="pan-y">
       <ListboxView
+        collapsable={false}
         ref={ref}
         role="listbox"
         aria-activedescendant={selectedSlot === undefined ? undefined : `${id}-${selectedSlot}`}

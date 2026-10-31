@@ -113,6 +113,7 @@ export function VehiclePicker<T extends string = VehicleKind>({
       ) : null}
 
       <View
+        collapsable={false}
         aria-disabled={disabled || undefined}
         role="radiogroup"
         nativeID={field.nativeID}
@@ -161,6 +162,7 @@ export function VehiclePicker<T extends string = VehicleKind>({
                   <View style={{ gap: VEHICLE_PICKER_GEOMETRY.chipGap }}>
                     {chips.length > 0 ? (
                       <View
+                        collapsable={false}
                         role="group"
                         accessibilityLabel={labels.fits(option.label)}
                         testID={id(`${option.value}-fits`)}

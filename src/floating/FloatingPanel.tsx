@@ -593,6 +593,7 @@ export function FloatingPanel({
           />
         ) : null}
         <AnimatedPanel
+          collapsable={false}
           nativeID={nativeID}
           aria-busy={busy}
           {...(onMouseDown ? { onMouseDown } : {})}

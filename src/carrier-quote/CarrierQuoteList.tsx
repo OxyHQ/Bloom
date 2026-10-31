@@ -128,6 +128,7 @@ function CarrierQuoteListComponent({
         )}
         {sortOptions.length > 0 ? (
           <View
+            collapsable={false}
             role="radiogroup"
             accessibilityLabel={labels.sort}
             style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
@@ -198,6 +199,7 @@ function CarrierQuoteListComponent({
   } else if (ordered.length === 0) {
     body = (
       <View
+        collapsable={false}
         role="group"
         accessibilityLabel={emptyTitle}
         style={{
@@ -253,6 +255,7 @@ function CarrierQuoteListComponent({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="group"
       accessibilityLabel={accessibilityLabel}

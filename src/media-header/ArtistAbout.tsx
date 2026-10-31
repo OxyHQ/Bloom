@@ -70,7 +70,12 @@ function ArtistAboutComponent({
             <ArtistStats stats={stats} testID={testID ? `${testID}-stats` : undefined} />
           ) : null}
           {cities && cities.length > 0 ? (
-            <View role="list" style={{ gap: 12 }} testID={testID ? `${testID}-cities` : undefined}>
+            <View
+              collapsable={false}
+              role="list"
+              style={{ gap: 12 }}
+              testID={testID ? `${testID}-cities` : undefined}
+            >
               {cities.map((city, i) => (
                 <View
                   role="listitem"

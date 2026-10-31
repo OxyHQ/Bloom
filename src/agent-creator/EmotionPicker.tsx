@@ -191,6 +191,7 @@ export function EmotionPicker({
   return (
     <GestureDetector gesture={drag}>
       <StyledView
+        collapsable={false}
         ref={ref}
         role="group"
         accessibilityLabel={messages.emotion}

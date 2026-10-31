@@ -330,6 +330,7 @@ const TrackRowComponent = forwardRef<ComponentRef<typeof View>, TrackRowProps>(f
 
   const indexCell = has('index') && !narrow && (
     <View
+      collapsable={false}
       role={ROLE_GRIDCELL}
       style={{ width: CELL.index, height: 32, alignItems: 'center', justifyContent: 'center' }}
     >
@@ -392,6 +393,7 @@ const TrackRowComponent = forwardRef<ComponentRef<typeof View>, TrackRowProps>(f
 
   const titleCell = has('title') && (
     <View
+      collapsable={false}
       role={ROLE_GRIDCELL}
       style={[
         {
@@ -444,6 +446,7 @@ const TrackRowComponent = forwardRef<ComponentRef<typeof View>, TrackRowProps>(f
     press?: () => void,
   ) => (
     <View
+      collapsable={false}
       key={key}
       role={ROLE_GRIDCELL}
       style={[{ minWidth: 0, opacity: dim }, flexOrWidth, cellGap]}
@@ -566,6 +569,7 @@ const TrackRowComponent = forwardRef<ComponentRef<typeof View>, TrackRowProps>(f
         ) : null}
         {has('duration') && !narrow ? (
           <View
+            collapsable={false}
             role={ROLE_GRIDCELL}
             style={[
               { width: CELL.duration, opacity: dim },
@@ -583,6 +587,7 @@ const TrackRowComponent = forwardRef<ComponentRef<typeof View>, TrackRowProps>(f
         ) : null}
         {has('actions') && (menuItems !== undefined || reorderable) ? (
           <View
+            collapsable={false}
             role={ROLE_GRIDCELL}
             style={[
               { width: CELL.button, alignItems: 'center' },

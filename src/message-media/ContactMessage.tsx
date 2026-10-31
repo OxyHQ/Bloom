@@ -107,6 +107,7 @@ function ContactMessageComponent({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={accessibilityLabel ?? fileMetaLine([messages.contact, name, detail])}
       // `maxWidth`: a bubble narrower than `width` (a phone, with the bubble's own

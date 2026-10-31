@@ -72,7 +72,13 @@ function TrackListHeaderComponent({
   };
 
   return (
-    <View role="row" aria-rowindex={1} style={[rootStyle, style]} testID={testID}>
+    <View
+      collapsable={false}
+      role="row"
+      aria-rowindex={1}
+      style={[rootStyle, style]}
+      testID={testID}
+    >
       {reorderable ? <View style={{ width: CELL.handle, marginRight: 4, marginLeft: -8 }} /> : null}
       {has('index') ? (
         <View role="columnheader" style={{ width: CELL.index, alignItems: 'center' }}>

@@ -44,7 +44,12 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
   const showMenu = onMenuPress != null && (showMenuProp ?? width < BREAKPOINTS.lg);
 
   return (
-    <View role="banner" testID={testID} style={[{ width: '100%', gap: 8 }, style]}>
+    <View
+      collapsable={false}
+      role="banner"
+      testID={testID}
+      style={[{ width: '100%', gap: 8 }, style]}
+    >
       {breadcrumb}
       <View
         style={{

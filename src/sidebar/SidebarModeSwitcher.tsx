@@ -236,6 +236,7 @@ const SegmentedModeSwitcher: React.FC<SidebarModeSwitcherProps> = ({
 
   return (
     <Animated.View
+      collapsable={false}
       role="radiogroup"
       accessibilityLabel={accessibilityLabel}
       testID={testID}

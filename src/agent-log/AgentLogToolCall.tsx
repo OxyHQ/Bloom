@@ -213,7 +213,7 @@ export function AgentLogToolCalls({
   const reduce = reduceProp ?? systemReduce;
   const calls = Children.toArray(children).filter(isValidElement);
   return (
-    <View role="list" accessibilityLabel={accessibilityLabel} testID={testID}>
+    <View collapsable={false} role="list" accessibilityLabel={accessibilityLabel} testID={testID}>
       {calls.map((call: ReactNode, index) => (
         <AgentLogRow
           key={isValidElement(call) ? (call.key ?? index) : index}

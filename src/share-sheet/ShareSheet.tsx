@@ -155,6 +155,7 @@ function ShareSheetComponent({
       ) : null}
       {people !== undefined ? (
         <View
+          collapsable={false}
           role="list"
           accessibilityLabel={messages.people}
           style={

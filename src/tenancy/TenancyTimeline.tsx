@@ -81,7 +81,13 @@ function TenancyTimelineComponent({
   };
 
   return (
-    <View role="list" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
+    <View
+      collapsable={false}
+      role="list"
+      accessibilityLabel={accessibilityLabel}
+      style={style}
+      testID={testID}
+    >
       {events.map((event, index) => {
         const state = event.state ?? 'complete';
         const last = index === events.length - 1;

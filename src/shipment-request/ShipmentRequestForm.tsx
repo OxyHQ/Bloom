@@ -129,7 +129,13 @@ function ShipmentRequestFormComponent({
   }
 
   return (
-    <View testID={testID} role="form" accessibilityLabel={accessibilityLabel} style={style}>
+    <View
+      collapsable={false}
+      testID={testID}
+      role="form"
+      accessibilityLabel={accessibilityLabel}
+      style={style}
+    >
       {sections.map((section, index) => (
         <FilterSection
           key={section.key}

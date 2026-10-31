@@ -411,6 +411,7 @@ export function SegmentedControl<T extends string>({
   return (
     <GestureDetector gesture={gesture} touchAction="pan-y">
       <StyledView
+        collapsable={false}
         className={className}
         ref={groupRef}
         {...webDataSet({ bloomSegmentedGroup: '' })}

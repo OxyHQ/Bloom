@@ -56,6 +56,7 @@ function ShelfSkeletonComponent({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={accessibilityLabel}
       aria-busy

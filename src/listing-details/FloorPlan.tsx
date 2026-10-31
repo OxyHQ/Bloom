@@ -201,6 +201,7 @@ function FloorPlanComponent({
 
   return (
     <View
+      collapsable={false}
       onLayout={onLayout}
       role="list"
       style={[{ width: '100%', flexDirection: 'row', flexWrap: 'wrap', rowGap: 24 }, style]}

@@ -204,6 +204,7 @@ const DayCell = memo(function DayCell({
 
   return (
     <View
+      collapsable={false}
       role={GRIDCELL_ROLE}
       // Both spellings: react-native-web reads only `aria-selected`, React Native
       // reads `accessibilityState`.
@@ -401,12 +402,13 @@ export function CalendarMonth({
         )}
       </View>
       <View
+        collapsable={false}
         role="grid"
         accessibilityLabel={accessibilityLabel ?? title}
         {...keyProps}
         style={{ alignSelf: 'flex-start', gap: CELL_GAP }}
       >
-        <View role="row" style={{ flexDirection: 'row', gap: CELL_GAP }}>
+        <View collapsable={false} role="row" style={{ flexDirection: 'row', gap: CELL_GAP }}>
           {weekdays.map((weekday) => (
             <View
               key={weekday.long}
@@ -422,6 +424,7 @@ export function CalendarMonth({
         </View>
         {weeks.map((week) => (
           <View
+            collapsable={false}
             key={dayKey(week[0]!.date)}
             role="row"
             style={{ flexDirection: 'row', gap: CELL_GAP }}
@@ -448,6 +451,7 @@ export function CalendarMonth({
                 />
               ) : (
                 <View
+                  collapsable={false}
                   key={key}
                   role={GRIDCELL_ROLE}
                   style={{ width: DAY_SIZE, height: DAY_SIZE }}

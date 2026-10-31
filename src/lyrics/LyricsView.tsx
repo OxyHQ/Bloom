@@ -214,6 +214,7 @@ function LyricsViewComponent({
 
   return (
     <View
+      collapsable={false}
       role="region"
       accessibilityLabel={accessibilityLabel}
       onLayout={onRootLayout}

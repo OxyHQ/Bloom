@@ -22,7 +22,13 @@ export function EpisodeList({
   const { messages } = useMessages(TRACK_LIST_MESSAGES);
   const accessibilityLabel = accessibilityLabelProp ?? messages.episodes;
   return (
-    <View role="list" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
+    <View
+      collapsable={false}
+      role="list"
+      accessibilityLabel={accessibilityLabel}
+      style={style}
+      testID={testID}
+    >
       {episodes.map((episode, index) => (
         <View key={episode.id} role="listitem">
           <EpisodeRow

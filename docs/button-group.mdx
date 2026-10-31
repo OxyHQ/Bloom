@@ -116,5 +116,6 @@ React Native's renderer flattens a view that forms no stacking context — a rol
 and a label do not form one — and mounts its children in the nearest ancestor
 that does, so an assistive technology reading the mounted tree (OxyOS's, Android's
 TalkBack) found an empty "Back and forward" group beside two loose buttons.
-`ButtonGroup.test.tsx` pins it.
+`ButtonGroup.test.tsx` pins it; every grouping container follows the same rule
+([Composition](/docs/bloom/main/composition#semantic-containers-keep-their-children)).
 

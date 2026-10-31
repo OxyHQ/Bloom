@@ -173,6 +173,7 @@ function RatingInputComponent({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       accessibilityRole="radiogroup"
       nativeID={field.nativeID}

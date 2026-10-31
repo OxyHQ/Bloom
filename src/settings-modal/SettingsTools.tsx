@@ -537,7 +537,12 @@ function ScopePills({
       style={styles.pillScroller}
       contentContainerStyle={styles.pillList}
     >
-      <View role="group" aria-label={messages.tools.projectScope} style={styles.pillRow}>
+      <View
+        collapsable={false}
+        role="group"
+        aria-label={messages.tools.projectScope}
+        style={styles.pillRow}
+      >
         <Animated.View
           pointerEvents="none"
           style={[styles.pillThumb, { backgroundColor: palette.tertiary }, thumb]}

@@ -114,6 +114,7 @@ function ChipRowComponent({
     // the element a caller's `testID` lands on, and a group whose semantics
     // hide one node deeper is a group every consumer's test misses.
     <View
+      collapsable={false}
       {...directionProps}
       role={role}
       accessibilityLabel={accessibilityLabel}

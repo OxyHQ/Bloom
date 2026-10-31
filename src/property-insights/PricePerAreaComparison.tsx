@@ -60,6 +60,7 @@ function PricePerAreaComparisonComponent({
 
   return (
     <View
+      collapsable={false}
       role="list"
       accessibilityLabel={accessibilityLabel}
       style={[{ width: '100%', gap: 16 }, style]}

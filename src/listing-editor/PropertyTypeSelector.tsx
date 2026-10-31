@@ -113,6 +113,7 @@ export function PropertyTypeSelector<T extends string = PropertyType>({
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
     >
       <View
+        collapsable={false}
         role="radiogroup"
         nativeID={field.nativeID}
         aria-describedby={field.describedBy}

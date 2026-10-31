@@ -763,6 +763,7 @@ function StepPills({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={label}
       testID={testID}
@@ -1175,6 +1176,7 @@ function QuestionnaireComponent({
           </View>
         ) : null}
         <View
+          collapsable={false}
           role="group"
           aria-labelledby={interactive ? headingId : undefined}
           accessibilityLabel={q.question}
@@ -1270,6 +1272,7 @@ function QuestionnaireComponent({
 
   return (
     <View
+      collapsable={false}
       ref={rootRef}
       testID={testID}
       role="group"

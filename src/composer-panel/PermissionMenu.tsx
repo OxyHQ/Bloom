@@ -158,6 +158,7 @@ export function PermissionMenu({
             {onLearnMore ? <LearnMore label={labels.learnMore} onPress={onLearnMore} /> : null}
           </View>
           <View
+            collapsable={false}
             accessibilityRole="radiogroup"
             accessibilityLabel={labels.permissionMode}
             style={{ flexDirection: 'column', gap: 4 }}

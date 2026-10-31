@@ -41,7 +41,13 @@ function DocumentGridComponent({
   const listName = accessibilityLabel ?? messages.sharedFiles(items.length);
 
   return (
-    <View role="list" accessibilityLabel={listName} style={style ?? null} testID={testID}>
+    <View
+      collapsable={false}
+      role="list"
+      accessibilityLabel={listName}
+      style={style ?? null}
+      testID={testID}
+    >
       {items.map((item, index) => (
         <View
           key={item.id}

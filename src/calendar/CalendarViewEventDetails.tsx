@@ -311,7 +311,7 @@ export function CalendarViewEventDetails({
               onPress={onEditParticipants ? () => onEditParticipants(event) : undefined}
             />
           </View>
-          <View role="list">
+          <View collapsable={false} role="list">
             {event.participants.map((participant) => (
               <View
                 key={participant.email}

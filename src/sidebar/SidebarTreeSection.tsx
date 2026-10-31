@@ -138,6 +138,7 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
       />
       <Reveal open={shown}>
         <View
+          collapsable={false}
           role="navigation"
           accessibilityLabel={section.label}
           style={{ width: '100%', gap: 4 }}

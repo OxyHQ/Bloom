@@ -166,6 +166,7 @@ function AddressListComponent({
           </Text>
         ) : null}
         <View
+          collapsable={false}
           role={picker ? 'group' : 'list'}
           accessibilityLabel={section.title ?? accessibilityLabel}
           testID={sectionId}
@@ -186,6 +187,7 @@ function AddressListComponent({
 
   return (
     <View
+      collapsable={false}
       role="radiogroup"
       accessibilityLabel={accessibilityLabel}
       testID={testID}

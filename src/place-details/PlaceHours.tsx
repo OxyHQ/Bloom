@@ -95,7 +95,13 @@ function PlaceHoursComponent({
   const word = openLabelFor(state, stateLabel, placeCard);
 
   return (
-    <View role="group" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
+    <View
+      collapsable={false}
+      role="group"
+      accessibilityLabel={accessibilityLabel}
+      style={style}
+      testID={testID}
+    >
       <Accordion type="single" value={open ? WEEK : undefined} onValueChange={onValueChange}>
         <AccordionItem value={WEEK}>
           <AccordionTrigger
@@ -145,6 +151,7 @@ function PlaceHoursComponent({
               nothing and removes the contradiction.
             */}
             <View
+              collapsable={false}
               role="list"
               aria-hidden={open ? undefined : true}
               accessibilityElementsHidden={!open}

@@ -46,6 +46,7 @@ function PlaceActionsComponent({
   if (actions.length === 0) return null;
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={accessibilityLabel}
       testID={testID}

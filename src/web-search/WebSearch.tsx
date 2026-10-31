@@ -817,7 +817,7 @@ function SourcesRow({
           </Animated.View>
         </Pressable>
 
-        <View role="list">
+        <View collapsable={false} role="list">
           {sources.map((source, index) => (
             <SourceLinkRow
               key={`${source.domain}-${index}`}
@@ -923,7 +923,7 @@ function StepRow({
           // descend from the step that found them.
           <View style={{ position: 'relative', marginTop: 2 }}>
             <AgentLogGuideBridge height={SOURCES_BRIDGE} offset={SOURCES_INDENT} reduce={reduce} />
-            <View role="list" style={{ marginLeft: SOURCES_INDENT }}>
+            <View collapsable={false} role="list" style={{ marginLeft: SOURCES_INDENT }}>
               <SourcesRow
                 sources={step.sources}
                 reduce={reduce}
@@ -1027,7 +1027,7 @@ function WebSearchComponent({
   const busy = working !== false && revealed > 0 && revealed < total;
 
   const list = (
-    <View role="list" aria-live="polite">
+    <View collapsable={false} role="list" aria-live="polite">
       {trail.map((step, index) => {
         const stepIndex = index + offset;
         const unit = unitOf(stepIndex, 'step');

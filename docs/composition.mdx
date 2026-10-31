@@ -209,6 +209,22 @@ The contracts are worth nothing if they only work in the screen they were built 
 
 What that instrument cannot see is written at the top of the file: no paint, no layer order, no hit testing, no focus. Those have their own scripts in `scripts/verify-*.mjs`.
 
+## Semantic containers keep their children
+
+A native view with a grouping role (`navigation`, `list`, `menu`, `tablist`,
+`radiogroup`, `group`, `toolbar`, `region`, a dialog and the like) is
+`collapsable={false}`. React Native's renderer flattens a view that forms no
+stacking context and mounts its children in the nearest ancestor that forms one.
+A role and a label are not enough to form one; only `accessible`, opacity,
+transforms, clipping and similar props are. The view can survive as a leaf, so
+an assistive technology reading the mounted tree (OxyOS's, Android's TalkBack)
+found an empty navigation beside loose rows and an empty toolbar group beside
+loose Back and Forward buttons. `semantic-container-census.test.ts` reads every
+native-reachable source: each grouping role, or each role forwarded from a prop,
+sits on a view that keeps its children or on a classified component (a host that
+is never flattened, or one that forwards the role to a checked view). The
+classification is an EQUALITY.
+
 ## Adoption and remaining work
 
 The [adoption matrix](/docs/adoption-matrix) derives four family-level contracts from source. The previously named Field and controlled-state adaptations now read the shared contracts: selectable domain cards and questionnaire answers inherit Field constraints, and their state uses `useControllableState`. Input OTP still normalizes its value at the component boundary.

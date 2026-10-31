@@ -178,6 +178,7 @@ function EarningsSummaryComponent({
   return (
     <SurfaceLevelProvider level={0} fill={paint.surface}>
       <View
+        collapsable={false}
         onLayout={onLayout}
         role="group"
         accessibilityLabel={accessibilityLabel}

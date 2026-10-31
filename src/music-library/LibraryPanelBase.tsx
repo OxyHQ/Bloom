@@ -259,6 +259,7 @@ export function createLibraryPanel({
     if (collapsed) {
       return (
         <Surface
+          collapsable={false}
           role="region"
           accessibilityLabel={labels.title}
           style={[surfaceStyle, { width: RAIL_WIDTH }, style]}
@@ -342,6 +343,7 @@ export function createLibraryPanel({
 
     return (
       <Surface
+        collapsable={false}
         role="region"
         accessibilityLabel={labels.title}
         style={[surfaceStyle, style]}
@@ -646,7 +648,11 @@ export function createLibraryPanel({
                 )}
               </View>
             ) : view === 'grid' ? (
-              <View role="list" style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              <View
+                collapsable={false}
+                role="list"
+                style={{ flexDirection: 'row', flexWrap: 'wrap' }}
+              >
                 {shown.map((item) => (
                   <View
                     key={item.id}
@@ -658,7 +664,7 @@ export function createLibraryPanel({
                 ))}
               </View>
             ) : (
-              <View role="list">
+              <View collapsable={false} role="list">
                 {shown.map((item) => (
                   <View key={item.id} role="listitem">
                     {renderItem(item, view)}

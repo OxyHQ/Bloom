@@ -364,7 +364,13 @@ function VoiceMessageComponent({
   };
 
   return (
-    <View role="group" accessibilityLabel={name} style={[{ width }, style ?? null]} testID={testID}>
+    <View
+      collapsable={false}
+      role="group"
+      accessibilityLabel={name}
+      style={[{ width }, style ?? null]}
+      testID={testID}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
         <PlayButton
           playing={playing}

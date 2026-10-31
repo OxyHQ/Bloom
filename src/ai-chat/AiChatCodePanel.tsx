@@ -157,6 +157,7 @@ export function AiChatCodePanel({
 
   return (
     <View
+      collapsable={false}
       role="complementary"
       testID={testID}
       style={[

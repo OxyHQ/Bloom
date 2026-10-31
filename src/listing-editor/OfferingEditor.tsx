@@ -282,6 +282,7 @@ function OfferingEditorComponent({
     <FieldConstraintScope>
       <View testID={testID} style={style} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         <View
+          collapsable={false}
           role="group"
           nativeID={field.nativeID}
           aria-describedby={field.describedBy}
@@ -421,6 +422,7 @@ function ChoiceRow<T extends string | number>({
   return (
     <FieldShell label={label} error={error}>
       <View
+        collapsable={false}
         role="radiogroup"
         accessibilityLabel={label}
         testID={testID}

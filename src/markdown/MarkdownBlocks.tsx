@@ -132,7 +132,7 @@ const MarkdownBlockView = memo(function MarkdownBlockView({ block, streaming, de
       return <View role="separator" style={{ height: 1, backgroundColor: colors.border }} />;
     case 'list':
       return (
-        <View role="list" style={{ gap: ITEM_GAP }}>
+        <View collapsable={false} role="list" style={{ gap: ITEM_GAP }}>
           {block.items.map((item, index) => (
             <MarkdownListItemView
               key={index}
@@ -268,6 +268,7 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
   return (
     <ScrollArea horizontal contentContainerStyle={{ flexGrow: 1 }}>
       <View
+        collapsable={false}
         role="table"
         style={{
           flexGrow: 1,
@@ -278,6 +279,7 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
         }}
       >
         <View
+          collapsable={false}
           role="row"
           style={{ flexDirection: 'row', backgroundColor: colors.backgroundSecondary }}
         >
@@ -285,6 +287,7 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
         </View>
         {rows.map((row, index) => (
           <View
+            collapsable={false}
             key={index}
             role="row"
             style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border }}

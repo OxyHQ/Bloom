@@ -57,6 +57,7 @@ export function CalendarViewHeader({
   return (
     // Raised over what follows: the month switcher grows DOWN over the grid.
     <View
+      collapsable={false}
       role="banner"
       testID={testID}
       style={[{ width: '100%', gap: 4, zIndex: Z_INDEX.floating }, style]}

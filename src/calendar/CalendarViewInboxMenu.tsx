@@ -145,7 +145,12 @@ function InboxBody({
               }}
             />
           ) : null}
-          <View role="group" accessibilityLabel={account.email} style={{ gap: 6, paddingTop: 5 }}>
+          <View
+            collapsable={false}
+            role="group"
+            accessibilityLabel={account.email}
+            style={{ gap: 6, paddingTop: 5 }}
+          >
             <Text
               variant="body-medium"
               numberOfLines={1}

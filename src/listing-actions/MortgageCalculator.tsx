@@ -203,6 +203,7 @@ function MortgageCalculatorComponent({
       <View>
         <TextFieldLabel>{`${labels.term} (${labels.years})`}</TextFieldLabel>
         <View
+          collapsable={false}
           accessibilityLabel={labels.term}
           aria-disabled={field.disabled || undefined}
           role="radiogroup"
@@ -355,6 +356,7 @@ function MortgageCalculatorComponent({
           slider and the term chips inside it are its parts, which keep their
           own names and freeze with the field (`field/FieldConstraintScope.tsx`). */}
       <View
+        collapsable={false}
         role="group"
         accessibilityLabel={field.accessibilityLabel}
         nativeID={field.nativeID}

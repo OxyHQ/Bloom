@@ -23,7 +23,7 @@ function ListingHighlightsComponent({
   const theme = useTheme();
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);
   return (
-    <View role="list" style={[{ gap: 24 }, style]} testID={testID}>
+    <View collapsable={false} role="list" style={[{ gap: 24 }, style]} testID={testID}>
       {items.map(({ icon: Icon, title, description }, index) => (
         <View
           key={`${title}-${index}`}

@@ -43,6 +43,7 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
   return (
     <BloomScope>
       <View
+        collapsable={false}
         {...directionProps}
         role={role}
         accessibilityLabel={accessibilityLabel}

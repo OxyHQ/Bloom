@@ -51,6 +51,7 @@ function MapAttributionShellComponent({
   if (variant === 'inline') {
     return (
       <View
+        collapsable={false}
         role={role}
         accessibilityLabel={accessibilityLabel}
         testID={testID}

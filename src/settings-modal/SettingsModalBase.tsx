@@ -540,6 +540,7 @@ export function createSettings(
                   ]}
                 >
                   <View
+                    collapsable={false}
                     ref={attachPanel}
                     tabIndex={IS_WEB ? -1 : undefined}
                     role="dialog"
@@ -1091,6 +1092,7 @@ export function createSettings(
       <SurfaceLevelProvider level={1} fill={palette.secondary}>
         {header ? (
           <View
+            collapsable={false}
             role="navigation"
             aria-label={label}
             style={styles.railCompact}
@@ -1104,6 +1106,7 @@ export function createSettings(
           // The band stays put while the rows scroll, so they never pass under
           // the controls.
           <View
+            collapsable={false}
             role="navigation"
             aria-label={label}
             style={[styles.rail, { width: railWidth }, railLook, style]}

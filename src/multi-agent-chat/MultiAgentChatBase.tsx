@@ -829,6 +829,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         )}
         {panel === 'picker' && (
           <StyledView
+            collapsable={false}
             className="flex flex-wrap justify-center gap-2 flex-row"
             role="group"
             accessibilityLabel={messages.chooseYourTeammates}

@@ -185,6 +185,7 @@ export function PropertyTypeTiles<T extends string = PropertyType>({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="group"
       accessibilityLabel={accessibilityLabel}

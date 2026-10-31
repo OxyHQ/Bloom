@@ -272,6 +272,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
 
   return (
     <Animated.View
+      collapsable={false}
       ref={setNode}
       {...dirProps}
       role="complementary"

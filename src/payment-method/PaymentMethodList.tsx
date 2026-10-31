@@ -240,6 +240,7 @@ function PaymentMethodListComponent({
     return (
       <View style={[{ gap: PAYMENT_METHOD_LIST_GAP }, style]}>
         <View
+          collapsable={false}
           role="radiogroup"
           accessibilityRole="radiogroup"
           accessibilityLabel={name}
@@ -263,6 +264,7 @@ function PaymentMethodListComponent({
   return (
     <View style={[{ gap: PAYMENT_METHOD_LIST_GAP }, style]}>
       <View
+        collapsable={false}
         role="list"
         accessibilityLabel={name}
         style={{ gap: PAYMENT_METHOD_LIST_GAP }}

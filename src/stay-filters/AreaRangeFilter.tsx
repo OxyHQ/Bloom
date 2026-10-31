@@ -58,6 +58,7 @@ function AreaRangeFilterComponent({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="group"
       accessibilityLabel={accessibilityLabel}

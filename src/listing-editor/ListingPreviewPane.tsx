@@ -108,6 +108,7 @@ function ListingPreviewPaneComponent({
         </SegmentedControlItem>
       </SegmentedControl>
       <View
+        collapsable={false}
         role="tabpanel"
         accessibilityLabel={mode === 'card' ? cardLabel : pageLabel}
         testID={testID ? `${testID}-${mode}` : undefined}

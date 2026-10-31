@@ -146,7 +146,8 @@ interface LayoutProps {
 }
 export function RadioGroupHost(props: LayoutProps) {
   useInteractiveWebCss('bloom-radio-host', BASE);
-  if (Platform.OS !== 'web') return <StyledView {...props} />;
+  // Never flattened away from its radios (semantic-containers.test.ts).
+  if (Platform.OS !== 'web') return <StyledView collapsable={false} {...props} />;
   const { className, style, accessibilityRole, accessibilityLabel, testID, children, ...aria } =
     props;
   return (

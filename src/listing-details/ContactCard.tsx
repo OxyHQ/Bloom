@@ -385,7 +385,7 @@ function ContactCardComponent({
       {card}
       {agencyRow}
       {rows.length > 0 ? (
-        <View role="list" style={{ gap: 12 }}>
+        <View collapsable={false} role="list" style={{ gap: 12 }}>
           {rows.map(({ icon: Icon, text, onPress, id }) => {
             const content = (
               <>

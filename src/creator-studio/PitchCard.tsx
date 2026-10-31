@@ -75,7 +75,13 @@ function TagGroup({
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const full = selected.length >= max;
   return (
-    <View testID={testID} role="group" accessibilityLabel={label} style={styles.group}>
+    <View
+      collapsable={false}
+      testID={testID}
+      role="group"
+      accessibilityLabel={label}
+      style={styles.group}
+    >
       <View style={styles.groupHeading}>
         <TextFieldLabel style={styles.noMargin}>{label}</TextFieldLabel>
         <Text variant="caption-1-regular" style={{ color: paint.textTertiary }}>

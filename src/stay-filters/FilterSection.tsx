@@ -33,6 +33,7 @@ function FilterSectionComponent({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="group"
       accessibilityLabel={name}

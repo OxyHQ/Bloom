@@ -207,6 +207,7 @@ export function MailRecipientField({
       </View>
       {(suggestions ?? []).length > 0 ? (
         <View
+          collapsable={false}
           role="list"
           accessibilityLabel={text.suggestions}
           style={{ backgroundColor: paint.hover }}

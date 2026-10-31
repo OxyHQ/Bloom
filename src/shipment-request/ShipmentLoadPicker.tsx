@@ -106,6 +106,7 @@ function ShipmentLoadPickerComponent({
         <View style={{ gap: 8 }}>
           <TextFieldLabel>{labels.kind}</TextFieldLabel>
           <View
+            collapsable={false}
             role="radiogroup"
             nativeID={field.nativeID}
             aria-describedby={field.describedBy}

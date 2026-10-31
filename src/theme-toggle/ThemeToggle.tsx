@@ -475,6 +475,7 @@ function SegmentedToggle({
 
   return (
     <View
+      collapsable={false}
       role="group"
       accessibilityLabel={messages.theme}
       testID={testID}

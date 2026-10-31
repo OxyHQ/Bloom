@@ -791,6 +791,7 @@ export function AgentChatHistoryBase({
 
   return (
     <View
+      collapsable={false}
       testID={testID}
       role="complementary"
       aria-label={l.region}

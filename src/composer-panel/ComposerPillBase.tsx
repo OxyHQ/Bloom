@@ -336,6 +336,7 @@ function ModelMenu({
             {labels.models}
           </Text>
           <View
+            collapsable={false}
             role="radiogroup"
             accessibilityLabel={labels.modelGroup}
             style={{ width: '100%', flexDirection: 'column', gap: 4 }}

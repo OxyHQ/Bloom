@@ -243,7 +243,7 @@ function DirectionsSummaryComponent({
           <Text variant="caption-1-semibold" style={{ color: paint.textSecondary }}>
             {alternatesLabel}
           </Text>
-          <View role="list" accessibilityLabel={alternatesLabel}>
+          <View collapsable={false} role="list" accessibilityLabel={alternatesLabel}>
             {alternates.map((route, index) => {
               const routeTraffic = trafficLabelFor(
                 route.traffic,

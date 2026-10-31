@@ -161,7 +161,7 @@ function RecentSearchesComponent({
           {title}
         </Text>
       ) : null}
-      <View role="list">
+      <View collapsable={false} role="list">
         {items.map((item) => (
           <View key={item.id} role="listitem">
             <RecentRow

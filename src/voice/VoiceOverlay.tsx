@@ -127,6 +127,7 @@ export function VoiceOverlay({
           <ModalKeyboard panelRef={panelRef} closing={!open} dismissible dismiss={close} />
         ) : null}
         <AnimatedPanel
+          collapsable={false}
           ref={panelRef}
           pointerEvents="auto"
           tabIndex={IS_WEB ? -1 : undefined}

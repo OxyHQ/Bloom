@@ -349,6 +349,7 @@ export function createBreadcrumb({
     );
     const list = (
       <View
+        collapsable={false}
         role="list"
         style={{
           flexDirection: 'row',
@@ -424,6 +425,7 @@ export function createBreadcrumb({
     return (
       <BloomScope size={geometry.size}>
         <View
+          collapsable={false}
           {...direction}
           role="navigation"
           accessibilityLabel={label}

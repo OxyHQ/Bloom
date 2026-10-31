@@ -221,6 +221,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
 
   return (
     <View
+      collapsable={false}
       role="navigation"
       accessibilityLabel={accessibilityLabel}
       onLayout={onLayout}
@@ -248,7 +249,11 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         {compact ? undefined : previousLabel}
       </Button>
 
-      <View role="list" style={{ flexDirection: 'row', alignItems: 'center', gap: 2, minWidth: 0 }}>
+      <View
+        collapsable={false}
+        role="list"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 2, minWidth: 0 }}
+      >
         {pages.map((item, index) =>
           item === DOTS ? (
             <View

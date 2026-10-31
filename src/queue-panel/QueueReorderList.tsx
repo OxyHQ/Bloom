@@ -379,7 +379,7 @@ function QueueReorderListComponent({
   );
 
   return (
-    <View role="list" testID={testID}>
+    <View collapsable={false} role="list" testID={testID}>
       {tracks.map((track, index) => (
         <QueueReorderRow
           key={track.id}

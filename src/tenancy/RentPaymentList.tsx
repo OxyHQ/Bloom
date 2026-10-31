@@ -217,7 +217,7 @@ function RentPaymentListComponent({
             </Text>
           </View>
         ) : (
-          <View role="list">
+          <View collapsable={false} role="list">
             {payments.map((payment, index) => {
               const rowStyle = {
                 flexDirection: 'row' as const,
