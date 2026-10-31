@@ -23,6 +23,8 @@ for (const required of [
   'android/build.gradle',
   'android/src/main/java/so/oxy/bloom/avatargpu/AvatarGPUModule.kt',
   'expo-module.config.json',
+  'LICENSE',
+  'README.md',
 ])
   assert(names.has(required), `Missing ${required}`);
 assert(
