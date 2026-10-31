@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.74.0
+
+### Added
+
+- **A menu its owner opens from the keyboard starts with a row active, as a Mac's does.** `DropdownMenu`'s new `openFocus` (`'first'` or `'last'`), passed with an open the owner makes from its own keys, makes that enabled row active as the menu opens: the active row in a platform popup (`floating/popup-navigation.tsx`, through the root's `MenuFocusIntent`, settled once the rows have registered, disabled rows skipped), focus on the web (`menu-keyboard.ts`'s panel keys, the same intent the trigger's own keys use). Before, a platform popup always opened with no row active, so after an open from the keyboard (OxyOS's menu bar from Super+F2) the first ↓ only highlighted the first row. An open by a pointer still starts with none. Pinned by `PlatformSurfacePopup.test.tsx` and `MenuKeyboard.web.test.tsx`.
+
+### Consumers
+
+Bump to 15.74.0. Owners that open a menu from their own keys pass `openFocus="first"` with that open; nothing else changes.
+
 ## 15.73.0
 
 ### Added

@@ -20,6 +20,13 @@ export type DropdownMenuProps = React.PropsWithChildren<
     activation?: 'click' | 'hover';
     openDelay?: number;
     closeDelay?: number;
+    /**
+     * Where an open the OWNER makes from its own keys lands, as a desktop menu opened from the
+     * keyboard does: `'first'` (or `'last'`) makes that enabled row active (web: focuses it).
+     * Read on each open; omit it for an open by a pointer, which starts with no row active. The
+     * menu's own trigger keys (web) need none: they ask for it themselves.
+     */
+    openFocus?: 'first' | 'last';
   }
 >;
 export type DropdownMenuTriggerProps = OverlayTriggerProps & {

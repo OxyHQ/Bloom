@@ -406,3 +406,96 @@ describe('DropdownMenu (native) submenus from the keyboard in a platform popup',
     expect(chosen).toHaveBeenCalledWith('Reply');
   });
 });
+
+describe('DropdownMenu (native) opened from the keyboard in a platform popup', () => {
+  // As on a Mac: a menu its owner opens from its own keys (a bar's Down on a title) starts with
+  // its first enabled row active (`openFocus`); one opened by a pointer starts with none.
+  function Rows({
+    open,
+    openFocus,
+    chosen,
+  }: {
+    open: boolean;
+    openFocus?: 'first' | 'last';
+    chosen: (row: string) => void;
+  }) {
+    return (
+      <DropdownMenu open={open} onOpenChange={() => {}} openFocus={openFocus}>
+        <DropdownMenuTrigger asChild>
+          <Pressable testID="trigger">
+            <Text>Open</Text>
+          </Pressable>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem disabled onPress={() => chosen('Undo')}>
+            Undo
+          </DropdownMenuItem>
+          <DropdownMenuItem onPress={() => chosen('Cut')}>Cut</DropdownMenuItem>
+          <DropdownMenuItem onPress={() => chosen('Copy')}>Copy</DropdownMenuItem>
+          <DropdownMenuItem onPress={() => chosen('Paste')}>Paste</DropdownMenuItem>
+          <DropdownMenuItem disabled onPress={() => chosen('Delete')}>
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  function opened(openFocus: 'first' | 'last' | undefined, chosen: jest.Mock) {
+    const popup = jest.fn();
+    const screen = render(
+      <BloomProvider mode="light" platform={adapter(popup)}>
+        <Rows open={false} openFocus={openFocus} chosen={chosen} />
+      </BloomProvider>,
+    );
+    screen.rerender(
+      <BloomProvider mode="light" platform={adapter(popup)}>
+        <Rows open openFocus={openFocus} chosen={chosen} />
+      </BloomProvider>,
+    );
+    const key = (name: string) =>
+      act(() => {
+        const props = popup.mock.calls[popup.mock.calls.length - 1]?.[0] as
+          | PopupSurfaceProps
+          | undefined;
+        props?.onKey?.(name);
+      });
+    return { screen, key, popup };
+  }
+
+  it('starts with the first enabled row active when opened from the keyboard', () => {
+    const chosen = jest.fn();
+    const { screen, key } = opened('first', chosen);
+    expect(screen.getByTestId('platform-popup')).toBeTruthy();
+    // Undo is disabled: Cut is active, and Enter chooses it with no arrow first.
+    key('Enter');
+    expect(chosen).toHaveBeenCalledTimes(1);
+    expect(chosen).toHaveBeenCalledWith('Cut');
+  });
+
+  it('then moves on from that row: the first ArrowDown goes to the second', () => {
+    const chosen = jest.fn();
+    const { key } = opened('first', chosen);
+    key('ArrowDown');
+    key('Enter');
+    expect(chosen).toHaveBeenCalledWith('Copy');
+  });
+
+  it('starts with the last enabled row active for openFocus="last"', () => {
+    const chosen = jest.fn();
+    const { key } = opened('last', chosen);
+    key('Enter');
+    expect(chosen).toHaveBeenCalledWith('Paste');
+  });
+
+  it('starts with no row active when opened by a pointer', () => {
+    const chosen = jest.fn();
+    const { screen, key } = opened(undefined, chosen);
+    key('Enter');
+    expect(chosen).not.toHaveBeenCalled();
+    expect(screen.getByTestId('platform-popup')).toBeTruthy();
+    key('ArrowDown');
+    key('Enter');
+    expect(chosen).toHaveBeenCalledWith('Cut');
+  });
+});

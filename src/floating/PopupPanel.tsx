@@ -20,6 +20,7 @@ import { useMenuPalette } from './menu-palette';
 import type { FloatingPositionProps } from './types';
 import { useMenuDensity } from './use-menu-density';
 import { usePopupNavigation } from './popup-navigation';
+import type { MenuFocusIntent } from './menu-keyboard';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 
 /** `rounded-radius-16`, the web menu panel's corner. */
@@ -36,6 +37,8 @@ export interface PopupPanelProps extends FloatingPositionProps {
   onDismiss: (reason: PopupDismissReason) => void;
   /** Escape or Tab from the keyboard: the owner closes the popup. */
   onClose: () => void;
+  /** Where an open from the keyboard lands: its first or last enabled row active. */
+  focusIntent?: MenuFocusIntent;
   minWidth?: number;
   maxWidth?: number;
   maxHeight?: number;
@@ -57,6 +60,7 @@ export function PopupPanel({
   label,
   onDismiss,
   onClose,
+  focusIntent,
   minWidth = MENU_WIDTH,
   maxWidth,
   maxHeight,
@@ -68,7 +72,7 @@ export function PopupPanel({
   const palette = useMenuPalette();
   const density = useMenuDensity();
   // The platform's keys move an active row among the panel's rows (`popup-navigation`).
-  const navigation = usePopupNavigation(onClose);
+  const navigation = usePopupNavigation(onClose, focusIntent);
   // Screen-reader focus moves into the menu when it opens, as into a sheet (`SheetShell`); the
   // panel is mounted only while open. The trigger takes it back on close
   // (`TriggerSlot`'s `useRestoreAccessibilityFocus`).

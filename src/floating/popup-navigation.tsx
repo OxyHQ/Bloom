@@ -16,6 +16,10 @@
  * open, moves into it); ← inside a submenu, or Escape, closes it and makes the
  * row that opened it active again. Escape anywhere else closes the menu. The web
  * flyout's own keys are `menu-sub-flyout.tsx`'s.
+ *
+ * A menu opened from the keyboard starts with its first enabled row active (or its
+ * last), as a Mac's does (the root's `openFocus`, through `MenuFocusIntent`); one
+ * opened by a pointer starts with none, so the first ↓ lands on the first row.
  */
 import type React from 'react';
 import {
@@ -28,6 +32,8 @@ import {
   useState,
 } from 'react';
 import type { GestureResponderEvent } from 'react-native';
+
+import type { MenuFocusIntent } from './menu-keyboard';
 
 /**
  * What a row's `onPress` receives when the keyboard activates it: there is no
@@ -146,9 +152,14 @@ export function usePopupNavigationRow({
 
 /**
  * The navigation state of one popup panel and its key handler. `onClose` runs
- * for Escape and Tab (Tab leaves the menu, as on the web).
+ * for Escape and Tab (Tab leaves the menu, as on the web). `intent`'s edge, when
+ * the panel opens with one (an open from the keyboard), makes the first or last
+ * enabled row active once the rows have registered.
  */
-export function usePopupNavigation(onClose: () => void): {
+export function usePopupNavigation(
+  onClose: () => void,
+  intent?: MenuFocusIntent,
+): {
   provider: (children: React.ReactNode) => React.ReactElement;
   onKey: (key: string) => void;
 } {
@@ -157,8 +168,18 @@ export function usePopupNavigation(onClose: () => void): {
   const typed = useRef({ text: '', at: 0 });
   // A submenu → opened, whose first enabled row becomes active as its rows register.
   const entering = useRef<PopupSubmenu | null>(null);
+  // The edge an open from the keyboard asked for, taken as the panel mounts and settled once its
+  // rows have registered (they may arrive after it, in a popup that renders its content later).
+  const opening = useRef<'first' | 'last' | null>(null);
+  const [registered, setRegistered] = useState(0);
+  if (intent?.edge.current && opening.current === null) {
+    const edge = intent.edge.current;
+    intent.edge.current = null;
+    if (edge === 'first' || edge === 'last') opening.current = edge;
+  }
   const register = useCallback((row: Row) => {
     rows.current = [...rows.current, row];
+    if (opening.current) setRegistered((count) => count + 1);
     if (entering.current && row.owner === entering.current && !row.disabled) {
       entering.current = null;
       setActive(row.id);
@@ -169,6 +190,15 @@ export function usePopupNavigation(onClose: () => void): {
     };
   }, []);
   const registry = useMemo<Registry>(() => ({ register, setActive }), [register]);
+  useEffect(() => {
+    const edge = opening.current;
+    if (!edge) return;
+    const enabled = rows.current.filter((row) => !row.disabled && row.owner === null);
+    const row = edge === 'last' ? enabled[enabled.length - 1] : enabled[0];
+    if (!row) return;
+    opening.current = null;
+    setActive(row.id);
+  }, [registered]);
 
   const onKey = useCallback(
     (key: string) => {

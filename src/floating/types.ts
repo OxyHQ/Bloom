@@ -43,8 +43,9 @@ export interface OverlayShellContextValue {
   /** The trigger wrapper. Measured by the web forks, unused on native. */
   anchorRef: React.RefObject<ComponentRef<typeof View> | null>;
   /**
-   * Web menus only: where a keyboard open lands focus, handed from the trigger
-   * to the panel (`menu-keyboard.ts`). Absent on native and on `Popover`.
+   * Menus: where a keyboard open lands, handed from the trigger (web) or the root's `openFocus`
+   * to the panel: focus on web (`menu-keyboard.ts`), the active row in a platform popup
+   * (`popup-navigation.tsx`). Absent on `Popover`.
    */
   focusIntent?: MenuFocusIntent;
 }
