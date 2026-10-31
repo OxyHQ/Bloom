@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-31",
+  "device": {
+    "model": "Pixel8a",
+    "android": 16,
+    "gpu": "Mali-G715",
+    "nativeHost": "Hermes/ExpoGL shared context,12 authored blue_beret avatars; isolated test app, not production application",
+    "atlasCss": [384, 512],
+    "atlasBacking": [576, 768],
+    "logicalCellCss": 128,
+    "cellBacking": 192,
+    "visibleSurfaceDp": 112,
+    "devicePixelRatio": 2.625,
+    "rendererPixelRatio": 1.5,
+    "offscreenMsaaSamples": 4
+  },
+  "reference": {
+    "host": "LinuxChrome146 SwiftShader, same source engine,12 blue_beret avatars and same atlas/cell/backing sizes",
+    "capture": "RawRGBA final framebuffer tile0, bothbottom-up, no screenshot clipping or output display scaling. Explicit held motion disables wandering. Native test-only HTTP commands invoke freeze/readTile once; no readback during normal animation.",
+    "limitation": "Cross-GPU comparison, not exact equality. Does not measure Android TextureView compositor/scaling, RN layout or frame completion."
+  },
+  "crossGpuSamples": [
+    {
+      "motion": "idle",
+      "time": 0.5,
+      "state": "cold first delivered frame before fix",
+      "engineFrames": 1,
+      "geometries": 8,
+      "meanAbsoluteChannelDifference": 16.225667317708332,
+      "pixelsOverChannelDifference8": 10801,
+      "maxChannelDifference": 255,
+      "pixelsCompared": 36864,
+      "nativeGlError": 0
+    },
+    {
+      "motion": "idle",
+      "time": 0.5,
+      "state": "same base-only asset, explicit second identical held frame",
+      "engineFrames": 2,
+      "geometries": 8,
+      "meanAbsoluteChannelDifference": 0.1750217013888889,
+      "pixelsOverChannelDifference8": 277,
+      "maxChannelDifference": 87,
+      "pixelsCompared": 36864,
+      "nativeGlError": 0
+    },
+    {
+      "motion": "idle",
+      "time": 0.5,
+      "state": "held idle after deferred work prepared",
+      "meanAbsoluteChannelDifference": 0.1750217013888889,
+      "pixelsOverChannelDifference8": 277,
+      "maxChannelDifference": 87,
+      "pixelsCompared": 36864,
+      "nativeGlError": 0
+    },
+    {
+      "motion": "work",
+      "time": 1.5,
+      "state": "deferred work prepared",
+      "meanAbsoluteChannelDifference": 0.20872667100694445,
+      "pixelsOverChannelDifference8": 333,
+      "maxChannelDifference": 81,
+      "pixelsCompared": 36864,
+      "nativeGlError": 0
+    }
+  ],
+  "finding": "The first alpha-fit reference pass leaked through presentation and could leave a paused/reduced avatar permanently showing the reference pose. Repeating the identical held pose produced the requested image without changing the base asset. This reproduced in original e0fee324 DOM WebGL, so it is not a native-only asset mismatch.",
+  "regressionGate": {
+    "script": "scripts/verify-avatar-first-frame.mjs",
+    "baseline": "e0fee324 DOM first versus second held0.5:17,517 of36,864 pixels differed, max255. Expected failure.",
+    "fixed": "Current source suppresses the fit pass from presentation and schedules the requested pose. Four browser cases pass exactly:DOM+injectedhost, eachwithauthoredidle and empty eyes-only preview. Eachcasecompares36,864RGBApixels. Emptyoutputalsoquiescent after200ms.",
+    "physicalAfterFix": {
+      "artifactCheckpoint": "6adb842b",
+      "compatible": true,
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "nontransparentPixels": 17341,
+      "comparedPixels": 36864,
+      "glError": 0,
+      "fitPasses": 1,
+      "backingPixelsPerAvatar": 192,
+      "scope": "Actual packed runtime, same Mali GPU, first delivered held idle0.5 vs explicitly repeated same pose; not cross-GPU screenshot equality."
+    }
+  },
+  "apiHazards": [
+    "ExpoGL getParameter(FRAMEBUFFER_BINDING=36006) is unsupported. The test helper restores the known final output framebuffer instead; production rendering does not perform this diagnostic query.",
+    "Hermes inspector WebSocket requires allowed Origin; opening succeeded with ws and Originhttp://localhost:8098 but evaluation returned no replies during this session. Test-only HTTP control provided bounded raw readback instead."
+  ]
+}

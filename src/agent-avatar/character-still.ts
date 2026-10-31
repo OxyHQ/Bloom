@@ -1,5 +1,6 @@
 import type { BloomThemeStorage } from '../theme/persistence';
 import type { ResolvedAvatarCharacter } from './character';
+import type { CharacterCapabilities } from './context';
 
 /**
  * A still of a character: one PNG, drawn once by the shared runtime and kept by CONTENT.
@@ -10,7 +11,7 @@ import type { ResolvedAvatarCharacter } from './character';
  */
 
 /** Bump when the runtime's look changes: stills drawn by the old one would otherwise outlive it. */
-const STILL_VERSION = 1;
+const STILL_VERSION = 3;
 /** CSS-pixel render sizes. A row takes the smallest that covers it, so 50 rows share 1-3 images. */
 export const STILL_BUCKETS = [64, 128, 256] as const;
 const MEMORY_LIMIT = 256;
@@ -25,12 +26,16 @@ export type StillJob = Readonly<{
   character: ResolvedAvatarCharacter;
   css: number;
   ratio: number;
+  previewPart?: 'eyes';
+  onCapabilities?(value: CharacterCapabilities): void;
 }>;
 /** Resolves a `data:image/png` URI, or `null` when the picture could not be made. */
 export type StillBackend = (job: StillJob) => Promise<string | null>;
 
 export type StillRequest = Readonly<{ promise: Promise<string | null>; cancel(): void }>;
 export type CharacterStills = {
+  /** Stop queued work and settle callers when its provider or runtime goes away. */
+  dispose(): void;
   /** The still if it is already in memory; synchronous, so a cached row never flashes a placeholder. */
   peek(key: string): string | undefined;
   /** `key` is `stillKey(character, css, ratio)`, computed once by the caller. */
@@ -39,6 +44,7 @@ export type CharacterStills = {
     character: ResolvedAvatarCharacter,
     css: number,
     ratio: number,
+    previewPart?: 'eyes',
   ): StillRequest;
 };
 
@@ -66,7 +72,12 @@ function hash(text: string): string {
  * in full are one picture), the render size and the density. Fixed field order, never the order
  * the caller happened to write the keys in.
  */
-export function stillKey(character: ResolvedAvatarCharacter, css: number, ratio: number): string {
+export function stillKey(
+  character: ResolvedAvatarCharacter,
+  css: number,
+  ratio: number,
+  previewPart?: 'eyes',
+): string {
   const { preset, shape, eyes, eyewear, accessory, paint, eyeSpacing, authored } = character;
   return hash(
     JSON.stringify([
@@ -81,6 +92,7 @@ export function stillKey(character: ResolvedAvatarCharacter, css: number, ratio:
       authored,
       css,
       ratio,
+      previewPart ?? null,
     ]),
   );
 }
@@ -101,15 +113,19 @@ export function createCharacterStills({
   runtimeUrl,
   storage,
   backend,
+  onCapabilities,
 }: {
   runtimeUrl: string;
   storage?: BloomThemeStorage;
   backend: StillBackend | null;
+  onCapabilities?(value: CharacterCapabilities): void;
 }): CharacterStills {
+  const storageNamespace = `${hash(runtimeUrl)}:`;
   const memory = new Map<string, string>();
   const pending = new Map<string, Pending>();
   const queue: Pending[] = [];
   let running = false;
+  let disposed = false;
 
   const remember = (key: string, uri: string) => {
     memory.delete(key);
@@ -119,7 +135,7 @@ export function createCharacterStills({
 
   const readStored = async (key: string): Promise<string | null> => {
     try {
-      const stored = await storage?.getItem(KEY_PREFIX + key);
+      const stored = await storage?.getItem(KEY_PREFIX + storageNamespace + key);
       return typeof stored === 'string' && stored.startsWith('data:image/png;base64,')
         ? stored
         : null;
@@ -128,8 +144,9 @@ export function createCharacterStills({
     }
   };
 
-  const writeStored = async (key: string, uri: string) => {
+  const writeStored = async (contentKey: string, uri: string) => {
     if (!storage) return;
+    const key = storageNamespace + contentKey;
     try {
       const raw = await storage.getItem(INDEX_KEY);
       const parsed: unknown = raw ? JSON.parse(raw) : [];
@@ -150,9 +167,9 @@ export function createCharacterStills({
     const { job } = entry;
     const stored = await readStored(job.key);
     if (stored) return stored;
-    if (!backend) return null;
+    if (disposed || entry.waiters === 0 || !backend) return null;
     const uri = await backend(job).catch(() => null);
-    if (uri) void writeStored(job.key, uri);
+    if (uri && !disposed) void writeStored(job.key, uri);
     return uri;
   };
 
@@ -161,12 +178,12 @@ export function createCharacterStills({
     if (running) return;
     running = true;
     try {
-      for (let entry = queue.shift(); entry; entry = queue.shift()) {
+      for (let entry = queue.shift(); entry && !disposed; entry = queue.shift()) {
         entry.started = true;
         const uri = await produce(entry);
-        if (uri) remember(entry.job.key, uri);
+        if (uri && !disposed) remember(entry.job.key, uri);
         pending.delete(entry.job.key);
-        entry.settle(uri);
+        entry.settle(disposed ? null : uri);
       }
     } finally {
       running = false;
@@ -174,12 +191,20 @@ export function createCharacterStills({
   };
 
   return {
+    dispose() {
+      disposed = true;
+      queue.length = 0;
+      for (const entry of pending.values()) entry.settle(null);
+      pending.clear();
+      memory.clear();
+    },
     peek(key) {
       const uri = memory.get(key);
       if (uri) remember(key, uri);
       return uri;
     },
-    request(key, character, css, ratio) {
+    request(key, character, css, ratio, previewPart) {
+      if (disposed) return { promise: Promise.resolve(null), cancel() {} };
       const cached = memory.get(key);
       if (cached) return { promise: Promise.resolve(cached), cancel() {} };
       let entry = pending.get(key);
@@ -187,7 +212,17 @@ export function createCharacterStills({
         let settle!: (uri: string | null) => void;
         const promise = new Promise<string | null>((resolve) => (settle = resolve));
         entry = {
-          job: { key, runtimeUrl, character, css, ratio },
+          job: {
+            key,
+            runtimeUrl,
+            character,
+            css,
+            ratio,
+            previewPart,
+            onCapabilities: (value) => {
+              if (!disposed) onCapabilities?.(value);
+            },
+          },
           waiters: 0,
           started: false,
           promise,
@@ -209,6 +244,7 @@ export function createCharacterStills({
           if (--joined.waiters > 0 || joined.started) return;
           queue.splice(queue.indexOf(joined), 1);
           pending.delete(joined.job.key);
+          joined.settle(null);
         },
       };
     },

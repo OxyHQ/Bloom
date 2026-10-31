@@ -30,6 +30,32 @@ Two consequences, both silent:
 
 **Recorded debt:** a platform config needs native peers installed/mocked; asserting native behavior via a web-resolved file measures the wrong file.
 
+## Canvas readbacks can change the backend being verified
+
+Use a **fresh destination canvas for each pose** in avatar pixel gates, and never
+read pixels from canvases used for timing. Repeated `getImageData` calls can make
+Chromium move a Canvas2D destination from GPU to CPU rendering. The resulting
+filtering path differs from an untouched GPU reference even though the renderer
+and presentation code did not change.
+
+Measured on Pixel 8a / WebView 148: a reused 112 CSS / 224 backing destination's
+third capture reported 110,277 changed RGBA pixels and 110,190 changed PNG pixels
+for eight working avatars. Repeating the same pose with fresh destinations gave
+zero differences. All nine fresh size/action combinations compared 2,482,176
+pixels exactly, including decoded PNGs. Smaller 64 CSS / 128 backing canvases
+were already CPU-backed and did not show that migration. Earlier 96/112 CSS
+captures also reported one-unit raw RGBA differences while decoded PNGs matched.
+See [physical presenter evidence](./benchmarks/avatar-web-presenters-2026-10-31.json).
+
+Capture all reference pixels and destination PNGs synchronously for the same
+submitted frame, before awaiting image decoding. Decode each PNG into a fresh
+scratch canvas for comparison. A WebGPU destination cannot also supply a 2D
+context; copying it with `drawImage` was observed to produce transparent pixels
+in a browser where its immediate PNG was correct. Check nonblank alpha and
+actual backend counters, so neither that copy hazard nor a silent fallback can
+produce a passing fidelity gate. These checks do not waive the separate scaled
+WebGPU differences observed in WebView 148.
+
 ## Verifying a LOCAL Bloom build in a consumer (four silent wrong passes)
 
 These silently verify the PUBLISHED package instead:

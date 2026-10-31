@@ -1,0 +1,5677 @@
+{
+  "sourceRevision": "6adb842b+ad60350d (4c74f958)",
+  "inputSHA256": "c3f0b4e1fb499c84d4322add782350e6ef94d3a502f32125f53bd4846db577bd",
+  "measurement": "Physical PNG pairs; composited offline in one Canvas2D backend. No timing claim.",
+  "limits": {
+    "premultipliedChannel": 1,
+    "alpha": 2,
+    "compositedRGB": 3
+  },
+  "backgrounds": [
+    {
+      "name": "Negro",
+      "color": "#000000"
+    },
+    {
+      "name": "Blanco",
+      "color": "#ffffff"
+    },
+    {
+      "name": "Surface clara · oxy",
+      "color": "rgb(241 221 233)"
+    },
+    {
+      "name": "Surface oscura · oxy",
+      "color": "rgb(47 15 44)"
+    }
+  ],
+  "cases": 120,
+  "pixels": 15390720,
+  "maxPremult": 1,
+  "maxAlpha": 2,
+  "maxCompositedRGB": 2,
+  "maxAlphaCentroidShift": 0.028184014765394717,
+  "sameSizeExact": true,
+  "cells": [
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 0,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6566,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0008735363439638705,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6351,
+          "max": 1,
+          "meanAbsolute": 0.24379475911458334,
+          "worst": [52, 8]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6401,
+          "max": 1,
+          "meanAbsolute": 0.24611409505208334,
+          "worst": [51, 7]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6418,
+          "max": 1,
+          "meanAbsolute": 0.24637858072916666,
+          "worst": [51, 7]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6394,
+          "max": 1,
+          "meanAbsolute": 0.24552408854166666,
+          "worst": [51, 7]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 1,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6714,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.002469224528690323,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6486,
+          "max": 1,
+          "meanAbsolute": 0.22782389322916666,
+          "worst": [58, 13]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6536,
+          "max": 1,
+          "meanAbsolute": 0.23028564453125,
+          "worst": [57, 13]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6550,
+          "max": 1,
+          "meanAbsolute": 0.23055013020833334,
+          "worst": [57, 13]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6511,
+          "max": 1,
+          "meanAbsolute": 0.22823079427083334,
+          "worst": [58, 13]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 2,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6502,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0011423787540745976,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6299,
+          "max": 1,
+          "meanAbsolute": 0.2181396484375,
+          "worst": [29, 17]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6353,
+          "max": 1,
+          "meanAbsolute": 0.2225341796875,
+          "worst": [29, 17]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6341,
+          "max": 1,
+          "meanAbsolute": 0.22196451822916666,
+          "worst": [29, 17]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6317,
+          "max": 1,
+          "meanAbsolute": 0.218994140625,
+          "worst": [29, 17]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 3,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6969,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0008804053306034414,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6755,
+          "max": 1,
+          "meanAbsolute": 0.23274739583333334,
+          "worst": [37, 17]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6757,
+          "max": 1,
+          "meanAbsolute": 0.23354085286458334,
+          "worst": [37, 17]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6775,
+          "max": 1,
+          "meanAbsolute": 0.23350016276041666,
+          "worst": [37, 17]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6764,
+          "max": 1,
+          "meanAbsolute": 0.23177083333333334,
+          "worst": [37, 17]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 4,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 7238,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0004939559289097433,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 7105,
+          "max": 1,
+          "meanAbsolute": 0.24930826822916666,
+          "worst": [61, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 7075,
+          "max": 1,
+          "meanAbsolute": 0.24812825520833334,
+          "worst": [61, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 7078,
+          "max": 1,
+          "meanAbsolute": 0.24808756510416666,
+          "worst": [61, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 7106,
+          "max": 1,
+          "meanAbsolute": 0.2501424153645833,
+          "worst": [61, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 5,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 4210,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.004149517777380664,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 4066,
+          "max": 1,
+          "meanAbsolute": 0.151611328125,
+          "worst": [57, 13]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 4092,
+          "max": 1,
+          "meanAbsolute": 0.15372721354166666,
+          "worst": [57, 13]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 4099,
+          "max": 1,
+          "meanAbsolute": 0.15399169921875,
+          "worst": [57, 13]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 4066,
+          "max": 1,
+          "meanAbsolute": 0.15236409505208334,
+          "worst": [57, 13]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 6,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 5835,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.003475325264989887,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5688,
+          "max": 1,
+          "meanAbsolute": 0.21382649739583334,
+          "worst": [46, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5683,
+          "max": 1,
+          "meanAbsolute": 0.2125244140625,
+          "worst": [45, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5680,
+          "max": 1,
+          "meanAbsolute": 0.2130126953125,
+          "worst": [45, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5704,
+          "max": 1,
+          "meanAbsolute": 0.21488444010416666,
+          "worst": [45, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 7,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6810,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.004965018586717874,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6537,
+          "max": 1,
+          "meanAbsolute": 0.236328125,
+          "worst": [53, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6591,
+          "max": 1,
+          "meanAbsolute": 0.24119059244791666,
+          "worst": [53, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6605,
+          "max": 1,
+          "meanAbsolute": 0.24149576822916666,
+          "worst": [53, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6560,
+          "max": 1,
+          "meanAbsolute": 0.23915608723958334,
+          "worst": [53, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 8,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 5433,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.006431572514353981,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5230,
+          "max": 1,
+          "meanAbsolute": 0.18672688802083334,
+          "worst": [63, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5237,
+          "max": 1,
+          "meanAbsolute": 0.18760172526041666,
+          "worst": [61, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5234,
+          "max": 1,
+          "meanAbsolute": 0.18701171875,
+          "worst": [61, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5250,
+          "max": 1,
+          "meanAbsolute": 0.18741861979166666,
+          "worst": [63, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "idle",
+      "index": 9,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6752,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0014468267355860647,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6604,
+          "max": 1,
+          "meanAbsolute": 0.2315673828125,
+          "worst": [45, 17]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6639,
+          "max": 1,
+          "meanAbsolute": 0.23419189453125,
+          "worst": [45, 17]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6625,
+          "max": 1,
+          "meanAbsolute": 0.23409016927083334,
+          "worst": [45, 17]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6593,
+          "max": 1,
+          "meanAbsolute": 0.232177734375,
+          "worst": [45, 17]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 0,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 5756,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00013695802884812984,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5568,
+          "max": 1,
+          "meanAbsolute": 0.21461995442708334,
+          "worst": [60, 13]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5565,
+          "max": 1,
+          "meanAbsolute": 0.21586100260416666,
+          "worst": [58, 13]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5583,
+          "max": 1,
+          "meanAbsolute": 0.21612548828125,
+          "worst": [58, 13]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5587,
+          "max": 1,
+          "meanAbsolute": 0.216552734375,
+          "worst": [58, 13]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 1,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6667,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.006766639024915976,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6417,
+          "max": 1,
+          "meanAbsolute": 0.22705078125,
+          "worst": [72, 17]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6508,
+          "max": 1,
+          "meanAbsolute": 0.23293050130208334,
+          "worst": [72, 17]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6508,
+          "max": 1,
+          "meanAbsolute": 0.23291015625,
+          "worst": [72, 17]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6439,
+          "max": 1,
+          "meanAbsolute": 0.22798665364583334,
+          "worst": [72, 17]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 2,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 5848,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.000793618719188412,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5673,
+          "max": 1,
+          "meanAbsolute": 0.19539388020833334,
+          "worst": [35, 23]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5727,
+          "max": 1,
+          "meanAbsolute": 0.19919840494791666,
+          "worst": [35, 23]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5730,
+          "max": 1,
+          "meanAbsolute": 0.19883219401041666,
+          "worst": [35, 23]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5683,
+          "max": 1,
+          "meanAbsolute": 0.19529215494791666,
+          "worst": [35, 23]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 3,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6993,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0007415290028528705,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6775,
+          "max": 1,
+          "meanAbsolute": 0.23030598958333334,
+          "worst": [37, 17]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6781,
+          "max": 1,
+          "meanAbsolute": 0.23048909505208334,
+          "worst": [38, 17]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6786,
+          "max": 1,
+          "meanAbsolute": 0.23008219401041666,
+          "worst": [38, 17]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6811,
+          "max": 1,
+          "meanAbsolute": 0.2310791015625,
+          "worst": [37, 17]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 4,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 7213,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0018767633649867384,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 7076,
+          "max": 1,
+          "meanAbsolute": 0.24462890625,
+          "worst": [57, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 7052,
+          "max": 1,
+          "meanAbsolute": 0.24446614583333334,
+          "worst": [57, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 7056,
+          "max": 1,
+          "meanAbsolute": 0.24497477213541666,
+          "worst": [57, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 7077,
+          "max": 1,
+          "meanAbsolute": 0.24593098958333334,
+          "worst": [57, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 5,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 4621,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.003824403601500025,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 4434,
+          "max": 1,
+          "meanAbsolute": 0.16861979166666666,
+          "worst": [61, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 4464,
+          "max": 1,
+          "meanAbsolute": 0.17043050130208334,
+          "worst": [61, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 4463,
+          "max": 1,
+          "meanAbsolute": 0.17043050130208334,
+          "worst": [61, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 4456,
+          "max": 1,
+          "meanAbsolute": 0.16982014973958334,
+          "worst": [61, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 6,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 5867,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0022014104633008673,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5709,
+          "max": 1,
+          "meanAbsolute": 0.2137451171875,
+          "worst": [46, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5712,
+          "max": 1,
+          "meanAbsolute": 0.21297200520833334,
+          "worst": [45, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5710,
+          "max": 1,
+          "meanAbsolute": 0.21341959635416666,
+          "worst": [45, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5731,
+          "max": 1,
+          "meanAbsolute": 0.21498616536458334,
+          "worst": [45, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 7,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6817,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.004391920950803929,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6534,
+          "max": 1,
+          "meanAbsolute": 0.23773193359375,
+          "worst": [53, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6592,
+          "max": 1,
+          "meanAbsolute": 0.24155680338541666,
+          "worst": [53, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6614,
+          "max": 1,
+          "meanAbsolute": 0.24129231770833334,
+          "worst": [53, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6574,
+          "max": 1,
+          "meanAbsolute": 0.23968505859375,
+          "worst": [53, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 8,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 5153,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.003878705121305468,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5000,
+          "max": 1,
+          "meanAbsolute": 0.17635091145833334,
+          "worst": [77, 15]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5024,
+          "max": 1,
+          "meanAbsolute": 0.17751057942708334,
+          "worst": [75, 15]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5018,
+          "max": 1,
+          "meanAbsolute": 0.17720540364583334,
+          "worst": [75, 15]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5016,
+          "max": 1,
+          "meanAbsolute": 0.17744954427083334,
+          "worst": [75, 15]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "reaction",
+      "index": 9,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6898,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.006656795880006892,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6625,
+          "max": 1,
+          "meanAbsolute": 0.23026529947916666,
+          "worst": [52, 19]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6652,
+          "max": 1,
+          "meanAbsolute": 0.23244222005208334,
+          "worst": [52, 19]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6682,
+          "max": 1,
+          "meanAbsolute": 0.23299153645833334,
+          "worst": [52, 19]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6666,
+          "max": 1,
+          "meanAbsolute": 0.23158772786458334,
+          "worst": [52, 19]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 0,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6486,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.021710438379942115,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6139,
+          "max": 1,
+          "meanAbsolute": 0.23321533203125,
+          "worst": [45, 25]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6119,
+          "max": 1,
+          "meanAbsolute": 0.23209635416666666,
+          "worst": [43, 25]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6086,
+          "max": 1,
+          "meanAbsolute": 0.23158772786458334,
+          "worst": [43, 25]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6150,
+          "max": 1,
+          "meanAbsolute": 0.23335774739583334,
+          "worst": [43, 25]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 1,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6197,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.028184014765394717,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5832,
+          "max": 1,
+          "meanAbsolute": 0.20658365885416666,
+          "worst": [44, 15]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5817,
+          "max": 1,
+          "meanAbsolute": 0.20499674479166666,
+          "worst": [44, 15]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5817,
+          "max": 1,
+          "meanAbsolute": 0.20469156901041666,
+          "worst": [44, 15]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5949,
+          "max": 1,
+          "meanAbsolute": 0.21006266276041666,
+          "worst": [44, 15]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 2,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6339,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.025480925854553686,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5878,
+          "max": 1,
+          "meanAbsolute": 0.20967610677083334,
+          "worst": [25, 23]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5937,
+          "max": 1,
+          "meanAbsolute": 0.21337890625,
+          "worst": [25, 23]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5949,
+          "max": 1,
+          "meanAbsolute": 0.21307373046875,
+          "worst": [25, 23]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6056,
+          "max": 1,
+          "meanAbsolute": 0.21571858723958334,
+          "worst": [25, 23]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 3,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 6444,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.01547801150870888,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6070,
+          "max": 1,
+          "meanAbsolute": 0.21370442708333334,
+          "worst": [37, 19]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6138,
+          "max": 1,
+          "meanAbsolute": 0.21834309895833334,
+          "worst": [37, 19]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6158,
+          "max": 1,
+          "meanAbsolute": 0.21820068359375,
+          "worst": [37, 19]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6099,
+          "max": 1,
+          "meanAbsolute": 0.21525065104166666,
+          "worst": [37, 19]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 4,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 7069,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.024879873190208388,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6675,
+          "max": 1,
+          "meanAbsolute": 0.240966796875,
+          "worst": [43, 19]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6642,
+          "max": 1,
+          "meanAbsolute": 0.23775227864583334,
+          "worst": [43, 19]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6624,
+          "max": 1,
+          "meanAbsolute": 0.23817952473958334,
+          "worst": [43, 19]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6747,
+          "max": 1,
+          "meanAbsolute": 0.2451171875,
+          "worst": [43, 19]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 5,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 4314,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.015128647471294459,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 4052,
+          "max": 1,
+          "meanAbsolute": 0.15364583333333334,
+          "worst": [47, 33]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 4057,
+          "max": 1,
+          "meanAbsolute": 0.15443929036458334,
+          "worst": [47, 33]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 4066,
+          "max": 1,
+          "meanAbsolute": 0.15470377604166666,
+          "worst": [47, 33]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 4101,
+          "max": 1,
+          "meanAbsolute": 0.15580240885416666,
+          "worst": [47, 33]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 6,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 7347,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.024101915473144414,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6943,
+          "max": 1,
+          "meanAbsolute": 0.2609659830729167,
+          "worst": [35, 11]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6941,
+          "max": 1,
+          "meanAbsolute": 0.2610066731770833,
+          "worst": [35, 11]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6945,
+          "max": 1,
+          "meanAbsolute": 0.2614339192708333,
+          "worst": [35, 11]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6945,
+          "max": 1,
+          "meanAbsolute": 0.2619222005208333,
+          "worst": [35, 11]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 7,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 5934,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.019618273289542014,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5590,
+          "max": 1,
+          "meanAbsolute": 0.20491536458333334,
+          "worst": [45, 17]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5571,
+          "max": 1,
+          "meanAbsolute": 0.20322672526041666,
+          "worst": [45, 17]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5610,
+          "max": 1,
+          "meanAbsolute": 0.20391845703125,
+          "worst": [45, 17]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5674,
+          "max": 1,
+          "meanAbsolute": 0.20733642578125,
+          "worst": [45, 17]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 8,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 5451,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.019665571456786886,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5145,
+          "max": 1,
+          "meanAbsolute": 0.1822509765625,
+          "worst": [59, 19]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5159,
+          "max": 1,
+          "meanAbsolute": 0.18393961588541666,
+          "worst": [59, 19]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5175,
+          "max": 1,
+          "meanAbsolute": 0.18393961588541666,
+          "worst": [59, 19]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5173,
+          "max": 1,
+          "meanAbsolute": 0.18389892578125,
+          "worst": [59, 19]
+        }
+      ]
+    },
+    {
+      "cssSize": 64,
+      "sourceTile": 64,
+      "kind": "work",
+      "index": 9,
+      "width": 128,
+      "height": 128,
+      "pixels": 16384,
+      "changed": 7135,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.02444309409236338,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6697,
+          "max": 1,
+          "meanAbsolute": 0.23697916666666666,
+          "worst": [43, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6741,
+          "max": 1,
+          "meanAbsolute": 0.24198404947916666,
+          "worst": [39, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6761,
+          "max": 1,
+          "meanAbsolute": 0.24263509114583334,
+          "worst": [39, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6858,
+          "max": 1,
+          "meanAbsolute": 0.2440185546875,
+          "worst": [39, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 0,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 1,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 2,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 3,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 4,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 5,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 6,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 7,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 8,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 9,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 0,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 1,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 2,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 3,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 4,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 5,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 6,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 7,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 8,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 9,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 0,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 1,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 2,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 3,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 4,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 5,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 6,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 7,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 8,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 96,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 9,
+      "width": 192,
+      "height": 192,
+      "pixels": 36864,
+      "changed": 0,
+      "maxPremult": 0,
+      "maxAlpha": 0,
+      "alphaCentroidShift": 0,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 0,
+          "max": 0,
+          "meanAbsolute": 0,
+          "worst": [0, 0]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 0,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1279,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00006814957619509613,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1224,
+          "max": 1,
+          "meanAbsolute": 0.009639402636054421,
+          "worst": [88, 18]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1279,
+          "max": 2,
+          "meanAbsolute": 0.010828550170068027,
+          "worst": [150, 52]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1279,
+          "max": 2,
+          "meanAbsolute": 0.010762117346938776,
+          "worst": [150, 52]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1248,
+          "max": 1,
+          "meanAbsolute": 0.009925063775510204,
+          "worst": [88, 18]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 1,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1479,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00014517099797831982,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1371,
+          "max": 1,
+          "meanAbsolute": 0.012110703656462584,
+          "worst": [101, 24]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1478,
+          "max": 2,
+          "meanAbsolute": 0.01463515093537415,
+          "worst": [52, 82]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1478,
+          "max": 2,
+          "meanAbsolute": 0.014395992772108844,
+          "worst": [52, 82]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1396,
+          "max": 1,
+          "meanAbsolute": 0.012356505102040817,
+          "worst": [101, 24]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 2,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1458,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00010182226732554998,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1400,
+          "max": 1,
+          "meanAbsolute": 0.010463169642857142,
+          "worst": [61, 30]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1458,
+          "max": 2,
+          "meanAbsolute": 0.0117453231292517,
+          "worst": [32, 103]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1458,
+          "max": 2,
+          "meanAbsolute": 0.011612457482993197,
+          "worst": [32, 103]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1415,
+          "max": 2,
+          "meanAbsolute": 0.010622608418367346,
+          "worst": [178, 132]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 3,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1408,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00020498714489089118,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1350,
+          "max": 1,
+          "meanAbsolute": 0.010111075680272108,
+          "worst": [67, 31]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1408,
+          "max": 2,
+          "meanAbsolute": 0.01132015306122449,
+          "worst": [194, 144]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1408,
+          "max": 2,
+          "meanAbsolute": 0.011253720238095238,
+          "worst": [194, 144]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1366,
+          "max": 1,
+          "meanAbsolute": 0.010310374149659863,
+          "worst": [66, 31]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 4,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1195,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.000033253547999897225,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1151,
+          "max": 1,
+          "meanAbsolute": 0.009054793792517007,
+          "worst": [111, 22]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1195,
+          "max": 2,
+          "meanAbsolute": 0.010011426445578231,
+          "worst": [108, 24]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1195,
+          "max": 2,
+          "meanAbsolute": 0.00995828018707483,
+          "worst": [108, 24]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1167,
+          "max": 1,
+          "meanAbsolute": 0.009194302721088435,
+          "worst": [111, 22]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 5,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 818,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0002117768519092483,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 737,
+          "max": 1,
+          "meanAbsolute": 0.005553784013605442,
+          "worst": [116, 23]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 818,
+          "max": 2,
+          "meanAbsolute": 0.007254464285714286,
+          "worst": [94, 31]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 818,
+          "max": 2,
+          "meanAbsolute": 0.0072013180272108845,
+          "worst": [94, 31]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 766,
+          "max": 2,
+          "meanAbsolute": 0.005885948129251701,
+          "worst": [180, 131]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 6,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1293,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00005286171883108221,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1234,
+          "max": 1,
+          "meanAbsolute": 0.009041507227891156,
+          "worst": [90, 21]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1293,
+          "max": 2,
+          "meanAbsolute": 0.010243941326530613,
+          "worst": [40, 135]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1293,
+          "max": 2,
+          "meanAbsolute": 0.01013764880952381,
+          "worst": [40, 135]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1253,
+          "max": 1,
+          "meanAbsolute": 0.009220875850340137,
+          "worst": [90, 21]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 7,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1186,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00011223441055820433,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1099,
+          "max": 1,
+          "meanAbsolute": 0.008636267006802721,
+          "worst": [100, 21]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1186,
+          "max": 2,
+          "meanAbsolute": 0.010496386054421769,
+          "worst": [26, 116]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1186,
+          "max": 2,
+          "meanAbsolute": 0.01038345025510204,
+          "worst": [26, 116]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1120,
+          "max": 1,
+          "meanAbsolute": 0.008868781887755101,
+          "worst": [100, 21]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 8,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1033,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00009373468253311508,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 975,
+          "max": 1,
+          "meanAbsolute": 0.007639774659863946,
+          "worst": [111, 26]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1033,
+          "max": 2,
+          "meanAbsolute": 0.008822278911564625,
+          "worst": [122, 80]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1033,
+          "max": 1,
+          "meanAbsolute": 0.008729272959183673,
+          "worst": [111, 26]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 992,
+          "max": 1,
+          "meanAbsolute": 0.007772640306122449,
+          "worst": [111, 26]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "idle",
+      "index": 9,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1439,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.000034926113957418653,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1384,
+          "max": 1,
+          "meanAbsolute": 0.011200573979591837,
+          "worst": [93, 29]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1438,
+          "max": 2,
+          "meanAbsolute": 0.012389721513605442,
+          "worst": [169, 49]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1438,
+          "max": 2,
+          "meanAbsolute": 0.012276785714285714,
+          "worst": [169, 49]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1400,
+          "max": 1,
+          "meanAbsolute": 0.011326796343537416,
+          "worst": [93, 29]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 0,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1225,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0001575834468300378,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1163,
+          "max": 1,
+          "meanAbsolute": 0.009453390731292517,
+          "worst": [108, 24]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1225,
+          "max": 2,
+          "meanAbsolute": 0.010708971088435375,
+          "worst": [108, 31]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1225,
+          "max": 2,
+          "meanAbsolute": 0.010669111394557822,
+          "worst": [108, 31]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1178,
+          "max": 1,
+          "meanAbsolute": 0.009566326530612245,
+          "worst": [108, 24]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 1,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1458,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00019092171182445668,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1373,
+          "max": 1,
+          "meanAbsolute": 0.011957908163265306,
+          "worst": [117, 38]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1458,
+          "max": 2,
+          "meanAbsolute": 0.013705091411564625,
+          "worst": [32, 166]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1458,
+          "max": 2,
+          "meanAbsolute": 0.013525722789115647,
+          "worst": [32, 166]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1399,
+          "max": 1,
+          "meanAbsolute": 0.012177136479591837,
+          "worst": [123, 36]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 2,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1273,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0002678323054836127,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1226,
+          "max": 1,
+          "meanAbsolute": 0.009127869897959183,
+          "worst": [93, 39]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1273,
+          "max": 2,
+          "meanAbsolute": 0.010197438350340137,
+          "worst": [206, 94]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1273,
+          "max": 2,
+          "meanAbsolute": 0.01016422193877551,
+          "worst": [206, 94]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1235,
+          "max": 1,
+          "meanAbsolute": 0.009214232568027211,
+          "worst": [93, 39]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 3,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1459,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00018703988681629472,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1398,
+          "max": 1,
+          "meanAbsolute": 0.010230654761904762,
+          "worst": [64, 31]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1456,
+          "max": 2,
+          "meanAbsolute": 0.011379942602040817,
+          "worst": [185, 52]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1456,
+          "max": 2,
+          "meanAbsolute": 0.011300223214285714,
+          "worst": [185, 52]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1413,
+          "max": 1,
+          "meanAbsolute": 0.01037016369047619,
+          "worst": [64, 31]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 4,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1187,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00008994013437895673,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1136,
+          "max": 1,
+          "meanAbsolute": 0.00896843112244898,
+          "worst": [101, 23]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1187,
+          "max": 1,
+          "meanAbsolute": 0.010004783163265306,
+          "worst": [101, 23]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1187,
+          "max": 1,
+          "meanAbsolute": 0.00994499362244898,
+          "worst": [101, 23]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1146,
+          "max": 1,
+          "meanAbsolute": 0.009048150510204082,
+          "worst": [101, 23]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 5,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 891,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00026318886550753167,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 831,
+          "max": 1,
+          "meanAbsolute": 0.006417410714285714,
+          "worst": [112, 19]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 891,
+          "max": 2,
+          "meanAbsolute": 0.007613201530612245,
+          "worst": [161, 108]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 891,
+          "max": 1,
+          "meanAbsolute": 0.007546768707482993,
+          "worst": [112, 19]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 851,
+          "max": 1,
+          "meanAbsolute": 0.006570206207482993,
+          "worst": [112, 19]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 6,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1327,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00004509342718748156,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1267,
+          "max": 1,
+          "meanAbsolute": 0.009420174319727892,
+          "worst": [81, 21]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1327,
+          "max": 2,
+          "meanAbsolute": 0.010722257653061224,
+          "worst": [73, 31]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1327,
+          "max": 2,
+          "meanAbsolute": 0.010655824829931973,
+          "worst": [73, 31]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1275,
+          "max": 2,
+          "meanAbsolute": 0.009479963860544218,
+          "worst": [164, 181]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 7,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1169,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0000622989223616373,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1058,
+          "max": 1,
+          "meanAbsolute": 0.008297459608843538,
+          "worst": [108, 23]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1169,
+          "max": 2,
+          "meanAbsolute": 0.010635894982993197,
+          "worst": [125, 43]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1169,
+          "max": 2,
+          "meanAbsolute": 0.010496386054421769,
+          "worst": [125, 43]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1084,
+          "max": 2,
+          "meanAbsolute": 0.008563190901360544,
+          "worst": [164, 59]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 8,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 981,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00012313634181150419,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 927,
+          "max": 1,
+          "meanAbsolute": 0.006842580782312925,
+          "worst": [135, 31]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 980,
+          "max": 2,
+          "meanAbsolute": 0.007965295493197279,
+          "worst": [157, 87]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 979,
+          "max": 2,
+          "meanAbsolute": 0.0078390731292517,
+          "worst": [157, 87]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 940,
+          "max": 2,
+          "meanAbsolute": 0.0069355867346938774,
+          "worst": [157, 87]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "reaction",
+      "index": 9,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1329,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00010212013129242844,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1248,
+          "max": 1,
+          "meanAbsolute": 0.009413531037414966,
+          "worst": [97, 38]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1329,
+          "max": 2,
+          "meanAbsolute": 0.011120854591836735,
+          "worst": [97, 38]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1329,
+          "max": 2,
+          "meanAbsolute": 0.010981345663265306,
+          "worst": [65, 56]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1269,
+          "max": 1,
+          "meanAbsolute": 0.009579613095238096,
+          "worst": [97, 38]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 0,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1331,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.001818938170511713,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1202,
+          "max": 1,
+          "meanAbsolute": 0.01057610544217687,
+          "worst": [75, 48]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1281,
+          "max": 2,
+          "meanAbsolute": 0.012316645408163265,
+          "worst": [73, 59]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1281,
+          "max": 2,
+          "meanAbsolute": 0.012203709608843538,
+          "worst": [73, 59]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1254,
+          "max": 1,
+          "meanAbsolute": 0.011233790391156462,
+          "worst": [75, 48]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 1,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1428,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0003916436908778867,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1213,
+          "max": 1,
+          "meanAbsolute": 0.009712478741496599,
+          "worst": [84, 28]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1428,
+          "max": 2,
+          "meanAbsolute": 0.01408375850340136,
+          "worst": [42, 80]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1428,
+          "max": 2,
+          "meanAbsolute": 0.013246704931972789,
+          "worst": [42, 80]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1298,
+          "max": 2,
+          "meanAbsolute": 0.010483099489795918,
+          "worst": [42, 80]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 2,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1374,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0016298248721692825,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1169,
+          "max": 1,
+          "meanAbsolute": 0.009466677295918368,
+          "worst": [50, 41]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1350,
+          "max": 2,
+          "meanAbsolute": 0.013293207908163265,
+          "worst": [31, 115]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1350,
+          "max": 2,
+          "meanAbsolute": 0.01313376913265306,
+          "worst": [31, 115]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1238,
+          "max": 1,
+          "meanAbsolute": 0.010629251700680272,
+          "worst": [66, 40]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 3,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1381,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00014292031062122364,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1173,
+          "max": 1,
+          "meanAbsolute": 0.0087890625,
+          "worst": [59, 38]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1380,
+          "max": 2,
+          "meanAbsolute": 0.01306733630952381,
+          "worst": [139, 41]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1380,
+          "max": 2,
+          "meanAbsolute": 0.012608949829931973,
+          "worst": [139, 41]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1255,
+          "max": 2,
+          "meanAbsolute": 0.009486607142857142,
+          "worst": [158, 113]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 4,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1404,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0011319253639247397,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1263,
+          "max": 1,
+          "meanAbsolute": 0.010855123299319728,
+          "worst": [97, 35]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1397,
+          "max": 2,
+          "meanAbsolute": 0.013984109268707483,
+          "worst": [120, 43]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1397,
+          "max": 2,
+          "meanAbsolute": 0.013884460034013606,
+          "worst": [120, 43]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1309,
+          "max": 1,
+          "meanAbsolute": 0.0116921768707483,
+          "worst": [97, 35]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 5,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 835,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0011246158318120377,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 749,
+          "max": 1,
+          "meanAbsolute": 0.006098533163265306,
+          "worst": [93, 58]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 829,
+          "max": 2,
+          "meanAbsolute": 0.007772640306122449,
+          "worst": [87, 95]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 829,
+          "max": 2,
+          "meanAbsolute": 0.007639774659863946,
+          "worst": [87, 95]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 778,
+          "max": 1,
+          "meanAbsolute": 0.006424053996598639,
+          "worst": [93, 58]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 6,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1582,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0009536791861443222,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1460,
+          "max": 1,
+          "meanAbsolute": 0.012562446853741497,
+          "worst": [58, 24]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1563,
+          "max": 2,
+          "meanAbsolute": 0.014708227040816327,
+          "worst": [130, 180]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1563,
+          "max": 2,
+          "meanAbsolute": 0.014449139030612245,
+          "worst": [130, 180]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1498,
+          "max": 1,
+          "meanAbsolute": 0.013034119897959183,
+          "worst": [58, 24]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 7,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1037,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.001291108711874142,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 935,
+          "max": 1,
+          "meanAbsolute": 0.00804501488095238,
+          "worst": [78, 35]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1008,
+          "max": 2,
+          "meanAbsolute": 0.009652689200680272,
+          "worst": [66, 45]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1008,
+          "max": 2,
+          "meanAbsolute": 0.009566326530612245,
+          "worst": [66, 45]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 962,
+          "max": 2,
+          "meanAbsolute": 0.008450255102040817,
+          "worst": [85, 192]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 8,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1106,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0011735287158741584,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1016,
+          "max": 1,
+          "meanAbsolute": 0.00880234906462585,
+          "worst": [108, 38]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1100,
+          "max": 2,
+          "meanAbsolute": 0.010589392006802721,
+          "worst": [59, 52]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1100,
+          "max": 2,
+          "meanAbsolute": 0.010483099489795918,
+          "worst": [59, 52]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1050,
+          "max": 2,
+          "meanAbsolute": 0.009287308673469387,
+          "worst": [143, 144]
+        }
+      ]
+    },
+    {
+      "cssSize": 112,
+      "sourceTile": 192,
+      "kind": "work",
+      "index": 9,
+      "width": 224,
+      "height": 224,
+      "pixels": 50176,
+      "changed": 1553,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.002379660189358519,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 1418,
+          "max": 1,
+          "meanAbsolute": 0.012030984268707483,
+          "worst": [74, 41]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 1534,
+          "max": 2,
+          "meanAbsolute": 0.014123618197278911,
+          "worst": [151, 150]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 1532,
+          "max": 2,
+          "meanAbsolute": 0.013751594387755101,
+          "worst": [151, 150]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 1472,
+          "max": 1,
+          "meanAbsolute": 0.012589019982993197,
+          "worst": [74, 41]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 0,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 10009,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0003345341004792944,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9774,
+          "max": 1,
+          "meanAbsolute": 0.009388834635416666,
+          "worst": [257, 52]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 10006,
+          "max": 2,
+          "meanAbsolute": 0.01004150390625,
+          "worst": [432, 128]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 10007,
+          "max": 2,
+          "meanAbsolute": 0.009998372395833333,
+          "worst": [432, 128]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9851,
+          "max": 2,
+          "meanAbsolute": 0.00947998046875,
+          "worst": [142, 522]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 1,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 10214,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.000024362325524999515,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9963,
+          "max": 1,
+          "meanAbsolute": 0.010057779947916666,
+          "worst": [325, 65]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 10205,
+          "max": 2,
+          "meanAbsolute": 0.01069091796875,
+          "worst": [403, 110]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 10211,
+          "max": 2,
+          "meanAbsolute": 0.010655924479166667,
+          "worst": [403, 110]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 10028,
+          "max": 2,
+          "meanAbsolute": 0.010126139322916667,
+          "worst": [407, 549]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 2,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 9413,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00006171584282151627,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9248,
+          "max": 1,
+          "meanAbsolute": 0.008616536458333334,
+          "worst": [168, 79]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 9413,
+          "max": 2,
+          "meanAbsolute": 0.009070638020833334,
+          "worst": [179, 82]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 9413,
+          "max": 2,
+          "meanAbsolute": 0.009037272135416666,
+          "worst": [179, 82]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9295,
+          "max": 2,
+          "meanAbsolute": 0.00868408203125,
+          "worst": [179, 82]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 3,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 10019,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00005799857161576495,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9797,
+          "max": 1,
+          "meanAbsolute": 0.009200032552083333,
+          "worst": [436, 86]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 10019,
+          "max": 2,
+          "meanAbsolute": 0.00979248046875,
+          "worst": [426, 90]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 10019,
+          "max": 2,
+          "meanAbsolute": 0.00974365234375,
+          "worst": [426, 90]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9864,
+          "max": 1,
+          "meanAbsolute": 0.009270833333333334,
+          "worst": [436, 86]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 4,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 9032,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0002007295823370551,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 8785,
+          "max": 1,
+          "meanAbsolute": 0.00834716796875,
+          "worst": [307, 62]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 9032,
+          "max": 2,
+          "meanAbsolute": 0.009007161458333333,
+          "worst": [219, 87]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 9032,
+          "max": 2,
+          "meanAbsolute": 0.008955891927083333,
+          "worst": [219, 87]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 8850,
+          "max": 2,
+          "meanAbsolute": 0.008416341145833334,
+          "worst": [492, 492]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 5,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 5814,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00038239834873595433,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5554,
+          "max": 1,
+          "meanAbsolute": 0.0051228841145833336,
+          "worst": [307, 62]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5813,
+          "max": 2,
+          "meanAbsolute": 0.0058349609375,
+          "worst": [318, 62]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5813,
+          "max": 2,
+          "meanAbsolute": 0.00578369140625,
+          "worst": [318, 62]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5641,
+          "max": 2,
+          "meanAbsolute": 0.00523193359375,
+          "worst": [318, 62]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 6,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 8613,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.000017153262742560114,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 8417,
+          "max": 1,
+          "meanAbsolute": 0.007762044270833333,
+          "worst": [262, 62]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 8613,
+          "max": 2,
+          "meanAbsolute": 0.008274739583333333,
+          "worst": [142, 162]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 8613,
+          "max": 2,
+          "meanAbsolute": 0.0082470703125,
+          "worst": [142, 162]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 8475,
+          "max": 2,
+          "meanAbsolute": 0.007832845052083334,
+          "worst": [347, 567]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 7,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 9660,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0001719260746864917,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9330,
+          "max": 1,
+          "meanAbsolute": 0.0086279296875,
+          "worst": [296, 59]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 9656,
+          "max": 2,
+          "meanAbsolute": 0.009485677083333333,
+          "worst": [322, 72]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 9657,
+          "max": 2,
+          "meanAbsolute": 0.00945556640625,
+          "worst": [255, 83]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9433,
+          "max": 2,
+          "meanAbsolute": 0.008766276041666667,
+          "worst": [242, 108]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 8,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 7973,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00014540198467447228,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 7779,
+          "max": 1,
+          "meanAbsolute": 0.0075830078125,
+          "worst": [315, 61]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 7970,
+          "max": 2,
+          "meanAbsolute": 0.008092447916666667,
+          "worst": [277, 122]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 7970,
+          "max": 2,
+          "meanAbsolute": 0.008052571614583334,
+          "worst": [277, 122]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 7834,
+          "max": 2,
+          "meanAbsolute": 0.007646484375,
+          "worst": [294, 224]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "idle",
+      "index": 9,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 9413,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00024493837833885346,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9219,
+          "max": 1,
+          "meanAbsolute": 0.00933837890625,
+          "worst": [277, 82]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 9413,
+          "max": 2,
+          "meanAbsolute": 0.009945475260416666,
+          "worst": [352, 107]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 9413,
+          "max": 2,
+          "meanAbsolute": 0.00988037109375,
+          "worst": [352, 107]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9280,
+          "max": 2,
+          "meanAbsolute": 0.009422200520833333,
+          "worst": [537, 266]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 0,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 8758,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00012124888398703158,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 8516,
+          "max": 1,
+          "meanAbsolute": 0.008302408854166667,
+          "worst": [307, 72]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 8754,
+          "max": 2,
+          "meanAbsolute": 0.008922526041666667,
+          "worst": [307, 77]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 8755,
+          "max": 2,
+          "meanAbsolute": 0.008857421875,
+          "worst": [307, 77]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 8602,
+          "max": 2,
+          "meanAbsolute": 0.00839599609375,
+          "worst": [337, 91]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 1,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 10145,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00011309594815168751,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9845,
+          "max": 1,
+          "meanAbsolute": 0.009921875,
+          "worst": [351, 102]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 10145,
+          "max": 2,
+          "meanAbsolute": 0.010716959635416667,
+          "worst": [328, 112]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 10145,
+          "max": 2,
+          "meanAbsolute": 0.0106689453125,
+          "worst": [328, 112]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9931,
+          "max": 2,
+          "meanAbsolute": 0.01002685546875,
+          "worst": [227, 127]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 2,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 8387,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.000012493656178499344,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 8224,
+          "max": 1,
+          "meanAbsolute": 0.00783447265625,
+          "worst": [219, 112]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 8387,
+          "max": 2,
+          "meanAbsolute": 0.008279622395833333,
+          "worst": [218, 115]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 8387,
+          "max": 2,
+          "meanAbsolute": 0.008252766927083334,
+          "worst": [218, 115]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 8277,
+          "max": 2,
+          "meanAbsolute": 0.00790283203125,
+          "worst": [492, 452]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 3,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 10176,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00009426530123522363,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9923,
+          "max": 1,
+          "meanAbsolute": 0.009239095052083333,
+          "worst": [204, 82]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 10176,
+          "max": 2,
+          "meanAbsolute": 0.0098876953125,
+          "worst": [300, 139]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 10176,
+          "max": 2,
+          "meanAbsolute": 0.0098291015625,
+          "worst": [300, 139]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9992,
+          "max": 1,
+          "meanAbsolute": 0.009305013020833334,
+          "worst": [197, 82]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 4,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 8891,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00010306395087218297,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 8685,
+          "max": 1,
+          "meanAbsolute": 0.008438313802083333,
+          "worst": [314, 61]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 8891,
+          "max": 2,
+          "meanAbsolute": 0.00899658203125,
+          "worst": [232, 91]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 8891,
+          "max": 2,
+          "meanAbsolute": 0.008954264322916667,
+          "worst": [232, 91]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 8732,
+          "max": 1,
+          "meanAbsolute": 0.008487955729166666,
+          "worst": [314, 61]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 5,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 5555,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00041501343115078797,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5361,
+          "max": 1,
+          "meanAbsolute": 0.0047998046875,
+          "worst": [306, 59]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 5555,
+          "max": 2,
+          "meanAbsolute": 0.005338541666666667,
+          "worst": [303, 62]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 5555,
+          "max": 2,
+          "meanAbsolute": 0.005301920572916666,
+          "worst": [303, 62]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5445,
+          "max": 2,
+          "meanAbsolute": 0.004903157552083333,
+          "worst": [303, 62]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 6,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 8395,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00013055554310011818,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 8181,
+          "max": 1,
+          "meanAbsolute": 0.0075252278645833335,
+          "worst": [246, 62]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 8394,
+          "max": 2,
+          "meanAbsolute": 0.00808349609375,
+          "worst": [325, 75]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 8395,
+          "max": 2,
+          "meanAbsolute": 0.008059895833333334,
+          "worst": [325, 75]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 8238,
+          "max": 2,
+          "meanAbsolute": 0.0075927734375,
+          "worst": [491, 256]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 7,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 9271,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00026051706960504285,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 8974,
+          "max": 1,
+          "meanAbsolute": 0.00828125,
+          "worst": [293, 61]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 9256,
+          "max": 2,
+          "meanAbsolute": 0.009016927083333333,
+          "worst": [442, 97]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 9258,
+          "max": 2,
+          "meanAbsolute": 0.008968098958333334,
+          "worst": [442, 97]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9063,
+          "max": 1,
+          "meanAbsolute": 0.008380533854166667,
+          "worst": [293, 61]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 8,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 6995,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.00007165472557626112,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 6798,
+          "max": 1,
+          "meanAbsolute": 0.00633544921875,
+          "worst": [379, 89]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6993,
+          "max": 2,
+          "meanAbsolute": 0.0068310546875,
+          "worst": [387, 92]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6993,
+          "max": 2,
+          "meanAbsolute": 0.006796875,
+          "worst": [387, 92]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 6841,
+          "max": 2,
+          "meanAbsolute": 0.006388346354166667,
+          "worst": [227, 177]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "reaction",
+      "index": 9,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 9932,
+      "maxPremult": 1,
+      "maxAlpha": 2,
+      "alphaCentroidShift": 0.00025146150178269154,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9635,
+          "max": 1,
+          "meanAbsolute": 0.00970947265625,
+          "worst": [288, 104]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 9917,
+          "max": 2,
+          "meanAbsolute": 0.010491536458333334,
+          "worst": [146, 172]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 9917,
+          "max": 2,
+          "meanAbsolute": 0.010450846354166666,
+          "worst": [146, 172]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9752,
+          "max": 2,
+          "meanAbsolute": 0.009834798177083333,
+          "worst": [112, 197]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 0,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 11245,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.006316084640911129,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 10164,
+          "max": 1,
+          "meanAbsolute": 0.010462239583333333,
+          "worst": [217, 137]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 11123,
+          "max": 2,
+          "meanAbsolute": 0.013031412760416666,
+          "worst": [237, 143]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 11123,
+          "max": 2,
+          "meanAbsolute": 0.012945149739583333,
+          "worst": [237, 143]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 10439,
+          "max": 2,
+          "meanAbsolute": 0.010999348958333334,
+          "worst": [237, 143]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 1,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 10790,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.002529682479392094,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 10240,
+          "max": 1,
+          "meanAbsolute": 0.01037109375,
+          "worst": [245, 80]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 10684,
+          "max": 2,
+          "meanAbsolute": 0.011631673177083333,
+          "worst": [234, 82]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 10684,
+          "max": 2,
+          "meanAbsolute": 0.011571451822916667,
+          "worst": [234, 82]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 10430,
+          "max": 2,
+          "meanAbsolute": 0.010701497395833334,
+          "worst": [234, 82]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 2,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 10443,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.005752991618500056,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9358,
+          "max": 1,
+          "meanAbsolute": 0.009186197916666666,
+          "worst": [159, 109]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 10316,
+          "max": 2,
+          "meanAbsolute": 0.0115966796875,
+          "worst": [202, 120]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 10315,
+          "max": 2,
+          "meanAbsolute": 0.0114892578125,
+          "worst": [202, 120]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9833,
+          "max": 2,
+          "meanAbsolute": 0.00980224609375,
+          "worst": [382, 122]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 3,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 10112,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.002528361028585961,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 9329,
+          "max": 1,
+          "meanAbsolute": 0.009000651041666667,
+          "worst": [201, 97]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 10060,
+          "max": 2,
+          "meanAbsolute": 0.010973307291666666,
+          "worst": [448, 254]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 10060,
+          "max": 2,
+          "meanAbsolute": 0.0109228515625,
+          "worst": [448, 254]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 9683,
+          "max": 1,
+          "meanAbsolute": 0.009420572916666667,
+          "worst": [201, 97]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 4,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 11301,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.0069487794372047615,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 10158,
+          "max": 1,
+          "meanAbsolute": 0.010128580729166666,
+          "worst": [245, 94]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 11182,
+          "max": 2,
+          "meanAbsolute": 0.012932942708333334,
+          "worst": [246, 97]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 11182,
+          "max": 2,
+          "meanAbsolute": 0.01275634765625,
+          "worst": [246, 97]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 10453,
+          "max": 2,
+          "meanAbsolute": 0.010703125,
+          "worst": [242, 547]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 5,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 6343,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.004193125692460317,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 5744,
+          "max": 1,
+          "meanAbsolute": 0.0056396484375,
+          "worst": [272, 162]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 6284,
+          "max": 2,
+          "meanAbsolute": 0.00695556640625,
+          "worst": [334, 217]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 6282,
+          "max": 2,
+          "meanAbsolute": 0.006865234375,
+          "worst": [235, 264]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 5984,
+          "max": 2,
+          "meanAbsolute": 0.006014811197916667,
+          "worst": [407, 362]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 6,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 11515,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.005577585225617064,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 10524,
+          "max": 1,
+          "meanAbsolute": 0.010185546875,
+          "worst": [172, 67]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 11416,
+          "max": 2,
+          "meanAbsolute": 0.012484537760416666,
+          "worst": [281, 83]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 11414,
+          "max": 2,
+          "meanAbsolute": 0.012351888020833333,
+          "worst": [281, 83]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 10781,
+          "max": 2,
+          "meanAbsolute": 0.010584309895833333,
+          "worst": [281, 83]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 7,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 9203,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.004550839555183207,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 8345,
+          "max": 1,
+          "meanAbsolute": 0.008155924479166667,
+          "worst": [222, 97]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 9122,
+          "max": 2,
+          "meanAbsolute": 0.010196940104166666,
+          "worst": [241, 97]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 9122,
+          "max": 2,
+          "meanAbsolute": 0.010130208333333333,
+          "worst": [187, 132]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 8604,
+          "max": 2,
+          "meanAbsolute": 0.008680826822916666,
+          "worst": [187, 132]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 8,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 8232,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.005098034313628077,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 7553,
+          "max": 1,
+          "meanAbsolute": 0.0077303059895833335,
+          "worst": [298, 108]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 8095,
+          "max": 2,
+          "meanAbsolute": 0.00918701171875,
+          "worst": [317, 117]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 8093,
+          "max": 2,
+          "meanAbsolute": 0.009119466145833333,
+          "worst": [317, 117]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 7810,
+          "max": 2,
+          "meanAbsolute": 0.008216959635416667,
+          "worst": [152, 472]
+        }
+      ]
+    },
+    {
+      "cssSize": 320,
+      "sourceTile": 512,
+      "kind": "work",
+      "index": 9,
+      "width": 640,
+      "height": 640,
+      "pixels": 409600,
+      "changed": 12078,
+      "maxPremult": 1,
+      "maxAlpha": 1,
+      "alphaCentroidShift": 0.006752861846747495,
+      "composites": [
+        {
+          "background": "Negro",
+          "color": "#000000",
+          "changed": 10841,
+          "max": 1,
+          "meanAbsolute": 0.01123046875,
+          "worst": [218, 112]
+        },
+        {
+          "background": "Blanco",
+          "color": "#ffffff",
+          "changed": 11935,
+          "max": 2,
+          "meanAbsolute": 0.014181315104166667,
+          "worst": [122, 167]
+        },
+        {
+          "background": "Surface clara · oxy",
+          "color": "rgb(241 221 233)",
+          "changed": 11934,
+          "max": 2,
+          "meanAbsolute": 0.013817545572916666,
+          "worst": [122, 167]
+        },
+        {
+          "background": "Surface oscura · oxy",
+          "color": "rgb(47 15 44)",
+          "changed": 11317,
+          "max": 1,
+          "meanAbsolute": 0.011998697916666667,
+          "worst": [249, 114]
+        }
+      ]
+    }
+  ]
+}

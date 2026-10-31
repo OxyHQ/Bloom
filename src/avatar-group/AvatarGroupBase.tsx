@@ -1,4 +1,5 @@
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import type { ComponentRef } from 'react';
 import {
   Pressable,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 
 import { Avatar } from '../avatar';
+import type { AvatarMotion } from '../avatar/types';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { fontSize } from '../styles/tokens';
@@ -104,6 +106,7 @@ function AvatarGroupCell({
   index,
   innerSize,
   variant,
+  motion,
   showInitials,
   cellStyle,
   wrapperStyle,
@@ -114,6 +117,7 @@ function AvatarGroupCell({
   index: number;
   innerSize: number;
   variant?: string;
+  motion?: AvatarMotion;
   showInitials: boolean;
   cellStyle: StyleProp<ViewStyle>;
   wrapperStyle: StyleProp<ViewStyle>;
@@ -154,6 +158,7 @@ function AvatarGroupCell({
         account={{ kind: item.kind, character: item.character }}
         name={showInitials ? name : undefined}
         variant={variant}
+        motion={motion}
         size={innerSize}
       />
     </View>
@@ -186,6 +191,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   layout = 'stack',
   size = 32,
   variant = 'thumb',
+  motion,
   max,
   total,
   overlap,
@@ -274,6 +280,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
         items={items}
         size={size}
         variant={variant}
+        motion={motion}
         max={max}
         total={total}
         ring={ring}
@@ -306,6 +313,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
             index={index}
             innerSize={innerSize}
             variant={variant}
+            motion={motion}
             showInitials={showInitials}
             cellStyle={cellStyle}
             wrapperStyle={wrapperStyle}
@@ -335,6 +343,7 @@ interface ClusterAvatarGroupProps {
   items: AvatarGroupItem[];
   size: number;
   variant?: string;
+  motion?: AvatarMotion;
   max?: number;
   total?: number;
   ring: string;
@@ -357,6 +366,7 @@ const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
   items,
   size,
   variant,
+  motion,
   max,
   total,
   ring,
@@ -453,6 +463,7 @@ const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
             index={index}
             innerSize={inner}
             variant={variant}
+            motion={motion}
             showInitials={showInitials}
             cellStyle={cellStyle}
             wrapperStyle={wrapperStyle}

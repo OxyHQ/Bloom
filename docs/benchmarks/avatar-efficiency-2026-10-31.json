@@ -1,0 +1,471 @@
+{
+  "schema": "bloom.avatar.efficiency-evidence",
+  "date": "2026-10-31",
+  "baseline": {
+    "revision": "798d6513",
+    "runtimeSourceMatchesEarlierSharedMain": "5ddd2c8b",
+    "runtimeEntrySha256": "37c20f5f7d2cb796c7ce7461b407aa53276ede718db959bfc283f48754291d4b"
+  },
+  "after": {
+    "baseCommitAtMeasurement": "b1dcfca1",
+    "pendingRuntimeControllerSupersessionFixes": true,
+    "features": [
+      "smooth surfaces without strand geometry or pile textures",
+      "base/Computer payload split with deferred Computer loading",
+      "retained-canvas GPU instance compaction",
+      "compiled shared motion transforms",
+      "ResizeObserver dimensions instead of frame layout reads"
+    ],
+    "note": "Steady-state runs precede the final integration commit. Later controller supersession corrections do not change the idle workload."
+  },
+  "device": {
+    "model": "Pixel 8a",
+    "android": 16,
+    "apiLevel": 36,
+    "gpu": "Mali-G715",
+    "userAgent": "Mozilla/5.0 (Linux; Android 16; Pixel 8a Build/BP4A.251205.006; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/148.0.7778.120 Mobile Safari/537.36",
+    "physicalDpr": 2.625,
+    "thermalStatusObservedAfterRuns": 1,
+    "sourceSharedDocumentBatteryTemperatureRangeC": [33.6, 34.3]
+  },
+  "sharedDocument": {
+    "artifact": "Vite source runtime in one dedicated Android WebView; multiple output canvases share one WebGL context",
+    "sample": "5-second warmup and approximately 5-second measurement per mode",
+    "before": [
+      {
+        "count": 1,
+        "mode": "active",
+        "fps": 59.84798611540954,
+        "presentedFrames": 300,
+        "elapsedMs": 5012.699999988079,
+        "mainThreadMs": 939.216,
+        "visible": 1,
+        "presentationGapP95Ms": 18.900000035762787,
+        "triangles": 22772,
+        "drawCalls": 16,
+        "renderedInstances": null,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 1,
+        "mode": "one-active",
+        "fps": 61.23955237249206,
+        "presentedFrames": 307,
+        "elapsedMs": 5013.100000023842,
+        "mainThreadMs": 1057.8970000000006,
+        "visible": 1,
+        "presentationGapP95Ms": 18.5,
+        "triangles": 22848,
+        "drawCalls": 16,
+        "renderedInstances": null,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 1,
+        "mode": "paused",
+        "fps": 0,
+        "presentedFrames": 0,
+        "elapsedMs": 5018.899999976158,
+        "mainThreadMs": 13.506000000000462,
+        "visible": 1,
+        "presentationGapP95Ms": null,
+        "triangles": 22888,
+        "drawCalls": 16,
+        "renderedInstances": null,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 12,
+        "mode": "active",
+        "fps": 59.9005650618545,
+        "presentedFrames": 300,
+        "elapsedMs": 5008.300000011921,
+        "mainThreadMs": 771.5589999999999,
+        "visible": 12,
+        "presentationGapP95Ms": 17.700000047683716,
+        "triangles": 273220,
+        "drawCalls": 16,
+        "renderedInstances": null,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 12,
+        "mode": "one-active",
+        "fps": 59.88143475874937,
+        "presentedFrames": 300,
+        "elapsedMs": 5009.900000035763,
+        "mainThreadMs": 1811.6179999999997,
+        "visible": 12,
+        "presentationGapP95Ms": 22.399999976158142,
+        "triangles": 273268,
+        "drawCalls": 16,
+        "renderedInstances": null,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 12,
+        "mode": "paused",
+        "fps": 0,
+        "presentedFrames": 0,
+        "elapsedMs": 5017.099999964237,
+        "mainThreadMs": 13.413999999999149,
+        "visible": 12,
+        "presentationGapP95Ms": null,
+        "triangles": 273220,
+        "drawCalls": 16,
+        "renderedInstances": null,
+        "backingPixels": 192,
+        "contexts": 1
+      }
+    ],
+    "after": [
+      {
+        "count": 1,
+        "mode": "active",
+        "fps": 60.029516174208375,
+        "presentedFrames": 301,
+        "elapsedMs": 5014.199999988079,
+        "mainThreadMs": 953.3199999999997,
+        "visible": 1,
+        "presentationGapP95Ms": 18.899999976158142,
+        "triangles": 18804,
+        "drawCalls": 15,
+        "renderedInstances": 1,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 1,
+        "mode": "one-active",
+        "fps": 59.67825635646368,
+        "presentedFrames": 299,
+        "elapsedMs": 5010.200000047684,
+        "mainThreadMs": 798.3430000000001,
+        "visible": 1,
+        "presentationGapP95Ms": 18.600000023841858,
+        "triangles": 18804,
+        "drawCalls": 15,
+        "renderedInstances": 1,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 1,
+        "mode": "paused",
+        "fps": 0,
+        "presentedFrames": 0,
+        "elapsedMs": 5019.400000035763,
+        "mainThreadMs": 111.25000000000007,
+        "visible": 1,
+        "presentationGapP95Ms": null,
+        "triangles": 18804,
+        "drawCalls": 15,
+        "renderedInstances": 0,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 12,
+        "mode": "active",
+        "fps": 59.87665409242684,
+        "presentedFrames": 300,
+        "elapsedMs": 5010.300000011921,
+        "mainThreadMs": 691.751,
+        "visible": 12,
+        "presentationGapP95Ms": 17.899999976158142,
+        "triangles": 225604,
+        "drawCalls": 15,
+        "renderedInstances": 12,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 12,
+        "mode": "one-active",
+        "fps": 59.83127580195319,
+        "presentedFrames": 300,
+        "elapsedMs": 5014.100000023842,
+        "mainThreadMs": 1797.979999999999,
+        "visible": 12,
+        "presentationGapP95Ms": 19.5,
+        "triangles": 18804,
+        "drawCalls": 15,
+        "renderedInstances": 1,
+        "backingPixels": 192,
+        "contexts": 1
+      },
+      {
+        "count": 12,
+        "mode": "paused",
+        "fps": 0,
+        "presentedFrames": 0,
+        "elapsedMs": 5018.699999988079,
+        "mainThreadMs": 85.03299999999925,
+        "visible": 12,
+        "presentationGapP95Ms": null,
+        "triangles": 225604,
+        "drawCalls": 15,
+        "renderedInstances": 0,
+        "backingPixels": 192,
+        "contexts": 1
+      }
+    ],
+    "finding": "Both versions remain near the 60 fps work budget. With 12 canvases and one active avatar, submitted triangles fall from 273268 to 18804. This is not the React Native one-WebView-per-live-avatar topology."
+  },
+  "independentDocuments": {
+    "artifact": "Distributed runtime.mjs and generated assets, eight independent Android WebViews and WebGL contexts in one dedicated APK",
+    "avatar": "Eight blue_beret presets with independent body pigments, 112 CSS pixels each",
+    "protocol": "Fresh dedicated app process for before and after. 128x128 CSS pixel WebView cells, DPR 2.625; runtime backing 192 pixels and renderer ratio 1.5. Five-second warmup and approximately five-second samples. Network cache disabled via CDP. Before ran first.",
+    "before": {
+      "readyMilliseconds": [
+        4338.199999988079, 3732.699999988079, 2653.699999988079, 4308.800000011921,
+        4897.300000011921, 5442.899999976158, 6484.5, 5937.900000035763
+      ],
+      "viewportCss": [
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        }
+      ],
+      "defaultFramebufferAntialias": [true, true, true, true, true, true, true, true],
+      "readyMemory": {
+        "hostPssKiB": 361048,
+        "webviewRendererPssKiB": [310581],
+        "combinedPssKiB": 671629,
+        "batteryTemperatureC": 38
+      },
+      "cases": [
+        {
+          "mode": "active",
+          "fpsPerDocument": [
+            36.330786905036, 36.33221390810909, 36.33364102371175, 36.34149216185392,
+            36.34077828205025, 36.33578190648948, 36.34006442986698, 36.33935060615341
+          ],
+          "framesPerDocument": [185, 185, 185, 185, 185, 185, 185, 185],
+          "elapsedMsPerDocument": [
+            5092.100000023842, 5091.900000035763, 5091.699999988079, 5090.600000023842,
+            5090.699999988079, 5091.400000035763, 5090.800000011921, 5090.899999976158
+          ],
+          "trianglesPerDocument": [22772, 22772, 23048, 22772, 22772, 22772, 22972, 22772],
+          "memory": {
+            "hostPssKiB": 395954,
+            "webviewRendererPssKiB": [319984],
+            "combinedPssKiB": 715938,
+            "batteryTemperatureC": 38.1
+          }
+        },
+        {
+          "mode": "paused",
+          "fpsPerDocument": [0, 0, 0, 0, 0, 0, 0, 0],
+          "framesPerDocument": [0, 0, 0, 0, 0, 0, 0, 0],
+          "elapsedMsPerDocument": [
+            5031.199999988079, 5030.300000011921, 5031.200000047684, 5032.800000011921,
+            5032.100000023842, 5037.5, 5037.699999988079, 5038.599999964237
+          ],
+          "trianglesPerDocument": [23040, 22852, 22868, 22952, 23060, 22772, 22772, 22772],
+          "memory": {
+            "hostPssKiB": 393298,
+            "webviewRendererPssKiB": [320411],
+            "combinedPssKiB": 713709,
+            "batteryTemperatureC": 38.1
+          }
+        }
+      ],
+      "binaryResponseEncodedBytesPerDocument": [
+        7880216, 7880216, 7880216, 7880216, 7880216, 7880216, 7880216, 7880216
+      ]
+    },
+    "after": {
+      "readyMilliseconds": [
+        2531.5, 1336.800000011921, 1688, 3090, 3449.7000000476837, 3799.600000023842,
+        2908.100000023842, 2099.699999988079
+      ],
+      "viewportCss": [
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "dpr": 2.625
+        }
+      ],
+      "defaultFramebufferAntialias": [false, false, false, false, false, false, false, false],
+      "readyMemory": {
+        "hostPssKiB": 283355,
+        "webviewRendererPssKiB": [172975],
+        "combinedPssKiB": 456330,
+        "batteryTemperatureC": 38.1
+      },
+      "cases": [
+        {
+          "mode": "active",
+          "fpsPerDocument": [
+            36.32773938795656, 36.3284566330759, 36.32702217158578, 36.32343651320654,
+            36.52661506862355, 36.5222884665957, 36.523730553667264, 36.51147644533551
+          ],
+          "framesPerDocument": [184, 184, 184, 184, 185, 185, 185, 185],
+          "elapsedMsPerDocument": [
+            5065, 5064.899999976158, 5065.099999964237, 5065.599999964237, 5064.800000011921,
+            5065.400000035763, 5065.199999988079, 5066.899999976158
+          ],
+          "trianglesPerDocument": [18804, 18804, 18804, 18804, 18804, 18804, 18804, 18804],
+          "memory": {
+            "hostPssKiB": 311123,
+            "webviewRendererPssKiB": [174438],
+            "combinedPssKiB": 485561,
+            "batteryTemperatureC": 38.1
+          }
+        },
+        {
+          "mode": "paused",
+          "fpsPerDocument": [0, 0, 0, 0, 0, 0, 0, 0],
+          "framesPerDocument": [0, 0, 0, 0, 0, 0, 0, 0],
+          "elapsedMsPerDocument": [
+            5027.400000035763, 5027.399999976158, 5029.300000011921, 5028.699999988079, 5029,
+            5029.199999988079, 5029.300000011921, 5029.5
+          ],
+          "trianglesPerDocument": [18804, 18804, 18804, 18804, 18804, 18804, 18804, 18804],
+          "memory": {
+            "hostPssKiB": 306591,
+            "webviewRendererPssKiB": [174517],
+            "combinedPssKiB": 481108,
+            "batteryTemperatureC": 38.4
+          }
+        }
+      ],
+      "binaryResponseEncodedBytesPerDocument": [
+        1038012, 1038012, 1038012, 1038012, 1038012, 1038012, 1038012, 1038012
+      ]
+    },
+    "finding": "Steady-state FPS is approximately 36 in both versions. Binary transport and resident-memory snapshots improve; the independent-document topology remains a limit.",
+    "memoryCaveat": "PSS snapshots, not peak allocations or a sustained thermal test. One WebView renderer process was present after each dedicated-host restart; the after renderer was explicitly confirmed bound to the dedicated host through Android service records. Baseline association used the sole new WebView renderer observation.",
+    "networkCaveat": "CDP Network.loadingFinished encodedDataLength for application/octet-stream responses. Includes HTTP overhead; excludes JavaScript and JSON and is not total application transfer or decoded heap size. Requests from eight documents are reported separately.",
+    "startupCaveat": "Per-controller ready time excludes module imports before createAvatar. Ordering and shared browser/system caches are not fully controlled; these samples do not establish a universal cold-start multiplier.",
+    "taskDurationCaveat": "CDP TaskDuration was almost identical across targets sharing one renderer thread; it is intentionally not summed or presented as independent per-avatar CPU."
+  },
+  "nineIndependentDocuments": {
+    "before": {
+      "documents": 9,
+      "ready": 8,
+      "lostContexts": 1,
+      "allDocumentsVisible": true,
+      "allStageRectsInside128pxViewport": true,
+      "lostContextFrames": [0]
+    },
+    "after": {
+      "documents": 9,
+      "ready": 8,
+      "lostContexts": 1,
+      "allDocumentsVisible": true,
+      "allViewports128px": true,
+      "deadlineMs": 20000
+    },
+    "finding": "Both versions lose one WebGL context with nine independent visible WebViews. The blank avatar is a real context-loss failure, not offscreen culling. No nine-live-avatar performance claim is supported."
+  },
+  "desktopDiagnostic": {
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "conditions": "24 mixed avatars across eight presets, 112 CSS pixels, DPR1, DevTools CPU throttling 4x, three five-second samples per version; not a physical low-end computer.",
+    "beforeFps": [58.81766523776293, 30.34991668621614, 29.1022165526606],
+    "afterFps": [50.806933652121934, 53.393144240631784, 59.99003487792725],
+    "finding": "No performance headline is derived from these variable samples; concurrent preparation and execution order were not controlled tightly enough to attribute a speedup."
+  },
+  "verification": {
+    "editorPoolBrowserCases": 14,
+    "lazyWorkCases": [
+      "complete",
+      "same-reference",
+      "replace-ready-before-old-fetch-release",
+      "pause-before-fetch-completes",
+      "reduced-motion-before-fetch-completes",
+      "dispose-pending",
+      "failed-fetch-preserves-neighbor"
+    ],
+    "distributedRuntimeCases": 4
+  },
+  "excludedEvidence": [
+    "Source-module loading failures from launching nine Vite development documents are not treated as production runtime failures.",
+    "Diagnostic patches that imported an engine without its exact Vite HMR query patched a different class and were discarded. The harness now asserts actual diagnostic application.",
+    "Earlier resourceTiming totals from development pages could reach the default 250-entry cap and are not used for transfer claims.",
+    "Android WebView Page.captureScreenshot stalled; physical captures used the dedicated test host through adb instead."
+  ],
+  "limits": [
+    "One midrange Android phone is not coverage of cheap Android devices, office PCs, ARM laptops or iOS.",
+    "The dedicated Java WebView host reproduces independent documents and contexts but does not exercise the React Native compositor.",
+    "Native selector adoption of a shared still-capture host has source/unit coverage; this experiment does not measure its complete React Native screen.",
+    "A shared native live renderer is still needed to remove the independent-WebView context ceiling."
+  ]
+}

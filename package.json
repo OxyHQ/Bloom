@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.77.0",
+  "version": "15.78.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -4015,7 +4015,8 @@
     "clean": "rm -rf lib",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
-    "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs"
+    "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs && node scripts/build-avatar-native-runtime.mjs",
+    "build:avatar-native": "node scripts/build-avatar-native-runtime.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
@@ -4085,7 +4086,8 @@
     "react-native-safe-area-context": ">=5.0.0",
     "react-native-screens": ">=3.16.0",
     "react-native-svg": ">=13.0.0",
-    "react-native-webview": ">=13.0.0"
+    "react-native-webview": ">=13.0.0",
+    "@oxy.so/bloom-avatar-native": "0.1.0"
   },
   "peerDependenciesMeta": {
     "@lottiefiles/dotlottie-react": {
@@ -4128,6 +4130,9 @@
       "optional": true
     },
     "react-native-webview": {
+      "optional": true
+    },
+    "@oxy.so/bloom-avatar-native": {
       "optional": true
     }
   },

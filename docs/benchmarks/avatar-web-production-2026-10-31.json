@@ -1,0 +1,664 @@
+{
+  "date": "2026-10-31",
+  "baseline": {
+    "source": "4c74f958",
+    "definition": "6adb842b plus exact flat joint uniform buffer ad60350d; source imports, not stale built runtime.",
+    "smallStoryFixtureSha256": "b52f0db8443b470fafb592c613cc0236c0c2d1a7b772c63ea60e1c4baa5e834a"
+  },
+  "candidate": {
+    "source": "85fbb6d3",
+    "rebased": "c6341f24",
+    "definition": "Actual production pool and presenters; runtime source unchanged by rebase. Source imports. Final generated artifact/package smoke tracked separately."
+  },
+  "conditions": {
+    "phone": "Pixel 8a, Android 16, Mali-G715",
+    "browser": "Android System WebView 148.0.7778.120 in dedicated Java test host",
+    "dpr": 2.625,
+    "desktop": "Windows Chrome 156.0.8078.48 headless with actual RTX 5090 ANGLE D3D11; WebGPU nvidia/blackwell",
+    "metrics": "Engine submission and WebGPU completion counters are not physical display presentations. Independent document requestAnimationFrame measures available UI scheduling cadence. Pixel GL GPU timer unsupported.",
+    "protocol": "Fresh pages/canvases; no destination pixel reads before timing. Mobile steady windows after separate profiling windows. Real touch scroll/input. Short paired sequential samples, not randomized thermal-controlled trials; Pixel 8a is not a low-end phone certification."
+  },
+  "mobile": [
+    {
+      "scene": "ManyAvatars",
+      "mounted": 48,
+      "cssSize": 96,
+      "action": "still",
+      "baseline": {
+        "rawSha256": "a67d3e18cdd3538a5d7cde3eedfb39c43e5e6732b5b7f468a6c510c15db5ce90",
+        "seconds": 5.057799999952317,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 254,
+        "engineFps": 50.21946300810523,
+        "gpuCompletedFps": null,
+        "globalRafPerSecond": 51.998892799731,
+        "rafP95Ms": 25.100000000002183,
+        "longTasks": 0,
+        "visible": 8,
+        "rendered": 8,
+        "triangles": 215604,
+        "drawCalls": 93,
+        "backingPixelsPerAvatar": 192,
+        "presentation": null
+      },
+      "candidate": {
+        "rawSha256": "a931367726f9fd987fb420254b7bf918f7f00fd79f5d08e967eee805107926e4",
+        "seconds": 5.0145,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 300,
+        "engineFps": 59.82650314089142,
+        "gpuCompletedFps": 60.02592481802772,
+        "globalRafPerSecond": 119.65300628178284,
+        "rafP95Ms": 8.400000000001455,
+        "longTasks": 0,
+        "visible": 8,
+        "rendered": 8,
+        "triangles": 215604,
+        "drawCalls": 93,
+        "backingPixelsPerAvatar": 192,
+        "presentation": {
+          "webgpuFrames": 590,
+          "pboFrames": 0,
+          "directFrames": 0,
+          "completed": 590,
+          "maximumPending": 2,
+          "webgpuTargets": 8,
+          "canvas2dTargets": 0
+        }
+      }
+    },
+    {
+      "scene": "ManyAvatars",
+      "mounted": 48,
+      "cssSize": 96,
+      "action": "scroll",
+      "baseline": {
+        "rawSha256": "1fa62e99b769f6112762579c4faad1418df055ac61029b89d5f56a25b3b10da8",
+        "seconds": 5.054599999964237,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 223,
+        "engineFps": 44.118228940287615,
+        "gpuCompletedFps": null,
+        "globalRafPerSecond": 44.118228940287615,
+        "rafP95Ms": 25.200000000000728,
+        "longTasks": 0,
+        "visible": 20,
+        "rendered": 8,
+        "triangles": 271804,
+        "drawCalls": 117,
+        "backingPixelsPerAvatar": 192,
+        "presentation": null
+      },
+      "candidate": {
+        "rawSha256": "cfe7a410af9361d8bee35c185e281915e93769d94a1f70916bb5769d85cc8e73",
+        "seconds": 5.026399999976158,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 301,
+        "engineFps": 59.88381346518935,
+        "gpuCompletedFps": 59.88381346518935,
+        "globalRafPerSecond": 119.7676269303787,
+        "rafP95Ms": 8.400000000001455,
+        "longTasks": 0,
+        "visible": 20,
+        "rendered": 8,
+        "triangles": 271804,
+        "drawCalls": 117,
+        "backingPixelsPerAvatar": 192,
+        "presentation": {
+          "webgpuFrames": 1321,
+          "pboFrames": 0,
+          "directFrames": 0,
+          "completed": 1320,
+          "maximumPending": 2,
+          "webgpuTargets": 20,
+          "canvas2dTargets": 0
+        }
+      }
+    },
+    {
+      "scene": "ManyAvatars",
+      "mounted": 48,
+      "cssSize": 96,
+      "action": "input",
+      "baseline": {
+        "rawSha256": "d5896c5b7ca27c8d38d912d5249fe947080e51e5f2d7985e5486d0e1f41f1689",
+        "seconds": 5.031100000023842,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 250,
+        "engineFps": 49.69092246204911,
+        "gpuCompletedFps": null,
+        "globalRafPerSecond": 52.27485043007567,
+        "rafP95Ms": 25.10000000000582,
+        "longTasks": 0,
+        "visible": 20,
+        "rendered": 8,
+        "triangles": 215604,
+        "drawCalls": 93,
+        "backingPixelsPerAvatar": 192,
+        "presentation": null
+      },
+      "candidate": {
+        "rawSha256": "d629c1f489a1da8db76c6983fadc57e5eb27507abfb32a11c9fbc7f33374d116",
+        "seconds": 5.018100000023842,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 300,
+        "engineFps": 59.78358342770663,
+        "gpuCompletedFps": 59.78358342770663,
+        "globalRafPerSecond": 119.76644546683896,
+        "rafP95Ms": 8.400000000001455,
+        "longTasks": 0,
+        "visible": 20,
+        "rendered": 8,
+        "triangles": 215604,
+        "drawCalls": 93,
+        "backingPixelsPerAvatar": 192,
+        "presentation": {
+          "webgpuFrames": 2041,
+          "pboFrames": 0,
+          "directFrames": 0,
+          "completed": 2040,
+          "maximumPending": 2,
+          "webgpuTargets": 20,
+          "canvas2dTargets": 0
+        }
+      }
+    },
+    {
+      "scene": "SmallAvatars",
+      "mounted": 48,
+      "cssSize": 64,
+      "action": "still",
+      "baseline": {
+        "rawSha256": "15f9eae697cf01dffa9b49efce08aee616b5a8f751633680d5422addb12f04c3",
+        "seconds": 5.345800000011921,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 103,
+        "engineFps": 19.267462306814753,
+        "gpuCompletedFps": null,
+        "globalRafPerSecond": 19.267462306814753,
+        "rafP95Ms": 58.70000000000073,
+        "longTasks": 62,
+        "visible": 8,
+        "rendered": 8,
+        "triangles": 215604,
+        "drawCalls": 93,
+        "backingPixelsPerAvatar": 64,
+        "presentation": null
+      },
+      "candidate": {
+        "rawSha256": "0a198c451345c9f8a2df8257a76a67f987d0fc9a71411c564e9f6f898b9aacab",
+        "seconds": 5.036899999976158,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 258,
+        "engineFps": 51.22198177474662,
+        "gpuCompletedFps": 51.42051658782703,
+        "globalRafPerSecond": 82.3919474283715,
+        "rafP95Ms": 25.099999999998545,
+        "longTasks": 0,
+        "visible": 8,
+        "rendered": 8,
+        "triangles": 215604,
+        "drawCalls": 93,
+        "backingPixelsPerAvatar": 64,
+        "presentation": {
+          "webgpuFrames": 545,
+          "pboFrames": 0,
+          "directFrames": 0,
+          "completed": 544,
+          "maximumPending": 2,
+          "webgpuTargets": 8,
+          "canvas2dTargets": 0
+        }
+      }
+    },
+    {
+      "scene": "Sequential authored crowd",
+      "mounted": 24,
+      "cssSize": 96,
+      "action": "still",
+      "baseline": {
+        "rawSha256": "2c923b8babab7fb58c6ec7e27d31d069ec78c2110d612ebbde48d9b27c67e3ca",
+        "seconds": 5.1275,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 121,
+        "engineFps": 23.598244758654314,
+        "gpuCompletedFps": null,
+        "globalRafPerSecond": 23.988298391028763,
+        "rafP95Ms": 50.19999999999709,
+        "longTasks": 1,
+        "visible": 24,
+        "rendered": 24,
+        "triangles": 524236,
+        "drawCalls": 111,
+        "backingPixelsPerAvatar": 192,
+        "presentation": null
+      },
+      "candidate": {
+        "rawSha256": "d6dfee6a88ca84b090b09f1526559049347ea314b6e48e44f40ecce32fcffae0",
+        "seconds": 5.055699999988079,
+        "viewport": [411, 914, 2.625],
+        "engineFrames": 202,
+        "engineFps": 39.95490238749853,
+        "gpuCompletedFps": 39.95490238749853,
+        "globalRafPerSecond": 107.60132128118416,
+        "rafP95Ms": 16.700000000000728,
+        "longTasks": 0,
+        "visible": 24,
+        "rendered": 24,
+        "triangles": 524236,
+        "drawCalls": 111,
+        "backingPixelsPerAvatar": 192,
+        "presentation": {
+          "webgpuFrames": 628,
+          "pboFrames": 0,
+          "directFrames": 637,
+          "completed": 626,
+          "maximumPending": 2,
+          "webgpuTargets": 23,
+          "canvas2dTargets": 1
+        }
+      }
+    }
+  ],
+  "desktop": [
+    {
+      "count": 1,
+      "baseline": {
+        "count": 1,
+        "seconds": 3.0035,
+        "engineFps": 60.26302646911937,
+        "globalRaf": {
+          "frames": 361,
+          "perSecond": 120.19310804061928,
+          "medianGapMs": 8.300000000000182,
+          "p95GapMs": 8.5
+        },
+        "mainThreadMs": 194.16799999999995,
+        "scriptMs": 110.70799999999997,
+        "canvas2dCopies": 181,
+        "presentation": null
+      },
+      "candidate": {
+        "count": 1,
+        "seconds": 3.0110999999642374,
+        "engineFps": 59.778818372733504,
+        "globalRaf": {
+          "frames": 360,
+          "perSecond": 119.55763674546701,
+          "medianGapMs": 8.300000000001091,
+          "p95GapMs": 8.5
+        },
+        "mainThreadMs": 273.78400000000016,
+        "scriptMs": 163.65899999999993,
+        "canvas2dCopies": 180,
+        "presentation": {
+          "webgpuFrames": 0,
+          "pboFrames": 0,
+          "directFrames": 488,
+          "completed": 0,
+          "maximumPending": 0,
+          "webgpuTargets": 0,
+          "canvas2dTargets": 1
+        }
+      },
+      "note": null
+    },
+    {
+      "count": 8,
+      "baseline": {
+        "count": 8,
+        "seconds": 3.0030999999642374,
+        "engineFps": 60.27105324569793,
+        "globalRaf": {
+          "frames": 361,
+          "perSecond": 120.2091172469445,
+          "medianGapMs": 8.300000000000182,
+          "p95GapMs": 8.499999999999545
+        },
+        "mainThreadMs": 460.6209999999999,
+        "scriptMs": 335.638,
+        "canvas2dCopies": 1448,
+        "presentation": null
+      },
+      "candidate": {
+        "count": 8,
+        "seconds": 3.01,
+        "engineFps": 59.46843853820599,
+        "globalRaf": {
+          "frames": 359,
+          "perSecond": 119.26910299003322,
+          "medianGapMs": 8.300000000000182,
+          "p95GapMs": 8.5
+        },
+        "mainThreadMs": 699.1340000000001,
+        "scriptMs": 548.3280000000001,
+        "canvas2dCopies": 0,
+        "presentation": {
+          "webgpuFrames": 309,
+          "pboFrames": 0,
+          "directFrames": 0,
+          "completed": 308,
+          "maximumPending": 2,
+          "webgpuTargets": 8,
+          "canvas2dTargets": 0
+        }
+      },
+      "note": "Timing completed; subsequent legacy 2D pixel check failed because destination is WebGPU. Fixed PNG gate and editor15 independently pass."
+    },
+    {
+      "count": 24,
+      "baseline": {
+        "count": 24,
+        "seconds": 3.0026999999880792,
+        "engineFps": 59.94604855653732,
+        "globalRaf": {
+          "frames": 360,
+          "perSecond": 119.89209711307464,
+          "medianGapMs": 8.300000000000182,
+          "p95GapMs": 8.5
+        },
+        "mainThreadMs": 289.98500000000007,
+        "scriptMs": 188.52800000000002,
+        "canvas2dCopies": 4320,
+        "presentation": null
+      },
+      "candidate": {
+        "count": 24,
+        "seconds": 3.0066999999880792,
+        "engineFps": 59.86629860003115,
+        "globalRaf": {
+          "frames": 360,
+          "perSecond": 119.7325972000623,
+          "medianGapMs": 8.300000000000182,
+          "p95GapMs": 8.5
+        },
+        "mainThreadMs": 669.284,
+        "scriptMs": 513.621,
+        "canvas2dCopies": 0,
+        "presentation": {
+          "webgpuFrames": 314,
+          "pboFrames": 0,
+          "directFrames": 0,
+          "completed": 313,
+          "maximumPending": 2,
+          "webgpuTargets": 24,
+          "canvas2dTargets": 0
+        }
+      },
+      "note": null
+    }
+  ],
+  "quiescence": [
+    {
+      "mode": "active-eight-visible",
+      "seconds": 5.697800000011921,
+      "hidden": false,
+      "engineFrames": 233,
+      "scriptMs": 2090.071,
+      "taskDurationMs": 2658.392,
+      "taskDurationCaveat": null,
+      "hostPssKiBBefore": 619527,
+      "hostPssKiBAfter": 609691,
+      "backingStorageBytesBefore": 82227019,
+      "backingStorageBytesAfter": 82227019,
+      "resourcesBefore": {
+        "geometries": 47,
+        "textures": 55,
+        "programs": 7
+      },
+      "resourcesAfter": {
+        "geometries": 47,
+        "textures": 55,
+        "programs": 7
+      }
+    },
+    {
+      "mode": "paused",
+      "seconds": 5.420899999976158,
+      "hidden": false,
+      "engineFrames": 0,
+      "scriptMs": 1.1679999999998358,
+      "taskDurationMs": 27.752,
+      "taskDurationCaveat": null,
+      "hostPssKiBBefore": 580287,
+      "hostPssKiBAfter": 573247,
+      "backingStorageBytesBefore": 82227264,
+      "backingStorageBytesAfter": 82227264,
+      "resourcesBefore": {
+        "geometries": 47,
+        "textures": 55,
+        "programs": 7
+      },
+      "resourcesAfter": {
+        "geometries": 47,
+        "textures": 55,
+        "programs": 7
+      }
+    },
+    {
+      "mode": "document-hidden",
+      "seconds": 18.72310000002384,
+      "hidden": true,
+      "engineFrames": 0,
+      "scriptMs": 10.213999999999945,
+      "taskDurationMs": 16706.350000000002,
+      "taskDurationCaveat": "Excluded from CPU conclusions: deferred/background command window includes anomalous16.7s task duration; script and engine counters reported independently.",
+      "hostPssKiBBefore": 464435,
+      "hostPssKiBAfter": 389741,
+      "backingStorageBytesBefore": 82227312,
+      "backingStorageBytesAfter": 80481389,
+      "resourcesBefore": {
+        "geometries": 47,
+        "textures": 55,
+        "programs": 7
+      },
+      "resourcesAfter": {
+        "geometries": 47,
+        "textures": 55,
+        "programs": 7
+      }
+    },
+    {
+      "mode": "resumed",
+      "seconds": 5.586299999952316,
+      "hidden": false,
+      "engineFrames": 253,
+      "scriptMs": 1810.353,
+      "taskDurationMs": 2378.6810000000005,
+      "taskDurationCaveat": null,
+      "hostPssKiBBefore": 483581,
+      "hostPssKiBAfter": 519851,
+      "backingStorageBytesBefore": 80481440,
+      "backingStorageBytesAfter": 80481440,
+      "resourcesBefore": {
+        "geometries": 47,
+        "textures": 55,
+        "programs": 7
+      },
+      "resourcesAfter": {
+        "geometries": 47,
+        "textures": 55,
+        "programs": 7
+      }
+    }
+  ],
+  "gates": {
+    "editor": {
+      "cases": [
+        "load-failure-releases-context-and-pool",
+        "abort-during-initial-load-releases-reservation",
+        "pending-neighbor-keeps-pool-alive-after-first-aborts",
+        "two-independent-paused-previews-are-quiescent",
+        "neighbor-mount-preset-load-and-dispose-preserve-held-drag",
+        "work-key-one-to-zero-restarts-once",
+        "resize-promotes-resolution-and-lod-without-restarting-action",
+        "failed-preset-rolls-back-with-surviving-neighbors",
+        "simultaneous-work-before-reaction-including-zero-key",
+        "final-dispose-removes-all-contexts-and-stages",
+        "catalog-to-preset-update-delivers-zero-work-key",
+        "middle-live-slot-compacts-gpu-work-and-preserves-retained-pixels",
+        "paused-recolor-repaints-correct-slot-once-and-returns-to-quiescence",
+        "resume-and-offscreen-return-restore-the-original-slot",
+        "retained-webgpu-canvas-reattaches-as-a-singleton-with-fresh-pixels"
+      ],
+      "errors": [],
+      "infrastructure": [],
+      "presentations": [
+        {
+          "webgpuFrames": 4,
+          "pboFrames": 0,
+          "directFrames": 0,
+          "completed": 3,
+          "maximumPending": 2,
+          "webgpuTargets": 2,
+          "canvas2dTargets": 0
+        }
+      ],
+      "retainedPresentations": [
+        {
+          "webgpuFrames": 8,
+          "pboFrames": 0,
+          "directFrames": 0,
+          "completed": 7,
+          "maximumPending": 1,
+          "webgpuTargets": 5,
+          "canvas2dTargets": 0
+        }
+      ]
+    },
+    "lazy": {
+      "built": false,
+      "cases": [
+        "noop-latest",
+        "complete",
+        "same-reference",
+        "replace",
+        "pause",
+        "reduced",
+        "dispose",
+        "failure"
+      ],
+      "presentations": [
+        {
+          "scenario": "noop-latest",
+          "presentations": [
+            {
+              "webgpuFrames": 3,
+              "pboFrames": 0,
+              "directFrames": 0,
+              "completed": 3,
+              "maximumPending": 2,
+              "webgpuTargets": 2,
+              "canvas2dTargets": 0
+            }
+          ]
+        },
+        {
+          "scenario": "complete",
+          "presentations": [
+            {
+              "webgpuFrames": 3,
+              "pboFrames": 0,
+              "directFrames": 0,
+              "completed": 2,
+              "maximumPending": 2,
+              "webgpuTargets": 2,
+              "canvas2dTargets": 0
+            }
+          ]
+        },
+        {
+          "scenario": "same-reference",
+          "presentations": [
+            {
+              "webgpuFrames": 4,
+              "pboFrames": 0,
+              "directFrames": 0,
+              "completed": 2,
+              "maximumPending": 2,
+              "webgpuTargets": 2,
+              "canvas2dTargets": 0
+            }
+          ]
+        },
+        {
+          "scenario": "replace",
+          "presentations": [
+            {
+              "webgpuFrames": 4,
+              "pboFrames": 0,
+              "directFrames": 0,
+              "completed": 3,
+              "maximumPending": 2,
+              "webgpuTargets": 2,
+              "canvas2dTargets": 0
+            }
+          ]
+        },
+        {
+          "scenario": "pause",
+          "presentations": [
+            {
+              "webgpuFrames": 3,
+              "pboFrames": 0,
+              "directFrames": 0,
+              "completed": 2,
+              "maximumPending": 2,
+              "webgpuTargets": 2,
+              "canvas2dTargets": 0
+            }
+          ]
+        },
+        {
+          "scenario": "reduced",
+          "presentations": [
+            {
+              "webgpuFrames": 4,
+              "pboFrames": 0,
+              "directFrames": 0,
+              "completed": 4,
+              "maximumPending": 2,
+              "webgpuTargets": 2,
+              "canvas2dTargets": 0
+            }
+          ]
+        },
+        {
+          "scenario": "dispose",
+          "presentations": [
+            {
+              "webgpuFrames": 3,
+              "pboFrames": 0,
+              "directFrames": 0,
+              "completed": 3,
+              "maximumPending": 2,
+              "webgpuTargets": 2,
+              "canvas2dTargets": 0
+            }
+          ]
+        },
+        {
+          "scenario": "failure",
+          "presentations": [
+            {
+              "webgpuFrames": 4,
+              "pboFrames": 0,
+              "directFrames": 0,
+              "completed": 3,
+              "maximumPending": 2,
+              "webgpuTargets": 2,
+              "canvas2dTargets": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Storybook48 mounted has8 intersecting avatars, including partial edge visibility; not48 live.",
+    "Sequential24 preserves the initial singleton Canvas2D canvas and23 WebGPU canvases. It does not reach the isolated all-WebGPU prototype cadence.",
+    "RTX cadence is preserved but measured main-thread TaskDuration did not improve; no universal CPU-saving claim.",
+    "WebGPU WebView scaled output has separately reviewed bounded quantization, not byte-exact parity. Chromium159 physical PNG matrix is exact. See avatar-web-presenters-2026-10-31.json and WebView quantization evidence.",
+    "Pause/hidden removes engine frames; retained assets consume memory. Host PSS is a snapshot, excludes unassociated child/GPU processes, not peak or total browser memory."
+  ]
+}

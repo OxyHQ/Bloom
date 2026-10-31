@@ -1,3 +1,4 @@
+import { createAvatarReconciler } from './avatar-controller';
 import { resolveCompleteEditorRecipe } from './avatar/recipe';
 import type { EditorRenderProps } from './avatar-contract';
 import type { CharacterCapabilities } from '../src/agent-avatar/context';
@@ -29,49 +30,19 @@ export async function createAvatar(
     callbacks.onError,
     pending.signal,
   );
-  callbacks.onCapabilities?.(recipe.capabilities);
-  let latest = initial;
-  let applied = initial;
-  let disposed = false;
-  let running: Promise<void> | undefined;
-  const reconcile = async () => {
-    while (!disposed && applied !== latest) {
-      const props = latest;
-      const next = resolveCompleteEditorRecipe(props);
-      await current.update(props, next);
-      if (!disposed) callbacks.onCapabilities?.(next.capabilities);
-      applied = props;
-    }
-  };
-  return {
-    update(props) {
-      if (disposed) return;
-      latest = props;
-      if (!running)
-        running = reconcile()
-          .catch(() => {
-            if (!disposed) {
-              disposed = true;
-              pending.abort();
-              current.dispose();
-              callbacks.onError();
-            }
-          })
-          .finally(() => {
-            running = undefined;
-          });
-      return running;
-    },
-    dispose() {
-      if (disposed) return;
-      disposed = true;
-      pending.abort();
-      current.dispose();
-    },
-  };
+  return createAvatarReconciler(initial, current, {
+    resolveRecipe: resolveCompleteEditorRecipe,
+    initialRecipe: recipe,
+    onCapabilities: callbacks.onCapabilities,
+    onError: callbacks.onError,
+    onDispose: () => pending.abort(),
+  });
 }
 
-if (typeof document !== 'undefined') {
+/** The browser entry passes its own URL. A shared Rollup chunk is allowed to
+ * contain this implementation, but must never become the public registry key. */
+export function registerAvatarRuntime(url: string) {
+  if (typeof document === 'undefined') return;
   const key = Symbol.for('bloom.character.runtimes');
   const scope = globalThis as unknown as Record<symbol, Map<string, unknown>>;
   const registry = (scope[key] ??= new Map());
@@ -79,7 +50,10 @@ if (typeof document !== 'undefined') {
     createAvatar,
     diagnostics: async () => (await import('./avatar-pool')).editorPoolDiagnostics(),
   };
-  registry.set(import.meta.url, runtime);
-  if (import.meta.env.DEV)
-    registry.set(new URL(CHARACTER_RUNTIME_URL, document.baseURI).href, runtime);
+  registry.set(url, runtime);
+}
+
+if (import.meta.env.DEV && typeof document !== 'undefined') {
+  registerAvatarRuntime(import.meta.url);
+  registerAvatarRuntime(new URL(CHARACTER_RUNTIME_URL, document.baseURI).href);
 }

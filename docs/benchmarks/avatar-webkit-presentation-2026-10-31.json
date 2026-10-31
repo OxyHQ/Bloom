@@ -1,0 +1,67 @@
+{
+  "scope": "Linux Playwright WebKit; no iOS device or Safari-product claim",
+  "cases": [
+    {
+      "size": 64,
+      "width": 128,
+      "height": 128,
+      "readyCount": 1,
+      "changedPixels": 0,
+      "maxDifference": 0,
+      "nontransparent": 8642,
+      "partialAlpha": 2644,
+      "snapshot": true,
+      "gpu": "Apple GPU"
+    },
+    {
+      "size": 96,
+      "width": 192,
+      "height": 192,
+      "readyCount": 1,
+      "changedPixels": 0,
+      "maxDifference": 0,
+      "nontransparent": 17352,
+      "partialAlpha": 1423,
+      "snapshot": true,
+      "gpu": "Apple GPU"
+    },
+    {
+      "size": 112,
+      "width": 224,
+      "height": 224,
+      "readyCount": 1,
+      "changedPixels": 0,
+      "maxDifference": 0,
+      "nontransparent": 24017,
+      "partialAlpha": 2727,
+      "snapshot": true,
+      "gpu": "Apple GPU"
+    },
+    {
+      "size": 320,
+      "width": 640,
+      "height": 640,
+      "readyCount": 1,
+      "changedPixels": 0,
+      "maxDifference": 0,
+      "nontransparent": 191903,
+      "partialAlpha": 8389,
+      "snapshot": true,
+      "gpu": "Apple GPU"
+    }
+  ],
+  "errors": [],
+  "capabilities": {
+    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+    "webgl2": true,
+    "bitmaprenderer": true,
+    "offscreen2d": true,
+    "transfer": true
+  },
+  "hostPlatform": "linux",
+  "prototype": "Same-size OffscreenCanvas2D scratch at origin, transferToImageBitmap, bitmaprenderer destination",
+  "productionPathChanged": false,
+  "performance": "No timing claim. Physical Android scratch-presentation experiment regressed and was not adopted.",
+  "gpuIdentifierCaveat": "Reported Apple GPU string is browser-provided on this Linux host; it does not identify Apple hardware.",
+  "script": "scripts/verify-avatar-webkit-presentation.mjs"
+}

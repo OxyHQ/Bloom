@@ -1,0 +1,166 @@
+{
+  "date": "2026-10-31",
+  "scope": "Exact pose reuse for duplicate explicit idle clocks. No time rounding, pose interpolation changes, frame-rate change, geometry or shader change. Work, reaction, independent clocks and singleton samplers retain direct sampling. One candidate time per sampler per frame may intentionally miss additional duplicate cohorts.",
+  "cache": "WeakMap keyed by sampler identity; one private reusable pose per sampler. Every avatar receives its own matrices and field arrays. There is no history of sampled times and no alias to an avatar output.",
+  "numericalVerification": {
+    "cases": 10,
+    "presets": 8,
+    "clips": ["idle", "reaction", "work"],
+    "mutationIsolation": "Every output matrix and field is modified after copying; subsequent same-time neighbors still equal direct scalar sampling. Adjacent distinct floating-point timestamps are evaluated independently."
+  },
+  "microbenchmark": {
+    "environment": "Node v24.21.0 linux/x64",
+    "scope": "Sampler and exact-pose copies only; not renderer time, FPS, GPU work or device performance. All runs include clock registration overhead; alternating order after warmup.",
+    "results": [
+      {
+        "mode": "same",
+        "avatars": 24,
+        "frames": 600,
+        "directMs": [
+          50.91014000000007, 70.55430000000001, 68.696778, 71.64494800000011, 71.84070199999996,
+          71.96891499999992
+        ],
+        "sharedMs": [
+          17.628214999999955, 17.759683999999993, 26.088276999999835, 29.154218000000128,
+          25.228106000000025, 23.861319999999978
+        ],
+        "evaluationsPerFrame": 1,
+        "copiesPerFrame": 24,
+        "directMedianMs": 71.09962400000006,
+        "sharedMedianMs": 24.544713,
+        "sharedOverDirect": 0.34521579185847706
+      },
+      {
+        "mode": "mixed",
+        "avatars": 24,
+        "frames": 600,
+        "directMs": [
+          65.47701400000005, 63.04598499999997, 63.504110999999966, 89.29784100000006,
+          89.86669700000016, 79.26670100000001
+        ],
+        "sharedMs": [
+          34.08413499999983, 40.38017100000002, 65.23564599999986, 46.876141999999845,
+          58.30860800000028, 62.597381999999925
+        ],
+        "evaluationsPerFrame": 8,
+        "copiesPerFrame": 24,
+        "directMedianMs": 72.37185750000003,
+        "sharedMedianMs": 52.59237500000006,
+        "sharedOverDirect": 0.7266964924867382
+      },
+      {
+        "mode": "independent",
+        "avatars": 24,
+        "frames": 600,
+        "directMs": [
+          43.419376000000284, 46.41879999999992, 46.38700999999992, 44.42519200000015,
+          44.01367600000003, 43.54523700000027
+        ],
+        "sharedMs": [
+          35.67393799999991, 43.69120100000009, 45.84468599999991, 45.3621549999998,
+          44.1532900000002, 43.87139500000012
+        ],
+        "evaluationsPerFrame": 24,
+        "copiesPerFrame": 0,
+        "directMedianMs": 44.21943400000009,
+        "sharedMedianMs": 44.01234250000016,
+        "sharedOverDirect": 0.9953167311006302
+      },
+      {
+        "mode": "single",
+        "avatars": 1,
+        "frames": 600,
+        "directMs": [
+          1.234096000000136, 1.2628210000002582, 1.6942290000001776, 1.214274999999816,
+          1.2425640000001295, 1.2875570000001062
+        ],
+        "sharedMs": [
+          1.2461480000001757, 1.2638299999998708, 1.2798099999999977, 1.2348050000000512,
+          1.2192110000000866, 1.271107000000029
+        ],
+        "evaluationsPerFrame": 1,
+        "copiesPerFrame": 0,
+        "directMedianMs": 1.2526925000001938,
+        "sharedMedianMs": 1.2549890000000232,
+        "sharedOverDirect": 1.0018332511768284
+      }
+    ]
+  },
+  "rendererVerification": {
+    "cases": [
+      {
+        "name": "same-clock-24",
+        "changedPixels": 0,
+        "maxDifference": 0,
+        "pixels": 98304,
+        "directEvaluations": 24,
+        "sharedEvaluations": 1,
+        "sharedCopies": 24
+      },
+      {
+        "name": "independent-clocks-24",
+        "changedPixels": 0,
+        "maxDifference": 0,
+        "pixels": 98304,
+        "directEvaluations": 24,
+        "sharedEvaluations": 24,
+        "sharedCopies": 0
+      },
+      {
+        "name": "independent-look-and-pigment",
+        "changedPixels": 0,
+        "maxDifference": 0,
+        "pixels": 98304,
+        "directEvaluations": 24,
+        "sharedEvaluations": 1,
+        "sharedCopies": 24
+      },
+      {
+        "name": "reaction-among-shared-idles",
+        "changedPixels": 0,
+        "maxDifference": 0,
+        "pixels": 98304,
+        "directEvaluations": 24,
+        "sharedEvaluations": 2,
+        "sharedCopies": 23
+      },
+      {
+        "name": "work-falls-back-to-independent-sampling",
+        "changedPixels": 0,
+        "maxDifference": 0,
+        "pixels": 98304,
+        "directEvaluations": 24,
+        "sharedEvaluations": 24,
+        "sharedCopies": 0
+      },
+      {
+        "name": "eight-authored-three-matching-clocks-each",
+        "changedPixels": 0,
+        "maxDifference": 0,
+        "pixels": 98304,
+        "directEvaluations": 24,
+        "sharedEvaluations": 8,
+        "sharedCopies": 24
+      },
+      {
+        "name": "four-catalog-six-matching-clocks-each",
+        "changedPixels": 0,
+        "maxDifference": 0,
+        "pixels": 98304,
+        "directEvaluations": 24,
+        "sharedEvaluations": 4,
+        "sharedCopies": 24
+      },
+      {
+        "name": "catalog-independent-clocks",
+        "changedPixels": 0,
+        "maxDifference": 0,
+        "pixels": 98304,
+        "directEvaluations": 24,
+        "sharedEvaluations": 24,
+        "sharedCopies": 0
+      }
+    ],
+    "errors": []
+  }
+}

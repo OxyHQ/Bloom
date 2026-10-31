@@ -814,3 +814,221 @@ context, one packed motion load per preset, and disposal. No original engine is
 loaded by the independent renderer.
 
 #### Editor adoption and cleanup — 2026-10-12
+
+### Avatar efficiency investigation — 2026-10-31
+
+This section records a new investigation without replacing the earlier measurements,
+renderer fidelity or shader hazards. The user explicitly authorized removing the hair
+material and geometry to improve performance; this is a deliberate visual change, not a
+claim that a cheaper image is pixel-identical. Body shapes, parts, pigment, gaze and authored
+actions remain the shared runtime's responsibilities. Cached still identity advances to
+version 2 so persisted portraits cannot keep the previous hair appearance.
+
+#### External approaches and what they actually establish
+
+- [The comparison gallery](https://libraries.dev/bots) and its
+  [public renderer](https://github.com/Jakubantalik/Libraries.dev/tree/main/packages/bot-avatars)
+  use Canvas 2D with 2.5D volume assembled from heightfield slices. Surface preparation is
+  shared by shape, lighting, style and tier (192/320/512); the cache is limited to 24 entries.
+  A shared animation scheduler, offscreen/hidden-document suspension and DPR capped at 2
+  avoid multiplying scheduling and raster cost while retaining independent rigs and gaze.
+  These are useful ownership patterns, not evidence that translating arbitrary 3D parts
+  and authored motion into that representation is free. Its 0.2.2 startup waits for bakes
+  before revealing avatars, with a four-second ceiling; the smooth reveal alone does not
+  measure loading time. No renderer code was copied.
+- The [native port's own documentation](https://github.com/Jakubantalik/Libraries.dev/blob/main/packages/bot-avatars/ports/react-native/bot-avatars-native/README.md)
+  describes Skia and Reanimated, a JavaScript rig producing one packed array for the UI
+  runtime, and a shared-canvas sheet. Its reported 18-avatar plastic example improves from
+  44 to 58 FPS **in a simulator**. This is the upstream author's measurement, not Bloom's,
+  and does not establish physical low-end Android, thermals or equivalent fabric rendering.
+  The port is not distributed as an npm package.
+- [Rive's Canvas/WebGL guidance](https://rive.app/docs/runtimes/web/canvas-vs-webgl)
+  recommends shared offscreen rendering for multiple 2D instances. Its separate
+  [experimental GPU canvas/3D guidance](https://rive.app/docs/runtimes/web/gpu-canvas)
+  requires an individual context per canvas with offscreen sharing disabled. Changing
+  libraries therefore does not automatically remove context ownership costs.
+- [Three.js multiple-scene guidance](https://threejs.org/manual/pages/multiple-scenes.html)
+  explains why separate WebGL contexts cannot share GPU resources. Bloom's web document
+  already pools live scenes by resolution. The remaining native WebView boundary cannot
+  be removed by sharing only a JavaScript frame callback.
+- [Baked animation textures](https://doc.babylonjs.com/features/featuresDeepDive/animation/baked_texture_animations/)
+  move repeated animation work from CPU to GPU and texture memory. The documented
+  blending/interpolation limitations make this a trade-off requiring action and gaze
+  fidelity checks, not a transparent replacement for the present arbitrary compositions.
+- [WebGL best practices](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices)
+  support batching, avoiding synchronous GPU queries and explicit GPU resource release.
+  They also record mobile precision hazards, including explicit high-precision floating
+  texture samplers on iOS. [Android material guidance](https://developer.android.com/games/optimize/materials)
+  and [vertex data guidance](https://developer.android.com/games/optimize/vertex-data-management)
+  emphasize overdraw, bandwidth, memory and shader work: high desktop FPS cannot establish
+  that the same scene is inexpensive on an ARM mobile GPU.
+- [OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)
+  can move canvas work off the UI thread. It does not remove the scene's GPU drawing,
+  geometry, texture memory or overdraw; moving a bottleneck is not eliminating it.
+
+#### Integration defects and corrections
+
+The native still host previously used `key={job.key}`. A sequential queue therefore kept
+only one WebView mounted at once **but recreated its document for every distinct still**.
+A test that counted simultaneous views passed while missing repeated module, donor and GPU
+preparation. The corrected host retains the same WebView and source object for a burst,
+keeps the preceding paused scene until the successor paints, and releases the host after
+1.5 seconds idle. Capture identities reject late results; capture waits for both first paint
+and controller creation. Tests now count actual mounts/unmounts and execute the generated
+bridge with independent fake controllers, including early readiness and late completion.
+This establishes resource ownership, not physical-device speed.
+
+Cancelled queued requests previously never settled. Provider teardown could also leave its
+queue draining. The cache now settles cancelled queued requests with `null`, discards queued
+work on disposal and ignores late results; an already running backend may complete, but
+cannot repopulate a disposed cache. Native teardown removes the drawing document. Web still
+jobs have a 15-second deadline including runtime loading and creation; controllers that arrive
+later are disposed. The runtime module loader also expires a hung request, removes the script
+and permits a retry without letting an old callback delete the newer request. Failed native
+module documents are replaced before the next queued character uses them.
+
+Live native avatars still own separate WebViews. A future shared live surface must own
+native positioning, clipping, stacking and input, or use a native renderer with equivalent
+geometry and motion. Physical Android/iOS crowds, low-memory behavior and sustained thermal
+runs remain required before claiming efficient live crowds on inexpensive phones. Browser
+software rendering and CPU throttling do not stand in for these measurements.
+
+
+#### Optional activity loading
+
+The original production engine requested `loadAuthoredAsset(..., true)` for every character.
+Its packed motion combined idle, reaction, Computer and the repeating Computer loop; catalog
+composition also attached Computer before resolving its motion, even for a paused eye
+preview. These resources were eager despite the visible avatar being idle.
+
+The motion transport now splits base (idle/reaction/blink/gaze) from optional work
+(Computer/loop). Catalog libraries split each rig's work clip in the same way. Channel byte
+ranges are relocated directly, retaining Float64 bytes and intra-file sharing; no number is
+rounded or motion resampled. The surface renderer's unused strand tracks are omitted.
+Source bundles remain unchanged. The complete eager loader is retained for diagnostic
+and fidelity tooling; production scene ownership prepares work only when requested.
+
+| Source collection | Original combined bytes | Base transport bytes | Optional work bytes |
+| --- | ---: | ---: | ---: |
+| Eight authored motion bundles | 17,267,296 | 1,990,440 | 15,239,904 |
+| Ten catalog motion libraries | 40,051,136 | 12,740,064 | 27,227,384 |
+
+These are uncompressed sums over those collections, **not** bytes downloaded by every visit.
+Each character uses selected files. Splitting duplicates a few channels shared between base
+and work, so summing both transport columns is not an overall package-size claim. The base
+motion reduction is 88.5% for the authored collection and 68.2% for the catalog collection.
+Geometry and per-visit network totals require their own measurements.
+
+`node --test scripts/test-avatar-motion-transport.mjs` compares every retained field in all
+18 reconstructed bundles against the originals, verifies no work fetch during authored
+idle/reaction setup, deduplicates simultaneous work requests, retries a failed work fetch,
+and ensures upgrading does not mutate the base samplers or attach gaze twice. The original
+motion fidelity suite still validates all eight presets against authored JSON.
+
+The initial audit also found a separate native reliability defect: the live bridge lacked
+Android `onRenderProcessGone` and WKWebView `onContentProcessDidTerminate` handlers. The
+[upstream event documentation](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#oncontentprocessdidterminate)
+explicitly describes OS memory reclamation/background termination. The bridge now remounts a killed live renderer once with its latest props, settles pending
+captures and rejects stale document events; consecutive process loss before 30 seconds of
+stable readiness reports unavailable. A stable recovery or runtime change renews the budget,
+allowing a later independent OS memory reclamation without an unbounded immediate retry loop.
+Native event mocks exercise both platforms. Request keys are not animation checkpoints;
+recovery does not reconstruct a lost action phase or replay consumed action identifiers.
+Physical OS process-kill recovery is still
+unverified; a render-performance benchmark cannot prove it.
+
+#### Verification scope of the efficiency change
+
+The combined runtime source passed the focused Jest union: 16 suites, 108 tests, covering
+characters, native still lifetime/capture, cache cancellation, runtime loading, retargeting,
+provider isolation and the family/documentation gates. The self-contained Node selection
+passed 279 tests across 15 files, including exact motion transport and authored JSON parity,
+geometry transport, shared-transform sampling, catalog layout/fitting and material rules.
+
+After adopting the native still selectors and process recovery, the expanded native/avatar,
+creator and family/documentation Jest union passed 23 suites and 159 tests. A subsequent
+13-test focused run also passed, including the added fake-timer check that 30 stable seconds
+restore the recovery budget and teardown removes its timer. These tests exercise mocked native
+events and renderer ownership; they do not prove physical process-kill recovery or native FPS.
+
+The broader `node --test --test-concurrency=2 scripts/test-avatar-*.mjs` invocation was also
+attempted: 31 files produced 428 test results, with 296 passes and 132 failures. The failures
+were missing historical `.local/` captures (`ENOENT`) in 16 scripts; examples include
+`avatar-original-geometry`, `avatar-computer-source`, `avatar-reaction-pointer`,
+`avatar-eye-activities` and `avatar-catalog-rig/rig2`. None of those 16 test scripts changed
+from the `798d6513` foundation, and those inputs were absent in the shared checkout too.
+The passing 15-file selection is not a claim that the broader suite passed. No source
+oracle was regenerated from the implementation, assertion weakened or missing-input test
+silently skipped. Full historical native-observation replay still requires those captures.
+
+
+#### Native selector adoption
+
+The cache host correction alone did not fix selector topology: `AgentAvatar` still delegated
+all `portrait` thumbnails directly to `CharacterAvatar`, so nine frozen native previews
+retained nine separate WebViews. Native portraits with no interaction now use the provider's
+shared still pipeline; temporary pausing, interactive avatars and standalone avatars without
+a provider keep the existing renderer. A runtime event/capture test renders nine distinct
+characters through one WebView mount and produces nine image results. Other tests distinguish
+eye-only from full portraits, preserve labels, image-ready/snapshot semantics and runtime
+capability reports, reject obsolete-character completions and surface errors without loops.
+Persistent still keys now also include the runtime namespace, avoiding images from a previous
+self-hosted runtime after an override.
+
+This removes frozen selector WebViews, not the live-native document boundary. Live instances
+still have independent heaps/GPU resources even if HTTP caching reuses downloaded bytes.
+A provider-wide transparent WebView is not a drop-in shared live renderer: native clipping,
+card backgrounds, scrolling, pointer input and Modal windows remain separate composition
+owners, while sending measured bounds over the bridge each frame would add latency. A
+future backend would need shared GPU resources with native composable output views and
+physical lifecycle validation; this change does not declare that problem solved.
+
+
+#### Physical Android: shared document and separate native WebViews
+
+The [curated 2026-10-31 evidence](./avatar-efficiency-2026-10-31.json) records device,
+revision, per-run counters, network scope and exclusions. The baseline is `798d6513`;
+optimized steady-state samples precede the final controller-supersession fixes, which do
+not change the measured idle workload. These are short diagnostics, not fleet guarantees.
+
+In one physical Android WebView, 12 canvases shared a GPU context. With only one active
+avatar, submitted triangles fell from 273,268 to 18,804 while FPS remained 59.88 to 59.83.
+With all 12 active, both versions likewise remained near 60 FPS (59.90 to 59.88). This
+establishes reduced drawing work for retained portraits, not an FPS gain or performance
+of the native per-avatar WebView integration. Desktop throttling repetitions are retained
+in the JSON, including their large variation; they do not support a universal FPS claim.
+
+A Pixel 8a with Mali-G715 also ran the distributed ESM runtime in a small native Android
+harness with **one visible WebView per live avatar**. This reproduces the document/context
+boundary; it is not the React Native compositor or the new native still-selector route.
+Eight instances used the same blue preset, each with a 128 × 128 CSS-pixel viewport. Device
+DPR was 2.625; the engine capped its pixel ratio at 1.5 (192 backing pixels per avatar).
+The optimized build disables redundant antialiasing on the default framebuffer; the
+offscreen color target retains 4× MSAA. This change in context settings is part of the
+measured implementation. It does not disable antialiasing for the avatar output.
+
+| Eight visible live WebViews | Before | After |
+| --- | ---: | ---: |
+| Measured active FPS across hosts, approximately 5 seconds | 36.33–36.34 | 36.32–36.53 |
+| Maximum initial readiness across eight hosts | 6,484.5 ms | 3,799.6 ms |
+| Binary network bytes per host, CDP encoded length | 7,880,216 | 1,038,012 |
+| Active host + renderer PSS snapshot | 715,938 KiB | 485,561 KiB |
+| Paused frame advancement | 0 | 0 |
+
+There is **no measured live-frame-rate gain** in this topology. The observed cold binary
+transfer decreased 86.8%, maximum readiness decreased 41.4%, and the one active PSS snapshot
+decreased 32.2%. These are individual paired runs, not repeated statistical estimates.
+Network capture disabled the HTTP cache and includes CDP's encoded overhead; it excludes
+other resource types and must not be described as total page download. PSS is a snapshot,
+not a peak or a guarantee for other devices. The active samples recorded 38.1 °C battery
+temperature on both sides; the later optimized paused sample reached 38.4 °C with thermal
+status 1. This is not a sustained thermal test.
+
+Nine visible 128 × 128 WebViews then exposed a separate limit: both builds retained eight
+ready renderers and one lost WebGL context. The failed view reported `isContextLost() === true`,
+zero engine frames and suspension, despite every document being visible. Reducing meshes
+and transfer did not remove that native context boundary. The selector change avoids nine
+frozen WebViews by using one capture host and images; its ownership is tested in Jest, while
+physical performance of the React Native selector wrapper remains unmeasured. A production
+live-native shared renderer, iOS/low-end ARM validation, and physical OS process-kill tests
+remain outstanding.

@@ -1,0 +1,117 @@
+{
+  "date": "2026-10-31",
+  "source": "7520d014 plus evidence-only commits; shader feature prototype reverted",
+  "rendererPixels": {
+    "baseline": "e0fee324 fixed-pose captures",
+    "cases": 44,
+    "comparedPixels": 45613056,
+    "changedPixels": 0,
+    "errors": [],
+    "coverage": "Eight authored presets and four catalog combinations;128/320CSS DPR2;held idle/reaction/work/gaze/pointer; sparse slots and restoration",
+    "script": "scripts/verify-avatar-render-equivalence.mjs"
+  },
+  "asyncLifecycle": {
+    "cases": [
+      {
+        "mode": "latest",
+        "frames": 2,
+        "errors": 0,
+        "readbacks": 0,
+        "fences": 0
+      },
+      {
+        "mode": "dispose",
+        "frames": 0,
+        "errors": 0,
+        "readbacks": 0,
+        "fences": 0
+      },
+      {
+        "mode": "context",
+        "frames": 1,
+        "errors": 0,
+        "readbacks": 0,
+        "fences": 0
+      },
+      {
+        "mode": "hidden",
+        "frames": 1,
+        "errors": 0,
+        "readbacks": 0,
+        "fences": 0
+      },
+      {
+        "mode": "failure",
+        "frames": 0,
+        "errors": 1,
+        "readbacks": 0,
+        "fences": 0
+      },
+      {
+        "mode": "pool-failure",
+        "errors": 1,
+        "ready": 0,
+        "pools": 0
+      }
+    ],
+    "errors": []
+  },
+  "otherGates": {
+    "firstDelivery": "4 DOM/injected-host cases, exact pixels including empty preview",
+    "hostParity": "4 cases; async web and synchronous host raw RGBA equal",
+    "pool": "14 source lifecycle cases",
+    "lazy": "8 source and8 built deferred-work cases",
+    "loader": "3 real loader cases: relocated/query URL, aliased URL preserving canonical tree, source alias; built async-fit marker asserted",
+    "unit": "23 focused controller/index/joint/readback tests; index benchmark optional third test separately passed"
+  },
+  "scope": "Functional fidelity and ownership checks, not performance measurements or iOS/device validation.",
+  "concurrencyAndCallbacks": {
+    "source": "a838fddd (source browser/controller checks; rendering math unchanged)",
+    "controllerCases": 16,
+    "presetSupersession": {
+      "script": "scripts/verify-avatar-preset-supersession.mjs",
+      "unfinishedColdRequestsPerSlotMaximum": 2,
+      "checks": [
+        "Cached latest recipe and color apply while two older fetches remain held",
+        "Third and fourth cold choices do not start while capacity is exhausted",
+        "Same pending preset with newer color and reaction applies the latest values",
+        "Late obsolete completion cannot change retained pixels",
+        "Dispose releases pool before pending shared fetch completes",
+        "Failed obsolete request releases capacity without disposing current host"
+      ],
+      "readyCallbacks": 1,
+      "errorCallbacks": 0,
+      "finalPools": 0,
+      "paths": "Source module and actual generated module loaded through loadCharacterRuntime, with hashed pool module asserted"
+    },
+    "fatalPoolCallbacks": {
+      "script": "scripts/verify-avatar-pool-render-error.mjs",
+      "checks": [
+        "Failed pool becomes unavailable before notifying callers",
+        "Reentrant replacement attaches to a healthy pool",
+        "Throwing first error callback cannot abandon remaining entries"
+      ],
+      "oldErrorCallbacks": [1, 1, 1],
+      "replacementReadyCallbacks": 1,
+      "finalPools": 0
+    },
+    "readyCallbackFailure": {
+      "script": "scripts/verify-avatar-pool-ready-error.mjs",
+      "callbacks": [1, 1, 1],
+      "pixelsPresentAtEachCallback": [true, true, true],
+      "subsequentFramesObserved": 6,
+      "finalPools": 0,
+      "callerException": "observable once, deferred after pool paint"
+    },
+    "checkpointVerification": {
+      "pairedRuntimeBuild": "pass",
+      "rootTypecheck": "pass",
+      "sourceEditorPoolCases": 14,
+      "sourceLazyWorkCases": 8,
+      "builtLazyWorkCases": 8,
+      "builtRelocatedLoaderCases": 3,
+      "nativePackageManifestIdentity": "pass",
+      "packedRootExports": "26909 files; 1455 literal exports and 5 wildcard patterns"
+    }
+  }
+}

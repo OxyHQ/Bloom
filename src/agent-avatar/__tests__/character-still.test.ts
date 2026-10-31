@@ -108,6 +108,7 @@ describe('the still cache', () => {
     await flush();
     running.cancel();
     queued.cancel();
+    expect(await queued.promise).toBeNull();
     jobs[0]!.resolve(URI('a'));
     await running.promise;
     await flush();
@@ -160,7 +161,15 @@ describe('the still cache', () => {
     it('ignores a stored value that is not a PNG data URI', async () => {
       const { data, storage } = memoryStorage();
       const key = stillKey(blue, 64, 1);
-      data.set(`bloom:avatar-still:${key}`, 'https://evil.test/x.png');
+      const seed = createCharacterStills({
+        runtimeUrl: 'u',
+        storage,
+        backend: async () => URI('old'),
+      });
+      await seed.request(key, blue, 64, 1).promise;
+      await flush();
+      const storedKey = [...data.keys()].find((stored) => stored.endsWith(key))!;
+      data.set(storedKey, 'https://evil.test/x.png');
       const backend = jest.fn(async () => URI('fresh'));
       const stills = createCharacterStills({ runtimeUrl: 'u', storage, backend });
       expect(await stills.request(key, blue, 64, 1).promise).toBe(URI('fresh'));
@@ -198,4 +207,67 @@ describe('the still cache', () => {
       expect(stored).toHaveLength(96);
     });
   });
+});
+
+it('disposes queued requests and ignores a late backend result', async () => {
+  const { backend, jobs } = deferredBackend();
+  const stills = createCharacterStills({ runtimeUrl: 'u', backend });
+  const key = stillKey(blue, 64, 1);
+  const first = stills.request(key, blue, 64, 1);
+  const second = stills.request(stillKey(alfred, 64, 1), alfred, 64, 1);
+  await flush();
+  stills.dispose();
+  expect(await Promise.all([first.promise, second.promise])).toEqual([null, null]);
+  jobs[0]!.resolve(URI('late'));
+  await flush();
+  expect(stills.peek(key)).toBeUndefined();
+  expect(jobs).toHaveLength(1);
+  expect(await stills.request(key, blue, 64, 1).promise).toBeNull();
+});
+
+it('does not start rendering after disposal during a storage read', async () => {
+  let read!: (value: null) => void;
+  const backend = jest.fn(async () => URI('unexpected'));
+  const stills = createCharacterStills({
+    runtimeUrl: 'u',
+    backend,
+    storage: {
+      getItem: () =>
+        new Promise((resolve) => {
+          read = resolve;
+        }),
+      setItem() {},
+    },
+  });
+  const request = stills.request(stillKey(blue, 64, 1), blue, 64, 1);
+  stills.dispose();
+  read(null);
+  expect(await request.promise).toBeNull();
+  await flush();
+  expect(backend).not.toHaveBeenCalled();
+});
+
+it('isolates persisted portraits by runtime URL and eye-only identity', async () => {
+  const data = new Map<string, string>();
+  const storage = {
+    getItem: async (key: string) => data.get(key) ?? null,
+    setItem: async (key: string, value: string) => {
+      data.set(key, value);
+    },
+  };
+  const key = stillKey(blue, 64, 1);
+  const first = createCharacterStills({
+    runtimeUrl: 'first',
+    storage,
+    backend: async () => URI('first'),
+  });
+  expect(await first.request(key, blue, 64, 1).promise).toBe(URI('first'));
+  await flush();
+  const second = createCharacterStills({
+    runtimeUrl: 'second',
+    storage,
+    backend: async () => URI('second'),
+  });
+  expect(await second.request(key, blue, 64, 1).promise).toBe(URI('second'));
+  expect(stillKey(blue, 64, 1, 'eyes')).not.toBe(key);
 });

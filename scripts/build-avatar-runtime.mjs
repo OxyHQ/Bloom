@@ -6,21 +6,28 @@ import { resolve } from 'node:path';
 import { readFile, readdir, rm, cp, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
+import { avatarMotionTransport } from './avatar-motion-transport.mjs';
+import { avatarSurfaceTransport } from './avatar-surface-transport.mjs';
 const output = resolve(process.env.AVATAR_RUNTIME_OUTPUT || '.local/character-runtime-build');
 if (!output.startsWith(resolve('.local') + '/'))
   throw Error('Build and verify the runtime under .local before installing it');
-await build({
+const browserEntry = resolve('runtime/avatar-browser-entry.ts');
+const built = await build({
   configFile: false,
   base: './',
   publicDir: false,
+  plugins: [avatarSurfaceTransport(), avatarMotionTransport()],
   build: {
     outDir: output,
     emptyOutDir: true,
     target: 'es2022',
     assetsInlineLimit: 0,
     rollupOptions: {
-      preserveEntrySignatures: 'strict',
-      input: resolve('runtime/avatar-runtime.ts'),
+      // The lazy pool shares internal bindings with the entry. Strict export
+      // signatures can replace that entry with a facade, moving import.meta.url
+      // registration into a shared chunk. These extra bindings are internal.
+      preserveEntrySignatures: 'allow-extension',
+      input: browserEntry,
       output: {
         entryFileNames: 'runtime.mjs',
         chunkFileNames: 'chunks/[name]-[hash].mjs',
@@ -29,6 +36,13 @@ await build({
     },
   },
 });
+const entryChunk = (Array.isArray(built) ? built : [built])
+  .flatMap((result) => result.output ?? [])
+  .find((item) => item.type === 'chunk' && item.fileName === 'runtime.mjs');
+assert(
+  entryChunk?.modules[browserEntry]?.renderedLength > 0,
+  'The actual browser entry must register its own URL, not a shared-chunk URL',
+);
 for (const directory of [output, resolve(output, 'chunks')])
   for (const file of await readdir(directory)) {
     assert(!/\.(wasm|data)$/.test(file), 'Native runtime must not ship');
@@ -66,6 +80,6 @@ if (!process.env.AVATAR_RUNTIME_OUTPUT) {
   );
   await writeFile(
     resolve(destination, 'README.md'),
-    '# Avatar runtime\n\nGenerated from `runtime/` by `bun run build:avatar-runtime`. Host this whole directory at `/bloom-character/`, or configure AgentAvatarProvider with the absolute URL of `runtime.mjs`. Geometry and motion load on demand; files under assets/ and chunks/ must keep their relative paths. Selectors render isolated parts through this engine. `manifest.json` pins every deployed file.\n\nThis is the sole avatar engine. It uses a shared WebGL scene per browser document, with no WASM, workers, SVG renderer or compatibility fallback. Native uses the same runtime through the optional WebView bridge.\n',
+    '# Avatar runtime\n\nGenerated from `runtime/` by `bun run build:avatar-runtime`. Host this whole directory at `/bloom-character/`, or configure AgentAvatarProvider with the absolute URL of `runtime.mjs`. Geometry and motion load on demand; files under assets/ and chunks/ must keep their relative paths. Selectors render isolated parts through this engine. `manifest.json` pins every deployed file.\n\nThis is the sole avatar engine. It uses a shared WebGL scene per browser document, with no WASM, workers, SVG renderer or compatibility fallback. Native can use the optional shared GPU companion when its bundled code matches this full manifest; otherwise it uses the optional WebView bridge.\n',
   );
 }

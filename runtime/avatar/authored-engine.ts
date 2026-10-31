@@ -1,8 +1,10 @@
 /** Original authored assets and material equations, rendered by an independent
  * Three scene. Captured semantic clips are separate from the fixed reference fixture. */
 import * as THREE from 'three';
+import { readPixelsAsync } from './async-pixels';
 import { boundBodyPigment } from '../../src/agent-avatar/body-pigment';
 import type { AuthoredMotionPose, AuthoredMotionSampler } from './motion';
+import { AvatarPoseSharing } from './pose-sharing';
 import { loadAuthoredMotion, type MotionKind, type MotionSamplers } from './motion-catalog';
 import { prepareCanonicalTuft } from './canonical-tuft';
 import { advanceMotion, type MotionState } from './motion-controller';
@@ -26,8 +28,6 @@ import {
   type AuthoredAsset,
   type AuthoredPart,
 } from './catalog';
-import pileUrl from './assets/furPile.bin?url';
-import cardsUrl from './assets/furCards.bin?url';
 import ltc1Url from './assets/furLTC1.bin?url';
 import ltc2Url from './assets/furLTC2.bin?url';
 
@@ -35,6 +35,11 @@ const eyeProfiles = rawEyeProfiles.presets as unknown as Partial<
   Record<AvatarPreset, Record<'0' | '1', Record<string, EyeGazeProfile>>>
 >;
 type Vectors = Record<string, number[]>;
+// These joints are immutable identity transforms. Three accepts their flattened
+// representation directly instead of copying 24 Matrix4 objects on every draw.
+const identityJoints = Float32Array.from({ length: 24 * 16 }, (_, index) =>
+  (index % 16) % 5 === 0 ? 1 : 0,
+);
 function uniforms(values: Vectors) {
   return Object.fromEntries(
     Object.entries(values).map(([key, value]) => [
@@ -66,11 +71,13 @@ export type ResolvedAvatarAsset = {
   eyeProfiles?: Record<number, EyeGazeProfile>;
 };
 type LoadedAsset = {
+  activities: boolean;
   source: AuthoredAsset;
   parts: RenderPart[];
   samplers: MotionSamplers | null;
 };
 type InstanceState = {
+  rendering?: boolean;
   matrix: THREE.Matrix4;
   normalMatrix: THREE.Matrix4;
   motion?: MotionState;
@@ -78,6 +85,7 @@ type InstanceState = {
   wander?: { next: number; step: number };
   pose?: AuthoredMotionPose[];
   poseSampler?: AuthoredMotionSampler;
+  poseSampleTime?: number;
   reactionGaze?: {
     motion: MotionState;
     yaw: number;
@@ -105,6 +113,31 @@ type AvatarBatch = {
   part: RenderPart;
   slots: number[];
   visible: boolean;
+  renderedSlots?: number[];
+};
+/** A non-DOM owner supplies scheduling, visibility and a WebGL2 context. The
+ * engine retains the same shaders, pixel density, MSAA and presentation crop. */
+export type AvatarEngineHost = {
+  context: WebGL2RenderingContext;
+  getSize(): { width: number; height: number; pixelRatio: number };
+  requestFrame(callback: FrameRequestCallback): number;
+  cancelFrame(id: number): void;
+  isHidden(): boolean;
+  subscribe?(events: {
+    resize(): void;
+    visibility(): void;
+    contextLost(): void;
+    contextRestored(): void;
+  }): () => void;
+  onFrame(output: {
+    framebuffer: WebGLFramebuffer;
+    width: number;
+    height: number;
+    columns: number;
+    rows: number;
+    pixels: number;
+    renderedIndices: readonly number[];
+  }): void;
 };
 export class AuthoredAvatarEngine {
   private renderer: THREE.WebGLRenderer;
@@ -113,9 +146,15 @@ export class AuthoredAvatarEngine {
   private batches: AvatarBatch[] = [];
   private assets = new Map<string, LoadedAsset>();
   private pendingAssets = new Map<string, Promise<LoadedAsset>>();
+  private retiredAssets: LoadedAsset[] = [];
   private assetClaims = new Map<string, number>();
-  private defaultPreset: AvatarPreset;
-  private resolveAsset?: (key: string, detail: 'low' | 'high') => Promise<ResolvedAvatarAsset>;
+  private defaultPreset: string;
+  private resolveAsset?: (
+    key: string,
+    detail: 'low' | 'high',
+    activities?: boolean,
+  ) => Promise<ResolvedAvatarAsset>;
+  private lazyWork: boolean;
   private allowPoseOverrides: boolean;
   private assetLoader: typeof loadAuthoredAsset;
   private detail: 'low' | 'high';
@@ -147,7 +186,13 @@ export class AuthoredAvatarEngine {
   private colorTarget = new THREE.WebGLRenderTarget(1, 1, {
     depthBuffer: true,
     samples: 4,
+    resolveDepthBuffer: false,
+    storeMultisampledDepthBuffer: false,
   });
+  private renderBounds = new THREE.Vector4();
+  private host?: AvatarEngineHost;
+  private unsubscribeHost?: () => void;
+  private outputTarget?: THREE.WebGLRenderTarget;
   private presentScene = new THREE.Scene();
   private presentGeometry = new THREE.PlaneGeometry(2, 2);
   private presentMaterial = new THREE.RawShaderMaterial({
@@ -157,7 +202,7 @@ export class AuthoredAvatarEngine {
     fragmentShader: `precision highp float;
       in vec2 uv; out vec4 color;
       uniform sampler2D image; uniform vec2 surface;
-      uniform vec4 grid; uniform sampler2D fits;
+      uniform vec4 grid; uniform highp sampler2D fits;
       void main(){
         vec2 pixel=vec2(uv.x,1.-uv.y)*surface;
         vec2 cell=floor((pixel-surface*.5)/grid.x+grid.yz*.5);
@@ -184,10 +229,13 @@ export class AuthoredAvatarEngine {
   });
   private raf = 0;
   private urgentFrame = true;
+  private presentationCapacity = true;
+  private presentationQueued = false;
   private maxFrameRate = 60;
   private disposed = false;
   private count = 1;
   private frames = 0;
+  private fitPasses = 0;
   private elapsed = 0;
   private timedFrames = 0;
   private ready = false;
@@ -203,6 +251,9 @@ export class AuthoredAvatarEngine {
   private attributesDirty = true;
   private cropCache = new Map<string, number[]>();
   private fitsDirty = true;
+  private fitGeneration = 0;
+  private fitReads: ReturnType<typeof readPixelsAsync>[] = [];
+  private renderFailure: Error | null = null;
   private fitPending = true;
   private backingPixels = 320;
   private poseObject = new THREE.Object3D();
@@ -221,18 +272,23 @@ export class AuthoredAvatarEngine {
   private partWorld = new THREE.Matrix4();
   private partNormal = new THREE.Matrix4();
   private states: InstanceState[] = [];
-  private observer: ResizeObserver;
-  private visibilityObserver: IntersectionObserver;
+  private poseSharing = new AvatarPoseSharing();
+  private observer?: ResizeObserver;
+  private visibilityObserver?: IntersectionObserver;
   private inViewport = true;
   private contextLost = false;
   private visibilityChanged = () => {
     this.previousTime = 0;
-    if (document.hidden || !this.inViewport || this.contextLost) {
-      cancelAnimationFrame(this.raf);
+    if (this.hidden() || !this.inViewport || this.contextLost) {
+      // Hidden time must neither consume a readback deadline nor retain GPU
+      // staging buffers. Visibility resumption requests a fresh reference fit.
+      this.cancelFitReads();
+      this.cancelFrame();
       this.raf = 0;
     } else this.invalidate();
   };
   private onContextLost = () => {
+    this.cancelFitReads();
     this.contextLost = true;
     this.visibilityChanged();
   };
@@ -243,62 +299,131 @@ export class AuthoredAvatarEngine {
   };
   private pixels: number;
   private onFrame?: () => void;
+  private onError?: (error: Error) => void;
   readonly loaded: Promise<void>;
   constructor(
-    private canvas: HTMLCanvasElement,
+    private canvas: HTMLCanvasElement | null,
     options: {
       count?: number;
       size?: number;
-      preset?: AvatarPreset;
+      preset?: string;
       maxFrameRate?: number;
       poseOverrides?: boolean;
       assetLoader?: typeof loadAuthoredAsset;
+      lazyWork?: boolean;
+      host?: AvatarEngineHost;
       onFrame?: () => void;
-      resolveAsset?: (key: string, detail: 'low' | 'high') => Promise<ResolvedAvatarAsset>;
+      onError?: (error: Error) => void;
+      resolveAsset?: (
+        key: string,
+        detail: 'low' | 'high',
+        activities?: boolean,
+      ) => Promise<ResolvedAvatarAsset>;
     } = {},
   ) {
+    this.host = options.host;
+    if (!canvas && !this.host) throw Error('Avatar engine requires a canvas or a render host');
     this.allowPoseOverrides = options.poseOverrides ?? false;
     this.onFrame = options.onFrame;
+    this.onError = options.onError;
     this.resolveAsset = options.resolveAsset;
-    this.assetLoader =
-      options.assetLoader ?? ((preset, detail) => loadAuthoredAsset(preset, detail, true));
+    this.lazyWork = options.lazyWork ?? false;
+    this.assetLoader = options.assetLoader ?? loadAuthoredAsset;
     this.maxFrameRate = this.validFrameRate(options.maxFrameRate ?? 60);
     this.defaultPreset = options.preset ?? 'blue_beret';
     this.count = this.validCount(options.count ?? 1);
     this.pixels = Math.max(48, Number.isFinite(options.size) ? options.size! : 320);
     this.detail = this.pixels <= 128 ? 'low' : 'high';
     this.fits.needsUpdate = true;
+    // Three requires a canvas-shaped event owner even with an injected context.
+    // This facade is local to this renderer; native lifecycle arrives through
+    // host.subscribe, without creating or replacing browser globals.
+    const contextEvents = new Map<string, Set<EventListener>>();
+    const dispatchContextEvent = (type: string) => {
+      const event = { type, preventDefault() {} } as Event;
+      for (const listener of contextEvents.get(type) ?? []) listener(event);
+    };
+    if (this.host && typeof this.host.context.texStorage2D !== 'function')
+      throw Error('Avatar render host requires a WebGL2 context');
+    const renderCanvas = this.host
+      ? ({
+          width: 1,
+          height: 1,
+          style: {},
+          getContext: (kind: string) => (kind === 'webgl2' ? this.host!.context : null),
+          addEventListener(type: string, listener: EventListener) {
+            const listeners = contextEvents.get(type) ?? new Set<EventListener>();
+            listeners.add(listener);
+            contextEvents.set(type, listeners);
+          },
+          removeEventListener(type: string, listener: EventListener) {
+            contextEvents.get(type)?.delete(listener);
+          },
+          setAttribute() {},
+        } as unknown as HTMLCanvasElement)
+      : canvas!;
     this.renderer = new THREE.WebGLRenderer({
-      canvas,
+      canvas: renderCanvas,
+      // Expo's WebGL2 inherits WebGLRenderingContext. Requesting webgl2 from
+      // the local facade avoids Three's supplied-context WebGL1 instanceof
+      // rejection without mutating native or browser global prototypes.
       alpha: true,
-      antialias: true,
+      // Geometry is antialiased in colorTarget. The final pass is an aligned
+      // fullscreen image; a second multisampled framebuffer adds no edge detail.
+      antialias: false,
     });
     this.disabledShadow.compareFunction = THREE.LessEqualCompare;
     this.disabledShadow.needsUpdate = true;
     this.occlusion = new AuthoredOcclusion(this.renderer, fixture.frame);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(this.pixelRatio(), 2));
     this.renderer.setClearColor(0, 0);
     this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace; // Authored shader encodes sRGB once.
     this.presentScene.add(new THREE.Mesh(this.presentGeometry, this.presentMaterial));
     this.camera.position.z = 4;
     this.camera.updateMatrixWorld();
-    this.observer = new ResizeObserver(() => this.resize());
-    this.observer.observe(canvas);
-    this.visibilityObserver = new IntersectionObserver(([entry]) => {
-      this.inViewport = entry?.isIntersecting ?? false;
-      this.visibilityChanged();
-    });
-    this.visibilityObserver.observe(canvas);
-    document.addEventListener('visibilitychange', this.visibilityChanged);
-    canvas.addEventListener('webglcontextlost', this.onContextLost);
-    canvas.addEventListener('webglcontextrestored', this.onContextRestored);
+    if (this.host) {
+      this.outputTarget = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false });
+      this.unsubscribeHost = this.host.subscribe?.({
+        resize: () => this.resize(),
+        visibility: this.visibilityChanged,
+        contextLost: () => {
+          dispatchContextEvent('webglcontextlost');
+          this.onContextLost();
+        },
+        contextRestored: () => {
+          dispatchContextEvent('webglcontextrestored');
+          this.onContextRestored();
+        },
+      });
+    } else {
+      this.observer = new ResizeObserver(() => this.resize());
+      this.observer.observe(canvas!);
+      this.visibilityObserver = new IntersectionObserver(([entry]) => {
+        this.inViewport = entry?.isIntersecting ?? false;
+        this.visibilityChanged();
+      });
+      this.visibilityObserver.observe(canvas!);
+      document.addEventListener('visibilitychange', this.visibilityChanged);
+      canvas!.addEventListener('webglcontextlost', this.onContextLost);
+      canvas!.addEventListener('webglcontextrestored', this.onContextRestored);
+    }
     this.loaded = this.load();
   }
+  private hidden() {
+    return this.host ? this.host.isHidden() : document.hidden;
+  }
+  private pixelRatio() {
+    return this.host ? this.host.getSize().pixelRatio : window.devicePixelRatio || 1;
+  }
+  private cancelFrame() {
+    if (this.host) this.host.cancelFrame(this.raf);
+    else cancelAnimationFrame(this.raf);
+  }
   private async load() {
-    const textures = await Promise.all([pileUrl, cardsUrl, ltc1Url, ltc2Url].map(binary));
+    const textures = await Promise.all([ltc1Url, ltc2Url].map(binary));
     if (this.disposed) return;
     this.textures = textures.map((data, i) => {
-      const spec = fixture.sourceTextures[i]!;
+      const spec = fixture.sourceTextures[i + 2]!;
       const floating = spec.type === 5126;
       const texture = new THREE.DataTexture(
         floating ? new Float32Array(data) : new Uint8Array(data),
@@ -307,10 +432,9 @@ export class AuthoredAvatarEngine {
         THREE.RGBAFormat,
         floating ? THREE.FloatType : THREE.UnsignedByteType,
       );
-      texture.wrapS = texture.wrapT = i === 0 ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+      texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
       texture.minFilter = texture.magFilter = THREE.LinearFilter;
-      texture.generateMipmaps = i < 2;
-      if (i < 2) texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.generateMipmaps = false;
       texture.needsUpdate = true;
       return texture;
     });
@@ -322,18 +446,24 @@ export class AuthoredAvatarEngine {
   private asset(preset: string) {
     return this.assets.get(`${preset}:${this.detail}`);
   }
-  private ensureAsset(preset: string, detail = this.detail): Promise<LoadedAsset> {
+  private ensureAsset(
+    preset: string,
+    detail = this.detail,
+    activities = !this.lazyWork ||
+      this.states.some((state) => state.preset === preset && state.motion?.kind === 'work'),
+  ): Promise<LoadedAsset> {
     const key = `${preset}:${detail}`;
+    const pendingKey = `${key}:${activities ? 'work' : 'base'}`;
     if (!AVATAR_PRESETS.includes(preset as AvatarPreset) && !this.resolveAsset)
       return Promise.reject(Error(`Unsupported avatar: ${preset}`));
     const existing = this.assets.get(key);
-    if (existing) return Promise.resolve(existing);
-    const pending = this.pendingAssets.get(key);
+    if (existing && (!activities || existing.activities)) return Promise.resolve(existing);
+    const pending = this.pendingAssets.get(pendingKey);
     if (pending) return pending;
     const resolved = AVATAR_PRESETS.includes(preset as AvatarPreset)
       ? Promise.all([
-          this.assetLoader(preset as AvatarPreset, detail),
-          loadAuthoredMotion(preset as AvatarPreset),
+          this.assetLoader(preset as AvatarPreset, detail, activities),
+          loadAuthoredMotion(preset as AvatarPreset, activities),
         ]).then(([source, samplers]) => {
           prepareCanonicalTuft(source.parts);
           return {
@@ -342,7 +472,7 @@ export class AuthoredAvatarEngine {
             eyeProfiles: undefined as Record<number, EyeGazeProfile> | undefined,
           };
         })
-      : this.resolveAsset!(preset, detail);
+      : this.resolveAsset!(preset, detail, activities);
     const promise = resolved
       .then(({ source, samplers, eyeProfiles: customEyes }) => {
         if (this.disposed) {
@@ -422,14 +552,21 @@ export class AuthoredAvatarEngine {
               : null,
           };
         });
-        const asset = { source, parts, samplers };
+        const asset = { source, parts, samplers, activities };
+        const previous = this.assets.get(key);
+        // A concurrent base request must never downgrade a completed activity rig.
+        if (previous?.activities && !activities) {
+          this.disposeAsset(asset);
+          return previous;
+        }
+        if (previous) this.retiredAssets.push(previous);
         this.assets.set(key, asset);
         if (detail === 'high' && AVATAR_PRESETS.includes(preset as AvatarPreset))
           this.cropCache.set(`${preset}:high:320`, source.material.crop);
         return asset;
       })
-      .finally(() => this.pendingAssets.delete(key));
-    this.pendingAssets.set(key, promise);
+      .finally(() => this.pendingAssets.delete(pendingKey));
+    this.pendingAssets.set(pendingKey, promise);
     return promise;
   }
   private material(part: AuthoredPart, frameValues: Vectors) {
@@ -447,7 +584,7 @@ export class AuthoredAvatarEngine {
         d: { value: uniforms(part.fields) },
         skin: {
           value: {
-            joints: Array.from({ length: 24 }, () => new THREE.Matrix4()),
+            joints: identityJoints,
           },
         },
         crowdProjection: { value: new THREE.Matrix4() },
@@ -464,10 +601,8 @@ export class AuthoredAvatarEngine {
         studioLighting: { value: null },
         paletteField: { value: null },
         referencePalette: { value: null },
-        furPile: { value: this.textures[0] },
-        furCards: { value: this.textures[1] },
-        furLTC1: { value: this.textures[2] },
-        furLTC2: { value: this.textures[3] },
+        furLTC1: { value: this.textures[0] },
+        furLTC2: { value: this.textures[1] },
       },
       premultipliedAlpha: true,
       transparent: part.transparent ?? (part.fur || part.fields.coverage![0]! < 1),
@@ -482,6 +617,7 @@ export class AuthoredAvatarEngine {
   setCount(value: number) {
     if (this.disposed) return;
     const nextCount = this.validCount(value);
+    if (this.ready && this.count === nextCount && this.states.length === nextCount) return;
     if (this.pointerIndex !== null && this.pointerIndex >= nextCount) this.endPointer();
     if (this.hoverIndex !== null && this.hoverIndex >= nextCount) this.selectHover(null);
     this.count = nextCount;
@@ -515,24 +651,30 @@ export class AuthoredAvatarEngine {
       ...this.assetClaims.keys(),
     ]);
     const unused = [...this.assets].filter(
-      ([key]) => !active.has(key.slice(0, key.lastIndexOf(':'))) && !this.pendingAssets.has(key),
+      ([key]) =>
+        !active.has(key.slice(0, key.lastIndexOf(':'))) &&
+        !this.pendingAssets.has(`${key}:base`) &&
+        !this.pendingAssets.has(`${key}:work`),
     );
     for (const [key, asset] of unused.slice(0, Math.max(0, unused.length - 4))) {
       this.assets.delete(key);
-      for (const part of asset.parts) {
-        part.motionTexture?.dispose();
-        part.source.geometry.dispose();
-        part.material.dispose();
-        part.depth?.dispose();
-        this.geometries = this.geometries.filter((g) => g !== part.source.geometry);
-        this.materials = this.materials.filter((m) => m !== part.material);
-        if (part.depth) this.depthMaterials = this.depthMaterials.filter((m) => m !== part.depth);
-      }
+      this.disposeAsset(asset);
       for (const fit of this.cropCache.keys())
         if (fit.startsWith(key + ':')) this.cropCache.delete(fit);
     }
   }
-  private async ensureCurrentDetail(presets: readonly string[]) {
+  private disposeAsset(asset: LoadedAsset) {
+    for (const part of asset.parts) {
+      part.motionTexture?.dispose();
+      part.source.geometry.dispose();
+      part.material.dispose();
+      part.depth?.dispose();
+      this.geometries = this.geometries.filter((g) => g !== part.source.geometry);
+      this.materials = this.materials.filter((m) => m !== part.material);
+      if (part.depth) this.depthMaterials = this.depthMaterials.filter((m) => m !== part.depth);
+    }
+  }
+  private async ensureCurrentDetail(presets: readonly string[], activities?: boolean) {
     for (const preset of presets)
       this.assetClaims.set(preset, (this.assetClaims.get(preset) ?? 0) + 1);
     const release = () => {
@@ -547,7 +689,7 @@ export class AuthoredAvatarEngine {
       let detail: typeof this.detail;
       do {
         detail = this.detail;
-        await Promise.all(presets.map((preset) => this.ensureAsset(preset, detail)));
+        await Promise.all(presets.map((preset) => this.ensureAsset(preset, detail, activities)));
       } while (!this.disposed && detail !== this.detail);
       return release;
     } catch (error) {
@@ -555,14 +697,31 @@ export class AuthoredAvatarEngine {
       throw error;
     }
   }
-  async setPreset(index: number, preset: string) {
+  getInstancePreset(index: number) {
+    return this.states[index]?.preset;
+  }
+  hasPreset(preset: string) {
+    return !!this.asset(preset);
+  }
+  cancelPresetChange(index: number) {
+    const state = this.states[index];
+    if (state) state.revision++;
+  }
+  async setPreset(index: number, preset: string, isCurrent = () => true) {
     await this.loaded;
     const state = this.states[index];
     if (!state || this.disposed) return;
     const revision = ++state.revision;
+    if (state.preset === preset && this.asset(preset)) return;
     const release = await this.ensureCurrentDetail([preset]);
     try {
-      if (this.disposed || this.states[index] !== state || revision !== state.revision) return;
+      if (
+        this.disposed ||
+        this.states[index] !== state ||
+        revision !== state.revision ||
+        !isCurrent()
+      )
+        return;
       if (state.preset !== preset) {
         if (this.pointerIndex === index) this.endPointer();
         state.pointer.reset();
@@ -620,6 +779,8 @@ export class AuthoredAvatarEngine {
       mesh.dispose();
     }
     this.batches = [];
+    for (const asset of this.retiredAssets) this.disposeAsset(asset);
+    this.retiredAssets = [];
     const groups = new Map<string, number[]>();
     this.states.forEach((state, i) => {
       const slots = groups.get(state.preset) ?? [];
@@ -794,6 +955,31 @@ export class AuthoredAvatarEngine {
       !!asset?.samplers?.work && asset.parts.some((part) => part.source.activity === 'computer')
     );
   }
+  /** Prepare optional activity resources while the avatar keeps displaying its
+   * current animation. Starting Work remains an explicit presentation event. */
+  async prepareWork(index: number) {
+    await this.loaded;
+    const state = this.states[index];
+    if (!state || this.disposed) return false;
+    const preset = state.preset,
+      revision = state.revision;
+    if (this.asset(preset)?.activities) return this.canWork(index);
+    const release = await this.ensureCurrentDetail([preset], true);
+    try {
+      if (this.disposed) return false;
+      // Replacement assets can be shared with neighbours. Rebind their batches
+      // even if the initiating instance was changed/disposed during the fetch.
+      this.rebuildBatches();
+      return (
+        this.states[index] === state &&
+        state.preset === preset &&
+        state.revision === revision &&
+        this.canWork(index)
+      );
+    } finally {
+      release();
+    }
+  }
   work(index: number, continuous = false, cycles = 1) {
     const state = this.states[index];
     if (
@@ -931,6 +1117,19 @@ export class AuthoredAvatarEngine {
     }
     this.invalidate();
   }
+  /** A pooled output canvas retains its own painted pixels. Exclude an
+   * offscreen or already-painted still from GPU batches without deleting its
+   * independent pose, action clock, input state or position in the atlas. */
+  setInstanceRendering(index: number, rendering: boolean) {
+    const state = this.states[index];
+    if (!state || state.rendering === rendering) return;
+    state.rendering = rendering;
+    if (rendering) {
+      if (!this.cropCache.has(`${state.preset}:${this.detail}:${this.backingPixels}`))
+        this.fitsDirty = this.fitPending = true;
+      this.invalidate();
+    }
+  }
   private resolvePigment(state: InstanceState) {
     const base = this.asset(state.preset)!.source.material.parts[0]!.fields.colorRoughness!;
     if (state.colorHex) state.color.set(state.colorHex);
@@ -1022,18 +1221,23 @@ export class AuthoredAvatarEngine {
   }
   private resize() {
     if (this.disposed) return;
+    this.cancelFitReads();
     this.attributesDirty = true;
     this.fitsDirty = true;
     const scale = this.pixels <= 64 ? 1 : this.pixels <= 128 ? 1.5 : 2;
     this.backingPixels = Math.max(
       64,
-      Math.min(512, Math.round(this.pixels * Math.min(window.devicePixelRatio || 1, scale))),
+      Math.min(512, Math.round(this.pixels * Math.min(this.pixelRatio(), scale))),
     );
     this.renderer.setPixelRatio(this.backingPixels / this.pixels);
     this.fitPending = this.states.some(
-      (state) => !this.cropCache.has(`${state.preset}:${this.detail}:${this.backingPixels}`),
+      (state) =>
+        state.rendering !== false &&
+        !this.cropCache.has(`${state.preset}:${this.detail}:${this.backingPixels}`),
     );
-    const { width, height } = this.canvas.getBoundingClientRect();
+    const { width, height } = this.host
+      ? this.host.getSize()
+      : this.canvas!.getBoundingClientRect();
     this.width = Math.max(1, width);
     this.height = Math.max(1, height);
     this.cols = Math.max(1, Math.floor(this.width / this.pixels));
@@ -1073,6 +1277,7 @@ export class AuthoredAvatarEngine {
     const ratio = this.renderer.getPixelRatio();
     this.colorTarget.setSize(Math.round(this.width * ratio), Math.round(this.height * ratio));
     this.depthTarget.setSize(this.colorTarget.width, this.colorTarget.height);
+    this.outputTarget?.setSize(this.colorTarget.width, this.colorTarget.height);
     for (const material of this.materials)
       material.uniforms.outputInverse!.value.set(
         1 / this.colorTarget.width,
@@ -1087,15 +1292,91 @@ export class AuthoredAvatarEngine {
     );
     this.invalidate();
   }
+  /** A presenter may hold a bounded number of submitted frames. Coalesce new
+   * render requests until capacity returns, retaining the newest state and
+   * urgency without changing animation clocks or the configured frame rate. */
+  setPresentationCapacity(available: boolean) {
+    if (this.disposed || this.presentationCapacity === available) return;
+    this.presentationCapacity = available;
+    if (!available) {
+      if (this.raf) {
+        this.cancelFrame();
+        this.raf = 0;
+        this.presentationQueued = true;
+      }
+    } else if (this.presentationQueued) {
+      this.presentationQueued = false;
+      this.invalidate(false);
+    }
+  }
   private invalidate(urgent = true) {
     this.urgentFrame ||= urgent;
-    if (!this.raf && !this.disposed && !document.hidden && this.inViewport && !this.contextLost)
-      this.raf = requestAnimationFrame(this.tick);
+    if (!this.presentationCapacity) {
+      this.presentationQueued = true;
+      return;
+    }
+    if (!this.raf && !this.disposed && !this.hidden() && this.inViewport && !this.contextLost)
+      this.raf = this.host ? this.host.requestFrame(this.tick) : requestAnimationFrame(this.tick);
+  }
+  private updateRenderBounds() {
+    const width = this.colorTarget.width;
+    const height = this.colorTarget.height;
+    const bounds = this.renderBounds;
+    bounds.set(0, 0, width, height);
+    if (this.states.some((state) => state.rendering === false)) {
+      let left = this.cols,
+        right = 0,
+        top = this.rows,
+        bottom = 0;
+      this.states.forEach((state, index) => {
+        if (state.rendering === false) return;
+        const column = index % this.cols;
+        const row = Math.floor(index / this.cols);
+        left = Math.min(left, column);
+        right = Math.max(right, column + 1);
+        top = Math.min(top, row);
+        bottom = Math.max(bottom, row + 1);
+      });
+      const originX = (width - Math.min(this.count, this.cols) * this.backingPixels) / 2;
+      const originY = (height - this.rows * this.backingPixels) / 2;
+      // AO rays and bilateral resolve reject other avatar cells. Clear a guard
+      // outside the active cells for the one-pixel depth-normal stencil and
+      // half-resolution rounding, so old inactive depth cannot affect an edge.
+      const guard = 8;
+      const x = Math.max(0, Math.floor(originX + left * this.backingPixels) - guard);
+      const y = Math.max(
+        0,
+        Math.floor(originY + (this.rows - bottom) * this.backingPixels) - guard,
+      );
+      const endX = Math.min(width, Math.ceil(originX + right * this.backingPixels) + guard);
+      const endY = Math.min(
+        height,
+        Math.ceil(originY + (this.rows - top) * this.backingPixels) + guard,
+      );
+      bounds.set(x, y, Math.max(0, endX - x), Math.max(0, endY - y));
+    }
+    for (const target of [this.depthTarget, this.colorTarget]) {
+      target.scissor.copy(bounds);
+      target.scissorTest = bounds.z < width || bounds.w < height;
+    }
+    if (this.outputTarget) {
+      this.outputTarget.scissor.copy(bounds);
+      this.outputTarget.scissorTest = this.colorTarget.scissorTest;
+    }
   }
   private tick = (timestamp: number) => {
     this.raf = 0;
-    if (this.disposed || !this.ready || document.hidden || !this.inViewport || this.contextLost)
+    if (!this.presentationCapacity) {
+      this.presentationQueued = true;
       return;
+    }
+    if (this.fitReads.length || this.renderFailure) return;
+    if (this.disposed || !this.ready || this.hidden() || !this.inViewport || this.contextLost)
+      return;
+    if (this.states.every((state) => state.rendering === false)) {
+      this.previousTime = 0;
+      return;
+    }
     // Pace continuous animation only. Interaction, asset changes and paused
     // updates paint immediately; animation time still advances by wall time.
     if (
@@ -1122,12 +1403,34 @@ export class AuthoredAvatarEngine {
     // Match the original's one-time alpha fit at each backing resolution. The
     // readback is per unique preset/resolution, never per instance or animated frame.
     const measureFit = this.fitPending;
+    this.poseSharing.beginFrame();
+    if (!measureFit) {
+      // Idle clocks have no pending action transition. Count exact duplicates
+      // before sampling; independent clocks keep the direct, copy-free path.
+      for (const state of this.states) {
+        const motion = state.motion;
+        if (
+          state.rendering === false ||
+          state.poseOverride ||
+          motion?.kind !== 'idle' ||
+          motion.pendingStart
+        )
+          continue;
+        const sampler = this.asset(state.preset)?.samplers?.idle;
+        if (!sampler) continue;
+        const sampleTime = motion.held ?? this.time - motion.started;
+        if (state.poseSampler !== sampler || state.poseSampleTime !== sampleTime)
+          this.poseSharing.register(sampler, sampleTime);
+      }
+    }
     const object = this.poseObject;
     let cameraChanged = false;
     for (const [stateIndex, state] of this.states.entries()) {
+      if (state.rendering === false && !measureFit) continue;
+      const asset = this.asset(state.preset);
       object.position.set(
         0,
-        this.paused || measureFit || state.poseOverride || this.asset(state.preset)?.samplers
+        this.paused || measureFit || state.poseOverride || asset?.samplers
           ? 0
           : Math.sin(this.time * 1.8 + state.phase) * 0.025,
         0,
@@ -1135,7 +1438,7 @@ export class AuthoredAvatarEngine {
       object.rotation.set(
         measureFit ? 0 : -state.look.y * 0.12,
         measureFit ? 0 : state.look.x * 0.18,
-        this.paused || measureFit || state.poseOverride || this.asset(state.preset)?.samplers
+        this.paused || measureFit || state.poseOverride || asset?.samplers
           ? 0
           : Math.sin(this.time + state.phase) * 0.02,
       );
@@ -1176,13 +1479,8 @@ export class AuthoredAvatarEngine {
       }
       object.updateMatrix();
       state.matrix.copy(object.matrix);
-      if (
-        !state.poseOverride &&
-        this.asset(state.preset)?.samplers &&
-        !measureFit &&
-        (!this.paused || state.motion)
-      ) {
-        const samplers = this.asset(state.preset)!.samplers!;
+      if (!state.poseOverride && asset?.samplers && !measureFit && (!this.paused || state.motion)) {
+        const samplers = asset!.samplers!;
         const previousMotion = state.motion;
         state.motion = advanceMotion(state.motion, samplers, this.time);
         // Presentation activation must retain the gaze snapshot taken at input.
@@ -1197,16 +1495,19 @@ export class AuthoredAvatarEngine {
         if (!state.pose || state.poseSampler !== sampler) {
           state.pose = sampler.createPose();
           state.poseSampler = sampler;
+          state.poseSampleTime = undefined;
         }
-        sampler.sample(
-          motion?.held ?? (motion ? this.time - motion.started : this.time + state.phase),
-          state.pose,
-        );
+        const sampleTime =
+          motion?.held ?? (motion ? this.time - motion.started : this.time + state.phase);
+        // Held neighbours still participate in the shared render, but their
+        // semantic pose is immutable until its sampler or clock changes.
+        if (state.poseSampleTime !== sampleTime) {
+          this.poseSharing.sample(sampler, sampleTime, state.pose);
+          state.poseSampleTime = sampleTime;
+        }
       }
       const reactionTiming =
-        state.motion?.kind === 'reaction'
-          ? this.asset(state.preset)?.samplers?.reactionGaze
-          : undefined;
+        state.motion?.kind === 'reaction' ? asset?.samplers?.reactionGaze : undefined;
       if (reactionTiming && state.motion) {
         if (state.reactionGaze?.motion !== state.motion) {
           state.reactionGaze = {
@@ -1252,11 +1553,11 @@ export class AuthoredAvatarEngine {
           this.pointerPivot.fromArray(neutral);
           this.rotatedPivot.copy(this.pointerPivot).applyMatrix4(this.pointerMatrix);
           this.pointerMatrix.setPosition(this.pointerPivot.sub(this.rotatedPivot));
-        } else if (this.asset(state.preset)?.source.preset !== 'blue_beret') {
+        } else if (asset?.source.preset !== 'blue_beret') {
           const body =
             state.poseOverride?.get('mesh:0')?.world ??
             (!this.paused || state.motion ? state.pose?.[0]?.world : undefined) ??
-            this.asset(state.preset)!.parts[0]!.material.uniforms.d!.value.world;
+            asset!.parts[0]!.material.uniforms.d!.value.world;
           this.pointerPivot.setFromMatrixPosition(body);
           this.rotatedPivot.copy(this.pointerPivot).applyMatrix4(this.pointerMatrix);
           this.pointerMatrix.setPosition(this.pointerPivot.sub(this.rotatedPivot));
@@ -1277,7 +1578,11 @@ export class AuthoredAvatarEngine {
         }
       }
     }
-    if (cameraChanged) this.cameras.needsUpdate = true;
+    if (cameraChanged) {
+      this.cameras.clearUpdateRanges();
+      this.cameras.addUpdateRange(0, this.count * 4);
+      this.cameras.needsUpdate = true;
+    }
     this.occlusion.setAvatars(
       this.cameras,
       Math.min(this.count, this.cols),
@@ -1288,7 +1593,15 @@ export class AuthoredAvatarEngine {
     for (const material of this.materials)
       material.uniforms.crowdProjection!.value.copy(projection);
     this.batches.forEach((batch) => {
-      const { mesh, part, slots } = batch;
+      const { mesh, part } = batch;
+      const slots = batch.slots.filter((index) => this.states[index]!.rendering !== false);
+      const offsetsChanged =
+        this.attributesDirty ||
+        !batch.renderedSlots ||
+        slots.length !== batch.renderedSlots.length ||
+        slots.some((index, i) => index !== batch.renderedSlots![i]);
+      batch.renderedSlots = slots;
+      mesh.count = slots.length;
       batch.visible = false;
       let furBudget = 0;
       const offsets = mesh.geometry.getAttribute(
@@ -1427,7 +1740,7 @@ export class AuthoredAvatarEngine {
           mesh.setMatrixAt(slot, state.matrix);
           batch.visible = true;
         }
-        if (!this.attributesDirty) return;
+        if (!offsetsChanged) return;
         offsets.setXY(
           slot,
           ((index % this.cols) - (Math.min(this.count, this.cols) - 1) / 2) * 3.64,
@@ -1449,13 +1762,32 @@ export class AuthoredAvatarEngine {
           );
         } else pigments.setXYZ(slot, color.r, color.g, color.b);
       });
-      mesh.instanceMatrix.needsUpdate = true;
+      if (slots.length) {
+        mesh.instanceMatrix.clearUpdateRanges();
+        mesh.instanceMatrix.addUpdateRange(0, slots.length * 16);
+        mesh.instanceMatrix.needsUpdate = true;
+      }
       if (part.source.fur && part.motionTexture)
         mesh.geometry.setDrawRange(0, Math.ceil(furBudget) * 12);
-      if (part.motionTexture) part.motionTexture.needsUpdate = true;
-      if (this.attributesDirty) offsets.needsUpdate = pigments.needsUpdate = true;
+      if (slots.length && part.motionTexture) {
+        part.motionTexture.clearUpdateRanges();
+        // Three's texture ranges are single-row uploads. A lone populated row
+        // can replace a capacity-sized upload without adding GL calls; larger
+        // batches keep the single whole-image upload rather than one per row.
+        if (slots.length === 1 && part.motionTexture.image.height > 1)
+          part.motionTexture.addUpdateRange(0, 64);
+        part.motionTexture.needsUpdate = true;
+      }
+      if (offsetsChanged && slots.length) {
+        offsets.clearUpdateRanges();
+        offsets.addUpdateRange(0, slots.length * 2);
+        pigments.clearUpdateRanges();
+        pigments.addUpdateRange(0, slots.length * 3);
+        offsets.needsUpdate = pigments.needsUpdate = true;
+      }
     });
     this.attributesDirty = false;
+    this.updateRenderBounds();
     this.renderer.info.autoReset = false;
     this.renderer.info.reset();
     this.batches.forEach(({ mesh, part, visible }) => {
@@ -1469,6 +1801,7 @@ export class AuthoredAvatarEngine {
       projection,
       this.depthTarget.width,
       this.depthTarget.height,
+      this.renderBounds,
     );
     this.batches.forEach(({ mesh, part, visible }) => {
       mesh.visible = visible;
@@ -1478,12 +1811,46 @@ export class AuthoredAvatarEngine {
     this.renderer.setRenderTarget(this.colorTarget);
     this.renderer.render(this.scene, this.camera);
     this.updateCrops();
-    this.renderer.setRenderTarget(null);
+    if (measureFit) {
+      // Reference geometry is rendered only to measure its alpha bounds. It
+      // must never be delivered as the requested live or held pose, including
+      // when every clock is paused and would otherwise schedule no next frame.
+      this.fitPasses++;
+      if (!this.fitReads.length) this.invalidate();
+      return;
+    }
+    const ratio = this.renderer.getPixelRatio();
+    this.renderer.setScissor(
+      this.renderBounds.x / ratio,
+      this.renderBounds.y / ratio,
+      this.renderBounds.z / ratio,
+      this.renderBounds.w / ratio,
+    );
+    this.renderer.setScissorTest(this.colorTarget.scissorTest);
+    this.renderer.setRenderTarget(this.outputTarget ?? null);
     this.renderer.render(this.presentScene, this.camera);
+    this.renderer.setScissorTest(false);
     this.frames++;
+    if (this.host && this.outputTarget) {
+      const { __webglFramebuffer: framebuffer } = this.renderer.properties.get(
+        this.outputTarget,
+      ) as { __webglFramebuffer: WebGLFramebuffer };
+      this.host.onFrame({
+        framebuffer,
+        width: this.outputTarget.width,
+        height: this.outputTarget.height,
+        columns: Math.min(this.count, this.cols),
+        rows: this.rows,
+        pixels: this.backingPixels,
+        renderedIndices: this.states.flatMap((state, index) =>
+          state.rendering === false ? [] : [index],
+        ),
+      });
+    }
     this.onFrame?.();
     let gazeChanged = false;
     for (const state of this.states) {
+      if (state.rendering === false) continue;
       const yaw = state.gaze.yaw,
         pitch = state.gaze.pitch,
         eyeX = state.eyes.x,
@@ -1508,12 +1875,14 @@ export class AuthoredAvatarEngine {
       gazeChanged ||
       this.states.some(
         (state) =>
-          state.pointer.moving ||
-          (!this.paused && state.entrance && state.entrance.held === undefined),
+          state.rendering !== false &&
+          (state.pointer.moving ||
+            (!this.paused && state.entrance && state.entrance.held === undefined)),
       ) ||
       (!this.paused &&
         this.states.some(
           (state) =>
+            state.rendering !== false &&
             !state.poseOverride &&
             (!this.asset(state.preset)?.samplers ||
               !state.motion ||
@@ -1529,53 +1898,40 @@ export class AuthoredAvatarEngine {
     // reaction/work would consume the entire wall-clock gap on its first frame.
     else this.previousTime = 0;
   };
-  private updateCrops() {
-    if (!this.fitsDirty) return;
+  private cancelFitReads() {
+    this.fitGeneration++;
+    for (const read of this.fitReads) read.cancel();
+    this.fitReads = [];
+  }
+  private fittedCrop(pixels: Uint8Array, size: number, fallback: number[]) {
+    let minX = size,
+      minY = size,
+      maxX = -1,
+      maxY = -1;
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++) {
+        if (pixels[((size - y - 1) * size + x) * 4 + 3]! <= 24) continue;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    if (maxX < minX) return fallback;
+    const extent = Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
+    return [
+      (minX + maxX - extent) / (2 * size),
+      (minY + maxY - extent) / (2 * size),
+      extent / size,
+      extent / size,
+    ];
+  }
+  private applyCachedFits() {
     let changed = false;
     const size = this.backingPixels;
-    const ratio = this.renderer.getPixelRatio();
     this.states.forEach((state, index) => {
-      const key = `${state.preset}:${this.detail}:${size}`;
-      let crop = this.cropCache.get(key);
-      if (!crop) {
-        const left = Math.round(
-          (this.width * ratio) / 2 +
-            ((index % this.cols) - Math.min(this.count, this.cols) / 2) * size,
-        );
-        const top = Math.round(
-          (this.height * ratio) / 2 + (Math.floor(index / this.cols) - this.rows / 2) * size,
-        );
-        const pixels = new Uint8Array(size * size * 4);
-        this.renderer.readRenderTargetPixels(
-          this.colorTarget,
-          left,
-          this.colorTarget.height - top - size,
-          size,
-          size,
-          pixels,
-        );
-        let minX = size,
-          minY = size,
-          maxX = -1,
-          maxY = -1;
-        for (let y = 0; y < size; y++)
-          for (let x = 0; x < size; x++) {
-            if (pixels[((size - y - 1) * size + x) * 4 + 3]! <= 24) continue;
-            minX = Math.min(minX, x);
-            maxX = Math.max(maxX, x);
-            minY = Math.min(minY, y);
-            maxY = Math.max(maxY, y);
-          }
-        if (maxX < minX) return;
-        const extent = Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
-        crop = [
-          (minX + maxX - extent) / (2 * size),
-          (minY + maxY - extent) / (2 * size),
-          extent / size,
-          extent / size,
-        ];
-        this.cropCache.set(key, crop);
-      }
+      if (state.rendering === false) return;
+      const crop = this.cropCache.get(`${state.preset}:${this.detail}:${size}`);
+      if (!crop) return;
       const values = this.fits.image.data as Float32Array;
       if (crop.some((v, channel) => Math.abs(values[index * 4 + channel]! - v) > 1e-7)) {
         values.set(crop, index * 4);
@@ -1584,13 +1940,115 @@ export class AuthoredAvatarEngine {
     });
     if (changed) this.fits.needsUpdate = true;
     this.fitPending = this.states.some(
-      (state) => !this.cropCache.has(`${state.preset}:${this.detail}:${size}`),
+      (state) =>
+        state.rendering !== false && !this.cropCache.has(`${state.preset}:${this.detail}:${size}`),
     );
     this.fitsDirty = this.fitPending;
   }
+  private updateCrops() {
+    if (!this.fitsDirty || this.fitReads.length) return;
+    const size = this.backingPixels;
+    const ratio = this.renderer.getPixelRatio();
+    const captures = new Map<string, { left: number; bottom: number; fallback: number[] }>();
+    this.states.forEach((state, index) => {
+      if (state.rendering === false) return;
+      const key = `${state.preset}:${this.detail}:${size}`;
+      if (this.cropCache.has(key) || captures.has(key)) return;
+      const left = Math.round(
+        (this.width * ratio) / 2 +
+          ((index % this.cols) - Math.min(this.count, this.cols) / 2) * size,
+      );
+      const top = Math.round(
+        (this.height * ratio) / 2 + (Math.floor(index / this.cols) - this.rows / 2) * size,
+      );
+      captures.set(key, {
+        left,
+        bottom: this.colorTarget.height - top - size,
+        fallback: this.asset(state.preset)!.source.material.crop.slice(),
+      });
+    });
+    if (!captures.size) {
+      this.applyCachedFits();
+      return;
+    }
+    if (this.host) {
+      // ExpoGL does not provide the web PBO readback operations. Its host keeps
+      // the existing synchronous one-time fit, not an exception-based fallback.
+      for (const [key, capture] of captures) {
+        const pixels = new Uint8Array(size * size * 4);
+        this.renderer.readRenderTargetPixels(
+          this.colorTarget,
+          capture.left,
+          capture.bottom,
+          size,
+          size,
+          pixels,
+        );
+        this.cropCache.set(key, this.fittedCrop(pixels, size, capture.fallback));
+      }
+      this.applyCachedFits();
+      return;
+    }
+    const generation = this.fitGeneration;
+    const gl = this.renderer.getContext() as WebGL2RenderingContext;
+    const { __webglFramebuffer: framebuffer } = this.renderer.properties.get(this.colorTarget) as {
+      __webglFramebuffer: WebGLFramebuffer;
+    };
+    const pending = captures.entries();
+    const results: { key: string; crop: number[] }[] = [];
+    const drain = async () => {
+      for (const [key, capture] of pending) {
+        if (this.disposed || generation !== this.fitGeneration) return;
+        const read = readPixelsAsync(gl, framebuffer, capture.left, capture.bottom, size, size);
+        this.fitReads.push(read);
+        try {
+          const pixels = await read.promise;
+          results.push({ key, crop: this.fittedCrop(pixels, size, capture.fallback) });
+        } finally {
+          const index = this.fitReads.indexOf(read);
+          if (index >= 0) this.fitReads.splice(index, 1);
+        }
+      }
+    };
+    // Bound temporary GPU storage to two tiles even for a large cold catalog.
+    // Rendering stays suspended so the source framebuffer remains unchanged.
+    void Promise.all([drain(), drain()])
+      .then(() => {
+        if (this.disposed || generation !== this.fitGeneration) return;
+        this.fitReads = [];
+        for (const { key, crop } of results) this.cropCache.set(key, crop);
+        this.applyCachedFits();
+        this.invalidate();
+      })
+      .catch((error: unknown) => {
+        if (this.disposed || generation !== this.fitGeneration) return;
+        if (gl.isContextLost()) {
+          this.onContextLost();
+          return;
+        }
+        this.cancelFitReads();
+        this.renderFailure = error instanceof Error ? error : new Error(String(error));
+        this.cancelFrame();
+        this.raf = 0;
+        this.onError?.(this.renderFailure);
+      });
+  }
+
   stats() {
     return {
       ready: this.ready,
+      surfaceFinish: 'smooth',
+      retainedCanvasCulling: true,
+      activeAtlasScissor: true,
+      asyncFitReadback: !this.host,
+      pendingFitReads: this.fitReads.length,
+      presentationCapacity: this.presentationCapacity,
+      presentationQueued: this.presentationQueued,
+      renderFailure: this.renderFailure?.message ?? null,
+      renderedPixels: this.renderBounds.z * this.renderBounds.w,
+      atlasPixels: this.colorTarget.width * this.colorTarget.height,
+      renderBounds: this.renderBounds.toArray(),
+      lazyWork: this.lazyWork,
       renderer: 'original-assets-three',
       parity: false,
       missing: [
@@ -1605,8 +2063,12 @@ export class AuthoredAvatarEngine {
         .filter(([, asset]) => asset.samplers)
         .map(([, asset]) => asset.source.preset),
       count: this.count,
+      renderedInstances: this.states.filter((state) => state.rendering !== false).length,
       frames: this.frames,
-      suspended: document.hidden || !this.inViewport || this.contextLost,
+      fitPasses: this.fitPasses,
+      poseEvaluations: this.poseSharing.evaluations,
+      sharedPoseCopies: this.poseSharing.copies,
+      suspended: this.hidden() || !this.inViewport || this.contextLost,
       frameRateLimit: this.maxFrameRate === Infinity ? null : this.maxFrameRate,
       observedFrameRate: this.elapsed ? this.timedFrames / this.elapsed : 0,
       columns: this.cols,
@@ -1669,18 +2131,25 @@ export class AuthoredAvatarEngine {
     };
   }
   dispose() {
+    this.cancelFitReads();
     if (this.disposed) return;
     this.disposed = true;
-    cancelAnimationFrame(this.raf);
-    this.observer.disconnect();
-    this.visibilityObserver.disconnect();
-    document.removeEventListener('visibilitychange', this.visibilityChanged);
-    this.canvas.removeEventListener('webglcontextlost', this.onContextLost);
-    this.canvas.removeEventListener('webglcontextrestored', this.onContextRestored);
+    this.cancelFrame();
+    this.observer?.disconnect();
+    this.visibilityObserver?.disconnect();
+    this.unsubscribeHost?.();
+    if (!this.host) {
+      document.removeEventListener('visibilitychange', this.visibilityChanged);
+      this.canvas!.removeEventListener('webglcontextlost', this.onContextLost);
+      this.canvas!.removeEventListener('webglcontextrestored', this.onContextRestored);
+    }
     this.batches.forEach(({ mesh }) => mesh.dispose());
     this.fits.dispose();
     this.cameras.dispose();
     this.assets.forEach((asset) => asset.parts.forEach((part) => part.motionTexture?.dispose()));
+    this.retiredAssets.forEach((asset) =>
+      asset.parts.forEach((part) => part.motionTexture?.dispose()),
+    );
     this.geometries.forEach((g) => g.dispose());
     this.materials.forEach((m) => m.dispose());
     this.textures.forEach((t) => t.dispose());
@@ -1689,9 +2158,10 @@ export class AuthoredAvatarEngine {
     this.disabledShadow.dispose();
     this.depthMaterials.forEach((m) => m.dispose());
     this.colorTarget.dispose();
+    this.outputTarget?.dispose();
     this.presentGeometry.dispose();
     this.presentMaterial.dispose();
     this.renderer.dispose();
-    this.renderer.forceContextLoss();
+    if (!this.host) this.renderer.forceContextLoss();
   }
 }

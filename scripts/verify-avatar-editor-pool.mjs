@@ -2,16 +2,26 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { installAvatarPNGSnapshots } from './fixtures/avatar/png-snapshot.mjs';
 const require = createRequire(import.meta.url);
 const puppeteer = require(process.env.BLOOM_PUPPETEER_MODULE || 'puppeteer-core');
-const browser = await puppeteer.launch({
-  executablePath: process.env.CHROME_PATH,
-  headless: true,
-  args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
-});
+const connected = Boolean(process.env.AVATAR_BROWSER_URL);
+const browser = connected
+  ? await puppeteer.connect({
+      browserURL: process.env.AVATAR_BROWSER_URL,
+      defaultViewport: null,
+      protocolTimeout: 180000,
+    })
+  : await puppeteer.launch({
+      executablePath: process.env.CHROME_PATH,
+      headless: true,
+      args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
+    });
+const ownedPages = [];
 const report = { cases: [], errors: [], infrastructure: [] };
 try {
   const page = await browser.newPage();
+  ownedPages.push(page);
   page.on('pageerror', (e) => {
     if (e.message === 'WebSocket closed without opened.' && e.stack?.includes('/@vite/client:'))
       report.infrastructure.push({ message: e.message, stack: e.stack });
@@ -32,14 +42,18 @@ try {
       ).toString('base64'),
     }),
   );
-  await page.goto('http://localhost:6006/editor-pool-check.html');
+  await page.goto(
+    `${process.env.BLOOM_STORYBOOK_URL || 'http://localhost:6006'}/editor-pool-check.html`,
+  );
   await cdp.send('Fetch.disable');
+  await page.evaluate(installAvatarPNGSnapshots);
   await page.evaluate(async () => {
     window.runtime = await import('/runtime/avatar-runtime.ts');
     const { resolveAvatarCharacter } = await import('/src/agent-avatar/character.ts');
     const { characterFromLegacy } = await import('/src/agent-avatar/legacy-character.ts');
     // These gates still write a character as `{ preset, selections }`; the renderer takes it resolved.
     const resolved = (nested) => resolveAvatarCharacter(characterFromLegacy({ character: nested }));
+    window.resolveTestCharacter = resolved;
     // Resolve the pool URL from the SAME transformed runtime module graph.
     const source = await (await fetch('/runtime/avatar-runtime.ts')).text();
     const match = source.match(/import\(["']([^"']*avatar-pool[^"']*)["']\)/);
@@ -68,7 +82,7 @@ try {
   await page.evaluate(async () => {
     const saved = window.fetch;
     window.fetch = (url, ...rest) =>
-      String(url).includes('furPile.bin')
+      String(url).includes('furLTC1.bin')
         ? Promise.resolve(new Response('injected', { status: 503 }))
         : saved(url, ...rest);
     const canvas = make();
@@ -134,21 +148,27 @@ try {
     { timeout: 90000 },
   );
   assert.equal(await page.evaluate(() => diag()[0].stats.contexts), 1);
+  report.presentations = await page.evaluate(() => diag().map((pool) => pool.presentation));
+  if (process.env.AVATAR_EXPECT_PRESENTER && process.env.AVATAR_EXPECT_PRESENTER !== 'pbo')
+    assert(
+      report.presentations.some((p) => p?.[`${process.env.AVATAR_EXPECT_PRESENTER}Frames`] > 0),
+      'Requested backend must actually submit frames',
+    );
   await page.evaluate(async () => {
     await Promise.all(controllers.map((c) => c.update({ ...props, paused: true }, recipe)));
   });
   await new Promise((r) => setTimeout(r, 300));
-  const paused = await page.evaluate(() => ({
+  const paused = await page.evaluate(async () => ({
     frames: diag()[0].stats.frames,
-    images: canvases.map((c) => c.toDataURL()),
+    images: await avatarPNGSnapshots(canvases),
   }));
   await new Promise((r) => setTimeout(r, 300));
-  const pausedAgain = await page.evaluate(() => ({
+  const pausedAgain = await page.evaluate(async () => ({
     frames: diag()[0].stats.frames,
-    images: canvases.map((c) => c.toDataURL()),
+    images: await avatarPNGSnapshots(canvases),
   }));
   assert.equal(pausedAgain.frames, paused.frames);
-  assert(paused.images.every((image, i) => image === pausedAgain.images[i]));
+  assert.deepEqual(pausedAgain.images, paused.images);
   report.cases.push('two-independent-paused-previews-are-quiescent');
   await page.evaluate(async () => {
     await Promise.all(controllers.map((c) => c.update(props, recipe)));
@@ -187,6 +207,13 @@ try {
     }),
   );
   report.cases.push('work-key-one-to-zero-restarts-once');
+  await page.waitForFunction(() => diag()[0].stats.states[0].motionTime > 0.25);
+  // Hold the exact clock while high-LOD shaders compile. A live one-cycle
+  // action may finish naturally before a software-GPU resize is observable.
+  await page.evaluate(async () => {
+    await controllers[0].update({ ...props, workingKey: 0, paused: true }, recipe);
+  });
+  const preResizeTime = await page.evaluate(() => diag()[0].stats.states[0].motionTime);
   await page.evaluate(() => {
     canvases[0].style.width = canvases[0].style.height = '320px';
   });
@@ -199,6 +226,14 @@ try {
   );
   assert.equal(await page.evaluate(() => diag()[0].avatars), 2);
   assert.equal(await page.evaluate(() => diag()[0].stats.states[0].motion), 'work');
+  assert.equal(
+    await page.evaluate(() => diag()[0].stats.states[0].motionTime),
+    preResizeTime,
+    'LOD promotion preserves the running action clock',
+  );
+  await page.evaluate(async () => {
+    await controllers[0].update({ ...props, workingKey: 0 }, recipe);
+  });
   report.cases.push('resize-promotes-resolution-and-lod-without-restarting-action');
   await page.evaluate(async () => {
     const c = make();
@@ -226,8 +261,12 @@ try {
   report.cases.push('simultaneous-work-before-reaction-including-zero-key');
 
   await page.evaluate(() => {
-    controllers.forEach((c) => c.dispose());
-    canvases.forEach((c) => c.remove());
+    controllers.forEach((c) => {
+      c.dispose();
+    });
+    canvases.forEach((c) => {
+      c.remove();
+    });
   });
   assert.deepEqual(await page.evaluate(() => diag()), []);
   report.cases.push('final-dispose-removes-all-contexts-and-stages');
@@ -238,7 +277,10 @@ try {
       {
         ...props,
         workingKey: 1,
-        character: resolved({ preset: 'blue_beret', selections: { accessory: 'crown' } }),
+        character: resolveTestCharacter({
+          preset: 'blue_beret',
+          selections: { accessory: 'crown' },
+        }),
       },
       {
         onError() {
@@ -258,11 +300,201 @@ try {
     catalogCanvas.remove();
   });
   assert.deepEqual(await page.evaluate(() => diag()), []);
+  // The rendered batch may compact slots, but retained canvases and their state
+  // keep their original identities. Exercise a live middle slot with gaps around it.
+  await page.evaluate(async () => {
+    window.retainedCanvases = [];
+    window.retainedControllers = [];
+    window.retainedRecipes = [];
+    await Promise.all(
+      Array.from({ length: 5 }, async (_, index) => {
+        const canvas = make();
+        retainedCanvases[index] = canvas;
+        retainedRecipes[index] = {
+          ...recipe,
+          color: ['#ff4444', '#44ff44', '#4444ff', '#ffaa44', '#aa44ff'][index],
+        };
+        retainedControllers[index] = await pool.attachEditorAvatar(
+          canvas,
+          props,
+          retainedRecipes[index],
+        );
+      }),
+    );
+  });
+  await page.waitForFunction(
+    () => diag()[0]?.stats.renderedInstances === 5 && diag()[0].stats.frames > 5,
+  );
+  const allLiveFrame = await page.evaluate(() => diag()[0].stats.frames);
+  await page.waitForFunction((frame) => diag()[0].stats.frames > frame + 1, {}, allLiveFrame);
+  const fullTriangles = await page.evaluate(() => diag()[0].stats.triangles);
+  report.retainedPresentations = await page.evaluate(() => diag().map((pool) => pool.presentation));
+  if (process.env.AVATAR_EXPECT_PRESENTER)
+    assert(
+      report.retainedPresentations.some(
+        (p) => p?.[`${process.env.AVATAR_EXPECT_PRESENTER}Frames`] > 0,
+      ),
+      'Five-avatar burst must actually submit through the requested backend',
+    );
+  await page.evaluate(async () => {
+    await Promise.all(
+      retainedControllers.map((controller, i) =>
+        controller.update({ ...props, paused: i !== 2 }, retainedRecipes[i]),
+      ),
+    );
+  });
+  await page.waitForFunction(
+    (full) => diag()[0].stats.renderedInstances === 1 && diag()[0].stats.triangles < full / 2,
+    { timeout: 10000 },
+    fullTriangles,
+  );
+  assert(
+    (await page.evaluate(() => diag()[0].stats.triangles)) < fullTriangles / 2,
+    'Retained slots remove actual geometry submissions',
+  );
+  const retainedPictures = await page.evaluate(() => avatarPNGSnapshots(retainedCanvases));
+  await new Promise((r) => setTimeout(r, 500));
+  const laterPictures = await page.evaluate(() => avatarPNGSnapshots(retainedCanvases));
+  for (const i of [0, 1, 3, 4])
+    assert.deepEqual(
+      laterPictures[i],
+      retainedPictures[i],
+      `Retained slot ${i} stays pixel-identical`,
+    );
+  report.cases.push('middle-live-slot-compacts-gpu-work-and-preserves-retained-pixels');
+  await page.evaluate(async () => {
+    retainedRecipes[4] = { ...retainedRecipes[4], color: '#ff0000' };
+    await retainedControllers[4].update({ ...props, paused: true }, retainedRecipes[4]);
+  });
+  await page.waitForFunction(
+    async (previous) =>
+      (await avatarPNGSnapshot(retainedCanvases[4])).sha256 !== previous.sha256 &&
+      diag()[0].stats.renderedInstances === 1,
+    {},
+    retainedPictures[4],
+  );
+  const recolored = await page.evaluate(() => avatarPNGSnapshots(retainedCanvases));
+  for (const i of [0, 1, 3])
+    assert.deepEqual(
+      recolored[i],
+      retainedPictures[i],
+      `Repaint does not replace retained neighbor ${i}`,
+    );
+  await page.evaluate(() =>
+    retainedControllers[2].update({ ...props, paused: true }, retainedRecipes[2]),
+  );
+  await page.waitForFunction(() => diag()[0].stats.renderedInstances === 0);
+  const heldFrames = await page.evaluate(() => diag()[0].stats.frames);
+  await new Promise((r) => setTimeout(r, 300));
+  assert.equal(await page.evaluate(() => diag()[0].stats.frames), heldFrames);
+  await page.evaluate(async () => {
+    retainedRecipes[4] = { ...retainedRecipes[4], color: '#00ff00' };
+    await retainedControllers[4].update({ ...props, paused: true }, retainedRecipes[4]);
+  });
+  await page.waitForFunction(
+    async (previous) =>
+      (await avatarPNGSnapshot(retainedCanvases[4])).sha256 !== previous.sha256 &&
+      diag()[0].stats.renderedInstances === 0,
+    {},
+    recolored[4],
+  );
+  const repaintFrames = await page.evaluate(() => diag()[0].stats.frames);
+  await new Promise((r) => setTimeout(r, 300));
+  assert.equal(
+    await page.evaluate(() => diag()[0].stats.frames),
+    repaintFrames,
+    'Paused recolor returns to quiescence',
+  );
+  report.cases.push('paused-recolor-repaints-correct-slot-once-and-returns-to-quiescence');
+  await page.evaluate(() => retainedControllers[2].update(props, retainedRecipes[2]));
+  await page.waitForFunction(
+    (previous) => diag()[0].stats.renderedInstances === 1 && diag()[0].stats.frames > previous,
+    {},
+    repaintFrames,
+  );
+  await page.evaluate(() => {
+    retainedCanvases[2].style.position = 'fixed';
+    retainedCanvases[2].style.top = '20000px';
+  });
+  await page.waitForFunction(() => diag()[0].stats.renderedInstances === 0);
+  const hiddenFrames = await page.evaluate(() => diag()[0].stats.frames);
+  await new Promise((r) => setTimeout(r, 300));
+  assert.equal(
+    await page.evaluate(() => diag()[0].stats.frames),
+    hiddenFrames,
+    'Offscreen slots remove the final active draw',
+  );
+  await page.evaluate(() => {
+    retainedCanvases[2].style.position = '';
+    retainedCanvases[2].style.top = '';
+  });
+  await page.waitForFunction(
+    (previous) => diag()[0].stats.renderedInstances === 1 && diag()[0].stats.frames > previous,
+    {},
+    hiddenFrames,
+  );
+  report.cases.push('resume-and-offscreen-return-restore-the-original-slot');
+  const hadWebGPUTarget = await page.evaluate(() => diag()[0]?.presentation?.webgpuTargets > 0);
+  const retainedBeforeDispose = hadWebGPUTarget
+    ? await page.evaluate(() => avatarPNGSnapshot(retainedCanvases[4]))
+    : undefined;
+  await page.evaluate((keepGPUCanvas) => {
+    retainedControllers.forEach((c) => {
+      c.dispose();
+    });
+    retainedCanvases.forEach((c, index) => {
+      if (!keepGPUCanvas || index !== 4) c.remove();
+    });
+  }, hadWebGPUTarget);
+  if (hadWebGPUTarget) {
+    assert.deepEqual(await page.evaluate(() => diag()), []);
+    assert.deepEqual(
+      await page.evaluate(() => avatarPNGSnapshot(retainedCanvases[4])),
+      retainedBeforeDispose,
+      'Disposing the final GPU slot retains its actual destination PNG',
+    );
+    const duringReattach = await page.evaluate(async () => {
+      window.reattachReady = 0;
+      const attachment = pool.attachEditorAvatar(
+        retainedCanvases[4],
+        props,
+        { ...recipe, color: '#ff11dd' },
+        () => {
+          reattachReady++;
+        },
+      );
+      const during = avatarPNGSnapshot(retainedCanvases[4]);
+      window.reattached = await attachment;
+      return await during;
+    });
+    assert.deepEqual(
+      duringReattach,
+      retainedBeforeDispose,
+      'Same-canvas singleton keeps old PNG while loading',
+    );
+    await page.waitForFunction(
+      async (previous) =>
+        reattachReady === 1 &&
+        diag()[0]?.presentation?.webgpuTargets === 1 &&
+        diag()[0].presentation.webgpuFrames > 0 &&
+        (await avatarPNGSnapshot(retainedCanvases[4])).sha256 !== previous.sha256,
+      { timeout: 90000 },
+      retainedBeforeDispose,
+    );
+    report.cases.push('retained-webgpu-canvas-reattaches-as-a-singleton-with-fresh-pixels');
+    await page.evaluate(() => {
+      reattached.dispose();
+      retainedCanvases[4].remove();
+    });
+  }
+  assert.deepEqual(await page.evaluate(() => diag()), []);
   assert.equal(await page.$$eval('[data-avatar-renderer]', (x) => x.length), 0);
   assert.deepEqual(report.errors, []);
   console.log(JSON.stringify(report));
 } finally {
   await mkdir('.local/avatar-editor-pool', { recursive: true });
-  await writeFile('.local/avatar-editor-pool/report.json', JSON.stringify(report, null, 2) + '\n');
-  await browser.close();
+  await writeFile('.local/avatar-editor-pool/report.json', `${JSON.stringify(report, null, 2)}\n`);
+  for (const page of ownedPages) if (!page.isClosed()) await page.close();
+  if (connected) await browser.disconnect();
+  else await browser.close();
 }

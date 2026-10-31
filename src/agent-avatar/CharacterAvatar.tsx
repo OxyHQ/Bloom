@@ -13,6 +13,9 @@ import { characterHtml, scriptJson } from './character-html';
 import { loadCharacterRuntime } from './character-runtime-module';
 import { characterWebView, type CharacterWebViewHandle } from './character-webview';
 import { type ResolvedAvatarCharacter, resolveAvatarCharacter } from './character';
+import { NativePortrait } from './NativePortrait';
+import type { NativeAvatarAdapterProps } from './native-avatar-adapter';
+import { useNativeAvatarCompatibility } from './use-avatar-renderer-capabilities';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 
@@ -146,13 +149,18 @@ function NativeCharacter({
   const observeSnapshot = useContext(AvatarSnapshotObserver);
   const WebView = characterWebView();
   const ref = useRef<CharacterWebViewHandle>(null);
+  const [generation, setGeneration] = useState(0);
+  const recovery = useRef({ runtimeUrl, used: false });
+  const recoveryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(recoveryTimer.current), [runtimeUrl]);
+  if (recovery.current.runtimeUrl !== runtimeUrl) recovery.current = { runtimeUrl, used: false };
   const captures = useRef(new Map<number, (snapshot: AvatarSnapshot | null) => void>());
   const nextCapture = useRef(0);
   useEffect(() => {
     observeSnapshot?.(
       () =>
         new Promise((resolve) => {
-          if (!ref.current) {
+          if (!ref.current || !activeSource.current) {
             resolve(null);
             return;
           }
@@ -180,29 +188,56 @@ function NativeCharacter({
     };
   }, [observeSnapshot, runtimeUrl]);
   const initial = useRef(value);
+  initial.current = value;
   const source = useMemo(
     () => ({
       html: characterHtml(runtimeUrl, initial.current),
       baseUrl: runtimeUrl,
     }),
-    [runtimeUrl],
+    [runtimeUrl, generation],
   );
+  const activeSource = useRef<typeof source | null>(source);
+  activeSource.current = source;
+  const readySource = useRef<typeof source | null>(null);
+  const processTerminated = () => {
+    if (activeSource.current !== source) return;
+    activeSource.current = null;
+    clearTimeout(recoveryTimer.current);
+    recoveryTimer.current = undefined;
+    for (const finish of captures.current.values()) finish(null);
+    captures.current.clear();
+    if (recovery.current.used) {
+      onError();
+      return;
+    }
+    recovery.current.used = true;
+    setGeneration((current) => current + 1);
+  };
   useEffect(() => {
     if (!WebView) onError();
   }, [WebView, onError]);
   const send = () =>
-    ref.current?.injectJavaScript(`window.updateCharacter?.(${scriptJson(value)}); true;`);
+    ref.current?.injectJavaScript(
+      `window.updateCharacter?.(${scriptJson(initial.current)}); true;`,
+    );
   useEffect(send, [value]);
   if (!WebView) return null;
   return (
     <WebView
+      key={`${runtimeUrl}:${generation}`}
       ref={ref}
       source={source}
       style={{ flex: 1, backgroundColor: 'transparent' }}
       scrollEnabled={false}
       javaScriptEnabled
       originWhitelist={['*']}
+      onError={() => {
+        if (activeSource.current === source) onError();
+      }}
+      onRenderProcessGone={processTerminated}
+      onContentProcessDidTerminate={processTerminated}
       onMessage={(event) => {
+        if (activeSource.current !== source) return;
         if (event.nativeEvent.data.startsWith('snapshot:')) {
           try {
             const { id, uri } = JSON.parse(event.nativeEvent.data.slice(9));
@@ -219,17 +254,46 @@ function NativeCharacter({
           } catch {
             onError();
           }
-        } else if (event.nativeEvent.data === 'ready') onReady?.();
-        else if (event.nativeEvent.data === 'error') onError();
+        } else if (event.nativeEvent.data === 'ready') {
+          if (readySource.current === source) return;
+          readySource.current = source;
+          onReady?.();
+          if (recovery.current.used) {
+            clearTimeout(recoveryTimer.current);
+            recoveryTimer.current = setTimeout(() => {
+              if (activeSource.current === source) recovery.current.used = false;
+              recoveryTimer.current = undefined;
+            }, 30_000);
+          }
+        } else if (event.nativeEvent.data === 'error') onError();
         else if (event.nativeEvent.data === 'loaded') send();
       }}
     />
   );
 }
 
+function NativeCharacterRouter(
+  props: Omit<NativeAvatarAdapterProps, 'onCapabilities' | 'observeSnapshot'>,
+) {
+  const { adapter, compatible } = useNativeAvatarCompatibility(props.runtimeUrl);
+  const { reportCapabilities } = useContext(CharacterRuntimeContext);
+  const observeSnapshot = useContext(AvatarSnapshotObserver);
+  if (!adapter) return <NativeCharacter {...props} />;
+  if (compatible === undefined) return null;
+  if (!compatible) return <NativeCharacter {...props} />;
+  const Renderer = adapter.NativeAvatar;
+  return (
+    <Renderer
+      {...props}
+      onCapabilities={reportCapabilities}
+      observeSnapshot={observeSnapshot ?? undefined}
+    />
+  );
+}
+
 /** Single character renderer. Web defaults to the hosted module; native uses its configured URL. */
 export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes' }) {
-  const { runtimeUrl } = useContext(CharacterRuntimeContext);
+  const { runtimeUrl, stills } = useContext(CharacterRuntimeContext);
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
   const initialReduced = useReducedMotion();
   const [reduced, setReduced] = useState(initialReduced);
@@ -292,7 +356,8 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
     ],
   );
   const fail = useMemo(() => () => setFailed(true), []);
-  const Renderer = Platform.OS === 'web' ? WebCharacter : NativeCharacter;
+  const cachedPortrait = Platform.OS !== 'web' && !!portrait && !interactive && !!stills;
+  const Renderer = Platform.OS === 'web' ? WebCharacter : NativeCharacterRouter;
   return (
     <StyledView
       className={props.className}
@@ -303,7 +368,18 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
       testID={props.testID}
     >
       {runtimeUrl && !failed ? (
-        <Renderer runtimeUrl={runtimeUrl} value={value} onError={fail} onReady={props.onReady} />
+        cachedPortrait ? (
+          <NativePortrait
+            key={runtimeUrl}
+            character={resolved}
+            size={size}
+            previewPart={props.previewPart}
+            onReady={props.onReady}
+            onError={fail}
+          />
+        ) : (
+          <Renderer runtimeUrl={runtimeUrl} value={value} onError={fail} onReady={props.onReady} />
+        )
       ) : (
         <StyledText numberOfLines={2} style={{ fontSize: 10 }}>
           {!runtimeUrl ? messages.runtimeRequired : messages.unavailable}

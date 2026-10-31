@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { decodeIndexBuffer } from './index-buffer';
 
 export const AVATAR_PRESETS = [
   'blue_beret',
@@ -124,7 +125,6 @@ export function decodeAuthoredAsset(
   binary: ArrayBuffer,
   activity = false,
   excludeIds?: ReadonlySet<number>,
-  furPartIds?: ReadonlySet<number>,
 ): AuthoredAsset {
   if (
     manifest.buffer.byteLength !== binary.byteLength ||
@@ -158,15 +158,7 @@ export function decodeAuthoredAsset(
       'skinWeights',
       new THREE.Float32BufferAttribute(new Float32Array(record.vertices.count * 4), 4),
     );
-    geometry.setIndex(
-      record.indices.flatMap((range) =>
-        Array.from(
-          range.componentType === 'uint16'
-            ? new Uint16Array(binary, range.byteOffset, range.count)
-            : new Uint32Array(binary, range.byteOffset, range.count),
-        ),
-      ),
-    );
+    geometry.setIndex(new THREE.BufferAttribute(decodeIndexBuffer(binary, record.indices), 1));
     parts.push({
       geometry,
       id: record.id,
@@ -192,49 +184,7 @@ export function decodeAuthoredAsset(
       renderOrder: description.renderOrder,
     });
   }
-  for (const record of manifest.parts) {
-    if (activity) continue;
-    if (!record.fur || (furPartIds && !furPartIds.has(record.id))) continue;
-    const original = parts.find((part) => part.id === record.id);
-    if (!original) continue;
-    const fur = record.fur,
-      source = new Float32Array(binary, fur.byteOffset, fur.byteLength / 4);
-    const geometry = new THREE.InstancedBufferGeometry();
-    const expanded = new Float32Array(fur.count * 6 * 16),
-      strand = new Float32Array(fur.count * 6),
-      indices = new Uint32Array(fur.count * 12);
-    for (let i = 0; i < fur.count; i++) {
-      for (let v = 0; v < 6; v++) {
-        expanded.set(source.subarray(i * 16, i * 16 + 16), (i * 6 + v) * 16);
-        strand[i * 6 + v] = i;
-      }
-      indices.set(
-        [0, 1, 2, 2, 1, 3, 2, 3, 4, 4, 3, 5].map((v) => i * 6 + v),
-        i * 12,
-      );
-    }
-    const data = new THREE.InterleavedBuffer(expanded, 16);
-    for (const [name, offset, size] of [
-      ['position', 0, 3],
-      ['normal', 3, 3],
-      ['normal0', 6, 3],
-      ['delta1', 9, 3],
-      ['paletteGeometry', 12, 4],
-    ] as const)
-      geometry.setAttribute(name, new THREE.InterleavedBufferAttribute(data, size, offset));
-    geometry.setAttribute('strandIndex', new THREE.BufferAttribute(strand, 1));
-    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-    parts.push({
-      ...original,
-      geometry,
-      fur: true,
-      kind: 2,
-      // The coat has its own render pass; surface depth/blend flags do not apply.
-      transparent: true,
-      depthWrite: false,
-      depthTest: true,
-      doubleSided: true,
-    });
-  }
+  // The live renderer uses solid surfaces. Strand records remain in authored
+  // source archives for historical inspection, but never allocate CPU/GPU ribbons.
   return { preset, material, parts };
 }

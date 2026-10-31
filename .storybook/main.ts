@@ -4,6 +4,8 @@ import type { StorybookConfig } from '@storybook/react-vite';
 import type { PluginBuild } from 'esbuild';
 import tailwindcss from '@tailwindcss/vite';
 import { mergeConfig, type ViteDevServer } from 'vite';
+import { avatarMotionTransport } from '../scripts/avatar-motion-transport.mjs';
+import { avatarSurfaceTransport } from '../scripts/avatar-surface-transport.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,6 +77,8 @@ const config: StorybookConfig = {
   async viteFinal(viteConfig) {
     return mergeConfig(viteConfig, {
       plugins: [
+        avatarSurfaceTransport(),
+        avatarMotionTransport(),
         tailwindcss(),
         {
           name: 'bloom-character-runtime-reload',
