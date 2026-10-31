@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.82.1
+
+### Fixed
+
+- Native display text now draws BlomusModernus' Bold cut wherever the web does. Semibold and bold title, large-title and display variants, `H1`–`H6`, the default `Title`, and className- or style-weighted display text (`font-semibold`, `font-bold`, an inline `fontWeight`) previously drew a synthesized bold of the Regular file on Android, and the Bold file was never used. The cut follows CSS font matching for faces at 400 and 700: weights above 500 draw Bold, 500 and below draw Regular. The web is unchanged.
+- Disabled surface buttons on the web now paint the disabled material fill as their body, as native always has. The body is the material's `::before` layer, which kept the rest fill (a disabled solid button stayed accent-coloured). Loading buttons keep their rest paint.
+
+### Consumers
+
+No API changes. Native apps must keep `BloomProvider`'s font loading (or register both `BlomusModernus` and `BlomusModernus-Bold` themselves).
+
 ## 15.82.0
 
 ### Added

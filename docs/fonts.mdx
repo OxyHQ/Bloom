@@ -98,12 +98,20 @@ BlomusModernus is the default for big titles, not an opt-in: a screen that asks 
 
 | You write | It is set in |
 | --- | --- |
-| `<H1>` … `<H4>` | BlomusModernus |
-| `<Text variant="large-title-*">`, `display-1-*` … `display-4-*` (32px and up) | BlomusModernus |
+| `<H1>` … `<H6>`, `<Title>`, `<Subtitle>` | BlomusModernus |
+| `<Text variant="large-title-*">`, `display-1-*` … `display-4-*`, `title-1-*` … `title-3-*` | BlomusModernus |
 | `<Text className="text-3xl">` … `text-9xl`, at any breakpoint or state (`md:text-5xl`), or `font-display` | BlomusModernus |
-| every other `Text` (`title-*`, `headline`, `body`, `caption`, `text-2xl` and below) | Inter |
+| every other `Text` (`headline`, `body`, `caption`, `text-2xl` and below) | Inter |
 
-The face is the caller's only through those; an inline `fontFamily` still wins. BlomusModernus ships two cuts (400, 700), so the medium and semibold weights of a display variant draw the nearest cut.
+The face is the caller's only through those; an inline `fontFamily` still wins.
+
+### Which cut draws
+
+BlomusModernus ships two cuts, Regular (400) and Bold (700), and both platforms draw the one CSS font matching picks: a weight above 500 draws Bold, 500 and below draw Regular. So `*-semibold` and `*-bold` titles, `H1`–`H6` (600 and 800) and the default `Title` draw the Bold cut; `*-regular` and `*-medium` draw Regular.
+
+- **Web** declares one `BlomusModernus` family with a 400 and a 700 `@font-face`, and the browser matches the resolved `font-weight`.
+- **Native** has no matching for fonts loaded from files: each cut is its own registered family (`BlomusModernus`, `BlomusModernus-Bold`), and naming the Regular family at 600+ draws a synthesized bold of the Regular outlines. Bloom's `Text` names the cut itself (`fonts/display-face.ts`), reading the style the text node is finally given — after `react-native-css` has resolved the className — so a variant's weight, a heading's, `font-semibold`/`font-bold` at any breakpoint or state, and an inline `fontWeight` all count, in cascade order. The caller's weight is kept, except at 900 (`font-black`), where the Bold cut is requested at 700: Android synthesizes bold when the request exceeds the face by 200 or more, Chromium only beyond 200, so 900 on the 700 face would otherwise thicken on Android alone.
+- A text that names the family itself (`style={{ fontFamily: 'BlomusModernus' }}`) is matched the same way; one that names `BlomusModernus-Bold` is left as written.
 
 ## Four ways in, one surface
 

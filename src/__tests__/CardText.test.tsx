@@ -25,7 +25,8 @@ describe('CardTitle and CardDescription className', () => {
 
     const display = renderInCard(<CardTitle className="font-display">Display</CardTitle>);
     const displayStyle = styleOf(display, 'Display');
-    expect(displayStyle.fontFamily).toBe('BlomusModernus');
+    // A card title is 600, which draws BlomusModernus' Bold cut, as the web's font matching does.
+    expect(displayStyle.fontFamily).toBe('BlomusModernus-Bold');
     expect(displayStyle.color).toBe(plainStyle.color);
     expect(displayStyle.fontSize).toBe(17);
   });

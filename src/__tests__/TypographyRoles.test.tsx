@@ -39,10 +39,14 @@ it('uses the display family for all semantic title variants while body and contr
     </BloomThemeProvider>,
   );
   const family = (id: string) => StyleSheet.flatten(screen.getByTestId(id).props.style).fontFamily;
-  const display = family('reference');
+  // The display face is one family in two cuts (`fonts/display-face.ts`): native
+  // names the cut by weight, so compare the face, not the cut.
+  const face = (id: string) => String(family(id)).replace(/-Bold$/, '');
+  const display = face('reference');
+  expect(display).toBe('BlomusModernus');
   for (const id of [...variants, 'title', 'subtitle', 'accessible-heading'])
-    expect(family(id)).toBe(display);
-  expect(family('body')).not.toBe(display);
+    expect(face(id)).toBe(display);
+  expect(face('body')).not.toBe(display);
   expect(family('headline')).toBe(family('body'));
   expect(StyleSheet.flatten(screen.getByText('Continue').props.style).fontFamily).toBe(
     family('body'),
