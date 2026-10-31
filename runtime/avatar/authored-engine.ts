@@ -229,6 +229,8 @@ export class AuthoredAvatarEngine {
   });
   private raf = 0;
   private urgentFrame = true;
+  private presentationCapacity = true;
+  private presentationQueued = false;
   private maxFrameRate = 60;
   private disposed = false;
   private count = 1;
@@ -1290,8 +1292,29 @@ export class AuthoredAvatarEngine {
     );
     this.invalidate();
   }
+  /** A presenter may hold a bounded number of submitted frames. Coalesce new
+   * render requests until capacity returns, retaining the newest state and
+   * urgency without changing animation clocks or the configured frame rate. */
+  setPresentationCapacity(available: boolean) {
+    if (this.disposed || this.presentationCapacity === available) return;
+    this.presentationCapacity = available;
+    if (!available) {
+      if (this.raf) {
+        this.cancelFrame();
+        this.raf = 0;
+        this.presentationQueued = true;
+      }
+    } else if (this.presentationQueued) {
+      this.presentationQueued = false;
+      this.invalidate(false);
+    }
+  }
   private invalidate(urgent = true) {
     this.urgentFrame ||= urgent;
+    if (!this.presentationCapacity) {
+      this.presentationQueued = true;
+      return;
+    }
     if (!this.raf && !this.disposed && !this.hidden() && this.inViewport && !this.contextLost)
       this.raf = this.host ? this.host.requestFrame(this.tick) : requestAnimationFrame(this.tick);
   }
@@ -1343,6 +1366,10 @@ export class AuthoredAvatarEngine {
   }
   private tick = (timestamp: number) => {
     this.raf = 0;
+    if (!this.presentationCapacity) {
+      this.presentationQueued = true;
+      return;
+    }
     if (this.fitReads.length || this.renderFailure) return;
     if (this.disposed || !this.ready || this.hidden() || !this.inViewport || this.contextLost)
       return;
@@ -2015,6 +2042,8 @@ export class AuthoredAvatarEngine {
       activeAtlasScissor: true,
       asyncFitReadback: !this.host,
       pendingFitReads: this.fitReads.length,
+      presentationCapacity: this.presentationCapacity,
+      presentationQueued: this.presentationQueued,
       renderFailure: this.renderFailure?.message ?? null,
       renderedPixels: this.renderBounds.z * this.renderBounds.w,
       atlasPixels: this.colorTarget.width * this.colorTarget.height,
