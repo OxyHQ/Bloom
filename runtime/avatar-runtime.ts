@@ -38,8 +38,8 @@ export async function createAvatar(
     while (!disposed && applied !== latest) {
       const props = latest;
       const next = resolveCompleteEditorRecipe(props);
-      await current.update(props, next);
-      if (!disposed) callbacks.onCapabilities?.(next.capabilities);
+      await current.update(props, next, () => !disposed && latest === props);
+      if (!disposed && latest === props) callbacks.onCapabilities?.(next.capabilities);
       applied = props;
     }
   };
@@ -47,6 +47,8 @@ export async function createAvatar(
     update(props) {
       if (disposed) return;
       latest = props;
+      // Presentation constraints must not queue behind an optional action fetch.
+      current.setPresentation(props);
       if (!running)
         running = reconcile()
           .catch(() => {

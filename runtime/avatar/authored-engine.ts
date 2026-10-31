@@ -64,11 +64,13 @@ export type ResolvedAvatarAsset = {
   eyeProfiles?: Record<number, EyeGazeProfile>;
 };
 type LoadedAsset = {
+  activities: boolean;
   source: AuthoredAsset;
   parts: RenderPart[];
   samplers: MotionSamplers | null;
 };
 type InstanceState = {
+  rendering?: boolean;
   matrix: THREE.Matrix4;
   normalMatrix: THREE.Matrix4;
   motion?: MotionState;
@@ -104,6 +106,7 @@ type AvatarBatch = {
   part: RenderPart;
   slots: number[];
   visible: boolean;
+  renderedSlots?: number[];
 };
 export class AuthoredAvatarEngine {
   private renderer: THREE.WebGLRenderer;
@@ -112,9 +115,15 @@ export class AuthoredAvatarEngine {
   private batches: AvatarBatch[] = [];
   private assets = new Map<string, LoadedAsset>();
   private pendingAssets = new Map<string, Promise<LoadedAsset>>();
+  private retiredAssets: LoadedAsset[] = [];
   private assetClaims = new Map<string, number>();
   private defaultPreset: string;
-  private resolveAsset?: (key: string, detail: 'low' | 'high') => Promise<ResolvedAvatarAsset>;
+  private resolveAsset?: (
+    key: string,
+    detail: 'low' | 'high',
+    activities?: boolean,
+  ) => Promise<ResolvedAvatarAsset>;
+  private lazyWork: boolean;
   private allowPoseOverrides: boolean;
   private assetLoader: typeof loadAuthoredAsset;
   private detail: 'low' | 'high';
@@ -146,6 +155,8 @@ export class AuthoredAvatarEngine {
   private colorTarget = new THREE.WebGLRenderTarget(1, 1, {
     depthBuffer: true,
     samples: 4,
+    resolveDepthBuffer: false,
+    storeMultisampledDepthBuffer: false,
   });
   private presentScene = new THREE.Scene();
   private presentGeometry = new THREE.PlaneGeometry(2, 2);
@@ -252,15 +263,20 @@ export class AuthoredAvatarEngine {
       maxFrameRate?: number;
       poseOverrides?: boolean;
       assetLoader?: typeof loadAuthoredAsset;
+      lazyWork?: boolean;
       onFrame?: () => void;
-      resolveAsset?: (key: string, detail: 'low' | 'high') => Promise<ResolvedAvatarAsset>;
+      resolveAsset?: (
+        key: string,
+        detail: 'low' | 'high',
+        activities?: boolean,
+      ) => Promise<ResolvedAvatarAsset>;
     } = {},
   ) {
     this.allowPoseOverrides = options.poseOverrides ?? false;
     this.onFrame = options.onFrame;
     this.resolveAsset = options.resolveAsset;
-    this.assetLoader =
-      options.assetLoader ?? ((preset, detail) => loadAuthoredAsset(preset, detail, true));
+    this.lazyWork = options.lazyWork ?? false;
+    this.assetLoader = options.assetLoader ?? loadAuthoredAsset;
     this.maxFrameRate = this.validFrameRate(options.maxFrameRate ?? 60);
     this.defaultPreset = options.preset ?? 'blue_beret';
     this.count = this.validCount(options.count ?? 1);
@@ -270,7 +286,9 @@ export class AuthoredAvatarEngine {
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
-      antialias: true,
+      // Geometry is antialiased in colorTarget. The final pass is an aligned
+      // fullscreen image; a second multisampled framebuffer adds no edge detail.
+      antialias: false,
     });
     this.disabledShadow.compareFunction = THREE.LessEqualCompare;
     this.disabledShadow.needsUpdate = true;
@@ -320,18 +338,24 @@ export class AuthoredAvatarEngine {
   private asset(preset: string) {
     return this.assets.get(`${preset}:${this.detail}`);
   }
-  private ensureAsset(preset: string, detail = this.detail): Promise<LoadedAsset> {
+  private ensureAsset(
+    preset: string,
+    detail = this.detail,
+    activities = !this.lazyWork ||
+      this.states.some((state) => state.preset === preset && state.motion?.kind === 'work'),
+  ): Promise<LoadedAsset> {
     const key = `${preset}:${detail}`;
+    const pendingKey = `${key}:${activities ? 'work' : 'base'}`;
     if (!AVATAR_PRESETS.includes(preset as AvatarPreset) && !this.resolveAsset)
       return Promise.reject(Error(`Unsupported avatar: ${preset}`));
     const existing = this.assets.get(key);
-    if (existing) return Promise.resolve(existing);
-    const pending = this.pendingAssets.get(key);
+    if (existing && (!activities || existing.activities)) return Promise.resolve(existing);
+    const pending = this.pendingAssets.get(pendingKey);
     if (pending) return pending;
     const resolved = AVATAR_PRESETS.includes(preset as AvatarPreset)
       ? Promise.all([
-          this.assetLoader(preset as AvatarPreset, detail),
-          loadAuthoredMotion(preset as AvatarPreset),
+          this.assetLoader(preset as AvatarPreset, detail, activities),
+          loadAuthoredMotion(preset as AvatarPreset, activities),
         ]).then(([source, samplers]) => {
           prepareCanonicalTuft(source.parts);
           return {
@@ -340,7 +364,7 @@ export class AuthoredAvatarEngine {
             eyeProfiles: undefined as Record<number, EyeGazeProfile> | undefined,
           };
         })
-      : this.resolveAsset!(preset, detail);
+      : this.resolveAsset!(preset, detail, activities);
     const promise = resolved
       .then(({ source, samplers, eyeProfiles: customEyes }) => {
         if (this.disposed) {
@@ -420,14 +444,21 @@ export class AuthoredAvatarEngine {
               : null,
           };
         });
-        const asset = { source, parts, samplers };
+        const asset = { source, parts, samplers, activities };
+        const previous = this.assets.get(key);
+        // A concurrent base request must never downgrade a completed activity rig.
+        if (previous?.activities && !activities) {
+          this.disposeAsset(asset);
+          return previous;
+        }
+        if (previous) this.retiredAssets.push(previous);
         this.assets.set(key, asset);
         if (detail === 'high' && AVATAR_PRESETS.includes(preset as AvatarPreset))
           this.cropCache.set(`${preset}:high:320`, source.material.crop);
         return asset;
       })
-      .finally(() => this.pendingAssets.delete(key));
-    this.pendingAssets.set(key, promise);
+      .finally(() => this.pendingAssets.delete(pendingKey));
+    this.pendingAssets.set(pendingKey, promise);
     return promise;
   }
   private material(part: AuthoredPart, frameValues: Vectors) {
@@ -478,6 +509,7 @@ export class AuthoredAvatarEngine {
   setCount(value: number) {
     if (this.disposed) return;
     const nextCount = this.validCount(value);
+    if (this.ready && this.count === nextCount && this.states.length === nextCount) return;
     if (this.pointerIndex !== null && this.pointerIndex >= nextCount) this.endPointer();
     if (this.hoverIndex !== null && this.hoverIndex >= nextCount) this.selectHover(null);
     this.count = nextCount;
@@ -511,24 +543,30 @@ export class AuthoredAvatarEngine {
       ...this.assetClaims.keys(),
     ]);
     const unused = [...this.assets].filter(
-      ([key]) => !active.has(key.slice(0, key.lastIndexOf(':'))) && !this.pendingAssets.has(key),
+      ([key]) =>
+        !active.has(key.slice(0, key.lastIndexOf(':'))) &&
+        !this.pendingAssets.has(`${key}:base`) &&
+        !this.pendingAssets.has(`${key}:work`),
     );
     for (const [key, asset] of unused.slice(0, Math.max(0, unused.length - 4))) {
       this.assets.delete(key);
-      for (const part of asset.parts) {
-        part.motionTexture?.dispose();
-        part.source.geometry.dispose();
-        part.material.dispose();
-        part.depth?.dispose();
-        this.geometries = this.geometries.filter((g) => g !== part.source.geometry);
-        this.materials = this.materials.filter((m) => m !== part.material);
-        if (part.depth) this.depthMaterials = this.depthMaterials.filter((m) => m !== part.depth);
-      }
+      this.disposeAsset(asset);
       for (const fit of this.cropCache.keys())
         if (fit.startsWith(key + ':')) this.cropCache.delete(fit);
     }
   }
-  private async ensureCurrentDetail(presets: readonly string[]) {
+  private disposeAsset(asset: LoadedAsset) {
+    for (const part of asset.parts) {
+      part.motionTexture?.dispose();
+      part.source.geometry.dispose();
+      part.material.dispose();
+      part.depth?.dispose();
+      this.geometries = this.geometries.filter((g) => g !== part.source.geometry);
+      this.materials = this.materials.filter((m) => m !== part.material);
+      if (part.depth) this.depthMaterials = this.depthMaterials.filter((m) => m !== part.depth);
+    }
+  }
+  private async ensureCurrentDetail(presets: readonly string[], activities?: boolean) {
     for (const preset of presets)
       this.assetClaims.set(preset, (this.assetClaims.get(preset) ?? 0) + 1);
     const release = () => {
@@ -543,7 +581,7 @@ export class AuthoredAvatarEngine {
       let detail: typeof this.detail;
       do {
         detail = this.detail;
-        await Promise.all(presets.map((preset) => this.ensureAsset(preset, detail)));
+        await Promise.all(presets.map((preset) => this.ensureAsset(preset, detail, activities)));
       } while (!this.disposed && detail !== this.detail);
       return release;
     } catch (error) {
@@ -556,6 +594,7 @@ export class AuthoredAvatarEngine {
     const state = this.states[index];
     if (!state || this.disposed) return;
     const revision = ++state.revision;
+    if (state.preset === preset && this.asset(preset)) return;
     const release = await this.ensureCurrentDetail([preset]);
     try {
       if (this.disposed || this.states[index] !== state || revision !== state.revision) return;
@@ -616,6 +655,8 @@ export class AuthoredAvatarEngine {
       mesh.dispose();
     }
     this.batches = [];
+    for (const asset of this.retiredAssets) this.disposeAsset(asset);
+    this.retiredAssets = [];
     const groups = new Map<string, number[]>();
     this.states.forEach((state, i) => {
       const slots = groups.get(state.preset) ?? [];
@@ -790,6 +831,31 @@ export class AuthoredAvatarEngine {
       !!asset?.samplers?.work && asset.parts.some((part) => part.source.activity === 'computer')
     );
   }
+  /** Prepare optional activity resources while the avatar keeps displaying its
+   * current animation. Starting Work remains an explicit presentation event. */
+  async prepareWork(index: number) {
+    await this.loaded;
+    const state = this.states[index];
+    if (!state || this.disposed) return false;
+    const preset = state.preset,
+      revision = state.revision;
+    if (this.asset(preset)?.activities) return this.canWork(index);
+    const release = await this.ensureCurrentDetail([preset], true);
+    try {
+      if (this.disposed) return false;
+      // Replacement assets can be shared with neighbours. Rebind their batches
+      // even if the initiating instance was changed/disposed during the fetch.
+      this.rebuildBatches();
+      return (
+        this.states[index] === state &&
+        state.preset === preset &&
+        state.revision === revision &&
+        this.canWork(index)
+      );
+    } finally {
+      release();
+    }
+  }
   work(index: number, continuous = false, cycles = 1) {
     const state = this.states[index];
     if (
@@ -927,6 +993,19 @@ export class AuthoredAvatarEngine {
     }
     this.invalidate();
   }
+  /** A pooled output canvas retains its own painted pixels. Exclude an
+   * offscreen or already-painted still from GPU batches without deleting its
+   * independent pose, action clock, input state or position in the atlas. */
+  setInstanceRendering(index: number, rendering: boolean) {
+    const state = this.states[index];
+    if (!state || state.rendering === rendering) return;
+    state.rendering = rendering;
+    if (rendering) {
+      if (!this.cropCache.has(`${state.preset}:${this.detail}:${this.backingPixels}`))
+        this.fitsDirty = this.fitPending = true;
+      this.invalidate();
+    }
+  }
   private resolvePigment(state: InstanceState) {
     const base = this.asset(state.preset)!.source.material.parts[0]!.fields.colorRoughness!;
     if (state.colorHex) state.color.set(state.colorHex);
@@ -1027,7 +1106,9 @@ export class AuthoredAvatarEngine {
     );
     this.renderer.setPixelRatio(this.backingPixels / this.pixels);
     this.fitPending = this.states.some(
-      (state) => !this.cropCache.has(`${state.preset}:${this.detail}:${this.backingPixels}`),
+      (state) =>
+        state.rendering !== false &&
+        !this.cropCache.has(`${state.preset}:${this.detail}:${this.backingPixels}`),
     );
     const { width, height } = this.canvas.getBoundingClientRect();
     this.width = Math.max(1, width);
@@ -1092,6 +1173,10 @@ export class AuthoredAvatarEngine {
     this.raf = 0;
     if (this.disposed || !this.ready || document.hidden || !this.inViewport || this.contextLost)
       return;
+    if (this.states.every((state) => state.rendering === false)) {
+      this.previousTime = 0;
+      return;
+    }
     // Pace continuous animation only. Interaction, asset changes and paused
     // updates paint immediately; animation time still advances by wall time.
     if (
@@ -1121,6 +1206,7 @@ export class AuthoredAvatarEngine {
     const object = this.poseObject;
     let cameraChanged = false;
     for (const [stateIndex, state] of this.states.entries()) {
+      if (state.rendering === false && !measureFit) continue;
       object.position.set(
         0,
         this.paused || measureFit || state.poseOverride || this.asset(state.preset)?.samplers
@@ -1289,7 +1375,15 @@ export class AuthoredAvatarEngine {
     for (const material of this.materials)
       material.uniforms.crowdProjection!.value.copy(projection);
     this.batches.forEach((batch) => {
-      const { mesh, part, slots } = batch;
+      const { mesh, part } = batch;
+      const slots = batch.slots.filter((index) => this.states[index]!.rendering !== false);
+      const offsetsChanged =
+        this.attributesDirty ||
+        !batch.renderedSlots ||
+        slots.length !== batch.renderedSlots.length ||
+        slots.some((index, i) => index !== batch.renderedSlots![i]);
+      batch.renderedSlots = slots;
+      mesh.count = slots.length;
       batch.visible = false;
       let furBudget = 0;
       const offsets = mesh.geometry.getAttribute(
@@ -1428,7 +1522,7 @@ export class AuthoredAvatarEngine {
           mesh.setMatrixAt(slot, state.matrix);
           batch.visible = true;
         }
-        if (!this.attributesDirty) return;
+        if (!offsetsChanged) return;
         offsets.setXY(
           slot,
           ((index % this.cols) - (Math.min(this.count, this.cols) - 1) / 2) * 3.64,
@@ -1450,11 +1544,11 @@ export class AuthoredAvatarEngine {
           );
         } else pigments.setXYZ(slot, color.r, color.g, color.b);
       });
-      mesh.instanceMatrix.needsUpdate = true;
+      if (slots.length) mesh.instanceMatrix.needsUpdate = true;
       if (part.source.fur && part.motionTexture)
         mesh.geometry.setDrawRange(0, Math.ceil(furBudget) * 12);
-      if (part.motionTexture) part.motionTexture.needsUpdate = true;
-      if (this.attributesDirty) offsets.needsUpdate = pigments.needsUpdate = true;
+      if (slots.length && part.motionTexture) part.motionTexture.needsUpdate = true;
+      if (offsetsChanged) offsets.needsUpdate = pigments.needsUpdate = true;
     });
     this.attributesDirty = false;
     this.renderer.info.autoReset = false;
@@ -1485,6 +1579,7 @@ export class AuthoredAvatarEngine {
     this.onFrame?.();
     let gazeChanged = false;
     for (const state of this.states) {
+      if (state.rendering === false) continue;
       const yaw = state.gaze.yaw,
         pitch = state.gaze.pitch,
         eyeX = state.eyes.x,
@@ -1509,12 +1604,14 @@ export class AuthoredAvatarEngine {
       gazeChanged ||
       this.states.some(
         (state) =>
-          state.pointer.moving ||
-          (!this.paused && state.entrance && state.entrance.held === undefined),
+          state.rendering !== false &&
+          (state.pointer.moving ||
+            (!this.paused && state.entrance && state.entrance.held === undefined)),
       ) ||
       (!this.paused &&
         this.states.some(
           (state) =>
+            state.rendering !== false &&
             !state.poseOverride &&
             (!this.asset(state.preset)?.samplers ||
               !state.motion ||
@@ -1536,6 +1633,7 @@ export class AuthoredAvatarEngine {
     const size = this.backingPixels;
     const ratio = this.renderer.getPixelRatio();
     this.states.forEach((state, index) => {
+      if (state.rendering === false) return;
       const key = `${state.preset}:${this.detail}:${size}`;
       let crop = this.cropCache.get(key);
       if (!crop) {
@@ -1585,13 +1683,17 @@ export class AuthoredAvatarEngine {
     });
     if (changed) this.fits.needsUpdate = true;
     this.fitPending = this.states.some(
-      (state) => !this.cropCache.has(`${state.preset}:${this.detail}:${size}`),
+      (state) =>
+        state.rendering !== false && !this.cropCache.has(`${state.preset}:${this.detail}:${size}`),
     );
     this.fitsDirty = this.fitPending;
   }
   stats() {
     return {
       ready: this.ready,
+      surfaceFinish: 'smooth',
+      retainedCanvasCulling: true,
+      lazyWork: this.lazyWork,
       renderer: 'original-assets-three',
       parity: false,
       missing: [
@@ -1606,6 +1708,7 @@ export class AuthoredAvatarEngine {
         .filter(([, asset]) => asset.samplers)
         .map(([, asset]) => asset.source.preset),
       count: this.count,
+      renderedInstances: this.states.filter((state) => state.rendering !== false).length,
       frames: this.frames,
       suspended: document.hidden || !this.inViewport || this.contextLost,
       frameRateLimit: this.maxFrameRate === Infinity ? null : this.maxFrameRate,
@@ -1682,6 +1785,9 @@ export class AuthoredAvatarEngine {
     this.fits.dispose();
     this.cameras.dispose();
     this.assets.forEach((asset) => asset.parts.forEach((part) => part.motionTexture?.dispose()));
+    this.retiredAssets.forEach((asset) =>
+      asset.parts.forEach((part) => part.motionTexture?.dispose()),
+    );
     this.geometries.forEach((g) => g.dispose());
     this.materials.forEach((m) => m.dispose());
     this.textures.forEach((t) => t.dispose());

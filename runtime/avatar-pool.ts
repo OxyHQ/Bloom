@@ -21,7 +21,7 @@ type Entry = {
 const pools = new Set<EditorPool>();
 const frozen = (p: EditorRenderProps) => !!(p.paused || p.portrait || p.reduced);
 const sizeFor = (canvas: HTMLCanvasElement) => {
-  const width = canvas.getBoundingClientRect().width;
+  const width = canvas.clientWidth;
   return width <= 64 ? 64 : width <= 128 ? 128 : 320;
 };
 const aborted = () => new DOMException('Avatar attachment aborted', 'AbortError');
@@ -49,6 +49,7 @@ class EditorPool {
         count: 1,
         size: cell,
         preset,
+        lazyWork: true,
         resolveAsset: createCatalogAssetResolver(createCatalogMotion),
         onFrame: () => this.paint(),
       });
@@ -72,8 +73,13 @@ class EditorPool {
         const entry = this.entries[index];
         if (!entry) continue;
         entry.visible = change.isIntersecting;
-        if (entry.ready)
+        if (entry.ready) {
           this.engine.setInstancePaused(index, frozen(entry.props) || !entry.visible);
+          this.engine.setInstanceRendering(
+            index,
+            entry.visible && (!frozen(entry.props) || entry.dirty || !entry.painted),
+          );
+        }
       }
     });
   }
@@ -87,7 +93,11 @@ class EditorPool {
     this.stage.style.width = `${this.columns * this.cell}px`;
     this.stage.style.height = `${Math.ceil(count / this.columns) * this.cell}px`;
     this.engine.setCount(count);
-    for (const entry of this.entries) if (entry) entry.dirty = true;
+    this.entries.forEach((entry, index) => {
+      if (!entry) return;
+      entry.dirty = true;
+      if (entry.ready && entry.visible) this.engine.setInstanceRendering(index, true);
+    });
   }
   private resolution() {
     if (this.disposed) return Promise.resolve();
@@ -113,6 +123,7 @@ class EditorPool {
     if (this.entries[index] !== entry) return;
     this.observer.unobserve(entry.canvas);
     this.engine.setInstancePaused(index, true);
+    this.engine.setInstanceRendering(index, false);
     this.entries[index] = undefined;
     while (this.entries.length && !this.entries[this.entries.length - 1]) this.entries.pop();
     if (!this.entries.length) {
@@ -147,6 +158,7 @@ class EditorPool {
         height,
       );
       entry.dirty = false;
+      if (frozen(entry.props)) this.engine.setInstanceRendering(index, false);
       if (!entry.painted) {
         entry.painted = true;
         entry.onReady?.();
@@ -176,7 +188,6 @@ class EditorPool {
       }
       throw Error('Editor canvas unavailable');
     }
-    const rect = canvas.getBoundingClientRect();
     const entry: Entry = {
       canvas,
       context,
@@ -186,8 +197,8 @@ class EditorPool {
       dirty: true,
       painted: false,
       size: sizeFor(canvas),
-      width: rect.width,
-      height: rect.height,
+      width: canvas.clientWidth,
+      height: canvas.clientHeight,
       onReady,
     };
     // Reservation exists throughout every asynchronous load, including the first.
@@ -224,6 +235,7 @@ class EditorPool {
       let currentPreset = recipe.preset;
       let currentColor: string | undefined;
       let previous = initial;
+      let presentation = initial;
       let ownsPointer = false;
       let hovered = false;
       const pointerOptions = {
@@ -264,10 +276,36 @@ class EditorPool {
         },
         pointerOptions,
       );
-      const update = async (props: EditorRenderProps, next: EditorRecipe) => {
+      const applyPresentation = () => {
+        entry.props = presentation;
+        pointerOptions.enabled = !!presentation.interactive && !frozen(presentation);
+        this.engine.setInstancePaused(index, frozen(presentation) || !entry.visible);
+        this.engine.setInstanceRendering(
+          index,
+          entry.visible && (!frozen(presentation) || entry.dirty || !entry.painted),
+        );
+      };
+      const setPresentation = (props: EditorRenderProps) => {
         if (disposed) return;
-        entry.ready = false;
+        presentation = props;
+        applyPresentation();
+      };
+      const update = async (
+        props: EditorRenderProps,
+        next: EditorRecipe,
+        isCurrent = () => true,
+      ) => {
+        if (disposed) return;
+        setPresentation(props);
+        const startWork =
+          props.workingKey !== previous.workingKey && props.workingKey !== undefined;
+        let workPrepared = false;
         try {
+          if (startWork && currentPreset === next.preset) {
+            workPrepared = await wait(this.engine.prepareWork(index));
+            if (disposed || !workPrepared || !isCurrent()) return;
+          }
+          entry.ready = false;
           if (currentPreset !== next.preset) {
             await wait(this.engine.setPreset(index, next.preset));
             if (disposed) return;
@@ -277,25 +315,37 @@ class EditorPool {
             this.engine.setWander(index, true);
             this.engine.setGaze(index, 0.5, 0.5);
           }
+          if (!isCurrent()) {
+            entry.ready = true;
+            applyPresentation();
+            return;
+          }
           if (currentColor !== next.color) {
             if (next.color) this.engine.setColor(index, next.color);
             else this.engine.clearColor(index);
             currentColor = next.color;
           }
-          if (props.workingKey !== previous.workingKey && props.workingKey !== undefined)
+          if (startWork) {
+            if (!workPrepared) workPrepared = await wait(this.engine.prepareWork(index));
+            if (disposed) return;
+            if (!workPrepared || !isCurrent()) {
+              entry.ready = true;
+              applyPresentation();
+              return;
+            }
             this.engine.work(index, false, props.workingCycles);
+          }
           if (
             props.entranceKey !== previous.entranceKey &&
             props.entranceKey !== undefined &&
-            !frozen(props)
+            !frozen(presentation)
           )
             this.engine.entrance(index);
           if (props.reactionKey !== previous.reactionKey && props.reactionKey !== undefined)
             this.engine.react(index);
-          entry.props = previous = props;
+          previous = props;
           entry.ready = entry.dirty = true;
-          pointerOptions.enabled = !!props.interactive && !frozen(props);
-          this.engine.setInstancePaused(index, frozen(props) || !entry.visible);
+          applyPresentation();
         } catch (error) {
           dispose();
           throw error;
@@ -303,17 +353,20 @@ class EditorPool {
       };
       await update(initial, recipe);
       this.observer.observe(canvas);
-      resize = new ResizeObserver(() => {
+      resize = new ResizeObserver(([change]) => {
         if (disposed) return;
-        const rect = canvas.getBoundingClientRect();
-        entry.width = rect.width;
-        entry.height = rect.height;
+        // Layout dimensions stay stable during ancestor scale animations.
+        // Pointer hit testing still reads its current transformed client rect.
+        entry.width = change?.contentRect.width ?? canvas.clientWidth;
+        entry.height = change?.contentRect.height ?? canvas.clientHeight;
         entry.size = sizeFor(canvas);
         entry.dirty = true;
         void this.resolution()
           .then(() => {
-            if (!disposed)
+            if (!disposed) {
               this.engine.setInstancePaused(index, frozen(entry.props) || !entry.visible);
+              this.engine.setInstanceRendering(index, entry.visible);
+            }
           })
           .catch(() => {
             if (!disposed) {
@@ -323,7 +376,7 @@ class EditorPool {
           });
       });
       resize.observe(canvas);
-      return { update, dispose };
+      return { update, setPresentation, dispose };
     } catch (error) {
       dispose();
       throw error;
