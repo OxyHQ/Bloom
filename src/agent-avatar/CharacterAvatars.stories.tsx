@@ -168,9 +168,11 @@ const stressCharacters = Array.from({ length: 48 }, (_, index) => {
 function StressAvatar({
   item,
   paused,
+  avatarSize,
 }: {
   item: (typeof stressCharacters)[number];
   paused: boolean;
+  avatarSize: 64 | 96;
 }) {
   const [workingKey, setWorking] = useState(0);
   const [reactionKey, setReaction] = useState(0);
@@ -182,7 +184,7 @@ function StressAvatar({
     >
       <AgentAvatar
         character={item.character}
-        size={96}
+        size={avatarSize}
         paused={paused}
         interactive
         workingKey={workingKey}
@@ -215,7 +217,7 @@ function StressAvatar({
   );
 }
 
-function ManyAvatarGallery() {
+function ManyAvatarGallery({ avatarSize = 96 }: { avatarSize?: 64 | 96 }) {
   const [paused, setPaused] = useState(false);
   return (
     <AgentAvatarProvider runtimeUrl={CHARACTER_RUNTIME_URL}>
@@ -230,7 +232,7 @@ function ManyAvatarGallery() {
         </Button>
         <StyledView className="flex-row flex-wrap gap-4">
           {stressCharacters.map((item) => (
-            <StressAvatar key={item.id} item={item} paused={paused} />
+            <StressAvatar key={item.id} item={item} paused={paused} avatarSize={avatarSize} />
           ))}
         </StyledView>
       </StyledView>
@@ -241,6 +243,11 @@ function ManyAvatarGallery() {
 export const ManyAvatars: Story = {
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
   render: () => <ManyAvatarGallery />,
+};
+
+export const SmallAvatars: Story = {
+  parameters: { layout: 'fullscreen', bloomScroll: 'document' },
+  render: () => <ManyAvatarGallery avatarSize={64} />,
 };
 
 function ClippoLab() {

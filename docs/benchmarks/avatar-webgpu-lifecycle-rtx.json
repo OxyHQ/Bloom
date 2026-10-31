@@ -1,0 +1,42 @@
+{
+  "adapterInfo": [
+    {
+      "vendor": "nvidia",
+      "architecture": "blackwell",
+      "isFallbackAdapter": false
+    },
+    {
+      "vendor": "nvidia",
+      "architecture": "blackwell",
+      "isFallbackAdapter": false
+    }
+  ],
+  "devices": 2,
+  "cycles": 50,
+  "targets": 24,
+  "sparseCopy": {
+    "source": {
+      "x": 63,
+      "y": 63
+    },
+    "destination": {
+      "x": 63,
+      "y": 63
+    },
+    "size": [
+      66,
+      66
+    ]
+  },
+  "retention": true,
+  "sparseMatchesFull": true,
+  "recovery": [
+    true,
+    false
+  ],
+  "failures": [
+    "Device was destroyed."
+  ],
+  "liveResources": 0,
+  "glError": 0
+}
