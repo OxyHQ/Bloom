@@ -7,6 +7,7 @@ import {
   edgeGlowMask,
   edgeLightFilter,
   materialFilter,
+  bodyRelief,
   type SurfaceLook,
 } from './optics';
 
@@ -60,8 +61,11 @@ export const SURFACE_HIGHLIGHT_FILTER = edgeLightFilter(SURFACE_LOOKS.light);
 export const SURFACE_EDGE_GLOW = edgeGlowMask(SURFACE_LOOKS.light.rim);
 export const SURFACE_SHEEN_SHADOW = nativeGlow(glowStops(SURFACE_LOOKS.light));
 export const SURFACE_RIM = nativeRim(0.7);
+export const SURFACE_BODY_SHADOW = bodyRelief(SURFACE_LOOKS.light);
 
 export interface SurfaceOptics {
+  /** Shared inset relief, below the edge light and content. */
+  bodyShadow: string;
   filter: string;
   highlightFilter: string;
   glow: string;
@@ -72,6 +76,7 @@ export interface SurfaceOptics {
 }
 
 const LIGHT_OPTICS: SurfaceOptics = {
+  bodyShadow: SURFACE_BODY_SHADOW,
   filter: SURFACE_FILTER,
   highlightFilter: SURFACE_HIGHLIGHT_FILTER,
   glow: SURFACE_EDGE_GLOW,
@@ -79,6 +84,7 @@ const LIGHT_OPTICS: SurfaceOptics = {
   rim: SURFACE_RIM,
 };
 const DARK_OPTICS: SurfaceOptics = {
+  bodyShadow: bodyRelief(SURFACE_LOOKS.dark),
   filter: materialFilter(SURFACE_LOOKS.dark),
   highlightFilter: edgeLightFilter(SURFACE_LOOKS.dark),
   glow: edgeGlowMask(SURFACE_LOOKS.dark.rim),
@@ -121,8 +127,10 @@ export function surfaceOpticsVars(
   optics: SurfaceOptics,
   radius?: unknown,
   edge = true,
+  sheen = true,
 ): Record<string, string> {
   return {
+    '--bloom-surface-body-shadow': sheen ? optics.bodyShadow : 'none',
     '--bloom-surface-filter': optics.filter,
     '--bloom-surface-highlight-filter': edge ? optics.highlightFilter : 'none',
     '--bloom-surface-edge-glow': optics.glow,
@@ -132,6 +140,7 @@ export function surfaceOpticsVars(
 
 /** Every material variable at rest, for a host that paints no material. */
 export const SURFACE_VARS_OFF: Record<string, string> = {
+  '--bloom-surface-body-shadow': 'none',
   '--bloom-surface-fill': 'transparent',
   '--bloom-surface-solid': 'transparent',
   '--bloom-surface-hairline': 'transparent',

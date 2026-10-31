@@ -5,7 +5,7 @@ description: Shared component bases, migrated surfaces and intentional exception
 
 # Material composition
 
-Surface has one shared material: a frosted body (72% of an opaque fill over a blurred backdrop) and an edge of light along its top and bottom. There is no material selector. A component keeps its layout, interaction and accessibility semantics; only its paint is shared. Semantic actions keep their fill and foreground pairs with the same subtle transparency. BottomBar's optional blur band remains independent.
+Surface has one shared material: a frosted body (72% of an opaque fill over a blurred backdrop) with shallow satin relief and an edge of light along its top and bottom. There is no material selector. A component keeps its layout, interaction and accessibility semantics; only its paint is shared. Semantic actions keep their fill and foreground pairs with the same subtle transparency. BottomBar's optional blur band remains independent.
 
 ## Choose the existing base
 
@@ -20,9 +20,18 @@ Surface has one shared material: a frosted body (72% of an opaque fill over a bl
 | Anchored overlay behavior | FloatingPanel | Web Popover, DropdownMenu, ContextMenu, Menubar, Select and HoverCard |
 | Modal/sheet behavior | Dialog / BottomSheet / SheetShell | AlertDialog, Command and existing native overlay adapters |
 
-`SurfacePaint` can own a supplied fill, or omit `fill` to add only the edge light over a host-owned background. Hosts that hand their fill to the material stay transparent so they do not hide the backdrop. Explicit alpha is preserved; default fills keep 72% opacity on web. Native uses one View with tint, a background-image glow and an inset box-shadow edge line; it has no per-surface blur. The web host hook adds shared pseudo-elements, without a wrapper or a per-frame JavaScript loop. Backdrop filtering still incurs compositor cost per painted surface.
+`SurfacePaint` can own a supplied fill, or omit `fill` to decorate a host-owned background with the shared light and relief. Hosts that hand their fill to the material stay transparent so they do not hide the backdrop. Explicit alpha is preserved; default fills keep 72% opacity on web. Native uses one View with tint, satin relief and inset box-shadow rim/glow; in-flow surfaces have no blur, while floating iOS surfaces may use the system material. The web host hook adds shared pseudo-elements, without a wrapper or a per-frame JavaScript loop. Backdrop filtering still incurs compositor cost per painted surface.
 
 Surface and painted Card resolve depth from the actual parent and publish the fill composited against that backing through both React context and the web CSS variable. Plain transparent containers inherit; a plain explicit background publishes that backing without increasing the level. Material does not own padding, dimensions, geometry, elevation or state. Foreground/fill pairs stay with the semantic palette. A surface-level context must continue to describe the fill its descendants actually sit on. Never replace the parent's layout node just to paint material.
+
+The shared optics add bounded inset light and shade inside the existing paint
+layer. They do not replace semantic button fills or foregrounds, change depth,
+or add a painted wrapper to the compositor. Large panels retain a quiet centre.
+The web baked path keeps the same relief; no extra backdrop pass is added.
+`sheen={false}` and reduced transparency suppress the body relief, and increased
+contrast retains its existing opaque body and hairline. Responsive ContentPanel
+framing gates the relief with the rim. Native device appearance and performance
+still require device verification; paint-structure tests do not establish it.
 
 ## Intentional exceptions
 

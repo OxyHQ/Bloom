@@ -41,10 +41,11 @@ export function useSurfaceMaterial(
   const backing = useSurfaceFill();
   return useMemo(() => {
     if (!enabled) return SURFACE_VARS_OFF;
-    const { '--bloom-surface-highlight-filter': highlight, ...vars } = surfaceOpticsVars(
-      optics,
-      radius,
-    );
+    const {
+      '--bloom-surface-highlight-filter': highlight,
+      '--bloom-surface-body-shadow': bodyShadow,
+      ...vars
+    } = surfaceOpticsVars(optics, radius);
     const tint = paintFill ?? resolveSurfaceTint(fill);
     const solid = resolveSurfaceMaterial({ fill: tint, parentFill: backing }).solidFill;
     return {
@@ -54,8 +55,14 @@ export function useSurfaceMaterial(
       [SURFACE_HAIRLINE_VAR]: text ? surfaceContrastEdge(solid, text) : 'transparent',
       ...vars,
       ...(framing === 'responsive'
-        ? { '--bloom-framed-highlight-filter': highlight }
-        : { '--bloom-surface-highlight-filter': highlight }),
+        ? {
+            '--bloom-framed-highlight-filter': highlight,
+            '--bloom-framed-body-shadow': bodyShadow,
+          }
+        : {
+            '--bloom-surface-highlight-filter': highlight,
+            '--bloom-surface-body-shadow': bodyShadow,
+          }),
     };
   }, [optics, fill, paintFill, enabled, radius, framing, backing, text]);
 }

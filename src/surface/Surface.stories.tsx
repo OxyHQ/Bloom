@@ -8,6 +8,7 @@ import { Card } from '../card';
 import { LinkPreviewCard } from '../link-preview';
 import { Text } from '../typography/Typography';
 import { useTheme } from '../theme/use-theme';
+import { TextFieldInput } from '../text-field';
 
 const meta: Meta<typeof Surface> = {
   id: 'base-surface',
@@ -38,6 +39,9 @@ export const BorderLighting: Story = {
             <Button size={size} tone="danger" appearance="solid">
               Delete
             </Button>
+            <Button size={size} appearance="subtle">
+              Subtle
+            </Button>
             <InverseButton size={size}>Inverse</InverseButton>
             <Button size={size} disabled>
               Disabled
@@ -55,6 +59,16 @@ export const BorderLighting: Story = {
           <Text variant="title-3-semibold">Nested surfaces</Text>
           <Card style={{ padding: 20, gap: 16 }}>
             <Text>Card inside a surface</Text>
+            <TextFieldInput label="Name" placeholder="Type a name" />
+            <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
+              <Button>Save</Button>
+              <Button tone="neutral" appearance="outline">
+                Cancel
+              </Button>
+              <Button tone="danger" appearance="subtle">
+                Remove
+              </Button>
+            </View>
             <LinkPreviewCard
               url="https://example.com"
               title="A link inside the card"
@@ -64,7 +78,7 @@ export const BorderLighting: Story = {
         </Surface>
         <Card style={{ padding: 24, gap: 16, flexGrow: 1, flexBasis: 240 }}>
           <Text variant="title-3-semibold">Card</Text>
-          <Text>The same edge treatment on a larger shape.</Text>
+          <Text>The same satin relief on a larger shape, with a quiet centre.</Text>
           <Button>Continue</Button>
           <Button tone="neutral" appearance="outline">
             Save for later

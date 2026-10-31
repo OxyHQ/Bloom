@@ -142,25 +142,25 @@ const RESPONSIVE_WEB: Record<
 > = {
   500: {
     surface:
-      '[--bloom-surface-highlight-filter:none] min-[500px]:rounded-[var(--bloom-panel-radius)] min-[500px]:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)]',
+      '[--bloom-surface-highlight-filter:none] min-[500px]:rounded-[var(--bloom-panel-radius)] min-[500px]:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)] [--bloom-surface-body-shadow:none] min-[500px]:[--bloom-surface-body-shadow:var(--bloom-framed-body-shadow)]',
     content: 'min-[500px]:rounded-[var(--bloom-panel-radius)] web:min-[500px]:overflow-x-clip',
     overlayHidden: 'max-[500px]:hidden',
   },
   640: {
     surface:
-      '[--bloom-surface-highlight-filter:none] sm:rounded-[var(--bloom-panel-radius)] sm:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)]',
+      '[--bloom-surface-highlight-filter:none] sm:rounded-[var(--bloom-panel-radius)] sm:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)] [--bloom-surface-body-shadow:none] sm:[--bloom-surface-body-shadow:var(--bloom-framed-body-shadow)]',
     content: 'sm:rounded-[var(--bloom-panel-radius)] web:sm:overflow-x-clip',
     overlayHidden: 'max-sm:hidden',
   },
   768: {
     surface:
-      '[--bloom-surface-highlight-filter:none] md:rounded-[var(--bloom-panel-radius)] md:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)]',
+      '[--bloom-surface-highlight-filter:none] md:rounded-[var(--bloom-panel-radius)] md:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)] [--bloom-surface-body-shadow:none] md:[--bloom-surface-body-shadow:var(--bloom-framed-body-shadow)]',
     content: 'md:rounded-[var(--bloom-panel-radius)] web:md:overflow-x-clip',
     overlayHidden: 'max-md:hidden',
   },
   1024: {
     surface:
-      '[--bloom-surface-highlight-filter:none] lg:rounded-[var(--bloom-panel-radius)] lg:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)]',
+      '[--bloom-surface-highlight-filter:none] lg:rounded-[var(--bloom-panel-radius)] lg:[--bloom-surface-highlight-filter:var(--bloom-framed-highlight-filter)] [--bloom-surface-body-shadow:none] lg:[--bloom-surface-body-shadow:var(--bloom-framed-body-shadow)]',
     content: 'lg:rounded-[var(--bloom-panel-radius)] web:lg:overflow-x-clip',
     overlayHidden: 'max-lg:hidden',
   },

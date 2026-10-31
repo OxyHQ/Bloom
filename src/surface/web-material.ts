@@ -126,12 +126,14 @@ export function surfaceMaterialCss(
   -webkit-backdrop-filter: none;
   background-color: ${solid};
   background-image: none;
+  box-shadow: none;
 }
 ${host}::after {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background: none;
   filter: none;
+  box-shadow: none;
 }`;
   // Baked: the body as one colour (a gradient layer would be dithered), and the
   // edge light as this layer brightened, which reads no backdrop. `:where()`
@@ -166,9 +168,12 @@ ${selector}::after {
 }
 ${selector}::before {
   z-index: -2;
+  box-sizing: border-box;
+  border: ${EDGE_LINE_PX}px solid transparent;
   backdrop-filter: var(--bloom-surface-filter, ${SURFACE_FILTER});
   -webkit-backdrop-filter: var(--bloom-surface-filter, ${SURFACE_FILTER});
   background-color: ${fill};
+  box-shadow: var(--bloom-surface-body-shadow, none);
   opacity: var(--bloom-surface-presence, 1);
   transition: ${layerTransition};
 }
@@ -191,6 +196,7 @@ ${bakedLayers}
 }
 ${baked}::after {
 ${bakedLayers}
+  box-shadow: var(--bloom-surface-body-shadow, none);
   filter: var(--bloom-surface-highlight-filter, ${SURFACE_HIGHLIGHT_FILTER});
 }
 ${reduced(`:root[${REDUCED_TRANSPARENCY_ATTRIBUTE}="reduced"] ${selector}`)}

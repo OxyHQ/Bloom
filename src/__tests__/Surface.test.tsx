@@ -10,7 +10,7 @@ jest.mock('../theme/use-theme', () => ({
 import { Surface } from '../surface/Surface';
 import Svg from 'react-native-svg';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { SURFACE_RIM, SURFACE_SHEEN_SHADOW } from '../surface/shared';
+import { SURFACE_RIM, SURFACE_SHEEN_SHADOW, SURFACE_BODY_SHADOW } from '../surface/shared';
 import { resolvedStyle, classNamesOn, surfaceSheens } from './support/rendered-style';
 
 beforeAll(() => {
@@ -64,7 +64,7 @@ it('paints one view with the tint alpha, the sheen and the rim', () => {
   const style = resolvedStyle((toJSON() as unknown as { props: { style: unknown } }).props.style);
   expect(style.backgroundColor).toBe('rgba(18, 52, 86, 0.5)');
   expect(style.experimental_backgroundImage).toBeUndefined();
-  expect(style.boxShadow).toBe(`${SURFACE_RIM}, ${SURFACE_SHEEN_SHADOW}`);
+  expect(style.boxShadow).toBe(`${SURFACE_RIM}, ${SURFACE_SHEEN_SHADOW}, ${SURFACE_BODY_SHADOW}`);
 });
 
 it('decorates a host-owned background without adding another fill', () => {

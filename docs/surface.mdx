@@ -15,22 +15,45 @@ import { Surface, Button } from '@oxy.so/bloom';
 </Surface>
 ```
 
-Surface has one material, the one Astro's pinned tabs wear: a frosted, translucent body and an edge of light along its top and bottom. There is no material selector. Opaque semantic fill colours receive 72% opacity on web, so the frosted backdrop shows through; caller-supplied alpha remains explicit. With no fill override, a Surface on the page uses the card role, and a nested Surface derives its fill from the actual parent. `radius` defaults to 20. Geometry precedence is explicit `radius` → resolved `style.borderRadius` → family default, shared with Card and BlurIsland. Host and paint always receive the same resolved radius, including percentage style values. Use `radius` or `style.borderRadius` to set native clipping, rather than a class utility the inner paint cannot inspect. `className` belongs to the root layout node; padding, size and layout remain caller-owned. `children`, `accessibilityLabel` and `testID` pass through.
+Surface has one shared material: a frosted, translucent body with shallow satin relief and an edge of light along its top and bottom. There is no material selector. Opaque semantic fill colours receive 72% opacity on web, so the frosted backdrop shows through; caller-supplied alpha remains explicit. With no fill override, a Surface on the page uses the card role, and a nested Surface derives its fill from the actual parent. `radius` defaults to 20. Geometry precedence is explicit `radius` → resolved `style.borderRadius` → family default, shared with Card and BlurIsland. Host and paint always receive the same resolved radius, including percentage style values. Use `radius` or `style.borderRadius` to set native clipping, rather than a class utility the inner paint cannot inspect. `className` belongs to the root layout node; padding, size and layout remain caller-owned. `children`, `accessibilityLabel` and `testID` pass through.
 
-Surface publishes its resolved base fill to `SurfaceLevelProvider` and `--bloom-surface`, so nested cards, fields and other controls read the same backing that it paints. The gradient and rim decorate this base; they do not create another level. Stepping is based on the actual fill even beyond named level 3. Explicit `fill` takes precedence over `style.backgroundColor`; both are respected and published. Material fills are composited onto the declared parent, an estimate rather than a measurement of the blurred backdrop.
+Surface publishes its resolved base fill to `SurfaceLevelProvider` and `--bloom-surface`, so nested cards, fields and other controls read the same backing that it paints. The satin relief and rim decorate this base; they do not create another level. Stepping is based on the actual fill even beyond named level 3. Explicit `fill` takes precedence over `style.backgroundColor`; both are respected and published. Material fills are composited onto the declared parent, an estimate rather than a measurement of the blurred backdrop.
 
 `Surface` has no press, disabled, loading or business state. Controls such as Button own those states and consume the **same paint** directly: `SurfacePaint` for universal components and `surfaceMaterialCss` for web roots. These are internal implementation primitives, not alternate public components. Button keeps its single interactive root without wrapping it in another Surface.
 
 The shared implementation lives in `surface/optics.ts` (the measured looks), `surface/shared.ts`, `SurfacePaint.tsx` and `web-material.ts`. On web the shape is always the host's own border radius, so material and host cannot disagree, whatever the radius (capsules, per-corner radii, percentages). Two pseudo-elements paint it:
 
-- `::before` is the body: the backdrop blurred (24px), saturated, flattened and brightened, under the tint.
+- `::before` is the body: the backdrop blurred (24px), saturated, flattened and brightened, under the tint. Its existing layer also paints shallow inset light from the upper left and shade from the lower right. These mode-specific shadows give the body relief on a flat backdrop without another filter or node.
 - `::after` is the edge: the backdrop brightened again through a CSS mask — a 1.25px line along the border (the box minus its padding box), full where it runs flat along the top and bottom, about a third through each corner and gone before the side, plus a glow within 8px of the top and bottom. The falloff is measured by depth from the edge and stops 12px down, so a capsule's ends do not read as an outline.
 
 Hosts set the material's variables through `surfaceOpticsVars(optics, radius)` on every painting element, so none inherits an enclosing surface's values. A host clips with `overflow: clip; overflow-clip-margin: 1px` rather than `hidden`: an exact clip cuts the layers' antialiased edge and Chromium does not antialias it. Its corners are always round on web: Chromium drops every mask inside an element clipped with a non-round `corner-shape`, which would turn the edge into a flat brightening of the whole surface. No blend modes either: a sibling with `mix-blend-mode` switches the body's backdrop filter off.
 
-Native paints a single view: tint as `backgroundColor`, and the edge line and its glow as inset `boxShadow`s (`inset 0 ±1px 0` lines over `inset 0 ±8px 5.18px -5.18px` glows in light mode). Never paint the glow as an `experimental_backgroundImage` gradient: React Native's parser drops a whole gradient for one `calc()` stop (every native surface lost its glow that way), and a gradient with fixed `px` stops crashes the Android emulator's SwiftShader renderer (a SIGSEGV in its render thread on the first frame, measured with six stops and with four). No in-flow native surface has a `BlurView`, and no Android one at all (see *iOS: the system's material under floating surfaces* below). A surface's own shadow belongs on the outer node; do not clip the native outer node if it needs a shadow.
+Native paints a single view: tint as `backgroundColor`, satin relief, and the edge line and its glow as inset `boxShadow`s (`inset 0 ±1px 0` lines over `inset 0 ±8px 5.18px -5.18px` glows in light mode). Never paint the glow as an `experimental_backgroundImage` gradient: React Native's parser drops a whole gradient for one `calc()` stop (every native surface lost its glow that way), and a gradient with fixed `px` stops crashes the Android emulator's SwiftShader renderer (a SIGSEGV in its render thread on the first frame, measured with six stops and with four). No in-flow native surface has a `BlurView`, and no Android one at all (see *iOS: the system's material under floating surfaces* below). A surface's own shadow belongs on the outer node; do not clip the native outer node if it needs a shadow.
 
 `Surface` has no press, disabled, loading or business state. Controls such as Button own those states and consume the **same paint** directly: `SurfacePaint` for universal components, `surfaceMaterialCss` and `useSurfaceMaterial` for web hosts. A `Screen` inside a painted surface leaves its canvas transparent, so the surface's material and edge stay visible.
+
+## Satin relief and composition
+
+The relief belongs to the shared optics, not to an action palette. Button tones,
+semantic foreground pairs, explicit alpha, parent backing and depth retain their
+existing owners. Light and shade are confined near the edge, so large panels keep
+a quiet centre while small controls show the same material. `SurfacePaint`
+`sheen={false}` suppresses the body relief on both platforms. Plain and flat
+components remain unpainted, and responsive ContentPanel framing gates the relief
+along with its rim.
+
+Reduced transparency removes the body relief; increased contrast replaces the
+optical edge with the existing contrast hairline. The web's baked path preserves
+the relief without adding a backdrop pass. The native path uses inset shadows,
+never a gradient or an additional blur. OxyOS renderers that do not implement
+box shadows retain their current tint fallback. Jest checks paint and composition
+contracts; native device appearance and performance still require device checks.
+
+The relief is pending release validation: Chromium 153 measures up to 3 RGB
+levels between the live and baked material, above the existing 2-level gate.
+The gate remains unchanged. Resolve that comparison before publishing this
+refinement; the paint-structure and composition tests alone do not establish
+pixel parity.
 
 ## iOS: the system's material under floating surfaces
 
@@ -54,7 +77,8 @@ card, toasts, native tooltips and the composer's popover.
   the surface.
 - **With transparency reduced** (or contrast increased) the floating surface is
   the opaque view every other native surface paints, with no blur mounted.
-  Only floating surfaces read the switch, so in-flow ones pay nothing for it.
+  All paint reads the switch to suppress relief; only floating iOS surfaces
+  mount a system blur.
 - The colour a floating surface publishes to its content stays its opaque fill:
   the text on it is measured against what reduced transparency paints exactly.
 

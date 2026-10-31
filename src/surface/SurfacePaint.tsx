@@ -129,6 +129,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   // Colour arithmetic reads the concrete theme, never a prepaint variable.
   const text = opticsRecipe.current.text;
   const increasedContrast = useIncreasedContrast();
+  const reducedTransparency = useReducedTransparency();
   const isWeb = Platform.OS === 'web';
   const contextBacking = useCompositeBacking();
   const resolvedFill = resolveSurfaceTint(
@@ -147,6 +148,7 @@ export const SurfacePaint = memo(function SurfacePaint({
     resolvedFill,
     optics,
     rim,
+    sheen,
   ]);
   if (isWeb) {
     const solid = compositeOnto(paintFill ?? resolvedFill, backing ?? contextBacking);
@@ -165,7 +167,7 @@ export const SurfacePaint = memo(function SurfacePaint({
       ...(transition ? { '--bloom-surface-paint-transition': transition } : null),
       ...(presence === undefined ? null : { '--bloom-surface-presence': String(presence) }),
       ...(presenceMs === undefined ? null : { '--bloom-surface-presence-ms': `${presenceMs}ms` }),
-      ...surfaceOpticsVars(optics, radius, rim),
+      ...surfaceOpticsVars(optics, radius, rim, sheen),
     };
     return (
       <>
@@ -194,7 +196,11 @@ export const SurfacePaint = memo(function SurfacePaint({
       ? { borderWidth: 1, borderColor: surfaceContrastEdge(paintFill ?? resolvedFill, text) }
       : !increasedContrast && (rim || sheen)
         ? {
-            boxShadow: [rim ? optics.rim : null, sheen ? optics.sheenShadow : null]
+            boxShadow: [
+              rim ? optics.rim : null,
+              sheen ? optics.sheenShadow : null,
+              sheen && !reducedTransparency ? optics.bodyShadow : null,
+            ]
               .filter(Boolean)
               .join(', '),
           }

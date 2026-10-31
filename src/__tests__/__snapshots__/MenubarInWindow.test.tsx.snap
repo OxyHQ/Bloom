@@ -285,7 +285,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
           {
            "overflow": "hidden",
            "backgroundColor": "rgb(179 236 247)",
-           "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+           "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 2px 6px 12px -6px rgba(255, 255, 255, 0.12), inset -2px -6px 12px -6px rgba(0, 0, 0, 0.06)"
           }
          ],
          {
@@ -783,7 +783,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
           {
            "overflow": "hidden",
            "backgroundColor": "rgb(179 236 247)",
-           "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+           "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 2px 6px 12px -6px rgba(255, 255, 255, 0.12), inset -2px -6px 12px -6px rgba(0, 0, 0, 0.06)"
           }
          ],
          {
@@ -1221,7 +1221,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                        "backgroundColor": "rgba(199, 246, 255, 0.72)"
                       },
                       {
-                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 2px 6px 12px -6px rgba(255, 255, 255, 0.12), inset -2px -6px 12px -6px rgba(0, 0, 0, 0.06)"
                       }
                      ],
                      {
@@ -1762,7 +1762,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
           {
            "overflow": "hidden",
            "backgroundColor": "rgb(179 236 247)",
-           "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+           "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 2px 6px 12px -6px rgba(255, 255, 255, 0.12), inset -2px -6px 12px -6px rgba(0, 0, 0, 0.06)"
           }
          ],
          {
@@ -2135,7 +2135,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                        "backgroundColor": "rgba(199, 246, 255, 0.72)"
                       },
                       {
-                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 2px 6px 12px -6px rgba(255, 255, 255, 0.12), inset -2px -6px 12px -6px rgba(0, 0, 0, 0.06)"
                       }
                      ],
                      {
@@ -2997,7 +2997,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
           {
            "overflow": "hidden",
            "backgroundColor": "rgb(179 236 247)",
-           "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+           "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 2px 6px 12px -6px rgba(255, 255, 255, 0.12), inset -2px -6px 12px -6px rgba(0, 0, 0, 0.06)"
           }
          ],
          {
@@ -3500,7 +3500,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                        "backgroundColor": "rgba(199, 246, 255, 0.72)"
                       },
                       {
-                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 2px 6px 12px -6px rgba(255, 255, 255, 0.12), inset -2px -6px 12px -6px rgba(0, 0, 0, 0.06)"
                       }
                      ],
                      {

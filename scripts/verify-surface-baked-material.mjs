@@ -89,8 +89,8 @@ body * { visibility: hidden !important; }
 [data-gate-shade] { visibility: visible !important; }
 [data-gate-shade] * { visibility: hidden !important; }
 [data-gate-shade] [data-gate-shade] { visibility: visible !important; }
-[data-gate-shade="0"]::before { background-color: #000 !important; backdrop-filter: none !important; opacity: 1 !important; }
-[data-gate-shade="1"]::before { background-color: #fff !important; backdrop-filter: none !important; opacity: 1 !important; }
+[data-gate-shade="0"]::before { background-color: #000 !important; backdrop-filter: none !important; box-shadow: none !important; opacity: 1 !important; }
+[data-gate-shade="1"]::before { background-color: #fff !important; backdrop-filter: none !important; box-shadow: none !important; opacity: 1 !important; }
 [data-gate-shade]::after { display: none !important; }`,
   });
   await settle(page);
@@ -176,6 +176,12 @@ try {
       url.searchParams.set('globals', `theme:${theme}`);
       await page.goto(url.href, { waitUntil: 'networkidle0', timeout: 180_000 });
       await page.evaluate(() => document.fonts.ready);
+      // Compare material pixels, not text rasterization: Chromium can switch
+      // between greyscale and subpixel text AA when a backdrop layer is baked.
+      // Keep text geometry (and therefore layout/backdrop geometry) unchanged.
+      await page.addStyleTag({
+        content: '* { -webkit-text-fill-color: transparent !important; }',
+      });
       await settle(page);
       const baked = await bakedHosts(page);
       const black = await bodiesIn(page, false);

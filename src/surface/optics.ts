@@ -23,6 +23,8 @@ export interface SurfaceLook {
   slope: number;
   offset: number;
   rim: SurfaceRim;
+  /** Shallow, directional relief inside the body; independent of the backdrop. */
+  relief: { light: number; shade: number };
 }
 
 const RIM_ANGLES = [0, 1, 8.5, 25, 45, 65, 81.5, 89, 90];
@@ -38,6 +40,7 @@ const GLOW_BY_ANGLE: OpticsCurve = [
 
 export const SURFACE_LOOKS: { light: SurfaceLook; dark: SurfaceLook } = {
   light: {
+    relief: { light: 0.12, shade: 0.06 },
     saturate: 1.8705,
     slope: 0.6098,
     offset: 98.2,
@@ -73,6 +76,7 @@ export const SURFACE_LOOKS: { light: SurfaceLook; dark: SurfaceLook } = {
     },
   },
   dark: {
+    relief: { light: 0.06, shade: 0.12 },
     saturate: 1.2652,
     slope: 0.8684,
     offset: 32.48,
@@ -144,6 +148,19 @@ export function peakGain(rim: SurfaceRim): number {
 
 /** Frosting radius, in CSS px. */
 export const SURFACE_BLUR_PX = 24;
+
+/**
+ * The same inset relief on web and native. A short, fixed reach leaves the
+ * centre of large reading surfaces quiet while rounding smaller controls.
+ * Neutral light/shade modulates the resolved tint, never chooses a new hue or
+ * semantic fill. No layout reads, native gradients or additional backdrop pass.
+ */
+export function bodyRelief({ relief }: SurfaceLook): string {
+  return [
+    `inset 2px 6px 12px -6px rgba(255, 255, 255, ${relief.light})`,
+    `inset -2px -6px 12px -6px rgba(0, 0, 0, ${relief.shade})`,
+  ].join(', ');
+}
 
 /** The backdrop under the tint: frosted, saturated, flattened, brightened. */
 export function materialFilter({ saturate, slope, offset }: SurfaceLook): string {
