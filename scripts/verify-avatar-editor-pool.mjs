@@ -190,6 +190,13 @@ try {
     }),
   );
   report.cases.push('work-key-one-to-zero-restarts-once');
+  await page.waitForFunction(() => diag()[0].stats.states[0].motionTime > 0.25);
+  // Hold the exact clock while high-LOD shaders compile. A live one-cycle
+  // action may finish naturally before a software-GPU resize is observable.
+  await page.evaluate(async () => {
+    await controllers[0].update({ ...props, workingKey: 0, paused: true }, recipe);
+  });
+  const preResizeTime = await page.evaluate(() => diag()[0].stats.states[0].motionTime);
   await page.evaluate(() => {
     canvases[0].style.width = canvases[0].style.height = '320px';
   });
@@ -202,6 +209,14 @@ try {
   );
   assert.equal(await page.evaluate(() => diag()[0].avatars), 2);
   assert.equal(await page.evaluate(() => diag()[0].stats.states[0].motion), 'work');
+  assert.equal(
+    await page.evaluate(() => diag()[0].stats.states[0].motionTime),
+    preResizeTime,
+    'LOD promotion preserves the running action clock',
+  );
+  await page.evaluate(async () => {
+    await controllers[0].update({ ...props, workingKey: 0 }, recipe);
+  });
   report.cases.push('resize-promotes-resolution-and-lod-without-restarting-action');
   await page.evaluate(async () => {
     const c = make();
@@ -229,8 +244,12 @@ try {
   report.cases.push('simultaneous-work-before-reaction-including-zero-key');
 
   await page.evaluate(() => {
-    controllers.forEach((c) => c.dispose());
-    canvases.forEach((c) => c.remove());
+    controllers.forEach((c) => {
+      c.dispose();
+    });
+    canvases.forEach((c) => {
+      c.remove();
+    });
   });
   assert.deepEqual(await page.evaluate(() => diag()), []);
   report.cases.push('final-dispose-removes-all-contexts-and-stages');
@@ -379,8 +398,12 @@ try {
   );
   report.cases.push('resume-and-offscreen-return-restore-the-original-slot');
   await page.evaluate(() => {
-    retainedControllers.forEach((c) => c.dispose());
-    retainedCanvases.forEach((c) => c.remove());
+    retainedControllers.forEach((c) => {
+      c.dispose();
+    });
+    retainedCanvases.forEach((c) => {
+      c.remove();
+    });
   });
   assert.deepEqual(await page.evaluate(() => diag()), []);
   assert.equal(await page.$$eval('[data-avatar-renderer]', (x) => x.length), 0);
@@ -388,6 +411,6 @@ try {
   console.log(JSON.stringify(report));
 } finally {
   await mkdir('.local/avatar-editor-pool', { recursive: true });
-  await writeFile('.local/avatar-editor-pool/report.json', JSON.stringify(report, null, 2) + '\n');
+  await writeFile('.local/avatar-editor-pool/report.json', `${JSON.stringify(report, null, 2)}\n`);
   await browser.close();
 }

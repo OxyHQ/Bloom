@@ -14,7 +14,8 @@ const browser = await puppeteer.launch({
 });
 const report = { cases: [] };
 try {
-  for (const scenario of [
+  for (const scenario of process.env.AVATAR_LAZY_CASES?.split(',') ?? [
+    'noop-latest',
     'complete',
     'same-reference',
     'replace',
@@ -90,6 +91,29 @@ try {
       0,
       'Idle never requests Computer payloads',
     );
+    if (scenario === 'noop-latest') {
+      assert.equal(
+        await page.evaluate(async () => {
+          const noop = controllers[0].update(props);
+          const changed = controllers[0].update({ ...props, reactionKey: 1 });
+          await Promise.all([noop, changed]);
+          return diag()[0].stats.states[0].motion;
+        }),
+        'reaction',
+        'A synchronous new intent after a no-op update is not dropped',
+      );
+      await page.evaluate(() => {
+        controllers.forEach((controller) => {
+          controller.dispose();
+        });
+      });
+      await page.waitForFunction(() => diag().length === 0);
+      assert.deepEqual(errors, []);
+      report.cases.push(scenario);
+      console.log(`Lazy Work: ${scenario} passed`);
+      await page.close();
+      continue;
+    }
     const before = await page.evaluate(() => {
       window.holdWork = true;
       window.workGate = new Promise((resolve) => {
@@ -182,8 +206,12 @@ try {
       assert.equal(released.errors, scenario === 'failure' ? 1 : 0);
     }
     await page.evaluate(() => {
-      controllers.forEach((c) => c.dispose());
-      canvases.forEach((c) => c.remove());
+      controllers.forEach((c) => {
+        c.dispose();
+      });
+      canvases.forEach((c) => {
+        c.remove();
+      });
     });
     assert.deepEqual(await page.evaluate(() => diag()), []);
     assert.deepEqual(errors, []);
@@ -196,6 +224,6 @@ try {
   throw error;
 } finally {
   await mkdir('.local/avatar-lazy-work', { recursive: true });
-  await writeFile('.local/avatar-lazy-work/report.json', JSON.stringify(report, null, 2) + '\n');
+  await writeFile('.local/avatar-lazy-work/report.json', `${JSON.stringify(report, null, 2)}\n`);
   await browser.close();
 }
