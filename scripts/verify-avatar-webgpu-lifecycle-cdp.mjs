@@ -67,6 +67,11 @@ try {
       };
       return adapter;
     };
+    const moduleSource = await (await fetch('/runtime/avatar-webgpu-presenter.ts')).arrayBuffer();
+    const sourceModuleSHA256 = Array.from(
+      new Uint8Array(await crypto.subtle.digest('SHA-256', moduleSource)),
+      (value) => value.toString(16).padStart(2, '0'),
+    ).join('');
     const { createWebGPUAvatarPresenter: create } = await import(
       '/runtime/avatar-webgpu-presenter.ts'
     );
@@ -159,6 +164,11 @@ try {
       canvases.every((c, i) => c.toDataURL() === beforeDispose[i]),
       'dispose retains every PNG',
     );
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    check(
+      canvases.every((c, i) => c.toDataURL() === beforeDispose[i]),
+      'Dispose retains front-buffer PNG after presentation',
+    );
     check(resources.size === 0, 'dispose frees owned GPU resources');
     for (let i = 0; i < 50; i++) {
       const p = await create((e) => failures.push(e.message));
@@ -200,12 +210,15 @@ try {
     p.dispose();
     check(resources.size === 0, 'Failure cleanup');
     return {
+      sourceModuleSHA256,
+      userAgent: navigator.userAgent,
       adapterInfo,
       devices: devices.length,
       cycles: 50,
       targets: 24,
       sparseCopy,
       retention: true,
+      retainedAfterTwoFrames: true,
       sparseMatchesFull: true,
       recovery,
       failures,
