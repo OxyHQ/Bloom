@@ -78,7 +78,7 @@ try {
           document.body.append(canvas);
           controllers[index] = await runtime.createAvatar(canvas, props, {
             onReady: () => ready++,
-            onError: () => errors++,
+            onError: () => window.errors++,
           });
         }),
       );

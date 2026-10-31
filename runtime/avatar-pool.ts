@@ -294,15 +294,22 @@ class EditorPool {
         props: EditorRenderProps,
         next: EditorRecipe,
         isCurrent = () => true,
+        superseded?: Promise<void>,
       ) => {
         if (disposed) return;
         setPresentation(props);
         const startWork =
           props.workingKey !== previous.workingKey && props.workingKey !== undefined;
         let workPrepared = false;
+        // Optional activity preparation can finish into the asset cache, but a
+        // newer character/action must not wait behind its network request.
+        const prepareWork = () => {
+          const prepared = wait(this.engine.prepareWork(index));
+          return superseded ? Promise.race([prepared, superseded.then(() => false)]) : prepared;
+        };
         try {
           if (startWork && currentPreset === next.preset) {
-            workPrepared = await wait(this.engine.prepareWork(index));
+            workPrepared = await prepareWork();
             if (disposed || !workPrepared || !isCurrent()) return;
           }
           entry.ready = false;
@@ -326,7 +333,7 @@ class EditorPool {
             currentColor = next.color;
           }
           if (startWork) {
-            if (!workPrepared) workPrepared = await wait(this.engine.prepareWork(index));
+            if (!workPrepared) workPrepared = await prepareWork();
             if (disposed) return;
             if (!workPrepared || !isCurrent()) {
               entry.ready = true;
