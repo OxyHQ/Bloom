@@ -1,0 +1,456 @@
+{
+  "date": "2026-10-31",
+  "artifactCommit": "fa4b74dd",
+  "packageVersion": "0.1.0",
+  "tarballSHA256": "8273e00b16eb6581bd52bdcb40a326bfb505be21e5b0411bf3edfaa3872d3908",
+  "apkSHA256": "8f71b687421f0c03035290f3df6973f05482b556c6c8b5a6a12d94a78e7d81ee",
+  "runtimeManifestSHA256": "7e44cfec2bd9e1490fb90270028fd84b12fcbc019f09709af9a1b9187b36b577",
+  "device": "Pixel 8a, Android16, Mali-G715",
+  "conditions": "Actual installed companion tarball, Expo58/ReactNative0.88/ExpoGL58.0.3 debug Hermes lab. One shared context and eight native TextureViews.112dp/294 physical view;192 render backing. Source package identity verified against final artifact; no local module duplicates.",
+  "bootstrap": "Lab MainApplication explicitly passes useDevSupport=BuildConfig.DEBUG to ExpoReactHostFactory. Its default reads the React Native dependency release flag and attempted a missing embedded bundle. Companion code unchanged. This is a functional smoke, not a new performance campaign.",
+  "cases": [
+    {
+      "name": "mixed-idle",
+      "compatible": true,
+      "contexts": 1,
+      "viewCount": 8,
+      "views": [
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 35
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 35
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 35
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 35
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 35
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 35
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 35
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 35
+        }
+      ],
+      "rawSHA256": "8c7da75e008afd27176a0e4d0721278bd14e451f1d0ce53b75f9c6ea08001e2a",
+      "snapshot": {
+        "width": 294,
+        "height": 294,
+        "nontransparent": 41353,
+        "partialAlpha": 4630,
+        "sha256": "e5d3dc9e1de57c3ea5d8a678d52d8ecb1845bfccbcb295d139a03802ddce993e"
+      }
+    },
+    {
+      "name": "mixed-work",
+      "compatible": true,
+      "contexts": 1,
+      "viewCount": 8,
+      "views": [
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 27
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 27
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 27
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 27
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 27
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 27
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 27
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 27
+        }
+      ],
+      "rawSHA256": "8eb5610fe78f2c7cbcc671e4b9e971918cb95fb6bdb263398edfbd8b29ce7454",
+      "snapshot": {
+        "width": 294,
+        "height": 294,
+        "nontransparent": 35647,
+        "partialAlpha": 9768,
+        "sha256": "40a7b2f41055d4bfb028e25ab4d2d92cbae5cdb8cf24ad5898ce1d9ee88fb7f7"
+      }
+    },
+    {
+      "name": "paused",
+      "compatible": true,
+      "contexts": 1,
+      "viewCount": 8,
+      "views": [
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 0
+        }
+      ],
+      "rawSHA256": "ed51856cc68ccdc5415361b308efd8dd17dccf14b45fab10470e5634d8df1b56"
+    },
+    {
+      "name": "offscreen",
+      "compatible": true,
+      "contexts": 1,
+      "viewCount": 8,
+      "views": [
+        {
+          "width": 294,
+          "height": 294,
+          "visible": false,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": false,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": false,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": false,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": false,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": false,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": false,
+          "presentationDelta": 0
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": false,
+          "presentationDelta": 0
+        }
+      ],
+      "rawSHA256": "e9a44272621686d6211badc870fbc35cef7fde1232aa18af697ef157067d4a66"
+    },
+    {
+      "name": "resumed",
+      "compatible": true,
+      "contexts": 1,
+      "viewCount": 8,
+      "views": [
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 30
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 30
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 30
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 30
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 30
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 30
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 30
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 30
+        }
+      ],
+      "coldFrame": {
+        "changedPixels": 0,
+        "maxChannelDifference": 0,
+        "nontransparentPixels": 17341,
+        "comparedPixels": 36864,
+        "glError": 0,
+        "fitPasses": 1,
+        "backingPixelsPerAvatar": 192
+      },
+      "rawSHA256": "ebb27c50b723a26164e094431e56e97cb7d7111147a6af2b7a81cfbd7aafda17",
+      "snapshot": {
+        "width": 294,
+        "height": 294,
+        "nontransparent": 39196,
+        "partialAlpha": 13342,
+        "sha256": "d96fabc8b2182acbf93533768f2be08b9697772f7b5df6e72d085d4c830615f9"
+      }
+    },
+    {
+      "name": "disposed",
+      "compatible": true,
+      "contexts": 0,
+      "viewCount": 0,
+      "views": [],
+      "rawSHA256": "b485b6086215e6ea835851c2f5b46f87e9a244ee7fd5626d767f677da0ae9b15"
+    },
+    {
+      "name": "catalog-idle",
+      "compatible": true,
+      "contexts": 1,
+      "viewCount": 5,
+      "views": [
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 20
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 20
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 20
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 20
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": null
+        }
+      ],
+      "rawSHA256": "01658068052b4d2a697fc12b9ccd067dddbdadb4bf9a576ff9cba9266a2ad107",
+      "snapshot": {
+        "width": 294,
+        "height": 294,
+        "nontransparent": 41346,
+        "partialAlpha": 4623,
+        "sha256": "bcd58b9b71f0a9b1cc659df51b02ceb48f0e796b2dbe99bf9da9b0423a06f2c5"
+      },
+      "note": "Initial fixed warmup ended before all catalog assets loaded:5 views then; subsequent catalog-work confirms all8 ready. Not an8-view idle timing claim."
+    },
+    {
+      "name": "catalog-work",
+      "compatible": true,
+      "contexts": 1,
+      "viewCount": 8,
+      "views": [
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 24
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 23
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 23
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 23
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 23
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 23
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 24
+        },
+        {
+          "width": 294,
+          "height": 294,
+          "visible": true,
+          "presentationDelta": 24
+        }
+      ],
+      "rawSHA256": "599b3d6336f69b5eda1cc15e80e45b8d3fcd646ae321e69e298e733530722bfb",
+      "snapshot": {
+        "width": 294,
+        "height": 294,
+        "nontransparent": 39174,
+        "partialAlpha": 13352,
+        "sha256": "b69db1556a96628765048361448947cfe392f720b6bdcc716ac57c8849156afd"
+      }
+    },
+    {
+      "name": "catalog-disposed",
+      "compatible": true,
+      "contexts": 0,
+      "viewCount": 0,
+      "views": [],
+      "rawSHA256": "20bbaba6952f936d7796d0b8ee318cbbc8e069253bd5bb6c39fdbdefd8bae41f"
+    }
+  ],
+  "appearance": "Inspected actual device composite for all8 authored work and4 authored+4 catalog work (heart cyclops crown, six-lobed todd monocle bow, cloud oval frames, clippo). Snapshots decode nonblank alpha. Same-GPU cold held pose equals repeated frame in36864RGBA pixels, GLerror0."
+}
