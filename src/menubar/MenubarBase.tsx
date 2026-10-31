@@ -25,7 +25,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, type View as RNView } from 'react-native';
+import { type PointerEvent, StyleSheet, type View as RNView } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { FIELD_REST_BORDER_WIDTH } from '../styles/field-border';
 
@@ -119,12 +119,20 @@ export function Menubar(props: MenubarProps) {
     onChange: onFocusValueChange,
   });
   const [menus] = useState(() => new Map<string, MenubarMenuHandle>());
+  const barRef = useRef<ComponentRef<typeof RNView> | null>(null);
   const leave = useCallback(() => {
     if (focusValue !== undefined) setFocusValue(undefined);
   }, [focusValue, setFocusValue]);
+  const switchTo = useCallback(
+    (next: string) => {
+      setValue(next);
+      if (focusValue !== undefined) setFocusValue(next);
+    },
+    [setValue, focusValue, setFocusValue],
+  );
   const context = useMemo(
-    () => ({ value: openValue, setValue, focusValue, leave, menus }),
-    [openValue, setValue, focusValue, leave, menus],
+    () => ({ value: openValue, setValue, focusValue, leave, switchTo, barRef, menus }),
+    [openValue, setValue, focusValue, leave, switchTo, menus],
   );
   // The bar from the keyboard (`use-menubar-keys.ts`): its titles in the order they are declared.
   useMenubarKeys(
@@ -180,6 +188,8 @@ export function Menubar(props: MenubarProps) {
           RN elevation. On web the two agree, so whichever wins paints the
           same thing. */}
       <StyledView
+        ref={barRef}
+        collapsable={false}
         role="menubar"
         aria-label={label}
         testID={testID}
@@ -239,6 +249,7 @@ export function MenubarMenu({ children, value, openFocus }: MenubarMenuProps) {
 
   const context = useMemo(
     () => ({
+      value,
       open,
       setOpen: (next: boolean) => setValue(next ? value : undefined),
       choose: () => {
@@ -299,6 +310,21 @@ function MenubarTriggerButton({
   const palette = useMenuPalette();
   // Its title has the bar's keyboard: lit as an open one is, as a Mac's bar lights it.
   const focused = bar.focusValue !== undefined && bar.menus.get(bar.focusValue) === menu.handle;
+  // While another menu of the bar is open, the pointer moving onto this title opens its menu in
+  // that one's place, as a Mac's bar tracks the pointer across its titles: no press. Only a
+  // pointer's movement is intent (a finger dragging is not, nor layout moving under a parked
+  // pointer), and the title listens only while another menu is open, so a bar at rest, or over its
+  // open menu's own title, costs no event.
+  const tracking = bar.value !== undefined && !menu.open && !disabled;
+  const { switchTo } = bar;
+  const { value } = menu;
+  const onPointerMove = useCallback(
+    (event: PointerEvent) => {
+      if (event.nativeEvent?.pointerType === 'touch') return;
+      switchTo(value);
+    },
+    [switchTo, value],
+  );
   // Web: Enter/Space/ArrowDown open into the first row, ArrowUp into the last,
   // and focus returns here on close (`floating/menu-keyboard.ts`). Inert on
   // native, where there is no DOM node to listen on.
@@ -338,6 +364,10 @@ function MenubarTriggerButton({
     <TriggerSlot
       asChild={asChild}
       anchorRef={menu.anchorRef}
+      onPointerMove={tracking ? onPointerMove : undefined}
+      // Closed because another menu of the bar opened in its place: the screen reader's focus is
+      // that menu's, never this title's.
+      restoreFocus={bar.value === undefined || menu.open}
       style={style}
       testID={testID}
       handle={{
