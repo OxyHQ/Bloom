@@ -34,8 +34,10 @@ try {
     .split(',')
     .filter(Boolean)
     .map(Number)) {
-    await page.evaluate(startPBOAtlasFixture, { mode: 'pbo', count: 8, cssSize });
     for (const kind of ['idle', 'reaction', 'work']) {
+      // Repeated getImageData calls demote accelerated Canvas2D targets on Android.
+      // Each pose needs fresh destinations so the gate cannot change its backend.
+      await page.evaluate(startPBOAtlasFixture, { mode: 'pbo', count: 8, cssSize });
       const capture = await page.evaluate(
         (kind) => __avatarPBOFixture.captureHeld({ kind, time: kind === 'work' ? 1.5 : 0.5 }),
         kind,
