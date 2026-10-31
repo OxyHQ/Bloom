@@ -215,7 +215,6 @@ describe('Avatar semantic image request identity', () => {
     // bundle starts fresh and resolves BloomImage through the RNW path.
     const webLoader =
       os === 'web' ? jest.spyOn(expoImageModule, 'loadExpoImage').mockReturnValue(null) : undefined;
-    const imageType = os === 'web' ? NativeImage : Image;
     const onImageError = jest.fn();
     const wrap = (uri: string) => (
       <React.StrictMode>
@@ -231,21 +230,23 @@ describe('Avatar semantic image request identity', () => {
     );
     try {
       const tree = render(wrap(URI));
-      const firstError = tree.UNSAFE_getByType(imageType).props.onError;
+      const image = () =>
+        os === 'web' ? tree.UNSAFE_getByType(NativeImage) : tree.UNSAFE_getByType(Image);
+      const firstError = image().props.onError;
       const error = { error: 'failed', nativeEvent: { error: 'failed' } };
       act(() => {
         firstError(error);
         firstError(error);
       });
       expect(onImageError).toHaveBeenCalledTimes(1);
-      expect(tree.UNSAFE_getByType(imageType).props.source.uri).toContain('fallback.png');
-      fireEvent(tree.UNSAFE_getByType(imageType), 'error', error);
+      expect(image().props.source.uri).toContain('fallback.png');
+      fireEvent(image(), 'error', error);
       expect(onImageError).toHaveBeenCalledTimes(1);
       expect(tree.getByText('A')).toBeTruthy();
       tree.rerender(wrap('https://example.com/new.png'));
       act(() => firstError(error));
       expect(onImageError).toHaveBeenCalledTimes(1);
-      const nextError = tree.UNSAFE_getByType(imageType).props.onError;
+      const nextError = image().props.onError;
       act(() => nextError(error));
       expect(onImageError).toHaveBeenCalledTimes(2);
       tree.unmount();
