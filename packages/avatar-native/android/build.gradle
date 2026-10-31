@@ -1,0 +1,12 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+group = 'so.oxy.bloom'
+version = '0.0.1'
+android { namespace 'so.oxy.bloom.avatargpu' }
+dependencies {
+  // SDK58 may consume Expo modules as precompiled AARs or source projects.
+  if (findProject(':expo-gl') != null) implementation project(':expo-gl')
+  else implementation 'host.exp.exponent:expo.modules.gl:58.0.3'
+}
