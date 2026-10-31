@@ -182,7 +182,15 @@ class EditorPool {
       if (frozen(entry.props)) this.engine.setInstanceRendering(index, false);
       if (!entry.painted) {
         entry.painted = true;
-        entry.onReady?.();
+        try {
+          entry.onReady?.();
+        } catch (error) {
+          // The first image is already presented. A caller notification cannot
+          // interrupt the remaining destinations or the shared frame scheduler.
+          queueMicrotask(() => {
+            throw error;
+          });
+        }
       }
     });
   }
