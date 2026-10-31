@@ -7,6 +7,7 @@ import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { Text } from '../typography';
 import { Button } from '../button/index.web';
 import { Card } from '../card';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 
 const meta: Meta = {
   id: 'foundations-color',
@@ -101,6 +102,18 @@ function Sample({ label, detail }: { label: string; detail?: string }) {
   );
 }
 
+/** Each local mode paints its own page before the translucent card. */
+function ModeSample({ mode }: { mode: 'light' | 'dark' }) {
+  const { colors } = useTheme();
+  return (
+    <SurfaceLevelProvider level={0} fill={colors.background}>
+      <View style={{ padding: 16, backgroundColor: colors.background }}>
+        <Sample label={mode} />
+      </View>
+    </SurfaceLevelProvider>
+  );
+}
+
 /** Local modes coexist without changing the root provider or Storybook toolbar. */
 export const Modes: Story = {
   parameters: { controls: { disable: true } },
@@ -117,9 +130,7 @@ export const Modes: Story = {
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16 }}>
         {(['light', 'dark'] as const).map((mode) => (
           <BloomColorScope key={mode} mode={mode}>
-            <View style={{ padding: 16 }}>
-              <Sample label={mode} />
-            </View>
+            <ModeSample mode={mode} />
           </BloomColorScope>
         ))}
       </View>
