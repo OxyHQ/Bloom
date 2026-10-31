@@ -187,6 +187,11 @@ are recorded in the [physical native audit](./avatar-native-shared-context-2026-
 - Eight pose-sharing renderer cases compare 786,432 pixels exactly and assert that the
   intended sample-count reduction actually occurred. Numeric tests mutate every copied
   matrix and field to prove output isolation.
+- Cold preset changes retain at most two unfinished requests per slot. Cached choices
+  apply without waiting for those requests; shared fetches continue serving neighbors.
+  Held-fetch browser checks cover rapid replacement, same-preset recoloring, stale
+  completion and immediate disposal. Caller exceptions cannot strand other destinations
+  or skip slot cleanup; first-image callbacks still run only after pixels are painted.
 - Browser lifecycle and deferred-work gates cover retained images, resize, input,
   immediate constraints, latest intent, failure and disposal. Shared-controller tests
   also run without a DOM.
