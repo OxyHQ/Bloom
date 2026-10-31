@@ -61,9 +61,9 @@ test('StrictMode setup and cleanup leave the runtime balanced', () => {
       <Owner />
     </StrictMode>,
   );
-  expect(setter.mock.calls.at(-1)).toEqual([true]);
+  expect(setter.mock.calls[setter.mock.calls.length - 1]).toEqual([true]);
   tree.unmount();
-  expect(setter.mock.calls.at(-1)).toEqual([false]);
+  expect(setter.mock.calls[setter.mock.calls.length - 1]).toEqual([false]);
   expect(setter.mock.calls.filter(([enabled]) => enabled)).toHaveLength(
     setter.mock.calls.filter(([enabled]) => !enabled).length,
   );
