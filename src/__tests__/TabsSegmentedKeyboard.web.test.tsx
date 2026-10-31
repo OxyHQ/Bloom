@@ -24,6 +24,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { useRovingTabIndex } from '../hooks/roving-focus';
 import { Tabs, TabsTrigger } from '../tabs';
 import {
   SegmentedControl,
@@ -331,5 +332,161 @@ describe('SegmentedControl (web) — keyboard', () => {
     press('ArrowRight');
     press(' ');
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('independent tab children', () => {
+  it('moves the tab stop when the selected child disables itself', async () => {
+    let setDisabled!: (disabled: boolean) => void;
+    function DynamicTab() {
+      const [disabled, updateDisabled] = React.useState(false);
+      setDisabled = updateDisabled;
+      return <TabsTrigger value="overview" label="Overview" disabled={disabled} />;
+    }
+    mount(
+      <Tabs label="Sections" value="overview" onValueChange={() => {}}>
+        <DynamicTab />
+        <TabsTrigger value="activity" label="Activity" />
+      </Tabs>,
+    );
+    expect(tabStops('tab').map((element) => element.getAttribute('aria-label'))).toEqual([
+      'Overview',
+    ]);
+    await act(async () => {
+      setDisabled(true);
+      await Promise.resolve();
+    });
+    expect(tabStops('tab').map((element) => element.getAttribute('aria-label'))).toEqual([
+      'Activity',
+    ]);
+    await act(async () => {
+      setDisabled(false);
+      await Promise.resolve();
+    });
+    expect(tabStops('tab').map((element) => element.getAttribute('aria-label'))).toEqual([
+      'Overview',
+    ]);
+  });
+
+  it('keeps a tab stop when a child removes the selected trigger', async () => {
+    let remove!: () => void;
+    function DynamicTab() {
+      const [visible, setVisible] = React.useState(true);
+      remove = () => setVisible(false);
+      return visible ? <TabsTrigger value="overview" label="Overview" /> : null;
+    }
+    mount(
+      <Tabs label="Sections" value="overview" onValueChange={() => {}}>
+        <DynamicTab />
+        <TabsTrigger value="activity" label="Activity" />
+      </Tabs>,
+    );
+    expect(tabStops('tab').map((element) => element.getAttribute('aria-label'))).toEqual([
+      'Overview',
+    ]);
+    await act(async () => {
+      remove();
+      await Promise.resolve();
+    });
+    expect(tabStops('tab').map((element) => element.getAttribute('aria-label'))).toEqual([
+      'Activity',
+    ]);
+  });
+});
+
+describe('independent segmented children', () => {
+  it.each([
+    ['radio', 'radio'],
+    ['tabs', 'tab'],
+  ] as const)('type="%s" moves its tab stop when a child disables itself', async (type, role) => {
+    let disable!: () => void;
+    function DynamicSegment() {
+      const [disabled, setDisabled] = React.useState(false);
+      disable = () => setDisabled(true);
+      return (
+        <SegmentedControlItem value="day" accessibilityLabel="day" disabled={disabled}>
+          <SegmentedControlItemText>day</SegmentedControlItemText>
+        </SegmentedControlItem>
+      );
+    }
+    mount(
+      <SegmentedControl label="Range" type={type} value="day" onValueChange={() => {}}>
+        <DynamicSegment />
+        <SegmentedControlItem value="week" accessibilityLabel="week">
+          <SegmentedControlItemText>week</SegmentedControlItemText>
+        </SegmentedControlItem>
+      </SegmentedControl>,
+    );
+    expect(tabStops(role).map((element) => element.getAttribute('aria-label'))).toEqual(['day']);
+    await act(async () => {
+      disable();
+      await Promise.resolve();
+    });
+    expect(tabStops(role).map((element) => element.getAttribute('aria-label'))).toEqual(['week']);
+  });
+});
+
+describe('roving focus observation', () => {
+  it('keeps nested changes within their own group', async () => {
+    let disableInner!: () => void;
+    const selected = (element: HTMLElement) => element.getAttribute('data-selected') === 'true';
+    function InnerGroup() {
+      const inner = React.useRef<HTMLDivElement>(null);
+      const [disabled, setDisabled] = React.useState(false);
+      disableInner = () => setDisabled(true);
+      useRovingTabIndex(() => inner.current, '[data-option]', selected, '[data-group]');
+      return (
+        <div ref={inner} data-group="inner">
+          <button
+            type="button"
+            data-option
+            aria-label="inner selected"
+            data-selected="true"
+            disabled={disabled}
+          />
+          <button type="button" data-option aria-label="inner other" data-selected="false" />
+        </div>
+      );
+    }
+    function Fixture() {
+      const outer = React.useRef<HTMLDivElement>(null);
+      useRovingTabIndex(() => outer.current, '[data-option]', selected, '[data-group]');
+      return (
+        <div ref={outer} data-group="outer">
+          <button type="button" data-option aria-label="outer selected" data-selected="true" />
+          <button type="button" data-option aria-label="outer other" data-selected="false" />
+          <InnerGroup />
+        </div>
+      );
+    }
+    mount(<Fixture />);
+    const stops = () =>
+      Array.from(container.querySelectorAll<HTMLElement>('[data-option]'))
+        .filter((element) => element.tabIndex === 0)
+        .map((element) => element.getAttribute('aria-label'));
+    expect(stops()).toEqual(['outer selected', 'inner selected']);
+    await act(async () => {
+      disableInner();
+      await Promise.resolve();
+    });
+    expect(stops()).toEqual(['outer selected', 'inner other']);
+  });
+
+  it('keeps group-render updates when MutationObserver is unavailable', () => {
+    const observer = globalThis.MutationObserver;
+    try {
+      // Some non-browser web environments omit this standard browser API.
+      globalThis.MutationObserver = undefined as unknown as typeof MutationObserver;
+      mount(<ControlledTabs />);
+      expect(tabStops('tab').map((element) => element.getAttribute('aria-label'))).toEqual([
+        'Overview',
+      ]);
+      act(() => named('tab', 'Activity').click());
+      expect(tabStops('tab').map((element) => element.getAttribute('aria-label'))).toEqual([
+        'Activity',
+      ]);
+    } finally {
+      globalThis.MutationObserver = observer;
+    }
   });
 });
