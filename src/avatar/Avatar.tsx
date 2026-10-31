@@ -4,12 +4,11 @@ import { BloomAppearanceContext } from '../appearance/context';
 import type React from 'react';
 import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, Pressable, Platform } from 'react-native';
-import type { TextStyle } from 'react-native';
+import type { PressableStateCallbackType, TextStyle } from 'react-native';
 import { imageSourcesKey } from './source-key';
 
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { Z_INDEX } from '../styles/z-index';
@@ -147,6 +146,10 @@ function AvatarImageContent({
   );
 }
 
+function avatarPressStyle({ pressed }: PressableStateCallbackType) {
+  return pressed ? styles.pressed : undefined;
+}
+
 const AvatarComponent: React.FC<AvatarProps> = ({
   source,
   uri,
@@ -179,10 +182,6 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   ring,
   testID,
 }) => {
-  // The press dip goes through the shared interaction hook rather than
-  // `TouchableOpacity`'s `activeOpacity` — one mechanism across the library, and
-  // the one the reduced-motion / pointer-type guards live behind.
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const theme = useTheme();
   const { messages } = useMessages(AVATAR_MESSAGES);
   const liveLabel = liveLabelProp ?? messages.live;
@@ -346,11 +345,9 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     return (
       <Pressable
         onPress={onPress}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
         accessibilityRole="button"
         accessibilityLabel={alt ?? (hasName ? name : undefined)}
-        style={pressed ? styles.pressed : undefined}
+        style={avatarPressStyle}
       >
         {content}
       </Pressable>
