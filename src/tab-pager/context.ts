@@ -26,6 +26,8 @@ export interface TabCommitter {
  */
 export interface TabPagerContextValue extends Omit<TabPagerState, 'activePage'> {
   model: PageModel;
+  /** Invalidates native navigation previews when the viewer/session changes. */
+  navigationScopeKey?: string;
   registerCommitter: (committer: TabCommitter | null) => void;
   /**
    * What reselecting means when the provider is given no `onReselect`: an
