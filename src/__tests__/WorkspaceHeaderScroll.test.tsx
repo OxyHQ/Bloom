@@ -7,7 +7,7 @@ import { Screen, ScreenScrollView, useScreen } from '../screen';
 import { resolvedStyle } from './support/rendered-style';
 import { ScreenScope } from '../layout/screen-scope';
 import { VirtualList } from '../list';
-import { WorkspaceHeaderInsetContext } from '../screen/workspace-header-context';
+import { WorkspaceHeaderInsetContext } from '../screen/context';
 import { PortalProvider, PortalOutlet } from '../portal';
 
 const originalOS = Platform.OS;

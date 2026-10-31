@@ -1,7 +1,7 @@
 import { BloomScope } from '../appearance/BloomScope';
 import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
 import { ScreenContext, ScreenNavigationContext } from '../screen/context';
-import { WorkspaceHeaderInsetContext } from '../screen/workspace-header-context';
+import { WorkspaceHeaderInsetContext } from '../screen/context';
 /**
  * A surface that is its OWN screen, for the two contracts that are screen-scoped.
  *
