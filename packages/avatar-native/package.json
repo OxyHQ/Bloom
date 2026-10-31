@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-avatar-native",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Shared native GPU presentation for Bloom's existing avatar engine",
   "main": "src/index.ts",
@@ -10,7 +10,10 @@
     "!src/**/__tests__/**",
     "lib/**",
     "android/**",
-    "expo-module.config.json"
+    "expo-module.config.json",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "peerDependencies": {
     "expo": ">=58 <59",
@@ -23,6 +26,18 @@
     "test": "jest --config jest.config.cjs --runInBand",
     "typescript": "tsc --project tsconfig.json",
     "build": "cd ../.. && node scripts/build-avatar-native-runtime.mjs",
+    "postbuild": "node scripts-verify-package.mjs",
     "verify:package": "node scripts-verify-package.mjs"
-  }
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/avatar-native"
+  },
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "bun@1.4.3"
 }
