@@ -6,6 +6,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../dropdown-menu/DropdownMenu';
 import { PlatformSurfaceProvider, usePopupSurface } from '../platform-surface/context';
@@ -268,5 +271,138 @@ describe('DropdownMenu (native) keyboard in a platform popup', () => {
     key('Enter');
     expect(chosen).not.toHaveBeenCalled();
     expect(screen.getByTestId('platform-popup')).toBeTruthy();
+  });
+});
+
+describe('DropdownMenu (native) submenus from the keyboard in a platform popup', () => {
+  // As the WAI-ARIA menu pattern, macOS and Android menus take them: → on a row with a submenu
+  // opens it and moves into its first row, ← (or Escape) inside it closes it and goes back to
+  // the row that opened it.
+  function Rows({ chosen }: { chosen: (row: string) => void }) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Pressable testID="trigger">
+            <Text>Open</Text>
+          </Pressable>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onPress={() => chosen('Reply')}>Reply</DropdownMenuItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>More actions</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem disabled onPress={() => chosen('Share')}>
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuItem onPress={() => chosen('Copy link')}>Copy link</DropdownMenuItem>
+              <DropdownMenuItem onPress={() => chosen('Print')}>Print</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuItem onPress={() => chosen('Delete')}>Delete</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  function open(chosen: jest.Mock) {
+    const popup = jest.fn();
+    const screen = render(
+      <BloomProvider mode="light" platform={adapter(popup)}>
+        <Rows chosen={chosen} />
+      </BloomProvider>,
+    );
+    fireEvent.press(screen.getByTestId('trigger'));
+    const key = (name: string) =>
+      act(() => {
+        const props = popup.mock.calls[popup.mock.calls.length - 1]?.[0] as
+          | PopupSurfaceProps
+          | undefined;
+        props?.onKey?.(name);
+      });
+    return { screen, key };
+  }
+
+  it('opens a submenu with ArrowRight and makes its first enabled row active', () => {
+    const chosen = jest.fn();
+    const { screen, key } = open(chosen);
+    key('ArrowDown');
+    key('ArrowDown');
+    expect(screen.queryByText('Copy link')).toBeNull();
+    key('ArrowRight');
+    expect(screen.getByText('Copy link')).toBeTruthy();
+    // The disabled Share is skipped: Copy link is active.
+    key('Enter');
+    expect(chosen).toHaveBeenCalledTimes(1);
+    expect(chosen).toHaveBeenCalledWith('Copy link');
+  });
+
+  it('moves into an open submenu with ArrowRight on its row', () => {
+    const chosen = jest.fn();
+    const { key } = open(chosen);
+    key('ArrowDown');
+    key('ArrowDown');
+    key('Enter'); // the row toggles its submenu open, staying active
+    key('ArrowRight');
+    key('ArrowDown');
+    key('Enter');
+    expect(chosen).toHaveBeenCalledWith('Print');
+  });
+
+  it('closes the submenu with ArrowLeft and goes back to the row that opened it', () => {
+    const chosen = jest.fn();
+    const { screen, key } = open(chosen);
+    key('ArrowDown');
+    key('ArrowDown');
+    key('ArrowRight');
+    key('ArrowDown');
+    expect(screen.getByText('Print')).toBeTruthy();
+    key('ArrowLeft');
+    expect(screen.queryByText('Copy link')).toBeNull();
+    expect(screen.getByTestId('platform-popup')).toBeTruthy();
+    // The active row is More actions again: the row below it is Delete.
+    key('ArrowDown');
+    key('Enter');
+    expect(chosen).toHaveBeenCalledTimes(1);
+    expect(chosen).toHaveBeenCalledWith('Delete');
+  });
+
+  it('closes only the submenu on Escape inside it, then the menu on Escape again', () => {
+    const chosen = jest.fn();
+    const { screen, key } = open(chosen);
+    key('ArrowDown');
+    key('ArrowDown');
+    key('ArrowRight');
+    key('Escape');
+    expect(screen.queryByText('Copy link')).toBeNull();
+    expect(screen.getByTestId('platform-popup')).toBeTruthy();
+    key('ArrowUp');
+    key('Enter');
+    expect(chosen).toHaveBeenCalledWith('Reply');
+    expect(screen.queryByTestId('platform-popup')).toBeNull();
+  });
+
+  it('closes the menu on Escape when the active row is outside any submenu', () => {
+    const chosen = jest.fn();
+    const { screen, key } = open(chosen);
+    key('ArrowDown');
+    key('ArrowDown');
+    key('ArrowRight');
+    expect(screen.getByText('Copy link')).toBeTruthy();
+    key('ArrowLeft');
+    expect(screen.queryByText('Copy link')).toBeNull();
+    key('Escape');
+    expect(screen.queryByTestId('platform-popup')).toBeNull();
+    expect(chosen).not.toHaveBeenCalled();
+  });
+
+  it('does nothing on ArrowRight or ArrowLeft on a row without a submenu', () => {
+    const chosen = jest.fn();
+    const { screen, key } = open(chosen);
+    key('ArrowDown');
+    key('ArrowRight');
+    key('ArrowLeft');
+    expect(screen.queryByText('Copy link')).toBeNull();
+    key('Enter');
+    expect(chosen).toHaveBeenCalledWith('Reply');
   });
 });

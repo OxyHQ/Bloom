@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.72.0
+
+### Added
+
+- **Submenus in a platform popup open and close from the keyboard.** In an OxyOS compositor popup (`popup-surface`), a menu's keys arrive through the adapter (`floating/popup-navigation.tsx`), which took Up, Down, Home, End, Page Up and Down, Enter, Space, Escape and Tab only, so an inline submenu (`DropdownMenuSub`, `ContextMenuSub`, `MenubarSub`) could be opened only by pressing its row, and from inside it the keyboard could not get back. Now, as the WAI-ARIA menu pattern, macOS and Android menus have it and as the web flyout already did: <kbd>→</kbd> on a sub trigger opens it and makes its first enabled row active (on one already open, moves into it); <kbd>←</kbd> inside it, or <kbd>Esc</kbd>, closes it and makes its trigger active again; <kbd>Esc</kbd> elsewhere closes the menu as before. The inline sub knows its trigger and its rows through one navigation handle (`PopupSubmenu`, `PopupSubmenuScope`). Pinned by `PlatformSurfacePopup.test.tsx`.
+
+### Consumers
+
+Bump to 15.72.0. No API changes; nothing changes on iOS, Android, the web or in a bottom sheet.
+
 ## 15.71.2
 
 ### Fixed
