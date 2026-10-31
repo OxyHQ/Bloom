@@ -62,6 +62,7 @@ import { useHaptics } from '../hooks/use-haptics';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
+import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
@@ -573,7 +574,11 @@ function TabBarBody({
 
   // Shared with `useTabBarFootprint`, so a consumer accounting for the bar in
   // its own layout can never drift from where the bar actually sits.
-  const bottomOffset = embedded ? 0 : windowEdgeGap(insets.bottom);
+  const suppliedBottomInset = useContext(BottomBarSlotContext);
+  const inShellSlot = suppliedBottomInset !== undefined;
+  const bottomOffset = embedded
+    ? 0
+    : Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
 
   // Publish what the bar occupies so anything else at this edge stacks above it
   // rather than behind it. Same number `useTabBarFootprint` reports, derived from
@@ -581,7 +586,7 @@ function TabBarBody({
   // where the bar actually sits. The EXPANDED height on purpose: the bar
   // minimizes on scroll and re-expands, so claiming the minimized height would
   // drop a FAB onto the pill the moment the user scrolled back up.
-  useClaimBottomEdge(embedded ? 0 : bottomOffset + EXPANDED_HEIGHT);
+  useClaimBottomEdge(embedded || inShellSlot ? 0 : bottomOffset + EXPANDED_HEIGHT);
 
   // How centring and the animated inset compose: centring is STATIC and belongs
   // to the wrap, the inset stays ANIMATED on the pill inside it. The wrap is
@@ -632,7 +637,21 @@ function TabBarBody({
         setContainerWidth(event.nativeEvent.layout.width);
         onLayout?.(event);
       }}
-      style={[[embedded ? { width: '100%' } : styles.root, style], pointerEventsStyle('box-none')]}
+      style={[
+        [
+          embedded
+            ? { width: '100%' }
+            : inShellSlot
+              ? {
+                  width: '100%',
+                  height: EXPANDED_HEIGHT + bottomOffset,
+                  justifyContent: 'flex-end',
+                }
+              : styles.root,
+          style,
+        ],
+        pointerEventsStyle('box-none'),
+      ]}
     >
       {recipe.sheet}
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
@@ -645,18 +664,20 @@ function TabBarBody({
           pill. */}
       {!embedded && blur !== false && (
         <Blur
+          testID={viewProps.testID ? `${viewProps.testID}-blur` : undefined}
           direction="bottom"
           intensity={typeof blur === 'object' ? blur.intensity : undefined}
           style={{
             position: 'absolute',
             left: 0,
             right: 0,
-            bottom: 0,
-            height: bottomOffset + EXPANDED_HEIGHT + BLUR_BLEED,
+            bottom: suppliedBottomInset ? -suppliedBottomInset : 0,
+            height: bottomOffset + EXPANDED_HEIGHT + BLUR_BLEED + (suppliedBottomInset ?? 0),
           }}
         />
       )}
       <View
+        testID={viewProps.testID ? `${viewProps.testID}-wrap` : undefined}
         style={[
           [
             embedded ? undefined : styles.barWrap,
