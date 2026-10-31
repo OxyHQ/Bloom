@@ -19,6 +19,7 @@ const mockRouter = {
 jest.mock('expo-router', () => ({
   useRouter: () => mockRouter,
   usePathname: () => mockPathname,
+  useIsFocused: () => true,
 }));
 jest.mock('../bottom-bar', () => ({ BottomBar: jest.fn(() => null) }));
 // The layout's navigator: one call per layout render.

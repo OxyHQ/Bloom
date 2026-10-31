@@ -48,3 +48,43 @@ patched ReactAndroid source. Both variants are required; passing only the defaul
 variant does not compile the predictive host. Gesture-state unit tests alone do
 not verify Android dispatcher arbitration, retained-page drawing, or native
 lifecycle behavior; those require native integration and device acceptance.
+
+## Expo integration
+
+Enable the config plugin together with the source-build requirement, then run
+prebuild and rebuild the Android binary. An OTA update cannot add a native host
+or change ReactAndroid's dispatcher implementation.
+
+```js
+plugins: [
+  ['expo-build-properties', { android: { buildReactNativeFromSource: true } }],
+  ['@oxy.so/bloom', { predictiveBack: true }],
+]
+```
+
+The Expo router must expose `registerNativeBackNavigation` and
+`dispatchWithResult` on navigator helpers. Bloom registers the tabs navigator
+only when both that public router contract and the native host exist. Older
+routers/binaries retain their existing JavaScript Back handling. Overlays and
+compact drawers temporarily release the registration, so a non-dismissable
+overlay cannot accidentally send Back past an underlying tab history.
+
+Pass the current authority scope to the shared provider when account switching
+does not unmount the navigation tree:
+
+```tsx
+<TabPagerProvider destinations={destinations} navigationScopeKey={sessionScope}>
+  {children}
+</TabPagerProvider>
+```
+
+The value is an opaque identity, not a credential. Change it whenever the viewer
+or session authority changes. A scope change cancels pending previews even when
+the route keys, selected tab and history remain identical.
+
+Completion dispatches the router's ordinary `GO_BACK`, guarded against the exact
+state previewed at reducer execution. It does not select a tab or rewrite history
+independently. Prevented, stale, unhandled and no-op results settle immediately;
+successful completion waits for the native pager's destination-selection event.
+Repeated completion events are ignored by gesture ID, and a prevented gesture
+does not disable a later retry against the same history.

@@ -1,13 +1,14 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ComponentType,
   type ReactNode,
 } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { findNodeHandle, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -23,6 +24,9 @@ import { Screen } from 'react-native-screens';
 import { animateMotion } from '../../motion/recipes';
 import { ScreenActivity } from '../../screen/ScreenActivity';
 import { valueAtPage, type PageModel } from '../pages';
+import type { ViewRef } from '../../styles/native-refs';
+import type { TabBackPreview } from './back-preview';
+import { PredictiveBackHost, isPredictiveBackAvailable } from './PredictiveBackHost';
 import {
   loadPagerView,
   warnPagerViewUnavailable,
@@ -40,6 +44,9 @@ export interface TabPagerProps {
   chromeProgress: SharedValue<number>;
   /** A page the reader landed on by swiping. */
   onCommit: (name: string) => void;
+  backPreview?: TabBackPreview | null;
+  predictiveBackEnabled?: boolean;
+  onBackPreviewCommit?: (sessionKey: string, gestureId: number, reject: () => void) => boolean;
 }
 
 type PageScrollEvent = { position: number; offset: number };
@@ -101,6 +108,9 @@ export function TabPager({
   progress,
   chromeProgress,
   onCommit,
+  backPreview,
+  predictiveBackEnabled = false,
+  onBackPreviewCommit,
 }: TabPagerProps) {
   const PagerView = loadAnimatedPagerView();
   const pagerRef = useRef<PagerViewHandle>(null);
@@ -110,6 +120,48 @@ export function TabPager({
     [state.routes],
   );
   const focusedPage = Math.max(0, model.indexOf(state.routes[state.index]?.name ?? ''));
+  const previewPage =
+    backPreview && isPredictiveBackAvailable() ? model.indexOf(backPreview.to) : -1;
+  const [destinationTag, setDestinationTag] = useState(0);
+  const destinationRef = useCallback((view: ViewRef | null) => {
+    setDestinationTag(view ? (findNodeHandle(view) ?? 0) : 0);
+  }, []);
+  const predictiveCommitPage = useRef<number | null>(null);
+  const lastNativeGesture = useRef(0);
+  const pendingGestureId = useRef<number | null>(null);
+  const [settledGestureId, setSettledGestureId] = useState(0);
+  const [pendingGesture, setPendingGesture] = useState<{
+    gestureId: number;
+    sessionKey: string;
+    destinationTag: number;
+    page: number;
+    state: TabPagerProps['state'];
+  } | null>(null);
+  const settleGesture = useCallback((gestureId: number) => {
+    setSettledGestureId((current) => Math.max(current, gestureId));
+    setPendingGesture((pending) => (pending?.gestureId === gestureId ? null : pending));
+    if (pendingGestureId.current === gestureId) {
+      predictiveCommitPage.current = null;
+      pendingGestureId.current = null;
+    }
+  }, []);
+  useEffect(() => {
+    if (!pendingGesture) return;
+    if (
+      !predictiveBackEnabled ||
+      (state === pendingGesture.state && backPreview?.sessionKey !== pendingGesture.sessionKey) ||
+      (state !== pendingGesture.state && focusedPage !== pendingGesture.page)
+    ) {
+      settleGesture(pendingGesture.gestureId);
+    }
+  }, [
+    pendingGesture,
+    predictiveBackEnabled,
+    state,
+    focusedPage,
+    settleGesture,
+    backPreview?.sessionKey,
+  ]);
 
   // The page the PAGER believes it is on. A swipe commits a route, the route
   // drives the pager, the pager reports the page again: this ref is what keeps
@@ -175,6 +227,20 @@ export function TabPager({
   const cutTo = useCallback((page: number) => {
     pagerRef.current?.setPageWithoutAnimation(page);
   }, []);
+  // Commit the already-previewed destination before paint, without the normal
+  // tap animation or visiting pages between two nonadjacent history entries.
+  useLayoutEffect(() => {
+    if (predictiveCommitPage.current !== focusedPage) return;
+    predictiveCommitPage.current = null;
+    pageRef.current = focusedPage;
+    cutTo(focusedPage);
+    setSettledPage(focusedPage);
+    progress.value = barPositions[focusedPage] ?? 0;
+    chromeProgress.value = chromeHidden[focusedPage] ?? 0;
+  }, [focusedPage, cutTo, progress, chromeProgress, barPositions, chromeHidden]);
+  useEffect(() => {
+    if (previewPage >= 0) admit([keyForPage(previewPage)]);
+  }, [previewPage, admit, keyForPage]);
   useEffect(() => {
     const from = pageRef.current;
     if (focusedPage === from) return;
@@ -229,13 +295,14 @@ export function TabPager({
   const onPageSelected = useCallback(
     (event: { nativeEvent: { position: number } }) => {
       const next = event.nativeEvent.position;
+      if (pendingGesture?.page === next) settleGesture(pendingGesture.gestureId);
       const page = pages[next];
       if (next === pageRef.current || !page) return;
       pageRef.current = next;
       admit([keyForPage(next)]);
       onCommit(page.name);
     },
-    [pages, onCommit, admit, keyForPage],
+    [pages, onCommit, admit, keyForPage, pendingGesture, settleGesture],
   );
 
   const children = pages.map((page, index) => {
@@ -245,6 +312,7 @@ export function TabPager({
     return (
       <View
         key={page.name}
+        ref={index === previewPage ? destinationRef : undefined}
         collapsable={false}
         style={[styles.page, !PagerView && !focused && styles.hidden]}
       >
@@ -256,7 +324,13 @@ export function TabPager({
           <Screen
             enabled
             activityState={
-              focused ? 2 : (page.bar && page.preload) || Math.abs(index - settledPage) <= 1 ? 1 : 0
+              focused
+                ? 2
+                : index === previewPage ||
+                    (page.bar && page.preload) ||
+                    Math.abs(index - settledPage) <= 1
+                  ? 1
+                  : 0
             }
             style={styles.page}
           >
@@ -269,22 +343,55 @@ export function TabPager({
 
   if (!PagerView) return <View style={styles.page}>{children}</View>;
   return (
-    <Animated.View style={[styles.page, fadeStyle]}>
-      <PagerView
-        ref={pagerRef}
-        style={styles.page}
-        initialPage={focusedPage}
-        // One page either side: exactly what neighbour admission maintains.
-        offscreenPageLimit={1}
-        // An overdrag at either end is a horizontal gesture stolen from a child.
-        overdrag={false}
-        onPageScroll={onPageScroll}
-        onPageSelected={onPageSelected}
-        onPageScrollStateChanged={onPageScrollStateChanged}
-      >
-        {children}
-      </PagerView>
-    </Animated.View>
+    <PredictiveBackHost
+      style={styles.page}
+      enabled={predictiveBackEnabled && (pendingGesture !== null || previewPage >= 0)}
+      destinationTag={pendingGesture?.destinationTag ?? destinationTag}
+      sessionKey={pendingGesture?.sessionKey ?? backPreview?.sessionKey ?? ''}
+      settledGestureId={settledGestureId}
+      onBackCommitted={({ nativeEvent }) => {
+        if (nativeEvent.gestureId <= lastNativeGesture.current) return;
+        lastNativeGesture.current = nativeEvent.gestureId;
+        if (
+          !predictiveBackEnabled ||
+          !backPreview ||
+          nativeEvent.sessionKey !== backPreview.sessionKey
+        ) {
+          settleGesture(nativeEvent.gestureId);
+          return;
+        }
+        predictiveCommitPage.current = previewPage;
+        pendingGestureId.current = nativeEvent.gestureId;
+        setPendingGesture({ ...nativeEvent, destinationTag, page: previewPage, state });
+        if (
+          !onBackPreviewCommit?.(nativeEvent.sessionKey, nativeEvent.gestureId, () =>
+            settleGesture(nativeEvent.gestureId),
+          )
+        ) {
+          settleGesture(nativeEvent.gestureId);
+        }
+      }}
+    >
+      <Animated.View style={[styles.page, fadeStyle]}>
+        <PagerView
+          ref={pagerRef}
+          style={styles.page}
+          initialPage={focusedPage}
+          // One page either side: exactly what neighbour admission maintains.
+          offscreenPageLimit={Math.max(
+            1,
+            previewPage >= 0 ? Math.abs(previewPage - focusedPage) : 1,
+          )}
+          // An overdrag at either end is a horizontal gesture stolen from a child.
+          overdrag={false}
+          onPageScroll={onPageScroll}
+          onPageSelected={onPageSelected}
+          onPageScrollStateChanged={onPageScrollStateChanged}
+        >
+          {children}
+        </PagerView>
+      </Animated.View>
+    </PredictiveBackHost>
   );
 }
 

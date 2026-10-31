@@ -673,6 +673,7 @@ function buildExportsField() {
 
   // Allow consumers / tooling to resolve the package.json itself.
   out['./package.json'] = './package.json';
+  out['./app.plugin.js'] = './app.plugin.js';
 
   return out;
 }

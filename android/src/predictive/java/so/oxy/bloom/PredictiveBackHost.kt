@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
+import android.view.MotionEvent
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.findViewTreeOnBackPressedDispatcherOwner
@@ -56,6 +57,7 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
 
   private val callback = object : OnBackPressedCallback(false) {
     override fun handleOnBackStarted(event: BackEventCompat) {
+      if (session.committed) return
       animator?.cancel()
       session.cancel()
       gestureId = nextGestureId.incrementAndGet()
@@ -71,11 +73,13 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
       }
     }
     override fun handleOnBackCancelled() {
+      if (session.committed) return
       gestureStarted = false
       invalidatedGesture = false
       animateTo(0f) { session.cancel(); invalidate(); updateEligibility() }
     }
     override fun handleOnBackPressed() {
+      if (session.committed) return
       // A hardware button has no start event. A late completion of an invalidated
       // edge gesture must never be mistaken for a new hardware press.
       if (invalidatedGesture) { gestureStarted = false; invalidatedGesture = false; return }
@@ -85,7 +89,8 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
       val dispatcher = UIManagerHelper.getEventDispatcher(reactContext)
       if (dispatcher == null) { session.cancel(); invalidate(); return }
       if (session.commit(owner) == null) return
-      isEnabled = false
+      // Keep consuming Back until JS acknowledges this completed transition;
+      // otherwise a second gesture could fall through and finish the activity.
       invalidate()
       dispatcher.dispatchEvent(BackCommittedEvent(UIManagerHelper.getSurfaceId(this@PredictiveBackHost), id, owner.key, gestureId))
     }
@@ -143,7 +148,7 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
   }
 
   private fun currentOwner(): BackPreviewSession.Owner? {
-    if (coordinator?.isNativeNavigationEnabled != true || coordinator?.hasJavaScriptHandlers() != false ||
+    if (coordinator?.isNativeNavigationEnabled != true || coordinator?.isJavaScriptEnabled != false ||
       !registered || !previewEnabled || sessionKey.isEmpty() || destinationTag <= 0 ||
       !isAttachedToWindow || !hasWindowFocus() || !isShown ||
       lifecycleOwner?.lifecycle?.currentState != Lifecycle.State.RESUMED) return null
@@ -174,7 +179,7 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
       invalidatedGesture = gestureStarted
       invalidate()
     }
-    callback.isEnabled = owner != null && !session.committed
+    callback.isEnabled = owner != null
   }
 
   private fun animateTo(value: Float, complete: () -> Unit) {
@@ -213,6 +218,14 @@ class PredictiveBackHost(private val reactContext: ThemedReactContext) : ViewGro
 
   // Fabric lays out the React children. The host only changes drawing during a gesture.
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) = Unit
+
+  // The drawn destination is not yet the interactive route. A second touch must
+  // not operate the source pager or commit a competing swipe during handoff.
+  override fun onInterceptTouchEvent(event: MotionEvent): Boolean =
+    session.owner != null || super.onInterceptTouchEvent(event)
+
+  override fun onTouchEvent(event: MotionEvent): Boolean =
+    session.owner != null || super.onTouchEvent(event)
 }
 
 private class BackCommittedEvent(surfaceId: Int, viewId: Int, private val key: String, private val gestureId: Int) : Event<BackCommittedEvent>(surfaceId, viewId) {
