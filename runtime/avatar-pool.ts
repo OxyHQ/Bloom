@@ -1,4 +1,14 @@
 import { AuthoredAvatarEngine } from './avatar/authored-engine';
+import {
+  createWebGPUAvatarPresenter,
+  type WebGPUAvatarPresenter,
+  type WebGPUAvatarTarget,
+} from './avatar-webgpu-presenter';
+import {
+  createPBOAvatarPresenter,
+  PBO_MINIMUM_DESTINATIONS,
+  PBO_MAXIMUM_DESTINATION_AREA,
+} from './avatar-pbo-presenter';
 import { bindAvatarPointer } from './avatar/bind-pointer';
 import type { EditorRenderProps } from './avatar-contract';
 import type { CompleteEditorRecipe as EditorRecipe } from './avatar/recipe';
@@ -12,7 +22,10 @@ import {
 
 type Entry = AvatarSlotState & {
   canvas: HTMLCanvasElement;
-  context: CanvasRenderingContext2D;
+  context?: CanvasRenderingContext2D;
+  target?: WebGPUAvatarTarget;
+  revision: number;
+  delivered: number;
   size: number;
   width: number;
   height: number;
@@ -32,7 +45,23 @@ class EditorPool {
   readonly stage = document.createElement('canvas');
   readonly engine: AuthoredAvatarEngine;
   readonly entries: (Entry | undefined)[] = [];
-  readonly capacity: number;
+  private limit = 1;
+  private presenter?: WebGPUAvatarPresenter;
+  private presenterReady?: Promise<void>;
+  private cpuPresenter?: ReturnType<typeof createPBOAvatarPresenter>;
+  private recovering = false;
+  private sequence = 0;
+  private onVisibility = () => {
+    if (document.hidden) this.cpuPresenter?.cancelPending();
+  };
+  private presentations = new Set<Promise<void>>();
+  readonly presentation = {
+    webgpuFrames: 0,
+    pboFrames: 0,
+    directFrames: 0,
+    completed: 0,
+    maximumPending: 0,
+  };
   cell: number;
   private columns = 1;
   private observer: IntersectionObserver;
@@ -53,22 +82,7 @@ class EditorPool {
         lazyWork: true,
         resolveAsset: createCatalogAssetResolver(createCatalogMotion),
         onFrame: () => this.paint(),
-        onError: () => {
-          // Callbacks may synchronously attach a replacement. A fatal engine
-          // must never accept that reservation while its old entries drain.
-          this.failed = true;
-          for (const entry of [...this.entries]) {
-            try {
-              entry?.onRenderError?.();
-            } catch (error) {
-              // Preserve the caller's error without abandoning other entries'
-              // observers, reservations or final renderer disposal.
-              queueMicrotask(() => {
-                throw error;
-              });
-            }
-          }
-        },
+        onError: () => this.fail(),
       });
     } catch (error) {
       this.stage.remove();
@@ -83,12 +97,14 @@ class EditorPool {
       viewport[1]!,
     );
     // Reserve the maximum per-avatar backing (512) even before a future resize.
-    this.capacity = Math.min(200, Math.max(1, Math.floor(limit / 512)) ** 2);
+    this.limit = Math.min(200, Math.max(1, Math.floor(limit / 512)) ** 2);
+    document.addEventListener('visibilitychange', this.onVisibility);
     this.observer = new IntersectionObserver((changes) => {
       for (const change of changes) {
         const index = this.entries.findIndex((e) => e?.canvas === change.target);
         const entry = this.entries[index];
         if (!entry) continue;
+        if (entry.visible !== change.isIntersecting) entry.revision++;
         entry.visible = change.isIntersecting;
         if (entry.ready) {
           this.engine.setInstancePaused(index, frozen(entry.props) || !entry.visible);
@@ -99,6 +115,64 @@ class EditorPool {
         }
       }
     });
+  }
+  private initializePresenter(force = false) {
+    if (this.presenterReady) return this.presenterReady;
+    // Coalesce reservations during the shared engine load. A standalone avatar
+    // (including each legacy native WebView) must not allocate another GPU device.
+    if (!force && this.entries.filter(Boolean).length < 2) return Promise.resolve();
+    this.presenterReady = createWebGPUAvatarPresenter(
+      () => this.fail(),
+      (recovering) => {
+        if (this.disposed || this.failed) return;
+        this.recovering = recovering;
+        for (const [index, entry] of this.entries.entries()) {
+          if (!entry?.target) continue;
+          entry.revision++;
+          entry.dirty = true;
+          if (!recovering && entry.ready && entry.visible)
+            this.engine.setInstanceRendering(index, true);
+        }
+        this.updateCapacity();
+      },
+    ).then((presenter) => {
+      if (!presenter) return;
+      if (this.disposed || this.failed) {
+        presenter.dispose();
+        return;
+      }
+      const capacity = Math.min(
+        this.limit,
+        Math.max(1, Math.floor(presenter.maxTextureDimension2D / 512)) ** 2,
+      );
+      if (this.entries.length > capacity) {
+        presenter.dispose();
+        return;
+      }
+      this.limit = capacity;
+      this.presenter = presenter;
+    });
+    return this.presenterReady;
+  }
+  get capacity() {
+    return this.limit;
+  }
+  private updateCapacity() {
+    this.engine.setPresentationCapacity(!this.recovering && this.presentations.size < 2);
+  }
+  private fail() {
+    if (this.disposed || this.failed) return;
+    // Reentrant replacement callbacks must never reserve this failed engine.
+    this.failed = true;
+    for (const entry of [...this.entries]) {
+      try {
+        entry?.onRenderError?.();
+      } catch (error) {
+        queueMicrotask(() => {
+          throw error;
+        });
+      }
+    }
   }
   get available() {
     return (
@@ -117,6 +191,7 @@ class EditorPool {
     this.entries.forEach((entry, index) => {
       if (!entry) return;
       entry.dirty = true;
+      entry.revision++;
       if (entry.ready && entry.visible) this.engine.setInstanceRendering(index, true);
     });
   }
@@ -143,6 +218,7 @@ class EditorPool {
   private release(index: number, entry: Entry) {
     if (this.entries[index] !== entry) return;
     this.observer.unobserve(entry.canvas);
+    if (entry.target) this.presenter?.release(entry.target);
     this.engine.setInstancePaused(index, true);
     this.engine.setInstanceRendering(index, false);
     this.entries[index] = undefined;
@@ -150,34 +226,60 @@ class EditorPool {
     if (!this.entries.length) {
       this.disposed = true;
       this.observer.disconnect();
+      document.removeEventListener('visibilitychange', this.onVisibility);
       this.engine.dispose();
+      this.cpuPresenter?.dispose();
+      this.presenter?.dispose();
       this.stage.remove();
       pools.delete(this);
     } else this.layout();
   }
   private paint() {
-    const pixels = this.stage.width / this.columns;
-    this.entries.forEach((entry, index) => {
+    if (this.disposed || this.failed || this.recovering) return;
+    const stageWidth = this.stage.width,
+      stageHeight = this.stage.height;
+    const sequence = ++this.sequence;
+    const pixels = stageWidth / this.columns;
+    const ratio = Math.min(devicePixelRatio || 1, 2);
+    const records = this.entries.flatMap((entry, index) => {
       if (!entry?.ready || !entry.visible || (frozen(entry.props) && entry.painted && !entry.dirty))
-        return;
-      const { canvas, context } = entry;
-      const ratio = Math.min(devicePixelRatio || 1, 2);
+        return [];
       const width = Math.max(1, Math.round(entry.width * ratio));
       const height = Math.max(1, Math.round(entry.height * ratio));
-      if (canvas.width !== width) canvas.width = width;
-      if (canvas.height !== height) canvas.height = height;
-      context.clearRect(0, 0, width, height);
-      context.drawImage(
-        this.stage,
-        (index % this.columns) * pixels,
-        Math.floor(index / this.columns) * pixels,
-        pixels,
-        pixels,
-        0,
-        0,
-        width,
-        height,
-      );
+      if (entry.context) {
+        if (entry.canvas.width !== width) entry.canvas.width = width;
+        if (entry.canvas.height !== height) entry.canvas.height = height;
+      }
+      const revision = entry.revision;
+      const isCurrent = () =>
+        !this.disposed &&
+        !this.failed &&
+        this.entries[index] === entry &&
+        entry.revision === revision &&
+        sequence >= entry.delivered &&
+        this.stage.width === stageWidth &&
+        this.stage.height === stageHeight &&
+        entry.ready &&
+        entry.visible &&
+        entry.canvas.width === width &&
+        entry.canvas.height === height;
+      return [
+        {
+          entry,
+          index,
+          width,
+          height,
+          isCurrent,
+          sourceX: (index % this.columns) * pixels,
+          sourceY: Math.floor(index / this.columns) * pixels,
+        },
+      ];
+    });
+    type Record = (typeof records)[number];
+    const finish = (record: Record) => {
+      if (!record.isCurrent()) return;
+      const { entry, index } = record;
+      entry.delivered = sequence;
       entry.dirty = false;
       if (frozen(entry.props)) this.engine.setInstanceRendering(index, false);
       if (!entry.painted) {
@@ -185,14 +287,114 @@ class EditorPool {
         try {
           entry.onReady?.();
         } catch (error) {
-          // The first image is already presented. A caller notification cannot
-          // interrupt the remaining destinations or the shared frame scheduler.
           queueMicrotask(() => {
             throw error;
           });
         }
       }
-    });
+    };
+    const small = records.filter(
+      (record) =>
+        record.entry.context && record.width * record.height <= PBO_MAXIMUM_DESTINATION_AREA,
+    );
+    const cpu = small.length >= PBO_MINIMUM_DESTINATIONS ? small : [];
+    const gpu = records.filter((record) => record.entry.target);
+    const deferred = new Set([...cpu, ...gpu]);
+    const jobs: Promise<boolean>[] = [];
+    try {
+      if (cpu.length) {
+        this.cpuPresenter ??= createPBOAvatarPresenter();
+        this.presentation.pboFrames++;
+        jobs.push(
+          this.cpuPresenter
+            .present(
+              this.stage,
+              cpu.map((record) => ({
+                context: record.entry.context!,
+                sourceX: record.sourceX,
+                sourceY: record.sourceY,
+                sourceWidth: pixels,
+                sourceHeight: pixels,
+                destinationWidth: record.width,
+                destinationHeight: record.height,
+                isCurrent: record.isCurrent,
+                onPresented: () => {
+                  record.entry.delivered = sequence;
+                },
+              })),
+            )
+            .then((completed) => {
+              if (completed) cpu.forEach(finish);
+              return completed;
+            }),
+        );
+      }
+      if (gpu.length && this.presenter) {
+        this.presentation.webgpuFrames++;
+        jobs.push(
+          this.presenter
+            .present(
+              this.stage,
+              gpu.map((record) => ({
+                target: record.entry.target!,
+                sourceX: record.sourceX,
+                sourceY: record.sourceY,
+                sourceWidth: pixels,
+                sourceHeight: pixels,
+                destinationWidth: record.width,
+                destinationHeight: record.height,
+              })),
+            )
+            .then((completed) => {
+              if (completed) gpu.forEach(finish);
+              return completed;
+            }),
+        );
+      }
+      let direct = false;
+      for (const record of records) {
+        if (deferred.has(record) || !record.entry.context) continue;
+        const context = record.entry.context;
+        context.clearRect(0, 0, record.width, record.height);
+        context.drawImage(
+          this.stage,
+          record.sourceX,
+          record.sourceY,
+          pixels,
+          pixels,
+          0,
+          0,
+          record.width,
+          record.height,
+        );
+        finish(record);
+        direct = true;
+      }
+      if (direct) this.presentation.directFrames++;
+    } catch {
+      // A backend may fail after another has submitted; always observe every
+      // pending rejection while the pool releases its entries and resources.
+      void Promise.all(jobs).catch(() => {});
+      this.fail();
+      return;
+    }
+    if (!jobs.length) return;
+    let task: Promise<void>;
+    task = Promise.all(jobs)
+      .then((results) => {
+        if (results.some(Boolean)) this.presentation.completed++;
+      })
+      .catch(() => this.fail())
+      .finally(() => {
+        this.presentations.delete(task);
+        if (!this.disposed && !this.failed) this.updateCapacity();
+      });
+    this.presentations.add(task);
+    this.presentation.maximumPending = Math.max(
+      this.presentation.maximumPending,
+      this.presentations.size,
+    );
+    this.updateCapacity();
   }
   async attach(
     canvas: HTMLCanvasElement,
@@ -206,20 +408,10 @@ class EditorPool {
     let index = this.entries.findIndex((e) => !e);
     if (index < 0) index = this.entries.length;
     if (!this.available || index >= this.capacity) throw Error('Editor scene capacity exceeded');
-    const context = canvas.getContext('2d');
-    if (!context) {
-      if (!this.entries.length) {
-        this.engine.dispose();
-        this.stage.remove();
-        this.observer.disconnect();
-        pools.delete(this);
-        this.disposed = true;
-      }
-      throw Error('Editor canvas unavailable');
-    }
     const entry: Entry = {
       canvas,
-      context,
+      revision: 0,
+      delivered: 0,
       props: initial,
       ready: false,
       visible: true,
@@ -261,6 +453,20 @@ class EditorPool {
     const wait = <T>(promise: Promise<T>) => Promise.race([promise, interrupted]);
     try {
       await wait(this.engine.loaded);
+      await wait(this.initializePresenter());
+      if (this.failed) throw Error('Avatar presentation unavailable');
+      entry.target = this.presenter?.attach(canvas) ?? undefined;
+      if (!entry.target) {
+        entry.context = canvas.getContext('2d') ?? undefined;
+        if (!entry.context) {
+          // A retained WebGPU canvas cannot become 2D, including after a new
+          // runtime URL replaces the module's ownership map. Fresh singletons
+          // already acquired 2D above and never enter this forced GPU path.
+          await wait(this.initializePresenter(true));
+          entry.target = this.presenter?.attach(canvas) ?? undefined;
+          if (!entry.target) throw Error('Editor canvas unavailable');
+        }
+      }
       this.layout();
       await wait(this.resolution());
       await wait(this.engine.setPreset(index, recipe.preset));
@@ -316,6 +522,7 @@ class EditorPool {
           wait,
           dispose,
           onPresentation: (props) => {
+            entry.revision++;
             pointerOptions.enabled = !!props.interactive && !frozen(props);
           },
         },
@@ -330,6 +537,7 @@ class EditorPool {
         entry.height = change?.contentRect.height ?? canvas.clientHeight;
         entry.size = sizeFor(canvas);
         entry.dirty = true;
+        entry.revision++;
         void this.resolution()
           .then(() => {
             if (!disposed) {
@@ -377,6 +585,11 @@ export function editorPoolDiagnostics() {
     avatars: p.entries.filter(Boolean).length,
     pending: p.entries.filter((e) => e && !e.ready).length,
     activeIndices: p.entries.flatMap((entry, index) => (entry ? [index] : [])),
+    presentation: {
+      ...p.presentation,
+      webgpuTargets: p.entries.filter((entry) => entry?.target).length,
+      canvas2dTargets: p.entries.filter((entry) => entry?.context).length,
+    },
     stats: p.engine.stats(),
   }));
 }
