@@ -150,7 +150,7 @@ try {
   throw error;
 } finally {
   await mkdir(output, { recursive: true });
-  await writeFile(`${output}/report.json`, JSON.stringify(report, null, 2) + '\n');
+  await writeFile(`${output}/report.json`, `${JSON.stringify(report, null, 2)}\n`);
   await browser.close();
   await new Promise((closed) => server.close(closed));
 }
