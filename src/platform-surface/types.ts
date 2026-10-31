@@ -67,8 +67,13 @@ export interface PopupSurfaceProps {
   align: FloatingAlign;
   sideOffset: number;
   alignOffset: number;
-  /** Accessible role of the popup's content. */
-  role: 'menu' | 'listbox' | 'dialog';
+  /**
+   * Accessible role of the popup's content. A `tooltip` is a hint, not a
+   * control: the platform shows it without taking the pointer or the keyboard
+   * (no grab, presses pass through it) while it is mounted, and closes it
+   * itself only with its parent.
+   */
+  role: 'menu' | 'listbox' | 'dialog' | 'tooltip';
   /** Accessible name. */
   label?: string;
   /** Called once when the platform closes the popup itself. */
