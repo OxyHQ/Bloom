@@ -8,6 +8,10 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 
 - `DocumentScrollRestorationBoundary` lets an app declare that it or a route owns document scroll restoration, so the compositor does not compete with that owner.
 
+### Changed
+
+- Foundations stories explain the current color presets, roles and surfaces using the shared theme contract.
+
 ### Fixed
 
 - Window controls keep their space beside compact sidebars, including shells with explicit navigation placement. Stateful headers survive fullscreen and navigation changes.
