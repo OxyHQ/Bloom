@@ -127,3 +127,22 @@ it('retains an active mirror if its original backup is missing', () => {
   expect(result.status).not.toBe(0);
   expect(readFileSync(join(install, 'src/index.ts'), 'utf8')).toContain('localMarker');
 });
+
+it('links built dependencies from the published virtual-store context without modifying them', () => {
+  const pkg = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'));
+  pkg.dependencies = { 'fixture-dependency': '1.0.0' };
+  writeFileSync(join(source, 'package.json'), JSON.stringify(pkg));
+  const dependency = join(target, 'node_modules/fixture-dependency');
+  mkdirSync(dependency, { recursive: true });
+  writeFileSync(
+    join(dependency, 'package.json'),
+    JSON.stringify({ name: 'fixture-dependency', version: '1.0.0', main: 'index.js' }),
+  );
+  writeFileSync(join(dependency, 'index.js'), 'module.exports = "original dependency";');
+  run(`--source=${source}`, '--built');
+  const linked = join(install, 'node_modules/fixture-dependency');
+  expect(readFileSync(join(linked, 'index.js'), 'utf8')).toContain('original dependency');
+  expect(lstatSync(linked).isSymbolicLink()).toBe(true);
+  run('--restore');
+  expect(readFileSync(join(dependency, 'index.js'), 'utf8')).toContain('original dependency');
+});
