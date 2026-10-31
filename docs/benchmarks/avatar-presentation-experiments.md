@@ -24,6 +24,20 @@ records the full source, browser, timing and temperature context.
 | 24 live authored avatars | Persistent transferred Offscreen2D destinations | 24.74fps, approximately control | No benefit sufficient to justify contract changes |
 | 64 live avatars,64px source →128px destination | Persistent transferred Offscreen2D destinations | 11.02fps versus original 1.62fps; scratch bitmaprenderer 5.19fps | Useful diagnostic, still slow and not production eligible: first-ready snapshot fails |
 
+Additional paired measurements distinguish the workloads further:
+
+- The CPU atlas roundtrip (`none` then `premultiply`) completed about 2.0→20.7→2.1
+  full frame copies/s for 64 small avatars. It regressed 24 authored192px outputs
+  from 27.99→18.10→25.32 and the actual 48-mounted/8-visible page from
+  50.79→36.85→50.40. Stale, fallback and error counts were zero. It is not a
+  universal replacement. A physical mixed-character gate preserved 665,600 RGBA
+  and decoded-PNG pixels across 64→128 and192→224.
+- Presentation-only WebGPU on the same Chromium 159 source fixture completed
+  32.94 GPU batches/s versus 18.39 direct-copy batches/s for 24 visible avatars.
+  On the WebView 148 host with 192→192 outputs it completed 59.8 GPU batches/s versus
+  28.2 direct. Queue capacity remained 2. These GPU-completion and canvas-copy
+  counters do not independently count compositor-displayed frames.
+
 A separate ablation kept full WebGL drawing and explicit flushing, but suppressed
 presentation: normal 27.25fps → no `drawImage` 48.71fps → neither clear nor copy 59.92fps
 → restored 25.95fps. This is evidence about the destination presentation cost, not
@@ -133,8 +147,20 @@ hooks both image-copy APIs to the context image.
 Bloom's current web snapshot, embedded live-WebView snapshot, web still capture
 and embedded still capture all use `canvas.toDataURL('image/png')`. The PNG gate
 therefore tests those actual contracts; it does not claim the browser's
-cross-context `drawImage` behavior is correct. Scaled PNG fidelity, immediate
-snapshot ordering, lifecycle and physical throughput remain separate gates.
+cross-context `drawImage` behavior is correct. After removing the unnecessary per-tile UV clamp (the HTML drawImage algorithm
+filters neighboring pixels within the original atlas), Chromium 159 passed all
+120 character/state/size cases: 15,390,720 decoded PNG pixels both immediately
+after submit and after presentation, with zero differences. The four scales were
+validated explicitly after correcting an external-CDP viewport default that had
+initially changed DPR; those wrong-resolution runs were excluded.
+
+WebView 148 on the same physical GPU still differs when scaling:192→192 remains
+exact in all three states, but scaled outputs differ by up to 1 premultiplied
+channel unit and up to 2 alpha units. At 64→128 the difference is consistently
+rounding upward relative to Canvas2D, including opaque colors. This is a real
+backend quantization difference, not an approved tolerance change. Exact output
+conformance and routing must be addressed before claiming universal pixel parity.
+Lifecycle and physical throughput remain separate gates.
 
 ## Index locality audit, not a shipped change
 
