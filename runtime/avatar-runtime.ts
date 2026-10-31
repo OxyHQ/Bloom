@@ -34,11 +34,18 @@ export async function createAvatar(
   let applied = initial;
   let disposed = false;
   let running: Promise<void> | undefined;
+  let supersedeUpdate: (() => void) | undefined;
   const reconcile = async () => {
     while (!disposed && applied !== latest) {
       const props = latest;
       const next = resolveCompleteEditorRecipe(props);
-      await current.update(props, next, () => !disposed && latest === props);
+      let supersede!: () => void;
+      const superseded = new Promise<void>((resolve) => {
+        supersede = resolve;
+      });
+      supersedeUpdate = supersede;
+      await current.update(props, next, () => !disposed && latest === props, superseded);
+      if (supersedeUpdate === supersede) supersedeUpdate = undefined;
       if (!disposed && latest === props) callbacks.onCapabilities?.(next.capabilities);
       applied = props;
     }
@@ -46,7 +53,9 @@ export async function createAvatar(
   return {
     update(props) {
       if (disposed) return;
+      const changed = latest !== props;
       latest = props;
+      if (changed) supersedeUpdate?.();
       // Presentation constraints must not queue behind an optional action fetch.
       current.setPresentation(props);
       if (!running)
@@ -67,6 +76,7 @@ export async function createAvatar(
     dispose() {
       if (disposed) return;
       disposed = true;
+      supersedeUpdate?.();
       pending.abort();
       current.dispose();
     },
