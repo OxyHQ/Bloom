@@ -245,7 +245,10 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
     {
      "type": "View",
      "props": {
-      "ref": null,
+      "ref": {
+       "current": null
+      },
+      "collapsable": false,
       "role": "menubar",
       "aria-label": "Menu bar",
       "testID": "bar",
@@ -743,7 +746,10 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
     {
      "type": "View",
      "props": {
-      "ref": null,
+      "ref": {
+       "current": null
+      },
+      "collapsable": false,
       "role": "menubar",
       "aria-label": "Menu bar",
       "testID": "bar",
@@ -1723,7 +1729,10 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
     {
      "type": "View",
      "props": {
-      "ref": null,
+      "ref": {
+       "current": null
+      },
+      "collapsable": false,
       "role": "menubar",
       "aria-label": "Menu bar",
       "testID": "bar",
@@ -2959,7 +2968,10 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
     {
      "type": "View",
      "props": {
-      "ref": null,
+      "ref": {
+       "current": null
+      },
+      "collapsable": false,
       "role": "menubar",
       "aria-label": "Menu bar",
       "testID": "bar",

@@ -428,6 +428,94 @@ describe('Menubar on a desktop with platform popups', () => {
     expect(state()).toBe('open: none, keyboard: elsewhere');
   });
 
+  // A Mac's bar with a menu open: the pointer crossing the titles opens each one's menu in the open
+  // one's place, without a press.
+  const move = (screen: ReturnType<typeof render>, testID: string, pointerType = 'mouse') =>
+    fireEvent(screen.getByTestId(testID), 'pointerMove', { nativeEvent: { pointerType } });
+
+  it('with a menu open, the pointer crossing onto another title opens its menu in place, no press', () => {
+    const { screen, platform, chosen, state } = bar();
+    fireEvent.press(screen.getByText('File'));
+    move(screen, 'help');
+    expect(state()).toBe('open: help, keyboard: elsewhere');
+    expect(screen.queryByTestId('platform-file-menu')).toBeNull();
+    expect(screen.getByTestId('platform-help-menu')).toBeTruthy();
+    // Opened by the pointer: no row is active, so Return chooses nothing.
+    act(() => platform.popups.get('help-menu')?.onKey?.('Enter'));
+    expect(chosen).not.toHaveBeenCalled();
+    move(screen, 'app');
+    expect(state()).toBe('open: app, keyboard: elsewhere');
+  });
+
+  it('listens to the pointer only while another menu is open: never at rest, on the open title or a disabled one', () => {
+    const { screen } = bar();
+    for (const title of ['app', 'file', 'edit', 'help']) {
+      expect(screen.getByTestId(title).props.onPointerMove).toBeUndefined();
+    }
+    fireEvent.press(screen.getByText('File'));
+    expect(screen.getByTestId('file').props.onPointerMove).toBeUndefined();
+    expect(screen.getByTestId('edit').props.onPointerMove).toBeUndefined();
+    expect(screen.getByTestId('app').props.onPointerMove).toBeInstanceOf(Function);
+    expect(screen.getByTestId('help').props.onPointerMove).toBeInstanceOf(Function);
+  });
+
+  it('takes a finger dragging across the titles for no intent', () => {
+    const { screen, state } = bar();
+    fireEvent.press(screen.getByText('File'));
+    move(screen, 'help', 'touch');
+    expect(state()).toBe('open: file, keyboard: elsewhere');
+  });
+
+  it("moves the keyboard's title with the pointer's, while the bar has the keyboard", () => {
+    const { screen, platform, state } = bar('app');
+    platform.press('ArrowDown');
+    move(screen, 'file');
+    expect(state()).toBe('open: file, keyboard: file');
+    // The keys go on from there.
+    platform.press('ArrowRight');
+    expect(state()).toBe('open: help, keyboard: help');
+  });
+
+  it('names the bar as the view the pointer goes on driving, for the menu and not its submenu', () => {
+    const { screen, platform } = bar();
+    fireEvent.press(screen.getByText('File'));
+    const tracking = platform.popups.get('file-menu')?.trackingRef;
+    expect(tracking).toBeTruthy();
+    // The bar's own view, the one carrying its role (the test renderer hands host views their ref
+    // as a prop).
+    expect(screen.getByLabelText('Menu bar').props.ref).toBe(tracking);
+    act(() => platform.popups.get('file-menu')?.onKey?.('ArrowDown'));
+    act(() => platform.popups.get('file-menu')?.onKey?.('ArrowDown'));
+    act(() => platform.popups.get('file-menu')?.onKey?.('ArrowRight'));
+    expect(platform.popups.get('flyout')?.trackingRef).toBeUndefined();
+  });
+
+  it('with a menu opened by a press, ← and → open the next one in its place, the keyboard left where it was', () => {
+    const { screen, platform, chosen, state } = bar();
+    fireEvent.press(screen.getByText('File'));
+    expect(platform.press('ArrowRight')).toBe(true);
+    expect(state()).toBe('open: help, keyboard: elsewhere');
+    expect(screen.queryByTestId('platform-file-menu')).toBeNull();
+    expect(platform.press('ArrowLeft')).toBe(true);
+    expect(state()).toBe('open: file, keyboard: elsewhere');
+    // Its other keys are the menu's own, never the bar's.
+    expect(platform.press('ArrowDown')).toBe(false);
+    expect(platform.press('h')).toBe(false);
+    expect(platform.press('Escape')).toBe(false);
+    // Opened from the keys, on its first row: Return chooses it.
+    act(() => platform.popups.get('file-menu')?.onKey?.('Enter'));
+    expect(chosen).toHaveBeenCalledWith('New');
+  });
+
+  it('leaves → to a menu opened by a press on a row that opens a submenu', () => {
+    const { screen, platform, state } = bar();
+    fireEvent.press(screen.getByText('File'));
+    act(() => platform.popups.get('file-menu')?.onKey?.('ArrowDown'));
+    act(() => platform.popups.get('file-menu')?.onKey?.('ArrowDown'));
+    expect(platform.press('ArrowRight')).toBe(false);
+    expect(state()).toBe('open: file, keyboard: elsewhere');
+  });
+
   it('never takes a key with Ctrl, Alt or Meta', () => {
     const { platform, state } = bar('app');
     expect(platform.press('ArrowRight', { ctrlKey: true })).toBe(false);

@@ -287,6 +287,71 @@ describe('Menubar and ContextMenu (web) — the same keys', () => {
     expect(document.activeElement).toBe(trigger('file'));
   });
 
+  function TwoMenus() {
+    return (
+      <Menubar>
+        <MenubarMenu value="file">
+          <MenubarTrigger testID="file">File</MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem>New</MenubarItem>
+            <MenubarItem>Open</MenubarItem>
+          </MenubarContent>
+        </MenubarMenu>
+        <MenubarMenu value="edit">
+          <MenubarTrigger testID="edit">Edit</MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem>Undo</MenubarItem>
+            <MenubarItem>Redo</MenubarItem>
+          </MenubarContent>
+        </MenubarMenu>
+      </Menubar>
+    );
+  }
+
+  /** The pointer moving over a title, as the browser reports a mouse's (or a finger's). */
+  function pointerOver(testID: string, pointerType = 'mouse') {
+    const target = trigger(testID);
+    act(() => {
+      const event = new MouseEvent('pointermove', { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'pointerType', { value: pointerType });
+      target.dispatchEvent(event);
+    });
+    flush();
+  }
+
+  it('Menubar: with a menu open, the pointer moving onto another title opens its menu in place', () => {
+    mount(<TwoMenus />);
+    // At rest the pointer opens nothing: a menu bar opens by a press.
+    pointerOver('edit');
+    expect(expanded('edit')).toBe(false);
+    act(() => trigger('file').click());
+    flush();
+    expect(expanded('file')).toBe(true);
+    // A finger dragging across is no intent.
+    pointerOver('edit', 'touch');
+    expect(expanded('file')).toBe(true);
+    pointerOver('edit');
+    expect(expanded('edit')).toBe(true);
+    expect(expanded('file')).toBe(false);
+    expect(row('Undo')).toBeTruthy();
+    expect(row('New')).toBeNull();
+  });
+
+  it('Menubar: a menu opened by a press takes ← and →, the next menu opening on its first row', () => {
+    mount(<TwoMenus />);
+    openWith('Enter', 'file');
+    expect(focusedName()).toBe('New');
+    press('ArrowRight');
+    expect(expanded('edit')).toBe(true);
+    expect(expanded('file')).toBe(false);
+    expect(focusedName()).toBe('Undo');
+    press('ArrowLeft');
+    expect(expanded('file')).toBe(true);
+    expect(focusedName()).toBe('New');
+    press('ArrowDown');
+    expect(focusedName()).toBe('Open');
+  });
+
   it('ContextMenu: a right-click opens into the first row, and the arrows move', () => {
     const onOpen = jest.fn();
     mount(
