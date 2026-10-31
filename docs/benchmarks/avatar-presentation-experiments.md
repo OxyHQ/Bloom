@@ -158,9 +158,29 @@ WebView 148 on the same physical GPU still differs when scaling:192→192 remain
 exact in all three states, but scaled outputs differ by up to 1 premultiplied
 channel unit and up to 2 alpha units. At 64→128 the difference is consistently
 rounding upward relative to Canvas2D, including opaque colors. This is a real
-backend quantization difference, not an approved tolerance change. Exact output
-conformance and routing must be addressed before claiming universal pixel parity.
-Lifecycle and physical throughput remain separate gates.
+backend quantization difference. A separate precision gate preserves the strict
+Chromium and 1:1 gates: independently fixed limits are 1/255 premultiplied RGB,
+2/255 alpha and 3/255 composited RGB (the conservative sum of the first two).
+All 120 physical PNG pairs / 15,390,720 pixels passed this separate gate. Painted
+over black, white and the actual Oxy light/dark surface fills, the largest RGB
+difference was 2/255; the largest alpha-weighted centroid shift was 0.028184 px.
+The [reviewed contact sheet](avatar-webgpu-webview148-quantization.png) preserves
+reference/output pairs and a nearest-neighbor enlarged edge. The
+[per-case results](avatar-webgpu-webview148-quantization.json) record the limits,
+input hash and unchanged exact 1:1 result. This bounded backend precision
+variation is accepted after visual review; it is not binary pixel identity,
+reduced resolution, reduced MSAA or a modified shader/filter. Lifecycle and
+physical throughput remain separate gates.
+
+To reproduce this precision check, capture the existing physical page with
+`AVATAR_CAPTURE_ALL_IMAGES=1 node scripts/verify-avatar-webgpu-cdp.mjs` (plus the
+required source/CDP environment). Its exact gate intentionally still fails on
+scaled WebView output. Then run
+`AVATAR_QUANTIZATION_INPUT=<report.json> node scripts/analyze-avatar-webgpu-quantization.mjs`.
+The second command recomputes all PNG comparisons, paints both arms onto the four
+backgrounds in the same local Canvas2D backend, checks the independent limits and
+writes the contact sheet. It never treats raw `drawImage(webgpuCanvas)` diagnostic
+pixels as PNG results. Neither command measures frame rate.
 
 ## Index locality audit, not a shipped change
 
