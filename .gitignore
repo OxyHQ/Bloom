@@ -11,3 +11,5 @@ storybook-static/
 android/build/
 android/.gradle/
 .native-check/
+scripts/native-check/.gradle/
+scripts/native-check/build/
