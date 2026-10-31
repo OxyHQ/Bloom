@@ -930,3 +930,21 @@ Android `onRenderProcessGone` and WKWebView `onContentProcessDidTerminate` handl
 [upstream event documentation](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#oncontentprocessdidterminate)
 explicitly describes OS memory reclamation/background termination. Timeout recovery for
 queued stills does not establish recovery of an already live native avatar.
+
+#### Verification scope of the efficiency change
+
+The combined runtime source passed the focused Jest union: 16 suites, 108 tests, covering
+characters, native still lifetime/capture, cache cancellation, runtime loading, retargeting,
+provider isolation and the family/documentation gates. The self-contained Node selection
+passed 279 tests across 15 files, including exact motion transport and authored JSON parity,
+geometry transport, shared-transform sampling, catalog layout/fitting and material rules.
+
+The broader `node --test --test-concurrency=2 scripts/test-avatar-*.mjs` invocation was also
+attempted: 31 files produced 428 test results, with 296 passes and 132 failures. The failures
+were missing historical `.local/` captures (`ENOENT`) in 16 scripts; examples include
+`avatar-original-geometry`, `avatar-computer-source`, `avatar-reaction-pointer`,
+`avatar-eye-activities` and `avatar-catalog-rig/rig2`. None of those 16 test scripts changed
+from the `798d6513` foundation, and those inputs were absent in the shared checkout too.
+The passing 15-file selection is not a claim that the broader suite passed. No source
+oracle was regenerated from the implementation, assertion weakened or missing-input test
+silently skipped. Full historical native-observation replay still requires those captures.
