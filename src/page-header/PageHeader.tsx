@@ -259,10 +259,15 @@ function PageHeaderComponent({
     screenActions == null &&
     hostActions == null;
   const windowToolbar =
-    positionedByScreen && windowChrome && platformWindow && !barEmpty
+    positionedByScreen &&
+    windowChrome &&
+    windowChrome.topEdge !== false &&
+    platformWindow &&
+    !barEmpty
       ? windowToolbarHeight(platformWindow.metrics)
       : 0;
   const windowRoom = positionedByScreen && windowChrome ? windowChrome.leading : 0;
+  const windowRoomCss = positionedByScreen ? windowChrome?.leadingCss : undefined;
   const padTop = windowToolbar > 0 ? 0 : safeTop;
   const height =
     measuredHeight ||
@@ -762,7 +767,7 @@ function PageHeaderComponent({
         {barEmpty ? null : (
           <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
             <StyledView
-              {...(windowRoom > 0
+              {...(windowRoom > 0 || windowRoomCss != null
                 ? dataHooks({ bloomPageHeaderBar: '', bloomPageHeaderWindow: '' })
                 : dataHook('bloomPageHeaderBar'))}
               className={
@@ -779,8 +784,10 @@ function PageHeaderComponent({
                     ? { gap: 2, minHeight: windowToolbar || NAVIGATION_HEIGHT }
                     : windowToolbar > 0 && { minHeight: windowToolbar },
                   isWeb
-                    ? windowRoom > 0 &&
-                      ({ '--bloom-page-header-window-room': `${windowRoom}px` } as WebCssStyle)
+                    ? (windowRoom > 0 || windowRoomCss != null) &&
+                      ({
+                        '--bloom-page-header-window-room': windowRoomCss ?? `${windowRoom}px`,
+                      } as WebCssStyle)
                     : windowRoom > 0
                       ? { paddingInlineStart: barStart, paddingInlineEnd: sideInset }
                       : { paddingLeft: sideInset, paddingRight: sideInset },

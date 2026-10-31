@@ -28,13 +28,14 @@ import type { ImageResolver } from '../image-resolver';
  *   - `useMinimizeState()` hands every caller a PRIVATE fallback instead —
  *     silent, and the only symptom is a tab bar that never minimizes.
  *
- * Storybook's own decorator mounts `BloomThemeProvider`, so the theme keeps
+ * This contract demo opts into the decorator's theme-only harness so the theme keeps
  * working in the "without" story. That is a limit of this harness, not of the
  * claim: an app with no Bloom root at all loses the theme too.
  */
 const meta: Meta = {
   id: 'foundations-bloom-provider',
   title: 'Composition/Provider',
+  parameters: { bloomProvider: 'theme-only' },
 };
 
 export default meta;

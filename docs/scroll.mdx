@@ -21,12 +21,39 @@ import { expoRouterScrollAdapter } from '@oxy.so/bloom/scroll/expo-router';
 </ScrollRestorationProvider>
 ```
 
-An expo-router app gets this from [`BloomProvider`](/docs/bloom/main/provider)
-already. A Vite/SPA consumer mounts it directly with its own adapter.
+An app using [`BloomProvider`](/docs/bloom/main/provider) supplies its adapter
+through `scrollAdapter`; omitting it leaves the root unconnected to router
+identity and focus. Panel scopes can still supply their own identity, and an
+explicit restoration key can distinguish content within that scope. A Vite/SPA
+consumer can mount the restoration provider with its own adapter.
 
 **The adapter must be a module-level constant** — the core calls its members as
 hooks, so a value built inside a component changes the hook identity every
 render.
+
+## A document restored by the host
+
+Normally a document-flow panel layout restores the window once for the whole
+workspace. If a router or a descendant route already restores that same window,
+declare that ownership around the shell:
+
+```tsx
+import { DocumentScrollRestorationBoundary } from '@oxy.so/bloom/scroll';
+
+<DocumentScrollRestorationBoundary>
+  <AppShell panelLayout={layout} />
+</DocumentScrollRestorationBoundary>
+```
+
+The boundary renders no element and does not restore anything itself: the host
+must supply the document restoration. It suppresses automatic window restoration
+in the subtree, while bounded element scrollers keep their own restoration.
+Independent overlay screen scopes still own their own scrollable state. Explicit
+`useScrollRestoration` calls remain active, so a route may decide which content
+to restore and which content, such as a conversation timeline, manages itself.
+This boundary does not extend a panel's store lifetime: if leaving the shell
+unmounts its panel scope, returning starts a new scope unless the host persists
+and supplies its own snapshot.
 
 ## Global adapter keys and independent panel histories
 

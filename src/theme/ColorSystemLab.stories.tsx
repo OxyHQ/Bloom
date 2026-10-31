@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../typography';
 import { useGlobals } from 'storybook/preview-api';
 import { SocialTemplate } from '../../templates/social/SocialTemplate';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -12,6 +13,7 @@ import {
   type ColorPresetRecipe,
 } from './color-presets';
 import { getResolvedTokens } from './token-registry';
+import { useTheme } from './use-theme';
 
 type ColorMode = 'light' | 'dark';
 
@@ -55,7 +57,8 @@ function resolveLabPalette(recipe: ColorRecipe, mode: ColorMode): LabPalette {
   };
 }
 const meta: Meta = {
-  title: 'Foundations/Color System Playground',
+  id: 'foundations-color-system-playground',
+  title: 'Foundations/Color/Explorer',
   parameters: {
     layout: 'fullscreen',
     bloomScroll: 'document',
@@ -67,6 +70,7 @@ export default meta;
 type Story = StoryObj;
 
 function Swatch({ label, color, text }: { label: string; color: string; text: string }) {
+  const styles = useLabStyles();
   return (
     <View style={styles.swatchItem}>
       <View style={[styles.swatch, { backgroundColor: color }]} />
@@ -88,17 +92,15 @@ function FilterButton({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      aria-pressed={selected}
+    <Button
+      size="sm"
+      tone="neutral"
+      appearance={selected ? 'subtle' : 'plain'}
+      pressed={selected}
       onPress={onPress}
-      style={[styles.filterButton, selected && styles.filterButtonSelected]}
     >
-      <Text style={[styles.filterButtonText, selected && styles.filterButtonTextSelected]}>
-        {label}
-      </Text>
-    </Pressable>
+      {label}
+    </Button>
   );
 }
 
@@ -109,9 +111,11 @@ function ColorSystemLab({
   globals: Record<string, unknown>;
   updateGlobals: (globals: Record<string, unknown>) => void;
 }) {
+  const styles = useLabStyles();
+  const { colors } = useTheme();
   const [authenticated, setAuthenticated] = useState(true);
   const [familyFilter, setFamilyFilter] = useState<RecipeFamilyFilter>('all');
-  const [pairingFilter, setPairingFilter] = useState<RecipePairingFilter>('curated');
+  const [pairingFilter, setPairingFilter] = useState<RecipePairingFilter>('all');
   const visibleRecipes = COLOR_RECIPES.filter(
     (recipe) =>
       (familyFilter === 'all' || recipe.family === familyFilter) &&
@@ -128,11 +132,11 @@ function ColorSystemLab({
       <View style={styles.page}>
         <View style={styles.labHeader}>
           <View style={styles.labHeading}>
-            <Text style={styles.labEyebrow}>BLOOM COLOR LAB · MENTION INTERFACE</Text>
-            <Text style={styles.labTitle}>More energy, less pastel</Text>
+            <Text style={styles.labEyebrow}>BLOOM COLOR · REGISTERED PRESETS</Text>
+            <Text style={styles.labTitle}>Color presets and semantic roles</Text>
             <Text style={styles.labDescription}>
-              The same Mention structure applied to {COLOR_RECIPES.length} dynamic recipes. Large
-              surfaces stay neutral while identity and action carry the saturated colour.
+              Every entry is a registered colorPreset from COLOR_PRESET_REGISTRY. Compare resolved
+              roles in light and dark, then apply the selection to the same Mention composition.
             </Text>
             <Button
               href="./?path=/story/foundations-color-roles-in-context--first-direction"
@@ -143,29 +147,37 @@ function ColorSystemLab({
             >
               Open colour roles in context
             </Button>
+            <Button
+              href="./?path=/story/foundations-color--modes"
+              target="_top"
+              appearance="outline"
+              tone="neutral"
+              style={{ alignSelf: 'flex-start' }}
+            >
+              Root mode and local scopes
+            </Button>
           </View>
           <View style={styles.legend}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#75805D' }]} />
-              <Text style={styles.legendText}>Identity: selection, navigation and brand</Text>
+              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+              <Text style={styles.legendText}>Identity: primary · tone="accent"</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#E9B522' }]} />
-              <Text style={styles.legendText}>Action: one dominant CTA in each context</Text>
+              <View style={[styles.legendDot, { backgroundColor: colors.tertiary }]} />
+              <Text style={styles.legendText}>Action: tertiary · tone="action"</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#BDB6AC' }]} />
-              <Text style={styles.legendText}>
-                Hierarchy: flow, spacing and radius without decorative boxes
-              </Text>
+              <View style={[styles.legendDot, { backgroundColor: colors.secondary }]} />
+              <Text style={styles.legendText}>Support: secondary · tone="support"</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.paletteMapHeader}>
-          <Text style={styles.paletteMapTitle}>{COLOR_RECIPES.length} directions to compare</Text>
+          <Text style={styles.paletteMapTitle}>{COLOR_RECIPES.length} registered presets</Text>
           <Text style={styles.paletteMapDescription}>
-            Filter by family or curated/derived pairing. Every card shows light and dark.
+            Curated pairings pin the action seed; some also pin support. Derived pairings generate
+            both from identity. Both are official presets. Every card shows light and dark.
           </Text>
         </View>
 
@@ -270,38 +282,16 @@ function ColorSystemLab({
         <View style={styles.viewerModeRow}>
           <Text style={styles.viewerModeLabel}>Mention state</Text>
           <View style={styles.viewerModeControl}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: authenticated }}
-              aria-pressed={authenticated}
+            <FilterButton
+              label="Signed in"
+              selected={authenticated}
               onPress={() => setAuthenticated(true)}
-              style={[styles.viewerModeButton, authenticated && styles.viewerModeButtonSelected]}
-            >
-              <Text
-                style={[
-                  styles.viewerModeButtonText,
-                  authenticated && styles.viewerModeButtonTextSelected,
-                ]}
-              >
-                Signed in
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: !authenticated }}
-              aria-pressed={!authenticated}
+            />
+            <FilterButton
+              label="Public view"
+              selected={!authenticated}
               onPress={() => setAuthenticated(false)}
-              style={[styles.viewerModeButton, !authenticated && styles.viewerModeButtonSelected]}
-            >
-              <Text
-                style={[
-                  styles.viewerModeButtonText,
-                  !authenticated && styles.viewerModeButtonTextSelected,
-                ]}
-              >
-                Public view
-              </Text>
-            </Pressable>
+            />
           </View>
         </View>
 
@@ -311,6 +301,7 @@ function ColorSystemLab({
             size="sm"
             tone="neutral"
             appearance={globals.theme === 'dark' ? 'subtle' : 'solid'}
+            pressed={globals.theme !== 'dark'}
             onPress={() => updateGlobals({ theme: 'light' })}
           >
             Light mode
@@ -319,6 +310,7 @@ function ColorSystemLab({
             size="sm"
             tone="neutral"
             appearance={globals.theme === 'dark' ? 'solid' : 'subtle'}
+            pressed={globals.theme === 'dark'}
             onPress={() => updateGlobals({ theme: 'dark' })}
           >
             Dark mode
@@ -329,23 +321,23 @@ function ColorSystemLab({
           <View style={styles.swatchMode}>
             <Text style={styles.swatchModeTitle}>Light · neutral layers, concentrated colour</Text>
             <View style={styles.swatchRow}>
-              <Swatch label="Canvas" color={activeLight.canvas} text="#18202A" />
-              <Swatch label="Shell" color={activeLight.shell} text="#18202A" />
-              <Swatch label="Surface" color={activeLight.surface} text="#18202A" />
-              <Swatch label="Raised" color={activeLight.raised} text="#18202A" />
-              <Swatch label="Identity" color={activeLight.identity} text="#18202A" />
-              <Swatch label="Action" color={activeLight.action} text="#18202A" />
+              <Swatch label="Canvas" color={activeLight.canvas} text={colors.text} />
+              <Swatch label="Shell" color={activeLight.shell} text={colors.text} />
+              <Swatch label="Surface" color={activeLight.surface} text={colors.text} />
+              <Swatch label="Raised" color={activeLight.raised} text={colors.text} />
+              <Swatch label="Identity" color={activeLight.identity} text={colors.text} />
+              <Swatch label="Action" color={activeLight.action} text={colors.text} />
             </View>
           </View>
           <View style={styles.swatchMode}>
             <Text style={styles.swatchModeTitle}>Dark · deep layers, not inverted</Text>
             <View style={styles.swatchRow}>
-              <Swatch label="Canvas" color={activeDark.canvas} text="#18202A" />
-              <Swatch label="Shell" color={activeDark.shell} text="#18202A" />
-              <Swatch label="Surface" color={activeDark.surface} text="#18202A" />
-              <Swatch label="Raised" color={activeDark.raised} text="#18202A" />
-              <Swatch label="Identity" color={activeDark.identity} text="#18202A" />
-              <Swatch label="Action" color={activeDark.action} text="#18202A" />
+              <Swatch label="Canvas" color={activeDark.canvas} text={colors.text} />
+              <Swatch label="Shell" color={activeDark.shell} text={colors.text} />
+              <Swatch label="Surface" color={activeDark.surface} text={colors.text} />
+              <Swatch label="Raised" color={activeDark.raised} text={colors.text} />
+              <Swatch label="Identity" color={activeDark.identity} text={colors.text} />
+              <Swatch label="Action" color={activeDark.action} text={colors.text} />
             </View>
           </View>
         </View>
@@ -363,290 +355,262 @@ export const Playground: Story = {
   },
 };
 
-const styles = StyleSheet.create({
-  page: {
-    width: '100%',
-    maxWidth: 1480,
-    alignSelf: 'center',
-    padding: 32,
-    gap: 28,
-    backgroundColor: '#F1EEE8',
-  },
-  labHeader: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 24,
-  },
-  labHeading: {
-    maxWidth: '100%',
-    gap: 8,
-  },
-  labEyebrow: {
-    color: '#6E655B',
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '700',
-    letterSpacing: 1.6,
-  },
-  labTitle: {
-    color: '#1F1C19',
-    fontSize: 38,
-    lineHeight: 44,
-    fontWeight: '700',
-    letterSpacing: -1.2,
-  },
-  labDescription: {
-    color: '#625B54',
-    fontSize: 16,
-    lineHeight: 24,
-    maxWidth: '100%',
-  },
-  legend: {
-    maxWidth: '100%',
-    gap: 10,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#E7E2DA',
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 9,
-  },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  legendText: {
-    flexShrink: 1,
-    color: '#4C4640',
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '600',
-  },
-  paletteMapHeader: {
-    gap: 3,
-  },
-  paletteMapTitle: {
-    color: '#1F1C19',
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: '800',
-  },
-  paletteMapDescription: {
-    color: '#625B54',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  filterStack: {
-    gap: 10,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 8,
-  },
-  filterLabel: {
-    width: 68,
-    color: '#4C4640',
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '800',
-  },
-  filterButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: '#E4DFD7',
-  },
-  filterButtonSelected: {
-    backgroundColor: '#1F1C19',
-  },
-  filterButtonText: {
-    color: '#625B54',
-    fontSize: 11,
-    lineHeight: 15,
-    fontWeight: '700',
-  },
-  filterButtonTextSelected: {
-    color: '#FFFFFF',
-  },
-  filterCount: {
-    color: '#766F67',
-    fontSize: 11,
-    lineHeight: 15,
-    fontWeight: '600',
-  },
-  recipeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  recipeButton: {
-    minWidth: 180,
-    maxWidth: 220,
-    flexGrow: 1,
-    flexBasis: 210,
-    padding: 14,
-    borderRadius: 16,
-    gap: 8,
-  },
-  recipeButtonSelected: {
-    backgroundColor: '#FFFFFF',
-  },
-  recipeButtonIdle: {
-    backgroundColor: '#E9E5DE',
-  },
-  recipeModes: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  recipeSwatches: {
-    flexDirection: 'row',
-  },
-  recipeSwatch: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    marginRight: -6,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  recipeName: {
-    color: '#1F1C19',
-    fontSize: 15,
-    lineHeight: 20,
-    fontWeight: '700',
-  },
-  recipeSource: {
-    color: '#766F67',
-    fontSize: 11,
-    lineHeight: 15,
-  },
-  recipeIntro: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 16,
-  },
-  recipeIntroCopy: {
-    maxWidth: '100%',
-    gap: 4,
-  },
-  recipeTitle: {
-    color: '#1F1C19',
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '700',
-  },
-  recipeIdea: {
-    color: '#625B54',
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  rulePill: {
-    maxWidth: '100%',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 999,
-    backgroundColor: '#DFD9D0',
-  },
-  rulePillText: {
-    color: '#4C4640',
-    fontSize: 11,
-    lineHeight: 15,
-    fontWeight: '700',
-  },
-  viewerModeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  viewerModeLabel: {
-    color: '#4C4640',
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '800',
-  },
-  viewerModeControl: {
-    padding: 4,
-    borderRadius: 999,
-    backgroundColor: '#DFD9D0',
-    flexDirection: 'row',
-    gap: 4,
-  },
-  viewerModeButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-  },
-  viewerModeButtonSelected: {
-    backgroundColor: '#FFFFFF',
-  },
-  viewerModeButtonText: {
-    color: '#6E655B',
-    fontSize: 11,
-    lineHeight: 15,
-    fontWeight: '700',
-  },
-  viewerModeButtonTextSelected: {
-    color: '#1F1C19',
-  },
-  swatchSection: {
-    gap: 18,
-    padding: 20,
-    borderRadius: 20,
-    backgroundColor: '#E7E2DA',
-  },
-  swatchMode: {
-    gap: 10,
-  },
-  swatchModeTitle: {
-    color: '#1F1C19',
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '800',
-  },
-  swatchRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  swatchItem: {
-    width: 154,
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: '#F7F5F1',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  swatch: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(31, 28, 25, 0.12)',
-  },
-  swatchLabel: {
-    gap: 1,
-  },
-  swatchName: {
-    fontSize: 9,
-    lineHeight: 12,
-    fontWeight: '800',
-  },
-  swatchHex: {
-    fontSize: 9,
-    lineHeight: 12,
-    opacity: 0.62,
-  },
-});
+function useLabStyles() {
+  const { colors } = useTheme();
+  return useMemo(
+    () =>
+      StyleSheet.create({
+        page: {
+          width: '100%',
+          maxWidth: 1480,
+          alignSelf: 'center',
+          padding: 32,
+          gap: 28,
+          backgroundColor: colors.background,
+        },
+        labHeader: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: 24,
+        },
+        labHeading: {
+          maxWidth: '100%',
+          gap: 8,
+        },
+        labEyebrow: {
+          color: colors.textSecondary,
+          fontSize: 12,
+          lineHeight: 16,
+          fontWeight: '700',
+          letterSpacing: 1.6,
+        },
+        labTitle: {
+          color: colors.text,
+          fontSize: 38,
+          lineHeight: 44,
+          fontWeight: '700',
+          letterSpacing: -1.2,
+        },
+        labDescription: {
+          color: colors.textSecondary,
+          fontSize: 16,
+          lineHeight: 24,
+          maxWidth: '100%',
+        },
+        legend: {
+          maxWidth: '100%',
+          gap: 10,
+          padding: 16,
+          borderRadius: 16,
+          backgroundColor: colors.backgroundSecondary,
+        },
+        legendItem: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 9,
+        },
+        legendDot: {
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+        },
+        legendText: {
+          flexShrink: 1,
+          color: colors.textSecondary,
+          fontSize: 12,
+          lineHeight: 16,
+          fontWeight: '600',
+        },
+        paletteMapHeader: {
+          gap: 3,
+        },
+        paletteMapTitle: {
+          color: colors.text,
+          fontSize: 18,
+          lineHeight: 24,
+          fontWeight: '800',
+        },
+        paletteMapDescription: {
+          color: colors.textSecondary,
+          fontSize: 13,
+          lineHeight: 18,
+        },
+        filterStack: {
+          gap: 10,
+        },
+        filterRow: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 8,
+        },
+        filterLabel: {
+          width: 68,
+          color: colors.textSecondary,
+          fontSize: 12,
+          lineHeight: 16,
+          fontWeight: '800',
+        },
+        filterCount: {
+          color: colors.textSecondary,
+          fontSize: 11,
+          lineHeight: 15,
+          fontWeight: '600',
+        },
+        recipeGrid: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 12,
+        },
+        recipeButton: {
+          minWidth: 180,
+          maxWidth: 220,
+          flexGrow: 1,
+          flexBasis: 210,
+          padding: 14,
+          borderRadius: 16,
+          gap: 8,
+        },
+        recipeButtonSelected: {
+          backgroundColor: colors.background,
+        },
+        recipeButtonIdle: {
+          backgroundColor: colors.backgroundSecondary,
+        },
+        recipeModes: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+        },
+        recipeSwatches: {
+          flexDirection: 'row',
+        },
+        recipeSwatch: {
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          marginRight: -6,
+          borderWidth: 2,
+          borderColor: colors.background,
+        },
+        recipeName: {
+          color: colors.text,
+          fontSize: 15,
+          lineHeight: 20,
+          fontWeight: '700',
+        },
+        recipeSource: {
+          color: colors.textSecondary,
+          fontSize: 11,
+          lineHeight: 15,
+        },
+        recipeIntro: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+        },
+        recipeIntroCopy: {
+          maxWidth: '100%',
+          gap: 4,
+        },
+        recipeTitle: {
+          color: colors.text,
+          fontSize: 24,
+          lineHeight: 30,
+          fontWeight: '700',
+        },
+        recipeIdea: {
+          color: colors.textSecondary,
+          fontSize: 14,
+          lineHeight: 21,
+        },
+        rulePill: {
+          maxWidth: '100%',
+          paddingHorizontal: 14,
+          paddingVertical: 9,
+          borderRadius: 999,
+          backgroundColor: colors.backgroundTertiary,
+        },
+        rulePillText: {
+          color: colors.textSecondary,
+          fontSize: 11,
+          lineHeight: 15,
+          fontWeight: '700',
+        },
+        viewerModeRow: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        },
+        viewerModeLabel: {
+          color: colors.textSecondary,
+          fontSize: 13,
+          lineHeight: 18,
+          fontWeight: '800',
+        },
+        viewerModeControl: {
+          padding: 4,
+          borderRadius: 999,
+          backgroundColor: colors.backgroundTertiary,
+          flexDirection: 'row',
+          gap: 4,
+        },
+        swatchSection: {
+          gap: 18,
+          padding: 20,
+          borderRadius: 20,
+          backgroundColor: colors.backgroundSecondary,
+        },
+        swatchMode: {
+          gap: 10,
+        },
+        swatchModeTitle: {
+          color: colors.text,
+          fontSize: 13,
+          lineHeight: 18,
+          fontWeight: '800',
+        },
+        swatchRow: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 10,
+        },
+        swatchItem: {
+          width: 154,
+          padding: 8,
+          borderRadius: 12,
+          backgroundColor: colors.background,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+        },
+        swatch: {
+          width: 32,
+          height: 32,
+          borderRadius: 10,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        swatchLabel: {
+          gap: 1,
+        },
+        swatchName: {
+          fontSize: 9,
+          lineHeight: 12,
+          fontWeight: '800',
+        },
+        swatchHex: {
+          fontSize: 9,
+          lineHeight: 12,
+          opacity: 0.62,
+        },
+      }),
+    [colors],
+  );
+}

@@ -22,7 +22,7 @@ import {
   type GuestCounts,
 } from '../stay-search';
 import { StepperRow } from '../stepper';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -1080,8 +1080,8 @@ function DarkCanvas() {
 /** Dark: the buy bar with property types open, the rent flow and saved searches. */
 export const Dark: Story = {
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <DarkCanvas />
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };

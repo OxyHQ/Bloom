@@ -795,10 +795,29 @@ export function createAppShellEngine() {
       room != null && navInFlow && !topBarKeepsRoom
         ? Math.max(0, room.top - rowPadTop - (canvasNavPad ? gutter : 0))
         : 0;
+    const rowGap = canvas
+      ? 0
+      : dockedNav
+        ? panelHost
+          ? regionOuter
+          : 0
+        : Math.max(0, navigationGap ?? columnGap);
+    const visibleNavigationExtent =
+      navInFlow && !navDock.hidden
+        ? navContentWidth + rowGap + (canvasNavPad ? gutter : 0)
+        : navInFlow
+          ? navHiddenExtent
+          : 0;
     const headerRoom =
-      room != null && !topBarKeepsRoom && !(navInFlow && !navDock.hidden)
-        ? Math.max(0, room.leading - rowPadStart - (navInFlow ? navHiddenExtent : 0))
+      room != null && !topBarKeepsRoom
+        ? Math.max(0, room.leading - rowPadStart - visibleNavigationExtent)
         : 0;
+    // CSS owns responsive navigation width on web. The registered length
+    // interpolates on the frame, so navigation and header share each frame's room.
+    const navigationRoomCss =
+      room != null && !topBarKeepsRoom && navInFlow && cssScope
+        ? `max(0px, ${room.leading}px - var(--bloom-frame-alignment, var(--bloom-frame-start, 0px)) - var(--bloom-nav-width, 0px) - var(--bloom-nav-gap, 0px))`
+        : undefined;
     const navSidebar =
       flowSidebar && navRoom > 0 ? { ...flowSidebar, windowControlsRoom: navRoom } : flowSidebar;
     // The window's panels (`windowPanels`, above) hold the window's chrome:
@@ -831,9 +850,19 @@ export function createAppShellEngine() {
           ? 0
           : Math.max(0, room.leading - rowPadStart - (navInFlow ? navHiddenExtent : 0))
         : null;
+    const sidebarContentClearance =
+      room != null && navInFlow && panelHost && !topBarKeepsRoom && !shellHeaderShown;
     const contentChrome = useMemo<WindowChrome | null>(
-      () => (contentChromeLeading == null ? null : { leading: contentChromeLeading }),
-      [contentChromeLeading],
+      () =>
+        contentChromeLeading != null
+          ? {
+              leading: navInFlow ? headerRoom : contentChromeLeading,
+              leadingCss: navInFlow ? navigationRoomCss : undefined,
+            }
+          : sidebarContentClearance && (headerRoom > 0 || navigationRoomCss != null)
+            ? { leading: headerRoom, leadingCss: navigationRoomCss, topEdge: false }
+            : null,
+      [contentChromeLeading, sidebarContentClearance, headerRoom, navigationRoomCss, navInFlow],
     );
     const windowControlsNode =
       windowChrome && appWindow.controls === 'bloom' ? (
@@ -890,23 +919,8 @@ export function createAppShellEngine() {
         reserveBottomBarSpace,
       ],
     );
-    // The row's gap after the navigation. Panels keep their gutter off a docked
-    // nav's hairline; a canvas runs to the edge.
-    const rowGap = canvas
-      ? 0
-      : dockedNav
-        ? panelHost
-          ? regionOuter
-          : 0
-        : Math.max(0, navigationGap ?? columnGap);
-    // The reading envelope is flex, natively as on the web: a filling envelope
-    // grows into whatever room the row leaves it (beside the navigation, as a
-    // dock slides it closed, inside the gutters), and a capped one is its
-    // reading width, shrinking with the room below it. No measured width is an
-    // input, so a window resizing lays it out in Yoga's pass with no
-    // JavaScript. What moves on native is the reading width itself (a panel
-    // shown or hidden changes the panels' envelope): it animates from one width
-    // to the other, the room still capping it.
+    // The reading envelope uses flex so a window resize lays it out in Yoga's
+    // pass without JavaScript; native animates only a changing reading width.
     const numericReading = Platform.OS !== 'web' && panelHost && centred && !compactRegion;
     const asideReadingWidth = asideShown ? asideWidth + readingGap : 0;
     const readingGroupWidth = contentWidth + asideReadingWidth;
@@ -1153,7 +1167,17 @@ export function createAppShellEngine() {
       ) : null;
     // Without a sidebar in flow the header is the window's toolbar.
     const headerNode =
-      shellHeader != null && headerRoom > 0 ? (
+      shellHeader != null &&
+      navInFlow &&
+      !navDock.hidden &&
+      (headerRoom > 0 || navigationRoomCss != null) ? (
+        <View
+          testID={testID ? `${testID}-header-clearance` : undefined}
+          style={{ paddingInlineStart: navigationRoomCss ?? headerRoom } as WebCssStyle}
+        >
+          {shellHeader}
+        </View>
+      ) : shellHeader != null && headerRoom > 0 ? (
         <WindowDragRegion
           testID={testID ? `${testID}-header-drag` : undefined}
           style={{ paddingInlineStart: headerRoom }}
@@ -1842,17 +1866,22 @@ export function createAppShellEngine() {
     // While a dock moves, the regions it resizes follow its one progress
     // property frame by frame; their own layout transitions would chase it.
     const dockMoving = Platform.OS === 'web' && (navDock.moving || topDock.moving);
+    // The reveal root owns its own immediate-open / delayed-close clipping.
+    // The document-deck override belongs only to roots with the fixed clip.
+    const revealRoot =
+      (variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav;
     const rootData = (frameScope: string | null) =>
-      frameScope || dockMoving
+      frameScope || dockMoving || (cssScope && !revealRoot)
         ? {
             dataSet: {
               ...(frameScope ? { bloomShellFrame: frameScope } : {}),
+              ...(cssScope && !revealRoot ? { bloomShellHost: cssScope } : {}),
               ...(dockMoving ? { bloomDockMoving: 'true' } : {}),
             },
           }
         : {};
 
-    if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
+    if (revealRoot) {
       return shellRoot(
         <AppShellProvider value={shell}>
           {navigationRecipe.sheet}

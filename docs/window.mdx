@@ -120,6 +120,12 @@ content: they draw the controls and keep their room. A shell or a settings
 layout inside one of them is a panel, away from the corner, and is laid out as
 without windows.
 
+A shell's internal Screen that supplies navigation scope does not take the
+corner before the shell's sidebar can keep its room. On the native window host,
+that premature claim placed a collapsed sidebar control at (22, 22) in the
+window, over the close control at (24, 26). An enclosing shell's claim still
+prevents a nested shell from drawing a second set of controls.
+
 A page that sets `AppShell header={null}` without panels owns the corner
 itself when nothing else is there (no sidebar in flow, no top bar): its own
 toolbar keeps `useWindowControlsRoom()` and is a `WindowDragRegion`.

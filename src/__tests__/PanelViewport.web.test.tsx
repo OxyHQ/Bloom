@@ -209,3 +209,28 @@ it('lets an explicitly unrestricted split envelope fill available shell space', 
   expect(fluid).not.toContain('width:min(var(--bloom-reading-envelope)');
   expect(fluid).toContain('flex:var(--fluid-panel-grow-1, 1) 1');
 });
+
+it('releases the fixed shell clip only for a horizontal document deck', () => {
+  const panels = [
+    { id: 'a', width: 360 },
+    { id: 'b', width: 360 },
+  ];
+  const selector = '[data-bloom-shell-host="deck"]{overflow:visible!important}';
+  const documentDeck = panelLayoutCss('deck', { mode: 'deck', panels }, 8);
+  expect(documentDeck).toContain(selector);
+  expect(
+    panelLayoutCss('deck', { mode: 'deck', horizontalScroll: 'contained', panels }, 8),
+  ).not.toContain(selector);
+  expect(panelLayoutCss('deck', { mode: 'deck', axis: 'vertical', panels }, 8)).not.toContain(
+    selector,
+  );
+  const responsive = panelLayoutCss(
+    'deck',
+    { mode: 'deck', axis: { base: 'vertical', lg: 'horizontal' }, panels },
+    8,
+  );
+  expect(responsive).toContain(selector);
+  expect(responsive.indexOf(selector)).toBeGreaterThan(
+    responsive.indexOf('@container deck (min-width:1024px)'),
+  );
+});

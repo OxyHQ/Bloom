@@ -74,6 +74,55 @@ Storybook continues to use the real web animation packages, platform resolution,
 CSS pipeline and provider harness. Catalogue organization must not change those
 runtime contracts or replace them with mocks.
 
+## Runtime examples
+
+The global decorator mounts `BloomProvider`, plus the explicit safe-area,
+surface and portal hosts. Keep universal composition state in that public
+provider instead of rebuilding a partial stack in the preview. Stories comparing
+palettes use `BloomColorScope`; additional root theme providers compete for the
+document's theme. Preset samples inherit the toolbar mode. Component comparison
+matrices use web color scopes with `display: contents` so their existing flex
+geometry stays intact. The provider contract stories alone opt into
+`bloomProvider: 'theme-only'`: their negative example must exercise the real
+missing scroll/minimize contexts rather than inherit them from the preview.
+
+Foundations / Color groups Modes and Presets, Roles in Context and Explorer.
+Modes and Presets explains root mode, inherited local scopes and the registered
+preset catalogue. Curated and derived pairings are both official presets; the
+pairing field describes seed selection, not registration status. Roles in
+Context maps primary/secondary/tertiary to accent/support/action on the same
+composed UI, including its single-accent comparison. Explorer starts with the
+whole registry, filters pairings and families, and retains the signed-in/public
+social fixture. Links join the examples, and every historical story ID remains
+stable (including `first-direction`, whose display name now describes the example).
+
+Application examples use `AppShell`, `Screen` and the real navigation components.
+The Sidebar Playground (`composition-app-shell-sidebar-playground--playground`)
+compares panel/rail, surfaces, sizes and collapse within the same compositor,
+with or without a window capability. Its Adaptive story exercises the shell-owned
+Screen and measured navigation clearance, including RTL. Color Roles uses that composition contract
+too; its cards demonstrate accent roles rather than a separate layout engine.
+
+Verify the server's source before trusting a browser result: another worktree
+can own port 6006. `scripts/verify-storybook-theme.mjs <url>` checks local mode
+isolation and toolbar preset behavior; `scripts/verify-color-scope.mjs <url>`
+checks nested scopes and overlays. These scripts use `@playwright/test` (or the
+module supplied by `BLOOM_PLAYWRIGHT_MODULE`).
+
 The accompanying SelectionCard examples add one group and two stories: the final
 index contains **275 groups and 1,580 stories**. All 1,578 original IDs remain
 present with the same import path and exported story name.
+
+## Interactive composition examples
+
+Keep Storybook hooks (`useArgs`) in the story render and React state/hooks in a
+child component. Mixing them in the same render broke navigation after the first
+React state update in the sidebar playground.
+
+Give complex descriptor examples an authored `docs.source.code` with
+`type: 'code'`. Dynamic JSX serialization after an args update traversed React's
+owner tree inside panel `content`: the CPU profile stayed in Storybook's
+`prettyPrint2`, freezing the canvas. Disabling CSS transitions did not fix it;
+the authored public recipe did. The real render and interaction remain intact.
+`scripts/verify-sidebar-window-room.mjs <url>` exercises collapse/expand and
+route selection, plus surfaces, RTL and window-host combinations.

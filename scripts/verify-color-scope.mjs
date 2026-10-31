@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium, expect } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
+const { chromium, expect } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || '@playwright/test');
 const base = process.argv[2] || 'http://localhost:6006';
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 try {
@@ -14,7 +14,7 @@ try {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
       await page.goto(
-        `${base}/iframe.html?id=theme-colorscope--exact-tokens&viewMode=story&args=placement:${placement}`,
+        `${base}/iframe.html?id=foundations-color-scope--exact-tokens&viewMode=story&args=placement:${placement}`,
       );
       const inside = page.getByTestId('inside-scope');
       await inside.waitFor({ timeout: 120000 });

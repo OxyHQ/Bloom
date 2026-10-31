@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ActivityHeatmap, bucketByDay } from './index';
 import type { ActivityHeatmapDay } from './index';
-import { BloomThemeProvider } from '../theme';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 
 const END_DATE = '2026-06-30';
 
@@ -50,7 +50,7 @@ type Story = StoryObj<typeof ActivityHeatmap>;
 export const Light: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <BloomThemeProvider mode="light">
+    <BloomColorScope style={{ display: 'contents' }} mode="light">
       <View style={{ padding: 24 }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <ActivityHeatmap
@@ -60,14 +60,14 @@ export const Light: Story = {
           />
         </ScrollView>
       </View>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 
 export const Dark: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <View style={{ padding: 24, backgroundColor: '#000' }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <ActivityHeatmap
@@ -77,7 +77,7 @@ export const Dark: Story = {
           />
         </ScrollView>
       </View>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 
@@ -85,7 +85,7 @@ export const CustomScale: Story = {
   args: { numDays: 140, cellSize: 14, gap: 4 },
   parameters: { controls: { include: ['numDays', 'cellSize', 'gap', 'emptyColor'] } },
   render: (args) => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <View style={{ padding: 24, backgroundColor: '#000' }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <ActivityHeatmap
@@ -99,7 +99,7 @@ export const CustomScale: Story = {
           />
         </ScrollView>
       </View>
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 
@@ -110,13 +110,13 @@ export const FromRawEvents: Story = {
     const events = DATA.flatMap((d) => Array.from({ length: d.count }, () => ({ at: d.date })));
     const bucketed = bucketByDay(events, (e) => e.at);
     return (
-      <BloomThemeProvider mode="light">
+      <BloomColorScope style={{ display: 'contents' }} mode="light">
         <View style={{ padding: 24 }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <ActivityHeatmap data={bucketed} endDate={END_DATE} />
           </ScrollView>
         </View>
-      </BloomThemeProvider>
+      </BloomColorScope>
     );
   },
 };

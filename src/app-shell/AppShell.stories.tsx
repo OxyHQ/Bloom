@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
 import { BottomBar } from '../bottom-bar';
-import { RiAddFill, RiFilter3Fill, RiHomeLine } from '../icons/remix';
+import { RiAddFill, RiArrowLeftLine, RiFilter3Fill, RiHomeLine } from '../icons/remix';
 import { DEMO_NOTIFICATIONS } from '../notification-center/NotificationCenter.stories';
 import {
   DEMO_ACCOUNT,
@@ -25,6 +25,7 @@ import {
   AppShell,
   AppShellHeader,
   AppShellPanel,
+  AppShellPanelVisibility,
   AppShellPanels,
   useAppShellPanel,
   usePanelNavigation,
@@ -568,9 +569,53 @@ export const ModularDeck: Story = {
     );
   },
 };
-/** Joined or separated tracks use the same accessible resize grip and pair constraints. */
-export const ModularInbox: Story = {
-  render: () => (
+
+/** Compare document and contained Deck scrolling, including a responsive axis. */
+export const DeckScrollModes: Story = {
+  render: function DeckScrollModes() {
+    const [contained, setContained] = useState(false);
+    const [responsive, setResponsive] = useState(false);
+    const [reveal, setReveal] = useState(false);
+    return (
+      <View style={{ height: 680 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <Button testID="deck-scroll-mode" onPress={() => setContained((value) => !value)}>
+            {contained ? 'Use document scroll' : 'Use contained scroll'}
+          </Button>
+          <Button testID="deck-axis-mode" onPress={() => setResponsive((value) => !value)}>
+            {responsive ? 'Use horizontal axis' : 'Use responsive axis'}
+          </Button>
+          <Button testID="deck-drawer-mode" onPress={() => setReveal((value) => !value)}>
+            {reveal ? 'Use overlay drawer' : 'Use reveal drawer'}
+          </Button>
+        </View>
+        <AppShell
+          testID="deck-scroll-modes"
+          navigationAlign="content"
+          drawer={reveal ? 'reveal' : 'overlay'}
+          sidebar={{ items: DEMO_NAV, surface: 'plain' }}
+          panelLayout={{
+            mode: 'deck',
+            horizontalScroll: contained ? 'contained' : 'document',
+            axis: responsive ? { base: 'vertical', lg: 'horizontal' } : 'horizontal',
+            panels: ['Home', 'Mentions', 'Saved', 'Activity'].map((id) => ({
+              id,
+              width: 360,
+              minWidth: 280,
+              content: <Text>{id}</Text>,
+            })),
+          }}
+        />
+      </View>
+    );
+  },
+};
+
+/** Joined tracks share their resize grip and compact panel selection. */
+function ModularInboxDemo() {
+  const [activePanel, setActivePanel] = useState('message');
+  const [selectedMessage, setSelectedMessage] = useState(1);
+  return (
     <View style={{ height: 680 }}>
       <AppShell
         testID="modular-inbox"
@@ -579,7 +624,7 @@ export const ModularInbox: Story = {
         panelLayout={{
           appearance: 'joined',
           collapseBelow: 700,
-          activePanel: 'message',
+          activePanel,
           panels: [
             {
               id: 'list',
@@ -591,7 +636,17 @@ export const ModularInbox: Story = {
               content: (
                 <View style={{ padding: 16, gap: 16 }}>
                   {Array.from({ length: 30 }, (_, i) => (
-                    <Text key={i}>Message {i + 1}</Text>
+                    <Button
+                      key={i}
+                      appearance="plain"
+                      testID={`modular-inbox-message-${i + 1}`}
+                      onPress={() => {
+                        setSelectedMessage(i + 1);
+                        setActivePanel('message');
+                      }}
+                    >
+                      Message {i + 1}
+                    </Button>
                   ))}
                 </View>
               ),
@@ -602,7 +657,18 @@ export const ModularInbox: Story = {
               minWidth: 300,
               content: (
                 <View style={{ padding: 24 }}>
+                  <AppShellPanelVisibility when="alone">
+                    <Button
+                      appearance="plain"
+                      leadingIcon={RiArrowLeftLine}
+                      testID="modular-inbox-back"
+                      onPress={() => setActivePanel('list')}
+                    >
+                      Back to messages
+                    </Button>
+                  </AppShellPanelVisibility>
                   <Text variant="title-1-medium">A message with room to read</Text>
+                  <Text testID="modular-inbox-selected">Message {selectedMessage}</Text>
                 </View>
               ),
             },
@@ -610,8 +676,9 @@ export const ModularInbox: Story = {
         }}
       />
     </View>
-  ),
-};
+  );
+}
+export const ModularInbox: Story = { render: () => <ModularInboxDemo /> };
 
 /** Intrinsic chrome reserves the bounded viewport before any measurements. */
 export const BoundedChrome: Story = {

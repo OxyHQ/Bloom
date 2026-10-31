@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -6,7 +6,7 @@ import { AiProfileCard } from '../ai-profile-card';
 import { Button, GlyphButton } from '../button';
 import { hashContributionCell, type ContributionCell } from '../chart-cards/contributions-cells';
 import { RiDraftLine, RiMore2Line } from '../icons/remix';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ContactProfileCard } from './ContactProfileCard';
@@ -171,19 +171,18 @@ function Caption({ children }: { children: string }) {
 
 /** The same block in both modes — every colour here flips. */
 function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
+      <BloomColorScope style={{ display: 'contents' }} mode="light">
         <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 560 }}>
           <Page>{children}</Page>
         </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
+      </BloomColorScope>
+      <BloomColorScope style={{ display: 'contents' }} mode="dark">
         <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 560 }}>
           <Page>{children}</Page>
         </View>
-      </BloomThemeProvider>
+      </BloomColorScope>
     </View>
   );
 }

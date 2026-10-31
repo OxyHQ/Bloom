@@ -23,7 +23,7 @@ function mediaViolations(source: string): string[] {
 
 describe('Color System Playground media ownership', () => {
   it('uses local avatar fallback and deterministic illustrations without remote media', () => {
-    expect(storySource).toContain("title: 'Foundations/Color System Playground'");
+    expect(storySource).toContain("id: 'foundations-color-system-playground'");
     expect((contentSource.match(/<(?:Avatar|ContactRow)\b/g) ?? []).length).toBeGreaterThanOrEqual(
       3,
     );

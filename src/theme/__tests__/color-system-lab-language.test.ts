@@ -73,7 +73,7 @@ function spanishWords(source: string): string[] {
 describe('Color System Playground visible language', () => {
   it('keeps the substantial Mention playground source in English', () => {
     expect((storySource.match(/<Text\b/g) ?? []).length).toBeGreaterThan(35);
-    expect(storySource).toContain('BLOOM COLOR LAB · MENTION INTERFACE');
+    expect(storySource).toContain('BLOOM COLOR · REGISTERED PRESETS');
     expect(storySource).toContain('Public view');
     expect(spanishWords(storySource)).toEqual([]);
   });

@@ -27,7 +27,7 @@ import { RiSunLine } from '../icons/remix/RiSunLine';
 import { RiTentLine } from '../icons/remix/RiTentLine';
 import { RiTreeLine } from '../icons/remix/RiTreeLine';
 import { Switch } from '../switch';
-import { BloomThemeProvider } from '../theme';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CategoryBar } from './CategoryBar';
@@ -233,9 +233,9 @@ export const Fits: Story = {
 /** The same strips in dark mode. */
 export const Dark: Story = {
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <DarkBody />
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 

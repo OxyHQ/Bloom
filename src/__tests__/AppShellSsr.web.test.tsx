@@ -68,6 +68,15 @@ import {
   AppShellPanelVisibility,
   useAppShellPanel,
 } from '../app-shell/index.web';
+import { createPanelLayoutView } from '../app-shell/AppShellPanelLayout';
+import { AppShellRegionContext } from '../layout/app-shell-region';
+import { ScrollArea, ScrollBar } from '../layout/index.web';
+import { ContentPanel } from '../content-panel/index.web';
+import { BloomColorScope } from '../theme/color-scope/index.web';
+import { useScrollRestoration } from '../scroll/index.web';
+import { Dialog } from '../dialog/index.web';
+import { Screen } from '../screen/index.web';
+import { useSurfaceFill } from '../styles/surface-levels';
 import { BloomProvider } from '../provider/BloomProvider';
 import { PageHeader } from '../page-header/PageHeader';
 import type { ServerStylePolicy } from '../styles/context';
@@ -175,6 +184,62 @@ describe('AppShell server layout', () => {
     expect(host.querySelector('[data-testid="visibility-probe"]')).toBe(probe);
     expect(probe?.textContent).toBe('ready');
   });
+  it.each(
+    [false, true].flatMap((framed) =>
+      (['joined', 'separated'] as const).flatMap((appearance) =>
+        [false, true].map((header) => ({ framed, appearance, header })),
+      ),
+    ),
+  )(
+    'publishes the same panel fill for descriptor and JSX group ($framed, $appearance, header=$header)',
+    ({ framed, appearance, header }) => {
+      const PanelLayout = createPanelLayoutView(
+        ContentPanel,
+        BloomColorScope,
+        ScrollArea,
+        ScrollBar,
+        useScrollRestoration,
+        Dialog,
+        Screen,
+      );
+      function Probe() {
+        return <span data-fill={useSurfaceFill()}>Panel content</span>;
+      }
+      const render = (eligibilityFromGroup: boolean) =>
+        renderToString(
+          <BloomProvider mode="light" fonts={false}>
+            <AppShellRegionContext.Provider
+              value={{
+                flow: 'bounded',
+                framed,
+                gutter: 12,
+                viewportInset: { top: 0, bottom: 0 },
+                bottomReserve: 0,
+                underBottomBar: false,
+                revealed: false,
+                maskColor: '#ffffff',
+              }}
+            >
+              <PanelCssContext.Provider value="test-layout">
+                <PanelLayout
+                  eligibilityFromGroup={eligibilityFromGroup}
+                  layout={{
+                    appearance,
+                    ...(header ? { header: null } : {}),
+                    panels: [{ id: 'main', content: <Probe /> }],
+                  }}
+                  shellWidth={1000}
+                  gap={1}
+                />
+              </PanelCssContext.Provider>
+            </AppShellRegionContext.Provider>
+          </BloomProvider>,
+        );
+      const fill = (html: string) => html.match(/data-fill="([^"]+)"/)?.[1];
+      expect(fill(render(false))).toBeDefined();
+      expect(fill(render(false))).toBe(fill(render(true)));
+    },
+  );
 
   it('delivers header container insets in server HTML and adopts them without replacing the bar', async () => {
     const app = (
