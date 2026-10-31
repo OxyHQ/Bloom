@@ -89,6 +89,81 @@ export const BorderLighting: Story = {
   ),
 };
 
+function RoundedMaterialExample() {
+  const { colors } = useTheme();
+  const tones = [
+    { label: 'Accent', fill: colors.primary, foreground: colors.primaryForeground },
+    { label: 'Information', fill: colors.info, foreground: colors.infoForeground },
+    { label: 'Positive', fill: colors.success, foreground: colors.successForeground },
+    { label: 'Destructive', fill: colors.error, foreground: colors.errorForeground },
+  ];
+  return (
+    <View style={{ padding: 32, gap: 28, maxWidth: 1000 }}>
+      <Text variant="title-2-semibold">One material, different tones</Text>
+      <Text>Rounded light, a continuous fine rim, and colour from the shared palette.</Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
+        {tones.map(({ label, fill, foreground }) => (
+          <Surface
+            key={label}
+            fill={fill}
+            radius={36}
+            style={{
+              width: 204,
+              height: 148,
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            <Text variant="title-2-semibold" style={{ color: foreground }}>
+              Aa
+            </Text>
+            <Text style={{ color: foreground }}>{label}</Text>
+          </Surface>
+        ))}
+      </View>
+      <Surface radius={28} style={{ padding: 28, gap: 20 }}>
+        <Text variant="title-3-semibold">Workspace</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
+          <Card style={{ padding: 24, gap: 20, flexGrow: 1, flexBasis: 420 }}>
+            <Text variant="title-3-semibold">Shared with your team</Text>
+            <Text>Each nested surface keeps its own depth and backing.</Text>
+            <TextFieldInput
+              label="Workspace name"
+              placeholder="Workspace name"
+              defaultValue="Design studio"
+            />
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+              <Button>Save changes</Button>
+              <Button tone="neutral" appearance="outline">
+                Cancel
+              </Button>
+              <Button tone="danger" appearance="subtle">
+                Remove
+              </Button>
+            </View>
+          </Card>
+          <Card style={{ padding: 24, gap: 16, flexGrow: 1, flexBasis: 220 }}>
+            <Text variant="title-3-semibold">Actions</Text>
+            <Button size="lg">Continue</Button>
+            <Button size="lg" tone="neutral" appearance="outline">
+              Secondary
+            </Button>
+            <Button size="lg" tone="danger">
+              Delete
+            </Button>
+          </Card>
+        </View>
+      </Surface>
+    </View>
+  );
+}
+
+export const RoundedMaterial: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => <RoundedMaterialExample />,
+};
+
 function MaterialExample() {
   const [range, setRange] = useState('day');
   return (
@@ -306,35 +381,45 @@ const PHOTO =
 
 /**
  * Where the web bakes the material and where it keeps it live. On the page's
- * flat canvas, and on a baked surface, the backdrop is one colour: the material
- * is computed once and paints the same pixels with no backdrop filter
- * (`data-bloom-material="baked"`). Over a photo (an ancestor's background
- * image, or a positioned layer behind an in-flow card) it stays live.
+ * flat canvas, or inside an explicit opaque owner, the backdrop is one colour:
+ * the material is computed once and paints the same pixels with no backdrop
+ * filter (`data-bloom-material="baked"`). Directly on a lit surface, or over a
+ * photo (an ancestor's image or a positioned layer), it stays live.
  */
 export const BakedAndLive: Story = {
   parameters: { bloomScroll: 'document' },
-  render: () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, padding: 32 }}>
-      <Surface testID="baked-canvas" style={{ padding: 20, width: 280, gap: 12 }}>
-        <Text variant="title-3-semibold">On the canvas</Text>
-        <Text>Baked: the backdrop is the flat page.</Text>
-        <Card testID="baked-nested" style={{ padding: 16 }}>
-          <Text>Baked on the surface's body.</Text>
-        </Card>
-      </Surface>
-      <div style={{ width: 300, padding: 20, borderRadius: 20, backgroundImage: PHOTO }}>
-        <Surface testID="live-ancestor-image" style={{ padding: 20, gap: 12 }}>
-          <Text variant="title-3-semibold">Over a background image</Text>
-          <Text>Live: an ancestor paints an image.</Text>
+  render: function Render() {
+    const { colors } = useTheme();
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, padding: 32 }}>
+        <Surface testID="baked-canvas" style={{ padding: 20, width: 280, gap: 12 }}>
+          <Text variant="title-3-semibold">On the canvas</Text>
+          <Text>Baked: the backdrop is the flat page.</Text>
+          <Card testID="live-lit-parent" style={{ padding: 16 }}>
+            <Text>Live: the parent has a rim and bevel.</Text>
+          </Card>
+          <Card appearance="plain" style={{ backgroundColor: colors.card, padding: 24 }}>
+            <Card testID="baked-nested" style={{ padding: 16 }}>
+              <Text>Baked: this nested owner paints an opaque, flat backing.</Text>
+            </Card>
+          </Card>
         </Surface>
+        <div style={{ width: 300, padding: 20, borderRadius: 20, backgroundImage: PHOTO }}>
+          <Surface testID="live-ancestor-image" style={{ padding: 20, gap: 12 }}>
+            <Text variant="title-3-semibold">Over a background image</Text>
+            <Text>Live: an ancestor paints an image.</Text>
+          </Surface>
+        </div>
+        <div style={{ position: 'relative', width: 300, padding: 20 }}>
+          <div
+            style={{ position: 'absolute', inset: 0, borderRadius: 20, backgroundImage: PHOTO }}
+          />
+          <Surface testID="live-sibling-layer" style={{ padding: 20, gap: 12 }}>
+            <Text variant="title-3-semibold">Over a photo layer</Text>
+            <Text>Live: a positioned layer paints behind it.</Text>
+          </Surface>
+        </div>
       </div>
-      <div style={{ position: 'relative', width: 300, padding: 20 }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: 20, backgroundImage: PHOTO }} />
-        <Surface testID="live-sibling-layer" style={{ padding: 20, gap: 12 }}>
-          <Text variant="title-3-semibold">Over a photo layer</Text>
-          <Text>Live: a positioned layer paints behind it.</Text>
-        </Surface>
-      </div>
-    </div>
-  ),
+    );
+  },
 };

@@ -111,7 +111,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     });
     useBakedMaterial(localRef, material.painted, [materialRecipe.paint.paintFill, optics]);
     const baseStyle: WebCssStyle = {
-      ...surfaceOpticsVars(optics, geometry.radius ?? resolvedStyle?.borderRadius),
+      ...surfaceOpticsVars(optics),
       ...geometry.style,
       backgroundColor: 'transparent',
       '--bloom-surface-fill': materialRecipe.paint.paintFill,

@@ -1,4 +1,5 @@
 import { SurfacePaint } from '../surface/SurfacePaint';
+import { surfaceLightingFills } from '../surface/shared';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
@@ -7,7 +8,8 @@ import {
   useEnteredPresence,
   useSurfacePresenceContent,
 } from '../surface/use-surface-presence';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -32,6 +34,7 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
+import { AA_TEXT_CONTRAST, mixColors, quietTextOver } from '../styles/color-contrast';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ProOfferCardProps } from './types';
@@ -65,6 +68,7 @@ const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 const ENTER_CSS_EASING = 'cubic-bezier(0, 0, 0.58, 1)';
 const ENTER_MS = 300;
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
+const BACKDROP_TINT_OPACITY = 0.7;
 
 /** `--shadow-waitlist`, light and dark. */
 const WAITLIST_SHADOW = {
@@ -81,8 +85,8 @@ function DefaultBackdrop({ from, via }: { from: string; via: string }) {
     <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
       <Defs>
         <LinearGradient id={`${id}-fill`} x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor={from} stopOpacity={0.7} />
-          <Stop offset="0.5" stopColor={via} stopOpacity={0.7} />
+          <Stop offset="0" stopColor={from} stopOpacity={BACKDROP_TINT_OPACITY} />
+          <Stop offset="0.5" stopColor={via} stopOpacity={BACKDROP_TINT_OPACITY} />
           <Stop offset="1" stopColor={via} stopOpacity={0} />
         </LinearGradient>
         <LinearGradient id={`${id}-fade`} x1="0" y1="0" x2="0" y2="1">
@@ -195,7 +199,6 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
       from: theme.colors.card,
       via: theme.colors.backgroundTertiary,
       text: theme.colors.text,
-      secondary: theme.colors.textSecondary,
     };
   }, [theme]);
 
@@ -206,7 +209,20 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
     parentFill: surfaceLayer.parentFill,
     parentLevel: surfaceLayer.parentLevel,
   });
-  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
+  const { paintFill, publishedFill: surfaceFill } = material;
+  const descriptionColor = useMemo(() => {
+    const bodies = surfaceLightingFills(surfaceFill, theme.isDark);
+    // The default artwork is known; a caller-supplied backdrop owns its colours.
+    const bounds =
+      backdrop == null
+        ? bodies.flatMap((body) => [
+            body,
+            mixColors(body, palette.from, BACKDROP_TINT_OPACITY),
+            mixColors(body, palette.via, BACKDROP_TINT_OPACITY),
+          ])
+        : bodies;
+    return quietTextOver(bounds, theme.colors.text, AA_TEXT_CONTRAST);
+  }, [surfaceFill, theme.isDark, theme.colors.text, palette.from, palette.via, backdrop]);
   const enter = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     enter.value = reducedMotion
@@ -305,7 +321,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
           <Text variant="body-medium" style={{ color: palette.text }}>
             {title}
           </Text>
-          <Text variant="body-2-regular" style={{ color: palette.secondary }}>
+          <Text variant="body-2-regular" style={{ color: descriptionColor }}>
             {description}
           </Text>
         </View>

@@ -15,9 +15,8 @@ import { SURFACE_HAIRLINE_VAR, surfaceMaterialCss } from './web-material';
 
 /**
  * Move a web host fill into the shared body and edge paint; preserve layout and shadow.
- * `radius` is the host's corner, for the edge light's falloff. With
- * `framing: 'responsive'` the edge light waits for the host's breakpoint classes
- * (`--bloom-framed-highlight-filter`), since below the breakpoint the host is square.
+ * With `framing: 'responsive'` the lighting waits for the host's breakpoint
+ * classes (`--bloom-framed-lighting`), since below the breakpoint the host is square.
  */
 export function useSurfaceMaterial(
   selector: string,
@@ -26,7 +25,6 @@ export function useSurfaceMaterial(
   enabled = true,
   paintFill?: string,
   paintOptics?: ReturnType<typeof resolveSurfaceOptics>,
-  radius?: unknown,
   framing: 'always' | 'responsive' = 'always',
 ): WebCssStyle {
   const css = useMemo(
@@ -41,11 +39,7 @@ export function useSurfaceMaterial(
   const backing = useSurfaceFill();
   return useMemo(() => {
     if (!enabled) return SURFACE_VARS_OFF;
-    const {
-      '--bloom-surface-highlight-filter': highlight,
-      '--bloom-surface-body-shadow': bodyShadow,
-      ...vars
-    } = surfaceOpticsVars(optics, radius);
+    const { '--bloom-surface-lighting': lighting, ...vars } = surfaceOpticsVars(optics);
     const tint = paintFill ?? resolveSurfaceTint(fill);
     const solid = resolveSurfaceMaterial({ fill: tint, parentFill: backing }).solidFill;
     return {
@@ -55,14 +49,8 @@ export function useSurfaceMaterial(
       [SURFACE_HAIRLINE_VAR]: text ? surfaceContrastEdge(solid, text) : 'transparent',
       ...vars,
       ...(framing === 'responsive'
-        ? {
-            '--bloom-framed-highlight-filter': highlight,
-            '--bloom-framed-body-shadow': bodyShadow,
-          }
-        : {
-            '--bloom-surface-highlight-filter': highlight,
-            '--bloom-surface-body-shadow': bodyShadow,
-          }),
+        ? { '--bloom-framed-lighting': lighting }
+        : { '--bloom-surface-lighting': lighting }),
     };
-  }, [optics, fill, paintFill, enabled, radius, framing, backing, text]);
+  }, [optics, fill, paintFill, enabled, framing, backing, text]);
 }

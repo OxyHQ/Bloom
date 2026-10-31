@@ -128,9 +128,10 @@ describe('the material CSS', () => {
     ])
       expect(css).toContain(scope);
     const rule = css.slice(
-      css.indexOf(`:root[${INCREASED_CONTRAST_ATTRIBUTE}="more"] .host::after {\n  mask-image`),
+      css.indexOf(`:root[${INCREASED_CONTRAST_ATTRIBUTE}="more"] .host::after {`),
     );
-    expect(rule).toMatch(/mask-image: none;/);
+    expect(rule).toContain('box-shadow: none;');
+    expect(css).not.toMatch(/mask-(?:image|composite):/);
     expect(rule).toContain(`border: 1px solid var(${SURFACE_HAIRLINE_VAR}, transparent)`);
   });
 
@@ -191,7 +192,18 @@ describe('every host sets its own hairline', () => {
       ),
     );
     const solid = container.querySelector('[data-testid="solid"]') as HTMLElement;
-    expect(solid.style.getPropertyValue(SURFACE_HAIRLINE_VAR)).toMatch(/^(rgb|#)/);
-    expect(hairlineOf('[data-testid="outline"]')).toBe('transparent');
+    expect(solid.style.getPropertyValue(SURFACE_HAIRLINE_VAR)).toBe(
+      'var(--bloom-btn-state-hairline)',
+    );
+    for (const state of ['', '-hover', '-active', '-disabled']) {
+      const body = solid.style.getPropertyValue(`--bloom-btn-solid${state}`);
+      const hairline = solid.style.getPropertyValue(`--bloom-btn-hairline${state}`);
+      expect(contrastRatio(hairline, body)).toBeGreaterThanOrEqual(3);
+      expect(
+        (container.querySelector('[data-testid="outline"]') as HTMLElement).style.getPropertyValue(
+          `--bloom-btn-hairline${state}`,
+        ),
+      ).toBe('transparent');
+    }
   });
 });

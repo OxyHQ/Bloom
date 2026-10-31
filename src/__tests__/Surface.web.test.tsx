@@ -1,8 +1,8 @@
 /** @jest-environment jsdom */
 import {
   SURFACE_FILTER,
-  SURFACE_EDGE_GLOW,
-  SURFACE_HIGHLIGHT_FILTER,
+  resolveSurfaceOptics,
+  surfaceLighting,
   resolveSurfaceTint,
   resolveSurfaceFill,
 } from '../surface/shared';
@@ -78,7 +78,7 @@ it('uses real RN web layout styles and keeps the material on the same root', () 
   expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(255, 255, 255, 0.72)');
 });
 
-it('shares one glass material across Surface and disabled Button', () => {
+it('shares one frosted body and self-painted lighting across Surface and disabled Button', () => {
   act(() =>
     root.render(
       <>
@@ -95,17 +95,16 @@ it('shares one glass material across Surface and disabled Button', () => {
     const glass = css.match(/::before\s*\{[^}]+\}/g)?.find((rule) => rule.includes('z-index: -2'));
     expect(glass).toContain(`backdrop-filter: var(--bloom-surface-filter, ${SURFACE_FILTER})`);
     const edge = css.match(/::after\s*\{[^}]+\}/g)?.find((rule) => rule.includes('z-index: -1'));
-    expect(edge).toContain(
-      `backdrop-filter: var(--bloom-surface-highlight-filter, ${SURFACE_HIGHLIGHT_FILTER})`,
-    );
-    expect(edge).toContain('mask-composite: add, intersect, exclude');
-    expect(edge).toContain(`mask-image: var(--bloom-surface-edge-glow, ${SURFACE_EDGE_GLOW})`);
+    expect(edge).toContain('box-shadow: var(--bloom-surface-lighting,');
+    expect(edge).not.toMatch(/(?:backdrop-)?filter:\s*(?:var|blur|brightness)/);
+    expect(edge).not.toContain('mask-image:');
+    expect(edge).not.toContain('mask-composite:');
     expect(css).not.toContain('feDisplacementMap');
     expect(css).not.toMatch(/filter:\s*url\(/);
   }
   const surface = document.querySelector('[data-testid="surface"]') as HTMLElement;
-  expect(surface.style.getPropertyValue('--bloom-surface-highlight-filter')).toBe(
-    SURFACE_HIGHLIGHT_FILTER,
+  expect(surface.style.getPropertyValue('--bloom-surface-lighting')).toBe(
+    surfaceLighting(resolveSurfaceOptics(false)),
   );
 });
 
@@ -140,7 +139,7 @@ it('paints every host opaque with no backdrop filter while transparency is reduc
       expect(body).toContain('backdrop-filter: none;');
       expect(body).toContain('-webkit-backdrop-filter: none;');
       expect(body).toMatch(/background-color: var\(--bloom-surface-solid, /);
-      expect(rule(`${scope}::after`)).toContain('backdrop-filter: none;');
+      expect(rule(`${scope}::after`)).toContain('box-shadow: none;');
     }
     expect(css).toContain('@media (prefers-reduced-transparency: reduce)');
   }
@@ -233,7 +232,9 @@ it('can turn the edge light off without dropping the glass', () => {
   const pane = container.querySelector('[data-testid="pane"]') as HTMLElement;
   expect(pane.className).toContain('bloom-surface-paint');
   expect(pane.style.getPropertyValue('--bloom-surface-filter')).toBe(SURFACE_FILTER);
-  expect(pane.style.getPropertyValue('--bloom-surface-highlight-filter')).toBe('none');
+  expect(pane.style.getPropertyValue('--bloom-surface-lighting')).toBe(
+    surfaceLighting(resolveSurfaceOptics(false), false),
+  );
 });
 
 // The rim owns the edge even on semantic outline buttons.

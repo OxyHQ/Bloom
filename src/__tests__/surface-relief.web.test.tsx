@@ -6,7 +6,7 @@ import { SurfacePaint } from '../surface/SurfacePaint';
 import { Card } from '../card/Card';
 import { Button } from '../button/Button.web';
 import { useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
-import { resolveSurfaceOptics } from '../surface/shared';
+import { controlReliefScale, resolveSurfaceOptics, surfaceLighting } from '../surface/shared';
 import { surfaceMaterialCss } from '../surface/web-material';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -73,10 +73,11 @@ it('shares relief while preserving semantic action pairs and nested backing', ()
       </Surface>,
     ),
   );
-  const relief = resolveSurfaceOptics(false).bodyShadow;
-  expect(property('panel', '--bloom-surface-body-shadow')).toBe(relief);
-  expect(property('accent', '--bloom-surface-body-shadow')).toBe(relief);
-  expect(property('danger', '--bloom-surface-body-shadow')).toBe(relief);
+  const relief = surfaceLighting(resolveSurfaceOptics(false));
+  expect(property('panel', '--bloom-surface-lighting')).toBe(relief);
+  const controlLighting = surfaceLighting(resolveSurfaceOptics(false, controlReliefScale(36, 20)));
+  expect(property('accent', '--bloom-surface-lighting')).toBe(controlLighting);
+  expect(property('danger', '--bloom-surface-lighting')).toBe(controlLighting);
   expect(property('accent', '--bloom-btn-bg')).toBe('rgba(22, 101, 52, 0.72)');
   expect(property('danger', '--bloom-btn-bg')).toBe('rgba(153, 27, 27, 0.72)');
   expect(property('accent', '--bloom-btn-fg')).toBe('#ffffff');
@@ -100,7 +101,9 @@ it('does not inherit relief through a clear surface or an explicit sheen opt-out
     ),
   );
   expect(host('clear').className).not.toContain('bloom-surface--material');
-  expect(property('quiet', '--bloom-surface-body-shadow')).toBe('none');
+  expect(property('quiet', '--bloom-surface-lighting')).toBe(
+    surfaceLighting(resolveSurfaceOptics(false), true, false),
+  );
   expect(host('flat').className).not.toContain('bloom-btn--surface');
 });
 
@@ -113,7 +116,7 @@ it('removes body relief in every reduced-transparency and contrast CSS path', ()
     for (const layer of ['before', 'after']) {
       const rule = css.split(`${scope}::${layer} {`)[1]?.split('}')[0];
       expect(rule).toContain('box-shadow: none;');
-      expect(rule).toContain('backdrop-filter: none;');
+      if (layer === 'before') expect(rule).toContain('backdrop-filter: none;');
     }
   }
   for (const query of [

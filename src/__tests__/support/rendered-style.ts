@@ -98,9 +98,9 @@ export function renderedChildren(tree: unknown, hostTestID: string): HostNode[] 
   return (host.children ?? []).filter(isHostNode);
 }
 
-/** One layer of the native sheen: an inset white glow, blurred and pulled in by its spread. */
+/** Native body lighting: inset shoulder/trough, blurred and pulled in by negative spread. */
 const SHEEN_GLOW =
-  /inset 0 -?\d+(?:\.\d+)?px \d+(?:\.\d+)?px -\d+(?:\.\d+)?px rgba\(255, 255, 255, [\d.]+\)/g;
+  /inset -?\d+(?:\.\d+)?(?:px)? -?\d+(?:\.\d+)?(?:px)? \d+(?:\.\d+)?px -\d+(?:\.\d+)?px rgba\(\d+, \d+, \d+, [\d.]+\)/g;
 
 /** The sheen layers of a native material pane's `boxShadow`, or `''`. */
 export function sheenGlow(style: unknown): string {

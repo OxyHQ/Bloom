@@ -25,6 +25,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
+import { controlReliefScale } from '../surface/shared';
 import { styled } from 'react-native-css';
 
 import { useBloomAppearance, useBloomControlDensity } from '../appearance/context';
@@ -637,6 +638,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
         <SurfacePaint
           fill={paint.background}
           radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
+          lightingScale={controlReliefScale(geometry.height, geometry.lineHeight)}
         />
       ) : null}
       <ButtonContent loading={loading} gap={geometry.gap}>

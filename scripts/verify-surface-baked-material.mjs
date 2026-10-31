@@ -6,7 +6,8 @@
  * live (`data-bloom-material-bake="off"` on the root, the measurement control),
  * then baked, compared pixel by pixel. Fails on any channel more than
  * `TOLERANCE` levels apart, on a story on the flat canvas that bakes nothing,
- * on a host that must bake and does not, and on one that bakes over a picture.
+ * on a host that must bake and does not, and on one that bakes over an unknown
+ * or spatially varying backing.
  *
  *   STORYBOOK_URL=http://localhost:6006 CHROME_PATH=… node scripts/verify-surface-baked-material.mjs
  */
@@ -18,12 +19,11 @@ const puppeteer = require(process.env.PUPPETEER_MODULE ?? 'puppeteer-core');
 const TOLERANCE = 2;
 /**
  * A material host's own antialiased outline, the pixels it only partly covers,
- * is the one place the two may differ more: the live edge light brightens a
- * backdrop that already holds the outline's mix with what is outside, the baked
- * one brightens its own body under the same coverage (and a live host on a
- * baked one antialiases against a different render surface). Measured up to 11
- * levels, on that outline's antialiased pixels and the two either side. The ring is found by painting every body
- * black, then white, and keeping the pixels in between.
+ * is the one place the two may differ more: live and baked bodies can meet
+ * different compositor render surfaces at their partially covered edges.
+ * Keep the existing 12-level limit confined to that antialiased outline and
+ * the two pixels either side. The ring is found by painting every body black,
+ * then white, and keeping the pixels in between.
  */
 const OUTLINE_TOLERANCE = 12;
 const BASE = process.env.STORYBOOK_URL ?? 'http://localhost:6006';
@@ -32,12 +32,20 @@ const HEIGHT = 800;
 
 /** Stories on the flat canvas: something must bake, and nothing may move. */
 const FLAT = [
-  { id: 'base-surface--nested', baked: ['nested-outer', 'nested-card'] },
+  { id: 'base-surface--nested', baked: ['nested-outer'] },
   { id: 'base-surface--border-lighting' },
   { id: 'base-surface--baked-and-live', baked: ['baked-canvas', 'baked-nested'] },
 ];
 /** Hosts that must stay live, by test id, wherever they appear. */
-const LIVE = ['live-ancestor-image', 'live-sibling-layer', 'side-reflection', 'surface-material'];
+const LIVE = [
+  'nested-card',
+  'nested-plain-child',
+  'live-lit-parent',
+  'live-ancestor-image',
+  'live-sibling-layer',
+  'side-reflection',
+  'surface-material',
+];
 /** Stories whose every material is over a picture: nothing may bake. */
 const UNKNOWN = [{ id: 'base-surface--material' }, { id: 'base-surface--backdrop-reflection' }];
 
@@ -212,7 +220,7 @@ try {
       if (UNKNOWN.includes(story) && baked.count !== 0)
         failures.push(`${label}: ${baked.count} baked over a picture`);
       for (const id of LIVE)
-        if (baked.ids.includes(id)) failures.push(`${label}: ${id} baked over a picture`);
+        if (baked.ids.includes(id)) failures.push(`${label}: ${id} baked over a non-flat backing`);
     }
   }
 } finally {

@@ -663,7 +663,7 @@ describe('filled button material', () => {
       const screen = renderWithTheme(<Button tone={tone}>Save</Button>);
       const sheens = surfaceSheens(screen.toJSON());
       expect(sheens).toHaveLength(1);
-      // One glow down from the top edge and one up from the bottom, never a gradient.
+      // The upper shoulder and lower trough share one paint view, never a gradient.
       const glow = sheenGlow(sheens[0]!.props.style).split(', inset');
       expect(glow).toHaveLength(2);
       expect(resolvedStyle(sheens[0]!.props.style).experimental_backgroundImage).toBeUndefined();

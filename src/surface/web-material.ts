@@ -1,22 +1,4 @@
-import { SURFACE_EDGE_GLOW, SURFACE_FILTER, SURFACE_HIGHLIGHT_FILTER } from './shared';
-
-/** Width of the edge line, in CSS px: the measured rim's reach. */
-const EDGE_LINE_PX = 1.25;
-
-/**
- * The edge line's strength, relative to the peak gain, as measured: full where the
- * border runs flat along the top and bottom (its first 1.25px of depth), about a
- * third once it curves into a corner, and gone before the corner turns vertical.
- * Measured by depth from the edge, so it holds for any radius, capsules included.
- */
-const STRAIGHT = 0.75;
-/**
- * The deepest a corner's light reaches, in CSS px: the measured profile is for a
- * 10–12px corner. Scaled to a capsule's end it would light half the side and read
- * as an outline, so on larger radii the light stops where it would on the tab.
- */
-const CORNER_REACH_PX = 12;
-const CORNER = 0.27;
+import { SURFACE_FILTER, SURFACE_LIGHTING } from './shared';
 
 /**
  * The root attribute that turns transparency down, written by the theme provider's
@@ -71,7 +53,7 @@ const MATERIAL_HOSTS = new Set<string>();
 
 /**
  * Every selector the material has been painted on so far, as one selector list:
- * the hosts whose `::before`/`::after` carry a backdrop filter. A host is
+ * the hosts whose `::before` carries the body backdrop filter. A host is
  * registered the moment its CSS is built, which is before it can render, so
  * `use-surface-presence.ts` and the backdrop-root gates can find every material
  * host without a list of their own going stale.
@@ -91,28 +73,22 @@ export function materialHostSelector(): string {
  * leaves a pixel of margin (`overflow-clip-margin: 1px`) so the layers' own
  * antialiased edges are not cut by an aliased clip.
  *
- * The host's corners are always circular here: Chromium drops every mask inside
- * an element clipped with a non-round `corner-shape`, which would turn the edge
- * light into a flat brightening of the whole surface.
+ * The host keeps the material's existing circular corner geometry.
  *
  * Both layers take the host's own border radius, so they are exactly its shape.
  * `::before` is the material: the backdrop frosted, saturated, flattened and
- * brightened under the tint. `::after` brightens the backdrop again through a
- * mask: a line along the border (the box minus its padding box) kept near the top
- * and bottom, strongest where it runs flat and dimmer through each corner, plus
- * the glow within 8px of the top and bottom.
+ * brightened under the tint. `::after` paints the shared inset lighting: a fine
+ * rim around the shape, a broad lit shoulder and an inner shade. The lighting
+ * reads no backdrop, uses no mask and stays identical on a live or baked body.
  *
  * With transparency reduced (the provider's `reduceTransparency`, or the
  * system's `prefers-reduced-transparency`) neither layer filters the backdrop:
- * the body paints `solid` opaque and the edge light is gone. That is the same
- * colour native paints, and on a slow GPU it is the difference between a
- * backdrop filter per surface every frame and none (measured on a Chromecast:
- * 7 fps with the filter, 16 without).
+ * the body paints `solid` opaque and the decorative lighting is gone.
  *
  * With contrast increased (the provider's `increaseContrast`, or the system's
  * `prefers-contrast: more` or `forced-colors`) the body is the same opaque
  * colour, and the edge light becomes a plain 1px line in the host's
- * `--bloom-surface-hairline`, with no mask and no backdrop filter.
+ * `--bloom-surface-hairline`, with no decorative shadow or backdrop filter.
  */
 export function surfaceMaterialCss(
   selector: string,
@@ -135,24 +111,19 @@ ${host}::after {
   filter: none;
   box-shadow: none;
 }`;
-  // Baked: the body as one colour (a gradient layer would be dithered), and the
-  // edge light as this layer brightened, which reads no backdrop. `:where()`
-  // keeps the specificity of the live rules, so the reduced and contrast rules
-  // below still win.
+  // Baked: only the body changes to one colour (a gradient would be dithered).
+  // The same lighting layer paints above either body. `:where()` keeps the
+  // specificity of the live rules, so reduced transparency and contrast win.
   const baked = `${selector}:where([${BAKED_MATERIAL_ATTRIBUTE}="baked"])`;
   const bakedLayers = `  backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-color: var(${BAKED_BODY_VAR});`;
   const contrast = (host: string) => `${reduced(host)}
 ${host}::after {
-  mask-image: none;
-  -webkit-mask-image: none;
   border: 1px solid var(${SURFACE_HAIRLINE_VAR}, transparent);
 }`;
   const presence = 'opacity var(--bloom-surface-presence-ms, 0ms) ease-out';
   const layerTransition = transition === 'none' ? presence : `${transition}, ${presence}`;
-  const y = `min(var(--bloom-surface-corner-y, 16px), 50%, ${CORNER_REACH_PX}px)`;
-  const strength = `linear-gradient(to bottom, rgba(0,0,0,${STRAIGHT}) 0, rgba(0,0,0,${STRAIGHT}) ${EDGE_LINE_PX}px, rgba(0,0,0,${CORNER}) ${2 * EDGE_LINE_PX}px, rgba(0,0,0,${CORNER}) calc(${y} * 0.58), transparent calc(${y} * 0.84), transparent calc(100% - ${y} * 0.84), rgba(0,0,0,${CORNER}) calc(100% - ${y} * 0.58), rgba(0,0,0,${CORNER}) calc(100% - ${2 * EDGE_LINE_PX}px), rgba(0,0,0,${STRAIGHT}) calc(100% - ${EDGE_LINE_PX}px), rgba(0,0,0,${STRAIGHT}) 100%)`;
   return `
 ${selector} {
   corner-shape: round !important;
@@ -168,12 +139,9 @@ ${selector}::after {
 }
 ${selector}::before {
   z-index: -2;
-  box-sizing: border-box;
-  border: ${EDGE_LINE_PX}px solid transparent;
   backdrop-filter: var(--bloom-surface-filter, ${SURFACE_FILTER});
   -webkit-backdrop-filter: var(--bloom-surface-filter, ${SURFACE_FILTER});
   background-color: ${fill};
-  box-shadow: var(--bloom-surface-body-shadow, none);
   opacity: var(--bloom-surface-presence, 1);
   transition: ${layerTransition};
 }
@@ -182,22 +150,10 @@ ${selector}::after {
   opacity: var(--bloom-surface-presence, 1);
   transition: ${presence};
   box-sizing: border-box;
-  border: ${EDGE_LINE_PX}px solid transparent;
-  backdrop-filter: var(--bloom-surface-highlight-filter, ${SURFACE_HIGHLIGHT_FILTER});
-  -webkit-backdrop-filter: var(--bloom-surface-highlight-filter, ${SURFACE_HIGHLIGHT_FILTER});
-  mask-image: var(--bloom-surface-edge-glow, ${SURFACE_EDGE_GLOW}), ${strength},
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-clip: border-box, border-box, padding-box, border-box;
-  mask-origin: border-box;
-  mask-composite: add, intersect, exclude;
+  box-shadow: var(--bloom-surface-lighting, ${SURFACE_LIGHTING});
 }
 ${baked}::before {
 ${bakedLayers}
-}
-${baked}::after {
-${bakedLayers}
-  box-shadow: var(--bloom-surface-body-shadow, none);
-  filter: var(--bloom-surface-highlight-filter, ${SURFACE_HIGHLIGHT_FILTER});
 }
 ${reduced(`:root[${REDUCED_TRANSPARENCY_ATTRIBUTE}="reduced"] ${selector}`)}
 @media (prefers-reduced-transparency: reduce) {

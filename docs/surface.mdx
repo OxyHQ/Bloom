@@ -15,45 +15,73 @@ import { Surface, Button } from '@oxy.so/bloom';
 </Surface>
 ```
 
-Surface has one shared material: a frosted, translucent body with shallow satin relief and an edge of light along its top and bottom. There is no material selector. Opaque semantic fill colours receive 72% opacity on web, so the frosted backdrop shows through; caller-supplied alpha remains explicit. With no fill override, a Surface on the page uses the card role, and a nested Surface derives its fill from the actual parent. `radius` defaults to 20. Geometry precedence is explicit `radius` → resolved `style.borderRadius` → family default, shared with Card and BlurIsland. Host and paint always receive the same resolved radius, including percentage style values. Use `radius` or `style.borderRadius` to set native clipping, rather than a class utility the inner paint cannot inspect. `className` belongs to the root layout node; padding, size and layout remain caller-owned. `children`, `accessibilityLabel` and `testID` pass through.
+Surface has one shared material: a frosted, translucent body with a rounded bevel and a fine luminous rim around its full silhouette. There is no material selector. Opaque semantic fill colours receive 72% opacity on web, so the frosted backdrop shows through; caller-supplied alpha remains explicit. With no fill override, a Surface on the page uses the card role, and a nested Surface derives its fill from the actual parent. `radius` defaults to 20. Geometry precedence is explicit `radius` → resolved `style.borderRadius` → family default, shared with Card and BlurIsland. Host and paint always receive the same resolved radius, including percentage style values. Use `radius` or `style.borderRadius` to set native clipping, rather than a class utility the inner paint cannot inspect. `className` belongs to the root layout node; padding, size and layout remain caller-owned. `children`, `accessibilityLabel` and `testID` pass through.
 
-Surface publishes its resolved base fill to `SurfaceLevelProvider` and `--bloom-surface`, so nested cards, fields and other controls read the same backing that it paints. The satin relief and rim decorate this base; they do not create another level. Stepping is based on the actual fill even beyond named level 3. Explicit `fill` takes precedence over `style.backgroundColor`; both are respected and published. Material fills are composited onto the declared parent, an estimate rather than a measurement of the blurred backdrop.
+Surface publishes its resolved base fill to `SurfaceLevelProvider` and `--bloom-surface`, so nested cards, fields and other controls read the same backing that it paints. The bevel and rim decorate this base; they do not create another level. Stepping is based on the actual fill even beyond named level 3. Explicit `fill` takes precedence over `style.backgroundColor`; both are respected and published. Material fills are composited onto the declared parent, an estimate rather than a measurement of the blurred backdrop.
 
 `Surface` has no press, disabled, loading or business state. Controls such as Button own those states and consume the **same paint** directly: `SurfacePaint` for universal components and `surfaceMaterialCss` for web roots. These are internal implementation primitives, not alternate public components. Button keeps its single interactive root without wrapping it in another Surface.
 
-The shared implementation lives in `surface/optics.ts` (the measured looks), `surface/shared.ts`, `SurfacePaint.tsx` and `web-material.ts`. On web the shape is always the host's own border radius, so material and host cannot disagree, whatever the radius (capsules, per-corner radii, percentages). Two pseudo-elements paint it:
+The shared implementation lives in `surface/optics.ts` (body-filter and lighting recipes), `surface/shared.ts`, `SurfacePaint.tsx` and `web-material.ts`. On web the shape is always the host's own border radius, so material and host cannot disagree, whatever the radius (capsules, per-corner radii, percentages). Two pseudo-elements paint it:
 
-- `::before` is the body: the backdrop blurred (24px), saturated, flattened and brightened, under the tint. Its existing layer also paints shallow inset light from the upper left and shade from the lower right. These mode-specific shadows give the body relief on a flat backdrop without another filter or node.
-- `::after` is the edge: the backdrop brightened again through a CSS mask — a 1.25px line along the border (the box minus its padding box), full where it runs flat along the top and bottom, about a third through each corner and gone before the side, plus a glow within 8px of the top and bottom. The falloff is measured by depth from the edge and stops 12px down, so a capsule's ends do not read as an outline.
+- `::before` is the body: the backdrop blurred (24px), saturated, flattened and brightened under the tint. This is the material's only backdrop-filter pass.
+- `::after` paints the lighting itself: three fine inset rim/reflection shadows around the silhouette, then two broader inset shadows for an upper-left highlight and a lower-right shade. It has no background, mask, filter or backdrop filter. The body colour shows through the rounded bevel; the lighting never paints an outer halo.
 
-Hosts set the material's variables through `surfaceOpticsVars(optics, radius)` on every painting element, so none inherits an enclosing surface's values. A host clips with `overflow: clip; overflow-clip-margin: 1px` rather than `hidden`: an exact clip cuts the layers' antialiased edge and Chromium does not antialias it. Its corners are always round on web: Chromium drops every mask inside an element clipped with a non-round `corner-shape`, which would turn the edge into a flat brightening of the whole surface. No blend modes either: a sibling with `mix-blend-mode` switches the body's backdrop filter off.
+`surfaceLighting(optics, rim, sheen)` joins the two optional shadow groups. Hosts set `--bloom-surface-lighting` and the body filter through `surfaceOpticsVars(optics, rim, sheen)` on every painting element, so none inherits an enclosing surface's recipe. Radius is inherited directly by the paint, not passed to the optics. A host clips with `overflow: clip; overflow-clip-margin: 1px` rather than `hidden`: an exact clip cuts the layers' antialiased edge and Chromium does not antialias it. Web keeps circular corners. Historical hazard: Chromium removed the previous renderer's masks inside non-round `corner-shape` clipping. No blend modes either: a sibling with `mix-blend-mode` switches the body's backdrop filter off.
 
-Native paints a single view: tint as `backgroundColor`, satin relief, and the edge line and its glow as inset `boxShadow`s (`inset 0 ±1px 0` lines over `inset 0 ±8px 5.18px -5.18px` glows in light mode). Never paint the glow as an `experimental_backgroundImage` gradient: React Native's parser drops a whole gradient for one `calc()` stop (every native surface lost its glow that way), and a gradient with fixed `px` stops crashes the Android emulator's SwiftShader renderer (a SIGSEGV in its render thread on the first frame, measured with six stops and with four). No in-flow native surface has a `BlurView`, and no Android one at all (see *iOS: the system's material under floating surfaces* below). A surface's own shadow belongs on the outer node; do not clip the native outer node if it needs a shadow.
+Native paints one view: tint as `backgroundColor`, with the same five inset `boxShadow`s for the complete rim and broad bevel. Never replace them with an `experimental_backgroundImage` gradient: React Native's parser drops a whole gradient for one `calc()` stop (every native surface lost its glow that way), and a gradient with fixed `px` stops crashes the Android emulator's SwiftShader renderer (a SIGSEGV in its render thread on the first frame, measured with six stops and with four). No in-flow native surface has a `BlurView`, and no Android one at all (see *iOS: the system's material under floating surfaces* below). A surface's own outer shadow belongs on the outer node; do not clip the native outer node if it needs one.
 
 `Surface` has no press, disabled, loading or business state. Controls such as Button own those states and consume the **same paint** directly: `SurfacePaint` for universal components, `surfaceMaterialCss` and `useSurfaceMaterial` for web hosts. A `Screen` inside a painted surface leaves its canvas transparent, so the surface's material and edge stay visible.
 
-## Satin relief and composition
+## Bevel lighting and composition
 
-The relief belongs to the shared optics, not to an action palette. Button tones,
-semantic foreground pairs, explicit alpha, parent backing and depth retain their
-existing owners. Light and shade are confined near the edge, so large panels keep
-a quiet centre while small controls show the same material. `SurfacePaint`
-`sheen={false}` suppresses the body relief on both platforms. Plain and flat
-components remain unpainted, and responsive ContentPanel framing gates the relief
-along with its rim.
+The lighting belongs to the shared optics, not to an action palette. Button
+tones, semantic foreground pairs, explicit alpha, parent backing and depth
+retain their existing owners. The highlight, inner shade and reflected edge
+make small controls visibly rounded while large panels retain a quiet centre.
+`SurfacePaint rim={false}` removes the fine rim independently of the broad
+bevel; `sheen={false}` removes that bevel independently of the rim. Plain and
+flat components remain unpainted. Responsive ContentPanel framing gates the
+whole lighting recipe with one CSS variable.
 
-Reduced transparency removes the body relief; increased contrast replaces the
-optical edge with the existing contrast hairline. The web's baked path preserves
-the relief without adding a backdrop pass. The native path uses inset shadows,
-never a gradient or an additional blur. OxyOS renderers that do not implement
-box shadows retain their current tint fallback. Jest checks paint and composition
-contracts; native device appearance and performance still require device checks.
+Button uses `controlReliefScale(height, lineHeight)` to derive a vertical
+content inset from its resolved size, density and text geometry. The shared
+material helper scales the broad bevel's offsets, blur and spread to that
+space, keeping its light/shade strengths and fine rim.
+This keeps the broad lighting near the edge of short buttons instead of
+covering their label area. It is an internal paint input, not a public material
+variant; semantic palettes, control dimensions and published backing retain
+their existing owners. Arbitrary height or line-height overrides in `style`
+or `className` are not measured; this scale follows the resolved built-in
+Button geometry and introduces no layout observer.
 
-The relief is pending release validation: Chromium 153 measures up to 3 RGB
-levels between the live and baked material, above the existing 2-level gate.
-The gate remains unchanged. Resolve that comparison before publishing this
-refinement; the paint-structure and composition tests alone do not establish
-pixel parity.
+Reduced transparency removes all decorative lighting on both platforms;
+increased contrast adds the existing contrast hairline to the opaque body.
+The web's baked path replaces only the body colour. The lighting layer uses
+the same inset-shadow recipe in live and baked rendering, without another
+backdrop pass. Native uses those same shadows, never a gradient or an
+additional blur. OxyOS renderers that do not implement box shadows retain
+their current tint fallback.
+
+This revised renderer remains pending release validation. Chromium 153's
+baked-material gate passes the dark fixtures and all outline comparisons, but
+the light fixtures still differ by up to 4 RGB levels against the unchanged
+limit of 2. A 72-case button comparison found no new crossings below 4.5:1
+after scaling the bevel; existing light accent/danger combinations remain
+below that floor. Twelve reduced/increased-contrast interaction checks retain
+opaque state colours without lighting or filters. Native device appearance
+and dense-view performance still need verification. Jest verifies paint and
+composition contracts, not visual equivalence or device performance.
+
+The shared `surfaceLightingFills` bounds let components account for the bevel
+when they paint additional artwork beneath text. ProOfferCard combines those
+bounds with its own artwork colours before choosing its caption through
+`quietTextOver`, rather than reusing the page's secondary text colour.
+
+The `RoundedMaterial` Storybook example shows semantic fills and nested controls:
+
+![Rounded material in light mode](./surface-rounded-light.png)
+
+![Rounded material in dark mode](./surface-rounded-dark.png)
 
 ## iOS: the system's material under floating surfaces
 
@@ -92,7 +120,7 @@ With `BloomProvider reduceTransparency`, a platform appearance that asks for it
 (the `appearance` capability), the system's own setting (iOS Reduce
 Transparency; the browser's `prefers-reduced-transparency: reduce`), or with
 contrast increased (below), no surface filters its backdrop. The body
-paints opaque and the edge light, itself a backdrop filter, is gone. The opaque
+paints opaque and the decorative rim and bevel are gone. The opaque
 colour is the one the surface already publishes to its content (its tint
 composited onto its parent, `resolveSurfaceMaterial().solidFill`), so the text and
 controls on it are measured against what is painted. It is the colour native
@@ -102,13 +130,13 @@ The provider marks the document with `data-bloom-transparency="reduced"`, beside
 the `dark` class, and `surfaceMaterialCss` carries the rule for both that
 attribute and the media query, so every host follows it with no prop of its own.
 Each host sets `--bloom-surface-solid` on itself (`transparent` when it paints no
-material), so none inherits an enclosing surface's. Measured on a Chromecast
-(Chrome 90) over a slowly moving photo: 7 fps with a backdrop filter per card,
-16 without.
+material), so none inherits an enclosing surface's. Historical measurement
+with the previous renderer on a Chromecast (Chrome 90) over a slowly moving
+photo: 7 fps with a backdrop filter per card, 16 without.
 
 The provider resolves the switch once (the prop, the platform's appearance or the
 system's setting) and publishes it twice: the document attribute for the material's CSS, and
-`useReducedTransparency()` for what blurs in JavaScript. Every material host
+`useReducedTransparency()` for native lighting and what blurs in JavaScript. Every material host
 follows the attribute with nothing of its own (Button, Card, Sidebar,
 `BlurIsland`, floating panels, the window controls' bubbles and plate). The rest
 read the hook:
@@ -149,8 +177,8 @@ A host that draws its own border (`SurfacePaint rim={false}`, an outlined
 
 - **Web.** The provider writes `data-bloom-contrast="more"` beside
   `data-bloom-transparency="reduced"`; `surfaceMaterialCss` carries the rule for
-  the attribute and both media queries. The `::after` layer drops its mask and
-  backdrop filter and draws `border: 1px solid var(--bloom-surface-hairline)`.
+  the attribute and both media queries. The `::after` layer drops its decorative
+  shadows and draws `border: 1px solid var(--bloom-surface-hairline)`.
   Each host sets `--bloom-surface-hairline` on itself, as it sets
   `--bloom-surface-solid`. In `forced-colors` the browser recolours that border
   to the system's own; the line stays.
@@ -160,7 +188,7 @@ A host that draws its own border (`SurfacePaint rim={false}`, an outlined
 - `useIncreasedContrast()` reads the switch; `useReducedTransparency()` is true
   whenever it is.
 
-![The Material story with prefers-contrast: more, before (left) and after (right), light above and dark below](./surface-increased-contrast.png)
+![Historical Material capture with prefers-contrast: more, before (left) and after (right), light above and dark below](./surface-increased-contrast.png)
 
 Gates: `increased-contrast.test.tsx` (the iOS and Android settings as they
 change, the prop, the native hairline, the 3:1 floor over every preset's card
@@ -175,12 +203,12 @@ nothing, and the rest of the material's filter (saturate, contrast, brightness)
 is arithmetic on that colour. So the web computes the body once and paints it
 as a plain colour, with no backdrop filter for the compositor to run on every
 frame: the host is marked `data-bloom-material="baked"` and carries its body in
-`--bloom-surface-baked-body` (`surface/baked-material.ts`). The edge light
-becomes a `filter: brightness()` of the host's own layer, which reads no
-backdrop either. Same pixels: `scripts/verify-surface-baked-material.mjs`
-compares every story baked and live, in both modes, and fails on any pixel more
-than 2 levels apart off a host's antialiased outline (up to 11 on that outline,
-where the live edge light brightens the outline's mix with what is outside).
+`--bloom-surface-baked-body` (`surface/baked-material.ts`). Only `::before`
+changes; `::after` keeps the same self-painted rim and bevel.
+`scripts/verify-surface-baked-material.mjs` compares the fixtures baked and
+live in both modes and requires pixels to stay within 2 RGB levels outside
+a host's antialiased outline, with the existing separate outline allowance.
+The revised renderer must pass that gate before its parity is established.
 
 The decision is made per instance, from the page, after the host has painted
 once live: the same Card sits on a page's canvas in one place and over a photo
@@ -188,10 +216,21 @@ in another, which no list of callers can tell apart. Walking up from the host,
 the first thing that paints decides:
 
 - an element with an opaque, flat background (no image): bake on it;
-- a material host already baked (parents are done first): bake on its body;
+- a material host already baked (parents are done first), without decorative
+  lighting: bake on its flat body;
 - anything else stays live: a translucent or image background, a live material
   host, an element that floats out of the flow (`absolute`, `fixed`, `sticky`)
   or that is a backdrop root, and the host itself floating.
+
+A parent's decorative rim and bevel are not a flat colour. A child directly
+backed by illuminated material stays live, even when that parent is baked.
+This applies throughout the parent: a position-based centre exception could
+become incorrect after layout moves the child toward the lit edge. No geometry
+observer or new position cache is introduced. An explicit opaque, flat backing
+inside the nested tree can still provide a known colour and allow its children
+to bake. This intentionally reduces nested baking coverage compared with the
+previous renderer; its performance tradeoff needs fresh measurement. The
+pixel gate's tolerances remain unchanged.
 
 On the way, a positioned or transformed earlier sibling that overlaps the host
 keeps it live: it would paint behind it. A host starts live and is baked in the
@@ -207,11 +246,19 @@ states (`transition`: fields, chips, switches) and `Button` stay live: a baked
 body does not transition with the tint. Floating panels, menus, toasts and
 dialogs float, so they stay live by the rule.
 
-![The BakedAndLive story with every host live (above) and baked where it can be (below), light on the left and dark on the right: the same pixels; the two surfaces over the photo stay live](./surface-baked-material.png)
+Button hover, press and disabled tint changes paint `::before`, the body layer.
+The self-painted `::after` lighting stays background-free in every state, so a
+state does not add a second tint over the bevel. State-selected opaque body
+and hairline variables follow the same palette when transparency is reduced
+or contrast is increased.
+
+![Historical BakedAndLive capture of the previous masked-rim renderer: live above and baked below, light on the left and dark on the right](./surface-baked-material.png)
 
 `data-bloom-material-bake="off"` on the root keeps every host live: the
 control the pixel and performance checks compare against, never a second
-material. **System / Composition / Dense Feed** (100 posts,
+material. The following **historical measurement of the previous masked-rim
+renderer** is not a measurement of the revised inset lighting.
+**System / Composition / Dense Feed** (100 posts,
 `scripts/measure-surface-feed.mjs`, headless Chrome 146 on a development build,
 2 s of scrolling, two runs each): live, 300 hosts filter their backdrop, 64 and
 87 frames, 95th percentile 33 and 50 ms, 32 and 49 frames over 32 ms; baked,
@@ -221,7 +268,7 @@ the ratio, not the numbers, is the evidence.
 
 ## Backdrop roots: never fade or filter a material host or its ancestors
 
-In Chromium an element with `opacity` below 1, any `filter` (`blur(0px)` included: only `none` is safe), a `mask`, a `clip-path`, a `mix-blend-mode` or a `backdrop-filter` of its own is the **backdrop root** of everything under it. A material host on or under one blurs only what that element painted: it turns flat and loses its edge light for as long as the trigger lasts, then pops back. Measured behind a striped page, a dialog's stripe contrast jumped to full (255) the instant it began closing, a tooltip rested at 66 because its entrance ended on `filter: blur(0px)`, and a menu flickered on every open and close.
+In Chromium an element with `opacity` below 1, any `filter` (`blur(0px)` included: only `none` is safe), a `mask`, a `clip-path`, a `mix-blend-mode` or a `backdrop-filter` of its own is the **backdrop root** of everything under it. A material host on or under one blurs only what that element painted: its body turns flat for as long as the trigger lasts, then pops back. Self-painted lighting does not repair a missing backdrop. Historical measurements with the masked-rim renderer behind a striped page: a dialog's stripe contrast jumped to full (255) the instant it began closing, a tooltip rested at 66 because its entrance ended on `filter: blur(0px)`, and a menu flickered on every open and close.
 
 So a surface that paints the material appears, leaves and dims through its **presence**, a number from 0 to 1 (`surface/use-surface-presence.ts`):
 

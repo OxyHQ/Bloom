@@ -1,5 +1,10 @@
 import { Platform } from 'react-native';
-import { resolveSurfaceFill, resolveSurfaceOptics, resolveSurfaceTint } from '../surface/shared';
+import {
+  controlReliefScale,
+  resolveSurfaceFill,
+  resolveSurfaceOptics,
+  resolveSurfaceTint,
+} from '../surface/shared';
 import { surfacePresenceStyle } from '../surface/use-surface-presence';
 
 afterEach(() => jest.restoreAllMocks());
@@ -30,25 +35,41 @@ describe('the native material', () => {
   // cannot read drops the whole shadow, silently. `calc()`/`var()` are never read.
   const LENGTH = '(-?\\d+(?:\\.\\d+)?)(?:px)?';
   const SHADOW = new RegExp(
-    `^inset 0 ${LENGTH} ${LENGTH}(?: ${LENGTH})? rgba\\(255, 255, 255, (0(?:\\.\\d+)?|1)\\)$`,
+    `^inset ${LENGTH} ${LENGTH} ${LENGTH}(?: ${LENGTH})? rgba\\((\\d+), (\\d+), (\\d+), (0(?:\\.\\d+)?|1)\\)$`,
   );
 
   it.each([false, true])(
-    'paints its sheen as inset shadows, never a gradient (dark: %s)',
+    'paints continuous rim and directional body lighting as native-readable inset shadows (dark: %s)',
     (isDark) => {
       const { sheenShadow, rim } = resolveSurfaceOptics(isDark);
-      for (const css of [sheenShadow, rim]) {
-        expect(css).not.toMatch(/gradient|calc\(|var\(/);
-        for (const layer of css.split(/,(?![^(]*\))/).map((part) => part.trim()))
-          expect(layer).toMatch(SHADOW);
-      }
-      const [top, bottom] = sheenShadow
-        .split(/,(?![^(]*\))/)
-        .map((part) => part.trim().match(SHADOW));
-      expect(Number(top?.[1])).toBeGreaterThan(0);
-      expect(Number(bottom?.[1])).toBe(-Number(top?.[1]));
-      // A spread of minus the blur keeps the glow off the sides.
-      expect(Number(top?.[3])).toBe(-Number(top?.[2]));
+      const parse = (css: string) =>
+        css.split(/,(?![^(]*\))/).map((part) => {
+          expect(part).not.toMatch(/gradient|calc\(|var\(/);
+          const match = part.trim().match(SHADOW);
+          expect(match).not.toBeNull();
+          if (!match) throw new Error(`Unsupported native shadow: ${part}`);
+          const values = match.slice(1).map((value) => Number(value ?? 0));
+          expect(values.every(Number.isFinite)).toBe(true);
+          expect(values[2]).toBeGreaterThanOrEqual(0);
+          for (const channel of values.slice(4, 7)) {
+            expect(channel).toBeGreaterThanOrEqual(0);
+            expect(channel).toBeLessThanOrEqual(255);
+          }
+          return values;
+        });
+      const rimLayers = parse(rim);
+      const bodyLayers = parse(sheenShadow);
+      // The perimeter exists on vertical sides as well as the horizontal edges.
+      expect(
+        rimLayers.some(
+          ([x, y, blur, spread]) => x === 0 && y === 0 && blur === 0 && (spread ?? 0) > 0,
+        ),
+      ).toBe(true);
+      // The shoulder and trough establish a direction, rather than mirrored white glows.
+      expect(bodyLayers.some(([, y]) => (y ?? 0) > 0)).toBe(true);
+      expect(bodyLayers.some(([, y]) => (y ?? 0) < 0)).toBe(true);
+      expect(bodyLayers.some((values) => values.slice(4, 7).every((v) => v === 255))).toBe(true);
+      expect(bodyLayers.some((values) => values.slice(4, 7).every((v) => v === 0))).toBe(true);
     },
   );
 
@@ -57,4 +78,26 @@ describe('the native material', () => {
     expect(surfacePresenceStyle(0.5)).toEqual({ opacity: 0.5 });
     expect(surfacePresenceStyle(0)).toEqual({ opacity: 0 });
   });
+
+  it.each([
+    [24, 16],
+    [36, 20],
+    [44, 22],
+  ])(
+    'keeps the full rim while confining control body lighting to content inset (%s/%s)',
+    (height, lineHeight) => {
+      const inset = (height - lineHeight) / 2;
+      for (const dark of [false, true]) {
+        const full = resolveSurfaceOptics(dark);
+        const control = resolveSurfaceOptics(dark, controlReliefScale(height, lineHeight));
+        expect(control.rim).toBe(full.rim);
+        const layers = control.sheenShadow.split(/,(?![^(]*\))/);
+        for (const layer of layers) {
+          const parsed = layer.trim().match(SHADOW);
+          expect(parsed).not.toBeNull();
+          expect(Number(parsed?.[3])).toBeLessThanOrEqual(inset);
+        }
+      }
+    },
+  );
 });

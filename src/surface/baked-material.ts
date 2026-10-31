@@ -23,8 +23,8 @@ import {
  * paints that body as a plain colour (`data-bloom-material="baked"`,
  * `--bloom-surface-baked-body`):
  * the same pixels, with no backdrop filter for the compositor to run every frame.
- * The edge light becomes a `filter: brightness()` of the host's own layer, which
- * reads no backdrop either.
+ * The inset lighting is a separate self-painted layer, identical on live and
+ * baked bodies; it never reads or filters the backdrop.
  *
  * "Known" is decided from the document, per instance, after the host mounts:
  * the same Card is in the flow of a page in one place and over a photo in
@@ -32,9 +32,16 @@ import {
  * host, the first thing that paints is the backing:
  *
  * - an element with an opaque, flat background (no image): bake on that colour;
- * - a material host baked earlier in the same pass: bake on its body;
+ * - a material host baked earlier with an explicit lighting opt-out: bake on its body;
  * - anything else (a translucent or image background, a live material host, an
- *   element floating out of the flow, a backdrop root): stay live.
+ *   illuminated material host, an element floating out of the flow, a backdrop
+ *   root): stay live.
+ *
+ * The cache records one body colour, not the parent's spatial rim and bevel.
+ * Even a child in its apparent centre can sample that lighting through blur,
+ * and layout changes can move it closer. No geometric snapshot is used: a
+ * child directly on a lit material stays live. An opaque flat owner between
+ * the two can provide a known backing again.
  *
  * The host itself, and every element on the way up, must be in the flow (not
  * `absolute`, `fixed` or `sticky`), and no positioned or transformed earlier
@@ -42,9 +49,9 @@ import {
  * A host starts live and is baked after it has painted once, so a wrong guess
  * can only ever cost performance, never show the wrong colour first.
  *
- * Hosts are processed in document order, parents before children, so a card on
- * a baked panel bakes on the panel's body. The pass reruns for a host whose props
- * changed and for every host when the document's theme changes.
+ * Hosts are processed in document order, parents before children, so an unlit
+ * baked panel can supply its body's colour. The pass reruns for a host whose
+ * props changed and for every host when the document's theme changes.
  */
 
 type RGB = readonly [number, number, number];
@@ -183,6 +190,20 @@ const FLOATING = new Set(['absolute', 'fixed', 'sticky']);
 /** An unset computed value reads as its initial one. */
 const isNone = (value: string | undefined) => !value || value === 'none';
 
+/** The cache represents only the body; a lit material is not a flat backing. */
+function flatMaterialBody(host: Element): RGB | null {
+  // Responsive chrome can turn a computed `none` into lighting on resize,
+  // without changing paint inputs. Only a literal inline opt-out is stable;
+  // it must still win in the cascade. An absent value uses the lit fallback.
+  if (
+    !(host instanceof HTMLElement) ||
+    host.style.getPropertyValue('--bloom-surface-lighting').trim() !== 'none' ||
+    getComputedStyle(host).getPropertyValue('--bloom-surface-lighting').trim() !== 'none'
+  )
+    return null;
+  return bodies.get(host) ?? null;
+}
+
 /** The flat colour behind `host`, or null when it is not known. */
 export function backingOf(host: HTMLElement, outOfFlow: WeakMap<Element, Element[]>): RGB | null {
   // SurfacePaint's layer covers its host exactly: the host is what sits in the page.
@@ -195,9 +216,9 @@ export function backingOf(host: HTMLElement, outOfFlow: WeakMap<Element, Element
   for (let node = subject.parentElement; node; child = node, node = node.parentElement) {
     // A host whose material is its own ::before, or a SurfacePaint layer under
     // its content: either way that material is what is behind.
-    if (selector && node.matches(selector)) return bodies.get(node) ?? null;
+    if (selector && node.matches(selector)) return flatMaterialBody(node);
     const layer = paintLayerOf(node, child);
-    if (layer) return bodies.get(layer) ?? null;
+    if (layer) return flatMaterialBody(layer);
     if (overlapped(node, child, rect, outOfFlow)) return null;
     const style = getComputedStyle(node);
     if (!isNone(style.backgroundImage)) return null;

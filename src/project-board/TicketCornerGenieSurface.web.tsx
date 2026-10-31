@@ -158,7 +158,6 @@ function copySurface(source: HTMLDivElement, prefix: string) {
     element.style.transition = 'none';
     element.style.backdropFilter = 'none';
     element.style.setProperty('--bloom-surface-filter', 'none');
-    element.style.setProperty('--bloom-surface-highlight-filter', 'none');
     if (originals[index]!.classList.contains('animate-chart-reveal')) {
       element.style.clipPath = getComputedStyle(originals[index]!).clipPath;
     }

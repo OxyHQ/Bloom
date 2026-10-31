@@ -7,6 +7,16 @@ description: What react-native-screens' new sheet background effects do, how Blo
 
 **Status: decided (2026-10-30).** The owner approved phases 0 to 3 and deferred phase 4 to the GPU path; phase 5 remains a proposal that needs its own ADRs; see [Decisions](#decisions). The [Surface](./surface.mdx) page describes the material as it is; this page records why it changes and in what order. It compares Bloom's material with a recent change in react-native-screens and lists each improvement with its cost and its test.
 
+**Historical renderer note (2026-10-31).** The baseline comparison and phased
+measurements below describe the earlier material, including its second masked
+backdrop-brightness pass. The current refinement keeps the 72% tint and 24px
+body frosting, but replaces that edge pass with a self-painted full rim and
+broad bevel. Web now has one body backdrop pass and a separate inset-shadow
+lighting layer; native uses the same lighting in one paint view. The existing
+measurements are preserved as historical evidence, not claimed as results for
+this revised renderer. See [Surface](./surface.mdx) for its current architecture
+and validation status.
+
 Sources, read on 2026-10-30:
 
 - The post: [x.com/kmichalikk/status/2116160694349598747](https://x.com/kmichalikk/status/2116160694349598747), read through X's public syndication endpoint. Its four replies could not be read: they need a signed-in session, and the public mirrors are offline.
@@ -57,7 +67,7 @@ It has no accessibility code of its own. It relies on UIKit: when Reduce Transpa
 
 react-native-screens is MIT. Bloom could copy its code if it kept the copyright notice, recorded in `NOTICE` under third-party components. Nothing here is worth copying, though. The code is a mapping onto UIKit calls and the ideas are API design. **Reimplement the ideas and copy no source.** If a future step does port a file (for example the 20-case blur style mapping), its header names the origin and `NOTICE` gains the MIT entry, as Bloom's licence requires of vendored material.
 
-## Bloom's Surface today
+## Bloom's Surface at the study baseline
 
 One material, no selector. Bloom 9.0 chose this and 15.49.0 (#481) measured it again. Every painting family uses it: 53 files paint through `SurfacePaint` and 8 through `useSurfaceMaterial`/`surfaceMaterialCss`, across about 45 families. Product apps do not use `Surface` directly. Atlas, Inbox and Mention have no `Surface` import at all; they get the material through `Card`, `Button`, `BottomBar`, `Dialog`, menus and the other families.
 

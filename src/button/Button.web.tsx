@@ -6,7 +6,12 @@ import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { useButtonLayout } from './use-button-layout.web';
 import { useLongPress } from './use-long-press.web';
-import { resolveSurfaceOptics, surfaceContrastEdge, surfaceOpticsVars } from '../surface/shared';
+import {
+  controlReliefScale,
+  resolveSurfaceOptics,
+  surfaceContrastEdge,
+  surfaceOpticsVars,
+} from '../surface/shared';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import type { GestureResponderEvent, View } from 'react-native';
 import { SURFACE_HAIRLINE_VAR, surfaceMaterialCss } from '../surface/web-material';
@@ -69,7 +74,7 @@ import type { MemoRefComponent } from '../styles/native-refs';
 //  is declared only in the sheet. An inline `background-color` would outrank the
 //  `:hover` rule and silence it (`interactive-web-css.test.tsx` gates that).
 //
-//  The material paints the backdrop in ::before and its state tint in ::after.
+//  The material paints every body-tint state in ::before; ::after owns lighting.
 //
 //  `aria-busy` is excluded from the disabled paint: a loading button keeps its
 //  rest colours under the spinner instead of greying out.
@@ -143,13 +148,30 @@ export const BLOOM_BUTTON_CSS = `@layer base {\n${interactiveWebCss({
   opacity: 1;
   cursor: progress;
 }
-${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-color ${T} ease`)}
-.bloom-btn--surface { background: transparent !important; }
+${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-state-bg)', `background-color ${T} ease`)}
+.bloom-btn--surface {
+  background: transparent !important;
+  --bloom-btn-state-bg: var(--bloom-btn-bg);
+  --bloom-btn-state-solid: var(--bloom-btn-solid);
+  --bloom-btn-state-hairline: var(--bloom-btn-hairline);
+}
 .bloom-btn--surface::before { inset: 0; }
-.bloom-btn--surface${NOT_DISABLED}:hover::after { background-color: var(--bloom-btn-bg-hover); }
-.bloom-btn--surface${NOT_DISABLED}:active::after { background-color: var(--bloom-btn-bg-active); }
-.bloom-btn--surface:disabled:not([aria-busy="true"])::after,
-.bloom-btn--surface[aria-disabled="true"]:not([aria-busy="true"])::after { background-color: var(--bloom-btn-bg-disabled); }
+.bloom-btn--surface${NOT_DISABLED}:hover {
+  --bloom-btn-state-bg: var(--bloom-btn-bg-hover);
+  --bloom-btn-state-solid: var(--bloom-btn-solid-hover);
+  --bloom-btn-state-hairline: var(--bloom-btn-hairline-hover);
+}
+.bloom-btn--surface${NOT_DISABLED}:active {
+  --bloom-btn-state-bg: var(--bloom-btn-bg-active);
+  --bloom-btn-state-solid: var(--bloom-btn-solid-active);
+  --bloom-btn-state-hairline: var(--bloom-btn-hairline-active);
+}
+.bloom-btn--surface:disabled:not([aria-busy="true"]),
+.bloom-btn--surface[aria-disabled="true"]:not([aria-busy="true"]) {
+  --bloom-btn-state-bg: var(--bloom-btn-bg-disabled);
+  --bloom-btn-state-solid: var(--bloom-btn-solid-disabled);
+  --bloom-btn-state-hairline: var(--bloom-btn-hairline-disabled);
+}
 .bloom-btn--surface:disabled, .bloom-btn--surface[aria-disabled="true"] { box-shadow: var(--bloom-btn-shadow); }
 .bloom-btn--underline-rest,
 .bloom-btn--underline-hover {
@@ -163,7 +185,7 @@ ${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-c
 }
 @media (prefers-reduced-motion: reduce) {
 .bloom-btn,
-.bloom-btn--surface::after {
+.bloom-btn--surface::before {
   transition: none;
 }
 }`,
@@ -251,7 +273,6 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       (accessibilityElementsHidden || importantForAccessibility === 'no-hide-descendants'
         ? true
         : undefined);
-    const theme = useTheme();
     const parentRecipe = useSurfaceFillRecipe();
     const parentLevel = useSurfaceLevelValue();
     const reactId = useId();
@@ -309,10 +330,30 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         isLink && linkTone != null && toneProp == null
           ? resolveLinkButtonPalette(modeTheme, linkTone)
           : resolveButtonPalette(appearance, modeTheme, tone, colors, layer.fill, material);
+      const solidOf = (paint: typeof palette.rest) =>
+        resolveSurfaceMaterial({ fill: paint.background, parentFill: layer.fill }).solidFill;
+      const solid = {
+        rest: solidOf(palette.rest),
+        hover: solidOf(palette.hover),
+        active: solidOf(palette.active),
+        disabled: solidOf(palette.disabled),
+      };
+      const edgeOf = (fill: string) =>
+        palette.borderWidth > 0 ? 'transparent' : surfaceContrastEdge(fill, modeTheme.colors.text);
       return {
         palette,
         backing: layer.fill,
-        optics: resolveSurfaceOptics(modeTheme.isDark),
+        solid,
+        hairline: {
+          rest: edgeOf(solid.rest),
+          hover: edgeOf(solid.hover),
+          active: edgeOf(solid.active),
+          disabled: edgeOf(solid.disabled),
+        },
+        optics: resolveSurfaceOptics(
+          modeTheme.isDark,
+          controlReliefScale(geometry.height, geometry.lineHeight),
+        ),
         shadow: palette.shadow ? BUTTON_SHADOW[modeTheme.isDark ? 'dark' : 'light'] : 'none',
       };
     });
@@ -328,10 +369,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
 
     const containerStyle = useMemo((): CSSProperties => {
       const shadow = paintRecipe.paint.shadow;
-      const solidFill = resolveSurfaceMaterial({
-        fill: (togglePressed && !loading ? palette.active : palette.rest).background,
-        parentFill: paintRecipe.paint.backing,
-      }).solidFill;
+      const currentState = togglePressed && !loading ? 'active' : 'rest';
       const base: CSSProperties = {
         ['--bloom-btn-height' as string]: `${geometry.height}px`,
         ['--bloom-btn-padding' as string]: `${geometry.paddingHorizontal}px`,
@@ -343,10 +381,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           ? `${geometry.letterSpacing}px`
           : 'normal',
         // CSS custom props consumed by the static stylesheet — see its header.
-        ...surfaceOpticsVars(
-          paintRecipe.paint.optics,
-          isLink ? 4 : Math.min(BUTTON_RADIUS, geometry.height / 2),
-        ),
+        ...surfaceOpticsVars(paintRecipe.paint.optics),
         ['--bloom-btn-gap' as string]: `${geometry.gap}px`,
         ['--bloom-btn-ring' as string]: palette.ring,
         // No press scale — the pressed state is the active paint alone.
@@ -361,12 +396,16 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
         ['--bloom-btn-bg' as string]: (togglePressed && !loading ? palette.active : palette.rest)
           .background,
-        ['--bloom-surface-solid' as string]: solidFill,
-        // A button that draws its own border keeps it as its edge.
-        [SURFACE_HAIRLINE_VAR as string]:
-          palette.borderWidth > 0
-            ? 'transparent'
-            : surfaceContrastEdge(solidFill, theme.colors.text),
+        ['--bloom-btn-solid' as string]: paintRecipe.paint.solid[currentState],
+        ['--bloom-btn-solid-hover' as string]: paintRecipe.paint.solid.hover,
+        ['--bloom-btn-solid-active' as string]: paintRecipe.paint.solid.active,
+        ['--bloom-btn-solid-disabled' as string]: paintRecipe.paint.solid.disabled,
+        ['--bloom-surface-solid' as string]: 'var(--bloom-btn-state-solid)',
+        ['--bloom-btn-hairline' as string]: paintRecipe.paint.hairline[currentState],
+        ['--bloom-btn-hairline-hover' as string]: paintRecipe.paint.hairline.hover,
+        ['--bloom-btn-hairline-active' as string]: paintRecipe.paint.hairline.active,
+        ['--bloom-btn-hairline-disabled' as string]: paintRecipe.paint.hairline.disabled,
+        [SURFACE_HAIRLINE_VAR as string]: 'var(--bloom-btn-state-hairline)',
         ['--bloom-btn-bg-hover' as string]: palette.hover.background,
         ['--bloom-btn-bg-active' as string]: palette.active.background,
         ['--bloom-btn-bg-disabled' as string]: palette.disabled.background,
@@ -413,8 +452,6 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     }, [
       geometry,
       palette,
-      theme.isDark,
-      theme.colors.text,
       paintRecipe.paint,
       isSquare,
       wide,

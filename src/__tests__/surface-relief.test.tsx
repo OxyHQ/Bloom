@@ -14,7 +14,7 @@ it('adds relief to the existing native paint without replacing explicit tint alp
   const tree = render(<SurfacePaint testID="paint" fill="rgba(18,52,86,.5)" radius={12} />);
   const style = resolvedStyle(tree.getByTestId('paint').props.style);
   expect(style.backgroundColor).toBe('rgba(18,52,86,.5)');
-  expect(style.boxShadow).toContain(resolveSurfaceOptics(false).bodyShadow);
+  expect(style.boxShadow).toContain(resolveSurfaceOptics(false).sheenShadow);
   expect(style.experimental_backgroundImage).toBeUndefined();
 });
 
@@ -34,7 +34,7 @@ it('removes relief under reduced transparency and keeps the opaque body', () => 
   );
   const style = resolvedStyle(tree.getByTestId('paint').props.style);
   expect(style.backgroundColor).toBe('#123456');
-  expect(String(style.boxShadow)).not.toContain(resolveSurfaceOptics(false).bodyShadow);
+  expect([undefined, 'none']).toContain(style.boxShadow);
 });
 
 it('keeps the contrast hairline authoritative instead of a decorative shadow', () => {

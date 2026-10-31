@@ -23,7 +23,7 @@ jest.mock('../theme/use-theme', () => ({
     },
   }),
 }));
-import { SURFACE_HIGHLIGHT_FILTER } from '../surface/shared';
+import { controlReliefScale, resolveSurfaceOptics, surfaceLighting } from '../surface/shared';
 import { Button, BLOOM_BUTTON_CSS } from '../button/Button.web';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let container: HTMLDivElement;
@@ -58,7 +58,9 @@ it.each(['solid', 'subtle', 'outline'] as const)(
     );
     expect(BLOOM_BUTTON_CSS).toContain('backdrop-filter:');
     expect(BLOOM_BUTTON_CSS).not.toContain('filter: url(');
-    expect(BLOOM_BUTTON_CSS).toContain(SURFACE_HIGHLIGHT_FILTER);
+    expect(button.style.getPropertyValue('--bloom-surface-lighting')).toBe(
+      surfaceLighting(resolveSurfaceOptics(false, controlReliefScale(36, 20))),
+    );
   },
 );
 it('composites a built-in subtle tint before applying the shared tint', () => {
@@ -92,6 +94,24 @@ it('preserves explicit caller alpha through interaction states', () => {
   expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(18,52,86,.5)');
   expect(button.style.getPropertyValue('--bloom-btn-bg-hover')).toMatch(/, 0.5\)$/);
   expect(button.style.getPropertyValue('--bloom-btn-bg-active')).toMatch(/, 0.5\)$/);
+});
+
+it('selects body states on the host so accessibility paint can stay opaque', () => {
+  act(() => root.render(<Button>Continue</Button>));
+  const button = container.querySelector('button')!;
+  expect(button.style.getPropertyValue('--bloom-surface-solid')).toBe(
+    'var(--bloom-btn-state-solid)',
+  );
+  for (const state of ['hover', 'active', 'disabled']) {
+    expect(BLOOM_BUTTON_CSS).toContain(`--bloom-btn-state-bg: var(--bloom-btn-bg-${state});`);
+    expect(BLOOM_BUTTON_CSS).toContain(`--bloom-btn-state-solid: var(--bloom-btn-solid-${state});`);
+    expect(button.style.getPropertyValue(`--bloom-btn-solid-${state}`)).toMatch(/^rgb\(/);
+  }
+  // A tint on the lighting layer would double-composite the old body and can
+  // outrank the shared reduced-transparency body rule.
+  expect(BLOOM_BUTTON_CSS).not.toMatch(
+    /(?:hover|active|disabled)[^{]*::after\s*\{[^}]*background-color/,
+  );
 });
 
 it('paints an exact flat brand fill without surface layers, keeping disabled and loading behavior', () => {

@@ -17,6 +17,7 @@ import {
   resolveSurfaceOptics,
   surfaceContrastEdge,
   surfaceOpticsVars,
+  surfaceLighting,
 } from './shared';
 import { SURFACE_HAIRLINE_VAR } from './web-material';
 import { useBakedMaterial } from './baked-material';
@@ -51,6 +52,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   geometryStyle,
   direction = 'ltr',
   sheen = true,
+  lightingScale = 1,
   rim = true,
   outset = 0,
   composite = false,
@@ -62,6 +64,8 @@ export const SurfacePaint = memo(function SurfacePaint({
   testID,
 }: {
   sheen?: boolean;
+  /** Internal control geometry: scale body-lighting reach without changing rim or strength. */
+  lightingScale?: number;
   /**
    * The surface floats over content that moves or differs under it: a bar,
    * an island, a sheet, a dialog, a toast, a tooltip. On iOS it then draws the
@@ -122,7 +126,7 @@ export const SurfacePaint = memo(function SurfacePaint({
     ...geometryStyle,
   };
   const opticsRecipe = useThemeRecipe((theme) => ({
-    ...resolveSurfaceOptics(theme.isDark),
+    ...resolveSurfaceOptics(theme.isDark, lightingScale),
     text: theme.colors.text,
   }));
   const optics = opticsRecipe.paint;
@@ -167,7 +171,7 @@ export const SurfacePaint = memo(function SurfacePaint({
       ...(transition ? { '--bloom-surface-paint-transition': transition } : null),
       ...(presence === undefined ? null : { '--bloom-surface-presence': String(presence) }),
       ...(presenceMs === undefined ? null : { '--bloom-surface-presence-ms': `${presenceMs}ms` }),
-      ...surfaceOpticsVars(optics, radius, rim, sheen),
+      ...surfaceOpticsVars(optics, rim, sheen),
     };
     return (
       <>
@@ -194,16 +198,8 @@ export const SurfacePaint = memo(function SurfacePaint({
   const edge: ViewStyle | null =
     increasedContrast && rim
       ? { borderWidth: 1, borderColor: surfaceContrastEdge(paintFill ?? resolvedFill, text) }
-      : !increasedContrast && (rim || sheen)
-        ? {
-            boxShadow: [
-              rim ? optics.rim : null,
-              sheen ? optics.sheenShadow : null,
-              sheen && !reducedTransparency ? optics.bodyShadow : null,
-            ]
-              .filter(Boolean)
-              .join(', '),
-          }
+      : !increasedContrast && !reducedTransparency && (rim || sheen)
+        ? { boxShadow: surfaceLighting(optics, rim, sheen) }
         : null;
   const body = fill === undefined ? 'transparent' : resolvedFill;
   if (Platform.OS === 'ios' && floating && !composite && fill !== undefined) {
@@ -222,7 +218,9 @@ export const SurfacePaint = memo(function SurfacePaint({
       testID={testID}
       // Only decorative paint owns a texture; content keeps its normal rendering.
       // Android invalidates this layer when fill/geometry/optics props change.
-      renderToHardwareTextureAndroid={Platform.OS === 'android' && (rim || sheen)}
+      renderToHardwareTextureAndroid={
+        Platform.OS === 'android' && Boolean(edge?.boxShadow && edge.boxShadow !== 'none')
+      }
       style={[
         [
           StyleSheet.absoluteFill,
@@ -246,7 +244,8 @@ export const SurfacePaint = memo(function SurfacePaint({
  * top, all clipped to the surface's shape. With transparency reduced (or
  * contrast increased, which reduces it) it is the opaque paint every other
  * native surface draws: the colour the surface publishes to its content.
- * Only a floating surface reads the switch, so in-flow surfaces pay nothing.
+ * The parent reads the switch for lighting; this floating branch also uses it
+ * to gate the system blur.
  */
 function FloatingIosPaint({
   testID,

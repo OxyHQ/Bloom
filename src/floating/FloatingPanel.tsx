@@ -268,10 +268,6 @@ export function FloatingPanel({
     'bloom-floating-surface-css',
     typeof ownFill === 'string' ? ownFill : 'transparent',
     surfaceMaterial !== 'flat',
-    undefined,
-    undefined,
-    StyleSheet.flatten(style)?.borderRadius ??
-      (surface === 'popover' ? undefined : SURFACE_SHAPES.menu.radius),
   );
   const transparentFill = ownFill === 'transparent' || parsedFill?.a === 0;
   // The mounted panel as STATE, not a bare ref: placement has to measure it,
