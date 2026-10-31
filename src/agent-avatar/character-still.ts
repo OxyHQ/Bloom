@@ -10,7 +10,7 @@ import type { ResolvedAvatarCharacter } from './character';
  */
 
 /** Bump when the runtime's look changes: stills drawn by the old one would otherwise outlive it. */
-const STILL_VERSION = 1;
+const STILL_VERSION = 2;
 /** CSS-pixel render sizes. A row takes the smallest that covers it, so 50 rows share 1-3 images. */
 export const STILL_BUCKETS = [64, 128, 256] as const;
 const MEMORY_LIMIT = 256;
@@ -31,6 +31,8 @@ export type StillBackend = (job: StillJob) => Promise<string | null>;
 
 export type StillRequest = Readonly<{ promise: Promise<string | null>; cancel(): void }>;
 export type CharacterStills = {
+  /** Stop queued work and settle callers when its provider or runtime goes away. */
+  dispose(): void;
   /** The still if it is already in memory; synchronous, so a cached row never flashes a placeholder. */
   peek(key: string): string | undefined;
   /** `key` is `stillKey(character, css, ratio)`, computed once by the caller. */
@@ -110,6 +112,7 @@ export function createCharacterStills({
   const pending = new Map<string, Pending>();
   const queue: Pending[] = [];
   let running = false;
+  let disposed = false;
 
   const remember = (key: string, uri: string) => {
     memory.delete(key);
@@ -150,9 +153,9 @@ export function createCharacterStills({
     const { job } = entry;
     const stored = await readStored(job.key);
     if (stored) return stored;
-    if (!backend) return null;
+    if (disposed || entry.waiters === 0 || !backend) return null;
     const uri = await backend(job).catch(() => null);
-    if (uri) void writeStored(job.key, uri);
+    if (uri && !disposed) void writeStored(job.key, uri);
     return uri;
   };
 
@@ -161,12 +164,12 @@ export function createCharacterStills({
     if (running) return;
     running = true;
     try {
-      for (let entry = queue.shift(); entry; entry = queue.shift()) {
+      for (let entry = queue.shift(); entry && !disposed; entry = queue.shift()) {
         entry.started = true;
         const uri = await produce(entry);
-        if (uri) remember(entry.job.key, uri);
+        if (uri && !disposed) remember(entry.job.key, uri);
         pending.delete(entry.job.key);
-        entry.settle(uri);
+        entry.settle(disposed ? null : uri);
       }
     } finally {
       running = false;
@@ -174,12 +177,20 @@ export function createCharacterStills({
   };
 
   return {
+    dispose() {
+      disposed = true;
+      queue.length = 0;
+      for (const entry of pending.values()) entry.settle(null);
+      pending.clear();
+      memory.clear();
+    },
     peek(key) {
       const uri = memory.get(key);
       if (uri) remember(key, uri);
       return uri;
     },
     request(key, character, css, ratio) {
+      if (disposed) return { promise: Promise.resolve(null), cancel() {} };
       const cached = memory.get(key);
       if (cached) return { promise: Promise.resolve(cached), cancel() {} };
       let entry = pending.get(key);
@@ -209,6 +220,7 @@ export function createCharacterStills({
           if (--joined.waiters > 0 || joined.started) return;
           queue.splice(queue.indexOf(joined), 1);
           pending.delete(joined.job.key);
+          joined.settle(null);
         },
       };
     },

@@ -86,9 +86,20 @@ lazy loading.
 `Avatar account={bot}` (see [Avatar](/docs/avatar)) draws a character as a cached still below
 profile size. The still pipeline renders a paused `portrait` through this same runtime, one at a
 time, into an invisible fixed-size box (web) or one hidden WebView (native), reads the canvas back
-once and caches the PNG by content. `AgentAvatar` takes `onReady`, called when the renderer has
-painted its first picture. The measured cost is in the pull request that introduced it; the
-runtime itself is unchanged.
+once and caches the PNG by content. Native retains the same WebView document throughout a
+burst of requests: the runtime module, decoded donors and compatible GL pool survive between
+characters. The preceding paused scene remains attached until the next picture is ready, then
+is disposed; the hidden host is released 1.5 seconds after the queue empties. Each request has
+its own capture identity, so an old completion cannot supply a later character's picture.
+Web uses the same brief scene retention. Both paths wait for the first painted frame and the
+created controller before capture; web runtime loading or creation that outlives the 15-second deadline
+cannot block the queue, and its late controller is disposed. Failed module requests can be
+retried; a failed native document is replaced for subsequent work.
+
+Unmounting the provider or replacing its runtime disposes that cache's queued work. Cancelled
+queued requests settle with `null`; late results cannot repopulate a disposed cache. These are
+resource-lifetime guarantees, not native frame-rate measurements. `AgentAvatar` takes `onReady`,
+called when the renderer has painted its first picture.
 
 ## Editing and proportions
 
@@ -144,10 +155,14 @@ quiescent scenes stop requesting animation frames. Geometry donors are immutable
 and cached within a byte budget; fitted geometry and GPU ownership are released
 with the last live scene. There is no cached animation sprite playback.
 
-Native WebViews are separate documents: they cannot share the web document's
-GPU context or memory across avatars. Web correctness checks do not establish
-native crowd performance. A physical native integration remains necessary for
-that claim. Software GL browser tests likewise do not establish laptop FPS.
+Live native avatars still use separate WebView documents: they cannot share the web
+document's GPU context or decoded geometry across avatars. The shared still host does not
+change that live-renderer boundary. Sharing live native rendering would require a shared
+surface that owns native positioning, clipping and input, or a native renderer port; merely
+sharing a JavaScript scheduler cannot share these documents' GPU resources. Web correctness
+checks do not establish native crowd performance. Physical Android and iOS integration
+remains necessary for that claim. Software GL browser tests likewise do not establish laptop
+FPS, and browser CPU throttling is not a substitute for measuring a low-end mobile GPU.
 
 `className` and `style` apply to the outer layout node. `label` defaults to the
 translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel`

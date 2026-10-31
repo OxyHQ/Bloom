@@ -1,6 +1,7 @@
 /** Native Metro cannot analyze import(variable); load the optional browser module as a module script. */
 const registryKey = Symbol.for('bloom.character.runtimes');
 const pending = new Map<string, Promise<unknown>>();
+const LOAD_TIMEOUT_MS = 15_000;
 export function loadCharacterRuntime<T>(url: string): Promise<T> {
   const resolved = new URL(url, document.baseURI).href;
   const registry = (globalThis as unknown as Record<symbol, Map<string, unknown>>)[registryKey];
@@ -12,20 +13,32 @@ export function loadCharacterRuntime<T>(url: string): Promise<T> {
     const script = document.createElement('script');
     script.type = 'module';
     script.src = resolved;
-    script.onload = () => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return false;
+      settled = true;
+      clearTimeout(timer);
       script.remove();
+      script.onload = null;
+      script.onerror = null;
+      pending.delete(resolved);
+      return true;
+    };
+    const timer = setTimeout(() => {
+      if (finish()) reject(new Error('Character runtime load timed out'));
+    }, LOAD_TIMEOUT_MS);
+    script.onload = () => {
+      if (!finish()) return;
       const loaded = (globalThis as unknown as Record<symbol, Map<string, unknown>>)[
         registryKey
       ]?.get(resolved);
       if (loaded) resolve(loaded);
       else {
-        pending.delete(resolved);
         reject(new Error('Invalid character runtime module'));
       }
     };
     script.onerror = () => {
-      script.remove();
-      pending.delete(resolved);
+      if (!finish()) return;
       reject(new Error('Character runtime could not be loaded'));
     };
     document.head.appendChild(script);
