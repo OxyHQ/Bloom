@@ -64,7 +64,7 @@ preset's own does not change it, and naming the preset's own paint again does no
 
 The runtime URL defaults to `BLOOM_CHARACTER_RUNTIME_URL`, the SDK's hosted copy
 (`https://alia.onl/bloom-character/runtime.mjs`, CORS open), on web and native alike, so an app
-that does not host the 214 MB runtime needs no setup. To self-host, serve the package's complete
+that does not self-host the runtime needs no setup. To self-host, serve the package's complete
 `assets/character-runtime/` directory and pass its absolute URL to `BloomProvider
 characterRuntimeUrl` or `AgentAvatarProvider runtimeUrl`. Native needs the optional
 `react-native-webview` peer. Missing assets or an unavailable bridge produce an explicit translated
@@ -108,8 +108,10 @@ A preset is a default, not the identity of an edited avatar: the first edit with
 cannot change a saved custom avatar. AgentCreator's templates (`CHARACTER_TEMPLATES`) are
 complete characters of their own: Felipe (orange, sleepy eyes), Todd (Clippo eyes, bow, coral),
 Alfred (Cyclops, monocle, bow, cyan) and Iris (Clippo eyes, round sunglasses, no accessory).
-Edited characters compose the selected actual geometry, materials, fur and animation
-channels; color is instance state and does not rebuild meshes.
+Edited characters compose the selected actual geometry, smooth materials and animation
+channels; color is instance state and does not rebuild meshes. Bodies use the smooth solid
+surface for every device. The runtime neither builds hair strands nor loads their pile/card
+textures; body silhouettes, eyes, attachments and authored motion remain live 3D.
 
 The catalog has 21 bodies, Todd's among them. Clippo's open wire and asymmetric face remain
 independently selectable. Todd's eyes, Clippo's face, Cyclops and the other catalog eye styles
@@ -118,9 +120,8 @@ can be fitted across bodies. Hidden faces (`eyes: 'none'`) contribute no eye mes
 `catalog-layout.ts` assigns each silhouette its own Tuft position, scale and
 rotation, and eye size, separation and height. Attachment depth follows actual
 triangles, not the bounding box. Tuft's root joins a smooth shoulder in the body;
-its exposed tips retain their height. Surface and fur use the body's pigment,
-including animated material updates. Normals, morphs and fur frames follow the
-join and rotation. This work happens once per composed geometry, not per frame.
+its exposed tips retain their height. The surface uses the body's pigment, including animated material updates. Normals and
+morphs follow the join and rotation. This work happens once per composed geometry, not per frame.
 Todd keeps paired eyes on its stalks and places Cyclops on its forehead.
 Eyewear follows the composed face and accessories remain attached during motion.
 An explicit `eyeSpacing` is included in geometry identity.
