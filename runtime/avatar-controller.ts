@@ -216,16 +216,24 @@ export function createAvatarReconciler(
   let disposed = false;
   let running: Promise<void> | undefined;
   let supersedeUpdate: (() => void) | undefined;
-  callbacks.onCapabilities?.(
-    (callbacks.initialRecipe ?? callbacks.resolveRecipe(initial)).capabilities,
-  );
   const dispose = () => {
     if (disposed) return;
     disposed = true;
     supersedeUpdate?.();
-    callbacks.onDispose?.();
-    slot.dispose();
+    try {
+      callbacks.onDispose?.();
+    } finally {
+      slot.dispose();
+    }
   };
+  try {
+    callbacks.onCapabilities?.(
+      (callbacks.initialRecipe ?? callbacks.resolveRecipe(initial)).capabilities,
+    );
+  } catch (error) {
+    dispose();
+    throw error;
+  }
   const reconcile = async () => {
     while (!disposed && applied !== latest) {
       const props = latest;

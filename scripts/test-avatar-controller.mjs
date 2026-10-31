@@ -394,3 +394,62 @@ test('superseded preset rejection never disposes the current host', async () => 
   assert.equal(f.state.ready, true);
   assert.equal(f.calls.filter(([name]) => name === 'dispose').length, 0);
 });
+
+test('initial capability callback failure releases its already attached slot', () => {
+  const slotDisposals = [],
+    error = new Error('initial capabilities callback failed');
+  assert.throws(
+    () =>
+      createAvatarReconciler(
+        {},
+        {
+          update: async () => {},
+          setPresentation() {},
+          dispose: () => slotDisposals.push('slot'),
+        },
+        {
+          resolveRecipe: () => ({ preset: 'blue_beret', capabilities: {} }),
+          onCapabilities() {
+            throw error;
+          },
+          onError() {},
+        },
+      ),
+    (value) => value === error,
+  );
+  assert.deepEqual(slotDisposals, ['slot']);
+});
+
+test('throwing host disposal still releases its slot once and cancels pending reconciliation', async () => {
+  const slotDisposals = [],
+    pending = deferred(),
+    error = new Error('host dispose failed');
+  let entered = false;
+  const controller = createAvatarReconciler(
+    {},
+    {
+      update: async (_props, _recipe, _current, superseded) => {
+        entered = true;
+        await Promise.race([pending.promise, superseded]);
+      },
+      setPresentation() {},
+      dispose: () => slotDisposals.push('slot'),
+    },
+    {
+      resolveRecipe: () => ({ preset: 'blue_beret', capabilities: {} }),
+      onDispose() {
+        throw error;
+      },
+      onError() {},
+    },
+  );
+  const change = controller.update({ reactionKey: 1 });
+  assert.equal(entered, true);
+  assert.throws(
+    () => controller.dispose(),
+    (value) => value === error,
+  );
+  await change;
+  controller.dispose();
+  assert.deepEqual(slotDisposals, ['slot']);
+});
