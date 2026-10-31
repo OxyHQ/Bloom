@@ -1,7 +1,7 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { surfaceStyle } from '../shapes/surface-style';
 import type { SurfaceShape, SurfaceStyle } from '../shapes/corner-types';
-import React, { memo, useEffect, useRef } from 'react';
+import { memo, useEffect } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
 import { webDataSet } from '../styles/web-data';
@@ -19,7 +19,7 @@ import {
   surfaceOpticsVars,
 } from './shared';
 import { SURFACE_HAIRLINE_VAR } from './web-material';
-import { useBakedMaterial } from './baked-material';
+import { useSurfacePaintLayer } from './use-surface-paint-layer';
 import { SurfaceBlur } from './SurfaceBlur';
 import { useReducedTransparency } from '../theme/reduced-transparency';
 import { useIncreasedContrast } from '../theme/increased-contrast';
@@ -139,15 +139,13 @@ export const SurfacePaint = memo(function SurfacePaint({
   useEffect(() => {
     if (isWeb) adoptStyleSheet('bloom-surface-paint-web-css', WEB_PAINT_CSS);
   }, [isWeb]);
-  // A layer whose fill animates between states stays live: a baked tint is an
-  // image layer, which does not transition.
-  const layerRef = useRef<HTMLElement | null>(null);
-  useBakedMaterial(layerRef, isWeb && transition === undefined, [
+  const layerRef = useSurfacePaintLayer(
+    isWeb && transition === undefined,
     paintFill,
     resolvedFill,
     optics,
     rim,
-  ]);
+  );
   if (isWeb) {
     const solid = compositeOnto(paintFill ?? resolvedFill, backing ?? contextBacking);
     const paintStyle: WebCssStyle = {
