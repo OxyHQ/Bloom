@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import type { AvatarCharacter } from '../agent-avatar/character';
+import type { AvatarAccount, AvatarMotion } from '../avatar/types';
 
 /**
  * A single member of an {@link AvatarGroup}. Mirrors the minimal shape needed to
@@ -27,7 +27,7 @@ export interface AvatarGroupItem {
   username?: string;
   /** `'bot'` with a `character` draws that character (a still at facepile sizes); see `Avatar`. */
   kind?: string;
-  character?: AvatarCharacter | null;
+  character?: AvatarAccount['character'];
 }
 
 export interface AvatarGroupProps {
@@ -64,6 +64,8 @@ export interface AvatarGroupProps {
    * `'thumb'`; pass `undefined` to request full-size renditions.
    */
   variant?: string;
+  /** Character motion for each member. Defaults to Avatar's `auto`; reduced motion always wins. */
+  motion?: AvatarMotion;
   /**
    * Maximum number of avatars to render before collapsing into the overflow
    * chip. Defaults to 5 for `'stack'`/`'row'`, and to 20 for `'cluster'` (which

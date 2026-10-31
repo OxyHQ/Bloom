@@ -15,11 +15,11 @@ export interface AvatarAccount {
   kind?: string;
   /** The account's image: a URL or a resolver-handled file id, exactly as `source` takes it. */
   avatar?: string | null;
-  /** The stored 3D character of a bot account. Remote and federated bots carry none. */
-  character?: AvatarCharacter | null;
+  /** Stored bot character data, validated before rendering. Unknown recipes fall back to its image. */
+  character?: unknown;
   username?: string | null;
-  /** A display name, or Oxy's `{ first, last, full }`. */
-  name?: string | { full?: string; first?: string; last?: string } | null;
+  /** A display name, or the account service's structured name. */
+  name?: string | { displayName?: string; full?: string; first?: string; last?: string } | null;
 }
 
 /**

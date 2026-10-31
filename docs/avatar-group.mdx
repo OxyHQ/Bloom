@@ -33,6 +33,7 @@ import { AvatarGroup } from '@oxy.so/bloom/avatar-group';
 | `total`            | the number the overflow chip counts to (its name, "N more", is localised via `BloomProvider locale`) |
 | `size` / `overlap` | the geometry                                                    |
 | `ringColor`        | the colour of the gap between overlapping faces                 |
+| `motion`           | bot character playback in every layout: `auto` (default), `always`, or `never`; reduced motion always wins |
 | `onPressItem`      | makes each face a link to that profile                          |
 | `hoverCard`        | a hover card on web; a no-op on native, where there is no hover |
 | `renderItemAction` | a slot on each face                                             |
@@ -40,6 +41,10 @@ import { AvatarGroup } from '@oxy.so/bloom/avatar-group';
 `total` is separate from `items.length` on purpose: a list endpoint usually
 returns a page of members plus a full count, and the overflow chip should say
 `+248` rather than `+3`.
+
+Members with `kind: 'bot'` and a valid stored `character` use the same Avatar
+renderer as standalone accounts. Pass `motion="always"` when those small
+characters should animate; the default still follows Avatar's size/activity policy.
 
 ## The avatar prop that goes wrong silently
 

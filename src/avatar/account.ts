@@ -1,4 +1,3 @@
-import type { AvatarCharacter } from '../agent-avatar/character';
 import type { AvatarAccount, AvatarProps } from './types';
 
 /** The text that names an account: its display name, else its handle. */
@@ -7,7 +6,9 @@ export function accountName(account: AvatarAccount | undefined): string | undefi
   const text =
     typeof name === 'string'
       ? name
-      : (name?.full ?? [name?.first, name?.last].filter(Boolean).join(' '));
+      : name?.displayName?.trim() ||
+        name?.full?.trim() ||
+        [name?.first, name?.last].filter(Boolean).join(' ');
   return text?.trim() || account?.username?.trim() || undefined;
 }
 
@@ -19,7 +20,7 @@ export function accountName(account: AvatarAccount | undefined): string | undefi
 export function pickAccountCharacter({
   character,
   account,
-}: Pick<AvatarProps, 'character' | 'account'>): AvatarCharacter | null | undefined {
+}: Pick<AvatarProps, 'character' | 'account'>): unknown {
   if (character !== undefined) return character;
   return account?.kind === 'bot' ? account.character : undefined;
 }

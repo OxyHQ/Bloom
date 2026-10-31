@@ -170,8 +170,13 @@ wraps it:
 ```
 
 `account` is the part of the account object an avatar reads: `{ kind, avatar, character,
-username, name }` (`name` is a string or Oxy's `{ first, last, full }`). **Resolution order:
+username, name }` (`name` is a string or Oxy's `{ displayName, first, last, full }`). **Resolution order:
 character, then image, then initials.**
+
+Stored account characters accept the service's string-key DTO and are validated by
+Bloom before drawing. Unknown or incomplete recipes fall back to the image/initials;
+the explicit `character` prop remains typed as `AvatarCharacter`. A nonblank service
+`name.displayName` takes precedence over the structured full name and handle.
 
 1. **Character**: an explicit `character` prop, else a bot account's `character`. `character={null}`
    opts out and draws the image path. A remote or federated bot has no character and keeps its
