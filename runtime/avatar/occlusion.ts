@@ -124,8 +124,22 @@ export class AuthoredOcclusion {
     projectionMatrix: THREE.Matrix4,
     width: number,
     height: number,
+    bounds?: THREE.Vector4,
   ): THREE.Texture {
     this.resize(width, height);
+    for (const target of [this.sampled, this.resolved]) {
+      target.scissorTest = !!bounds && (bounds.z < width || bounds.w < height);
+      if (bounds) {
+        const x = Math.floor((bounds.x * target.width) / width);
+        const y = Math.floor((bounds.y * target.height) / height);
+        target.scissor.set(
+          x,
+          y,
+          Math.ceil(((bounds.x + bounds.z) * target.width) / width) - x,
+          Math.ceil(((bounds.y + bounds.w) * target.height) / height) - y,
+        );
+      }
+    }
     if (
       !projectionMatrix.elements.every(Number.isFinite) ||
       Math.abs(projectionMatrix.determinant()) < 1e-15
