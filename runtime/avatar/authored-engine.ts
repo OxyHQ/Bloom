@@ -108,6 +108,30 @@ type AvatarBatch = {
   visible: boolean;
   renderedSlots?: number[];
 };
+/** A non-DOM owner supplies scheduling, visibility and a WebGL2 context. The
+ * engine retains the same shaders, pixel density, MSAA and presentation crop. */
+export type AvatarEngineHost = {
+  context: WebGL2RenderingContext;
+  getSize(): { width: number; height: number; pixelRatio: number };
+  requestFrame(callback: FrameRequestCallback): number;
+  cancelFrame(id: number): void;
+  isHidden(): boolean;
+  subscribe?(events: {
+    resize(): void;
+    visibility(): void;
+    contextLost(): void;
+    contextRestored(): void;
+  }): () => void;
+  onFrame(output: {
+    framebuffer: WebGLFramebuffer;
+    width: number;
+    height: number;
+    columns: number;
+    rows: number;
+    pixels: number;
+    renderedIndices: readonly number[];
+  }): void;
+};
 export class AuthoredAvatarEngine {
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
@@ -158,6 +182,10 @@ export class AuthoredAvatarEngine {
     resolveDepthBuffer: false,
     storeMultisampledDepthBuffer: false,
   });
+  private renderBounds = new THREE.Vector4();
+  private host?: AvatarEngineHost;
+  private unsubscribeHost?: () => void;
+  private outputTarget?: THREE.WebGLRenderTarget;
   private presentScene = new THREE.Scene();
   private presentGeometry = new THREE.PlaneGeometry(2, 2);
   private presentMaterial = new THREE.RawShaderMaterial({
@@ -231,14 +259,14 @@ export class AuthoredAvatarEngine {
   private partWorld = new THREE.Matrix4();
   private partNormal = new THREE.Matrix4();
   private states: InstanceState[] = [];
-  private observer: ResizeObserver;
-  private visibilityObserver: IntersectionObserver;
+  private observer?: ResizeObserver;
+  private visibilityObserver?: IntersectionObserver;
   private inViewport = true;
   private contextLost = false;
   private visibilityChanged = () => {
     this.previousTime = 0;
-    if (document.hidden || !this.inViewport || this.contextLost) {
-      cancelAnimationFrame(this.raf);
+    if (this.hidden() || !this.inViewport || this.contextLost) {
+      this.cancelFrame();
       this.raf = 0;
     } else this.invalidate();
   };
@@ -255,7 +283,7 @@ export class AuthoredAvatarEngine {
   private onFrame?: () => void;
   readonly loaded: Promise<void>;
   constructor(
-    private canvas: HTMLCanvasElement,
+    private canvas: HTMLCanvasElement | null,
     options: {
       count?: number;
       size?: number;
@@ -264,6 +292,7 @@ export class AuthoredAvatarEngine {
       poseOverrides?: boolean;
       assetLoader?: typeof loadAuthoredAsset;
       lazyWork?: boolean;
+      host?: AvatarEngineHost;
       onFrame?: () => void;
       resolveAsset?: (
         key: string,
@@ -272,6 +301,8 @@ export class AuthoredAvatarEngine {
       ) => Promise<ResolvedAvatarAsset>;
     } = {},
   ) {
+    this.host = options.host;
+    if (!canvas && !this.host) throw Error('Avatar engine requires a canvas or a render host');
     this.allowPoseOverrides = options.poseOverrides ?? false;
     this.onFrame = options.onFrame;
     this.resolveAsset = options.resolveAsset;
@@ -283,8 +314,38 @@ export class AuthoredAvatarEngine {
     this.pixels = Math.max(48, Number.isFinite(options.size) ? options.size! : 320);
     this.detail = this.pixels <= 128 ? 'low' : 'high';
     this.fits.needsUpdate = true;
+    // Three requires a canvas-shaped event owner even with an injected context.
+    // This facade is local to this renderer; native lifecycle arrives through
+    // host.subscribe, without creating or replacing browser globals.
+    const contextEvents = new Map<string, Set<EventListener>>();
+    const dispatchContextEvent = (type: string) => {
+      const event = { type, preventDefault() {} } as Event;
+      for (const listener of contextEvents.get(type) ?? []) listener(event);
+    };
+    if (this.host && typeof this.host.context.texStorage2D !== 'function')
+      throw Error('Avatar render host requires a WebGL2 context');
+    const renderCanvas = this.host
+      ? ({
+          width: 1,
+          height: 1,
+          style: {},
+          getContext: (kind: string) => (kind === 'webgl2' ? this.host!.context : null),
+          addEventListener(type: string, listener: EventListener) {
+            const listeners = contextEvents.get(type) ?? new Set<EventListener>();
+            listeners.add(listener);
+            contextEvents.set(type, listeners);
+          },
+          removeEventListener(type: string, listener: EventListener) {
+            contextEvents.get(type)?.delete(listener);
+          },
+          setAttribute() {},
+        } as unknown as HTMLCanvasElement)
+      : canvas!;
     this.renderer = new THREE.WebGLRenderer({
-      canvas,
+      canvas: renderCanvas,
+      // Expo's WebGL2 inherits WebGLRenderingContext. Requesting webgl2 from
+      // the local facade avoids Three's supplied-context WebGL1 instanceof
+      // rejection without mutating native or browser global prototypes.
       alpha: true,
       // Geometry is antialiased in colorTarget. The final pass is an aligned
       // fullscreen image; a second multisampled framebuffer adds no edge detail.
@@ -293,23 +354,49 @@ export class AuthoredAvatarEngine {
     this.disabledShadow.compareFunction = THREE.LessEqualCompare;
     this.disabledShadow.needsUpdate = true;
     this.occlusion = new AuthoredOcclusion(this.renderer, fixture.frame);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(this.pixelRatio(), 2));
     this.renderer.setClearColor(0, 0);
     this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace; // Authored shader encodes sRGB once.
     this.presentScene.add(new THREE.Mesh(this.presentGeometry, this.presentMaterial));
     this.camera.position.z = 4;
     this.camera.updateMatrixWorld();
-    this.observer = new ResizeObserver(() => this.resize());
-    this.observer.observe(canvas);
-    this.visibilityObserver = new IntersectionObserver(([entry]) => {
-      this.inViewport = entry?.isIntersecting ?? false;
-      this.visibilityChanged();
-    });
-    this.visibilityObserver.observe(canvas);
-    document.addEventListener('visibilitychange', this.visibilityChanged);
-    canvas.addEventListener('webglcontextlost', this.onContextLost);
-    canvas.addEventListener('webglcontextrestored', this.onContextRestored);
+    if (this.host) {
+      this.outputTarget = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false });
+      this.unsubscribeHost = this.host.subscribe?.({
+        resize: () => this.resize(),
+        visibility: this.visibilityChanged,
+        contextLost: () => {
+          dispatchContextEvent('webglcontextlost');
+          this.onContextLost();
+        },
+        contextRestored: () => {
+          dispatchContextEvent('webglcontextrestored');
+          this.onContextRestored();
+        },
+      });
+    } else {
+      this.observer = new ResizeObserver(() => this.resize());
+      this.observer.observe(canvas!);
+      this.visibilityObserver = new IntersectionObserver(([entry]) => {
+        this.inViewport = entry?.isIntersecting ?? false;
+        this.visibilityChanged();
+      });
+      this.visibilityObserver.observe(canvas!);
+      document.addEventListener('visibilitychange', this.visibilityChanged);
+      canvas!.addEventListener('webglcontextlost', this.onContextLost);
+      canvas!.addEventListener('webglcontextrestored', this.onContextRestored);
+    }
     this.loaded = this.load();
+  }
+  private hidden() {
+    return this.host ? this.host.isHidden() : document.hidden;
+  }
+  private pixelRatio() {
+    return this.host ? this.host.getSize().pixelRatio : window.devicePixelRatio || 1;
+  }
+  private cancelFrame() {
+    if (this.host) this.host.cancelFrame(this.raf);
+    else cancelAnimationFrame(this.raf);
   }
   private async load() {
     const textures = await Promise.all([ltc1Url, ltc2Url].map(binary));
@@ -1102,7 +1189,7 @@ export class AuthoredAvatarEngine {
     const scale = this.pixels <= 64 ? 1 : this.pixels <= 128 ? 1.5 : 2;
     this.backingPixels = Math.max(
       64,
-      Math.min(512, Math.round(this.pixels * Math.min(window.devicePixelRatio || 1, scale))),
+      Math.min(512, Math.round(this.pixels * Math.min(this.pixelRatio(), scale))),
     );
     this.renderer.setPixelRatio(this.backingPixels / this.pixels);
     this.fitPending = this.states.some(
@@ -1110,7 +1197,9 @@ export class AuthoredAvatarEngine {
         state.rendering !== false &&
         !this.cropCache.has(`${state.preset}:${this.detail}:${this.backingPixels}`),
     );
-    const { width, height } = this.canvas.getBoundingClientRect();
+    const { width, height } = this.host
+      ? this.host.getSize()
+      : this.canvas!.getBoundingClientRect();
     this.width = Math.max(1, width);
     this.height = Math.max(1, height);
     this.cols = Math.max(1, Math.floor(this.width / this.pixels));
@@ -1150,6 +1239,7 @@ export class AuthoredAvatarEngine {
     const ratio = this.renderer.getPixelRatio();
     this.colorTarget.setSize(Math.round(this.width * ratio), Math.round(this.height * ratio));
     this.depthTarget.setSize(this.colorTarget.width, this.colorTarget.height);
+    this.outputTarget?.setSize(this.colorTarget.width, this.colorTarget.height);
     for (const material of this.materials)
       material.uniforms.outputInverse!.value.set(
         1 / this.colorTarget.width,
@@ -1166,12 +1256,58 @@ export class AuthoredAvatarEngine {
   }
   private invalidate(urgent = true) {
     this.urgentFrame ||= urgent;
-    if (!this.raf && !this.disposed && !document.hidden && this.inViewport && !this.contextLost)
-      this.raf = requestAnimationFrame(this.tick);
+    if (!this.raf && !this.disposed && !this.hidden() && this.inViewport && !this.contextLost)
+      this.raf = this.host ? this.host.requestFrame(this.tick) : requestAnimationFrame(this.tick);
+  }
+  private updateRenderBounds() {
+    const width = this.colorTarget.width;
+    const height = this.colorTarget.height;
+    const bounds = this.renderBounds;
+    bounds.set(0, 0, width, height);
+    if (this.states.some((state) => state.rendering === false)) {
+      let left = this.cols,
+        right = 0,
+        top = this.rows,
+        bottom = 0;
+      this.states.forEach((state, index) => {
+        if (state.rendering === false) return;
+        const column = index % this.cols;
+        const row = Math.floor(index / this.cols);
+        left = Math.min(left, column);
+        right = Math.max(right, column + 1);
+        top = Math.min(top, row);
+        bottom = Math.max(bottom, row + 1);
+      });
+      const originX = (width - Math.min(this.count, this.cols) * this.backingPixels) / 2;
+      const originY = (height - this.rows * this.backingPixels) / 2;
+      // AO rays and bilateral resolve reject other avatar cells. Clear a guard
+      // outside the active cells for the one-pixel depth-normal stencil and
+      // half-resolution rounding, so old inactive depth cannot affect an edge.
+      const guard = 8;
+      const x = Math.max(0, Math.floor(originX + left * this.backingPixels) - guard);
+      const y = Math.max(
+        0,
+        Math.floor(originY + (this.rows - bottom) * this.backingPixels) - guard,
+      );
+      const endX = Math.min(width, Math.ceil(originX + right * this.backingPixels) + guard);
+      const endY = Math.min(
+        height,
+        Math.ceil(originY + (this.rows - top) * this.backingPixels) + guard,
+      );
+      bounds.set(x, y, Math.max(0, endX - x), Math.max(0, endY - y));
+    }
+    for (const target of [this.depthTarget, this.colorTarget]) {
+      target.scissor.copy(bounds);
+      target.scissorTest = bounds.z < width || bounds.w < height;
+    }
+    if (this.outputTarget) {
+      this.outputTarget.scissor.copy(bounds);
+      this.outputTarget.scissorTest = this.colorTarget.scissorTest;
+    }
   }
   private tick = (timestamp: number) => {
     this.raf = 0;
-    if (this.disposed || !this.ready || document.hidden || !this.inViewport || this.contextLost)
+    if (this.disposed || !this.ready || this.hidden() || !this.inViewport || this.contextLost)
       return;
     if (this.states.every((state) => state.rendering === false)) {
       this.previousTime = 0;
@@ -1364,7 +1500,11 @@ export class AuthoredAvatarEngine {
         }
       }
     }
-    if (cameraChanged) this.cameras.needsUpdate = true;
+    if (cameraChanged) {
+      this.cameras.clearUpdateRanges();
+      this.cameras.addUpdateRange(0, this.count * 4);
+      this.cameras.needsUpdate = true;
+    }
     this.occlusion.setAvatars(
       this.cameras,
       Math.min(this.count, this.cols),
@@ -1544,13 +1684,32 @@ export class AuthoredAvatarEngine {
           );
         } else pigments.setXYZ(slot, color.r, color.g, color.b);
       });
-      if (slots.length) mesh.instanceMatrix.needsUpdate = true;
+      if (slots.length) {
+        mesh.instanceMatrix.clearUpdateRanges();
+        mesh.instanceMatrix.addUpdateRange(0, slots.length * 16);
+        mesh.instanceMatrix.needsUpdate = true;
+      }
       if (part.source.fur && part.motionTexture)
         mesh.geometry.setDrawRange(0, Math.ceil(furBudget) * 12);
-      if (slots.length && part.motionTexture) part.motionTexture.needsUpdate = true;
-      if (offsetsChanged) offsets.needsUpdate = pigments.needsUpdate = true;
+      if (slots.length && part.motionTexture) {
+        part.motionTexture.clearUpdateRanges();
+        // Three's texture ranges are single-row uploads. A lone populated row
+        // can replace a capacity-sized upload without adding GL calls; larger
+        // batches keep the single whole-image upload rather than one per row.
+        if (slots.length === 1 && part.motionTexture.image.height > 1)
+          part.motionTexture.addUpdateRange(0, 64);
+        part.motionTexture.needsUpdate = true;
+      }
+      if (offsetsChanged && slots.length) {
+        offsets.clearUpdateRanges();
+        offsets.addUpdateRange(0, slots.length * 2);
+        pigments.clearUpdateRanges();
+        pigments.addUpdateRange(0, slots.length * 3);
+        offsets.needsUpdate = pigments.needsUpdate = true;
+      }
     });
     this.attributesDirty = false;
+    this.updateRenderBounds();
     this.renderer.info.autoReset = false;
     this.renderer.info.reset();
     this.batches.forEach(({ mesh, part, visible }) => {
@@ -1564,6 +1723,7 @@ export class AuthoredAvatarEngine {
       projection,
       this.depthTarget.width,
       this.depthTarget.height,
+      this.renderBounds,
     );
     this.batches.forEach(({ mesh, part, visible }) => {
       mesh.visible = visible;
@@ -1573,9 +1733,34 @@ export class AuthoredAvatarEngine {
     this.renderer.setRenderTarget(this.colorTarget);
     this.renderer.render(this.scene, this.camera);
     this.updateCrops();
-    this.renderer.setRenderTarget(null);
+    const ratio = this.renderer.getPixelRatio();
+    this.renderer.setScissor(
+      this.renderBounds.x / ratio,
+      this.renderBounds.y / ratio,
+      this.renderBounds.z / ratio,
+      this.renderBounds.w / ratio,
+    );
+    this.renderer.setScissorTest(this.colorTarget.scissorTest);
+    this.renderer.setRenderTarget(this.outputTarget ?? null);
     this.renderer.render(this.presentScene, this.camera);
+    this.renderer.setScissorTest(false);
     this.frames++;
+    if (this.host && this.outputTarget) {
+      const { __webglFramebuffer: framebuffer } = this.renderer.properties.get(
+        this.outputTarget,
+      ) as { __webglFramebuffer: WebGLFramebuffer };
+      this.host.onFrame({
+        framebuffer,
+        width: this.outputTarget.width,
+        height: this.outputTarget.height,
+        columns: Math.min(this.count, this.cols),
+        rows: this.rows,
+        pixels: this.backingPixels,
+        renderedIndices: this.states.flatMap((state, index) =>
+          state.rendering === false ? [] : [index],
+        ),
+      });
+    }
     this.onFrame?.();
     let gazeChanged = false;
     for (const state of this.states) {
@@ -1693,6 +1878,10 @@ export class AuthoredAvatarEngine {
       ready: this.ready,
       surfaceFinish: 'smooth',
       retainedCanvasCulling: true,
+      activeAtlasScissor: true,
+      renderedPixels: this.renderBounds.z * this.renderBounds.w,
+      atlasPixels: this.colorTarget.width * this.colorTarget.height,
+      renderBounds: this.renderBounds.toArray(),
       lazyWork: this.lazyWork,
       renderer: 'original-assets-three',
       parity: false,
@@ -1710,7 +1899,7 @@ export class AuthoredAvatarEngine {
       count: this.count,
       renderedInstances: this.states.filter((state) => state.rendering !== false).length,
       frames: this.frames,
-      suspended: document.hidden || !this.inViewport || this.contextLost,
+      suspended: this.hidden() || !this.inViewport || this.contextLost,
       frameRateLimit: this.maxFrameRate === Infinity ? null : this.maxFrameRate,
       observedFrameRate: this.elapsed ? this.timedFrames / this.elapsed : 0,
       columns: this.cols,
@@ -1775,12 +1964,15 @@ export class AuthoredAvatarEngine {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
-    cancelAnimationFrame(this.raf);
-    this.observer.disconnect();
-    this.visibilityObserver.disconnect();
-    document.removeEventListener('visibilitychange', this.visibilityChanged);
-    this.canvas.removeEventListener('webglcontextlost', this.onContextLost);
-    this.canvas.removeEventListener('webglcontextrestored', this.onContextRestored);
+    this.cancelFrame();
+    this.observer?.disconnect();
+    this.visibilityObserver?.disconnect();
+    this.unsubscribeHost?.();
+    if (!this.host) {
+      document.removeEventListener('visibilitychange', this.visibilityChanged);
+      this.canvas!.removeEventListener('webglcontextlost', this.onContextLost);
+      this.canvas!.removeEventListener('webglcontextrestored', this.onContextRestored);
+    }
     this.batches.forEach(({ mesh }) => mesh.dispose());
     this.fits.dispose();
     this.cameras.dispose();
@@ -1796,9 +1988,10 @@ export class AuthoredAvatarEngine {
     this.disabledShadow.dispose();
     this.depthMaterials.forEach((m) => m.dispose());
     this.colorTarget.dispose();
+    this.outputTarget?.dispose();
     this.presentGeometry.dispose();
     this.presentMaterial.dispose();
     this.renderer.dispose();
-    this.renderer.forceContextLoss();
+    if (!this.host) this.renderer.forceContextLoss();
   }
 }
