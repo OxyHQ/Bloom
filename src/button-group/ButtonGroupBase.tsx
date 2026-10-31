@@ -43,6 +43,15 @@ function Divider() {
   );
 }
 
+/**
+ * GROUP_HOLDS_ITEMS: the group's view is never flattened away from its items.
+ * Fabric flattens a view that forms no stacking context (a role and a label do
+ * not form one) and mounts its children in the nearest one above: the
+ * accessibility tree then held an empty "Back and forward" group beside two
+ * loose buttons (Stash's toolbar on OxyOS; Android's TalkBack reads the same
+ * mounted tree). `collapsable={false}` keeps the items the group's children.
+ */
+
 /** The group owns joining and inheritance; Button owns each actual control. */
 export function createButtonGroup(
   Button: ComponentType<ButtonProps>,
@@ -129,6 +138,8 @@ export function createButtonGroup(
               cornerCurve="round"
               role="group"
               accessibilityLabel={accessibilityLabel}
+              // The group holds its items (GROUP_HOLDS_ITEMS).
+              collapsable={false}
               testID={testID}
               style={[
                 {
@@ -163,6 +174,8 @@ export function createButtonGroup(
             cornerCurve="round"
             role="group"
             accessibilityLabel={accessibilityLabel}
+            // The group holds its items (GROUP_HOLDS_ITEMS).
+            collapsable={false}
             testID={testID}
             style={[
               {

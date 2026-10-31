@@ -3,7 +3,8 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
-export { SettingsLayout, SettingsModal } from './SettingsModal.web';
+export { SettingsModal } from './SettingsModal.web';
+export { SettingsLayout } from './SettingsLayout.web';
 export {
   SettingsCard,
   SettingsRow,

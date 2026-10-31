@@ -108,3 +108,13 @@ Joined action items use the same neutral outline Button foreground as standalone
 IconButton. `material="shared"` delegates only the resting surface to the group;
 it does not lower icon emphasis. Hover, press, disabled and selected states
 remain Button behavior, not a separate group implementation.
+
+## The group holds its items
+
+The group's view is never flattened away from its items (`collapsable={false}`).
+React Native's renderer flattens a view that forms no stacking context — a role
+and a label do not form one — and mounts its children in the nearest ancestor
+that does, so an assistive technology reading the mounted tree (OxyOS's, Android's
+TalkBack) found an empty "Back and forward" group beside two loose buttons.
+`ButtonGroup.test.tsx` pins it.
+

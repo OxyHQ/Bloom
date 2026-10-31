@@ -146,6 +146,8 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   close: 'Tanca',
   dismiss: 'Descarta',
   back: 'Enrere',
+  forward: 'Endavant',
+  backAndForward: 'Enrere i endavant',
   goBack: 'Torna enrere',
   loading: "S'està carregant",
   more: 'Més',

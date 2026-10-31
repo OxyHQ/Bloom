@@ -142,6 +142,8 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   close: 'Kapat',
   dismiss: 'Yoksay',
   back: 'Geri',
+  forward: 'İleri',
+  backAndForward: 'Geri ve ileri',
   goBack: 'Geri dön',
   loading: 'Yükleniyor',
   more: 'Daha fazla',

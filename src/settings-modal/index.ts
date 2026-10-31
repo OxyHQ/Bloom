@@ -1,4 +1,5 @@
-export { SettingsLayout, SettingsModal } from './SettingsModal';
+export { SettingsModal } from './SettingsModal';
+export { SettingsLayout } from './SettingsLayout';
 export {
   SettingsCard,
   SettingsRow,

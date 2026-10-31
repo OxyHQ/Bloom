@@ -139,6 +139,8 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   close: '关闭',
   dismiss: '忽略',
   back: '返回',
+  forward: '前进',
+  backAndForward: '后退和前进',
   goBack: '返回上一页',
   loading: '正在加载',
   more: '更多',

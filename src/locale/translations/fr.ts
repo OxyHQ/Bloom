@@ -146,6 +146,8 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   close: 'Fermer',
   dismiss: 'Ignorer',
   back: 'Retour',
+  forward: 'Suivant',
+  backAndForward: 'Retour et suivant',
   goBack: 'Revenir en arrière',
   loading: 'Chargement',
   more: 'Plus',

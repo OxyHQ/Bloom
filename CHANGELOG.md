@@ -2,6 +2,25 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.85.0
+
+### Added
+
+- **A window toolbar's history is back and forward in one group.** A `PageHeader` that is the window's toolbar (the `window` capability) in a panel with `navigation` shows back and forward as one `ButtonGroup`, each disabled while its direction has nowhere to go (both at the root), and `Mod+[` / `Mod+]` move through the history while its screen is in front. An explicit `onBack` or `null` still wins; off a window the lone Back is unchanged. New common messages `forward` and `backAndForward` in every Bloom language. Pinned by `PageHeaderHistory.test.tsx`.
+- **`SettingsLayout` keeps the pages visited.** Selecting a page drops what was ahead; back and forward go through `onBeforeLeave` and report `onPageChange`.
+
+### Changed
+
+- **`SettingsLayout` as a window's content is composed by `AppShell`**, as Stash, Mention and Inbox compose their windows: the rail is the shell's sidebar (the shell keeps the controls' room at its top and draws the controls), the page is one panel whose `navigation` is the history, and the page header is the window's toolbar with the grouped back and forward. The compact list → page layout, the modal and every layout without the `window` capability are unchanged.
+
+### Fixed
+
+- **`ButtonGroup` holds its items in the mounted tree.** Its view had no stacking context, so React Native's renderer flattened it and mounted its items in the ancestor above: an assistive technology read an empty group beside loose buttons (Stash's toolbar on OxyOS; TalkBack reads the same tree). The group is `collapsable={false}`.
+
+### Consumers
+
+`SettingsLayout` is no longer exported from the lean `@oxy.so/bloom/settings-modal/modal` entry, which must not link `AppShell` (`lean-entries.test.ts`) and never documented it; import it from `@oxy.so/bloom/settings-modal`. No app imported it from `modal`. Nothing else changes for an app that does not run in a window.
+
 ## 15.84.0
 
 ### Added
