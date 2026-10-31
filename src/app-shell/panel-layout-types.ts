@@ -103,6 +103,9 @@ export interface AppShellPanelLayout {
    * Defaults to `inset`.
    */
   headerPlacement?: 'inset' | 'scroll-under';
+  /** Extend a separated header over adjacent outer frame insets. Joined and plain
+   * headers remain inside their shared surface. Defaults to the panel width. */
+  headerSpan?: 'panel' | 'frame';
   /** Access the existing viewport for domain gestures, without nesting another scroller. */
   viewportRef?: Ref<AppShellPanelViewport>;
   onViewportScroll?: (offset: { x: number; y: number }) => void;

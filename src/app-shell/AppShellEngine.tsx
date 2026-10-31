@@ -895,6 +895,10 @@ export function createAppShellEngine() {
         flow: regionFlow,
         framed,
         gutter,
+        headerFrameOutsets: {
+          start: !navInFlow && (!centred || stretchReading) ? rowPadStart : 0,
+          end: !asideShown && (!centred || stretchReading) ? outerEnd : 0,
+        },
         viewportInset: {
           top: externalTopHeight + regionInsetTop,
           bottom: regionInsetBottom,
@@ -910,6 +914,12 @@ export function createAppShellEngine() {
         regionFlow,
         framed,
         gutter,
+        navInFlow,
+        centred,
+        stretchReading,
+        rowPadStart,
+        asideShown,
+        outerEnd,
         externalTopHeight,
         regionInsetTop,
         regionInsetBottom,

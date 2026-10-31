@@ -1497,11 +1497,36 @@ export function createPanelLayoutView(
       props.layout.flow === 'document' && props.layout.mode !== 'deck' && Platform.OS === 'web';
     const joined = props.layout.appearance === 'joined' || props.layout.appearance === 'plain';
     const scrollUnder = !document && props.layout.headerPlacement === 'scroll-under';
+    const frameStart =
+      props.layout.headerSpan === 'frame' ? (region?.headerFrameOutsets?.start ?? 0) : 0;
+    const frameEnd =
+      props.layout.headerSpan === 'frame' ? (region?.headerFrameOutsets?.end ?? 0) : 0;
     const workspace = (
       <Screen
         scroll={scrollUnder ? 'content' : 'none'}
         documentScroll={document}
-        header={props.layout.header}
+        header={
+          props.layout.header != null && !joined ? (
+            <View
+              testID={props.testID ? `${props.testID}-header-span` : undefined}
+              style={
+                (Platform.OS === 'web'
+                  ? {
+                      marginInlineStart: frameStart ? -frameStart : 0,
+                      marginInlineEnd: frameEnd ? -frameEnd : 0,
+                    }
+                  : {
+                      marginStart: frameStart ? -frameStart : 0,
+                      marginEnd: frameEnd ? -frameEnd : 0,
+                    }) as WebCssStyle
+              }
+            >
+              {props.layout.header}
+            </View>
+          ) : (
+            props.layout.header
+          )
+        }
         testID={props.testID ? `${props.testID}-workspace` : undefined}
       >
         <WorkspaceHeaderTracks enabled={scrollUnder}>
