@@ -125,8 +125,9 @@ function fixture({
         writeBuffer() {
           device.writes++;
         },
-        copyExternalImageToTexture() {
+        copyExternalImageToTexture(...args) {
           device.copies++;
+          device.lastCopy = args;
         },
         submit(commands) {
           device.submissions++;
@@ -286,7 +287,7 @@ test('two batches bound work; successful completion is not reported before GPU c
     f.restore();
   }
 });
-test('release retains pixels and frees buffers only after submitted work completes; same canvas reattaches', async () => {
+test('release retains pixels and frees owned buffers after submit; same canvas reattaches', async () => {
   const f = fixture();
   try {
     const { createWebGPUAvatarPresenter: create } = await load();
@@ -299,7 +300,7 @@ test('release retains pixels and frees buffers only after submitted work complet
     await drain();
     assert.equal(canvas.image, 'submitted');
     assert.equal(canvas.unconfigures, 0);
-    assert.equal(f.buffers[0].destroyed, false);
+    assert.equal(f.buffers[0].destroyed, true);
     device.jobs[0].resolve();
     await completion;
     await drain();
@@ -318,7 +319,7 @@ test('release retains pixels and frees buffers only after submitted work complet
     f.restore();
   }
 });
-test('dispose settles pending logical completion without deleting resources still in use by the GPU', async () => {
+test('dispose settles logical completion and releases owned resources even before GPU completion', async () => {
   const f = fixture();
   try {
     const { createWebGPUAvatarPresenter: create } = await load();
@@ -329,8 +330,8 @@ test('dispose settles pending logical completion without deleting resources stil
     p.dispose();
     assert.equal(await completion, false);
     await drain();
-    assert.equal(f.buffers[0].destroyed, false);
-    assert.equal(f.textures[0].destroyed, false);
+    assert.equal(f.buffers[0].destroyed, true);
+    assert.equal(f.textures[0].destroyed, true);
     f.devices[0].jobs[0].resolve();
     await drain();
     assert.equal(f.buffers[0].destroyed, true);
@@ -446,6 +447,59 @@ test('batch timeout settles work and uses the same bounded recovery path', async
     assert.equal(f.devices.length, 2);
     assert.equal(f.devices[0].destroyed, true);
     p.dispose();
+  } finally {
+    f.restore();
+    t.mock.timers.reset();
+  }
+});
+
+test('sparse copies retain full atlas coordinates and refresh a one-texel filter guard', async () => {
+  const f = fixture();
+  try {
+    const { createWebGPUAvatarPresenter: create } = await load();
+    const p = await create(() => {}),
+      target = p.attach(new f.Canvas()),
+      source = { width: 960, height: 960 };
+    const completion = p.present(source, [
+      { ...tile(target), sourceX: 192, sourceY: 384, sourceWidth: 192, sourceHeight: 192 },
+    ]);
+    const [from, to, size] = f.devices[0].lastCopy;
+    assert.deepEqual(from, { source, origin: { x: 191, y: 383 } });
+    assert.deepEqual(to.origin, { x: 191, y: 383 });
+    assert.deepEqual(size, [194, 194]);
+    f.devices[0].jobs[0].resolve();
+    await completion;
+    const edge = p.present(source, [{ ...tile(target), sourceWidth: 192, sourceHeight: 192 }]);
+    assert.deepEqual(f.devices[0].lastCopy[0].origin, { x: 0, y: 0 });
+    assert.deepEqual(f.devices[0].lastCopy[2], [193, 193]);
+    f.devices[0].jobs[1].resolve();
+    await edge;
+    p.dispose();
+  } finally {
+    f.restore();
+  }
+});
+test('dispose cannot cancel the physical hang watchdog or retain buffers forever', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const f = fixture();
+  try {
+    const { createWebGPUAvatarPresenter: create } = await load();
+    const p = await create(() => {}),
+      target = p.attach(new f.Canvas());
+    f.devices[0].queue.onSubmittedWorkDone = () => new Promise(() => {});
+    const completion = p.present(stage, [tile(target)]);
+    p.dispose();
+    assert.equal(await completion, false);
+    assert(f.buffers.every((value) => value.destroyed));
+    assert(f.textures.every((value) => value.destroyed));
+    t.mock.timers.tick(5000);
+    await drain();
+    assert.equal(f.devices[0].destroyed, true);
+    assert.equal(f.devices.length, 1, 'No automatic replacement is needed without any live pool');
+    const replacement = await create(() => {});
+    assert(replacement);
+    assert.equal(f.devices.length, 2);
+    replacement.dispose();
   } finally {
     f.restore();
     t.mock.timers.reset();
