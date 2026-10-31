@@ -103,6 +103,61 @@ const HEALTHY_INTERVAL = 30000;
 const MAX_PENDING = 2;
 const TEXTURE_USAGE = 2 | 4 | 16; // COPY_DST | TEXTURE_BINDING | RENDER_ATTACHMENT
 const UNIFORM_USAGE = 8 | 64; // COPY_DST | UNIFORM
+type Deadline = { visibilityChanged(): void };
+const deadlines = new Set<Deadline>();
+let visibilityListening = false;
+const WATCHDOG_INTERVAL = 250;
+const hidden = () => typeof document !== 'undefined' && document.hidden;
+/** GPU task callbacks can be suspended along with the page. Count only visible,
+ * responsive event-loop time, never an OS/background wall-clock jump. Healthy
+ * submissions finish before the first check, so this adds no polling wakeups. */
+function watchDeadline(duration: number, expire: () => void): () => void {
+  let remaining = duration,
+    previous = Date.now(),
+    done = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const stop = () => {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    deadlines.delete(deadline);
+  };
+  const schedule = () => {
+    if (done || hidden()) return;
+    previous = Date.now();
+    timer = setTimeout(check, Math.min(WATCHDOG_INTERVAL, remaining));
+  };
+  const check = () => {
+    timer = undefined;
+    if (done || hidden()) return;
+    const elapsed = Math.max(0, Date.now() - previous);
+    if (elapsed <= WATCHDOG_INTERVAL * 2) remaining -= elapsed;
+    if (remaining <= 0) {
+      stop();
+      expire();
+    } else schedule();
+  };
+  const deadline: Deadline = {
+    visibilityChanged() {
+      clearTimeout(timer);
+      timer = undefined;
+      schedule();
+    },
+  };
+  if (
+    !visibilityListening &&
+    typeof document !== 'undefined' &&
+    typeof document.addEventListener === 'function'
+  ) {
+    document.addEventListener('visibilitychange', () => {
+      for (const item of deadlines) item.visibilityChanged();
+    });
+    visibilityListening = true;
+  }
+  deadlines.add(deadline);
+  schedule();
+  return stop;
+}
 const shader = `
 struct Out { @builtin(position) position:vec4f, @location(0) uv:vec2f };
 @group(0) @binding(0) var atlas:texture_2d<f32>;
@@ -178,13 +233,13 @@ async function initialize(): Promise<Shared | null> {
   if (!gpu || typeof document === 'undefined') return null;
   let abandoned = false;
   let candidate: Device | undefined;
-  let timer: ReturnType<typeof setTimeout> | undefined;
+  let stopDeadline: (() => void) | undefined;
   const timeout = new Promise<null>((resolve) => {
-    timer = setTimeout(() => {
+    stopDeadline = watchDeadline(INIT_TIMEOUT, () => {
       abandoned = true;
       candidate?.destroy();
       resolve(null);
-    }, INIT_TIMEOUT);
+    });
   });
   const work = (async (): Promise<Shared | null> => {
     try {
@@ -239,7 +294,7 @@ async function initialize(): Promise<Shared | null> {
     }
   })();
   const result = await Promise.race([work, timeout]);
-  clearTimeout(timer);
+  stopDeadline?.();
   return result;
 }
 function acquire(): Promise<Shared | null> {
@@ -468,7 +523,7 @@ export async function createWebGPUAvatarPresenter(
         active.device.queue.submit([encoder.finish()]);
         let resolve!: (success: boolean) => void;
         let settled = false;
-        let timer: ReturnType<typeof setTimeout> | undefined;
+        let stopDeadline: (() => void) | undefined;
         const promise = new Promise<boolean>((done) => {
           resolve = done;
         });
@@ -484,19 +539,19 @@ export async function createWebGPUAvatarPresenter(
           },
         };
         pending.add(ticket);
-        timer = setTimeout(() => {
+        stopDeadline = watchDeadline(BATCH_TIMEOUT, () => {
           lost(active, new Error('WebGPU presentation timed out'));
           ticket.finish(false);
-        }, BATCH_TIMEOUT);
+        });
         void gpuDone.then(
           () => {
-            clearTimeout(timer);
+            stopDeadline?.();
             const success = !disposed && !failed && !active.retired && shared === active;
             if (success) healthy(active);
             ticket.finish(success);
           },
           (error) => {
-            clearTimeout(timer);
+            stopDeadline?.();
             lost(active, errorOf(error));
             ticket.finish(false);
           },
