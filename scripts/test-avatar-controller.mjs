@@ -13,7 +13,7 @@ await writeFile(
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
   }).outputText,
 );
-const { createAvatarSlotController } = await import(
+const { createAvatarSlotController, createAvatarReconciler } = await import(
   pathToFileURL(`${process.cwd()}/${temporary}/controller.mjs`).href
 );
 test.after(() => rm(temporary, { recursive: true, force: true }));
@@ -200,4 +200,114 @@ test('a failed resource disposes its host and reports the original error', async
     (value) => value === error,
   );
   assert.equal(f.calls.filter(([name]) => name === 'dispose').length, 1);
+});
+
+function reconcilerFixture(update = async () => {}) {
+  const initial = { character: {}, reduced: false };
+  const calls = [],
+    presentations = [],
+    capabilities = [],
+    errors = [],
+    disposals = [];
+  const controller = createAvatarReconciler(
+    initial,
+    {
+      update: async (...args) => {
+        calls.push(args);
+        await update(...args);
+      },
+      setPresentation: (props) => presentations.push(props),
+      dispose: () => disposals.push('slot'),
+    },
+    {
+      resolveRecipe: (props) => ({
+        preset: 'blue_beret',
+        capabilities: { key: props.reactionKey ?? 'initial' },
+      }),
+      onCapabilities: (value) => capabilities.push(value.key),
+      onError: () => errors.push('error'),
+      onDispose: () => disposals.push('host'),
+    },
+  );
+  return { initial, controller, calls, presentations, capabilities, errors, disposals };
+}
+
+test('an immediate new update after a no-op is drained before its promise settles', async () => {
+  const f = reconcilerFixture();
+  const first = f.controller.update(f.initial);
+  const next = { ...f.initial, reactionKey: 1 };
+  const second = f.controller.update(next);
+  await Promise.all([first, second]);
+  assert.deepEqual(
+    f.calls.map(([props]) => props),
+    [next],
+  );
+  assert.deepEqual(f.capabilities, ['initial', 1]);
+});
+
+test('an update queued in the completion microtask is not stranded', async () => {
+  let f, queued;
+  f = reconcilerFixture(async (props) => {
+    if (props.reactionKey === 1)
+      queueMicrotask(() => {
+        queued = f.controller.update({ ...f.initial, reactionKey: 2 });
+      });
+  });
+  await f.controller.update({ ...f.initial, reactionKey: 1 });
+  await queued;
+  assert.deepEqual(
+    f.calls.map(([props]) => props.reactionKey),
+    [1, 2],
+  );
+  assert.equal(f.capabilities.at(-1), 2);
+});
+
+test('repeating the pending props reference does not cancel its action', async () => {
+  const held = deferred();
+  let superseded = false;
+  const f = reconcilerFixture(async (_props, _recipe, _current, cancellation) => {
+    void cancellation.then(() => {
+      superseded = true;
+    });
+    await held.promise;
+  });
+  const next = { ...f.initial, reactionKey: 1 };
+  const first = f.controller.update(next);
+  const repeated = f.controller.update(next);
+  assert.equal(first, repeated);
+  assert.equal(superseded, false);
+  held.resolve();
+  await first;
+  assert.equal(superseded, false);
+  assert.deepEqual(f.capabilities, ['initial', 1]);
+});
+
+test('new constraints apply immediately and supersede an old action before completion', async () => {
+  const old = deferred();
+  const f = reconcilerFixture(async (props, _recipe, _current, cancellation) => {
+    if (props.reactionKey === 1) await Promise.race([old.promise, cancellation]);
+  });
+  const first = f.controller.update({ ...f.initial, reactionKey: 1 });
+  const latest = { ...f.initial, reactionKey: 2, paused: true };
+  const second = f.controller.update(latest);
+  assert.equal(f.presentations.at(-1), latest);
+  await second;
+  assert.deepEqual(
+    f.calls.map(([props]) => props.reactionKey),
+    [1, 2],
+  );
+  assert.deepEqual(f.capabilities, ['initial', 2]);
+  old.resolve();
+  await first;
+});
+
+test('failure disposes once and subsequent updates are inert', async () => {
+  const f = reconcilerFixture(async () => {
+    throw Error('resource unavailable');
+  });
+  await f.controller.update({ ...f.initial, reactionKey: 1 });
+  f.controller.dispose();
+  assert.equal(f.controller.update({ ...f.initial, reactionKey: 2 }), undefined);
+  assert.deepEqual(f.errors, ['error']);
+  assert.deepEqual(f.disposals, ['host', 'slot']);
 });
