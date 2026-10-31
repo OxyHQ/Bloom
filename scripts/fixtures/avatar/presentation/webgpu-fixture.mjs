@@ -271,7 +271,7 @@ export async function startWebGPUPresentationFixture({
             rgba: compare(expected, actual),
             png: compare(expected, read(decoded)),
             submittedPNG,
-            ...(capture.images && index === 0
+            ...(capture.images && (capture.images === 'all' || index === 0)
               ? { referencePNG: reference.toDataURL('image/png'), actualPNG: png }
               : {}),
           });
