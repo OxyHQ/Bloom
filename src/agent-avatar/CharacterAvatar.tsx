@@ -14,7 +14,8 @@ import { loadCharacterRuntime } from './character-runtime-module';
 import { characterWebView, type CharacterWebViewHandle } from './character-webview';
 import { type ResolvedAvatarCharacter, resolveAvatarCharacter } from './character';
 import { NativePortrait } from './NativePortrait';
-import { nativeAvatarAdapter, type NativeAvatarAdapterProps } from './native-avatar-adapter';
+import type { NativeAvatarAdapterProps } from './native-avatar-adapter';
+import { useNativeAvatarCompatibility } from './use-avatar-renderer-capabilities';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 
@@ -274,28 +275,12 @@ function NativeCharacter({
 function NativeCharacterRouter(
   props: Omit<NativeAvatarAdapterProps, 'onCapabilities' | 'observeSnapshot'>,
 ) {
-  const adapter = nativeAvatarAdapter();
+  const { adapter, compatible } = useNativeAvatarCompatibility(props.runtimeUrl);
   const { reportCapabilities } = useContext(CharacterRuntimeContext);
   const observeSnapshot = useContext(AvatarSnapshotObserver);
-  const [choice, setChoice] = useState<{ url: string; native: boolean }>();
-  useEffect(() => {
-    if (!adapter) return;
-    let stopped = false;
-    void adapter
-      .isRuntimeCompatible(props.runtimeUrl)
-      .then((native) => {
-        if (!stopped) setChoice({ url: props.runtimeUrl, native });
-      })
-      .catch(() => {
-        if (!stopped) setChoice({ url: props.runtimeUrl, native: false });
-      });
-    return () => {
-      stopped = true;
-    };
-  }, [adapter, props.runtimeUrl]);
   if (!adapter) return <NativeCharacter {...props} />;
-  if (choice?.url !== props.runtimeUrl) return null;
-  if (!choice.native) return <NativeCharacter {...props} />;
+  if (compatible === undefined) return null;
+  if (!compatible) return <NativeCharacter {...props} />;
   const Renderer = adapter.NativeAvatar;
   return (
     <Renderer
