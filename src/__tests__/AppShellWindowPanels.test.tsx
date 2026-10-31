@@ -223,11 +223,19 @@ describe('a split panel layout with nothing else at the corner', () => {
     setWidth(1440);
     const windowed = shell(fakeWindow().adapter, { panelLayout: SPLIT });
     // The whole window less the frame's two 16 insets.
-    expect(style(windowed, 'shell-content')).toMatchObject({ flexBasis: 1408, maxWidth: 1408 });
+    expect(style(windowed, 'shell-content')).toMatchObject({
+      flexBasis: 'auto',
+      width: 1408,
+      maxWidth: 1408,
+    });
     windowed.unmount();
     // Without windows the envelope is the panels' own widths (340 + 8 + 360).
     const page = shell(undefined, { panelLayout: SPLIT });
-    expect(style(page, 'shell-content')).toMatchObject({ flexBasis: 708, maxWidth: 708 });
+    expect(style(page, 'shell-content')).toMatchObject({
+      flexBasis: 'auto',
+      width: 708,
+      maxWidth: 708,
+    });
   });
 
   it("keeps the room of the platform's own controls without drawing any", () => {
@@ -540,13 +548,21 @@ describe('panes beside a sidebar flush to the window', () => {
     // The panes take the sidebar's room: the window less the frame's 7 start
     // and end insets, where shown they had what the 190 sidebar leaves.
     const hidden = style(screen, 'shell-content');
-    expect(hidden).toMatchObject({ flexBasis: 1100 - 7 - 7, maxWidth: 1100 - 7 - 7 });
+    expect(hidden).toMatchObject({
+      flexBasis: 'auto',
+      width: 1100 - 7 - 7,
+      maxWidth: 1100 - 7 - 7,
+    });
     screen.unmount();
     const shown = style(
       shell(fakeWindow().adapter, { ...DESKTOP, sidebar: { ...FLUSH, dock: {} } }),
       'shell-content',
     );
-    expect(shown).toMatchObject({ flexBasis: 1100 - 190 - 7, maxWidth: 1100 - 190 - 7 });
+    expect(shown).toMatchObject({
+      flexBasis: 'auto',
+      width: 1100 - 190 - 7,
+      maxWidth: 1100 - 190 - 7,
+    });
   });
 
   it('a sidebar an app puts in a drawer, or a card, keeps the corner to itself', () => {
