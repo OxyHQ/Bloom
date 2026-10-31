@@ -11,7 +11,7 @@ import type { CharacterCapabilities } from './context';
  */
 
 /** Bump when the runtime's look changes: stills drawn by the old one would otherwise outlive it. */
-const STILL_VERSION = 2;
+const STILL_VERSION = 3;
 /** CSS-pixel render sizes. A row takes the smallest that covers it, so 50 rows share 1-3 images. */
 export const STILL_BUCKETS = [64, 128, 256] as const;
 const MEMORY_LIMIT = 256;
