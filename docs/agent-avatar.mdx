@@ -148,8 +148,8 @@ An explicit `eyeSpacing` is included in geometry identity.
 
 The shape selector draws only the body in the selected color. The eye selector
 draws only the eye meshes, framed independently, with no body or accessories.
-Both use paused portraits from the same engine; no selector PNGs or second
-renderer remain. Preview-only choices never change the saved avatar. The color
+Both use paused portraits from the same engine; no preauthored selector artwork or
+second rendering engine remains. Native selectors cache captured PNGs of that live geometry. Preview-only choices never change the saved avatar. The color
 palette precedes accessory controls and stays available when changing shapes.
 The editor accepts and saves any RGB color unchanged. The engine bounds body
 pigment in linear sRGB to relative luminance 0.21–0.68, keeping shadows and
@@ -181,8 +181,12 @@ document's GPU context or decoded geometry across avatars. The shared still host
 change that live-renderer boundary. Sharing live native rendering would require a shared
 surface that owns native positioning, clipping and input, or a native renderer port; merely
 sharing a JavaScript scheduler cannot share these documents' GPU resources. Web correctness
-checks do not establish native crowd performance. Physical Android and iOS integration
-remains necessary for that claim. Software GL browser tests likewise do not establish laptop
+checks do not establish native crowd performance. A physical Pixel 8a test with nine native
+WebViews found one lost WebGL context both before and after the engine changes, despite all
+nine views being visible; eight remained ready. The native still-selector route avoids this
+topology, but live native crowds retain the limitation. The benchmark appendix records the
+separate shared-document and multiple-WebView protocols. iOS integration and sustained thermal
+validation remain outstanding. Software GL browser tests likewise do not establish laptop
 FPS, and browser CPU throttling is not a substitute for measuring a low-end mobile GPU.
 
 The native bridge handles Android `onRenderProcessGone` and WKWebView
