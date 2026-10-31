@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import { readFile, readdir, rm, cp, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
+import { avatarSurfaceTransport } from './avatar-surface-transport.mjs';
 const output = resolve(process.env.AVATAR_RUNTIME_OUTPUT || '.local/character-runtime-build');
 if (!output.startsWith(resolve('.local') + '/'))
   throw Error('Build and verify the runtime under .local before installing it');
@@ -13,6 +14,7 @@ await build({
   configFile: false,
   base: './',
   publicDir: false,
+  plugins: [avatarSurfaceTransport()],
   build: {
     outDir: output,
     emptyOutDir: true,

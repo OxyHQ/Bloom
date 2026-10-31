@@ -14,6 +14,8 @@ type Entry = {
   dirty: boolean;
   painted: boolean;
   size: number;
+  width: number;
+  height: number;
   onReady?: () => void;
 };
 const pools = new Set<EditorPool>();
@@ -36,7 +38,7 @@ class EditorPool {
   private observer: IntersectionObserver;
   private disposed = false;
   private resizing?: Promise<void>;
-  constructor(cell: number) {
+  constructor(cell: number, preset: string) {
     this.cell = cell;
     this.stage.dataset.avatarRenderer = 'shared-editor-scene';
     this.stage.setAttribute('aria-hidden', 'true');
@@ -46,6 +48,7 @@ class EditorPool {
       this.engine = new AuthoredAvatarEngine(this.stage, {
         count: 1,
         size: cell,
+        preset,
         resolveAsset: createCatalogAssetResolver(createCatalogMotion),
         onFrame: () => this.paint(),
       });
@@ -126,10 +129,9 @@ class EditorPool {
       if (!entry?.ready || !entry.visible || (frozen(entry.props) && entry.painted && !entry.dirty))
         return;
       const { canvas, context } = entry;
-      const rect = canvas.getBoundingClientRect();
       const ratio = Math.min(devicePixelRatio || 1, 2);
-      const width = Math.max(1, Math.round(rect.width * ratio));
-      const height = Math.max(1, Math.round(rect.height * ratio));
+      const width = Math.max(1, Math.round(entry.width * ratio));
+      const height = Math.max(1, Math.round(entry.height * ratio));
       if (canvas.width !== width) canvas.width = width;
       if (canvas.height !== height) canvas.height = height;
       context.clearRect(0, 0, width, height);
@@ -174,6 +176,7 @@ class EditorPool {
       }
       throw Error('Editor canvas unavailable');
     }
+    const rect = canvas.getBoundingClientRect();
     const entry: Entry = {
       canvas,
       context,
@@ -183,6 +186,8 @@ class EditorPool {
       dirty: true,
       painted: false,
       size: sizeFor(canvas),
+      width: rect.width,
+      height: rect.height,
       onReady,
     };
     // Reservation exists throughout every asynchronous load, including the first.
@@ -300,6 +305,9 @@ class EditorPool {
       this.observer.observe(canvas);
       resize = new ResizeObserver(() => {
         if (disposed) return;
+        const rect = canvas.getBoundingClientRect();
+        entry.width = rect.width;
+        entry.height = rect.height;
         entry.size = sizeFor(canvas);
         entry.dirty = true;
         void this.resolution()
@@ -335,7 +343,7 @@ export async function attachEditorAvatar(
   const cell = sizeFor(canvas);
   let pool = [...pools].find((p) => p.cell === cell && p.available);
   if (!pool) {
-    pool = new EditorPool(cell);
+    pool = new EditorPool(cell, recipe.preset);
     pools.add(pool);
   }
   return pool.attach(canvas, props, recipe, onReady, onError, signal);

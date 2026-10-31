@@ -47,6 +47,17 @@ function interpolate(
   }
 }
 
+/** Captured body, fur and attached parts often carry the exact same transform.
+ * Compare the full channels once; matching endpoints alone cannot prove that. */
+function equalChannel(a: MotionChannel | undefined, b: MotionChannel | undefined) {
+  if (a === b) return true;
+  if (!a || !b || 'value' in a !== 'value' in b) return false;
+  const left = 'value' in a ? a.value : a.samples;
+  const right = 'value' in b ? b.value : b.samples;
+  if (left === right) return true;
+  return left.length === right.length && left.every((value, i) => Object.is(value, right[i]));
+}
+
 export class AuthoredMotionSampler {
   private position = new THREE.Vector3();
   private rotation = new THREE.Quaternion();
@@ -56,6 +67,7 @@ export class AuthoredMotionSampler {
   private shear = [0, 0, 0];
   private normalCorrection = Array<number>(9).fill(0);
   private fieldEntries: [string, MotionChannel][][];
+  private transformSources: number[];
 
   constructor(readonly clip: AuthoredMotionClip) {
     if (
@@ -70,6 +82,20 @@ export class AuthoredMotionSampler {
       if (clip.times[i]! <= clip.times[i - 1]!) throw Error('Motion keyframes must increase');
     if (!clip.times.every(Number.isFinite)) throw Error('Invalid motion timestamps');
     this.fieldEntries = clip.parts.map((part) => Object.entries(part.fields));
+    this.transformSources = clip.parts.map((part, index) => {
+      for (let source = 0; source < index; source++) {
+        const candidate = clip.parts[source]!;
+        if (
+          equalChannel(part.translation, candidate.translation) &&
+          equalChannel(part.rotation, candidate.rotation) &&
+          equalChannel(part.scale, candidate.scale) &&
+          equalChannel(part.shear, candidate.shear) &&
+          equalChannel(part.normalCorrection, candidate.normalCorrection)
+        )
+          return source;
+      }
+      return index;
+    });
     const ids = new Set<string>();
     for (const part of clip.parts) {
       if (ids.has(part.id)) throw Error('Duplicate motion part');
@@ -143,6 +169,16 @@ export class AuthoredMotionSampler {
       const part = clip.parts[i]!,
         target = pose[i]!;
       if (target.id !== part.id) throw Error('Motion pose identities differ');
+      const source = this.transformSources[i]!;
+      if (source !== i) {
+        // Copy into this avatar's output: no matrix aliases across parts or
+        // instances, and retargeting may safely modify its private pose later.
+        target.world.copy(pose[source]!.world);
+        target.normalMatrix.copy(pose[source]!.normalMatrix);
+        for (const [key, channel] of this.fieldEntries[i]!)
+          interpolate(channel, 4, target.fields[key]!, lo, hi, alpha);
+        continue;
+      }
       interpolate(part.translation, 3, this.scratch, lo, hi, alpha);
       this.position.fromArray(this.scratch);
       interpolate(part.scale, 3, this.scratch, lo, hi, alpha);
