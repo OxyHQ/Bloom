@@ -695,7 +695,17 @@ export class AuthoredAvatarEngine {
       throw error;
     }
   }
-  async setPreset(index: number, preset: string) {
+  getInstancePreset(index: number) {
+    return this.states[index]?.preset;
+  }
+  hasPreset(preset: string) {
+    return !!this.asset(preset);
+  }
+  cancelPresetChange(index: number) {
+    const state = this.states[index];
+    if (state) state.revision++;
+  }
+  async setPreset(index: number, preset: string, isCurrent = () => true) {
     await this.loaded;
     const state = this.states[index];
     if (!state || this.disposed) return;
@@ -703,7 +713,13 @@ export class AuthoredAvatarEngine {
     if (state.preset === preset && this.asset(preset)) return;
     const release = await this.ensureCurrentDetail([preset]);
     try {
-      if (this.disposed || this.states[index] !== state || revision !== state.revision) return;
+      if (
+        this.disposed ||
+        this.states[index] !== state ||
+        revision !== state.revision ||
+        !isCurrent()
+      )
+        return;
       if (state.preset !== preset) {
         if (this.pointerIndex === index) this.endPointer();
         state.pointer.reset();
