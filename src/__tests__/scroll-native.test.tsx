@@ -18,7 +18,11 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
-import { ScrollRestorationProvider, useScrollRestoration } from '../scroll/index';
+import {
+  DocumentScrollRestorationBoundary,
+  ScrollRestorationProvider,
+  useScrollRestoration,
+} from '../scroll/index';
 import type {
   ScreenFocusEffect,
   ScrollRestorationBinding,
@@ -125,7 +129,10 @@ class Harness {
   private readonly container: HTMLElement;
   private bindingRef: ScrollRestorationBinding | null = null;
 
-  constructor(private readonly persistence: ScrollRestorationPersistence = {}) {
+  constructor(
+    private readonly persistence: ScrollRestorationPersistence = {},
+    private readonly externalDocument = false,
+  ) {
     this.container = document.createElement('div');
     document.body.appendChild(this.container);
     this.root = createRoot(this.container);
@@ -137,7 +144,9 @@ class Harness {
         createElement(ScrollRestorationProvider, {
           adapter: testAdapter,
           ...this.persistence,
-          children,
+          children: this.externalDocument
+            ? createElement(DocumentScrollRestorationBoundary, { children })
+            : children,
         }),
       );
     });
@@ -211,6 +220,21 @@ describe('native scroll-restoration hook', () => {
 
   afterEach(() => {
     harness.teardown();
+  });
+
+  it('continues restoring a native list under an external document owner', () => {
+    harness.teardown();
+    harness = new Harness({}, true);
+    const list = new FakeList();
+    const content = unseenContent();
+    harness.show({ list, content, subKey: 'posts' });
+    act(() => frames.flushOneFrame());
+    harness.scroll(420);
+    harness.show({ list, content, subKey: 'media' });
+    act(() => frames.flushOneFrame());
+    harness.show({ list, content, subKey: 'posts' });
+    act(() => frames.flushOneFrame());
+    expect(list.lastScroll).toBe(420);
   });
 
   it('restores through scrollToOffset when the key changes while mounted', () => {
