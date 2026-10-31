@@ -20,7 +20,7 @@ try {
   try {
    let painted, failed;
    const ready=new Promise((resolve,reject)=>{painted=resolve;failed=reject;});
-   const created=createAvatar(canvas,{character:job.character,paused:true,portrait:true,reduced:true},{onReady:painted,onError:()=>failed(Error('Still failed'))}).then(value=>{
+   const created=createAvatar(canvas,{character:job.character,paused:true,portrait:true,reduced:true,previewPart:job.previewPart},{onReady:painted,onError:()=>failed(Error('Still failed')),onCapabilities:value=>report('capabilities:'+JSON.stringify({id:job.id,value}))}).then(value=>{
     work.controller=value;
     if(discarded || closed || turn!==generation) release(work);
     return value;

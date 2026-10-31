@@ -15,6 +15,16 @@ export function useCharacterStill(
   size: number,
   enabled: boolean,
 ): string | undefined {
+  return useCharacterStillResult(character, size, enabled).uri;
+}
+
+/** Portrait renderers also distinguish a failed render from a pending request. */
+export function useCharacterStillResult(
+  character: ResolvedAvatarCharacter | undefined,
+  size: number,
+  enabled: boolean,
+  previewPart?: 'eyes',
+): { uri: string | undefined; failed: boolean } {
   const { runtimeUrl, stills: provided } = useContext(CharacterRuntimeContext);
   const stills = useMemo(
     () =>
@@ -27,27 +37,28 @@ export function useCharacterStill(
   const css = stillBucket(size);
   const ratio = Math.min(PixelRatio.get(), 2);
   const key = useMemo(
-    () => (character ? stillKey(character, css, ratio) : undefined),
-    [character, css, ratio],
+    () => (character ? stillKey(character, css, ratio, previewPart) : undefined),
+    [character, css, ratio, previewPart],
   );
   // The effect keys on the content address, so a caller that writes the character inline each
   // render does not restart the request.
   const latest = useRef(character);
   latest.current = character;
-  const [drawn, setDrawn] = useState<{ stills: unknown; key: string; uri: string }>();
+  const [drawn, setDrawn] = useState<{ stills: unknown; key: string; uri: string | null }>();
   const cached = enabled && stills && key ? stills.peek(key) : undefined;
   useEffect(() => {
     const target = latest.current;
     if (!enabled || !stills || !key || !target || cached) return;
-    const request = stills.request(key, target, css, ratio);
+    const request = stills.request(key, target, css, ratio, previewPart);
     let current = true;
     void request.promise.then((uri) => {
-      if (current && uri) setDrawn({ stills, key, uri });
+      if (current) setDrawn({ stills, key, uri });
     });
     return () => {
       current = false;
       request.cancel();
     };
-  }, [enabled, stills, key, css, ratio, cached]);
-  return cached ?? (drawn && drawn.stills === stills && drawn.key === key ? drawn.uri : undefined);
+  }, [enabled, stills, key, css, ratio, cached, previewPart]);
+  const result = drawn && drawn.stills === stills && drawn.key === key ? drawn.uri : undefined;
+  return { uri: cached || result || undefined, failed: enabled && result === null && !cached };
 }

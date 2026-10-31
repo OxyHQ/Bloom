@@ -18,7 +18,13 @@ const release = (held: Held) => {
  * fixed-size box (the pool reads the canvas's layout size, so it cannot be detached or
  * `display:none`), read back once with `toDataURL`. Renders arrive one at a time from the queue.
  */
-export const renderWebStill: StillBackend = async ({ runtimeUrl, character, css }) => {
+export const renderWebStill: StillBackend = async ({
+  runtimeUrl,
+  character,
+  css,
+  previewPart,
+  onCapabilities,
+}) => {
   if (typeof document === 'undefined') return null;
   const box = document.createElement('div');
   box.setAttribute('aria-hidden', 'true');
@@ -45,8 +51,8 @@ export const renderWebStill: StillBackend = async ({ runtimeUrl, character, css 
     const created = runtime
       .createAvatar(
         canvas,
-        { character, paused: true, portrait: true, reduced: true },
-        { onError: () => failed(new Error('Still failed')), onReady: painted },
+        { character, paused: true, portrait: true, reduced: true, previewPart },
+        { onError: () => failed(new Error('Still failed')), onReady: painted, onCapabilities },
       )
       .then((instance) => {
         if (finished) {

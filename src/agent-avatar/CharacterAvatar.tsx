@@ -13,6 +13,7 @@ import { characterHtml, scriptJson } from './character-html';
 import { loadCharacterRuntime } from './character-runtime-module';
 import { characterWebView, type CharacterWebViewHandle } from './character-webview';
 import { type ResolvedAvatarCharacter, resolveAvatarCharacter } from './character';
+import { NativePortrait } from './NativePortrait';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 
@@ -229,7 +230,7 @@ function NativeCharacter({
 
 /** Single character renderer. Web defaults to the hosted module; native uses its configured URL. */
 export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes' }) {
-  const { runtimeUrl } = useContext(CharacterRuntimeContext);
+  const { runtimeUrl, stills } = useContext(CharacterRuntimeContext);
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
   const initialReduced = useReducedMotion();
   const [reduced, setReduced] = useState(initialReduced);
@@ -292,6 +293,7 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
     ],
   );
   const fail = useMemo(() => () => setFailed(true), []);
+  const cachedPortrait = Platform.OS !== 'web' && !!portrait && !interactive && !!stills;
   const Renderer = Platform.OS === 'web' ? WebCharacter : NativeCharacter;
   return (
     <StyledView
@@ -303,7 +305,17 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
       testID={props.testID}
     >
       {runtimeUrl && !failed ? (
-        <Renderer runtimeUrl={runtimeUrl} value={value} onError={fail} onReady={props.onReady} />
+        cachedPortrait ? (
+          <NativePortrait
+            character={resolved}
+            size={size}
+            previewPart={props.previewPart}
+            onReady={props.onReady}
+            onError={fail}
+          />
+        ) : (
+          <Renderer runtimeUrl={runtimeUrl} value={value} onError={fail} onReady={props.onReady} />
+        )
       ) : (
         <StyledText numberOfLines={2} style={{ fontSize: 10 }}>
           {!runtimeUrl ? messages.runtimeRequired : messages.unavailable}

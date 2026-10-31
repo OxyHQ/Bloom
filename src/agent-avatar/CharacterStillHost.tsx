@@ -69,6 +69,7 @@ function StillRender({
           id: current.id,
           character: current.job.character,
           css: current.job.css,
+          previewPart: current.job.previewPart,
         })}); true;`,
       );
     } catch {
@@ -138,6 +139,13 @@ function StillRender({
           } else if (data === 'error') {
             broken.current = true;
             active.current?.finish(null, true);
+          } else if (data.startsWith('capabilities:')) {
+            try {
+              const { id, value } = JSON.parse(data.slice(13));
+              if (active.current?.id === id) active.current.job.onCapabilities?.(value);
+            } catch {
+              /* Invalid reports cannot supply another job's catalog. */
+            }
           } else if (data.startsWith('snapshot:')) {
             try {
               const { id, uri } = JSON.parse(data.slice(9));
