@@ -167,6 +167,28 @@ describe('DropdownMenu (web) — keyboard', () => {
     expect(focusedName()).toBe('Archive');
   });
 
+  it.each([
+    ['first', 'Rename'],
+    ['last', 'Archive'],
+  ] as const)("an owner's open with openFocus=%j lands focus on that row", (edge, name) => {
+    const Controlled = ({ open }: { open: boolean }) => (
+      <DropdownMenu open={open} onOpenChange={() => {}} openFocus={edge}>
+        <DropdownMenuTrigger label="Actions" testID="menu">
+          <Text>Actions</Text>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onPress={actions.rename}>Rename</DropdownMenuItem>
+          <DropdownMenuItem disabled>Move</DropdownMenuItem>
+          <DropdownMenuItem onPress={actions.archive}>Archive</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+    mount(<Controlled open={false} />);
+    mount(<Controlled open />);
+    expect(expanded('menu')).toBe(true);
+    expect(focusedName()).toBe(name);
+  });
+
   it('a pointer open leaves focus on the trigger until an arrow moves it in', () => {
     mount(<Actions />);
     act(() => trigger('menu').focus());

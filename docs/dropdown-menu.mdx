@@ -79,6 +79,8 @@ const [open, setOpen] = useState(false);
 
 Uncontrolled by default; pass `open` to take over. `onOpenChange` fires either way. There is no imperative control to reach for and no `close()` to call: the menu's state is one boolean, and a row closes it by returning.
 
+An owner that opens the menu from its own keys (a bar driven by the keyboard: a title's <kbd>↓</kbd>, <kbd>Enter</kbd> or <kbd>Space</kbd>) passes `openFocus="first"` (or `"last"`) with that open, and the menu starts with that enabled row active, as a Mac's menu opened from the keyboard does: focused on web, the active row in a platform popup. An open by a pointer passes none and starts with no row active, so the first <kbd>↓</kbd> lands on the first row. The menu's own trigger keys on web need no prop; they ask for it themselves. Pinned by `PlatformSurfacePopup.test.tsx` and `MenuKeyboard.web.test.tsx`.
+
 ## Checkbox and radio rows
 
 ```tsx

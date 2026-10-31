@@ -17,6 +17,7 @@ import { FloatingPanel } from '../floating/FloatingPanel';
 import {
   hostElement,
   useMenuFocusIntent,
+  useOpenFocus,
   useMenuPanelKeys,
   useMenuTriggerKeys,
 } from '../floating/menu-keyboard';
@@ -45,6 +46,7 @@ export function DropdownMenu({
   activation = 'click',
   openDelay = HOVER_CARD_OPEN_DELAY,
   closeDelay = HOVER_CARD_CLOSE_DELAY,
+  openFocus,
 }: DropdownMenuProps) {
   const [isOpen, setOpen] = useControllableState<boolean>({
     value: open,
@@ -53,6 +55,7 @@ export function DropdownMenu({
   });
   const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
   const focusIntent = useMenuFocusIntent();
+  useOpenFocus(focusIntent, isOpen, openFocus);
   const panelRef = useRef<ComponentRef<typeof View> | null>(null);
   const intent = useHoverIntent(isOpen, setOpen, openDelay, closeDelay);
   const suppressed = useRef(false);

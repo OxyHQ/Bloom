@@ -66,6 +66,20 @@ export interface MenuFocusIntent {
   request: (edge: MenuFocusEdge) => void;
 }
 
+/**
+ * The root's `openFocus` (`DropdownMenuProps`) as the panel's intent: set as the menu opens, in
+ * the render that opens it, so the panel mounting in that commit finds it.
+ */
+export function useOpenFocus(
+  intent: MenuFocusIntent,
+  open: boolean,
+  openFocus: 'first' | 'last' | undefined,
+): void {
+  const wasOpen = useRef(open);
+  if (open && !wasOpen.current && openFocus) intent.edge.current = openFocus;
+  wasOpen.current = open;
+}
+
 export function useMenuFocusIntent(): MenuFocusIntent {
   const edge = useRef<MenuFocusEdge | null>(null);
   const [tick, setTick] = useState(0);

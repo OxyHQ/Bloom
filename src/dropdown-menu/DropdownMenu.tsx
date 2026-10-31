@@ -31,6 +31,7 @@ import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { TriggerSlot } from '../floating/TriggerSlot';
+import { useMenuFocusIntent, useOpenFocus } from '../floating/menu-keyboard';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { DropdownMenuProvider, useDropdownMenu } from './context';
@@ -47,6 +48,7 @@ export function DropdownMenu({
   defaultOpen = false,
   onOpenChange,
   activation = 'click',
+  openFocus,
 }: DropdownMenuProps) {
   const [isOpen, setOpen] = useControllableState<boolean>({
     value: open,
@@ -54,6 +56,9 @@ export function DropdownMenu({
     onChange: onOpenChange,
   });
   const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
+  // An open from the owner's keys starts with a row active in a platform popup, as on a Mac.
+  const focusIntent = useMenuFocusIntent();
+  useOpenFocus(focusIntent, isOpen, openFocus);
   const primaryOpen = useRef(false);
   const setMenuOpen = useCallback(
     (next: boolean) => {
@@ -69,8 +74,15 @@ export function DropdownMenu({
     [setOpen],
   );
   const value = useMemo(
-    () => ({ open: isOpen, setOpen: setMenuOpen, anchorRef, activation, onPrimaryOpenChange }),
-    [isOpen, setMenuOpen, activation, onPrimaryOpenChange],
+    () => ({
+      open: isOpen,
+      setOpen: setMenuOpen,
+      anchorRef,
+      focusIntent,
+      activation,
+      onPrimaryOpenChange,
+    }),
+    [isOpen, setMenuOpen, focusIntent, activation, onPrimaryOpenChange],
   );
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
@@ -157,6 +169,7 @@ export function DropdownMenuContent({
           alignOffset={alignOffset}
           role="menu"
           label={label}
+          focusIntent={menu.focusIntent}
           onDismiss={() => menu.setOpen(false)}
           onClose={() => menu.setOpen(false)}
           minWidth={minWidth}
