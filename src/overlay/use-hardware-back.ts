@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { BackHandler, Platform } from 'react-native';
+import { acquireBackOwnership } from './back-ownership';
 
 /**
  * Consume Android's hardware back for as long as the caller is mounted with a
@@ -18,10 +19,14 @@ export function useHardwareBack(onBack: (() => void) | undefined): void {
   useEffect(() => {
     if (!active || Platform.OS !== 'android') return;
     if (typeof BackHandler?.addEventListener !== 'function') return;
+    const release = acquireBackOwnership();
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       onBackRef.current?.();
       return true;
     });
-    return () => subscription.remove();
+    return () => {
+      subscription.remove();
+      release();
+    };
   }, [active]);
 }

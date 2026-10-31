@@ -29,6 +29,12 @@ export type TabPagerProviderProps = {
    * top, and a reload when it is already there (`useScreenReselectHandler`).
    */
   onReselect?: (name: string) => void;
+  /**
+   * An opaque viewer/session identity. Change it when retained pages change
+   * authority, even if the current path and navigation history stay the same.
+   * A predictive gesture from the old scope is cancelled, never committed.
+   */
+  navigationScopeKey?: string;
   children: ReactNode;
 } & (
   | {
@@ -62,6 +68,7 @@ export function TabPagerProvider({
   destinations: declared,
   pages: legacyPages,
   onReselect,
+  navigationScopeKey,
   children,
 }: TabPagerProviderProps) {
   const router = useRouter();
@@ -201,6 +208,7 @@ export function TabPagerProvider({
     () => ({
       pages: model.pages,
       model,
+      navigationScopeKey,
       progress,
       chromeProgress,
       selectTab,
@@ -211,6 +219,7 @@ export function TabPagerProvider({
     }),
     [
       model,
+      navigationScopeKey,
       progress,
       chromeProgress,
       selectTab,

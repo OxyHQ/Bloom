@@ -36,11 +36,12 @@ const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8')) as {
 };
 const exportsMap = pkg.exports;
 
-/** Non-subpath entries that are legitimately plain strings (static assets). */
+/** Non-component entries: static assets and the Node-only Expo config plugin. */
 const STRING_ENTRIES = [
   './design-tokens/theme.css',
   './design-tokens/tokens.json',
   './package.json',
+  './app.plugin.js',
 ];
 
 /**
