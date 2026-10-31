@@ -12,6 +12,12 @@ jest.mock('react-native-reanimated', () => {
 import { AppShell } from '../app-shell/index.web';
 import { Screen, ScreenScrollView } from '../screen/index.web';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import {
+  ScreenContext,
+  ScreenViewportContext,
+  type ScreenContextValue,
+  type ScreenViewportValue,
+} from '../screen/context';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -36,7 +42,9 @@ it.each(['document', 'bounded'] as const)(
                 id: 'main',
                 content: (
                   <Screen testID="route" scroll="content" documentScroll={flow === 'document'}>
-                    <ScreenScrollView testID="scroller"><div data-testid="body">Page</div></ScreenScrollView>
+                    <ScreenScrollView testID="scroller">
+                      <div data-testid="body">Page</div>
+                    </ScreenScrollView>
                   </Screen>
                 ),
               },
@@ -66,7 +74,10 @@ it.each(['document', 'bounded'] as const)(
       expect(get('shell-panels-workspace-content')).toBe(workspace);
       expect(get('body')).toBe(body);
       if (flow === 'document') {
-        expect({ workspace: workspace.getAttribute('style'), body: body.getAttribute('style') }).toEqual(before);
+        expect({
+          workspace: workspace.getAttribute('style'),
+          body: body.getAttribute('style'),
+        }).toEqual(before);
       } else {
         expect(workspace.style.paddingTop).toBe('');
         expect(body.parentElement?.style.paddingTop).toBe('56px');
@@ -83,3 +94,45 @@ it.each(['document', 'bounded'] as const)(
     }
   },
 );
+
+it('reserves workspace clearance in an existing element viewport without replacing class padding', () => {
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  const viewport = {
+    kind: 'element',
+    active: true,
+    scrollRef: { current: container },
+    scrollTo: () => {},
+    metrics: { scrollY: { value: 0 }, contentHeight: { value: 0 }, viewportHeight: { value: 0 } },
+  } as ScreenViewportValue;
+  const screen = (inset: number) =>
+    ({
+      active: true,
+      workspaceTopInset: inset,
+      contentSized: false,
+      documentScroll: false,
+    }) as ScreenContextValue;
+  const app = (inset: number) => (
+    <ScreenContext.Provider value={screen(inset)}>
+      <ScreenViewportContext.Provider value={viewport}>
+        <ScreenScrollView contentContainerClassName="p-4">
+          <div data-testid="content">Child</div>
+        </ScreenScrollView>
+      </ScreenViewportContext.Provider>
+    </ScreenContext.Provider>
+  );
+  try {
+    act(() => root.render(app(64)));
+    const child = container.querySelector('[data-testid="content"]') as HTMLElement;
+    const content = child.parentElement!;
+    expect(content.className).toContain('p-4');
+    expect(content.parentElement?.style.paddingTop).toBe('64px');
+    act(() => root.render(app(0)));
+    expect(container.querySelector('[data-testid="content"]')).toBe(child);
+    expect(content.parentElement?.style.paddingTop).toBe('0px');
+  } finally {
+    act(() => root.unmount());
+    container.remove();
+  }
+});
