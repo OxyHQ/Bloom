@@ -46,7 +46,7 @@ function context(mode) {
     isContextLost: () => mode === 'lost',
     clientWaitSync: () => {
       state.polls++;
-      return mode === 'held' ? 6 : mode === 'wait-fail' ? 5 : 7;
+      return mode === 'held' || mode === 'timeout' ? 6 : mode === 'wait-fail' ? 5 : 7;
     },
     getBufferSubData: (_target, _offset, pixels) => pixels.fill(17),
   };
@@ -60,12 +60,13 @@ for (const mode of [
   'wait-fail',
   'lost',
   'held',
+  'timeout',
 ])
   test(`web pixel readback: ${mode} restores bindings and releases every owned object`, async () => {
     const { gl, state } = context(mode),
       framebuffer = state.readFramebuffer,
       pack = state.packBuffer;
-    const task = readPixelsAsync(gl, {}, 0, 0, 2, 2);
+    const task = readPixelsAsync(gl, {}, 0, 0, 2, 2, mode === 'timeout' ? 1 : 30000);
     assert.equal(state.readFramebuffer, framebuffer);
     assert.equal(state.packBuffer, pack);
     if (mode === 'held') task.cancel();
