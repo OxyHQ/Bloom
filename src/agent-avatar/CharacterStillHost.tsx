@@ -1,54 +1,113 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { characterHtml } from './character-html';
+import { scriptJson } from './character-html';
+import { characterStillHtml } from './character-still-html';
 import { characterWebView, type CharacterWebViewHandle } from './character-webview';
 import type { StillJob } from './character-still';
 
 const TIMEOUT_MS = 20_000;
+const LINGER_MS = 1_500;
 
 export type NativeStillJob = StillJob & { done(uri: string | null): void };
 
-/**
- * Native's drawing surface for stills: ONE hidden WebView, mounted only while a render is queued,
- * that draws the paused portrait, hands back a PNG and goes away. A WebView per row would be a
- * GL context per row; this is one at a time, whatever the list length. Mounted by
- * `AgentAvatarProvider`; renders nothing while idle.
- */
+/** One WebView for a burst of queued stills, released shortly after the queue drains. */
 export function CharacterStillHost({ job }: { job: NativeStillJob | null }) {
-  if (!job) return null;
-  return <StillRender key={job.key} job={job} />;
+  const [held, setHeld] = useState(job);
+  const [revision, setRevision] = useState(0);
+  const retry = useCallback(() => setRevision((value) => value + 1), []);
+  useEffect(() => {
+    if (job) {
+      setHeld(job);
+      return;
+    }
+    const timer = setTimeout(() => setHeld(null), LINGER_MS);
+    return () => clearTimeout(timer);
+  }, [job]);
+  const retained = job ?? held;
+  if (!retained) return null;
+  return (
+    <StillRender
+      key={`${retained.runtimeUrl}:${revision}`}
+      runtimeUrl={retained.runtimeUrl}
+      job={job}
+      onFailure={retry}
+    />
+  );
 }
 
-function StillRender({ job }: { job: NativeStillJob }) {
+type Active = {
+  id: number;
+  job: NativeStillJob;
+  finish(uri: string | null, retry?: boolean): void;
+};
+
+function StillRender({
+  runtimeUrl,
+  job,
+  onFailure,
+}: {
+  runtimeUrl: string;
+  job: NativeStillJob | null;
+  onFailure(): void;
+}) {
   const WebView = characterWebView();
   const ref = useRef<CharacterWebViewHandle>(null);
-  const finished = useRef(false);
-  const latest = useRef(job);
-  latest.current = job;
-  const finish = (uri: string | null) => {
-    if (finished.current) return;
-    finished.current = true;
-    latest.current.done(uri);
-  };
+  const loaded = useRef(false);
+  const broken = useRef(false);
+  const active = useRef<Active | null>(null);
+  const sequence = useRef(0);
+  const source = useMemo(
+    () => ({ html: characterStillHtml(runtimeUrl), baseUrl: runtimeUrl }),
+    [runtimeUrl],
+  );
+  const send = useCallback(() => {
+    const current = active.current;
+    if (!loaded.current || !current) return;
+    try {
+      ref.current?.injectJavaScript(
+        `window.renderStill?.(${scriptJson({
+          id: current.id,
+          character: current.job.character,
+          css: current.job.css,
+        })}); true;`,
+      );
+    } catch {
+      current.finish(null, true);
+    }
+  }, []);
   useEffect(() => {
-    if (!WebView) finish(null);
-    const timer = setTimeout(() => finish(null), TIMEOUT_MS);
+    if (!job) return;
+    if (broken.current) {
+      onFailure();
+      return;
+    }
+    let finished = false;
+    const current: Active = {
+      id: ++sequence.current,
+      job,
+      finish(uri, retry = false) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        if (active.current === current) active.current = null;
+        job.done(uri);
+        if (retry) onFailure();
+      },
+    };
+    const timer = setTimeout(() => current.finish(null, true), TIMEOUT_MS);
+    active.current = current;
+    if (!WebView) current.finish(null);
+    else send();
     return () => {
       clearTimeout(timer);
-      finish(null);
+      if (active.current === current) active.current = null;
+      // React replays new effects in StrictMode. The replacement owns the same
+      // job; only a real departure should settle it as failed.
+      queueMicrotask(() => {
+        if (active.current?.job !== job) current.finish(null);
+      });
     };
-    // The job is keyed: one render per mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const source = useRef({
-    html: characterHtml(job.runtimeUrl, {
-      character: job.character,
-      paused: true,
-      portrait: true,
-      reduced: true,
-    }),
-    baseUrl: job.runtimeUrl,
-  });
+  }, [job, WebView, send, onFailure]);
   if (!WebView) return null;
   return (
     <View
@@ -59,30 +118,35 @@ function StillRender({ job }: { job: NativeStillJob }) {
         position: 'absolute',
         left: 0,
         top: 0,
-        width: job.css,
-        height: job.css,
+        width: job?.css ?? 64,
+        height: job?.css ?? 64,
         opacity: 0.01,
       }}
     >
       <WebView
         ref={ref}
-        source={source.current}
+        source={source}
         style={{ flex: 1, backgroundColor: 'transparent' }}
         scrollEnabled={false}
         javaScriptEnabled
         originWhitelist={['*']}
         onMessage={(event) => {
           const data = event.nativeEvent.data;
-          if (data === 'ready') ref.current?.injectJavaScript('window.captureAvatar?.(1); true;');
-          else if (data === 'error') finish(null);
-          else if (data.startsWith('snapshot:')) {
+          if (data === 'loaded') {
+            loaded.current = true;
+            send();
+          } else if (data === 'error') {
+            broken.current = true;
+            active.current?.finish(null, true);
+          } else if (data.startsWith('snapshot:')) {
             try {
-              const { uri } = JSON.parse(data.slice(9));
-              finish(
+              const { id, uri } = JSON.parse(data.slice(9));
+              if (active.current?.id !== id) return;
+              active.current?.finish(
                 typeof uri === 'string' && uri.startsWith('data:image/png;base64,') ? uri : null,
               );
             } catch {
-              finish(null);
+              active.current?.finish(null, true);
             }
           }
         }}
