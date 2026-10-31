@@ -2,7 +2,6 @@
  * Three scene. Captured semantic clips are separate from the fixed reference fixture. */
 import * as THREE from 'three';
 import { readPixelsAsync } from './async-pixels';
-import { createFrameShaderSpecializer } from './frame-shader';
 import { boundBodyPigment } from '../../src/agent-avatar/body-pigment';
 import type { AuthoredMotionPose, AuthoredMotionSampler } from './motion';
 import { AvatarPoseSharing } from './pose-sharing';
@@ -36,7 +35,6 @@ const eyeProfiles = rawEyeProfiles.presets as unknown as Partial<
   Record<AvatarPreset, Record<'0' | '1', Record<string, EyeGazeProfile>>>
 >;
 type Vectors = Record<string, number[]>;
-const frameShader = createFrameShaderSpecializer(fragmentShader);
 // These joints are immutable identity transforms. Three accepts their flattened
 // representation directly instead of copying 24 Matrix4 objects on every draw.
 const identityJoints = Float32Array.from({ length: 24 * 16 }, (_, index) =>
@@ -574,7 +572,7 @@ export class AuthoredAvatarEngine {
     return new THREE.RawShaderMaterial({
       glslVersion: THREE.GLSL3,
       vertexShader,
-      fragmentShader: frameShader(frameValues),
+      fragmentShader,
       defines: {
         ...(!part.universal ? { FELIPE_MATERIAL: 1, FELIPE_KIND: part.kind } : {}),
         ...(part.fur ? { FELIPE_FUR: 1 } : {}),
