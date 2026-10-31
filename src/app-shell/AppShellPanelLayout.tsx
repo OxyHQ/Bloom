@@ -267,6 +267,7 @@ export function createPanelLayoutView(
     resizeHandle,
     cssScope,
     cssFraming,
+    visibilityReady,
     index,
     getSize,
     vertical,
@@ -293,6 +294,7 @@ export function createPanelLayoutView(
     resizeHandle: AppShellPanelLayout['resizeHandle'];
     cssScope: string | null;
     cssFraming: boolean;
+    visibilityReady: boolean;
     index: number;
     getSize: () => number;
     vertical: boolean;
@@ -684,6 +686,7 @@ export function createPanelLayoutView(
                   cssVisibility: !!cssScope,
                   visible: panel.visible !== false && track.visible,
                   active,
+                  visibilityReady,
                 }}
               >
                 {/* Menus and popovers opened in here stay inside this panel while
@@ -778,6 +781,7 @@ export function createPanelLayoutView(
                   framed: true,
                   visible: floatingOpen,
                   active,
+                  visibilityReady,
                   presentation: 'floating',
                 }}
               >
@@ -871,8 +875,13 @@ export function createPanelLayoutView(
       }),
       [],
     );
-    const [cssState, setCssState] = useState<{ vertical: boolean; tracks: ResolvedPanelTrack[] }>({
+    const [cssState, setCssState] = useState<{
+      vertical: boolean;
+      tracks: ResolvedPanelTrack[];
+      measured: boolean;
+    }>({
       vertical: false,
+      measured: false,
       tracks: layout.panels.map((panel) => ({
         id: panel.id,
         width: 0,
@@ -939,6 +948,7 @@ export function createPanelLayoutView(
           fillWidth,
         )
       : '';
+    const visibilityReady = cssScope ? cssState.measured : layoutReady;
     useLayoutEffect(() => {
       if (!cssScope || !rootRef.current || typeof getComputedStyle !== 'function') return;
       const root = rootRef.current as unknown as HTMLElement;
@@ -968,10 +978,11 @@ export function createPanelLayoutView(
           root.setAttribute('data-bloom-panel-ready', 'true');
         }
         setCssState((previous) =>
+          previous.measured &&
           previous.vertical === (axis === 'vertical') &&
           JSON.stringify(previous.tracks) === JSON.stringify(next)
             ? previous
-            : { vertical: axis === 'vertical', tracks: next },
+            : { vertical: axis === 'vertical', tracks: next, measured: true },
         );
       };
       read();
@@ -1125,6 +1136,7 @@ export function createPanelLayoutView(
       node?.addEventListener('scroll', report, { passive: true });
       return () => node?.removeEventListener('scroll', report);
     }, [documentHorizontal, hasViewportScrollObserver]);
+    const trackById = new Map(tracks.map((track) => [track.id, track]));
     const row = (
       <View
         {...(cssScope ? { dataSet: { bloomPanelRow: cssScope } } : {})}
@@ -1161,6 +1173,7 @@ export function createPanelLayoutView(
             }
             cssScope={cssScope}
             cssFraming={!eligibilityFromGroup}
+            visibilityReady={visibilityReady && trackById.has(panel.id)}
             index={index}
             getSize={() => resize.size(panel.id)}
             vertical={vertical}
@@ -1170,7 +1183,7 @@ export function createPanelLayoutView(
               panel.height === undefined &&
               dimensions[panel.id] === undefined
             }
-            track={tracks[index] ?? { id: panel.id, width: 0, visible: false, gap: 0 }}
+            track={trackById.get(panel.id) ?? { id: panel.id, width: 0, visible: false, gap: 0 }}
             alone={visible.length === 1}
             document={document}
             joined={joined}

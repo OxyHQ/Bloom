@@ -8,7 +8,7 @@ import { act, render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
-import { AppShell } from '../app-shell';
+import { AppShell, useAppShellPanel } from '../app-shell';
 import type { AppShellPanelDefinition } from '../app-shell/panel-layout-types';
 import { resolvedStyle } from './support/rendered-style';
 import { ResizeHandle } from '../layout/ResizeHandle';
@@ -71,6 +71,29 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('retained panels (native)', () => {
+  it('publishes resolved visibility for shown and retained hidden panels', () => {
+    function Probe({ id }: { id: string }) {
+      const panel = useAppShellPanel();
+      return <Text testID={id}>{`${panel.visibilityReady}:${panel.active}`}</Text>;
+    }
+    const screen = render(
+      <BloomThemeProvider mode="light">
+        <AppShell
+          panelLayout={{
+            retain: true,
+            panels: [
+              { id: 'shown', content: <Probe id="shown" /> },
+              { id: 'hidden', visible: false, content: <Probe id="hidden" /> },
+            ],
+          }}
+        />
+      </BloomThemeProvider>,
+    );
+    expect(screen.getByTestId('shown').props.children).toBe('true:true');
+    expect(screen.getByTestId('hidden', { includeHiddenElements: true }).props.children).toBe(
+      'true:false',
+    );
+  });
   it('mounts each panel once across reorders, stacks, hiding and showing', () => {
     const screen = render(ui([{ id: 'a' }, { id: 'b' }, { id: 'c' }]));
     act(() => screen.rerender(ui([{ id: 'c' }, { id: 'b' }, { id: 'a' }])));

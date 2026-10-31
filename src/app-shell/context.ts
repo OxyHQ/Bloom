@@ -106,6 +106,8 @@ export interface AppShellPanelValue {
   /** Root modular panels retain hidden content; use this to suspend background work. */
   visible?: boolean;
   active?: boolean;
+  /** Whether the compositor has resolved this panel's initial visibility. */
+  visibilityReady?: boolean;
   /** The panel's `id`, when it was given one. */
   id?: string;
   /**
@@ -118,7 +120,7 @@ export interface AppShellPanelValue {
   framed: boolean;
 }
 
-const OUTSIDE_PANEL: AppShellPanelValue = { alone: false, framed: false };
+const OUTSIDE_PANEL: AppShellPanelValue = { alone: false, framed: false, visibilityReady: true };
 
 export const AppShellPanelContext = createContext<
   | (AppShellPanelValue & {

@@ -62,7 +62,12 @@ import { Text, View } from 'react-native';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { AppShellPanelContext } from '../app-shell/context';
 import { PanelCssContext } from '../app-shell/panel-layout-css';
-import { AppShell, AppShellMenuButton, AppShellPanelVisibility } from '../app-shell/index.web';
+import {
+  AppShell,
+  AppShellMenuButton,
+  AppShellPanelVisibility,
+  useAppShellPanel,
+} from '../app-shell/index.web';
 import { BloomProvider } from '../provider/BloomProvider';
 import { PageHeader } from '../page-header/PageHeader';
 import type { ServerStylePolicy } from '../styles/context';
@@ -144,6 +149,31 @@ describe('AppShell server layout', () => {
     host.remove();
     Object.defineProperty(globalThis, 'CSS', { value: css, configurable: true });
     consoleErrors.mockRestore();
+  });
+
+  it('hydrates a visibility-aware panel without replacing its server content', async () => {
+    function Probe() {
+      const { visibilityReady } = useAppShellPanel();
+      return <Text testID="visibility-probe">{visibilityReady ? 'ready' : 'pending'}</Text>;
+    }
+    Object.defineProperty(globalThis, 'CSS', { value: undefined, configurable: true });
+    const fixture = (
+      <Fixture ssrStyles="inline" layout={{ panels: [{ id: 'main', content: <Probe /> }] }} />
+    );
+    host.innerHTML = renderToString(fixture);
+    const probe = host.querySelector('[data-testid="visibility-probe"]');
+    expect(probe?.textContent).toBe('pending');
+    Object.defineProperty(globalThis, 'CSS', {
+      value: { supports: () => true },
+      configurable: true,
+    });
+    const errors: unknown[] = [];
+    await act(async () => {
+      root = hydrateRoot(host, fixture, { onRecoverableError: (error) => errors.push(error) });
+    });
+    expect(errors).toEqual([]);
+    expect(host.querySelector('[data-testid="visibility-probe"]')).toBe(probe);
+    expect(probe?.textContent).toBe('ready');
   });
 
   it('delivers header container insets in server HTML and adopts them without replacing the bar', async () => {
