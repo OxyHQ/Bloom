@@ -32,7 +32,7 @@ import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
-import { useMenubarMenu } from './context';
+import { useMenubar, useMenubarMenu } from './context';
 import { createMenubarContent, createMenubarRows } from './declared';
 import type { MenubarContentProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
@@ -60,6 +60,7 @@ function MenubarPanel({
   const density = useMenuDensity(size);
   const label = labelProp ?? common.menu;
   const menu = useMenubarMenu();
+  const bar = useMenubar();
   const PopupSurface = usePopupSurface();
   const { control, onSheetClose } = useSheetOpenBridge(menu.open, menu.setOpen);
   const surface = useMemo<MenuSurfaceContextValue>(
@@ -75,6 +76,9 @@ function MenubarPanel({
         <PopupPanel
           PopupSurface={PopupSurface}
           anchorRef={menu.anchorRef}
+          // The bar goes on taking the pointer while the menu is open: crossing onto another
+          // title opens its menu in this one's place (`MenubarTriggerButton`).
+          trackingRef={bar.barRef}
           side={side}
           align={align}
           sideOffset={sideOffset}

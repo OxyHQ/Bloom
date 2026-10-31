@@ -39,6 +39,13 @@ unchanged.
   corner, to place the popup against instead of the anchor's frame (a context
   menu opens where the pointer pressed); placement applies to it as to a frame
   of no size;
+- `trackingRef` (optional): a view outside the popup that keeps taking the
+  pointer's movement while the popup is open: a menu bar, whose titles open
+  their menus in turn as the pointer crosses them, as a Mac's bar tracks the
+  pointer with a menu open. The platform delivers the movement over that view,
+  and over nothing else outside the popup, while the popup holds its input grab.
+  A press there still closes the popup, as any press outside it does. A platform
+  that cannot do this ignores it, and the bar then switches menus by press only;
 - Bloom's placement (`side`, `align`, `sideOffset`, `alignOffset`, the same
   `FloatingPositionProps` the web panel takes);
 - the content's `role` and accessible `label`, which the popup carries (the panel inside it

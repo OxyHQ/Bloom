@@ -53,6 +53,16 @@ export interface PopupSurfaceProps {
    * never reports `popup-surface` to a context menu.
    */
   point?: { x: number; y: number };
+  /**
+   * A view beside the popup that the pointer goes on driving while the popup
+   * is open: a menu bar, whose titles open their menus in turn as the pointer
+   * crosses them, as a Mac's menu bar tracks the pointer with a menu open. The
+   * platform delivers the pointer's movement over this view (and over nothing
+   * else outside the popup) while the popup holds its input grab; a press there
+   * still closes the popup as any press outside it does. A platform that
+   * cannot ignores it, and the bar then switches menus by press only.
+   */
+  trackingRef?: RefObject<ComponentRef<typeof View> | null>;
   side: FloatingSide;
   align: FloatingAlign;
   sideOffset: number;

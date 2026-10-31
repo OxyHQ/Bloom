@@ -158,9 +158,12 @@ Pinned by `MenubarDesktop.test.tsx`; the desktop reference is the `Desktop menus
 
 Each menu takes the keys `DropdownMenu` documents: <kbd>Enter</kbd> · <kbd>Space</kbd> · <kbd>↓</kbd> on a trigger open its menu onto the first row (<kbd>↑</kbd> onto the last), the arrows move between rows and wrap, <kbd>Home</kbd> · <kbd>End</kbd> jump, <kbd>Enter</kbd> · <kbd>Space</kbd> activate, and <kbd>Esc</kbd> · <kbd>Tab</kbd> close the menu with focus back on its trigger. See [DropdownMenu → Keyboard](/docs/bloom/main/dropdown-menu).
 
-## What is not here yet
+## Moving across the bar
 
-One thing a desktop menu bar has that this one does not, deliberate rather than forgotten:
+Once one menu is open, the bar follows the pointer as a Mac's does: moving onto another title opens its menu in place of the open one, with no press, the switch being one state write as a press's is. Only the pointer's movement counts (a finger dragging across the titles does not, nor layout moving under a parked pointer), and a title listens only while another menu of its bar is open, so a bar at rest, or the pointer over the open menu's own title, costs no event. Pressing the open title closes its menu. With the keyboard on the bar (`focusValue`), the keyboard's title moves with the pointer's, and the keys go on from there.
 
-- **Hover to switch.** On a real desktop bar, once one menu is open, moving the pointer across a sibling trigger switches to it without a click. That needs hover intent, which is the same machinery a sub-menu flyout needs.
-A press opens, a press closes, and every menu is reachable by <kbd>Tab</kbd> and operable from the keyboard once open. Nothing is half-wired.
+A menu opened by a press, the keyboard elsewhere, takes <kbd>←</kbd> · <kbd>→</kbd> too: the previous or next menu opens in its place on its first row, round the ends and skipping a disabled one, and `focusValue` is left as it was. Its rows keep the arrow they act on (<kbd>→</kbd> on a row that opens a submenu, <kbd>←</kbd> inside a submenu); every other key is the menu's own. On the web those arrows are heard as they bubble, after the rows' own handlers.
+
+In a platform popup the menu names the bar as its `trackingRef` ([Platform surfaces](/docs/bloom/main/platform-surface)): the platform goes on giving the bar the pointer's movement while the menu holds its input grab, and gives it to nothing else outside the menu. On the web the panel has no backdrop, so the bar hears the pointer anyway.
+
+Pinned by `MenubarDesktop.test.tsx` (native, platform popups) and `MenuKeyboard.web.test.tsx` (web).

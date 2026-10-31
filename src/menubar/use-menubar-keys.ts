@@ -14,6 +14,11 @@
  *   Escape closing it back to its title).
  * - A key with Ctrl, Alt or Meta is never the bar's.
  *
+ * A menu opened by a press, the keyboard elsewhere, takes ← and → the same
+ * way, as a Mac's menu opened by a click does: the next menu opens in its
+ * place, on its first row, and the keyboard stays where it was (`focusValue`
+ * is untouched). Every other key is the menu's own.
+ *
  * The keys come from the platform's `keyboard` before anything else sees them
  * (a native host), or from the document (the web). A key the bar takes goes no
  * further.
@@ -43,7 +48,9 @@ export function menubarKey(
   typed: { text: string; at: number },
 ): boolean {
   if (event.ctrlKey || event.altKey || event.metaKey) return false;
-  const focused = bar.focusValue;
+  // The title with the keyboard, else the open menu's: a menu opened by a press.
+  const byKeyboard = bar.focusValue !== undefined;
+  const focused = bar.focusValue ?? bar.openValue;
   if (focused === undefined) return false;
   const enabled = bar.order.filter((value) => !bar.menus.get(value)?.disabled);
   if (enabled.length === 0) return false;
@@ -60,11 +67,11 @@ export function menubarKey(
     const from = Math.max(0, enabled.indexOf(focused));
     const step = event.key === 'ArrowRight' ? 1 : -1;
     const to = enabled[(from + step + enabled.length) % enabled.length] as string;
-    bar.setFocusValue(to);
+    if (byKeyboard) bar.setFocusValue(to);
     if (isOpen) open(to, 'first');
     return true;
   }
-  if (isOpen) return false;
+  if (isOpen || !byKeyboard) return false;
   switch (event.key) {
     case 'ArrowDown':
     case 'Enter':
@@ -102,10 +109,12 @@ export function useMenubarKeys(bar: BarState, keyboard: PlatformKeyboard | null)
   const latest = useRef(bar);
   latest.current = bar;
   const typed = useRef({ text: '', at: 0 });
-  const active = bar.focusValue !== undefined;
+  // The bar's keys while it has the keyboard; while a menu opened by a press is open, its arrows.
+  const mode =
+    bar.focusValue !== undefined ? 'keyboard' : bar.openValue !== undefined ? 'open' : null;
 
   useEffect(() => {
-    if (!active) return undefined;
+    if (!mode) return undefined;
     if (keyboard) {
       return keyboard.subscribe((event) => menubarKey(event, latest.current, typed.current));
     }
@@ -117,10 +126,13 @@ export function useMenubarKeys(bar: BarState, keyboard: PlatformKeyboard | null)
         event.stopPropagation();
       }
     };
-    // Capture: the bar's arrows win over the focused element's own.
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => document.removeEventListener('keydown', onKeyDown, true);
-  }, [active, keyboard]);
+    // With the keyboard, capture: the bar's arrows win over the focused element's own. A menu
+    // opened by a press hears them as they bubble, after its rows: a submenu's trigger takes →
+    // and a submenu ← (`menu-sub-flyout.tsx`), each preventing it, and the bar takes the rest.
+    const capture = mode === 'keyboard';
+    document.addEventListener('keydown', onKeyDown, capture);
+    return () => document.removeEventListener('keydown', onKeyDown, capture);
+  }, [mode, keyboard]);
 
   // The assistive technology's focus, and the web's, follow the title with the keyboard while no
   // menu is open, as VoiceOver's follows a Mac's bar.

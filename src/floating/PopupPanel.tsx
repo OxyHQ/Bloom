@@ -104,6 +104,8 @@ export interface PopupPanelProps extends FloatingPositionProps {
   anchorRef: RefObject<ComponentRef<typeof View> | null>;
   /** A point in the anchor to open at (a context menu's press), instead of its frame. */
   point?: PopupSurfaceProps['point'];
+  /** The view the pointer goes on driving while the popup is open (a menu bar). */
+  trackingRef?: PopupSurfaceProps['trackingRef'];
   role: PopupSurfaceProps['role'];
   label?: string;
   onDismiss: (reason: PopupDismissReason) => void;
@@ -126,6 +128,7 @@ export function PopupPanel({
   PopupSurface,
   anchorRef,
   point,
+  trackingRef,
   side = 'bottom',
   align = 'start',
   sideOffset = DEFAULT_SIDE_OFFSET,
@@ -160,6 +163,7 @@ export function PopupPanel({
     <PopupSurface
       anchorRef={anchorRef}
       point={point}
+      trackingRef={trackingRef}
       side={side}
       align={align}
       sideOffset={sideOffset}

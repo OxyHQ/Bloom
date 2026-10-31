@@ -40,11 +40,23 @@ export interface MenubarContextValue {
   focusValue: string | undefined;
   /** The keyboard leaves the bar: a row was chosen from it. */
   leave: () => void;
+  /**
+   * Opens `next` in place of the open menu, as a Mac's bar does when the pointer crosses onto
+   * another title: the keyboard's title moves with it if the bar has the keyboard.
+   */
+  switchTo: (next: string) => void;
+  /**
+   * The bar drawn in the window. A menu in a platform popup names it as the view the pointer goes
+   * on driving while the menu is open (`PopupSurfaceProps.trackingRef`).
+   */
+  barRef: RefObject<ComponentRef<typeof View> | null>;
   /** Each menu's handle, by its `value`, while it is mounted. */
   menus: Map<string, MenubarMenuHandle>;
 }
 
 export interface MenubarMenuContextValue extends OverlayShellContextValue {
+  /** The menu's `value` in its bar. */
+  value: string;
   /** A row was chosen: the menu closes, and the bar gives the keyboard up if it had it. */
   choose: () => void;
   /** Given the open panel's keyboard navigation, in a platform popup. */
