@@ -20,6 +20,7 @@ let mockState = {
 let mockScope = 'account-1';
 let mockFocused = true;
 let mockNativeAvailable = true;
+let mockPagerAvailable = true;
 let mockPager: TabPagerProps;
 let mockResult: ((result: { status: string }) => void) | undefined;
 const mockNavigation = {
@@ -51,6 +52,9 @@ jest.mock('../panel-routing/expo-router', () => ({ useIsFocused: () => mockFocus
 jest.mock('../tab-pager/expo-router/PredictiveBackHost', () => ({
   isPredictiveBackAvailable: () => mockNativeAvailable,
 }));
+jest.mock('../tab-pager/expo-router/pager-view-module', () => ({
+  loadPagerView: () => (mockPagerAvailable ? () => null : null),
+}));
 jest.mock('expo-router/ui', () => ({
   useTabsWithTriggers: () => ({
     state: mockState,
@@ -73,6 +77,15 @@ beforeEach(() => {
   mockFocused = true;
   mockNativeAvailable = true;
   mockScope = 'account-1';
+  mockPagerAvailable = true;
+  mockContext.model = mockModel;
+  mockState = {
+    ...mockState,
+    history: [
+      { type: 'route', key: 'home-1' },
+      { type: 'route', key: 'profile-1' },
+    ],
+  };
 });
 
 it('keeps the existing JS Back owner when the native binary lacks the opt-in host', () => {
@@ -165,3 +178,39 @@ it.each(['stale', 'unhandled', 'noop'])(
     expect(reject).toHaveBeenCalledTimes(1);
   },
 );
+
+it('keeps JS Back for tab history when the optional pager is unavailable', () => {
+  mockPagerAvailable = false;
+  render(<TabPagerLayout />);
+  expect(mockNavigation.registerNativeBackNavigation).not.toHaveBeenCalled();
+  expect(mockPager.predictiveBackEnabled).toBe(false);
+});
+
+it('still delegates an empty root history to native/system Back without a pager', () => {
+  mockPagerAvailable = false;
+  mockState = { ...mockState, history: [{ type: 'route', key: 'profile-1' }] };
+  render(<TabPagerLayout />);
+  expect(mockNavigation.registerNativeBackNavigation).toHaveBeenCalledTimes(1);
+  expect(mockPager.backPreview).toBeNull();
+});
+
+it('keeps JS ownership for malformed nonempty history', () => {
+  mockState = {
+    ...mockState,
+    history: [
+      { type: 'route', key: 'removed-1' },
+      { type: 'route', key: 'profile-1' },
+    ],
+  };
+  render(<TabPagerLayout />);
+  expect(mockNavigation.registerNativeBackNavigation).not.toHaveBeenCalled();
+});
+
+it('releases ownership if a retained destination leaves the page model', () => {
+  const view = render(<TabPagerLayout />);
+  const registration = mockNavigation.registerNativeBackNavigation.mock.results[0]?.value;
+  mockContext.model = createPageModel(mockModel.pages.filter((page) => page.name !== 'home'));
+  view.rerender(<TabPagerLayout />);
+  expect(registration.remove).toHaveBeenCalledTimes(1);
+  expect(mockPager.predictiveBackEnabled).toBe(false);
+});

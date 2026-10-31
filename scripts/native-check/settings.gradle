@@ -2,15 +2,24 @@ pluginManagement {
   repositories { google(); mavenCentral(); gradlePluginPortal() }
   includeBuild('../../node_modules/@react-native/gradle-plugin')
 }
+plugins { id 'com.facebook.react.settings' }
+if (providers.gradleProperty('bloom.predictiveBackEnabled').orNull == 'true') {
+  extensions.configure(com.facebook.react.ReactSettingsExtension) { settings ->
+    settings.autolinkLibrariesFromConfigFile(file('app/autolinking.json'))
+  }
+}
 // Also expose the plugin as a composite dependency for ReactAndroid's buildscript.
 includeBuild('../../node_modules/@react-native/gradle-plugin')
 rootProject.name = 'bloom-native-check'
 include ':bloom'
 project(':bloom').projectDir = file('../../android')
 if (providers.gradleProperty('bloom.predictiveBackEnabled').orNull == 'true') {
+  include ':app', ':screensWithCustomAutolinkName'
+  project(':screensWithCustomAutolinkName').projectDir = file('../../node_modules/react-native-screens/android')
   includeBuild('../../node_modules/react-native') {
     dependencySubstitution {
       substitute(module('com.facebook.react:react-android')).using(project(':packages:react-native:ReactAndroid'))
+      substitute(module('com.facebook.react:react-native')).using(project(':packages:react-native:ReactAndroid'))
       substitute(module('com.facebook.react:hermes-android')).using(project(':packages:react-native:ReactAndroid:hermes-engine'))
     }
   }

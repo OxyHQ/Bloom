@@ -15,3 +15,5 @@ scripts/native-check/.gradle/
 scripts/native-check/build/
 scripts/native-check/legacy/.gradle/
 scripts/native-check/legacy/build/
+scripts/native-check/app/build/
+scripts/native-check/.kotlin/

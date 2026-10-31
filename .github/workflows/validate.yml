@@ -189,6 +189,11 @@ jobs:
         run: |
           echo '16b6577b14184ca971fb19692930ab85936103880bf42ccbaafce8e93ccf0a51  scripts/native-check/patches/react-native-0.88.0.patch' | sha256sum -c -
           patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native < scripts/native-check/patches/react-native-0.88.0.patch
+          echo '5b4e3d2eb483c5c4fca1b96abf17f11eabef45aa572b08b38bdd9df80670daf0  scripts/native-check/patches/react-native-screens-4.30.0.patch' | sha256sum -c -
+          patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native-screens < scripts/native-check/patches/react-native-screens-4.30.0.patch
+      - name: Verify public build capability contract
+        if: matrix.variant == 'default'
+        run: python3 scripts/native-check/test-capability-contract.py
       - name: Compile production native source and run AndroidX callback tests
         env:
           VARIANT: ${{ matrix.variant }}
@@ -197,10 +202,16 @@ jobs:
             gradle -p scripts/native-check/legacy :bloom:compileDebugKotlin :bloom:processDebugManifest --console=plain --max-workers=2
             python3 scripts/native-check/legacy/verify-manifest.py
           else
-            predictive=false
-            if [ "$VARIANT" = predictive ]; then predictive=true; fi
-            gradle -p scripts/native-check -Pbloom.predictiveBackEnabled="$predictive" :bloom:testDebugUnitTest --console=plain --max-workers=2
+            if [ "$VARIANT" = predictive ]; then
+              gradle -p scripts/native-check -Pbloom.predictiveBackEnabled=true -Prnscreens.nativeBackOwnershipEnabled=true :bloom:testDebugUnitTest :screensWithCustomAutolinkName:compileDebugKotlin :screensWithCustomAutolinkName:compileDebugJavaWithJavac --console=plain --max-workers=2
+            else
+              gradle -p scripts/native-check :bloom:testDebugUnitTest --console=plain --max-workers=2
+            fi
           fi
+
+      - name: Prove unresolved-target host regression coverage
+        if: matrix.variant == 'predictive'
+        run: python3 scripts/native-check/verify-host-regression.py
 
   # The one required check of the main merge queue: green only when every job
   # above is, so a skipped or cancelled shard can never read as a pass. The ONE
