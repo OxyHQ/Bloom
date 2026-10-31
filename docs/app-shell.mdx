@@ -1518,6 +1518,20 @@ window's own backdrop between them. Nothing about it is positioned by hand.
 The **App Shell / Window** stories draw this window: docked, split, hidden, and
 with tabs across the top.
 
+### In a window, a desktop at every size
+
+With the `window` capability ([Window](/docs/window)) the shell is a desktop
+at every size the window can take: `navFrom` and `framedFrom` default to `0`,
+so the sidebar stays in the window (it hides by its `dock`, or collapses by
+capacity, never into a phone's drawer whose menu button would sit on the
+window's controls) and the panels stay framed. The navigation convenience
+entry point's `navigationPlacement="auto"` keeps its navigation in the window
+too. An explicit tier wins: an app that wants a drawer in a narrow window
+passes `navFrom`. Without the capability nothing changes. With a flush sidebar
+(`plain` with `navigationAlign="content"`, or `docked`) the panels beside it
+are then the window's title area without any tier written
+([Panes beside a sidebar](/docs/window#panes-beside-a-sidebar)).
+
 ### The window's controls
 
 Where the platform has windows (the `window` capability, [Window](/docs/window))

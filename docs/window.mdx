@@ -129,7 +129,7 @@ toolbar keeps `useWindowControlsRoom()` and is a `WindowDragRegion`.
 As in a desktop file manager or mail application, a sidebar flush to the
 window's start edge holds the controls at its top and the panes beside it are
 the window's title area. An `AppShell` whose sidebar is in the window at every
-width it can take (`navFrom={0}`) and flush to its edge (`surface: 'docked'`,
+width it can take (in a window that is the default; an explicit `navFrom` other than 0 opts out) and flush to its edge (`surface: 'docked'`,
 or `'plain'` with `navigationAlign="content"`, the
 [desktop window](/docs/app-shell#a-desktop-window)), with no top bar or header,
 lays its panels out as [below](#panes-as-the-title-area), with one difference:
@@ -141,7 +141,7 @@ lays its panels out as [below](#panes-as-the-title-area), with one difference:
   from where its frame now starts (`room.leading` less the frame's start
   inset), as without a sidebar.
 
-A sidebar that may still become a drawer (no `navFrom={0}`) or a detached
+A sidebar an app puts in a drawer (an explicit `navFrom`) or a detached
 `card` keeps the corner to itself: the panels beside it are laid out as
 without windows.
 

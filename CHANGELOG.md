@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.75.0
+
+### Changed
+
+- **In a desktop window, the shell is a desktop at every size.** With the `window` capability, `AppShell`'s `navFrom` and `framedFrom` default to `0`: the sidebar stays in the window however narrow it is (it hides by its `dock`, or collapses by capacity), never a phone's drawer whose menu button sat on the window's controls, and the panels stay framed. `navigationPlacement="auto"` keeps its navigation in the window too. Explicit tiers win; without the capability nothing changes. With a flush sidebar the panels beside it are the window's title area without a tier written, so apps composed as Mention and Inbox are (a plain or docked sidebar, `header={null}`, a panel layout) get the window's behaviour from the shell alone. Pinned in `AppShellWindow.test.tsx` (a narrow window keeps its sidebar; an app's explicit drawer still works) and `AppShellWindowPanels.test.tsx`.
+
+### Consumers
+
+Bump to 15.75.0. Drop `navFrom={0}` / `framedFrom={0}` written only for desktop windows. An app that relied on a drawer below `md` inside a desktop window passes `navFrom="md"`.
+
 ## 15.74.0
 
 ### Added
