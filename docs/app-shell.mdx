@@ -438,8 +438,35 @@ real difference from `@media`, not an accident. (Chrome's headless shell uses
 overlay scrollbars, so every measurement below has the shell's width exactly
 equal to `innerWidth`.)
 
-(The measurement is `useContainerWidth`, the hook `listing-details` already uses
-for the same reason.)
+### A resize runs no JavaScript
+
+The measurement decides only at THRESHOLDS: the breakpoints above, the room the
+expanded navigation needs, a panel group's minimum. It is read through
+`useMeasuredSizeClass` (`hooks/use-width-class.ts`), which quantizes the width
+to the largest threshold at or below it, so a live resize re-renders the shell
+only when it crosses one. Everything whose size follows the room is native
+flex, laid out by Yoga in the pass that lays the resized window out:
+
+- the reading envelope grows into the row's room (filling) or is its reading
+  width, shrinking below it (capped); only a change of the reading width itself
+  (a panel shown or hidden) animates it;
+- panel tracks are `resolvePanelFlex`'s flex values, the CSS compositor's
+  (`flex: <span> 1 0px` for a flexible track, its width for a fixed one), moved
+  by Reanimated only while the layout itself changes (`animatePanelFlex`);
+- flexible tracks with minimums keep the CSS answer, `clamp(λ · span, min, max)`:
+  Yoga would start them at their minimum and divide the rest, so a track the
+  room holds at its minimum is given to Yoga as a fixed track, at thresholds of
+  the room (`flexibleRoomThresholds`); `PanelNativeFlex.test.tsx` lays the very
+  tree React rendered out with real Yoga at several widths and holds every track
+  to `resolvePanelTracks`.
+
+Before, the shell and each panel group measured themselves with `onLayout` →
+`setState` and sized their regions in pixels: every frame of a resize was two
+renders of the whole shell, one commit behind the window each. The window's
+width is read the same way where a component only compares it with a
+breakpoint: `useWindowBreakpoint`, `useWindowWidthClass`, and
+`useWindowSizeWhile(active)` for a surface that sizes itself from the window
+only while it is open (a closed dialog subscribes to nothing).
 
 ## Why there are no tricks in here
 

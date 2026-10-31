@@ -41,7 +41,7 @@ export function usePanelResize({
   onCommit,
 }: {
   layout: AppShellPanelLayout;
-  tracks: readonly ResolvedPanelTrack[];
+  tracks: readonly Pick<ResolvedPanelTrack, 'id' | 'visible'>[];
   vertical: boolean;
   document: boolean;
   scope: string | null;
@@ -113,10 +113,7 @@ export function usePanelResize({
   const size = (id: string) => {
     const active = drag.current;
     if (active?.id === id) return active.firstSize;
-    if (!scope)
-      return (
-        previews.current.get(id)?.read() ?? tracks.find((track) => track.id === id)?.width ?? 0
-      );
+    if (!scope) return previews.current.get(id)?.read() ?? 0;
     const index = layout.panels.findIndex((panel) => panel.id === id);
     const node = (rootRef.current as unknown as HTMLElement | null)?.querySelector<HTMLElement>(
       `[data-bloom-panel-owner="${scope}"][data-bloom-panel-index="${index}"]`,

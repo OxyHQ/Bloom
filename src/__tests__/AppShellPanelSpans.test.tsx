@@ -7,17 +7,14 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { applyPanelSpans, resolvePanelTracks, splitPairSpans } from '../app-shell/panel-layout';
 import { panelLayoutCss } from '../app-shell/panel-layout-css';
+import { mockWindowSize } from './support/window-size';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BloomThemeProvider mode="light" colorPreset="teal">
     {children}
   </BloomThemeProvider>
 );
-beforeEach(() =>
-  jest
-    .spyOn(Native, 'useWindowDimensions')
-    .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 }),
-);
+beforeEach(() => mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 }));
 afterEach(() => jest.restoreAllMocks());
 
 const widths = (layout: AppShellPanelLayout, room: number, gap = 7) =>

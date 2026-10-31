@@ -1,24 +1,3 @@
-/**
- * The FLOATING presentation: islands, a gradient edge, and content that passes
- * under all of it.
- *
- * Three of the acceptance criteria this header was rebuilt against cannot be
- * seen in a prop snapshot of the header alone, so they are measured here as
- * relations instead:
- *
- *   "islands, not a strip"        no full-width background node exists, and the
- *                                 back control is inside a material of its own
- *   "one surface per group"       exactly one material in the tree per island
- *   "the edge does not end in a   the gradient's box is TALLER than the header
- *    line"                        it belongs to, so the ramp finishes past the
- *                                 layout rather than at it
- *
- * And the one that is a relation between two components — content that starts
- * below an overlaying header — is measured by reading the claim back out of the
- * registry, which is the only place the two ever meet.
- */
-import React from 'react';
-import * as ReactNative from 'react-native';
 import { Text, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
@@ -28,6 +7,7 @@ import { TopEdgeProvider, useTopEdgeInset } from '../layout';
 import { PageHeader } from '../page-header';
 import type { PageHeaderProps } from '../page-header';
 import { hostNodes, resolvedStyle, surfaceSheens } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 function renderHeader(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') {
   return render(
@@ -38,9 +18,7 @@ function renderHeader(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') 
 }
 
 function setWidth(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 const materialCount = (tree: unknown) => surfaceSheens(tree).length;

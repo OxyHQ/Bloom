@@ -10,7 +10,6 @@
  */
 
 import React from 'react';
-import * as ReactNative from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { AppShell } from '../app-shell';
@@ -18,6 +17,7 @@ import { RiHomeLine } from '../icons/remix';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { Sidebar } from '../sidebar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { mockWindowSize } from './support/window-size';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 
@@ -33,9 +33,7 @@ function renderIn(ui: React.ReactElement) {
 }
 
 function setWidth(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 afterEach(() => jest.restoreAllMocks());

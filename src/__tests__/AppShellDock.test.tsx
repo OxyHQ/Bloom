@@ -29,6 +29,7 @@ import {
 } from '../app-shell/dock';
 import { RiHomeLine } from '../icons/remix';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 
@@ -89,9 +90,7 @@ const translateX = (screen: ReturnType<typeof render>) =>
 
 beforeEach(() => {
   shell = null;
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width: 1280, height: 800, scale: 1, fontScale: 1 });
+  mockWindowSize({ width: 1280, height: 800, scale: 1, fontScale: 1 });
 });
 afterEach(() => {
   jest.useRealTimers();

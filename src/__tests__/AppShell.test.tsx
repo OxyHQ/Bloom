@@ -22,6 +22,7 @@ import type { NotificationCenterItem } from '../notification-center';
 import { ContentPanel } from '../content-panel';
 import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 const ITEMS: NotificationCenterItem[] = [
@@ -58,9 +59,7 @@ function renderIn(ui: React.ReactElement) {
 }
 
 function setWidth(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 afterEach(() => jest.restoreAllMocks());
@@ -704,8 +703,11 @@ describe('AppShell variant="feed"', () => {
       maxWidth: 600,
       minWidth: 0,
     });
-    // A `width` would be the bug: 600 inside a 360 phone overflows sideways.
-    expect(resolvedStyle(wide.getByTestId('shell-content').props.style).width).toBeUndefined();
+    // A `width` that cannot shrink would be the bug: 600 inside a 360 phone
+    // overflows sideways. This column has none (UNSET reaches the view as null).
+    expect(
+      resolvedStyle(wide.getByTestId('shell-content').props.style).width ?? undefined,
+    ).toBeUndefined();
     wide.unmount();
 
     setWidth(360);
@@ -1549,9 +1551,18 @@ describe('AppShellPanels', () => {
     const screen = renderIn(twoPanels());
     const results = resolvedStyle(screen.getByTestId('results').props.style);
     const map = resolvedStyle(screen.getByTestId('map').props.style);
-    expect(results.width).toBe(560);
-    expect(Number(map.width)).toBeGreaterThanOrEqual(400);
-    expect(Number(results.width) + Number(map.width) + 8).toBe(1440);
+    // As flex, which Yoga resolves as the resolver does (PanelNativeFlex.test):
+    // the declared 560 kept beside the flexible map, which takes the rest from
+    // its 400 minimum, 8 after it.
+    expect(results).toMatchObject({ flexGrow: 0, flexShrink: 1, flexBasis: 'auto', width: 560 });
+    expect(map).toMatchObject({
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 'auto',
+      width: 0,
+      minWidth: 400,
+    });
+    expect(map.marginInlineStart).toBe(8);
   });
 
   it('collapses below collapseBelow, measured on the group OWN box, to the panel `show` names', () => {

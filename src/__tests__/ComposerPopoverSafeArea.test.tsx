@@ -1,27 +1,16 @@
-/**
- * The composer's native popover stays inside the SAFE area.
- *
- * Its `Modal` draws edge to edge, and the placement used to clamp to the bare
- * window: the model picker's effort panel, opening below its chip near the
- * foot of the screen, "fitted" by 30px and landed under Android's gesture bar
- * (Pixel 8a, Android 16, Bloom 4.23.0).
- */
-import React from 'react';
 import { Text, type View } from 'react-native';
-import * as ReactNative from 'react-native';
 import * as SafeArea from 'react-native-safe-area-context';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { ComposerPopover } from '../composer-panel/ComposerPopover';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const WINDOW = { width: 400, height: 800 };
 const INSETS = { top: 40, bottom: 48, left: 0, right: 0 };
 
 beforeEach(() => {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ ...WINDOW, scale: 1, fontScale: 1 });
+  mockWindowSize({ ...WINDOW, scale: 1, fontScale: 1 });
   jest.spyOn(SafeArea, 'useSafeAreaInsets').mockReturnValue(INSETS);
 });
 afterEach(() => jest.restoreAllMocks());

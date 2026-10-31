@@ -24,6 +24,7 @@ import { RiHomeLine } from '../icons/remix';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolvedStyle, type StyleEntry } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 const WIDTH = 390;
@@ -43,9 +44,7 @@ afterEach(() => {
 });
 
 function setWidth(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 function wrap(ui: React.ReactElement) {

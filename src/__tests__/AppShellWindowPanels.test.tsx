@@ -24,14 +24,13 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useWindowHeaderRoom } from '../window';
 import { fakeWindow, WINDOW_METRICS } from './support/fake-window';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 const i18n = ReactNative.I18nManager as { isRTL: boolean };
 
 function setWidth(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 afterEach(() => {
@@ -222,12 +221,19 @@ describe('a split panel layout with nothing else at the corner', () => {
   it('the panels fill the window rather than centring a reading envelope in it', () => {
     setWidth(1440);
     const windowed = shell(fakeWindow().adapter, { panelLayout: SPLIT });
-    // The whole window less the frame's two 16 insets.
-    expect(style(windowed, 'shell-content')).toMatchObject({ flexBasis: 1408, maxWidth: 1408 });
+    // All the room the frame leaves inside its two insets, as flex: Yoga gives
+    // it whatever the window's size, with nothing measured.
+    expect(style(windowed, 'shell-content')).toMatchObject({
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 'auto',
+      width: 0,
+      maxWidth: null,
+    });
     windowed.unmount();
     // Without windows the envelope is the panels' own widths (340 + 8 + 360).
     const page = shell(undefined, { panelLayout: SPLIT });
-    expect(style(page, 'shell-content')).toMatchObject({ flexBasis: 708, maxWidth: 708 });
+    expect(style(page, 'shell-content')).toMatchObject({ width: 708, maxWidth: 708 });
   });
 
   it("keeps the room of the platform's own controls without drawing any", () => {
@@ -436,16 +442,17 @@ describe('panes beside a sidebar flush to the window', () => {
     expect(barStart(screen, 'inbox')).toBe(81);
     expect(barStart(screen, 'detail')).toBe(24);
     expect(moves(screen, 'inbox')).toBe(true);
-    // The panes take the sidebar's room: the window less the frame's 7 start
-    // and end insets, where shown they had what the 190 sidebar leaves.
+    // The panes take whatever room the row leaves them, as flex: the sidebar's
+    // too while its dock hides it (its slot closes natively beside them).
+    const fill = { flexGrow: 1, flexShrink: 1, flexBasis: 'auto', width: 0, maxWidth: null };
     const hidden = style(screen, 'shell-content');
-    expect(hidden).toMatchObject({ flexBasis: 1100 - 7 - 7, maxWidth: 1100 - 7 - 7 });
+    expect(hidden).toMatchObject(fill);
     screen.unmount();
     const shown = style(
       shell(fakeWindow().adapter, { ...DESKTOP, sidebar: { ...FLUSH, dock: {} } }),
       'shell-content',
     );
-    expect(shown).toMatchObject({ flexBasis: 1100 - 190 - 7, maxWidth: 1100 - 190 - 7 });
+    expect(shown).toMatchObject(fill);
   });
 
   it('a sidebar an app puts in a drawer, or a card, keeps the corner to itself', () => {
@@ -597,8 +604,13 @@ describe('a Screen that is the window', () => {
         header={<PageHeader title="Notes" titleAlign="center" testID="root-bar" />}
       />,
     );
-    // The centre slot is inset past the room (88 − the 24 side inset) + the row gap.
-    expect(style(screen, 'root-bar-center')).toMatchObject({ marginLeft: 72, marginRight: 72 });
+    // The centre slot clears the room (88 − the 24 side inset) + the row gap on
+    // both sides: spacers of that clearance, flex, around the title.
+    for (const side of ['before', 'after'])
+      expect(style(screen, `root-bar-center-${side}`)).toMatchObject({
+        width: 72,
+        flexShrink: 1,
+      });
   });
 });
 

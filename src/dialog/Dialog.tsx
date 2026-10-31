@@ -27,13 +27,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useWindowSizeWhile } from '../hooks/use-width-class';
 import Animated, {
   type AnimatedStyle,
   cancelAnimation,
@@ -204,7 +199,6 @@ function CenteredOrSideDialog({
   const isSide = placement !== 'center';
   const headerController = useDialogHeaderController();
   const scrollableResolved = scrollable ?? true;
-  const { height: viewportHeight } = useWindowDimensions();
   // A desktop window (macOS, Windows, or any window from the `md` breakpoint)
   // presents the centred placement as the web does: a centred card, not a card
   // floating up from the bottom edge — which on a wide window also sat at the
@@ -221,7 +215,6 @@ function CenteredOrSideDialog({
   const morphState = useDialogMorph({
     enabled: morph !== false && !isSide,
     measurable: scrollableResolved && !isSide,
-    maxHeight: viewportHeight,
     maxWidth: desktop ? maxWidth : undefined,
   });
 
@@ -625,9 +618,10 @@ function SideSheet({
   const motion = useSurfaceTransition(transition);
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
-  const { width: viewportWidth } = useWindowDimensions();
-
   const [mounted, setMounted] = useState(open);
+  // The window only while the sheet is up: a closed one re-renders nothing as
+  // the window resizes.
+  const { width: viewportWidth } = useWindowSizeWhile(open || mounted);
   const progress = useSharedValue(open ? 1 : 0);
 
   const fullscreen = presentation === 'fullscreen';

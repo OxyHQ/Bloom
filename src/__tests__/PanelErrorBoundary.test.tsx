@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ScrollView, Text } from 'react-native';
-import * as ReactNative from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { AppShell, AppShellPanel, AppShellPanels } from '../app-shell';
@@ -13,6 +12,7 @@ import { RiHomeLine } from '../icons/remix';
 import { pressHost } from './support/press-host';
 import { LocaleProvider, loadBloomLocale } from '../locale';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 function Provider({ children }: React.PropsWithChildren) {
   return (
@@ -37,9 +37,7 @@ beforeEach(() => jest.spyOn(console, 'error').mockImplementation(() => {}));
 afterEach(() => jest.restoreAllMocks());
 
 it('isolates each panel independently while keeping shell navigation usable', () => {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 });
   const view = render(
     <Provider>
       <AppShell

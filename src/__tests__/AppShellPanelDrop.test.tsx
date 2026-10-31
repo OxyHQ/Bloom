@@ -4,6 +4,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { AppShell } from '../app-shell';
 import type { AppShellPanelDrop, AppShellPanelLayout } from '../app-shell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { mockWindowSize } from './support/window-size';
 
 const HIDDEN = { includeHiddenElements: true } as const;
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -28,9 +29,7 @@ const createNodeMock = (element: React.ReactElement) => {
 };
 beforeEach(() => {
   jest.useFakeTimers();
-  jest
-    .spyOn(Native, 'useWindowDimensions')
-    .mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 });
 });
 afterEach(() => {
   jest.useRealTimers();

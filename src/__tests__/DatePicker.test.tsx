@@ -3,7 +3,6 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomProvider } from '../provider';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import * as ReactNative from 'react-native';
 
 import { Calendar, DatePicker, DateRangePicker, RangeCalendar } from '../date-picker';
 import {
@@ -23,6 +22,7 @@ import {
 } from '../date-picker/calendar-grid';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const day = (d: number, month = 8, year = 2026) => new Date(year, month, d);
 const iso = (date: Date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
@@ -366,11 +366,9 @@ describe('labels (localisation)', () => {
   });
 
   describe('DateRangePicker, wide enough for the dual view', () => {
-    let dimensions: jest.SpyInstance;
+    let dimensions: ReturnType<typeof mockWindowSize>;
     beforeEach(() => {
-      dimensions = jest
-        .spyOn(ReactNative, 'useWindowDimensions')
-        .mockReturnValue({ width: 1280, height: 800, scale: 1, fontScale: 1 });
+      dimensions = mockWindowSize({ width: 1280, height: 800, scale: 1, fontScale: 1 });
     });
     afterEach(() => dimensions.mockRestore());
 

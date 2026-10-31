@@ -44,6 +44,7 @@ import { formatAgo, relativeTime, resolveAgentChatPalette, shortModel } from '..
 import { buildTheme } from '../theme/build-theme';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(
@@ -504,7 +505,7 @@ describe('AgentChat', () => {
   });
 
   it('hides the rail without threads, and disables it mid-stream in a wide panel layout', () => {
-    const dimensions = jest.spyOn(Native, 'useWindowDimensions').mockReturnValue({
+    const dimensions = mockWindowSize({
       width: 1440,
       height: 900,
       scale: 1,

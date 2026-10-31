@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { useWindowWidthClass } from './use-width-class';
 
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { space } from '../styles/tokens';
@@ -44,6 +44,8 @@ const TIERS: ReadonlyArray<readonly [Exclude<GutterTier, 'base'>, number]> = [
   ['sm', BREAKPOINTS.sm],
 ];
 
+const TIER_WIDTHS = TIERS.map(([, minWidth]) => minWidth);
+
 function resolveTier(width: number): GutterTier {
   for (const [tier, minWidth] of TIERS) {
     if (width >= minWidth) return tier;
@@ -84,7 +86,8 @@ export function useGutters(gutters: [Gutter]): Gutters;
 export function useGutters(gutters: [Gutter, Gutter]): Gutters;
 export function useGutters(gutters: [Gutter, Gutter, Gutter, Gutter]): Gutters;
 export function useGutters(gutters: Gutter[]): Gutters {
-  const { width } = useWindowDimensions();
+  // The window at the tiers' breakpoints only: never a re-render per pixel.
+  const width = useWindowWidthClass(TIER_WIDTHS);
   const [top, right, bottom, left] = normalizeShorthand(gutters);
 
   return useMemo<Gutters>(() => {

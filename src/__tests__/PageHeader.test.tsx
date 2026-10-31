@@ -19,6 +19,7 @@ import { HeaderDockProvider, useHeaderDockContext } from '../layout/header-dock'
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import type { PageHeaderProps } from '../page-header';
 import { resolvedStyle, classNamesOn } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 function renderHeader(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') {
   return render(
@@ -34,9 +35,7 @@ function renderBar(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') {
 }
 
 function setWidth(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 function opacity(node: { props: { [key: string]: unknown } }) {
@@ -168,11 +167,20 @@ describe('PageHeader', () => {
         nativeEvent: { layout: { x: 0, y: 0, width: 82, height: 36 } },
       });
     });
-    // 16 side inset + 82 (wider side) + 8 gap.
+    // The wider side (82) + the 8 gap, on both sides of the title, as flex:
+    // spacers that give it up alike as the room narrows, around a title that
+    // keeps its minimum width (Yoga resolves it as the window resizes).
+    for (const side of ['before', 'after'])
+      expect(resolvedStyle(screen.getByTestId(`h-center-${side}`).props.style)).toMatchObject({
+        flexGrow: 0,
+        flexShrink: 1,
+        width: 90,
+        minWidth: 0,
+      });
     expect(resolvedStyle(screen.getByTestId('h-center').props.style)).toMatchObject({
-      flex: 1,
-      marginLeft: 90,
-      marginRight: 90,
+      flexGrow: 1,
+      flexShrink: 0,
+      flexBasis: 96,
     });
     expect(screen.queryByTestId('h-title')).toBeTruthy();
   });
@@ -197,10 +205,18 @@ describe('PageHeader', () => {
         nativeEvent: { layout: { x: 0, y: 0, width: 130, height: 36 } },
       });
     });
-    const slot = resolvedStyle(screen.getByTestId('h-center').props.style);
-    const left = 16 + (slot.marginLeft as number);
-    const right = 16 + (slot.marginRight as number);
-    expect(320 - left - right).toBeGreaterThanOrEqual(96);
+    // The spacers shrink (to nothing at most) and the title does not: it keeps
+    // its 96 whatever the clearance asks.
+    for (const side of ['before', 'after'])
+      expect(resolvedStyle(screen.getByTestId(`h-center-${side}`).props.style)).toMatchObject({
+        flexShrink: 1,
+        width: 138,
+        minWidth: 0,
+      });
+    expect(resolvedStyle(screen.getByTestId('h-center').props.style)).toMatchObject({
+      flexShrink: 0,
+      flexBasis: 96,
+    });
   });
 
   it('forgets a slot that is no longer rendered, instead of centring around it', () => {
@@ -225,13 +241,13 @@ describe('PageHeader', () => {
         nativeEvent: { layout: { x: 0, y: 0, width: 120, height: 36 } },
       });
     });
-    expect(resolvedStyle(screen.getByTestId('h-center').props.style).marginLeft).toBe(120 + 8);
+    expect(resolvedStyle(screen.getByTestId('h-center-before').props.style).width).toBe(120 + 8);
     screen.rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
         <PageHeader testID="h" presentation="bar" title="Messages" titleAlign="center" />
       </BloomThemeProvider>,
     );
-    expect(resolvedStyle(screen.getByTestId('h-center').props.style).marginLeft).toBe(8);
+    expect(resolvedStyle(screen.getByTestId('h-center-before').props.style).width).toBe(8);
   });
 
   it('border: auto is hidden at rest, always is drawn, none never', () => {

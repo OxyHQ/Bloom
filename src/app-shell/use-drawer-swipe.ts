@@ -30,7 +30,7 @@ export interface DrawerSwipeOptions {
   closeOnFrame: boolean;
   rtl: boolean;
   /** The frame's measured width: the start-edge strip is read from its far side in RTL. */
-  frameWidth: number;
+  frameWidth: SharedValue<number>;
   /** Points of finger travel from closed to open: what moves, moving 1:1. */
   travel: number;
   /** The drawer's open amount, 0–1 — the same shared value its press animation drives. */
@@ -107,7 +107,7 @@ export function useDrawerSwipe({
           if (!opening) return;
           const touch = event.allTouches[0];
           if (!touch) return;
-          const fromStart = rtl ? frameWidth - touch.x : touch.x;
+          const fromStart = rtl ? frameWidth.value - touch.x : touch.x;
           if (fromStart > DRAWER_SWIPE.edgeWidth) manager.fail();
         })
         .onStart(() => {

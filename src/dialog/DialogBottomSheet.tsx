@@ -3,7 +3,7 @@ import { useDialogFrameScrollReset } from './DialogFrameContent';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
-import { Platform, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, type AnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -78,7 +78,6 @@ export function DialogBottomSheet({
 }: DialogBottomSheetProps) {
   const isControlled = controlledOpen !== undefined;
   const theme = useTheme();
-  const { height: viewportHeight } = useWindowDimensions();
   const ref = useRef<BottomSheetRef>(null);
   const closeCallbacks = useRef<(() => void)[]>([]);
   const titleId = useId();
@@ -185,7 +184,6 @@ export function DialogBottomSheet({
   const morphState = useDialogMorph({
     enabled: morph !== false,
     measurable: scrollableResolved,
-    maxHeight: viewportHeight,
   });
 
   // `panelStyle` paints the sheet surface (e.g. a brand background). It composes

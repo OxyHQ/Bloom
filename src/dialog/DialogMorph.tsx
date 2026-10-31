@@ -14,7 +14,13 @@ import {
   type ComponentRef,
 } from 'react';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-import type { LayoutChangeEvent, StyleProp, View, ViewStyle } from 'react-native';
+import {
+  Dimensions,
+  type LayoutChangeEvent,
+  type StyleProp,
+  type View,
+  type ViewStyle,
+} from 'react-native';
 import { IS_WEB } from '../styles/platform';
 import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import Animated, {
@@ -243,8 +249,10 @@ export interface DialogMorphOptions {
    * `maxHeight` style already clamps the RENDERED height at every frame, so a
    * target above the cap simply lands on the cap and releases onto it — the
    * bound here only keeps the animation from chasing a runaway content height.
+   * Omitted, the window's height when the morph starts: read then, it re-renders
+   * nothing as the window resizes.
    */
-  maxHeight: number;
+  maxHeight?: number;
   /**
    * The panel's `maxWidth` (px) when the placement lets width vary (the centered
    * card). A surface that changes it per frame gets a width morph alongside the
@@ -268,6 +276,9 @@ export interface DialogMorphOptions {
  * out WITHOUT a key change, so the animation never re-runs) still settles at the
  * declared size instead of falling back to natural.
  */
+/** The window's height now, for a bound read when a morph starts. */
+const windowHeight = () => Dimensions.get('window').height;
+
 export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: DialogMorphOptions) {
   const channel = useMemo(() => createFrameChannel(), []);
 
@@ -372,7 +383,10 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
         return;
       }
       const from = height.value;
-      const to = Math.max(0, Math.min(naturalContentHeight + chrome.current, maxHeightRef.current));
+      const to = Math.max(
+        0,
+        Math.min(naturalContentHeight + chrome.current, maxHeightRef.current ?? windowHeight()),
+      );
       if (Math.abs(to - from) < 1) {
         release();
         return;
@@ -464,7 +478,7 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
         cancelAnimation(height);
         height.value = from;
         pinned.value = 1;
-        const to = Math.max(0, Math.min(next.size.height, maxHeightRef.current));
+        const to = Math.max(0, Math.min(next.size.height, maxHeightRef.current ?? windowHeight()));
         height.value = withTiming(
           to,
           { duration: DIALOG_MORPH_DURATION, easing: MORPH_EASING },

@@ -2,6 +2,23 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.81.0
+
+### Changed
+
+- **A window resizing runs no JavaScript in AppShell.** The reading envelope and the panel tracks are native flex (`resolvePanelFlex`, the CSS compositor's own flex values), laid out by Yoga in the pass that lays the resized window out. The shell and each panel group read their measured size only at the thresholds they decide at (`useMeasuredSizeClass`): before, each measured itself with `onLayout` → `setState` and sized its regions in pixels, two renders of the whole shell for every frame of a resize, one commit behind the window each. On OxyOS a live resize of the sample's Inbox went from 24 ms of JavaScript and 56 React commits to 0.25 ms and 2 (its one breakpoint), and Stash's from 66 ms to under 2.
+- Flexible split tracks with minimums keep the CSS answer natively (`clamp(λ · span, min, max)`): a track the room holds at its minimum is a fixed track for Yoga, chosen at thresholds of the room (`flexibleRoomThresholds`). `PanelNativeFlex.test.tsx` lays the rendered tree out with real Yoga at several widths and holds every track to `resolvePanelTracks`.
+- Components that only compare the window with a breakpoint no longer re-render on every pixel of a resize: `PageHeader` (its centred title's clearance is flex spacers), `ContentPanel`, `useGutters`, `P`/`Blockquote`, `AppShellHeader`, the responsive dialog placement and desktop presentation. A closed `Dialog`, centred card or side sheet subscribes to the window not at all.
+- A `Screen` sets its measured header and bottom heights only when they change, and a desktop window's bars do not follow an on-screen keyboard (it has none; following one subscribed to every resize).
+
+### Added
+
+- `useWindowBreakpoint()`, `useWindowWidthClass(thresholds)`, `useMeasuredSizeClass(widths, heights)`, `useWindowSizeWhile(active)` and `quantizeWidth` (`@oxy.so/bloom/hooks`): a width read only at the thresholds it is compared with, so a resize re-renders a component once per threshold crossed, never per pixel.
+
+### Consumers
+
+No API changes. An app that reads `useWindowDimensions()` only to compare it with a breakpoint should read `useWindowBreakpoint()` or `useWindowWidthClass()`, and lay out what follows the room with flex.
+
 ## 15.80.2
 
 ### Fixed

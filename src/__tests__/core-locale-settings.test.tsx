@@ -5,7 +5,6 @@
  * `core-locale.web.test.tsx`.
  */
 import React, { useState } from 'react';
-import * as ReactNative from 'react-native';
 import { Text as RNText } from 'react-native';
 import { render } from '@testing-library/react-native';
 
@@ -24,6 +23,7 @@ import { SETTINGS_MODAL_MESSAGES } from '../settings-modal/messages';
 import { ThemeToggle } from '../theme-toggle';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { messagesIn } from './support/messages-in';
+import { mockWindowSize } from './support/window-size';
 
 // The web portal is a react-dom portal (no DOM here); render in place.
 jest.mock('../settings-modal/modal-portal', () => ({
@@ -52,9 +52,7 @@ describe('settings-modal, error-boundary, theme-toggle', () => {
 
   describe('settings-modal in Spanish', () => {
     beforeEach(() => {
-      jest
-        .spyOn(ReactNative, 'useWindowDimensions')
-        .mockReturnValue({ width: 1280, height: 800, scale: 1, fontScale: 1 });
+      mockWindowSize({ width: 1280, height: 800, scale: 1, fontScale: 1 });
     });
     afterEach(() => jest.restoreAllMocks());
 

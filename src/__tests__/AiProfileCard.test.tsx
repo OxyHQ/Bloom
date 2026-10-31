@@ -1,5 +1,4 @@
 import React from 'react';
-import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -8,6 +7,7 @@ import type { AiProfileCardStat } from '../ai-profile-card';
 import { Button } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
+import { mockWindowSize } from './support/window-size';
 
 const STATS: AiProfileCardStat[] = [
   { value: '9B', label: 'Lifetime tokens' },
@@ -26,9 +26,7 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 }
 
 function viewport(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 2, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 2, fontScale: 1 });
 }
 
 afterEach(() => jest.restoreAllMocks());

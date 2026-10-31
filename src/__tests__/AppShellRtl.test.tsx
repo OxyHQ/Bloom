@@ -37,6 +37,7 @@ import { PortalOutlet, PortalProvider } from '../portal';
 import { Sidebar } from '../sidebar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolvedStyle, type StyleEntry } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 
@@ -49,9 +50,7 @@ function setRtl(rtl: boolean) {
 }
 
 function setWidth(width: number) {
-  jest
-    .spyOn(ReactNative, 'useWindowDimensions')
-    .mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
+  mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
 afterEach(() => {
