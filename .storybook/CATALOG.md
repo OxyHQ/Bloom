@@ -87,9 +87,14 @@ geometry stays intact. The provider contract stories alone opt into
 missing scroll/minimize contexts rather than inherit them from the preview.
 
 Foundations / Color groups Modes and Presets, Roles in Context and Explorer.
-The first compares local modes and the official recipe catalogue; the second
-shows identity/support/action on real composed UI; Explorer filters recipes
-and previews the social application. All three retain their existing story IDs.
+Modes and Presets explains root mode, inherited local scopes and the registered
+preset catalogue. Curated and derived pairings are both official presets; the
+pairing field describes seed selection, not registration status. Roles in
+Context maps primary/secondary/tertiary to accent/support/action on the same
+composed UI, including its single-accent comparison. Explorer starts with the
+whole registry, filters pairings and families, and retains the signed-in/public
+social fixture. Links join the examples, and every historical story ID remains
+stable (including `first-direction`, whose display name now describes the example).
 
 Application examples use `AppShell`, `Screen` and the real navigation components.
 The Sidebar Playground (`composition-app-shell-sidebar-playground--playground`)

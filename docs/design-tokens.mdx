@@ -68,7 +68,12 @@ from this registry and retain their existing public shapes.
 For visual review, run Storybook and open **Foundations / Color / Explorer**
 (`src/theme/ColorSystemLab.stories.tsx`). It keeps signed-in and public Mention
 views, renders both modes from `getResolvedTokens()`, and filters the complete
-registry by family or curated/derived pairing.
+registry by family or curated/derived pairing. Both pairings are registered
+presets, not separate official and experimental catalogues. The adjacent
+**Modes and Presets** stories explain `BloomProvider` ownership and inherited
+`BloomColorScope` overrides; **Roles in Context** maps the resolved roles to
+`tone="accent"`, `tone="support"` and `tone="action"` on real composed components.
+The examples link to each other through their stable historical story IDs.
 
 ## Opt in
 
