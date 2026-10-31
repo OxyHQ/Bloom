@@ -99,10 +99,42 @@ WebGL engine/shaders render unchanged; one WebGPU device copies the finished atl
 once per frame and draws destination quads. It explicitly bounds submitted GPU
 batches at 2 by deferring the engine scheduler, records source revision and GPU
 completion separately, and does not drop frames. It is not production code or a
-validated quality/performance improvement. Software WebGL/WebGPU interoperation
-lost the GPU process locally; physical validation is required. The
+validated quality/performance improvement. An explicitly forced local software diagnostic (`--enable-unsafe-webgpu` plus
+SwiftShader) lost the GPU process during WebGL/WebGPU interoperation. This is
+not a capability test for normal user browsers. The fixture uses default adapter
+selection without browser flags and excludes `adapter.info.isFallbackAdapter`
+when true; an explicit diagnostic override is required for software experiments.
+Physical validation remains required. The
 [WebGPU specification](https://www.w3.org/TR/webgpu/) permits external canvas
 copies but does not promise they are free.
+
+## WebGPU gate and an observed browser interop hazard
+
+The fixture's `captureHeld` takes the Canvas2D reference from the exact same
+WebGL atlas in the same frame as WebGPU submission. It records decoded PNG both
+immediately after `queue.submit` and after GPU completion/presentation, plus a
+separate diagnostic `Canvas2D.drawImage(webgpuCanvas)` read. The external CDP gate
+connects to an existing benchmark page; it does not launch or close a browser.
+Its matrix is 64→128,192→192,192→224 and512→640, with eight authored and two catalog
+characters in idle, reaction and work. These readbacks occur only when the gate
+is explicitly invoked, outside timing windows.
+
+An initial physical 192→192 held-idle run matched all 24 decoded PNGs exactly, while
+`drawImage(webgpuCanvas)` after a frame boundary returned transparent pixels.
+The screenshot was correct too. This is not a shader/filter discrepancy and must
+not be silently relabeled full interop parity. Chromium's `GetImage()` can use the
+front buffer after the current texture expires, whereas its back-buffer snapshot
+path may return an existing resource-provider snapshot without a current
+texture. See [GPUCanvasContext implementation](https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/modules/webgpu/gpu_canvas_context.cc).
+This is an implementation hypothesis for the observed divergence, not a proven
+root-cause fix. The [WebGPU canvas specification](https://www.w3.org/TR/webgpu/#canvas-rendering)
+hooks both image-copy APIs to the context image.
+
+Bloom's current web snapshot, embedded live-WebView snapshot, web still capture
+and embedded still capture all use `canvas.toDataURL('image/png')`. The PNG gate
+therefore tests those actual contracts; it does not claim the browser's
+cross-context `drawImage` behavior is correct. Scaled PNG fidelity, immediate
+snapshot ordering, lifecycle and physical throughput remain separate gates.
 
 ## Index locality audit, not a shipped change
 
