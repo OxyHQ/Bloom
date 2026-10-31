@@ -925,11 +925,17 @@ idle/reaction setup, deduplicates simultaneous work requests, retries a failed w
 and ensures upgrading does not mutate the base samplers or attach gaze twice. The original
 motion fidelity suite still validates all eight presets against authored JSON.
 
-Native process reclamation remains separate from render performance: the live bridge lacks
+The initial audit also found a separate native reliability defect: the live bridge lacked
 Android `onRenderProcessGone` and WKWebView `onContentProcessDidTerminate` handlers. The
 [upstream event documentation](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#oncontentprocessdidterminate)
-explicitly describes OS memory reclamation/background termination. Timeout recovery for
-queued stills does not establish recovery of an already live native avatar.
+explicitly describes OS memory reclamation/background termination. The bridge now remounts a killed live renderer once with its latest props, settles pending
+captures and rejects stale document events; consecutive process loss before 30 seconds of
+stable readiness reports unavailable. A stable recovery or runtime change renews the budget,
+allowing a later independent OS memory reclamation without an unbounded immediate retry loop.
+Native event mocks exercise both platforms. Request keys are not animation checkpoints;
+recovery does not reconstruct a lost action phase or replay consumed action identifiers.
+Physical OS process-kill recovery is still
+unverified; a render-performance benchmark cannot prove it.
 
 #### Verification scope of the efficiency change
 
@@ -948,3 +954,25 @@ from the `798d6513` foundation, and those inputs were absent in the shared check
 The passing 15-file selection is not a claim that the broader suite passed. No source
 oracle was regenerated from the implementation, assertion weakened or missing-input test
 silently skipped. Full historical native-observation replay still requires those captures.
+
+
+#### Native selector adoption
+
+The cache host correction alone did not fix selector topology: `AgentAvatar` still delegated
+all `portrait` thumbnails directly to `CharacterAvatar`, so nine frozen native previews
+retained nine separate WebViews. Native portraits with no interaction now use the provider's
+shared still pipeline; temporary pausing, interactive avatars and standalone avatars without
+a provider keep the existing renderer. A runtime event/capture test renders nine distinct
+characters through one WebView mount and produces nine image results. Other tests distinguish
+eye-only from full portraits, preserve labels, image-ready/snapshot semantics and runtime
+capability reports, reject obsolete-character completions and surface errors without loops.
+Persistent still keys now also include the runtime namespace, avoiding images from a previous
+self-hosted runtime after an override.
+
+This removes frozen selector WebViews, not the live-native document boundary. Live instances
+still have independent heaps/GPU resources even if HTTP caching reuses downloaded bytes.
+A provider-wide transparent WebView is not a drop-in shared live renderer: native clipping,
+card backgrounds, scrolling, pointer input and Modal windows remain separate composition
+owners, while sending measured bounds over the bridge each frame would add latency. A
+future backend would need shared GPU resources with native composable output views and
+physical lifecycle validation; this change does not declare that problem solved.
