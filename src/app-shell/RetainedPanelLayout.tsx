@@ -13,8 +13,8 @@
  * accessibility tree, so showing it again is one style change with no relayout
  * of its content.
  */
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
-import { View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import { useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Platform, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { ResizeHandle } from '../layout/ResizeHandle';
@@ -26,6 +26,9 @@ import type { AppShellPanelDefinition, AppShellPanelLayout } from './panel-layou
 import { WINDOW_TOP_EDGE } from './panel-layout';
 import { usePlatformWindow } from '../platform-surface/context';
 import { useWindowChrome, WindowChromeProvider, type WindowChrome } from '../window/context';
+import { ScreenScope } from '../layout/screen-scope';
+import { ScreenHostContext } from '../screen/context';
+import { WorkspaceHeaderInsetContext } from '../screen/context';
 import {
   resizeRetainedSpans,
   retainedGeometry,
@@ -107,6 +110,17 @@ function RetainedHost({
   testID?: string;
 }) {
   const shown = box !== undefined;
+  const workspace = useContext(WorkspaceHeaderInsetContext);
+  const ancestorHost = useContext(ScreenHostContext);
+  const host = useMemo(
+    () => ({
+      active: ancestorHost.active && shown,
+      back: ancestorHost.back,
+      kind: (Platform.OS === 'web' ? 'element' : 'native') as 'element' | 'native',
+      workspaceTopInset: box && atZero(box.top) ? (workspace?.scrollInset ?? 0) : 0,
+    }),
+    [ancestorHost, shown, box, workspace?.scrollInset],
+  );
   const value = useMemo(
     () => ({
       id: panel.id,
@@ -117,6 +131,13 @@ function RetainedHost({
       visibilityReady: true,
     }),
     [panel.id, alone, shown],
+  );
+  const content = windowed ? (
+    <WindowChromeProvider value={windowChrome}>
+      <View style={CONTENT}>{panel.content as ReactNode}</View>
+    </WindowChromeProvider>
+  ) : (
+    <View style={CONTENT}>{panel.content as ReactNode}</View>
   );
   return (
     <View
@@ -131,12 +152,12 @@ function RetainedHost({
       }
     >
       <AppShellPanelContext.Provider value={value}>
-        {windowed ? (
-          <WindowChromeProvider value={windowChrome}>
-            <View style={CONTENT}>{panel.content as ReactNode}</View>
-          </WindowChromeProvider>
+        {workspace ? (
+          <ScreenScope inheritNavigation>
+            <ScreenHostContext.Provider value={host}>{content}</ScreenHostContext.Provider>
+          </ScreenScope>
         ) : (
-          <View style={CONTENT}>{panel.content as ReactNode}</View>
+          content
         )}
       </AppShellPanelContext.Provider>
       {shown ? (

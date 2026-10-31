@@ -242,7 +242,10 @@ export function createScreen(
     const pageMinHeight =
       region?.flow === 'document'
         ? webViewportHeightMinus(
-            region.viewportInset.top + region.viewportInset.bottom + region.bottomReserve,
+            region.viewportInset.top +
+              region.viewportInset.bottom +
+              region.bottomReserve +
+              (host.workspaceViewportInset ?? 0),
           )
         : WEB_VIEWPORT_HEIGHT;
     const value = useMemo(
@@ -262,6 +265,7 @@ export function createScreen(
         documentScroll: document,
         headerOverlays: header != null && headerPlacement === 'overlay',
         topInset: reservedTop,
+        workspaceTopInset: host.workspaceTopInset,
         bottomInset:
           keyboardVisible && !hasBottom
             ? contentClearance
@@ -293,6 +297,7 @@ export function createScreen(
         reservesChrome,
         scroll,
         reservedTop,
+        host.workspaceTopInset,
         keyboardVisible,
         navigationEdge,
         keyboardFollow,
@@ -336,7 +341,13 @@ export function createScreen(
     };
     const headerSlotStyle = document
       ? documentHeaderStyle
-      : ({ position: 'absolute', top: 0, left: 0, right: 0, zIndex: Z_INDEX.floating } as const);
+      : ({
+          position: 'absolute',
+          top: host.workspaceTopInset ?? 0,
+          left: 0,
+          right: 0,
+          zIndex: Z_INDEX.floating,
+        } as const);
     const headerNode = header ? (
       platformWindow != null ? (
         // The same node whether or not it is the window's chrome right now (a

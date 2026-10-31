@@ -1,7 +1,14 @@
 import { createContext, useContext, type RefObject, type ReactNode } from 'react';
+
 import type { AppColorName } from '../theme/color-presets';
 import type { ScrollMetrics } from '../layout/scroll-metrics';
 import type { SharedValue } from 'react-native-reanimated';
+
+/** Workspace clearance is scoped away from independent sheets and panels. */
+export const WorkspaceHeaderInsetContext = createContext<{
+  scrollInset: number;
+  viewportInset: number;
+} | null>(null);
 
 export interface ScreenContextValue {
   active: boolean;
@@ -23,6 +30,8 @@ export interface ScreenContextValue {
   /** `headerPlacement="overlay"`: the header floats over the content, which runs under it. */
   headerOverlays?: boolean;
   topInset: number;
+  /** A workspace header above this panel, reserved inside its scroller. */
+  workspaceTopInset?: number;
   bottomInset: number;
 }
 
@@ -61,6 +70,10 @@ export function useScreenViewport(): ScreenViewportValue | null {
 }
 /** Host metadata, independent of the screen's declarative chrome. */
 export interface ScreenHostValue {
+  /** Header above the panel whose clearance belongs to scroll content. */
+  workspaceTopInset?: number;
+  /** Web document region already displaced by its workspace header. */
+  workspaceViewportInset?: number;
   /** The first Screen contributes intrinsic height to a content-sized surface. */
   sizing?: 'content' | 'fill';
   /** Overlays own independent screen state and must not restore the underlying route. */
