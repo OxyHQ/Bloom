@@ -48,6 +48,7 @@ const HAPTICS_TYPES_STILL_MATCH: RealHapticsIsCompatible = true;
 
 type Harness = {
   useHaptics: typeof import('../hooks/use-haptics').useHaptics;
+  useHapticFeedback: typeof import('../hooks/use-haptics').useHapticFeedback;
   BloomHapticsProvider: typeof import('../hooks/use-haptics').BloomHapticsProvider;
   impactAsync: jest.Mock;
   styles: Record<'Light' | 'Medium' | 'Heavy', string>;
@@ -88,6 +89,7 @@ function loadWithHaptics(factory?: () => unknown): Harness {
 
     harness = {
       useHaptics: mod.useHaptics,
+      useHapticFeedback: mod.useHapticFeedback,
       BloomHapticsProvider: mod.BloomHapticsProvider,
       impactAsync,
       styles: STYLES,
@@ -237,5 +239,197 @@ describe('useHaptics', () => {
     } finally {
       process.env.NODE_ENV = previous;
     }
+  });
+});
+
+describe('useHapticFeedback', () => {
+  afterEach(() => {
+    ReactNative.Platform.OS = originalOS;
+    jest.resetModules();
+    jest.dontMock(HAPTICS);
+    jest.clearAllMocks();
+  });
+
+  it('uses selection and notification feedback for semantic events', () => {
+    ReactNative.Platform.OS = 'ios';
+    const selectionAsync = jest.fn(async () => {});
+    const notificationAsync = jest.fn(async (_type?: string) => {});
+    const impactAsync = jest.fn(async (_style?: string) => {});
+    const { useHapticFeedback } = loadWithHaptics(() => ({
+      ImpactFeedbackStyle: STYLES,
+      NotificationFeedbackType: { Success: 'success', Error: 'error' },
+      impactAsync,
+      selectionAsync,
+      notificationAsync,
+    }));
+    const { result } = renderHook(() => useHapticFeedback());
+    act(() => {
+      result.current.tap();
+      result.current.confirm();
+      result.current.selection();
+      result.current.toggle(true);
+      result.current.success();
+      result.current.error();
+    });
+    expect(impactAsync.mock.calls.map(([style]) => style)).toEqual(['light', 'medium']);
+    expect(selectionAsync).toHaveBeenCalledTimes(2);
+    expect(notificationAsync.mock.calls.map(([type]) => type)).toEqual(['success', 'error']);
+  });
+
+  it('falls back to impact on iOS when the peer lacks semantic methods', () => {
+    ReactNative.Platform.OS = 'ios';
+    const { useHapticFeedback, impactAsync } = loadWithHaptics();
+    const { result } = renderHook(() => useHapticFeedback());
+    act(() => {
+      result.current.selection();
+      result.current.success();
+      result.current.error();
+    });
+    expect(impactAsync).toHaveBeenCalledTimes(3);
+  });
+
+  it('maps Android intents to system view feedback, including older API fallbacks', () => {
+    ReactNative.Platform.OS = 'android';
+    const performAndroidHapticsAsync = jest.fn(async (_type: string) => {});
+    const impactAsync = jest.fn(async (_style?: string) => {});
+    const selectionAsync = jest.fn(async () => {});
+    const notificationAsync = jest.fn(async (_type?: string) => {});
+    const { useHapticFeedback } = loadWithHaptics(() => ({
+      ImpactFeedbackStyle: STYLES,
+      NotificationFeedbackType: { Success: 'success', Error: 'error' },
+      impactAsync,
+      selectionAsync,
+      notificationAsync,
+      performAndroidHapticsAsync,
+    }));
+    const { resolveAndroidHapticIntent } =
+      require('../hooks/use-haptics') as typeof import('../hooks/use-haptics');
+    const { result } = renderHook(() => useHapticFeedback());
+    act(() => {
+      result.current.tap();
+      result.current.confirm();
+      result.current.selection();
+      result.current.toggle(true);
+      result.current.toggle(false);
+      result.current.success();
+      result.current.error();
+    });
+    const apiLevel =
+      typeof ReactNative.Platform.Version === 'number' ? ReactNative.Platform.Version : 24;
+    expect(performAndroidHapticsAsync.mock.calls.map(([value]) => value)).toEqual(
+      (['tap', 'confirm', 'selection', 'toggleOn', 'toggleOff', 'success', 'error'] as const).map(
+        (intent) => resolveAndroidHapticIntent(intent, apiLevel),
+      ),
+    );
+    expect(impactAsync).not.toHaveBeenCalled();
+    expect(selectionAsync).not.toHaveBeenCalled();
+    expect(notificationAsync).not.toHaveBeenCalled();
+    expect(resolveAndroidHapticIntent('selection', 33)).toBe('context-click');
+    expect(resolveAndroidHapticIntent('selection', 34)).toBe('segment-tick');
+    expect(resolveAndroidHapticIntent('toggleOn', 33)).toBe('context-click');
+    expect(resolveAndroidHapticIntent('toggleOff', 33)).toBe('clock-tick');
+    expect(resolveAndroidHapticIntent('toggleOn', 34)).toBe('toggle-on');
+    expect(resolveAndroidHapticIntent('toggleOff', 34)).toBe('toggle-off');
+    expect(resolveAndroidHapticIntent('confirm', 29)).toBe('virtual-key');
+    expect(resolveAndroidHapticIntent('error', 29)).toBe('long-press');
+    expect(resolveAndroidHapticIntent('success', 30)).toBe('confirm');
+    expect(resolveAndroidHapticIntent('error', 30)).toBe('reject');
+  });
+
+  it('stays silent on Android when the peer lacks view feedback', () => {
+    ReactNative.Platform.OS = 'android';
+    const { useHapticFeedback, impactAsync } = loadWithHaptics();
+    const { result } = renderHook(() => useHapticFeedback());
+    act(() => {
+      result.current.tap();
+      result.current.selection();
+      result.current.success();
+    });
+    expect(impactAsync).not.toHaveBeenCalled();
+  });
+
+  it('never invokes Android feedback when disabled by the provider', () => {
+    ReactNative.Platform.OS = 'android';
+    const performAndroidHapticsAsync = jest.fn(async (_type: string) => {});
+    const { useHapticFeedback, BloomHapticsProvider } = loadWithHaptics(() => ({
+      ImpactFeedbackStyle: STYLES,
+      impactAsync: jest.fn(async () => {}),
+      performAndroidHapticsAsync,
+    }));
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <BloomHapticsProvider enabled={false}>{children}</BloomHapticsProvider>
+    );
+    const { result } = renderHook(() => useHapticFeedback(), { wrapper });
+    act(() => {
+      result.current.tap();
+      result.current.toggle(false);
+      result.current.error();
+    });
+    expect(performAndroidHapticsAsync).not.toHaveBeenCalled();
+  });
+
+  it.each(['ios', 'android'] as const)(
+    'handles native rejections on %s without unhandled promises',
+    async (platform) => {
+      const catches: jest.SpyInstance[] = [];
+      const reject = () => {
+        const promise = Promise.reject(new Error('native feedback unavailable'));
+        catches.push(jest.spyOn(promise, 'catch'));
+        return promise;
+      };
+
+      ReactNative.Platform.OS = platform;
+      const { useHapticFeedback } = loadWithHaptics(() => ({
+        ImpactFeedbackStyle: STYLES,
+        NotificationFeedbackType: { Success: 'success', Error: 'error' },
+        impactAsync: reject,
+        selectionAsync: reject,
+        notificationAsync: reject,
+        performAndroidHapticsAsync: reject,
+      }));
+      const hook = renderHook(() => useHapticFeedback());
+      await act(async () => {
+        hook.result.current.tap();
+        hook.result.current.selection();
+        hook.result.current.error();
+        await Promise.resolve();
+      });
+      expect(catches).toHaveLength(3);
+      for (const caught of catches) expect(caught).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('honors the provider', () => {
+    ReactNative.Platform.OS = 'ios';
+    const { useHapticFeedback, BloomHapticsProvider, impactAsync } = loadWithHaptics();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <BloomHapticsProvider enabled={false}>{children}</BloomHapticsProvider>
+    );
+    const { result } = renderHook(() => useHapticFeedback(), { wrapper });
+    act(() => {
+      result.current.tap();
+      result.current.selection();
+      result.current.success();
+    });
+    expect(impactAsync).not.toHaveBeenCalled();
+  });
+
+  it('does nothing on web or when the peer is absent', () => {
+    ReactNative.Platform.OS = 'web';
+    const web = loadWithHaptics();
+    const webHook = renderHook(() => web.useHapticFeedback());
+    act(() => {
+      webHook.result.current.tap();
+      webHook.result.current.selection();
+      webHook.result.current.error();
+    });
+    expect(web.impactAsync).not.toHaveBeenCalled();
+
+    ReactNative.Platform.OS = 'ios';
+    const missing = loadWithHaptics(() => {
+      throw new Error('missing peer');
+    });
+    const missingHook = renderHook(() => missing.useHapticFeedback());
+    expect(() => act(() => missingHook.result.current.success())).not.toThrow();
   });
 });

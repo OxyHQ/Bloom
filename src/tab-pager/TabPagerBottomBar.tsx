@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 import { BottomBar } from '../bottom-bar';
 import type { BottomBarProps } from '../bottom-bar/types';
-import { useHaptics } from '../hooks/use-haptics';
+import { useHapticFeedback } from '../hooks/use-haptics';
 import { TabPagerActiveContext, TabPagerChromeContext, useTabPagerContext } from './context';
 import type { TabPagerBottomBarProps } from './types';
 
@@ -20,17 +20,17 @@ export function useTabPagerBottomBar(
   const { model, progress, chromeProgress, selectDestination } = useTabPagerContext();
   const { activeIndex, activePage } = useContext(TabPagerActiveContext);
   const { destinations, barItems } = useContext(TabPagerChromeContext);
-  const impact = useHaptics();
+  const haptics = useHapticFeedback();
   // An unmatched value is the bar's "no selection": a pushed route, or a page
   // that draws no item.
   const value = activePage !== null && model.barIndexOf(activeIndex) >= 0 ? activePage : '';
   const onValueChange = useCallback(
     (name: string) => {
-      impact('light');
+      haptics.tap();
       if (onReselect && name === value) onReselect(name);
       else selectDestination(name);
     },
-    [impact, value, onReselect, selectDestination],
+    [haptics, value, onReselect, selectDestination],
   );
   const onValueLongPress = useCallback(
     (name: string) =>

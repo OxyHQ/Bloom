@@ -59,8 +59,99 @@ export function useHaptics(): (strength?: HapticStrength) => void {
         else if (strength === 'heavy') style = ImpactFeedbackStyle.Heavy;
       }
 
-      void haptics.impactAsync(style);
+      void haptics.impactAsync(style).catch(() => {});
     },
     [enabled],
   );
+}
+
+/** Feedback described by the user action rather than motor strength. */
+export interface HapticFeedback {
+  tap(): void;
+  confirm(): void;
+  selection(): void;
+  toggle(on: boolean): void;
+  success(): void;
+  error(): void;
+}
+
+type HapticIntent =
+  | 'tap'
+  | 'confirm'
+  | 'selection'
+  | 'toggleOn'
+  | 'toggleOff'
+  | 'success'
+  | 'error';
+
+/** Android constants introduced after API 24 fall back to older view feedback. */
+export function resolveAndroidHapticIntent(intent: HapticIntent, apiLevel: number): string {
+  switch (intent) {
+    case 'tap':
+      return 'context-click';
+    case 'confirm':
+    case 'success':
+      return apiLevel >= 30 ? 'confirm' : 'virtual-key';
+    case 'error':
+      return apiLevel >= 30 ? 'reject' : 'long-press';
+    case 'selection':
+      return apiLevel >= 34 ? 'segment-tick' : 'context-click';
+    case 'toggleOn':
+      return apiLevel >= 34 ? 'toggle-on' : 'context-click';
+    case 'toggleOff':
+      return apiLevel >= 34 ? 'toggle-off' : 'clock-tick';
+  }
+}
+
+/**
+ * Semantic haptics honoring the same provider and optional-peer behavior as
+ * `useHaptics`. Android uses view feedback to respect system settings; older
+ * peers without that API are silent. iOS falls back to a light impact.
+ */
+export function useHapticFeedback(): HapticFeedback {
+  const { enabled } = useContext(BloomHapticsContext);
+  const impact = useHaptics();
+
+  return useMemo(() => {
+    function play(kind: HapticIntent) {
+      if (!enabled || Platform.OS === 'web') return;
+      const haptics = loadHaptics();
+      if (!haptics) {
+        warnHapticsUnavailable();
+        return;
+      }
+      if (Platform.OS === 'android') {
+        const apiLevel = typeof Platform.Version === 'number' ? Platform.Version : 24;
+        void haptics
+          .performAndroidHapticsAsync?.(resolveAndroidHapticIntent(kind, apiLevel))
+          .catch(() => {});
+        return;
+      }
+      if (kind === 'tap' || kind === 'confirm') {
+        impact(kind === 'tap' ? 'light' : 'medium');
+        return;
+      }
+      const result =
+        kind === 'selection' || kind === 'toggleOn' || kind === 'toggleOff'
+          ? haptics.selectionAsync?.()
+          : haptics.NotificationFeedbackType && haptics.notificationAsync
+            ? haptics.notificationAsync(
+                kind === 'success'
+                  ? haptics.NotificationFeedbackType.Success
+                  : haptics.NotificationFeedbackType.Error,
+              )
+            : undefined;
+      if (result) void result.catch(() => {});
+      else impact('light');
+    }
+
+    return {
+      tap: () => play('tap'),
+      confirm: () => play('confirm'),
+      selection: () => play('selection'),
+      toggle: (on: boolean) => play(on ? 'toggleOn' : 'toggleOff'),
+      success: () => play('success'),
+      error: () => play('error'),
+    };
+  }, [enabled, impact]);
 }

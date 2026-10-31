@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.76.0
+
+### Added
+
+- `useHapticFeedback` exposes tap, confirm, selection, toggle, success and error feedback while honoring the existing haptic preference and optional peer. `useHaptics` remains available.
+
+### Consumers
+
+Use `useHapticFeedback` from `@oxy.so/bloom/hooks` for feedback described by intent. The existing strength-based API remains compatible.
+
 ## 15.75.0
 
 ### Changed
