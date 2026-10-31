@@ -232,8 +232,16 @@ class AvatarGPUView(context: Context, appContext: AppContext) : TextureView(cont
     onWindowAttachment?.invoke(false)
     super.onDetachedFromWindow()
   }
+  private fun hasVisibleAlpha(): Boolean {
+    var ancestor: android.view.View? = this
+    while (ancestor != null) {
+      if (ancestor.alpha <= 0f) return false
+      ancestor = ancestor.parent as? android.view.View
+    }
+    return true
+  }
   private fun updateVisibility() = publishVisibility(
-    isAttachedToWindow && isShown && alpha > 0f && getGlobalVisibleRect(visibleRect) && !visibleRect.isEmpty
+    isAttachedToWindow && isShown && hasVisibleAlpha() && getGlobalVisibleRect(visibleRect) && !visibleRect.isEmpty
   )
   private fun publishVisibility(value: Boolean) {
     if (visibleToUser == value) return
