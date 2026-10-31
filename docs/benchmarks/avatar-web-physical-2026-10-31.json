@@ -1,0 +1,2819 @@
+{
+  "date": "2026-10-31",
+  "scope": "Physical web profiling and rejected diagnostic experiments. No visual-quality, resolution or frame-cadence reductions accepted. Distinguish actual product samples from intentionally invalid ablations.",
+  "device": {
+    "model": "Pixel 8a",
+    "android": 16,
+    "gpu": "Mali-G715",
+    "deviceDpr": 2.625,
+    "displayRafRefreshObservedHz": 120,
+    "thermalStatus": 1,
+    "batteryTemperatureRangeC": [40.4, 42.3],
+    "conditions": "Sequential samples; battery temperature rose through session. Use adjacent controls and retain all windows. Ambient temperature, GPU clock and background device activity were not controlled. This is a real midrange device, not certification for all cheap phones."
+  },
+  "browsers": {
+    "webview": {
+      "version": "148.0.7778.120",
+      "package": "com.android.webview",
+      "host": "Dedicated isolated Java Activity, one full-screen WebView; not RN compositor. GPU string Mali-G715; app RenderThread uses Vulkan."
+    },
+    "chromium": {
+      "version": "159.0.8135.0",
+      "package": "org.chromium.chrome",
+      "source": "https://storage.googleapis.com/chromium-browser-snapshots/Android_Arm64/1732145/chrome-android.zip",
+      "apkSha256": "436f0d3f5b13f3a52c987bc687bddd1939e441914761e4593821933103245b70",
+      "renderer": "ANGLE Vulkan1.4.305 Mali-G715",
+      "isolation": "Package absent before test. Official standalone test APK installed without replacing existing browsers, sign-in or default-browser change. Owned temporary package remains pending final cleanup.",
+      "comparisonCaveat": "Different browser version and graphics backend; same24 actors/backing/4-column layout, but viewport height differs because browser chrome. All24 are visible in both matched samples. Not a causal host-only A/B."
+    }
+  },
+  "methodology": [
+    "Built runtime checkpoint6adb842b remains unchanged on6007 through these built samples. Flat-joint-only production control built separately on6009. Source Storybook experiments are reported separately from built production.",
+    "Canvas destinations are never read with getImageData/toDataURL during or before timing. Pixel-readback tests ran on separate pages/apps. Profiling wrappers forward original drawImage and measure its CPU call duration.",
+    "Reported FPS counts engine submissions; Canvas2D copies are destination updates, not proof of distinct displayed frames. Raw RAF intervals recorded separately. CPUProfiler windows and unprofiled steady windows are separate.",
+    "EXT_disjoint_timer_query_webgl2 unavailable in both physical browser backends. CPU submit spans, fence latency and Android trace wall spans are not pure GPU execution times.",
+    "Initial readyMs has uncontrolled cache/order and excludes app startup; no cold-download or universal startup claim. All stress samples report mounted/ready/visible counts.",
+    "Device stays in dedicated benchmark apps. Raw traces/local profiles are retained locally; curated output removes process identifiers and unrelated app data."
+  ],
+  "samples": [
+    {
+      "id": "storybook-candidate-still",
+      "originArtifact": "Exploratory Storybook source before flat joints; includes typed index decode, not an immutable A/B reference",
+      "profiled": {
+        "elapsedMs": 5942.699999988079,
+        "submittedFrames": 261,
+        "submittedFps": 43.91943056195392,
+        "rafIntervalsMs": {
+          "count": 269,
+          "median": 16.70000000001164,
+          "p95": 25.10000000000582,
+          "min": 8.299999999988358,
+          "max": 776.5999999999913
+        },
+        "destinationCopies": 2088,
+        "destinationCopyCallMs": 88.40000075101852,
+        "perDestinationCopyGapsMs": {
+          "count": 2080,
+          "median": 19.600000023841858,
+          "p95": 24.600000023841858,
+          "min": 11.5,
+          "max": 790.9000000357628
+        },
+        "longTasks": [],
+        "events": []
+      },
+      "mounted": 48,
+      "visible": 8,
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": null,
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 8,
+          "pending": 0,
+          "stats": {
+            "count": 8,
+            "renderedInstances": 8,
+            "columns": 3,
+            "rows": 3,
+            "width": 384,
+            "height": 384,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 93,
+            "triangles": 215604,
+            "atlasPixels": 331776,
+            "renderedPixels": 331776,
+            "poseEvaluations": 7,
+            "sharedPoseCopies": 2,
+            "resources": {
+              "geometries": 47,
+              "textures": 55,
+              "programs": 7
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5783.208,
+        "selfSampleMs": {
+          "(idle)": 1555.375000000002,
+          "(program)": 1214.1889999999994,
+          "flatten": 910.3760000000007,
+          "toArray": 317.42199999999997,
+          "(anonymous)": 170.0940000000001,
+          "update": 118.85599999999998,
+          "sample": 114.49300000000007,
+          "drawImage": 82.13100000000003,
+          "AuthoredAvatarEngine.tick": 76.54,
+          "texSubImage2D": 71.00500000000001,
+          "CanvasRenderingContext2D.drawImage": 69.52799999999998,
+          "setValueV4f": 58.16799999999999,
+          "upload": 49.93400000000001,
+          "querySelectorAll": 48.035,
+          "WebGLRenderer.renderBufferDirect": 48.00399999999999,
+          "needsUpdate": 47.02700000000001,
+          "bufferSubData": 42.92100000000001,
+          "setValue": 42.403000000000006,
+          "bindTexture": 34.622,
+          "setValueM4Array": 31.014000000000003
+        }
+      }
+    },
+    {
+      "id": "storybook-candidate-scroll",
+      "originArtifact": "Exploratory Storybook source before flat joints; includes typed index decode, not an immutable A/B reference",
+      "profiled": {
+        "elapsedMs": 8171.600000023842,
+        "submittedFrames": 284,
+        "submittedFps": 34.754515639430636,
+        "rafIntervalsMs": {
+          "count": 304,
+          "median": 25.0,
+          "p95": 58.5,
+          "min": 8.299999999988358,
+          "max": 217.1999999999971
+        },
+        "destinationCopies": 2245,
+        "destinationCopyCallMs": 107.7000002861023,
+        "perDestinationCopyGapsMs": {
+          "count": 2225,
+          "median": 23.100000023841858,
+          "p95": 43.19999998807907,
+          "min": 7.699999988079071,
+          "max": 335.60000002384186
+        },
+        "longTasks": [
+          {
+            "at": 77600.60000002384,
+            "duration": 58
+          },
+          {
+            "at": 78166.10000002384,
+            "duration": 55
+          },
+          {
+            "at": 78491.10000002384,
+            "duration": 79
+          },
+          {
+            "at": 78686.30000001192,
+            "duration": 64
+          }
+        ],
+        "events": [
+          {
+            "type": "pointerdown",
+            "delay": 12.399999976158142,
+            "at": 76351.5
+          },
+          {
+            "type": "touchstart",
+            "delay": 14.100000023841858,
+            "at": 76353.10000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 0.30000001192092896,
+            "at": 76377.60000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 3.399999976158142,
+            "at": 76399.5
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 76410.89999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.40000003576278687,
+            "at": 76430.80000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.40000003576278687,
+            "at": 76453.10000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 0.30000001192092896,
+            "at": 76472.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.09999996423721313,
+            "at": 76496.80000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.3999999761581421,
+            "at": 76516.69999998808
+          },
+          {
+            "type": "scroll",
+            "delay": 0.30000001192092896,
+            "at": 76541.19999998808
+          },
+          {
+            "type": "scroll",
+            "delay": 0.2999999523162842,
+            "at": 76560.39999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 2,
+            "at": 76583.89999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.3999999761581421,
+            "at": 76603
+          },
+          {
+            "type": "scroll",
+            "delay": 0.30000001192092896,
+            "at": 76624.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.5,
+            "at": 76689.19999998808
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 76715.39999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.2999999523162842,
+            "at": 76739.39999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.10000002384185791,
+            "at": 76782.10000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 2,
+            "at": 76828.69999998808
+          },
+          {
+            "type": "scroll",
+            "delay": 0.2999999523162842,
+            "at": 76850.89999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.10000002384185791,
+            "at": 76938.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 77013.89999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 1.5999999642372131,
+            "at": 77060.89999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.20000004768371582,
+            "at": 77087.10000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 0.30000001192092896,
+            "at": 77104.10000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 0.10000002384185791,
+            "at": 77142.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.30000001192092896,
+            "at": 77173.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.20000004768371582,
+            "at": 77227.60000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 1.800000011920929,
+            "at": 77295
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 77319.69999998808
+          },
+          {
+            "type": "scroll",
+            "delay": 0.20000004768371582,
+            "at": 77340.39999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.20000004768371582,
+            "at": 77359.10000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 0.20000004768371582,
+            "at": 77380.10000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 0.20000004768371582,
+            "at": 77426.60000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 77449.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 2,
+            "at": 77471.5
+          },
+          {
+            "type": "scroll",
+            "delay": 0.10000002384185791,
+            "at": 77522.5
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 77600.89999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.09999996423721313,
+            "at": 77684.19999998808
+          },
+          {
+            "type": "scroll",
+            "delay": 2.199999988079071,
+            "at": 77710
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 77726.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.20000004768371582,
+            "at": 77793.60000002384
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 77819.80000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.09999996423721313,
+            "at": 77842.39999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 0.30000001192092896,
+            "at": 77864.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 77909.5
+          },
+          {
+            "type": "scroll",
+            "delay": 1.699999988079071,
+            "at": 77990
+          },
+          {
+            "type": "scroll",
+            "delay": 0.10000002384185791,
+            "at": 78166.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 1.5999999642372131,
+            "at": 78254.69999998808
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 78321.30000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.30000001192092896,
+            "at": 78373.5
+          },
+          {
+            "type": "scroll",
+            "delay": 0.2999999523162842,
+            "at": 78491.39999997616
+          },
+          {
+            "type": "scroll",
+            "delay": 1.600000023841858,
+            "at": 78583.80000001192
+          },
+          {
+            "type": "scroll",
+            "delay": 0.10000002384185791,
+            "at": 78619.5
+          },
+          {
+            "type": "scroll",
+            "delay": 0.19999998807907104,
+            "at": 78686.5
+          },
+          {
+            "type": "scroll",
+            "delay": 0.10000002384185791,
+            "at": 78769
+          },
+          {
+            "type": "scroll",
+            "delay": 1.699999988079071,
+            "at": 78803.19999998808
+          }
+        ]
+      },
+      "mounted": 48,
+      "visible": 8,
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": null,
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 20,
+          "pending": 0,
+          "stats": {
+            "count": 20,
+            "renderedInstances": 8,
+            "columns": 5,
+            "rows": 4,
+            "width": 640,
+            "height": 512,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 117,
+            "triangles": 271804,
+            "atlasPixels": 737280,
+            "renderedPixels": 376320,
+            "poseEvaluations": 8,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 123,
+              "textures": 131,
+              "programs": 7
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 8011.659,
+        "selfSampleMs": {
+          "toArray": 1653.1460000000006,
+          "(idle)": 1621.2720000000015,
+          "(program)": 1362.9029999999996,
+          "(anonymous)": 204.72599999999997,
+          "readPixels": 177.8699999999999,
+          "update": 145.79099999999997,
+          "AuthoredAvatarEngine.tick": 143.31000000000003,
+          "drawImage": 107.994,
+          "sample": 107.90200000000002,
+          "(garbage collector)": 97.772,
+          "texSubImage2D": 85.38099999999996,
+          "setValue": 83.97300000000001,
+          "upload": 76.019,
+          "AuthoredMotionSampler": 75.56599999999999,
+          "setProgram": 71.92600000000003,
+          "flatten": 64.55599999999998,
+          "WebGLRenderer.renderBufferDirect": 63.39099999999999,
+          "querySelectorAll": 58.504000000000005,
+          "getTextureCacheKey": 57.97800000000001,
+          "decodeMotionBinary": 57.26200000000001
+        }
+      }
+    },
+    {
+      "id": "storybook-candidate-input",
+      "originArtifact": "Exploratory Storybook source before flat joints; includes typed index decode, not an immutable A/B reference",
+      "profiled": {
+        "elapsedMs": 5602.199999988079,
+        "submittedFrames": 252,
+        "submittedFps": 44.98232837109283,
+        "rafIntervalsMs": {
+          "count": 273,
+          "median": 16.79999999998836,
+          "p95": 25.20000000001164,
+          "min": 8.299999999988358,
+          "max": 242.1999999999971
+        },
+        "destinationCopies": 2016,
+        "destinationCopyCallMs": 86.59999966621399,
+        "perDestinationCopyGapsMs": {
+          "count": 2008,
+          "median": 20.5,
+          "p95": 27.0,
+          "min": 11.300000011920929,
+          "max": 246.80000001192093
+        },
+        "longTasks": [],
+        "events": [
+          {
+            "type": "pointerdown",
+            "delay": 37,
+            "at": 86102.19999998808
+          },
+          {
+            "type": "touchstart",
+            "delay": 38.60000002384186,
+            "at": 86103.80000001192
+          }
+        ]
+      },
+      "mounted": 48,
+      "visible": 8,
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": null,
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 20,
+          "pending": 0,
+          "stats": {
+            "count": 20,
+            "renderedInstances": 8,
+            "columns": 5,
+            "rows": 4,
+            "width": 640,
+            "height": 512,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 93,
+            "triangles": 215604,
+            "atlasPixels": 737280,
+            "renderedPixels": 376320,
+            "poseEvaluations": 8,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 132,
+              "textures": 140,
+              "programs": 7
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5382.819,
+        "selfSampleMs": {
+          "toArray": 1257.7010000000005,
+          "(idle)": 1146.4039999999993,
+          "(program)": 800.5429999999998,
+          "(anonymous)": 174.99500000000003,
+          "sample": 140.24599999999992,
+          "AuthoredAvatarEngine.tick": 104.227,
+          "texSubImage2D": 100.15599999999996,
+          "update": 84.59100000000002,
+          "interpolate": 75.24500000000003,
+          "CanvasRenderingContext2D.drawImage": 73.49000000000002,
+          "drawImage": 68.27,
+          "setValue": 67.30199999999999,
+          "bufferSubData": 58.18000000000001,
+          "flatten": 54.091,
+          "querySelectorAll": 45.49199999999999,
+          "setValueV4f": 44.649,
+          "updateMatrixWorld": 43.054,
+          "WebGLRenderer.renderBufferDirect": 40.294000000000004,
+          "uniformMatrix4fv": 37.93000000000001,
+          "upload": 36.010999999999996
+        }
+      }
+    },
+    {
+      "id": "storybook-pinned-baseline-still",
+      "originArtifact": "Storybook source6adb842b",
+      "profiled": {
+        "elapsedMs": 5904.199999988079,
+        "submittedFrames": 263,
+        "submittedFps": 44.54456149868416,
+        "rafIntervalsMs": {
+          "count": 283,
+          "median": 16.700000000000728,
+          "p95": 25.100000000002183,
+          "min": 8.19999999999709,
+          "max": 760.4000000000015
+        },
+        "destinationCopies": 2112,
+        "destinationCopyCallMs": 81.59999966621399,
+        "perDestinationCopyGapsMs": {
+          "count": 2104,
+          "median": 19.5,
+          "p95": 24.5,
+          "min": 10.399999976158142,
+          "max": 766.8999999761581
+        },
+        "longTasks": [],
+        "events": []
+      },
+      "mounted": 48,
+      "visible": 8,
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": null,
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 8,
+          "pending": 0,
+          "stats": {
+            "count": 8,
+            "renderedInstances": 8,
+            "columns": 3,
+            "rows": 3,
+            "width": 384,
+            "height": 384,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 93,
+            "triangles": 215604,
+            "atlasPixels": 331776,
+            "renderedPixels": 331776,
+            "poseEvaluations": 7,
+            "sharedPoseCopies": 2,
+            "resources": {
+              "geometries": 47,
+              "textures": 55,
+              "programs": 7
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5759.512,
+        "selfSampleMs": {
+          "(idle)": 1621.4470000000026,
+          "(program)": 1221.825,
+          "toArray": 1147.6530000000007,
+          "flatten": 110.64799999999997,
+          "AuthoredAvatarEngine.tick": 90.743,
+          "sample": 82.68100000000001,
+          "(anonymous)": 81.631,
+          "CanvasRenderingContext2D.drawImage": 78.58800000000001,
+          "texSubImage2D": 70.65899999999999,
+          "setValue": 70.54600000000002,
+          "drawImage": 66.27699999999999,
+          "querySelectorAll": 61.93899999999999,
+          "upload": 54.22200000000001,
+          "update": 54.124,
+          "WebGLRenderer.renderBufferDirect": 44.901,
+          "bufferSubData": 42.756,
+          "projectObject": 42.354000000000006,
+          "needsUpdate": 40.794000000000004,
+          "updateTexture": 40.16600000000001,
+          "setValueT1": 37.33599999999999
+        }
+      }
+    },
+    {
+      "id": "storybook-flat-joints-still",
+      "originArtifact": "Storybook source6adb842b + ad60350d",
+      "profiled": {
+        "elapsedMs": 5458.400000035763,
+        "submittedFrames": 261,
+        "submittedFps": 47.816209878039345,
+        "rafIntervalsMs": {
+          "count": 295,
+          "median": 16.700000000000728,
+          "p95": 25.100000000000364,
+          "min": 8.199999999998909,
+          "max": 284
+        },
+        "destinationCopies": 2088,
+        "destinationCopyCallMs": 88.39999943971634,
+        "perDestinationCopyGapsMs": {
+          "count": 2080,
+          "median": 19.399999976158142,
+          "p95": 28.69999998807907,
+          "min": 7.5,
+          "max": 294.10000002384186
+        },
+        "longTasks": [],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5035.0,
+        "submittedFrames": 251,
+        "submittedFps": 49.851042701092354,
+        "rafIntervalsMs": {
+          "count": 267,
+          "median": 16.700000000000728,
+          "p95": 25.100000000002183,
+          "min": 8.199999999998909,
+          "max": 33.400000000001455
+        },
+        "destinationCopies": 2008,
+        "destinationCopyCallMs": 78.40000033378601,
+        "perDestinationCopyGapsMs": {
+          "count": 2000,
+          "median": 19.899999976158142,
+          "p95": 25.80000001192093,
+          "min": 5.699999988079071,
+          "max": 44.0
+        },
+        "longTasks": [],
+        "events": []
+      },
+      "mounted": 48,
+      "visible": 8,
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": null,
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 8,
+          "pending": 0,
+          "stats": {
+            "count": 8,
+            "renderedInstances": 8,
+            "columns": 3,
+            "rows": 3,
+            "width": 384,
+            "height": 384,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 93,
+            "triangles": 215604,
+            "atlasPixels": 331776,
+            "renderedPixels": 331776,
+            "poseEvaluations": 7,
+            "sharedPoseCopies": 2,
+            "resources": {
+              "geometries": 47,
+              "textures": 55,
+              "programs": 7
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5295.347,
+        "selfSampleMs": {
+          "(idle)": 2746.697000000003,
+          "(program)": 731.7449999999997,
+          "sample": 169.11900000000003,
+          "AuthoredAvatarEngine.tick": 114.33799999999998,
+          "(anonymous)": 100.15500000000002,
+          "drawImage": 84.27,
+          "update": 73.22200000000001,
+          "CanvasRenderingContext2D.drawImage": 72.84199999999998,
+          "setValueV4f": 67.60800000000002,
+          "WebGLRenderer.renderBufferDirect": 61.868,
+          "toArray": 52.273999999999994,
+          "needsUpdate": 50.43600000000001,
+          "bufferSubData": 48.639,
+          "querySelectorAll": 48.352000000000004,
+          "texSubImage2D": 47.93699999999999,
+          "projectObject": 41.028999999999996,
+          "setValueM4": 38.967,
+          "setValue": 37.321999999999996,
+          "upload": 35.562,
+          "get": 35.196999999999996
+        }
+      }
+    },
+    {
+      "id": "storybook-pinned-baseline-repeat-still",
+      "originArtifact": "Storybook source6adb842b",
+      "profiled": {
+        "elapsedMs": 5544.5,
+        "submittedFrames": 222,
+        "submittedFps": 40.03967896113265,
+        "rafIntervalsMs": {
+          "count": 262,
+          "median": 16.80000000000109,
+          "p95": 33.399999999999636,
+          "min": 8.199999999998909,
+          "max": 334
+        },
+        "destinationCopies": 1784,
+        "destinationCopyCallMs": 106.60000079870224,
+        "perDestinationCopyGapsMs": {
+          "count": 1776,
+          "median": 23.19999998807907,
+          "p95": 31.5,
+          "min": 13.400000035762787,
+          "max": 338.80000001192093
+        },
+        "longTasks": [],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5038.0,
+        "submittedFrames": 228,
+        "submittedFps": 45.25605398967844,
+        "rafIntervalsMs": {
+          "count": 233,
+          "median": 25,
+          "p95": 25.200000000000728,
+          "min": 8.300000000001091,
+          "max": 33.5
+        },
+        "destinationCopies": 1832,
+        "destinationCopyCallMs": 82.50000005960464,
+        "perDestinationCopyGapsMs": {
+          "count": 1824,
+          "median": 21.600000023841858,
+          "p95": 27.0,
+          "min": 14.699999988079071,
+          "max": 33.5
+        },
+        "longTasks": [],
+        "events": []
+      },
+      "mounted": 48,
+      "visible": 8,
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": null,
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 8,
+          "pending": 0,
+          "stats": {
+            "count": 8,
+            "renderedInstances": 8,
+            "columns": 3,
+            "rows": 3,
+            "width": 384,
+            "height": 384,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 93,
+            "triangles": 215604,
+            "atlasPixels": 331776,
+            "renderedPixels": 331776,
+            "poseEvaluations": 7,
+            "sharedPoseCopies": 2,
+            "resources": {
+              "geometries": 47,
+              "textures": 55,
+              "programs": 7
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5354.134,
+        "selfSampleMs": {
+          "toArray": 1582.874999999998,
+          "(program)": 882.3820000000012,
+          "(idle)": 796.5209999999998,
+          "sample": 125.89399999999999,
+          "(anonymous)": 107.18500000000002,
+          "update": 99.81999999999996,
+          "texSubImage2D": 94.154,
+          "setValue": 86.32500000000002,
+          "drawImage": 86.201,
+          "setProgram": 78.11399999999999,
+          "CanvasRenderingContext2D.drawImage": 75.039,
+          "AuthoredAvatarEngine.tick": 71.201,
+          "querySelectorAll": 67.173,
+          "bufferSubData": 61.969,
+          "setValueV4f": 56.78699999999999,
+          "WebGLRenderer.renderBufferDirect": 55.92999999999999,
+          "needsUpdate": 52.722,
+          "bindTexture": 47.158,
+          "uploadTexture": 41.030999999999985,
+          "multiplyMatrices": 40.11799999999999
+        }
+      }
+    },
+    {
+      "id": "candidate-authored-12",
+      "originArtifact": "built6adb842b",
+      "profiled": {
+        "elapsedMs": 5214.099999964237,
+        "submittedFrames": 264,
+        "submittedFps": 50.631940316029755,
+        "rafIntervalsMs": {
+          "count": 363,
+          "median": 16.599999999998545,
+          "p95": 25.100000000000364,
+          "min": 8.200000000000728,
+          "max": 133.60000000000036
+        },
+        "destinationCopies": 3168,
+        "destinationCopyCallMs": 98.59999996423721,
+        "perDestinationCopyGapsMs": {
+          "count": 3156,
+          "median": 19.30000001192093,
+          "p95": 28.899999976158142,
+          "min": 4.899999976158142,
+          "max": 138.9000000357628
+        },
+        "longTasks": [],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5067.699999988079,
+        "submittedFrames": 271,
+        "submittedFps": 53.4759358290028,
+        "rafIntervalsMs": {
+          "count": 525,
+          "median": 8.399999999999636,
+          "p95": 16.700000000000728,
+          "min": 8.19999999999709,
+          "max": 25.100000000002183
+        },
+        "destinationCopies": 3240,
+        "destinationCopyCallMs": 86.19999992847443,
+        "perDestinationCopyGapsMs": {
+          "count": 3228,
+          "median": 17.80000001192093,
+          "p95": 31.5,
+          "min": 4.899999976158142,
+          "max": 38.0
+        },
+        "longTasks": [],
+        "events": []
+      },
+      "count": 12,
+      "kind": "authored",
+      "cssSize": 96,
+      "ready": 12,
+      "visible": 12,
+      "readyMs": 1910.4000000357628,
+      "errors": [],
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "Mali-G715",
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 12,
+          "pending": 0,
+          "stats": {
+            "count": 12,
+            "renderedInstances": 12,
+            "columns": 4,
+            "rows": 3,
+            "width": 512,
+            "height": 384,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 111,
+            "triangles": 270900,
+            "atlasPixels": 442368,
+            "renderedPixels": 442368,
+            "poseEvaluations": 12,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 56,
+              "textures": 63,
+              "programs": 6
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5144.673,
+        "selfSampleMs": {
+          "(idle)": 3025.9629999999966,
+          "(program)": 477.76399999999995,
+          "Ti": 120.32899999999992,
+          "(anonymous)": 117.968,
+          "drawImage": 89.43899999999998,
+          "sample": 71.368,
+          "tick": 70.279,
+          "texSubImage2D": 66.642,
+          "s": 63.35699999999999,
+          "Hp.renderBufferDirect": 60.54599999999998,
+          "Jd": 59.09,
+          "setValue": 49.351000000000006,
+          "bufferSubData": 45.91900000000001,
+          "upload": 41.351,
+          "j": 41.166000000000004,
+          "tf": 38.62200000000001,
+          "m": 36.028999999999996,
+          "multiplyMatrices": 34.994,
+          "clearRect": 34.425,
+          "_e": 33.669000000000004
+        }
+      }
+    },
+    {
+      "id": "candidate-authored-24",
+      "originArtifact": "built6adb842b",
+      "profiled": {
+        "elapsedMs": 5504.200000047684,
+        "submittedFrames": 152,
+        "submittedFps": 27.61527560747851,
+        "rafIntervalsMs": {
+          "count": 156,
+          "median": 33.399999999999636,
+          "p95": 41.80000000000109,
+          "min": 8.199999999998909,
+          "max": 225.5
+        },
+        "destinationCopies": 3648,
+        "destinationCopyCallMs": 62.8000003695488,
+        "perDestinationCopyGapsMs": {
+          "count": 3624,
+          "median": 35.099999994039536,
+          "p95": 46.90000003576279,
+          "min": 5.900000035762787,
+          "max": 221.9000000357628
+        },
+        "longTasks": [
+          {
+            "at": 8694.100000023842,
+            "duration": 93
+          }
+        ],
+        "events": []
+      },
+      "count": 24,
+      "kind": "authored",
+      "cssSize": 96,
+      "ready": 24,
+      "visible": 24,
+      "readyMs": 2445.800000011921,
+      "errors": [],
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "Mali-G715",
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 24,
+          "pending": 0,
+          "stats": {
+            "count": 24,
+            "renderedInstances": 24,
+            "columns": 5,
+            "rows": 5,
+            "width": 640,
+            "height": 640,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 111,
+            "triangles": 524236,
+            "atlasPixels": 921600,
+            "renderedPixels": 921600,
+            "poseEvaluations": 24,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 56,
+              "textures": 63,
+              "programs": 6
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5248.583,
+        "selfSampleMs": {
+          "(idle)": 3114.1440000000052,
+          "(program)": 495.24799999999965,
+          "(anonymous)": 273.97299999999996,
+          "sample": 167.43400000000003,
+          "tick": 101.09000000000002,
+          "wf": 77.73900000000002,
+          "s": 75.58799999999998,
+          "drawImage": 54.88499999999999,
+          "texSubImage2D": 54.68400000000001,
+          "oc": 53.088,
+          "o": 48.90700000000001,
+          "Hp.renderBufferDirect": 48.873,
+          "y": 45.81799999999999,
+          "bufferSubData": 38.92099999999999,
+          "multiplyMatrices": 32.28,
+          "j": 29.648000000000003,
+          "Jd": 28.236,
+          "updateMatrixWorld": 25.027,
+          "uniformMatrix4fv": 23.992000000000004,
+          "eo": 23.746
+        }
+      }
+    },
+    {
+      "id": "candidate-catalog-24",
+      "originArtifact": "built6adb842b",
+      "profiled": {
+        "elapsedMs": 5363.0,
+        "submittedFrames": 151,
+        "submittedFps": 28.155882901361178,
+        "rafIntervalsMs": {
+          "count": 151,
+          "median": 33.400000000001455,
+          "p95": 41.899999999999636,
+          "min": 8.299999999999272,
+          "max": 134.5
+        },
+        "destinationCopies": 3600,
+        "destinationCopyCallMs": 51.799999952316284,
+        "perDestinationCopyGapsMs": {
+          "count": 3576,
+          "median": 35.89999997615814,
+          "p95": 48.19999998807907,
+          "min": 9.399999976158142,
+          "max": 131.30000001192093
+        },
+        "longTasks": [
+          {
+            "at": 10169.900000035763,
+            "duration": 62
+          }
+        ],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5110.199999988079,
+        "submittedFrames": 130,
+        "submittedFps": 25.43931744360363,
+        "rafIntervalsMs": {
+          "count": 134,
+          "median": 41.70000000000073,
+          "p95": 50.099999999998545,
+          "min": 7.599999999998545,
+          "max": 99.89999999999964
+        },
+        "destinationCopies": 3144,
+        "destinationCopyCallMs": 47.10000056028366,
+        "perDestinationCopyGapsMs": {
+          "count": 3120,
+          "median": 39.0,
+          "p95": 54.40000003576279,
+          "min": 7.199999988079071,
+          "max": 93.20000004768372
+        },
+        "longTasks": [
+          {
+            "at": 15683.699999988079,
+            "duration": 82
+          }
+        ],
+        "events": []
+      },
+      "count": 24,
+      "kind": "catalog",
+      "cssSize": 96,
+      "ready": 24,
+      "visible": 24,
+      "readyMs": 4010.300000011921,
+      "errors": [],
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "Mali-G715",
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 24,
+          "pending": 0,
+          "stats": {
+            "count": 24,
+            "renderedInstances": 24,
+            "columns": 5,
+            "rows": 5,
+            "width": 640,
+            "height": 640,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 51,
+            "triangles": 884188,
+            "atlasPixels": 921600,
+            "renderedPixels": 921600,
+            "poseEvaluations": 24,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 26,
+              "textures": 34,
+              "programs": 7
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5132.657,
+        "selfSampleMs": {
+          "(idle)": 2936.8280000000073,
+          "toArray": 635.4770000000004,
+          "(program)": 352.215,
+          "sample": 307.1440000000002,
+          "(anonymous)": 114.78599999999997,
+          "tick": 63.823,
+          "drawImage": 53.298,
+          "multiplyMatrices": 50.59299999999998,
+          "copy": 46.29700000000001,
+          "s": 39.754999999999995,
+          "oc": 38.199999999999996,
+          "bufferSubData": 26.810999999999996,
+          "texSubImage2D": 26.386,
+          "clearRect": 22.973999999999997,
+          "Hp.renderBufferDirect": 21.517,
+          "gi": 18.285999999999998,
+          "_e": 16.411,
+          "invert": 15.888000000000002,
+          "uniformMatrix4fv": 14.927,
+          "paint": 14.721
+        }
+      }
+    },
+    {
+      "id": "flat-authored-24",
+      "originArtifact": "Built6adb842b + isolated ad60350d",
+      "profiled": {
+        "elapsedMs": 5645.100000023842,
+        "submittedFrames": 133,
+        "submittedFps": 23.560255796963435,
+        "rafIntervalsMs": {
+          "count": 136,
+          "median": 41.70000000000073,
+          "p95": 50.099999999998545,
+          "min": 8.299999999999272,
+          "max": 325.2000000000007
+        },
+        "destinationCopies": 3216,
+        "destinationCopyCallMs": 55.60000020265579,
+        "perDestinationCopyGapsMs": {
+          "count": 3192,
+          "median": 40.0,
+          "p95": 49.80000001192093,
+          "min": 7,
+          "max": 323.39999997615814
+        },
+        "longTasks": [
+          {
+            "at": 8835.300000011921,
+            "duration": 110
+          }
+        ],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5136.199999988079,
+        "submittedFrames": 126,
+        "submittedFps": 24.531754994021345,
+        "rafIntervalsMs": {
+          "count": 129,
+          "median": 41.79999999999927,
+          "p95": 50.100000000000364,
+          "min": 8.199999999998909,
+          "max": 116.40000000000146
+        },
+        "destinationCopies": 3024,
+        "destinationCopyCallMs": 58.19999945163727,
+        "perDestinationCopyGapsMs": {
+          "count": 3000,
+          "median": 40.69999998807907,
+          "p95": 53,
+          "min": 8.299999952316284,
+          "max": 90.5
+        },
+        "longTasks": [
+          {
+            "at": 14633.300000011921,
+            "duration": 81
+          }
+        ],
+        "events": []
+      },
+      "count": 24,
+      "kind": "authored",
+      "cssSize": 96,
+      "ready": 24,
+      "visible": 24,
+      "readyMs": 2645.599999964237,
+      "errors": [],
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "Mali-G715",
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 24,
+          "pending": 0,
+          "stats": {
+            "count": 24,
+            "renderedInstances": 24,
+            "columns": 5,
+            "rows": 5,
+            "width": 640,
+            "height": 640,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 111,
+            "triangles": 524236,
+            "atlasPixels": 921600,
+            "renderedPixels": 921600,
+            "poseEvaluations": 24,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 56,
+              "textures": 63,
+              "programs": 6
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5351.853,
+        "selfSampleMs": {
+          "(idle)": 3197.2749999999924,
+          "(program)": 570.5940000000003,
+          "(anonymous)": 226.14899999999994,
+          "sample": 195.81,
+          "tick": 130.946,
+          "s": 79.547,
+          "texSubImage2D": 60.25999999999998,
+          "Hp.renderBufferDirect": 56.74300000000001,
+          "oc": 54.37,
+          "drawImage": 51.228,
+          "o": 50.261999999999986,
+          "multiplyMatrices": 38.06999999999999,
+          "bufferSubData": 34.925999999999995,
+          "y": 31.032,
+          "j": 30.227000000000004,
+          "updateMatrixWorld": 28.970999999999997,
+          "Jd": 25.242,
+          "uniformMatrix4fv": 25.122,
+          "clearRect": 22.394000000000002,
+          "er": 20.555999999999997
+        }
+      }
+    },
+    {
+      "id": "control-authored-24",
+      "originArtifact": "built6adb842b",
+      "profiled": {
+        "elapsedMs": 5464.199999988079,
+        "submittedFrames": 127,
+        "submittedFps": 23.242194648855655,
+        "rafIntervalsMs": {
+          "count": 131,
+          "median": 41.70000000000073,
+          "p95": 50.19999999999891,
+          "min": 8.299999999999272,
+          "max": 291.7999999999993
+        },
+        "destinationCopies": 3072,
+        "destinationCopyCallMs": 58.10000002384186,
+        "perDestinationCopyGapsMs": {
+          "count": 3048,
+          "median": 40.60000002384186,
+          "p95": 49.69999998807907,
+          "min": 6.599999964237213,
+          "max": 285.2000000476837
+        },
+        "longTasks": [
+          {
+            "at": 8983.5,
+            "duration": 99
+          }
+        ],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5155.900000035763,
+        "submittedFrames": 123,
+        "submittedFps": 23.85616478192883,
+        "rafIntervalsMs": {
+          "count": 124,
+          "median": 41.79999999999927,
+          "p95": 50.100000000000364,
+          "min": 8.299999999999272,
+          "max": 75.39999999999964
+        },
+        "destinationCopies": 2952,
+        "destinationCopyCallMs": 56.19999969005585,
+        "perDestinationCopyGapsMs": {
+          "count": 2928,
+          "median": 41.59999996423721,
+          "p95": 54.30000001192093,
+          "min": 7.5,
+          "max": 112.80000001192093
+        },
+        "longTasks": [
+          {
+            "at": 14622.899999976158,
+            "duration": 103
+          }
+        ],
+        "events": []
+      },
+      "count": 24,
+      "kind": "authored",
+      "cssSize": 96,
+      "ready": 24,
+      "visible": 24,
+      "readyMs": 2796,
+      "errors": [],
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "Mali-G715",
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 24,
+          "pending": 0,
+          "stats": {
+            "count": 24,
+            "renderedInstances": 24,
+            "columns": 5,
+            "rows": 5,
+            "width": 640,
+            "height": 640,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 111,
+            "triangles": 524236,
+            "atlasPixels": 921600,
+            "renderedPixels": 921600,
+            "poseEvaluations": 24,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 56,
+              "textures": 63,
+              "programs": 6
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5288.858,
+        "selfSampleMs": {
+          "(idle)": 3154.8219999999965,
+          "(program)": 536.164,
+          "(anonymous)": 240.95299999999992,
+          "sample": 185.13099999999994,
+          "tick": 93.98800000000001,
+          "texSubImage2D": 74.63600000000002,
+          "oc": 73.97500000000004,
+          "s": 65.796,
+          "Ti": 56.14800000000001,
+          "y": 52.530999999999985,
+          "o": 51.059,
+          "Hp.renderBufferDirect": 50.132999999999996,
+          "drawImage": 44.86100000000001,
+          "multiplyMatrices": 43.123000000000005,
+          "bufferSubData": 36.43600000000001,
+          "er": 33.815999999999995,
+          "uniformMatrix4fv": 24.844,
+          "j": 20.396999999999995,
+          "clearRect": 19.413999999999998,
+          "_e": 19.119000000000003
+        }
+      }
+    },
+    {
+      "id": "chromium-matched24",
+      "originArtifact": "built6adb842b",
+      "profiled": {
+        "elapsedMs": 5553.199999988079,
+        "submittedFrames": 98,
+        "submittedFps": 17.647482532631702,
+        "rafIntervalsMs": {
+          "count": 98,
+          "median": 58.14999999999873,
+          "p95": 58.80000000000109,
+          "min": 16.599999999998545,
+          "max": 275.59999999999854
+        },
+        "destinationCopies": 2352,
+        "destinationCopyCallMs": 136.6999997496605,
+        "perDestinationCopyGapsMs": {
+          "count": 2328,
+          "median": 53.59999996423721,
+          "p95": 65.0,
+          "min": 11.899999976158142,
+          "max": 216.19999998807907
+        },
+        "longTasks": [
+          {
+            "at": 8984.699999988079,
+            "duration": 267
+          }
+        ],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5153.0,
+        "submittedFrames": 96,
+        "submittedFps": 18.629924315932467,
+        "rafIntervalsMs": {
+          "count": 97,
+          "median": 58.29999999999927,
+          "p95": 58.600000000000364,
+          "min": 16.599999999998545,
+          "max": 150.40000000000146
+        },
+        "destinationCopies": 2328,
+        "destinationCopyCallMs": 112.5999995470047,
+        "perDestinationCopyGapsMs": {
+          "count": 2304,
+          "median": 56.70000001788139,
+          "p95": 68.19999998807907,
+          "min": 13.5,
+          "max": 157.5
+        },
+        "longTasks": [
+          {
+            "at": 14914.399999976158,
+            "duration": 139
+          }
+        ],
+        "events": []
+      },
+      "count": 24,
+      "kind": "authored",
+      "cssSize": 96,
+      "ready": 24,
+      "visible": 24,
+      "readyMs": 2978.199999988079,
+      "errors": [],
+      "viewport": [411, 732, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "ANGLE (ARM, Vulkan 1.4.305 (Mali-G715 (0xB8A20000)), Mali-G715)",
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 24,
+          "pending": 0,
+          "stats": {
+            "count": 24,
+            "renderedInstances": 24,
+            "columns": 5,
+            "rows": 5,
+            "width": 640,
+            "height": 640,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 111,
+            "triangles": 524236,
+            "atlasPixels": 921600,
+            "renderedPixels": 921600,
+            "poseEvaluations": 24,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 56,
+              "textures": 63,
+              "programs": 6
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5212.968,
+        "selfSampleMs": {
+          "(idle)": 3055.2830000000035,
+          "(program)": 599.1430000000001,
+          "(anonymous)": 172.03099999999995,
+          "sample": 146.98099999999997,
+          "drawImage": 105.59299999999998,
+          "tick": 98.427,
+          "(garbage collector)": 71.521,
+          "gi": 69.80300000000003,
+          "Ti": 68.36800000000001,
+          "s": 46.825,
+          "Jd": 46.82099999999999,
+          "Hp.renderBufferDirect": 43.03800000000001,
+          "CanvasRenderingContext2D.drawImage": 41.486000000000004,
+          "texSubImage2D": 41.417,
+          "clearRect": 38.81700000000001,
+          "m": 36.12800000000001,
+          "_e": 34.382999999999996,
+          "bufferSubData": 33.65900000000001,
+          "tf": 22.987000000000002,
+          "uniformMatrix4fv": 22.205000000000002
+        }
+      }
+    },
+    {
+      "id": "webview-matched24",
+      "originArtifact": "built6adb842b",
+      "profiled": {
+        "elapsedMs": 5929.699999988079,
+        "submittedFrames": 136,
+        "submittedFps": 22.935393021615496,
+        "rafIntervalsMs": {
+          "count": 139,
+          "median": 41.69999999999891,
+          "p95": 43.5,
+          "min": 8.299999999999272,
+          "max": 600.3999999999996
+        },
+        "destinationCopies": 3264,
+        "destinationCopyCallMs": 51.69999921321869,
+        "perDestinationCopyGapsMs": {
+          "count": 3240,
+          "median": 39.799999952316284,
+          "p95": 49.80000001192093,
+          "min": 9.399999976158142,
+          "max": 611.2000000476837
+        },
+        "longTasks": [
+          {
+            "at": 8996.799999952316,
+            "duration": 93
+          }
+        ],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5088.800000011921,
+        "submittedFrames": 122,
+        "submittedFps": 23.974217890212664,
+        "rafIntervalsMs": {
+          "count": 123,
+          "median": 41.79999999999927,
+          "p95": 50.29999999999927,
+          "min": 8.299999999999272,
+          "max": 75
+        },
+        "destinationCopies": 2904,
+        "destinationCopyCallMs": 50.10000002384186,
+        "perDestinationCopyGapsMs": {
+          "count": 2880,
+          "median": 41.90000003576279,
+          "p95": 52.80000001192093,
+          "min": 9.0,
+          "max": 54.10000002384186
+        },
+        "longTasks": [
+          {
+            "at": 15087.899999976158,
+            "duration": 69
+          }
+        ],
+        "events": []
+      },
+      "count": 24,
+      "kind": "authored",
+      "cssSize": 96,
+      "ready": 24,
+      "visible": 24,
+      "readyMs": 2773.300000011921,
+      "errors": [],
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "Mali-G715",
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 24,
+          "pending": 0,
+          "stats": {
+            "count": 24,
+            "renderedInstances": 24,
+            "columns": 5,
+            "rows": 5,
+            "width": 640,
+            "height": 640,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 111,
+            "triangles": 524236,
+            "atlasPixels": 921600,
+            "renderedPixels": 921600,
+            "poseEvaluations": 24,
+            "sharedPoseCopies": 0,
+            "resources": {
+              "geometries": 56,
+              "textures": 63,
+              "programs": 6
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5636.067,
+        "selfSampleMs": {
+          "(idle)": 3086.599999999997,
+          "(program)": 878.8419999999999,
+          "(anonymous)": 224.363,
+          "sample": 202.92299999999992,
+          "tick": 105.54099999999997,
+          "s": 81.50900000000001,
+          "toArray": 50.751999999999995,
+          "texSubImage2D": 48.85300000000001,
+          "bufferSubData": 47.351,
+          "Ti": 43.724000000000004,
+          "drawImage": 43.24599999999999,
+          "j": 42.06999999999999,
+          "multiplyMatrices": 39.620999999999995,
+          "y": 33.928,
+          "oc": 33.766999999999996,
+          "m": 32.550999999999995,
+          "upload": 31.643000000000004,
+          "updateMatrixWorld": 28.609,
+          "copy": 28.08,
+          "o": 26.112999999999996
+        }
+      }
+    },
+    {
+      "id": "webview-blue24",
+      "originArtifact": "built6adb842b",
+      "profiled": {
+        "elapsedMs": 5473.099999964237,
+        "submittedFrames": 113,
+        "submittedFps": 20.64643437918883,
+        "rafIntervalsMs": {
+          "count": 114,
+          "median": 50.0,
+          "p95": 58.5,
+          "min": 8.299999999999272,
+          "max": 100.39999999999964
+        },
+        "destinationCopies": 2712,
+        "destinationCopyCallMs": 92.79999995231628,
+        "perDestinationCopyGapsMs": {
+          "count": 2688,
+          "median": 48.09999996423721,
+          "p95": 59.700000047683716,
+          "min": 7.099999964237213,
+          "max": 133.69999998807907
+        },
+        "longTasks": [
+          {
+            "at": 8120.699999988079,
+            "duration": 120
+          }
+        ],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 5133.299999952316,
+        "submittedFrames": 106,
+        "submittedFps": 20.64948473710569,
+        "rafIntervalsMs": {
+          "count": 109,
+          "median": 50.099999999998545,
+          "p95": 58.599999999998545,
+          "min": 8.200000000000728,
+          "max": 83.29999999999927
+        },
+        "destinationCopies": 2520,
+        "destinationCopyCallMs": 63.00000065565109,
+        "perDestinationCopyGapsMs": {
+          "count": 2496,
+          "median": 49.80000001192093,
+          "p95": 59.5,
+          "min": 7.299999952316284,
+          "max": 87.10000002384186
+        },
+        "longTasks": [
+          {
+            "at": 13768.399999976158,
+            "duration": 80
+          }
+        ],
+        "events": []
+      },
+      "count": 24,
+      "kind": "blue",
+      "cssSize": 96,
+      "ready": 24,
+      "visible": 24,
+      "readyMs": 1866.5,
+      "errors": [],
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "Mali-G715",
+      "pools": [
+        {
+          "cell": 128,
+          "avatars": 24,
+          "pending": 0,
+          "stats": {
+            "count": 24,
+            "renderedInstances": 24,
+            "columns": 5,
+            "rows": 5,
+            "width": 640,
+            "height": 640,
+            "pixelRatio": 1.5,
+            "backingPixelsPerAvatar": 192,
+            "drawCalls": 15,
+            "triangles": 451204,
+            "atlasPixels": 921600,
+            "renderedPixels": 921600,
+            "poseEvaluations": 23,
+            "sharedPoseCopies": 2,
+            "resources": {
+              "geometries": 8,
+              "textures": 15,
+              "programs": 6
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5133.605,
+        "selfSampleMs": {
+          "(idle)": 3625.912999999999,
+          "(program)": 369.27199999999993,
+          "(anonymous)": 196.98700000000005,
+          "sample": 114.368,
+          "gi": 82.51199999999997,
+          "tick": 78.31800000000003,
+          "drawImage": 72.872,
+          "multiplyMatrices": 41.24900000000001,
+          "s": 27.077,
+          "clearRect": 25.292,
+          "oc": 24.258000000000003,
+          "o": 20.696999999999996,
+          "CanvasRenderingContext2D.drawImage": 20.371999999999996,
+          "texSubImage2D": 20.247,
+          "requestAnimationFrame": 18.474,
+          "Ti": 17.866,
+          "Hp.render": 17.181,
+          "Jd": 16.333000000000002,
+          "copy": 15.547,
+          "updateMatrix": 14.443
+        }
+      }
+    },
+    {
+      "id": "webview-blue64",
+      "originArtifact": "built6adb842b",
+      "profiled": {
+        "elapsedMs": 8487.699999988079,
+        "submittedFrames": 13,
+        "submittedFps": 1.531628120694447,
+        "rafIntervalsMs": {
+          "count": 13,
+          "median": 634.9000000000015,
+          "p95": 759.7999999999956,
+          "min": 584.7000000000044,
+          "max": 759.7999999999956
+        },
+        "destinationCopies": 832,
+        "destinationCopyCallMs": 18.79999989271164,
+        "perDestinationCopyGapsMs": {
+          "count": 768,
+          "median": 655.3499999940395,
+          "p95": 699.5,
+          "min": 606.2000000476837,
+          "max": 699.7000000476837
+        },
+        "longTasks": [
+          {
+            "at": 40507.60000002384,
+            "duration": 625
+          },
+          {
+            "at": 41133.69999998808,
+            "duration": 629
+          },
+          {
+            "at": 41783.30000001192,
+            "duration": 566
+          },
+          {
+            "at": 42444.90000003576,
+            "duration": 662
+          },
+          {
+            "at": 43111.30000001192,
+            "duration": 640
+          },
+          {
+            "at": 43752.30000001192,
+            "duration": 693
+          },
+          {
+            "at": 44450.69999998808,
+            "duration": 670
+          },
+          {
+            "at": 45122.10000002384,
+            "duration": 678
+          },
+          {
+            "at": 45803.60000002384,
+            "duration": 679
+          },
+          {
+            "at": 46484.69999998808,
+            "duration": 623
+          },
+          {
+            "at": 47109.69999998808,
+            "duration": 631
+          },
+          {
+            "at": 47767.40000003576,
+            "duration": 596
+          }
+        ],
+        "events": []
+      },
+      "unprofiledSteady": {
+        "elapsedMs": 6782.699999988079,
+        "submittedFrames": 11,
+        "submittedFps": 1.6217730402375652,
+        "rafIntervalsMs": {
+          "count": 11,
+          "median": 618,
+          "p95": 659.8999999999942,
+          "min": 568.2000000000044,
+          "max": 659.8999999999942
+        },
+        "destinationCopies": 704,
+        "destinationCopyCallMs": 11.399999976158142,
+        "perDestinationCopyGapsMs": {
+          "count": 640,
+          "median": 615.75,
+          "p95": 656.3000000119209,
+          "min": 568.9000000357628,
+          "max": 657.3999999761581
+        },
+        "longTasks": [
+          {
+            "at": 50895.80000001192,
+            "duration": 603
+          },
+          {
+            "at": 51499.69999998808,
+            "duration": 582
+          },
+          {
+            "at": 52092.30000001192,
+            "duration": 613
+          },
+          {
+            "at": 52707,
+            "duration": 648
+          },
+          {
+            "at": 53356.5,
+            "duration": 635
+          },
+          {
+            "at": 53993.90000003576,
+            "duration": 566
+          },
+          {
+            "at": 54562.10000002384,
+            "duration": 615
+          },
+          {
+            "at": 55178.80000001192,
+            "duration": 614
+          },
+          {
+            "at": 55794.90000003576,
+            "duration": 567
+          },
+          {
+            "at": 56363,
+            "duration": 656
+          }
+        ],
+        "events": []
+      },
+      "count": 64,
+      "kind": "blue",
+      "cssSize": 64,
+      "ready": 64,
+      "visible": 64,
+      "readyMs": 31046,
+      "errors": [],
+      "viewport": [411, 914, 2.625],
+      "gpuTimerSupported": false,
+      "renderer": "Mali-G715",
+      "pools": [
+        {
+          "cell": 64,
+          "avatars": 64,
+          "pending": 0,
+          "stats": {
+            "count": 64,
+            "renderedInstances": 64,
+            "columns": 8,
+            "rows": 8,
+            "width": 512,
+            "height": 512,
+            "pixelRatio": 1,
+            "backingPixelsPerAvatar": 64,
+            "drawCalls": 15,
+            "triangles": 1203204,
+            "atlasPixels": 262144,
+            "renderedPixels": 262144,
+            "poseEvaluations": 63,
+            "sharedPoseCopies": 2,
+            "resources": {
+              "geometries": 8,
+              "textures": 15,
+              "programs": 6
+            }
+          }
+        }
+      ],
+      "cpuProfile": {
+        "durationMs": 5390.552,
+        "selfSampleMs": {
+          "(program)": 5285.082999999985,
+          "sample": 14.947000000000001,
+          "(anonymous)": 13.25,
+          "drawImage": 13.125,
+          "bufferSubData": 7.529,
+          "asset": 7.4399999999999995,
+          "tick": 6.426,
+          "(idle)": 5.53,
+          "setFromEuler": 3.766,
+          "(garbage collector)": 2.7720000000000002,
+          "normalize": 2.723,
+          "multiplyMatrices": 2.566,
+          "invert": 2.526,
+          "uniformMatrix4fv": 2.513,
+          "Hp.render": 2.375,
+          "texSubImage2D": 2.3600000000000003,
+          "hidden": 1.622,
+          "onFrame": 1.502,
+          "clearRect": 1.414,
+          "viewport": 1.32
+        }
+      }
+    }
+  ],
+  "trace": {
+    "scope": "5-second app-filtered atrace gfx/view/webview during built24-authored workload. Only test-app process spans retained; nested spans overlap and must not be summed.",
+    "spans": [
+      {
+        "thread": "RenderThread",
+        "name": "Drawing  0.00  0.00 1080.00 2400.00",
+        "count": 114,
+        "totalMs": 4940.343000460416,
+        "medianMs": 43.377499969210476,
+        "p95Ms": 47.92000004090369
+      },
+      {
+        "thread": "RenderThread",
+        "name": "flush commands",
+        "count": 114,
+        "totalMs": 4869.116999674588,
+        "medianMs": 42.83299995586276,
+        "p95Ms": 47.143999952822924
+      },
+      {
+        "thread": "RenderThread",
+        "name": "Vulkan finish frame",
+        "count": 114,
+        "totalMs": 4868.447000044398,
+        "medianMs": 42.826500022783875,
+        "p95Ms": 47.13999992236495
+      },
+      {
+        "thread": "avatarbenchmark",
+        "name": "traversal",
+        "count": 114,
+        "totalMs": 4721.275000367314,
+        "medianMs": 41.61049996037036,
+        "p95Ms": 46.267000027000904
+      },
+      {
+        "thread": "avatarbenchmark",
+        "name": "draw-VRI[MainActivity]",
+        "count": 114,
+        "totalMs": 4701.259999186732,
+        "medianMs": 41.454499994870275,
+        "p95Ms": 46.10999999567866
+      },
+      {
+        "thread": "avatarbenchmark",
+        "name": "postAndWait",
+        "count": 114,
+        "totalMs": 4623.966999119148,
+        "medianMs": 40.84649996366352,
+        "p95Ms": 45.436999993398786
+      },
+      {
+        "thread": "RenderThread",
+        "name": "auto skgpu::ganesh::OpsTask::onExecute(GrOpFlushState *)::(anonymous class)::operator()() const",
+        "count": 114,
+        "totalMs": 4433.195999707095,
+        "medianMs": 39.31700007524341,
+        "p95Ms": 42.62399999424815
+      },
+      {
+        "thread": "RenderThread",
+        "name": "Drawable",
+        "count": 229,
+        "totalMs": 4425.50999938976,
+        "medianMs": 0.00300002284348011,
+        "p95Ms": 41.883999947458506
+      },
+      {
+        "thread": "RenderThread",
+        "name": "draw",
+        "count": 114,
+        "totalMs": 4421.472999965772,
+        "medianMs": 39.238000055775046,
+        "p95Ms": 42.51800000201911
+      },
+      {
+        "thread": "RenderThread",
+        "name": "WebViewFunctor::drawVk",
+        "count": 114,
+        "totalMs": 4419.292000355199,
+        "medianMs": 39.22249999595806,
+        "p95Ms": 42.498999973759055
+      },
+      {
+        "thread": "Chrome_InProcGp",
+        "name": "QueueSubmit",
+        "count": 2872,
+        "totalMs": 451.281996560283,
+        "medianMs": 0.12400001287460327,
+        "p95Ms": 0.3370000049471855
+      },
+      {
+        "thread": "RenderThread",
+        "name": "WebViewFunctor::postDrawVk",
+        "count": 114,
+        "totalMs": 402.63599972240627,
+        "medianMs": 3.344499971717596,
+        "p95Ms": 5.13100007083267
+      },
+      {
+        "thread": "avatarbenchmark",
+        "name": "animation",
+        "count": 115,
+        "totalMs": 124.78899885900319,
+        "medianMs": 0.990999978967011,
+        "p95Ms": 1.7340000486001372
+      },
+      {
+        "thread": "RenderThread",
+        "name": "queueBuffer",
+        "count": 230,
+        "totalMs": 82.96799985691905,
+        "medianMs": 0.34449994564056396,
+        "p95Ms": 0.5700000328943133
+      },
+      {
+        "thread": "avatarbenchmark",
+        "name": "Record View#draw()",
+        "count": 115,
+        "totalMs": 68.13000014517456,
+        "medianMs": 0.5510000046342611,
+        "p95Ms": 0.7539999205619097
+      },
+      {
+        "thread": "RenderThread",
+        "name": "QueueSubmit",
+        "count": 456,
+        "totalMs": 65.70399925112724,
+        "medianMs": 0.14700007159262896,
+        "p95Ms": 0.27900002896785736
+      },
+      {
+        "thread": "Chrome_InProcGp",
+        "name": "M: CPU Surface conversion",
+        "count": 6161,
+        "totalMs": 30.800004140473902,
+        "medianMs": 0.00500003807246685,
+        "p95Ms": 0.00600004568696022
+      }
+    ]
+  },
+  "fenceDiagnostic": {
+    "method": "Diagnostic gl.flush+fence before first destination copy; wall latency includes command queue, GPU work and main-thread polling delay. Not GPU timer or performance baseline.",
+    "latencyMs": {
+      "count": 25,
+      "median": 98.30000001192093,
+      "p95": 110.89999997615814,
+      "min": 87.80000001192093,
+      "max": 125.59999996423721
+    },
+    "pollCounts": {
+      "count": 25,
+      "median": 21,
+      "p95": 25,
+      "min": 18,
+      "max": 25
+    },
+    "glError": 0
+  },
+  "passAblation": {
+    "method": "Attribution-only skip entire renderer.render for one pass, retaining previous framebuffer contents. Invalid visuals or frozen buffers, never acceptance/performance gain. Other passes and canvas copies continue. Deltas include upload migration, dependency and cache effects; wall CPU submission is not GPU time.",
+    "results": [
+      {
+        "mode": "normal",
+        "elapsedMs": 3125.5,
+        "submittedFrames": 64,
+        "submittedFps": 20.476723724204128,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "depth": 64,
+          "aoSample": 64,
+          "aoResolve": 64,
+          "color": 64,
+          "present": 64
+        },
+        "skipped": {},
+        "uploads": {
+          "bufferSubData": 3456,
+          "texSubImage2D": 3456
+        },
+        "cpuSubmissionWallMs": {
+          "depth": 202.00000005960464,
+          "aoSample": 7.399999737739563,
+          "aoResolve": 3.399999976158142,
+          "color": 119.70000010728836,
+          "present": 7.200000166893005
+        },
+        "glError": null
+      },
+      {
+        "mode": "depth",
+        "elapsedMs": 3120.800000011921,
+        "submittedFrames": 65,
+        "submittedFps": 20.827992822273682,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "depth": 66,
+          "aoSample": 66,
+          "aoResolve": 66,
+          "color": 66,
+          "present": 66
+        },
+        "skipped": {
+          "depth": 66
+        },
+        "uploads": {
+          "bufferSubData": 3564,
+          "texSubImage2D": 3564
+        },
+        "cpuSubmissionWallMs": {
+          "aoSample": 19.69999986886978,
+          "aoResolve": 7.099999725818634,
+          "color": 286.30000019073486,
+          "present": 7.4999998807907104
+        },
+        "glError": null
+      },
+      {
+        "mode": "color",
+        "elapsedMs": 3102.300000011921,
+        "submittedFrames": 64,
+        "submittedFps": 20.629855268592358,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "depth": 64,
+          "aoSample": 64,
+          "aoResolve": 64,
+          "color": 64,
+          "present": 64
+        },
+        "skipped": {
+          "color": 64
+        },
+        "uploads": {
+          "bufferSubData": 3456,
+          "texSubImage2D": 3456
+        },
+        "cpuSubmissionWallMs": {
+          "depth": 217.90000009536743,
+          "aoSample": 9.199999749660492,
+          "aoResolve": 3.500000238418579,
+          "present": 5.700000107288361
+        },
+        "glError": null
+      },
+      {
+        "mode": "present",
+        "elapsedMs": 3094.399999976158,
+        "submittedFrames": 66,
+        "submittedFps": 21.32885212012297,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "depth": 66,
+          "aoSample": 66,
+          "aoResolve": 66,
+          "color": 66,
+          "present": 66
+        },
+        "skipped": {
+          "present": 66
+        },
+        "uploads": {
+          "bufferSubData": 3564,
+          "texSubImage2D": 3564
+        },
+        "cpuSubmissionWallMs": {
+          "depth": 258.6999999284744,
+          "aoSample": 8,
+          "aoResolve": 3.099999964237213,
+          "color": 127.60000026226044
+        },
+        "glError": null
+      },
+      {
+        "mode": "normal",
+        "elapsedMs": 3086.300000011921,
+        "submittedFrames": 63,
+        "submittedFps": 20.41279201625139,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "depth": 63,
+          "aoSample": 63,
+          "aoResolve": 63,
+          "color": 63,
+          "present": 63
+        },
+        "skipped": {},
+        "uploads": {
+          "bufferSubData": 3402,
+          "texSubImage2D": 3402
+        },
+        "cpuSubmissionWallMs": {
+          "depth": 270.6999999284744,
+          "aoSample": 7.299999952316284,
+          "aoResolve": 2.9999998807907104,
+          "color": 128.69999992847443,
+          "present": 6.599999964237213
+        },
+        "glError": null
+      }
+    ]
+  },
+  "uploadAblation": {
+    "method": "Attribution-only frozen GPU buffers/textures or all render passes skipped. Invalid/frozen visuals, not a product gain. All uploads/calls restored in finally. Pose generation and destination copies continue; allRender also suppresses upload execution inside Three.",
+    "results": [
+      {
+        "mode": "normal",
+        "elapsedMs": 3121.399999976158,
+        "submittedFrames": 64,
+        "submittedFps": 20.503620170592953,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "render": 320,
+          "bufferSubData": 3456,
+          "texSubImage2D": 3456
+        },
+        "skipped": {},
+        "uploads": null,
+        "cpuSubmissionWallMs": null,
+        "glError": 0
+      },
+      {
+        "mode": "bufferSubData",
+        "elapsedMs": 3101.600000023842,
+        "submittedFrames": 64,
+        "submittedFps": 20.63451121985686,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "render": 320,
+          "bufferSubData": 3456,
+          "texSubImage2D": 3456
+        },
+        "skipped": {
+          "bufferSubData": 3456
+        },
+        "uploads": null,
+        "cpuSubmissionWallMs": null,
+        "glError": 0
+      },
+      {
+        "mode": "texSubImage2D",
+        "elapsedMs": 3078.800000011921,
+        "submittedFrames": 64,
+        "submittedFps": 20.787319734881187,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "render": 320,
+          "bufferSubData": 3456,
+          "texSubImage2D": 3456
+        },
+        "skipped": {
+          "texSubImage2D": 3456
+        },
+        "uploads": null,
+        "cpuSubmissionWallMs": null,
+        "glError": 0
+      },
+      {
+        "mode": "both",
+        "elapsedMs": 3105.699999988079,
+        "submittedFrames": 64,
+        "submittedFps": 20.607270502703308,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "render": 320,
+          "bufferSubData": 3456,
+          "texSubImage2D": 3456
+        },
+        "skipped": {
+          "bufferSubData": 3456,
+          "texSubImage2D": 3456
+        },
+        "uploads": null,
+        "cpuSubmissionWallMs": null,
+        "glError": 0
+      },
+      {
+        "mode": "allRender",
+        "elapsedMs": 3083.800000011921,
+        "submittedFrames": 67,
+        "submittedFps": 21.726441403379273,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "render": 335
+        },
+        "skipped": {
+          "render": 335
+        },
+        "uploads": null,
+        "cpuSubmissionWallMs": null,
+        "glError": 0
+      },
+      {
+        "mode": "normal",
+        "elapsedMs": 3086.800000011921,
+        "submittedFrames": 64,
+        "submittedFps": 20.733445639417145,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "calls": {
+          "render": 320,
+          "bufferSubData": 3456,
+          "texSubImage2D": 3456
+        },
+        "skipped": {},
+        "uploads": null,
+        "cpuSubmissionWallMs": null,
+        "glError": 0
+      }
+    ]
+  },
+  "bitmapPresentationProbe": {
+    "method": "Experimental steady-state bitmap injection after ready, same pool/engine/canvases; timing canvases never read. Not production routing or first-ready/lifecycle proof.",
+    "results": [
+      {
+        "mode": "direct",
+        "elapsedMs": 5127.100000023842,
+        "submittedFrames": 105,
+        "submittedFps": 20.47941331347384,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "presentation": {
+          "mode": "direct",
+          "frames": 105,
+          "completed": 105,
+          "staleDestinations": 0,
+          "fallbackFrames": 0,
+          "bitmapCallMs": 0,
+          "bitmapLatencyMs": 0,
+          "firstCopyMs": 35.89999997615814,
+          "remainingCopyMs": 37.39999997615814,
+          "maximumPending": 0,
+          "destinations": 2520,
+          "errors": [],
+          "pending": 0
+        },
+        "completedAtlasBatchesPerSecond": 20.47941331347384
+      },
+      {
+        "mode": "bitmap",
+        "elapsedMs": 5123.0,
+        "submittedFrames": 104,
+        "submittedFps": 20.3006051141909,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "presentation": {
+          "mode": "bitmap",
+          "frames": 104,
+          "completed": 104,
+          "staleDestinations": 0,
+          "fallbackFrames": 0,
+          "bitmapCallMs": 32.70000034570694,
+          "bitmapLatencyMs": 67.700000166893,
+          "firstCopyMs": 11.70000010728836,
+          "remainingCopyMs": 32.90000009536743,
+          "maximumPending": 1,
+          "destinations": 2496,
+          "errors": [],
+          "pending": 0
+        },
+        "completedAtlasBatchesPerSecond": 20.3006051141909
+      },
+      {
+        "mode": "direct",
+        "elapsedMs": 5105.0,
+        "submittedFrames": 104,
+        "submittedFps": 20.37218413320274,
+        "rafIntervalsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "destinationCopies": 0,
+        "destinationCopyCallMs": 0,
+        "perDestinationCopyGapsMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "longTasks": [],
+        "events": [],
+        "presentation": {
+          "mode": "direct",
+          "frames": 104,
+          "completed": 104,
+          "staleDestinations": 0,
+          "fallbackFrames": 0,
+          "bitmapCallMs": 0,
+          "bitmapLatencyMs": 0,
+          "firstCopyMs": 35.20000058412552,
+          "remainingCopyMs": 36.99999940395355,
+          "maximumPending": 0,
+          "destinations": 2496,
+          "errors": [],
+          "pending": 0
+        },
+        "completedAtlasBatchesPerSecond": 20.37218413320274
+      }
+    ]
+  },
+  "noCopyDiagnostic": {
+    "method": "Attribution-only: suppress destination drawImage while clearRect continues; original WebGL draws continue with explicit flush each frame. Blank/invalid displayed avatars, never a product performance result or proposed behavior.",
+    "elapsedMs": 5065.700000047684,
+    "submittedFrames": 169,
+    "submittedFps": 33.361628205067255,
+    "rafIntervalsMs": {
+      "count": 0,
+      "median": null,
+      "p95": null,
+      "min": null,
+      "max": null
+    },
+    "destinationCopies": 0,
+    "destinationCopyCallMs": 0,
+    "perDestinationCopyGapsMs": {
+      "count": 0,
+      "median": null,
+      "p95": null,
+      "min": null,
+      "max": null
+    },
+    "longTasks": [],
+    "events": []
+  },
+  "findings": [
+    "Source Storybook Matrix4 array flatten/toArray sampled self time~1.26seconds/5seconds disappears with immutable flat uniform buffers. Adjacent source steady45.26\u219249.85fps, but built24 control23.86 vsflat24.53 shows no material production throughput gain in that workload.",
+    "24 all-visible authored/categorized actors remain slow on WebView and standalone Chromium; the ceiling is not unique to embedded WebView. Different graphics backends preclude attributing their FPS difference solely to embedding.",
+    "During late adjacent controls, skipping depth/color/present separately, all rendering, or GPU buffer/texture uploads fails to materially improve~20\u201321fps while destination copies continue. Invalid visual diagnostics strongly direct investigation toward browser presentation/interoperation; they do not prove a single internal driver cause.",
+    "Atlas ImageBitmap followed by the same24 Canvas2D destinations provides no measurable improvement:104\u2013105 completed batches/5seconds, no stale destinations/fallback/errors. The promise alone does not remove downstream work.",
+    "64 same-preset actors at64CSS,64 source backing and128 destination backing remain all visible, yet reach1.62 submittedfps, RAFmedian618ms. Atlas512\u00b2 and15draws; sampled time mostly program/native browser work outside JS. This is a measured unresolved performance limit, not an accepted result."
+  ],
+  "reproduce": "scripts/fixtures/avatar/physical-web/README.md",
+  "cleanup": "Not yet: further authorized physical web work is ongoing. Both owned test APKs and standalone Chromium must be removed only at final cleanup; preserve lab/artifacts and Storybook6006."
+}
