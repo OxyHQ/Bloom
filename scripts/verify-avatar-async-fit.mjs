@@ -13,7 +13,7 @@ const browser = await puppeteer.launch({
 });
 const report = { cases: [], errors: [] };
 try {
-  for (const mode of ['latest', 'dispose', 'context', 'failure']) {
+  for (const mode of ['latest', 'dispose', 'context', 'hidden', 'failure']) {
     const page = await browser.newPage();
     page.on('pageerror', (error) => report.errors.push(error.message));
     await page.setViewport({ width: 512, height: 512, deviceScaleFactor: 2 });
@@ -142,6 +142,15 @@ try {
         extension.restoreContext();
         await wait(() => frames > 0, 'restored first delivery');
         if (errors) throw Error('Recoverable context loss reported fatal');
+      } else if (mode === 'hidden') {
+        canvas.style.display = 'none';
+        await wait(() => !engine.inViewport && !engine.stats().pendingFitReads, 'hidden cancel');
+        if (readbacks.size || fences.size || errors) throw Error('Hidden read retained resources');
+        canvas.style.display = 'block';
+        await wait(() => engine.stats().pendingFitReads > 0, 'visible new fit');
+        if (frames) throw Error('Hidden stale fit delivered');
+        held = false;
+        await wait(() => frames > 0, 'visible first delivery');
       } else if (mode === 'failure') {
         fail = true;
         held = false;
