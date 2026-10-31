@@ -128,6 +128,16 @@ it('retains an active mirror if its original backup is missing', () => {
   expect(readFileSync(join(install, 'src/index.ts'), 'utf8')).toContain('localMarker');
 });
 
+it('refuses restore when an install link was removed and retains its backup and mirror', () => {
+  run(`--source=${source}`);
+  rmSync(install);
+  const result = spawnSync(process.execPath, [script, consumer, '--restore'], { encoding: 'utf8' });
+  expect(result.status).not.toBe(0);
+  expect(existsSync(install)).toBe(false);
+  expect(readlinkSync(join(dirname(install), '.bloom-published'))).toBe(originalLink);
+  expect(readFileSync(join(consumer, 'bloom-local/src/index.ts'), 'utf8')).toContain('localMarker');
+});
+
 it('links built dependencies from the published virtual-store context without modifying them', () => {
   const pkg = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'));
   pkg.dependencies = { 'fixture-dependency': '1.0.0' };

@@ -89,11 +89,13 @@ function bloomInstalls(dir, found = []) {
     }
     if (name === 'node_modules') {
       const target = join(full, '@oxy.so', 'bloom');
-      if (existsSync(target) || isLink(target)) found.push(target);
+      if (existsSync(target) || isLink(target) || existsOrLink(join(dirname(target), KEPT)))
+        found.push(target);
       // Bun's central hoisted links are also resolution entry points for
       // packages inside .bun. Do not traverse or modify its package store.
       const hoisted = join(full, '.bun', 'node_modules', '@oxy.so', 'bloom');
-      if (existsSync(hoisted) || isLink(hoisted)) found.push(hoisted);
+      if (existsSync(hoisted) || isLink(hoisted) || existsOrLink(join(dirname(hoisted), KEPT)))
+        found.push(hoisted);
       continue;
     }
     if (stat.isDirectory() && depth(full) <= 3) bloomInstalls(full, found);
