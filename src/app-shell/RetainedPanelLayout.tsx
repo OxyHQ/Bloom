@@ -28,7 +28,7 @@ import { usePlatformWindow } from '../platform-surface/context';
 import { useWindowChrome, WindowChromeProvider, type WindowChrome } from '../window/context';
 import { ScreenScope } from '../layout/screen-scope';
 import { ScreenHostContext } from '../screen/context';
-import { WorkspaceHeaderInsetContext } from '../screen/workspace-header-context';
+import { WorkspaceHeaderInsetContext } from '../screen/context';
 import {
   resizeRetainedSpans,
   retainedGeometry,

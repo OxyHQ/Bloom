@@ -51,9 +51,13 @@ it.each(['document', 'bounded'] as const)(
       const workspace = get('shell-panels-workspace-content');
       const body = get('body');
       const route = get('route');
+      const surface = get('content-panel-surface');
       expect(workspace).not.toBeNull();
       expect(body).not.toBeNull();
-      if (flow === 'document') expect(route.style.minHeight).toContain('56px');
+      if (flow === 'document') {
+        expect(route.style.minHeight).toContain('56px');
+        expect(surface.style.minHeight).toContain('56px');
+      }
       const before = {
         workspace: workspace.getAttribute('style'),
         body: body.getAttribute('style'),
@@ -67,7 +71,10 @@ it.each(['document', 'bounded'] as const)(
       }).toEqual(before);
       act(() => root.render(app('scroll-under', false)));
       expect(get('route')).toBe(route);
-      if (flow === 'document') expect(route.style.minHeight).toContain('0px');
+      if (flow === 'document') {
+        expect(route.style.minHeight).toContain('0px');
+        expect(surface.style.minHeight).toContain('0px');
+      }
     } finally {
       act(() => root.unmount());
       container.remove();

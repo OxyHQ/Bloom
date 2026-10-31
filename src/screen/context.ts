@@ -1,7 +1,14 @@
 import { createContext, useContext, type RefObject, type ReactNode } from 'react';
+
 import type { AppColorName } from '../theme/color-presets';
 import type { ScrollMetrics } from '../layout/scroll-metrics';
 import type { SharedValue } from 'react-native-reanimated';
+
+/** Workspace clearance is scoped away from independent sheets and panels. */
+export const WorkspaceHeaderInsetContext = createContext<{
+  scrollInset: number;
+  viewportInset: number;
+} | null>(null);
 
 export interface ScreenContextValue {
   active: boolean;
