@@ -14,6 +14,7 @@ import { loadCharacterRuntime } from './character-runtime-module';
 import { characterWebView, type CharacterWebViewHandle } from './character-webview';
 import { type ResolvedAvatarCharacter, resolveAvatarCharacter } from './character';
 import { NativePortrait } from './NativePortrait';
+import { nativeAvatarAdapter, type NativeAvatarAdapterProps } from './native-avatar-adapter';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 
@@ -270,6 +271,41 @@ function NativeCharacter({
   );
 }
 
+function NativeCharacterRouter(
+  props: Omit<NativeAvatarAdapterProps, 'onCapabilities' | 'observeSnapshot'>,
+) {
+  const adapter = nativeAvatarAdapter();
+  const { reportCapabilities } = useContext(CharacterRuntimeContext);
+  const observeSnapshot = useContext(AvatarSnapshotObserver);
+  const [choice, setChoice] = useState<{ url: string; native: boolean }>();
+  useEffect(() => {
+    if (!adapter) return;
+    let stopped = false;
+    void adapter
+      .isRuntimeCompatible(props.runtimeUrl)
+      .then((native) => {
+        if (!stopped) setChoice({ url: props.runtimeUrl, native });
+      })
+      .catch(() => {
+        if (!stopped) setChoice({ url: props.runtimeUrl, native: false });
+      });
+    return () => {
+      stopped = true;
+    };
+  }, [adapter, props.runtimeUrl]);
+  if (!adapter) return <NativeCharacter {...props} />;
+  if (choice?.url !== props.runtimeUrl) return null;
+  if (!choice.native) return <NativeCharacter {...props} />;
+  const Renderer = adapter.NativeAvatar;
+  return (
+    <Renderer
+      {...props}
+      onCapabilities={reportCapabilities}
+      observeSnapshot={observeSnapshot ?? undefined}
+    />
+  );
+}
+
 /** Single character renderer. Web defaults to the hosted module; native uses its configured URL. */
 export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes' }) {
   const { runtimeUrl, stills } = useContext(CharacterRuntimeContext);
@@ -336,7 +372,7 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
   );
   const fail = useMemo(() => () => setFailed(true), []);
   const cachedPortrait = Platform.OS !== 'web' && !!portrait && !interactive && !!stills;
-  const Renderer = Platform.OS === 'web' ? WebCharacter : NativeCharacter;
+  const Renderer = Platform.OS === 'web' ? WebCharacter : NativeCharacterRouter;
   return (
     <StyledView
       className={props.className}
