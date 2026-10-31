@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Platform } from 'react-native';
+import { useNavigation } from 'expo-router';
+import { usePredictiveBackRuntime } from './use-predictive-back-runtime';
 import { useSharedValue } from 'react-native-reanimated';
 import { animateMotion } from '../../motion/recipes';
 import { useRouter, usePathname, type Href } from '../../panel-routing/expo-router';
@@ -71,6 +73,8 @@ export function TabPagerProvider({
   navigationScopeKey,
   children,
 }: TabPagerProviderProps) {
+  const navigation = useNavigation();
+  usePredictiveBackRuntime(navigation);
   const router = useRouter();
   const pathname = usePathname();
   const destinations = useMemo(

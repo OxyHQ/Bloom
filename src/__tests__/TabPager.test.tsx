@@ -18,6 +18,7 @@ const mockRouter = {
 };
 jest.mock('expo-router', () => ({
   useRouter: () => mockRouter,
+  useNavigation: () => ({}),
   usePathname: () => mockPathname,
   useIsFocused: () => true,
 }));
