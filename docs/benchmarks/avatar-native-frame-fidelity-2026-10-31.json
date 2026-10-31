@@ -5,14 +5,8 @@
     "android": 16,
     "gpu": "Mali-G715",
     "nativeHost": "Hermes/ExpoGL shared context,12 authored blue_beret avatars; isolated test app, not production application",
-    "atlasCss": [
-      384,
-      512
-    ],
-    "atlasBacking": [
-      576,
-      768
-    ],
+    "atlasCss": [384, 512],
+    "atlasBacking": [576, 768],
     "logicalCellCss": 128,
     "cellBacking": 192,
     "visibleSurfaceDp": 112,
@@ -76,7 +70,18 @@
     "script": "scripts/verify-avatar-first-frame.mjs",
     "baseline": "e0fee324 DOM first versus second held0.5:17,517 of36,864 pixels differed, max255. Expected failure.",
     "fixed": "Current source suppresses the fit pass from presentation and schedules the requested pose. Four browser cases pass exactly:DOM+injectedhost, eachwithauthoredidle and empty eyes-only preview. Eachcasecompares36,864RGBApixels. Emptyoutputalsoquiescent after200ms.",
-    "physicalAfterFix": "Not yet remeasured in this artifact; browser injected-host proof is separate from physical output."
+    "physicalAfterFix": {
+      "artifactCheckpoint": "6adb842b",
+      "compatible": true,
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "nontransparentPixels": 17341,
+      "comparedPixels": 36864,
+      "glError": 0,
+      "fitPasses": 1,
+      "backingPixelsPerAvatar": 192,
+      "scope": "Actual packed runtime, same Mali GPU, first delivered held idle0.5 vs explicitly repeated same pose; not cross-GPU screenshot equality."
+    }
   },
   "apiHazards": [
     "ExpoGL getParameter(FRAMEBUFFER_BINDING=36006) is unsupported. The test helper restores the known final output framebuffer instead; production rendering does not perform this diagnostic query.",
