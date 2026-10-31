@@ -704,8 +704,9 @@ describe('AppShell variant="feed"', () => {
       maxWidth: 600,
       minWidth: 0,
     });
-    // A `width` would be the bug: 600 inside a 360 phone overflows sideways.
-    expect(resolvedStyle(wide.getByTestId('shell-content').props.style).width).toBeUndefined();
+    // No fixed width: UNSET clears a prior animated width on native, so the
+    // 600 pt column can still shrink inside a 360 pt phone.
+    expect(resolvedStyle(wide.getByTestId('shell-content').props.style).width).toBeNull();
     wide.unmount();
 
     setWidth(360);
