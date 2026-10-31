@@ -35,7 +35,15 @@ import { KEYBOARD_ACTIVATION, type PopupSubmenu, usePopupNavigationRow } from '.
  * DOM, so a layout class and a visual class cannot land in different places.
  */
 import type React from 'react';
-import { Platform, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { type ComponentRef, useEffect, useRef } from 'react';
+import {
+  AccessibilityInfo,
+  Platform,
+  type GestureResponderEvent,
+  type StyleProp,
+  type View,
+  type ViewStyle,
+} from 'react-native';
 
 import {
   StyledPressable,
@@ -44,6 +52,7 @@ import {
   type WebAriaProps,
 } from '../styles/styled-primitives';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { FOCUS_SETTLE_MS } from '../hooks/use-accessibility-focus';
 import {
   ROW_CHEVRON_CLASS,
   ROW_CLASS,
@@ -229,6 +238,19 @@ export function MenuRowShell({
     activate: () => onPress?.(KEYBOARD_ACTIVATION),
     submenu,
   });
+  // The keyboard made this row the active one in a platform popup: the screen reader's focus moves
+  // to it, as VoiceOver's follows a menu's highlight (a hover never moves it). The web's rows take
+  // real focus instead (`menu-keyboard.ts`).
+  const rowRef = useRef<ComponentRef<typeof View> | null>(null);
+  useEffect(() => {
+    if (!navigation.byKeys || Platform.OS === 'web') return;
+    // After the accessibility service has the row: a popup opened from the keys is committed in
+    // this same frame (`use-accessibility-focus.ts`).
+    const timer = setTimeout(() => {
+      if (rowRef.current) AccessibilityInfo.sendAccessibilityEvent(rowRef.current, 'focus');
+    }, FOCUS_SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [navigation.byKeys]);
   // `MENU_ITEM_INTERACTIVE` + `MENU_ITEM_ACTIVE`: hover, keyboard focus
   // and the current selection all paint the same `dropdown-item-hover-background`.
   const highlighted =
@@ -260,6 +282,7 @@ export function MenuRowShell({
 
   return (
     <StyledPressable
+      ref={navigation.inPopup ? rowRef : undefined}
       nativeID={nativeID}
       onLayout={onLayout}
       tabIndex={role === 'option' ? -1 : undefined}

@@ -65,7 +65,9 @@ Uncontrolled by default (`defaultValue` sets the initially-open menu; omit it fo
 
 `MenubarTrigger` draws its own chrome — `rounded-md px-2 py-1.5` with a `text-body-medium` label (`TYPE_SCALE` + Inter, `text-primary`), washed with the menu row highlight (`neutral-100`, dark `neutral-700` @60%) while its menu is open. The bar uses the menu recipe's field: the select trigger's white surface, `border-button-default` hairline and `shadow-xs`, `rounded-2lg`. Pass a string and it is set for you; pass nodes and they go inside that button; pass `asChild` and your own element replaces the whole thing.
 
-On web each menu is an anchored panel under its own trigger, aligned to the trigger's left edge. On native each is the bottom sheet the other menu families use — a phone has no room for a hanging panel, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system.
+On web each menu is an anchored panel under its own trigger, aligned to the trigger's left edge. On a phone each is the bottom sheet the other menu families use — a phone has no room for a hanging panel, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system.
+
+On a native desktop — an adapter reporting [`popup-surface`](/docs/bloom/main/platform-surface) (an OxyOS window, or its shell) — each menu is the web's desktop menu instead: the same panel in the platform's popup, hanging under its trigger with the web's `sideOffset={8} alignOffset={-4}` and 266px floor, its chrome the web panel's (the menu surface as Bloom's material, its 1px edge under it, `shadow-dropdown`, the 16px corner, the separators ending at the rows' edges as the web's scroller clips them), its submenus flying out beside their rows when a pointer drives the platform (`window` or `pointer`), and its rows driven by the platform's keys. Never a bottom sheet there.
 
 Pressing an open menu's trigger closes it.
 
@@ -73,7 +75,7 @@ Pressing an open menu's trigger closes it.
 
 `MenubarItem`, `MenubarCheckboxItem`, `MenubarRadioGroup` / `MenubarRadioItem`, `MenubarLabel`, `MenubarSeparator`, `MenubarShortcut`, `MenubarGroup`, and `MenubarSub` / `MenubarSubTrigger` / `MenubarSubContent`.
 
-Sub-menus fly out beside their trigger row on web and render as an inline disclosure on native — see [DropdownMenu](/docs/bloom/main/dropdown-menu).
+Sub-menus fly out beside their trigger row on web and on a native desktop, and render as an inline disclosure in a phone's sheet — see [DropdownMenu](/docs/bloom/main/dropdown-menu).
 
 ## Shortcuts
 
@@ -121,15 +123,44 @@ A menu's content is its rows. Something else placed in one (a bare `View` or `Te
 
 The labels are the text under each part (strings and numbers, through element children, without a `MenubarShortcut` hint), else its `accessibilityLabel` (an item) or `label` (a trigger). Text a custom component renders is not seen; give such a row an `accessibilityLabel`.
 
+## The bar from the keyboard (`focusValue`)
+
+A desktop's bar is driven from the keyboard once the keyboard is put on it — a Mac's <kbd>Control</kbd>-<kbd>F2</kbd>, OxyOS's <kbd>Super</kbd>-<kbd>F2</kbd>. `Menubar`'s `focusValue` is the `value` of the menu whose title has the keyboard (`undefined`: the keyboard is elsewhere), controlled with `onFocusValueChange`. The owner puts the keyboard on the bar by setting it, to the first menu's value as a Mac does:
+
+```tsx
+const [open, setOpen] = useState<string | undefined>();
+const [focus, setFocus] = useState<string | undefined>();
+// The system's shortcut for the bar:
+onBarShortcut(() => setFocus('app'));
+
+<Menubar value={open} onValueChange={setOpen} focusValue={focus} onFocusValueChange={setFocus}>
+  …
+</Menubar>
+```
+
+While it is set:
+
+- <kbd>←</kbd> · <kbd>→</kbd> move across the titles, round the ends, skipping a disabled menu; with a menu open the next one opens in its place, on its first row. An open menu keeps the arrow it acts on: <kbd>→</kbd> on a row that opens a submenu, <kbd>←</kbd> inside a submenu.
+- With none open, <kbd>↓</kbd> · <kbd>Enter</kbd> · <kbd>Space</kbd> open the focused menu on its first enabled row, <kbd>↑</kbd> on its last; a letter moves to the next title that starts with it (letters typed within 500ms build one query); <kbd>Esc</kbd> leaves the bar.
+- With one open, every other key is the menu's own: its rows, typeahead, and <kbd>Esc</kbd>, which closes it back to its title.
+- A row chosen closes the menu and leaves the bar (`onFocusValueChange(undefined)`), so the owner can give the keyboard back to where it was.
+- A key with <kbd>Ctrl</kbd>, <kbd>Alt</kbd> or <kbd>Meta</kbd> is never the bar's.
+
+The keys come from the platform adapter's `keyboard` before anything else sees them (a native host), or from the document in the capture phase (the web); a key the bar takes goes no further. The focused title is lit as an open one is, and the screen reader's focus (the web's DOM focus) follows it while no menu is open.
+
+`MenubarMenu` also takes `openFocus` (`'first'` | `'last'`), as `DropdownMenu` does: an open the owner makes from its own keys starts with that row active.
+
+Both `value` and `focusValue` are controlled whenever the prop is passed, `undefined` included: `undefined` is "no menu open" and "the keyboard elsewhere", never a hand-back to the bar's own state.
+
+Pinned by `MenubarDesktop.test.tsx`; the desktop reference is the `Desktop menus` story.
+
 ## Keyboard (web)
 
 Each menu takes the keys `DropdownMenu` documents: <kbd>Enter</kbd> · <kbd>Space</kbd> · <kbd>↓</kbd> on a trigger open its menu onto the first row (<kbd>↑</kbd> onto the last), the arrows move between rows and wrap, <kbd>Home</kbd> · <kbd>End</kbd> jump, <kbd>Enter</kbd> · <kbd>Space</kbd> activate, and <kbd>Esc</kbd> · <kbd>Tab</kbd> close the menu with focus back on its trigger. See [DropdownMenu → Keyboard](/docs/bloom/main/dropdown-menu).
 
 ## What is not here yet
 
-Two things a desktop menu bar has that this one does not, both deliberate rather than forgotten:
+One thing a desktop menu bar has that this one does not, deliberate rather than forgotten:
 
 - **Hover to switch.** On a real desktop bar, once one menu is open, moving the pointer across a sibling trigger switches to it without a click. That needs hover intent, which is the same machinery a sub-menu flyout needs.
-- **Arrow-key navigation between menus.** <kbd>←</kbd> · <kbd>→</kbd> across the bar, and from one open menu to the next. Each trigger is its own tab stop until then.
-
 A press opens, a press closes, and every menu is reachable by <kbd>Tab</kbd> and operable from the keyboard once open. Nothing is half-wired.

@@ -7,15 +7,50 @@
  * makes switching menus a single state write instead of two (close that one,
  * open this one) with a frame of nothing open in between.
  */
-import { createContext, useContext } from 'react';
+import {
+  type ComponentRef,
+  createContext,
+  type MutableRefObject,
+  type RefObject,
+  useContext,
+} from 'react';
+import type { View } from 'react-native';
 
+import type { MenuFocusIntent } from '../floating/menu-keyboard';
+import type { PopupNavigation } from '../floating/popup-navigation';
 import type { OverlayShellContextValue } from '../floating/types';
 import type { MenubarRegistry } from './registry';
+
+/** A menu of the bar as the bar's keyboard knows it (`use-menubar-keys.ts`). */
+export interface MenubarMenuHandle {
+  /** Its trigger's label, for typeahead. */
+  label: string;
+  disabled: boolean;
+  anchorRef: RefObject<ComponentRef<typeof View> | null>;
+  focusIntent: MenuFocusIntent;
+  /** The open panel's keyboard navigation, in a platform popup. */
+  navigation: MutableRefObject<PopupNavigation | null>;
+}
 
 export interface MenubarContextValue {
   /** The `value` of the menu currently open, or `undefined` when none is. */
   value: string | undefined;
   setValue: (next: string | undefined) => void;
+  /** The menu whose title has the keyboard, or `undefined` when the keyboard is elsewhere. */
+  focusValue: string | undefined;
+  /** The keyboard leaves the bar: a row was chosen from it. */
+  leave: () => void;
+  /** Each menu's handle, by its `value`, while it is mounted. */
+  menus: Map<string, MenubarMenuHandle>;
+}
+
+export interface MenubarMenuContextValue extends OverlayShellContextValue {
+  /** A row was chosen: the menu closes, and the bar gives the keyboard up if it had it. */
+  choose: () => void;
+  /** Given the open panel's keyboard navigation, in a platform popup. */
+  navigation: MutableRefObject<PopupNavigation | null>;
+  /** The menu as the bar's keyboard knows it; its trigger writes its label and state. */
+  handle: MenubarMenuHandle;
 }
 
 const MenubarContext = createContext<MenubarContextValue | null>(null);
@@ -31,12 +66,12 @@ export function useMenubar(): MenubarContextValue {
   return value;
 }
 
-const MenubarMenuContext = createContext<OverlayShellContextValue | null>(null);
+const MenubarMenuContext = createContext<MenubarMenuContextValue | null>(null);
 MenubarMenuContext.displayName = 'BloomMenubarMenuContext';
 
 export const MenubarMenuProvider = MenubarMenuContext.Provider;
 
-export function useMenubarMenu(): OverlayShellContextValue {
+export function useMenubarMenu(): MenubarMenuContextValue {
   const value = useContext(MenubarMenuContext);
   if (!value) {
     throw new Error('MenubarTrigger and MenubarContent must be rendered inside a <MenubarMenu>.');

@@ -148,7 +148,7 @@ Whenever the menu closes with focus inside it — a row activated, <kbd>Esc</kbd
 
 Before this the trigger opened the menu and focus stayed on it: the rows are portaled to the end of `<body>`, so the arrows had nothing to move, <kbd>Tab</kbd> walked on through the page behind the open menu, and <kbd>Space</kbd> pressed nothing (react-native-web presses a `menuitem`, `checkbox` or `radio` on <kbd>Enter</kbd> only). Verified in jest (`MenuKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`). Native is unchanged — the menu is a bottom sheet there — except in a platform popup, whose keys arrive through the adapter (`platform-surface.mdx`).
 
-## Sub-menus: a flyout on web, an inline disclosure on native
+## Sub-menus: a flyout on web and on a desktop, an inline disclosure in a sheet
 
 The API is one thing on both platforms — a shadcn call site ports across unchanged — and the presentation is the platform's own, matching what each platform's upstream does.
 
@@ -179,11 +179,13 @@ The API is one thing on both platforms — a shadcn call site ports across uncha
 
 **On native** it is an inline disclosure: the trigger expands its content in place, under the row, and the chevron swaps between down and up. react-native-reusables renders it the same way there, and a menu on native is a bottom sheet — there is nowhere for a flyout to fly to.
 
-In a platform popup (OxyOS) the keys reach the same disclosure through the adapter (`floating/popup-navigation.tsx`), as the web flyout's do: <kbd>→</kbd> on the sub trigger opens it and makes its first enabled row active (on one already open, moves into it); <kbd>←</kbd> inside it, or <kbd>Esc</kbd>, closes it and makes the trigger active again; <kbd>Esc</kbd> outside a submenu closes the menu. Pinned by `PlatformSurfacePopup.test.tsx`.
+**On a native desktop** — a platform popup (an adapter reporting `popup-surface`) that a pointer drives (`window` or `pointer`, an OxyOS window or its shell) — it is the web's flyout again: the chevron points right, the pointer on its row opens it, a row outside it closes it after the web's 300ms grace, and its content is a panel of its own in a popup of the platform's, anchored to the row (`side="right"`, `align="start"`, its `sideOffset` the 2px seam measured from the parent panel's edge, so the panel's padding and border are added back), with the parent's chrome. Its rows stay in the same React tree and register with the parent panel's keyboard navigation, so the keys, the active row and typeahead are the parent's whichever popup has the keyboard. Before, a desktop drew a phone's inline disclosure inside the menu.
+
+In a platform popup the keys reach the submenu through the adapter (`floating/popup-navigation.tsx`), as the web flyout's do: <kbd>→</kbd> on the sub trigger opens it and makes its first enabled row active (on one already open, moves into it); <kbd>←</kbd> inside it, or <kbd>Esc</kbd>, closes it and makes the trigger active again; <kbd>Esc</kbd> outside a submenu closes the menu. Pinned by `PlatformSurfacePopup.test.tsx` (inline) and `MenubarDesktop.test.tsx` (flyout).
 
 `DropdownMenuSubContent` accepts `side="left" | "right"`, `align`, `sideOffset`, `alignOffset`, `minWidth`, `maxWidth`, `className`, `style`, `label` and `testID`. Web applies the geometry to the flyout and still fit-flip-clamps it; native keeps the same API, forwards identity and styling to the inline disclosure, and ignores flyout-only placement.
 
-The split is a build-time one, not a `Platform.OS` branch: `floating/menu-sub-flyout.tsx` and `floating/menu-sub-inline.tsx` are passed to `createMenuRows` by each family's own platform fork, so the web-only `FloatingPanel` never reaches a native bundle.
+The web/native split is a build-time one, not a `Platform.OS` branch: `floating/menu-sub-flyout.tsx` and `floating/menu-sub-inline.tsx` are passed to `createMenuRows` by each family's own platform fork, so the web-only `FloatingPanel` never reaches a native bundle. The native file's own choice between the sheet's disclosure and the desktop's flyout is made at render, from the panel it is in.
 
 Verified in a real browser by `scripts/verify-submenu-flyout.mjs` — jest can see none of it.
 

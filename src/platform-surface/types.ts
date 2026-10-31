@@ -15,13 +15,18 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
  *   own (the top of the screen, as on a Mac). A `Menubar` then draws nothing in
  *   the window: it describes its menus to the platform (`PlatformMenuBar`) and
  *   runs the item the person chooses there.
+ * - `pointer`: a pointer (a mouse, a touchpad) drives the platform, though
+ *   Bloom is not in a window of its own there (a desktop's shell, its top bar
+ *   and dock): controls take a desktop's compact geometry and menus open as a
+ *   desktop's (anchored dropdowns, submenus beside their row), as `window`
+ *   gives an application.
  * - `appearance`: the platform has an appearance of its own for every
  *   application (`PlatformAppearance`): an accent colour, which seeds Bloom's
  *   palette, and whether transparency is reduced, which draws every blurred
  *   material opaque. Light or dark is not part of it: React Native's
  *   `Appearance` already carries that.
  */
-export type SurfaceCapability = 'popup-surface' | 'window' | 'menu-bar' | 'appearance';
+export type SurfaceCapability = 'popup-surface' | 'window' | 'pointer' | 'menu-bar' | 'appearance';
 
 /** Why the platform closed a popup without the application asking. */
 export type PopupDismissReason =

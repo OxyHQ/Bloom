@@ -59,9 +59,10 @@ function MenubarPanel({
   const menu = useMenubarMenu();
   const anchor = useAnchorRect(menu.anchorRef, menu.open);
   const close = useCallback(() => menu.setOpen(false), [menu]);
+  // A row chosen closes the menu and leaves the bar's keyboard (`focusValue`).
   const surface = useMemo<MenuSurfaceContextValue>(
-    () => ({ close, presentation: 'dropdown' }),
-    [close],
+    () => ({ close: menu.choose, presentation: 'dropdown' }),
+    [menu.choose],
   );
   const [panel, setPanel] = useState<ComponentRef<typeof View> | null>(null);
   useMenuPanelKeys(hostElement(panel), { open: menu.open, onTab: close, intent: menu.focusIntent });

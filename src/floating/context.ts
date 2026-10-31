@@ -11,7 +11,8 @@
  * `context.ts` with its own React context, because one shared open-state context
  * would make a dropdown menu nested inside a popover drive the popover.
  */
-import { createContext, useContext } from 'react';
+import { type ComponentRef, createContext, type RefObject, useContext } from 'react';
+import type { View } from 'react-native';
 
 import type { PopupSubmenu } from './popup-navigation';
 
@@ -65,6 +66,10 @@ export interface MenuSubContextValue {
   setOpen: (next: boolean) => void;
   /** The submenu as a platform popup's keyboard navigation follows it (`popup-navigation.tsx`). */
   navigation?: PopupSubmenu;
+  /** Native: the submenu flies out beside its row in a popup of its own (`menu-sub-inline.tsx`). */
+  flyout?: boolean;
+  /** Native: the trigger row, which a flyout's popup is anchored to. */
+  anchorRef?: RefObject<ComponentRef<typeof View> | null>;
 }
 
 const MenuSubContext = createContext<MenuSubContextValue | null>(null);

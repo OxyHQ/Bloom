@@ -14,7 +14,17 @@
  * neutral module naming a forked target resolves to NATIVE in every bundler
  * that is not Metro and no gate would report it.
  */
-import React, { type ComponentRef, useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  Children,
+  type ComponentRef,
+  Fragment,
+  isValidElement,
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { StyleSheet, type View as RNView } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { FIELD_REST_BORDER_WIDTH } from '../styles/field-border';
@@ -31,11 +41,14 @@ import { useMenuPalette } from '../floating/menu-palette';
 import { menuType } from '../floating/menu-type';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
-import { useMenuFocusIntent, useMenuTriggerKeys } from '../floating/menu-keyboard';
+import { useMenuFocusIntent, useMenuTriggerKeys, useOpenFocus } from '../floating/menu-keyboard';
+import type { PopupNavigation } from '../floating/popup-navigation';
+import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { StyledText, StyledView } from '../styles/styled-primitives';
-import { usePlatformMenuBar } from '../platform-surface/context';
+import { usePlatformKeyboard, usePlatformMenuBar } from '../platform-surface/context';
 import {
+  type MenubarMenuHandle,
   type MenubarScope,
   MenubarMenuProvider,
   MenubarProvider,
@@ -49,10 +62,24 @@ import { MenubarRegistry, nextMenuEntryId } from './registry';
 import type { MenubarMenuProps, MenubarProps, MenubarTriggerProps } from './types';
 import { useMenuShortcuts } from './use-menu-shortcuts';
 import { usePublishMenus } from './use-publish-menus';
+import { useMenubarKeys } from './use-menubar-keys';
 import { useMessages } from '../locale/messages';
 import { MENUBAR_MESSAGES } from './messages';
 
 const noHint = () => false;
+
+/** The `value`s of the `MenubarMenu`s among `children`, in order, through fragments and arrays. */
+function menuValues(children: ReactNode, into: string[] = []): string[] {
+  Children.forEach(children, (child) => {
+    if (!isValidElement<{ value?: unknown; children?: ReactNode }>(child)) return;
+    if (child.type === MenubarMenu && typeof child.props.value === 'string') {
+      into.push(child.props.value);
+    } else if (child.type === Fragment) {
+      menuValues(child.props.children, into);
+    }
+  });
+  return into;
+}
 
 /**
  * The bar. Without the `menu-bar` capability it draws itself in the window, as
@@ -61,24 +88,56 @@ const noHint = () => false;
  * item chosen there runs here. Either way each item's shortcut runs it
  * (`use-menu-shortcuts.ts`).
  */
-export function Menubar({
-  children,
-  value,
-  defaultValue,
-  onValueChange,
-  label: labelProp,
-  className,
-  style,
-  testID,
-}: MenubarProps) {
+export function Menubar(props: MenubarProps) {
+  const {
+    children,
+    value,
+    defaultValue,
+    onValueChange,
+    focusValue: focusValueProp,
+    onFocusValueChange,
+    label: labelProp,
+    className,
+    style,
+    testID,
+  } = props;
   const { messages } = useMessages(MENUBAR_MESSAGES);
   const label = labelProp ?? messages.menuBar;
+  // Supplied is controlled, `undefined` included: it is "no menu open" (and "the keyboard
+  // elsewhere"), never a hand-back to the bar's own state, which kept a menu its owner had
+  // closed open.
   const [openValue, setValue] = useControllableState<string | undefined>({
     value,
+    controlled: 'value' in props,
     defaultValue,
     onChange: onValueChange,
   });
-  const context = useMemo(() => ({ value: openValue, setValue }), [openValue, setValue]);
+  const [focusValue, setFocusValue] = useControllableState<string | undefined>({
+    value: focusValueProp,
+    controlled: 'focusValue' in props,
+    defaultValue: undefined,
+    onChange: onFocusValueChange,
+  });
+  const [menus] = useState(() => new Map<string, MenubarMenuHandle>());
+  const leave = useCallback(() => {
+    if (focusValue !== undefined) setFocusValue(undefined);
+  }, [focusValue, setFocusValue]);
+  const context = useMemo(
+    () => ({ value: openValue, setValue, focusValue, leave, menus }),
+    [openValue, setValue, focusValue, leave, menus],
+  );
+  // The bar from the keyboard (`use-menubar-keys.ts`): its titles in the order they are declared.
+  useMenubarKeys(
+    {
+      order: menuValues(children),
+      menus,
+      focusValue,
+      openValue,
+      setFocusValue,
+      setOpenValue: setValue,
+    },
+    usePlatformKeyboard(),
+  );
   const menuBar = usePlatformMenuBar();
   const [registry] = useState(() => new MenubarRegistry());
   const publishing = usePublishMenus(registry, menuBar);
@@ -140,7 +199,7 @@ export function Menubar({
   );
 }
 
-export function MenubarMenu({ children, value }: MenubarMenuProps) {
+export function MenubarMenu({ children, value, openFocus }: MenubarMenuProps) {
   const bar = useMenubar();
   const scope = useMenubarScope();
   const [id] = useState(nextMenuEntryId);
@@ -156,17 +215,42 @@ export function MenubarMenu({ children, value }: MenubarMenuProps) {
     [scope, id],
   );
   const anchorRef = useRef<ComponentRef<typeof RNView> | null>(null);
-  const { setValue } = bar;
+  const navigation = useRef<PopupNavigation | null>(null);
+  const { setValue, leave, menus } = bar;
   const focusIntent = useMenuFocusIntent();
+  const open = bar.value === value;
+  // An open from the owner's keys starts with a row active, as `DropdownMenu`'s `openFocus`.
+  useOpenFocus(focusIntent, open, openFocus);
+  // Its handle for the bar's keyboard; its trigger fills in its label and state.
+  const handle = useRef<MenubarMenuHandle>({
+    label: '',
+    disabled: false,
+    anchorRef,
+    focusIntent,
+    navigation,
+  }).current;
+  handle.focusIntent = focusIntent;
+  useIsomorphicLayoutEffect(() => {
+    menus.set(value, handle);
+    return () => {
+      if (menus.get(value) === handle) menus.delete(value);
+    };
+  }, [menus, value, handle]);
 
   const context = useMemo(
     () => ({
-      open: bar.value === value,
+      open,
       setOpen: (next: boolean) => setValue(next ? value : undefined),
+      choose: () => {
+        setValue(undefined);
+        leave();
+      },
       anchorRef,
       focusIntent,
+      navigation,
+      handle,
     }),
-    [bar.value, value, setValue, focusIntent],
+    [open, value, setValue, leave, focusIntent, handle],
   );
 
   return (
@@ -183,15 +267,20 @@ export function MenubarMenu({ children, value }: MenubarMenuProps) {
 export function MenubarTrigger(props: MenubarTriggerProps) {
   const scope = useMenubarScope();
   const owner = scope?.owner?.kind === 'menu' ? scope.owner : undefined;
+  const label = textOf(props.children, noHint) || (props.label ?? '');
   useMenuEntry(owner ? scope : null, {
     kind: 'menu',
     id: owner?.id,
     parent: null,
     path: owner?.path,
-    label: textOf(props.children, noHint) || (props.label ?? ''),
+    label,
     enabled: !props.disabled,
     shortcut: null,
   });
+  // Its name and state for the bar's keyboard (typeahead, skipping a disabled menu).
+  const { handle } = useMenubarMenu();
+  handle.label = label;
+  handle.disabled = !!props.disabled;
   if (scope?.headless) return null;
   return <MenubarTriggerButton {...props} />;
 }
@@ -206,7 +295,10 @@ function MenubarTriggerButton({
   testID,
 }: MenubarTriggerProps) {
   const menu = useMenubarMenu();
+  const bar = useMenubar();
   const palette = useMenuPalette();
+  // Its title has the bar's keyboard: lit as an open one is, as a Mac's bar lights it.
+  const focused = bar.focusValue !== undefined && bar.menus.get(bar.focusValue) === menu.handle;
   // Web: Enter/Space/ArrowDown open into the first row, ArrowUp into the last,
   // and focus returns here on close (`floating/menu-keyboard.ts`). Inert on
   // native, where there is no DOM node to listen on.
@@ -226,7 +318,7 @@ function MenubarTriggerButton({
   const trigger = (
     <StyledView
       className={cx(MENUBAR_TRIGGER_CLASS, menu.open && MENUBAR_TRIGGER_OPEN_CLASS, className)}
-      style={{ backgroundColor: menu.open ? palette.rowHighlight : 'transparent' }}
+      style={{ backgroundColor: menu.open || focused ? palette.rowHighlight : 'transparent' }}
     >
       {typeof children === 'string' ? (
         <StyledText
