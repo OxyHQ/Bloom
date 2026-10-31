@@ -3933,7 +3933,12 @@
     "!**/*.stories.*",
     "!**/*.test.*",
     "!**/*.spec.*",
-    "assets/character-runtime"
+    "assets/character-runtime",
+    "android",
+    "react-native.config.js",
+    "!android/build",
+    "!android/.gradle",
+    "!android/src/test"
   ],
   "workspaces": [
     "packages/*"
