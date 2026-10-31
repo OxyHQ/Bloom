@@ -58,7 +58,7 @@ it.each([
     return id;
   };
   window.cancelAnimationFrame = (id) => {
-    frames.delete(id);
+    if (id != null) frames.delete(id);
   };
   const settle = () => {
     for (let i = 0; i < 12 && frames.size; i++) {
