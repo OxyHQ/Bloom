@@ -569,6 +569,48 @@ export const ModularDeck: Story = {
     );
   },
 };
+
+/** Compare document and contained Deck scrolling, including a responsive axis. */
+export const DeckScrollModes: Story = {
+  render: function DeckScrollModes() {
+    const [contained, setContained] = useState(false);
+    const [responsive, setResponsive] = useState(false);
+    const [reveal, setReveal] = useState(false);
+    return (
+      <View style={{ height: 680 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <Button testID="deck-scroll-mode" onPress={() => setContained((value) => !value)}>
+            {contained ? 'Use document scroll' : 'Use contained scroll'}
+          </Button>
+          <Button testID="deck-axis-mode" onPress={() => setResponsive((value) => !value)}>
+            {responsive ? 'Use horizontal axis' : 'Use responsive axis'}
+          </Button>
+          <Button testID="deck-drawer-mode" onPress={() => setReveal((value) => !value)}>
+            {reveal ? 'Use overlay drawer' : 'Use reveal drawer'}
+          </Button>
+        </View>
+        <AppShell
+          testID="deck-scroll-modes"
+          navigationAlign="content"
+          drawer={reveal ? 'reveal' : 'overlay'}
+          sidebar={{ items: DEMO_NAV, surface: 'plain' }}
+          panelLayout={{
+            mode: 'deck',
+            horizontalScroll: contained ? 'contained' : 'document',
+            axis: responsive ? { base: 'vertical', lg: 'horizontal' } : 'horizontal',
+            panels: ['Home', 'Mentions', 'Saved', 'Activity'].map((id) => ({
+              id,
+              width: 360,
+              minWidth: 280,
+              content: <Text>{id}</Text>,
+            })),
+          }}
+        />
+      </View>
+    );
+  },
+};
+
 /** Joined tracks share their resize grip and compact panel selection. */
 function ModularInboxDemo() {
   const [activePanel, setActivePanel] = useState('message');

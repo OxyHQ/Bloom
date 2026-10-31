@@ -1818,17 +1818,22 @@ export function createAppShellEngine() {
     // While a dock moves, the regions it resizes follow its one progress
     // property frame by frame; their own layout transitions would chase it.
     const dockMoving = Platform.OS === 'web' && (navDock.moving || topDock.moving);
+    // The reveal root owns its own immediate-open / delayed-close clipping.
+    // The document-deck override belongs only to roots with the fixed clip.
+    const revealRoot =
+      (variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav;
     const rootData = (frameScope: string | null) =>
-      frameScope || dockMoving
+      frameScope || dockMoving || (cssScope && !revealRoot)
         ? {
             dataSet: {
               ...(frameScope ? { bloomShellFrame: frameScope } : {}),
+              ...(cssScope && !revealRoot ? { bloomShellHost: cssScope } : {}),
               ...(dockMoving ? { bloomDockMoving: 'true' } : {}),
             },
           }
         : {};
 
-    if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
+    if (revealRoot) {
       return shellRoot(
         <AppShellProvider value={shell}>
           {navigationRecipe.sheet}
