@@ -47,15 +47,15 @@ export interface RovingKeyOptions {
 /** The move a key asks for, or `null` for a key this widget does not own. */
 export function rovingMove(
   key: string,
-  { orientation, homeEnd = true }: RovingKeyOptions,
+  { orientation, homeEnd = true, rtl = false }: RovingKeyOptions & { rtl?: boolean },
 ): RovingMove | null {
   const horizontal = orientation !== 'vertical';
   const vertical = orientation !== 'horizontal';
   switch (key) {
     case 'ArrowRight':
-      return horizontal ? 'next' : null;
+      return horizontal ? (rtl ? 'prev' : 'next') : null;
     case 'ArrowLeft':
-      return horizontal ? 'prev' : null;
+      return horizontal ? (rtl ? 'next' : 'prev') : null;
     case 'ArrowDown':
       return vertical ? 'next' : null;
     case 'ArrowUp':
@@ -194,7 +194,9 @@ export function handleRovingKeyDown(
     current.click();
     return true;
   }
-  const move = rovingMove(event.key, { orientation, homeEnd });
+  // Match useIsRtl and RadioGroup: Bloom's web direction is the document's dir.
+  const rtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
+  const move = rovingMove(event.key, { orientation, homeEnd, rtl });
   if (move === null) return false;
   const container = current.closest(owner);
   const target = rovingTarget(rovingItems(container, selector, { owner }), current, move, true);
