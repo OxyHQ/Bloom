@@ -78,7 +78,7 @@ it('reports pooled web support without requiring a native adapter', () => {
 it('does not load or query the native adapter when no character needs a capability', async () => {
   mockCompatibility.mockResolvedValue(true);
   const { result, rerender } = renderHook(
-    ({ enabled }) => useAvatarRendererCapabilities({ enabled }),
+    ({ enabled }: { enabled: boolean }) => useAvatarRendererCapabilities({ enabled }),
     { initialProps: { enabled: false } },
   );
   expect(result.current.sharedLiveRendering).toBe(false);
