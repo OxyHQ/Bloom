@@ -89,7 +89,11 @@ export function usePlatformKeyboard(): PlatformKeyboard | null {
   return useContext(PlatformSurfaceContext)?.keyboard ?? null;
 }
 
-/** The person's places and the Trash, or null when the platform supplies none (`PlatformFiles`). */
+/**
+ * The person's places and the Trash (and, in an application the platform
+ * started as the file chooser, its request: `chooser`), or null when the
+ * platform supplies none (`PlatformFiles`).
+ */
 export function usePlatformFiles(): PlatformFiles | null {
   return useContext(PlatformSurfaceContext)?.files ?? null;
 }

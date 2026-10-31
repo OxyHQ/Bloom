@@ -257,6 +257,7 @@ interface PlatformFiles {
   restore(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
   erase(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
   emptyTrash(): Promise<void>;
+  readonly chooser?: PlatformFileChooser;            // only in the person's file chooser
 }
 ```
 
@@ -275,6 +276,41 @@ Every URI is `file://`: what a place holds is read, changed and watched through
 API on every platform. `usePlatformFiles()` returns the adapter's `files`, or
 null: then an application has the folders `expo-file-system` gives it
 (`Paths.document`) and deletes as that API does, for good, saying so.
+
+### The file chooser: `chooser`
+
+A desktop shows its open and save panels as a system service, never as the
+asking application's code: the platform starts the person's file manager to
+show the panel as a sheet of the asker's window, and passes the answer back
+to the asker alone. That file manager learns it is the chooser only here:
+`files.chooser` is present in an application the platform started for a
+request, and absent everywhere else.
+
+```ts
+interface PlatformFileChooserRequest {
+  mode: 'open' | 'save';
+  multiple: boolean;                  // several items may be chosen (open)
+  directory: boolean;                 // folders are chosen, not files (open)
+  types: readonly string[];           // media types (image/png, image/*) and .ext; empty: any
+  title: string | null;
+  suggestedName: string | null;       // save
+  folder: string | null;              // file:// where to start, if the asker said
+  application: { id: string; name: string } | null; // who asks
+}
+
+interface PlatformFileChooser {
+  request: PlatformFileChooserRequest;
+  choose(uris: readonly string[]): void; // file:// URIs; save: the one file to write
+  cancel(): void;
+}
+```
+
+The application shows its panel for `request` and answers once: `choose` with
+the `file://` URIs the person chose (for `save`, the one file to write, after
+the panel asked before replacing an existing one), or `cancel`. The platform
+cites the latest press the application received for a choice, then closes the
+panel. Where the panel starts, and what it remembers between requests (the
+folder last used for each asking application), are the application's own.
 
 ## Who registers the adapter
 

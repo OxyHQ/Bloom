@@ -12,6 +12,8 @@ export { usePlatformAppearanceState } from './use-platform-appearance';
 export type {
   PlatformAppearance,
   PlatformAppearanceState,
+  PlatformFileChooser,
+  PlatformFileChooserRequest,
   PlatformFileError,
   PlatformFileOutcome,
   PlatformFiles,

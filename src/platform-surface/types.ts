@@ -339,6 +339,50 @@ export type PlatformFileOutcome =
   | { readonly uri: string; readonly ok: false; readonly error: PlatformFileError };
 
 /**
+ * What the platform asks of an application it started to choose files for
+ * another (an open or save panel shown as a sheet of that application's
+ * window): `PlatformFileChooser.request`.
+ */
+export interface PlatformFileChooserRequest {
+  /** `open`: existing items are chosen; `save`: the one file to write. */
+  readonly mode: 'open' | 'save';
+  /** Several items may be chosen (`open`). */
+  readonly multiple: boolean;
+  /** Folders are chosen, not files (`open`). */
+  readonly directory: boolean;
+  /**
+   * What may be chosen: media types (`image/png`, `image/*`) and extensions
+   * (`.png`). Empty: anything.
+   */
+  readonly types: readonly string[];
+  /** The panel's title, when the asker gave one. */
+  readonly title: string | null;
+  /** The name a `save` panel starts with, when the asker gave one. */
+  readonly suggestedName: string | null;
+  /** Where to start, as a `file://` URI, when the asker said. */
+  readonly folder: string | null;
+  /** Who asks: the application whose window the panel is a sheet of, when the platform knows it. */
+  readonly application: { readonly id: string; readonly name: string } | null;
+}
+
+/**
+ * The request the platform started this application to answer, as the
+ * person's file chooser (`PlatformFiles.chooser`). The application shows its
+ * open or save panel for `request` and answers exactly once.
+ */
+export interface PlatformFileChooser {
+  readonly request: PlatformFileChooserRequest;
+  /**
+   * The person chose: `file://` URIs (for `save`, the one file to write, its
+   * replacing already confirmed by the panel). The platform cites the latest
+   * press the application received, then closes the panel.
+   */
+  choose(uris: readonly string[]): void;
+  /** The person cancelled. The platform closes the panel. */
+  cancel(): void;
+}
+
+/**
  * The person's files beyond what `expo-file-system` reaches, for a platform
  * that has them: their places (a desktop's home, standard folders and
  * volumes) and the Trash every file manager on it shares. Optional and not a
@@ -367,6 +411,11 @@ export interface PlatformFiles {
   erase(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
   /** Deletes everything in the Trash for good. */
   emptyTrash(): Promise<void>;
+  /**
+   * Present only in an application the platform started as the person's file
+   * chooser (a file manager in its picker mode): the request it answers.
+   */
+  readonly chooser?: PlatformFileChooser;
 }
 
 /**

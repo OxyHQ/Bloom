@@ -1,6 +1,6 @@
 /**
- * The `files` part of the platform adapter (the person's places and the Trash)
- * and who registers an adapter: the runtime wraps the application, and the
+ * The `files` part of the platform adapter (the person's places and the Trash,
+ * and the file chooser's request) and who registers an adapter: the runtime wraps the application, and the
  * application's own `BloomProvider`, with no `platform` of its own, keeps it.
  */
 import type React from 'react';
@@ -11,7 +11,11 @@ import {
   usePlatformFiles,
   usePlatformSurfaces,
 } from '../platform-surface/context';
-import type { PlatformFiles, PlatformSurfaceAdapter } from '../platform-surface/types';
+import type {
+  PlatformFileChooser,
+  PlatformFiles,
+  PlatformSurfaceAdapter,
+} from '../platform-surface/types';
 import { BloomProvider } from '../provider';
 
 const files: PlatformFiles = {
@@ -46,6 +50,45 @@ describe('usePlatformFiles', () => {
       wrapper: ({ children }) => runtime(children, OTHER),
     });
     expect(result.current).toBeNull();
+  });
+});
+
+describe('the file chooser’s request', () => {
+  it('reaches the application the platform started as the chooser, through its files', () => {
+    const answers: string[] = [];
+    const chooser: PlatformFileChooser = {
+      request: {
+        mode: 'open',
+        multiple: false,
+        directory: false,
+        types: ['image/*', '.png'],
+        title: null,
+        suggestedName: null,
+        folder: 'file:///home/ada/Pictures',
+        application: { id: 'so.oxy.astro', name: 'Astro' },
+      },
+      choose: (uris) => answers.push(`chose ${uris.join(' ')}`),
+      cancel: () => answers.push('cancelled'),
+    };
+    const adapter: PlatformSurfaceAdapter = {
+      platform: 'runtime',
+      capabilities: new Set(),
+      files: { ...files, chooser },
+    };
+    const { result } = renderHook(() => usePlatformFiles()?.chooser, {
+      wrapper: ({ children }) =>
+        runtime(<BloomProvider fonts={false}>{children}</BloomProvider>, adapter),
+    });
+    expect(result.current).toBe(chooser);
+    result.current?.choose(['file:///home/ada/Pictures/a.png']);
+    expect(answers).toEqual(['chose file:///home/ada/Pictures/a.png']);
+  });
+
+  it('is absent from an application the platform did not start as the chooser', () => {
+    const { result } = renderHook(() => usePlatformFiles()?.chooser, {
+      wrapper: ({ children }) => runtime(children),
+    });
+    expect(result.current).toBeUndefined();
   });
 });
 

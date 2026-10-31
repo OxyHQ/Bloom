@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.82.0
+
+### Added
+
+- **The file chooser's request on the platform adapter: `PlatformFiles.chooser`.** A desktop shows its open and save panels as a system service: the platform starts the person's file manager to show the panel as a sheet of the asking application's window. That application learns it is the chooser only through `usePlatformFiles()?.chooser`, a `PlatformFileChooser`: its `request` (`PlatformFileChooserRequest`: `open` or `save`, `multiple`, `directory`, the accepted `types` as media types and `.ext`, `title`, `suggestedName`, the start `folder` and the asking `application`), and `choose(uris)` / `cancel()`, which answer it once. Present only in an application the platform started for a request. Documented in `docs/platform-surface.mdx`; pinned by `PlatformFiles.test.tsx`.
+
+### Consumers
+
+Only adds: an adapter with no `chooser` is unchanged, and so is every application that does not read it.
+
 ## 15.81.0
 
 ### Changed
