@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 // `image/BloomImage` draws with expo-image on a device, and jest's `Platform.OS`
 // is `ios` — so the rendered image is `__mocks__/expo-image.ts`'s component,
 // not react-native's `Image`.
@@ -62,6 +62,50 @@ beforeEach(() => {
 });
 
 describe('resolution order: character, then image, then initials', () => {
+  it('accepts account DTO string keys, validates them, and follows immutable account updates', () => {
+    const account: { kind: string; character: { preset: string }; name: { displayName: string } } =
+      {
+        kind: 'bot',
+        character: { preset: 'blue_beret' },
+        name: { displayName: 'Peri' },
+      };
+    const view = renderAvatar(<Avatar account={account} size={32} motion="always" />);
+    expect(lastProps().character).toMatchObject({ preset: 'blue_beret' });
+    view.rerender(
+      wrap(
+        <Avatar
+          account={{ ...account, character: { preset: 'alfred' } }}
+          size={32}
+          motion="always"
+        />,
+      ),
+    );
+    expect(lastProps().character).toMatchObject({ preset: 'alfred' });
+    mockAgentAvatar.mockClear();
+    view.rerender(
+      wrap(
+        <Avatar
+          account={{ ...account, character: { preset: 'future-unknown' } }}
+          size={32}
+          motion="always"
+        />,
+      ),
+    );
+    expect(mockAgentAvatar).not.toHaveBeenCalled();
+    expect(view.queryByText('P')).toBeTruthy();
+  });
+
+  it('falls through blank service display names to structured names and handles', () => {
+    const view = renderAvatar(
+      <Avatar account={{ name: { displayName: '  ', full: 'Grace Hopper' }, username: 'other' }} />,
+    );
+    expect(view.queryByText('G')).toBeTruthy();
+    view.rerender(
+      wrap(<Avatar account={{ name: { displayName: '  ', full: '  ' }, username: 'ada' }} />),
+    );
+    expect(view.queryByText('A')).toBeTruthy();
+  });
+
   it('draws a bot account with a character, as its still, never its image', async () => {
     const view = renderAvatar(
       <Avatar account={{ ...bot, avatar: 'https://cdn.test/bot.png' }} size={40} />,
@@ -350,6 +394,28 @@ describe('50 rows', () => {
     expect(mockAgentAvatar).not.toHaveBeenCalled();
     expect(stillImages(view).length).toBeGreaterThan(0);
   });
+
+  it.each(['stack', 'row', 'cluster'] as const)(
+    'forwards live motion through the memoized %s group and honors reduced motion',
+    async (layout) => {
+      const items = rows.slice(0, 3);
+      const element = (motion: 'always' | 'never') => (
+        <AvatarGroup items={items} layout={layout} size={32} motion={motion} />
+      );
+      const view = renderAvatar(element('never'));
+      await flush();
+      expect(mockAgentAvatar).not.toHaveBeenCalled();
+      view.rerender(wrap(element('always')));
+      expect(mockAgentAvatar).toHaveBeenCalledTimes(3);
+      mockAgentAvatar.mockClear();
+      mockReduced = true;
+      view.rerender(wrap(element('never')));
+      view.rerender(wrap(element('always')));
+      await flush();
+      expect(mockAgentAvatar).not.toHaveBeenCalled();
+      expect(stillImages(view)).toHaveLength(3);
+    },
+  );
 });
 
 describe('accessible name', () => {
