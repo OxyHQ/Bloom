@@ -94,13 +94,19 @@ async function loadMotion(preset: AvatarPreset): Promise<MotionSamplers | null> 
     loop.preset !== preset
   )
     throw Error(`Missing or invalid Computer loop: ${preset}`);
+  // The production rig has solid meshes only. Historical exported clips retain
+  // strand tracks; avoid allocating/sampling their dead poses in every instance.
+  const surfaceClip = (clip: AuthoredMotionClip): AuthoredMotionClip => ({
+    ...clip,
+    parts: clip.parts.filter((part) => !part.id.startsWith('fur:')),
+  });
   const workLoop = new ComputerLoopSampler(
-    loop.clip,
+    surfaceClip(loop.clip),
     loop.nativeStart,
     loop.loopStart,
     loop.period,
   );
-  const work = new AuthoredMotionSampler(episode.clip);
+  const work = new AuthoredMotionSampler(surfaceClip(episode.clip));
   const workReturn = (
     computerReturns.presets as Partial<
       Record<AvatarPreset, { returnTime: number; idleTime: number }>
@@ -130,8 +136,10 @@ async function loadMotion(preset: AvatarPreset): Promise<MotionSamplers | null> 
   )
     throw Error(`Invalid reaction return phase: ${preset}`);
   return {
-    idle: new AuthoredMotionSampler(data.clips.idle),
-    reaction: data.clips.reaction ? new AuthoredMotionSampler(data.clips.reaction) : undefined,
+    idle: new AuthoredMotionSampler(surfaceClip(data.clips.idle)),
+    reaction: data.clips.reaction
+      ? new AuthoredMotionSampler(surfaceClip(data.clips.reaction))
+      : undefined,
     work,
     workLoop,
     workReturn: { time: workReturn.returnTime, idleTime: workReturn.idleTime },

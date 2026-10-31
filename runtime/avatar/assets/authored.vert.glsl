@@ -11,7 +11,7 @@ uniform mat4 crowdProjection;
 out vec3 pigment;
 mat4 avatarWorld, avatarNormal;
 #ifdef AUTHORED_MOTION
-uniform sampler2D instancePose;
+uniform highp sampler2D instancePose;
 vec4 avatarParameters, avatarSignatureDeform;
 flat out vec4 avatarColorRoughness, avatarPaletteClosure;
 #endif
@@ -193,50 +193,7 @@ vec4 furAreaVector(vec3 p,vec3 light,vec2 size,float intensity) {
     float len=length(ff);
     return vec4(-ff/(len+1.)*intensity,len*len/(len+1.)*intensity);
 }
-void felipeFurVertex() {
-    const vec2 vertices[6]=vec2[6](vec2(-.5,0),vec2(.5,0),vec2(-.5,.5),vec2(.5,.5),vec2(-.5,1),vec2(.5,1));
-    vec2 xy=vertices[gl_VertexID % 6];float t=xy.y;
-    float scale=d.fur.x/.018;float width=scale*.01296;
-    vec3 n=normal,side=normal0,bend=delta1;
-    float part=paletteGeometry.w;vec4 seed=paletteGeometry;seed.w=1.;
-    // Small tufts share the body material but need proportionate fiber length.
-    float groomScale=clamp(d.fur.y/scale,.42,1.);
-    float len=d.fur.x*seed.y*seed.w*groomScale;
-    width*=sqrt(groomScale);
-    vec3 local=position+len*(n*t*(1.-.22*part*t)+bend*t*t)+side*xy.x*width*seed.w;
-    vec3 bentNormal=signatureNormal(n,local,avatarSignatureDeform);
-    local=signaturePosition(local,avatarSignatureDeform);
-    vec3 world=(avatarWorld*vec4(local,1)).xyz;
-    vec3 transformedNormal=normalize((avatarNormal*vec4(bentNormal,0)).xyz);
-    vec3 view=normalize(f.cameraPosition.xyz-(avatarWorld*vec4(position,1)).xyz*f.cameraPosition.w);
-    world.x+=avatarParameters.y*sin(world.y*3.);
-    transformedNormal.y-=avatarParameters.y*3.*cos(world.y*3.)*transformedNormal.x;
-    transformedNormal=normalize(transformedNormal);
-    float facing=dot(transformedNormal,view),rim=1.-smoothstep(.12,.6,abs(facing));
-    vec3 sideWorld=(avatarWorld*vec4(side,0)).xyz,screenSide=cross(view,transformedNormal);
-    screenSide/=max(length(screenSide),.0001);if(dot(screenSide,sideWorld)<0.)screenSide=-screenSide;
-    float worldScale=max(max(length(avatarWorld[0].xyz),length(avatarWorld[1].xyz)),length(avatarWorld[2].xyz));
-    world+=(screenSide*d.fur.y*d.fur.w*worldScale-sideWorld*width)*xy.x*seed.w*rim;
-    world-=transformedNormal*worldScale*min(scale*.0015,len*.12)*(1.-t)*rim;
-    float pixels=d.fur.y*d.fur.z*worldScale*abs(f.viewProjection[1].y)*f.viewport.y*.5;
-// AUTHORED_COMPUTER_FUR_BUDGET_V1
-#ifdef AUTHORED_COMPUTER
-    pixels*=abs(avatarComputerCamera.y);
-#endif
-    float budget=min(8192.,160.+pixels*pixels*.027)*clamp((pixels-12.)/48.,0.,1.);
-    float fade=clamp((budget-strandIndex)/96.,0.,1.)*smoothstep(-.50,-.32,facing);
 
-    if(fade<=0.) {gl_Position=vec4(2,2,2,1);return;}
-    worldPosition=world;worldNormal=transformedNormal;
-    furSurface=vec4((vec2(mod(seed.z,4.),floor(seed.z/4.))+vec2(xy.x+.5,t))*.25,t,1);
-    furNormal=vec3(.9+.2*seed.x,fade,rim);
-    // Fiber normals are constant across a ribbon. Its broad illumination can
-    // be interpolated while fine coverage and pigment remain per fragment.
-    furLight=felipeLighting(transformedNormal,view,world,1.);
-    gl_Position=computerProjection(world);
-    shadowPosition=f.lightViewProjection*vec4(world,1);
-    return;
-}
 #endif
 // END GENERATED FELIPE
 
@@ -249,13 +206,14 @@ vec4 computerProjection(vec3 world) {
 }
 void main() {
 #ifdef AUTHORED_COMPUTER
+avatarComputerCamera=texelFetch(instancePose,ivec2(9,gl_InstanceID),0);
+if(avatarComputerCamera.w<=0.) {gl_Position=vec4(2,2,2,1);return;}
 avatarComputerReference=texelFetch(instancePose,ivec2(7,gl_InstanceID),0);
 avatarComputerCoverage=texelFetch(instancePose,ivec2(8,gl_InstanceID),0);
 avatarComputerEye0=texelFetch(instancePose,ivec2(10,gl_InstanceID),0);
 avatarComputerEye1=texelFetch(instancePose,ivec2(11,gl_InstanceID),0);
 avatarInstanceIndex=gl_InstanceID;
 avatarCanvasOffset=instanceOffset;
-avatarComputerCamera=texelFetch(instancePose,ivec2(9,gl_InstanceID),0);
 #endif
     #ifdef AUTHORED_MOTION
     avatarWorld=instanceMatrix;
@@ -269,10 +227,6 @@ avatarComputerCamera=texelFetch(instancePose,ivec2(9,gl_InstanceID),0);
     avatarNormal=instanceMatrix*d.normalMatrix;
 #endif
     pigment=instancePigment;
-#ifdef FELIPE_FUR
-    felipeFurVertex();
-    return;
-#endif
     furLight=vec4(0.);
     vec3 p = position + delta0*avatarParameters.z + delta1*avatarParameters.w;
     vec3 n = normalize(normal+(normal0-normal)*avatarParameters.z+(normal1-normal)*avatarParameters.w);
