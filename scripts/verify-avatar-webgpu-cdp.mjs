@@ -9,6 +9,7 @@ const require = createRequire(import.meta.url),
 const sourceRevision = process.env.AVATAR_SOURCE_REVISION;
 if (!sourceRevision) throw Error('AVATAR_SOURCE_REVISION must identify the served engine checkout');
 const browser = await puppeteer.connect({
+  defaultViewport: null,
   browserURL: process.env.AVATAR_CDP_URL || 'http://localhost:9340',
   protocolTimeout: 180000,
 });
@@ -41,6 +42,16 @@ try {
         time,
         images: true,
       });
+      const sourcePixels = cssSize === 64 ? 64 : cssSize === 320 ? 512 : 192;
+      assert.equal(
+        result.sourceTile,
+        sourcePixels,
+        'Unexpected source backing; do not compare altered quality',
+      );
+      assert(
+        result.cells.every((cell) => cell.width === cssSize * 2 && cell.height === cssSize * 2),
+        'Expected DPR2-capped outputs; preserve physical viewport with defaultViewport:null',
+      );
       report.cases.push(result);
       console.log(
         JSON.stringify({
