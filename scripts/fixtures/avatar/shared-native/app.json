@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Bloom Avatar GPU Lab",
+    "slug": "bloom-avatar-gpu-lab",
+    "android": {
+      "package": "so.oxy.bloom.avatar.gpulab"
+    },
+    "newArchEnabled": true
+  }
+}

@@ -1,0 +1,134 @@
+[
+  {
+    "preset": "blue_beret",
+    "shape": "six_lobed_flower",
+    "eyes": "oval",
+    "eyewear": "none",
+    "accessory": "felipe_beret",
+    "paint": {
+      "color": "blue"
+    },
+    "authored": true
+  },
+  {
+    "preset": "alfred",
+    "shape": "rounded_triangle",
+    "eyes": "sleepy_lids",
+    "eyewear": "tall_oval_frames",
+    "accessory": "bow",
+    "paint": {
+      "color": "yellow"
+    },
+    "authored": true
+  },
+  {
+    "preset": "purple_heart",
+    "shape": "heart",
+    "eyes": "oval",
+    "eyewear": "round_sunglasses",
+    "accessory": "none",
+    "paint": {
+      "color": "orchid"
+    },
+    "authored": true
+  },
+  {
+    "preset": "lime_frog",
+    "shape": "rounded_head_two_ears",
+    "eyes": "todd",
+    "eyewear": "none",
+    "accessory": "bow",
+    "paint": {
+      "color": "lime"
+    },
+    "authored": true
+  },
+  {
+    "preset": "coral_monocle",
+    "shape": "twelve_scalloped_rosette",
+    "eyes": "double_highlights",
+    "eyewear": "monocle",
+    "accessory": "none",
+    "paint": {
+      "color": "coral"
+    },
+    "authored": true
+  },
+  {
+    "preset": "gus",
+    "shape": "rounded_diamond",
+    "eyes": "oval",
+    "eyewear": "classic_sunglasses",
+    "accessory": "orb",
+    "paint": {
+      "bodyColor": "#ffd838"
+    },
+    "authored": true
+  },
+  {
+    "preset": "blue_spectacles",
+    "shape": "rounded_cube",
+    "eyes": "crescent_inset",
+    "eyewear": "tall_oval_frames",
+    "accessory": "three_lobe",
+    "paint": {
+      "color": "cyan"
+    },
+    "authored": true
+  },
+  {
+    "preset": "lime_headphones",
+    "shape": "circle_two_ears",
+    "eyes": "swept_lids",
+    "eyewear": "none",
+    "accessory": "headphones",
+    "paint": {
+      "color": "pink"
+    },
+    "authored": true
+  },
+  {
+    "preset": "blue_beret",
+    "shape": "heart",
+    "eyes": "cyclops",
+    "eyewear": "none",
+    "accessory": "crown",
+    "paint": {
+      "color": "blue"
+    },
+    "authored": false
+  },
+  {
+    "preset": "lime_frog",
+    "shape": "six_lobed_flower",
+    "eyes": "todd",
+    "eyewear": "monocle",
+    "accessory": "bow",
+    "paint": {
+      "color": "lime"
+    },
+    "authored": false
+  },
+  {
+    "preset": "blue_spectacles",
+    "shape": "cloud",
+    "eyes": "oval",
+    "eyewear": "tall_oval_frames",
+    "accessory": "three_lobe",
+    "paint": {
+      "color": "cyan"
+    },
+    "authored": false
+  },
+  {
+    "preset": "alfred",
+    "shape": "clippo",
+    "eyes": "clippo",
+    "eyewear": "tall_oval_frames",
+    "accessory": "bow",
+    "paint": {
+      "color": "yellow"
+    },
+    "authored": false
+  }
+]
