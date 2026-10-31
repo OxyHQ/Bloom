@@ -97,6 +97,12 @@ export function NativeAvatar(props: NativeAvatarProps) {
   }, [props.observeSnapshot]);
   const layout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
+    if (width <= 0 || height <= 0) {
+      // A collapsed/hidden layout must hold this instance, not reseed its
+      // consumed actions when the same native view becomes visible again.
+      attachment.current?.visibility(false);
+      return;
+    }
     setSize((old) => (old.width === width && old.height === height ? old : { width, height }));
     attachment.current?.resize(width, height);
   };
