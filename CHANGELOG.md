@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.78.1
+
+### Fixed
+
+- Tabs and segmented controls now follow the document direction for horizontal keyboard navigation, matching RadioGroup in RTL.
+
+### Consumers
+
+No API changes. Set `<html dir="rtl">` for RTL web layouts.
+
 ## 15.78.0
 
 ### Changed
