@@ -1,7 +1,9 @@
 export { ScrollRestorationProvider } from './context';
+export { DocumentScrollRestorationBoundary } from './DocumentScrollRestorationBoundary';
 export { useScrollRestoration } from './use-scroll-restoration';
 
 export type {
+  DocumentScrollRestorationBoundaryProps,
   ScreenFocusEffect,
   ScrollableHandle,
   ScrollRestorationBinding,

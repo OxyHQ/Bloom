@@ -223,11 +223,19 @@ describe('a split panel layout with nothing else at the corner', () => {
     setWidth(1440);
     const windowed = shell(fakeWindow().adapter, { panelLayout: SPLIT });
     // The whole window less the frame's two 16 insets.
-    expect(style(windowed, 'shell-content')).toMatchObject({ flexBasis: 1408, maxWidth: 1408 });
+    expect(style(windowed, 'shell-content')).toMatchObject({
+      flexBasis: 'auto',
+      width: 1408,
+      maxWidth: 1408,
+    });
     windowed.unmount();
     // Without windows the envelope is the panels' own widths (340 + 8 + 360).
     const page = shell(undefined, { panelLayout: SPLIT });
-    expect(style(page, 'shell-content')).toMatchObject({ flexBasis: 708, maxWidth: 708 });
+    expect(style(page, 'shell-content')).toMatchObject({
+      flexBasis: 'auto',
+      width: 708,
+      maxWidth: 708,
+    });
   });
 
   it("keeps the room of the platform's own controls without drawing any", () => {
@@ -387,6 +395,107 @@ const DESKTOP: Partial<AppShellProps> = {
 const FLUSH = { items: NAV, surface: 'plain' as const, variant: 'panel' as const, width: 190 };
 
 describe('panes beside a sidebar flush to the window', () => {
+  it('keeps the window corner with the shell when navigationPlacement selects its engine path', () => {
+    setWidth(900);
+    const { navFrom: _navFrom, framedFrom: _framedFrom, ...desktop } = DESKTOP;
+    const screen = shell(fakeWindow().adapter, {
+      ...desktop,
+      navigationPlacement: 'sidebar',
+      sidebar: { ...FLUSH, surface: 'docked', size: 'sm', collapsed: true },
+    });
+    expect(screen.getAllByLabelText('Close')).toHaveLength(1);
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.queryByTestId('shell-screen-window-controls')).toBeNull();
+    expect(style(screen, 'sidebar-window-band').height).toBe(52);
+    expect(barStart(screen, 'inbox')).toBeGreaterThanOrEqual(24);
+  });
+
+  it('does not reclaim a window corner already owned by an enclosing shell', () => {
+    setWidth(900);
+    const screen = shell(fakeWindow().adapter, {
+      title: 'Outer',
+      children: (
+        <AppShell
+          testID="nested"
+          navigationPlacement="sidebar"
+          sidebar={{ ...FLUSH, surface: 'docked', size: 'sm', collapsed: true }}
+          header={null}
+          contentMaxWidth="none"
+          panelLayout={SPLIT}
+        />
+      ),
+    });
+    expect(screen.getAllByLabelText('Close')).toHaveLength(1);
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.queryByTestId('nested-window-controls')).toBeNull();
+    expect(screen.queryByTestId('sidebar-window-band')).toBeNull();
+  });
+
+  it('the engine path removes its controls and room in fullscreen and restores both', () => {
+    setWidth(900);
+    const { adapter, window } = fakeWindow();
+    const screen = shell(adapter, {
+      ...DESKTOP,
+      navigationPlacement: 'sidebar',
+      sidebar: { ...FLUSH, surface: 'docked', size: 'sm', collapsed: true },
+    });
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+    act(() => window.set({ fullscreen: true }));
+    expect(screen.queryByTestId('shell-window-controls')).toBeNull();
+    expect(screen.queryByTestId('sidebar-window-band')).toBeNull();
+    act(() => window.set({ fullscreen: false }));
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+  });
+
+  it('the engine path keeps overlay controls without reserving sidebar room', () => {
+    setWidth(900);
+    const screen = shell(fakeWindow().adapter, {
+      ...DESKTOP,
+      navigationPlacement: 'sidebar',
+      windowControls: 'overlay',
+      sidebar: { ...FLUSH, surface: 'docked', size: 'sm', collapsed: true },
+    });
+    expect(screen.getAllByLabelText('Close')).toHaveLength(1);
+    expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
+    expect(screen.queryByTestId('shell-screen-window-controls')).toBeNull();
+    expect(screen.queryByTestId('sidebar-window-band')).toBeNull();
+  });
+  it('keeps the controls clearance in the first title row beside a narrow sidebar', () => {
+    setWidth(1100);
+    const screen = shell(fakeWindow().adapter, {
+      ...DESKTOP,
+      sidebar: { ...FLUSH, size: 'sm', collapsed: true },
+    });
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+    expect(barStart(screen, 'inbox')).toBe(44);
+    expect(moves(screen, 'inbox')).toBe(true);
+    expect(moves(screen, 'detail')).toBe(true);
+  });
+
+  it.each([false, true])(
+    'keeps ordinary joined-panel corners when clearance is not window chrome (workspace header=%s)',
+    (header) => {
+      setWidth(1100);
+      const { adapter, window } = fakeWindow();
+      const wideCorners = {
+        ...adapter,
+        window: { ...window, metrics: { ...window.metrics, radius: 31 } },
+      };
+      const screen = shell(wideCorners, {
+        ...DESKTOP,
+        sidebar: { ...FLUSH, surface: 'card', size: 'sm', collapsed: true },
+        panelLayout: { ...SPLIT, appearance: 'joined', ...(header ? { header: null } : {}) },
+      });
+      const surfaces = screen.getAllByTestId('content-panel-surface');
+      expect(surfaces).toHaveLength(1);
+      const panel = resolvedStyle(surfaces[0]!.props.style);
+      expect(panel.borderTopLeftRadius ?? panel.borderRadius).not.toBe(31);
+      expect(panel.borderTopRightRadius ?? panel.borderRadius).not.toBe(31);
+    },
+  );
+
   it('the sidebar holds the controls; every pane header moves the window and keeps no room', () => {
     setWidth(1100);
     const screen = shell(fakeWindow().adapter, { ...DESKTOP, sidebar: FLUSH });
@@ -439,13 +548,21 @@ describe('panes beside a sidebar flush to the window', () => {
     // The panes take the sidebar's room: the window less the frame's 7 start
     // and end insets, where shown they had what the 190 sidebar leaves.
     const hidden = style(screen, 'shell-content');
-    expect(hidden).toMatchObject({ flexBasis: 1100 - 7 - 7, maxWidth: 1100 - 7 - 7 });
+    expect(hidden).toMatchObject({
+      flexBasis: 'auto',
+      width: 1100 - 7 - 7,
+      maxWidth: 1100 - 7 - 7,
+    });
     screen.unmount();
     const shown = style(
       shell(fakeWindow().adapter, { ...DESKTOP, sidebar: { ...FLUSH, dock: {} } }),
       'shell-content',
     );
-    expect(shown).toMatchObject({ flexBasis: 1100 - 190 - 7, maxWidth: 1100 - 190 - 7 });
+    expect(shown).toMatchObject({
+      flexBasis: 'auto',
+      width: 1100 - 190 - 7,
+      maxWidth: 1100 - 190 - 7,
+    });
   });
 
   it('a sidebar an app puts in a drawer, or a card, keeps the corner to itself', () => {

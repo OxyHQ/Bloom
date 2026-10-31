@@ -175,7 +175,8 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
       const deckWidth = layout.expandedPanel
         ? 'var(--bloom-deck-viewport)'
         : `max(var(--bloom-deck-viewport), calc(${declaredWidth} + var(--bloom-frame-end)))`;
-      rules += `${root} [data-bloom-shell-frame="${scope}"]{overflow:visible!important;padding-inline:0!important;--bloom-deck-viewport:calc(100cqw - var(--bloom-nav-width) - var(--bloom-nav-gap))}
+      rules += `${root} [data-bloom-shell-host="${scope}"]{overflow:visible!important}
+${root} [data-bloom-shell-frame="${scope}"]{overflow:visible!important;padding-inline:0!important;--bloom-deck-viewport:calc(100cqw - var(--bloom-nav-width) - var(--bloom-nav-gap))}
 ${root} [data-bloom-reading-envelope="${scope}"]{width:${deckWidth}!important;min-width:0!important;max-width:${deckWidth}!important;flex:0 0 auto!important;padding-inline-start:0!important;padding-inline-end:var(--bloom-frame-end)!important}
 ${root} [data-bloom-reading-envelope="${scope}"]{min-width:0!important}
 ${root} [data-bloom-shell-nav="${scope}"]{position:sticky!important;inset-inline-start:0;top:0;z-index:200;background-color:inherit}

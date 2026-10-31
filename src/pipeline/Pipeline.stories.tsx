@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { GlyphButton } from '../button';
 import { RiMore2Line } from '../icons/remix';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { DealCard } from './DealCard';
@@ -135,19 +135,18 @@ function Caption({ children }: { children: string }) {
 }
 
 function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
+      <BloomColorScope style={{ display: 'contents' }} mode="light">
         <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 520 }}>
           <Page>{children}</Page>
         </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
+      </BloomColorScope>
+      <BloomColorScope style={{ display: 'contents' }} mode="dark">
         <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 520 }}>
           <Page>{children}</Page>
         </View>
-      </BloomThemeProvider>
+      </BloomColorScope>
     </View>
   );
 }

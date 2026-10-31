@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { FilterChips } from './FilterChips';
@@ -254,9 +254,9 @@ export const HomeFeedNarrow: Story = {
 /** Dark mode at 1280 and 390. */
 export const Dark: Story = {
   render: () => (
-    <BloomThemeProvider mode="dark">
+    <BloomColorScope style={{ display: 'contents' }} mode="dark">
       <DarkCanvas />
-    </BloomThemeProvider>
+    </BloomColorScope>
   ),
 };
 

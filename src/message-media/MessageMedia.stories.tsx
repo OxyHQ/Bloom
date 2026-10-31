@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ContactMessage } from './ContactMessage';
@@ -153,18 +153,17 @@ function Surface({ children, width }: { children: React.ReactNode; width?: numbe
 
 /** The same block in both modes. The ambient preset is forwarded. */
 function BothModes({ children, width }: { children: React.ReactNode; width?: number }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
     <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
       <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 360 }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
+        <BloomColorScope style={{ display: 'contents' }} mode="light">
           <Surface width={width}>{children}</Surface>
-        </BloomThemeProvider>
+        </BloomColorScope>
       </View>
       <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 360 }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
+        <BloomColorScope style={{ display: 'contents' }} mode="dark">
           <Surface width={width}>{children}</Surface>
-        </BloomThemeProvider>
+        </BloomColorScope>
       </View>
     </View>
   );

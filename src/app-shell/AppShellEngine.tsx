@@ -761,10 +761,29 @@ export function createAppShellEngine() {
       room != null && navInFlow && !topBarKeepsRoom
         ? Math.max(0, room.top - rowPadTop - (canvasNavPad ? gutter : 0))
         : 0;
+    const rowGap = canvas
+      ? 0
+      : dockedNav
+        ? panelHost
+          ? regionOuter
+          : 0
+        : Math.max(0, navigationGap ?? columnGap);
+    const visibleNavigationExtent =
+      navInFlow && !navDock.hidden
+        ? navContentWidth + rowGap + (canvasNavPad ? gutter : 0)
+        : navInFlow
+          ? navHiddenExtent
+          : 0;
     const headerRoom =
-      room != null && !topBarKeepsRoom && !(navInFlow && !navDock.hidden)
-        ? Math.max(0, room.leading - rowPadStart - (navInFlow ? navHiddenExtent : 0))
+      room != null && !topBarKeepsRoom
+        ? Math.max(0, room.leading - rowPadStart - visibleNavigationExtent)
         : 0;
+    // CSS owns responsive navigation width on web. The registered length
+    // interpolates on the frame, so navigation and header share each frame's room.
+    const navigationRoomCss =
+      room != null && !topBarKeepsRoom && navInFlow && cssScope
+        ? `max(0px, ${room.leading}px - var(--bloom-frame-alignment, var(--bloom-frame-start, 0px)) - var(--bloom-nav-width, 0px) - var(--bloom-nav-gap, 0px))`
+        : undefined;
     const navSidebar =
       flowSidebar && navRoom > 0 ? { ...flowSidebar, windowControlsRoom: navRoom } : flowSidebar;
     // The window's panels (`windowPanels`, above) hold the window's chrome:
@@ -797,9 +816,19 @@ export function createAppShellEngine() {
           ? 0
           : Math.max(0, room.leading - rowPadStart - (navInFlow ? navHiddenExtent : 0))
         : null;
+    const sidebarContentClearance =
+      room != null && navInFlow && panelHost && !topBarKeepsRoom && !shellHeaderShown;
     const contentChrome = useMemo<WindowChrome | null>(
-      () => (contentChromeLeading == null ? null : { leading: contentChromeLeading }),
-      [contentChromeLeading],
+      () =>
+        contentChromeLeading != null
+          ? {
+              leading: navInFlow ? headerRoom : contentChromeLeading,
+              leadingCss: navInFlow ? navigationRoomCss : undefined,
+            }
+          : sidebarContentClearance && (headerRoom > 0 || navigationRoomCss != null)
+            ? { leading: headerRoom, leadingCss: navigationRoomCss, topEdge: false }
+            : null,
+      [contentChromeLeading, sidebarContentClearance, headerRoom, navigationRoomCss, navInFlow],
     );
     const windowControlsNode =
       windowChrome && appWindow.controls === 'bloom' ? (
@@ -860,23 +889,15 @@ export function createAppShellEngine() {
     // transitions against its actual siblings, with no navigation measurement.
     // Both keep the same alignment, gutter ownership and mounted host tree.
     const [measuredNavigationWidth, setMeasuredNavigationWidth] = useState<number | null>(null);
-    const navigationWidth = navInFlow ? (measuredNavigationWidth ?? sidebarMetrics.expanded) : 0;
+    const navHostWidth = navContentWidth + (canvasNavPad ? gutter : 0);
+    const navigationWidth = navInFlow ? (measuredNavigationWidth ?? navHostWidth) : 0;
     // The row's gap after the navigation. Panels keep their gutter off a docked
     // nav's hairline; a canvas runs to the edge.
-    const rowGap = canvas
-      ? 0
-      : dockedNav
-        ? panelHost
-          ? regionOuter
-          : 0
-        : Math.max(0, navigationGap ?? columnGap);
     const rowNavigationGap = !navInFlow
       ? 0
-      : dockedNav
-        ? panelHost
-          ? regionOuter
-          : 0
-        : Math.max(0, navigationGap ?? columnGap);
+      : canvas && !dockedNav
+        ? Math.max(0, navigationGap ?? columnGap)
+        : rowGap;
     // The frame's own start and end edges (`frameInset`, else the gutter): a
     // flush navigation owns the start edge.
     const rowHorizontalPadding = panelHost
@@ -930,21 +951,45 @@ export function createAppShellEngine() {
         numericReading && contentAligned
           ? {
               flexGrow: 0,
-              flexBasis: readingWidth.value + asideReadingWidth,
+              flexBasis: 'auto' as const,
+              width: readingWidth.value + asideReadingWidth,
               maxWidth: readingWidth.value + asideReadingWidth,
             }
-          : {},
-      [numericReading, contentAligned, readingWidth, asideReadingWidth],
+          : {
+              width: UNSET,
+              flexGrow: contentAligned && !stretchReading ? 0 : 1,
+              flexBasis: contentAligned
+                ? stretchReading
+                  ? ('100%' as const)
+                  : contentWidth + asideReadingWidth
+                : 0,
+              maxWidth: contentAligned
+                ? stretchReading
+                  ? ('100%' as const)
+                  : contentWidth + asideReadingWidth
+                : UNSET,
+            },
+      [
+        numericReading,
+        contentAligned,
+        readingWidth,
+        asideReadingWidth,
+        stretchReading,
+        contentWidth,
+      ],
     );
     const contentSpanStyle = useAnimatedStyle(() => {
       const extra = asideReadingWidth * spanProgress.value;
       return numericReading
         ? {
             flexGrow: 0,
-            flexBasis: readingWidth.value + extra,
+            flexBasis: 'auto' as const,
+            width: readingWidth.value + extra,
             maxWidth: readingWidth.value + extra,
           }
         : {
+            width: UNSET,
+            flexGrow: stretchReading ? 1 : 0,
             flexBasis: stretchReading ? ('100%' as const) : contentWidth + extra,
             maxWidth: stretchReading
               ? compactRegion
@@ -1098,7 +1143,17 @@ export function createAppShellEngine() {
       ) : null;
     // Without a sidebar in flow the header is the window's toolbar.
     const headerNode =
-      shellHeader != null && headerRoom > 0 ? (
+      shellHeader != null &&
+      navInFlow &&
+      !navDock.hidden &&
+      (headerRoom > 0 || navigationRoomCss != null) ? (
+        <View
+          testID={testID ? `${testID}-header-clearance` : undefined}
+          style={{ paddingInlineStart: navigationRoomCss ?? headerRoom } as WebCssStyle}
+        >
+          {shellHeader}
+        </View>
+      ) : shellHeader != null && headerRoom > 0 ? (
         <WindowDragRegion
           testID={testID ? `${testID}-header-drag` : undefined}
           style={{ paddingInlineStart: headerRoom }}
@@ -1361,7 +1416,6 @@ export function createAppShellEngine() {
     );
     const veilStyle = useAnimatedStyle(() => ({ opacity: revealAmount.value }), [revealAmount]);
 
-    const navHostWidth = navContentWidth + (canvasNavPad ? gutter : 0);
     const navSlotStyle = useDockSlotStyle(
       'start',
       navDock,
@@ -1517,6 +1571,7 @@ export function createAppShellEngine() {
     const centredBody = (
       <AnimatedLayoutView
         className={READING_TRANSITION}
+        testID={testID ? `${testID}-reading-envelope` : undefined}
         {...(Platform.OS === 'web'
           ? { dataSet: { bloomReadingEnvelope: cssScope ?? 'legacy' } }
           : {})}
@@ -1788,17 +1843,22 @@ export function createAppShellEngine() {
     // While a dock moves, the regions it resizes follow its one progress
     // property frame by frame; their own layout transitions would chase it.
     const dockMoving = Platform.OS === 'web' && (navDock.moving || topDock.moving);
+    // The reveal root owns its own immediate-open / delayed-close clipping.
+    // The document-deck override belongs only to roots with the fixed clip.
+    const revealRoot =
+      (variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav;
     const rootData = (frameScope: string | null) =>
-      frameScope || dockMoving
+      frameScope || dockMoving || (cssScope && !revealRoot)
         ? {
             dataSet: {
               ...(frameScope ? { bloomShellFrame: frameScope } : {}),
+              ...(cssScope && !revealRoot ? { bloomShellHost: cssScope } : {}),
               ...(dockMoving ? { bloomDockMoving: 'true' } : {}),
             },
           }
         : {};
 
-    if ((variant === 'feed' || variant === 'dashboard') && drawerStyle === 'reveal' && hasNav) {
+    if (revealRoot) {
       return shellRoot(
         <AppShellProvider value={shell}>
           {navigationRecipe.sheet}

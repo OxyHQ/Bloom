@@ -23,6 +23,10 @@ export function useWindowCornerTaken(): boolean {
  */
 export interface WindowChrome {
   readonly leading: number;
+  /** Web reservation following compositor CSS geometry. */
+  readonly leadingCss?: string;
+  /** False when only horizontal clearance is needed, away from the top edge. */
+  readonly topEdge?: boolean;
 }
 
 /**
