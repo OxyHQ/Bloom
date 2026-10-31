@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 
 import { usePlatformWindow } from '../platform-surface/context';
 import { useWindowChrome } from './context';
 import type { PlatformWindowState } from '../platform-surface/types';
-import type { WindowControlsRoom, WindowHandle } from './types';
+import type { WindowControlsRoom, WindowHandle, WindowSizeLimits } from './types';
 
 const NO_ROOM: WindowControlsRoom = { top: 0, leading: 0 };
 
@@ -93,4 +93,31 @@ export function useWindowControlsRoom(): WindowControlsRoom {
  */
 export function useWindowHeaderRoom(): number {
   return useWindowChrome()?.leading ?? 0;
+}
+
+/** A bound as the platform takes it: a whole, non-negative number, zero for none. */
+function bound(value: number | undefined): number {
+  return value != null && Number.isFinite(value) && value > 0 ? Math.round(value) : 0;
+}
+
+/**
+ * Declares the sizes the application's window can take, for as long as the
+ * caller is mounted: the platform never sizes the window outside them (a
+ * resize by its edges stops at them; zoom fills the work area only up to
+ * them). The smallest size an application's layout still holds together at
+ * is its minimum: a sidebar and the narrowest content beside it, a toolbar
+ * whose controls all fit. Leaving it, or a platform without windows or
+ * without limits, asks nothing. One owner per window: the last declared wins.
+ */
+export function useWindowSizeLimits(limits: WindowSizeLimits): void {
+  const platform = usePlatformWindow();
+  const minWidth = bound(limits.minWidth);
+  const minHeight = bound(limits.minHeight);
+  const maxWidth = bound(limits.maxWidth);
+  const maxHeight = bound(limits.maxHeight);
+  useEffect(() => {
+    if (!platform?.setSizeLimits) return;
+    platform.setSizeLimits({ minWidth, minHeight, maxWidth, maxHeight });
+    return () => platform.setSizeLimits?.({ minWidth: 0, minHeight: 0, maxWidth: 0, maxHeight: 0 });
+  }, [platform, minWidth, minHeight, maxWidth, maxHeight]);
 }

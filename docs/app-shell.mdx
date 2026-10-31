@@ -1536,6 +1536,11 @@ nothing but its shape (`windowControls`, default `auto`):
   `header={null}` page owns that corner itself.
 - **A top bar across the window** (`topBarVisibility="always"` above a sidebar)
   is the one that keeps the room; the sidebar below it keeps none.
+- **Panels beside a flush sidebar** (the desktop window above: `navFrom={0}`,
+  a `plain` or `docked` sidebar, no top bar or header): the sidebar keeps the
+  room, and the panels' headers along the window's top edge are the window's
+  toolbar and move it; hidden by its dock, the first panel's header keeps the
+  room ([Panes beside a sidebar](/docs/window#panes-beside-a-sidebar)).
 - **Panels and nothing else** (no sidebar, top bar or header): the panels are
   the window's title area. They fill the window, the first one's header keeps
   the room, and every panel header along the top edge moves the window

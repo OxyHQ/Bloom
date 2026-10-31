@@ -11,9 +11,34 @@ import {
   webViewportHeightMinus,
   type WebCssStyle,
 } from '../styles/web-view-style';
-import type { AppShellScroll, AppShellVariant } from './types';
+import { breakpointPx } from './constants';
+import type {
+  AppShellBreakpoint,
+  AppShellScroll,
+  AppShellSidebarProps,
+  AppShellVariant,
+} from './types';
 
 export type ScrollMode = 'document' | 'container' | 'fixed';
+
+/**
+ * A sidebar flush to the window's start edge at every width the shell can
+ * take: in flow from 0 (`navFrom={0}`, a desktop window's navigation, which
+ * hides by its dock rather than into a drawer) and docked, or plain beside a
+ * content-aligned region. The panels beside it start at the window's top edge
+ * and are the window's title area.
+ */
+export function flushSidebarAtEveryWidth(
+  sidebar: AppShellSidebarProps,
+  navFrom: AppShellBreakpoint | undefined,
+  navigationAlign: 'edge' | 'content' | undefined,
+): boolean {
+  return (
+    navFrom !== undefined &&
+    breakpointPx(navFrom) <= 0 &&
+    (sidebar.surface === 'docked' || (sidebar.surface === 'plain' && navigationAlign === 'content'))
+  );
+}
 
 /**
  * Which frame a shell actually gets.

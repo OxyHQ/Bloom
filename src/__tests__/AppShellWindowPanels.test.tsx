@@ -368,6 +368,101 @@ describe('other panel shapes', () => {
   });
 });
 
+/**
+ * A desktop file manager's or mail client's window: the sidebar flush to the
+ * window's start edge at every width (`navFrom={0}`), holding the controls at
+ * its top, and the panes beside it are the window's title area.
+ */
+const DESKTOP: Partial<AppShellProps> = {
+  header: null,
+  navigationAlign: 'content',
+  navigationGap: 0,
+  navFrom: 0,
+  framedFrom: 0,
+  contentMaxWidth: 'none',
+  frameInset: { top: 6, end: 7, bottom: 7, start: 7 },
+  panelLayout: SPLIT,
+};
+const FLUSH = { items: NAV, surface: 'plain' as const, variant: 'panel' as const, width: 190 };
+
+describe('panes beside a sidebar flush to the window', () => {
+  it('the sidebar holds the controls; every pane header moves the window and keeps no room', () => {
+    setWidth(1100);
+    const screen = shell(fakeWindow().adapter, { ...DESKTOP, sidebar: FLUSH });
+    expect(screen.getAllByLabelText('Close')).toHaveLength(1);
+    expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
+    expect(moves(screen, 'inbox')).toBe(true);
+    expect(moves(screen, 'detail')).toBe(true);
+    expect(barStart(screen, 'inbox')).toBe(24);
+    expect(barStart(screen, 'detail')).toBe(24);
+  });
+
+  it("every pane's title row is the window's toolbar, centred on the controls", () => {
+    setWidth(1100);
+    const screen = shell(fakeWindow().adapter, { ...DESKTOP, sidebar: FLUSH });
+    for (const id of ['inbox', 'detail']) {
+      expect(style(screen, `${id}-bar-bar`).minHeight).toBe(52);
+      expect(titleRowCentre(screen, id)).toBe(CONTROLS_CENTRE);
+    }
+  });
+
+  it('a docked sidebar is flush too', () => {
+    setWidth(1100);
+    const screen = shell(fakeWindow().adapter, {
+      ...DESKTOP,
+      sidebar: { ...FLUSH, surface: 'docked' },
+    });
+    expect(moves(screen, 'inbox')).toBe(true);
+    expect(titleRowCentre(screen, 'inbox')).toBe(CONTROLS_CENTRE);
+  });
+
+  it('hidden by its dock, the first pane is at the corner and keeps the room from its frame', () => {
+    setWidth(1100);
+    const screen = shell(fakeWindow().adapter, {
+      ...DESKTOP,
+      sidebar: { ...FLUSH, dock: { defaultHidden: true } },
+    });
+    // The content's edge is at the frame's 7 start inset: 81 of the 88 are its own.
+    expect(barStart(screen, 'inbox')).toBe(81);
+    expect(barStart(screen, 'detail')).toBe(24);
+    expect(moves(screen, 'inbox')).toBe(true);
+    // The panes take the sidebar's room: the window less the frame's 7 start
+    // and end insets, where shown they had what the 190 sidebar leaves.
+    const hidden = style(screen, 'shell-content');
+    expect(hidden).toMatchObject({ flexBasis: 1100 - 7 - 7, maxWidth: 1100 - 7 - 7 });
+    screen.unmount();
+    const shown = style(
+      shell(fakeWindow().adapter, { ...DESKTOP, sidebar: { ...FLUSH, dock: {} } }),
+      'shell-content',
+    );
+    expect(shown).toMatchObject({ flexBasis: 1100 - 190 - 7, maxWidth: 1100 - 190 - 7 });
+  });
+
+  it('a sidebar that may become a drawer, or a card, keeps the corner to itself', () => {
+    setWidth(1100);
+    const drawer = shell(fakeWindow().adapter, { ...DESKTOP, navFrom: undefined, sidebar: FLUSH });
+    expect(moves(drawer, 'inbox')).toBe(false);
+    expect(style(drawer, 'inbox-bar-bar').minHeight).toBeUndefined();
+    drawer.unmount();
+    const card = shell(fakeWindow().adapter, {
+      ...DESKTOP,
+      sidebar: { ...FLUSH, surface: 'card' },
+    });
+    expect(moves(card, 'inbox')).toBe(false);
+    expect(barStart(card, 'inbox')).toBe(24);
+  });
+
+  it('full screen: no controls, no room, no drag', () => {
+    setWidth(1100);
+    const screen = shell(fakeWindow({ state: { fullscreen: true } }).adapter, {
+      ...DESKTOP,
+      sidebar: FLUSH,
+    });
+    expect(screen.queryByTestId('shell-window-controls')).toBeNull();
+    expect(moves(screen, 'inbox')).toBe(false);
+  });
+});
+
 describe('the corner has one owner', () => {
   it('a sidebar in flow keeps it: the panels keep no room and move nothing', () => {
     setWidth(1440);

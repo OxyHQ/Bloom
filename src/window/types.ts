@@ -18,6 +18,17 @@ export interface WindowHandle extends PlatformWindowState {
 }
 
 /**
+ * The sizes the application's window can take (`useWindowSizeLimits`), in
+ * layout pixels. An absent or zero bound is none.
+ */
+export interface WindowSizeLimits {
+  minWidth?: number;
+  minHeight?: number;
+  maxWidth?: number;
+  maxHeight?: number;
+}
+
+/**
  * The room the window's controls take, from the window's top and from its
  * LEADING edge (the left in LTR, the right in RTL): keep it with
  * `paddingTop` / `paddingInlineStart`. Zero without the `window` capability

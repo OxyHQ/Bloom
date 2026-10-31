@@ -25,6 +25,7 @@ export type {
   PlatformTrashedItem,
   PlatformWindow,
   PlatformWindowMetrics,
+  PlatformWindowSizeLimits,
   PlatformWindowState,
   PopupDismissReason,
   PopupSurfaceProps,
