@@ -87,7 +87,7 @@ type Target = WebGPUAvatarTarget & {
   atlas?: Texture;
   rect?: readonly number[];
 };
-type Ticket = { promise: Promise<boolean>; gpuDone: Promise<void>; finish(success: boolean): void };
+type Ticket = { finish(success: boolean): void };
 const canvasStates = new WeakMap<HTMLCanvasElement, CanvasState>();
 const listeners = new Set<Listener>();
 let current: Shared | undefined;
@@ -286,10 +286,10 @@ export async function createWebGPUAvatarPresenter(
       if (target.buffer) buffers.push(target.buffer);
       target.buffer = target.binding = target.atlas = target.rect = undefined;
     }
-    void Promise.all([...pending].map((ticket) => ticket.gpuDone)).then(() => {
-      texture?.destroy();
-      for (const buffer of buffers) buffer.destroy();
-    });
+    // Submitted commands retain their GPU references. Destroying application
+    // resources is safe after submit, including when completion never arrives.
+    texture?.destroy();
+    for (const buffer of buffers) buffer.destroy();
   };
   const fail = (error: Error) => {
     if (disposed || failed) return;
@@ -354,6 +354,10 @@ export async function createWebGPUAvatarPresenter(
       try {
         if (!(stage.width > 0 && stage.height > 0 && stage.width <= limit && stage.height <= limit))
           throw new Error('WebGPU atlas dimensions exceed device limits');
+        let minX = stage.width,
+          minY = stage.height,
+          maxX = 0,
+          maxY = 0;
         for (const tile of tiles) {
           const target = tile.target as Target;
           if (!targets.has(target) || !target.active)
@@ -376,6 +380,10 @@ export async function createWebGPUAvatarPresenter(
             tile.sourceY + tile.sourceHeight > stage.height
           )
             throw new Error('Invalid WebGPU source rectangle');
+          minX = Math.min(minX, tile.sourceX);
+          minY = Math.min(minY, tile.sourceY);
+          maxX = Math.max(maxX, tile.sourceX + tile.sourceWidth);
+          maxY = Math.max(maxY, tile.sourceY + tile.sourceHeight);
         }
         if (!atlas || atlasWidth !== stage.width || atlasHeight !== stage.height) {
           const previous = atlas;
@@ -386,15 +394,24 @@ export async function createWebGPUAvatarPresenter(
             format: 'rgba8unorm',
             usage: TEXTURE_USAGE,
           });
-          if (previous)
-            void Promise.all([...pending].map((ticket) => ticket.gpuDone)).then(() =>
-              previous.destroy(),
-            );
+          previous?.destroy();
         }
+        // Preserve sparse atlas rendering: copy only submitted tiles' union.
+        // One source texel around it supplies the exact drawImage filter guard,
+        // including current transparent pixels instead of stale atlas contents.
+        const left = Math.max(0, Math.floor(minX) - 1),
+          top = Math.max(0, Math.floor(minY) - 1),
+          right = Math.min(stage.width, Math.ceil(maxX) + 1),
+          bottom = Math.min(stage.height, Math.ceil(maxY) + 1);
         active.device.queue.copyExternalImageToTexture(
-          { source: stage },
-          { texture: atlas, premultipliedAlpha: true, colorSpace: 'srgb' },
-          [stage.width, stage.height],
+          { source: stage, origin: { x: left, y: top } },
+          {
+            texture: atlas,
+            origin: { x: left, y: top },
+            premultipliedAlpha: true,
+            colorSpace: 'srgb',
+          },
+          [right - left, bottom - top],
         );
         const encoder = active.device.createCommandEncoder();
         for (const tile of tiles) {
@@ -457,15 +474,11 @@ export async function createWebGPUAvatarPresenter(
         });
         const gpuDone = active.device.queue.onSubmittedWorkDone();
         const ticket: Ticket = {
-          promise,
-          gpuDone: gpuDone.then(
-            () => undefined,
-            () => undefined,
-          ),
           finish(success) {
             if (settled) return;
             settled = true;
-            clearTimeout(timer);
+            // Cancellation settles the caller, but does not cancel the physical
+            // queue watchdog. Even a disposed pool must detect a hung device.
             pending.delete(ticket);
             resolve(success);
           },
@@ -477,11 +490,13 @@ export async function createWebGPUAvatarPresenter(
         }, BATCH_TIMEOUT);
         void gpuDone.then(
           () => {
+            clearTimeout(timer);
             const success = !disposed && !failed && !active.retired && shared === active;
             if (success) healthy(active);
             ticket.finish(success);
           },
           (error) => {
+            clearTimeout(timer);
             lost(active, errorOf(error));
             ticket.finish(false);
           },
@@ -499,7 +514,7 @@ export async function createWebGPUAvatarPresenter(
       if (target.state.owner === target) target.state.owner = undefined;
       const buffer = target.buffer;
       target.buffer = target.binding = target.atlas = target.rect = undefined;
-      void Promise.all([...pending].map((ticket) => ticket.gpuDone)).then(() => buffer?.destroy());
+      buffer?.destroy();
       // Do not unconfigure: it clears the retained canvas image. The WeakMap
       // permits same-canvas reattachment without retaining detached DOM nodes.
     },
