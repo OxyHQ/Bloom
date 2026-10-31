@@ -13,3 +13,5 @@ android/.gradle/
 .native-check/
 scripts/native-check/.gradle/
 scripts/native-check/build/
+scripts/native-check/legacy/.gradle/
+scripts/native-check/legacy/build/

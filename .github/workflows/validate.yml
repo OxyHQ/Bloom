@@ -150,7 +150,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [default, predictive]
+        variant: [legacy, default, predictive]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -173,9 +173,14 @@ jobs:
           cmdline-tools-version: '15859902' # 22.0; understands API 37.0 package versions
       - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
         with:
-          gradle-version: '9.4.1'
+          gradle-version: ${{ matrix.variant == 'legacy' && '8.3' || '9.4.1' }}
       - run: bun install --frozen-lockfile --ignore-scripts
-      - run: sdkmanager 'platforms;android-36' 'platforms;android-37.0' 'build-tools;37.0.0' 'ndk;27.1.12297006' 'cmake;3.30.5'
+      - name: Current Android SDK
+        if: matrix.variant != 'legacy'
+        run: sdkmanager 'platforms;android-36' 'platforms;android-37.0' 'build-tools;37.0.0' 'ndk;27.1.12297006' 'cmake;3.30.5'
+      - name: Declared minimum React Native toolchain SDK
+        if: matrix.variant == 'legacy'
+        run: sdkmanager 'platforms;android-34' 'build-tools;33.0.1' 'build-tools;34.0.0'
       - name: Hermes source prerequisites
         if: matrix.variant == 'predictive'
         run: sudo apt-get update && sudo apt-get install -y libicu-dev
@@ -188,9 +193,14 @@ jobs:
         env:
           VARIANT: ${{ matrix.variant }}
         run: |
-          predictive=false
-          if [ "$VARIANT" = predictive ]; then predictive=true; fi
-          gradle -p scripts/native-check -Pbloom.predictiveBackEnabled="$predictive" :bloom:testDebugUnitTest --console=plain --max-workers=2
+          if [ "$VARIANT" = legacy ]; then
+            gradle -p scripts/native-check/legacy :bloom:compileDebugKotlin :bloom:processDebugManifest --console=plain --max-workers=2
+            python3 scripts/native-check/legacy/verify-manifest.py
+          else
+            predictive=false
+            if [ "$VARIANT" = predictive ]; then predictive=true; fi
+            gradle -p scripts/native-check -Pbloom.predictiveBackEnabled="$predictive" :bloom:testDebugUnitTest --console=plain --max-workers=2
+          fi
 
   # The one required check of the main merge queue: green only when every job
   # above is, so a skipped or cancelled shard can never read as a pass. The ONE

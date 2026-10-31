@@ -8,7 +8,9 @@ def predictiveBackEnabled = providers.gradleProperty('bloom.predictiveBackEnable
 android {
   namespace 'so.oxy.bloom'
   compileSdkVersion rootProject.ext.has('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 36
-  defaultConfig { minSdkVersion 24 }
+  defaultConfig {
+    minSdkVersion rootProject.ext.has('minSdkVersion') ? rootProject.ext.minSdkVersion : 24
+  }
   sourceSets {
     main.java.srcDir(predictiveBackEnabled ? 'src/predictive/java' : 'src/legacy/java')
     main.kotlin.srcDir(predictiveBackEnabled ? 'src/predictive/java' : 'src/legacy/java')
