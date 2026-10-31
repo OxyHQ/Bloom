@@ -50,6 +50,7 @@ import {
 } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -242,6 +243,36 @@ function linkInstalls(installs) {
   }
 }
 
+// A Bun virtual-store package resolves its dependencies through its own
+// node_modules, not necessarily the consumer root. Capture those exact
+// installed packages before moving the published links; never modify them.
+function dependencyTargets(installs, dependencies) {
+  const resolvers = installs
+    .filter((p) => !isMirrorLink(p))
+    .map((p) => createRequire(join(p, 'package.json')));
+  return Object.keys(dependencies ?? {}).map((name) => {
+    let entry;
+    for (const require of resolvers) {
+      try {
+        entry = require.resolve(name);
+        break;
+      } catch {
+        /* try the next workspace */
+      }
+    }
+    if (!entry)
+      throw new Error(`cannot resolve built dependency ${name} from the published installation`);
+    let dir = dirname(entry);
+    while (dir !== dirname(dir)) {
+      const manifest = join(dir, 'package.json');
+      if (existsSync(manifest) && JSON.parse(readFileSync(manifest, 'utf8')).name === name)
+        return [name, dir];
+      dir = dirname(dir);
+    }
+    throw new Error(`cannot locate package root for built dependency ${name}: ${entry}`);
+  });
+}
+
 const installs = checkedInstalls();
 if (built) {
   const temporary = mkdtempSync(join(tmpdir(), 'bloom-mirror-pack-'));
@@ -262,8 +293,20 @@ if (built) {
     if (!active) {
       if (existsSync(MIRROR)) throw new Error(`built mirror already exists: ${MIRROR}`);
       mkdirSync(MIRROR, { recursive: true });
-      execFileSync('tar', ['-xzf', tarball, '-C', MIRROR, '--strip-components=1']);
-      writeFileSync(marker, hash);
+      try {
+        execFileSync('tar', ['-xzf', tarball, '-C', MIRROR, '--strip-components=1']);
+        const pkg = JSON.parse(readFileSync(join(MIRROR, 'package.json'), 'utf8'));
+        for (const [name, target] of dependencyTargets(installs, pkg.dependencies)) {
+          const link = join(MIRROR, 'node_modules', name);
+          mkdirSync(dirname(link), { recursive: true });
+          symlinkSync(relative(dirname(link), target), link);
+          console.log(`dependency ${name} -> ${target}`);
+        }
+        writeFileSync(marker, hash);
+      } catch (error) {
+        rmSync(MIRROR, { recursive: true, force: true });
+        throw error;
+      }
     }
   } finally {
     rmSync(temporary, { recursive: true, force: true });
