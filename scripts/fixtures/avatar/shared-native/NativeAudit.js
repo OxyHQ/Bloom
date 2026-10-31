@@ -1,6 +1,6 @@
 /** Explicit test diagnostics only: no readback in the production frame loop. */
-import { bridge, createContext } from '@oxy.so/bloom-avatar-native/src/bridge';
-import { getRuntime } from '@oxy.so/bloom-avatar-native/src/runtime';
+import { bridge, createContext } from './node_modules/@oxy.so/bloom/src/agent-avatar/native/bridge';
+import { getRuntime } from './node_modules/@oxy.so/bloom/src/agent-avatar/native/runtime';
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function probeColdFrame(runtimeUrl) {
   const gl = await createContext();

@@ -89,7 +89,7 @@ jobs:
       # release; the release itself runs no tests.
       - name: Workspace packages typecheck and test
         run: |
-          for package in packages/bloom-text packages/bloom-editor packages/color packages/avatar-native; do
+          for package in packages/bloom-text packages/bloom-editor packages/color; do
             (cd "$package" && bun run typescript && bun run test)
           done
       - name: Avatar runtime concurrency, transport and presentation units
@@ -104,7 +104,7 @@ jobs:
             scripts/test-avatar-pose-sharing.mjs \
             scripts/test-avatar-surface-transport.mjs \
             scripts/test-avatar-webgpu-presenter.mjs
-          bun run --cwd packages/avatar-native verify:package
+          node scripts/verify-avatar-native-package.mjs
       - name: Generated sources are committed
         run: |
           git diff --exit-code

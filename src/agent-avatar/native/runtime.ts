@@ -1,6 +1,6 @@
-import expected from '../lib/asset-manifest.json';
+import expected from './generated/asset-manifest.json';
 import type { Runtime } from './types';
-const factory = require('../lib/runtime.cjs') as (base: string) => Runtime;
+const factory = require('./generated/runtime.cjs') as (base: string) => Runtime;
 const compatible = new Map<string, { pending: Promise<boolean>; expires: number }>();
 const runtimes = new Map<string, Runtime>();
 

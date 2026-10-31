@@ -1,0 +1,41 @@
+apply plugin: 'com.android.library'
+
+// Older supported Expo hosts use the core Gradle helpers instead of the modern
+// module plugin. They compile only the unavailable registration below.
+def expoAutolinking = gradle.extensions.findByName('expoGradle')
+if (expoAutolinking != null) {
+  apply plugin: 'expo-module-gradle-plugin'
+} else {
+  def core = project(':expo-modules-core')
+  apply from: new File(core.projectDir, 'ExpoModulesCorePlugin.gradle')
+  applyKotlinExpoModulesCorePlugin()
+  useCoreDependencies()
+  // Expo 50 configures these defaults inside applyKotlinExpoModulesCorePlugin.
+  if (project.ext.has('useDefaultAndroidSdkVersions')) useDefaultAndroidSdkVersions()
+}
+group = 'so.oxy.bloom'
+version = '1.0.0'
+
+// Use Expo's resolved autolinking graph, including exclusions and source/AAR
+// selection. An installed-but-excluded GL package must not enable this module.
+def expoConfig = expoAutolinking?.config
+def glModule = expoConfig?.modules?.find { it.packageName == 'expo-gl' }
+def coreModule = expoConfig?.modules?.find { it.packageName == 'expo-modules-core' }
+def glProject = glModule?.projects?.find { it.name == 'expo-gl' }
+def hasCompatibleGL = glModule?.packageVersion == '58.0.3' &&
+  coreModule?.packageVersion?.startsWith('58.') && glProject != null
+
+android {
+  namespace 'so.oxy.bloom.avatargpu'
+  sourceSets.main.java.srcDirs = [hasCompatibleGL ? 'src/gl/java' : 'src/no-gl/java']
+}
+dependencies {
+  if (hasCompatibleGL) {
+    if (glProject.usePublication) {
+      def artifact = glProject.publication
+      implementation "${artifact.groupId}:${artifact.artifactId}:${artifact.version}"
+    } else {
+      implementation project(":${glProject.name}")
+    }
+  }
+}

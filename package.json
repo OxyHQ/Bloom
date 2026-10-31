@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.87.0",
+  "version": "15.88.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3897,6 +3897,10 @@
         "default": "./lib/commonjs/expandable-text/index.js"
       }
     },
+    "./agent-avatar/runtime-revision": {
+      "types": "./assets/character-native/runtime-revision.d.cts",
+      "default": "./assets/character-native/runtime-revision.cjs"
+    },
     "./design-tokens/theme.css": "./src/design-tokens/theme.css",
     "./design-tokens/tokens.json": "./src/design-tokens/tokens.json",
     "./package.json": "./package.json"
@@ -3914,7 +3918,11 @@
     "!**/*.stories.*",
     "!**/*.test.*",
     "!**/*.spec.*",
-    "assets/character-runtime"
+    "assets/character-runtime",
+    "android",
+    "expo-module.config.json",
+    "react-native.config.js",
+    "assets/character-native"
   ],
   "workspaces": [
     "packages/*"
@@ -4061,7 +4069,8 @@
     "three": "^0.186.1",
     "ts-jest": "^29.4.6",
     "typescript": "~5.9.2",
-    "vite": "^7"
+    "vite": "^7",
+    "expo-gl": "58.0.3"
   },
   "peerDependencies": {
     "@lottiefiles/dotlottie-react": ">=0.13.0",
@@ -4087,7 +4096,8 @@
     "react-native-screens": ">=3.16.0",
     "react-native-svg": ">=13.0.0",
     "react-native-webview": ">=13.0.0",
-    "@oxy.so/bloom-avatar-native": "0.1.0"
+    "expo-gl": "*",
+    "expo-modules-core": "*"
   },
   "peerDependenciesMeta": {
     "@lottiefiles/dotlottie-react": {
@@ -4132,7 +4142,10 @@
     "react-native-webview": {
       "optional": true
     },
-    "@oxy.so/bloom-avatar-native": {
+    "expo-gl": {
+      "optional": true
+    },
+    "expo-modules-core": {
       "optional": true
     }
   },
@@ -4956,6 +4969,9 @@
       ],
       "expandable-text": [
         "./lib/typescript/module/expandable-text/index.d.ts"
+      ],
+      "agent-avatar/runtime-revision": [
+        "./assets/character-native/runtime-revision.d.cts"
       ]
     }
   }

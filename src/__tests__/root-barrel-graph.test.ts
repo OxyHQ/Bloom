@@ -32,6 +32,8 @@ const SRC = join(__dirname, '..');
  * `src/index.ts` is the mistake this catches.
  */
 const FORBIDDEN: Record<string, string> = {
+  'expo-gl': 'agent-avatar native adapter (optional require only)',
+  'expo-modules-core': 'agent-avatar native adapter (optional require only)',
   'expo-router': '@oxy.so/bloom/provider (and ./scroll/expo-router)',
   // Reached from BOTH families: `media-flight/MediaSurface.tsx` is the one
   // renderer the gallery and the flight layer share, and it is what names

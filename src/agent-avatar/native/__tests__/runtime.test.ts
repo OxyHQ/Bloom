@@ -1,4 +1,4 @@
-import manifest from '../../lib/asset-manifest.json';
+import manifest from '../generated/asset-manifest.json';
 import { isRuntimeCompatible } from '../runtime';
 const originalFetch = global.fetch;
 afterEach(() => {

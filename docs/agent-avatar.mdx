@@ -68,15 +68,15 @@ that does not self-host the runtime needs no setup. To self-host, serve the pack
 `assets/character-runtime/` directory and pass its absolute URL to `BloomProvider
 characterRuntimeUrl` or `AgentAvatarProvider runtimeUrl`. The native WebView route and
 shared still-capture host need the optional `react-native-webview` peer. Android live avatars
-can instead use the separately installed native GPU companion described below. Missing assets or an unavailable bridge produce an explicit translated
+can instead use Bloom’s integrated native GPU adapter described below. Missing assets or an unavailable bridge produce an explicit translated
 unavailable state. Geometry and motion load lazily; keep the generated chunks
 and assets beside the entry point with their original relative paths.
 
 `bun run build` builds the runtime before the library, then verifies all runtime
 files and their hashes against the actual package file list. For runtime-only
 work use `bun run build:avatar-runtime`; it builds both the browser runtime and the native
-companion factory/expected manifest from the same source. `bun run build:avatar-native` can
-regenerate only the companion after a fresh source browser build. `manifest.json` records the generated
+native factory/expected manifest from the same source. `bun run build:avatar-native` can
+regenerate only the native adapter after a fresh source browser build. `manifest.json` records the generated
 files. Build output replaces the entire runtime directory; old files and selector
 PNGs cannot silently survive an incremental build.
 Production avatars load the selected geometry and idle/reaction motion first. Computer
@@ -92,7 +92,7 @@ source bundles remain frozen fidelity evidence. The public character and action 
 unchanged; runtime diagnostic tooling can still request a complete eager rig.
 
 The source lives outside `src/` so Three and browser-only code do not enter ordinary
-Bloom consumers' native import graph. The optional native companion explicitly bundles the
+Bloom consumers' native import graph. The integrated native adapter explicitly bundles the
 same engine for Hermes, with shader strings and external asset URLs; it does not evaluate
 remote JavaScript or install global DOM shims. Vite application output preserves `createAvatar`
 and external binary assets; library mode would inline these assets and defeat
@@ -183,13 +183,11 @@ quiescent scenes stop requesting animation frames. Geometry donors are immutable
 and cached within a byte budget; fitted geometry and GPU ownership are released
 with the last live scene. There is no cached animation sprite playback.
 
-The optional `@oxy.so/bloom-avatar-native` companion now supplies an Android shared GPU
-backend. It is a private, installable package in this repository, not a published release;
-see [its integration and build contract](../packages/avatar-native/README.md). Install its
-archive and declared peers, rebuild the application's native binary, and keep the normal
-Bloom API. Bloom requires companion ABI 1 and selects it only when the configured runtime's
+Bloom includes an Android shared GPU backend; see the
+[integration and build contract](./native-avatars.mdx). Install the optional graphics
+peer, rebuild the application’s native binary, and keep the normal Bloom API. Bloom requires native adapter ABI 1 and selects it only when the configured runtime's
 complete manifest matches the bundled engine. An absent module or incompatible host retains
-the WebView route. The neutral web facade cannot load the companion's native dependency graph.
+the WebView route. The neutral web facade cannot load the adapter’s native dependency graph.
 
 Matching size buckets and runtime URLs share an engine, GPU context, decoded assets and atlas
 across providers. Each live destination remains an independently laid-out native TextureView;
@@ -207,7 +205,7 @@ queue. Pointer cancellation clears ownership and gaze; a release moved six logic
 more does not trigger a tap reaction. Snapshot observation captures the retained native image
 on request and encodes PNG off the GL thread. Context/surface disposal drains submitted work;
 allocation and EGL presentation failures reach the existing unavailable state. Native context
-loss does not yet have automatic recovery. iOS has no native presenter in this companion.
+loss does not yet have automatic recovery. iOS has no native presenter in this adapter.
 
 The fallback live route still creates separate WebView documents and retains its topology
 limit. A physical Pixel 8a test with nine WebViews found one lost WebGL context both before
