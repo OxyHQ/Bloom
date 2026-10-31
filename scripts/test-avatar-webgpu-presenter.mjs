@@ -24,6 +24,12 @@ const deferred = () => {
 const drain = async () => {
   for (let i = 0; i < 20; i++) await Promise.resolve();
 };
+const advanceActive = async (t, duration) => {
+  for (let elapsed = 0; elapsed < duration; elapsed += 100) {
+    t.mock.timers.tick(Math.min(100, duration - elapsed));
+    await drain();
+  }
+};
 function fixture({
   fallback = false,
   available = true,
@@ -143,6 +149,18 @@ function fixture({
     devices.push(device);
     return device;
   };
+  const visibilityHandlers = new Set();
+  const documentState = {
+    hidden: false,
+    addEventListener(name, callback) {
+      if (name === 'visibilitychange') visibilityHandlers.add(callback);
+    },
+    createElement() {
+      const canvas = new Canvas();
+      canvases.push(canvas);
+      return canvas;
+    },
+  };
   const gpu = {
     async requestAdapter() {
       adapterRequests++;
@@ -155,18 +173,13 @@ function fixture({
   const priorNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator'),
     priorDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { gpu } });
-  Object.defineProperty(globalThis, 'document', {
-    configurable: true,
-    value: {
-      createElement() {
-        const canvas = new Canvas();
-        canvases.push(canvas);
-        return canvas;
-      },
-    },
-  });
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: documentState });
   return {
     devices,
+    setHidden(value) {
+      documentState.hidden = value;
+      for (const callback of visibilityHandlers) callback();
+    },
     canvases,
     buffers,
     textures,
@@ -441,8 +454,7 @@ test('batch timeout settles work and uses the same bounded recovery path', async
     const p = await create(() => {}),
       target = p.attach(new f.Canvas());
     const completion = p.present(stage, [tile(target)]);
-    t.mock.timers.tick(5000);
-    await drain();
+    await advanceActive(t, 5000);
     assert.equal(await completion, false);
     assert.equal(f.devices.length, 2);
     assert.equal(f.devices[0].destroyed, true);
@@ -492,14 +504,83 @@ test('dispose cannot cancel the physical hang watchdog or retain buffers forever
     assert.equal(await completion, false);
     assert(f.buffers.every((value) => value.destroyed));
     assert(f.textures.every((value) => value.destroyed));
-    t.mock.timers.tick(5000);
-    await drain();
+    await advanceActive(t, 5000);
     assert.equal(f.devices[0].destroyed, true);
     assert.equal(f.devices.length, 1, 'No automatic replacement is needed without any live pool');
     const replacement = await create(() => {});
     assert(replacement);
     assert.equal(f.devices.length, 2);
     replacement.dispose();
+  } finally {
+    f.restore();
+    t.mock.timers.reset();
+  }
+});
+
+test('hidden time never expires a healthy pending batch or forces device recovery', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const f = fixture();
+  try {
+    const { createWebGPUAvatarPresenter: create } = await load();
+    const events = [],
+      p = await create(
+        () => assert.fail('unexpected failure'),
+        (value) => events.push(value),
+      ),
+      target = p.attach(new f.Canvas());
+    const completion = p.present(stage, [tile(target)]);
+    await advanceActive(t, 1000);
+    f.setHidden(true);
+    t.mock.timers.tick(60000);
+    await drain();
+    assert.equal(f.devices[0].destroyed, false);
+    f.setHidden(false);
+    await drain();
+    assert.equal(f.devices.length, 1);
+    f.devices[0].jobs[0].resolve();
+    assert.equal(await completion, true);
+    assert.deepEqual(events, []);
+    p.dispose();
+  } finally {
+    f.restore();
+    t.mock.timers.reset();
+  }
+});
+test('a suspended event loop does not consume the entire visible GPU deadline', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const f = fixture();
+  try {
+    const { createWebGPUAvatarPresenter: create } = await load();
+    const p = await create(() => assert.fail('unexpected failure')),
+      target = p.attach(new f.Canvas());
+    const completion = p.present(stage, [tile(target)]);
+    t.mock.timers.tick(60000);
+    await drain();
+    assert.equal(f.devices[0].destroyed, false);
+    f.devices[0].jobs[0].resolve();
+    assert.equal(await completion, true);
+    p.dispose();
+  } finally {
+    f.restore();
+    t.mock.timers.reset();
+  }
+});
+test('background initialization cannot time out before its GPU callback is allowed to run', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const f = fixture({ delayInit: true });
+  try {
+    const { createWebGPUAvatarPresenter: create } = await load();
+    f.setHidden(true);
+    const factory = create(() => {});
+    await drain();
+    t.mock.timers.tick(120000);
+    await drain();
+    assert.equal(f.devices[0].destroyed, false);
+    f.setHidden(false);
+    f.init.resolve();
+    const p = await factory;
+    assert(p);
+    p.dispose();
   } finally {
     f.restore();
     t.mock.timers.reset();
