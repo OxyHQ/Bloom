@@ -37,6 +37,7 @@ class EditorPool {
   private columns = 1;
   private observer: IntersectionObserver;
   private disposed = false;
+  private failed = false;
   private resizing?: Promise<void>;
   constructor(cell: number, preset: string) {
     this.cell = cell;
@@ -53,7 +54,20 @@ class EditorPool {
         resolveAsset: createCatalogAssetResolver(createCatalogMotion),
         onFrame: () => this.paint(),
         onError: () => {
-          for (const entry of [...this.entries]) entry?.onRenderError?.();
+          // Callbacks may synchronously attach a replacement. A fatal engine
+          // must never accept that reservation while its old entries drain.
+          this.failed = true;
+          for (const entry of [...this.entries]) {
+            try {
+              entry?.onRenderError?.();
+            } catch (error) {
+              // Preserve the caller's error without abandoning other entries'
+              // observers, reservations or final renderer disposal.
+              queueMicrotask(() => {
+                throw error;
+              });
+            }
+          }
         },
       });
     } catch (error) {
@@ -87,7 +101,11 @@ class EditorPool {
     });
   }
   get available() {
-    return !this.disposed && (this.entries.length < this.capacity || this.entries.some((e) => !e));
+    return (
+      !this.disposed &&
+      !this.failed &&
+      (this.entries.length < this.capacity || this.entries.some((e) => !e))
+    );
   }
   private layout() {
     if (this.disposed) return;
