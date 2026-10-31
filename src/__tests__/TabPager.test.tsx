@@ -18,7 +18,9 @@ const mockRouter = {
 };
 jest.mock('expo-router', () => ({
   useRouter: () => mockRouter,
-  useNavigation: () => ({}),
+  useNavigation: () => {
+    throw new Error('A binary without the native host must not require a navigation context');
+  },
   usePathname: () => mockPathname,
   useIsFocused: () => true,
 }));
