@@ -15,7 +15,8 @@ const mockAttachment = {
   pointerLeave: jest.fn(),
   react: jest.fn(),
 };
-jest.mock('../pool', () => ({ attachNativeAvatar: () => Promise.resolve(mockAttachment) }));
+const mockAttach = jest.fn(() => Promise.resolve(mockAttachment));
+jest.mock('../pool', () => ({ attachNativeAvatar: () => mockAttach() }));
 jest.mock('../bridge', () => ({
   NativeView: (props: object) => require('react').createElement('NativeGPU', props),
 }));
@@ -70,4 +71,16 @@ it('settles a native surface allocation failure once and ignores events from the
   expect(tree.root.findAllByType('NativeGPU' as any)).toHaveLength(0);
   act(() => failed());
   expect(mockError).toHaveBeenCalledTimes(1);
+});
+
+it('retains the same attachment across a collapsed layout instead of reseeding motion on return', async () => {
+  expect(mockAttach).toHaveBeenCalledTimes(1);
+  await act(async () =>
+    host().props.onLayout({ nativeEvent: { layout: { width: 0, height: 0 } } }),
+  );
+  expect(mockAttachment.visibility).toHaveBeenLastCalledWith(false);
+  await act(async () =>
+    host().props.onLayout({ nativeEvent: { layout: { width: 64, height: 64 } } }),
+  );
+  expect(mockAttach).toHaveBeenCalledTimes(1);
 });
