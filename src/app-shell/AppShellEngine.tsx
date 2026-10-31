@@ -236,9 +236,9 @@ export function createAppShellEngine() {
     const drawerCloseLabel = drawerCloseLabelProp ?? messages.closeNavigation;
     const theme = useTheme();
     const paintColors = useThemePaint();
-    const backgroundRecipe = useThemeRecipe((palette) => palette.colors.background);
-    const cardRecipe = useThemeRecipe((palette) => palette.colors.card);
-    const navigationRecipe = useThemeRecipe(resolvePanelChrome);
+    const backgroundRecipe = useThemeRecipe((palette) => palette.colors.background, []);
+    const cardRecipe = useThemeRecipe((palette) => palette.colors.card, []);
+    const navigationRecipe = useThemeRecipe(resolvePanelChrome, []);
     const navigationChrome = navigationRecipe.paint;
     // Only a web document's sticky aside is placed from the viewport's height.
     const viewportHeight = useWindowSizeWhile(Platform.OS === 'web').height;

@@ -243,16 +243,19 @@ function TabBarBody({
   const layer = useSurfaceLayer();
   const theme = useTabBarTheme(themeOverrides);
   const parentRecipe = useSurfaceFillRecipe();
-  const recipe = useThemeRecipe((palette, documentMode, documentPreset) => {
-    const modeTheme = resolveTabBarTheme(palette.colors, themeOverrides);
-    return {
-      theme: modeTheme,
-      material: resolveSurfaceMaterial({
-        fill: modeTheme.blurTint,
-        parentFill: resolvePaintMode(parentRecipe, documentMode, documentPreset),
-      }),
-    };
-  });
+  const recipe = useThemeRecipe(
+    (palette, documentMode, documentPreset) => {
+      const modeTheme = resolveTabBarTheme(palette.colors, themeOverrides);
+      return {
+        theme: modeTheme,
+        material: resolveSurfaceMaterial({
+          fill: modeTheme.blurTint,
+          parentFill: resolvePaintMode(parentRecipe, documentMode, documentPreset),
+        }),
+      };
+    },
+    [themeOverrides, parentRecipe],
+  );
   const publishedFill = resolveSurfaceMaterial({
     fill: theme.blurTint,
     parentFill: layer.parentFill,

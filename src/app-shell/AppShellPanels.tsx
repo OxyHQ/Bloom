@@ -30,7 +30,7 @@ import type { ScrollAreaProps } from '../layout/types';
  * This legacy surface delegates modular layout to that shared owner.
  */
 import type React from 'react';
-import { Children, isValidElement, useContext, useId } from 'react';
+import { Children, isValidElement, useContext, useId, useMemo } from 'react';
 import { Platform, View, type ViewStyle } from 'react-native';
 
 import type { ContentPanelProps } from '../content-panel/types';
@@ -72,9 +72,11 @@ const FILL_ROW: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth
 /** The region a panel lays itself out in: the shell's, or a bounded stand-in outside one. */
 function useRegion(): AppShellRegionValue {
   const region = useAppShellRegion();
-  const theme = useTheme();
-  return (
-    region ?? {
+  const maskColor = useTheme().colors.background;
+  // The stand-in is the same object while the theme is: the panels publish it
+  // (bounded) to everything inside them.
+  const standIn = useMemo<AppShellRegionValue>(
+    () => ({
       flow: 'bounded',
       framed: true,
       gutter: STANDALONE_GUTTER,
@@ -82,9 +84,11 @@ function useRegion(): AppShellRegionValue {
       bottomReserve: 0,
       underBottomBar: false,
       revealed: false,
-      maskColor: theme.colors.background,
-    }
+      maskColor,
+    }),
+    [maskColor],
   );
+  return region ?? standIn;
 }
 
 /** Where a panel sits in its group — positions, never the siblings' props. */
@@ -179,10 +183,12 @@ export function createAppShellPanels(
     const document = region.flow === 'document';
     const growing = region.flow !== 'bounded';
     const { top, bottom } = region.viewportInset;
+    const panelValue = useMemo(
+      () => ({ id, alone: true, framed: region.framed, visibilityReady: true }),
+      [id, region.framed],
+    );
     return (
-      <AppShellPanelContext.Provider
-        value={{ id, alone: true, framed: region.framed, visibilityReady: true }}
-      >
+      <AppShellPanelContext.Provider value={panelValue}>
         <BloomColorScope colorPreset={colorPreset} asChild>
           <ContentPanel
             appearance={appearance}
@@ -242,16 +248,27 @@ export function createAppShellPanels(
     const nested = useContext(ContentPanelNestingContext);
     const parentFill = useOptionalSurfaceFill();
     const local = compositionScope === 'local';
-    const region: AppShellRegionValue = local
-      ? {
-          ...inheritedRegion,
-          flow: 'bounded',
-          viewportInset: { top: 0, bottom: 0 },
-          bottomReserve: 0,
-          underBottomBar: false,
-          maskColor: parentFill ?? inheritedRegion.maskColor,
-        }
-      : inheritedRegion;
+    // The region and the bounded one the panels publish are the same objects
+    // while what they say is: the panels draw again whenever their content does,
+    // and a value made inline would make React look for every reader below them.
+    const region = useMemo<AppShellRegionValue>(
+      () =>
+        local
+          ? {
+              ...inheritedRegion,
+              flow: 'bounded',
+              viewportInset: { top: 0, bottom: 0 },
+              bottomReserve: 0,
+              underBottomBar: false,
+              maskColor: parentFill ?? inheritedRegion.maskColor,
+            }
+          : inheritedRegion,
+      [local, inheritedRegion, parentFill],
+    );
+    const boundedRegion = useMemo<AppShellRegionValue>(
+      () => ({ ...region, flow: 'bounded' }),
+      [region],
+    );
     const scope = panelCssScope(useId());
     const { messages } = useMessages(APP_SHELL_MESSAGES);
     const css = useShellCssLayout();
@@ -310,7 +327,7 @@ export function createAppShellPanels(
         <PanelCssContext.Provider value={css ? scope : null}>
           <BottomEdgeProvider inherit={!local}>
             <ContentPanelNestingContext.Provider value={local ? false : nested}>
-              <AppShellRegionContext.Provider value={{ ...region, flow: 'bounded' }}>
+              <AppShellRegionContext.Provider value={boundedRegion}>
                 <PanelLayoutView
                   eligibilityFromGroup
                   layout={panelLayout}

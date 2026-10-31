@@ -42,7 +42,7 @@ import { ScreenContext, ScreenNavigationContext } from '../screen/context';
  * consumer gets this by using them. It is exported for a surface Bloom does not
  * own — an app's own full-screen route presented over another.
  */
-import { useContext, type PropsWithChildren } from 'react';
+import { useContext, useMemo, type PropsWithChildren } from 'react';
 
 import { BottomEdgeProvider } from './bottom-edge';
 import { ScrollMetricsContext } from './scroll-metrics';
@@ -62,10 +62,14 @@ export function ScreenScope({
   sizing?: 'content' | 'fill';
 }>) {
   const navigation = useContext(ScreenNavigationContext);
+  // The same host while `sizing` is: a scope draws again with what it holds,
+  // and a host made inline would make React look for every reader below it.
+  const host = useMemo(
+    () => ({ active: true, kind: 'element' as const, restoreScroll: false, sizing }),
+    [sizing],
+  );
   return (
-    <ScreenHostContext.Provider
-      value={{ active: true, kind: 'element', restoreScroll: false, sizing }}
-    >
+    <ScreenHostContext.Provider value={host}>
       <ScreenViewportContext.Provider value={null}>
         <ScreenContext.Provider value={null}>
           <ScreenNavigationContext.Provider value={inheritNavigation ? navigation : null}>

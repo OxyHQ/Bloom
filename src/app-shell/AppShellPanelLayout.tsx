@@ -656,6 +656,36 @@ export function createPanelLayoutView(
       ) : (
         <View style={FILL}>{content}</View>
       );
+    // What the panel tells its content about itself, the same object while that
+    // stays the same: the host draws again whenever its panel's content does,
+    // and a value made inline would make React look for every reader below it.
+    const isFramed = region?.framed ?? true;
+    const isPanelVisible = panel.visible !== false && track.visible;
+    const isCssVisibility = !!cssScope;
+    const panelValue = useMemo(
+      () => ({
+        id: panel.id,
+        alone,
+        framed: isFramed,
+        cssVisibility: isCssVisibility,
+        visible: isPanelVisible,
+        active,
+        visibilityReady,
+      }),
+      [panel.id, alone, isFramed, isCssVisibility, isPanelVisible, active, visibilityReady],
+    );
+    const floatingValue = useMemo(
+      () => ({
+        id: panel.id,
+        alone: true,
+        framed: true,
+        visible: floatingOpen,
+        active,
+        visibilityReady,
+        presentation: 'floating' as const,
+      }),
+      [panel.id, floatingOpen, active, visibilityReady],
+    );
     const renderPanel = (content: React.ReactNode, navigation?: PanelNavigationController) => {
       // Under the bottom bar a side-by-side panel reaches it: its content clears
       // the bar and drives it (the shell's navigation motion); a stacked one sits
@@ -765,17 +795,7 @@ export function createPanelLayoutView(
             pointerEvents={active ? 'auto' : 'none'}
           >
             {mounted.current && !track.floating ? (
-              <AppShellPanelContext.Provider
-                value={{
-                  id: panel.id,
-                  alone,
-                  framed,
-                  cssVisibility: !!cssScope,
-                  visible: panel.visible !== false && track.visible,
-                  active,
-                  visibilityReady,
-                }}
-              >
+              <AppShellPanelContext.Provider value={panelValue}>
                 {/* Menus and popovers opened in here stay inside this panel while
                 they fit in it (`overlay/placement-boundary`). */}
                 <PlacementBoundaryContext.Provider value={panelRef}>
@@ -861,17 +881,7 @@ export function createPanelLayoutView(
           </AnimatedView>
           {track.floating && panel.floating ? (
             <PanelFloatingSurface panel={panel} open={floatingOpen} testID={testID}>
-              <AppShellPanelContext.Provider
-                value={{
-                  id: panel.id,
-                  alone: true,
-                  framed: true,
-                  visible: floatingOpen,
-                  active,
-                  visibilityReady,
-                  presentation: 'floating',
-                }}
-              >
+              <AppShellPanelContext.Provider value={floatingValue}>
                 <ColorScope colorPreset={screenPreset ?? panel.colorPreset} asChild>
                   <View style={FILL}>
                     {panel.errorBoundary ? (

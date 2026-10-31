@@ -216,27 +216,30 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
       paint: appearance !== 'plain',
     });
     const { paintFill: fill, painted: paintsSurface, publishedFill } = material;
-    const paintRecipe = useThemeRecipe((palette, documentMode, documentPreset) => {
-      const modeLayer = resolveSurfaceLayer(
-        palette,
-        resolvePaintMode(parentRecipe, documentMode, documentPreset),
-        parentLevel,
-      );
-      const modePaint = resolveBloomColors(palette.colors, tone, appearance);
-      const background =
-        callerStyle?.backgroundColor ??
-        (tone === 'neutral' && appearance !== 'plain' ? modeLayer.fill : modePaint.background);
-      return {
-        ...resolveSurfaceMaterial({
-          fill: String(background),
-          parentFill: modeLayer.parentFill,
+    const paintRecipe = useThemeRecipe(
+      (palette, documentMode, documentPreset) => {
+        const modeLayer = resolveSurfaceLayer(
+          palette,
+          resolvePaintMode(parentRecipe, documentMode, documentPreset),
           parentLevel,
-          paint: appearance !== 'plain',
-        }),
-        borderColor: tone === 'neutral' ? palette.colors.border : modePaint.border,
-        foreground: modePaint.foreground,
-      };
-    });
+        );
+        const modePaint = resolveBloomColors(palette.colors, tone, appearance);
+        const background =
+          callerStyle?.backgroundColor ??
+          (tone === 'neutral' && appearance !== 'plain' ? modeLayer.fill : modePaint.background);
+        return {
+          ...resolveSurfaceMaterial({
+            fill: String(background),
+            parentFill: modeLayer.parentFill,
+            parentLevel,
+            paint: appearance !== 'plain',
+          }),
+          borderColor: tone === 'neutral' ? palette.colors.border : modePaint.border,
+          foreground: modePaint.foreground,
+        };
+      },
+      [tone, callerStyle?.backgroundColor, parentRecipe, parentLevel, appearance],
+    );
     const outerStyle: ViewStyle = {
       ...resolved,
       ...paintRecipe.paint.vars,

@@ -94,21 +94,27 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     const material = useResolvedSurface({
       fill: override === undefined ? undefined : String(override),
     });
-    const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark));
+    const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark), []);
     const optics = opticsRecipe.paint;
-    const materialRecipe = useThemeRecipe((theme, documentMode, documentPreset) => {
-      const layer = resolveSurfaceLayer(
-        theme,
-        resolvePaintMode(parent, documentMode, documentPreset),
-        parentLevel,
-      );
-      const resolved = resolveSurfaceMaterial({
-        fill: override === undefined ? layer.fill : String(override),
-        parentFill: layer.parentFill,
-        parentLevel,
-      });
-      return { ...resolved, hairline: surfaceContrastEdge(resolved.solidFill, theme.colors.text) };
-    });
+    const materialRecipe = useThemeRecipe(
+      (theme, documentMode, documentPreset) => {
+        const layer = resolveSurfaceLayer(
+          theme,
+          resolvePaintMode(parent, documentMode, documentPreset),
+          parentLevel,
+        );
+        const resolved = resolveSurfaceMaterial({
+          fill: override === undefined ? layer.fill : String(override),
+          parentFill: layer.parentFill,
+          parentLevel,
+        });
+        return {
+          ...resolved,
+          hairline: surfaceContrastEdge(resolved.solidFill, theme.colors.text),
+        };
+      },
+      [parentLevel, parent, override],
+    );
     useBakedMaterial(localRef, material.painted, [materialRecipe.paint.paintFill, optics]);
     const baseStyle: WebCssStyle = {
       ...surfaceOpticsVars(optics, geometry.radius ?? resolvedStyle?.borderRadius),

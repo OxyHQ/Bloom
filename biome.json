@@ -85,7 +85,12 @@
         "noUnusedFunctionParameters": "warn",
         "noUnusedImports": "warn",
         "noUnusedVariables": "warn",
-        "useExhaustiveDependencies": "warn",
+        "useExhaustiveDependencies": {
+          "level": "warn",
+          "options": {
+            "hooks": [{ "name": "useThemeRecipe", "closureIndex": 0, "dependenciesIndex": 1 }]
+          }
+        },
         "useHookAtTopLevel": "warn",
         "useJsxKeyInIterable": "warn"
       },

@@ -32,8 +32,10 @@ import type { ButtonGroupItemProps, ButtonGroupProps } from './types';
 /** Separators resolve against the material actually published by the group. */
 function Divider() {
   const fill = useSurfaceFillRecipe();
-  const recipe = useThemeRecipe((theme, documentMode, documentPreset) =>
-    hairlineOn(theme, resolvePaintMode(fill, documentMode, documentPreset)),
+  const recipe = useThemeRecipe(
+    (theme, documentMode, documentPreset) =>
+      hairlineOn(theme, resolvePaintMode(fill, documentMode, documentPreset)),
+    [fill],
   );
   return (
     <>
@@ -72,10 +74,13 @@ export function createButtonGroup(
     style,
     testID,
   }: ButtonGroupProps) {
-    const recipe = useThemeRecipe((theme) => ({
-      selection: resolveCanonicalButtonPalette('outline', theme, 'neutral'),
-      shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
-    }));
+    const recipe = useThemeRecipe(
+      (theme) => ({
+        selection: resolveCanonicalButtonPalette('outline', theme, 'neutral'),
+        shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+      }),
+      [],
+    );
     const canonicalSize = sizeProp;
     const { size: scopedSize } = useBloomAppearance(
       { size: canonicalSize },
