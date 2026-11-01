@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.92.2
+
+### Added
+
+- **A general surface can be cancelled by its owner.** `presentCancelable` accepts a required `AbortSignal` and returns `Promise<Result | undefined>`. Abort removes only that entry from the stack without an exit animation; React removes rendered content on commit. Give each session-owned child its own signal, and revalidate the session before acting. `present` and `SurfaceControls` keep their existing contracts. See `docs/surfaces.mdx`.
+
+### Consumers
+
+The new function is available from `@oxy.so/bloom/surfaces` and on `surfaces`. Existing calls need no changes.
+
 ## 15.92.1
 
 ### Added

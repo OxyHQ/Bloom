@@ -141,6 +141,7 @@ Use `presentCancelable` when the surface belongs to a session or another
 cancelable operation. Its required `signal` closes only this surface and
 resolves the promise with `undefined`; an already-aborted signal presents
 nothing. The first dismissal or abort wins. Other stacked surfaces remain open.
+If a child belongs to the same session, present it with the same signal too.
 
 ```tsx
 import { presentCancelable } from '@oxy.so/bloom/surfaces';
