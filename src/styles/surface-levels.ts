@@ -383,7 +383,17 @@ export function useOptionalSurfaceFill(): string | undefined {
 
 export function useSurfaceFill(): string {
   const theme = useTheme();
-  const { level, fill } = useContext(SurfaceLevelContext);
+  const surface = useSurfaceSnapshot();
+  return useSurfaceFillForSnapshot(theme, surface);
+}
+
+/** Reuse the context's existing snapshot when both level and fill are needed. */
+export function useSurfaceSnapshot(): AmbientSurface {
+  return useContext(SurfaceLevelContext);
+}
+
+/** Resolve a snapshot against an already-read theme without allocating another object. */
+export function useSurfaceFillForSnapshot(theme: Theme, { level, fill }: AmbientSurface): string {
   return useMemo(() => fill ?? levelBackground(theme, level), [theme, level, fill]);
 }
 
