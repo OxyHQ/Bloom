@@ -15,7 +15,17 @@ try {
       await page.getByRole('button', { name: 'Open owned surface' }).waitFor();
     };
     const invalidate = () =>
-      page.evaluate(() => window.dispatchEvent(new Event('bloom-story-surface-invalidated')));
+      page.evaluate(async () => {
+        const hasOwned = () =>
+          Array.from(document.querySelectorAll('[role="dialog"]')).some((element) =>
+            element.textContent?.includes('Owned surface'),
+          );
+        const before = hasOwned();
+        window.dispatchEvent(new Event('bloom-story-surface-invalidated'));
+        const synchronous = hasOwned();
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        return { before, synchronous, firstFrame: hasOwned() };
+      });
     const owned = page.getByText('Owned surface', { exact: true });
     const other = page.getByText('Other surface', { exact: true });
     const parent = page.getByText('Parent surface', { exact: true });
@@ -32,7 +42,9 @@ try {
     const childOpener = page.getByRole('button', { name: 'Open cancelable child' });
     await childOpener.click();
     await owned.waitFor();
-    await invalidate();
+    const nestedTiming = await invalidate();
+    assert.equal(nestedTiming.before, true);
+    assert.equal(nestedTiming.firstFrame, false);
     await page.getByText('Owned: undefined').waitFor();
     await owned.waitFor({ state: 'hidden' });
     await parent.waitFor();
@@ -49,7 +61,9 @@ try {
     await other.waitFor();
     const upper = page.getByRole('button', { name: 'Finish other' });
     await upper.focus();
-    await invalidate();
+    const lowerTiming = await invalidate();
+    assert.equal(lowerTiming.before, true);
+    assert.equal(lowerTiming.firstFrame, false);
     await page.getByText('Owned: undefined').waitFor();
     await owned.waitFor({ state: 'hidden' });
     assert.equal(await upper.evaluate((node) => node === document.activeElement), true);
@@ -62,6 +76,8 @@ try {
         beforeMount: 'pass',
         nestedChild: 'pass',
         upperFocusAndPointer: 'pass',
+        nestedTiming,
+        lowerTiming,
       }),
     );
     await page.close();

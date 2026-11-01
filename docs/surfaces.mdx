@@ -154,8 +154,10 @@ const choice = await presentCancelable<string>(
 
 The same function is available as `surfaces.presentCancelable`, including from
 inside another surface. Existing `present` and `SurfaceControls` remain
-unchanged. An aborted surface that never mounted does not take focus; an
-already-mounted surface follows its normal exit animation.
+unchanged. Abort removes the entry from the stack immediately, without its exit
+animation; React removes the rendered content when it commits the update. If
+the content is private, the consumer must also guard its own data against a
+session change. Dismissal without abort keeps the normal exit animation.
 
 ### Content beside the sheet that moves with it
 

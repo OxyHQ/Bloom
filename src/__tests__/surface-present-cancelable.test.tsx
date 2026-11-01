@@ -147,7 +147,7 @@ it('handles abort during notification and ignores a late dismissal', async () =>
   await expect(answer).resolves.toBeUndefined();
 });
 
-it('finalizes an aborted surface when its last host leaves during exit', async () => {
+it('removes an aborted surface with two mounted hosts under StrictMode', async () => {
   const MockDialog = ({ control }: import('../dialog/types').DialogProps) => {
     React.useImperativeHandle(control?.ref, () => ({ open: () => {}, close: () => {} }));
     return null;
@@ -166,9 +166,8 @@ it('finalizes an aborted surface when its last host leaves during exit', async (
   });
   const id = entryId();
   act(() => controller.abort());
-  expect(getSnapshot()[0]?.status).toBe('closing');
+  expect(getSnapshot()).toHaveLength(0);
   first.unmount();
-  expect(getSnapshot()[0]?.id).toBe(id);
   second.unmount();
   expect(getSnapshot()).toHaveLength(0);
   finalizeClose(id);
@@ -196,4 +195,37 @@ it('does not reopen if cancelled between host unmount and remount', async () => 
   expect(renders).not.toHaveBeenCalled();
   expect(getSnapshot()).toHaveLength(0);
   await expect(answer).resolves.toBeUndefined();
+});
+
+it('removes an already mounted canceled surface from the store immediately', async () => {
+  const MockDialog = ({ control }: import('../dialog/types').DialogProps) => {
+    React.useImperativeHandle(control?.ref, () => ({ open: () => {}, close: () => {} }));
+    return null;
+  };
+  const { SurfaceHost: Host } = createSurfaceHost(MockDialog);
+  const screen = render(<Host />);
+  const controller = new AbortController();
+  let answer!: Promise<unknown>;
+  act(() => {
+    answer = presentCancelable(noop, { title: 'private', signal: controller.signal });
+  });
+  expect(getSnapshot()).toHaveLength(1);
+  act(() => controller.abort());
+  expect(getSnapshot()).toHaveLength(0);
+  await expect(answer).resolves.toBeUndefined();
+  screen.unmount();
+});
+
+it('cancels every surface sharing the signal without closing an unrelated surface', async () => {
+  const controller = new AbortController();
+  const first = presentCancelable(noop, { signal: controller.signal });
+  const other = present<string>(noop);
+  const otherId = entryId(1);
+  const second = presentCancelable(noop, { signal: controller.signal });
+  controller.abort();
+  expect(getSnapshot().map((entry) => [entry.id, entry.status])).toEqual([[otherId, 'open']]);
+  await expect(first).resolves.toBeUndefined();
+  await expect(second).resolves.toBeUndefined();
+  requestDismiss(otherId, 'safe');
+  await expect(other).resolves.toBe('safe');
 });
