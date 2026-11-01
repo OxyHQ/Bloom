@@ -19,6 +19,12 @@ export interface GalleryImage extends MediaSurfaceImage {
    * When known ahead of time it avoids a first-frame `Image.getSize` round-trip.
    */
   aspectRatio?: number;
+  /**
+   * URL to share instead of the displayed image URI. Set to `null` to disable
+   * the share action. When omitted, sharing uses `uri` for compatibility.
+   * Supply a canonical URL or `null` when `uri` contains private credentials.
+   */
+  shareUrl?: string | null;
 }
 
 /**

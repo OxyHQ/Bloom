@@ -154,6 +154,35 @@ export const MultipleImages: Story = {
   render: () => <GalleryDemo items={IMAGES} />,
 };
 
+/** Explicit sharing is independent of the URL used to paint an image. */
+export const SharePolicy: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <GalleryDemo
+      indicatorVariant="thumbnails"
+      items={[
+        { ...FOREST, shareUrl: 'https://example.test/post/first' },
+        { ...VALLEY, shareUrl: null },
+        { ...FOREST, uri: 'https://example.test/empty.jpg', shareUrl: '' },
+        { ...FOREST, uri: 'https://example.test/blank.jpg', shareUrl: '   ' },
+        { ...FOREST, uri: 'https://example.test/legacy.jpg' },
+      ]}
+    />
+  ),
+};
+
+export const ShareFocusFirst: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <GalleryDemo
+      items={[
+        { ...FOREST, shareUrl: null },
+        { ...VALLEY, shareUrl: 'https://example.test/post' },
+      ]}
+    />
+  ),
+};
+
 export const ThumbnailIndicator: Story = {
   parameters: { controls: { disable: true } },
   render: () => <GalleryDemo items={IMAGES} indicatorVariant="thumbnails" />,
