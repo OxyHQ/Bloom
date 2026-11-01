@@ -121,18 +121,30 @@ it('finishes a normal exit when its last host disappears before animation comple
   expect(closed).toHaveBeenCalledTimes(1);
 });
 
-it('waits for host cleanup after reset, including a previously answered entry', async () => {
+it('waits for both hosts after reset during an answered exit', async () => {
   const controller = new AbortController();
+  const remove = jest.spyOn(controller.signal, 'removeEventListener');
   const closed = jest.fn();
   const result = presentCancelable<string>(noop, { signal: controller.signal, onClosed: closed });
   const id = firstId();
-  const release = markSurfaceMounted(id);
+  const releaseFirst = markSurfaceMounted(id);
+  const releaseSecond = markSurfaceMounted(id);
   requestDismiss(id, 'chosen');
   resetSurfaces();
   await expect(result).resolves.toBe('chosen');
   await flush();
   expect(closed).not.toHaveBeenCalled();
-  release();
+  expect(remove).not.toHaveBeenCalled();
+  releaseFirst();
+  await flush();
+  expect(closed).not.toHaveBeenCalled();
+  expect(remove).not.toHaveBeenCalled();
+  releaseSecond();
+  await flush();
+  expect(closed).toHaveBeenCalledTimes(1);
+  expect(remove).toHaveBeenCalledTimes(1);
+  releaseSecond();
+  controller.abort();
   await flush();
   expect(closed).toHaveBeenCalledTimes(1);
 });
