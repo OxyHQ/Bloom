@@ -43,17 +43,48 @@ function coarsePointerQuery() {
   }
 }
 function readCoarsePointer() {
-  return coarsePointerQuery()?.matches ?? false;
+  return coarsePointer?.matches ?? coarsePointerQuery()?.matches ?? false;
 }
-function subscribeCoarsePointer(notify: () => void) {
-  const query = coarsePointerQuery();
-  if (!query) return () => {};
-  if (typeof query.addEventListener === 'function') {
-    query.addEventListener('change', notify);
-    return () => query.removeEventListener('change', notify);
+const coarsePointerListeners = new Set<() => void>();
+let coarsePointer: MediaQueryList | undefined;
+let stopCoarsePointer: (() => void) | undefined;
+
+function notifyCoarsePointerListeners() {
+  for (const listener of [...coarsePointerListeners]) {
+    if (coarsePointerListeners.has(listener)) listener();
   }
-  query.addListener(notify);
-  return () => query.removeListener(notify);
+}
+
+function subscribeCoarsePointer(notify: () => void) {
+  coarsePointerListeners.add(notify);
+  if (!coarsePointer) {
+    const query = coarsePointerQuery();
+    if (query) {
+      try {
+        if (typeof query.addEventListener === 'function') {
+          query.addEventListener('change', notifyCoarsePointerListeners);
+          stopCoarsePointer = () =>
+            query.removeEventListener('change', notifyCoarsePointerListeners);
+        } else {
+          query.addListener(notifyCoarsePointerListeners);
+          stopCoarsePointer = () => query.removeListener(notifyCoarsePointerListeners);
+        }
+        coarsePointer = query;
+      } catch (error) {
+        coarsePointerListeners.delete(notify);
+        throw error;
+      }
+    }
+  }
+  return () => {
+    coarsePointerListeners.delete(notify);
+    if (coarsePointerListeners.size === 0) {
+      const stop = stopCoarsePointer;
+      stopCoarsePointer = undefined;
+      coarsePointer = undefined;
+      stop?.();
+    }
+  };
 }
 /**
  * Whether controls take a finger's geometry (44pt rows, swipe affordances).
