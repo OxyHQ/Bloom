@@ -134,6 +134,8 @@ export function confirm(options: SurfaceConfirmOptions): Promise<boolean> {
       // mapping below reads as "not confirmed".
     },
     options.signal,
+    'dismiss',
+    options.onClosed,
   ).then((result) => result === true);
 }
 
@@ -267,6 +269,8 @@ export function confirmWithSuppression(
       label: options.title,
     },
     options.signal,
+    'dismiss',
+    options.onClosed,
   ).then((result) =>
     result && typeof result === 'object' && 'confirmed' in result
       ? (result as SurfaceSuppressibleConfirmResult)

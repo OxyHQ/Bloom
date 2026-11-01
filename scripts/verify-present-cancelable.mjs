@@ -55,6 +55,86 @@ try {
     await parent.waitFor({ state: 'hidden' });
 
     await go();
+    const normalOpener = page.getByRole('button', { name: 'Open owned surface' });
+    await normalOpener.click();
+    await owned.waitFor();
+    await page.evaluate(() => {
+      const hasOwned = () =>
+        Array.from(document.querySelectorAll('[role="dialog"]')).some((element) =>
+          element.textContent?.includes('Owned surface'),
+        );
+      window.addEventListener(
+        'bloom-story-surface-answered',
+        () => {
+          window.__bloomNormalAnswer = { present: hasOwned(), closed: window.__bloomNormalClosed };
+        },
+        { once: true },
+      );
+      window.addEventListener(
+        'bloom-story-surface-closed',
+        () => {
+          window.__bloomNormalClosed = { present: hasOwned() };
+        },
+        { once: true },
+      );
+    });
+    await page.getByRole('button', { name: 'Finish owned surface' }).click();
+    await page.waitForFunction(() => window.__bloomNormalClosed !== undefined);
+    const normalAnswer = await page.evaluate(() => window.__bloomNormalAnswer);
+    const normalClosed = await page.evaluate(() => window.__bloomNormalClosed);
+    assert.equal(normalAnswer.present, true);
+    assert.equal(normalAnswer.closed, undefined);
+    assert.equal(normalClosed.present, false);
+    await page.getByText('Owned: chosen').waitFor();
+    await page.getByText('Closed: 1').waitFor();
+    await normalOpener.click({ timeout: 5000 });
+    await owned.waitFor();
+    await invalidate();
+    await owned.waitFor({ state: 'hidden' });
+
+    await go();
+    const exitOpener = page.getByRole('button', { name: 'Open owned surface' });
+    await exitOpener.click();
+    await owned.waitFor();
+    const finishOwned = page.getByRole('button', { name: 'Finish owned surface' });
+    await page.evaluate(() => {
+      const hasOwned = () =>
+        Array.from(document.querySelectorAll('[role="dialog"]')).some((element) =>
+          element.textContent?.includes('Owned surface'),
+        );
+      let before = false;
+      window.addEventListener(
+        'bloom-story-exit-aborting',
+        () => {
+          before = hasOwned();
+        },
+        { once: true },
+      );
+      window.addEventListener(
+        'bloom-story-exit-aborted',
+        () => {
+          const synchronous = hasOwned();
+          requestAnimationFrame(() => {
+            window.__bloomExitAbortTiming = { before, synchronous, firstFrame: hasOwned() };
+          });
+        },
+        { once: true },
+      );
+      window.dispatchEvent(new Event('bloom-story-arm-exit-abort'));
+    });
+    await finishOwned.click();
+    await page.waitForFunction(() => window.__bloomExitAbortTiming !== undefined);
+    const exitTiming = await page.evaluate(() => window.__bloomExitAbortTiming);
+    assert.equal(exitTiming.before, true);
+    assert.equal(exitTiming.firstFrame, false);
+    await page.getByText('Owned: chosen').waitFor();
+    await owned.waitFor({ state: 'hidden' });
+    await exitOpener.click({ timeout: 5000 });
+    await owned.waitFor();
+    await invalidate();
+    await owned.waitFor({ state: 'hidden' });
+
+    await go();
     await page.getByRole('button', { name: 'Open owned surface' }).click();
     await owned.waitFor();
     await page.getByRole('button', { name: 'Open other surface' }).click();
@@ -76,6 +156,9 @@ try {
         beforeMount: 'pass',
         nestedChild: 'pass',
         upperFocusAndPointer: 'pass',
+        normalExitCallback: 'pass',
+        abortAfterAnswer: 'pass',
+        exitTiming,
         nestedTiming,
         lowerTiming,
       }),

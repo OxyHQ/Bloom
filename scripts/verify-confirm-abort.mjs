@@ -25,6 +25,77 @@ try {
     assert.equal(await before.evaluate((node) => node === document.activeElement), true);
 
     await go();
+    const normalOpener = page.getByRole('button', { name: 'Open session confirmation' });
+    await normalOpener.click();
+    await page.getByText('Session confirmation', { exact: true }).waitFor();
+    await page.evaluate(() => {
+      const hasOwned = () =>
+        Array.from(document.querySelectorAll('[role="dialog"]')).some((element) =>
+          element.textContent?.includes('Session confirmation'),
+        );
+      window.addEventListener(
+        'bloom-story-confirm-answered',
+        () => {
+          window.__bloomConfirmAnswer = {
+            present: hasOwned(),
+            closed: window.__bloomConfirmClosed,
+          };
+        },
+        { once: true },
+      );
+      window.addEventListener(
+        'bloom-story-confirm-closed',
+        () => {
+          window.__bloomConfirmClosed = { present: hasOwned() };
+        },
+        { once: true },
+      );
+    });
+    await page.getByRole('button', { name: 'Confirm session' }).click();
+    await page.waitForFunction(() => window.__bloomConfirmClosed !== undefined);
+    const normalAnswer = await page.evaluate(() => window.__bloomConfirmAnswer);
+    const normalClosed = await page.evaluate(() => window.__bloomConfirmClosed);
+    assert.equal(normalAnswer.present, true);
+    assert.equal(normalAnswer.closed, undefined);
+    assert.equal(normalClosed.present, false);
+    await page.getByText('Owned: true').waitFor();
+
+    await go();
+    await page.getByRole('button', { name: 'Open session confirmation' }).click();
+    await page.getByText('Session confirmation', { exact: true }).waitFor();
+    await page.evaluate(() => {
+      const hasOwned = () =>
+        Array.from(document.querySelectorAll('[role="dialog"]')).some((element) =>
+          element.textContent?.includes('Session confirmation'),
+        );
+      let before = false;
+      window.addEventListener(
+        'bloom-story-confirm-exit-aborting',
+        () => {
+          before = hasOwned();
+        },
+        { once: true },
+      );
+      window.addEventListener(
+        'bloom-story-confirm-exit-aborted',
+        () => {
+          const synchronous = hasOwned();
+          requestAnimationFrame(() => {
+            window.__bloomConfirmExitTiming = { before, synchronous, firstFrame: hasOwned() };
+          });
+        },
+        { once: true },
+      );
+      window.dispatchEvent(new Event('bloom-story-arm-confirm-exit-abort'));
+    });
+    await page.getByRole('button', { name: 'Confirm session' }).click();
+    await page.waitForFunction(() => window.__bloomConfirmExitTiming !== undefined);
+    const exitTiming = await page.evaluate(() => window.__bloomConfirmExitTiming);
+    assert.equal(exitTiming.before, true);
+    assert.equal(exitTiming.firstFrame, false);
+    await page.getByText('Owned: true').waitFor();
+
+    await go();
     const opener = page.getByRole('button', { name: 'Open session confirmation' });
     await opener.click();
     await page.getByText('Session confirmation', { exact: true }).waitFor();
@@ -58,6 +129,9 @@ try {
       JSON.stringify({
         width,
         beforeMount: 'pass',
+        normalExitCallback: 'pass',
+        abortAfterAnswer: 'pass',
+        exitTiming,
         focusAndPointer: 'pass',
         stackedFocusAndPointer: 'pass',
       }),

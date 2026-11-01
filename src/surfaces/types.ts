@@ -134,6 +134,12 @@ export type PresentOptions = SurfacePresentation;
 export interface CancelablePresentOptions extends SurfacePresentation {
   /** Cancels this surface only, resolving its promise with `undefined`. */
   signal: AbortSignal;
+  /**
+   * Called once asynchronously after stack removal and after all mounted host
+   * layers unmount, including abort or reset before mounting. This does not
+   * guarantee a painted frame or close independently stacked children.
+   */
+  onClosed?: () => void;
 }
 
 /**
@@ -220,6 +226,11 @@ export interface SurfaceConfirmOptions {
   dismissible?: boolean;
   /** Abort this confirmation only; resolves as cancelled, even when non-dismissible. */
   signal?: AbortSignal;
+  /**
+   * Called once asynchronously after stack removal and after all mounted host
+   * layers unmount. Does not guarantee a painted frame or close other surfaces.
+   */
+  onClosed?: () => void;
   /** Placement override. Defaults to `'center'`. */
   placement?: ResponsiveDialogPlacement;
 }

@@ -37,6 +37,41 @@ const listeners = new Set<() => void>();
 // A host hand-off can briefly mount the same entry twice. Count the live
 // layers so an abort between hosts cannot reopen a cancelled surface.
 const mountedEntries = new Map<string, { count: number; aborted: boolean }>();
+// An observed surface can answer while its exit is still visible. Its owner
+// and signal live until it leaves the stack and all host layers unmount.
+const surfaceLifetimes = new Map<
+  string,
+  { cleanup: () => void; onClosed?: () => void; removed: boolean }
+>();
+
+function notifyClosed(onClosed?: () => void): void {
+  if (!onClosed) return;
+  void Promise.resolve().then(() => {
+    try {
+      onClosed();
+    } catch (error) {
+      console.error('Surface onClosed callback error:', error);
+    }
+  });
+}
+
+function finishRemovedSurface(id: string): void {
+  const lifetime = surfaceLifetimes.get(id);
+  if (!lifetime?.removed || mountedEntries.has(id)) return;
+  surfaceLifetimes.delete(id);
+  lifetime.cleanup();
+  notifyClosed(lifetime.onClosed);
+}
+
+function markSurfaceRemoved(id: string): void {
+  const lifetime = surfaceLifetimes.get(id);
+  if (!lifetime) {
+    mountedEntries.delete(id);
+    return;
+  }
+  lifetime.removed = true;
+  finishRemovedSurface(id);
+}
 
 export function markSurfaceMounted(id: string): () => void {
   if (!surfaces.some((entry) => entry.id === id)) return () => {};
@@ -50,9 +85,13 @@ export function markSurfaceMounted(id: string): () => void {
     mount.count -= 1;
     if (mount.count === 0) {
       mountedEntries.delete(id);
-      // The aborted surface no longer has an exit animation to wait for. It
-      // must not mount again if the host moves while that animation is running.
-      if (mount.aborted) finalizeClose(id);
+      // A closing observed surface with no host has no exit left to wait for.
+      // Do not reopen it or retain its owner during a host hand-off.
+      const closingObserved =
+        surfaceLifetimes.has(id) &&
+        surfaces.some((entry) => entry.id === id && entry.status === 'closing');
+      if (mount.aborted || closingObserved) finalizeClose(id);
+      finishRemovedSurface(id);
     }
   };
 }
@@ -91,10 +130,12 @@ export function presentCancelable<Result = unknown>(
   render: SurfaceRenderFn,
   options: CancelablePresentOptions,
 ): Promise<Result | undefined> {
-  if (!options?.signal)
+  if (!options?.signal) {
+    notifyClosed(options?.onClosed);
     return Promise.reject(new TypeError('presentCancelable requires an AbortSignal'));
-  const { signal, ...presentation } = options;
-  return presentWithSignal<Result | undefined>(render, presentation, signal, 'remove');
+  }
+  const { signal, onClosed, ...presentation } = options;
+  return presentWithSignal<Result | undefined>(render, presentation, signal, 'remove', onClosed);
 }
 
 /** Internal: bind cancellation to this entry before notifying stack subscribers. */
@@ -103,30 +144,49 @@ export function presentWithSignal<Result = unknown>(
   opts?: PresentOptions,
   signal?: AbortSignal,
   abortBehavior: 'dismiss' | 'remove' = 'dismiss',
+  onClosed?: () => void,
 ): Promise<Result> {
-  if (signal?.aborted) return Promise.resolve(undefined as Result);
-  return new Promise<Result>((resolve) => {
+  if (signal?.aborted) {
+    notifyClosed(onClosed);
+    return Promise.resolve(undefined as Result);
+  }
+  return new Promise<Result>((resolve, reject) => {
     const id = genId();
-    let settle = resolve as (result: unknown) => void;
+    let cleanup = () => {};
     if (signal) {
       const abort = () => abortSurface(id, abortBehavior);
-      settle = (result) => {
-        signal.removeEventListener('abort', abort);
-        resolve(result as Result);
-      };
-      signal.addEventListener('abort', abort, { once: true });
-      // Also handles a signal aborted while its listener was being installed.
-      if (signal.aborted) {
-        settle(undefined);
+      cleanup = () => signal.removeEventListener('abort', abort);
+      try {
+        signal.addEventListener('abort', abort, { once: true });
+      } catch (error) {
+        // A nonstandard signal may throw after attaching its listener. The
+        // presentation never existed, so release whatever it installed.
+        try {
+          cleanup();
+        } catch {
+          // Preserve the installation error when cleanup is also unavailable.
+        }
+        notifyClosed(onClosed);
+        reject(error);
         return;
       }
+      // Also handles a signal aborted while its listener was being installed.
+      if (signal.aborted) {
+        cleanup();
+        resolve(undefined as Result);
+        notifyClosed(onClosed);
+        return;
+      }
+    }
+    if (signal || onClosed) {
+      surfaceLifetimes.set(id, { cleanup, onClosed, removed: false });
     }
     const entry: SurfaceEntry = {
       id,
       render,
       presentation: opts ?? {},
       status: 'open',
-      resolve: settle,
+      resolve: resolve as (result: unknown) => void,
       settled: false,
       generation: 0,
     };
@@ -140,15 +200,15 @@ function abortSurface(id: string, behavior: 'dismiss' | 'remove'): void {
   const entry = surfaces.find((candidate) => candidate.id === id);
   if (!entry) return;
   const mount = mountedEntries.get(id);
-  if (mount && behavior === 'dismiss') {
+  if (mount && behavior === 'dismiss' && entry.status === 'open') {
     mount.aborted = true;
     requestDismiss(id);
     return;
   }
   const next = surfaces.filter((candidate) => candidate.id !== id);
-  mountedEntries.delete(id);
   surfaces = next.length === 0 ? EMPTY : next;
   if (!entry.settled) entry.resolve(undefined);
+  markSurfaceRemoved(id);
   emit();
 }
 
@@ -173,6 +233,15 @@ export function requestDismiss(id: string, result?: unknown): void {
 
   if (entry.status === 'closing') return;
 
+  // No committed host means there is no exit to animate or unmount to await.
+  if (surfaceLifetimes.has(id) && !mountedEntries.has(id)) {
+    const next = surfaces.filter((candidate) => candidate.id !== id);
+    surfaces = next.length === 0 ? EMPTY : next;
+    markSurfaceRemoved(id);
+    emit();
+    return;
+  }
+
   surfaces = surfaces.map((e) =>
     e.id === id ? { ...e, settled: true, status: 'closing', generation: e.generation + 1 } : e,
   );
@@ -191,8 +260,8 @@ export function finalizeClose(id: string): void {
   const entry = surfaces.find((e) => e.id === id);
   if (!entry || entry.status !== 'closing') return;
   const next = surfaces.filter((e) => e.id !== id);
-  mountedEntries.delete(id);
   surfaces = next.length === 0 ? EMPTY : next;
+  markSurfaceRemoved(id);
   emit();
 }
 
@@ -231,9 +300,9 @@ export function resetSurfaces(): void {
   if (surfaces.length === 0) return;
   const pending = surfaces;
   surfaces = EMPTY;
-  mountedEntries.clear();
   for (const entry of pending) {
     if (!entry.settled) entry.resolve(undefined);
+    markSurfaceRemoved(entry.id);
   }
   emit();
 }
@@ -242,5 +311,7 @@ export function resetSurfaces(): void {
 export function __resetSurfacesForTests(): void {
   surfaces = EMPTY;
   mountedEntries.clear();
+  for (const lifetime of surfaceLifetimes.values()) lifetime.cleanup();
+  surfaceLifetimes.clear();
   idCounter = 0;
 }

@@ -74,17 +74,29 @@ that confirmation when its owner becomes invalid. Other surfaces stay open.
 An already-aborted signal presents nothing. Aborting resolves `confirm` as
 `false`, including for `dismissible: false`; the suppressible variant returns
 `confirmed: false` and the current checkbox value. The first answer or abort
-wins, and the signal listener is removed when the confirmation settles.
+wins. The answer may arrive before its exit animation completes: the signal
+remains attached until the confirmation is removed and its host layers unmount.
+An abort during that exit removes the confirmation without changing the answer.
 
 ```tsx
 const controller = new AbortController();
-const answer = confirm({ title: 'Continue?', signal: controller.signal });
+const answer = confirm({
+  title: 'Continue?',
+  signal: controller.signal,
+  onClosed: stopObservingOwner,
+});
 // On session invalidation or owner teardown:
 controller.abort();
 ```
 
 Callers must still verify that their session remains valid before acting on a
 confirmed answer: the session can change after the confirmation settles.
+Keep the owner and its observer alive until `onClosed`, which runs once
+asynchronously after stack removal and host unmount, including abort or reset
+before mounting or failure to install the signal listener. The callback and
+result are independent; for a surface that never mounts, the callback can run
+before the caller observes the result. It does not guarantee a painted frame or
+close other surfaces.
 
 ## "Don't ask again": `confirmWithSuppression()`
 
@@ -148,7 +160,7 @@ import { presentCancelable } from '@oxy.so/bloom/surfaces';
 
 const choice = await presentCancelable<string>(
   (surface) => <SizeList onPick={(size) => surface.dismiss(size)} />,
-  { title: 'Pick a size', signal: controller.signal },
+  { title: 'Pick a size', signal: controller.signal, onClosed: stopObservingOwner },
 );
 // choice is string | undefined; verify the session again before acting.
 ```
@@ -159,6 +171,18 @@ unchanged. Abort removes the entry from the stack immediately, without its exit
 animation; React removes the rendered content when it commits the update. If
 the content is private, the consumer must also guard its own data against a
 session change. Dismissal without abort keeps the normal exit animation.
+
+The result can resolve while that animation is still running. Keep the owner
+and its session observer alive until `onClosed`, which runs once asynchronously
+after the entry leaves the stack and every mounted host layer unmounts. It also
+runs if the signal was already aborted, the stack resets, or the surface closes
+without ever mounting. It also runs if signal setup fails or the required signal
+is missing; in those cases the result rejects. The signal remains attached until
+then, so an abort during exit removes the entry while preserving an earlier
+result. The callback can run before the caller observes a result when the
+surface never mounts.
+`onClosed` does not guarantee a painted frame or close independently stacked
+children.
 
 ### Content beside the sheet that moves with it
 
