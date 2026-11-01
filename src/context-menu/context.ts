@@ -28,8 +28,13 @@ export interface ContextMenuContextValue {
    * `null` while closed, and on native without the platform's popups (a sheet).
    */
   anchor: FloatingAnchor | null;
-  /** Native: the trigger's wrapper, which a platform popup is anchored to. */
+  /** Native: the trigger's wrapper, which a trigger measures itself into. */
   triggerRef?: RefObject<ComponentRef<typeof View> | null>;
+  /**
+   * Native: what a platform popup is anchored to — the caller's `anchorRef`
+   * when it gives one, else the trigger's wrapper.
+   */
+  anchorRef?: RefObject<ComponentRef<typeof View> | null>;
   /** Web only: the row focus lands on when the menu opens (`menu-keyboard.ts`). */
   focusIntent?: MenuFocusIntent;
 }
