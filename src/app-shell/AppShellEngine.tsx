@@ -951,15 +951,19 @@ export function createAppShellEngine() {
           minWidth: 0,
         };
       }
-      // Otherwise what the static style below writes, or nothing.
+      // Otherwise what the static style below writes. Not UNSET for the keys it
+      // sets: UNSET reaches native as `null`, which Fabric resets to Yoga's
+      // default, so `flexGrow` 0 and `flexBasis` auto replaced the static
+      // fill and, in the shell's row, the envelope took its content's width —
+      // none, as every page fills its parent — on every phone.
       if (!contentAligned)
         return {
-          flexGrow: UNSET,
-          flexShrink: UNSET,
-          flexBasis: UNSET,
+          flexGrow: 1,
+          flexShrink: 1,
+          flexBasis: 0,
           width: UNSET,
           maxWidth: UNSET,
-          minWidth: UNSET,
+          minWidth: 0,
         };
       return stretchReading
         ? {

@@ -2,6 +2,18 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.90.2
+
+### Fixed
+
+- **Every native phone screen inside `AppShell` draws its page again.** Since 15.81.0 the reading envelope's animated style wrote `UNSET` (`null`) for the keys its static style sets when the shell is not content-aligned, which is every phone. Fabric resets a `null` prop to Yoga's default, so `flexGrow` 0 and `flexBasis` auto replaced the static fill and the envelope took its content's width: none, since every page fills its parent. Screens showed only the bars around them. The animated style now writes the static values (`flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0`).
+- **A native split's panels fit the screen.** The panels sit in a horizontal `ScrollView`, whose content natively takes its children's width, so a track with a preferred width (Mention's 620) overflowed a 412 phone instead of shrinking as `resolvePanelFlex` intends. A split that does not scroll now holds its content to the viewport (`width: '100%'`); a deck still scrolls.
+- **The Yoga test harness lays out what the device does.** Percent bounds (`maxWidth: '100%'`) were read as points, and a horizontal `ScrollView` had neither its scrolling row nor its content container. `AppShellNativeReadingEnvelope.test.tsx` pins both fixes at 360 and 412 wide; it fails on 15.90.1.
+
+### Consumers
+
+No API changes. Native apps using `AppShell` on 15.81.0 to 15.90.1 should update.
+
 ## 15.89.1
 
 ### Fixed

@@ -109,6 +109,12 @@ import type {
 const RESIZE_HANDLE_PANE_REACH = 2;
 
 const AnimatedView = Animated.createAnimatedComponent(View);
+// A horizontal ScrollView's content is as wide as its children, so a row that
+// does not scroll (a split, not a deck) is held to the viewport: its tracks fit
+// by shrinking from their preferred widths (`resolvePanelFlex`), which an
+// unbounded content never asks them to. Only the style changes with the mode,
+// so the panels' routes are never remounted by it.
+const VIEWPORT_WIDTH: ViewStyle = { width: '100%' };
 const FILL: ViewStyle = {
   flexGrow: 1,
   flexShrink: 1,
@@ -240,7 +246,12 @@ export function createPanelLayoutView(
         testID={testID}
         onScroll={onScroll}
         style={FILL}
-        contentContainerStyle={{ flexGrow: 1, alignItems: 'stretch', paddingBottom: bottomInset }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          alignItems: 'stretch',
+          paddingBottom: bottomInset,
+          ...(horizontal && !enabled ? VIEWPORT_WIDTH : null),
+        }}
       >
         {children}
       </ScrollArea>
