@@ -2,6 +2,41 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.92.1
+
+### Added
+
+- **An imperative confirmation can be cancelled by its owner.** Pass an `AbortSignal` to `confirm` or `confirmWithSuppression` to cancel only that confirmation. Abort resolves as a cancelled answer; it does not dismiss other surfaces. A confirmation aborted before mounting does not open, and an aborted exit cannot reopen when the host changes. The first answer wins, and callers must still revalidate their session after awaiting. See `docs/surfaces.mdx`.
+
+### Consumers
+
+The `signal` option is optional. Existing calls keep their behavior.
+
+## 15.92.0
+
+### Fixed
+
+- **A dialog says it is one.** A native `Dialog`'s panel (and its side sheet's) and a named `CenteredCard` now carry `role="dialog"` and keep their children (`collapsable={false}`): an assistive technology announced a nameless group, its title read again inside it, and a flattened panel would have been an empty leaf beside its rows. OxyOS reads it as a dialog by its label (OxyOS ADR 0039).
+- **A grouped row reads its value with its name.** A `GroupedSectionItem`'s `value` is its accessible value (`aria-valuetext`, which React Native folds into `accessibilityValue`): "Version, 0.1", never the value as loose text after the row. A row without `onPress` and without a control of its own is one element, its title its name; one holding a control (a switch, a select) is no element, its title and description read as text and the control by its own name. Before, such a row was a role-less container (`accessibilityRole="none"` with the title as its label) whose title was read a second time inside it.
+- **A select's trigger says its choice.** The native `SelectTrigger` reads what its `SelectValue` shows as its value ("Wallpaper, Solar"): an accessible trigger is read as one element, so the value text inside it was never heard. `TriggerHandleProps` takes `accessibilityValue`, which `TriggerSlot` passes to the control (an `asChild` child's own wins).
+- **A meter ring says how far along it is.** Without the caller's `valueText`, `MeterRing` says its share ("42%"): React Native keeps `accessibilityValue.now` as a whole number, so a fraction of 1 (an install's progress) read as nothing.
+
+`NativeAccessibleValues.test.tsx` pins each.
+
+### Consumers
+
+No API changes beyond the optional `accessibilityValue` on `TriggerHandleProps`. A test that matched a static grouped row by `accessibilityRole="none"` now finds it `accessible` with no role.
+
+## 15.91.0
+
+### Added
+
+- **A native `ContextMenu` can open for a view it has no trigger around: `anchorRef`.** The controlled form (`anchor`) promised that a `ContextMenuTrigger` was optional, but on a platform with popups (an adapter reporting `popup-surface`) the popup hangs from a view, and without a trigger there was none: the menu never opened. `anchorRef` names that view — a menu opened for a view the caller does not wrap, as OxyOS opens a text field's Cut, Copy and Paste for the fields it owns (OxyOS ADR 0037). The popup hangs from it at `anchor` (a point in the window), so a menu for a view inside another popup opens as that popup's child, and screen-reader focus returns to it when the menu closes. With a trigger as well, the menu hangs from `anchorRef`. Web ignores it. `ContextMenuPlatformPopup.test.tsx` pins the popup's anchor and point and the focus returned.
+
+### Consumers
+
+No breaking changes. A controlled native `ContextMenu` with no trigger, which drew nothing on a desktop platform, can pass `anchorRef`.
+
 ## 15.90.2
 
 ### Fixed

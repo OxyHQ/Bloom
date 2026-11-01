@@ -76,6 +76,7 @@ const [anchor, setAnchor] = useState<ContextMenuAnchor | null>(null);
 | `anchor` | `ContextMenuAnchor \| null` | Controlled. Open exactly while non-null; omit it (`undefined`) for the right-click menu. |
 | `onAnchorChange` | `(anchor: ContextMenuAnchor \| null) => void` | The anchor the menu asks for: a trigger's point when one opens it, `null` on every dismissal. |
 | `onOpenChange` | `(open: boolean) => void` | Fires in both forms, from any cause. |
+| `anchorRef` | `RefObject<View \| null>` | Native, with the platform's popups: the view the menu is about when no `ContextMenuTrigger` wraps it. The popup hangs from it at `anchor`; screen-reader focus returns to it on close. Web ignores it. |
 
 `ContextMenuAnchor` is a viewport point `{ x, y }` (CSS client coordinates — `event.clientX/clientY`) or a rect `{ top, right, bottom, left }` to open beside a box. Either goes through the same fit / flip / clamp a right-click does, so a point at the bottom-right corner opens the menu up and to the left, on screen.
 
@@ -84,6 +85,17 @@ const [anchor, setAnchor] = useState<ContextMenuAnchor | null>(null);
 - **No trigger needed.** Without a `ContextMenuTrigger`, focus returns on close to the element that held it before the open (if it is still in the document). With one, it returns to the trigger, and the trigger's right-click no longer opens the menu by itself — it calls `onAnchorChange({ x, y })` with the click point for you to store.
 - **Sub-menus and keys are unchanged**: flyouts, → / ←, the escape order and row activation are the right-click menu's.
 - **Native** presents the same bottom sheet a long press does while `anchor` is non-null; the position is ignored. A trigger's long press reports the press point.
+- **Native with the platform's popups** (an adapter reporting `popup-surface`, a desktop) opens the menu in the platform's popup at `anchor`, a point in the window as `measureInWindow` gives it. A popup hangs from a view: the trigger's, or `anchorRef` when the caller renders no trigger — a menu opened for a view the caller does not wrap, as OxyOS opens a text field's Cut, Copy and Paste for the field it owns. A menu for a view inside another popup then opens as that popup's child, and screen-reader focus returns to the view when it closes. With neither a trigger nor `anchorRef` there is nothing to hang from, and the menu does not open. Keep the ref object stable: a new one while open measures again.
+
+```tsx
+const field = useRef<View>(null);
+
+<ContextMenu anchor={anchor} anchorRef={field} onAnchorChange={setAnchor}>
+  <ContextMenuContent>
+    <ContextMenuItem onPress={copy}>Copy</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
+```
 
 Without `anchor` the menu is the uncontrolled right-click menu, exactly as before. `onOpenChange` still reports it:
 

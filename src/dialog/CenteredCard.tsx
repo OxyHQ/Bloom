@@ -306,6 +306,10 @@ export const CenteredCard = forwardRef(
           >
             <Animated.View
               accessibilityViewIsModal
+              // A named card is announced as the dialog it is (a Select's list, a sheet).
+              role={accessibilityLabel ? 'dialog' : undefined}
+              // A dialog keeps its children: flattened, its node would be an empty leaf beside them.
+              collapsable={false}
               accessibilityLabel={accessibilityLabel}
               onAccessibilityEscape={requestDismiss}
               testID={testID}

@@ -1,4 +1,5 @@
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { ComponentRef, RefObject } from 'react';
+import type { StyleProp, View, ViewStyle } from 'react-native';
 
 import type {
   MenuCheckboxRowProps,
@@ -53,6 +54,22 @@ export interface ContextMenuProps {
    * opens it, `null` when it is dismissed. What a controlled caller stores.
    */
   onAnchorChange?: (anchor: ContextMenuAnchor | null) => void;
+  /**
+   * The view the menu is about, when the caller renders no
+   * `ContextMenuTrigger` around it: a menu opened for a view the caller does
+   * not wrap, such as a text field's Cut, Copy and Paste opened by the
+   * platform that owns the field.
+   *
+   * Native, on a platform with popups: the popup hangs from this view, at the
+   * controlled `anchor` (a point in the window, as `measureInWindow` measures
+   * it), so a menu for a view inside another popup opens as that popup's child;
+   * and screen-reader focus returns to this view when the menu closes. With a
+   * trigger as well, the menu hangs from this view rather than the trigger.
+   * Without either, a native popup has nothing to hang from and does not open.
+   *
+   * Web anchors at `anchor` alone and ignores it.
+   */
+  anchorRef?: RefObject<ComponentRef<typeof View> | null>;
 }
 
 export interface ContextMenuTriggerProps {
