@@ -67,6 +67,25 @@ If you want them one after the other, `await` the first. This is deliberate: a
 queue would delay an urgent surface behind a trivial one, and there is no
 general rule for which of two surfaces matters more.
 
+### Cancel a confirmation owned by a session
+
+Pass an `AbortSignal` to `confirm` or `confirmWithSuppression` to dismiss
+that confirmation when its owner becomes invalid. Other surfaces stay open.
+An already-aborted signal presents nothing. Aborting resolves `confirm` as
+`false`, including for `dismissible: false`; the suppressible variant returns
+`confirmed: false` and the current checkbox value. The first answer or abort
+wins, and the signal listener is removed when the confirmation settles.
+
+```tsx
+const controller = new AbortController();
+const answer = confirm({ title: 'Continue?', signal: controller.signal });
+// On session invalidation or owner teardown:
+controller.abort();
+```
+
+Callers must still verify that their session remains valid before acting on a
+confirmed answer: the session can change after the confirmation settles.
+
 ## "Don't ask again": `confirmWithSuppression()`
 
 A desktop alert's suppression checkbox. `confirm()` keeps resolving a plain

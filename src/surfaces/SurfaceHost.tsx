@@ -16,6 +16,7 @@ import type { DialogProps } from '../dialog/types';
 import {
   finalizeClose,
   getSnapshot,
+  markSurfaceMounted,
   present,
   requestDismiss,
   resetSurfaces,
@@ -106,6 +107,10 @@ export function createSurfaceHost(Dialog: DialogComponent) {
     useEffect(() => {
       control.open();
     }, [control]);
+
+    useLayoutEffect(() => {
+      return markSurfaceMounted(id);
+    }, [id]);
 
     // When the store flips this entry to 'closing' (a programmatic dismiss,
     // dismissAll, dismissToRoot, Escape, or Android-back), run the exit

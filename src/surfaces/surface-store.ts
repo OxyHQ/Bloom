@@ -29,6 +29,28 @@ const EMPTY: readonly SurfaceEntry[] = Object.freeze([]);
 
 let surfaces: readonly SurfaceEntry[] = EMPTY;
 const listeners = new Set<() => void>();
+// A host hand-off can briefly mount the same entry twice. Count the live
+// layers so an abort between hosts cannot reopen a cancelled surface.
+const mountedEntries = new Map<string, { count: number; aborted: boolean }>();
+
+export function markSurfaceMounted(id: string): () => void {
+  if (!surfaces.some((entry) => entry.id === id)) return () => {};
+  const mount = mountedEntries.get(id) ?? { count: 0, aborted: false };
+  mount.count += 1;
+  mountedEntries.set(id, mount);
+  let released = false;
+  return () => {
+    if (released || mountedEntries.get(id) !== mount) return;
+    released = true;
+    mount.count -= 1;
+    if (mount.count === 0) {
+      mountedEntries.delete(id);
+      // The aborted surface no longer has an exit animation to wait for. It
+      // must not mount again if the host moves while that animation is running.
+      if (mount.aborted) finalizeClose(id);
+    }
+  };
+}
 
 function emit(): void {
   for (const listener of listeners) listener();
@@ -56,19 +78,60 @@ export function present<Result = unknown>(
   render: SurfaceRenderFn,
   opts?: PresentOptions,
 ): Promise<Result> {
+  return presentWithSignal(render, opts);
+}
+
+/** Internal: bind cancellation to this entry before notifying stack subscribers. */
+export function presentWithSignal<Result = unknown>(
+  render: SurfaceRenderFn,
+  opts?: PresentOptions,
+  signal?: AbortSignal,
+): Promise<Result> {
+  if (signal?.aborted) return Promise.resolve(undefined as Result);
   return new Promise<Result>((resolve) => {
+    const id = genId();
+    let settle = resolve as (result: unknown) => void;
+    if (signal) {
+      const abort = () => abortSurface(id);
+      settle = (result) => {
+        signal.removeEventListener('abort', abort);
+        resolve(result as Result);
+      };
+      signal.addEventListener('abort', abort, { once: true });
+      // Also handles a signal aborted while its listener was being installed.
+      if (signal.aborted) {
+        settle(undefined);
+        return;
+      }
+    }
     const entry: SurfaceEntry = {
-      id: genId(),
+      id,
       render,
       presentation: opts ?? {},
       status: 'open',
-      resolve: resolve as (result: unknown) => void,
+      resolve: settle,
       settled: false,
       generation: 0,
     };
     surfaces = [...surfaces, entry];
     emit();
   });
+}
+
+/** An unmounted aborted entry has nothing to animate and must never claim focus. */
+function abortSurface(id: string): void {
+  const entry = surfaces.find((candidate) => candidate.id === id);
+  if (!entry) return;
+  const mount = mountedEntries.get(id);
+  if (mount) {
+    mount.aborted = true;
+    requestDismiss(id);
+    return;
+  }
+  const next = surfaces.filter((candidate) => candidate.id !== id);
+  surfaces = next.length === 0 ? EMPTY : next;
+  if (!entry.settled) entry.resolve(undefined);
+  emit();
 }
 
 /**
@@ -110,6 +173,7 @@ export function finalizeClose(id: string): void {
   const entry = surfaces.find((e) => e.id === id);
   if (!entry || entry.status !== 'closing') return;
   const next = surfaces.filter((e) => e.id !== id);
+  mountedEntries.delete(id);
   surfaces = next.length === 0 ? EMPTY : next;
   emit();
 }
@@ -149,6 +213,7 @@ export function resetSurfaces(): void {
   if (surfaces.length === 0) return;
   const pending = surfaces;
   surfaces = EMPTY;
+  mountedEntries.clear();
   for (const entry of pending) {
     if (!entry.settled) entry.resolve(undefined);
   }
@@ -158,5 +223,6 @@ export function resetSurfaces(): void {
 /** Test-only: hard-reset without notifying (drops listeners' work). */
 export function __resetSurfacesForTests(): void {
   surfaces = EMPTY;
+  mountedEntries.clear();
   idCounter = 0;
 }

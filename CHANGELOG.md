@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.92.1
+
+### Added
+
+- **An imperative confirmation can be cancelled by its owner.** Pass an `AbortSignal` to `confirm` or `confirmWithSuppression` to cancel only that confirmation. Abort resolves as a cancelled answer; it does not dismiss other surfaces. A confirmation aborted before mounting does not open, and an aborted exit cannot reopen when the host changes. The first answer wins, and callers must still revalidate their session after awaiting. See `docs/surfaces.mdx`.
+
+### Consumers
+
+The `signal` option is optional. Existing calls keep their behavior.
+
 ## 15.92.0
 
 ### Fixed
