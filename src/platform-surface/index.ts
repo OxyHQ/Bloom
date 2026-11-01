@@ -1,6 +1,8 @@
 export {
   PlatformSurfaceProvider,
   usePlatformAppearance,
+  usePlatformDrag,
+  usePlatformDropTarget,
   usePlatformFiles,
   usePlatformKeyboard,
   usePlatformMenuBar,
@@ -10,7 +12,17 @@ export {
 } from './context';
 export { usePlatformAppearanceState } from './use-platform-appearance';
 export type {
+  DragAction,
+  DragData,
+  DropData,
+  DropKind,
+  DroppedFile,
+  DropTargetDragEvent,
+  DropTargetDropEvent,
   PlatformAppearance,
+  PlatformDrag,
+  PlatformDragRequest,
+  PlatformDropTargetProps,
   PlatformAppearanceState,
   PlatformFileChooser,
   PlatformFileChooserRequest,

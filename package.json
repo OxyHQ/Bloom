@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.87.0",
+  "version": "15.88.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -2090,6 +2090,25 @@
       "require": {
         "types": "./lib/typescript/commonjs/tooltip/index.d.ts",
         "default": "./lib/commonjs/tooltip/index.js"
+      }
+    },
+    "./drop-zone": {
+      "react-native": {
+        "types": "./lib/typescript/module/drop-zone/index.d.ts",
+        "default": "./src/drop-zone/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/drop-zone/index.web.d.ts",
+        "import": "./lib/module/drop-zone/index.web.js",
+        "require": "./lib/commonjs/drop-zone/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/drop-zone/index.d.ts",
+        "default": "./lib/module/drop-zone/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/drop-zone/index.d.ts",
+        "default": "./lib/commonjs/drop-zone/index.js"
       }
     },
     "./select": {
@@ -4596,6 +4615,9 @@
       ],
       "tooltip": [
         "./lib/typescript/module/tooltip/index.d.ts"
+      ],
+      "drop-zone": [
+        "./lib/typescript/module/drop-zone/index.d.ts"
       ],
       "select": [
         "./lib/typescript/module/select/index.d.ts"

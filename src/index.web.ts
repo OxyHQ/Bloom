@@ -2147,6 +2147,7 @@ export type { KbdProps } from './kbd';
 export * from './admonition';
 export * from './dropdown-menu/index.web';
 export * from './tooltip/index.web';
+export * from './drop-zone/index.web';
 export * from './select/index.web';
 export * from './context-menu/index.web';
 export * from './menubar/index.web';

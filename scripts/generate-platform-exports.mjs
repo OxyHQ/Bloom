@@ -246,6 +246,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./admonition', 'admonition/index.ts'],
   ['./dropdown-menu', 'dropdown-menu/index.ts'],
   ['./tooltip', 'tooltip/index.ts'],
+  // A view that takes drops from any application: HTML5's on the web, the platform's elsewhere.
+  ['./drop-zone', 'drop-zone/index.ts'],
   ['./select', 'select/index.ts'],
   ['./bottom-sheet', 'bottom-sheet/index.ts'],
   ['./context-menu', 'context-menu/index.ts'],
@@ -437,6 +439,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './loading',
   './dropdown-menu',
   './tooltip',
+  './drop-zone',
   './select',
   './theme',
   './bottom-sheet',

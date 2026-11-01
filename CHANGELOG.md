@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.88.0
+
+### Added
+
+- **`DropZone`** (`@oxy.so/bloom/drop-zone`): a view that takes what the person drops on it from another application or this one: files, URLs, text, HTML or media types named exactly, with the actions it supports (copy, move, link; Option a copy, Command a move, both a link, as a Mac) and `onDragEnter`, `onDragOver`, `onDragLeave`, `onDrop`. On the web it is HTML5's drag and drop on its element (the kinds offered during the drag, the content only at the drop, `dropEffect` from the action, nested children not leaving it); on a platform whose adapter reports `drag-and-drop`, the adapter's `DropTarget`; elsewhere a view that takes nothing. Documented in `docs/drop-zone.mdx`; pinned by `DropZone.test.tsx` and `DropZone.web.test.tsx`.
+- **The platform's drag and drop** (`docs/platform-surface.mdx`, `drag-and-drop`): the capability, the adapter's `DropTarget` (`PlatformDropTargetProps`) and `drag` (`PlatformDrag.start({ data, actions, previewRef })`, resolving with the action the drop took), and `usePlatformDropTarget()` and `usePlatformDrag()`, which throw for an adapter reporting the capability without both parts. OxyOS implements them (OxyOS ADR 0035).
+
+### Consumers
+
+Only adds. An application that runs its own drags (a file manager's items) can hand them to the platform with `usePlatformDrag()` where it is not null.
+
 ## 15.87.0
 
 ### Fixed

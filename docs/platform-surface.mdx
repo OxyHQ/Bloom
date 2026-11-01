@@ -1,6 +1,6 @@
 ---
 title: Platform surfaces
-description: The host platform's popups, windows, menu bar, keys, appearance and the person's files, registered once at the root by the runtime, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar, every application follows the system's accent and reduce transparency, and a file manager reaches the person's places and Trash.
+description: The host platform's popups, windows, menu bar, keys, appearance and the person's files, registered once at the root by the runtime, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar, every application follows the system's accent and reduce transparency, a file manager reaches the person's places and Trash, and content is dragged between applications.
 order: 55
 ---
 
@@ -321,6 +321,48 @@ the panel asked before replacing an existing one), or `cancel`. The platform
 cites the latest press the application received for a choice, then closes the
 panel. Where the panel starts, and what it remembers between requests (the
 folder last used for each asking application), are the application's own.
+
+## `drag-and-drop`
+
+Dragging between applications, on a platform that moves content between them
+(OxyOS's, ADR 0035 there). The adapter supplies two parts, both required with
+the capability (`usePlatformDropTarget()` and `usePlatformDrag()` throw if one
+is missing, as the other hooks do):
+
+- **`DropTarget`**, a host component taking `PlatformDropTargetProps`: what it
+  accepts (`files`, `text`, `url`, `html` or media types), its actions (its
+  preferred one first), `disabled`, and `onDragEnter`, `onDragOver`,
+  `onDragLeave` and `onDrop`. It renders its children. The platform answers the
+  drag itself from those props, so a drag never waits on JavaScript; the
+  callbacks follow it, and `onDrop` receives the content (`DropData`: files as
+  `file://` URIs, URLs, text, HTML, other named types). Applications use it
+  through `DropZone` (`docs/drop-zone.mdx`), never directly.
+- **`drag`** (`PlatformDrag`): `start({ data, actions, previewRef })` begins a
+  drag from the press the application is handling, with what it drags (`files`
+  as `file://` URIs, `text`, `url`, `html`), the actions it allows and the view
+  whose image follows the pointer. It resolves with the action the drop took,
+  or null when it was cancelled or refused. An application that runs its own
+  pointer gestures (a file manager's items) calls it once its own drag begins
+  (the pointer moved past its slop while pressed), as macOS's
+  `beginDraggingSession` is called from `mouseDragged`:
+
+```tsx
+const drag = usePlatformDrag();
+// In the application's own gesture, once the pressed pointer moved 4 px:
+if (drag) {
+  const action = await drag.start({
+    data: { files: selected.map((item) => item.uri) },
+    actions: ['copy', 'move', 'link'],
+    previewRef: rowRef,
+  });
+} else {
+  // No platform drag (the web, a phone): the application's drag stays inside it.
+}
+```
+
+With `move` of data the application deletes its original once the promise
+resolves; files are moved by the target, as Finder and every Linux file
+manager do, and the source deletes nothing.
 
 ## Who registers the adapter
 
