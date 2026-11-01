@@ -141,6 +141,84 @@ jobs:
       # worker and with FEWER workers, not with memory (AGENTS.md).
       - run: node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=4 --shard=${{ matrix.shard }}/5
 
+  android:
+    name: Android (${{ matrix.variant }})
+    needs: provenance
+    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [legacy, default, predictive]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.21.0'
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          # The legacy SDK "tools" package was removed from the repository.
+          packages: platform-tools
+          cmdline-tools-version: '15859902' # 22.0; understands API 37.0 package versions
+      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+        with:
+          gradle-version: ${{ matrix.variant == 'legacy' && '8.3' || '9.4.1' }}
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - name: Current Android SDK
+        if: matrix.variant != 'legacy'
+        run: sdkmanager 'platforms;android-36' 'platforms;android-37.0' 'build-tools;37.0.0' 'ndk;27.1.12297006' 'cmake;3.30.5'
+      - name: Declared minimum React Native toolchain SDK
+        if: matrix.variant == 'legacy'
+        run: sdkmanager 'platforms;android-34' 'build-tools;33.0.1' 'build-tools;34.0.0'
+      - name: Hermes source prerequisites
+        if: matrix.variant == 'predictive'
+        run: |
+          if dpkg-query -W -f='${Status}\n' libicu-dev 2>/dev/null | grep -qx 'install ok installed'; then
+            echo 'The runner already provides the ICU development files.'
+          else
+            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update
+            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y libicu-dev
+          fi
+      - name: Apply exact public API source backport
+        if: matrix.variant == 'predictive'
+        run: |
+          echo '16b6577b14184ca971fb19692930ab85936103880bf42ccbaafce8e93ccf0a51  scripts/native-check/patches/react-native-0.88.0.patch' | sha256sum -c -
+          patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native < scripts/native-check/patches/react-native-0.88.0.patch
+          echo '5b4e3d2eb483c5c4fca1b96abf17f11eabef45aa572b08b38bdd9df80670daf0  scripts/native-check/patches/react-native-screens-4.30.0.patch' | sha256sum -c -
+          patch --batch --forward --fuzz=0 -p1 -d node_modules/react-native-screens < scripts/native-check/patches/react-native-screens-4.30.0.patch
+      - name: Verify public build capability contract
+        if: matrix.variant == 'default'
+        run: python3 scripts/native-check/test-capability-contract.py
+      - name: Compile production native source and run AndroidX callback tests
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          if [ "$VARIANT" = legacy ]; then
+            gradle -p scripts/native-check/legacy :bloom:compileDebugKotlin :bloom:processDebugManifest --console=plain --max-workers=2
+            python3 scripts/native-check/legacy/verify-manifest.py
+          else
+            if [ "$VARIANT" = predictive ]; then
+              gradle -p scripts/native-check -Pbloom.predictiveBackEnabled=true -Prnscreens.nativeBackOwnershipEnabled=true :bloom:testDebugUnitTest :screensWithCustomAutolinkName:compileDebugKotlin :screensWithCustomAutolinkName:compileDebugJavaWithJavac --console=plain --max-workers=2
+            else
+              gradle -p scripts/native-check :bloom:testDebugUnitTest --console=plain --max-workers=2
+            fi
+          fi
+
+      - name: Prove unresolved-target host regression coverage
+        if: matrix.variant == 'predictive'
+        run: python3 scripts/native-check/verify-host-regression.py
+
   # The one required check of the main merge queue: green only when every job
   # above is, so a skipped or cancelled shard can never read as a pass. The ONE
   # legitimate skip is a push whose exact SHA already passed this job in the
@@ -149,7 +227,7 @@ jobs:
   ci-complete:
     name: CI complete
     if: always()
-    needs: [provenance, build, tests]
+    needs: [provenance, build, tests, android]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -173,7 +251,7 @@ jobs:
             verified=
           fi
 
-          for job in build tests; do
+          for job in build tests android; do
             result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")"
             if [ "$verified" = true ]; then
               [ "$result" = skipped ] || failures+=("$job ran on a queue-verified push: $result")

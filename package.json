@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "15.88.0",
+  "version": "15.89.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3918,7 +3918,8 @@
     },
     "./design-tokens/theme.css": "./src/design-tokens/theme.css",
     "./design-tokens/tokens.json": "./src/design-tokens/tokens.json",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./app.plugin.js": "./app.plugin.js"
   },
   "files": [
     "NOTICE",
@@ -3933,7 +3934,14 @@
     "!**/*.stories.*",
     "!**/*.test.*",
     "!**/*.spec.*",
-    "assets/character-runtime"
+    "assets/character-runtime",
+    "android",
+    "react-native.config.js",
+    "app.plugin.js",
+    "!android/build",
+    "!android/.gradle",
+    "!android/src/test",
+    "!android/src/predictiveTest"
   ],
   "workspaces": [
     "packages/*"

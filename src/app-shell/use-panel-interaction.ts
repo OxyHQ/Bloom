@@ -3,6 +3,7 @@ import { BackHandler, Keyboard, Platform, type View } from 'react-native';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { listenForEscape, tabbablesWithin, wrapTab } from '../overlay/modal-keyboard';
 import { hasActiveOverlays } from '../overlay/stack';
+import { acquireBackOwnership } from '../overlay/back-ownership';
 import type { ViewRef } from '../styles/native-refs';
 
 /**
@@ -31,12 +32,16 @@ export function usePanelInteraction(
     if (!open) return;
     if (Platform.OS !== 'web') {
       if (modal) Keyboard?.dismiss?.();
+      const release = Platform.OS === 'android' ? acquireBackOwnership() : undefined;
       const subscription = BackHandler?.addEventListener('hardwareBackPress', () => {
         if (hasActiveOverlays()) return false;
         closeRef.current();
         return true;
       });
-      return () => subscription?.remove();
+      return () => {
+        subscription?.remove();
+        release?.();
+      };
     }
     if (typeof window === 'undefined') return;
     // This ref is a native View on native, a DOM host on web.

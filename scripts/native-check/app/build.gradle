@@ -1,0 +1,26 @@
+// Real Android application configuration supplies the public React Gradle
+// extension used by library codegen. The gate compiles libraries, not this APK.
+apply plugin: 'com.android.application'
+apply plugin: 'com.facebook.react'
+
+react {
+  root = rootProject.file('../..')
+  reactNativeDir = rootProject.file('../../node_modules/react-native')
+  codegenDir = rootProject.file('../../node_modules/@react-native/codegen')
+}
+android {
+  namespace 'so.oxy.bloom.nativecheck'
+  compileSdkVersion 37
+  ndkVersion rootProject.ext.ndkVersion
+  defaultConfig {
+    applicationId 'so.oxy.bloom.nativecheck'
+    minSdkVersion 24
+    targetSdkVersion 36
+    versionCode 1
+    versionName '1'
+  }
+}
+dependencies {
+  implementation project(':bloom')
+  implementation project(':screensWithCustomAutolinkName')
+}

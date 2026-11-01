@@ -18,7 +18,11 @@ const mockRouter = {
 };
 jest.mock('expo-router', () => ({
   useRouter: () => mockRouter,
+  useNavigation: () => {
+    throw new Error('A binary without the native host must not require a navigation context');
+  },
   usePathname: () => mockPathname,
+  useIsFocused: () => true,
 }));
 jest.mock('../bottom-bar', () => ({ BottomBar: jest.fn(() => null) }));
 // The layout's navigator: one call per layout render.

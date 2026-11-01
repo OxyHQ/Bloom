@@ -98,6 +98,7 @@ export interface OverlayLayer {
 interface Registry {
   sequence: number;
   live: Set<number>;
+  listeners?: Set<() => void>;
 }
 
 declare global {
@@ -149,6 +150,7 @@ export function registerOverlayRank(rank: number): void {
   const reg = registry();
   reg.live.add(rank);
   if (rank > reg.sequence) reg.sequence = rank;
+  for (const notify of reg.listeners ?? []) notify();
 }
 
 /** Release a rank; resets the counter once nothing is open. */
@@ -156,6 +158,7 @@ export function releaseOverlayRank(rank: number): void {
   const reg = registry();
   reg.live.delete(rank);
   if (reg.live.size === 0) reg.sequence = 0;
+  for (const notify of reg.listeners ?? []) notify();
 }
 
 /** Test seam — drops all registry state. */
@@ -166,6 +169,13 @@ export function resetOverlayStack(): void {
 /** In-flow shell drawers yield interaction to any portaled surface above them. */
 export function hasActiveOverlays(): boolean {
   return registry().live.size > 0;
+}
+
+export function subscribeActiveOverlays(notify: () => void): () => void {
+  const reg = registry();
+  reg.listeners ??= new Set();
+  reg.listeners.add(notify);
+  return () => reg.listeners?.delete(notify);
 }
 
 /**

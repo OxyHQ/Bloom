@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Platform } from 'react-native';
+import { useNavigation } from 'expo-router';
+import { usePredictiveBackRuntime } from './use-predictive-back-runtime';
+import { isPredictiveBackAvailable } from './PredictiveBackHost';
 import { useSharedValue } from 'react-native-reanimated';
 import { animateMotion } from '../../motion/recipes';
 import { useRouter, usePathname, type Href } from '../../panel-routing/expo-router';
@@ -29,6 +32,12 @@ export type TabPagerProviderProps = {
    * top, and a reload when it is already there (`useScreenReselectHandler`).
    */
   onReselect?: (name: string) => void;
+  /**
+   * An opaque viewer/session identity. Change it when retained pages change
+   * authority, even if the current path and navigation history stay the same.
+   * A predictive gesture from the old scope is cancelled, never committed.
+   */
+  navigationScopeKey?: string;
   children: ReactNode;
 } & (
   | {
@@ -62,6 +71,7 @@ export function TabPagerProvider({
   destinations: declared,
   pages: legacyPages,
   onReselect,
+  navigationScopeKey,
   children,
 }: TabPagerProviderProps) {
   const router = useRouter();
@@ -201,6 +211,7 @@ export function TabPagerProvider({
     () => ({
       pages: model.pages,
       model,
+      navigationScopeKey,
       progress,
       chromeProgress,
       selectTab,
@@ -211,6 +222,7 @@ export function TabPagerProvider({
     }),
     [
       model,
+      navigationScopeKey,
       progress,
       chromeProgress,
       selectTab,
@@ -227,9 +239,17 @@ export function TabPagerProvider({
 
   return (
     <TabPagerContext.Provider value={value}>
+      {isPredictiveBackAvailable() && <NativeBackRuntime />}
       <TabPagerActiveContext.Provider value={active}>
         <TabPagerChromeContext.Provider value={chrome}>{children}</TabPagerChromeContext.Provider>
       </TabPagerActiveContext.Provider>
     </TabPagerContext.Provider>
   );
+}
+
+/** Preserve default provider compatibility outside a focused navigation context. */
+function NativeBackRuntime() {
+  const navigation = useNavigation();
+  usePredictiveBackRuntime(navigation);
+  return null;
 }

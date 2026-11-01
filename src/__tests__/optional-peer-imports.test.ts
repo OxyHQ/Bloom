@@ -104,6 +104,11 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
   },
   {
     peer: 'expo-router',
+    file: 'tab-pager/expo-router/TabPagerProvider.tsx',
+    why: 'the provider is exported only from the explicit tab-pager/expo-router entrypoints, already depends on the Expo panel adapter, and never enters the core/root barrels; its native-only capability-gated child reads the underlying Expo navigator without adding a context requirement to default providers',
+  },
+  {
+    peer: 'expo-router',
     file: 'tab-pager/expo-router/TabPagerLayout.tsx',
     why: 'the native tabs layout IS an expo-router navigator (`useTabsWithTriggers`) and is reachable only from `@oxy.so/bloom/tab-pager/expo-router`; the core `tab-pager` (hook, bar, types) imports no router',
   },
