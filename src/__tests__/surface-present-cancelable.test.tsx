@@ -21,7 +21,7 @@ function entryId(index = 0) {
 
 // Compile-time contract: existing structural SurfaceControls and legacy typed
 // present still work; the new explicit API requires a signal and permits abort.
-if (false) {
+function typeContract() {
   const existing: SurfaceControls = {
     dismiss: () => {},
     present: <T,>() => Promise.resolve(undefined as T),
@@ -50,6 +50,7 @@ if (false) {
   void unsafe;
   void unsafeNamespaced;
 }
+void typeContract;
 
 afterEach(() => {
   resetSurfaces();
