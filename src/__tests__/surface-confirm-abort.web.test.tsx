@@ -105,7 +105,7 @@ it('does not reopen or steal focus when abort falls between host unmount and rem
   });
   flush();
   expect(document.body.textContent).toContain('In transit');
-  act(() => root.render(<BloomThemeProvider fonts={false} />));
+  act(() => root.render(<BloomThemeProvider fonts={false}>{null}</BloomThemeProvider>));
   flush();
   opener.focus();
   act(() => controller.abort());
@@ -131,7 +131,7 @@ it('does not reopen if the host unmounts during an aborted exit', async () => {
   });
   flush();
   act(() => controller.abort());
-  act(() => root.render(<BloomThemeProvider fonts={false} />));
+  act(() => root.render(<BloomThemeProvider fonts={false}>{null}</BloomThemeProvider>));
   opener.focus();
   act(() =>
     root.render(
