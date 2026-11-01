@@ -19,13 +19,18 @@ import { PortalProvider, PortalOutlet } from '../portal';
 import { ZoomableMediaGallery } from '../zoomable-media-gallery';
 import type { ZoomableMediaGalleryHandle, GalleryImage } from '../zoomable-media-gallery';
 import { Backdrop } from '../overlay';
-import { ScrollView, Dimensions, Pressable, Text, View } from 'react-native';
+import { ScrollView, Dimensions, Platform, Pressable, Share, Text, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import type { GalleryVideo, ZoomableMediaGalleryProps } from '../zoomable-media-gallery';
 import { hostNodes } from './support/rendered-style';
 import { GestureDetector } from 'react-native-gesture-handler';
 import type { MockGesture } from '../../__mocks__/react-native-gesture-handler';
+
+jest.mock('react-native', () => ({
+  ...jest.requireActual('react-native'),
+  Share: { share: jest.fn(), sharedAction: 'sharedAction' },
+}));
 
 const BackdropComponent = (
   Backdrop as unknown as { type: React.ComponentType<React.ComponentProps<typeof Backdrop>> }
@@ -62,6 +67,189 @@ function renderGallery(props: ZoomableMediaGalleryProps = {}, mode: 'light' | 'd
 }
 
 describe('ZoomableMediaGallery', () => {
+  it('shares the explicit canonical URL and keeps the legacy URI fallback', async () => {
+    jest.useFakeTimers();
+    const share = jest
+      .spyOn(Share, 'share')
+      .mockResolvedValue({ action: Share.sharedAction, activityType: undefined });
+    try {
+      const api = renderGallery();
+      act(() =>
+        api.ref.current?.open(
+          [
+            {
+              uri: 'https://private.invalid/image?token=synthetic',
+              shareUrl: 'https://public.invalid/post',
+            },
+            { uri: 'https://public.invalid/legacy' },
+          ],
+          0,
+        ),
+      );
+      act(() => jest.advanceTimersByTime(1000));
+      await act(async () => fireEvent.press(api.getByLabelText('Share media')));
+      expect(share).toHaveBeenLastCalledWith({ url: 'https://public.invalid/post' });
+      const pager = api.UNSAFE_getAllByType(ScrollView).find((node) => node.props.pagingEnabled);
+      if (!pager) throw new Error('Expected the gallery pager');
+      fireEvent(pager, 'momentumScrollEnd', {
+        nativeEvent: { contentOffset: { x: Dimensions.get('window').width, y: 0 } },
+      });
+      await act(async () => fireEvent.press(api.getByLabelText('Share media')));
+      expect(share).toHaveBeenLastCalledWith({ url: 'https://public.invalid/legacy' });
+      expect(share).toHaveBeenCalledTimes(2);
+    } finally {
+      share.mockRestore();
+      jest.useRealTimers();
+    }
+  });
+
+  it.each([null, '', '   '])(
+    'disables the share action for explicit non-shareable value %p',
+    (shareUrl) => {
+      jest.useFakeTimers();
+      const share = jest.spyOn(Share, 'share');
+      try {
+        const api = renderGallery();
+        act(() =>
+          api.ref.current?.open([{ uri: 'https://private.invalid/?token=synthetic', shareUrl }], 0),
+        );
+        act(() => jest.advanceTimersByTime(1000));
+        const button = api.getByLabelText('Share media');
+        expect(button.props.accessibilityState).toMatchObject({ disabled: true });
+        fireEvent.press(button);
+        expect(share).not.toHaveBeenCalled();
+      } finally {
+        share.mockRestore();
+        jest.useRealTimers();
+      }
+    },
+  );
+
+  it('preserves video sharing and never shares the poster as a fallback', async () => {
+    jest.useFakeTimers();
+    const share = jest
+      .spyOn(Share, 'share')
+      .mockResolvedValue({ action: Share.sharedAction, activityType: undefined });
+    const player = { playing: false, play: jest.fn(), pause: jest.fn() };
+    try {
+      const api = renderGallery();
+      act(() =>
+        api.ref.current?.open(
+          [
+            { kind: 'video', id: 'one', player, poster: 'https://private.invalid/poster' },
+            { kind: 'video', id: 'two', player, shareUrl: 'https://public.invalid/video' },
+          ],
+          0,
+        ),
+      );
+      act(() => jest.advanceTimersByTime(1000));
+      await act(async () => fireEvent.press(api.getByLabelText('Share media')));
+      expect(share).not.toHaveBeenCalled();
+      const pager = api.UNSAFE_getAllByType(ScrollView).find((node) => node.props.pagingEnabled);
+      if (!pager) throw new Error('Expected the gallery pager');
+      fireEvent(pager, 'momentumScrollEnd', {
+        nativeEvent: { contentOffset: { x: Dimensions.get('window').width, y: 0 } },
+      });
+      await act(async () => fireEvent.press(api.getByLabelText('Share media')));
+      expect(share).toHaveBeenCalledWith({ url: 'https://public.invalid/video' });
+    } finally {
+      share.mockRestore();
+      jest.useRealTimers();
+    }
+  });
+
+  it('never shares an earlier page or opening through a delayed callback', async () => {
+    jest.useFakeTimers();
+    const share = jest
+      .spyOn(Share, 'share')
+      .mockResolvedValue({ action: Share.sharedAction, activityType: undefined });
+    try {
+      const api = renderGallery();
+      act(() =>
+        api.ref.current?.open(
+          [
+            {
+              uri: 'https://private.invalid/?token=synthetic',
+              shareUrl: 'https://public.invalid/first',
+            },
+            { uri: 'https://private.invalid/second?token=synthetic', shareUrl: null },
+          ],
+          0,
+        ),
+      );
+      act(() => jest.advanceTimersByTime(1000));
+      const button = api
+        .UNSAFE_getAllByProps({ accessibilityLabel: 'Share media' })
+        .find((node) => typeof node.props.onPress === 'function');
+      if (!button) throw new Error('Expected the share action');
+      const callback = button.props.onPress;
+      const pager = api.UNSAFE_getAllByType(ScrollView).find((node) => node.props.pagingEnabled);
+      if (!pager) throw new Error('Expected the gallery pager');
+      fireEvent(pager, 'momentumScrollEnd', {
+        nativeEvent: { contentOffset: { x: Dimensions.get('window').width, y: 0 } },
+      });
+      await act(async () => callback());
+      expect(share).not.toHaveBeenCalled();
+      fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
+      await act(async () => callback());
+      act(() => jest.advanceTimersByTime(1000));
+      act(() => api.ref.current?.open([{ uri: 'https://public.invalid/later' }], 0));
+      act(() => jest.advanceTimersByTime(1000));
+      await act(async () => callback());
+      expect(share).not.toHaveBeenCalled();
+    } finally {
+      share.mockRestore();
+      jest.useRealTimers();
+    }
+  });
+
+  it('uses the Web Share API with the canonical URL', async () => {
+    jest.useFakeTimers();
+    const priorPlatform = Platform.OS;
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis.navigator, 'share');
+    const frameDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'requestAnimationFrame');
+    const cancelDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'cancelAnimationFrame');
+    const share = jest.fn().mockResolvedValue(undefined);
+    Platform.OS = 'web';
+    Object.defineProperty(globalThis.navigator, 'share', { configurable: true, value: share });
+    Object.defineProperty(globalThis, 'requestAnimationFrame', {
+      configurable: true,
+      value: (callback: FrameRequestCallback) => setTimeout(() => callback(0), 16),
+    });
+    Object.defineProperty(globalThis, 'cancelAnimationFrame', {
+      configurable: true,
+      value: (handle: ReturnType<typeof setTimeout>) => clearTimeout(handle),
+    });
+    try {
+      const api = renderGallery();
+      act(() =>
+        api.ref.current?.open(
+          [
+            {
+              uri: 'https://private.invalid/?token=synthetic',
+              shareUrl: 'https://public.invalid/post',
+            },
+          ],
+          0,
+        ),
+      );
+      act(() => jest.advanceTimersByTime(1000));
+      await act(async () => fireEvent.press(api.getByLabelText('Share media')));
+      expect(share).toHaveBeenCalledWith({ url: 'https://public.invalid/post' });
+    } finally {
+      if (descriptor) Object.defineProperty(globalThis.navigator, 'share', descriptor);
+      else Reflect.deleteProperty(globalThis.navigator, 'share');
+      if (frameDescriptor)
+        Object.defineProperty(globalThis, 'requestAnimationFrame', frameDescriptor);
+      else Reflect.deleteProperty(globalThis, 'requestAnimationFrame');
+      if (cancelDescriptor)
+        Object.defineProperty(globalThis, 'cancelAnimationFrame', cancelDescriptor);
+      else Reflect.deleteProperty(globalThis, 'cancelAnimationFrame');
+      Platform.OS = priorPlatform;
+      jest.useRealTimers();
+    }
+  });
+
   it('renders current consumer status only over the active video without duplicating its player', () => {
     jest.useFakeTimers();
     try {

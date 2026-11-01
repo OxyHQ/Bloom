@@ -67,7 +67,21 @@ full image is ready, with a short crossfade; a failed full image keeps its
 preview. Both images use the same `contain` fit, so the upgrade does not crop or
 resize the picture. Supply the intrinsic aspect ratio to avoid a size probe.
 Inactive pages and strip tiles use the thumbnail; opening a gallery does not
-download every full image. Sharing still uses the full `uri`.
+download every full image.
+
+For images, sharing uses the full `uri` by default for existing consumers. If
+the image URL is temporary, private or contains credentials, explicitly supply
+a canonical public URL in `shareUrl`, or set `shareUrl: null` to disable the
+share action. An empty or whitespace-only `shareUrl` also disables the action;
+it never falls back to the image URI. Bloom does not infer shareability from a
+URL. Videos share their own `shareUrl` rather than their poster.
+
+```tsx
+gallery.current?.open([
+  { uri: authorizedImageUrl, previewUri: thumbnailUrl, shareUrl: publicPostUrl },
+  { uri: privateImageUrl, shareUrl: null },
+], 0);
+```
 
 ## Exactly one video view is mounted
 

@@ -37,6 +37,7 @@ import { borderRadius } from '../styles/tokens';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import type { ButtonProps } from '../button/types';
+import type { MemoRefComponent, ViewRef } from '../styles/native-refs';
 // Per glyph, not through `../icons` — see DialogHeader for why a shipped
 // component must never reach the barrel.
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
@@ -110,7 +111,9 @@ function mediaKey(item: GalleryMedia, index: number): string {
  * means, so a video shares its own `shareUrl` or nothing at all.
  */
 function shareUri(item: GalleryMedia): string | undefined {
-  return item.kind === 'video' ? item.shareUrl : item.uri;
+  const uri =
+    item.kind === 'video' ? item.shareUrl : item.shareUrl === undefined ? item.uri : item.shareUrl;
+  return typeof uri === 'string' && uri.trim().length > 0 ? uri : undefined;
 }
 
 // Web-only interaction hints (no-ops on native): the zoom surfaces are
@@ -157,22 +160,25 @@ const UNBLURRED_DIM_OPACITY = 0.92;
  */
 const SCRIM_CHROME = { background: 'rgba(0,0,0,0.55)', foreground: '#fff' } as const;
 
-export function createZoomableMediaGallery(Button: React.ComponentType<ButtonProps>) {
+export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>) {
   function NavArrow({
     direction,
     onPress,
     label,
     pageColors,
+    buttonRef,
   }: {
     direction: 'left' | 'right';
     onPress: () => void;
     label: string;
     pageColors?: { background: string; foreground: string };
+    buttonRef?: React.Ref<ViewRef>;
   }) {
     const isLeft = direction === 'left';
     const chrome = pageColors ?? SCRIM_CHROME;
     return (
       <Button
+        ref={buttonRef}
         onPress={onPress}
         appearance="outline"
         tone="neutral"
@@ -276,6 +282,9 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
       const onOpenChangeRef = useRef(onOpenChange);
       onOpenChangeRef.current = onOpenChange;
       const openRef = useRef(false);
+      // A queued callback from an earlier opening must never share its media
+      // after this instance has closed and opened for another caller.
+      const openingGenerationRef = useRef(0);
       const reportOpen = useCallback((next: boolean) => {
         if (openRef.current === next) return;
         openRef.current = next;
@@ -343,6 +352,12 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
       const originScale = useSharedValue(1);
 
       const pagerRef = useRef<ComponentRef<typeof ScrollView>>(null);
+      const shareButtonRef = useRef<ViewRef>(null);
+      const previousButtonRef = useRef<ViewRef>(null);
+      const nextButtonRef = useRef<ViewRef>(null);
+      const pendingShareFocus = useRef<{ index: number; opening: number; element: Element } | null>(
+        null,
+      );
       // Mirror of `activeIndex` readable synchronously from callbacks/worklets
       // (`handleDismiss` runs via `runOnJS` and from `Pressable.onPress`, where the
       // state closure can be stale). Kept in lockstep by `setActiveIndexBoth`.
@@ -543,6 +558,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
         // fly-back from an already-moving image.
         if (dismissingRef.current) return;
         dismissingRef.current = true;
+        pendingShareFocus.current = null;
         // Collapse the pager back to the single open-surface so the fly-back
         // animates one item (the current one) rather than the whole scrolled strip.
         setPagerReady(false);
@@ -587,6 +603,8 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
           const safeIndex = Math.min(Math.max(index, 0), nextItems.length - 1);
           const target = nextItems[safeIndex];
           if (!target) return;
+          openingGenerationRef.current += 1;
+          pendingShareFocus.current = null;
           const targetUri = posterUri(target);
           const knownRatio = target.aspectRatio ?? cachedRatio(target);
           const ratio = knownRatio ?? DEFAULT_ASPECT_RATIO;
@@ -791,6 +809,23 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
           if (lastIndex < 0) return;
           const next = Math.min(Math.max(Math.round(offsetX / SCREEN_WIDTH), 0), lastIndex);
           if (next === activeIndexRef.current) return;
+          // An intervening page change supersedes any uncommitted transfer.
+          pendingShareFocus.current = null;
+          const incoming = items[next];
+          if (
+            Platform.OS === 'web' &&
+            typeof document !== 'undefined' &&
+            incoming &&
+            incoming.shareUrl !== undefined &&
+            shareUri(incoming) === undefined &&
+            document.activeElement === (shareButtonRef.current as unknown as Element)
+          ) {
+            pendingShareFocus.current = {
+              index: next,
+              opening: openingGenerationRef.current,
+              element: document.activeElement,
+            };
+          }
           // Swiping to a new page always starts it un-zoomed (and clears the zoom on
           // the page scrolling away).
           resetZoom();
@@ -822,6 +857,25 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
         },
         [updateIndexFromOffset],
       );
+
+      // If paging disables the focused share control, move web focus to a
+      // surviving navigation action. Native accessibility focus is untouched.
+      useLayoutEffect(() => {
+        const pending = pendingShareFocus.current;
+        if (!pending) return;
+        pendingShareFocus.current = null;
+        if (
+          pending.index !== activeIndex ||
+          Platform.OS !== 'web' ||
+          typeof document === 'undefined' ||
+          dismissingRef.current ||
+          pending.opening !== openingGenerationRef.current ||
+          (document.activeElement !== pending.element && document.activeElement !== document.body)
+        )
+          return;
+        const target = activeIndex > 0 ? previousButtonRef.current : nextButtonRef.current;
+        (target as unknown as HTMLElement | null)?.focus();
+      }, [activeIndex]);
 
       // Re-seat the pager on the CURRENT page, without animation, whenever it mounts
       // or the page width changes.
@@ -1012,7 +1066,14 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
       // Share the active item's URI: the OS share sheet on native; the Web Share API
       // on supporting browsers (the button is only rendered where it exists). A
       // video shares its own `shareUrl`; its poster is not what "share this" means.
+      const openingGeneration = openingGenerationRef.current;
       const handleShare = useCallback(async () => {
+        if (
+          !openRef.current ||
+          dismissingRef.current ||
+          openingGeneration !== openingGenerationRef.current
+        )
+          return;
         const item = items[activeIndexRef.current];
         const uri = item === undefined ? undefined : shareUri(item);
         if (!uri) return;
@@ -1031,7 +1092,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
           if (typeof console !== 'undefined' && console.error)
             console.error('Media share failed:', err);
         }
-      }, [items]);
+      }, [items, openingGeneration]);
 
       // Keyboard navigation (web only), scoped to the open lifetime like Dialog.web's
       // Escape handler. Reads the live index from the ref so it need not re-subscribe
@@ -1121,6 +1182,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
                   <Animated.View style={[StyleSheet.absoluteFill, pagerContainerStyle]}>
                     <ScrollView
                       ref={pagerRef}
+                      testID="bloom-media-gallery-pager"
                       horizontal
                       pagingEnabled
                       // Frozen while zoomed so a horizontal drag pans the zoomed image
@@ -1294,6 +1356,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
 
                 {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex > 0 && (
                   <NavArrow
+                    buttonRef={previousButtonRef}
                     pageColors={pageColors}
                     direction="left"
                     label={labels.previous}
@@ -1306,6 +1369,7 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
                   items.length > 1 &&
                   activeIndex < items.length - 1 && (
                     <NavArrow
+                      buttonRef={nextButtonRef}
                       pageColors={pageColors}
                       direction="right"
                       label={labels.next}
@@ -1313,9 +1377,13 @@ export function createZoomableMediaGallery(Button: React.ComponentType<ButtonPro
                     />
                   )}
 
-                {canShare && pagerReady && (
+                {canShare && pagerReady && activeItem && (
                   <Button
+                    ref={shareButtonRef}
                     onPress={handleShare}
+                    disabled={
+                      activeItem.shareUrl !== undefined && shareUri(activeItem) === undefined
+                    }
                     appearance="outline"
                     tone="neutral"
                     iconOnly
