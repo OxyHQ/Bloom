@@ -39,6 +39,7 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import type { FloatingAnchor } from '../floating/types';
 import { usePopupSurface } from '../platform-surface/context';
+import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { ContextMenuProvider, useContextMenu } from './context';
 import { pointAnchor, useControlledAnchor } from './shared';
 import type { ContextMenuContentProps, ContextMenuProps, ContextMenuTriggerProps } from './types';
@@ -56,6 +57,7 @@ export function ContextMenu({
   anchor: anchorProp,
   onOpenChange,
   onAnchorChange,
+  anchorRef: anchorRefProp,
 }: ContextMenuProps) {
   const PopupSurface = usePopupSurface();
   const [ownAnchor, setOwnAnchor] = useState<FloatingAnchor | null>(null);
@@ -66,6 +68,11 @@ export function ContextMenu({
   const anchor = controlled ? controlledAnchor : ownAnchor;
   const open = anchor !== null;
   const triggerRef = useRef<ComponentRef<typeof View> | null>(null);
+  // The view the popup hangs from: the caller's, else the trigger's wrapper.
+  // Only the caller's is given screen-reader focus back here; a trigger gives
+  // it back itself (TriggerSlot).
+  const anchorRef = anchorRefProp ?? triggerRef;
+  useRestoreAccessibilityFocus(open && PopupSurface != null, anchorRef, anchorRefProp != null);
 
   const value = useMemo(
     () => ({
@@ -84,8 +91,9 @@ export function ContextMenu({
       // A sheet is not anchored to the press; a platform popup is.
       anchor: PopupSurface ? anchor : null,
       triggerRef,
+      anchorRef,
     }),
-    [open, anchor, controlled, onOpenChange, onAnchorChange, PopupSurface],
+    [open, anchor, controlled, onOpenChange, onAnchorChange, PopupSurface, anchorRef],
   );
 
   return <ContextMenuProvider value={value}>{children}</ContextMenuProvider>;
@@ -154,7 +162,7 @@ export function ContextMenuTrigger({
   );
 }
 
-/** The trigger's wrapper's top-left corner in the window, measured as the menu opens. */
+/** The anchor view's top-left corner in the window, measured as the menu opens. */
 function useTriggerOrigin(
   open: boolean,
   triggerRef: React.RefObject<ComponentRef<typeof View> | null> | undefined,
@@ -205,18 +213,18 @@ export function ContextMenuContent({
     () => ({ close: menu.close, presentation: PopupSurface ? 'dropdown' : 'sheet' }),
     [menu.close, PopupSurface],
   );
-  const origin = useTriggerOrigin(menu.open && PopupSurface != null, menu.triggerRef);
+  const origin = useTriggerOrigin(menu.open && PopupSurface != null, menu.anchorRef);
 
   if (PopupSurface) {
     // The platform's popup, at the press: mounted while open, closed by the
     // platform on an outside press, which closes the menu.
     const anchor = menu.anchor;
-    if (!menu.open || !anchor || !origin || !menu.triggerRef) return null;
+    if (!menu.open || !anchor || !origin || !menu.anchorRef) return null;
     return (
       <BloomScope size={size}>
         <PopupPanel
           PopupSurface={PopupSurface}
-          anchorRef={menu.triggerRef}
+          anchorRef={menu.anchorRef}
           point={{ x: anchor.left - origin.x, y: anchor.top - origin.y }}
           side={side}
           align={align}

@@ -4,7 +4,8 @@
  * to the trigger at that point; the innermost trigger takes the press; a child
  * that states its role keeps it. Without popups, a phone's sheet as before.
  */
-import { Text, View } from 'react-native';
+import React from 'react';
+import { AccessibilityInfo, Text, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import {
@@ -115,4 +116,95 @@ it('keeps a phone its sheet: without popups the secondary button opens nothing a
     fireEvent(wrapperOf(screen), 'pointerDown', pointer(2, 10, 10));
   });
   expect(screen.queryByTestId('platform-popup')).toBeNull();
+});
+
+/**
+ * A menu the caller opens for a view it renders no trigger around (OxyOS's
+ * text fields: the platform owns the field and opens its Cut, Copy and Paste):
+ * `anchorRef` is the view the popup hangs from, `anchor` the point in the
+ * window, and the point handed to the platform is relative to that view.
+ */
+function FieldMenu({
+  anchor,
+  field,
+  onClose,
+  onCopy,
+}: {
+  anchor: { x: number; y: number } | null;
+  field: React.RefObject<React.ComponentRef<typeof View> | null>;
+  onClose: () => void;
+  onCopy: () => void;
+}) {
+  return (
+    <ContextMenu
+      anchor={anchor}
+      anchorRef={field}
+      onAnchorChange={(next) => next === null && onClose()}
+    >
+      <ContextMenuContent testID="menu">
+        <ContextMenuItem onPress={onCopy}>Copy</ContextMenuItem>
+        <ContextMenuItem disabled onPress={() => {}}>
+          Paste
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+
+it('opens without a trigger in the platform popup, hanging from `anchorRef` at the point', () => {
+  const popup = jest.fn();
+  const onCopy = jest.fn();
+  const onClose = jest.fn();
+  const field = React.createRef<React.ComponentRef<typeof View>>();
+  const createNodeMock = () => ({
+    measureInWindow: (callback: (x: number, y: number, w: number, h: number) => void) =>
+      callback(40, 100, 300, 32),
+  });
+  const page = (anchor: { x: number; y: number } | null) => (
+    <BloomProvider mode="light" platform={adapter(popup)}>
+      <View ref={field} testID="field" />
+      <FieldMenu anchor={anchor} field={field} onClose={onClose} onCopy={onCopy} />
+    </BloomProvider>
+  );
+  const screen = render(page(null), { createNodeMock });
+  expect(screen.queryByTestId('platform-popup')).toBeNull();
+
+  screen.rerender(page({ x: 70, y: 116 }));
+  expect(screen.getByTestId('platform-popup')).toBeTruthy();
+  const props = popup.mock.calls[popup.mock.calls.length - 1]?.[0] as PopupSurfaceProps;
+  expect(props.anchorRef).toBe(field);
+  expect(props.point).toEqual({ x: 30, y: 16 });
+  expect(props.role).toBe('menu');
+
+  fireEvent.press(screen.getByText('Copy'));
+  expect(onCopy).toHaveBeenCalledTimes(1);
+  expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+it('gives screen-reader focus back to `anchorRef` when it closes', () => {
+  jest.useFakeTimers();
+  const sent = jest.spyOn(AccessibilityInfo, 'sendAccessibilityEvent').mockImplementation(() => {});
+  try {
+    const field = React.createRef<React.ComponentRef<typeof View>>();
+    const fieldNode = {
+      measureInWindow: (callback: (x: number, y: number, w: number, h: number) => void) =>
+        callback(0, 0, 100, 20),
+    };
+    const page = (anchor: { x: number; y: number } | null) => (
+      <BloomProvider mode="light" platform={adapter(() => {})}>
+        <View ref={field} testID="field" />
+        <FieldMenu anchor={anchor} field={field} onClose={() => {}} onCopy={() => {}} />
+      </BloomProvider>
+    );
+    const screen = render(page({ x: 10, y: 10 }), { createNodeMock: () => fieldNode });
+    sent.mockClear();
+    screen.rerender(page(null));
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+    expect(sent).toHaveBeenCalledWith(field.current, 'focus');
+  } finally {
+    sent.mockRestore();
+    jest.useRealTimers();
+  }
 });

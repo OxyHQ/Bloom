@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.91.0
+
+### Added
+
+- **A native `ContextMenu` can open for a view it has no trigger around: `anchorRef`.** The controlled form (`anchor`) promised that a `ContextMenuTrigger` was optional, but on a platform with popups (an adapter reporting `popup-surface`) the popup hangs from a view, and without a trigger there was none: the menu never opened. `anchorRef` names that view — a menu opened for a view the caller does not wrap, as OxyOS opens a text field's Cut, Copy and Paste for the fields it owns (OxyOS ADR 0037). The popup hangs from it at `anchor` (a point in the window), so a menu for a view inside another popup opens as that popup's child, and screen-reader focus returns to it when the menu closes. With a trigger as well, the menu hangs from `anchorRef`. Web ignores it. `ContextMenuPlatformPopup.test.tsx` pins the popup's anchor and point and the focus returned.
+
+### Consumers
+
+No breaking changes. A controlled native `ContextMenu` with no trigger, which drew nothing on a desktop platform, can pass `anchorRef`.
+
 ## 15.90.2
 
 ### Fixed
