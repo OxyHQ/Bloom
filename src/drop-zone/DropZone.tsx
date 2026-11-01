@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { styled } from 'react-native-css';
 
 import { usePlatformDropTarget } from '../platform-surface/context';
 import { orderedActions } from './shared';
@@ -10,7 +11,7 @@ import type { DropZoneProps } from './types';
  * these props and follows it with the callbacks; without one, a view that
  * takes nothing.
  */
-export function DropZone({
+function DropZoneComponent({
   accept,
   actions,
   preferredAction,
@@ -49,3 +50,9 @@ export function DropZone({
     </DropTarget>
   );
 }
+
+/**
+ * `className` resolved to `style` before the platform's drop target is given it: a host component
+ * of the platform's takes styles, not class names.
+ */
+export const DropZone = styled(DropZoneComponent, { className: 'style' });
