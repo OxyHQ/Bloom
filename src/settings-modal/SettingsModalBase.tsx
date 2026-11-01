@@ -67,6 +67,10 @@ import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { mergeRefs } from '../hooks/merge-refs';
+import {
+  useNativeRovingGroup,
+  type NativeRovingItemProps,
+} from '../hooks/use-native-roving-group';
 import { surfacePresenceVars, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -1060,12 +1064,41 @@ export function createSettings(
       borderRightColor: palette.separator,
     };
     const railWidth = layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH;
+    // Beside the page, the rail is ONE list whose selection is the page shown,
+    // as a Mac's System Settings sidebar: on a native host that gives Bloom the
+    // window's keys, one Tab stop (the selected row), and ↑ ↓ (Home, End)
+    // select the row above or below, which shows its page
+    // (`hooks/use-native-roving-group.ts`). Its rows are the list's items, so
+    // the screen reader says where each one is in it ("3 of 13"). Narrow, the
+    // rows are a list of pages to go into, each a button of its own. The web's
+    // rail stays a navigation of buttons, each one a Tab stop.
+    const selection = !compact && !IS_WEB;
+    const roving = useNativeRovingGroup<string>({
+      items: () =>
+        groups.flatMap((group) =>
+          group.items.flatMap((item) =>
+            item.page === undefined ? [] : [{ value: item.page, disabled: item.disabled }],
+          ),
+        ),
+      value: page,
+      select: onSelect,
+      orientation: 'vertical',
+      homeEnd: true,
+      wrap: false,
+      disabled: !selection,
+    });
     const content = (
-      <View style={header ? [styles.railContent, styles.railContentCompact] : { gap: 20 }}>
+      <View
+        role={selection ? 'list' : undefined}
+        style={header ? [styles.railContent, styles.railContentCompact] : { gap: 20 }}
+      >
         {groups.map((group) => (
           <View key={group.key ?? group.label} style={styles.group}>
             <Text
               variant="body-medium"
+              // A section of the rail, as the screen reader's headings list finds it.
+              role="heading"
+              aria-level={3}
               style={[styles.groupLabel, { color: palette.textSecondary }]}
             >
               {group.label}
@@ -1080,6 +1113,12 @@ export function createSettings(
                   showChevron={compact && item.page !== undefined}
                   onSelect={onSelect}
                   palette={palette}
+                  listItem={selection}
+                  roving={
+                    selection && item.page !== undefined
+                      ? roving.itemProps(item.page, item.disabled)
+                      : undefined
+                  }
                   testID={testID ? `${testID}-nav-${item.key}` : undefined}
                 />
               ))}
@@ -1152,6 +1191,8 @@ export function createSettings(
     showChevron = false,
     onSelect,
     palette,
+    listItem = false,
+    roving,
     testID,
   }: {
     item: SettingsNavItem;
@@ -1159,6 +1200,10 @@ export function createSettings(
     showChevron?: boolean;
     onSelect: (page: string) => void;
     palette: SettingsPalette;
+    /** An item of the rail's list (beside the page, natively), not a button. */
+    listItem?: boolean;
+    /** The rail's one Tab stop and its arrows, natively. */
+    roving?: NativeRovingItemProps;
     testID?: string;
   }) {
     const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
@@ -1166,7 +1211,8 @@ export function createSettings(
     const onPress = item.page ? () => onSelect(item.page as string) : item.onPress;
     return (
       <Pressable
-        role="button"
+        {...roving}
+        role={listItem ? 'listitem' : 'button'}
         accessibilityLabel={item.label}
         accessibilityState={{ selected, disabled: item.disabled }}
         aria-disabled={item.disabled}

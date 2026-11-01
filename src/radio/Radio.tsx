@@ -36,6 +36,7 @@ import { RadioHost, RadioGroupHost, RadioLabel } from './RadioHost';
 import type { RadioGroupProps, RadioProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { CHOICE_CONTROL_SIZES } from '../styles/choice-control-sizes';
+import { useNativeRovingGroup } from '../hooks/use-native-roving-group';
 
 /**
  * The radio: the dot is `RadioIndicator`, this is the row.
@@ -331,6 +332,19 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
     .filter((option) => !isDisabled && !option.disabled)
     .map((option) => option.value);
   const tabValue = value !== undefined && enabledValues.includes(value) ? value : enabledValues[0];
+  // Native (a host giving Bloom the window's keys): the same one stop and the
+  // same four arrows, through the platform's keyboard focus.
+  const roving = useNativeRovingGroup<string>({
+    items: () =>
+      options.map((option) => ({ value: option.value, disabled: option.disabled === true })),
+    value,
+    select: (next) => onValueChange(next as Value),
+    orientation: 'both',
+    wrap: true,
+    rtl,
+    disabled: isDisabled,
+  });
+  const rovingItem = roving.itemProps;
   const register = useCallback(
     (option: string, node: ComponentRef<typeof View> | null) => {
       controlRef(option).current = node;
@@ -378,7 +392,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
     if (target !== value) onValueChange(target);
   };
   return (
-    <RadioGroupContext.Provider value={{ tabValue, register, onKeyDown }}>
+    <RadioGroupContext.Provider value={{ tabValue, register, onKeyDown, rovingItem }}>
       <RadioGroupHost
         {...direction}
         className={className}

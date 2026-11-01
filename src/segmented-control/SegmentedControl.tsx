@@ -47,6 +47,11 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useFieldMembership } from '../field/membership';
 import { StyledView, StyledPressable } from '../styles/styled-primitives';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
+import {
+  useNativeRovingGroup,
+  type NativeRovingItemProps,
+} from '../hooks/use-native-roving-group';
+import { mergeRefs } from '../hooks/merge-refs';
 import { webDataSet } from '../styles/web-data';
 import { IS_WEB } from '../styles/platform';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -170,6 +175,8 @@ const InternalContext = createContext<{
   selectedPosition: { width: number; x: number } | null;
   onSelectValue: (value: string, position: { width: number; x: number } | null) => void;
   updatePosition: (position: { width: number; x: number }) => void;
+  /** A segment's keyboard props on a native host (`hooks/use-native-roving-group.ts`). */
+  rovingItem: (value: string, disabled: boolean) => NativeRovingItemProps;
 } | null>(null);
 
 /**
@@ -267,14 +274,32 @@ export function SegmentedControl<T extends string>({
     isChosenSegment,
     GROUP,
   );
+  // Native (a host giving Bloom the window's keys): the same one stop, and the
+  // same arrows, through the platform's keyboard focus. The segments in the
+  // order they are laid out, left to right, so → is always the one to the right.
+  // The segments as laid out, on the JS thread (the shared value is the
+  // gesture's, on the UI thread).
+  const laidOut = useRef<SegmentPosition[]>([]);
+  const roving = useNativeRovingGroup<string>({
+    items: () => laidOut.current,
+    value,
+    select: (next) => onValueChange(next as T),
+    orientation: type === 'tabs' ? 'horizontal' : 'both',
+    homeEnd: type === 'tabs',
+    wrap: true,
+    disabled: isDisabled,
+  });
+  const rovingItem = roving.itemProps;
   const register = useCallback(
     (segment: SegmentPosition) => {
-      segments.value = [
-        ...segments.value.filter((item) => item.value !== segment.value),
+      laidOut.current = [
+        ...laidOut.current.filter((item) => item.value !== segment.value),
         segment,
       ].sort((a, b) => a.x - b.x);
+      segments.value = [...laidOut.current];
       return () => {
-        segments.value = segments.value.filter((item) => item.value !== segment.value);
+        laidOut.current = laidOut.current.filter((item) => item.value !== segment.value);
+        segments.value = [...laidOut.current];
       };
     },
     [segments],
@@ -385,8 +410,10 @@ export function SegmentedControl<T extends string>({
           return position;
         });
       },
+      rovingItem,
     };
   }, [
+    rovingItem,
     value,
     selectedPosition,
     setSelectedPosition,
@@ -591,9 +618,12 @@ export function SegmentedControlItem({
     [active, hovered, isDisabled],
   );
 
+  const roving = ctx.rovingItem(value, isDisabled);
+
   return (
     <StyledPressable
-      ref={itemRef}
+      {...roving}
+      ref={roving.ref ? mergeRefs([itemRef, roving.ref]) : itemRef}
       className={className}
       onLayout={(evt) => {
         const measuredPosition = {
