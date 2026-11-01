@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.89.1
+
+### Fixed
+
+- **A native `DropZone` honours its `className`.** On a platform whose adapter reports `drag-and-drop` the zone is the platform's drop target, a host component that takes styles: its class names (`flex-1`) were dropped, and a zone meant to fill its pane had no height. `DropZone` now resolves `className` to `style` first (`react-native-css`'s `styled`), as `Surface` and `Accordion` do.
+
+### Consumers
+
+No API changes.
+
 ## 15.88.0
 
 ### Added
