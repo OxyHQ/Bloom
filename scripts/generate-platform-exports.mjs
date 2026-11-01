@@ -113,6 +113,12 @@ const SUBPATHS = /** @type {const} */ ([
   ['./announcement', 'announcement/index.ts'],
   ['./data-table', 'data-table/index.ts'],
   ['./chart-cards', 'chart-cards/index.ts'],
+  // Focused entries keep Metro from linking unrelated chart cards.
+  ['./chart-cards/bar-list', 'chart-cards/bar-list.ts'],
+  ['./chart-cards/line', 'chart-cards/line.ts'],
+  ['./chart-cards/surface', 'chart-cards/surface.ts'],
+  ['./chart-cards/header', 'chart-cards/header.ts'],
+  ['./chart-cards/stat-tiles', 'chart-cards/stat-tiles.ts'],
   // Tiny trend charts should not link every full-size chart card in Metro.
   ['./chart-cards/sparkline', 'chart-cards/sparkline.ts'],
   ['./calendar', 'calendar/index.ts'],

@@ -831,6 +831,76 @@
         "default": "./lib/commonjs/chart-cards/index.js"
       }
     },
+    "./chart-cards/bar-list": {
+      "react-native": {
+        "types": "./lib/typescript/module/chart-cards/bar-list.d.ts",
+        "default": "./src/chart-cards/bar-list.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chart-cards/bar-list.d.ts",
+        "default": "./lib/module/chart-cards/bar-list.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chart-cards/bar-list.d.ts",
+        "default": "./lib/commonjs/chart-cards/bar-list.js"
+      }
+    },
+    "./chart-cards/line": {
+      "react-native": {
+        "types": "./lib/typescript/module/chart-cards/line.d.ts",
+        "default": "./src/chart-cards/line.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chart-cards/line.d.ts",
+        "default": "./lib/module/chart-cards/line.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chart-cards/line.d.ts",
+        "default": "./lib/commonjs/chart-cards/line.js"
+      }
+    },
+    "./chart-cards/surface": {
+      "react-native": {
+        "types": "./lib/typescript/module/chart-cards/surface.d.ts",
+        "default": "./src/chart-cards/surface.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chart-cards/surface.d.ts",
+        "default": "./lib/module/chart-cards/surface.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chart-cards/surface.d.ts",
+        "default": "./lib/commonjs/chart-cards/surface.js"
+      }
+    },
+    "./chart-cards/header": {
+      "react-native": {
+        "types": "./lib/typescript/module/chart-cards/header.d.ts",
+        "default": "./src/chart-cards/header.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chart-cards/header.d.ts",
+        "default": "./lib/module/chart-cards/header.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chart-cards/header.d.ts",
+        "default": "./lib/commonjs/chart-cards/header.js"
+      }
+    },
+    "./chart-cards/stat-tiles": {
+      "react-native": {
+        "types": "./lib/typescript/module/chart-cards/stat-tiles.d.ts",
+        "default": "./src/chart-cards/stat-tiles.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chart-cards/stat-tiles.d.ts",
+        "default": "./lib/module/chart-cards/stat-tiles.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chart-cards/stat-tiles.d.ts",
+        "default": "./lib/commonjs/chart-cards/stat-tiles.js"
+      }
+    },
     "./chart-cards/sparkline": {
       "react-native": {
         "types": "./lib/typescript/module/chart-cards/sparkline.d.ts",
@@ -4371,6 +4441,21 @@
       ],
       "chart-cards": [
         "./lib/typescript/module/chart-cards/index.d.ts"
+      ],
+      "chart-cards/bar-list": [
+        "./lib/typescript/module/chart-cards/bar-list.d.ts"
+      ],
+      "chart-cards/line": [
+        "./lib/typescript/module/chart-cards/line.d.ts"
+      ],
+      "chart-cards/surface": [
+        "./lib/typescript/module/chart-cards/surface.d.ts"
+      ],
+      "chart-cards/header": [
+        "./lib/typescript/module/chart-cards/header.d.ts"
+      ],
+      "chart-cards/stat-tiles": [
+        "./lib/typescript/module/chart-cards/stat-tiles.d.ts"
       ],
       "chart-cards/sparkline": [
         "./lib/typescript/module/chart-cards/sparkline.d.ts"

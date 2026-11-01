@@ -83,6 +83,8 @@ jobs:
       - run: ./node_modules/.bin/biome ci .
       # Includes prebuild generation and postbuild tarball/freshness checks.
       - run: bun run build
+      - name: Verify packed chart card consumer entries
+        run: node scripts/verify-chart-card-entries.mjs
       - run: bun run typescript
       # The separately published workspace packages: their typecheck and jest
       # run (the root jest config ignores packages/). This is what gates their
