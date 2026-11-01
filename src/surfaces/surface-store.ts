@@ -31,16 +31,24 @@ let surfaces: readonly SurfaceEntry[] = EMPTY;
 const listeners = new Set<() => void>();
 // A host hand-off can briefly mount the same entry twice. Count the live
 // layers so an abort between hosts cannot reopen a cancelled surface.
-const mountedEntries = new Map<string, number>();
+const mountedEntries = new Map<string, { count: number; aborted: boolean }>();
 
 export function markSurfaceMounted(id: string): () => void {
   if (!surfaces.some((entry) => entry.id === id)) return () => {};
-  mountedEntries.set(id, (mountedEntries.get(id) ?? 0) + 1);
+  const mount = mountedEntries.get(id) ?? { count: 0, aborted: false };
+  mount.count += 1;
+  mountedEntries.set(id, mount);
+  let released = false;
   return () => {
-    const count = mountedEntries.get(id);
-    if (count === undefined) return;
-    if (count === 1) mountedEntries.delete(id);
-    else mountedEntries.set(id, count - 1);
+    if (released || mountedEntries.get(id) !== mount) return;
+    released = true;
+    mount.count -= 1;
+    if (mount.count === 0) {
+      mountedEntries.delete(id);
+      // The aborted surface no longer has an exit animation to wait for. It
+      // must not mount again if the host moves while that animation is running.
+      if (mount.aborted) finalizeClose(id);
+    }
   };
 }
 
@@ -114,7 +122,9 @@ export function presentWithSignal<Result = unknown>(
 function abortSurface(id: string): void {
   const entry = surfaces.find((candidate) => candidate.id === id);
   if (!entry) return;
-  if (mountedEntries.has(id)) {
+  const mount = mountedEntries.get(id);
+  if (mount) {
+    mount.aborted = true;
     requestDismiss(id);
     return;
   }

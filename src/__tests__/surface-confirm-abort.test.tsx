@@ -151,7 +151,7 @@ it('aborts suppressible confirmations with the current checkbox value', async ()
   await expect(answer).resolves.toEqual({ confirmed: false, suppressed: true });
 });
 
-it('preserves the close lifecycle if a mounted entry moves to another host', async () => {
+it('preserves the existing non-abort close lifecycle during a host hand-off', async () => {
   const { createSurfaceHost } = await import('../surfaces/SurfaceHost');
   const calls: string[] = [];
   const MockDialog = ({ control, startOpen }: import('../dialog/types').DialogProps) => {
@@ -164,12 +164,11 @@ it('preserves the close lifecycle if a mounted entry moves to another host', asy
   };
   const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
   const screen = render(<MockHost />);
-  const controller = new AbortController();
   let answer!: Promise<boolean>;
   act(() => {
-    answer = confirm({ title: 'handoff', signal: controller.signal });
+    answer = confirm({ title: 'handoff' });
   });
-  act(() => controller.abort());
+  act(() => requestDismiss(firstId(), false));
   screen.unmount();
   calls.length = 0;
   render(<MockHost />);
@@ -263,4 +262,85 @@ it('keeps an entry alive when one of two mounted hosts unmounts before abort', a
   expect(onClose).toHaveBeenCalled();
   await expect(answer).resolves.toBe(false);
   second.unmount();
+});
+
+it('does not reopen if the last host unmounts during an aborted exit', async () => {
+  const { createSurfaceHost } = await import('../surfaces/SurfaceHost');
+  const renders = jest.fn();
+  const MockDialog = ({ control }: import('../dialog/types').DialogProps) => {
+    React.useImperativeHandle(control?.ref, () => ({ open: () => {}, close: () => {} }));
+    renders();
+    return null;
+  };
+  const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
+  const screen = render(<MockHost />);
+  const controller = new AbortController();
+  let answer!: Promise<boolean>;
+  act(() => {
+    answer = confirm({ title: 'abort then handoff', signal: controller.signal });
+  });
+  act(() => controller.abort());
+  expect(getSnapshot()[0]?.status).toBe('closing');
+  screen.unmount();
+  expect(getSnapshot()).toHaveLength(0);
+  renders.mockClear();
+  render(<MockHost />);
+  expect(renders).not.toHaveBeenCalled();
+  await expect(answer).resolves.toBe(false);
+});
+
+it('waits for the last mounted host before finalizing an aborted exit', async () => {
+  const { createSurfaceHost } = await import('../surfaces/SurfaceHost');
+  const MockDialog = ({ control }: import('../dialog/types').DialogProps) => {
+    React.useImperativeHandle(control?.ref, () => ({ open: () => {}, close: () => {} }));
+    return null;
+  };
+  const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
+  const first = render(<MockHost />);
+  const second = render(<MockHost />);
+  const controller = new AbortController();
+  let answer!: Promise<boolean>;
+  act(() => {
+    answer = confirm({ title: 'overlapping hosts', signal: controller.signal });
+  });
+  act(() => controller.abort());
+  first.unmount();
+  expect(getSnapshot()[0]?.status).toBe('closing');
+  second.unmount();
+  expect(getSnapshot()).toHaveLength(0);
+  await expect(answer).resolves.toBe(false);
+});
+
+it('ignores a stale host cleanup after reset and test id reuse', async () => {
+  const old = present(noop);
+  const oldId = firstId();
+  const releaseOld = markSurfaceMounted(oldId);
+  resetSurfaces();
+  await expect(old).resolves.toBeUndefined();
+  __resetSurfacesForTests();
+  const controller = new AbortController();
+  const answer = confirm({ title: 'new', signal: controller.signal });
+  expect(firstId()).toBe(oldId);
+  const releaseNew = markSurfaceMounted(oldId);
+  releaseOld();
+  controller.abort();
+  expect(getSnapshot()[0]?.status).toBe('closing');
+  releaseNew();
+  expect(getSnapshot()).toHaveLength(0);
+  await expect(answer).resolves.toBe(false);
+});
+
+it('does not count the same host cleanup twice', async () => {
+  const controller = new AbortController();
+  const answer = confirm({ title: 'two hosts', signal: controller.signal });
+  const id = firstId();
+  const releaseFirst = markSurfaceMounted(id);
+  const releaseSecond = markSurfaceMounted(id);
+  releaseFirst();
+  releaseFirst();
+  controller.abort();
+  expect(getSnapshot()[0]?.status).toBe('closing');
+  releaseSecond();
+  expect(getSnapshot()).toHaveLength(0);
+  await expect(answer).resolves.toBe(false);
 });

@@ -122,3 +122,27 @@ it('does not reopen or steal focus when abort falls between host unmount and rem
   expect(getSnapshot()).toHaveLength(0);
   await expect(answer).resolves.toBe(false);
 });
+
+it('does not reopen if the host unmounts during an aborted exit', async () => {
+  const controller = new AbortController();
+  let answer!: Promise<boolean>;
+  act(() => {
+    answer = confirm({ title: 'Closing while moving', signal: controller.signal });
+  });
+  flush();
+  act(() => controller.abort());
+  act(() => root.render(<BloomThemeProvider fonts={false} />));
+  opener.focus();
+  act(() =>
+    root.render(
+      <BloomThemeProvider fonts={false}>
+        <SurfaceHost />
+      </BloomThemeProvider>,
+    ),
+  );
+  flush();
+  expect(document.body.textContent).not.toContain('Closing while moving');
+  expect(document.activeElement).toBe(opener);
+  expect(getSnapshot()).toHaveLength(0);
+  await expect(answer).resolves.toBe(false);
+});
