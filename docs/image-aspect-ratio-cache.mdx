@@ -54,6 +54,16 @@ and skip the measurement entirely. A ratio known before first paint means the
 layout is right on frame one, which no amount of caching after the fact
 achieves.
 
+Concurrent measurements of the same URL may complete out of order. An older
+measurement cannot overwrite a newer result that has already been cached, and
+`setAspectRatio` takes precedence over measurements already in flight. A valid
+earlier result can still populate the cache while a later measurement is pending;
+each `fetchAspectRatio` call resolves with its own measurement.
+
+The cache tracks an in-flight URL until all of its measurements settle. The
+underlying image-size API does not expose cancellation, so a measurement that
+never settles also keeps its in-flight tracking entry.
+
 ## It is a cache, not state
 
 Module-level and process-wide, so it survives navigation and re-renders. Do not

@@ -183,6 +183,33 @@ export const ShareFocusFirst: Story = {
   ),
 };
 
+function RatioLifetimeDemo() {
+  const galleryRef = React.useRef<ZoomableMediaGalleryHandle>(null);
+  return (
+    <View>
+      <Pressable
+        testID="ratio-open-old"
+        onPress={() =>
+          galleryRef.current?.open([{ uri: '/gallery-ratio-old.svg', alt: 'old image' }], 0)
+        }
+      >
+        <Text>Open old image</Text>
+      </Pressable>
+      <Pressable
+        testID="ratio-open-current"
+        onPress={() =>
+          galleryRef.current?.open([{ uri: '/gallery-ratio-current.svg', alt: 'current image' }], 0)
+        }
+      >
+        <Text>Open current image</Text>
+      </Pressable>
+      <ZoomableMediaGallery ref={galleryRef} />
+    </View>
+  );
+}
+
+export const RatioLifetime: Story = { render: () => <RatioLifetimeDemo /> };
+
 export const ThumbnailIndicator: Story = {
   parameters: { controls: { disable: true } },
   render: () => <GalleryDemo items={IMAGES} indicatorVariant="thumbnails" />,
