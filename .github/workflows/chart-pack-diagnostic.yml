@@ -36,6 +36,10 @@ jobs:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile --ignore-scripts
       - run: bun run build
+      - name: Verify generated sources match the candidate
+        run: |
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
       - name: Pack and record the source and SHA-512
         env:
           CANDIDATE: af61ce26815fdcf3544791f95b72e476a3311cb9
