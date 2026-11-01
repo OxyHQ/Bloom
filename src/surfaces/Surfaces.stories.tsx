@@ -10,6 +10,7 @@ import {
   present,
   presentCancelable,
 } from './index';
+import { getSnapshot, subscribe } from './surface-store';
 import { Button } from '../button';
 import { Text } from '../typography';
 
@@ -99,12 +100,35 @@ export const AbortableConfirm: Story = {
   parameters: { controls: { disable: true } },
   render: function AbortableConfirmStory() {
     const owner = useRef<AbortController | null>(null);
+    const abortOnExit = useRef(false);
     const [result, setResult] = useState('pending');
     const [other, setOther] = useState('pending');
     useEffect(() => {
       const abort = () => owner.current?.abort();
+      const armExit = () => {
+        abortOnExit.current = true;
+      };
       window.addEventListener('bloom-story-session-invalidated', abort);
-      return () => window.removeEventListener('bloom-story-session-invalidated', abort);
+      window.addEventListener('bloom-story-arm-confirm-exit-abort', armExit);
+      const unsubscribe = subscribe(() => {
+        if (
+          !abortOnExit.current ||
+          !getSnapshot().some(
+            (entry) =>
+              entry.status === 'closing' && entry.presentation.title === 'Session confirmation',
+          )
+        )
+          return;
+        abortOnExit.current = false;
+        window.dispatchEvent(new Event('bloom-story-confirm-exit-aborting'));
+        owner.current?.abort();
+        window.dispatchEvent(new Event('bloom-story-confirm-exit-aborted'));
+      });
+      return () => {
+        unsubscribe();
+        window.removeEventListener('bloom-story-session-invalidated', abort);
+        window.removeEventListener('bloom-story-arm-confirm-exit-abort', armExit);
+      };
     }, []);
     const openOwned = () => {
       owner.current = new AbortController();
@@ -112,7 +136,11 @@ export const AbortableConfirm: Story = {
         title: 'Session confirmation',
         confirmLabel: 'Confirm session',
         signal: owner.current.signal,
-      }).then((value) => setResult(String(value)));
+        onClosed: () => window.dispatchEvent(new Event('bloom-story-confirm-closed')),
+      }).then((value) => {
+        setResult(String(value));
+        window.dispatchEvent(new Event('bloom-story-confirm-answered'));
+      });
     };
     return (
       <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
@@ -147,12 +175,35 @@ export const CancelableSurface: Story = {
   parameters: { controls: { disable: true } },
   render: function CancelableSurfaceStory() {
     const owner = useRef<AbortController | null>(null);
+    const abortOnExit = useRef(false);
     const [result, setResult] = useState('pending');
     const [other, setOther] = useState('pending');
+    const [closed, setClosed] = useState(0);
     useEffect(() => {
       const abort = () => owner.current?.abort();
+      const armExit = () => {
+        abortOnExit.current = true;
+      };
       window.addEventListener('bloom-story-surface-invalidated', abort);
-      return () => window.removeEventListener('bloom-story-surface-invalidated', abort);
+      window.addEventListener('bloom-story-arm-exit-abort', armExit);
+      const unsubscribe = subscribe(() => {
+        if (
+          !abortOnExit.current ||
+          !getSnapshot().some(
+            (entry) => entry.status === 'closing' && entry.presentation.title === 'Owned surface',
+          )
+        )
+          return;
+        abortOnExit.current = false;
+        window.dispatchEvent(new Event('bloom-story-exit-aborting'));
+        owner.current?.abort();
+        window.dispatchEvent(new Event('bloom-story-exit-aborted'));
+      });
+      return () => {
+        unsubscribe();
+        window.removeEventListener('bloom-story-surface-invalidated', abort);
+        window.removeEventListener('bloom-story-arm-exit-abort', armExit);
+      };
     }, []);
     const openOther = () => {
       void present<string>(
@@ -163,9 +214,24 @@ export const CancelableSurface: Story = {
     const openOwned = () => {
       owner.current = new AbortController();
       void presentCancelable<string>(
-        () => <Button onPress={openOther}>Open other surface</Button>,
-        { title: 'Owned surface', signal: owner.current.signal },
-      ).then((value) => setResult(String(value)));
+        (surface) => (
+          <View style={{ gap: 8 }}>
+            <Button onPress={openOther}>Open other surface</Button>
+            <Button onPress={() => surface.dismiss('chosen')}>Finish owned surface</Button>
+          </View>
+        ),
+        {
+          title: 'Owned surface',
+          signal: owner.current.signal,
+          onClosed: () => {
+            setClosed((count) => count + 1);
+            window.dispatchEvent(new Event('bloom-story-surface-closed'));
+          },
+        },
+      ).then((value) => {
+        setResult(String(value));
+        window.dispatchEvent(new Event('bloom-story-surface-answered'));
+      });
     };
     const openParent = () => {
       void present(
@@ -192,6 +258,7 @@ export const CancelableSurface: Story = {
         </Button>
         <Text testID="cancelable-surface-result">Owned: {result}</Text>
         <Text testID="other-surface-result">Other: {other}</Text>
+        <Text testID="surface-closed-count">Closed: {closed}</Text>
       </View>
     );
   },

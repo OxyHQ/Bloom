@@ -6,6 +6,7 @@ import {
   __resetSurfacesForTests,
   finalizeClose,
   getSnapshot,
+  markSurfaceMounted,
   present,
   requestDismiss,
   resetSurfaces,
@@ -119,13 +120,19 @@ it('cancels a nested surface without touching its parent or a later surface', as
   await expect(root).resolves.toBe('root');
 });
 
-it('cleans the listener immediately and preserves a result chosen before abort', async () => {
+it('preserves a result chosen before abort and cleans the listener on removal', async () => {
   const controller = new AbortController();
   const remove = jest.spyOn(controller.signal, 'removeEventListener');
   const answer = presentCancelable<string>(noop, { signal: controller.signal });
-  requestDismiss(entryId(), 'chosen');
-  expect(remove).toHaveBeenCalledWith('abort', expect.any(Function));
+  const id = entryId();
+  const release = markSurfaceMounted(id);
+  requestDismiss(id, 'chosen');
+  expect(remove).not.toHaveBeenCalled();
   controller.abort();
+  expect(remove).not.toHaveBeenCalled();
+  release();
+  expect(remove).toHaveBeenCalledWith('abort', expect.any(Function));
+  expect(getSnapshot()).toHaveLength(0);
   await expect(answer).resolves.toBe('chosen');
 });
 

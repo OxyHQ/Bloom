@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.92.3
+
+### Fixed
+
+- **A cancelable surface remains owned through its exit.** Its signal stays active until the entry is removed and its host layers unmount. Aborting during exit removes only that surface while preserving an answer already returned. Ordinary dismissals retain their animation.
+
+### Consumers
+
+`presentCancelable`, `confirm`, and `confirmWithSuppression` accept optional `onClosed` so a session owner can keep observing until removal and host unmount. The callback does not promise a painted frame or close independent child surfaces. Existing result promises are unchanged; callers must still validate the session before acting. See `docs/surfaces.mdx`.
+
 ## 15.92.2
 
 ### Added
