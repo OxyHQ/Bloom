@@ -2,16 +2,17 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import {
   surfaceFillOn,
-  useSurfaceFill,
-  useSurfaceLevelValue,
+  useSurfaceFillForSnapshot,
+  useSurfaceSnapshot,
   type SurfaceLevel,
 } from '../styles/surface-levels';
 
 /** Material is independent of depth: derive a new fill from the actual parent. */
 export function useSurfaceLayer() {
   const theme = useTheme();
-  const parentFill = useSurfaceFill();
-  const parentLevel = useSurfaceLevelValue();
+  const surface = useSurfaceSnapshot();
+  const parentFill = useSurfaceFillForSnapshot(theme, surface);
+  const parentLevel = surface.level;
   return resolveSurfaceLayer(theme, parentFill, parentLevel);
 }
 

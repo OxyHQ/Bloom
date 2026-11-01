@@ -43,9 +43,9 @@ import { splitCompiledStyle } from '../styles/compiled-style';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import {
   SurfaceLevelProvider,
-  useSurfaceFill,
+  useSurfaceFillForSnapshot,
   useSurfaceFillRecipe,
-  useSurfaceLevelValue,
+  useSurfaceSnapshot,
 } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
@@ -113,9 +113,10 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
     ref,
   ) {
     const theme = useTheme();
-    const parentFill = useSurfaceFill();
+    const surface = useSurfaceSnapshot();
+    const parentFill = useSurfaceFillForSnapshot(theme, surface);
+    const parentLevel = surface.level;
     const parentRecipe = useSurfaceFillRecipe();
-    const parentLevel = useSurfaceLevelValue();
     const layer = resolveSurfaceLayer(theme, parentFill, parentLevel);
     const panelShape = usePanelShape();
     const cornerCurve =
