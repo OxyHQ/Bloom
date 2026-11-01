@@ -18,6 +18,13 @@ export const DEFAULT_ASPECT_RATIO = 4 / 3;
 
 const aspectRatioCache = new Map<string, number>();
 
+// Only in-flight probes have an entry. A committed newer probe cannot be
+// overwritten by an older one; an explicit set invalidates all pending probes.
+const inFlightProbes = new Map<
+  string,
+  { generation: number; committedGeneration: number; count: number }
+>();
+
 /**
  * Intrinsic pixel size, recorded whenever we had to read it anyway (the
  * `getImageSize` behind `fetchAspectRatio`). A viewer needs it to avoid
@@ -41,9 +48,78 @@ export const hasAspectRatio = (uri: string): boolean => aspectRatioCache.has(uri
 
 export const setAspectRatio = (uri: string, ratio: number): void => {
   if (uri && ratio > 0 && Number.isFinite(ratio)) {
+    const pending = inFlightProbes.get(uri);
+    if (pending) pending.committedGeneration = ++pending.generation;
     aspectRatioCache.set(uri, ratio);
   }
 };
+
+/**
+ * Internal owner-aware probe. An obsolete owner still receives its result, but
+ * cannot put it into the shared cache. The public helper uses an always-live owner.
+ */
+export const fetchAspectRatioForOwner = (
+  uri: string,
+  isCurrent: () => boolean,
+): Promise<number> => {
+  const cached = aspectRatioCache.get(uri);
+  if (cached !== undefined) {
+    return Promise.resolve(cached);
+  }
+  let pending = inFlightProbes.get(uri);
+  if (!pending) {
+    pending = { generation: 0, committedGeneration: 0, count: 0 };
+    inFlightProbes.set(uri, pending);
+  }
+  const state = pending;
+  const generation = ++state.generation;
+  state.count += 1;
+  const finish = () => {
+    state.count -= 1;
+    if (state.count === 0 && inFlightProbes.get(uri) === state) inFlightProbes.delete(uri);
+  };
+  let size: Promise<IntrinsicSize>;
+  try {
+    size = getImageSize(uri);
+  } catch (error) {
+    finish();
+    throw error;
+  }
+  const mayCache = () => {
+    if (!isCurrent() || generation < state.committedGeneration) return false;
+    state.committedGeneration = generation;
+    return true;
+  };
+  return size.then(
+    (result) => {
+      try {
+        const { width, height } = result;
+        if (width > 0 && height > 0) {
+          const ratio = width / height;
+          if (mayCache()) {
+            aspectRatioCache.set(uri, ratio);
+            intrinsicSizeCache.set(uri, { width, height });
+          }
+          return ratio;
+        }
+        if (mayCache()) aspectRatioCache.set(uri, DEFAULT_ASPECT_RATIO);
+        return DEFAULT_ASPECT_RATIO;
+      } finally {
+        finish();
+      }
+    },
+    () => {
+      try {
+        if (mayCache()) aspectRatioCache.set(uri, DEFAULT_ASPECT_RATIO);
+        return DEFAULT_ASPECT_RATIO;
+      } finally {
+        finish();
+      }
+    },
+  );
+};
+
+const alwaysCurrent = () => true;
 
 /**
  * Resolve the aspect ratio for `uri`, returning the cached value immediately on
@@ -52,25 +128,5 @@ export const setAspectRatio = (uri: string, ratio: number): void => {
  * `DEFAULT_ASPECT_RATIO` is cached and returned so callers never deadlock on a
  * broken image.
  */
-export const fetchAspectRatio = (uri: string): Promise<number> => {
-  const cached = aspectRatioCache.get(uri);
-  if (cached !== undefined) {
-    return Promise.resolve(cached);
-  }
-  return getImageSize(uri).then(
-    ({ width, height }) => {
-      if (width > 0 && height > 0) {
-        const ratio = width / height;
-        aspectRatioCache.set(uri, ratio);
-        intrinsicSizeCache.set(uri, { width, height });
-        return ratio;
-      }
-      aspectRatioCache.set(uri, DEFAULT_ASPECT_RATIO);
-      return DEFAULT_ASPECT_RATIO;
-    },
-    () => {
-      aspectRatioCache.set(uri, DEFAULT_ASPECT_RATIO);
-      return DEFAULT_ASPECT_RATIO;
-    },
-  );
-};
+export const fetchAspectRatio = (uri: string): Promise<number> =>
+  fetchAspectRatioForOwner(uri, alwaysCurrent);

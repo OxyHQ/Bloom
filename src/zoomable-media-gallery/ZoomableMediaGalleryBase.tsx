@@ -48,9 +48,9 @@ import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';
 import {
   getAspectRatio,
   getIntrinsicSize,
-  fetchAspectRatio,
   DEFAULT_ASPECT_RATIO,
 } from '../image-aspect-ratio-cache';
+import { fetchAspectRatioForOwner } from '../image-aspect-ratio-cache/aspect-ratio-cache';
 import {
   FIT_FRACTION,
   MAX_DRAG_FRACTION,
@@ -94,6 +94,11 @@ function posterUri(item: GalleryMedia): string | undefined {
 function cachedRatio(item: GalleryMedia): number | undefined {
   const uri = posterUri(item);
   return uri === undefined ? undefined : getAspectRatio(uri);
+}
+
+/** The pager and the transition surface must fit the same item identically. */
+function itemRatio(item: GalleryMedia, resolved: number | undefined): number {
+  return resolved ?? cachedRatio(item) ?? item.aspectRatio ?? DEFAULT_ASPECT_RATIO;
 }
 
 /**
@@ -305,15 +310,21 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       // Once true, the swipeable pager is mounted and the single open-surface hidden.
       const [pagerReady, setPagerReady] = useState(false);
       const [items, setItems] = useState<GalleryMedia[]>([]);
+      // The accepted opening's item identities are needed by async probes even
+      // before React commits the corresponding state update.
+      const openedItemsRef = useRef<GalleryMedia[]>([]);
       const [activeIndex, setActiveIndex] = useState(0);
       // Whether the active media is currently pinched/double-tapped past its base
       // size. Drives the pan-while-zoomed gesture, disables the pager's horizontal
       // paging + the dismiss drag so a pan moves the zoomed media instead.
       const [isZoomed, setIsZoomed] = useState(false);
-      // Aspect ratio of the OPENING item (drives the open-animation fit box).
-      const [openRatio, setOpenRatio] = useState<number>(DEFAULT_ASPECT_RATIO);
-      // Per-item aspect ratios for the pager pages (index-aligned with `items`).
-      const [pageRatios, setPageRatios] = useState<Record<number, number>>({});
+      // Ratios belong to one accepted opening. Keeping its generation in the
+      // state lets a queued React update reject an older opening without reading
+      // mutable refs inside a state updater.
+      const [ratios, setRatios] = useState<{
+        generation: number;
+        pages: Record<number, number>;
+      }>({ generation: 0, pages: {} });
 
       // Native `Share` is always available; web exposes a share button only when the
       // browser implements `navigator.share`. Computed once (capability is static).
@@ -465,11 +476,13 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       );
 
       // Fitted size of the single open-surface for the CURRENT page. On open this is
-      // the opened item's fit (active index == opened index, ratio == `openRatio`);
+      // the opened item's fit;
       // after swiping it tracks the viewed item so the collapse-on-dismiss renders
       // and flies back the media actually on screen.
       const activeItem = items[activeIndex];
-      const activeRatio = pageRatios[activeIndex] ?? openRatio;
+      const activeRatio = activeItem
+        ? itemRatio(activeItem, ratios.pages[activeIndex])
+        : DEFAULT_ASPECT_RATIO;
       const activeUri = activeItem === undefined ? undefined : posterUri(activeItem);
       const activeFit = useMemo(
         () => fitForRatio(activeRatio, activeUri),
@@ -485,17 +498,45 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       // Probe and cache the ratio of the page at `index`. A video with no poster has
       // nothing to probe — it keeps whatever ratio the consumer declared, or the
       // gallery default — so this is a no-op rather than a guess.
-      const ensureRatio = useCallback((index: number, uri: string | undefined) => {
-        if (uri === undefined) return;
-        const cached = getAspectRatio(uri);
-        if (cached !== undefined) {
-          setPageRatios((prev) => (prev[index] === cached ? prev : { ...prev, [index]: cached }));
-          return;
-        }
-        void fetchAspectRatio(uri).then((ratio) => {
-          setPageRatios((prev) => (prev[index] === ratio ? prev : { ...prev, [index]: ratio }));
-        });
-      }, []);
+      const isCurrentRatioProbe = useCallback(
+        (generation: number, index: number, item: GalleryMedia, uri: string) =>
+          !unmountedRef.current &&
+          !dismissingRef.current &&
+          openRef.current &&
+          openingGenerationRef.current === generation &&
+          openedItemsRef.current[index] === item &&
+          posterUri(item) === uri,
+        [],
+      );
+      const ensureRatio = useCallback(
+        (index: number, item: GalleryMedia) => {
+          const uri = posterUri(item);
+          if (uri === undefined) return;
+          const generation = openingGenerationRef.current;
+          if (!isCurrentRatioProbe(generation, index, item, uri)) return;
+          const cached = getAspectRatio(uri);
+          if (cached !== undefined) {
+            setRatios((prev) =>
+              prev.generation !== generation || prev.pages[index] === cached
+                ? prev
+                : { ...prev, pages: { ...prev.pages, [index]: cached } },
+            );
+            return;
+          }
+          void fetchAspectRatioForOwner(uri, () =>
+            isCurrentRatioProbe(generation, index, item, uri),
+          ).then((ratio) => {
+            if (!isCurrentRatioProbe(generation, index, item, uri)) return;
+            const currentRatio = getAspectRatio(uri) ?? ratio;
+            setRatios((prev) =>
+              prev.generation !== generation || prev.pages[index] === currentRatio
+                ? prev
+                : { ...prev, pages: { ...prev.pages, [index]: currentRatio } },
+            );
+          });
+        },
+        [isCurrentRatioProbe],
+      );
 
       // Unmount + reset all animation values to their neutral baseline. Shared by
       // every dismiss path (fly-back and fade-out fallback).
@@ -605,13 +646,14 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
           if (!target) return;
           openingGenerationRef.current += 1;
           pendingShareFocus.current = null;
+          openedItemsRef.current = nextItems;
+          const generation = openingGenerationRef.current;
           const targetUri = posterUri(target);
           const knownRatio = target.aspectRatio ?? cachedRatio(target);
           const ratio = knownRatio ?? DEFAULT_ASPECT_RATIO;
 
           setItems(nextItems);
           setActiveIndexBoth(safeIndex, true);
-          setOpenRatio(ratio);
           // Seed every page whose ratio is already known (consumer-provided metadata
           // or a previously-cached probe) so swiping never hits the same snap — only
           // a genuinely-unknown item falls through to `ensureRatio`'s async probe.
@@ -620,14 +662,23 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
             const r = item.aspectRatio ?? cachedRatio(item);
             if (r !== undefined) initialRatios[i] = r;
           });
-          setPageRatios(initialRatios);
+          setRatios((prev) =>
+            prev.generation > generation ? prev : { generation, pages: initialRatios },
+          );
 
           // Resolve the opening ratio if it was not yet known, then re-fit. A video
           // with no poster has nothing to probe and keeps the default.
           if (knownRatio === undefined && targetUri !== undefined) {
-            void fetchAspectRatio(targetUri).then((resolved) => {
-              setOpenRatio(resolved);
-              setPageRatios((prev) => ({ ...prev, [safeIndex]: resolved }));
+            void fetchAspectRatioForOwner(targetUri, () =>
+              isCurrentRatioProbe(generation, safeIndex, target, targetUri),
+            ).then((resolved) => {
+              if (!isCurrentRatioProbe(generation, safeIndex, target, targetUri)) return;
+              const currentRatio = getAspectRatio(targetUri) ?? resolved;
+              setRatios((prev) =>
+                prev.generation === generation
+                  ? { ...prev, pages: { ...prev.pages, [safeIndex]: currentRatio } }
+                  : prev,
+              );
             });
           }
 
@@ -680,6 +731,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
           SCREEN_WIDTH,
           SCREEN_HEIGHT,
           fitForRatio,
+          isCurrentRatioProbe,
           opacity,
           originScale,
           originX,
@@ -831,7 +883,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
           resetZoom();
           setActiveIndexBoth(next);
           const item = items[next];
-          if (item) ensureRatio(next, posterUri(item));
+          if (item) ensureRatio(next, item);
         },
         [ensureRatio, items, pagerReady, resetZoom, setActiveIndexBoth, SCREEN_WIDTH],
       );
@@ -1197,11 +1249,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
                     >
                       {items.map((item, idx) => {
                         const uri = posterUri(item);
-                        const ratio =
-                          pageRatios[idx] ??
-                          cachedRatio(item) ??
-                          item.aspectRatio ??
-                          DEFAULT_ASPECT_RATIO;
+                        const ratio = itemRatio(item, ratios.pages[idx]);
                         const fit = fitForRatio(ratio, uri);
                         // Only the active page is zoomable + gesture-wrapped (double-tap
                         // / single-tap dismiss / pinch / pan). It is also the ONLY page
