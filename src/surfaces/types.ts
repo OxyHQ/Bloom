@@ -130,6 +130,12 @@ export interface SurfacePresentation {
 /** Options accepted by `present` / `SurfaceControls.present`. */
 export type PresentOptions = SurfacePresentation;
 
+/** Options for presenting a surface whose owner can cancel it. */
+export interface CancelablePresentOptions extends SurfacePresentation {
+  /** Cancels this surface only, resolving its promise with `undefined`. */
+  signal: AbortSignal;
+}
+
 /**
  * Controls handed to a presented surface — both as the argument to its render
  * function AND via {@link ../surfaces/useSurface#useSurface}. This is the DEPTH

@@ -1,4 +1,9 @@
-import type { PresentOptions, SurfaceEntry, SurfaceRenderFn } from './types';
+import type {
+  CancelablePresentOptions,
+  PresentOptions,
+  SurfaceEntry,
+  SurfaceRenderFn,
+} from './types';
 
 /**
  * The shared, content-agnostic SURFACE STACK.
@@ -79,6 +84,17 @@ export function present<Result = unknown>(
   opts?: PresentOptions,
 ): Promise<Result> {
   return presentWithSignal(render, opts);
+}
+
+/** Present one surface bound to its owner's signal; abort resolves `undefined`. */
+export function presentCancelable<Result = unknown>(
+  render: SurfaceRenderFn,
+  options: CancelablePresentOptions,
+): Promise<Result | undefined> {
+  if (!options?.signal)
+    return Promise.reject(new TypeError('presentCancelable requires an AbortSignal'));
+  const { signal, ...presentation } = options;
+  return presentWithSignal<Result | undefined>(render, presentation, signal);
 }
 
 /** Internal: bind cancellation to this entry before notifying stack subscribers. */

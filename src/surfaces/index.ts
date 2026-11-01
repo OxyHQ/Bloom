@@ -18,6 +18,7 @@ export { SurfaceHost, SurfaceProvider };
 export {
   surfaces,
   present,
+  presentCancelable,
   dismiss,
   dismissById,
   dismissToRoot,
@@ -31,6 +32,7 @@ export { useSurface } from './use-surface';
 export type {
   SurfacePresentation,
   PresentOptions,
+  CancelablePresentOptions,
   SurfaceControls,
   SurfaceRenderFn,
   SurfaceStatus,
