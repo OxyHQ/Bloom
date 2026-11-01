@@ -164,6 +164,7 @@ function cloneTrigger(children: React.ReactNode, handle: TriggerHandleProps): Re
     // A label the caller already wrote is more specific than the family's.
     accessibilityLabel: childProps.accessibilityLabel ?? handle.accessibilityLabel,
     accessibilityRole: childProps.accessibilityRole ?? handle.accessibilityRole,
+    accessibilityValue: childProps.accessibilityValue ?? handle.accessibilityValue,
     disabled: isDisabled ? true : childProps.disabled,
   });
 }
