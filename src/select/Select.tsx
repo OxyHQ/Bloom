@@ -6,7 +6,15 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
 import type React from 'react';
-import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -74,6 +82,14 @@ const ValueStoreContext = createContext<[unknown, React.Dispatch<React.SetStateA
   () => {},
 ]);
 ValueStoreContext.displayName = 'SelectValueStoreContext';
+
+/**
+ * What the trigger's `SelectValue` shows, told to the trigger so its control reads it as its
+ * value ("Wallpaper, Solar"): an accessible trigger is read as one element, so the value text
+ * inside it would never be heard. Null outside a trigger.
+ */
+const SelectDisplayContext = createContext<((display: string | undefined) => void) | null>(null);
+SelectDisplayContext.displayName = 'SelectDisplayContext';
 
 function useSelectContext(): SelectContextValue {
   const ctx = useContext(SelectContext);
@@ -168,6 +184,7 @@ export function SelectTrigger({
   const requiredDescription = useRequiredDescription(membership.required, membership.describedBy);
   const isDisabled = membership.disabled;
   const t = palette.trigger;
+  const [display, setDisplay] = useState<string | undefined>(undefined);
 
   // The same field the web fork draws — a bordered white select trigger
   // with the xs contact shadow, as a full pill — so the two platforms agree about
@@ -206,24 +223,27 @@ export function SelectTrigger({
 
   return (
     <SelectTriggerStateContext.Provider value={triggerState}>
-      <TriggerSlot
-        asChild={asChild}
-        style={[styles.triggerSlot, style]}
-        testID={testID}
-        handle={{
-          onPress: () => control.open(),
-          disabled: isDisabled,
-          accessibilityLabel: membership.accessibilityLabel,
-          accessibilityRole: 'button',
-          'aria-haspopup': SELECT_TRIGGER_POPUP,
-          nativeID: membership.nativeID,
-          'aria-describedby': requiredDescription.describedBy,
-          accessibilityHint: requiredDescription.hint,
-          'aria-invalid': membership.invalid || undefined,
-        }}
-      >
-        {asChild ? children : field}
-      </TriggerSlot>
+      <SelectDisplayContext.Provider value={setDisplay}>
+        <TriggerSlot
+          asChild={asChild}
+          style={[styles.triggerSlot, style]}
+          testID={testID}
+          handle={{
+            onPress: () => control.open(),
+            disabled: isDisabled,
+            accessibilityLabel: membership.accessibilityLabel,
+            accessibilityRole: 'button',
+            accessibilityValue: display ? { text: display } : undefined,
+            'aria-haspopup': SELECT_TRIGGER_POPUP,
+            nativeID: membership.nativeID,
+            'aria-describedby': requiredDescription.describedBy,
+            accessibilityHint: requiredDescription.hint,
+            'aria-invalid': membership.invalid || undefined,
+          }}
+        >
+          {asChild ? children : field}
+        </TriggerSlot>
+      </SelectDisplayContext.Provider>
       {requiredDescription.description}
     </SelectTriggerStateContext.Provider>
   );
@@ -246,6 +266,15 @@ export function SelectValue({
 
   const hasValue = storedValue != null;
   const display = hasValue ? extractLabel(storedValue) : placeholder;
+  const tell = useContext(SelectDisplayContext);
+  const spoken =
+    hasValue && (typeof display === 'string' || typeof display === 'number')
+      ? String(display)
+      : undefined;
+  useEffect(() => {
+    tell?.(spoken);
+  }, [tell, spoken]);
+  useEffect(() => () => tell?.(undefined), [tell]);
   // Same colours as the web fork: `text-primary`, `text-placeholder`, and the
   // disabled trigger's `text-tertiary`. Inline only without a caller className.
   const color = trigger.disabled

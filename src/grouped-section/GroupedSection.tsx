@@ -1,5 +1,5 @@
 import React, { createContext, useContext, memo } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Platform, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
@@ -127,8 +127,18 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
   // which NativeWind v4's css-interop swallows.
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
-  const role = accessibilityRole ?? (onPress ? 'button' : 'none');
+  const role = accessibilityRole ?? (onPress ? 'button' : undefined);
   const label = accessibilityLabel ?? title;
+  // What the row's value says, read with its name ("Version, 0.1") rather than as loose text
+  // after it: an assistive technology reads an accessible row as one element, its children's
+  // text included in none of it.
+  // As `aria-valuetext`, which React Native folds into `accessibilityValue` and the web reads.
+  const spokenValue = value || undefined;
+  // A row without a press that holds a control of its own (a switch, a select) is no element:
+  // its title and description are read as text and the control by its own name. Without one it
+  // is one element, its title its name and its value its value, never a role-less container
+  // named like its title with the same title read again inside it.
+  const staticElement = !onPress && !rightElement;
 
   const content = (
     <View
@@ -182,6 +192,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
         accessibilityLabel={label}
         accessibilityHint={accessibilityHint}
         accessibilityState={rowState}
+        aria-valuetext={spokenValue}
         testID={testID}
         aria-selected={accessibilityState?.selected}
         aria-busy={accessibilityState?.busy}
@@ -197,8 +208,11 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
   return (
     <View
       collapsable={false}
+      // Native only: react-native-web reads `accessible` as a tab stop, which a static row is not.
+      accessible={Platform.OS === 'web' ? undefined : staticElement}
       accessibilityRole={role}
-      accessibilityLabel={label}
+      accessibilityLabel={staticElement ? label : accessibilityLabel}
+      aria-valuetext={staticElement ? spokenValue : undefined}
       accessibilityHint={accessibilityHint}
       // See the pressable branch above, which gets `aria-disabled` for free
       // from its `disabled` prop. A `View` has no such prop, and

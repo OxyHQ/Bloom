@@ -205,6 +205,8 @@ export interface TriggerHandleProps {
   accessibilityLabel?: string;
   /** `button`, unless an `asChild` child states its own role, which it keeps. */
   accessibilityRole?: AccessibilityRole;
+  /** What the trigger shows chosen, read with its name: a select's value ("Theme, Dark"). */
+  accessibilityValue?: { text?: string };
   'aria-expanded'?: boolean;
   /**
    * The trigger's id, so an enclosing `Field`'s label can point at it.

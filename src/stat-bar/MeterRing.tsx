@@ -104,7 +104,11 @@ function MeterRingComponent({
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={indeterminate ? undefined : meterValue(value, max)}
-      aria-valuetext={indeterminate ? undefined : valueText}
+      // Without the caller's words, how far along it is as a share ("42%"): React Native keeps
+      // `now` as a whole number, so a fraction of 1 (an install's progress) would read as nothing.
+      aria-valuetext={
+        indeterminate ? undefined : (valueText ?? `${Math.round(meterFraction(value, max) * 100)}%`)
+      }
       aria-busy={indeterminate || undefined}
       testID={testID}
       style={[boxStyle, style]}

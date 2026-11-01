@@ -433,6 +433,11 @@ function CenteredOrSideDialog({
     <Context.Provider value={context}>
       <StyledView
         testID={testID}
+        // Announced as a dialog by its label, as VoiceOver and TalkBack say a modal pane: without
+        // a role the panel was a nameless group the title then repeated.
+        role={label ? 'dialog' : undefined}
+        // A dialog keeps its children: flattened, its node would be an empty leaf beside them.
+        collapsable={false}
         accessibilityLabel={label}
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
@@ -774,6 +779,9 @@ function SideSheet({
 
       <AnimatedStyledView
         accessibilityViewIsModal
+        role={label ? 'dialog' : undefined}
+        // A dialog keeps its children: flattened, its node would be an empty leaf beside them.
+        collapsable={false}
         accessibilityLabel={label}
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
