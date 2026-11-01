@@ -1,6 +1,5 @@
 import { resolvePaintMode } from '../theme/paint';
 import { useThemeRecipe } from '../theme/use-theme-paint';
-import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { resolveSurfaceLayer } from '../surface/use-surface-layer';
 import { ConcentricView } from '../concentric';
 import { useSurfacePresenceRef } from '../surface/use-surface-presence-ref';
@@ -42,8 +41,12 @@ import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceGeometry } from '../surface/resolve-surface-geometry';
 import { splitCompiledStyle } from '../styles/compiled-style';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import { useSurfaceLayer } from '../surface/use-surface-layer';
-import { SurfaceLevelProvider, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  useSurfaceFill,
+  useSurfaceFillRecipe,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -110,9 +113,10 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
     ref,
   ) {
     const theme = useTheme();
-    const layer = useSurfaceLayer();
+    const parentFill = useSurfaceFill();
     const parentRecipe = useSurfaceFillRecipe();
     const parentLevel = useSurfaceLevelValue();
+    const layer = resolveSurfaceLayer(theme, parentFill, parentLevel);
     const panelShape = usePanelShape();
     const cornerCurve =
       cornerCurveProp ?? (radius === 'panel' ? panelShape.curve : SURFACE_SHAPES.card.curve);

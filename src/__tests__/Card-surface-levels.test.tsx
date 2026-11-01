@@ -20,6 +20,7 @@ import { Card } from '../card';
 import { LinkPreviewCard } from '../link-preview';
 import {
   SurfaceLevelProvider,
+  resolveSurfaceLevel,
   surfaceFillOn,
   useSurfaceFill,
   useSurfaceLevelValue,
@@ -188,6 +189,47 @@ it.each([false, true])(
         </SurfaceLevelProvider>,
       );
       expect(value(plain)).toEqual({ fill: parent, level: 3 });
+    } finally {
+      Object.assign(mockTheme, original);
+    }
+  },
+);
+
+it.each([false, true])(
+  'preserves the inherited backing across every level, with or without an explicit fill (dark=%s)',
+  (isDark) => {
+    const original = { isDark: mockTheme.isDark, colors: mockTheme.colors };
+    Object.assign(mockTheme, {
+      isDark,
+      colors: {
+        ...mockTheme.colors,
+        background: isDark ? '#111111' : '#eeeeee',
+        card: isDark ? '#333333' : '#ffffff',
+        text: isDark ? '#eeeeee' : '#111111',
+      },
+    });
+    try {
+      for (const level of [0, 1, 2, 3] as const) {
+        for (const explicitFill of [undefined, '#445566']) {
+          const parent = explicitFill ?? resolveSurfaceLevel(mockTheme, level).background;
+          const expected =
+            level === 0 && parent === mockTheme.colors.background
+              ? mockTheme.colors.card
+              : surfaceFillOn(mockTheme, parent);
+          const screen = render(
+            <SurfaceLevelProvider level={level} fill={explicitFill}>
+              <Card appearance="outline">
+                <Probe />
+              </Card>
+            </SurfaceLevelProvider>,
+          );
+          expect(value(screen)).toEqual({
+            fill: resolveSurfaceFill(resolveSurfaceTint(expected), parent),
+            level: Math.min(level + 1, 3),
+          });
+          screen.unmount();
+        }
+      }
     } finally {
       Object.assign(mockTheme, original);
     }
