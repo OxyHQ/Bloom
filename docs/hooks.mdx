@@ -177,6 +177,18 @@ unanswered `AppState` is not evidence the app went away); iOS's transient
 [`useScreenVisible`](/docs/screen#visible-to-the-reader), which adds the Screen's
 activity.
 
+## `useItemAccessibilityFocus`
+
+Screen-reader focus that follows the current item of a collection that keeps the keyboard itself — a file list whose arrows move its selection while the list stays the one focused control, as Finder's list keeps the key view and VoiceOver says each row the selection reaches. Each item hands its mounted view under its key; when the current key changes, focus moves to that item's view (after the same settle as `useAccessibilityFocus`), or as the view mounts, for a virtualized list that draws the row it scrolled to. Only a change moves it: the collection appearing with an item current, or a row scrolled away and drawn again, takes nothing from where the cursor is. Native only. A platform that follows the screen reader's focus with the keyboard's only for controls of the keyboard (OxyOS, Android) leaves the keyboard on the collection.
+
+```tsx
+const focusItem = useItemAccessibilityFocus(selection.focus);
+
+{items.map((item) => (
+  <Row key={item.key} ref={(view) => focusItem(item.key, view)} item={item} />
+))}
+```
+
 ## `mergeRefs`
 
 Combines several refs into one callback.

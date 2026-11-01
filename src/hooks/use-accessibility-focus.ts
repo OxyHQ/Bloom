@@ -25,7 +25,7 @@
  * a bridgeless app those constants exist only when the host installs the
  * legacy UIManager constants, so closing any surface threw a TypeError.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Platform } from 'react-native';
 
 /**
@@ -101,4 +101,71 @@ export function useRestoreAccessibilityFocus(
     const timer = setTimeout(() => focusView(ref.current), FOCUS_SETTLE_MS);
     return () => clearTimeout(timer);
   }, [open, ref, restore]);
+}
+
+/**
+ * Screen-reader focus that follows the CURRENT ITEM of a collection that keeps
+ * the keyboard itself: a file list whose arrows move its selection while the
+ * list stays the one focused control, as Finder's list keeps the key view and
+ * VoiceOver says each row the selection moves to.
+ *
+ * Each item hands its mounted view to the returned function under its key
+ * (`ref={(view) => focusItem(item.key, view)}`); when `current` changes to a
+ * key, screen-reader focus moves to that item's view — at once if it is
+ * mounted, else as it mounts (a virtualized list drawing the row it scrolled
+ * to). Focus on a view that is no control of the keyboard's leaves the
+ * keyboard where it is, so the collection keeps it.
+ *
+ * Only a CHANGE of `current` moves focus: the collection appearing with an item
+ * already current, or a row scrolled away and back, takes nothing from where
+ * the cursor is. Native only, as the hooks above.
+ */
+export function useItemAccessibilityFocus(
+  current: string | null,
+): (key: string, view: unknown) => void {
+  const views = useRef(new Map<string, unknown>());
+  // The key focus is owed to until its view mounts.
+  const pending = useRef<string | null>(null);
+  const shown = useRef(current);
+  // A move owed to a view that mounted, not yet made; the collection going cancels it.
+  const mounted = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (mounted.current !== null) clearTimeout(mounted.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const changed = shown.current !== current;
+    shown.current = current;
+    if (!isNative() || !changed || current === null) {
+      if (changed) pending.current = null;
+      return;
+    }
+    const view = views.current.get(current);
+    if (view == null) {
+      pending.current = current;
+      return;
+    }
+    pending.current = null;
+    const timer = setTimeout(() => focusView(view), FOCUS_SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [current]);
+
+  const [register] = useState(() => (key: string, view: unknown) => {
+    if (view == null) {
+      views.current.delete(key);
+      return;
+    }
+    views.current.set(key, view);
+    if (pending.current !== key) return;
+    pending.current = null;
+    if (mounted.current !== null) clearTimeout(mounted.current);
+    mounted.current = setTimeout(() => {
+      mounted.current = null;
+      focusView(view);
+    }, FOCUS_SETTLE_MS);
+  });
+  return register;
 }

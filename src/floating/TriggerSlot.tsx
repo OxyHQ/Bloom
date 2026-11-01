@@ -72,6 +72,12 @@ export interface TriggerSlotProps {
    */
   onPointerMove?: (event: PointerEvent) => void;
   /**
+   * Whether the trigger's surface is open, when the trigger does not say so
+   * itself through `aria-expanded`: a context menu's area is no disclosure, and
+   * claims no expanded state, but its surface opens and closes all the same.
+   */
+  open?: boolean;
+  /**
    * Whether the screen reader's focus comes back here as the surface closes
    * (default). A menu bar's title closing because the next menu opened in its
    * place leaves it to that menu.
@@ -161,12 +167,47 @@ function cloneTrigger(children: React.ReactNode, handle: TriggerHandleProps): Re
             if (event?.defaultPrevented) return;
             handle.onLongPress?.(event);
           },
+    ...composeAccessibilityActions(childProps, handle, isDisabled),
     // A label the caller already wrote is more specific than the family's.
     accessibilityLabel: childProps.accessibilityLabel ?? handle.accessibilityLabel,
     accessibilityRole: childProps.accessibilityRole ?? handle.accessibilityRole,
     accessibilityValue: childProps.accessibilityValue ?? handle.accessibilityValue,
     disabled: isDisabled ? true : childProps.disabled,
   });
+}
+
+/**
+ * The child's own accessibility actions, then the family's that the child does
+ * not declare by name: a list's item keeps its Rename, and gains the context
+ * menu's `longpress`. An action is answered by whoever declared it — the
+ * child's handler hears every action, the family's only its own, and not
+ * while the trigger is disabled.
+ */
+function composeAccessibilityActions(
+  childProps: TriggerHandleProps,
+  handle: TriggerHandleProps,
+  isDisabled: boolean,
+): Pick<TriggerHandleProps, 'accessibilityActions' | 'onAccessibilityAction'> {
+  const own = childProps.accessibilityActions ?? [];
+  const added = isDisabled
+    ? []
+    : (handle.accessibilityActions ?? []).filter(
+        (action) => !own.some((mine) => mine.name === action.name),
+      );
+  if (added.length === 0) {
+    return {
+      accessibilityActions: childProps.accessibilityActions,
+      onAccessibilityAction: childProps.onAccessibilityAction,
+    };
+  }
+  return {
+    accessibilityActions: [...own, ...added],
+    onAccessibilityAction: (event) => {
+      const name = event.nativeEvent.actionName;
+      if (added.some((action) => action.name === name)) handle.onAccessibilityAction?.(event);
+      else childProps.onAccessibilityAction?.(event);
+    },
+  };
 }
 
 export function TriggerSlot({
@@ -178,24 +219,25 @@ export function TriggerSlot({
   anchorRef,
   onPointerDown,
   onPointerMove,
+  open,
   restoreFocus = true,
   className,
   style,
   testID,
 }: TriggerSlotProps) {
-  // Every family already tells the trigger whether its surface is open, through
-  // `aria-expanded` — so the screen-reader focus restore is wired ONCE here
-  // rather than in each of the four native forks, and any family added later
-  // gets it by construction. Native-only inside the hook; on web the browser
-  // owns focus.
+  // Every family tells the trigger whether its surface is open — through
+  // `aria-expanded`, or `open` for a trigger that is no disclosure (a context
+  // menu's) — so the screen-reader focus restore is wired ONCE here rather than
+  // in each of the native forks, and any family added later gets it by
+  // construction. Native-only inside the hook; on web the browser owns focus.
   const reportPrimary = useContext(PrimaryTriggerStateContext);
-  const expanded = handle['aria-expanded'] === true;
+  const expanded = open ?? handle['aria-expanded'] === true;
   useEffect(() => {
     reportPrimary?.(expanded);
   }, [reportPrimary, expanded]);
   useEffect(() => () => reportPrimary?.(false), [reportPrimary]);
   const ownRef = useRef<ComponentRef<typeof View> | null>(null);
-  useRestoreAccessibilityFocus(handle['aria-expanded'] === true, ownRef, restoreFocus);
+  useRestoreAccessibilityFocus(expanded, ownRef, restoreFocus);
 
   const control = asChild ? (
     cloneTrigger(children, handle)

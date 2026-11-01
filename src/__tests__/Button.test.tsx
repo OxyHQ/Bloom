@@ -61,6 +61,27 @@ describe('Button', () => {
     },
   );
 
+  it("forwards the caller's accessibility value and actions to the native control", () => {
+    const onAction = jest.fn();
+    const api = renderWithTheme(
+      <Button
+        testID="dock-icon"
+        accessibilityLabel="Stash"
+        accessibilityValue={{ text: 'running' }}
+        accessibilityActions={[{ name: 'longpress', label: 'Show menu' }]}
+        onAccessibilityAction={(event) => onAction(event.nativeEvent.actionName)}
+      >
+        Stash
+      </Button>,
+    );
+    const host = api.getByTestId('dock-icon');
+    // Spelled flat; React Native's Pressable folds it into the view's value.
+    expect(host.props['aria-valuetext']).toBe('running');
+    expect(host.props.accessibilityActions).toEqual([{ name: 'longpress', label: 'Show menu' }]);
+    fireEvent(host, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
+    expect(onAction).toHaveBeenCalledWith('longpress');
+  });
+
   it('keeps an explicit native toggle state authoritative when current is also supplied', () => {
     const api = renderWithTheme(
       <Button testID="current" aria-current="page" pressed={false}>

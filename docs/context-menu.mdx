@@ -50,6 +50,14 @@ On web the menu anchors to the CLICK POINT, not to the trigger's box: right-clic
 
 On native there is no cursor to anchor to, so a long press presents the same bottom sheet `DropdownMenu` uses. A native platform with popups (an adapter reporting [`popup-surface`](/docs/bloom/main/platform-surface), a desktop) has one: there the secondary button (a W3C `pointerdown` with `button` 2) opens the menu where it pressed, in the platform's popup, as does a long press. The innermost trigger takes the press, so an item's menu opens rather than its list's. An `asChild` child that states its own role (a list item, a list) keeps it, without a menu button's `aria-haspopup` and `aria-expanded`: a region that opens a context menu is not a button.
 
+## It opens from the keyboard and the screen reader
+
+The native trigger declares React Native's `longpress` accessibility action, named "Show menu" in the locale (`CONTEXT_MENU_MESSAGES.showMenu`, "Mostrar menú" in Spanish). TalkBack's long press performs it, a screen reader lists it among the element's custom actions, and a platform maps its keys to it: OxyOS's Menu key and <kbd>Shift</kbd>+<kbd>F10</kbd> perform it on the control the keyboard focused, or on its nearest ancestor that declares it — the keyboard's Control-Return of a Mac. The menu opens AT the trigger, anchored to the view it hangs from as a menu button's menu is, because a keyboard has no point. An `asChild` child keeps its own accessibility actions beside it (a list item's Rename), each answered by whoever declared it; one the child declares by the same name wins. A disabled trigger offers none.
+
+A controlled caller is asked with that view's frame, a rect, and may anchor the menu elsewhere — Stash anchors it at the selected item, below it, as Finder opens it at the selected row. A rect anchor that is the frame of the view the menu hangs from anchors the menu to that view; any other rect opens the menu from its edge, by `side` and `align` (below it, from its start, by default).
+
+The trigger claims no expanded state: an area with a menu is no disclosure (Android's long-pressable views have none), so a screen reader says an icon with a context menu as the button it is, never "collapsed". Screen-reader focus still comes back to it when its menu closes — or to `anchorRef` instead, when the menu hangs from a view of the caller's.
+
 The native trigger (without `asChild`) times the hold off raw touch events and never takes the touch responder. On Android the responder's view intercepts every later move of its touch, so a `Pressable` trigger kept a horizontal `ScrollView` inside it — a code block in a chat turn — from scrolling. Taps still reach whatever the content makes pressable; a drag past 10dp, an early lift or a scroller taking the touch cancels the hold, and assistive tech opens the menu through the `longpress` accessibility action. With `asChild` your own element takes the long press, responder and all.
 
 ## Opening it from code: `anchor`
@@ -74,7 +82,7 @@ const [anchor, setAnchor] = useState<ContextMenuAnchor | null>(null);
 | Prop | Type | |
 | --- | --- | --- |
 | `anchor` | `ContextMenuAnchor \| null` | Controlled. Open exactly while non-null; omit it (`undefined`) for the right-click menu. |
-| `onAnchorChange` | `(anchor: ContextMenuAnchor \| null) => void` | The anchor the menu asks for: a trigger's point when one opens it, `null` on every dismissal. |
+| `onAnchorChange` | `(anchor: ContextMenuAnchor \| null) => void` | The anchor the menu asks for: a trigger's point when a press opens it, its frame (a rect) when its `longpress` action does (native), `null` on every dismissal. |
 | `onOpenChange` | `(open: boolean) => void` | Fires in both forms, from any cause. |
 | `anchorRef` | `RefObject<View \| null>` | Native, with the platform's popups: the view the menu is about when no `ContextMenuTrigger` wraps it. The popup hangs from it at `anchor`; screen-reader focus returns to it on close. Web ignores it. |
 
@@ -84,7 +92,7 @@ const [anchor, setAnchor] = useState<ContextMenuAnchor | null>(null);
 - **Focus lands on the panel, not a row**, as a desktop menu opened from code does: nothing is highlighted, <kbd>↓</kbd> moves to the first row and <kbd>↑</kbd> to the last, and every other menu key works at once. A new `anchor` while open is a new open (moved, focus re-taken).
 - **No trigger needed.** Without a `ContextMenuTrigger`, focus returns on close to the element that held it before the open (if it is still in the document). With one, it returns to the trigger, and the trigger's right-click no longer opens the menu by itself — it calls `onAnchorChange({ x, y })` with the click point for you to store.
 - **Sub-menus and keys are unchanged**: flyouts, → / ←, the escape order and row activation are the right-click menu's.
-- **Native** presents the same bottom sheet a long press does while `anchor` is non-null; the position is ignored. A trigger's long press reports the press point.
+- **Native** presents the same bottom sheet a long press does while `anchor` is non-null; the position is ignored. A trigger's long press reports the press point, its `longpress` accessibility action its frame.
 - **Native with the platform's popups** (an adapter reporting `popup-surface`, a desktop) opens the menu in the platform's popup at `anchor`, a point in the window as `measureInWindow` gives it. A popup hangs from a view: the trigger's, or `anchorRef` when the caller renders no trigger — a menu opened for a view the caller does not wrap, as OxyOS opens a text field's Cut, Copy and Paste for the field it owns. A menu for a view inside another popup then opens as that popup's child, and screen-reader focus returns to the view when it closes. With neither a trigger nor `anchorRef` there is nothing to hang from, and the menu does not open. Keep the ref object stable: a new one while open measures again.
 
 ```tsx

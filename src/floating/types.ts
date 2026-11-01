@@ -20,6 +20,8 @@ import type { BloomSize } from '../appearance';
  */
 import type { ComponentRef } from 'react';
 import type {
+  AccessibilityActionEvent,
+  AccessibilityActionInfo,
   AccessibilityRole,
   GestureResponderEvent,
   StyleProp,
@@ -207,6 +209,14 @@ export interface TriggerHandleProps {
   accessibilityRole?: AccessibilityRole;
   /** What the trigger shows chosen, read with its name: a select's value ("Theme, Dark"). */
   accessibilityValue?: { text?: string };
+  /**
+   * What an assistive technology (or the keyboard, through it) can ask of the
+   * trigger beyond activating it: a context menu's `longpress`, which opens
+   * its menu, as TalkBack's long press reaches a view. An `asChild` child's
+   * own actions are kept, and one it declares by the same name wins.
+   */
+  accessibilityActions?: readonly AccessibilityActionInfo[];
+  onAccessibilityAction?: (event: AccessibilityActionEvent) => void;
   'aria-expanded'?: boolean;
   /**
    * The trigger's id, so an enclosing `Field`'s label can point at it.

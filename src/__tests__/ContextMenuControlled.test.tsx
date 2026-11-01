@@ -17,6 +17,7 @@ import {
   type ContextMenuAnchor,
 } from '../context-menu';
 import { LONG_PRESS_MS } from '../floating/LongPressArea';
+import { Button } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 const calls = { open: jest.fn(), anchor: jest.fn(), rename: jest.fn() };
@@ -109,4 +110,86 @@ it('a long press on a trigger reports the press point and opens once stored', ()
   expect(calls.anchor).toHaveBeenCalledWith({ x: 120, y: 340 });
   settle();
   expect(screen.queryByText('Rename')).toBeNull();
+});
+
+it("the trigger's longpress action asks for its frame, and opens once stored", () => {
+  // The trigger's wrapper, measured in the window as the action opens it: at (16, 200), 300 × 48.
+  const screen = render(<Controlled withTrigger />, {
+    createNodeMock: () => ({
+      measureInWindow: (callback: (x: number, y: number, w: number, h: number) => void) =>
+        callback(16, 200, 300, 48),
+    }),
+  });
+  const area = screen.getByLabelText('Message actions');
+  expect(area.props.accessibilityActions).toEqual([{ name: 'longpress', label: 'Show menu' }]);
+  fireEvent(area, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
+  expect(calls.open).toHaveBeenCalledWith(true);
+  expect(calls.anchor).toHaveBeenCalledTimes(1);
+  expect(calls.anchor).toHaveBeenCalledWith({ top: 200, right: 316, bottom: 248, left: 16 });
+  settle();
+  expect(screen.getByText('Rename')).toBeTruthy();
+});
+
+it('a disabled trigger offers no longpress and ignores one', () => {
+  const screen = render(
+    <ContextMenu onOpenChange={calls.open}>
+      <ContextMenuTrigger label="Message actions" disabled>
+        <Text>Hold me</Text>
+      </ContextMenuTrigger>
+    </ContextMenu>,
+  );
+  const area = screen.getByLabelText('Message actions');
+  expect(area.props.accessibilityActions).toBeUndefined();
+  area.props.onAccessibilityAction?.({ nativeEvent: { actionName: 'longpress' } });
+  expect(calls.open).not.toHaveBeenCalled();
+});
+
+it('an asChild child keeps its own actions beside the longpress, each answered by its owner', () => {
+  const own = jest.fn();
+  const screen = render(
+    <ContextMenu onOpenChange={calls.open}>
+      <ContextMenuTrigger asChild>
+        <Pressable
+          accessibilityRole="listitem"
+          accessibilityLabel="report.txt"
+          accessibilityActions={[{ name: 'rename', label: 'Rename' }]}
+          onAccessibilityAction={(event) => own(event.nativeEvent.actionName)}
+        >
+          <Text>report.txt</Text>
+        </Pressable>
+      </ContextMenuTrigger>
+    </ContextMenu>,
+  );
+  const item = screen.getByLabelText('report.txt');
+  expect(item.props.accessibilityActions).toEqual([
+    { name: 'rename', label: 'Rename' },
+    { name: 'longpress', label: 'Show menu' },
+  ]);
+  expect(item.props['aria-expanded']).toBeUndefined();
+  fireEvent(item, 'accessibilityAction', { nativeEvent: { actionName: 'rename' } });
+  expect(own.mock.calls).toEqual([['rename']]);
+  expect(calls.open).not.toHaveBeenCalled();
+  fireEvent(item, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
+  expect(own.mock.calls).toEqual([['rename']]);
+  expect(calls.open).toHaveBeenCalledWith(true);
+});
+
+it("gives a Button child the trigger's longpress, with no expanded state", () => {
+  const screen = render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <ContextMenu onOpenChange={calls.open}>
+        <ContextMenuTrigger asChild>
+          <Button testID="icon" accessibilityLabel="Stash" onPress={() => {}}>
+            Stash
+          </Button>
+        </ContextMenuTrigger>
+      </ContextMenu>
+    </BloomThemeProvider>,
+  );
+  const icon = screen.getByTestId('icon');
+  expect(icon.props.accessibilityActions).toEqual([{ name: 'longpress', label: 'Show menu' }]);
+  expect(icon.props['aria-expanded']).toBeUndefined();
+  expect(icon.props.accessibilityState?.expanded).toBeUndefined();
+  fireEvent(icon, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
+  expect(calls.open).toHaveBeenCalledWith(true);
 });

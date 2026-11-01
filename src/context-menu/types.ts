@@ -51,7 +51,11 @@ export interface ContextMenuProps {
   onOpenChange?: (open: boolean) => void;
   /**
    * Called with the anchor the menu asks for: the pointer point when a trigger
-   * opens it, `null` when it is dismissed. What a controlled caller stores.
+   * opens it from a press; on native, the frame (a box) of the view the menu
+   * hangs from when the trigger's `longpress` accessibility action opens it (a
+   * screen reader, or the platform's Menu key on the focused control), which a
+   * caller may replace with the box of what the menu is about (the selected
+   * item); `null` when it is dismissed. What a controlled caller stores.
    */
   onAnchorChange?: (anchor: ContextMenuAnchor | null) => void;
   /**
@@ -72,6 +76,15 @@ export interface ContextMenuProps {
   anchorRef?: RefObject<ComponentRef<typeof View> | null>;
 }
 
+/**
+ * The area whose menu this is. A long press or the secondary button opens it;
+ * on native it also declares React Native's `longpress` accessibility action
+ * ("Show menu" in the locale), which opens it at the area — TalkBack's long
+ * press, a screen reader's custom action, the platform's Menu key and
+ * Shift+F10 on the focused control. It claims no expanded state: an area with
+ * a menu is no disclosure. An `asChild` child keeps its own accessibility
+ * actions beside it.
+ */
 export interface ContextMenuTriggerProps {
   children?: React.ReactNode;
   /**

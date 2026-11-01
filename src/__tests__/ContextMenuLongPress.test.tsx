@@ -98,13 +98,20 @@ it('does not open when the finger drags, lifts early, or a scroller takes the to
   expect(onOpenChange).not.toHaveBeenCalled();
 });
 
-it('offers the hold to assistive tech as the longpress action', () => {
+it('offers the hold to assistive tech as the longpress action, named Show menu', () => {
   const { area, onOpenChange } = mount();
-  expect(area.props.accessibilityActions).toEqual([
-    { name: 'longpress', label: 'Message actions' },
-  ]);
+  expect(area.props.accessibilityActions).toEqual([{ name: 'longpress', label: 'Show menu' }]);
   fireEvent(area, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
   expect(onOpenChange).toHaveBeenCalledWith(true);
+});
+
+it('claims no expanded state: an area with a menu is no disclosure', () => {
+  const { area } = mount();
+  expect(area.props['aria-expanded']).toBeUndefined();
+  expect(area.props.accessibilityState?.expanded).toBeUndefined();
+  fireEvent(area, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
+  expect(area.props['aria-expanded']).toBeUndefined();
+  expect(area.props.accessibilityState?.expanded).toBeUndefined();
 });
 
 it('cancels a hold when the trigger becomes disabled, even if it is enabled again', () => {
@@ -123,7 +130,7 @@ it('cancels a hold when the trigger becomes disabled, even if it is enabled agai
   expect(disabledArea.props.accessibilityState.disabled).toBe(true);
   expect(disabledArea.props.accessibilityActions).toBeUndefined();
   act(() => {
-    disabledArea.props.onAccessibilityAction({ nativeEvent: { actionName: 'longpress' } });
+    disabledArea.props.onAccessibilityAction?.({ nativeEvent: { actionName: 'longpress' } });
     jest.advanceTimersByTime(LONG_PRESS_MS);
   });
   expect(onOpenChange).not.toHaveBeenCalled();

@@ -208,3 +208,87 @@ it('gives screen-reader focus back to `anchorRef` when it closes', () => {
     jest.useRealTimers();
   }
 });
+
+it("opens from the trigger's longpress action anchored to the trigger itself, not a point", () => {
+  const popup = jest.fn();
+  const screen = render(
+    <BloomProvider mode="light" platform={adapter(popup)}>
+      <Item onRename={() => {}} />
+    </BloomProvider>,
+    {
+      createNodeMock: () => ({
+        measureInWindow: (callback: (x: number, y: number, w: number, h: number) => void) =>
+          callback(100, 40, 200, 30),
+      }),
+    },
+  );
+  const item = screen.getByTestId('item');
+  expect(item.props.accessibilityActions).toEqual([{ name: 'longpress', label: 'Show menu' }]);
+  act(() => {
+    fireEvent(item, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
+  });
+  expect(screen.getByTestId('platform-popup')).toBeTruthy();
+  const props = popup.mock.calls[popup.mock.calls.length - 1]?.[0] as PopupSurfaceProps;
+  expect(props.point).toBeUndefined();
+  expect(props).toMatchObject({ side: 'bottom', align: 'start' });
+});
+
+it('opens below a box a controlled caller anchors it at, from its start', () => {
+  const popup = jest.fn();
+  const field = React.createRef<React.ComponentRef<typeof View>>();
+  // The view the menu hangs from is at (40, 100); the box is a row inside it.
+  const screen = render(
+    <BloomProvider mode="light" platform={adapter(popup)}>
+      <View ref={field} testID="field" />
+      <ContextMenu anchor={{ top: 130, right: 300, bottom: 154, left: 50 }} anchorRef={field}>
+        <ContextMenuContent>
+          <ContextMenuItem onPress={() => {}}>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+    </BloomProvider>,
+    {
+      createNodeMock: () => ({
+        measureInWindow: (callback: (x: number, y: number, w: number, h: number) => void) =>
+          callback(40, 100, 400, 300),
+      }),
+    },
+  );
+  expect(screen.getByTestId('platform-popup')).toBeTruthy();
+  const props = popup.mock.calls[popup.mock.calls.length - 1]?.[0] as PopupSurfaceProps;
+  expect(props.point).toEqual({ x: 10, y: 54 });
+});
+
+it('with `anchorRef` and a trigger, gives screen-reader focus back once, to `anchorRef`', () => {
+  jest.useFakeTimers();
+  const sent = jest.spyOn(AccessibilityInfo, 'sendAccessibilityEvent').mockImplementation(() => {});
+  try {
+    const row = React.createRef<React.ComponentRef<typeof View>>();
+    const node = {
+      measureInWindow: (callback: (x: number, y: number, w: number, h: number) => void) =>
+        callback(0, 0, 100, 20),
+    };
+    const page = (anchor: { x: number; y: number } | null) => (
+      <BloomProvider mode="light" platform={adapter(() => {})}>
+        <View ref={row} testID="row" />
+        <ContextMenu anchor={anchor} anchorRef={row}>
+          <ContextMenuTrigger asChild>
+            <View testID="item" accessibilityRole="list" accessible />
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onPress={() => {}}>Copy</ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      </BloomProvider>
+    );
+    const screen = render(page({ x: 10, y: 10 }), { createNodeMock: () => node });
+    sent.mockClear();
+    screen.rerender(page(null));
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+    expect(sent.mock.calls).toEqual([[row.current, 'focus']]);
+  } finally {
+    sent.mockRestore();
+    jest.useRealTimers();
+  }
+});

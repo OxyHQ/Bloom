@@ -179,6 +179,20 @@ export interface ButtonProps {
 
   accessibilityLabel?: string;
   accessibilityHint?: string;
+  /**
+   * Native: what the button shows beyond its name, read after it ("Stash, running"),
+   * as a `Pressable`'s. The web fork's `<button>` has no value; it ignores it.
+   */
+  accessibilityValue?: ViewProps['accessibilityValue'];
+  /**
+   * Native: what an assistive technology (or the keyboard, through the
+   * platform) can ask of the button beyond pressing it — a context menu
+   * trigger's `longpress` on a `ContextMenuTrigger asChild` button, an
+   * application's custom actions — and their handler, as a `Pressable`'s. The
+   * web fork ignores them.
+   */
+  accessibilityActions?: ViewProps['accessibilityActions'];
+  onAccessibilityAction?: ViewProps['onAccessibilityAction'];
   hitSlop?: number | { top: number; bottom: number; left: number; right: number };
   testID?: string;
   className?: string;
