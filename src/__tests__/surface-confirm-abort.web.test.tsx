@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { act } from 'react';
+import { act, useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -142,6 +142,29 @@ it('does not reopen if the host unmounts during an aborted exit', async () => {
   );
   flush();
   expect(document.body.textContent).not.toContain('Closing while moving');
+  expect(document.activeElement).toBe(opener);
+  expect(getSnapshot()).toHaveLength(0);
+  await expect(answer).resolves.toBe(false);
+});
+
+it('does not leave a modal open when cancellation happens in the mounting commit', async () => {
+  const controller = new AbortController();
+  function AbortDuringCommit() {
+    useLayoutEffect(() => controller.abort(), []);
+    return null;
+  }
+  let answer!: Promise<boolean>;
+  act(() => {
+    answer = confirm({ title: 'Abort during commit', signal: controller.signal });
+    root.render(
+      <BloomThemeProvider fonts={false}>
+        <SurfaceHost />
+        <AbortDuringCommit />
+      </BloomThemeProvider>,
+    );
+  });
+  flush();
+  expect(document.body.textContent).not.toContain('Abort during commit');
   expect(document.activeElement).toBe(opener);
   expect(getSnapshot()).toHaveLength(0);
   await expect(answer).resolves.toBe(false);
