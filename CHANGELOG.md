@@ -2,6 +2,21 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 15.93.0
+
+### Fixed
+
+- **A native slider can be adjusted without a drag.** `Slider` (and each of `RangeSlider`'s thumbs) on native now offers an assistive technology's increment and decrement (`accessibilityActions`), as a SeekBar and a UISlider do, and is one `focusable` element, so a platform's keyboard focus steps it with the arrows (OxyOS ADR 0039). It was an `adjustable` element offering neither: a screen reader could not move it, and a caller that wrapped it to offer them had it read twice.
+- **A slider reads its formatted value.** With `formatValue`, its text is the value assistive technologies read (`aria-valuetext`): "50 %", not "50".
+
+### Added
+
+- **`keyboardStep`**: how far the arrows and an assistive technology's increment and decrement move the value, `step` by default, as AppKit's `altIncrementValue` (a volume dragged finely but stepped in sixteenths). See `docs/slider.mdx`.
+
+### Consumers
+
+Nothing to change. A native slider becomes a keyboard stop where the platform's keyboard focus reaches focusable views. Remove any wrapper that made a slider adjustable: it is now read twice.
+
 ## 15.92.2
 
 ### Added

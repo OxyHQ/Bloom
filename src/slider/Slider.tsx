@@ -4,6 +4,7 @@ import React, { type ComponentRef, memo, useCallback, useMemo, useRef, useState 
 import {
   PanResponder,
   View,
+  type AccessibilityActionEvent,
   type GestureResponderEvent,
   type LayoutChangeEvent,
   type PanResponderGestureState,
@@ -30,6 +31,8 @@ import { useMessages } from '../locale/messages';
 import { SLIDER_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
+
+const ADJUST_ACTIONS = [{ name: 'increment' }, { name: 'decrement' }];
 
 function quantize(raw: number, min: number, max: number, step: number): number {
   if (step <= 0) return clamp(raw, min, max);
@@ -167,6 +170,8 @@ interface SliderBaseProps {
   min: number;
   max: number;
   step: number;
+  /** How far the arrow keys and an assistive technology's increment and decrement move it. */
+  keyboardStep: number;
   disabled: boolean;
   trackHeight: number;
   thumbSize: number;
@@ -190,6 +195,7 @@ function SliderBase({
   min,
   max,
   step,
+  keyboardStep,
   disabled: disabledProp,
   trackHeight,
   thumbSize,
@@ -336,6 +342,27 @@ function SliderBase({
     }
   };
 
+  // Native: an assistive technology's increment and decrement (React Native's accessibility
+  // actions, which the platform's keyboard focus answers with the arrows too) step the value, as
+  // a SeekBar's and a UISlider's do. Declared, the slider is adjustable; without them it was an
+  // adjustable control that nothing but a drag could move.
+  const adjustable = (index: number) =>
+    IS_WEB
+      ? {}
+      : {
+          accessible: true,
+          focusable: !disabled,
+          accessibilityActions: ADJUST_ACTIONS,
+          onAccessibilityAction: ({ nativeEvent }: AccessibilityActionEvent) => {
+            if (nativeEvent.actionName === 'increment') onKeyStep(index, keyboardStep);
+            else if (nativeEvent.actionName === 'decrement') onKeyStep(index, -keyboardStep);
+          },
+        };
+  // What an assistive technology reads as its value: the formatted text where the caller formats
+  // it (a unit, "40 %"), else the number.
+  const valueText = (index: number) =>
+    formatValue ? formatValue(values[index] as number, index) : undefined;
+
   const centers = values.map((v) => fractionOf(v) * trackWidth);
 
   // Web-only hover: the track region is the pointer target (everything drawn in
@@ -398,6 +425,8 @@ function SliderBase({
             'aria-valuemin': min,
             'aria-valuemax': max,
             'aria-valuenow': values[0],
+            'aria-valuetext': valueText(0),
+            ...adjustable(0),
           })}
       aria-disabled={disabled || undefined}
       {...webDataSet({ bloomSlider: '' })}
@@ -497,12 +526,12 @@ function SliderBase({
                     case 'ArrowRight':
                     case 'ArrowUp':
                       e.preventDefault();
-                      onKeyStep(index, step);
+                      onKeyStep(index, keyboardStep);
                       break;
                     case 'ArrowLeft':
                     case 'ArrowDown':
                       e.preventDefault();
-                      onKeyStep(index, -step);
+                      onKeyStep(index, -keyboardStep);
                       break;
                     case 'Home':
                       e.preventDefault();
@@ -570,7 +599,9 @@ function SliderBase({
                     'aria-valuemax':
                       index < values.length - 1 ? (values[index + 1] as number) : max,
                     'aria-valuenow': value,
+                    'aria-valuetext': valueText(index),
                     'aria-disabled': disabled || undefined,
+                    ...(isRange ? adjustable(index) : {}),
                   }
                 : {})}
               style={thumbStyle}
@@ -674,6 +705,7 @@ const SliderComponent = function Slider({
   min = 0,
   max = 100,
   step = 1,
+  keyboardStep,
   disabled = false,
   size: sizeProp,
   tone: toneProp,
@@ -715,6 +747,7 @@ const SliderComponent = function Slider({
       min={min}
       max={max}
       step={step}
+      keyboardStep={keyboardStep ?? step}
       disabled={disabled}
       trackHeight={trackHeight}
       thumbSize={thumbSize}
@@ -742,6 +775,7 @@ const RangeSliderComponent = function RangeSlider({
   min = 0,
   max = 100,
   step = 1,
+  keyboardStep,
   disabled = false,
   size: sizeProp,
   tone: toneProp,
@@ -783,6 +817,7 @@ const RangeSliderComponent = function RangeSlider({
       min={min}
       max={max}
       step={step}
+      keyboardStep={keyboardStep ?? step}
       disabled={disabled}
       trackHeight={trackHeight}
       thumbSize={thumbSize}

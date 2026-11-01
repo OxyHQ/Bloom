@@ -32,10 +32,11 @@ import { Slider } from '@oxy.so/bloom/slider';
 | `onSlidingComplete` | fires **once**, when the finger lifts                      |
 | `min` / `max`       | the range                                                  |
 | `step`              | the granularity; omit for continuous                       |
+| `keyboardStep`      | how far the arrows and an assistive technology step it (`step` by default) |
 | `disabled`          | dims and ignores gestures                                  |
 | `label`             | a visible label above the track; also the fallback name    |
 | `showTooltip`       | the value bubble above the thumb (default `true`)          |
-| `formatValue`       | the text in the bubble                                     |
+| `formatValue`       | the text in the bubble, and the value assistive technologies read |
 
 `RangeSlider` takes the same props with `value: [number, number]` (and `onValueChange` / `onSlidingComplete` receiving the pair), `formatValue(value, index)`, and `thumbLabels` — the accessible name of each thumb, default `['Minimum', 'Maximum']` in English, localised via `BloomProvider locale`. The thumbs cannot pass each other; the fill runs between them; each carries its own bubble, and each is its own `adjustable` control with its own value.
 
@@ -79,6 +80,35 @@ beside it names nothing, and the `aria-value*` props say how far along it is
 and never what it is. Omitting it warns once in development, dev-only and never
 throwing; an empty or whitespace-only string counts as missing, because
 `aria-label=""` is not a name.
+
+## Adjusting it without a drag
+
+On the web each thumb is focusable and answers the arrows, Home and End. On native the slider is
+one element that offers an assistive technology's **increment** and **decrement** (React Native's
+`accessibilityActions`), as a SeekBar and a UISlider do, and is `focusable`, so a platform whose
+keyboard focus reaches it (OxyOS's Full Keyboard Access) steps it with the arrows through the same
+actions. Before 15.93.0 a native slider was an `adjustable` element offering neither: only a drag
+could move it, and a caller that wrapped it in an element of its own to offer them had the slider
+read twice.
+
+Both step by `keyboardStep`, `step` unless given, the result rounded to `step`: a volume dragged to
+any of 64 positions but stepped in sixteenths, as AppKit's `altIncrementValue`. A range's thumbs
+step the same way, each within its neighbour.
+
+```tsx
+<Slider
+  value={volume * 100}
+  onValueChange={(v) => setVolume(v / 100)}
+  step={100 / 64}
+  keyboardStep={100 / 16}
+  formatValue={(v) => `${Math.round(v)} %`}
+  showTooltip={false}
+  accessibilityLabel="Sound"
+/>
+```
+
+With `formatValue` an assistive technology reads its text as the value (`aria-valuetext`, which
+React Native folds into `accessibilityValue`): "Sound, 50 %", never the bare number.
 
 ## In a `Field`
 

@@ -16,6 +16,13 @@ export interface SliderProps {
   max?: number;
   /** Step granularity. Defaults to `1`. Use a fractional step for fine control. */
   step?: number;
+  /**
+   * How far the arrow keys (on the web, and wherever the platform's keyboard focus reaches the
+   * slider) and an assistive technology's increment and decrement move the value, as AppKit's
+   * `altIncrementValue`: a volume stepped in sixteenths while a drag lands anywhere. The result
+   * is still rounded to `step`. Defaults to `step`.
+   */
+  keyboardStep?: number;
   disabled?: boolean;
   /** Track thickness in px. Defaults to `6`. */
   trackHeight?: number;
@@ -37,7 +44,11 @@ export interface SliderProps {
    * `true`; the bubble reserves 32px above the track.
    */
   showTooltip?: boolean;
-  /** Formats the value shown in the bubble. Defaults to `String(value)`. */
+  /**
+   * Formats the value shown in the bubble and read by assistive technologies (`aria-valuetext`):
+   * "40 %" rather than "40". Defaults to `String(value)` in the bubble and the number alone for
+   * assistive technologies.
+   */
   formatValue?: (value: number) => string;
   style?: StyleProp<ViewStyle>;
   /**
