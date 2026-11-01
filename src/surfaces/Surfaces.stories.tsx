@@ -2,7 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { alert, confirm, confirmWithSuppression, prompt, present } from './index';
+import {
+  alert,
+  confirm,
+  confirmWithSuppression,
+  prompt,
+  present,
+  presentCancelable,
+} from './index';
 import { Button } from '../button';
 import { Text } from '../typography';
 
@@ -130,6 +137,61 @@ export const AbortableConfirm: Story = {
         </Button>
         <Text testID="owned-result">Owned: {result}</Text>
         <Text testID="other-result">Other: {other}</Text>
+      </View>
+    );
+  },
+};
+
+/** A signal can cancel one general surface without closing adjacent layers. */
+export const CancelableSurface: Story = {
+  parameters: { controls: { disable: true } },
+  render: function CancelableSurfaceStory() {
+    const owner = useRef<AbortController | null>(null);
+    const [result, setResult] = useState('pending');
+    const [other, setOther] = useState('pending');
+    useEffect(() => {
+      const abort = () => owner.current?.abort();
+      window.addEventListener('bloom-story-surface-invalidated', abort);
+      return () => window.removeEventListener('bloom-story-surface-invalidated', abort);
+    }, []);
+    const openOther = () => {
+      void present<string>(
+        (surface) => <Button onPress={() => surface.dismiss('other')}>Finish other</Button>,
+        { title: 'Other surface' },
+      ).then((value) => setOther(String(value)));
+    };
+    const openOwned = () => {
+      owner.current = new AbortController();
+      void presentCancelable<string>(
+        () => <Button onPress={openOther}>Open other surface</Button>,
+        { title: 'Owned surface', signal: owner.current.signal },
+      ).then((value) => setResult(String(value)));
+    };
+    const openParent = () => {
+      void present(
+        (surface) => (
+          <View style={{ gap: 8 }}>
+            <Button onPress={openOwned}>Open cancelable child</Button>
+            <Button onPress={() => surface.dismiss()}>Close parent</Button>
+          </View>
+        ),
+        { title: 'Parent surface' },
+      );
+    };
+    return (
+      <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
+        <Button onPress={openOwned}>Open owned surface</Button>
+        <Button onPress={openParent}>Open parent surface</Button>
+        <Button
+          onPress={() => {
+            openOwned();
+            owner.current?.abort();
+          }}
+        >
+          Abort surface before mount
+        </Button>
+        <Text testID="cancelable-surface-result">Owned: {result}</Text>
+        <Text testID="other-surface-result">Other: {other}</Text>
       </View>
     );
   },

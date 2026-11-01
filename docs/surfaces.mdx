@@ -135,6 +135,31 @@ it does **not** call: `Dialog`'s own `close()`. The value has to reach the
 `present()` promise, and it resolves on the press — a surface closed any other
 way resolves with nothing, which reads as the user having cancelled.
 
+### Cancel a surface when its owner ends
+
+Use `presentCancelable` when the surface belongs to a session or another
+cancelable operation. Its required `signal` closes only this surface and
+resolves the promise with `undefined`; an already-aborted signal presents
+nothing. The first dismissal or abort wins. Other stacked surfaces remain open.
+If a child belongs to the same session, present it with the same signal too.
+
+```tsx
+import { presentCancelable } from '@oxy.so/bloom/surfaces';
+
+const choice = await presentCancelable<string>(
+  (surface) => <SizeList onPick={(size) => surface.dismiss(size)} />,
+  { title: 'Pick a size', signal: controller.signal },
+);
+// choice is string | undefined; verify the session again before acting.
+```
+
+The same function is available as `surfaces.presentCancelable`, including from
+inside another surface. Existing `present` and `SurfaceControls` remain
+unchanged. Abort removes the entry from the stack immediately, without its exit
+animation; React removes the rendered content when it commits the update. If
+the content is private, the consumer must also guard its own data against a
+session change. Dismissal without abort keeps the normal exit animation.
+
 ### Content beside the sheet that moves with it
 
 A sheet that the screen behind it reacts to (a video that shrinks above its

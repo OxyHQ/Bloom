@@ -1,4 +1,9 @@
-import type { PresentOptions, SurfaceEntry, SurfaceRenderFn } from './types';
+import type {
+  CancelablePresentOptions,
+  PresentOptions,
+  SurfaceEntry,
+  SurfaceRenderFn,
+} from './types';
 
 /**
  * The shared, content-agnostic SURFACE STACK.
@@ -81,18 +86,30 @@ export function present<Result = unknown>(
   return presentWithSignal(render, opts);
 }
 
+/** Present one surface bound to its owner's signal; abort resolves `undefined`. */
+export function presentCancelable<Result = unknown>(
+  render: SurfaceRenderFn,
+  options: CancelablePresentOptions,
+): Promise<Result | undefined> {
+  if (!options?.signal)
+    return Promise.reject(new TypeError('presentCancelable requires an AbortSignal'));
+  const { signal, ...presentation } = options;
+  return presentWithSignal<Result | undefined>(render, presentation, signal, 'remove');
+}
+
 /** Internal: bind cancellation to this entry before notifying stack subscribers. */
 export function presentWithSignal<Result = unknown>(
   render: SurfaceRenderFn,
   opts?: PresentOptions,
   signal?: AbortSignal,
+  abortBehavior: 'dismiss' | 'remove' = 'dismiss',
 ): Promise<Result> {
   if (signal?.aborted) return Promise.resolve(undefined as Result);
   return new Promise<Result>((resolve) => {
     const id = genId();
     let settle = resolve as (result: unknown) => void;
     if (signal) {
-      const abort = () => abortSurface(id);
+      const abort = () => abortSurface(id, abortBehavior);
       settle = (result) => {
         signal.removeEventListener('abort', abort);
         resolve(result as Result);
@@ -118,17 +135,18 @@ export function presentWithSignal<Result = unknown>(
   });
 }
 
-/** An unmounted aborted entry has nothing to animate and must never claim focus. */
-function abortSurface(id: string): void {
+/** Remove an aborted surface or dismiss a mounted confirmation with its exit. */
+function abortSurface(id: string, behavior: 'dismiss' | 'remove'): void {
   const entry = surfaces.find((candidate) => candidate.id === id);
   if (!entry) return;
   const mount = mountedEntries.get(id);
-  if (mount) {
+  if (mount && behavior === 'dismiss') {
     mount.aborted = true;
     requestDismiss(id);
     return;
   }
   const next = surfaces.filter((candidate) => candidate.id !== id);
+  mountedEntries.delete(id);
   surfaces = next.length === 0 ? EMPTY : next;
   if (!entry.settled) entry.resolve(undefined);
   emit();

@@ -1,4 +1,11 @@
-import { dismissAll, dismissToRoot, dismissTop, present, requestDismiss } from './surface-store';
+import {
+  dismissAll,
+  dismissToRoot,
+  dismissTop,
+  present,
+  presentCancelable,
+  requestDismiss,
+} from './surface-store';
 import { alert, confirm, confirmWithSuppression, prompt } from './prompts';
 import type { PresentOptions, SurfaceRenderFn } from './types';
 
@@ -38,6 +45,8 @@ export const surfaces = {
   /** Present a new surface on top. Resolves with the dismissal result. */
   present: <Result = unknown>(render: SurfaceRenderFn, opts?: PresentOptions) =>
     present<Result>(render, opts),
+  /** Present a surface that its owner's signal can cancel. */
+  presentCancelable,
   /** Dismiss the top surface. */
   dismiss,
   /** Dismiss a specific surface by id. */
@@ -65,5 +74,6 @@ export {
   dismissById,
   dismissToRoot,
   present,
+  presentCancelable,
   prompt,
 };
