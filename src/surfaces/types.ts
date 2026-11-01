@@ -212,6 +212,8 @@ export interface SurfaceConfirmOptions {
    * pass `false` for a blocking confirm that must be answered by a button.
    */
   dismissible?: boolean;
+  /** Abort this confirmation only; resolves as cancelled, even when non-dismissible. */
+  signal?: AbortSignal;
   /** Placement override. Defaults to `'center'`. */
   placement?: ResponsiveDialogPlacement;
 }

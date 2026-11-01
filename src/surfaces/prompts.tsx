@@ -9,7 +9,7 @@ import { pickMessages, useMessages } from '../locale/messages';
 import type { DialogAction } from '../dialog/types';
 import { TextFieldInput } from '../text-field';
 import { SURFACES_MESSAGES } from './messages';
-import { present } from './surface-store';
+import { present, presentWithSignal } from './surface-store';
 import type {
   AlertButton,
   SurfaceConfirmOptions,
@@ -98,39 +98,43 @@ export function alert(title: string, message?: string, buttons?: AlertButton[]):
  * `true` on confirm, `false` on cancel OR on backdrop/Escape/back dismissal.
  */
 export function confirm(options: SurfaceConfirmOptions): Promise<boolean> {
-  return present<unknown>(() => null, {
-    placement: options.placement ?? 'center',
-    dismissOnBackdrop: options.dismissible ?? true,
-    title: options.title,
-    description: options.description,
-    label: options.title,
-    actions: (surface, locale) => {
-      // Defaults resolve here, as the surface renders — `confirm()` itself runs
-      // outside React and cannot read the provider's locale.
-      const messages = pickMessages(SURFACES_MESSAGES, locale);
-      const actions: DialogAction[] = [
-        {
-          label: options.confirmLabel ?? messages.confirm,
-          color: options.destructive ? 'destructive' : 'default',
-          shouldCloseOnPress: false,
-          onPress: () => surface.dismiss(true),
-          testID: 'bloom-surface-confirm-confirm',
-        },
-      ];
-      if (!options.hideCancel) {
-        actions.push({
-          label: options.cancelLabel ?? pickMessages(COMMON_MESSAGES, locale).cancel,
-          color: 'cancel',
-          shouldCloseOnPress: false,
-          onPress: () => surface.dismiss(false),
-          testID: 'bloom-surface-confirm-cancel',
-        });
-      }
-      return actions;
+  return presentWithSignal<unknown>(
+    () => null,
+    {
+      placement: options.placement ?? 'center',
+      dismissOnBackdrop: options.dismissible ?? true,
+      title: options.title,
+      description: options.description,
+      label: options.title,
+      actions: (surface, locale) => {
+        // Defaults resolve here, as the surface renders — `confirm()` itself runs
+        // outside React and cannot read the provider's locale.
+        const messages = pickMessages(SURFACES_MESSAGES, locale);
+        const actions: DialogAction[] = [
+          {
+            label: options.confirmLabel ?? messages.confirm,
+            color: options.destructive ? 'destructive' : 'default',
+            shouldCloseOnPress: false,
+            onPress: () => surface.dismiss(true),
+            testID: 'bloom-surface-confirm-confirm',
+          },
+        ];
+        if (!options.hideCancel) {
+          actions.push({
+            label: options.cancelLabel ?? pickMessages(COMMON_MESSAGES, locale).cancel,
+            color: 'cancel',
+            shouldCloseOnPress: false,
+            onPress: () => surface.dismiss(false),
+            testID: 'bloom-surface-confirm-cancel',
+          });
+        }
+        return actions;
+      },
+      // A backdrop / Escape / back dismissal resolves `undefined`, which the
+      // mapping below reads as "not confirmed".
     },
-    // A backdrop / Escape / back dismissal resolves `undefined`, which the
-    // mapping below reads as "not confirmed".
-  }).then((result) => result === true);
+    options.signal,
+  ).then((result) => result === true);
 }
 
 /**
@@ -247,7 +251,7 @@ export function confirmWithSuppression(
   const onSuppressedChange = (next: boolean) => {
     suppressed = next;
   };
-  return present<unknown>(
+  return presentWithSignal<unknown>(
     (surface) => (
       <SuppressibleConfirmSurface
         options={options}
@@ -262,6 +266,7 @@ export function confirmWithSuppression(
       description: options.description,
       label: options.title,
     },
+    options.signal,
   ).then((result) =>
     result && typeof result === 'object' && 'confirmed' in result
       ? (result as SurfaceSuppressibleConfirmResult)

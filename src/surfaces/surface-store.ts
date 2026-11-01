@@ -29,6 +29,13 @@ const EMPTY: readonly SurfaceEntry[] = Object.freeze([]);
 
 let surfaces: readonly SurfaceEntry[] = EMPTY;
 const listeners = new Set<() => void>();
+// An entry can move between hosts. Remember whether it ever reached a host so
+// a pre-mount cancellation can be discarded without changing host hand-offs.
+const mountedEntries = new Set<string>();
+
+export function markSurfaceMounted(id: string): void {
+  if (surfaces.some((entry) => entry.id === id)) mountedEntries.add(id);
+}
 
 function emit(): void {
   for (const listener of listeners) listener();
@@ -56,19 +63,58 @@ export function present<Result = unknown>(
   render: SurfaceRenderFn,
   opts?: PresentOptions,
 ): Promise<Result> {
+  return presentWithSignal(render, opts);
+}
+
+/** Internal: bind cancellation to this entry before notifying stack subscribers. */
+export function presentWithSignal<Result = unknown>(
+  render: SurfaceRenderFn,
+  opts?: PresentOptions,
+  signal?: AbortSignal,
+): Promise<Result> {
+  if (signal?.aborted) return Promise.resolve(undefined as Result);
   return new Promise<Result>((resolve) => {
+    const id = genId();
+    let settle = resolve as (result: unknown) => void;
+    if (signal) {
+      const abort = () => abortSurface(id);
+      settle = (result) => {
+        signal.removeEventListener('abort', abort);
+        resolve(result as Result);
+      };
+      signal.addEventListener('abort', abort, { once: true });
+      // Also handles a signal aborted while its listener was being installed.
+      if (signal.aborted) {
+        settle(undefined);
+        return;
+      }
+    }
     const entry: SurfaceEntry = {
-      id: genId(),
+      id,
       render,
       presentation: opts ?? {},
       status: 'open',
-      resolve: resolve as (result: unknown) => void,
+      resolve: settle,
       settled: false,
       generation: 0,
     };
     surfaces = [...surfaces, entry];
     emit();
   });
+}
+
+/** An unmounted aborted entry has nothing to animate and must never claim focus. */
+function abortSurface(id: string): void {
+  const entry = surfaces.find((candidate) => candidate.id === id);
+  if (!entry) return;
+  if (mountedEntries.has(id)) {
+    requestDismiss(id);
+    return;
+  }
+  const next = surfaces.filter((candidate) => candidate.id !== id);
+  surfaces = next.length === 0 ? EMPTY : next;
+  if (!entry.settled) entry.resolve(undefined);
+  emit();
 }
 
 /**
@@ -110,6 +156,7 @@ export function finalizeClose(id: string): void {
   const entry = surfaces.find((e) => e.id === id);
   if (!entry || entry.status !== 'closing') return;
   const next = surfaces.filter((e) => e.id !== id);
+  mountedEntries.delete(id);
   surfaces = next.length === 0 ? EMPTY : next;
   emit();
 }
@@ -149,6 +196,7 @@ export function resetSurfaces(): void {
   if (surfaces.length === 0) return;
   const pending = surfaces;
   surfaces = EMPTY;
+  mountedEntries.clear();
   for (const entry of pending) {
     if (!entry.settled) entry.resolve(undefined);
   }
@@ -158,5 +206,6 @@ export function resetSurfaces(): void {
 /** Test-only: hard-reset without notifying (drops listeners' work). */
 export function __resetSurfacesForTests(): void {
   surfaces = EMPTY;
+  mountedEntries.clear();
   idCounter = 0;
 }
