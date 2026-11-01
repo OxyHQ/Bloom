@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -82,6 +82,54 @@ export const Confirm: Story = {
           Ask (destructive)
         </Button>
         <Text>Answer: {answer}</Text>
+      </View>
+    );
+  },
+};
+
+/** A session cancellation affects only the confirmation that owns its signal. */
+export const AbortableConfirm: Story = {
+  parameters: { controls: { disable: true } },
+  render: function AbortableConfirmStory() {
+    const owner = useRef<AbortController | null>(null);
+    const [result, setResult] = useState('pending');
+    const [other, setOther] = useState('pending');
+    useEffect(() => {
+      const abort = () => owner.current?.abort();
+      window.addEventListener('bloom-story-session-invalidated', abort);
+      return () => window.removeEventListener('bloom-story-session-invalidated', abort);
+    }, []);
+    const openOwned = () => {
+      owner.current = new AbortController();
+      void confirm({
+        title: 'Session confirmation',
+        confirmLabel: 'Confirm session',
+        signal: owner.current.signal,
+      }).then((value) => setResult(String(value)));
+    };
+    return (
+      <View style={{ gap: 12, width: 320, maxWidth: '100%' }}>
+        <Button onPress={openOwned}>Open session confirmation</Button>
+        <Button
+          onPress={() => {
+            openOwned();
+            void confirm({ title: 'Other confirmation', confirmLabel: 'Confirm other' }).then(
+              (value) => setOther(String(value)),
+            );
+          }}
+        >
+          Open stacked confirmations
+        </Button>
+        <Button
+          onPress={() => {
+            openOwned();
+            owner.current?.abort();
+          }}
+        >
+          Abort before mount
+        </Button>
+        <Text testID="owned-result">Owned: {result}</Text>
+        <Text testID="other-result">Other: {other}</Text>
       </View>
     );
   },
