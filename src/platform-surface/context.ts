@@ -1,6 +1,8 @@
 import { type ComponentType, createContext, useContext } from 'react';
 import type {
   PlatformAppearance,
+  PlatformDrag,
+  PlatformDropTargetProps,
   PlatformFiles,
   PlatformKeyboard,
   PlatformMenuBar,
@@ -96,4 +98,32 @@ export function usePlatformKeyboard(): PlatformKeyboard | null {
  */
 export function usePlatformFiles(): PlatformFiles | null {
   return useContext(PlatformSurfaceContext)?.files ?? null;
+}
+
+/** The adapter, when it reports `drag-and-drop`; it throws if it lacks either part. */
+function dragAndDrop(adapter: PlatformSurfaceAdapter | null): PlatformSurfaceAdapter | null {
+  if (!adapter?.capabilities.has('drag-and-drop')) return null;
+  if (!adapter.DropTarget || !adapter.drag) {
+    throw new Error(
+      `Bloom: the ${adapter.platform} platform adapter reports 'drag-and-drop' without a DropTarget and a drag.`,
+    );
+  }
+  return adapter;
+}
+
+/**
+ * The adapter's drop target when it reports `drag-and-drop`, otherwise null (a
+ * `DropZone` then takes HTML5's drops on the web, and nothing on a phone).
+ */
+export function usePlatformDropTarget(): ComponentType<PlatformDropTargetProps> | null {
+  return dragAndDrop(useContext(PlatformSurfaceContext))?.DropTarget ?? null;
+}
+
+/**
+ * Dragging the application's own content to another application, when the
+ * adapter reports `drag-and-drop`; otherwise null, and the application keeps
+ * its drags inside itself.
+ */
+export function usePlatformDrag(): PlatformDrag | null {
+  return dragAndDrop(useContext(PlatformSurfaceContext))?.drag ?? null;
 }

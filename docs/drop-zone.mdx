@@ -1,0 +1,64 @@
+---
+title: Drop zone
+description: A view that takes what the person drops on it from another application or this one — files, links, text, HTML — with HTML5's drag and drop on the web and the platform's on a desktop platform.
+order: 39
+---
+
+# Drop zone
+
+A view that takes drops: a file manager's files dropped on a folder or the
+Trash, a link or an image dragged out of a browser, text from an editor.
+
+```tsx
+import { DropZone } from '@oxy.so/bloom/drop-zone';
+
+<DropZone
+  accept={['files']}
+  actions={['move', 'copy']}
+  onDragEnter={() => setOver(true)}
+  onDragLeave={() => setOver(false)}
+  onDrop={({ action, data }) => {
+    setOver(false);
+    for (const file of data.files) {
+      if (file.uri) move(file.uri, folder, action);
+    }
+  }}
+>
+  <Folder highlighted={over} />
+</DropZone>
+```
+
+## Props
+
+- `accept`: the kinds of content it takes: `files`, `text`, `url`, `html`, or
+  media types named exactly (`image/png`).
+- `actions` (default `['copy']`): the actions it supports, its preferred one
+  first, or named by `preferredAction`. The action a drop takes is chosen as a
+  Mac chooses it: Option (Alt) held forces a copy, Command (Meta) a move, both
+  a link, if both sides allow it; otherwise the preferred action the source
+  allows, else the next it allows; none if none (nothing is dropped).
+- `disabled`: it takes nothing while true.
+- `onDragEnter`, `onDragOver` (`DropTargetDragEvent`: the point in the view,
+  the action a drop would take, the kinds offered that it accepts) and
+  `onDragLeave`, for a drag it would take.
+- `onDrop` (`DropTargetDropEvent`): the action and the content (`DropData`):
+  - `files`: each with its `name`, and its `file://` `uri` on a native
+    platform (what `expo-file-system` takes) or the browser's `File` as `raw`
+    on the web;
+  - `urls`: the URIs dropped that are not files;
+  - `text`, `html`, and `other` (each media type accepted by name, as text).
+
+## Where it works
+
+- **The web:** HTML5's drag and drop on its element. During a drag a page sees
+  the kinds offered and never the content, which it reads at the drop (the
+  browser's protected mode); `dropEffect` follows the chosen action, and the
+  zone is left only when the pointer leaves it, not when it crosses a child.
+- **A platform whose adapter reports `drag-and-drop`** (OxyOS): the platform's
+  drop target (`docs/platform-surface.mdx`). Drops come from any application,
+  the content only to the target dropped on.
+- **Elsewhere** (a phone today): a view that takes nothing.
+
+Starting a drag of the application's own content to another application is
+the platform's `usePlatformDrag()` (`docs/platform-surface.mdx`), for an
+application that runs its own pointer gestures.

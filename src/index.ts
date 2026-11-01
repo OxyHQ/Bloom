@@ -2142,6 +2142,7 @@ export type { KbdProps } from './kbd';
 export * from './admonition';
 export * from './dropdown-menu';
 export * from './tooltip';
+export * from './drop-zone';
 export * from './select';
 export * from './context-menu';
 export * from './menubar';

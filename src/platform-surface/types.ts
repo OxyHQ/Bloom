@@ -25,8 +25,125 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
  *   palette, and whether transparency is reduced, which draws every blurred
  *   material opaque. Light or dark is not part of it: React Native's
  *   `Appearance` already carries that.
+ * - `drag-and-drop`: content is dragged between applications through the
+ *   platform (`PlatformDrag`, `DropTarget`): a `DropZone` takes drops from any
+ *   application, and an application starts a drag of its own content with
+ *   `usePlatformDrag()`.
  */
-export type SurfaceCapability = 'popup-surface' | 'window' | 'pointer' | 'menu-bar' | 'appearance';
+export type SurfaceCapability =
+  | 'popup-surface'
+  | 'window'
+  | 'pointer'
+  | 'menu-bar'
+  | 'appearance'
+  | 'drag-and-drop';
+
+/**
+ * What a drop does with what is dragged, as the web's `dropEffect`, Wayland's
+ * and macOS's drag operations: a copy, a move (the source deletes its original
+ * when it is data; files are moved by the target), or a link (an alias).
+ */
+export type DragAction = 'copy' | 'move' | 'link';
+
+/**
+ * A kind of content a drop target takes: files (`file://` URIs on a native
+ * platform, the browser's `File` objects on the web), plain text, URLs, HTML,
+ * or any other media type named exactly (`image/png`).
+ */
+export type DropKind = 'files' | 'text' | 'url' | 'html' | (string & {});
+
+/** A file dropped: its `file://` URI where the platform has one, its name and type. */
+export interface DroppedFile {
+  readonly name: string;
+  /** `file://`, as `expo-file-system` takes it; absent for a browser's file. */
+  readonly uri?: string;
+  readonly mimeType?: string;
+  readonly size?: number;
+  /** The browser's `File` on the web, to read or upload. */
+  readonly raw?: unknown;
+}
+
+/** What a drop carried, of the kinds the target accepts. */
+export interface DropData {
+  readonly files: readonly DroppedFile[];
+  readonly urls: readonly string[];
+  readonly text?: string;
+  readonly html?: string;
+  /** Other media types the target accepts by name, as text. */
+  readonly other: Readonly<Record<string, string>>;
+}
+
+/** A drag over a drop target: where (view-local), what a drop would do, what is offered. */
+export interface DropTargetDragEvent {
+  readonly x: number;
+  readonly y: number;
+  /** The action a drop here would take now; null when it would drop nothing. */
+  readonly action: DragAction | null;
+  /** The kinds the drag offers that the target accepts. */
+  readonly kinds: readonly DropKind[];
+}
+
+/** A drop on a target: where, the action it took and the content. */
+export interface DropTargetDropEvent extends DropTargetDragEvent {
+  readonly action: DragAction;
+  readonly data: DropData;
+}
+
+/**
+ * The adapter's drop target (`DropTarget`, with `drag-and-drop`): a view that
+ * takes drops from any application, its children inside it. The platform
+ * answers the drag itself from these props (the kinds it accepts and the
+ * actions it supports), so a drag never waits on JavaScript; the callbacks
+ * follow it.
+ */
+export interface PlatformDropTargetProps {
+  readonly accept: readonly DropKind[];
+  /** The actions it supports; the first is its preferred one unless `preferredAction` says. */
+  readonly actions: readonly DragAction[];
+  readonly preferredAction?: DragAction;
+  /** Takes nothing while true. */
+  readonly disabled?: boolean;
+  onDragEnter?(event: DropTargetDragEvent): void;
+  onDragOver?(event: DropTargetDragEvent): void;
+  onDragLeave?(): void;
+  onDrop(event: DropTargetDropEvent): void;
+  readonly style?: unknown;
+  readonly testID?: string;
+  readonly children?: ReactNode;
+}
+
+/** What an application drags: files as `file://` URIs, text, a URL, HTML. */
+export interface DragData {
+  readonly files?: readonly string[];
+  readonly text?: string;
+  readonly url?: string;
+  readonly html?: string;
+}
+
+/** A drag the application starts (`PlatformDrag.start`). */
+export interface PlatformDragRequest {
+  readonly data: DragData;
+  /** The actions it allows (at least one). */
+  readonly actions: readonly DragAction[];
+  /** The view whose image follows the pointer; none for the platform's own. */
+  readonly previewRef?: RefObject<ComponentRef<typeof View> | null>;
+}
+
+/**
+ * Dragging between applications (`drag-and-drop`): the application starts a
+ * drag from the press it is handling (a mouse press moved past its slop, as
+ * macOS's `beginDraggingSession` from `mouseDragged`), and the platform owns
+ * it from then on.
+ */
+export interface PlatformDrag {
+  /**
+   * Starts the drag; resolves with the action the drop took, or null when it
+   * was cancelled (Escape, a release over nothing that takes it) or refused
+   * (no press held). With `move` of data the application deletes its
+   * original; files are moved by the target.
+   */
+  start(request: PlatformDragRequest): Promise<DragAction | null>;
+}
 
 /** Why the platform closed a popup without the application asking. */
 export type PopupDismissReason =
@@ -464,4 +581,8 @@ export interface PlatformSurfaceAdapter {
   readonly keyboard?: PlatformKeyboard;
   /** The person's places and the Trash, where the platform has them. */
   readonly files?: PlatformFiles;
+  /** Required with `drag-and-drop`: the view that takes drops from any application. */
+  readonly DropTarget?: ComponentType<PlatformDropTargetProps>;
+  /** Required with `drag-and-drop`: dragging the application's own content out. */
+  readonly drag?: PlatformDrag;
 }
