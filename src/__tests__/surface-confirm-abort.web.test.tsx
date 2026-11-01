@@ -96,3 +96,29 @@ it('does not render or steal focus if aborted before the next host commit', asyn
   expect(getSnapshot()).toHaveLength(0);
   await expect(answer).resolves.toBe(false);
 });
+
+it('does not reopen or steal focus when abort falls between host unmount and remount', async () => {
+  const controller = new AbortController();
+  let answer!: Promise<boolean>;
+  act(() => {
+    answer = confirm({ title: 'In transit', signal: controller.signal });
+  });
+  flush();
+  expect(document.body.textContent).toContain('In transit');
+  act(() => root.render(<BloomThemeProvider fonts={false} />));
+  flush();
+  opener.focus();
+  act(() => controller.abort());
+  act(() =>
+    root.render(
+      <BloomThemeProvider fonts={false}>
+        <SurfaceHost />
+      </BloomThemeProvider>,
+    ),
+  );
+  flush();
+  expect(document.body.textContent).not.toContain('In transit');
+  expect(document.activeElement).toBe(opener);
+  expect(getSnapshot()).toHaveLength(0);
+  await expect(answer).resolves.toBe(false);
+});

@@ -29,12 +29,19 @@ const EMPTY: readonly SurfaceEntry[] = Object.freeze([]);
 
 let surfaces: readonly SurfaceEntry[] = EMPTY;
 const listeners = new Set<() => void>();
-// An entry can move between hosts. Remember whether it ever reached a host so
-// a pre-mount cancellation can be discarded without changing host hand-offs.
-const mountedEntries = new Set<string>();
+// A host hand-off can briefly mount the same entry twice. Count the live
+// layers so an abort between hosts cannot reopen a cancelled surface.
+const mountedEntries = new Map<string, number>();
 
-export function markSurfaceMounted(id: string): void {
-  if (surfaces.some((entry) => entry.id === id)) mountedEntries.add(id);
+export function markSurfaceMounted(id: string): () => void {
+  if (!surfaces.some((entry) => entry.id === id)) return () => {};
+  mountedEntries.set(id, (mountedEntries.get(id) ?? 0) + 1);
+  return () => {
+    const count = mountedEntries.get(id);
+    if (count === undefined) return;
+    if (count === 1) mountedEntries.delete(id);
+    else mountedEntries.set(id, count - 1);
+  };
 }
 
 function emit(): void {

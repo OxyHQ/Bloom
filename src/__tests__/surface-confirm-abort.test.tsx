@@ -214,3 +214,53 @@ it('closes correctly under StrictMode', async () => {
   await expect(answer).resolves.toBe(false);
   expect(getSnapshot()).toHaveLength(0);
 });
+
+it('does not reopen an aborted confirmation between host unmount and remount', async () => {
+  const { createSurfaceHost } = await import('../surfaces/SurfaceHost');
+  const renders = jest.fn();
+  const MockDialog = ({ control }: import('../dialog/types').DialogProps) => {
+    React.useImperativeHandle(control?.ref, () => ({ open: () => {}, close: () => {} }));
+    renders();
+    return null;
+  };
+  const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
+  const screen = render(<MockHost />);
+  const controller = new AbortController();
+  const remove = jest.spyOn(controller.signal, 'removeEventListener');
+  let answer!: Promise<boolean>;
+  act(() => {
+    answer = confirm({ title: 'handoff abort', signal: controller.signal });
+  });
+  expect(renders).toHaveBeenCalled();
+  screen.unmount();
+  controller.abort();
+  expect(remove).toHaveBeenCalledWith('abort', expect.any(Function));
+  expect(getSnapshot()).toHaveLength(0);
+  renders.mockClear();
+  render(<MockHost />);
+  expect(renders).not.toHaveBeenCalled();
+  await expect(answer).resolves.toBe(false);
+});
+
+it('keeps an entry alive when one of two mounted hosts unmounts before abort', async () => {
+  const { createSurfaceHost } = await import('../surfaces/SurfaceHost');
+  const onClose = jest.fn();
+  const MockDialog = ({ control }: import('../dialog/types').DialogProps) => {
+    React.useImperativeHandle(control?.ref, () => ({ open: () => {}, close: onClose }));
+    return null;
+  };
+  const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
+  const first = render(<MockHost />);
+  const second = render(<MockHost />);
+  const controller = new AbortController();
+  let answer!: Promise<boolean>;
+  act(() => {
+    answer = confirm({ title: 'two hosts', signal: controller.signal });
+  });
+  first.unmount();
+  act(() => controller.abort());
+  expect(getSnapshot()[0]?.status).toBe('closing');
+  expect(onClose).toHaveBeenCalled();
+  await expect(answer).resolves.toBe(false);
+  second.unmount();
+});

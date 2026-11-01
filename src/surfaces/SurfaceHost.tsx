@@ -109,7 +109,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
     }, [control]);
 
     useLayoutEffect(() => {
-      markSurfaceMounted(id);
+      return markSurfaceMounted(id);
     }, [id]);
 
     // When the store flips this entry to 'closing' (a programmatic dismiss,
