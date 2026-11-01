@@ -13,6 +13,32 @@ export interface NativeBox {
   height: number;
 }
 
+/**
+ * A horizontal ScrollView as React Native lays it out natively: a row that
+ * scrolls (`overflow: scroll`, its base style), holding a content container —
+ * a row carrying `contentContainerStyle` — that Yoga sizes to its children
+ * rather than to the viewport. The test renderer draws neither, and without
+ * them a track that only fits by shrinking measured as fitting here while it
+ * overflowed on the device.
+ */
+function horizontalScroller(node: HostNode): { view: HostNode; content: HostNode } | null {
+  if (node.type !== 'ScrollView' || node.props.horizontal !== true) return null;
+  return {
+    view: {
+      ...node,
+      props: {
+        ...node.props,
+        style: [node.props.style, { flexDirection: 'row', overflow: 'scroll' }],
+      },
+    },
+    content: {
+      type: 'View',
+      props: { style: [{ flexDirection: 'row' }, node.props.contentContainerStyle] },
+      children: [],
+    },
+  };
+}
+
 /** Real Yoga layout, not TestRenderer's geometry-free host mocks. Text metrics
  * are explicit fixture inputs; this does not claim to measure a platform font. */
 export function createYogaHostRenderer() {
@@ -45,10 +71,13 @@ export function createYogaHostRenderer() {
       const nodes: Array<{ node: HostNode; parent: number }> = [];
       const visit = (node: HostNode, parent: number) => {
         const index = nodes.length;
-        nodes.push({ node, parent });
+        const scroller = horizontalScroller(node);
+        nodes.push({ node: scroller?.view ?? node, parent });
         // Native Text is one measured leaf, including any nested spans.
-        if (node.type !== 'Text')
-          for (const child of node.children ?? []) if (isHostNode(child)) visit(child, index);
+        if (node.type === 'Text') return;
+        // The scroller's content container sits between it and its children.
+        const into = scroller ? nodes.push({ node: scroller.content, parent: index }) - 1 : index;
+        for (const child of node.children ?? []) if (isHostNode(child)) visit(child, into);
       };
       visit(tree, -1);
       const input = [

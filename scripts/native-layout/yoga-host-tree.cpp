@@ -21,10 +21,15 @@ void style(YGNodeRef node, const std::string& key, const std::string& value) {
   };
   if (key == "width") length(YGNodeStyleSetWidth,YGNodeStyleSetWidthPercent,YGNodeStyleSetWidthAuto);
   else if (key == "height") length(YGNodeStyleSetHeight,YGNodeStyleSetHeightPercent,YGNodeStyleSetHeightAuto);
-  else if (key == "minWidth") YGNodeStyleSetMinWidth(node,number());
-  else if (key == "maxWidth") YGNodeStyleSetMaxWidth(node,number());
-  else if (key == "minHeight") YGNodeStyleSetMinHeight(node,number());
-  else if (key == "maxHeight") YGNodeStyleSetMaxHeight(node,number());
+  // Bounds take percentages too (`maxWidth: '100%'`); read as points, `100%`
+  // was a 100pt cap and every percent-bounded box measured wrong.
+  else if (key == "minWidth" || key == "maxWidth" || key == "minHeight" || key == "maxHeight") {
+    const bool percent = value.ends_with('%');
+    if (key == "minWidth") (percent ? YGNodeStyleSetMinWidthPercent : YGNodeStyleSetMinWidth)(node, number());
+    else if (key == "maxWidth") (percent ? YGNodeStyleSetMaxWidthPercent : YGNodeStyleSetMaxWidth)(node, number());
+    else if (key == "minHeight") (percent ? YGNodeStyleSetMinHeightPercent : YGNodeStyleSetMinHeight)(node, number());
+    else (percent ? YGNodeStyleSetMaxHeightPercent : YGNodeStyleSetMaxHeight)(node, number());
+  }
   else if (key == "flexGrow") YGNodeStyleSetFlexGrow(node,number());
   else if (key == "flexShrink") YGNodeStyleSetFlexShrink(node,number());
   else if (key == "flex") YGNodeStyleSetFlex(node,number());
