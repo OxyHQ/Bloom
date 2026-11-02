@@ -2,7 +2,7 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
-## 16.2.0
+## 16.3.0
 
 ### Changed
 
@@ -11,6 +11,9 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 ### Consumers
 
 No API change. A popover on OxyOS is now anchored; content that relied on the sheet's height is laid out at the panel's width (266 at least).
+
+## 16.2.0
+
 ### Fixed
 
 - **A native slider can be adjusted without a drag.** `Slider` (and each of `RangeSlider`'s thumbs) on native now offers an assistive technology's increment and decrement (`accessibilityActions`), as a SeekBar and a UISlider do, and is one `focusable` element, so a platform's keyboard focus steps it with the arrows (OxyOS ADR 0039). It was an `adjustable` element offering neither: a screen reader could not move it, and a caller that wrapped it to offer them had it read twice.
