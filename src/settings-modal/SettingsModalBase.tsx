@@ -757,7 +757,7 @@ export function createSettings(
   }
 
   /**
-   * A settings window beside its rail: Bloom's AppShell, as Stash, Mention
+   * A settings window beside its rail: Bloom's AppShell, as Dropsea, Mention
    * and Inbox compose their windows. The rail is the shell's sidebar (keeping
    * the window controls' room the shell hands it), the page is one panel
    * whose `navigation` is the pages visited, and the page's `PageHeader` is

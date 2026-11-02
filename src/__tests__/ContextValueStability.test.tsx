@@ -3,7 +3,7 @@
  * same object while what it says is the same. A Screen draws again whenever its
  * bottom bar does (a status line's text), and panels whenever a panel's content
  * does (a selection in a list); a value made anew at each of those made React
- * draw every reader below them again: a click in Stash's list on OxyOS redrew
+ * draw every reader below them again: a click in Dropsea's list on OxyOS redrew
  * its whole header and toolbar.
  */
 import React from 'react';
