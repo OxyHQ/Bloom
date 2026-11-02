@@ -60,9 +60,19 @@ The group is ONE tab stop — the chosen segment — and the rest are reached wi
 | `tabs` | <kbd>←</kbd> <kbd>→</kbd> · <kbd>Home</kbd> <kbd>End</kbd> | move to the previous / next (or first / last) segment and select it, wrapping |
 | both | <kbd>Space</kbd> · <kbd>Enter</kbd> | choose the focused segment |
 
-Disabled segments are skipped, and a disabled group offers no tab stop at all. Selection follows focus in both modes — the control is a value, not a navigation. <kbd>Space</kbd> is Bloom's own: react-native-web presses a `radio` or `tab` on <kbd>Enter</kbd> only. Keys also clear the drag gesture's click suppression, so a key press is never swallowed as the tail of a drag. Native is unchanged.
+Disabled segments are skipped, and a disabled group offers no tab stop at all. Selection follows focus in both modes — the control is a value, not a navigation. <kbd>Space</kbd> is Bloom's own: react-native-web presses a `radio` or `tab` on <kbd>Enter</kbd> only. Keys also clear the drag gesture's click suppression, so a key press is never swallowed as the tail of a drag.
 
 If a segment is removed or disabled independently, the tab stop moves to an enabled segment. This uses the browser's `MutationObserver`: in web environments without it, independently changed children need the parent group to render again before the tab stop updates.
+
+## Keyboard (native)
+
+On a native host that gives Bloom the window's keys (`PlatformKeyboard`: OxyOS's, with its Full Keyboard Access), the control behaves as on the web, through the platform's keyboard focus (`hooks/use-native-roving-group.ts`):
+
+- Only the chosen segment is `focusable`, so <kbd>Tab</kbd> lands on it and goes on past the control; a disabled group has no stop.
+- While a segment has the keyboard focus, the same arrows (and <kbd>Home</kbd> <kbd>End</kbd> for `tabs`) choose the next enabled segment in the order they are laid out, round the ends. They are the focused control's keys (`FOCUSED_CONTROL_KEYS`), offered after a menu's shortcuts and before the application's own (`useWindowKeys`).
+- The focus FOLLOWS THE CHOICE: once `value` is the segment asked for, that segment is the stop and the accessibility focus moves to it, which the host's keyboard focus follows. A value the platform keeps (a session preference) moves the focus when it lands, so the screen reader says the segment once, chosen, never first unchosen and then its new state; a value the owner refuses leaves the focus where it was.
+
+On iOS and Android without such a host there is no window key to hear, and every segment stays focusable, as before.
 
 ## Right to left
 

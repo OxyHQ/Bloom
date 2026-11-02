@@ -16,9 +16,11 @@
  *    reaches only the focused view and its ancestors, on Android only).
  *
  * WHO HEARS A KEY FIRST. Handlers are offered a key by rank, then in the order
- * they were added: menus' shortcuts (`MENU_SHORTCUTS`) before an
+ * they were added: menus' shortcuts (`MENU_SHORTCUTS`), then the focused
+ * control's own keys (`FOCUSED_CONTROL_KEYS`: a segmented control's or a
+ * sidebar's arrows while one of its options has the keyboard focus), then an
  * application's keys (`APPLICATION_KEYS`), as a Mac's key equivalents come
- * before the key view. The first that takes it ends it: it is consumed
+ * before the key view, and the key view before the window. The first that takes it ends it: it is consumed
  * (`preventDefault`, `stopPropagation`; an adapter's `subscribe` listener
  * returns true). A key something else already took (`defaultPrevented`) and an
  * input method's composition reach no one.
@@ -33,7 +35,8 @@ export type WindowKeyHandler = (event: PlatformKeyEvent, textEntry: boolean) => 
 
 /** Ranks: lower hears first. */
 export const MENU_SHORTCUTS = 0;
-export const APPLICATION_KEYS = 1;
+export const FOCUSED_CONTROL_KEYS = 1;
+export const APPLICATION_KEYS = 2;
 
 interface Ranked {
   rank: number;

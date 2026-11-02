@@ -37,7 +37,10 @@ interface HostProps {
   onPressOut?: () => void;
   onHoverIn?: () => void;
   onHoverOut?: () => void;
+  onFocus?: () => void;
   onBlur?: () => void;
+  /** Native: whether the keyboard's Tab stops here (a group's one stop). */
+  focusable?: boolean;
   onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
   onKeyUp?: (event: KeyboardEvent<HTMLElement>) => void;
 }
