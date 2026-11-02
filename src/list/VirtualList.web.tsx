@@ -351,7 +351,7 @@ function VirtualListWebInner<T>(
   }, [measureElement, active]);
 
   const flatStyle = StyleSheet.flatten(style);
-  const flatContentStyle = resolveNativeWebStyle(contentContainerStyle);
+  const flatContentStyle = resolveNativeWebStyle(StyleSheet.flatten(contentContainerStyle));
 
   const renderCell = (index: number) => {
     const item = items[index];
