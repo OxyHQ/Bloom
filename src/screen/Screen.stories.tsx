@@ -7,6 +7,7 @@ import { Button } from '../button';
 import { PageFooter } from '../page-footer';
 import { PageHeader } from '../page-header';
 import { AppShell, AppShellPanel } from '../app-shell';
+import { VirtualList } from '../list';
 
 const meta: Meta<typeof Screen> = {
   id: 'foundations-screen',
@@ -163,6 +164,74 @@ export const DeclarativeHost: Story = {
           }}
         />
       </View>
+    );
+  },
+};
+
+/** The default route viewport follows the document or its bounded Deck column. */
+export const DefaultRouteHost: Story = {
+  parameters: { layout: 'fullscreen', controls: { disable: true } },
+  render: function DefaultRouteHost() {
+    const [deck, setDeck] = useState(false);
+    const [list, setList] = useState(false);
+    const rows = Array.from({ length: 50 }, (_, index) => `Default row ${index + 1}`);
+    return (
+      <AppShell
+        testID="default-shell"
+        variant="feed"
+        gutter={8}
+        panelLayout={{
+          mode: deck ? 'deck' : 'split',
+          flow: deck ? 'bounded' : 'document',
+          panels: [
+            {
+              id: 'main',
+              width: deck ? 390 : 620,
+              content: (
+                <Screen
+                  testID="default-screen"
+                  header={
+                    <PageHeader
+                      title="Default route"
+                      actions={
+                        <>
+                          <Button testID="default-toggle-host" onPress={() => setDeck(!deck)}>
+                            Toggle host
+                          </Button>
+                          <Button testID="default-toggle-list" onPress={() => setList(!list)}>
+                            Toggle list
+                          </Button>
+                        </>
+                      }
+                    />
+                  }
+                >
+                  {list ? (
+                    <VirtualList
+                      data={rows}
+                      estimatedItemSize={56}
+                      keyExtractor={(item) => item}
+                      renderItem={({ item }) => (
+                        <View style={{ height: 56 }}>
+                          <Text>{item}</Text>
+                        </View>
+                      )}
+                    />
+                  ) : (
+                    <ScreenScrollView>
+                      {rows.map((row) => (
+                        <View key={row} style={{ height: 56 }}>
+                          <Text>{row}</Text>
+                        </View>
+                      ))}
+                    </ScreenScrollView>
+                  )}
+                </Screen>
+              ),
+            },
+          ],
+        }}
+      />
     );
   },
 };

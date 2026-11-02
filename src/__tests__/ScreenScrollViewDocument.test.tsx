@@ -98,7 +98,7 @@ it('renders content in document flow and lets the window drive the screen', () =
   }
   const tree = render(
     wrap(
-      <Screen documentScroll header={<View />} headerHeight={64}>
+      <Screen scroll="content" documentScroll header={<View />} headerHeight={64}>
         <Probe />
         <ScreenScrollView
           testID="page"
@@ -130,7 +130,7 @@ it('renders content in document flow and lets the window drive the screen', () =
 it('keeps a real scroll view outside document mode', () => {
   const tree = render(
     wrap(
-      <Screen>
+      <Screen scroll="content">
         <ScreenScrollView testID="contained" />
       </Screen>,
     ),
@@ -142,7 +142,7 @@ it('answers the scroll ref with the window', () => {
   const ref = createRef<ComponentRef<typeof ScrollView>>();
   render(
     wrap(
-      <Screen documentScroll>
+      <Screen scroll="content" documentScroll>
         <ScreenScrollView ref={ref} />
       </Screen>,
     ),
@@ -175,7 +175,7 @@ it('restores the window through the same ref-based binding a native page uses', 
     const restoration = useScrollRestoration(ref);
     pending.push(restoration.restorePending);
     return (
-      <Screen documentScroll>
+      <Screen scroll="content" documentScroll>
         <ScreenScrollView ref={ref} restoration={restoration} testID="page" />
       </Screen>
     );
@@ -203,7 +203,7 @@ it('restores the window through the same ref-based binding a native page uses', 
 describe('onEndReached in document flow', () => {
   function page(onEndReached?: () => void, threshold?: number) {
     return wrap(
-      <Screen documentScroll>
+      <Screen scroll="content" documentScroll>
         <ScreenScrollView
           contentContainerClassName="gap-4 p-4"
           onEndReached={onEndReached}

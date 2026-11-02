@@ -1,0 +1,23 @@
+---
+title: Migrating to Bloom 16
+description: Migrate screen scroll ownership to the compositor.
+---
+
+# Migrating to Bloom 16
+
+`Screen` now defaults to `scroll="auto"`. In a document-flow host it grows
+with the document; in a bounded panel it owns the panel's vertical viewport.
+Its `ScreenScrollView` and `VirtualList` reuse that owner on web. Native reserves
+header and footer space around the list or `ScreenScrollView`.
+
+Remove redundant `scroll="auto"` declarations from normal route Screens. When
+an existing list binds its own scroll and chrome insets, explicitly set
+`scroll="content"` to retain that behavior. A bounded canvas such as a map or
+board uses `scroll="none"`. A Screen nested inside another Screen creates an
+independent owner when using auto; put a shared route header and navigator in one
+Screen rather than nesting route Screens.
+
+The change affects web, iOS and Android, including standalone Screens, not only
+AppShell panels. Audit existing screens before upgrading: exercise long and short
+content, chrome clearances, scrolling, restoration and the native list bindings.
+Bloom's legacy AppShell adapters retain their previous content-owned behavior.

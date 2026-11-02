@@ -500,7 +500,7 @@ describe('native navigation with layout props', () => {
             {
               id: 'main',
               content: (
-                <Screen>
+                <Screen scroll="content">
                   <Route />
                 </Screen>
               ),

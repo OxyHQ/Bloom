@@ -53,7 +53,7 @@ describe('VirtualList (native)', () => {
   it('binds screen geometry without adding a ScrollView', () => {
     const tree = render(
       <BloomThemeProvider fonts={false}>
-        <Screen header={<Text>Header</Text>} headerHeight={80}>
+        <Screen scroll="content" header={<Text>Header</Text>} headerHeight={80}>
           <VirtualList
             screen={{}}
             testID="list"

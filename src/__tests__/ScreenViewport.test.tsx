@@ -481,3 +481,30 @@ it('contains only its vertical scroll edge so horizontal workspace gestures can 
   expect(style.overscrollBehavior).toBeUndefined();
   expect(style.overscrollBehaviorX).toBeUndefined();
 });
+
+it.each(['document', 'bounded'] as const)(
+  'defaults to the %s host scroll owner and preserves explicit compatibility modes',
+  (flow) => {
+    let owner: ReturnType<typeof useScreenViewport> = null;
+    function Probe() {
+      owner = useScreenViewport();
+      return <View testID="default-child" />;
+    }
+    const draw = (scroll?: 'auto' | 'content' | 'none') =>
+      wrap(
+        <Screen scroll={scroll} testID="default-owner" header={<View />}>
+          <Probe />
+        </Screen>,
+        flow,
+      );
+    const tree = render(draw());
+    expect(owner).toMatchObject({ kind: flow === 'document' ? 'document' : 'element' });
+    expect(tree.getByTestId('default-owner-viewport')).toBeDefined();
+    tree.rerender(draw('content'));
+    expect(owner).toBeNull();
+    expect(tree.queryByTestId('default-owner-viewport')).toBeNull();
+    tree.rerender(draw('none'));
+    expect(owner).toBeNull();
+    expect(tree.getByTestId('default-child')).toBeDefined();
+  },
+);

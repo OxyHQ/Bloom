@@ -49,7 +49,7 @@ function Page({ id, title }: { id: string; title: string }) {
     mounts[id] = (mounts[id] ?? 0) + 1;
   }, [id]);
   return (
-    <Screen testID={id} header={<PageHeader title={title} testID={`${id}-bar`} />}>
+    <Screen scroll="content" testID={id} header={<PageHeader title={title} testID={`${id}-bar`} />}>
       <ReactNative.Text>{title} body</ReactNative.Text>
     </Screen>
   );
@@ -507,7 +507,11 @@ describe('the corner has one owner', () => {
           {
             id: 'outer',
             content: (
-              <Screen testID="outer" header={<PageHeader title="Outer" testID="outer-bar" />}>
+              <Screen
+                scroll="content"
+                testID="outer"
+                header={<PageHeader title="Outer" testID="outer-bar" />}
+              >
                 <AppShellPanels scope="local" testID="local">
                   <AppShellPanel id="nested">
                     <Page id="nested" title="Nested" />
@@ -529,7 +533,7 @@ describe('the corner has one owner', () => {
     setWidth(1440);
     const screen = mount(
       fakeWindow().adapter,
-      <Screen testID="root" header={<PageHeader title="Root" testID="root-bar" />}>
+      <Screen scroll="content" testID="root" header={<PageHeader title="Root" testID="root-bar" />}>
         <AppShell testID="inner" panelLayout={SPLIT} />
       </Screen>,
     );
@@ -542,7 +546,7 @@ describe('the corner has one owner', () => {
 
 describe('a Screen that is the window', () => {
   const app = (body?: ReactNode) => (
-    <Screen testID="root" header={<PageHeader title="Notes" testID="root-bar" />}>
+    <Screen scroll="content" testID="root" header={<PageHeader title="Notes" testID="root-bar" />}>
       {body ?? <ReactNative.Text>Body</ReactNative.Text>}
     </Screen>
   );
@@ -562,7 +566,11 @@ describe('a Screen that is the window', () => {
     const screen = mount(
       fakeWindow().adapter,
       app(
-        <Screen testID="inner" header={<PageHeader title="Inner" testID="inner-bar" />}>
+        <Screen
+          scroll="content"
+          testID="inner"
+          header={<PageHeader title="Inner" testID="inner-bar" />}
+        >
           <ReactNative.Text>Inner</ReactNative.Text>
         </Screen>,
       ),
@@ -600,6 +608,7 @@ describe('a Screen that is the window', () => {
     const screen = mount(
       fakeWindow().adapter,
       <Screen
+        scroll="content"
         testID="root"
         header={<PageHeader title="Notes" titleAlign="center" testID="root-bar" />}
       />,
@@ -658,13 +667,22 @@ describe('without the window capability', () => {
     ),
     'centred title': () => (
       <Screen
+        scroll="content"
         testID="root"
         header={<PageHeader title="Notes" titleAlign="center" testID="root-bar" />}
       />
     ),
     'single screen': () => (
-      <Screen testID="root" header={<PageHeader title="Notes" testID="root-bar" />}>
-        <Screen testID="inner" header={<PageHeader title="Inner" testID="inner-bar" />} />
+      <Screen
+        scroll="content"
+        testID="root"
+        header={<PageHeader title="Notes" testID="root-bar" />}
+      >
+        <Screen
+          scroll="content"
+          testID="inner"
+          header={<PageHeader title="Inner" testID="inner-bar" />}
+        />
       </Screen>
     ),
   };
