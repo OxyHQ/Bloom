@@ -82,7 +82,10 @@ useWindowKeys((event) => {
 - The keys are the window's, wherever focus is, from the platform adapter's
   `keyboard` (a native host), else the DOM's `window` (the web), else none.
 - A `Menubar`'s shortcut hears a key first: a command declared there (`Mod+O`)
-  runs its item and never reaches the handler.
+  runs its item and never reaches the handler. Then the focused control's own
+  keys (`FOCUSED_CONTROL_KEYS`): on a native host, a segmented control's, a
+  radio group's or a settings rail's arrows while one of its options has the
+  keyboard focus, as a Mac's key view hears a key before the window.
 - Not offered while a text field has focus (it types there) or an anchored
   menu, list or dialog is open (its own keys), unless `whileTyping` asks for
   them: the field's owner, taking only what the field does not act on (Escape

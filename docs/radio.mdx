@@ -154,8 +154,14 @@ enabled option when there is no enabled selection. Arrow keys focus and select
 the next enabled option, wrapping at each edge. Horizontal arrows respect RTL;
 Home/End reach the first/last enabled option. Disabled options are skipped, and
 a disabled group has no tab stop. Controlled values remain caller-owned.
-Space and Enter activate the focused option once. Native retains its platform
-accessibility focus behavior rather than applying DOM keyboard semantics.
+Space and Enter activate the focused option once. On a native host that gives
+Bloom the window's keys (`PlatformKeyboard`, OxyOS's Full Keyboard Access) the
+group is the same one stop through the platform's keyboard focus: only that
+option is `focusable`, and while an option has the keyboard focus the four
+arrows choose the next enabled one round the ends, the focus following the
+choice once the value lands (`hooks/use-native-roving-group.ts`, as
+[`SegmentedControl`](/docs/bloom/main/segmented-control) does). Without such a
+host every option stays focusable, as before.
 
 ## Composing option bodies
 

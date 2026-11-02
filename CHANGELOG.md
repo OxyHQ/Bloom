@@ -2,6 +2,20 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.1.0
+
+### Added
+
+- **Segmented controls, radio groups and the settings rail take the arrow keys on a native host.** Where the platform gives Bloom the window's keys (`PlatformKeyboard`: OxyOS's Bloom host, with its Full Keyboard Access), a `SegmentedControl`, a `RadioGroup` (every variant) and a `SettingsLayout` rail beside its page are ONE Tab stop, as on a Mac and as WAI-ARIA's radio-group, tabs and listbox patterns require: only the chosen option is `focusable`, and while an option has the keyboard focus the arrows choose the next one (← → for a segmented control, all four for a radio group, ↑ ↓ and Home / End for the rail, which stops at its ends). The focus follows the choice once the value lands, so a value the platform keeps (a session preference) is said once by the screen reader, chosen. Before, they had arrow keys only on the web, and every segment and row was a Tab stop of its own. `hooks/use-native-roving-group.ts`; `NativeRovingKeys.test.tsx`.
+- **The focused control hears its keys before the application.** The window's key handlers have a rank between a menu's shortcuts and `useWindowKeys`: `FOCUSED_CONTROL_KEYS` (`kbd/window-keys.ts`), as a Mac's key view hears a key before its window.
+
+### Fixed
+
+- **The settings rail's group labels are headings** (`role="heading"`, level 3), on every platform. Natively, beside its page, the rail's rows are the items of one list (`role="list"`, `listitem`), so a screen reader says where each row is in it.
+
+### Consumers
+
+No API changes. On iOS and Android without a `PlatformKeyboard` nothing changes. A test that found the settings rail's rows by `role="button"` on a native platform with a keyboard adapter now finds `listitem`; one that found the page's title as the only `heading` now finds the rail's group labels too (level 3).
 ## 16.0.1
 
 ### Fixed

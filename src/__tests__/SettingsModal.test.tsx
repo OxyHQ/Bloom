@@ -137,7 +137,7 @@ describe('SettingsModal shell', () => {
   });
 
   it('names the dialog and its controls, and marks the selected rail row', () => {
-    const { getByTestId, getByRole } = renderWithTheme(<Controlled />);
+    const { getByTestId, getAllByRole } = renderWithTheme(<Controlled />);
     flush();
     expect(getByTestId('settings').props['aria-label']).toBe('Settings');
     expect(getByTestId('settings').props.role).toBe('dialog');
@@ -148,7 +148,10 @@ describe('SettingsModal shell', () => {
       selected: false,
     });
     expect(getByTestId('settings-close').props.accessibilityLabel).toBe('Close settings');
-    expect(getByRole('heading').props.children).toBe('General');
+    // The page's title, and the rail's group labels: headings of their own.
+    const headings = getAllByRole('heading');
+    expect(headings.find((node) => node.props['aria-level'] === 2)?.props.children).toBe('General');
+    expect(headings.filter((node) => node.props['aria-level'] === 3).length).toBeGreaterThan(0);
   });
 
   /**
