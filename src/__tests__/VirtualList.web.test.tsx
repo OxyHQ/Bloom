@@ -176,6 +176,29 @@ describe('VirtualList (web)', () => {
     },
   );
 
+  it.each([[[{ id: 'a', label: 'Row a' }]], [[]]])(
+    'applies native axis padding to the web content container',
+    (data) => {
+      const c = mount(
+        <VirtualList<Row>
+          data={data}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <span>{item.label}</span>}
+          ListHeaderComponent={<div>List header</div>}
+          contentContainerStyle={[
+            { paddingHorizontal: 16, paddingVertical: 8 },
+            { paddingRight: 12 },
+          ]}
+        />,
+      );
+      const container = getByText(c, 'List header').parentElement as HTMLElement;
+      expect(container.style.paddingLeft).toBe('16px');
+      expect(container.style.paddingRight).toBe('12px');
+      expect(container.style.paddingTop).toBe('8px');
+      expect(container.style.paddingBottom).toBe('8px');
+    },
+  );
+
   it('supports a thunk slot for the header', () => {
     const c = mount(
       <VirtualList<Row>

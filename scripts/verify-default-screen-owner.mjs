@@ -38,6 +38,19 @@ try {
     assert.equal(state.ownerCount, 1);
     assert.ok(state.horizontalOverflow <= 1);
     assert.ok(state.panel.bottom >= state.body.bottom - 1, 'document panel encloses route content');
+    if (list) {
+      const listBox = await page.getByTestId('default-owner-list').boundingBox();
+      const rowBox = await page.getByTestId('default-owner-row').first().boundingBox();
+      assert.ok(listBox && rowBox, 'list and its first row are visible');
+      assert.ok(
+        Math.abs(rowBox.x - listBox.x - 16) < 1,
+        'native horizontal padding insets web rows',
+      );
+      assert.ok(
+        Math.abs(listBox.x + listBox.width - (rowBox.x + rowBox.width) - 16) < 1,
+        'native padding insets the trailing edge',
+      );
+    }
     await page.mouse.move(state.panel.x + state.panel.width / 2, 450);
     await page.mouse.wheel(0, 1000);
     await page.waitForTimeout(200);
