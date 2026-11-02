@@ -50,7 +50,7 @@ function Divider() {
  * Fabric flattens a view that forms no stacking context (a role and a label do
  * not form one) and mounts its children in the nearest one above: the
  * accessibility tree then held an empty "Back and forward" group beside two
- * loose buttons (Stash's toolbar on OxyOS; Android's TalkBack reads the same
+ * loose buttons (Dropsea's toolbar on OxyOS; Android's TalkBack reads the same
  * mounted tree). `collapsable={false}` keeps the items the group's children.
  */
 
