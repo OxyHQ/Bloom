@@ -27,7 +27,7 @@ region; the same screen can render as a document page or inside a Deck column.
 </Screen>
 ```
 
-On web, `scroll="auto"` uses the document in a document-flow host and one local
+`scroll="auto"` is the default. On web, it uses the document in a document-flow host and one local
 viewport in a bounded host. `ScreenScrollView` reuses that owner; it never adds
 another scroller. Switching between `auto`, `content` and `none` on web also
 keeps descendants mounted: non-owning wrappers create no layout boxes and
@@ -41,7 +41,7 @@ prompt, the scroller padding its end clear of the bar (the default `inset`
 keeps a chat thread above the composer it is anchored to). Insets otherwise reserve the measured header/footer once.
 
 On native, auto reserves chrome space but the screen's list or `ScreenScrollView`
-continues owning scrolling. `scroll="content"` (the compatibility default) keeps
+continues owning scrolling. `scroll="content"` keeps
 existing explicit list/inset bindings. `documentScroll` remains an explicit override.
 
 `useScreenViewport()` exposes the existing owner (`kind`, `scrollRef`, `metrics`,

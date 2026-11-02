@@ -249,6 +249,7 @@ export function createAppShell(
         ) : null}
         <ScreenActionOwnerContext.Provider value="shell">
           <Screen
+            scroll="content"
             navigationScope="shared"
             active={active}
             documentScroll={scroll === 'external'}
@@ -409,6 +410,7 @@ export function createAppShell(
     return (
       <ScreenActionOwnerContext.Provider value="shell">
         <Screen
+          scroll="content"
           active={active}
           navigationScope="shared"
           documentScroll={document}

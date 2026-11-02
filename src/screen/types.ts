@@ -9,7 +9,7 @@ export interface ScreenProps extends ViewProps {
   colorPreset?: AppColorName;
   header?: ReactNode;
   /**
-   * auto uses the host's document/column viewport. content lets an explicit list
+   * auto (the default) uses the host's document/column viewport. content lets an explicit list
    * bind the scroll/inset contract. none reserves chrome around a bounded canvas
    * (board, map or editor) without adding a scrolling viewport.
    */

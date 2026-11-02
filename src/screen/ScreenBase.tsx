@@ -81,7 +81,7 @@ export function createScreen(
   function ScreenCanvas({
     colorPreset,
     header,
-    scroll = 'content',
+    scroll = 'auto',
     headerPlacement = 'inset',
     bottomBarPlacement = 'inset',
     bottomBar,

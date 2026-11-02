@@ -488,8 +488,8 @@ Existing `children`, `AppShellPanel` and `AppShellPanels` compositions remain
 supported when `panelLayout` is absent. The JSX panel family uses the same shared
 renderer. Descriptor `header` and `scroll="panel"` remain compatibility adapters
 for content without a Screen; new screens use Screen slots and descriptor
-`scroll="content"` (the default). `Screen` keeps its compatibility `scroll="content"`
-default, so opt into `scroll="auto"` explicitly.
+`scroll="content"` (the default). `Screen` defaults to `scroll="auto"`. Explicit list-owned legacy screens must
+set `scroll="content"`; bounded canvases use `scroll="none"`.
 
 Replace manual viewport arithmetic and nested scroll containers with ownership
 props. Remove duplicate panel/screen headers, repeated safe-area padding,
