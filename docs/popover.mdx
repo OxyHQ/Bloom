@@ -129,6 +129,8 @@ This is `FloatingPanel`'s behaviour, so it is every menu, popover and select's; 
 
 The popover is a bottom sheet on native: a phone has no room to float a panel beside a control, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system. The sheet is the chrome (its surface, corner and drag handle), so the placement props are ignored and only the body takes the panel geometry — an 8px inset on the sides and bottom, below the handle's clearance — so the panel parts line up exactly as they do on web. `className`, `style` and `testID` land on that body.
 
+On a platform whose adapter reports `popup-surface` (a desktop: OxyOS), the popover is instead a panel beside its trigger in the platform's popup, as a Mac's popover and as the native menus' panels are (`floating/PopupPanel`'s chrome: the menu palette's material, the 16px corner, the density's padding, 266px wide at least). The popup is a `dialog` named by `label`; `side`, `align` and the offsets place it (the platform keeps it on screen, and it may extend beyond the window); the platform takes it through the keyboard — Tab and Shift+Tab go round its controls and never leave it, as a popover's key view loop — and Escape closes it (with `dismissible`), as does a press outside, which the platform's popup always closes on. The screen reader's focus moves into it as it opens and back to the trigger as it closes.
+
 ## `asChild` and `disabled`
 
 `disabled` on an `asChild` trigger keeps the panel closed whatever element the caller passed. The guard lives in `floating/TriggerSlot`'s `cloneTrigger`, not in the child: a child that forwards `onPress` but has no notion of `disabled` would otherwise still open the panel. The browser is the weaker instrument here — a real `Pressable` child swallows its own press and hides a missing guard — which is why the `Base/Popover` `AsChildDisabled` story carries a forwarding control, gated by `scripts/verify-trigger-disabled.mjs` and `src/__tests__/PopoverTriggerDisabled.test.tsx`.
@@ -141,7 +143,7 @@ Escape stops at the innermost open surface, so a popover opened from inside a di
 
 By default the outside press is caught by a transparent backdrop (it closes the popover and goes no further), so a popover opened inside a dialog cannot dismiss the dialog with the same click.
 
-`<Popover modal={false}>` lays down no backdrop: the outside press still closes the popover, and it also reaches whatever is under it. Use it for a panel that sits beside a control the user keeps working in — an @-mention picker under a text field, where a backdrop made the first click in the field only close the picker. It is the same option `Menubar` and `HoverCard` use. Web only: the native popover is a bottom sheet, which is always modal.
+`<Popover modal={false}>` lays down no backdrop: the outside press still closes the popover, and it also reaches whatever is under it. Use it for a panel that sits beside a control the user keeps working in — an @-mention picker under a text field, where a backdrop made the first click in the field only close the picker. It is the same option `Menubar` and `HoverCard` use. Web only: the native popover is a bottom sheet, which is always modal, or a platform popup, which a press outside always closes.
 
 ## The panel publishes its surface
 

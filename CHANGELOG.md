@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.3.0
+
+### Changed
+
+- **A popover is a popover on a desktop.** On a platform whose adapter reports `popup-surface` (OxyOS), the native `PopoverContent` opens beside its trigger in the platform's popup, as the native menus do, instead of a bottom sheet: a `dialog` named by its `label`, placed by `side`, `align` and the offsets, closed by Escape and by a press outside. The platform takes it through the keyboard (Tab goes round its controls, as a Mac's popover's), and the screen reader says it by its title as it opens. Without popups (a phone) it is the sheet, as before. See `docs/popover.mdx`.
+
+### Consumers
+
+No API change. A popover on OxyOS is now anchored; content that relied on the sheet's height is laid out at the panel's width (266 at least).
+
 ## 16.2.0
 
 ### Fixed
