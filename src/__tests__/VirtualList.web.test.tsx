@@ -252,7 +252,7 @@ it('binds the document to the focused Screen without a nested scroll element', (
   }
   const renderList = (active: boolean) => (
     <BloomThemeProvider fonts={false}>
-      <Screen documentScroll>
+      <Screen scroll="content" documentScroll>
         <Probe />
         <VirtualList screen={{ active }} data={[]} />
       </Screen>
@@ -281,9 +281,9 @@ it('drives persistent shell navigation from the focused route Screen only', () =
   }
   const ui = (focused: boolean) => (
     <BloomThemeProvider fonts={false}>
-      <Screen navigationScope="shared">
+      <Screen scroll="content" navigationScope="shared">
         <Probe name="shell" />
-        <Screen active={focused}>
+        <Screen scroll="content" active={focused}>
           <Probe name="route" />
           <VirtualList screen={{}} data={[]} />
         </Screen>
