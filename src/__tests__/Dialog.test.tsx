@@ -30,6 +30,31 @@ function Harness({
 }
 
 describe('Dialog (unified API)', () => {
+  it('is a dialog named by its title when it has no label, on a desktop window and a phone', () => {
+    for (const [width, height] of [
+      [1280, 800],
+      [390, 844],
+    ] as const) {
+      const size = mockWindowSize({ width, height });
+      try {
+        const { getByTestId, unmount } = renderWithTheme(
+          <Dialog open onClose={() => {}} title="notes.txt" testID="preview">
+            <Text>hello</Text>
+          </Dialog>,
+        );
+        const panel = getByTestId('preview');
+        expect([width, panel.props.role, panel.props.accessibilityLabel]).toEqual([
+          width,
+          'dialog',
+          'notes.txt',
+        ]);
+        unmount();
+      } finally {
+        size.mockRestore();
+      }
+    }
+  });
+
   it('does not render content until control.open() is called', () => {
     const { queryByText } = renderWithTheme(
       <Harness>

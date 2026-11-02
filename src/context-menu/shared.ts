@@ -17,8 +17,15 @@ export function toFloatingAnchor(anchor: ContextMenuAnchor): FloatingAnchor {
   return { top: anchor.top, bottom: anchor.bottom, left: anchor.left, right: anchor.right };
 }
 
+/**
+ * The anchor as a caller is told it: a point where it has no size (a press),
+ * else the box (the frame a trigger's accessibility action opens it at).
+ */
 export function pointAnchor(anchor: FloatingAnchor): ContextMenuAnchor {
-  return { x: anchor.left, y: anchor.top };
+  if (anchor.left === anchor.right && anchor.top === anchor.bottom) {
+    return { x: anchor.left, y: anchor.top };
+  }
+  return { top: anchor.top, right: anchor.right, bottom: anchor.bottom, left: anchor.left };
 }
 
 /**

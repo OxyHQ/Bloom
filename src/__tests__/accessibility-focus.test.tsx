@@ -16,7 +16,9 @@ import { AccessibilityInfo, Platform, View } from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
 
 import {
+  FOCUS_SETTLE_MS,
   useAccessibilityFocus,
+  useItemAccessibilityFocus,
   useRestoreAccessibilityFocus,
 } from '../hooks/use-accessibility-focus';
 
@@ -157,6 +159,92 @@ describe('useRestoreAccessibilityFocus', () => {
     });
     act(() => {
       jest.advanceTimersByTime(500);
+    });
+    expect(setFocus).not.toHaveBeenCalled();
+  });
+});
+
+describe('useItemAccessibilityFocus', () => {
+  /** A collection drawing the items `shown` (a virtualized list), `current` the one the keys moved to. */
+  function Items({ shown, current }: { shown: readonly string[]; current: string | null }) {
+    const focusItem = useItemAccessibilityFocus(current);
+    return (
+      <>
+        {shown.map((key) => (
+          <View key={key} testID={key} ref={(view) => focusItem(key, view)} />
+        ))}
+      </>
+    );
+  }
+  const nodes = new Map<string, object>();
+  const itemMock = {
+    createNodeMock: (element: React.ReactElement<{ testID?: string }>) => {
+      const key = element.props.testID ?? '';
+      const made = nodes.get(key) ?? { key };
+      nodes.set(key, made);
+      return made;
+    },
+  };
+  const focused = () => setFocus.mock.calls.map(([view]) => (view as { key: string }).key);
+  beforeEach(() => nodes.clear());
+
+  it('moves the cursor to the item the current key changes to, once it has settled', () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<Items shown={['a', 'b', 'c']} current={null} />, itemMock);
+    });
+    act(() => renderer.update(<Items shown={['a', 'b', 'c']} current="b" />));
+    expect(setFocus).not.toHaveBeenCalled();
+    act(() => {
+      jest.advanceTimersByTime(FOCUS_SETTLE_MS);
+    });
+    expect(focused()).toEqual(['b']);
+    act(() => renderer.update(<Items shown={['a', 'b', 'c']} current="c" />));
+    act(() => {
+      jest.advanceTimersByTime(FOCUS_SETTLE_MS);
+    });
+    expect(focused()).toEqual(['b', 'c']);
+  });
+
+  it('takes nothing as the collection appears with an item current, or as that row is drawn again', () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<Items shown={['a', 'b']} current="b" />, itemMock);
+    });
+    act(() => renderer.update(<Items shown={['a']} current="b" />));
+    act(() => renderer.update(<Items shown={['a', 'b']} current="b" />));
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+    expect(setFocus).not.toHaveBeenCalled();
+  });
+
+  it('moves the cursor to an item not drawn yet as it is drawn', () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<Items shown={['a', 'b']} current="a" />, itemMock);
+    });
+    act(() => renderer.update(<Items shown={['a', 'b']} current="z" />));
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+    expect(setFocus).not.toHaveBeenCalled();
+    act(() => renderer.update(<Items shown={['y', 'z']} current="z" />));
+    act(() => {
+      jest.advanceTimersByTime(FOCUS_SETTLE_MS);
+    });
+    expect(focused()).toEqual(['z']);
+  });
+
+  it('is native only', () => {
+    Platform.OS = 'web';
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<Items shown={['a', 'b']} current={null} />, itemMock);
+    });
+    act(() => renderer.update(<Items shown={['a', 'b']} current="b" />));
+    act(() => {
+      jest.runOnlyPendingTimers();
     });
     expect(setFocus).not.toHaveBeenCalled();
   });

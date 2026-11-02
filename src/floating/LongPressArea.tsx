@@ -18,11 +18,13 @@
  * and a finger that travels past the slop or lifts early cancels the timer.
  * Taps keep going to whatever the content itself makes pressable.
  *
- * Assistive tech reaches the menu through the `longpress` accessibility action
- * (TalkBack's double-tap-and-hold, VoiceOver's actions rotor).
+ * Assistive tech (and the keyboard's Menu key, through the platform) reaches
+ * the menu through the trigger's `longpress` accessibility action (TalkBack's
+ * double-tap-and-hold, VoiceOver's actions rotor), which the trigger declares
+ * and answers itself: the area only carries it.
  */
 import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { View, type AccessibilityActionEvent, type GestureResponderEvent } from 'react-native';
+import { View, type GestureResponderEvent } from 'react-native';
 
 import type { TriggerHandleProps } from './types';
 
@@ -86,15 +88,6 @@ export function LongPressArea({
     },
     [cancel],
   );
-  const onAccessibilityAction = useCallback(
-    (event: AccessibilityActionEvent) => {
-      if (event.nativeEvent.actionName === 'longpress' && !disabled) {
-        onLongPressRef.current?.(event as unknown as GestureResponderEvent);
-      }
-    },
-    [disabled],
-  );
-
   return (
     <View
       {...aria}
@@ -103,10 +96,6 @@ export function LongPressArea({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={accessibilityRole}
       accessibilityState={{ disabled: !!disabled }}
-      accessibilityActions={
-        disabled ? undefined : [{ name: 'longpress', label: accessibilityLabel }]
-      }
-      onAccessibilityAction={onAccessibilityAction}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={cancel}

@@ -2578,6 +2578,7 @@ const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
 
 const CONTEXT_MENU_MESSAGES: Translations['CONTEXT_MENU_MESSAGES'] = {
   contextMenu: 'Bağlam menüsü',
+  showMenu: 'Menüyü göster',
 };
 
 const SORTABLE_MEDIA_MESSAGES: Translations['SORTABLE_MEDIA_MESSAGES'] = {
