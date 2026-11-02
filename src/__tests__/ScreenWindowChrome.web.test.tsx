@@ -47,6 +47,7 @@ function mountWindow(options: Parameters<typeof fakeWindow>[0], onPressIn = () =
       <BloomThemeProvider mode="light" colorPreset="teal">
         <PlatformSurfaceProvider value={adapter}>
           <Screen
+            scroll="content"
             testID="root"
             header={
               <PageHeader

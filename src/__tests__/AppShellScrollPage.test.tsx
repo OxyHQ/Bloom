@@ -53,7 +53,7 @@ function Route({ probe }: { probe?: (screen: ScreenContextValue) => void }) {
     return null;
   }
   return (
-    <Screen documentScroll>
+    <Screen scroll="content" documentScroll>
       <Probe />
       <ScreenScrollView testID="route-scroll" contentContainerStyle={{ padding: 16 }}>
         <ReactNative.Text>Row</ReactNative.Text>
@@ -223,7 +223,7 @@ describe('web', () => {
         sidebar={{ items: NAV }}
       >
         <AppShellPanel>
-          <Screen documentScroll testID="route">
+          <Screen scroll="content" documentScroll testID="route">
             <ReactNative.Text>Short</ReactNative.Text>
           </Screen>
         </AppShellPanel>
@@ -235,7 +235,7 @@ describe('web', () => {
   it('outside a panel shell a document Screen stays one window tall', () => {
     setWidth(1440);
     const screen = renderIn(
-      <Screen documentScroll testID="route">
+      <Screen scroll="content" documentScroll testID="route">
         <ReactNative.Text>Short</ReactNative.Text>
       </Screen>,
     );

@@ -279,7 +279,7 @@ describe('a screen colour preset', () => {
             id: 'main',
             width: 620,
             content: (
-              <Screen colorPreset="rose">
+              <Screen scroll="content" colorPreset="rose">
                 <Preset testID="main" />
               </Screen>
             ),

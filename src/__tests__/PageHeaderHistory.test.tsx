@@ -33,7 +33,7 @@ function Page({
   header?: Partial<PageHeaderProps>;
 }) {
   return (
-    <Screen header={<PageHeader title={entry.name} testID="bar" {...header} />}>
+    <Screen scroll="content" header={<PageHeader title={entry.name} testID="bar" {...header} />}>
       <ReactNative.Text>{entry.name} body</ReactNative.Text>
     </Screen>
   );

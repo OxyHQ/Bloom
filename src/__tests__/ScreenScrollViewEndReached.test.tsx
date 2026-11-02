@@ -66,7 +66,7 @@ describe('ScreenScrollView onEndReached', () => {
     const onContentSizeChange = jest.fn();
     const tree = render(
       wrap(
-        <Screen>
+        <Screen scroll="content">
           <ScreenScrollView
             testID="scroll"
             onEndReached={onEndReached}
@@ -100,7 +100,7 @@ describe('ScreenScrollView onEndReached', () => {
     const onEndReached = jest.fn();
     const tree = render(
       wrap(
-        <Screen>
+        <Screen scroll="content">
           <ScreenScrollView
             testID="scroll"
             onEndReached={onEndReached}
@@ -129,7 +129,7 @@ describe('ScreenScrollView onEndReached', () => {
     const spy = jest.spyOn(Reanimated, 'useComposedEventHandler');
     render(
       wrap(
-        <Screen>
+        <Screen scroll="content">
           <ScreenScrollView testID="scroll" />
         </Screen>,
       ),
@@ -146,7 +146,7 @@ describe('ScreenScrollView contentContainerClassName', () => {
   it('pads the scroll content with the chrome and lays the class out inside it', () => {
     const tree = render(
       wrap(
-        <Screen header={<View />} headerHeight={70}>
+        <Screen scroll="content" header={<View />} headerHeight={70}>
           <ScreenScrollView
             testID="scroll"
             contentContainerClassName="gap-4 p-4"

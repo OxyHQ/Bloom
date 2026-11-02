@@ -498,7 +498,7 @@ it.each(['document', 'bounded'] as const)(
         flow,
       );
     const tree = render(draw());
-    expect(owner?.kind).toBe(flow === 'document' ? 'document' : 'element');
+    expect(owner).toMatchObject({ kind: flow === 'document' ? 'document' : 'element' });
     expect(tree.getByTestId('default-owner-viewport')).toBeDefined();
     tree.rerender(draw('content'));
     expect(owner).toBeNull();

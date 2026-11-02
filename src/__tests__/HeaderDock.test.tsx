@@ -154,10 +154,11 @@ it('uses the stable panel metrics above a route Screen instead of an inherited s
   }
   const ui = () => (
     <BloomThemeProvider fonts={false}>
-      <Screen>
+      <Screen scroll="content">
         <ScreenHostContext.Provider value={{ active: true, kind: 'element', metrics }}>
           <HeaderDockProvider>
             <Screen
+              scroll="content"
               header={<PageHeader testID="host-header" title="Profile" titleReveal="onDock" />}
             >
               <StickySection offset={300}>

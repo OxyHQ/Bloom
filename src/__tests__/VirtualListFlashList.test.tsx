@@ -40,7 +40,7 @@ it('renders through FlashList when it is installed, with the same Screen binding
   const getItemType = () => 'row';
   const tree = render(
     <BloomThemeProvider fonts={false}>
-      <Screen header={<Text>Header</Text>} headerHeight={80}>
+      <Screen scroll="content" header={<Text>Header</Text>} headerHeight={80}>
         <VirtualList
           ref={ref}
           screen={{}}

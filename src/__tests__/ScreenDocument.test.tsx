@@ -37,7 +37,7 @@ it('binds window by itself and disables retained or unmounted screen writers', (
   }
   const ui = (active: boolean) =>
     wrap(
-      <Screen documentScroll active={active}>
+      <Screen scroll="content" documentScroll active={active}>
         <Probe />
       </Screen>,
     );
@@ -72,7 +72,7 @@ it('gives a restoring document virtualizer sole ownership, then resumes the defa
   }
   const ui = (bound: boolean, pending = true) =>
     wrap(
-      <Screen documentScroll header={<View />} bottomBar={<View />}>
+      <Screen scroll="content" documentScroll header={<View />} bottomBar={<View />}>
         <Probe />
         {bound && <Virtualizer pending={pending} />}
       </Screen>,
@@ -109,7 +109,7 @@ it('does not adopt another window binding identity after a context update', () =
   }
   const tree = render(
     wrap(
-      <Screen documentScroll testID="page" header={<View />}>
+      <Screen scroll="content" documentScroll testID="page" header={<View />}>
         <Probe />
         <First />
         <RestoringOwner />
@@ -128,6 +128,7 @@ it('keeps natural document height and reserves measured chrome exactly once', ()
   const tree = render(
     wrap(
       <Screen
+        scroll="content"
         documentScroll
         testID="page"
         header={<View />}
@@ -170,6 +171,7 @@ it('positions only the header slot while content and standalone headers keep the
     wrap(
       <>
         <Screen
+          scroll="content"
           documentScroll
           testID="page"
           header={<PageHeader testID="managed" title="Managed" />}
@@ -196,6 +198,7 @@ it('does not carry a header slot position into an independent overlay or nested 
   const tree = render(
     wrap(
       <Screen
+        scroll="content"
         documentScroll
         header={
           <>
@@ -203,7 +206,7 @@ it('does not carry a header slot position into an independent overlay or nested 
             <ScreenScope>
               <PageHeader testID="overlay-header" title="Overlay" />
             </ScreenScope>
-            <Screen>
+            <Screen scroll="content">
               <PageHeader testID="nested-header" title="Nested" />
             </Screen>
           </>

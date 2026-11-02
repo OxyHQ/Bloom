@@ -23,7 +23,7 @@ it('gives an active dark screen light content and releases it when it deactivate
   const app = (active: boolean) => (
     <BloomProvider mode="light" fonts={false}>
       <BloomColorScope mode="dark" asChild>
-        <Screen active={active} />
+        <Screen scroll="content" active={active} />
       </BloomColorScope>
     </BloomProvider>
   );
