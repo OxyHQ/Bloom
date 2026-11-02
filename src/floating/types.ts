@@ -20,6 +20,8 @@ import type { BloomSize } from '../appearance';
  */
 import type { ComponentRef } from 'react';
 import type {
+  AccessibilityActionEvent,
+  AccessibilityActionInfo,
   AccessibilityRole,
   GestureResponderEvent,
   StyleProp,
@@ -199,7 +201,14 @@ export interface FloatingPanelProps extends FloatingPositionProps {
  */
 export interface TriggerHandleProps {
   accessibilityHint?: string;
-  onPress: (event: GestureResponderEvent) => void;
+  /**
+   * What a press does. None for a trigger a press does not open (a context
+   * menu's): an `asChild` child is then handed no press handler, which on
+   * native would make a plain `View` a pressable (react-native-css renders a
+   * `View` given `onPress` as a `Pressable`) — a keyboard stop that swallows
+   * Space and Return, and a touch responder, that the caller never asked for.
+   */
+  onPress?: (event: GestureResponderEvent) => void;
   onLongPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
   accessibilityLabel?: string;
@@ -207,6 +216,14 @@ export interface TriggerHandleProps {
   accessibilityRole?: AccessibilityRole;
   /** What the trigger shows chosen, read with its name: a select's value ("Theme, Dark"). */
   accessibilityValue?: { text?: string };
+  /**
+   * What an assistive technology (or the keyboard, through it) can ask of the
+   * trigger beyond activating it: a context menu's `longpress`, which opens
+   * its menu, as TalkBack's long press reaches a view. An `asChild` child's
+   * own actions are kept, and one it declares by the same name wins.
+   */
+  accessibilityActions?: readonly AccessibilityActionInfo[];
+  onAccessibilityAction?: (event: AccessibilityActionEvent) => void;
   'aria-expanded'?: boolean;
   /**
    * The trigger's id, so an enclosing `Field`'s label can point at it.

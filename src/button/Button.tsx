@@ -196,10 +196,16 @@ const ANDROID_LINK_HIT_SLOP = growVertical(LINK_HIT_SLOP);
  */
 type ButtonPressableProps = Pick<
   PressableProps,
+  | 'accessibilityActions'
   | 'accessibilityHint'
   | 'accessibilityLabel'
   | 'accessibilityRole'
   | 'accessibilityState'
+  | 'aria-valuemax'
+  | 'aria-valuemin'
+  | 'aria-valuenow'
+  | 'aria-valuetext'
+  | 'onAccessibilityAction'
   | 'className'
   | 'disabled'
   | 'hitSlop'
@@ -376,6 +382,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
     accessibilityLabel,
     accessibilityHint,
     accessibilityRole,
+    accessibilityValue,
+    accessibilityActions,
+    onAccessibilityAction,
     hitSlop,
     testID,
     className,
@@ -617,6 +626,14 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       accessibilityRole={accessibilityRole ?? (href != null ? 'link' : 'button')}
+      // Spelled flat, as React Native folds them back into the value and as
+      // the rest of Bloom spells a value (aria-state-source-census).
+      aria-valuetext={accessibilityValue?.text}
+      aria-valuenow={accessibilityValue?.now}
+      aria-valuemin={accessibilityValue?.min}
+      aria-valuemax={accessibilityValue?.max}
+      accessibilityActions={accessibilityActions}
+      onAccessibilityAction={onAccessibilityAction}
       // `aria-busy` matches what `Button.web.tsx` emits; react-native-web never
       // reads `accessibilityState`, React Native folds `aria-busy` back into it.
       aria-busy={loading || undefined}

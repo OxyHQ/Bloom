@@ -1,6 +1,7 @@
 export { useInteractionState, useInteractionStates } from './use-interaction-state';
 export {
   useAccessibilityFocus,
+  useItemAccessibilityFocus,
   useRestoreAccessibilityFocus,
 } from './use-accessibility-focus';
 export { useDelayedLoading } from './use-delayed-loading';

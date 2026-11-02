@@ -2551,6 +2551,7 @@ const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
 
 const CONTEXT_MENU_MESSAGES: Translations['CONTEXT_MENU_MESSAGES'] = {
   contextMenu: 'संदर्भ मेन्यू',
+  showMenu: 'मेन्यू दिखाएँ',
 };
 
 const SORTABLE_MEDIA_MESSAGES: Translations['SORTABLE_MEDIA_MESSAGES'] = {

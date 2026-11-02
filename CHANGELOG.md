@@ -2,6 +2,27 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.4.0
+
+### Added
+
+- **A context menu opens from the keyboard and the screen reader.** The native `ContextMenuTrigger` declares React Native's `longpress` accessibility action, named "Show menu" in the locale (`CONTEXT_MENU_MESSAGES.showMenu`, in every Bloom language): TalkBack's long press, a screen reader's custom action, and a platform's Menu key and Shift+F10 on the focused control (OxyOS) open the menu at the trigger, anchored to it as a menu button's menu is. A controlled caller is asked with the trigger's frame, a rect, and may anchor it elsewhere; a rect anchor that is the frame of the view the menu hangs from anchors the menu to that view, any other opens it from its edge by `side` and `align`. An `asChild` child keeps its own accessibility actions beside it, each answered by whoever declared it.
+- **`useItemAccessibilityFocus`** (`@oxy.so/bloom/hooks`): screen-reader focus that follows the current item of a collection that keeps the keyboard itself, as VoiceOver says each row of Finder's list the selection reaches. Only a change of the current item moves it; an item not drawn yet gets it as it is drawn. Native only. See `docs/hooks.mdx`.
+- **`Button` forwards `accessibilityValue`, `accessibilityActions` and `onAccessibilityAction`** to its native pressable (the value spelled flat, as `Pressable` folds it back), so a `ContextMenuTrigger asChild` around a `Button` gives it the menu's action. The web fork ignores them.
+
+### Changed
+
+- **A context menu's trigger claims no expanded state on native.** An area with a menu is no disclosure (Android's long-pressable views have none), so a screen reader says a dock icon as the button it is, never "collapsed". Screen-reader focus still comes back to the trigger as its menu closes, or to `anchorRef` alone when the menu hangs from a view of the caller's (it was given back to both).
+
+### Fixed
+
+- **A dialog with a title and no `label` is a dialog, named by its title** (native, every placement): its panel had no role, so a screen reader met a nameless group (a file manager's Quick Look). `label` still wins.
+- **A context menu's trigger hands an `asChild` child no press handler.** A no-op `onPress` on a plain `View` made react-native-css render it as a `Pressable`: a keyboard stop that took Space and Return for nothing, and a touch responder.
+
+### Consumers
+
+Nothing to change. A context menu's trigger now carries a custom action, "Show menu", that screen readers list; tests reading a native trigger's `aria-expanded` will find none. See `docs/context-menu.mdx`.
+
 ## 16.3.0
 
 ### Changed

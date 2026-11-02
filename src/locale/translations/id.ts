@@ -2608,6 +2608,7 @@ const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
 
 const CONTEXT_MENU_MESSAGES: Translations['CONTEXT_MENU_MESSAGES'] = {
   contextMenu: 'Menu konteks',
+  showMenu: 'Tampilkan menu',
 };
 
 const SORTABLE_MEDIA_MESSAGES: Translations['SORTABLE_MEDIA_MESSAGES'] = {
