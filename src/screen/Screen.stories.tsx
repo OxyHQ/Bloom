@@ -170,7 +170,7 @@ export const DeclarativeHost: Story = {
 
 /** The default route viewport follows the document or its bounded Deck column. */
 export const DefaultRouteHost: Story = {
-  parameters: { layout: 'fullscreen', bloomScroll: 'document', controls: { disable: true } },
+  parameters: { layout: 'fullscreen', controls: { disable: true } },
   render: function DefaultRouteHost() {
     const [deck, setDeck] = useState(false);
     const [list, setList] = useState(false);

@@ -32,24 +32,26 @@ try {
       };
     });
   for (const list of [false, true]) {
-    if (list) await page.getByTestId('default-toggle-list').evaluate((node) => node.click());
+    if (list) await page.getByTestId('default-toggle-list').click();
     let state = await read();
     assert.equal(state.kind, 'document');
     assert.equal(state.ownerCount, 1);
     assert.ok(state.horizontalOverflow <= 1);
     assert.ok(state.panel.bottom >= state.body.bottom - 1, 'document panel encloses route content');
-    await page.evaluate(() => window.scrollTo(0, 1000));
+    await page.mouse.move(state.panel.x + state.panel.width / 2, 450);
+    await page.mouse.wheel(0, 1000);
     await page.waitForTimeout(200);
     assert.ok((await read()).documentTop > 300, 'document scrolls long content');
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.getByTestId('default-toggle-host').evaluate((node) => node.click());
+    await page.getByTestId('default-toggle-host').click();
     await page.waitForTimeout(300);
     state = await read();
     assert.equal(state.kind, 'element');
     assert.equal(state.ownerCount, 1);
-    await viewport.evaluate((node) => {
-      node.scrollTop = 500;
-    });
+    const box = await viewport.boundingBox();
+    assert.ok(box && box.width >= 300 && box.height >= 400, 'Deck viewport has usable dimensions');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, 500);
     await page.waitForTimeout(200);
     state = await read();
     assert.ok(state.ownerTop > 300, 'Deck scrolls the column');
@@ -57,7 +59,7 @@ try {
     await viewport.evaluate((node) => {
       node.scrollTop = 0;
     });
-    await page.getByTestId('default-toggle-host').evaluate((node) => node.click());
+    await page.getByTestId('default-toggle-host').click();
     await page.waitForTimeout(300);
     assert.equal((await read()).kind, 'document');
   }
