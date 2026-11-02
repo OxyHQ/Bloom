@@ -48,6 +48,7 @@ import { useDocumentEndReached } from '../screen/use-document-end-reached';
 import { DEFAULT_END_REACHED_THRESHOLD } from '../screen/use-end-reached';
 import { useHeaderDockInset } from '../layout/header-dock';
 import { Z_INDEX } from '../styles/z-index';
+import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import type { CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
@@ -350,7 +351,7 @@ function VirtualListWebInner<T>(
   }, [measureElement, active]);
 
   const flatStyle = StyleSheet.flatten(style);
-  const flatContentStyle = StyleSheet.flatten(contentContainerStyle) as CSSProperties | undefined;
+  const flatContentStyle = resolveNativeWebStyle(contentContainerStyle);
 
   const renderCell = (index: number) => {
     const item = items[index];

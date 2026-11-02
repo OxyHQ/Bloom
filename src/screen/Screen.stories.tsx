@@ -208,11 +208,13 @@ export const DefaultRouteHost: Story = {
                 >
                   {list ? (
                     <VirtualList
+                      testID="default-owner-list"
+                      contentContainerStyle={{ paddingHorizontal: 16 }}
                       data={rows}
                       estimatedItemSize={56}
                       keyExtractor={(item) => item}
                       renderItem={({ item }) => (
-                        <View style={{ height: 56 }}>
+                        <View testID="default-owner-row" style={{ height: 56 }}>
                           <Text>{item}</Text>
                         </View>
                       )}
