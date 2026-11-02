@@ -80,6 +80,22 @@ function coverSource(
   return image && image.length > 0 ? [...image] : undefined;
 }
 
+/**
+ * The URL as a person reads it, for a card whose site gave no title: host and
+ * path, without the scheme, `www.`, query string, fragment or trailing slash.
+ * `https://www.example.com/a/b-c/?utm_source=x#top` reads `example.com/a/b-c`.
+ * Undefined for an unparseable URL, so the caller falls back to the raw string.
+ */
+function readableUrl(url: string): string | undefined {
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname.replace(/\/+$/, '');
+    return `${parsed.hostname.replace(/^www\./, '')}${path}`;
+  } catch {
+    return undefined;
+  }
+}
+
 const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   url,
   title,
@@ -95,9 +111,12 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
 
   const { displaySiteName, displayTitle } = useMemo(() => {
     const host = hostnameOf(url);
+    const displayTitle = title ?? readableUrl(url) ?? url;
+    const displaySiteName = siteName ?? host;
     return {
-      displaySiteName: siteName ?? host,
-      displayTitle: title ?? host ?? url,
+      // A bare origin has the host for both: say it once, not twice.
+      displaySiteName: displaySiteName === displayTitle ? undefined : displaySiteName,
+      displayTitle,
     };
   }, [url, siteName, title]);
 

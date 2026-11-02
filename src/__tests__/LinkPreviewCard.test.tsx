@@ -31,13 +31,19 @@ describe('LinkPreviewCard', () => {
     expect(getByText('The summary of the article.')).toBeTruthy();
   });
 
-  it('falls back to the URL hostname for the title and site name', () => {
-    const { getAllByText } = renderWithTheme(
-      <LinkPreviewCard url="https://www.example.com/path" />,
+  it('falls back to the hostname for the site name and the readable URL for the title', () => {
+    const { getByText } = renderWithTheme(
+      <LinkPreviewCard url="https://www.example.com/news/story-one/?utm_source=x#top" />,
     );
-    // `www.` is stripped; the bare hostname is used for both the site name line
-    // and the title fallback.
-    expect(getAllByText('example.com').length).toBe(2);
+    // `www.`, the query, the fragment and the trailing slash are dropped: the
+    // card says where it goes instead of repeating the host.
+    expect(getByText('example.com')).toBeTruthy();
+    expect(getByText('example.com/news/story-one')).toBeTruthy();
+  });
+
+  it('shows the host once for a bare origin', () => {
+    const { getAllByText } = renderWithTheme(<LinkPreviewCard url="https://example.com/" />);
+    expect(getAllByText('example.com').length).toBe(1);
   });
 
   it('calls the supplied onPress handler', () => {
