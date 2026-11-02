@@ -2,6 +2,12 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.0.1
+
+### Fixed
+
+- **A link card with no unfurled metadata no longer repeats the host.** `LinkPreviewCard` showed the hostname as both the site name and the title when a site gave no Open Graph data, so a publisher that refuses automated readers produced a card that read `nytimes.com` / `nytimes.com`. The site name is still the host; the title is now the readable URL (host and path, without the scheme, `www.`, query string or fragment). A bare origin shows its host once. Cards that have a title or site name are unchanged. See `docs/link-preview.mdx`.
+
 ## 15.92.3
 
 ### Fixed

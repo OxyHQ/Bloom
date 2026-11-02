@@ -33,9 +33,12 @@ import { LinkPreviewCard } from '@oxy.so/bloom/link-preview';
 ## Only `url` is required
 
 Everything else is optional because unfurling fails all the time — a site with
-no Open Graph tags, a link behind auth, a timeout. The hostname is the fallback
-for both the site name and the title, so a bare URL still renders a usable card
-rather than an empty box with a shadow.
+no Open Graph tags, a link behind auth, a timeout, a publisher that refuses
+automated readers. The hostname is the fallback for the site name and the
+readable URL (host and path, without the scheme, `www.`, query string or
+fragment) is the fallback for the title, so a bare URL still renders a card that
+says where it goes rather than an empty box with a shadow. A bare origin shows
+its host once.
 
 Design the calling code for that: pass whatever the unfurler returned, without
 deciding not to render when the metadata is thin.
