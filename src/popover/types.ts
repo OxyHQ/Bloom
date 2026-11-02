@@ -18,7 +18,8 @@ export type PopoverProps = React.PropsWithChildren<
      * where a backdrop made the first click anywhere only close the picker.
      * The same option `Menubar` and `HoverCard` use, under Radix's name.
      *
-     * Web only: the native popover is a bottom sheet, which is always modal.
+     * Web only: the native popover is a bottom sheet, which is always modal, or
+     * a platform popup, which a press outside always closes.
      */
     modal?: boolean;
   }

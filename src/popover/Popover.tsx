@@ -189,7 +189,10 @@ function PopoverPopup({
   style,
   testID,
   children,
-}: Pick<PopupSurfaceProps, 'anchorRef' | 'side' | 'align' | 'sideOffset' | 'alignOffset' | 'label'> & {
+}: Pick<
+  PopupSurfaceProps,
+  'anchorRef' | 'side' | 'align' | 'sideOffset' | 'alignOffset' | 'label'
+> & {
   PopupSurface: React.ComponentType<PopupSurfaceProps>;
   close: () => void;
   dismissible: boolean;
