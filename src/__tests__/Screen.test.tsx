@@ -23,7 +23,7 @@ function wrap(children: React.ReactNode) {
 it('reserves measured chrome once and preserves consumer content padding', () => {
   const tree = render(
     wrap(
-      <Screen testID="screen" header={<View />} bottomBar={<View />}>
+      <Screen scroll="content" testID="screen" header={<View />} bottomBar={<View />}>
         <ScreenScrollView
           testID="scroll"
           contentContainerStyle={{ paddingTop: 8, paddingBottom: 12 }}
@@ -52,7 +52,7 @@ it("stacks its own bar on the app's bottom navigation and clears both", () => {
     wrap(
       <BottomEdgeProvider>
         <Navigation />
-        <Screen testID="screen" bottomBar={<View />}>
+        <Screen scroll="content" testID="screen" bottomBar={<View />}>
           <ScreenScrollView testID="scroll" />
         </Screen>
       </BottomEdgeProvider>,
@@ -78,10 +78,10 @@ it('isolates nested motion contexts and only registers the active scroller', () 
   }
   const tree = render(
     wrap(
-      <Screen>
+      <Screen scroll="content">
         <Probe id="outer" />
         <ScreenScrollView active={false} />
-        <Screen>
+        <Screen scroll="content">
           <Probe id="inner" />
           <ScreenScrollView />
         </Screen>
@@ -99,7 +99,7 @@ it('keeps pending restored content laid out and forwards the scroll ref', () => 
   const ref = React.createRef<React.ComponentRef<typeof import('react-native').ScrollView>>();
   const tree = render(
     wrap(
-      <Screen>
+      <Screen scroll="content">
         <ScreenScrollView
           ref={ref}
           testID="restored"
@@ -120,6 +120,7 @@ it('seeds custom chrome footprints before any layout and positions a standalone 
   const tree = render(
     wrap(
       <Screen
+        scroll="content"
         testID="screen"
         header={<View />}
         primaryAction={<View testID="action" />}
@@ -145,7 +146,7 @@ it('deactivates all retained screen scroll writers at the scope boundary', () =>
   }
   const ui = (active: boolean) =>
     wrap(
-      <Screen active={active}>
+      <Screen scroll="content" active={active}>
         <Probe />
         <ScreenScrollView />
       </Screen>,
@@ -170,7 +171,12 @@ it('removes bottom chrome and its reserved footprint while the keyboard is visib
   try {
     const tree = render(
       wrap(
-        <Screen testID="screen" primaryAction={<View testID="action" />} bottomBarHeight={96}>
+        <Screen
+          scroll="content"
+          testID="screen"
+          primaryAction={<View testID="action" />}
+          bottomBarHeight={96}
+        >
           <ScreenScrollView testID="scroll" />
         </Screen>,
       ),
@@ -205,6 +211,7 @@ it('retains a composer and its footprint while the native keyboard is visible', 
     const tree = render(
       wrap(
         <Screen
+          scroll="content"
           bottomBar={<View testID="composer" />}
           bottomBarHeight={96}
           bottomBarKeyboardBehavior="visible"
@@ -233,17 +240,17 @@ it('inherits shell navigation motion while keeping route offsets local and modal
   }
   render(
     wrap(
-      <Screen navigationScope="shared" bottomBar={<View />} bottomBarHeight={96}>
+      <Screen scroll="content" navigationScope="shared" bottomBar={<View />} bottomBarHeight={96}>
         <Probe id="shell" />
-        <Screen active={false}>
+        <Screen scroll="content" active={false}>
           <Probe id="background" />
           <ScreenScrollView />
         </Screen>
-        <Screen>
+        <Screen scroll="content">
           <Probe id="route" />
           <ScreenScrollView />
         </Screen>
-        <Screen navigationScope="isolated">
+        <Screen scroll="content" navigationScope="isolated">
           <Probe id="modal" />
         </Screen>
       </Screen>,
@@ -270,8 +277,8 @@ it('keeps retained shell descendants inactive even if their own active prop defa
   }
   render(
     wrap(
-      <Screen navigationScope="shared" active={false}>
-        <Screen>
+      <Screen scroll="content" navigationScope="shared" active={false}>
+        <Screen scroll="content">
           <Probe />
           <ScreenScrollView />
         </Screen>
@@ -290,8 +297,13 @@ it('starts without inherited bottom clearance when mounted while the native keyb
   try {
     const tree = render(
       wrap(
-        <Screen navigationScope="shared" bottomBar={<View testID="bar" />} bottomBarHeight={96}>
-          <Screen>
+        <Screen
+          scroll="content"
+          navigationScope="shared"
+          bottomBar={<View testID="bar" />}
+          bottomBarHeight={96}
+        >
+          <Screen scroll="content">
             <ScreenScrollView testID="nested-scroll" />
           </Screen>
         </Screen>,
@@ -321,10 +333,10 @@ it('isolates overlay screen motion from its trigger screen without losing the vi
   render(
     wrap(
       <BloomScope size="sm">
-        <Screen navigationScope="shared" active={false}>
+        <Screen scroll="content" navigationScope="shared" active={false}>
           <Probe id="background" />
           <OverlayRoot>
-            <Screen>
+            <Screen scroll="content">
               <Probe id="overlay" />
             </Screen>
           </OverlayRoot>
@@ -353,12 +365,12 @@ it.each(['light', 'dark'] as const)(
     const tree = render(
       <BloomThemeProvider fonts={false} mode={mode}>
         <SurfaceLevelProvider level={1} fill="#334455">
-          <Screen testID="screen">
+          <Screen scroll="content" testID="screen">
             <Probe />
           </Screen>
-          <Screen testID="override" style={{ backgroundColor: '#123456' }} />
+          <Screen scroll="content" testID="override" style={{ backgroundColor: '#123456' }} />
         </SurfaceLevelProvider>
-        <Screen testID="standalone" />
+        <Screen scroll="content" testID="standalone" />
       </BloomThemeProvider>,
     );
     expect(resolvedStyle(tree.getByTestId('screen').props.style).backgroundColor).toBe(
@@ -391,7 +403,7 @@ it('hands the app bottom bar to its scroller under it when it has no bar of its 
             maskColor: '#ffffff',
           }}
         >
-          <Screen testID="screen">
+          <Screen scroll="content" testID="screen">
             <ScreenScrollView testID="scroll" />
           </Screen>
         </AppShellRegionContext.Provider>
@@ -463,7 +475,7 @@ it.each(['light', 'dark'] as const)(
       <BloomThemeProvider mode={outer} fonts={false}>
         <SurfaceLevelProvider level={1} fill={outer === 'light' ? '#ffffff' : '#000000'}>
           <BloomColorScope mode={inner}>
-            <Screen style={{ backgroundColor: background }}>
+            <Screen scroll="content" style={{ backgroundColor: background }}>
               <Probe />
             </Screen>
           </BloomColorScope>
@@ -474,3 +486,29 @@ it.each(['light', 'dark'] as const)(
     expect(contrast).toBeGreaterThanOrEqual(4.5);
   },
 );
+
+it('defaults to reserving chrome around a native scroll view', () => {
+  const tree = render(
+    wrap(
+      <Screen testID="default" header={<View />} bottomBar={<View />}>
+        <ScreenScrollView testID="default-list" />
+      </Screen>,
+    ),
+  );
+  fireEvent(tree.getByTestId('default-header'), 'layout', {
+    nativeEvent: { layout: { height: 70 } },
+  });
+  fireEvent(tree.getByTestId('default-bottom'), 'layout', {
+    nativeEvent: { layout: { height: 92 } },
+  });
+  expect(resolvedStyle(tree.getByTestId('default-content').props.style)).toMatchObject({
+    paddingTop: 70,
+    paddingBottom: 108,
+  });
+  expect(resolvedStyle(tree.getByTestId('default-list').props.contentContainerStyle)).toMatchObject(
+    {
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+  );
+});
