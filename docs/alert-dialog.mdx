@@ -31,12 +31,28 @@ import { AlertDialog } from '@oxy.so/bloom/alert-dialog';
 | `title`         | the question                                                  |
 | `description`   | the consequence                                               |
 | `confirmLabel` / `cancelLabel` | the button text                                |
-| `onConfirm` / `onCancel` | what each button does                                |
+| `onConfirm` / `onCancel` | what each button does; `onCancel` also answers Escape and the backdrop |
 | `destructive`   | paints the confirm button in the error role                   |
 | `hideCancel`    | one button only — an acknowledgement, not a choice            |
 | `dismissible`   | whether a backdrop press or Escape closes it                  |
+| `defaultAction` | the button the keyboard and the screen reader start on (`'cancel'` for a safe default) |
 
 The default Confirm / Cancel words are localised via `BloomProvider locale`; `confirmLabel` / `cancelLabel` still win.
+
+## Escape is Cancel; the default button
+
+A dismissal no button answered — Escape, the backdrop, Android Back — answers as the cancel button
+does: `onCancel` runs, then `onOpenChange(false)`, as a Mac's Escape presses an alert's Cancel button.
+A caller whose cancel undoes something (a display mode on trial, reverted) hears it however the
+person said no. An acknowledgement (`hideCancel`) has no cancel to run.
+
+`defaultAction` is the alert's default button, which the keyboard's focus and the screen reader's
+start on as it opens (and Return then presses), rather than its first control: `'cancel'` where the
+safe answer is to cancel, as a mode on trial that may have left the screen unreadable is reverted
+by Return. On a native host that gives Bloom the window's keys (OxyOS) the focus is asked in the
+commit that mounts the dialog, so it starts there and is said once; on iOS and Android once it is
+laid out; on the web the button focuses itself, which the modal's focus keeps. It is `DialogAction`'s
+`initialFocus`.
 
 There is no free-form action array: the shape is confirm-and-cancel, and that
 constraint is the point. A dialog with three or four actions is a menu wearing

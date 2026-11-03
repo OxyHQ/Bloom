@@ -253,16 +253,20 @@ describe('SettingsModal shell', () => {
   });
 
   it('shows the saved toast when a page reports a save, then hides it', () => {
-    const { getByTestId } = renderWithTheme(<Controlled />);
+    const { getByTestId, queryByTestId } = renderWithTheme(<Controlled />);
     flush();
     pressHost(getByTestId('settings-nav-profile'));
     const toast = () =>
       resolvedStyle(getByTestId('settings-saved', { includeHiddenElements: true }).props.style);
-    expect(toast().opacity).toBe(0);
+    // Hidden, it is not there at all: an invisible "Saved" was in the screen reader's tree.
+    expect(queryByTestId('settings-saved', { includeHiddenElements: true })).toBeNull();
     act(() => {
       getByTestId('save').props.onPress();
     });
     expect(toast().opacity).toBe(1);
+    // It comes with its row, a polite status the screen reader says as it appears.
+    const row = getByTestId('settings-saved', { includeHiddenElements: true }).parent?.parent;
+    expect(row?.props).toMatchObject({ role: 'status', accessibilityLiveRegion: 'polite' });
     expect(toast()).toMatchObject({
       borderWidth: 1,
       paddingLeft: 6,
@@ -273,7 +277,7 @@ describe('SettingsModal shell', () => {
     act(() => {
       jest.advanceTimersByTime(2100);
     });
-    expect(toast().opacity).toBe(0);
+    expect(queryByTestId('settings-saved', { includeHiddenElements: true })).toBeNull();
   });
 });
 

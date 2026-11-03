@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useEffect, useRef } from 'react';
+import type React from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 
 import type { DialogAction, DialogProps } from '../dialog';
 import { useDialogControl } from '../dialog/context';
@@ -54,6 +55,7 @@ export function createAlertDialog(Dialog: DialogComponent) {
     destructive = false,
     hideCancel = false,
     dismissible = true,
+    defaultAction,
     cardStyle,
     testID,
   }: AlertDialogProps) {
@@ -73,11 +75,20 @@ export function createAlertDialog(Dialog: DialogComponent) {
     // flips. When a consumer flips `visible` to `false`, we imperatively
     // `close()` so the exit animation still plays.
     const closingFromPropRef = useRef(false);
+    // Whether this showing was answered by one of its buttons, so a close that
+    // follows the answer is not taken for Escape or the backdrop.
+    const answeredRef = useRef(false);
+    const shownRef = useRef(false);
     useEffect(() => {
       if (visible) {
+        shownRef.current = true;
+        answeredRef.current = false;
+        closingFromPropRef.current = false;
         control.open();
         return;
       }
+      // Closed before it was ever shown (mounted closed): nothing is closing.
+      if (!shownRef.current) return;
       closingFromPropRef.current = true;
       control.close();
     }, [visible, control]);
@@ -87,13 +98,21 @@ export function createAlertDialog(Dialog: DialogComponent) {
     // to the consumer — a consumer-initiated close (they flipped `visible` to
     // `false`) must not re-enter `onClose`, preserving the previous controlled
     // semantics where a programmatic close does not fire `onClose`.
+    //
+    // A user dismissal that no button answered — Escape, the backdrop, Android
+    // Back — answers as the cancel button does (`onCancel`), as a Mac's Escape
+    // presses an alert's Cancel button: the safe answer, which a caller whose
+    // cancel undoes something (a display mode on trial, reverted) must hear.
     const handleClose = useCallback(() => {
+      const answered = answeredRef.current;
+      answeredRef.current = false;
       if (closingFromPropRef.current) {
         closingFromPropRef.current = false;
         return;
       }
+      if (!answered && !hideCancel) onCancel?.();
       onOpenChange(false);
-    }, [onOpenChange]);
+    }, [onOpenChange, onCancel, hideCancel]);
 
     // Confirm/cancel map onto the Dialog's declarative action row. Both keep the
     // default `shouldCloseOnPress` (true): the button runs the exit animation
@@ -106,8 +125,12 @@ export function createAlertDialog(Dialog: DialogComponent) {
     const actions: DialogAction[] = [
       {
         label: confirmLabel,
-        onPress: onConfirm,
+        onPress: () => {
+          answeredRef.current = true;
+          onConfirm?.();
+        },
         color: destructive ? 'destructive' : 'default',
+        initialFocus: defaultAction === 'confirm',
       },
     ];
     if (!hideCancel) {
@@ -115,8 +138,12 @@ export function createAlertDialog(Dialog: DialogComponent) {
       // animation), then runs `onCancel` as a close-completion callback.
       actions.push({
         label: cancelLabel,
-        onPress: onCancel,
+        onPress: () => {
+          answeredRef.current = true;
+          onCancel?.();
+        },
         color: 'cancel',
+        initialFocus: defaultAction === 'cancel',
       });
     }
 

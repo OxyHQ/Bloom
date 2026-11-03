@@ -5,9 +5,9 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { TextInput } from 'react-native';
+import { Text, TextInput } from 'react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { SettingsModal } from '../settings-modal';
+import { SettingsModal, useSettingsSavedToast } from '../settings-modal';
 import { resetOverlayStack } from '../overlay/stack';
 import { pushFloatingEscape } from '../floating/escape-stack';
 import { RiSettings6Line } from '../icons/remix/RiSettings6Line';
@@ -182,4 +182,50 @@ it('closes on Escape pressed before the enter frame, instead of the enter reopen
   flush();
   expect(onClose).toHaveBeenCalledTimes(1);
   expect(document.querySelector('[role="dialog"]')).toBeNull();
+});
+
+test('the saved toast is hidden from assistive technologies until shown, in a status that is always there', () => {
+  function SavePage() {
+    const showSaved = useSettingsSavedToast();
+    return <Text onPress={showSaved}>Save</Text>;
+  }
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="light">
+        <SettingsModal
+          open
+          testID="settings"
+          initialView="page"
+          onClose={() => {}}
+          groups={[
+            {
+              label: 'Settings',
+              items: [{ key: 'general', page: 'general', label: 'General', icon: RiSettings6Line }],
+            },
+          ]}
+          pages={{ general: { title: 'General', content: <SavePage /> } }}
+        />
+      </BloomThemeProvider>,
+    ),
+  );
+  flush();
+  flush();
+  const pill = () => document.querySelector('[data-testid="settings-saved"]') as HTMLElement;
+  // Mounted for its fade, but no part of the accessibility tree while unseen.
+  expect(pill().getAttribute('aria-hidden')).toBe('true');
+  const region = pill().parentElement as HTMLElement;
+  expect(region.getAttribute('role')).toBe('status');
+  expect(region.getAttribute('aria-live')).toBe('polite');
+  act(() => {
+    const saves = Array.from(document.querySelectorAll('div')).filter(
+      (node) => node.textContent === 'Save',
+    );
+    (saves[saves.length - 1] as HTMLElement).click();
+  });
+  // Shown: its text appears in the status region, which says it once.
+  expect(pill().getAttribute('aria-hidden')).toBeNull();
+  act(() => {
+    jest.advanceTimersByTime(2400);
+  });
+  expect(pill().getAttribute('aria-hidden')).toBe('true');
 });

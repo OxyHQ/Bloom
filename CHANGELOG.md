@@ -2,6 +2,24 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.14.0
+
+### Added
+
+- **`AlertDialog`'s default button: `defaultAction`.** `'cancel'` puts the keyboard's focus and the screen reader's on the cancel button as the alert opens, so Return presses it, as a Mac's alert starts on its default button: for an alert whose safe answer is to cancel (a display mode on trial, reverted). It is `DialogAction`'s new `initialFocus`, which any `Dialog` action can set. On a native host that gives Bloom the window's keys (OxyOS) the focus is asked in the commit that mounts the dialog, so the dialog starts there and the screen reader says it once; on iOS and Android once the button is laid out; on the web the button focuses itself.
+
+### Changed
+
+- **Escape is Cancel.** A dismissal of an `AlertDialog` that no button answered — Escape, the backdrop, Android Back — now runs `onCancel` (then `onOpenChange(false)`), as the cancel button does and as a Mac's Escape presses an alert's Cancel button. It ran `onOpenChange` alone, so a caller whose cancel undoes something never heard Escape. An alert mounted closed no longer swallows the first dismissal after it opens.
+
+### Fixed
+
+- **The settings' Saved toast leaves the accessibility tree while unseen.** On native it was mounted at opacity 0 for as long as `SettingsModal` or `SettingsLayout` was open, and a screen reader's cursor read "Saved" there; it is now mounted only while shown, its row a polite `status` that the screen reader says once as it appears. On the web the pill stays mounted for its fade, `aria-hidden` while not shown, inside a `status` region that is always there, so its text appearing is said once (it was a polite region whose text never changed, so it was never said).
+
+### Consumers
+
+Nothing to change. An `AlertDialog` with an `onCancel` now hears Escape and the backdrop there too; one whose `onCancel` and `onOpenChange` both undo the same thing runs it twice, as a cancel press already did.
+
 ## 16.13.0
 
 ### Added
