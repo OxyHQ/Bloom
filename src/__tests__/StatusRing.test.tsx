@@ -5,6 +5,7 @@ import * as Reanimated from 'react-native-reanimated';
 import { StatusRing } from '../loading/StatusRing';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Surface } from '../surface';
+import { useTheme } from '../theme/use-theme';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { cardFill } from './support/card-surface';
 import { resolvedStyle } from './support/rendered-style';
@@ -124,7 +125,7 @@ it('keeps transition layers mounted and animates matching success and error glyp
 });
 
 it.each(['light', 'dark'] as const)(
-  'uses the canonical nested Surface material in %s without painting idle',
+  'uses the canonical secondary Surface material in %s without painting idle',
   (mode) => {
     const wrap = ({ children }: React.PropsWithChildren) => (
       <BloomThemeProvider mode={mode} fonts={false}>
@@ -133,7 +134,19 @@ it.each(['light', 'dark'] as const)(
         </SurfaceLevelProvider>
       </BloomThemeProvider>
     );
-    const reference = render(<Surface radius={24} cornerCurve="round" />, { wrapper: wrap });
+    function Reference() {
+      const { colors } = useTheme();
+      return (
+        <Surface
+          radius={24}
+          cornerCurve="round"
+          fill={colors.backgroundSecondary}
+          rim={false}
+          sheen={false}
+        />
+      );
+    }
+    const reference = render(<Reference />, { wrapper: wrap });
     const view = render(
       <StatusRing state="success" accessibilityLabel="Complete">
         <Text>Brand</Text>

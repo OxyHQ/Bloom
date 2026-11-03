@@ -150,9 +150,11 @@ shrinks and fades as the loading ring appears and begins rotating. Success and
 error crossfade into matching centered check and X glyphs. Returning to idle
 restores the same mounted artwork. Decorative layers remain mounted through
 transitions; inactive rotation stops. Reduced motion settles directly into each state.
-The active circular backing is the canonical `Surface`, inheriting Bloom material
-and nested theme context without a custom fill. Its opacity is zero in idle;
-the outer layout stays transparent in every state.
+The active circular backing is the canonical `Surface` using Bloom's
+`backgroundSecondary` theme role. Its rim and native sheen are disabled because
+the status indicator owns its outline. Web fades the material through shared
+surface presence, preserving its backdrop; native uses opacity. Presence is zero
+in idle, and the outer layout stays transparent in every state.
 
 This is controlled presentation. The host decides when success is authoritative,
 whether to restore the artwork, and when to close its surface; the ring owns no
