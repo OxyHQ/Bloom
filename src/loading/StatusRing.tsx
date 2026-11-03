@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -13,6 +13,9 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useTheme } from '../theme/use-theme';
 import { SpinnerRing } from './SpinnerRing';
 import { Surface } from '../surface';
+import { surfacePresenceStyle } from '../surface/use-surface-presence';
+
+const IS_WEB = Platform.OS === 'web';
 
 export interface StatusRingProps {
   state: 'idle' | 'loading' | 'success' | 'error';
@@ -81,7 +84,7 @@ export function StatusRing({
   );
   const backgroundStyle = useAnimatedStyle(
     () => ({
-      opacity: 1 - brand.value,
+      ...(IS_WEB ? {} : { opacity: 1 - brand.value }),
     }),
     [brand],
   );
@@ -111,10 +114,19 @@ export function StatusRing({
       >
         <Animated.View
           testID="bloom-status-ring-background"
-          style={[StyleSheet.absoluteFill, backgroundStyle]}
+          style={[
+            StyleSheet.absoluteFill,
+            Platform.OS === 'web'
+              ? surfacePresenceStyle(state === 'idle' ? 0 : 1, reduced ? 0 : 220)
+              : undefined,
+            backgroundStyle,
+          ]}
         >
           <Surface
             testID="bloom-status-ring-surface"
+            fill={colors.backgroundSecondary}
+            rim={false}
+            sheen={false}
             radius={size / 2}
             cornerCurve="round"
             style={StyleSheet.absoluteFill}

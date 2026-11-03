@@ -3,7 +3,7 @@ import { ConcentricProvider } from '../concentric/ConcentricProvider';
 import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
 import { resolveSurfaceGeometry } from './resolve-surface-geometry';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { forwardRef, memo, useCallback, useRef } from 'react';
+import { forwardRef, memo, useCallback, useRef } from 'react';
 import type { ComponentRef } from 'react';
 import { StyleSheet, type View } from 'react-native';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
@@ -39,6 +39,8 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     {
       children,
       fill,
+      rim = true,
+      sheen: _sheen = true,
       radius,
       cornerCurve = SURFACE_SHAPES.panel.curve,
       style,
@@ -117,12 +119,12 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     );
     useBakedMaterial(localRef, material.painted, [materialRecipe.paint.paintFill, optics]);
     const baseStyle: WebCssStyle = {
-      ...surfaceOpticsVars(optics, geometry.radius ?? resolvedStyle?.borderRadius),
+      ...surfaceOpticsVars(optics, geometry.radius ?? resolvedStyle?.borderRadius, rim),
       ...geometry.style,
       backgroundColor: 'transparent',
       '--bloom-surface-fill': materialRecipe.paint.paintFill,
       '--bloom-surface-solid': materialRecipe.paint.solidFill,
-      [SURFACE_HAIRLINE_VAR]: materialRecipe.paint.hairline,
+      [SURFACE_HAIRLINE_VAR]: rim ? materialRecipe.paint.hairline : 'transparent',
     };
     return (
       <>

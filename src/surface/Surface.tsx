@@ -21,6 +21,8 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     {
       children,
       fill,
+      rim = true,
+      sheen = true,
       radius,
       cornerCurve = SURFACE_SHAPES.panel.curve,
       style,
@@ -85,6 +87,8 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       >
         {material.painted ? (
           <SurfacePaint
+            rim={rim}
+            sheen={sheen}
             fill={material.paintFill}
             radius={geometry.radius}
             shape={geometry.shape}

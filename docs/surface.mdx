@@ -226,3 +226,8 @@ opacity, while web retains merged host observation and material-safe fading.
 SurfacePaint subscribes to the backing fill only on web, where tint compositing
 uses it. Keep native feed measurements and the web backdrop-root regression
 when changing these boundaries.
+
+A control that owns its outline can set `rim={false}` to omit the material edge,
+and `sheen={false}` to omit the native inset sheen. Both default to true, so
+ordinary surfaces retain their existing optics. Use shared surface presence
+when fading a surface on web; ancestor opacity prevents its backdrop filtering.
