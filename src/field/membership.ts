@@ -2,7 +2,7 @@
  * ONE resolution of field membership, for every control that opts in.
  *
  * `useFieldControl()` hands a control the field's ids and state; applying them
- * is four separate decisions, and each has a direction that is silently wrong:
+ * is five separate decisions, and each has a direction that is silently wrong:
  *
  *   the NAME         defers to the field   (`??`) — a control inside a labelled
  *                                          field must not announce nothing
@@ -10,6 +10,8 @@
  *                                          restrict, so a control cannot opt out
  *   the ID           is the field's        (`??` the caller's own, which wins)
  *   `describedBy`    is a LIST, so the two are joined rather than one chosen
+ *   the HINT         on native is that list's TEXTS (React Native drops
+ *                    `aria-describedby`), after the caller's own hint
  *
  * Fifteen families resolving that by hand is fifteen chances to write `??` where
  * `||` belongs — and the failure is silent in both directions: a control that
@@ -38,6 +40,7 @@
  */
 import { useMemo } from 'react';
 
+import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import { useFieldControl } from './context';
 
 /** Where the control renders its own label, which decides which name wins. */
@@ -65,6 +68,11 @@ export interface FieldMembershipInput {
   nativeID?: string;
   /** An `aria-describedby` the caller wrote. JOINED with the field's, not replaced. */
   describedBy?: string;
+  /**
+   * The `accessibilityHint` the caller wrote. On native it comes first in the
+   * resolved hint, before the described texts; on the web it is returned as is.
+   */
+  accessibilityHint?: string;
 }
 
 export interface FieldMembership {
@@ -76,6 +84,15 @@ export interface FieldMembership {
   accessibilityLabel?: string;
   /** The `aria-describedby` id list, or `undefined` when there is nothing to describe it. */
   describedBy?: string;
+  /**
+   * The `accessibilityHint` to render beside `describedBy`. On native: the
+   * caller's hint, then the TEXT of each element `describedBy` names (the
+   * field's description or its error), kept in step as they change, because
+   * React Native drops `aria-describedby` and the hint is what a native screen
+   * reader says with a control (`hooks/use-described-by-hint.ts`). On the web:
+   * the caller's hint alone, as the web reads `aria-describedby` itself.
+   */
+  accessibilityHint?: string;
   /** The effective disabled state: the control's OR the field's. */
   disabled: boolean;
   /** The effective invalid state: the control's OR the field's. */
@@ -93,6 +110,7 @@ export interface FieldMembership {
  *   nativeID={field.nativeID}
  *   accessibilityLabel={field.accessibilityLabel}
  *   aria-describedby={field.describedBy}
+ *   accessibilityHint={field.accessibilityHint}
  *   aria-invalid={field.invalid || undefined}
  *   disabled={field.disabled}
  * />
@@ -112,6 +130,7 @@ export function useFieldMembership(input: FieldMembershipInput = {}): FieldMembe
     required = false,
     nativeID,
     describedBy,
+    accessibilityHint,
   } = input;
 
   const fieldLabel = field?.labelText;
@@ -121,41 +140,46 @@ export function useFieldMembership(input: FieldMembershipInput = {}): FieldMembe
   const fieldInvalid = field?.invalid === true;
   const fieldRequired = field?.required === true;
 
+  const own = label ?? undefined;
+  const name =
+    accessibilityLabel ??
+    (labelPlacement === 'adjacent' ? (own ?? fieldLabel) : (fieldLabel ?? own));
+
+  // An id LIST: a control that already points at its own hint keeps it, and
+  // the field's error is added rather than swapped in. Duplicates are
+  // dropped — an id named twice is read twice by some screen readers.
+  const uniqueDescribed = Array.from(
+    new Set(
+      [describedBy, fieldDescribedBy]
+        .filter((id): id is string => typeof id === 'string' && id.length > 0)
+        .flatMap((ids) => ids.split(/\s+/)),
+    ),
+  );
+  const described = uniqueDescribed.length > 0 ? uniqueDescribed.join(' ') : undefined;
+  // React Native drops `aria-describedby`: on native the texts it names are
+  // said as the hint, after the caller's own.
+  const hint = useDescribedByHint({ describedBy: described, hint: accessibilityHint, name });
+
   return useMemo<FieldMembership>(() => {
-    const own = label ?? undefined;
-    const name =
-      accessibilityLabel ??
-      (labelPlacement === 'adjacent' ? (own ?? fieldLabel) : (fieldLabel ?? own));
-
-    // An id LIST: a control that already points at its own hint keeps it, and
-    // the field's error is added rather than swapped in. Duplicates are
-    // dropped — an id named twice is read twice by some screen readers.
-    const described = [describedBy, fieldDescribedBy].filter(
-      (id): id is string => typeof id === 'string' && id.length > 0,
-    );
-    const uniqueDescribed = Array.from(new Set(described.flatMap((ids) => ids.split(/\s+/))));
-
     return {
       inField: field != null,
       nativeID: nativeID ?? fieldControlId,
       accessibilityLabel: name,
-      describedBy: uniqueDescribed.length > 0 ? uniqueDescribed.join(' ') : undefined,
+      describedBy: described,
+      accessibilityHint: hint,
       disabled: disabled || fieldDisabled,
       invalid: invalid || fieldInvalid,
       required: required || fieldRequired,
     };
   }, [
     field,
-    accessibilityLabel,
-    label,
-    labelPlacement,
+    name,
+    described,
+    hint,
     disabled,
     invalid,
     required,
     nativeID,
-    describedBy,
-    fieldLabel,
-    fieldDescribedBy,
     fieldControlId,
     fieldDisabled,
     fieldInvalid,

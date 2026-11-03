@@ -31,6 +31,8 @@ import { useBloomAppearance, useBloomControlDensity } from '../appearance/contex
 import { useTouchInput } from '../styles/pointer';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
+import { textOf } from '../typography/DescriptionSource';
+import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   BUTTON_RADIUS,
@@ -397,6 +399,12 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
   ref,
 ) {
   const theme = useTheme();
+  // A tooltip around the button is its help on native, said after it as a Mac's
+  // help tag is, unless it says the button's own name (a dock icon's tooltip).
+  const hint = useDescribedByHint({
+    hint: accessibilityHint,
+    name: accessibilityLabel ?? textOf(children),
+  });
   const layer = useSurfaceLayer();
   const appearance = appearanceProp ?? 'solid';
   const { size, tone } = useBloomAppearance(
@@ -631,7 +639,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
       disabled={isInteractionBlocked}
       hitSlop={hitSlop ?? defaultHitSlop}
       accessibilityLabel={accessibilityLabel}
-      accessibilityHint={accessibilityHint}
+      accessibilityHint={hint}
       // A column header has no `accessibilityRole` of React Native's: it is the ARIA
       // `role`, which React Native takes over `accessibilityRole`.
       accessibilityRole={

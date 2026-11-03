@@ -184,6 +184,7 @@ export function MailRecipientField({
             nativeID={field.nativeID}
             accessibilityLabel={field.accessibilityLabel}
             aria-describedby={field.describedBy}
+            accessibilityHint={field.accessibilityHint}
             aria-invalid={field.invalid || undefined}
             editable={!field.disabled}
             value={value}

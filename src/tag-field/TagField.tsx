@@ -49,6 +49,7 @@ import { TAG_FIELD_MESSAGES } from './messages';
 import { commitTag, filterSuggestions, normalizeTag } from './shared';
 import type { TagFieldLabels, TagFieldProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useDescribedByHint } from '../hooks/use-described-by-hint';
 
 /**
  * Tags as an input: the committed ones as removable chips, a caret after them,
@@ -282,6 +283,8 @@ export function TagField({
   const hint = full && max !== undefined ? labels.full(max) : undefined;
   const hintId = hint ? `${nativeID ?? reactId}-hint` : undefined;
   const describedBy = [field.describedBy, hintId].filter(Boolean).join(' ') || undefined;
+  // On native the field's texts, then the hint's, as this id list orders them.
+  const accessibilityHint = useDescribedByHint({ describedBy, name: field.accessibilityLabel });
 
   const listPanel: WebCssStyle = {
     marginTop: DEFAULT_SIDE_OFFSET,
@@ -387,6 +390,7 @@ export function TagField({
           nativeID={field.nativeID}
           accessibilityLabel={field.accessibilityLabel}
           aria-describedby={describedBy}
+          accessibilityHint={accessibilityHint}
           aria-invalid={field.invalid || undefined}
           aria-disabled={field.disabled || undefined}
           accessibilityState={{ disabled: field.disabled }}

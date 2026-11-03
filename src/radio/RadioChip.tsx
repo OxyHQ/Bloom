@@ -47,6 +47,8 @@ function RadioChipComponent<Value extends string = string>({
 }: RadioChipProps<Value>) {
   const theme = useTheme();
   const field = useFieldMembership({
+    // The card's own description is its hint, said before the field's.
+    accessibilityHint: description,
     accessibilityLabel,
     label,
     labelPlacement: 'adjacent',
@@ -124,9 +126,9 @@ function RadioChipComponent<Value extends string = string>({
       aria-disabled={disabled || undefined}
       aria-invalid={field.invalid || undefined}
       accessibilityLabel={field.accessibilityLabel}
-      accessibilityHint={description}
       nativeID={field.nativeID}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       testID={testID}
       hitSlop={Math.max(0, (44 - height) / 2)}
     >

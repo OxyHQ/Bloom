@@ -36,6 +36,8 @@ export function PageHeaderTitleInput({
     nativeID,
     disabled: disabled || !editable,
     describedBy: props['aria-describedby'],
+    // `props` is spread before the resolved hint, which says the caller's first.
+    accessibilityHint: props.accessibilityHint,
   });
   return (
     <TextInput
@@ -46,6 +48,7 @@ export function PageHeaderTitleInput({
       nativeID={field.nativeID}
       accessibilityLabel={field.accessibilityLabel}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
       aria-required={field.required || undefined}
       editable={!field.disabled}

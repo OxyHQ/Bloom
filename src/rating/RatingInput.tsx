@@ -180,6 +180,7 @@ function RatingInputComponent({
       accessibilityLabel={field.accessibilityLabel}
       aria-label={field.accessibilityLabel}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
       aria-required={field.required || undefined}
       aria-disabled={disabled || undefined}

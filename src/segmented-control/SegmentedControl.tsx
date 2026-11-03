@@ -246,7 +246,12 @@ export function SegmentedControl<T extends string>({
   // rendered text, so the field's label only fills in what is missing.
   // `label` is a NAME rather than rendered text (the segments carry the words),
   // so it goes in as the caller's own name and outranks the field's.
-  const field = useFieldMembership({ accessibilityLabel: label, disabled, nativeID });
+  const field = useFieldMembership({
+    accessibilityLabel: label,
+    accessibilityHint,
+    disabled,
+    nativeID,
+  });
   const isDisabled = field.disabled;
   const palette = useMemo(() => resolveSegmentedPalette(theme), [theme]);
   const [selectedPosition, setSelectedPosition] = useState<{
@@ -446,7 +451,7 @@ export function SegmentedControl<T extends string>({
         testID={testID}
         nativeID={field.nativeID}
         accessibilityLabel={field.accessibilityLabel}
-        accessibilityHint={accessibilityHint ?? ''}
+        accessibilityHint={field.accessibilityHint ?? ''}
         aria-describedby={field.describedBy}
         aria-invalid={field.invalid || undefined}
         // A `View`, so `aria-disabled` is the only spelling that reaches web —

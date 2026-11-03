@@ -21,6 +21,8 @@ import { mergeTypographyStyle, typographyDefaultsWhenNoClassName } from './defau
 import { TYPE_SCALE } from './scale';
 import { StyledText } from '../styles/styled-primitives';
 import { useTypographySystemFamily } from './TypographyScope';
+import { DescriptionSource } from './DescriptionSource';
+import { IS_WEB } from '../styles/platform';
 import type { BlockquoteProps, TextProps } from './types';
 
 /**
@@ -127,7 +129,7 @@ const TextComponent = function Text({ children, style, className, variant, ...re
   const systemFamily = useTypographySystemFamily();
   const trimmedClassName = className?.trim() ? className : undefined;
 
-  return (
+  const host = (
     <TextHost
       {...rest}
       {...(trimmedClassName ? { className: trimmedClassName } : {})}
@@ -142,6 +144,15 @@ const TextComponent = function Text({ children, style, className, variant, ...re
     >
       {children}
     </TextHost>
+  );
+  // On native a text with an id is findable by it, as a DOM element is: a control
+  // whose `aria-describedby` names the id says this text as its hint.
+  if (IS_WEB || typeof rest.nativeID !== 'string' || rest.nativeID.length === 0) return host;
+  return (
+    <>
+      {host}
+      <DescriptionSource id={rest.nativeID}>{children}</DescriptionSource>
+    </>
   );
 };
 

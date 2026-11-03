@@ -45,17 +45,18 @@ The label, description and error are ASSOCIATED with the control, not merely sta
 | the field publishes | the control applies |
 | --- | --- |
 | `controlId` | its `nativeID`, so the label's `for` points at it |
-| `describedBy` | `aria-describedby` — the description, or the error once there is one |
+| `describedBy` | `aria-describedby` — the description, or the error once there is one; on native, `accessibilityHint` — the TEXT of each |
 | `labelText` | its accessible NAME |
 | `invalid` | `aria-invalid` |
 | `required` | `aria-required` |
 | `disabled` | its own disabled state |
 
-Four things worth knowing:
+Five things worth knowing:
 
 - **The ids come from `useId`** when no `nativeID` is given, so they survive SSR and hydration. An explicit `nativeID` still owns every derived id (`<id>-description`, `<id>-error`), so a form already wired by hand keeps working.
 - **The field's label wins over a label the control draws ABOVE itself.** On web `aria-label` OVERRIDES a `<label for>`, and on native there is no association at all and the control must carry the name — so a `TextFieldInput` or a `Textarea` inside a field defers to the field's label text, and the visible label and the announced name cannot disagree.
 - **A label the control draws BESIDE itself keeps winning.** A checkbox's caption and a radio's option text are the words the user reads as the control; the field's label names the FIELD. Giving the field's label to a checkbox that draws "Accept the terms" would announce one thing while the screen says another.
+- **On native the description is the HINT.** React Native drops `aria-describedby` before it reaches the platform, so a field's description and its error were never said with the field on iOS, Android or OxyOS. A Bloom `Text` with a `nativeID` publishes its text under that id on native, and `useFieldMembership()` returns `accessibilityHint`: the caller's own hint FIRST (it says what activating the control does, and the caller outranks the container), then the text of each id in `aria-describedby`'s order, joined with a space as the web's description joins its list, without a text equal to the control's name or already said, kept in step as the texts change. A screen reader says it after the control, politely (VoiceOver's help, TalkBack's hint). The web keeps `aria-describedby` and gets no hint. A control outside `useFieldMembership()` that sets `aria-describedby` resolves the same through `useDescribedByHint({ describedBy, hint, name })` (`@oxy.so/bloom/hooks`); `described-by-hint-census.test.ts` fails on an element given the list and not the hint.
 - **`disabled` is a constraint, not a default.** A control inside a disabled field is disabled and cannot opt out — including the halves a composite owns, like `PhoneInput`'s country picker or an `InputGroup`'s addon button.
 
 Opt-in, not magic: a child that does not read the context renders exactly as before. A container cannot give an arbitrary child behaviour by wrapping it, and one that inspected its children's types to try would be guessing. See [Composition](/docs/composition).

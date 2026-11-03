@@ -74,6 +74,15 @@ else, and it dismisses on the next tap. So:
 - Nothing required to complete a task goes in one. If the user must know it,
   put it on the page.
 
+On native the tooltip's text is its trigger's HELP, as a Mac's help tag is a
+control's (AXHelp): `TooltipContent` names it to `TooltipTrigger` even while
+hidden, and a control under the trigger that resolves its hint through
+`useDescribedByHint` (Bloom's `Button`, every Field member) says it after its
+own hint, politely. A tooltip equal to the control's name (a dock icon's, which
+shows the application's name) is never said twice: the hint leaves out a text
+equal to the name. The bubble itself is no element for a screen reader. The web
+is unchanged.
+
 ## `position` is a preference
 
 A bubble near a screen edge is nudged back into view, so `position="top"` on an

@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -34,11 +35,14 @@ import {
 import { createTextBubble } from './TextBubble';
 import { TooltipCaret } from './TooltipCaret';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
+import { TooltipDescriptionContext } from '../hooks/use-described-by-hint';
 
 type TooltipContextType = {
   position: 'top' | 'bottom';
   visible: boolean;
   onVisibleChange: (visible: boolean) => void;
+  /** `TooltipContent` names its text, so the trigger can say it as its help. */
+  setDescription: (description: string | undefined) => void;
 };
 
 type TargetMeasurements = {
@@ -54,12 +58,15 @@ type TargetContextType = {
   shouldMeasure: boolean;
   /** The trigger's view: a platform popup is anchored to it. */
   targetRef: React.RefObject<ComponentRef<typeof View> | null>;
+  /** The tooltip's text, which the trigger's control says after itself on native. */
+  description: string | undefined;
 };
 
 const TooltipContext = createContext<TooltipContextType>({
   position: 'bottom',
   visible: false,
   onVisibleChange: () => {},
+  setDescription: () => {},
 });
 TooltipContext.displayName = 'TooltipContext';
 
@@ -68,6 +75,7 @@ const TargetContext = createContext<TargetContextType>({
   setTargetMeasurements: () => {},
   shouldMeasure: false,
   targetRef: { current: null },
+  description: undefined,
 });
 TargetContext.displayName = 'TargetContext';
 
@@ -92,6 +100,11 @@ export function Tooltip({
     undefined,
   );
   const targetRef = useRef<ComponentRef<typeof View>>(null);
+  // What the tooltip says, as `TooltipContent` names it even while hidden: a
+  // Mac's help tag is its control's help, said after the control, so the
+  // trigger's control takes it as its hint (`hooks/use-described-by-hint.ts`),
+  // unless it is the control's own name (a dock icon's tooltip is its name).
+  const [description, setDescription] = useState<string | undefined>(undefined);
   // In the platform's popup the platform places the bubble against the trigger: nothing to measure,
   // so a request is shown at once, in the render that asks for it.
   const placedByPlatform = usePopupSurface() !== null;
@@ -104,7 +117,7 @@ export function Tooltip({
   }
 
   const ctx = useMemo(
-    () => ({ position, visible, onVisibleChange }),
+    () => ({ position, visible, onVisibleChange, setDescription }),
     [position, visible, onVisibleChange],
   );
   const targetCtx = useMemo(
@@ -113,8 +126,9 @@ export function Tooltip({
       setTargetMeasurements,
       shouldMeasure: requestVisible && !placedByPlatform,
       targetRef,
+      description,
     }),
-    [requestVisible, placedByPlatform, targetMeasurements, setTargetMeasurements],
+    [requestVisible, placedByPlatform, targetMeasurements, setTargetMeasurements, description],
   );
 
   return (
@@ -125,7 +139,8 @@ export function Tooltip({
 }
 
 export function TooltipTrigger({ children }: { children: React.ReactNode }) {
-  const { shouldMeasure, setTargetMeasurements, targetRef } = useContext(TargetContext);
+  const { shouldMeasure, setTargetMeasurements, targetRef, description } =
+    useContext(TargetContext);
   const [hasLayedOut, setHasLayedOut] = useState(false);
 
   useEffect(() => {
@@ -140,7 +155,9 @@ export function TooltipTrigger({ children }: { children: React.ReactNode }) {
 
   return (
     <View collapsable={false} ref={targetRef} onLayout={() => setHasLayedOut(true)}>
-      {children}
+      <TooltipDescriptionContext.Provider value={description}>
+        {children}
+      </TooltipDescriptionContext.Provider>
     </View>
   );
 }
@@ -156,8 +173,13 @@ export function TooltipContent({
   size?: TooltipSize;
 }) {
   const size = useTooltipSize(sizeProp);
-  const { position, visible, onVisibleChange } = useContext(TooltipContext);
+  const { position, visible, onVisibleChange, setDescription } = useContext(TooltipContext);
   const { targetMeasurements, targetRef } = useContext(TargetContext);
+  // Named while hidden too: the trigger says it whenever it is reached.
+  useLayoutEffect(() => {
+    setDescription(label);
+    return () => setDescription(undefined);
+  }, [setDescription, label]);
   const PopupSurface = usePopupSurface();
   const requestClose = useCallback(() => {
     onVisibleChange(false);

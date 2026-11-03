@@ -286,6 +286,7 @@ function OfferingEditorComponent({
           role="group"
           nativeID={field.nativeID}
           aria-describedby={field.describedBy}
+          accessibilityHint={field.accessibilityHint}
           aria-invalid={field.invalid || undefined}
           aria-disabled={disabled || undefined}
           aria-required={field.required || undefined}

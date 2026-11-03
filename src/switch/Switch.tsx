@@ -155,6 +155,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         accessibilityLabel={field.accessibilityLabel}
         nativeID={field.nativeID}
         aria-describedby={field.describedBy}
+        accessibilityHint={field.accessibilityHint}
         aria-invalid={field.invalid || undefined}
         // The disabled state has to travel on this prop, not on `aria-disabled`:
         // react-native-web's `Pressable` appends its own `aria-disabled` from

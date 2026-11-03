@@ -226,6 +226,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
         aria-disabled={isDisabled || undefined}
         nativeID={field.nativeID}
         aria-describedby={field.describedBy}
+        accessibilityHint={field.accessibilityHint}
         accessibilityLabel={field.accessibilityLabel}
         testID={testID}
       >
@@ -254,6 +255,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
       disabled={isDisabled}
       nativeID={field.nativeID}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
       accessibilityRole="checkbox"
       // `aria-checked`, not `accessibilityState`: react-native-web's

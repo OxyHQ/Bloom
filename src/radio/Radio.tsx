@@ -191,6 +191,7 @@ const RadioComponent = function Radio<Value extends string = string>({
       disabled={isDisabled}
       nativeID={field.nativeID}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       accessibilityRole="radio"
       // `aria-checked`, not `accessibilityState`: react-native-web never reads
       // the latter, so an option that set only it announced no state at all.
@@ -412,6 +413,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
         accessibilityLabel={field.accessibilityLabel}
         aria-label={field.accessibilityLabel}
         aria-describedby={field.describedBy}
+        accessibilityHint={field.accessibilityHint}
         aria-invalid={field.invalid || undefined}
         aria-disabled={isDisabled || undefined}
         aria-required={field.required || undefined}

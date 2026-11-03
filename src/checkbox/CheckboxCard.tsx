@@ -81,6 +81,8 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = (props) => {
     onChange: onCheckedChange,
   });
   const field = useFieldMembership({
+    // The card's own description is its hint, said before the field's.
+    accessibilityHint: description,
     disabled: disabledProp,
     accessibilityLabel,
     label: title,
@@ -144,8 +146,8 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = (props) => {
       accessibilityLabel={field.accessibilityLabel}
       nativeID={field.nativeID}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
-      accessibilityHint={description}
       testID={testID}
     >
       <View style={{ flexDirection: 'column', gap: 2, minWidth: 0, flexShrink: 1 }}>

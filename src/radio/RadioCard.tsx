@@ -81,6 +81,8 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
 }: RadioCardProps<Value>) {
   const checked = checkedProp ?? false;
   const field = useFieldMembership({
+    // The card's own description is its hint, said before the field's.
+    accessibilityHint: description,
     disabled: disabledProp,
     accessibilityLabel,
     label: title,
@@ -160,8 +162,8 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
       accessibilityLabel={field.accessibilityLabel}
       nativeID={field.nativeID}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
-      accessibilityHint={description}
       testID={testID}
     >
       <View style={{ flexDirection: 'column', gap: 2, minWidth: 0, flexShrink: 1 }}>

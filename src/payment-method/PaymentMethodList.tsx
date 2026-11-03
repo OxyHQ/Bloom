@@ -246,6 +246,7 @@ function PaymentMethodListComponent({
           accessibilityLabel={name}
           aria-label={name}
           aria-describedby={field.describedBy}
+          accessibilityHint={field.accessibilityHint}
           aria-invalid={field.invalid || undefined}
           aria-required={field.required || undefined}
           // A `View` has no `disabled` prop for react-native-web to derive

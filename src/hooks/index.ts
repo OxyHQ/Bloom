@@ -25,3 +25,5 @@ export {
 export { moveItem, dragTarget, dragShift } from './list-reorder';
 export { useIsRtl } from './use-is-rtl';
 export { useAppForeground } from './use-app-state';
+export { useDescribedByHint } from './use-described-by-hint';
+export type { DescribedByHintInput } from './use-described-by-hint';

@@ -59,6 +59,8 @@ function RadioSwatchComponent<Value extends string = string>({
   const theme = useTheme();
   // The colour's name is the control's name: nothing is drawn beside it.
   const field = useFieldMembership({
+    // The card's own description is its hint, said before the field's.
+    accessibilityHint: description,
     accessibilityLabel,
     label,
     labelPlacement: 'adjacent',
@@ -104,9 +106,9 @@ function RadioSwatchComponent<Value extends string = string>({
       aria-disabled={disabled || undefined}
       aria-invalid={field.invalid || undefined}
       accessibilityLabel={field.accessibilityLabel}
-      accessibilityHint={description}
       nativeID={field.nativeID}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       testID={testID}
       hitSlop={HIT_SLOP}
     >

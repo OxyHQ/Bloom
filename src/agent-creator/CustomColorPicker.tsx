@@ -185,6 +185,7 @@ export function CustomColorPicker({
           aria-disabled={membership.disabled || undefined}
           aria-invalid={membership.invalid || undefined}
           aria-describedby={membership.describedBy}
+          accessibilityHint={membership.accessibilityHint}
           accessibilityLabel={messages.saturationBrightness}
           aria-valuemin={0}
           aria-valuemax={100}
@@ -253,6 +254,7 @@ export function CustomColorPicker({
           aria-disabled={membership.disabled || undefined}
           aria-invalid={membership.invalid || undefined}
           aria-describedby={membership.describedBy}
+          accessibilityHint={membership.accessibilityHint}
           accessibilityLabel={messages.hue}
           aria-valuemin={0}
           aria-valuemax={360}
@@ -325,6 +327,7 @@ export function CustomColorPicker({
           accessibilityLabel={membership.accessibilityLabel}
           nativeID={membership.nativeID}
           aria-describedby={membership.describedBy}
+          accessibilityHint={membership.accessibilityHint}
           aria-invalid={membership.invalid || undefined}
           aria-disabled={membership.disabled || undefined}
           editable={!membership.disabled}

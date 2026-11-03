@@ -2,6 +2,7 @@ import React, { memo, useId, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Text } from '../typography';
+import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import { Label } from '../label';
 import { atoms as a } from '../styles';
 import { TEXT_FIELD_STACK_GAP, useTextFieldPalette } from '../text-field/shared';
@@ -58,6 +59,19 @@ const FieldComponent = function Field({
   const descriptionID = `${base}-description`;
   const errorID = `${base}-error`;
   const hasDescription = !hasError && description != null;
+  const groupDescribedBy = multiple
+    ? hasError
+      ? errorID
+      : hasDescription
+        ? descriptionID
+        : undefined
+    : undefined;
+  // A `multiple` field's GROUP is described; on native its description is the
+  // group's hint (React Native drops `aria-describedby`).
+  const groupHint = useDescribedByHint({
+    describedBy: groupDescribedBy,
+    name: typeof label === 'string' ? label : undefined,
+  });
 
   const field = useMemo<FieldControlValue>(
     () => ({
@@ -102,9 +116,8 @@ const FieldComponent = function Field({
         // and it competes with the control's own name.
         role={multiple ? 'group' : undefined}
         aria-labelledby={multiple && label != null ? labelID : undefined}
-        aria-describedby={
-          multiple ? (hasError ? errorID : hasDescription ? descriptionID : undefined) : undefined
-        }
+        aria-describedby={groupDescribedBy}
+        accessibilityHint={groupHint}
       >
         {label != null ? (
           <Label

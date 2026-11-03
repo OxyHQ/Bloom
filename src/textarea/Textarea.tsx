@@ -126,6 +126,8 @@ export function Textarea({
     // field's is added to it, the same way `TextFieldInput` treats it: the two
     // are an id list, not a choice.
     describedBy: (rest as Record<string, unknown>)['aria-describedby'] as string | undefined,
+    // `rest` is spread before the resolved hint, which says the caller's first.
+    accessibilityHint: rest.accessibilityHint,
   });
   const palette = useTextFieldPalette();
   const innerRef = useRef<ComponentRef<typeof TextInput>>(null);
@@ -242,6 +244,7 @@ export function Textarea({
           nativeID={field.nativeID}
           accessibilityLabel={field.accessibilityLabel}
           aria-describedby={field.describedBy}
+          accessibilityHint={field.accessibilityHint}
           aria-invalid={field.invalid || undefined}
           aria-disabled={field.disabled || undefined}
           placeholder={placeholder}
