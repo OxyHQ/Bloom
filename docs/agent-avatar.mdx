@@ -184,9 +184,10 @@ and cached within a byte budget; fitted geometry and GPU ownership are released
 with the last live scene. There is no cached animation sprite playback.
 
 The optional `@oxy.so/bloom-avatar-native` companion now supplies an Android shared GPU
-backend. It is a private, installable package in this repository, not a published release;
-see [its integration and build contract](../packages/avatar-native/README.md). Install its
-archive and declared peers, rebuild the application's native binary, and keep the normal
+backend. It is published from this repository with Bloom (`bun add @oxy.so/bloom-avatar-native`,
+the exact version Bloom's peer names); see [its integration and build
+contract](../packages/avatar-native/README.md). Install it and its declared peers, rebuild
+the application's native binary, and keep the normal
 Bloom API. Bloom requires companion ABI 1 and selects it only when the configured runtime's
 complete manifest matches the bundled engine. An absent module or incompatible host retains
 the WebView route. The neutral web facade cannot load the companion's native dependency graph.
