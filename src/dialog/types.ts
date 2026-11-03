@@ -294,6 +294,11 @@ export type DialogProps = React.PropsWithChildren<{
    * `{ base: 'bottom', md: 'left' }` (drawer on wide, sheet on narrow).
    */
   placement?: ResponsiveDialogPlacement;
+  /**
+   * Float bottom placement above the window's safe area with rounded corners
+   * and side gutters. Defaults to `false`; other placements are unchanged.
+   */
+  detached?: boolean;
   /** Side-sheet width (px) on wide screens. Defaults to `460`. */
   width?: number;
   /** Minimum space beyond a side sheet and its insets. Defaults to 24; zero permits full viewport width. */
