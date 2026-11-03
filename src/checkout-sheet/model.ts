@@ -35,6 +35,13 @@ export interface CheckoutRequest {
   requiresContact?: boolean;
   /** Preformatted tax treatment supplied by the host; omitted hides the row. */
   taxDescription?: string;
+  /** Authoritative quote values; displayed as supplied, never computed from a rate. */
+  tax?: {
+    subtotalMinorUnits: number;
+    taxMinorUnits: number;
+    totalMinorUnits: number;
+    inclusive: boolean;
+  };
   paymentMethods: readonly string[];
   recurring?: {
     amountMinorUnits: number;

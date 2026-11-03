@@ -167,17 +167,31 @@ function CheckoutContent(props: CheckoutSheetProps) {
             ))}
             <GroupedSectionItem
               title={label('subtotal')}
-              value={money(request.items.reduce((total, item) => total + item.amountMinorUnits, 0))}
+              value={money(
+                request.tax?.subtotalMinorUnits ??
+                  request.items.reduce((total, item) => total + item.amountMinorUnits, 0),
+              )}
               showChevron={false}
             />
-            {request.totalMinorUnits !== undefined && (
+            {request.tax && (
               <GroupedSectionItem
-                title={label('orderTotal')}
-                value={money(request.totalMinorUnits)}
+                title={label(request.tax.inclusive ? 'taxIncluded' : 'tax')}
+                value={money(request.tax.taxMinorUnits)}
                 showChevron={false}
               />
             )}
-            {request.taxDescription && (
+            {(request.tax || request.totalMinorUnits !== undefined) && (
+              <GroupedSectionItem
+                title={label('orderTotal')}
+                value={money(
+                  request.tax?.totalMinorUnits ??
+                    request.totalMinorUnits ??
+                    request.dueTodayMinorUnits,
+                )}
+                showChevron={false}
+              />
+            )}
+            {!request.tax && request.taxDescription && (
               <GroupedSectionItem
                 title={label('tax')}
                 value={request.taxDescription}
