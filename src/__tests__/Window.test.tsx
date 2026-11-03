@@ -273,7 +273,7 @@ describe('WindowControls', () => {
     expect(spanish.getByLabelText('Pantalla completa')).toBeTruthy();
   });
 
-  it('takes the press that activates an inactive window, as a Mac\'s bubbles act on the first click', () => {
+  it("takes the press that activates an inactive window, as a Mac's bubbles act on the first click", () => {
     const screen = controls(fakeWindow({ state: { active: false } }).adapter);
     for (const key of ['close', 'minimize', 'zoom']) {
       expect(screen.getByTestId(`wc-${key}`).props.acceptsFirstMouse).toBe(true);
@@ -375,7 +375,7 @@ describe('WindowDragRegion', () => {
     }
   });
 
-  it("takes the press that activates its window, so an inactive window moves in one gesture", () => {
+  it('takes the press that activates its window, so an inactive window moves in one gesture', () => {
     const node = region(fakeWindow({ state: { active: false } }).adapter).getByTestId('drag');
     expect(node.props.acceptsFirstMouse).toBe(true);
     // Without the capability it is a plain view, which claims nothing.

@@ -2,6 +2,20 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.15.0
+
+### Added
+
+- **A Mac's first mouse: `ACCEPTS_FIRST_MOUSE`** (`@oxy.so/bloom/window`). On a desktop the click that activates an inactive window reaches the view under it only if the view accepts it, as AppKit asks `acceptsFirstMouse:`; any other such click only brings the window forward, so a button in a background window neither fires nor shows itself pressed. It is react-native-macos's View prop `acceptsFirstMouse`, which OxyOS's host now honours (OxyOS ADR 0016, decision 9) and every other platform drops; spread it on a view that should act on that click (a selectable list's row).
+
+### Changed
+
+- **`WindowDragRegion` and `WindowControls` take the first mouse.** An inactive window moves by its title area in one gesture, zooms on a double click, and its bubbles act on the first click, as a Mac's do. A control inside a drag region still decides for itself.
+
+### Consumers
+
+Nothing to change. On OxyOS a press on an inactive window's own controls no longer acts until its window is active, unless the control sets `ACCEPTS_FIRST_MOUSE`.
+
 ## 16.14.1
 
 ### Fixed
