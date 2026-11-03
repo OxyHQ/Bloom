@@ -2,7 +2,6 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
-
 ## 16.7.0
 
 ### Added
@@ -12,6 +11,7 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 ### Consumers
 
 Nothing to change. A file list's sorting headers can say what they are.
+
 ## 16.6.1
 
 ### Changed
