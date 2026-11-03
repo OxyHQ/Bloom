@@ -1,6 +1,7 @@
 import { FieldConstraintScope } from '../field/FieldConstraintScope';
 import { useFieldMembership } from '../field/membership';
-import React, { memo, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { groupThousands } from '../chart-cards/primitives/format';
@@ -286,6 +287,7 @@ function OfferingEditorComponent({
           role="group"
           nativeID={field.nativeID}
           aria-describedby={field.describedBy}
+          accessibilityHint={field.accessibilityHint}
           aria-invalid={field.invalid || undefined}
           aria-disabled={disabled || undefined}
           aria-required={field.required || undefined}

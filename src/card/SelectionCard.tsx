@@ -163,6 +163,8 @@ function SelectionCardComponent({
     accessibilityLabel,
     label: title,
     labelPlacement: 'adjacent',
+    // The card's own description is its hint, said before the field's.
+    accessibilityHint: typeof description === 'string' ? description : undefined,
   });
   const disabled = field.disabled;
   const activate = () => {
@@ -276,7 +278,7 @@ function SelectionCardComponent({
   // The role is spelled as a literal on each branch, so the source census can
   // see that each one carries its state and its name.
   const headProps = {
-    accessibilityHint: description,
+    accessibilityHint: field.accessibilityHint,
     accessibilityState: { checked: selected, disabled },
     'aria-disabled': disabled || undefined,
     disabled,

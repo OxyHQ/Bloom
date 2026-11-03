@@ -4,6 +4,7 @@ import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
 import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import Animated, { useAnimatedStyle, type AnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -82,6 +83,12 @@ export function DialogBottomSheet({
   const closeCallbacks = useRef<(() => void)[]>([]);
   const titleId = useId();
   const descriptionId = useId();
+  // React Native drops `aria-describedby`: on native the description is the
+  // panel's hint (the panel below carries the native semantics).
+  const descriptionHint = useDescribedByHint({
+    describedBy: description ? descriptionId : undefined,
+    name: label ?? title,
+  });
   const headerController = useDialogHeaderController();
   useDialogFrameScrollReset(scrollable !== false, () => {
     ref.current?.scrollTo(0, false);
@@ -313,6 +320,7 @@ export function DialogBottomSheet({
           aria-describedby={
             Platform.OS === 'web' ? undefined : description ? descriptionId : undefined
           }
+          accessibilityHint={Platform.OS === 'web' ? undefined : descriptionHint}
           // Bottom placement renders ONE node for both, so the two classes are
           // joined rather than spread twice — the second spread used to
           // overwrite the first, so `containerClassName` was silently dropped on

@@ -277,6 +277,7 @@ function StepperComponent({
       nativeID={field.nativeID}
       accessibilityLabel={field.accessibilityLabel}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-disabled={disabled || undefined}
       style={[
         { flexDirection: 'row', alignItems: 'center', gap: outlined ? 0 : config.gap },
@@ -309,6 +310,7 @@ function StepperComponent({
         accessibilityRole="adjustable"
         accessibilityLabel={field.accessibilityLabel}
         aria-describedby={field.describedBy}
+        accessibilityHint={field.accessibilityHint}
         aria-invalid={field.invalid || undefined}
         aria-valuemin={min}
         aria-valuemax={max}

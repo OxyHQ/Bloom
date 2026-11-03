@@ -409,6 +409,7 @@ function SliderBase({
       testID={testID}
       nativeID={IS_WEB && !isRange ? undefined : field.nativeID}
       aria-describedby={IS_WEB && !isRange ? undefined : field.describedBy}
+      accessibilityHint={IS_WEB && !isRange ? undefined : field.accessibilityHint}
       aria-invalid={IS_WEB && !isRange ? undefined : field.invalid || undefined}
       {...(isRange || IS_WEB
         ? isRange
@@ -592,6 +593,7 @@ function SliderBase({
                       ? {
                           nativeID: field.nativeID,
                           'aria-describedby': field.describedBy,
+                          accessibilityHint: field.accessibilityHint,
                           'aria-invalid': field.invalid || undefined,
                         }
                       : {}),

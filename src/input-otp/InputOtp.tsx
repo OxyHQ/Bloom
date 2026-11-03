@@ -301,6 +301,7 @@ export function InputOtp({
       role="group"
       accessibilityLabel={groupName}
       aria-describedby={membership.describedBy}
+      accessibilityHint={membership.accessibilityHint}
       testID={testID}
       // No `aria-invalid` here: `group` does not support it. Each box carries
       // its own, which is where a screen reader looks anyway.

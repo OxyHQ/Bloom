@@ -2,7 +2,8 @@ import { useFieldMembership } from '../field/membership';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
-import React, { memo, useCallback, useMemo } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -76,11 +77,13 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = (props) => {
   } = props;
   const [checked, setChecked] = useControllableState({
     value: checkedProp ?? false,
-    controlled: Object.prototype.hasOwnProperty.call(props, 'checked'),
+    controlled: Object.hasOwn(props, 'checked'),
     defaultValue: defaultChecked,
     onChange: onCheckedChange,
   });
   const field = useFieldMembership({
+    // The card's own description is its hint, said before the field's.
+    accessibilityHint: description,
     disabled: disabledProp,
     accessibilityLabel,
     label: title,
@@ -144,8 +147,8 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = (props) => {
       accessibilityLabel={field.accessibilityLabel}
       nativeID={field.nativeID}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
-      accessibilityHint={description}
       testID={testID}
     >
       <View style={{ flexDirection: 'column', gap: 2, minWidth: 0, flexShrink: 1 }}>

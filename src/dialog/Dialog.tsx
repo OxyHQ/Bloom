@@ -28,6 +28,7 @@ import {
   useState,
 } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import { useWindowSizeWhile } from '../hooks/use-width-class';
 import Animated, {
   type AnimatedStyle,
@@ -232,6 +233,11 @@ function CenteredOrSideDialog({
   const closeCallbacks = useRef<(() => void)[]>([]);
   const titleId = useId();
   const descriptionId = useId();
+  // React Native drops `aria-describedby`: the description is the panel's hint.
+  const descriptionHint = useDescribedByHint({
+    describedBy: description ? descriptionId : undefined,
+    name: label ?? title,
+  });
 
   // Read the latest controlled flag / `onClose` inside stable callbacks
   // without re-binding them (the context + imperative handle depend on `close`
@@ -441,6 +447,7 @@ function CenteredOrSideDialog({
         accessibilityLabel={label ?? title}
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
+        accessibilityHint={descriptionHint}
         className={panelClassName}
         style={[
           // Detached BottomSheet already adds `marginBottom: insets.bottom + 16`
@@ -623,6 +630,11 @@ function SideSheet({
   const motion = useSurfaceTransition(transition);
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
+  // React Native drops `aria-describedby`: the description is the panel's hint.
+  const descriptionHint = useDescribedByHint({
+    describedBy: description ? descriptionId : undefined,
+    name: label ?? title,
+  });
   const [mounted, setMounted] = useState(open);
   // The window only while the sheet is up: a closed one re-renders nothing as
   // the window resizes.
@@ -785,6 +797,7 @@ function SideSheet({
         accessibilityLabel={label ?? title}
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
+        accessibilityHint={descriptionHint}
         testID={testID}
         onLayout={measurePanel}
         className={panelClassName}

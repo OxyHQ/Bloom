@@ -25,7 +25,7 @@
  * join is the gate that quietly stops measuring anything (`aria-state-web` was
  * exactly that, and three `progressbar` siblings sat outside it).
  */
-import React from 'react';
+import type React from 'react';
 import { TextInput } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -563,6 +563,42 @@ describe.each(SUBJECTS.map((s) => [s.name, s] as const))('%s inside a Field', (_
       expect([subject.name, describedBy]).toEqual([
         subject.name,
         (description.getByText('Two words minimum').props as Props).nativeID,
+      ]);
+    });
+
+    // React Native drops `aria-describedby` before it reaches the platform, so on
+    // native (this suite's platform) the described TEXT is the control's hint:
+    // the description, then the error once it replaces it, as the field shows
+    // them. Without it a field's helper text and its error are never said.
+    it('says the description as its hint on native, and the error when it replaces it', () => {
+      const screen = wrap(
+        <Field label={FIELD_LABEL} description="Two words minimum">
+          {subject.render({})}
+        </Field>,
+      );
+      expect([subject.name, subjectProps(screen, subject, FIELD_LABEL).accessibilityHint]).toEqual([
+        subject.name,
+        'Two words minimum',
+      ]);
+      screen.rerender(
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Field label={FIELD_LABEL} description="Two words minimum" error="Too short">
+            {subject.render({})}
+          </Field>
+        </BloomThemeProvider>,
+      );
+      expect([subject.name, subjectProps(screen, subject, FIELD_LABEL).accessibilityHint]).toEqual([
+        subject.name,
+        'Too short',
+      ]);
+      screen.rerender(
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Field label={FIELD_LABEL}>{subject.render({})}</Field>
+        </BloomThemeProvider>,
+      );
+      expect([subject.name, subjectProps(screen, subject, FIELD_LABEL).accessibilityHint]).toEqual([
+        subject.name,
+        undefined,
       ]);
     });
   }

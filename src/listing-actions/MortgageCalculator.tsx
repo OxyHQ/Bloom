@@ -361,6 +361,7 @@ function MortgageCalculatorComponent({
         accessibilityLabel={field.accessibilityLabel}
         nativeID={field.nativeID}
         aria-describedby={field.describedBy}
+        accessibilityHint={field.accessibilityHint}
         aria-disabled={field.disabled || undefined}
         aria-invalid={field.invalid || undefined}
         aria-required={field.required || undefined}

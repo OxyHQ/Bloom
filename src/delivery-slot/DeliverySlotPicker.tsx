@@ -140,6 +140,7 @@ function DeliverySlotGroups({
       role="radiogroup"
       accessibilityLabel={field.accessibilityLabel}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
       aria-disabled={off || undefined}
       testID={id('windows')}

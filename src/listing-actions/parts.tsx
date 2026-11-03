@@ -208,6 +208,7 @@ export function SelectChip({
     <Pressable
       {...keyboard}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
       {...webDataSet({ bloomBookingFocus: '' })}
       accessibilityRole="radio"

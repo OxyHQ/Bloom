@@ -2,7 +2,8 @@ import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
-import React, { memo, useCallback, useMemo } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -102,7 +103,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
   } = props;
   const [checked, setChecked] = useControllableState({
     value: checkedProp ?? false,
-    controlled: Object.prototype.hasOwnProperty.call(props, 'checked'),
+    controlled: Object.hasOwn(props, 'checked'),
     defaultValue: defaultChecked,
     onChange: onCheckedChange,
   });
@@ -226,6 +227,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
         aria-disabled={isDisabled || undefined}
         nativeID={field.nativeID}
         aria-describedby={field.describedBy}
+        accessibilityHint={field.accessibilityHint}
         accessibilityLabel={field.accessibilityLabel}
         testID={testID}
       >
@@ -254,6 +256,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
       disabled={isDisabled}
       nativeID={field.nativeID}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
       accessibilityRole="checkbox"
       // `aria-checked`, not `accessibilityState`: react-native-web's

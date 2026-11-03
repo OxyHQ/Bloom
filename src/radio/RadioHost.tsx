@@ -140,6 +140,8 @@ interface LayoutProps {
   dir?: 'rtl';
   accessibilityRole?: 'radiogroup';
   accessibilityLabel?: string;
+  /** Native only: what the group's description says (the web reads `aria-describedby`). */
+  accessibilityHint?: string;
   testID?: string;
   'aria-label'?: string;
   'aria-describedby'?: string;
@@ -151,8 +153,16 @@ export function RadioGroupHost(props: LayoutProps) {
   useInteractiveWebCss('bloom-radio-host', BASE);
   // Never flattened away from its radios (semantic-containers.test.ts).
   if (Platform.OS !== 'web') return <StyledView collapsable={false} {...props} />;
-  const { className, style, accessibilityRole, accessibilityLabel, testID, children, ...aria } =
-    props;
+  const {
+    className,
+    style,
+    accessibilityRole,
+    accessibilityLabel,
+    accessibilityHint: _nativeHint,
+    testID,
+    children,
+    ...aria
+  } = props;
   return (
     <div
       {...aria}

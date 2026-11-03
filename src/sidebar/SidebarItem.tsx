@@ -5,6 +5,7 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarGeometry } from './geometry';
@@ -67,6 +68,11 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   const metrics = useSidebarMetrics(size);
   useSidebarWebCss();
   const { state: hovered, onIn, onOut } = useInteractionState();
+  // React Native drops `aria-describedby`: on native the texts it names are the hint.
+  const describedHint = useDescribedByHint({
+    describedBy: ariaDescribedby,
+    name: accessibilityLabel ?? label,
+  });
   const inSidebar = useInSidebar();
   const progress = useSidebarCollapseProgress(collapsed);
   const lane = useSidebarGeometry()?.collapsedLane ?? metrics.row.square;
@@ -137,6 +143,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
       aria-expanded={ariaExpanded}
       aria-haspopup={ariaHaspopup}
       aria-describedby={ariaDescribedby}
+      accessibilityHint={describedHint}
       role={href ? 'link' : 'button'}
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ selected }}

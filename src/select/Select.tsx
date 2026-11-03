@@ -4,6 +4,7 @@ import { useMenuDensity } from '../floating/use-menu-density';
 import { useCollapsibleVisibility } from '../collapsible/context';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
+import { joinDescription } from '../hooks/use-described-by-hint';
 import { useBloomAppearance } from '../appearance';
 import type React from 'react';
 import {
@@ -115,7 +116,7 @@ export function Select(props: SelectProps) {
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
-    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    controlled: Object.hasOwn(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);
     },
@@ -237,7 +238,11 @@ export function SelectTrigger({
             'aria-haspopup': SELECT_TRIGGER_POPUP,
             nativeID: membership.nativeID,
             'aria-describedby': requiredDescription.describedBy,
-            accessibilityHint: requiredDescription.hint,
+            // The field's texts, then "required", as the web's id list orders them.
+            accessibilityHint: joinDescription(
+              [membership.accessibilityHint, requiredDescription.hint],
+              membership.accessibilityLabel,
+            ),
             'aria-invalid': membership.invalid || undefined,
           }}
         >

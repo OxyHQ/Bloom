@@ -370,6 +370,7 @@ function CheckboxRow({
       aria-disabled={field.disabled || undefined}
       aria-invalid={field.invalid || undefined}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       {...dataSet({ bloomQuestionnaireRow: 'check', bloomCheckboxFocusable: '' })}
       testID={testID}
       role="checkbox"
@@ -437,6 +438,7 @@ function PickRow({
       aria-disabled={field.disabled || undefined}
       aria-invalid={field.invalid || undefined}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       {...dataSet({ bloomQuestionnaireRow: 'pick' })}
       testID={testID}
       role="button"
@@ -486,6 +488,7 @@ function OtherToggle({
       aria-disabled={field.disabled || undefined}
       aria-invalid={field.invalid || undefined}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       {...dataSet({ bloomQuestionnaireToggle: '', bloomCheckboxFocusable: '' })}
       testID={testID}
       role="checkbox"
@@ -586,6 +589,7 @@ function OtherRow({
           aria-disabled={field.disabled || undefined}
           aria-invalid={field.invalid || undefined}
           aria-describedby={field.describedBy}
+          accessibilityHint={field.accessibilityHint}
           editable={!field.disabled}
           placeholder={placeholder}
           placeholderTextColor={palette.textTertiary}
@@ -937,7 +941,7 @@ function QuestionnaireComponent({
     parentFill: surfaceLayer.parentFill,
     parentLevel: surfaceLayer.parentLevel,
   });
-  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
+  const { paintFill, publishedFill: surfaceFill } = material;
   const palette = useMemo(
     () => resolveQuestionnairePalette(theme, surfaceFill),
     [theme, surfaceFill],
@@ -1280,6 +1284,7 @@ function QuestionnaireComponent({
       aria-labelledby={field.accessibilityLabel ? undefined : headingId}
       accessibilityLabel={field.accessibilityLabel ?? question.question}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
       aria-disabled={field.disabled || undefined}
       aria-required={field.required || undefined}

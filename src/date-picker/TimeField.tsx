@@ -174,6 +174,7 @@ function TimeFieldComponent({
       nativeID={field.nativeID}
       accessibilityLabel={field.accessibilityLabel}
       aria-describedby={field.describedBy}
+      accessibilityHint={field.accessibilityHint}
       aria-invalid={field.invalid || undefined}
       aria-disabled={disabled || undefined}
       style={[FIELD_TRANSITION, fieldStyle, style]}

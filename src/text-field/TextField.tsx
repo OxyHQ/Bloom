@@ -28,6 +28,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { LEFT_TO_RIGHT_VALUE_IN_RTL } from '../styles/left-to-right-value';
 import { useFieldControl } from '../field/context';
+import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import { mergeRefs } from '../hooks/merge-refs';
 import { atoms as a, web, android, platform, tokens, type TextStyleProp } from '../styles';
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
@@ -459,6 +460,18 @@ export function TextFieldInput({
     return () => setInputDisabled(false);
   }, [setInputDisabled, inputDisabled]);
 
+  // React Native drops `aria-describedby`: on native the texts it names (the
+  // field's description or error, a card form box's message) are said as the
+  // hint, after the caller's own (`hooks/use-described-by-hint.ts`). Above the
+  // standalone branch, which renders this input again inside its own shell.
+  const accessibilityHint = useDescribedByHint({
+    describedBy:
+      ((rest as Record<string, unknown>)['aria-describedby'] as string | undefined) ??
+      field?.describedBy,
+    hint: rest.accessibilityHint,
+    name: rest.accessibilityLabel ?? field?.labelText ?? label,
+  });
+
   if (ctx === null) {
     // A standalone input wraps ITSELF in a field shell. The shell has to carry
     // the enclosing `Field`'s invalid and disabled state too, or the chrome
@@ -562,6 +575,7 @@ export function TextFieldInput({
           {...fieldProps}
           {...disabledProps}
           {...webDisabled}
+          accessibilityHint={accessibilityHint}
           secureTextEntry={secure}
         />
         {reveal}
@@ -619,13 +633,13 @@ export function TextFieldInput({
   return (
     <>
       <TextInput
-        accessibilityHint={undefined}
         hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         {...rest}
         {...fieldProps}
         {...disabledProps}
         {...webDisabled}
         accessibilityLabel={accessibleName}
+        accessibilityHint={accessibilityHint}
         ref={refs}
         value={value}
         onChangeText={onValueChange}
