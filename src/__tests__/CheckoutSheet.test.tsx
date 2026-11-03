@@ -338,3 +338,27 @@ it('centers confirmation and opted-in method headings without changing form head
   expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleAlign).toBeUndefined();
   expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleVariant).toBeUndefined();
 });
+
+it('shows explicitly unavailable capabilities with reasons without expanding payable methods', () => {
+  const input = props();
+  input.step = 'payment';
+  input.paymentMethods = [
+    { id: 'wallet', label: 'Wallet', detail: 'Not available for this order', disabled: true },
+    { id: 'bank', label: 'Bank', disabled: true },
+    { id: 'hidden', label: 'Unrequested' },
+  ];
+  input.onMethod = jest.fn();
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.getByText('Not available for this order')).toBeTruthy();
+  expect(view.queryByText('Unrequested')).toBeNull();
+  fireEvent.press(view.getByText('Wallet'));
+  fireEvent.press(view.getByText('Bank'));
+  expect(input.onMethod).not.toHaveBeenCalled();
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+  expect(input.request.paymentMethods).toEqual(['card']);
+  view.rerender(
+    <CheckoutSheet {...input} request={{ ...input.request, paymentMethods: ['card', 'wallet'] }} />,
+  );
+  fireEvent.press(view.getByText('Wallet'));
+  expect(input.onMethod).not.toHaveBeenCalled();
+});
