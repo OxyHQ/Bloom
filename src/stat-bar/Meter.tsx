@@ -4,12 +4,14 @@ import { Animated, Platform, View, type StyleProp, type ViewStyle } from 'react-
 
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useResolvedBloomLocale } from '../locale/context';
 import { useTheme } from '../theme/use-theme';
 import {
   METER_DURATION_VAR,
   adoptMeterStyleSheet,
   meterFraction,
   meterValue,
+  meterValueText,
   resolveMeterColors,
 } from './shared';
 import type { AnyMeterProps } from './types';
@@ -27,18 +29,21 @@ import { useMeterReveal } from './use-meter-reveal';
  * geometry, the two colours and the accessibility, which is the part every
  * hand-rolled copy got subtly differently.
  *
- * Accessibility: a `progressbar` named by `accessibilityLabel`, with the FLAT
+ * Accessibility: a `meter` (a level indicator; `role="progressbar"` for a
+ * task's progress, `MeterRole`) named by `accessibilityLabel`, with the FLAT
  * `aria-value*` props — react-native-web drops the `accessibilityValue` object
  * entirely, so a bar setting only that announces its role and no value, while
- * React Native folds the flat props back into `accessibilityValue` and native
- * is unchanged. `valueText` carries the reading ("4 of 5"), since a bare number
- * is announced as a percentage.
+ * React Native folds the flat props back into `accessibilityValue`.
+ * `valueText` carries the reading ("4 of 5"); without it, the share of the
+ * track in the reader's locale (`meterValueText`), since React Native keeps
+ * `aria-valuenow` as a whole number and a fraction of 1 would say nothing.
  *
- * A bar that is one SEGMENT of a larger progressbar passes `decorative` and
- * gets no role at all — two nested progressbars announce the measurement twice.
+ * A bar that is one SEGMENT of a larger meter passes `decorative` and gets no
+ * role at all — two nested meters announce the measurement twice.
  */
 function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle> }) {
   const theme = useTheme();
+  const locale = useResolvedBloomLocale();
   const defaults = useMemo(() => resolveMeterColors(theme), [theme]);
   const {
     value,
@@ -110,12 +115,13 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
 
   return (
     <View
-      accessibilityRole="progressbar"
+      // The two roles spelled out: a meter unless the caller says it measures a task (`MeterRole`).
+      role={props.role === 'progressbar' ? 'progressbar' : 'meter'}
       accessibilityLabel={props.accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={meterValue(value, max)}
-      aria-valuetext={props.valueText}
+      aria-valuetext={props.valueText ?? meterValueText(value, max, locale)}
       testID={testID}
       style={trackStyle}
     >

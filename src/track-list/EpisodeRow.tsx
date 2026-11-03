@@ -141,6 +141,7 @@ function EpisodeRowComponent({
       {inProgress ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12, flexShrink: 1 }}>
           <Meter
+            role="progressbar"
             value={Math.round(progress)}
             max={Math.round(episode.duration)}
             height={4}

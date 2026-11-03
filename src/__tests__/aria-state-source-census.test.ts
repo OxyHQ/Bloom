@@ -211,7 +211,13 @@ const RN_HOSTS = new Set([
 // other two attributes are ABSENT (`aria-pressed` on a tab is invalid ARIA).
 // RadioHost forwards the radio state/name to its native Pressable or owned DOM
 // button. aria-state-web.test.tsx exercises all three radio variants.
-const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'RadioHost'];
+//
+// `stat-bar/Meter.tsx` (and its web fork) takes `role` as `'meter' | 'progressbar'`
+// (`MeterRole`: a measurement or a task's progress) and puts it on its own host
+// element beside the flat `aria-value{min,max,now,text}` and its required
+// `accessibilityLabel`; a computed role the census cannot read, which
+// `aria-state-web.test.tsx` and `Meter.test.tsx` pin for both roles.
+const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'RadioHost'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -260,6 +266,7 @@ const NAME_DELEGATING_TAGS = [
   'LinkButton',
   'MediaPressable',
   'MenuRowShell',
+  'Meter',
   'PressableScale',
   'RadioHost',
 ];

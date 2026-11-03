@@ -497,10 +497,10 @@ describe('NeighbourhoodScores', () => {
     { label: 'Quiet', value: 5 },
   ];
 
-  it('bars are named progressbars with flat aria-values, filled primary to value / max', () => {
+  it('bars are named meters with flat aria-values, filled primary to value / max', () => {
     mount(<NeighbourhoodScores items={items} columns={1} testID="ns" />);
     const bar = byTestId('ns-item-0-bar');
-    expect(bar.getAttribute('role')).toBe('progressbar');
+    expect(bar.getAttribute('role')).toBe('meter');
     expect(bar.getAttribute('aria-label')).toBe('Transport');
     expect(bar.getAttribute('aria-valuemin')).toBe('0');
     expect(bar.getAttribute('aria-valuemax')).toBe('10');
@@ -513,10 +513,10 @@ describe('NeighbourhoodScores', () => {
     expect(byTestId('ns-item-1').textContent).toBe('Quiet5');
   });
 
-  it('rings: a 56 progressbar whose arc offset is the missing share', () => {
+  it('rings: a 56 meter whose arc offset is the missing share', () => {
     mount(<NeighbourhoodScores items={items} variant="rings" max={10} testID="ns" />);
     const ring = byTestId('ns-item-1-ring');
-    expect(ring.getAttribute('role')).toBe('progressbar');
+    expect(ring.getAttribute('role')).toBe('meter');
     expect(ring.getAttribute('aria-valuenow')).toBe('5');
     expect(getComputedStyle(ring).width).toBe('56px');
     const arc = ring.querySelectorAll('circle')[1]!;

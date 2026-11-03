@@ -750,7 +750,7 @@ describe('Loading: an indeterminate progressbar, when named', () => {
   });
 });
 
-describe('progressbars announce their value', () => {
+describe('meters and progressbars announce their value', () => {
   it('Meter — the primitive every bar above is now built from', () => {
     // `StatBar`, `RatingBar`, the wizard's bar, the lease bar, the score bars
     // and rings and the listening bars all render THIS. Asserting it here is
@@ -759,7 +759,8 @@ describe('progressbars announce their value', () => {
     const c = mount(
       <Meter value={4} max={5} accessibilityLabel="Cleanliness" valueText="4 of 5" testID="m" />,
     );
-    const el = byRole(c, 'progressbar');
+    // A measurement is a meter (a level indicator) unless its caller says it is a task's progress.
+    const el = byRole(c, 'meter');
     expect(el.getAttribute('aria-label')).toBe('Cleanliness');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('5');
@@ -767,6 +768,16 @@ describe('progressbars announce their value', () => {
     // `aria-valuetext`: without it a screen reader announces the raw number as
     // a percentage of the range, so "4 of 5" is read as "80 percent".
     expect(el.getAttribute('aria-valuetext')).toBe('4 of 5');
+  });
+
+  it("Meter, a task's progress: a progressbar, its share said without the caller's words", () => {
+    const c = mount(
+      <Meter role="progressbar" value={3} max={4} accessibilityLabel="Uploading" testID="m" />,
+    );
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-label')).toBe('Uploading');
+    expect(el.getAttribute('aria-valuenow')).toBe('3');
+    expect(el.getAttribute('aria-valuetext')).toBe('75%');
   });
 
   it('Meter: a decorative segment announces NOTHING rather than an unnamed value', () => {
@@ -790,7 +801,7 @@ describe('progressbars announce their value', () => {
       />,
     );
     const el = byTestId(c, 'r');
-    expect(el.getAttribute('role')).toBe('progressbar');
+    expect(el.getAttribute('role')).toBe('meter');
     expect(el.getAttribute('aria-label')).toBe('Listing quality');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('100');
@@ -803,6 +814,7 @@ describe('progressbars announce their value', () => {
       <MeterRing
         value={0}
         indeterminate
+        role="progressbar"
         accessibilityLabel="Installing Notes"
         onStop={() => {}}
         stopLabel="Stop installing Notes"
@@ -820,11 +832,11 @@ describe('progressbars announce their value', () => {
 
   it('StatBar', () => {
     const c = mount(<StatBar label="Storage" value={30} max={120} testID="sb" />);
-    const el = byRole(c, 'progressbar');
+    const el = byRole(c, 'meter');
     expect(el.getAttribute('aria-valuenow')).toBe('30');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('120');
-    // A progressbar with no label announces a number and nothing about what it
+    // A meter with no label announces a number and nothing about what it
     // measures, so the bar's own label travels with it.
     expect(el.getAttribute('aria-label')).toBe('Storage');
   });
@@ -1148,9 +1160,9 @@ describe('Stepper', () => {
 });
 
 describe('RatingBar', () => {
-  it('emits a named progressbar with aria-value*', () => {
+  it('emits a named meter with aria-value*', () => {
     const c = mount(<RatingBar label="Cleanliness" value={4.9} display="4.9" testID="rb" />);
-    const el = byRole(c, 'progressbar');
+    const el = byRole(c, 'meter');
     expect(el.getAttribute('aria-label')).toBe('Cleanliness');
     expect(el.getAttribute('aria-valuenow')).toBe('4.9');
     expect(el.getAttribute('aria-valuemin')).toBe('0');

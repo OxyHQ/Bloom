@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  *
  * `RatingSummary` through the REAL react-native-web: the average is one named
- * element, every bar a progressbar named by its stars with its share, the bars
+ * element, every bar a meter named by its stars with its share, the bars
  * agree with the count, and an unrated product draws no rating at all.
  */
 import type React from 'react';
@@ -51,7 +51,7 @@ describe('RatingSummary', () => {
     const average = byTestId('r-average');
     expect(average?.getAttribute('aria-label')).toBe('Rated 4.6 out of 5, 200 reviews');
     expect(average?.textContent).toBe('4.6out of 5');
-    const bars = container.querySelectorAll('[role="progressbar"]');
+    const bars = container.querySelectorAll('[role="meter"]');
     expect(bars).toHaveLength(5);
     const five = byTestId('r-bar-5');
     expect(five?.getAttribute('aria-label')).toBe('5 stars');
@@ -69,7 +69,7 @@ describe('RatingSummary', () => {
   it('with no ratings draws the empty words and no distribution', () => {
     mount(<RatingSummary testID="r" average={null} count={0} distribution={{}} />);
     expect(byTestId('r-empty')?.textContent).toBe('No ratings yet');
-    expect(container.querySelectorAll('[role="progressbar"]')).toHaveLength(0);
+    expect(container.querySelectorAll('[role="meter"]')).toHaveLength(0);
     expect(byTestId('r-average')).toBeNull();
   });
 

@@ -266,6 +266,7 @@ export function OutlineNav({
       ) : null}
       {hideProgress ? null : (
         <Meter
+          role="progressbar"
           value={value}
           height={compact ? 3 : 4}
           accessibilityLabel={name}

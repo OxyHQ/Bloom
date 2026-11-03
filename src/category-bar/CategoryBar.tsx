@@ -16,6 +16,8 @@ import { chipRowOverflow } from '../chip/shared';
 import { resolveButtonRamps } from '../button/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useIsRtl } from '../hooks/use-is-rtl';
+import { useNativeRovingGroup, type NativeRovingItemProps } from '../hooks/use-native-roving-group';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useMessages } from '../locale/messages';
@@ -47,9 +49,12 @@ import { IS_WEB } from '../styles/platform';
  * secondary arrow button over a fade into `fadeColor`; an arrow scrolls by
  * roughly a page (the viewport less both fades). Keyboard: the strip is one
  * tab stop (the selected item), ArrowLeft/ArrowRight/Home/End move focus
- * between items, Enter/Space select. Native: a plain horizontal `ScrollView`.
- * On both, the selected item is scrolled into view when it changes and on the
- * first layout.
+ * between items, Enter/Space select. Native: a plain horizontal `ScrollView`;
+ * on a host that gives Bloom the window's keys (OxyOS) the strip is one Tab
+ * stop too, the selected item, and ← → Home End select the item they reach,
+ * the keyboard following once the value lands (`hooks/use-native-roving-group.ts`),
+ * so each is said once, already selected. On both, the selected item is
+ * scrolled into view when it changes and on the first layout.
  *
  * Semantics: `role="tablist"` named by `accessibilityLabel`, each item a
  * `role="tab"` with `aria-selected` (React Native folds it into
@@ -180,6 +185,8 @@ interface CategoryBarTabProps {
   onKey: (key: string, event: { key: string; preventDefault: () => void }) => void;
   onItemLayout: (key: string, event: LayoutChangeEvent) => void;
   registerRef: (key: string, node: ComponentRef<typeof View> | null) => void;
+  /** The item's keyboard props on a native host that gives Bloom the window's keys. */
+  roving: NativeRovingItemProps;
   testID?: string;
 }
 
@@ -192,6 +199,7 @@ function CategoryBarTab({
   onKey,
   onItemLayout,
   registerRef,
+  roving,
   testID,
 }: CategoryBarTabProps) {
   const { state: hovered, onIn, onOut } = useInteractionState();
@@ -208,7 +216,11 @@ function CategoryBarTab({
 
   return (
     <Pressable
-      ref={(node) => registerRef(key, node)}
+      {...roving}
+      ref={(node) => {
+        registerRef(key, node);
+        roving.ref?.(node);
+      }}
       {...webDataSet({ bloomCategoryBarItem: selected ? 'selected' : '' })}
       {...webProps}
       role="tab"
@@ -428,6 +440,22 @@ function CategoryBarComponent({
 
   const hasSelection = value !== undefined && items.some((item) => item.key === value);
 
+  // Native, on a host that gives Bloom the window's keys: the same one stop, the
+  // arrows SELECTING as they move (automatic activation, as a Mac's segmented
+  // tabs), since the native strip has no Enter of its own to wait for; a list's
+  // ends stop the arrows, as the web's do. `items` are in logical order, so ←
+  // is `next` in a right-to-left strip.
+  const rtl = useIsRtl();
+  const roving = useNativeRovingGroup<string>({
+    items: () => items.map((item) => ({ value: item.key })),
+    value: hasSelection ? value : undefined,
+    select,
+    orientation: 'horizontal',
+    homeEnd: true,
+    wrap: false,
+    rtl,
+  });
+
   const trackStyle: WebCssStyle = {
     flexGrow: 1,
     marginLeft: -ITEM_PADDING,
@@ -475,6 +503,7 @@ function CategoryBarComponent({
               onKey={onKey}
               onItemLayout={onItemLayout}
               registerRef={registerRef}
+              roving={roving.itemProps(item.key)}
               testID={testID ? `${testID}-item-${item.key}` : undefined}
             />
           ))}

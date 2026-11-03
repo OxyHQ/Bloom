@@ -38,7 +38,7 @@ an ancestor of what it switches.
 | `hasSelection`  | whether **any** tab is selected — see below                    |
 | `variant`       | `underline` · `pill` · `filled` · `outlined` — see below       |
 | `fullWidth`     | spread the triggers across the container instead of hugging    |
-| `label`         | the strip's accessible name — the `tablist`'s `aria-label` (web) |
+| `label`         | the strip's accessible name — the `tablist`'s `aria-label` (web), `accessibilityLabel` (native) |
 | `count`         | a count badge beside a trigger's label                         |
 | `leadingIcon`   | an icon component, sized and tinted by the trigger             |
 | `trailing`      | a node after a trigger's label that is NOT its press target — see below |
@@ -111,7 +111,19 @@ Horizontal arrows follow the document direction: in RTL, Left advances and Right
 
 If a trigger is removed or disabled independently, the tab stop moves to an enabled trigger. This uses the browser's `MutationObserver`: in web environments without it, independently changed children need the parent strip to render again before the tab stop updates.
 
-Before this every tab was its own tab stop, the arrows did nothing, and there was no `tablist` at all — correct `role="tab"` and `aria-selected` on each trigger, which is why nothing flagged it. Native is unchanged: the strip stays a plain container there, since naming a native container would fold its tabs into one accessibility element. Verified in jest (`TabsSegmentedKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`).
+Before this every tab was its own tab stop, the arrows did nothing, and there was no `tablist` at all — correct `role="tab"` and `aria-selected` on each trigger, which is why nothing flagged it. Verified in jest (`TabsSegmentedKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`).
+
+## Keyboard (native)
+
+Natively the strip is a `role="tablist"` too, named by `label` (`accessibilityLabel`), so a screen reader says each tab with its place among the strip's tabs ("General, selected, tab, 1 of 3"). It is not an element of its own (`accessible` stays false), so its tabs are still each one: iOS maps the role to no trait, and the OxyOS host gives a `tab` its place in the nearest `tablist`.
+
+On a native host that gives Bloom the window's keys (`PlatformKeyboard`: OxyOS's, with its Full Keyboard Access) the strip behaves as on the web, through the platform's keyboard focus (`hooks/use-native-roving-group.ts`), as `SegmentedControl` does:
+
+- Only the selected tab is `focusable` (the first enabled one when none is), so <kbd>Tab</kbd> lands on it and goes on past the strip.
+- While a tab has the keyboard focus, <kbd>←</kbd> · <kbd>→</kbd> reach the next enabled tab in the order they are laid out, round the ends, and <kbd>Home</kbd> · <kbd>End</kbd> the first and last. They are the focused control's keys (`FOCUSED_CONTROL_KEYS`).
+- With `value` the arrows SELECT (automatic activation, as a Mac's segmented tabs and ARIA's recommended tabs pattern), and the keyboard follows once `value` is the tab asked for, so the screen reader says the tab once, already selected. On the focus-driven path selecting is navigating, so the arrows move the keyboard alone and <kbd>Space</kbd> or <kbd>Return</kbd> (the host's press) opens the tab.
+
+On iOS and Android without such a host there is no window key to hear, and every tab stays focusable, as before.
 
 ## Look
 

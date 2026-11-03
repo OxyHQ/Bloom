@@ -136,19 +136,34 @@ interface MeterGeometryProps {
   fillTestID?: string;
 }
 
-/** A determinate bar that IS the `progressbar` — the usual case. */
+/**
+ * What a meter is to assistive technology, as ARIA and a Mac name the two:
+ *
+ * - `meter` (the default): a measurement within a known range — a score, a
+ *   share of the ratings, a charge, how full something is. A level indicator
+ *   ("level indicator" on a Mac, ARIA's `meter`).
+ * - `progressbar`: how far a TASK has got — an upload, a download, an
+ *   install, an episode listened, a lease's elapsed time, steps done. A
+ *   progress indicator. An indeterminate ring is always one.
+ */
+export type MeterRole = 'meter' | 'progressbar';
+
+/** A determinate bar that IS the `meter` or `progressbar` — the usual case. */
 export interface MeterProps extends MeterGeometryProps {
   /**
-   * What the bar measures. Required: ARIA never computes a name for
-   * `progressbar` from its contents, and the bar draws no text of its own, so
-   * without this it announces "progress bar, 40%" with no subject.
+   * What the bar measures. Required: ARIA never computes a name for a `meter`
+   * or a `progressbar` from its contents, and the bar draws no text of its own,
+   * so without this it announces "level indicator, 40%" with no subject.
    */
   accessibilityLabel: string;
   /**
-   * `aria-valuetext` — the reading a screen reader says instead of the raw
-   * number, which is otherwise announced as a percentage ("4 of 5" vs "80%").
+   * `aria-valuetext` — the reading a screen reader says ("4 of 5"). Without
+   * it, the share of the track in the reader's locale (`formatPercent`: "80%",
+   * "80 %"), which is what a screen reader says of a bare number.
    */
   valueText?: string;
+  /** @default 'meter' — see {@link MeterRole}. */
+  role?: MeterRole;
   decorative?: false;
 }
 
@@ -161,6 +176,7 @@ export interface MeterDecorativeProps extends MeterGeometryProps {
   decorative: true;
   accessibilityLabel?: never;
   valueText?: never;
+  role?: never;
 }
 
 export type AnyMeterProps = MeterProps | MeterDecorativeProps;
@@ -200,8 +216,13 @@ interface MeterRingBaseProps {
   cap?: 'round' | 'butt';
   /** What the ring measures. Required, for the reason `Meter` states. */
   accessibilityLabel: string;
-  /** `aria-valuetext`. */
+  /** `aria-valuetext`. Without it, the share of the ring, as `Meter`'s. */
   valueText?: string;
+  /**
+   * @default 'meter' — see {@link MeterRole}. A download's or an install's ring
+   * (`indeterminate`, `onStop`) is a `progressbar`.
+   */
+  role?: MeterRole;
   /**
    * Milliseconds the arc eases over, on WEB only — native snaps. Ignored under
    * `prefers-reduced-motion`.

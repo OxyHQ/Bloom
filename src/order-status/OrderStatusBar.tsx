@@ -154,6 +154,7 @@ function OrderStatusBarComponent({
       </View>
       {progress ? (
         <Meter
+          role="progressbar"
           value={progress.value}
           max={progress.max}
           height={ORDER_STATUS_BAR_METER_HEIGHT}

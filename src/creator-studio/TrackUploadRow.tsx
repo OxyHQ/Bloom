@@ -252,6 +252,7 @@ function TrackUploadRowComponent({
         </View>
         {bar === 'determinate' ? (
           <Meter
+            role="progressbar"
             value={percent}
             max={100}
             height={BAR_HEIGHT}

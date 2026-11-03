@@ -266,10 +266,10 @@ describe('Rating variant="stars"', () => {
 });
 
 describe('RatingBar', () => {
-  it('is a named progressbar with the value on its scale and the display as valuetext', () => {
+  it('is a named meter with the value on its scale and the display as valuetext', () => {
     mount(<RatingBar label="Cleanliness" value={4.9} display="4.9" testID="b" />);
     const bar = byTestId('b-bar');
-    expect(bar.getAttribute('role')).toBe('progressbar');
+    expect(bar.getAttribute('role')).toBe('meter');
     expect(bar.getAttribute('aria-label')).toBe('Cleanliness');
     expect(bar.getAttribute('aria-valuemin')).toBe('0');
     expect(bar.getAttribute('aria-valuemax')).toBe('5');

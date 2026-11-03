@@ -100,7 +100,7 @@ describe('PlaceReviewCard', () => {
     expect(byTestId('r-author').textContent).toBe('Tenant, 2021–2023');
     expect(byTestId('r-rating').getAttribute('aria-label')).toBe('Rated 4.0 out of 5');
     const bar = byTestId('r-category-0-bar');
-    expect(bar.getAttribute('role')).toBe('progressbar');
+    expect(bar.getAttribute('role')).toBe('meter');
     expect(bar.getAttribute('aria-label')).toBe('Maintenance');
     expect(bar.getAttribute('aria-valuenow')).toBe('3');
     expect(bar.getAttribute('aria-valuetext')).toBe('3.0');

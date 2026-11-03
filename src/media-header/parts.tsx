@@ -400,6 +400,7 @@ export function ProgressBar({
   const pct = Math.round(clamp01(value) * 100);
   return (
     <Meter
+      role="progressbar"
       value={pct}
       max={100}
       height={4}

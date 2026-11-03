@@ -229,6 +229,7 @@ export function ProgressTrack({
   const percent = Math.round(Math.min(1, Math.max(0, value)) * 100);
   return (
     <Meter
+      role="progressbar"
       value={percent}
       max={100}
       height={6}

@@ -385,7 +385,7 @@ describe('HostCard', () => {
 });
 
 describe('ReviewSummary', () => {
-  it('a named score, category progressbars and a 5→1 distribution', () => {
+  it('a named score, category meters and a 5→1 distribution', () => {
     mount(
       <ReviewSummary
         rating={4.9}
@@ -407,7 +407,7 @@ describe('ReviewSummary', () => {
     expect(getComputedStyle(byTestId('s-value')).fontSize).toBe('48px');
 
     const cleanliness = byTestId('s-category-0-bar');
-    expect(cleanliness.getAttribute('role')).toBe('progressbar');
+    expect(cleanliness.getAttribute('role')).toBe('meter');
     expect(cleanliness.getAttribute('aria-valuenow')).toBe('4.9');
     expect(cleanliness.getAttribute('aria-valuetext')).toBe('4.9');
 
