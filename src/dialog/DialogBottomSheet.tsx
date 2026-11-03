@@ -2,7 +2,7 @@ import type { DialogPresentationLifecycle } from './use-presentation-session';
 import { useDialogFrameScrollReset } from './DialogFrameContent';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
 import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import Animated, { useAnimatedStyle, type AnimatedStyle } from 'react-native-reanimated';
@@ -63,6 +63,7 @@ export function DialogBottomSheet({
   header,
   material: surfaceMaterial = 'surface',
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
+  detached = false,
   progress,
   showHandle = true,
   dismissOnBackdrop = true,
@@ -94,10 +95,11 @@ export function DialogBottomSheet({
     ref.current?.scrollTo(0, false);
     headerController.scrollY.value = 0;
   });
-  // The sheet is flush with the bottom of the window (a `<Modal>` drawn
+  // A flush sheet reaches the bottom of the window (a `<Modal>` drawn
   // edge-to-edge on Android, and under the home indicator on iOS), and
   // `BottomSheet` deliberately leaves the safe area to its content. This Dialog
   // IS the content's chrome, so it owns the inset (the spacer after the body).
+  // Detached sheets already clear it through BottomSheet's window-edge gap.
   const { bottom: bottomInset } = useCssSafeAreaInsets(useSafeAreaInsets());
 
   // Read the latest controlled flag / `onClose` inside stable callbacks without
@@ -201,7 +203,7 @@ export function DialogBottomSheet({
     return [
       {
         backgroundColor: theme.colors.background,
-        ...surfaceStyle(SURFACE_SHAPES.dialogSheet),
+        ...surfaceStyle(detached ? SURFACE_SHAPES.dialog : SURFACE_SHAPES.dialogSheet),
         maxHeight: maxHeightPercent,
       },
       panelStyle,
@@ -209,7 +211,7 @@ export function DialogBottomSheet({
       // resolves to `height: 'auto'` — the sheet's normal content sizing.
       morphState.panelStyle,
     ];
-  }, [theme.colors.background, maxHeightRatio, panelStyle, morphState.panelStyle]);
+  }, [theme.colors.background, detached, maxHeightRatio, panelStyle, morphState.panelStyle]);
 
   // Does this dialog render bloom's declarative chrome (title / description /
   // actions)? This no longer gates the SCROLL decision (that is now the explicit
@@ -256,6 +258,7 @@ export function DialogBottomSheet({
 
   return (
     <BottomSheet
+      detached={detached}
       backdrop={backdrop}
       transition={transition}
       material={surfaceMaterial}
@@ -362,7 +365,7 @@ export function DialogBottomSheet({
               rather than a padding: the content box keeps the caller's
               `padding`/`contentPadding` untouched on both platforms, and the
               morph layer above still measures the content alone. */}
-          {bottomInset > 0 ? (
+          {!detached && bottomInset > 0 ? (
             <SafeAreaSpacer testID={SAFE_AREA_SPACER_TESTID} inset={bottomInset} />
           ) : null}
         </StyledView>
@@ -414,6 +417,7 @@ export type DialogBottomSheetProps = DialogPresentationLifecycle &
     | 'header'
     | 'material'
     | 'maxHeightRatio'
+    | 'detached'
     | 'progress'
     | 'showHandle'
     | 'dismissOnBackdrop'
