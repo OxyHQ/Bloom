@@ -40,7 +40,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { Item } from '../item';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
-import { H1, Subtitle } from '../typography';
+import { H1, Subtitle, TYPE_SCALE } from '../typography';
 import type { DialogHeaderConfig } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
@@ -173,6 +173,7 @@ function configsEqual(a: DialogHeaderConfig | null, b: DialogHeaderConfig | null
     a.subtitle === b.subtitle &&
     a.largeTitle === b.largeTitle &&
     a.largeTitleAlign === b.largeTitleAlign &&
+    a.largeTitleVariant === b.largeTitleVariant &&
     a.titleLayout === b.titleLayout &&
     a.titleReveal === b.titleReveal &&
     a.left === b.left &&
@@ -280,6 +281,7 @@ export function useDialogHeader(config: DialogHeaderConfig | null | undefined): 
     config?.subtitle,
     config?.largeTitle,
     config?.largeTitleAlign,
+    config?.largeTitleVariant,
     config?.titleLayout,
     config?.titleReveal,
     config?.left,
@@ -619,7 +621,9 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
             <View onLayout={onTitleLayout} testID="dialog-heading-anchor">
               <H1
                 style={[
-                  styles.largeTitle,
+                  config.largeTitleVariant
+                    ? TYPE_SCALE[config.largeTitleVariant]
+                    : styles.largeTitle,
                   {
                     color: onImage ? ON_IMAGE_TEXT : theme.colors.text,
                     textAlign: config.largeTitleAlign ?? 'left',

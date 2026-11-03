@@ -1,3 +1,4 @@
+import type { TypeScaleVariant } from '../typography/scale';
 import type { TypographyMode } from '../typography/TypographyScope';
 import type { AppColorName } from '../theme/color-presets';
 import type { BackdropAppearance } from '../overlay/types';
@@ -45,6 +46,8 @@ export interface DialogHeaderConfig {
   largeTitle?: boolean;
   /** Alignment of the in-content heading; the collapsed navigation title stays centered. */
   largeTitleAlign?: 'left' | 'center';
+  /** Optional type-scale token for a quieter in-content heading; default large-title styling is unchanged. */
+  largeTitleVariant?: TypeScaleVariant;
   /** Hero content owns its heading/media beneath the nav; nav title reveals on scroll. */
   titleLayout?: 'large' | 'bar' | 'hero';
   /** With a large title, reveal the bar title only after its measured bottom leaves the viewport. */

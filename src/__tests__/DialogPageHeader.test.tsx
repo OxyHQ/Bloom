@@ -188,6 +188,7 @@ it('reveals the opted-in nav title only after the measured heading leaves and hi
   const header: DialogHeaderConfig = {
     title: 'Payment methods',
     largeTitleAlign: 'center',
+    largeTitleVariant: 'title-2-semibold',
     titleReveal: 'afterTitle',
     largeTitle: true,
   };
@@ -206,9 +207,12 @@ it('reveals the opted-in nav title only after the measured heading leaves and hi
     </BloomThemeProvider>
   );
   const screen = render(draw());
-  expect(StyleSheet.flatten(screen.getByText('Payment methods').props.style).textAlign).toBe(
-    'center',
-  );
+  expect(StyleSheet.flatten(screen.getByText('Payment methods').props.style)).toMatchObject({
+    textAlign: 'center',
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '600',
+  });
   const opacity = () =>
     StyleSheet.flatten(
       screen.getByTestId('dialog-nav-title-block', { includeHiddenElements: true }).props.style,
