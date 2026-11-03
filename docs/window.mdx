@@ -93,6 +93,8 @@ from the top and the first 24 from the leading edge.
   (`closeLabel`, `minimizeLabel`, `zoomLabel` win).
 - `plate` floats them on a plate of the surface material, for full-bleed
   content (a photo, a video, a map) that keeps no room for them.
+- They act on the first click on an inactive window, as a Mac's do: each
+  takes the first mouse (`ACCEPTS_FIRST_MOUSE`, below).
 
 It draws nothing without the capability, where `controls` is `platform`, and
 while the window is full screen.
@@ -110,6 +112,27 @@ moves the window.
 `disabled` makes it the plain `View`: a slot that is the window's chrome only
 some of the time (a header in a full-screen window) keeps one tree, so its
 content is never remounted.
+
+It takes the first mouse, so an inactive window moves by its title area in one
+gesture and zooms on a double click, as a Mac's title bar does; a control
+inside decides for itself.
+
+## `ACCEPTS_FIRST_MOUSE`
+
+A Mac's first mouse: on a desktop, the click that activates an inactive window
+reaches the view under it only if that view accepts it (AppKit's
+`acceptsFirstMouse:`); otherwise it only brings the window forward, so a button
+in a background window neither fires nor shows itself pressed. Spread
+`ACCEPTS_FIRST_MOUSE` (react-native-macos's View prop `acceptsFirstMouse`,
+which React Native's own `ViewProps` do not declare) on a view that should act
+on that click: a selectable list's row, as a Mac's table views select on it.
+A view inside one that takes it inherits it, up to the nearest control, which
+decides for itself. OxyOS's host and react-native-macos honour it; elsewhere
+it is dropped.
+
+```tsx
+<Pressable {...ACCEPTS_FIRST_MOUSE} onPress={select}>…</Pressable>
+```
 
 ## Who keeps the room
 

@@ -3,7 +3,7 @@ import type { View } from 'react-native';
 
 import type { RefComponent } from '../styles/native-refs';
 import { StyledView } from '../styles/styled-primitives';
-import { WINDOW_DOUBLE_PRESS_MS } from './constants';
+import { ACCEPTS_FIRST_MOUSE, WINDOW_DOUBLE_PRESS_MS } from './constants';
 import type { WindowDragRegionProps } from './types';
 import { useWindow } from './use-window';
 
@@ -16,8 +16,11 @@ import { useWindow } from './use-window';
  * BUBBLE phase (`onStartShouldSetResponder`), which asks the deepest view
  * first: any button, field or other pressable inside takes its own presses,
  * and only a press on the region itself (or on text and boxes that take
- * none) reaches it. Without the `window` capability, while the window is
- * full screen, and while `disabled`, it is just the `View`.
+ * none) reaches it. It takes the press that activates an inactive window
+ * (`ACCEPTS_FIRST_MOUSE`), so an inactive window moves in one gesture and
+ * zooms on a double press, as a Mac's title bar does; a control inside decides
+ * for itself. Without the `window` capability, while the window is full
+ * screen, and while `disabled`, it is just the `View`.
  */
 export const WindowDragRegion: RefComponent<WindowDragRegionProps> = forwardRef<
   ComponentRef<typeof View>,
@@ -35,6 +38,7 @@ export const WindowDragRegion: RefComponent<WindowDragRegionProps> = forwardRef<
     <StyledView
       ref={ref}
       {...props}
+      {...ACCEPTS_FIRST_MOUSE}
       onStartShouldSetResponder={() => true}
       onResponderTerminationRequest={() => true}
       onResponderGrant={() => {

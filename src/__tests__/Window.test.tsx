@@ -273,6 +273,13 @@ describe('WindowControls', () => {
     expect(spanish.getByLabelText('Pantalla completa')).toBeTruthy();
   });
 
+  it("takes the press that activates an inactive window, as a Mac's bubbles act on the first click", () => {
+    const screen = controls(fakeWindow({ state: { active: false } }).adapter);
+    for (const key of ['close', 'minimize', 'zoom']) {
+      expect(screen.getByTestId(`wc-${key}`).props.acceptsFirstMouse).toBe(true);
+    }
+  });
+
   it('acts on press', () => {
     const { window, adapter } = fakeWindow();
     const screen = controls(adapter);
@@ -366,6 +373,14 @@ describe('WindowDragRegion', () => {
       expect(resolvedStyle(node.props.style)).toEqual({ height: 40 });
       screen.unmount();
     }
+  });
+
+  it('takes the press that activates its window, so an inactive window moves in one gesture', () => {
+    const node = region(fakeWindow({ state: { active: false } }).adapter).getByTestId('drag');
+    expect(node.props.acceptsFirstMouse).toBe(true);
+    // Without the capability it is a plain view, which claims nothing.
+    const plain = region(null).getByTestId('drag');
+    expect(plain.props.acceptsFirstMouse).toBeUndefined();
   });
 
   it('asks for presses in the bubble phase only, so the views inside answer first', () => {

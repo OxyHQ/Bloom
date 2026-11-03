@@ -18,6 +18,7 @@ import { animateWithSpec, type MotionSpec } from '../motion/spec';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { useTheme } from '../theme/use-theme';
 import {
+  ACCEPTS_FIRST_MOUSE,
   WINDOW_CONTROL_DISC,
   WINDOW_CONTROL_PRESSED_SCALE,
   WINDOW_CONTROL_SYMBOL,
@@ -66,6 +67,8 @@ function WindowControl({
   const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }), [scale]);
   return (
     <AnimatedPressable
+      // The first click on an inactive window's bubble acts, as a Mac's do.
+      {...ACCEPTS_FIRST_MOUSE}
       role="button"
       accessibilityLabel={label}
       onPress={onPress}
@@ -129,7 +132,8 @@ function WindowControl({
  * own corner (`AppShell` and `SettingsLayout` mount it there). On the active
  * window they are tinted red, yellow and green; on an inactive one, neutral.
  * The pointer over the group shows their symbols; a press shrinks a bubble to
- * 88 % and springs it back as it acts.
+ * 88 % and springs it back as it acts. They act on the first click on an
+ * inactive window (`ACCEPTS_FIRST_MOUSE`), as a Mac's do.
  *
  * Draws nothing without the `window` capability, where the platform draws its
  * own controls (`controls: 'platform'`), and while the window is full screen.
