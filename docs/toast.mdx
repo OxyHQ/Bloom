@@ -327,6 +327,26 @@ Expanding animates that viewport back to the full height, without scaling text.
 The front card keeps its shadow. `MixedHeightStack` in Storybook covers short,
 multiline, action and custom rows together.
 
+A card is never bounded by its own height, only by a shorter card in front of
+it, and a card that has not measured itself yet is not clipped at all. The
+measured height drives that bound, so the bound must never change what is
+measured. On native, Yoga lays a bounded column's children out within the bound,
+so a clipped viewport is a scroll container (laid out at its content's height,
+clipped like `hidden`, never panned) and an unclipped one has no `maxHeight`.
+Measured failure on OxyOS: a toast with a description bounded by its own
+animating height re-measured 77 and 78 in turn, re-laid out about seven times a
+second and never let the window go still. The web keeps `overflow: hidden`.
+
+### The toast layer on native
+
+On native the rows render inline where `ToastOutlet` is mounted, inside the
+same pinned `OverlayRoot` at `TOAST_LAYER_Z` the web host portals. It forms a
+stacking context: the rows' own order (front row on top) stays among the rows,
+and the layer sits above the app. Without it, Fabric flattened the paintless
+positioner and ordered the rows against the app's own views, so a toast drew
+beneath any screen with a background while its text was still in the
+accessibility tree. Screen readers reach the toasts after the app's content.
+
 ### Exit motion
 
 Default exits fade over 180ms and travel at most 12px. Explicit intermediate

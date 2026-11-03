@@ -72,6 +72,15 @@ describe('ToastHost platform split', () => {
     expect(read('toast/ToastHost.native.tsx')).toMatch(/FullWindowOverlay/);
   });
 
+  it('native host is the same pinned toast layer, rendered inline', () => {
+    // Bare, the rows' negative `zIndex` (front row on top) escaped into the
+    // app's stacking context once Fabric flattened the paintless positioner,
+    // and the toast drew beneath any screen with a background.
+    const native = code('toast/ToastHost.native.tsx');
+    expect(native).toMatch(/<OverlayRoot zIndex=\{TOAST_LAYER_Z\}>/);
+    expect(native).toMatch(/from '\.\.\/overlay'/);
+  });
+
   it('the shared style module owns the only fixed-position assertion', () => {
     const styleModule = read('styles/web-view-style.ts');
     expect(styleModule).toMatch(

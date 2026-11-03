@@ -74,6 +74,9 @@ import type { ToasterProps, ToastPosition, ToastProps, ToastRef, ToastStyles } f
 import { useToastPosition } from './use-toast-position';
 import { UNSET } from '../styles/animated-style';
 
+/** How a clipped viewport clips: see W14 at `viewportStyle`. */
+export const CLIPPING_OVERFLOW = IS_WEB ? 'hidden' : 'scroll';
+
 /** How much a wiggle grows the row, and for how long per half-cycle. */
 const WIGGLE_SCALE = 1.035;
 const WIGGLE_DURATION = 150;
@@ -236,31 +239,57 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
 
   // Keep the measured child intrinsic. Only its viewport changes height, so a
   // tall description/custom row cannot protrude behind a shorter front card.
-  const visibleHeight = useAnimatedTarget(
-    calculateToastVisibleHeight({
-      index,
-      numberOfToasts,
-      enableStacking,
-      position,
-      allToastHeights: toastHeights,
-      orderedToastIds,
-      isExpanded,
-    }),
-    { duration: STACKING_ANIMATION_DURATION, easing: easeOutQuartFn },
-  );
+  // A row that has not measured itself yet is not clipped at all (unbounded,
+  // not `ESTIMATED_TOAST_HEIGHT`: the estimate is no height it ever had), and
+  // its first measurement replaces that rather than animating from it
+  // (`estimated`). Seeded at the estimate instead, a card taller than it was
+  // clipped to the estimate for the length of a stack animation as it appeared.
   const naturalHeight = toastHeights[id];
+  const visibleHeight = useAnimatedTarget(
+    naturalHeight === undefined
+      ? Number.POSITIVE_INFINITY
+      : calculateToastVisibleHeight({
+          index,
+          numberOfToasts,
+          enableStacking,
+          position,
+          allToastHeights: toastHeights,
+          orderedToastIds,
+          isExpanded,
+        }),
+    {
+      duration: STACKING_ANIMATION_DURATION,
+      easing: easeOutQuartFn,
+      estimated: naturalHeight === undefined,
+    },
+  );
   const surfaceStyle = StyleSheet.flatten([mergedStyles.toast, style]);
   const inset = jsx || unstyled ? 0 : space.lg;
   const leftMargin = surfaceStyle?.marginLeft ?? surfaceStyle?.marginHorizontal ?? inset;
   const insetLeft = typeof leftMargin === 'number' ? leftMargin : 0;
   const rightMargin = surfaceStyle?.marginRight ?? surfaceStyle?.marginHorizontal ?? inset;
   const insetRight = typeof rightMargin === 'number' ? rightMargin : 0;
+  // W14 — THE VIEWPORT BOUNDS THE ROW ONLY WHILE IT CLIPS IT, and its clip
+  // never lays the measured child out shorter. The measured height feeds this
+  // very `maxHeight` (through `visibleHeight`), so the child must be the same
+  // height whatever the viewport is, or the loop never settles. On the web CSS
+  // already keeps a `flex-shrink: 0` child at its content height under a
+  // `max-height`. Yoga does not: it lays a non-scrolling column's children out
+  // within its height (`SizingMode::FitContent`), so a `maxHeight` squeezed the
+  // card's content, `onLayout` reported the squeezed height, and every report
+  // moved the target again. On OxyOS's host a toast never went still (the row
+  // re-laid out ~7 times a second, 77 and 78 in turn, for as long as it stayed).
+  // Hence, natively: no `maxHeight` at all unless the row is clipped, and a
+  // clipped viewport is a SCROLL container, whose children Yoga lays out at
+  // their content's own height (`CalculateLayout.cpp`), and which clips like
+  // `hidden`; it never scrolls (nothing pans it). The web keeps `hidden`: there
+  // `scroll` would draw scrollbars. Gate: `Toaster.test.tsx` (W14).
   const viewportStyle = useAnimatedStyle(() => {
     const constrained = naturalHeight !== undefined && visibleHeight.value < naturalHeight - 0.5;
     return {
       // maxHeight (not a text transform) clips without squashing typography.
-      maxHeight: naturalHeight === undefined ? UNSET : visibleHeight.value,
-      overflow: constrained ? 'hidden' : 'visible',
+      maxHeight: constrained ? visibleHeight.value : UNSET,
+      overflow: constrained ? CLIPPING_OVERFLOW : 'visible',
     };
   }, [visibleHeight, naturalHeight]);
 
