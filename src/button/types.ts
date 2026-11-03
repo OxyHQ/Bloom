@@ -124,8 +124,12 @@ export interface ButtonProps {
    * web and as buttons on native. Prefer `href` — it renders a REAL anchor,
    * which is the only spelling middle-click, copy-link and the status bar
    * understand.
+   *
+   * `columnheader` is a list's or a table's column header that sorts by its
+   * column when pressed (a file list's Name, Size): announced as a column
+   * header, not as a button, as VoiceOver and the ARIA grid pattern say one.
    */
-  accessibilityRole?: 'button' | 'link';
+  accessibilityRole?: 'button' | 'link' | 'columnheader';
 
   /**
    * Makes the button a link. On web it renders a real `<a href>` (dropped

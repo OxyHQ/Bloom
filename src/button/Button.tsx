@@ -200,6 +200,7 @@ type ButtonPressableProps = Pick<
   | 'accessibilityHint'
   | 'accessibilityLabel'
   | 'accessibilityRole'
+  | 'role'
   | 'accessibilityState'
   | 'aria-valuemax'
   | 'aria-valuemin'
@@ -631,7 +632,14 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
       hitSlop={hitSlop ?? defaultHitSlop}
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
-      accessibilityRole={accessibilityRole ?? (href != null ? 'link' : 'button')}
+      // A column header has no `accessibilityRole` of React Native's: it is the ARIA
+      // `role`, which React Native takes over `accessibilityRole`.
+      accessibilityRole={
+        accessibilityRole === 'columnheader'
+          ? undefined
+          : (accessibilityRole ?? (href != null ? 'link' : 'button'))
+      }
+      role={accessibilityRole === 'columnheader' ? 'columnheader' : undefined}
       // Spelled flat, as React Native folds them back into the value and as
       // the rest of Bloom spells a value (aria-state-source-census).
       aria-valuetext={accessibilityValue?.text}

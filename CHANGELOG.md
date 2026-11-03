@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.7.0
+
+### Added
+
+- **A column header button.** `Button`'s `accessibilityRole` takes `columnheader`: a list's or a table's header that sorts by its column is said as a column header ("Name, ascending, column header"), not as a button — React Native's ARIA `role` on native, the element's `role` on web. See `docs/button.mdx`.
+
+### Consumers
+
+Nothing to change. A file list's sorting headers can say what they are.
+
 ## 16.6.1
 
 ### Changed
