@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { PaymentStatusBlock } from '../payment-status';
+import { sizes as iconSizes } from '../icons/shared';
+import { PAYMENT_METHOD_KIND_ICON } from '../payment-method';
+import { RiCheckLine } from '../icons/remix/RiCheckLine';
+import { RiAddLine } from '../icons/remix/RiAddLine';
 import { Button } from '../button';
 import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { Dialog, useDialogFrame } from '../dialog';
@@ -18,10 +22,20 @@ import {
   type CheckoutDraft,
   type CheckoutRequest,
   type CheckoutStep,
+  type CheckoutPaymentMethod,
 } from './model';
 
 export interface CheckoutSheetProps {
   open: boolean;
+  /** Account identity supplied by the host; rendered instead of guest contact collection. */
+  accountSummary?: { name: string; detail?: string; avatar?: ReactNode };
+  /** Display entries filtered against request.paymentMethods; no availability is inferred. */
+  paymentMethods?: readonly CheckoutPaymentMethod[];
+  methodContent?: ReactNode;
+  /** Distinguishes host-owned method substates for the shared size morph. */
+  frameKey?: string;
+  /** The host selects the content and navigates to the method step. */
+  onMethod?(methodId: string): void;
   /** Localized copy, including interpolated merchant, quantity and formatted amount. */
   label(key: string, values?: Record<string, string | number>): string;
   /** Format the quoted minor units; the host owns currency exponents and display preferences. */
@@ -68,7 +82,7 @@ function CheckoutContent(props: CheckoutSheetProps) {
     onCard,
   } = props;
   const { colors } = useTheme();
-  useDialogFrame({ key: `checkout:${step}`, direction });
+  useDialogFrame({ key: `checkout:${step}:${props.frameKey ?? ''}`, direction });
   const money = (amount: number) => formatAmount(amount, request.currency);
   const muted = { color: colors.textSecondary };
   const next = props.nextStep ?? nextCheckoutStep(request, draft);
@@ -79,7 +93,10 @@ function CheckoutContent(props: CheckoutSheetProps) {
     contact: draft.email || label('addContact'),
     shipping: draft.shipping.address || label('addShipping'),
     delivery: draft.delivery ? label(`delivery.${draft.delivery}`) : label('chooseDelivery'),
-    payment: cardLabel,
+    payment:
+      (draft.paymentSelection
+        ? [draft.paymentSelection.label, draft.paymentSelection.detail].filter(Boolean).join(' · ')
+        : undefined) ?? (draft.paymentSelection === null ? label('addPayment') : cardLabel),
   };
   const sectionIcons = {
     contact: RiMailLine,
@@ -175,6 +192,14 @@ function CheckoutContent(props: CheckoutSheetProps) {
             </View>
           )}
           <GroupedSection>
+            {request.requiresContact === false && props.accountSummary ? (
+              <GroupedSectionItem
+                title={props.accountSummary.name}
+                description={props.accountSummary.detail}
+                icon={props.accountSummary.avatar}
+                showChevron={false}
+              />
+            ) : null}
             {checkoutSections(request).map((section) => {
               const Icon = sectionIcons[section];
               return (
@@ -283,33 +308,71 @@ function CheckoutContent(props: CheckoutSheetProps) {
           <Text variant="body-2-regular" style={muted}>
             {label('paymentHint')}
           </Text>
-          {request.paymentMethods.includes('card') && savedCards.length > 0 && (
-            <GroupedSection>
-              {savedCards.map((card) => (
-                <GroupedSectionItem
-                  key={card.id}
-                  title={`${card.brand} ···· ${card.last4}`}
-                  description={label('savedCard')}
-                  icon={<RiBankCardLine size="md" fill={colors.text} />}
-                  onPress={() => {
-                    onCard(card);
-                    onStep('review');
-                  }}
-                />
-              ))}
-            </GroupedSection>
-          )}
-          {request.paymentMethods.includes('card') && (
-            <>
-              <Button size="lg" onPress={() => onStep('card')}>
-                {label('addCard')}
-              </Button>
-              <Text style={{ ...muted, textAlign: 'center' }}>{label('acceptedCards')}</Text>
-            </>
-          )}
+          <GroupedSection>
+            {request.paymentMethods.includes('card') &&
+              savedCards.map((card) => {
+                const selected =
+                  draft.paymentSelection === undefined
+                    ? draft.card?.id === card.id
+                    : draft.paymentSelection?.method === 'card' &&
+                      draft.paymentSelection.id === card.id;
+                return (
+                  <GroupedSectionItem
+                    key={`card:${card.id}`}
+                    title={`${card.brand} ···· ${card.last4}`}
+                    description={label('savedCard')}
+                    icon={<RiBankCardLine size="md" fill={colors.text} />}
+                    showChevron={false}
+                    accessibilityState={{ selected }}
+                    rightElement={
+                      selected ? <RiCheckLine size="md" fill={colors.primary} /> : undefined
+                    }
+                    onPress={() => {
+                      onCard(card);
+                      onStep('review');
+                    }}
+                  />
+                );
+              })}
+            {(props.paymentMethods ?? [])
+              .filter(
+                (method) => method.id !== 'card' && request.paymentMethods.includes(method.id),
+              )
+              .map((method) => {
+                const Icon = PAYMENT_METHOD_KIND_ICON[method.kind ?? 'wallet'];
+                const selected = draft.paymentSelection?.method === method.id;
+                return (
+                  <GroupedSectionItem
+                    key={`method:${method.id}`}
+                    title={method.label}
+                    description={method.detail}
+                    icon={
+                      method.artwork ?? (
+                        <Icon width={iconSizes.md} height={iconSizes.md} fill={colors.text} />
+                      )
+                    }
+                    showChevron={false}
+                    accessibilityState={{ selected }}
+                    rightElement={
+                      selected ? <RiCheckLine size="md" fill={colors.primary} /> : undefined
+                    }
+                    disabled={!props.onMethod}
+                    onPress={() => props.onMethod?.(method.id)}
+                  />
+                );
+              })}
+            {request.paymentMethods.includes('card') && (
+              <GroupedSectionItem
+                title={label('addCard')}
+                icon={<RiAddLine size="md" fill={colors.text} />}
+                onPress={() => onStep('card')}
+              />
+            )}
+          </GroupedSection>
         </>
       )}
       {step === 'card' && cardEntry}
+      {step === 'method' && props.methodContent}
       {(step === 'processing' || step === 'success' || step === 'failure') && (
         <PaymentStatusBlock
           testID="bloom-checkout-result"
