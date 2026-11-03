@@ -23,6 +23,7 @@ import {
   CARD_FORM_EMPTY_VALUE,
   CardForm,
   CardFormExpiry,
+  CardFormCountry,
   CardFormHostedField,
   CardFormNumber,
   CardFormSecurityCode,
@@ -561,4 +562,16 @@ it('refuses sensitive local values in hosted mode', () => {
       />,
     ),
   ).toThrow('cannot receive sensitive local values');
+});
+
+it('shows the country prompt when the controlled billing country is empty', () => {
+  mount(
+    <CardFormCountry
+      value=""
+      label="Country"
+      countries={[{ value: 'US', label: 'United States' }]}
+      testID="country-empty"
+    />,
+  );
+  expect(byTestId('country-empty').textContent).toContain('Select a country');
 });
