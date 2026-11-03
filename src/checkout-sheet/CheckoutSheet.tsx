@@ -28,7 +28,19 @@ import {
 export interface CheckoutSheetProps {
   open: boolean;
   /** Account identity supplied by the host; rendered instead of guest contact collection. */
-  accountSummary?: { name: string; detail?: string; avatar?: ReactNode };
+  accountSummary?: {
+    name: string;
+    detail?: string;
+    avatar?: ReactNode;
+    /** Host-owned account context; no identity or balance lookup happens here. */
+    supportingRows?: readonly {
+      id: string;
+      title: string;
+      value?: string;
+      description?: string;
+      onPress?: () => void;
+    }[];
+  };
   /** Display entries filtered against request.paymentMethods; no availability is inferred. */
   paymentMethods?: readonly CheckoutPaymentMethod[];
   methodContent?: ReactNode;
@@ -186,12 +198,17 @@ function CheckoutContent(props: CheckoutSheetProps) {
           )}
           <GroupedSection>
             {request.requiresContact === false && props.accountSummary ? (
-              <GroupedSectionItem
-                title={props.accountSummary.name}
-                description={props.accountSummary.detail}
-                icon={props.accountSummary.avatar}
-                showChevron={false}
-              />
+              <>
+                <GroupedSectionItem
+                  title={props.accountSummary.name}
+                  description={props.accountSummary.detail}
+                  icon={props.accountSummary.avatar}
+                  showChevron={false}
+                />
+                {props.accountSummary.supportingRows?.map(({ id, ...row }) => (
+                  <GroupedSectionItem key={id} {...row} />
+                ))}
+              </>
             ) : null}
             {(request.recurring?.renewalTerms || request.recurring?.cancellationTerms) && (
               <GroupedSectionItem title={label('terms')} onPress={() => onStep('terms')} />

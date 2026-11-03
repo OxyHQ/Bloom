@@ -81,7 +81,10 @@ footer carries its progress indicator.
 `request.requiresContact` defaults to true. A host that already knows the account
 sets it to false and supplies `accountSummary: { name, detail?, avatar? }`; Bloom
 renders that identity through the same `GroupedSectionItem` as the other review
-rows. No identity or authentication lookup happens here.
+rows. Optional `accountSummary.supportingRows` adds host-owned context immediately
+below that identity in the same group. Each row supplies `id`, `title`, optional
+`value`, `description` and `onPress`. These rows never appear for guest checkout.
+No identity, balance or authentication lookup happens here.
 
 `paymentMethods` supplies display entries (`id`, `label`, `detail`, `kind`,
 optional `artwork`); entries are filtered against `request.paymentMethods`.

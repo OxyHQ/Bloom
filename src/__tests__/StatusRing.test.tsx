@@ -4,6 +4,9 @@ import { render } from '@testing-library/react-native';
 import * as Reanimated from 'react-native-reanimated';
 import { StatusRing } from '../loading/StatusRing';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { Surface } from '../surface';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { cardFill } from './support/card-surface';
 import { resolvedStyle } from './support/rendered-style';
 let mockReduced = true;
 jest.mock('../hooks/use-prefers-reduced-motion', () => ({
@@ -119,3 +122,40 @@ it('keeps transition layers mounted and animates matching success and error glyp
   expect(resolvedStyle(spinner.props.style).opacity).toBe(0);
   timing.mockRestore();
 });
+
+it.each(['light', 'dark'] as const)(
+  'uses the canonical nested Surface material in %s without painting idle',
+  (mode) => {
+    const wrap = ({ children }: React.PropsWithChildren) => (
+      <BloomThemeProvider mode={mode} fonts={false}>
+        <SurfaceLevelProvider level={3} fill={mode === 'dark' ? '#333333' : '#dddddd'}>
+          {children}
+        </SurfaceLevelProvider>
+      </BloomThemeProvider>
+    );
+    const reference = render(<Surface radius={24} cornerCurve="round" />, { wrapper: wrap });
+    const view = render(
+      <StatusRing state="success" accessibilityLabel="Complete">
+        <Text>Brand</Text>
+      </StatusRing>,
+      { wrapper: wrap },
+    );
+    expect(cardFill(view.UNSAFE_root)).toBe(cardFill(reference.UNSAFE_root));
+    view.rerender(
+      <StatusRing state="idle" accessibilityLabel="Idle">
+        <Text>Brand</Text>
+      </StatusRing>,
+    );
+    view.rerender(
+      <StatusRing state="idle" accessibilityLabel="Idle">
+        <Text>Brand</Text>
+      </StatusRing>,
+    );
+    expect(
+      resolvedStyle(
+        view.getByTestId('bloom-status-ring-background', { includeHiddenElements: true }).props
+          .style,
+      ).opacity,
+    ).toBe(0);
+  },
+);

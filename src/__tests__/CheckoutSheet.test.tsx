@@ -185,3 +185,21 @@ it('opens supplied terms separately and returns without changing draft or author
   expect(input.onDraft).not.toHaveBeenCalled();
   expect(input.onAuthorize).not.toHaveBeenCalled();
 });
+
+it('renders host account supporting rows only for account checkout and delegates their action', () => {
+  const input = props();
+  const onPress = jest.fn();
+  input.accountSummary = {
+    name: 'Account',
+    supportingRows: [{ id: 'balance', title: 'Wallet balance', value: '25 FAIR', onPress }],
+  };
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.queryByText('Wallet balance')).toBeNull();
+  view.rerender(
+    <CheckoutSheet {...input} request={{ ...input.request, requiresContact: false }} />,
+  );
+  expect(view.getByText('25 FAIR')).toBeTruthy();
+  fireEvent.press(view.getByText('Wallet balance'));
+  expect(onPress).toHaveBeenCalledTimes(1);
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+});
