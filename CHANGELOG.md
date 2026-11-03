@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.6.1
+
+### Changed
+
+- **A seeded colour scope is solved once per process, and a cold seed costs about 40% less on Hermes.** `buildThemeFromSeed` (and `buildColorsFromSeed`) keep the theme they solved for each argument set, bounded at 128 like `generateRoleColors` and `buildSeedScopeVars`, and return the same frozen object: a second `BloomColorScope` with that seed, or one re-rendering under a new parent theme, builds nothing. A scope's `tokens` count by value, so an inline `tokens={{ … }}` no longer resolves the scope (and gives its subtree a new theme) on every render. The colour engine's solver keeps each luminance's cut of the RGB cube, linearizes a channel by table, computes CAM16's chroma factor once per viewing conditions, and a tonal palette's tone no longer builds an HCT it discards: the same results, bit for bit (300 random seeds and every preset in both modes, every variant), and the first `BloomColorScope seed="#4464ba" mode="dark"` on Hermes goes from 43 to 26 ms. See `docs/design-tokens.mdx`.
+
+### Consumers
+
+Nothing to change. `buildThemeFromSeed`'s result is now shared and frozen: copy it before changing it.
+
 ## 16.6.0
 
 ### Added

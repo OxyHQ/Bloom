@@ -27,6 +27,17 @@ Arbitrary consumer seeds remain supported through `buildThemeFromSeed()` and
 `BloomSeedScope`; the named catalog is a set of useful starting points, not the
 limit of the dynamic engine.
 
+An arbitrary seed costs once per process. `buildThemeFromSeed()` and
+`buildSeedScopeVars()` keep what they solved (bounded, 128 entries each), so a
+second `BloomColorScope` with the same seed, or one re-rendering under a new
+parent theme, reads the same frozen theme; a scope's `tokens` count by value, so
+an inline `tokens={{ … }}` does not resolve the scope again on every render. The
+first solve is the accent search (`deriveAccentHues`: the most vivid tone of ~50
+hues, 63 gamut solves each); a named preset reads its accent hues from a
+generated table instead. On Hermes a cold seed took 43 ms before the solver kept
+each luminance's cut of the RGB cube and stopped building CAM16 colours nobody
+read, 26 ms after (one seed, dark, best of six on the same machine).
+
 ```ts
 import {
   COLOR_PRESET_REGISTRY,
