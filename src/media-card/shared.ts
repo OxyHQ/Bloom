@@ -1,7 +1,6 @@
 import { resolveButtonRamps } from '../button/shared';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { MediaCardLayout, MediaCardPlayButton, MediaCardSize } from './types';
 import {
@@ -44,10 +43,6 @@ export const QUICK_TILE_RADIUS = 6;
 /** The rotation of the cover peeking out of a genre tile. */
 export const GENRE_ARTWORK_ROTATION = 25;
 export const RECAP_RADIUS = 20;
-
-export function artworkSide(size: MediaCardSize, layout: MediaCardLayout): number {
-  return layout === 'row' ? ROW_ARTWORK[size] : TILE_ARTWORK[size];
-}
 
 // ---------------------------------------------------------------------------
 //  Play button visibility

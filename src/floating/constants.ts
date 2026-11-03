@@ -171,17 +171,6 @@ export const MENUBAR_MENU_MIN_WIDTH_CLASS = 'min-w-[266px]';
  */
 export const MENU_SUB_PANEL_CLASS = 'min-w-[266px]';
 
-/**
- * The sub panel's scroller: `-mx-2.5 px-2.5 max-h-96 overflow-y-auto
- * overflow-x-hidden`, with the panel's own 4px row rhythm. The negative inset
- * bleeds the scroll container to the panel edge and pads the content back, so
- * the scrollbar track is not inset by the panel's own padding — and it doubles as
- * the flyout's pointer hit box, which is why the ring of panel padding no longer
- * schedules a close.
- */
-export const MENU_SUB_SCROLL_CLASS =
-  '-mx-[10px] px-[10px] gap-space-4 max-h-96 overflow-y-auto overflow-x-hidden';
-
 /* -------------------------------------------------------------------------- */
 /*  The menu row vocabulary                                                   */
 /* -------------------------------------------------------------------------- */
@@ -268,25 +257,8 @@ export const ROW_INDICATOR_END_CLASS =
 /** `bg-foreground h-2 w-2 rounded-full` — a filled dot with no ring. */
 export const ROW_RADIO_DOT_CLASS = 'w-space-8 h-space-8 rounded-full bg-foreground';
 
-/**
- * The dropdown group label: `pl-2 text-body-medium text-text-secondary`,
- * `pt-1` above it and 6px (`gap-1.5`) to the first row — the panel's 4px gap
- * plus `pb-0.5`. The colour is inline (`MenuPalette.textSecondary`).
- */
-export const ROW_LABEL_CLASS = 'px-space-8 pt-space-4 pb-0.5';
-
 /** `pl-8` on a label asking to line up with an indicator row. */
 export const ROW_LABEL_INSET_CLASS = 'pl-space-32';
-
-/**
- * The dropdown divider: `-mx-2.5 my-1.5 h-px` — one whole pixel bleeding
- * through the panel's `p-2.5`, 10px from the rows on either side once the
- * panel's 4px gap is added. Colour inline (`MenuPalette.border`).
- */
-export const ROW_SEPARATOR_CLASS = '-mx-[10px] my-1.5 h-px';
-
-/** The same rule inside the select's `p-2` listbox. */
-export const SELECT_SEPARATOR_CLASS = '-mx-space-8 my-1.5 h-px';
 
 /** `ms-auto text-xs tracking-widest`, in `MenuPalette.textSecondary`. */
 export const ROW_SHORTCUT_CLASS = 'shrink-0 ms-auto';
@@ -396,11 +368,6 @@ export const SELECT_CHEVRON_SIZE = { xs: 14, sm: 16, md: 18, lg: 20 } as const;
  */
 export const SELECT_ITEM_CLASS =
   'relative flex-row items-center w-full min-w-0 select-none ' + 'rounded-[10px]';
-export const SELECT_ITEM_SIZE_CLASS = {
-  md: 'pl-space-8 py-space-8',
-  sm: 'pl-space-8 py-1.5',
-} as const;
-
 /** The option's label; colour inline (`text-primary` / `text-disabled`). */
 export const SELECT_ITEM_TEXT_CLASS = {
   xs: 'flex-1 min-w-0',

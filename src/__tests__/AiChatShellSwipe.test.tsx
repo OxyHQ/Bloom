@@ -19,12 +19,7 @@ afterEach(() => jest.restoreAllMocks());
 it('leaves the shared shell root free of a second gesture responder', () => {
   const tree = render(
     <BloomThemeProvider mode="light">
-      <AiChatShell
-        testID="shell"
-        sidebar={null}
-        mobileSidebar={<Text>Navigation</Text>}
-        navSwipeEnabled
-      >
+      <AiChatShell testID="shell" sidebar={null} mobileSidebar={<Text>Navigation</Text>}>
         <Text>Conversation</Text>
       </AiChatShell>
     </BloomThemeProvider>,

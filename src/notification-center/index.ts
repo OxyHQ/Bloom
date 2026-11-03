@@ -5,7 +5,6 @@ export type {
   NotificationCenterAvatar,
   NotificationCenterAvatarColor,
   NotificationCenterCategory,
-  NotificationCenterIcon,
   NotificationCenterItem,
   NotificationCenterProps,
   NotificationCenterStatus,

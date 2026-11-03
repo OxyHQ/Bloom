@@ -1,6 +1,7 @@
 import { FieldConstraintScope } from '../field/FieldConstraintScope';
 import { useFieldMembership } from '../field/membership';
-import React, { memo, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { groupThousands } from '../chart-cards/primitives/format';
@@ -18,7 +19,6 @@ import { Text } from '../typography';
 import { LISTING_EDITOR_MESSAGES } from './messages';
 import { resolveSelectionPaint, SelectionCard } from '../card/SelectionCard';
 import type {
-  ListingEditorIcon,
   OfferingEditorProps,
   OfferingKind,
   OfferingValue,
@@ -28,6 +28,7 @@ import type {
   SwapMode,
   SwapOffering,
 } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * How a home is offered: four large selectable cards — for rent, for sale,
@@ -54,7 +55,7 @@ import type {
  * `radiogroup`s named by their label.
  */
 
-const ICONS: Record<OfferingKind, ListingEditorIcon> = {
+const ICONS: Record<OfferingKind, BloomIconComponent> = {
   rent: RiKey2Line,
   sale: RiPriceTag3Line,
   stay: RiSuitcaseLine,

@@ -2,6 +2,31 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.0.0
+
+### Removed
+
+Every name below is a deprecated alias or an ignored prop that no Oxy app imports or passes on its default branch (searched across the 26 repos that depend on Bloom). Each has a replacement that already existed.
+
+- **Twenty icon-type aliases of `BloomIconComponent`** (`@oxy.so/bloom/icons`): `AnnouncementIconComponent`, `CallGlyph`, `CategoryBarIcon`, `ChartIconComponent`, `CreatorStudioIcon`, `DataTableIconComponent`, `HousingIcon`, `ImportantAlertsCardIcon`, `InsightIcon`, `ListingEditorIcon`, `ListingFactIcon`, `ListingIcon`, `NotificationCenterIcon`, `NotificationIconComponent`, `OfferingBadgeIcon`, `PatientInfoCardIcon`, `StatCardsIcon`, `TrackIconComponent`, and the unexported `PlayerGlyph` and `AiChatShellIcon`. The six apps still use (`SidebarIcon`, `ButtonIconComponent`, `BadgeIcon`, `TabsIconComponent`, `ChatComposerIcon`, `SavedSearchIcon`) stay, deprecated.
+- **`AiChatResizeHandle`, `AiChatResizeHandleProps`** (`@oxy.so/bloom/ai-chat`): use `ResizeHandle` / `ResizeHandleProps` from `@oxy.so/bloom/layout`, which they re-exported.
+- **`moveQueueItem`, `queueDragTarget`, `queueDragShift`** (`@oxy.so/bloom/queue-panel`): use `moveItem`, `dragTarget`, `dragShift` from `@oxy.so/bloom/hooks`, which they re-exported.
+- **`DEFAULT_COMPOSER_LOADER_COLORS`** (`@oxy.so/bloom/composer-loader`): pass `resolveComposerLoaderColors(theme)`, or your own four colours, as `colors`.
+- **`TabPage` and `TabPagerProvider`'s `pages` prop** (`@oxy.so/bloom/tab-pager`): declare `AppDestination`s and pass `destinations`.
+- **`TabPagerBottomBar`'s `onReselect`**: pass `onReselect` to `TabPagerProvider`, which the bar and the sidebar share; the bar's press now always goes through `selectDestination`.
+- **Props that had no effect**: `AiChatShell` `navSwipeEnabled`, `ScrollSurface` `chatId`, `RadioIndicator` `pressed`. Passing one is now a type error and still does nothing at run time.
+
+### Changed
+
+- **One implementation each** where a family kept its own copy: the container-width measurement in six `creator-studio` parts and `GroupCallGrid` is `useContainerWidth`; `Questionnaire`'s `dataSet` helper is `webDataSet`; `ConnectionDots`' web reduced-motion hook is `usePrefersReducedMotion` (it now reads the preference on its first render instead of animating for one frame, and holds still where `matchMedia` is unavailable); the app shell's panel-drop `clamp` is `styles/clamp`.
+- **Dead code removed**: two modules nothing imported (`ai-chat/use-wheel-forwarding`, `app-shell/use-shell-width`), sixty-eight unexported constants, types and components nothing referenced (label tables, radii, class names, `PriorityChip`, `VerticalFade`, …), the `settings-list/surface` test-only re-export and unused locals.
+- **`@tanstack/react-virtual` 3.14.23** (virtual-core 3.19). Apps resolved it through the caret range already.
+
+### Consumers
+
+- An app that imports one of the removed names moves to the replacement above (`docs/migrating-to-17.0.mdx`); none of Oxy's apps does today.
+- `SettingsList*`, `AgentLimitsCard`, `SidebarIcon` and the other names apps still import are unchanged.
+
 ## 16.17.0
 
 ### Added

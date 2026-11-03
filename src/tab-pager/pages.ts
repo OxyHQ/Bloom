@@ -1,8 +1,7 @@
-import { cloneElement, createElement, isValidElement, type ReactNode } from 'react';
-import type { BloomIconComponent } from '../icons/icon-component';
+import { createElement } from 'react';
 import type { SidebarNavItem } from '../sidebar/types';
 import type { TabBarItem } from '../tab-bar/types';
-import type { AppDestination, TabPage } from './types';
+import type { AppDestination } from './types';
 
 /**
  * The pages as two index spaces, converted in one place.
@@ -109,32 +108,6 @@ export function sidebarItemsOf(destinations: readonly AppDestination[]): Sidebar
     items.splice(items.findIndex((item) => item.key === sidebarAfter) + 1, 0, moved);
   }
   return items;
-}
-
-/**
- * A glyph handed over as an element, as a component: the slot's size and tint
- * fill in whatever the element does not set itself (a brand mark's own fill).
- */
-function iconOf(node: ReactNode): BloomIconComponent {
-  return (props) =>
-    isValidElement<{ width?: number; height?: number; fill?: string }>(node)
-      ? cloneElement(node, { ...props, ...node.props })
-      : (node as never);
-}
-
-/** The deprecated `pages` prop, as destinations. */
-export function destinationsOfPages(pages: readonly TabPage[]): AppDestination[] {
-  return pages.map(({ name, href, preload, bar }) => ({
-    name,
-    href,
-    preload,
-    page: true,
-    bar: Boolean(bar),
-    sidebar: false,
-    label: bar?.label,
-    icon: bar ? iconOf(bar.icon) : undefined,
-    activeIcon: bar?.activeIcon ? iconOf(bar.activeIcon) : undefined,
-  }));
 }
 
 /** What the model depends on. Labels, icons and badges are not part of it. */

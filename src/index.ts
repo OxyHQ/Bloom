@@ -987,12 +987,9 @@ export type {
 } from './media-shelf';
 export {
   DEFAULT_QUEUE_PANEL_LABELS,
-  moveQueueItem,
   QUEUE_ROW_HEIGHT,
   QueuePanel,
   QueuePanelRow,
-  queueDragShift,
-  queueDragTarget,
   RecentlyPlayedList,
 } from './queue-panel';
 export type {
@@ -1169,7 +1166,6 @@ export type {
   SelectionBarProps,
   Track,
   TrackArtist,
-  TrackIconComponent,
   TrackListColumn,
   TrackListDensity,
   TrackListEmptyProps,
@@ -1361,7 +1357,6 @@ export type {
   ListingCardLayout,
   ListingCardProps,
   ListingFact,
-  ListingFactIcon,
   ListingPriceLine,
   ListingStatus,
   Offering,
@@ -1369,13 +1364,12 @@ export type {
 } from './listing-card';
 export { OfferingBadge } from './offering-badge';
 export type {
-  OfferingBadgeIcon,
   OfferingBadgeProps,
   OfferingBadgeSize,
   OfferingBadgeVariant,
 } from './offering-badge';
 export { CategoryBar } from './category-bar';
-export type { CategoryBarIcon, CategoryBarItem, CategoryBarProps } from './category-bar';
+export type { CategoryBarItem, CategoryBarProps } from './category-bar';
 export {
   MapAreaCircle,
   MapClusterMarker,
@@ -2068,7 +2062,6 @@ export type {
   AddressPrecision,
   AddressPrecisionOption,
   AddressPrecisionPickerProps,
-  ListingEditorIcon,
   ListingPreviewData,
   ListingPreviewMode,
   ListingPreviewPaneProps,

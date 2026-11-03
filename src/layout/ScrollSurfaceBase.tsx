@@ -21,7 +21,6 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
     scrollRef,
     label,
     fadeBottom = false,
-    chatId: _chatId,
     animatedHandler,
     ...props
   }: ScrollSurfaceProps) {

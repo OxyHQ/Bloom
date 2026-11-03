@@ -2,7 +2,6 @@ import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
 
 import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
-import { dragShift, dragTarget, moveItem } from '../hooks/list-reorder';
 import type { Theme } from '../theme/types';
 import type { QueuePanelLabels } from './types';
 import { COMMON_MESSAGES, type CommonMessages } from '../locale/common-messages';
@@ -47,15 +46,6 @@ export function queuePlayName(
 ): string {
   return customPlay === undefined ? controls.playSubject(title) : `${customPlay} ${title}`;
 }
-
-/** @deprecated Use `moveItem` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
-export const moveQueueItem = moveItem;
-
-/** @deprecated Use `dragTarget` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
-export const queueDragTarget = dragTarget;
-
-/** @deprecated Use `dragShift` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
-export const queueDragShift = dragShift;
 
 export interface QueuePanelPaint {
   surface: string;

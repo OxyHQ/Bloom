@@ -18,7 +18,7 @@ import { resolveMediaHeaderPaint } from '../media-header/shared';
 import { resolveInsightPalette } from '../property-insights/shared';
 import { resolveSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveCardFill } from '../card/use-card-fill';
-import { settingsGroupSurface } from '../settings-list/surface';
+import { groupedSectionSurface } from '../grouped-section/surface';
 import { contrastRatio } from '../styles/color-contrast';
 import {
   AA_TEXT,
@@ -207,7 +207,7 @@ describe('a grouped section shares canonical card material', () => {
         // paints `colors.card`, which in dark is ~1.27:1 off rung 1.
         const rung = resolveSurfaceLevel(theme, level).background;
         for (const behind of level === 1 ? [rung, theme.colors.card] : [rung]) {
-          const chosen = settingsGroupSurface(theme, behind, undefined, level);
+          const chosen = groupedSectionSurface(theme, behind, undefined, level);
           expect(chosen).toBe(resolveCardFill(resolveSurfaceLayer(theme, behind, level)));
           const ratio = contrastRatio(chosen, behind);
           if (ratio <= 1) offenders.push(`${preset}/${mode} level ${level}: ${ratio.toFixed(3)}`);
@@ -220,7 +220,7 @@ describe('a grouped section shares canonical card material', () => {
   it('uses the canonical tinted/composited card backing on the page', () => {
     for (const { theme } of THEMES) {
       const page = theme.colors.background;
-      expect(settingsGroupSurface(theme, page)).toBe(
+      expect(groupedSectionSurface(theme, page)).toBe(
         resolveCardFill(resolveSurfaceLayer(theme, page)),
       );
     }
@@ -238,7 +238,7 @@ describe('a grouped section shares canonical card material', () => {
       const ratio = contrastRatio(theme.colors.backgroundSecondary, menu);
       if (mode === 'dark' && ratio < FILL_JND) failsInDark.push(preset);
       if (mode === 'light' && ratio >= FILL_JND) clearsInLight.push(preset);
-      if (contrastRatio(settingsGroupSurface(theme, menu), menu) < FILL_JND) {
+      if (contrastRatio(groupedSectionSurface(theme, menu), menu) < FILL_JND) {
         stepFails.push(`${preset}/${mode}`);
       }
     }
@@ -250,10 +250,10 @@ describe('a grouped section shares canonical card material', () => {
     const offenders: string[] = [];
     for (const { theme, preset, mode } of THEMES) {
       for (const behind of [theme.colors.background, theme.colors.card]) {
-        if (settingsGroupSurface(theme, behind, 'plain') !== theme.colors.card) {
+        if (groupedSectionSurface(theme, behind, 'plain') !== theme.colors.card) {
           offenders.push(`${preset}/${mode}: plain`);
         }
-        if (settingsGroupSurface(theme, behind, 'filled') !== theme.colors.backgroundSecondary) {
+        if (groupedSectionSurface(theme, behind, 'filled') !== theme.colors.backgroundSecondary) {
           offenders.push(`${preset}/${mode}: filled`);
         }
       }

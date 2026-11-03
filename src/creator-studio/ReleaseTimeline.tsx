@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { memo, useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
@@ -9,6 +9,7 @@ import { resolveCreatorStudioPaint, type CreatorStudioPaint } from './shared';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { ReleaseStep, ReleaseStepState, ReleaseTimelineProps } from './types';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * `ReleaseTimeline`: a release's distribution steps — Uploaded → Metadata →
@@ -87,11 +88,8 @@ function ReleaseTimelineComponent({
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const stateLabels = { ...messages.timeline.states, ...stateOverrides };
-  const [width, setWidth] = useState(0);
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    const next = Math.round(event.nativeEvent.layout.width);
-    setWidth((prev) => (prev === next ? prev : next));
-  }, []);
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   // A row of steps needs room for its labels; narrower than that it reads as a column.
   const horizontal =
     orientation === 'horizontal' && (width === 0 || width >= steps.length * HORIZONTAL_STEP_MIN);

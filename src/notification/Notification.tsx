@@ -1,4 +1,5 @@
-import React, { memo, useEffect, useMemo, useRef } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { IS_WEB } from '../styles/platform';
@@ -22,12 +23,8 @@ import {
 } from './shared';
 import { NOTIFICATION_MESSAGES } from './messages';
 import { EASE_OUT, useCardMotion } from './use-card-motion';
-import type {
-  NotificationAvatar,
-  NotificationIconComponent,
-  NotificationProps,
-  NotificationStatus,
-} from './types';
+import type { NotificationAvatar, NotificationProps, NotificationStatus } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * `Notification`: geometry is fixed to the pixel (see `shared.ts`); colours
@@ -40,7 +37,7 @@ import type {
  * and timers, which is why Bloom ships no `NotificationViewport`.
  */
 
-export const NOTIFICATION_STATUS_ICON: Record<NotificationStatus, NotificationIconComponent> = {
+export const NOTIFICATION_STATUS_ICON: Record<NotificationStatus, BloomIconComponent> = {
   neutral: RiNotification3Fill,
   information: RiInformationFill,
   success: RiCheckboxCircleFill,
@@ -56,7 +53,7 @@ export function NotificationStatusVisual({
   children,
 }: {
   status: NotificationStatus;
-  icon?: NotificationIconComponent;
+  icon?: BloomIconComponent;
   paint: NotificationPaint;
   /** Replaces the glyph (e.g. a spinner) while keeping the disc. */
   children?: React.ReactNode;

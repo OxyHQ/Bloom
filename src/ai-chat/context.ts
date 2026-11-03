@@ -70,15 +70,12 @@ export interface AiChatShellState {
   closeNav: () => void;
   openPanel: () => void;
   panelLabel: string;
-  panelIcon: AiChatShellIcon;
+  panelIcon: BloomIconComponent;
   labels: {
     openNavigation: string;
     openPanel: (panel: string) => string;
   };
 }
-
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type AiChatShellIcon = BloomIconComponent;
 
 export const AiChatShellContext = createContext<AiChatShellState | null>(null);
 

@@ -9,7 +9,6 @@ import type {
   HomeSearchSegmentKeys,
   HomeSearchSegmentOverrides,
   MoveInOption,
-  MoveInPickerLabels,
 } from './types';
 
 /** Every mode, in the default tab order. */
@@ -141,6 +140,3 @@ export function contractLengthOptions(messages: HomeSearchMessages): MoveInOptio
 export const DEFAULT_CONTRACT_LENGTHS: readonly MoveInOption[] = contractLengthOptions(
   HOME_SEARCH_MESSAGES.en,
 );
-
-/** English; `MoveInPicker` reads the locale's catalog. */
-export const DEFAULT_MOVE_IN_LABELS: MoveInPickerLabels = HOME_SEARCH_MESSAGES.en.moveInLabels;

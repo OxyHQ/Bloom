@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
 
@@ -51,14 +50,10 @@ export interface Track {
   downloaded?: boolean;
 }
 
-/** An icon component from `@oxy.so/bloom/icons` (`RiPlayListAddLine`). */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type TrackIconComponent = BloomIconComponent;
-
 export interface TrackMenuItem {
   key: string;
   label: string;
-  icon?: TrackIconComponent;
+  icon?: BloomIconComponent;
   onPress: () => void;
   destructive?: boolean;
   disabled?: boolean;
@@ -244,7 +239,7 @@ export interface TrackRowSkeletonProps {
 
 export interface TrackListEmptyProps {
   /** Default: a note glyph. */
-  icon?: TrackIconComponent;
+  icon?: BloomIconComponent;
   title: string;
   description?: string;
   /** Button label; drawn with `onAction`. */
@@ -257,7 +252,7 @@ export interface TrackListEmptyProps {
 export interface SelectionBarAction {
   key: string;
   label: string;
-  icon?: TrackIconComponent;
+  icon?: BloomIconComponent;
   onPress: () => void;
   destructive?: boolean;
   disabled?: boolean;

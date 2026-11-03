@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -6,6 +6,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { ConnectionDotsBase } from './ConnectionDotsBase';
 import type { ConnectionDotsProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const DEFAULT_DOT_COUNT = 6;
 const DEFAULT_DOT_SIZE = 6;
@@ -34,22 +35,6 @@ function useKeyframes(): void {
   useEffect(() => {
     adoptStyleSheet(KEYFRAMES_ID, BLOOM_CONNECTION_DOTS_CSS);
   }, []);
-}
-
-/** Read the OS `prefers-reduced-motion` preference reactively. */
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-
-  return reduced;
 }
 
 /**

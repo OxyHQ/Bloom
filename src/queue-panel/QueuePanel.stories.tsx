@@ -7,7 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { QueuePanel } from './QueuePanel';
 import { RecentlyPlayedList } from './RecentlyPlayedList';
-import { moveQueueItem } from './shared';
+import { moveItem } from '../hooks/list-reorder';
 import type { QueuePanelTab, QueueSection, QueueTrack } from './types';
 
 const meta: Meta = {
@@ -159,7 +159,7 @@ function InteractiveQueue({
       recentlyPlayed={RECENT}
       tab={tab}
       onTabChange={setTab}
-      onReorder={(section, from, to) => setter(section)((list) => moveQueueItem(list, from, to))}
+      onReorder={(section, from, to) => setter(section)((list) => moveItem(list, from, to))}
       onRemove={(section, index) => setter(section)((list) => list.filter((_, i) => i !== index))}
       onClearQueue={() => setQueue([])}
       onPlay={(section, _index, track) => {

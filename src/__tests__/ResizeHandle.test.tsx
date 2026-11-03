@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
+import { ResizeHandle } from '../layout/ResizeHandle';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 jest.mock('../styles/platform', () => ({
   ...jest.requireActual('../styles/platform'),
@@ -16,12 +16,7 @@ describe('shared separator orientations', () => {
     const onResize = jest.fn(),
       onNudge = jest.fn();
     const screen = render(
-      <AiChatResizeHandle
-        testID="grip"
-        orientation="horizontal"
-        onResize={onResize}
-        onNudge={onNudge}
-      />,
+      <ResizeHandle testID="grip" orientation="horizontal" onResize={onResize} onNudge={onNudge} />,
       { wrapper },
     );
     const grip = screen.getByTestId('grip');
@@ -52,10 +47,9 @@ describe('shared separator orientations', () => {
   });
   it('keeps left/right as the default separator contract', () => {
     const onNudge = jest.fn();
-    const screen = render(
-      <AiChatResizeHandle testID="grip" onResize={() => {}} onNudge={onNudge} />,
-      { wrapper },
-    );
+    const screen = render(<ResizeHandle testID="grip" onResize={() => {}} onNudge={onNudge} />, {
+      wrapper,
+    });
     const grip = screen.getByTestId('grip');
     expect(grip.props['aria-orientation']).toBe('vertical');
     fireEvent(grip, 'keyDown', { nativeEvent: { key: 'ArrowLeft' } });

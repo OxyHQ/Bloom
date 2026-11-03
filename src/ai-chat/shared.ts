@@ -76,11 +76,6 @@ export function resolveAiChatPalette(theme: Theme): AiChatPalette {
   };
 }
 
-/** Canonical hover surface, shared across modes. */
-export function primaryHoverOver(palette: AiChatPalette, _surface: string): string {
-  return palette.secondaryHover;
-}
-
 export function useAiChatPalette(): AiChatPalette {
   const theme = useTheme();
   return useMemo(() => resolveAiChatPalette(theme), [theme]);
@@ -90,8 +85,6 @@ export function useAiChatPalette(): AiChatPalette {
 //  Geometry and timing
 // ---------------------------------------------------------------------------
 
-/** `rounded-3xl` — the chat container. */
-export const CONTAINER_RADIUS = 24;
 /** `rounded-2xl` — bubbles, the image frame, the code card. */
 export const CARD_RADIUS = 16;
 /** `rounded-2lg` — panel rows and tiles. */
@@ -103,28 +96,8 @@ export const CONFIRM_MS = 1600;
 /** `cubic-bezier(0.22, 1, 0.36, 1)` — the settle curve. */
 export const EASE_OUT_QUINT = [0.22, 1, 0.36, 1] as const;
 
-/** The window is at least this wide when the panel (and the resize handle) show: `xl`. */
-export const PANEL_BREAKPOINT = 1280;
-/** The sidebar sits in flow from `lg`; below it becomes a push drawer. */
-export const SIDEBAR_BREAKPOINT = 1024;
-
 /** The shell's padding: the gutter around its columns, px. */
 export const SHELL_GUTTER = 12;
-
-/**
- * `scroll="document"`: a column pinned to the viewport while the document
- * scrolls under it — the sidebar and the panel. One screen tall less the
- * gutter above and below, so it closes where the page does; `flex-start` so
- * the row's stretch does not make it as tall as the page, which would leave the
- * sticky box nowhere to move.
- */
-export const DOCUMENT_RAIL: WebCssStyle = {
-  position: WEB_POSITION_STICKY,
-  top: SHELL_GUTTER,
-  height: webViewportHeightMinus(SHELL_GUTTER * 2),
-  alignSelf: 'flex-start',
-  flexShrink: 0,
-};
 
 /**
  * `scroll="document"`: the card is a `ContentPanel`, and this is its radius.

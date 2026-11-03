@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import { ScrollArea } from '../layout/ScrollArea';
 
@@ -25,13 +26,13 @@ import { Text } from '../typography';
 import type {
   NotificationCenterAvatar,
   NotificationCenterAvatarColor,
-  NotificationCenterIcon,
   NotificationCenterItem,
   NotificationCenterProps,
   NotificationCenterStatus,
   NotificationCenterTab,
 } from './types';
 import { NOTIFICATION_CENTER_MESSAGES } from './messages';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * The notification center.
@@ -67,7 +68,7 @@ import { NOTIFICATION_CENTER_MESSAGES } from './messages';
 
 const TABS: readonly NotificationCenterTab[] = ['all', 'mentions', 'system'];
 
-const STATUS_ICON: Record<NotificationCenterStatus, NotificationCenterIcon> = {
+const STATUS_ICON: Record<NotificationCenterStatus, BloomIconComponent> = {
   neutral: RiNotification3Fill,
   information: RiInformationFill,
   success: RiCheckboxCircleFill,

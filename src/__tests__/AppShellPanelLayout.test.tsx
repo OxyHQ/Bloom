@@ -5,7 +5,7 @@ import { AppShell, useAppShellPanel, usePanelNavigation } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useBloomTheme } from '../theme';
-import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
+import { ResizeHandle } from '../layout/ResizeHandle';
 import { resolvedStyle } from './support/rendered-style';
 import { Screen } from '../screen';
 import { mockWindowSize } from './support/window-size';
@@ -100,7 +100,7 @@ describe('root modular panels', () => {
     fireEvent(screen.getByTestId('shell-panels'), 'layout', {
       nativeEvent: { layout: { width: 800, height: 600, x: 0, y: 0 } },
     });
-    fireEvent(screen.UNSAFE_getByType(AiChatResizeHandle), 'nudge', 300);
+    fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', 300);
     expect(onWidthsChange).toHaveBeenCalledWith({ a: 500, b: 300 });
   });
   it('retains content when responsive axis changes and reports height resizing', () => {
@@ -134,7 +134,7 @@ describe('root modular panels', () => {
     fireEvent(screen.getByTestId('shell-panels'), 'layout', {
       nativeEvent: { layout: { width: 800, height: 700, x: 0, y: 0 } },
     });
-    const grip = screen.UNSAFE_getByType(AiChatResizeHandle);
+    const grip = screen.UNSAFE_getByType(ResizeHandle);
     expect(grip.props.orientation).toBe('horizontal');
     fireEvent(grip, 'nudge', 500);
     expect(onHeightsChange).toHaveBeenCalledWith({ a: 450, b: 250 });

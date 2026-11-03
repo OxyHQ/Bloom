@@ -15,15 +15,8 @@ import {
   type TabPagerChrome,
   type TabPagerContextValue,
 } from '../context';
-import {
-  barItemsOf,
-  createPageModel,
-  destinationsOfPages,
-  pagesOf,
-  pagesStructure,
-  sidebarItemsOf,
-} from '../pages';
-import type { AppDestination, TabPage } from '../types';
+import { barItemsOf, createPageModel, pagesOf, pagesStructure, sidebarItemsOf } from '../pages';
+import type { AppDestination } from '../types';
 
 export type TabPagerProviderProps = {
   /**
@@ -39,21 +32,12 @@ export type TabPagerProviderProps = {
    */
   navigationScopeKey?: string;
   children: ReactNode;
-} & (
-  | {
-      /**
-       * Every place the app's navigation leads, declared once: the pages in
-       * pager order, and the sidebar's rows in this same order.
-       */
-      destinations: readonly AppDestination[];
-      pages?: never;
-    }
-  | {
-      /** @deprecated Pass `destinations`. */
-      pages: readonly TabPage[];
-      destinations?: never;
-    }
-);
+  /**
+   * Every place the app's navigation leads, declared once: the pages in
+   * pager order, and the sidebar's rows in this same order.
+   */
+  destinations: readonly AppDestination[];
+};
 
 /**
  * The one authority on the app's navigation: which destination and which root
@@ -68,18 +52,13 @@ export type TabPagerProviderProps = {
  * href and every page's route chunk is warmed up front.
  */
 export function TabPagerProvider({
-  destinations: declared,
-  pages: legacyPages,
+  destinations,
   onReselect,
   navigationScopeKey,
   children,
 }: TabPagerProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const destinations = useMemo(
-    () => declared ?? destinationsOfPages(legacyPages ?? []),
-    [declared, legacyPages],
-  );
   const pages = useMemo(() => pagesOf(destinations), [destinations]);
   const structure = pagesStructure(pages);
   // Keyed on the structure, not the array: labels and icons change with a

@@ -1,7 +1,7 @@
-import React, { type ComponentRef, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop, Circle } from 'react-native-svg';
+import Svg, { Defs, RadialGradient, Rect, Stop, Circle } from 'react-native-svg';
 
 import { ACCENT_TABLE, colorRamp } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
@@ -388,28 +388,6 @@ export function RadialFade({ color, size }: { color: string; size: number }) {
         </RadialGradient>
       </Defs>
       <Rect x={0} y={0} width={size} height={size} fill={`url(#${id})`} />
-    </Svg>
-  );
-}
-
-/** A top-to-bottom fade from `color` to transparent, filling its parent. */
-export function VerticalFade({ color }: { color: string }) {
-  const id = useSvgId('bloom-settings-top-fade');
-  return (
-    <Svg
-      width="100%"
-      height="100%"
-      preserveAspectRatio="none"
-      viewBox="0 0 1 1"
-      style={StyleSheet.absoluteFill}
-    >
-      <Defs>
-        <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor={color} stopOpacity={1} />
-          <Stop offset="1" stopColor={color} stopOpacity={0} />
-        </LinearGradient>
-      </Defs>
-      <Rect x={0} y={0} width={1} height={1} fill={`url(#${id})`} />
     </Svg>
   );
 }

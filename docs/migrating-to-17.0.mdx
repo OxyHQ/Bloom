@@ -1,0 +1,24 @@
+---
+title: Migrating to Bloom 17
+description: Replace the deprecated aliases and ignored props 17.0.0 removed.
+---
+
+# Migrating to Bloom 17
+
+Bloom 17 removes deprecated names and props that no Oxy app used. Each one
+already had a replacement; nothing else changed for an app. A compile error
+naming one of them is the whole migration:
+
+| Removed | Use |
+|---|---|
+| `AnnouncementIconComponent`, `CallGlyph`, `CategoryBarIcon`, `ChartIconComponent`, `CreatorStudioIcon`, `DataTableIconComponent`, `HousingIcon`, `ImportantAlertsCardIcon`, `InsightIcon`, `ListingEditorIcon`, `ListingFactIcon`, `ListingIcon`, `NotificationCenterIcon`, `NotificationIconComponent`, `OfferingBadgeIcon`, `PatientInfoCardIcon`, `StatCardsIcon`, `TrackIconComponent` | `BloomIconComponent` from `@oxy.so/bloom/icons` |
+| `AiChatResizeHandle`, `AiChatResizeHandleProps` | `ResizeHandle`, `ResizeHandleProps` from `@oxy.so/bloom/layout` |
+| `moveQueueItem`, `queueDragTarget`, `queueDragShift` | `moveItem`, `dragTarget`, `dragShift` from `@oxy.so/bloom/hooks` |
+| `DEFAULT_COMPOSER_LOADER_COLORS` | `resolveComposerLoaderColors(theme)`, or your own four colours, as `colors` |
+| `TabPagerProvider pages` and the `TabPage` type | `destinations`, a list of `AppDestination` |
+| `TabPagerBottomBar onReselect` | `TabPagerProvider onReselect` |
+| `AiChatShell navSwipeEnabled`, `ScrollSurface chatId`, `RadioIndicator pressed` | nothing: they had no effect; delete them |
+
+The aliases apps still import (`SidebarIcon`, `ButtonIconComponent`,
+`BadgeIcon`, `TabsIconComponent`, `ChatComposerIcon`, `SavedSearchIcon`), the
+`SettingsList*` names and `AgentLimitsCard` remain, deprecated.

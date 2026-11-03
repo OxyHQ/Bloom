@@ -17,7 +17,6 @@ export {
 } from './constants';
 export type {
   DocumentListProps,
-  HousingIcon,
   LeaseNextPayment,
   LeaseParty,
   LeasePaymentStatus,

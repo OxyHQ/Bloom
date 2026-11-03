@@ -13,7 +13,6 @@ export type {
   DataTableSize,
   DataTableLayout,
   DataTableRowActionProps,
-  DataTableIconComponent,
   DataTableRowActionItem,
   DataTableRowActionsProps,
   DataTableOption,

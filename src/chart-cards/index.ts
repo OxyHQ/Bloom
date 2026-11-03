@@ -140,7 +140,7 @@ export { MostActiveDaysCard } from './MostActiveDaysCard';
 export type { ActivityDay, MostActiveDaysCardProps } from './MostActiveDaysCard';
 export { WeekRangePill } from './medical-parts';
 export type { WeekRangePillProps } from './medical-parts';
-export type { ChartIcon, ChartIconComponent } from './stage-parts';
+export type { ChartIcon } from './stage-parts';
 
 export { AgentsChartCard } from './AgentsChartCard';
 export type { AgentsChartCardProps, AgentsPoint } from './AgentsChartCard';

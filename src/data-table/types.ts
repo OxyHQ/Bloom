@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { ButtonProps } from '../button/types';
@@ -156,17 +156,13 @@ export interface DataTableProps<T> {
   testID?: string;
 }
 
-/** A Remix-style icon component: `width`, `height`, `fill`. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type DataTableIconComponent = BloomIconComponent;
-
 export interface DataTableRowActionProps
   extends Omit<
     ButtonProps,
     'children' | 'variant' | 'size' | 'iconOnly' | 'icon' | 'leadingIcon' | 'trailingIcon'
   > {
   /** The glyph, drawn at 16px. */
-  icon: DataTableIconComponent;
+  icon: BloomIconComponent;
   /** Accessible name, and the tooltip's text. */
   label: string;
   /** Paints the pressed state while a menu this button opened is showing. */
@@ -177,7 +173,7 @@ export interface DataTableRowActionProps
 
 /** One icon action of a row — a `DataTableRowAction`, or a row menu entry. */
 export interface DataTableRowActionItem {
-  icon: DataTableIconComponent;
+  icon: BloomIconComponent;
   /** The button's name and tooltip, or the menu entry's text. */
   label: string;
   onPress?: () => void;
@@ -234,7 +230,7 @@ export interface DataTableSelectOption extends DataTableOption {
    */
   dot?: BloomTone;
   /** An 18px icon in `foreground-icon-secondary`. */
-  icon?: DataTableIconComponent;
+  icon?: BloomIconComponent;
 }
 
 export interface DataTableSelectProps {

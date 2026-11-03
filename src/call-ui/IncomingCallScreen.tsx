@@ -22,7 +22,8 @@ import { CallEndGlyph } from './glyphs';
 import { CallStageBackdrop } from './parts';
 import { CALL_UI_MESSAGES } from './messages';
 import { CALL_UI_RADIUS, resolveCallPaint, slideAnswers, type CallPaint } from './shared';
-import type { CallGlyph, IncomingCallScreenProps } from './types';
+import type { IncomingCallScreenProps } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * `IncomingCallScreen`: the whole screen, for a call arriving on a locked or
@@ -89,7 +90,7 @@ function StageAction({
   onPress,
   testID,
 }: {
-  icon: CallGlyph;
+  icon: BloomIconComponent;
   label: string;
   color: string;
   onPress: () => void;

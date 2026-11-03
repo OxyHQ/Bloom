@@ -1,7 +1,7 @@
 import { BUTTON_SHADOW } from '../button/shared';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { MENU_SHADOW } from '../floating/menu-palette';
-import { PANEL_SHADOW, resolvePanelChrome } from '../styles/panel-chrome';
+import { resolvePanelChrome } from '../styles/panel-chrome';
 import { hairlineOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { createContext, useContext } from 'react';
@@ -54,12 +54,6 @@ export interface SidebarPalette {
 }
 
 /** `shadow-sidebar`, light and dark. */
-/**
- * The panel edge, now shared with the framed `ContentPanel` — see
- * `styles/panel-chrome.ts`. Kept exported under its own name because it is
- * public API of this family.
- */
-export const SIDEBAR_SHADOW = PANEL_SHADOW;
 
 export function resolveSidebarPalette(theme: Theme): SidebarPalette {
   const { colors: c, isDark: dark } = theme;

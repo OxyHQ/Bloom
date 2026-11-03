@@ -344,8 +344,6 @@ export function createCommand(Dialog: DialogComponent) {
   return Command;
 }
 
-export type CommandType = ReturnType<typeof createCommand>;
-
 /** Text in the menu type step and Inter, coloured from the palette. */
 function Text({
   children,

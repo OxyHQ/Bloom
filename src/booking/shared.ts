@@ -41,7 +41,6 @@ export interface BookingPalette {
 export function resolveBookingPalette(theme: Theme): BookingPalette {
   const menu = resolveMenuPalette(theme);
   const { accent } = resolveButtonRamps(theme);
-  const dark = theme.isDark;
   return {
     surface: menu.surface,
     page: theme.colors.background,
@@ -57,8 +56,6 @@ export function resolveBookingPalette(theme: Theme): BookingPalette {
   };
 }
 
-/** Card geometry. */
-export const BOOKING_CARD_RADIUS = 16;
 export const BOOKING_CARD_PADDING = 24;
 export const BOOKING_CARD_MAX_WIDTH = 372;
 export const BOOKING_FIELD_RADIUS = 12;

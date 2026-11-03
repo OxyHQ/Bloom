@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { BloomImage } from '../image';
@@ -25,7 +25,6 @@ import { withAlpha } from '../composer-panel/shared';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { PanelHeader, PanelPlaceholder } from './AiChatCodePanel';
-import { SurfaceAction } from './AiChatControls';
 import { ROW_RADIUS, useAiChatPalette, useAiChatWebCss, type AiChatPalette } from './shared';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
@@ -57,11 +56,6 @@ function galleryPanelActions(messages: AiChatMessages): ReadonlyArray<AiChatPane
     { key: 'toggle', label: messages.togglePanel, icon: RiSideBarLine },
   ];
 }
-
-/** The English actions; the panel's own default follows the locale. */
-export const DEFAULT_GALLERY_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = galleryPanelActions(
-  AI_CHAT_MESSAGES.en,
-);
 
 /**
  * An optical correction: `RiGalleryLine` is a dense filled rectangle, so

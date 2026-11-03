@@ -14,7 +14,6 @@ export type {
   EnergyLabelProps,
   EnergyMeasurement,
   EstimateConfidence,
-  InsightIcon,
   NearbyPlace,
   NearbyPlacesProps,
   NeighbourhoodScore,

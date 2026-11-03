@@ -1,6 +1,5 @@
 export { OfferingBadge } from './OfferingBadge';
 export type {
-  OfferingBadgeIcon,
   OfferingBadgeProps,
   OfferingBadgeSize,
   OfferingBadgeVariant,

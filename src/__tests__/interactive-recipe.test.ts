@@ -134,13 +134,12 @@ describe('one focus-ring mechanism', () => {
     expect([...found].sort()).toEqual([...OWN_OFFSET_VARS].sort());
   });
 
-  it('keeps the deprecated literal as a fallback only', () => {
-    // `checkbox/shared`'s `FOCUS_RING_OFFSET_COLOR` was the bug's home. It may
-    // still exist as an alias of the fallback; it may not be a literal again.
+  it('keeps the old ring-gap constant gone', () => {
+    // `checkbox/shared`'s `FOCUS_RING_OFFSET_COLOR` (`#FFFFFF`) was the bug's
+    // home; 17.0.0 removed it. A gap colour comes from `useRingOffsetStyle()`.
     const checkbox = FILES.find((f) => f.path === 'checkbox/shared.tsx');
-    expect(checkbox?.text).toContain(
-      'export const FOCUS_RING_OFFSET_COLOR = RING_OFFSET_FALLBACK;',
-    );
+    expect(checkbox?.text).toBeDefined();
+    expect(checkbox?.text).not.toContain('FOCUS_RING_OFFSET_COLOR');
   });
 });
 

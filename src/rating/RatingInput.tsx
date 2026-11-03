@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { RiStarFill } from '../icons/remix/RiStarFill';
@@ -78,11 +78,6 @@ const BLOOM_RATING_INPUT_CSS = interactiveWebCss({
   box-shadow: ${focusRingShadow('--bloom-rating-input-ring')};
 }`,
 });
-
-/** `1 star`, `4 stars` — the English entry; the component speaks the locale's. */
-export function defaultStarLabel(value: number): string {
-  return RATING_MESSAGES.en.star(value, 5);
-}
 
 function RatingInputComponent({
   value,

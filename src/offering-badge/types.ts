@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { Offering } from '../listing-card/types';
@@ -13,10 +12,6 @@ export type OfferingBadgeSize = 'sm' | 'md';
  */
 export type OfferingBadgeVariant = 'tinted' | 'onMedia';
 
-/** An icon component the badge draws at its own size and colour (`RiKey2Line`). */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type OfferingBadgeIcon = BloomIconComponent;
-
 export interface OfferingBadgeProps {
   /** What the listing is offered as. Picks the default label, icon and tint. */
   offering: Offering;
@@ -26,7 +21,7 @@ export interface OfferingBadgeProps {
    * `true` (default) draws the offering's own icon, `false` none, a component
    * replaces it.
    */
-  icon?: boolean | OfferingBadgeIcon;
+  icon?: boolean | BloomIconComponent;
   /** Default `md`. */
   size?: OfferingBadgeSize;
   /** Default `tinted`. */

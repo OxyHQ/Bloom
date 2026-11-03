@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Card } from '../card';
@@ -18,7 +18,7 @@ import {
   resolveHousingPalette,
   type HousingPalette,
 } from './shared';
-import type { HousingIcon } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { mixColors } from '../styles/color-contrast';
 
@@ -86,7 +86,7 @@ export function IconTile({
   radius = 12,
   testID,
 }: {
-  icon: HousingIcon;
+  icon: BloomIconComponent;
   size?: number;
   iconSize?: number;
   radius?: number;
@@ -144,8 +144,8 @@ export function HousingToggleButton({
   accessibilityLabel?: string;
   pressed: boolean;
   onPress?: () => void;
-  icon?: HousingIcon;
-  pressedIcon?: HousingIcon;
+  icon?: BloomIconComponent;
+  pressedIcon?: BloomIconComponent;
   size?: 'sm' | 'md';
   disabled?: boolean;
   testID?: string;

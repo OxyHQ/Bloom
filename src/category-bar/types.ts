@@ -1,17 +1,13 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
-
-/** An icon COMPONENT; the bar sizes (24) and colours it. Bloom's icons fit. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type CategoryBarIcon = BloomIconComponent;
 
 export interface CategoryBarItem {
   /** Stable identity, and what `value`/`onValueChange` speak. */
   key: string;
   /** The small label under the icon; also the tab's accessible name. */
   label: string;
-  icon: CategoryBarIcon;
+  icon: BloomIconComponent;
 }
 
 export interface CategoryBarProps {

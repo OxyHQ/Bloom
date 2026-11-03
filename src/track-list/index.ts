@@ -17,7 +17,6 @@ export type {
   SelectionBarProps,
   Track,
   TrackArtist,
-  TrackIconComponent,
   TrackListColumn,
   TrackListDensity,
   TrackListEmptyProps,

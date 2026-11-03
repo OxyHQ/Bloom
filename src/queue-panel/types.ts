@@ -77,7 +77,7 @@ export interface QueuePanelProps {
   /**
    * A row was dragged, moved by keyboard or moved from its menu. Indices are
    * within `section`. The panel draws what it is given — apply the move with
-   * `moveQueueItem` and pass the new list back.
+   * `moveItem` (`@oxy.so/bloom/hooks`) and pass the new list back.
    */
   onReorder?: (section: QueueSection, from: number, to: number) => void;
   /** A row's remove action. Omit to hide it. */

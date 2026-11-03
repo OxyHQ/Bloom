@@ -10,7 +10,6 @@ import { RiToolsLine } from '../icons/remix/RiToolsLine';
 import type { AccentTone } from '../theme/accent-colors';
 import { TENANCY_MESSAGES } from './messages';
 import type {
-  HousingIcon,
   LeasePaymentStatus,
   MaintenanceCategory,
   MaintenancePriority,
@@ -19,6 +18,7 @@ import type {
   TenancyDocumentStatus,
   TenancyDocumentType,
 } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 interface StatusInfo {
   tone: AccentTone;
@@ -47,7 +47,7 @@ export const RENT_PAYMENT_STATUS: Record<RentPaymentStatus, StatusInfo> = {
 /** `MaintenanceRequestCard`'s category icon and word. */
 export const MAINTENANCE_CATEGORY: Record<
   MaintenanceCategory,
-  { icon: HousingIcon; label: string }
+  { icon: BloomIconComponent; label: string }
 > = {
   plumbing: { icon: RiDropLine, label: EN.maintenanceCategory.plumbing },
   electrical: { icon: RiFlashlightLine, label: EN.maintenanceCategory.electrical },
@@ -86,7 +86,7 @@ export const TENANCY_DOCUMENT_STATUS: Record<TenancyDocumentStatus, StatusInfo> 
   expired: { tone: 'error', label: EN.documentStatus.expired },
 };
 
-export const TENANCY_DOCUMENT_ICON: Record<TenancyDocumentType, HousingIcon> = {
+export const TENANCY_DOCUMENT_ICON: Record<TenancyDocumentType, BloomIconComponent> = {
   pdf: RiFilePdf2Line,
   image: RiFileImageLine,
   document: RiFileWord2Line,

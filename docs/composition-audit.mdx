@@ -60,7 +60,7 @@ AppShell, AgentChat, MultiAgentChat, AgentCreator, AI Chat, SettingsModal and th
 
 ### Shared primitives and state
 
-- **ResizeHandle** lives in `layout`. AppShell and ChatSplitLayout use the same grip and resize engine. `AiChatResizeHandle` remains a deprecated alias, preserving existing consumers.
+- **ResizeHandle** lives in `layout`. AppShell and ChatSplitLayout use the same grip and resize engine.
 - **SelectionCard** lives in `card`, with generic icon and selection props. Property, offering, vehicle and shipment choices use that implementation. The selectable header and editable detail fields remain separate interactive elements.
 - SelectionCard, domain choice groups, listing action choices and questionnaire answers inherit Field constraints and associations. Questionnaire callbacks and delayed progression also respect disabled state.
 - Chat folder tabs, OTP, questionnaire, chart ranges and selections, track selection, QueuePanel and LibraryPanel use `useControllableState`. Domain equality checks, input normalization and same-tick answer references stay at their existing boundaries.

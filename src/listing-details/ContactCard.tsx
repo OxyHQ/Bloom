@@ -1,6 +1,6 @@
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
-import React, { isValidElement, memo, useMemo } from 'react';
+import { isValidElement, memo, useMemo } from 'react';
 import { View } from 'react-native';
 import { BloomImage } from '../image';
 
@@ -26,8 +26,9 @@ import {
 } from './shared';
 import { useMessages } from '../locale/messages';
 import { LISTING_DETAILS_MESSAGES, type ListingDetailsMessages } from './messages';
-import type { ContactCardProps, ContactRole, ListingIcon } from './types';
+import type { ContactCardProps, ContactRole } from './types';
 import { IS_WEB } from '../styles/platform';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * The person or business behind a listing — a host, a landlord, an agent or an
@@ -286,7 +287,7 @@ function ContactCardComponent({
       </View>
     ) : null;
 
-  const rows: { icon: ListingIcon; text: string; onPress?: () => void; id: string }[] = [
+  const rows: { icon: BloomIconComponent; text: string; onPress?: () => void; id: string }[] = [
     ...(details ?? []).map((d, i) => ({ icon: d.icon, text: d.text, id: `detail-${i}` })),
     ...(responseTime ? [{ icon: RiTimeLine, text: responseTime, id: 'response-time' }] : []),
     ...(activeListings != null

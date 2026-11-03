@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { memo, useCallback, useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { BloomImage } from '../image';
 
 import { groupThousands } from '../chart-cards/primitives/format';
@@ -16,7 +16,8 @@ import { Text } from '../typography';
 import { resolveCreatorStudioPaint, type CreatorStudioPaint } from './shared';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
-import type { TopTrackTrend, TopTracksTableLabels, TopTracksTableProps } from './types';
+import type { TopTrackTrend, TopTracksTableProps } from './types';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * `TopTracksTable`: the ranked tracks of a period on `DataTable` (`inset`
@@ -33,9 +34,6 @@ import type { TopTrackTrend, TopTracksTableLabels, TopTracksTableProps } from '.
  * Below 560px of its own width Listeners and Saves drop out, so a phone keeps
  * rank, track, streams and the trend without scrolling sideways.
  */
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const TOP_TRACKS_LABELS: TopTracksTableLabels = CREATOR_STUDIO_MESSAGES.en.topTracks;
 
 const NARROW_BELOW = 560;
 
@@ -122,11 +120,8 @@ function TopTracksTableComponent({
     }),
     [messages, labelOverrides],
   );
-  const [width, setWidth] = useState(0);
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    const next = Math.round(event.nativeEvent.layout.width);
-    setWidth((prev) => (prev === next ? prev : next));
-  }, []);
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const narrow = width > 0 && width < NARROW_BELOW;
 
   // The rank is the position in `tracks`, kept through sorting.

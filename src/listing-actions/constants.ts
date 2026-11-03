@@ -1,11 +1,5 @@
 import type { AccentTone } from '../theme/accent-colors';
-import type {
-  ApplicationItemStatus,
-  ExchangeMode,
-  MortgageCalculatorLabels,
-  RentalStatus,
-  SaleStatus,
-} from './types';
+import type { ApplicationItemStatus, ExchangeMode, RentalStatus, SaleStatus } from './types';
 import { LISTING_ACTIONS_MESSAGES } from './messages';
 
 interface OfferStatusInfo {
@@ -86,9 +80,6 @@ export const APPLICATION_ITEM_ACTION: Record<ApplicationItemStatus, 'upload' | '
   };
 
 export const MORTGAGE_TERM_OPTIONS: readonly number[] = [10, 15, 20, 25, 30];
-
-/** `MortgageCalculator`'s labels in English; the calculator speaks them in the locale. */
-export const MORTGAGE_LABELS: MortgageCalculatorLabels = EN.mortgage;
 
 /** `auto` layouts: homes stack under this card width, the calculator splits from this width. */
 export const EXCHANGE_STACK_BELOW = 360;

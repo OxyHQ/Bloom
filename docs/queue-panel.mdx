@@ -11,7 +11,8 @@ Painted containers publish their actual base fill to descendants and `--bloom-su
 The play queue as a side panel on web and as bottom-sheet content on native.
 
 ```tsx
-import { moveQueueItem, QueuePanel } from '@oxy.so/bloom/queue-panel';
+import { moveItem } from '@oxy.so/bloom/hooks';
+import { QueuePanel } from '@oxy.so/bloom/queue-panel';
 
 <QueuePanel
   nowPlaying={current}
@@ -22,7 +23,7 @@ import { moveQueueItem, QueuePanel } from '@oxy.so/bloom/queue-panel';
   recentlyPlayed={history}
   onReorder={(section, from, to) => {
     const set = section === 'queue' ? setQueue : setUpNext;
-    set((list) => moveQueueItem(list, from, to));
+    set((list) => moveItem(list, from, to));
   }}
   onRemove={(section, index) => removeAt(section, index)}
   onPlay={(section, index, track) => playFrom(section, index, track)}
@@ -73,15 +74,13 @@ On a device without hover (`(hover: none)`) web draws the controls all the time,
 
 Three ways, one callback — `onReorder(section, from, to)`, with indices inside that section (`'queue'` or `'context'`). A row never moves between sections.
 
-- **Drag** the handle. The row lifts under the pointer or finger, and its neighbours slide to show where it will land. Rows are a fixed 56 tall, so the landing slot is `from + round(dy / 56)` (`queueDragTarget`) with no measuring; the row cannot be dragged past its section's first or last slot. The panel's scroll view stops scrolling while a drag is live.
+- **Drag** the handle. The row lifts under the pointer or finger, and its neighbours slide to show where it will land. Rows are a fixed 56 tall, so the landing slot is `from + round(dy / 56)` (`dragTarget`) with no measuring; the row cannot be dragged past its section's first or last slot. The panel's scroll view stops scrolling while a drag is live.
 - **Keyboard**: focus a handle and press <kbd>↑</kbd> / <kbd>↓</kbd>. Focus stays on the handle as the row moves — the panel puts it back once your new list arrives. On native the handle offers "Move up" and "Move down" as accessibility actions.
 - **Menu**: "Move up", "Move down" (disabled at the ends) and "Remove from queue".
 
 Every move is announced: "Slow Tide moved to position 2 of 3" — through a polite live region on web and `AccessibilityInfo.announceForAccessibility` on native.
 
-`moveQueueItem(list, from, to)` applies a move to your array (a new array, target clamped; an out-of-range `from` is refused rather than clamped, so a stale index cannot move the wrong row). `queueDragTarget` and `queueDragShift` are the arithmetic the drag uses, exported for anything that wants to draw the same preview.
-
-All three are re-exports of `moveItem` / `dragTarget` / `dragShift` from [`@oxy.so/bloom/hooks`](/docs/bloom/main/hooks), which the track list and the sortable photo grid share. `queueDragTarget` used to answer slot `0` when the row height was not measured; it now answers `from`, i.e. "it has not moved".
+`moveItem(list, from, to)` from [`@oxy.so/bloom/hooks`](/docs/bloom/main/hooks) applies a move to your array (a new array, target clamped; an out-of-range `from` is refused rather than clamped, so a stale index cannot move the wrong row). `dragTarget` and `dragShift` beside it are the arithmetic the drag uses, shared with the track list and the sortable photo grid, for anything that wants to draw the same preview. `dragTarget` answers `from` ("it has not moved") when the row height is not measured.
 
 ## `RecentlyPlayedList`
 

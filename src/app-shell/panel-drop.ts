@@ -5,6 +5,7 @@ import type {
   PanelDropStage,
   PanelDropTarget,
 } from './panel-layout-types';
+import { clamp } from '../styles/clamp';
 
 export interface PanelDropRect {
   x: number;
@@ -40,8 +41,6 @@ export function physicalDropEdge(edge: PanelDropEdge, rtl: boolean): PhysicalEdg
   if (edge === 'end') return rtl ? 'left' : 'right';
   return edge;
 }
-
-const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 
 /**
  * A target's box inside `panel` (same coordinate space). The active stage leans

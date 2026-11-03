@@ -495,8 +495,6 @@ export interface AiChatShellProps {
   /** Controlled nav drawer (below `lg`). */
   navOpen?: boolean;
   onNavOpenChange?: (open: boolean) => void;
-  /** @deprecated Panel selection uses AppShell; root gestures stay with the content scroller. */
-  navSwipeEnabled?: boolean;
   /** Controlled panel drawer (below `xl`). */
   panelOpen?: boolean;
   onPanelOpenChange?: (open: boolean) => void;
@@ -561,6 +559,3 @@ export interface AiChatMobileHeaderProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
-
-/** @deprecated Use ResizeHandleProps from @oxy.so/bloom/layout. */
-export type AiChatResizeHandleProps = import('../layout/types').ResizeHandleProps;

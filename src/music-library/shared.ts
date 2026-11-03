@@ -1,7 +1,6 @@
 import { hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 
 import { resolveButtonRamps } from '../button/shared';
-import { parseRgb } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type {
   LibraryEntry,
@@ -11,7 +10,6 @@ import type {
   LibraryPanelLabels,
   LibrarySort,
 } from './types';
-import { COMMON_MESSAGES } from '../locale/common-messages';
 import { MUSIC_LIBRARY_MESSAGES, type MusicLibraryMessages } from './messages';
 import {
   AA_TEXT_CONTRAST,
@@ -58,12 +56,6 @@ export function libraryPanelLabels(
     kind: messages.kinds,
   };
 }
-
-/** The English labels; `LibraryPanel` reads the localised ones. */
-export const DEFAULT_LIBRARY_LABELS: LibraryPanelLabels = libraryPanelLabels(
-  MUSIC_LIBRARY_MESSAGES.en,
-  COMMON_MESSAGES.en,
-);
 
 /** "Playlist · Maya", or the entry's own `meta`. */
 export function libraryMeta(

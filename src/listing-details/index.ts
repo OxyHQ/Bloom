@@ -31,7 +31,6 @@ export type {
   ListingHeaderSize,
   ListingHighlight,
   ListingHighlightsProps,
-  ListingIcon,
   ListingPhoto,
   ListingPhotoGridLayout,
   ListingPhotoGridProps,
