@@ -103,9 +103,9 @@ export function sidebarItemsOf(destinations: readonly AppDestination[]): Sidebar
   // declaration order the pager and the bar use.
   for (const { name, sidebarAfter } of destinations) {
     if (!sidebarAfter || sidebarAfter === name) continue;
-    const from = items.findIndex((item) => item.key === name);
-    if (from < 0 || !items.some((item) => item.key === sidebarAfter)) continue;
-    const [moved] = items.splice(from, 1);
+    const moved = items.find((item) => item.key === name);
+    if (!moved || !items.some((item) => item.key === sidebarAfter)) continue;
+    items.splice(items.indexOf(moved), 1);
     items.splice(items.findIndex((item) => item.key === sidebarAfter) + 1, 0, moved);
   }
   return items;
