@@ -12,6 +12,7 @@ import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useTheme } from '../theme/use-theme';
 import { SpinnerRing } from './SpinnerRing';
+import { Surface } from '../surface';
 
 export interface StatusRingProps {
   state: 'idle' | 'loading' | 'success' | 'error';
@@ -110,12 +111,15 @@ export function StatusRing({
       >
         <Animated.View
           testID="bloom-status-ring-background"
-          style={[
-            StyleSheet.absoluteFill,
-            { borderRadius: size / 2, backgroundColor: colors.background },
-            backgroundStyle,
-          ]}
-        />
+          style={[StyleSheet.absoluteFill, backgroundStyle]}
+        >
+          <Surface
+            testID="bloom-status-ring-surface"
+            radius={size / 2}
+            cornerCurve="round"
+            style={StyleSheet.absoluteFill}
+          />
+        </Animated.View>
         <Animated.View
           testID="bloom-status-ring-spinner"
           style={[StyleSheet.absoluteFill, spinnerStyle]}
