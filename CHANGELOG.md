@@ -2,6 +2,24 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.17.0
+
+### Added
+
+- **`@oxy.so/bloom/color-engine`: the colour engine for servers.** The `ColorEngine` barrel (`src/theme/color-engine/index.ts`) as its own subpath, importing no React, no React Native and no package: seeds from a photo (`seedsFromRgbBytes`, `seedsFromImagePixels`), theme roles from a seed (`generateRoleColors`) and the ARGB helpers (`argbFromRgb`, `hexFromArgb`, …), under Bun and Node, ESM and CommonJS, with types for `bundler`, `node16` and `nodenext`. `scripts/test-color-engine-subpath.mjs` loads the built subpath in each runtime and fails if anything outside the engine's own files loads. Guide: `docs/color-engine.mdx`.
+
+### Removed
+
+- **`@oxy.so/color`.** The separate package that bundled the same barrel is gone from this repository and will not be published again; 1.0.0 stays on npm. Import the same names from `@oxy.so/bloom/color-engine`.
+
+### Changed
+
+- **Tooling to current releases.** react-native-builder-bob 0.44 (the built declarations now name their relative imports' files, `./types.js`, wherever no platform fork needs the bare specifier; `.d.ts` sources are no longer compiled into empty `.d.js` files), TypeScript 6.0, Biome 2.6 (its two new recommended rules, `noReactNativeRawText` and `noComponentHookFactories`, baselined to `warn`; Markdown formatting off, because it rewrote `__tests__` paths as bold text), Jest 30.5, ts-jest 29.4.15, Storybook 10.6, Tailwind 4.3.3 and Expo SDK 58's latest patches. Jest 30.5 refuses `module.registerHooks()` inside a test, which `@tailwindcss/node` calls as it loads, so the suites that compile real Tailwind CSS do it in a child process (`src/__tests__/support/tailwind-css.ts`).
+
+### Consumers
+
+Nothing to change. A server that installed `@oxy.so/color` moves to `@oxy.so/bloom/color-engine`.
+
 ## 16.16.0
 
 ### Added

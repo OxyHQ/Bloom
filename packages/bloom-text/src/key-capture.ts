@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { View } from 'react-native';
+import type { ViewInstance } from './view-ref';
 import type { KeyCommand } from './types';
 
 /**
@@ -7,11 +7,11 @@ import type { KeyCommand } from './types';
  * input, so key commands arrive through `onKeyPress` (key name only).
  */
 /** Native: focus is reported through `onFocus`/`onBlur` only. */
-export function containsFocus(_ref: RefObject<View | null>): boolean {
+export function containsFocus(_ref: RefObject<ViewInstance | null>): boolean {
   return false;
 }
 
 export function useKeyCapture(
-  _ref: RefObject<View | null>,
+  _ref: RefObject<ViewInstance | null>,
   _handler: ((command: KeyCommand) => boolean) | undefined,
 ): void {}

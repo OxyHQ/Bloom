@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { I18nManager } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { compile } from 'react-native-css/compiler';
@@ -10,6 +8,7 @@ import { Card } from '../card/Card';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { StyledView } from '../styles/styled-primitives';
 import { resolvedStyle } from './support/rendered-style';
+import { buildTailwindCss } from './support/tailwind-css';
 
 jest.mock('react-native', () => ({
   ...jest.requireActual('../../__mocks__/react-native'),
@@ -21,13 +20,8 @@ jest.mock('react-native-css/native-internal', () =>
   jest.requireActual('../../node_modules/react-native-css/dist/commonjs/native-internal/index.js'),
 );
 
-beforeAll(async () => {
-  const { compile: tailwind } = require('@tailwindcss/node') as typeof import('@tailwindcss/node');
-  const compiler = await tailwind(
-    `@import "tailwindcss/theme.css" layer(theme);\n@import "tailwindcss/utilities.css" layer(utilities);\n${readFileSync(join(__dirname, '../design-tokens/theme.css'), 'utf8')}`,
-    { base: join(__dirname, '../..'), onDependency() {} },
-  );
-  const css = compiler.build([
+beforeAll(() => {
+  const css = buildTailwindCss([
     'rounded-[32px]',
     'rounded-full',
     'p-3',

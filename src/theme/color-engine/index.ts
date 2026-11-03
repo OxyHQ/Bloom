@@ -8,9 +8,11 @@
  * contrast level — the same dynamic theming MaterialKolor does, but ours.
  *
  * This barrel is the engine's PUBLIC surface — `@oxy.so/bloom/theme` publishes it
- * whole, as the `ColorEngine` namespace, and `@oxy.so/color` (`packages/color`)
- * is the same barrel built with no React, for servers and build scripts. Keep it to what a consumer deriving a
- * theme actually calls; the ports underneath (`Hct`, `TonalPalette`,
+ * whole, as the `ColorEngine` namespace, and `@oxy.so/bloom/color-engine` is this
+ * same file as its own subpath, for servers and build scripts that never render.
+ * That subpath is why nothing here may import React, React Native or anything
+ * outside this folder (`scripts/test-color-engine-subpath.mjs` loads it built).
+ * Keep it to what a consumer deriving a theme actually calls; the ports underneath (`Hct`, `TonalPalette`,
  * `DynamicScheme`, `ColorRole`, `Roles`, `buildScheme`, `quantizeWu`, `score`)
  * are implementation and are imported from their own modules by the handful of
  * files inside Bloom that need them — adding one back here publishes it.

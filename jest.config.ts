@@ -10,7 +10,7 @@ const config: Config = {
         tsconfig: {
           jsx: 'react-jsx',
           module: 'commonjs',
-          moduleResolution: 'node',
+          moduleResolution: 'bundler',
           esModuleInterop: true,
           strict: true,
           noUncheckedIndexedAccess: true,

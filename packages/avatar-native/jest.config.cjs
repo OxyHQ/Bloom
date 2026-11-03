@@ -13,7 +13,7 @@ module.exports = {
           jsx: 'react-jsx',
           target: 'ES2020',
           module: 'commonjs',
-          moduleResolution: 'node',
+          moduleResolution: 'bundler',
           esModuleInterop: true,
           strict: true,
           skipLibCheck: true,

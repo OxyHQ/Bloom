@@ -67,6 +67,11 @@ const SUBPATHS = /** @type {const} */ ([
   ['./image-aspect-ratio-cache', 'image-aspect-ratio-cache/index.ts'],
   ['./theme', 'theme/index.ts'],
   ['./color-presets', 'theme/color-presets.ts'],
+  // The colour engine with no React and no React Native: seeds from a photo's
+  // pixels and theme roles from a seed, for a server or build script (a Bun or
+  // Node process that never renders). The same barrel `./theme` publishes as
+  // the `ColorEngine` namespace; this is its one entry outside a UI.
+  ['./color-engine', 'theme/color-engine/index.ts'],
   ['./preset-vars', 'theme/preset-vars.ts'],
   ['./design-tokens', 'design-tokens/index.ts'],
   ['./tailwind-preset', 'design-tokens/tailwind-preset.ts'],

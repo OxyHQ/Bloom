@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import { act, createElement, useRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import type { View } from 'react-native';
+import type { ViewInstance } from '../view-ref';
 import type { RefObject } from 'react';
 import type { InputAccessibility } from '../input-accessibility';
 import { useInputAccessibility } from '../input-accessibility.web';
@@ -12,8 +12,8 @@ let root: Root;
 let host: HTMLElement;
 function Input(props: InputAccessibility & { handler?: () => boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  useInputAccessibility(ref as unknown as RefObject<View | null>, props);
-  useKeyCapture(ref as unknown as RefObject<View | null>, props.handler);
+  useInputAccessibility(ref as unknown as RefObject<ViewInstance | null>, props);
+  useKeyCapture(ref as unknown as RefObject<ViewInstance | null>, props.handler);
   return createElement(
     'div',
     { ref },

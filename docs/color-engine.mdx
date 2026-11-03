@@ -1,0 +1,68 @@
+---
+title: Colour engine
+description: Bloom's colour engine with no React, for servers and build scripts.
+order: 143
+---
+
+# Colour engine
+
+`@oxy.so/bloom/color-engine` is Bloom's colour engine on its own: theme roles
+from any seed colour, and seed colours from an image's pixels. It imports no
+React, no React Native and no other package, so a process that never renders
+(a server, a worker, a build script) loads it under Bun or Node, ESM or
+CommonJS. It is the same file as the `ColorEngine` namespace of
+`@oxy.so/bloom/theme`, so a colour worked out here is exactly the colour Bloom
+draws. In an app, use `ColorEngine`.
+
+## Seed colours from a photo
+
+Work out a photo's seeds once, where the photo is stored, and send them with
+it: the screen that shows it then themes itself without reading pixels.
+
+```ts
+import sharp from 'sharp';
+import { hexFromArgb, seedsFromRgbBytes } from '@oxy.so/bloom/color-engine';
+
+const thumbnail = await sharp(bytes)
+  .rotate()
+  .resize(48, 48, { fit: 'cover' })
+  .removeAlpha()
+  .raw()
+  .toBuffer();
+
+const seeds = seedsFromRgbBytes(thumbnail).slice(0, 3).map(hexFromArgb);
+// best first, as '#rrggbb'
+```
+
+`seeds[0]` is `BloomProvider seed` (or `BloomSeedScope seed`); `seeds[1]` and
+`seeds[2]` can pin the secondary and tertiary accents. A 48×48 thumbnail gives
+the same ranking as the full photo at a fraction of the work. Pixels already
+packed as ARGB numbers go to `seedsFromImagePixels`; `argbFromRgb(r, g, b)`
+packs one.
+
+## Theme roles from a seed
+
+```ts
+import { generateRoleColors } from '@oxy.so/bloom/color-engine';
+
+const roles = generateRoleColors({ seed: '#c4502f', isDark: true });
+roles.primary; // 'rgb(255 181 160)', a CSS colour
+```
+
+## Surface
+
+`seedsFromRgbBytes`, `seedsFromImagePixels`, `seedHexFromImagePixels`, `quantizeImage`,
+`generateRoleColors`, `argbFromRgb`, `argbFromHex`, `hexFromArgb`,
+`redFromArgb`, `greenFromArgb`, `blueFromArgb`, and the types `RoleColors`,
+`GenerateOptions`, `RoleName`, `SchemeVariant`, `AccentSources`.
+
+The subpath loads none of Bloom's peers at run time, though a package manager
+that installs required peers (Bun, npm 7+) still installs them beside
+`@oxy.so/bloom`. Types resolve under `bundler`, `node16` and `nodenext`.
+`scripts/test-color-engine-subpath.mjs` holds all of this against the built
+package.
+
+## Replaces `@oxy.so/color`
+
+`@oxy.so/color` was this engine published as a separate package. It is no
+longer published; import the same names from `@oxy.so/bloom/color-engine`.

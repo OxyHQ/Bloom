@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { View } from 'react-native';
+import type { ViewInstance } from './view-ref';
 import type { RichTextInputProps } from './types';
 
 export type InputAccessibility = Pick<
@@ -13,6 +13,6 @@ export type InputAccessibility = Pick<
 
 /** Native accessibility is forwarded to the native input itself. */
 export function useInputAccessibility(
-  _ref: RefObject<View | null>,
+  _ref: RefObject<ViewInstance | null>,
   _props: InputAccessibility,
 ): void {}

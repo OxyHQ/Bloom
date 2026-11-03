@@ -89,9 +89,13 @@ jobs:
       # release; the release itself runs no tests.
       - name: Workspace packages typecheck and test
         run: |
-          for package in packages/bloom-text packages/bloom-editor packages/color packages/avatar-native; do
+          for package in packages/bloom-text packages/bloom-editor packages/avatar-native; do
             (cd "$package" && bun run typescript && bun run test)
           done
+      # The built `@oxy.so/bloom/color-engine` subpath, as a server loads it:
+      # Bun, Node ESM, Node CommonJS and a node16 typecheck, pulling no React.
+      - name: Colour engine subpath
+        run: node --test scripts/test-color-engine-subpath.mjs
       - name: Avatar runtime concurrency, transport and presentation units
         run: |
           mkdir -p .local

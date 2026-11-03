@@ -1,5 +1,5 @@
 import { type RefObject, useEffect, useRef } from 'react';
-import type { View } from 'react-native';
+import type { ViewInstance } from './view-ref';
 import type { PasteData } from './types';
 
 /** Whether the clipboard holds files (a pasted image): those go to `onPasteImages`. */
@@ -14,7 +14,7 @@ function hasFiles(data: DataTransfer): boolean {
  * and can claim it (the surface then pastes nothing).
  */
 export function usePasteCapture(
-  ref: RefObject<View | null>,
+  ref: RefObject<ViewInstance | null>,
   handler: ((paste: PasteData) => boolean) | undefined,
 ): void {
   const handlerRef = useRef(handler);

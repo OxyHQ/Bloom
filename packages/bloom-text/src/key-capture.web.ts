@@ -1,5 +1,5 @@
 import { type RefObject, useEffect, useRef } from 'react';
-import type { View } from 'react-native';
+import type { ViewInstance } from './view-ref';
 import type { KeyCommand } from './types';
 
 /**
@@ -9,14 +9,14 @@ import type { KeyCommand } from './types';
  * are then skipped).
  */
 /** Web: whether the document's focused element sits inside the input. */
-export function containsFocus(ref: RefObject<View | null>): boolean {
+export function containsFocus(ref: RefObject<ViewInstance | null>): boolean {
   const node = ref.current as unknown as HTMLElement | null;
   const active = typeof document === 'undefined' ? null : document.activeElement;
   return Boolean(node && active && node.contains(active));
 }
 
 export function useKeyCapture(
-  ref: RefObject<View | null>,
+  ref: RefObject<ViewInstance | null>,
   handler: ((command: KeyCommand) => boolean) | undefined,
 ): void {
   const handlerRef = useRef(handler);
