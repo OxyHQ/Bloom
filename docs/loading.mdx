@@ -138,3 +138,18 @@ function GlobalProgress() {
   return <Loading variant="top" showLoading={busy} />;
 }
 ```
+
+
+## Status around static artwork
+
+`StatusRing` from `@oxy.so/bloom/loading` accepts `state` (`idle`, `loading`,
+`success`, `error`), static `children`, a localized `accessibilityLabel`, and an
+optional `size` (48px by default). Idle shows only the original artwork, with no
+track or background; the measurement stays unchanged. Only the outer arc rotates while loading.
+Success fades in the shared check glyph; returning to idle restores the same
+mounted artwork. Error keeps the artwork and adds an error glyph. Reduced motion
+stops rotation and settles the check without animation.
+
+This is controlled presentation. The host decides when success is authoritative,
+whether to restore the artwork, and when to close its surface; the ring owns no
+completion timers or payment logic.

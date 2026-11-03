@@ -103,3 +103,23 @@ it('clips the header to the detached surface corners without clipping the shadow
   expect(clip.props.pointerEvents).toBe('box-none');
   expect(panel(view.toJSON()).overflow).not.toBe('hidden');
 });
+
+it('overlays a transparent viewport footer while reserving the scroll end for its height', () => {
+  const view = render(
+    <Dialog open placement="bottom" detached footerBehavior="viewport" footer={<Text>Logo</Text>}>
+      <Text>Body</Text>
+    </Dialog>,
+    { wrapper },
+  );
+  const footer = view.getByTestId('bloom-sheet-footer');
+  fireEvent(footer, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 540, height: 72 } } });
+  expect(resolvedStyle(view.getByTestId('bloom-sheet-footer').props.style)).toMatchObject({
+    position: 'absolute',
+    bottom: 0,
+  });
+  expect(
+    resolvedStyle(view.getByTestId('bloom-sheet-footer').props.style).backgroundColor,
+  ).toBeUndefined();
+  const scroll = hostNodes(view.toJSON()).find((node) => node.type === 'Animated.ScrollView');
+  expect(resolvedStyle(scroll?.props.contentContainerStyle).paddingBottom).toBe(72);
+});

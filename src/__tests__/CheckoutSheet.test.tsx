@@ -79,3 +79,13 @@ it('shows physical-order sections and host tax treatment without adding its own 
   expect(view.getByText('Quoted tax treatment')).toBeTruthy();
   expect(input.request.dueTodayMinorUnits).toBe(599);
 });
+
+it('shows navigation chrome only for editable or retry steps', () => {
+  const input = props();
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.queryByTestId('dialog-nav')).toBeNull();
+  view.rerender(<CheckoutSheet {...input} step="contact" />);
+  expect(view.getByTestId('dialog-nav')).toBeTruthy();
+  view.rerender(<CheckoutSheet {...input} step="processing" />);
+  expect(view.queryByTestId('dialog-nav')).toBeNull();
+});

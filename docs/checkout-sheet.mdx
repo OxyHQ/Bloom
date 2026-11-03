@@ -56,3 +56,7 @@ shipping, delivery and an available card.
 position it absolutely or add another scroll container. The shared Dialog measures
 it separately during frame morphs. `onAuthorize` is an event for the host; the
 host owns authorization, pending state, cancellation and completion.
+
+The checkout footer pins to the visible viewport edge during downward dragging,
+clamped inside the moving panel. Navigation chrome appears on editing and retry
+steps; review, processing and success use the body and the shared dismissal paths.
