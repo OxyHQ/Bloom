@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
-import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -15,7 +15,7 @@ import { SpinnerRing } from './SpinnerRing';
 import { Surface } from '../surface';
 import { surfacePresenceStyle } from '../surface/use-surface-presence';
 
-const IS_WEB = Platform.OS === 'web';
+import { IS_WEB } from '../styles/platform';
 
 export interface StatusRingProps {
   state: 'idle' | 'loading' | 'success' | 'error';
@@ -84,7 +84,7 @@ export function StatusRing({
   );
   const backgroundStyle = useAnimatedStyle(
     () => ({
-      ...(IS_WEB ? {} : { opacity: 1 - brand.value }),
+      opacity: IS_WEB ? 1 : 1 - brand.value,
     }),
     [brand],
   );
@@ -116,9 +116,7 @@ export function StatusRing({
           testID="bloom-status-ring-background"
           style={[
             StyleSheet.absoluteFill,
-            Platform.OS === 'web'
-              ? surfacePresenceStyle(state === 'idle' ? 0 : 1, reduced ? 0 : 220)
-              : undefined,
+            IS_WEB ? surfacePresenceStyle(state === 'idle' ? 0 : 1, reduced ? 0 : 220) : undefined,
             backgroundStyle,
           ]}
         >

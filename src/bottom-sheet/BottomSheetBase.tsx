@@ -801,10 +801,11 @@ export const BottomSheetBase = forwardRef(
       <Animated.ScrollView
         ref={scrollViewRef}
         style={[styles.scrollView, surfaceCorners]}
-        contentContainerStyle={[
-          dynamicStyles.scrollContent,
-          overlayFooter && { paddingBottom: footerInset },
-        ]}
+        contentContainerStyle={
+          overlayFooter
+            ? [dynamicStyles.scrollContent, { paddingBottom: footerInset }]
+            : dynamicStyles.scrollContent
+        }
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScroll={scrollHandler}
