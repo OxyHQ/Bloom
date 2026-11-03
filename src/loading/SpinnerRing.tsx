@@ -24,13 +24,14 @@ export function SpinnerRing({
   const rotation = useSharedValue(0);
 
   useEffect(() => {
-    rotation.value = 0;
-    if (animate)
+    if (animate) {
+      rotation.value = 0;
       rotation.value = withRepeat(
         withTiming(360, { duration: 800, easing: Easing.linear }),
         -1,
         false,
       );
+    }
     return () => cancelAnimation(rotation);
   }, [rotation, animate]);
 

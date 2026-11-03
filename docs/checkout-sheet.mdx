@@ -63,3 +63,8 @@ host owns authorization, pending state, cancellation and completion.
 The checkout footer pins to the visible viewport edge during downward dragging,
 clamped inside the moving panel. Navigation chrome appears on editing and retry
 steps; review, processing and success use the body and the shared dismissal paths.
+
+`resultIllustration` optionally supplies host-owned artwork for result steps.
+The checkout never duplicates the footer status glyph in its body: without artwork,
+result content is text and actions only. Loading can remain text-only while the
+footer carries its progress indicator.

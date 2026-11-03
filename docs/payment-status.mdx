@@ -106,3 +106,8 @@ where "Failed" is a word with no subject.
 
 The block names itself from its words, amount and detail joined, so a reader landing on it
 hears the answer before the glyph.
+
+`PaymentStatusBlock` accepts `illustration` to replace its default glyph tile.
+`showIcon={false}` hides the default tile while preserving custom artwork and
+status text; omitted retains the existing glyph. `illustration={null}` is also
+an explicit text-only presentation.

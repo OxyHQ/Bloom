@@ -27,6 +27,8 @@ export interface CheckoutSheetProps {
   /** Format the quoted minor units; the host owns currency exponents and display preferences. */
   formatAmount(amountMinorUnits: number, currency: string): string;
   footer?: ReactNode;
+  /** Optional result artwork; the footer owns the status glyph by default. */
+  resultIllustration?: ReactNode;
   /** Provider-owned fields, or a host's explicitly labelled local preview. */
   cardEntry?: ReactNode;
   /** Optional disclosure shown below the confirmation button. */
@@ -310,6 +312,9 @@ function CheckoutContent(props: CheckoutSheetProps) {
       {step === 'card' && cardEntry}
       {(step === 'processing' || step === 'success' || step === 'failure') && (
         <PaymentStatusBlock
+          testID="bloom-checkout-result"
+          illustration={props.resultIllustration}
+          showIcon={false}
           variant="plain"
           state={step === 'processing' ? 'authorising' : step === 'success' ? 'paid' : 'failed'}
           status={label(`result.${step}`)}
