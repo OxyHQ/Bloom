@@ -12,9 +12,17 @@ import type { BloomColorScopeTokens } from './types';
 export function useScope(
   colorPreset?: AppColorName,
   mode?: 'light' | 'dark',
-  tokens?: BloomColorScopeTokens,
+  tokensProp?: BloomColorScopeTokens,
   seed?: string,
 ) {
+  // Tokens are values. A caller writing them inline (`tokens={{ … }}`) passes a new
+  // object every render, and keyed on its identity the scope resolved again each
+  // time: its tokens re-applied, and a new theme for every consumer below it.
+  const tokensKey = tokensProp === undefined ? undefined : JSON.stringify(tokensProp);
+  const tokens = useMemo<BloomColorScopeTokens | undefined>(
+    () => (tokensKey === undefined ? undefined : JSON.parse(tokensKey)),
+    [tokensKey],
+  );
   const parent = useContext(BloomThemeContext);
   const inherited = useContext(ThemeScopeContext);
   const active =

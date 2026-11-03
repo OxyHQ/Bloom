@@ -136,3 +136,31 @@ it('solves a seed once for every scope that uses it, on mount and under a new pa
   );
   solve.mockRestore();
 });
+
+it('takes tokens by value: inline tokens with the same colours keep the scope and its theme', () => {
+  const themes: unknown[] = [];
+  function Capture() {
+    themes.push(useTheme());
+    return null;
+  }
+  function Inline({ tick, foreground }: { tick: number; foreground: string }) {
+    return (
+      <BloomThemeProvider colorPreset="blue" mode="dark" fonts={false}>
+        <BloomColorScope
+          seed="#4464ba"
+          mode="dark"
+          tokens={{ background: '#00000000', foreground }}
+        >
+          <Capture key={tick} />
+        </BloomColorScope>
+      </BloomThemeProvider>
+    );
+  }
+  const { rerender } = render(<Inline tick={0} foreground="#ffffff" />);
+  rerender(<Inline tick={1} foreground="#ffffff" />);
+  rerender(<Inline tick={2} foreground="#eeeeee" />);
+  expect(themes).toHaveLength(3);
+  expect(themes[1]).toBe(themes[0]);
+  expect(themes[2]).not.toBe(themes[1]);
+  expect((themes[2] as { colors: { text: string } }).colors.text).toBe('#eeeeee');
+});
