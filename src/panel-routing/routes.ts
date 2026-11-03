@@ -82,6 +82,7 @@ export function matchPanelRoute(
       const values = url.searchParams.getAll(key);
       params[key] = values.length === 1 ? values[0]! : values;
     }
+    if (url.hash) params['#'] = decodeURIComponent(url.hash.slice(1));
     best = { route, params, score };
   }
   return best;
