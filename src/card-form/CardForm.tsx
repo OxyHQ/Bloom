@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useMessages } from '../locale/messages';
+import { Field } from '../field';
 import { PaymentMethodMark } from '../payment-method';
 import {
   CardFormCountry,
@@ -52,6 +53,7 @@ import type { CardFormFieldName, CardFormProps, CardFormValue } from './types';
  */
 function CardFormComponent({
   value,
+  hostedFields,
   defaultValue,
   onValueChange,
   schemes,
@@ -73,7 +75,10 @@ function CardFormComponent({
     () => (value === undefined ? undefined : { ...CARD_FORM_EMPTY_VALUE, ...value }),
     [value],
   );
-  const initial = useRef<CardFormValue>({ ...CARD_FORM_EMPTY_VALUE, ...defaultValue });
+  const initial = useRef<CardFormValue>({
+    ...CARD_FORM_EMPTY_VALUE,
+    ...defaultValue,
+  });
   const [current, setCurrent] = useControllableState<CardFormValue>({
     value: controlled,
     defaultValue: initial.current,
@@ -106,62 +111,96 @@ function CardFormComponent({
   const showCountry = fields?.country === true && countries !== undefined;
   const pair = { flexBasis: 0, flexGrow: 1, minWidth: 0 } as const;
 
+  if (
+    hostedFields &&
+    ['number', 'expiry', 'securityCode'].some(
+      (key) => !React.isValidElement(hostedFields[key as keyof typeof hostedFields]),
+    )
+  ) {
+    throw new Error('CardForm hostedFields requires all three secure control elements.');
+  }
+  if (
+    hostedFields &&
+    [value, defaultValue].some(
+      (candidate) => candidate?.number || candidate?.expiry || candidate?.securityCode,
+    )
+  ) {
+    throw new Error('CardForm hosted fields cannot receive sensitive local values.');
+  }
+  const hosted = (node: React.ReactNode) => (
+    <Field multiple disabled={disabled} required={required}>
+      {node}
+    </Field>
+  );
+
   return (
     <View
       style={[{ width: '100%', gap: CARD_FORM_GAP }, style]}
       {...(accessibilityLabel ? { role: 'group' as const, accessibilityLabel } : {})}
       testID={testID}
     >
-      <CardFormNumber
-        value={current.number}
-        onValueChange={set('number')}
-        label={word('number')}
-        error={errors?.number}
-        disabled={disabled}
-        required={required}
-        autoFocus={autoFocus}
-        schemes={schemes}
-        scheme={scheme}
-        mark={
-          // The SCHEME'S NAME as text on a neutral plate — never its logo.
-          // `payment-method` owns that rule and this form borrows the component
-          // rather than drawing a second plate of its own.
-          <PaymentMethodMark
-            kind="card"
-            scheme={scheme?.name}
-            icon={scheme?.icon}
-            image={scheme?.image}
-            density="compact"
-            testID={testID ? `${testID}-mark` : undefined}
-          />
-        }
-        testID={testID ? `${testID}-number` : undefined}
-      />
+      {hostedFields ? (
+        hosted(hostedFields.number)
+      ) : (
+        <CardFormNumber
+          value={current.number}
+          onValueChange={set('number')}
+          label={word('number')}
+          error={errors?.number}
+          disabled={disabled}
+          required={required}
+          autoFocus={autoFocus}
+          schemes={schemes}
+          scheme={scheme}
+          mark={
+            // The SCHEME'S NAME as text on a neutral plate — never its logo.
+            // `payment-method` owns that rule and this form borrows the component
+            // rather than drawing a second plate of its own.
+            <PaymentMethodMark
+              kind="card"
+              scheme={scheme?.name}
+              icon={scheme?.icon}
+              image={scheme?.image}
+              density="compact"
+              testID={testID ? `${testID}-mark` : undefined}
+            />
+          }
+          testID={testID ? `${testID}-number` : undefined}
+        />
+      )}
 
       <View style={{ flexDirection: 'row', gap: CARD_FORM_GAP, minWidth: 0 }}>
         <View style={pair}>
-          <CardFormExpiry
-            value={current.expiry}
-            onValueChange={set('expiry')}
-            label={word('expiry')}
-            error={errors?.expiry}
-            disabled={disabled}
-            required={required}
-            testID={testID ? `${testID}-expiry` : undefined}
-          />
+          {hostedFields ? (
+            hosted(hostedFields.expiry)
+          ) : (
+            <CardFormExpiry
+              value={current.expiry}
+              onValueChange={set('expiry')}
+              label={word('expiry')}
+              error={errors?.expiry}
+              disabled={disabled}
+              required={required}
+              testID={testID ? `${testID}-expiry` : undefined}
+            />
+          )}
         </View>
         <View style={pair}>
-          <CardFormSecurityCode
-            value={current.securityCode}
-            onValueChange={set('securityCode')}
-            label={scheme?.securityCodeLabel ?? word('securityCode')}
-            error={errors?.securityCode}
-            disabled={disabled}
-            required={required}
-            length={schemeSecurityCodeLength(scheme)}
-            secure={secureSecurityCode}
-            testID={testID ? `${testID}-security-code` : undefined}
-          />
+          {hostedFields ? (
+            hosted(hostedFields.securityCode)
+          ) : (
+            <CardFormSecurityCode
+              value={current.securityCode}
+              onValueChange={set('securityCode')}
+              label={scheme?.securityCodeLabel ?? word('securityCode')}
+              error={errors?.securityCode}
+              disabled={disabled}
+              required={required}
+              length={schemeSecurityCodeLength(scheme)}
+              secure={secureSecurityCode}
+              testID={testID ? `${testID}-security-code` : undefined}
+            />
+          )}
         </View>
       </View>
 

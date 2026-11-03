@@ -185,3 +185,20 @@ message is drawn; it is not announced as part of the control. Put a country mess
 enclosing `Field` instead. This is a gap in `select`, not one this family can close.
 
 If a scheme change reduces `maxDigits` below the current value, deletion remains available until the value fits. New over-limit digits are still refused.
+
+## Secure hosted fields
+
+For payment-provider controls, pass `hostedFields={{ number, expiry,
+securityCode }}` to the same `CardForm`. All three slots must be React elements;
+an incomplete set throws instead of rendering local sensitive inputs. Name,
+country and postcode continue using the ordinary parts and layout.
+
+Wrap each secure mount in `CardFormHostedField`. It shares the ordinary part's
+label, error, field membership and TextField chrome. Its `focused` boolean comes
+from the hosted control's focus events. Its render callback receives only the
+resolved accessible name, id, described-by ids, required, disabled and invalid
+state. It has no value or change callback for card data. The adapter must apply
+those constraints and names through the provider API, destroy provider controls
+on unmount, and keep sensitive input inside the provider frame. Bloom neither
+mounts a provider nor processes payments. Do not populate the ordinary form's
+number, expiry or security-code values when using hosted fields.
