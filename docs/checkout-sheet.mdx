@@ -105,3 +105,9 @@ not in the review summary. The `terms` step shows the complete supplied text;
 Continue returns to review. Opening or leaving terms does not record acceptance
 or change the draft. Hosts supply `terms`, `terms.renewal`, `terms.cancellation`
 and `step.terms` labels and route the header Back action to review.
+
+Editing and terms screens use the Dialog's own large heading. Their compact
+navigation title appears only after the measured heading has scrolled out, and
+hides when scrolling back. `methodTitle` supplies a method-specific heading;
+method content should not repeat it. Monetary balances can remain prominent
+body content. The host does not register a scroll listener or estimate offsets.

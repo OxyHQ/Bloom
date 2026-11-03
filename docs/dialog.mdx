@@ -570,3 +570,10 @@ Dialog appearance scopes compose onto the actual panel renderer. They do not
 insert a host beside the calling page, even while the dialog is closed. A
 consumer may place Dialogs beside flex content without reserving invisible
 gaps; frame palette changes still preserve the mounted content and portal scope.
+
+
+`header.titleReveal="afterTitle"` opts a large-title dialog into revealing its
+compact navigation title only after the measured heading bottom leaves the
+scroll viewport. The default collapsing behavior is unchanged. This policy
+uses the shared scroll owner and the actual heading layout, including wrapping;
+subtitle, search and other large-title extras do not change the heading threshold.

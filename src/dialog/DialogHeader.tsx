@@ -5,6 +5,7 @@ import {
   useContext,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from 'react';
@@ -172,6 +173,7 @@ function configsEqual(a: DialogHeaderConfig | null, b: DialogHeaderConfig | null
     a.subtitle === b.subtitle &&
     a.largeTitle === b.largeTitle &&
     a.titleLayout === b.titleLayout &&
+    a.titleReveal === b.titleReveal &&
     a.left === b.left &&
     a.right === b.right &&
     // `onBack` legitimately gets a fresh closure each render; its identity never
@@ -217,6 +219,7 @@ function createHeaderStore(): HeaderStore {
 export interface DialogHeaderController {
   scrollY: SharedValue<number>;
   largeTitleHeight: SharedValue<number>;
+  largeTitleBottom: SharedValue<number>;
   store: HeaderStore;
 }
 
@@ -224,8 +227,12 @@ export interface DialogHeaderController {
 export function useDialogHeaderController(): DialogHeaderController {
   const scrollY = useSharedValue(0);
   const largeTitleHeight = useSharedValue(0);
+  const largeTitleBottom = useSharedValue(0);
   const store = useMemo(() => createHeaderStore(), []);
-  return useMemo(() => ({ scrollY, largeTitleHeight, store }), [scrollY, largeTitleHeight, store]);
+  return useMemo(
+    () => ({ scrollY, largeTitleHeight, largeTitleBottom, store }),
+    [scrollY, largeTitleHeight, largeTitleBottom, store],
+  );
 }
 
 const DialogHeaderContext = createContext<DialogHeaderController | null>(null);
@@ -272,6 +279,7 @@ export function useDialogHeader(config: DialogHeaderConfig | null | undefined): 
     config?.subtitle,
     config?.largeTitle,
     config?.titleLayout,
+    config?.titleReveal,
     config?.left,
     config?.right,
     config?.onBack,
@@ -452,7 +460,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   const surfaceFill = useSurfaceFill();
   const common = useCommonMessages();
   const config = useMergedHeaderConfig(header, controller.store);
-  const { scrollY, largeTitleHeight } = controller;
+  const { scrollY, largeTitleHeight, largeTitleBottom } = controller;
 
   // A branded `titleContent` owns the bar centre outright: it is always visible,
   // so there is nothing to collapse and no large in-content title to collapse under.
@@ -462,13 +470,19 @@ export const DialogNavHeader = memo(function DialogNavHeader({
     (config.titleLayout ? config.titleLayout === 'large' : (config.largeTitle ?? true)) &&
     !!config.title;
   const heroTitle = collapse && config.titleLayout === 'hero' && !config.titleContent;
+  const afterTitle = hasLargeTitle && config.titleReveal === 'afterTitle';
   const revealOffset = useDerivedValue(
-    () => (heroTitle ? 96 : (largeTitleHeight.value || 44) * 0.35),
-    [largeTitleHeight, heroTitle],
+    () =>
+      afterTitle
+        ? largeTitleBottom.value || Number.MAX_SAFE_INTEGER
+        : heroTitle
+          ? 96
+          : (largeTitleHeight.value || 44) * 0.35,
+    [largeTitleHeight, largeTitleBottom, heroTitle, afterTitle],
   );
   const revealDistance = useDerivedValue(
-    () => (largeTitleHeight.value || 44) * 0.55,
-    [largeTitleHeight],
+    () => (afterTitle ? 1 : (largeTitleHeight.value || 44) * 0.55),
+    [largeTitleHeight, afterTitle],
   );
   const onImage = config.tone === 'onImage';
   const closeButton =
@@ -550,7 +564,8 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
   const common = useCommonMessages();
   const { messages } = useMessages(DIALOG_MESSAGES);
   const config = useMergedHeaderConfig(header, controller.store);
-  const { largeTitleHeight } = controller;
+  const { largeTitleHeight, largeTitleBottom } = controller;
+  const titleGeometry = useRef({ blockY: 0, headingBottom: 0 });
 
   // A branded `titleContent` lives in the bar and never collapses, so the
   // surface starts flush under the bar with no large title above it.
@@ -566,6 +581,14 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
 
   const onLayout = (e: LayoutChangeEvent) => {
     largeTitleHeight.value = e.nativeEvent.layout.height;
+    titleGeometry.current.blockY = e.nativeEvent.layout.y;
+    if (titleGeometry.current.headingBottom) {
+      largeTitleBottom.value = titleGeometry.current.blockY + titleGeometry.current.headingBottom;
+    }
+  };
+  const onTitleLayout = (e: LayoutChangeEvent) => {
+    titleGeometry.current.headingBottom = e.nativeEvent.layout.y + e.nativeEvent.layout.height;
+    largeTitleBottom.value = titleGeometry.current.blockY + titleGeometry.current.headingBottom;
   };
 
   if (!hasLargeTitle && !hasExtras) {
@@ -591,9 +614,13 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
       <View onLayout={onLayout} testID="dialog-large-title" style={styles.largeTitleBlock}>
         {hasLargeTitle ? (
           <>
-            <H1 style={[styles.largeTitle, { color: onImage ? ON_IMAGE_TEXT : theme.colors.text }]}>
-              {config.title}
-            </H1>
+            <View onLayout={onTitleLayout} testID="dialog-heading-anchor">
+              <H1
+                style={[styles.largeTitle, { color: onImage ? ON_IMAGE_TEXT : theme.colors.text }]}
+              >
+                {config.title}
+              </H1>
+            </View>
             {config.subtitle ? (
               <Subtitle
                 style={[

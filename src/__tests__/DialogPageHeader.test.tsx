@@ -1,6 +1,10 @@
 import { StyleSheet } from 'react-native';
-import { fireEvent, render, within } from '@testing-library/react-native';
-import { DialogNavHeader, useDialogHeaderController } from '../dialog/DialogHeader';
+import { act, fireEvent, render, within } from '@testing-library/react-native';
+import {
+  DialogLargeTitle,
+  DialogNavHeader,
+  useDialogHeaderController,
+} from '../dialog/DialogHeader';
 import type { DialogHeaderConfig } from '../dialog/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
@@ -177,4 +181,60 @@ it('starts a custom hero with its navigation title and scrim hidden', () => {
   const title = screen.getByTestId('dialog-nav-title-block', { includeHiddenElements: true });
   expect(StyleSheet.flatten(title.props.style).opacity).toBe(0);
   expect(StyleSheet.flatten(screen.getByTestId('dialog-nav-scrim').props.style).opacity).toBe(0);
+});
+
+it('reveals the opted-in nav title only after the measured heading leaves and hides it again at the top', () => {
+  let controller: ReturnType<typeof useDialogHeaderController> | undefined;
+  const header: DialogHeaderConfig = {
+    title: 'Payment methods',
+    titleReveal: 'afterTitle',
+    largeTitle: true,
+  };
+  function Measured() {
+    controller = useDialogHeaderController();
+    return (
+      <>
+        <DialogNavHeader controller={controller} header={header} onDismiss={() => {}} />
+        <DialogLargeTitle controller={controller} header={header} />
+      </>
+    );
+  }
+  const draw = () => (
+    <BloomThemeProvider>
+      <Measured />
+    </BloomThemeProvider>
+  );
+  const screen = render(draw());
+  const opacity = () =>
+    StyleSheet.flatten(
+      screen.getByTestId('dialog-nav-title-block', { includeHiddenElements: true }).props.style,
+    ).opacity;
+  expect(opacity()).toBe(0);
+  fireEvent(screen.getByTestId('dialog-large-title'), 'layout', {
+    nativeEvent: { layout: { x: 0, y: 76, width: 300, height: 150 } },
+  });
+  fireEvent(screen.getByTestId('dialog-heading-anchor'), 'layout', {
+    nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 76 } },
+  });
+  // The heading is two lines. Subtitle/extras below it must not delay reveal.
+  for (const [scroll, expected] of [
+    [151, 0],
+    [153, 1],
+    [0, 0],
+  ]) {
+    act(() => {
+      if (controller) controller.scrollY.value = scroll as number;
+    });
+    screen.rerender(draw());
+    expect(opacity()).toBe(expected);
+  }
+  // A new, taller measured heading moves the threshold without a guessed offset.
+  fireEvent(screen.getByTestId('dialog-heading-anchor'), 'layout', {
+    nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 114 } },
+  });
+  act(() => {
+    if (controller) controller.scrollY.value = 153;
+  });
+  screen.rerender(draw());
+  expect(opacity()).toBe(0);
 });

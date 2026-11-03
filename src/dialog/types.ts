@@ -45,6 +45,8 @@ export interface DialogHeaderConfig {
   largeTitle?: boolean;
   /** Hero content owns its heading/media beneath the nav; nav title reveals on scroll. */
   titleLayout?: 'large' | 'bar' | 'hero';
+  /** With a large title, reveal the bar title only after its measured bottom leaves the viewport. */
+  titleReveal?: 'collapse' | 'afterTitle';
   /** Custom left slot node. Overrides the default back button. */
   left?: ReactNode;
   /** Custom right slot node. Overrides the default close button. */
