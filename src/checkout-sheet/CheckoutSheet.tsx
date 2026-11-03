@@ -69,6 +69,8 @@ export interface CheckoutSheetProps {
   notice?: ReactNode;
   /** Override prerequisite navigation for a host-supplied payment method. */
   nextStep?: CheckoutStep;
+  /** Disable payment advancement while host authority prepares; dismissal remains available. */
+  continueDisabled?: boolean;
   /** Advance completed details with the updated draft; defaults to returning to review. */
   onContinue?(draft: CheckoutDraft): void;
 
@@ -258,7 +260,10 @@ function CheckoutContent(props: CheckoutSheetProps) {
                   description={sectionText[section]}
                   icon={<Icon size="md" fill={colors.textSecondary} />}
                   accessibilityLabel={`${label(`section.${section}`)}: ${sectionText[section]}`}
-                  onPress={() => onStep(section)}
+                  disabled={section === 'payment' && props.continueDisabled}
+                  onPress={() => {
+                    if (!(section === 'payment' && props.continueDisabled)) onStep(section);
+                  }}
                 />
               );
             })}
@@ -289,7 +294,16 @@ function CheckoutContent(props: CheckoutSheetProps) {
                 )}
               </View>
             )}
-            <Button size="lg" onPress={() => (next === 'review' ? onAuthorize() : onStep(next))}>
+            <Button
+              size="lg"
+              disabled={props.continueDisabled}
+              onPress={() => {
+                if (!props.continueDisabled) {
+                  if (next === 'review') onAuthorize();
+                  else onStep(next);
+                }
+              }}
+            >
               {next === 'review'
                 ? request.recurring && request.dueTodayMinorUnits === 0
                   ? label('confirmSubscription')
@@ -322,9 +336,13 @@ function CheckoutContent(props: CheckoutSheetProps) {
           </GroupedSection>
           <Button
             size="lg"
-            onPress={() =>
-              confirmationNext === 'review' ? onAuthorize() : onStep(confirmationNext)
-            }
+            disabled={props.continueDisabled}
+            onPress={() => {
+              if (!props.continueDisabled) {
+                if (confirmationNext === 'review') onAuthorize();
+                else onStep(confirmationNext);
+              }
+            }}
           >
             {confirmationNext !== 'review'
               ? label('continue')
