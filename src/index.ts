@@ -90,6 +90,7 @@ export {
   PlatformSurfaceProvider,
   usePlatformAppearance,
   usePlatformAppearanceState,
+  usePlatformEditing,
   usePlatformKeyboard,
   usePlatformMenuBar,
   usePlatformSurfaces,
@@ -99,6 +100,9 @@ export {
 export type {
   PlatformAppearance,
   PlatformAppearanceState,
+  PlatformEditAction,
+  PlatformEditing,
+  PlatformEditingState,
   PlatformKeyboard,
   PlatformKeyEvent,
   PlatformMenu,

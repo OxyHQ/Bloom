@@ -2,6 +2,12 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.15.0
+
+### Added
+
+- **The Edit menu acts on the focused text field: `MenubarItem`'s `action`.** `action="copy"` (`undo`, `redo`, `cut`, `paste`, `pasteAndMatchStyle`, `delete`, `selectAll`) makes an item a standard editing command, sent to the focused text field first, as a Mac's Edit menu sends `copy:` to the first responder: while a field has focus the item is enabled exactly when the field can do it now (Copy with a selection, Paste with text on the clipboard, Undo with an edit to undo) and choosing it performs it there; with none, it is the application's item, its `onPress` and `disabled`. Each action brings its standard chord (`Mod+C`, `Mod+Alt+Shift+V`, …) unless `shortcut` gives another. The platform says which field has focus and what it can do through the adapter's new optional `editing` (`PlatformEditing`, `usePlatformEditing`); OxyOS's runtime supplies it.
+
 ## 16.14.1
 
 ### Fixed

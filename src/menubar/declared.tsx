@@ -46,6 +46,7 @@ import {
   useMenubarScope,
 } from './context';
 import { type MenuEntry, nextMenuEntryId } from './registry';
+import { EDIT_ACTION_SHORTCUTS, useEditAction } from './use-edit-action';
 import type {
   MenubarCheckboxItemProps,
   MenubarContentProps,
@@ -257,26 +258,28 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
   const isHint = (type: unknown) => type === Shortcut;
   const hint = (chord: Chord | null) => (chord ? <Shortcut>{formatChord(chord)}</Shortcut> : null);
 
-  function MenubarItem({ shortcut, ...props }: MenubarItemProps) {
+  function MenubarItem({ shortcut, action, ...props }: MenubarItemProps) {
     const scope = useMenubarScope();
-    const chord = useChord(shortcut);
+    const chord = useChord(shortcut ?? (action ? EDIT_ACTION_SHORTCUTS[action] : undefined));
     const { onPress, href } = props;
+    const handler = onPress ?? (href != null ? () => followLink(href) : undefined);
+    // An editing action goes to the focused text field first (use-edit-action.ts).
+    const item = useEditAction(action, props.disabled ?? false, handler);
     useMenuEntry(
       scope,
       {
         kind: 'item',
         label: textOf(props.children, isHint) || (props.accessibilityLabel ?? ''),
-        enabled: !props.disabled,
+        enabled: item.enabled,
         shortcut: chord,
         keepOpen: props.keepOpen ?? false,
       },
-      () => {
-        if (onPress) onPress();
-        else if (href != null) followLink(href);
-      },
+      item.run,
     );
     if (scope?.headless) return null;
-    return <rows.Item {...props} trailing={props.trailing ?? hint(chord)} />;
+    const trailing = props.trailing ?? hint(chord);
+    if (!action) return <rows.Item {...props} trailing={trailing} />;
+    return <rows.Item {...props} disabled={!item.enabled} onPress={item.run} trailing={trailing} />;
   }
   MenubarItem.displayName = 'MenubarItem';
 

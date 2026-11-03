@@ -3,6 +3,7 @@ import type {
   PlatformAppearance,
   PlatformDrag,
   PlatformDropTargetProps,
+  PlatformEditing,
   PlatformFiles,
   PlatformKeyboard,
   PlatformMenuBar,
@@ -84,6 +85,14 @@ export function usePlatformAppearance(): PlatformAppearance | null {
     );
   }
   return adapter.appearance;
+}
+
+/**
+ * The platform's first responder for the standard editing actions (the focused
+ * text field), or null when it supplies none (`PlatformEditing`).
+ */
+export function usePlatformEditing(): PlatformEditing | null {
+  return useContext(PlatformSurfaceContext)?.editing ?? null;
 }
 
 /** The adapter's source of the window's key presses, or null when it supplies none. */

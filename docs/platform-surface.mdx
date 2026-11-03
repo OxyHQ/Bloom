@@ -251,6 +251,22 @@ Both menus' shortcuts and an application's own keys (`useWindowKeys`,
 [`Kbd`](/docs/bloom/main/kbd)) come from this one source per window
 (`kbd/window-keys`), menus first.
 
+## `editing`
+
+Not a capability (it changes no presentation): the window's first responder for the standard editing actions, the focused text field, for a platform that knows which it is and what it can do.
+
+```ts
+type PlatformEditAction =
+  'undo' | 'redo' | 'cut' | 'copy' | 'paste' | 'pasteAndMatchStyle' | 'delete' | 'selectAll';
+interface PlatformEditing {
+  getState(): Readonly<Record<PlatformEditAction, boolean>> | null; // null: no text field has focus
+  subscribe(listener: () => void): () => void;
+  perform(action: PlatformEditAction): boolean;
+}
+```
+
+`getState` is an external store's (`useSyncExternalStore`): what the focused field can do now, one flag per action, as `NSTextView`'s `validateMenuItem:` answers, or null while no text field has focus. `subscribe` hears every change of it (focus, the field's text, selection and history, the clipboard). `perform` does the action on the focused field as its own key or context menu row would, citing the person's latest input for the clipboard. A `MenubarItem` with an `action` ([Menubar](/docs/bloom/main/menubar)) uses it: while a field has focus the item is the field's, enabled by its state and performed there; otherwise the application's own item. `usePlatformEditing()` returns it, or null.
+
 ## `files`
 
 Not a capability either: the person's files beyond what `expo-file-system`

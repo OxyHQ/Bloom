@@ -1,5 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { PlatformEditAction } from '../platform-surface/types';
+
 import type {
   MenuCheckboxRowProps,
   MenuGroupProps,
@@ -84,7 +86,26 @@ export interface MenubarShortcutProp {
   shortcut?: string;
 }
 
-export interface MenubarItemProps extends MenuRowProps, MenubarShortcutProp {}
+export interface MenubarItemProps extends MenuRowProps, MenubarShortcutProp {
+  /**
+   * A standard editing action (`copy`, `paste`, `undo`, …), sent to the
+   * focused text field first, as a Mac's Edit menu sends `copy:` to the first
+   * responder and Android's `EditText` takes `onTextContextMenuItem`. While a
+   * text field has focus (the platform's `editing` says so), the item acts on
+   * that field, whatever component it is, and is enabled exactly when the
+   * field can do it now (Copy with a selection, Paste with text on the
+   * clipboard, Undo with an edit to undo); the item's own `onPress` and
+   * `disabled` are not used then. With no text field focused, or on a
+   * platform that does not say, it is an ordinary item: its `onPress` (the
+   * application's own Copy of its selection, say) and `disabled`, and
+   * disabled when it has neither `onPress` nor `href`.
+   *
+   * It gives the item its standard shortcut unless `shortcut` says otherwise:
+   * `Mod+Z`, `Mod+Shift+Z`, `Mod+X`, `Mod+C`, `Mod+V`, `Mod+Alt+Shift+V`
+   * (Paste and Match Style) and `Mod+A`; Delete has none.
+   */
+  action?: PlatformEditAction;
+}
 export interface MenubarCheckboxItemProps extends MenuCheckboxRowProps, MenubarShortcutProp {}
 export type MenubarRadioGroupProps = MenuRadioGroupProps;
 export interface MenubarRadioItemProps extends MenuRadioRowProps, MenubarShortcutProp {}
