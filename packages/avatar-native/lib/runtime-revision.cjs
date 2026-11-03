@@ -1,2 +1,2 @@
 /** Generated from the exact UTF-8 asset-manifest.json bytes, including its final newline. */
-exports.AVATAR_RUNTIME_REVISION = "7e44cfec2bd9e1490fb90270028fd84b12fcbc019f09709af9a1b9187b36b577";
+exports.AVATAR_RUNTIME_REVISION = "6a3685009e50ba3e5776926ed89196d9dbe41d6fb17e13484209ce81049cc890";
