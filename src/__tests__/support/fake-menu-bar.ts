@@ -1,4 +1,7 @@
 import type {
+  PlatformEditAction,
+  PlatformEditing,
+  PlatformEditingState,
   PlatformKeyboard,
   PlatformKeyEvent,
   PlatformMenu,
@@ -92,15 +95,56 @@ export function fakeKeyboard(): FakeKeyboard {
   };
 }
 
-/** An adapter reporting `menu-bar` (and, given one, supplying the keys). */
+export interface FakeEditing extends PlatformEditing {
+  perform: jest.Mock<boolean, [PlatformEditAction]>;
+  /** A text field takes focus, able to do `can` (every other action disabled); null: none has it. */
+  focus(can: readonly PlatformEditAction[] | null): void;
+}
+
+const NOTHING: PlatformEditingState = {
+  undo: false,
+  redo: false,
+  cut: false,
+  copy: false,
+  paste: false,
+  pasteAndMatchStyle: false,
+  delete: false,
+  selectAll: false,
+};
+
+/** A native host's first responder: the focused text field and what it can do. */
+export function fakeEditing(): FakeEditing {
+  const listeners = new Set<() => void>();
+  let state: PlatformEditingState | null = null;
+  return {
+    getState: () => state,
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    perform: jest.fn<boolean, [PlatformEditAction]>((action) => state?.[action] ?? false),
+    focus(can) {
+      state = can
+        ? { ...NOTHING, ...Object.fromEntries(can.map((action) => [action, true])) }
+        : null;
+      for (const listener of [...listeners]) listener();
+    },
+  };
+}
+
+/** An adapter reporting `menu-bar` (and, given them, supplying the keys and the first responder). */
 export function menuBarAdapter(
   menuBar: PlatformMenuBar | undefined,
   keyboard?: PlatformKeyboard,
+  editing?: PlatformEditing,
 ): PlatformSurfaceAdapter {
   return {
     platform: 'test',
     capabilities: new Set(menuBar ? ['menu-bar'] : []),
     ...(menuBar ? { menuBar } : null),
     ...(keyboard ? { keyboard } : null),
+    ...(editing ? { editing } : null),
   };
 }
