@@ -140,11 +140,8 @@ export function PropertyTypeSelector<T extends string = PropertyType>({
           : null}
       </View>
       {error ? (
-        <Text
-          variant="body-2-regular"
-          accessibilityLiveRegion="polite"
-          style={{ color: paint.error }}
-        >
+        // A validation error: an `alert`, said once when it appears.
+        <Text variant="body-2-regular" accessibilityRole="alert" style={{ color: paint.error }}>
           {error}
         </Text>
       ) : null}

@@ -155,7 +155,15 @@ function AgentProgressPlanComponent({
           {/* Mounted before the decision lands, so assistive technology hears it arrive. */}
           <StyledView
             ref={statusRef}
-            role="status"
+            // A decision from elsewhere is said politely as it lands. One the
+            // user pressed for is said by the focus moving here, so the region
+            // stands down for it: a reader says it once, not twice. Both the
+            // role and `aria-live` go, because a `status` role alone still
+            // implies a polite region (and native cannot say `aria-live="off"`).
+            role={moveFocus ? undefined : 'status'}
+            aria-live={moveFocus ? undefined : 'polite'}
+            // The focus target must stay a view of its own on native, live or not.
+            collapsable={false}
             tabIndex={-1}
             style={pending ? undefined : styles.status}
             testID={testID ? `${testID}-status` : undefined}

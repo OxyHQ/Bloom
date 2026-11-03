@@ -1002,6 +1002,12 @@ export function TextFieldLabel({
  * Caption under the field: `text-caption-1-medium`
  * (12/16 500, tracking .15) in `text-secondary`, `text-error-primary` when
  * invalid, 1px top inset, 4px below the shell.
+ *
+ * An invalid hint is the field's error, so it is an `alert` (`docs/field.mdx`
+ * §Errors are said once): a screen reader says it the moment it appears or
+ * changes, interrupting, once. The two are different nodes (`key`), so a hint
+ * that turns into an error APPEARS as one rather than an existing caption
+ * gaining a role, which neither the web nor a native reader reliably reports.
  */
 export function TextFieldHint({
   children,
@@ -1015,8 +1021,10 @@ export function TextFieldHint({
   const palette = useTextFieldPalette();
   return (
     <Text
+      key={invalid ? 'error' : 'hint'}
       variant="caption-1-medium"
       nativeID={nativeID}
+      accessibilityRole={invalid ? 'alert' : undefined}
       style={[
         {
           paddingTop: 1,

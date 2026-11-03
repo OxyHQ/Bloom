@@ -746,11 +746,9 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
             >
               <StyledView className="flex flex-row items-center gap-2">
                 <RiCheckLine width={16} height={16} fill={colors.textSecondary} />
-                <Text
-                  accessibilityRole="alert"
-                  aria-live="polite"
-                  className="text-body-regular text-text-primary"
-                >
+                {/* A confirmation: a polite `status` (RN's Text drops `aria-live`
+                    on native; the role is what reaches it). */}
+                <Text role="status" className="text-body-regular text-text-primary">
                   {replies.notice}
                 </Text>
               </StyledView>

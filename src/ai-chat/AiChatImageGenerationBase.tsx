@@ -400,7 +400,7 @@ function FrameToast({
         }),
   };
   return (
-    <Animated.View role="status" style={[surface, animated]}>
+    <Animated.View role="status" aria-live="polite" style={[surface, animated]}>
       <Text variant="body-2-medium" style={{ textAlign: 'center', color: '#ffffff' }}>
         {message}
       </Text>

@@ -77,6 +77,15 @@ describe('Notification', () => {
     );
   });
 
+  it('states the politeness the role implies, so the card stays a native live region', () => {
+    expect(cardOf(renderNotification())?.props['aria-live']).toBe('polite');
+    expect(cardOf(renderNotification({ status: 'warning' }))?.props['aria-live']).toBe('polite');
+    expect(cardOf(renderNotification({ status: 'error' }))?.props['aria-live']).toBe('assertive');
+    expect(
+      cardOf(renderNotification({ status: 'error', role: 'status' }))?.props['aria-live'],
+    ).toBe('polite');
+  });
+
   it('renders a 40px tinted disc for each status, each a distinct colour', () => {
     const paint = resolveNotificationPaint(buildTheme('blue', 'light'));
     const discs = (['neutral', 'information', 'success', 'warning', 'error'] as const).map(

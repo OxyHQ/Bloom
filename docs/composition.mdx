@@ -225,6 +225,59 @@ sits on a view that keeps its children or on a classified component (a host that
 is never flattened, or one that forwards the role to a checked view). The
 classification is an EQUALITY.
 
+## Live regions: errors, toasts and status
+
+A message Bloom draws is said by a screen reader in one of three ways, as VoiceOver,
+TalkBack and the web's ARIA say them:
+
+- **An `alert` interrupts, once.** It is for what the user just did going wrong: a
+  field's error (`Field`, an invalid `TextFieldHint`, so `CardForm`, `Textarea`,
+  `PhoneInput` and every form that draws one), a file the user picked being refused
+  (`FileUpload`, the artwork uploader), a form's missing pieces, a message that could
+  not be sent, a payment that failed (`PaymentStatusBlock`), an error toast or
+  notification. It sits on the TEXT that holds the
+  message (or a view holding only that text and its glyph), never on a container that
+  also holds controls. Its text is said the moment it appears or changes.
+- **A polite `status` (or `log`) waits its turn.** News the user did not ask to be
+  interrupted by: a tag field being full, a sidebar section that could not load,
+  "Not saved" and "Offline" in a note's status line, an upload's phase, a payment's
+  progress and success, a selection's count, a confirmation, a toast that is not an error, an agent's progress and the
+  entries of its log (a failed tool call too: the reply's own error is what
+  interrupts).
+- **A callout that is part of the page is not live.** `Admonition`, `EmptyState`,
+  `ImportantAlertsCard`, `Announcement`, a notification centre's rows and an empty
+  board column are read where they are. Showing one is not news; a region that spoke
+  every time one rendered would say a page's furniture on top of what the user is
+  doing.
+
+What is on screen when a view first shows is not said, only what appears or changes
+after. So a role on a row that is in the page from the start (a list of
+`Notification` cards) speaks only for the rows that arrive later.
+
+Three rules make this reach native, all invisible on the web:
+
+- **A live view states its politeness.** React Native's renderer flattens a view that
+  carries only a role (a role forms no stacking context; a live region does), so a
+  `role="status"` view never reached the platform. Every live view carries `aria-live`
+  (or `accessibilityLiveRegion`) beside its role.
+- **A live text says so with its role.** React Native's `Text` drops `aria-live`
+  before it reaches native (only `View` maps it to `accessibilityLiveRegion`), so a
+  text is `role="status"` or `accessibilityRole="alert"`.
+- **A message that becomes an error is a new node.** A caption that gains the `alert`
+  role in place is not reliably reported by either platform; `Field` and
+  `TextFieldHint` key the error apart from the description, so it appears.
+
+An explicit politeness wins over the role's (`aria-live="assertive"` on a `status`),
+but `aria-live="off"` cannot silence an `alert` on native: React Native folds `off` into
+"unset". A text that must not interrupt is not an `alert`. A region the focus also
+moves to stands down instead (`AgentProgressPlan`: a decision the user pressed for is
+said by the focus moving to it; one that arrives from elsewhere by the region), so it
+is said once.
+
+`live-region-census.test.ts` reads every native-reachable source for the first two
+rules and pins, by EQUALITY, every element that may be assertive with the reason it may
+interrupt; `LiveRegions.test.tsx` and each family's tests assert the rendered roles.
+
 ## Adoption and remaining work
 
 The [adoption matrix](/docs/adoption-matrix) derives four family-level contracts from source. The previously named Field and controlled-state adaptations now read the shared contracts: selectable domain cards and questionnaire answers inherit Field constraints, and their state uses `useControllableState`. Input OTP still normalizes its value at the component boundary.

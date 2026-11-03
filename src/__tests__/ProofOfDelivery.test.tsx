@@ -269,6 +269,8 @@ describe('the confirm control is never disabled by something missing', () => {
     click(byTestId('p-submit'));
     const alert = byTestId('p-missing');
     expect(alert.getAttribute('role')).toBe('alert');
+    // Stated too: a View with only a role is flattened away on native.
+    expect(alert.getAttribute('aria-live')).toBe('assertive');
     expect(alert.textContent).toBe('One thing is still missing: Who received it.');
   });
 

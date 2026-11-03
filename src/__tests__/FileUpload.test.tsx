@@ -139,7 +139,10 @@ describe('FileUpload', () => {
     );
 
     await pressZone(getByTestId('zone'));
-    expect(getByText('Only PDF, JPG, JPEG, PNG, XLSX files are supported')).toBeTruthy();
+    // An alert: it answers what the user just picked, said once, interrupting.
+    expect(
+      getByText('Only PDF, JPG, JPEG, PNG, XLSX files are supported').props.accessibilityRole,
+    ).toBe('alert');
 
     next = { name: 'huge.pdf', size: 9 * 1024 * 1024 };
     await pressZone(getByTestId('zone'));
@@ -151,6 +154,8 @@ describe('FileUpload', () => {
       jest.advanceTimersByTime(2600);
     });
     expect(queryByText('That file is larger than 8 MB')).toBeNull();
+    // The prompt is back, and it is no alert.
+    expect(getByText(/^Tap to/).props.accessibilityRole).toBeUndefined();
   });
 
   it('exposes only the active status during upload, completion and reset', () => {
@@ -162,6 +167,11 @@ describe('FileUpload', () => {
     );
     const api = render(ui(REPORT, 0));
     expect(api.getByText('Uploading 2.4 MB...')).toBeTruthy();
+    // Each phase line is a polite status, exposed only while it is current.
+    expect(api.getByText('Uploading 2.4 MB...').props.role).toBe('status');
+    expect(
+      api.getByText('Uploaded successfully!', { includeHiddenElements: true }).props.role,
+    ).toBe('status');
     expect(api.queryByText('Uploaded successfully!')).toBeNull();
     expect(api.getByText('Uploaded successfully!', { includeHiddenElements: true })).toBeTruthy();
     api.rerender(ui(REPORT, 100));

@@ -49,6 +49,9 @@ const STATE_ICON = {
   error: RiErrorWarningLine,
 } as const satisfies Record<NoteSaveState, unknown>;
 
+/** The save states that are said: the ones the writer has to act on. */
+const LOUD_SAVE_STATES: ReadonlySet<NoteSaveState> = new Set<NoteSaveState>(['offline', 'error']);
+
 /**
  * One reading of the status line, with its own leading separator.
  *
@@ -122,7 +125,18 @@ export function NoteEditorHeader({
         testID={testID ? `${testID}-state` : undefined}
       >
         <StateIcon width={13} height={13} fill={paint.color} />
-        <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.color }}>
+        {/* Only the readings a writer must hear are live: "Not saved" and
+            "Offline" are a polite `status`, said once when they appear. "Saving…"
+            and "Saved" stay quiet — a document doing what it should is not news,
+            and an autosave would otherwise speak every few seconds of typing. The
+            two are different nodes (`key`), so the loud one APPEARS. */}
+        <Text
+          key={LOUD_SAVE_STATES.has(saveState) ? 'loud' : 'quiet'}
+          variant="caption-1-regular"
+          numberOfLines={1}
+          role={LOUD_SAVE_STATES.has(saveState) ? 'status' : undefined}
+          style={{ color: paint.color }}
+        >
           {labels[saveState]}
         </Text>
       </View>,

@@ -169,7 +169,9 @@ function ArtworkUploaderComponent({
       ) : null}
 
       {error ? (
-        <View testID={id('error')} aria-live="polite" style={styles.errorRow}>
+        // A rejection of the artwork the user just picked: an `alert`, said once,
+        // interrupting. The row holds only the glyph and the message.
+        <View testID={id('error')} role="alert" aria-live="assertive" style={styles.errorRow}>
           <RiErrorWarningLine width={16} height={16} fill={paint.error} />
           <Text variant="body-2-regular" style={[styles.errorText, { color: paint.error }]}>
             {error}

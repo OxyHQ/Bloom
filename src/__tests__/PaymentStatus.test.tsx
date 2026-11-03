@@ -160,6 +160,16 @@ describe('PaymentStatusBlock', () => {
     expect(byTestId('block-amount').textContent).toBe('€48.00');
   });
 
+  it('says its answer when it arrives: a failure as an alert, the rest politely', () => {
+    mount(<PaymentStatusBlock state="authorising" testID="block" />);
+    const authorising = byTestId('block-status');
+    expect(authorising.getAttribute('role')).toBe('status');
+    mount(<PaymentStatusBlock state="paid" testID="block" />);
+    expect(byTestId('block-status').getAttribute('role')).toBe('status');
+    mount(<PaymentStatusBlock state="failed" testID="block" />);
+    expect(byTestId('block-status').getAttribute('role')).toBe('alert');
+  });
+
   it('lets a caller replace that name', () => {
     mount(
       <PaymentStatusBlock

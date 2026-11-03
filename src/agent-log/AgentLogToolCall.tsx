@@ -139,10 +139,12 @@ function AgentLogToolCallComponent({
           <RiArrowRightSLine width={14} height={14} fill={theme.colors.textTertiary} />
         </View>
       ) : null}
-      {/* A live region that exists from the first render, so the change to `Done` or `Failed` is announced. */}
+      {/* A live region that exists from the first render, so the change to `Done` or `Failed` is
+          announced. Polite even for `Failed`: a tool call is one entry of the agent's log, and a run
+          can fail several in a row; the reply's own error (`AgentChat`) is what interrupts. */}
       <View
-        aria-live={failed ? 'assertive' : 'polite'}
-        accessibilityLiveRegion={failed ? 'assertive' : 'polite'}
+        aria-live="polite"
+        accessibilityLiveRegion="polite"
         testID={testID ? `${testID}-status` : undefined}
       >
         <Text style={VISUALLY_HIDDEN}>{statusText}</Text>

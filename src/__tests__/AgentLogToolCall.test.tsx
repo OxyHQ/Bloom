@@ -76,7 +76,7 @@ describe('AgentLogToolCall status', () => {
     expect(getByText('query: bloom')).toBeTruthy();
   });
 
-  it('puts the status in a live region: polite, assertive for a failure', () => {
+  it('puts the status in a live region: polite, even for a failure (a log entry does not interrupt)', () => {
     const { getByTestId, rerender } = renderCall(
       <AgentLogToolCall name="t" status="running" testID="c" />,
     );
@@ -87,7 +87,8 @@ describe('AgentLogToolCall status', () => {
         <AgentLogToolCall name="t" status="error" testID="c" />
       </BloomThemeProvider>,
     );
-    expect(region().props['aria-live']).toBe('assertive');
+    expect(region().props['aria-live']).toBe('polite');
+    expect(region().props.accessibilityLiveRegion).toBe('polite');
   });
 
   it('formats a duration under and over a second', () => {

@@ -133,8 +133,13 @@ const FieldComponent = function Field({
 
         {children}
 
+        {/* The error is an `alert`: said once, interrupting, when it appears or
+            changes. It and the description are different nodes (`key`): a
+            description REPLACED by an error must appear as a new alert, not as
+            the same caption gaining a role. */}
         {hasError ? (
           <Text
+            key="error"
             variant="caption-1-medium"
             nativeID={errorID}
             accessibilityRole="alert"
@@ -144,6 +149,7 @@ const FieldComponent = function Field({
           </Text>
         ) : description != null ? (
           <Text
+            key="description"
             variant="caption-1-medium"
             nativeID={descriptionID}
             style={[hintStyle, { color: disabled ? palette.placeholder : palette.hint }]}

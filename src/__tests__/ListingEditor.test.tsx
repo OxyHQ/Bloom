@@ -251,6 +251,11 @@ describe('OfferingEditor', () => {
     );
     expect(byTestId('o-kinds-error').textContent).toBe('Pick one more');
     expect(byTestId('o-rent-body').textContent).toContain('Enter the monthly rent.');
+    // Each is an alert: said once, interrupting, when it appears.
+    expect(byTestId('o-kinds-error').getAttribute('role')).toBe('alert');
+    expect(byTestId('o-rent-body').querySelector('[role="alert"]')?.textContent).toBe(
+      'Enter the monthly rent.',
+    );
   });
 
   it('restricts the cards to `kinds`', async () => {
@@ -334,6 +339,7 @@ describe('PropertyTypeSelector', () => {
       />,
     );
     expect(container.textContent).toContain('Choose one');
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe('Choose one');
   });
 });
 

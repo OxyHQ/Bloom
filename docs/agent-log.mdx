@@ -80,7 +80,7 @@ Every component takes an optional `reduce`; omitted, it reads the system setting
 | `onPress` | `() => void` | The row becomes a button that opens the result, with a chevron. |
 | `children`, `expanded`, `defaultExpanded`, `onExpandedChange` | | An inline result under the row. Makes the row a disclosure; with `onPress` as well, one press does both. |
 
-The status is carried three ways at once (shimmer or glyph, colour, and a word `Running` / `Done` / `Failed` in a live region: polite, assertive on a failure), so no one of them is load-bearing. A pressable row is a real `<button>` on web with `aria-expanded` and the shared focus ring. Inside `AgentChat`, a message's `toolCalls` render this way.
+The status is carried three ways at once (shimmer or glyph, colour, and a word `Running` / `Done` / `Failed` in a polite live region, a failure too: a tool call is one entry of the agent's log and a run can fail several in a row, so the reply's own error is what interrupts), so no one of them is load-bearing. A pressable row is a real `<button>` on web with `aria-expanded` and the shared focus ring. Inside `AgentChat`, a message's `toolCalls` render this way.
 
 ## The reveal
 

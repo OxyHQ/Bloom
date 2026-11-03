@@ -83,8 +83,11 @@ export function SelectionBar({
       style={[surface, style]}
       testID={testID}
     >
+      {/* The count is a polite `status`. RN's Text drops `aria-live` on native;
+          the role reaches it, and on the web implies the same polite region. */}
       <Text
         variant="body-semibold"
+        role="status"
         aria-live="polite"
         numberOfLines={1}
         style={{ color: paint.text, marginRight: 12, flexShrink: 0 }}

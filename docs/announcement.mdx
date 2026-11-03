@@ -59,6 +59,12 @@ Full height with every part: 12 + 20 + 4 + (20 + 2 + 36) + 12 + 32 + 12 = 150
 Dismissal is self-managed: the card unmounts itself. Persist "seen" state in
 `onClose` if it should stay gone.
 
+## Not a live region
+
+An announcement is a card in its slot, read when the reader reaches it; showing one is
+not news, so it says nothing on its own (see [Composition](/docs/composition)
+§Live regions).
+
 ## Motion
 
 - **Exit**: to opacity 0, scale 0.85, 6px blur over 250ms ease-in-out.

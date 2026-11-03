@@ -314,9 +314,10 @@ function OfferingEditorComponent({
           })}
         </View>
         {errors.kinds ? (
+          // A validation error: an `alert`, said once when it appears.
           <Text
             variant="body-2-regular"
-            accessibilityLiveRegion="polite"
+            accessibilityRole="alert"
             testID={tid('kinds-error')}
             style={{ color: paint.error, marginTop: 8 }}
           >

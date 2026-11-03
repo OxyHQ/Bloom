@@ -80,7 +80,9 @@ hidden, and a control under the trigger that resolves its hint through
 `useDescribedByHint` (Bloom's `Button`, every Field member) says it after its
 own hint, politely. A tooltip equal to the control's name (a dock icon's, which
 shows the application's name) is never said twice: the hint leaves out a text
-equal to the name. The bubble itself is no element for a screen reader. The web
+equal to the name. The bubble is no live region: a `tooltip`, it does not interrupt to
+say what the control's help already says (a phone's tapped bubble is one element a
+reader can move to while it is open; on a platform with popups it is the popup). The web
 is unchanged.
 
 ## `position` is a preference

@@ -131,7 +131,12 @@ export function AgentReplyIdentity({
         </AnimatedView>
       </AnimatedView>
       <StyledView style={{ opacity: avatarHidden ? 0 : 1 }}>
-        <AnimatedView aria-hidden={!thinking} role={thinking ? 'status' : undefined} style={status}>
+        <AnimatedView
+          aria-hidden={!thinking}
+          role={thinking ? 'status' : undefined}
+          aria-live={thinking ? 'polite' : undefined}
+          style={status}
+        >
           <ThinkingLabel variant="body-2-medium" color={colors.textSecondary}>
             {messages.thinking}
           </ThinkingLabel>

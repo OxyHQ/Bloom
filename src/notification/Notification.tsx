@@ -207,10 +207,17 @@ function NotificationComponent({
 
   if (motion.gone) return null;
 
+  // The card is a live region: an `error` interrupts, the rest are polite. A
+  // reader says its text (not its buttons) when it APPEARS or changes; a card
+  // that is on screen from the start — one of a list — is not said as it
+  // renders. `aria-live` states the role's politeness so native has it too.
+  const liveRole = role ?? (status === 'error' ? 'alert' : 'status');
+
   return (
     <Animated.View
       collapsable={false}
-      role={role ?? (status === 'error' ? 'alert' : 'status')}
+      role={liveRole}
+      aria-live={liveRole === 'alert' ? 'assertive' : 'polite'}
       testID={testID}
       style={[
         notificationCardStyle(paint),
