@@ -2,6 +2,25 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.10.0
+
+### Added
+
+- Controlled `CheckoutSheet` and its UI-free model compose review, contact, delivery, payment methods, confirmation, terms and result states. Hosts own quotes, capabilities, authentication and payment processing.
+- Atomic hosted `CardForm` slots reuse canonical labels, errors, disabled membership and TextField chrome while external secure controls retain sensitive card input. Incomplete slots or populated local sensitive values fail closed.
+- `StatusRing` transitions between a supplied brand, progress, success and failure, honoring reduced motion. Optional result artwork and unavailable method explanations remain host-controlled.
+- Dialog bottom placement supports detached geometry, measured fixed or viewport-pinned footers, restrained amount-led headings and navigation titles revealed after the large title scrolls away.
+
+### Fixed
+
+- Processing checkout steps veto dismissal without unmounting provider controls. Quoted totals and tax breakdowns are displayed without recomputation.
+- Panel route fragment updates preserve the route instance while updating its canonical location.
+- Empty billing country values display the selection prompt.
+
+### Consumers
+
+The new checkout family is presentation only; no provider, wallet key custody or payment network is included. Existing dialog and card-form behavior remains the default unless the new options are supplied.
+
 ## 16.9.0
 
 ### Added

@@ -1,5 +1,5 @@
 export { CheckoutSheet } from './CheckoutSheet';
-export type { CheckoutSheetProps } from './CheckoutSheet';
+export type { CheckoutSheetProps } from './types';
 export { checkoutSections, emptyCheckoutDraft, nextCheckoutStep } from './model';
 export type {
   CheckoutStep,
