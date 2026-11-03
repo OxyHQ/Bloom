@@ -919,7 +919,14 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   return (
     <TabsContext.Provider value={contextValue}>
       {fullWidth ? (
-        <View ref={stripRef} {...stripA11y} style={[containerStyle, style]} testID={testID}>
+        // Kept, never flattened: the tab list holds its tabs for an assistive technology.
+        <View
+          ref={stripRef}
+          {...stripA11y}
+          collapsable={false}
+          style={[containerStyle, style]}
+          testID={testID}
+        >
           {isUnderline ? null : indicator}
           {children}
           {isUnderline ? indicator : null}

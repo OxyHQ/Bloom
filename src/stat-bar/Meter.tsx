@@ -115,7 +115,8 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
 
   return (
     <View
-      role={props.role ?? 'meter'}
+      // The two roles spelled out: a meter unless the caller says it measures a task (`MeterRole`).
+      role={props.role === 'progressbar' ? 'progressbar' : 'meter'}
       accessibilityLabel={props.accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}

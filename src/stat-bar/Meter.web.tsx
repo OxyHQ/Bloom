@@ -69,7 +69,7 @@ export const Meter = memo(function Meter(props: AnyMeterProps) {
   return (
     <div
       {...root}
-      role={props.role ?? 'meter'}
+      role={props.role === 'progressbar' ? 'progressbar' : 'meter'}
       aria-label={props.accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}

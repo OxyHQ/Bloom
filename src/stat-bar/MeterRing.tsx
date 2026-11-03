@@ -104,7 +104,7 @@ function MeterRingComponent({
 
   return (
     <View
-      role={role}
+      role={role === 'progressbar' ? 'progressbar' : 'meter'}
       accessibilityLabel={accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}
