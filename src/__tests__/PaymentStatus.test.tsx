@@ -232,3 +232,21 @@ describe('PaymentStatusBlock', () => {
     expect(byTestId('block').style.backgroundColor).toBe('');
   });
 });
+
+it('composes optional artwork and text-only results without changing the default glyph', () => {
+  mount(<PaymentStatusBlock state="paid" testID="result" />);
+  expect(byTestId('result-tile')).toBeTruthy();
+  mount(<PaymentStatusBlock state="paid" showIcon={false} testID="result" />);
+  expect(queryTestId('result-tile')).toBeNull();
+  expect(byTestId('result-status').textContent).toBeTruthy();
+  mount(
+    <PaymentStatusBlock
+      state="failed"
+      showIcon={false}
+      illustration={<span data-testid="artwork">Illustration</span>}
+      testID="result"
+    />,
+  );
+  expect(byTestId('artwork').textContent).toBe('Illustration');
+  expect(queryTestId('result-tile')).toBeNull();
+});

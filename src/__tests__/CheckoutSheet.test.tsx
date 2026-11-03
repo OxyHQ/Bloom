@@ -89,3 +89,15 @@ it('shows navigation chrome only for editable or retry steps', () => {
   view.rerender(<CheckoutSheet {...input} step="processing" />);
   expect(view.queryByTestId('dialog-nav')).toBeNull();
 });
+
+it('keeps result status in the footer and allows host-owned illustrations without a duplicate glyph', () => {
+  const input = props();
+  const view = render(<CheckoutSheet {...input} step="success" />, { wrapper });
+  expect(view.queryByTestId('bloom-checkout-result-tile')).toBeNull();
+  expect(view.getByText('result.success')).toBeTruthy();
+  view.rerender(
+    <CheckoutSheet {...input} step="failure" resultIllustration={<Text>Host artwork</Text>} />,
+  );
+  expect(view.getByText('Host artwork')).toBeTruthy();
+  expect(view.queryByTestId('bloom-checkout-result-tile')).toBeNull();
+});
