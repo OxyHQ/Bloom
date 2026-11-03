@@ -180,12 +180,38 @@ function CheckoutContent(props: CheckoutSheetProps) {
               <GroupedSectionItem
                 title={label('orderTotal')}
                 testID="bloom-checkout-order-total"
-                description={
-                  request.tax
-                    ? `${label('subtotal')}: ${money(request.tax.subtotalMinorUnits)}\n${label(request.tax.inclusive ? 'taxIncluded' : 'tax')}: ${money(request.tax.taxMinorUnits)}`
-                    : undefined
+                content={
+                  request.tax ? (
+                    <View style={{ gap: 4 }}>
+                      <View
+                        style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}
+                      >
+                        <Text variant="body-2-regular" style={muted}>
+                          {label('subtotal')}
+                        </Text>
+                        <Text variant="body-2-regular" style={muted}>
+                          {money(request.tax.subtotalMinorUnits)}
+                        </Text>
+                      </View>
+                      <View
+                        style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}
+                      >
+                        <Text variant="body-2-regular" style={muted}>
+                          {label(request.tax.inclusive ? 'taxIncluded' : 'tax')}
+                        </Text>
+                        <Text variant="body-2-regular" style={muted}>
+                          {money(request.tax.taxMinorUnits)}
+                        </Text>
+                      </View>
+                      <View
+                        style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}
+                      >
+                        <Text variant="body-semibold">{label('orderTotal')}</Text>
+                        <Text variant="body-semibold">{money(request.tax.totalMinorUnits)}</Text>
+                      </View>
+                    </View>
+                  ) : undefined
                 }
-                descriptionLines={0}
                 value={money(
                   request.tax?.totalMinorUnits ??
                     request.totalMinorUnits ??

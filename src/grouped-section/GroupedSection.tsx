@@ -101,6 +101,7 @@ function renderRows(children: React.ReactNode, context: RowsContextValue): React
 export const GroupedSectionItem = memo<GroupedSectionItemProps>(function GroupedSectionItem({
   icon,
   title,
+  content: customContent,
   titleNumberOfLines = 1,
   description,
   descriptionLines = 2,
@@ -138,7 +139,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
   // its title and description are read as text and the control by its own name. Without one it
   // is one element, its title its name and its value its value, never a role-less container
   // named like its title with the same title read again inside it.
-  const staticElement = !onPress && !rightElement;
+  const staticElement = !onPress && !rightElement && customContent === undefined;
 
   const content = (
     <View
@@ -151,28 +152,34 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
     >
       {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
 
-      <View style={styles.textContainer}>
-        <Text
-          style={[styles.title, { color: titleColor }]}
-          numberOfLines={titleNumberOfLines === 0 ? undefined : titleNumberOfLines}
-        >
-          {title}
-        </Text>
-        {description ? (
-          <Text
-            style={[styles.description, { color: theme.colors.textSecondary }]}
-            numberOfLines={descriptionLines === 0 ? undefined : descriptionLines}
-          >
-            {description}
-          </Text>
-        ) : null}
-      </View>
+      {customContent !== undefined ? (
+        <View style={styles.textContainer}>{customContent}</View>
+      ) : (
+        <>
+          <View style={styles.textContainer}>
+            <Text
+              style={[styles.title, { color: titleColor }]}
+              numberOfLines={titleNumberOfLines === 0 ? undefined : titleNumberOfLines}
+            >
+              {title}
+            </Text>
+            {description ? (
+              <Text
+                style={[styles.description, { color: theme.colors.textSecondary }]}
+                numberOfLines={descriptionLines === 0 ? undefined : descriptionLines}
+              >
+                {description}
+              </Text>
+            ) : null}
+          </View>
 
-      {value ? (
-        <Text style={[styles.value, { color: theme.colors.textSecondary }]} numberOfLines={1}>
-          {value}
-        </Text>
-      ) : null}
+          {value ? (
+            <Text style={[styles.value, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+              {value}
+            </Text>
+          ) : null}
+        </>
+      )}
 
       {rightElement}
 
