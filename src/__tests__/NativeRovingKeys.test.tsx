@@ -13,6 +13,7 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { RiSchoolLine, RiSettings6Line } from '../icons/remix';
 import { PlatformSurfaceProvider } from '../platform-surface/context';
 import type { PlatformKeyboard } from '../platform-surface/types';
+import { ChoiceList } from '../choice-list';
 import { RadioGroup } from '../radio';
 import {
   SegmentedControl,
@@ -316,5 +317,108 @@ describe('The settings rail beside its page on a native host with the window key
     press(keyboard, 'Home');
     expect(screen.getByText('general body')).toBeTruthy();
     expect(send).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('A ChoiceList on a native host with the window keys', () => {
+  const ACCOUNTS = [
+    { value: 'ada', label: 'Ada', testID: 'account-ada' },
+    { value: 'bea', label: 'Bea', testID: 'account-bea' },
+    { value: 'cy', label: 'Cy', testID: 'account-cy', disabled: true },
+    { value: 'dee', label: 'Dee', testID: 'account-dee' },
+  ];
+
+  function Accounts({ onChange }: { onChange: (value: string) => void }) {
+    const [value, setValue] = useState('ada');
+    return (
+      <ChoiceList
+        label="Accounts"
+        value={value}
+        onValueChange={(next) => {
+          onChange(next);
+          setValue(next);
+        }}
+        options={ACCOUNTS}
+        renderContent={(option) => <RNText>{option.label}</RNText>}
+        testID="accounts"
+      />
+    );
+  }
+
+  it('is one list, one Tab stop; the arrows move the focus alone, a press chooses', () => {
+    const keyboard = fakeKeyboard();
+    const onChange = jest.fn();
+    const screen = wrap(<Accounts onChange={onChange} />, keyboard);
+    const item = (value: string) => host(screen, `account-${value}`);
+    expect(host(screen, 'accounts').props.role).toBe('list');
+    expect(host(screen, 'accounts').props.accessibilityLabel).toBe('Accounts');
+    expect(ACCOUNTS.map((account) => item(account.value).props.role)).toEqual([
+      'listitem',
+      'listitem',
+      'listitem',
+      'listitem',
+    ]);
+    expect(item('ada').props.accessibilityState).toEqual({ selected: true, disabled: false });
+    expect(item('ada').props.accessibilityLabel).toBe('Ada');
+    const stops = () =>
+      ACCOUNTS.filter((account) => item(account.value).props.focusable === true).map(
+        (account) => account.value,
+      );
+    expect(stops()).toEqual(['ada']);
+    // No arrow is the list's while it has no focus.
+    expect(press(keyboard, 'ArrowRight')).toBe(false);
+    focus(item('ada'));
+    expect(press(keyboard, 'ArrowRight')).toBe(true);
+    // Not chosen: the option moved to is the stop, and the focus goes there.
+    expect(onChange).not.toHaveBeenCalled();
+    expect(stops()).toEqual(['bea']);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0]?.[1]).toBe('focus');
+    // The host's focus lands: the one left blurs first, which leaves the stop where it is.
+    act(() => (item('ada').props.onBlur as () => void)());
+    focus(item('bea'));
+    expect(stops()).toEqual(['bea']);
+    // The disabled option is skipped; a list stops at its end; ↓ is not a row's.
+    press(keyboard, 'ArrowRight');
+    expect(stops()).toEqual(['dee']);
+    act(() => (item('bea').props.onBlur as () => void)());
+    focus(item('dee'));
+    expect(press(keyboard, 'ArrowRight')).toBe(true);
+    expect(press(keyboard, 'ArrowDown')).toBe(false);
+    expect(send).toHaveBeenCalledTimes(2);
+    press(keyboard, 'Home');
+    expect(stops()).toEqual(['ada']);
+    act(() => (item('dee').props.onBlur as () => void)());
+    focus(item('ada'));
+    press(keyboard, 'End');
+    act(() => (item('ada').props.onBlur as () => void)());
+    focus(item('dee'));
+    expect(onChange).not.toHaveBeenCalled();
+    // Space or Return is the host's press of the focused option: it chooses it.
+    fireEvent.press(item('dee'));
+    expect(onChange).toHaveBeenLastCalledWith('dee');
+    expect(item('dee').props.accessibilityState).toEqual({ selected: true, disabled: false });
+    expect(stops()).toEqual(['dee']);
+    // Pressed again, the chosen one is chosen again: going on with it.
+    fireEvent.press(item('dee'));
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it('gives the stop back to the chosen option when the keyboard leaves from another', () => {
+    const keyboard = fakeKeyboard();
+    const screen = wrap(<Accounts onChange={jest.fn()} />, keyboard);
+    const item = (value: string) => host(screen, `account-${value}`);
+    focus(item('ada'));
+    press(keyboard, 'ArrowRight');
+    act(() => (item('ada').props.onBlur as () => void)());
+    focus(item('bea'));
+    // Tab on: the option moved to blurs, and the chosen one is the list's stop again.
+    act(() => (item('bea').props.onBlur as () => void)());
+    expect(
+      ACCOUNTS.filter((account) => item(account.value).props.focusable === true).map(
+        (account) => account.value,
+      ),
+    ).toEqual(['ada']);
+    expect(press(keyboard, 'ArrowRight')).toBe(false);
   });
 });

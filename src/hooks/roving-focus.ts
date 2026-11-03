@@ -179,10 +179,10 @@ export function useRovingTabIndex(
  * The shared keydown for a tab strip or radio group option. Returns whether it
  * handled the key (and so prevented its default).
  *
- * - Arrows (per `orientation`), and Home/End where `homeEnd`, move focus with
- *   wrap-around. With `activate: 'follow'` (automatic activation) the option
- *   focused is also selected; with `'manual'` only focus moves and Enter or
- *   Space selects.
+ * - Arrows (per `orientation`), and Home/End where `homeEnd`, move focus,
+ *   round the ends unless `wrap` is false. With `activate: 'follow'`
+ *   (automatic activation) the option focused is also selected; with
+ *   `'manual'` only focus moves and Enter or Space selects.
  * - Space selects the focused option — the key react-native-web drops.
  */
 export function handleRovingKeyDown(
@@ -193,7 +193,14 @@ export function handleRovingKeyDown(
     orientation,
     homeEnd,
     activate,
-  }: RovingKeyOptions & { selector: string; owner: string; activate: 'follow' | 'manual' },
+    wrap = true,
+  }: RovingKeyOptions & {
+    selector: string;
+    owner: string;
+    activate: 'follow' | 'manual';
+    /** Past the last option is the first (the default); a list stops at its ends. */
+    wrap?: boolean;
+  },
 ): boolean {
   const current = event.currentTarget as HTMLElement | null;
   if (!current || typeof current.closest !== 'function') return false;
@@ -209,7 +216,7 @@ export function handleRovingKeyDown(
   const move = rovingMove(event.key, { orientation, homeEnd, rtl });
   if (move === null) return false;
   const container = current.closest(owner);
-  const target = rovingTarget(rovingItems(container, selector, { owner }), current, move, true);
+  const target = rovingTarget(rovingItems(container, selector, { owner }), current, move, wrap);
   if (!target) return false;
   event.preventDefault();
   target.focus();

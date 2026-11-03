@@ -25,6 +25,13 @@
  *    never hears the option first unchosen and then its new state. A value the
  *    owner refuses leaves the focus where it was.
  *
+ * With `activation: 'manual'` (a chooser whose choice changes what follows it,
+ * as a Mac's login window chooses whose password it asks for, and WAI-ARIA's
+ * manual activation), the arrows move the keyboard focus alone: the option
+ * focused is the group's stop while the keyboard is in the group, and Space or
+ * Return (the host's press of the focused control) chooses it. Leaving the
+ * group makes the chosen option the stop again.
+ *
  * NATIVE WITH A PLATFORM KEYBOARD ONLY. On the web the DOM does all of this
  * (`roving-focus.ts`); on iOS and Android without an adapter there is no
  * window key to hear, so every option stays focusable there, as before.
@@ -63,6 +70,12 @@ export interface NativeRovingGroupOptions<Value extends string> {
   rtl?: boolean;
   /** The whole group is disabled: no option is a stop. */
   disabled?: boolean;
+  /**
+   * `follow` (the default): an arrow chooses the next option, the focus
+   * following the choice. `manual`: an arrow moves the focus alone, and a press
+   * of the focused option (Space, Return) chooses it.
+   */
+  activation?: 'follow' | 'manual';
 }
 
 /** What each option's host view takes: spread it onto the `Pressable`. */
@@ -103,6 +116,10 @@ export function useNativeRovingGroup<Value extends string>(
   focusedRef.current = focused;
   // The option a key chose, until the group's value is it and the focus moved there.
   const pending = useRef<Value | undefined>(undefined);
+  // Manual activation: the option the arrows moved to, the group's stop until the
+  // keyboard leaves it from there.
+  const [moved, setMoved] = useState<Value | undefined>(undefined);
+  const manual = options.activation === 'manual';
 
   const focusOption = useCallback((target: Value) => {
     pending.current = undefined;
@@ -117,7 +134,15 @@ export function useNativeRovingGroup<Value extends string>(
   let stop: Value | undefined;
   if (active && !disabled) {
     const all = enabledItems(options);
-    stop = all.length === 0 ? value : (all.find((item) => item.value === value) ?? all[0])?.value;
+    const at = manual && moved !== undefined ? moved : value;
+    stop =
+      all.length === 0
+        ? at
+        : (
+            all.find((item) => item.value === at) ??
+            all.find((item) => item.value === value) ??
+            all[0]
+          )?.value;
   }
 
   useEffect(() => {
@@ -126,7 +151,7 @@ export function useNativeRovingGroup<Value extends string>(
       if (textEntry || hasOpenFloatingSurface() || event.altKey || event.ctrlKey || event.metaKey) {
         return false;
       }
-      const { orientation, homeEnd, wrap, rtl, select } = latest.current;
+      const { orientation, homeEnd, wrap, rtl, select, activation } = latest.current;
       const move = rovingMove(event.key, { orientation, homeEnd, rtl });
       if (move === null || event.shiftKey) return false;
       const all = enabledItems(latest.current);
@@ -146,11 +171,18 @@ export function useNativeRovingGroup<Value extends string>(
       // The key is the group's even at its end: it goes nowhere else.
       if (target === undefined || target === from) return true;
       pending.current = target;
-      if (latest.current.value === target) focusOption(target);
+      // Manual: the option becomes the stop, and the focus goes to it once it is.
+      if (activation === 'manual') setMoved(target);
+      else if (latest.current.value === target) focusOption(target);
       else select(target);
       return true;
     });
   }, [active, keyboard, focused, focusOption]);
+
+  // Manual: the option moved to is focusable in this commit; the focus goes to it.
+  useLayoutEffect(() => {
+    if (moved !== undefined && pending.current === moved) focusOption(moved);
+  }, [moved, focusOption]);
 
   // The choice landed: the focus follows it in the same commit, so the host
   // and the screen reader see the option chosen and focused together.
@@ -169,7 +201,11 @@ export function useNativeRovingGroup<Value extends string>(
       return {
         focusable: !itemDisabled && item === stop,
         onFocus: () => setFocused(item),
-        onBlur: () => setFocused((current) => (current === item ? undefined : current)),
+        onBlur: () => {
+          setFocused((current) => (current === item ? undefined : current));
+          // Leaving the group from the option moved to: the chosen one is the stop again.
+          setMoved((current) => (current === item ? undefined : current));
+        },
         ref: (node: unknown) => {
           if (node == null) nodes.current.delete(item);
           else nodes.current.set(item, node);

@@ -2108,6 +2108,7 @@ export * from './aspect-ratio';
 export * from './tabs';
 export * from './checkbox';
 export * from './radio';
+export * from './choice-list';
 export * from './accordion/index.web';
 
 // Stat / profile widgets
