@@ -63,6 +63,8 @@ export interface CheckoutSheetProps {
   notice?: ReactNode;
   /** Override prerequisite navigation for a host-supplied payment method. */
   nextStep?: CheckoutStep;
+  /** Advance completed details with the updated draft; defaults to returning to review. */
+  onContinue?(draft: CheckoutDraft): void;
 
   request: CheckoutRequest;
   draft: CheckoutDraft;
@@ -100,6 +102,11 @@ function CheckoutContent(props: CheckoutSheetProps) {
   const money = (amount: number) => formatAmount(amount, request.currency);
   const muted = { color: colors.textSecondary };
   const next = props.nextStep ?? nextCheckoutStep(request, draft);
+  const continueWith = (updated: CheckoutDraft = draft) =>
+    props.onContinue ? props.onContinue(updated) : onStep('review');
+  const required = nextCheckoutStep(request, draft);
+  const confirmationNext =
+    required !== 'review' ? required : next === 'confirmation' ? 'review' : next;
   const cardLabel = draft.card
     ? `${draft.card.brand} ···· ${draft.card.last4}`
     : label('addPayment');
@@ -250,6 +257,41 @@ function CheckoutContent(props: CheckoutSheetProps) {
         </>
       )}
 
+      {step === 'confirmation' && (
+        <>
+          <View style={{ alignItems: 'center', gap: 5 }}>
+            <Text variant="display-3-bold">{money(request.dueTodayMinorUnits)}</Text>
+            <Text variant="body-2-regular" style={muted}>
+              {label('dueToday')}
+            </Text>
+          </View>
+          <GroupedSection>
+            <GroupedSectionItem
+              title={label('section.payment')}
+              description={sectionText.payment}
+              showChevron={false}
+            />
+          </GroupedSection>
+          <Button
+            size="lg"
+            onPress={() =>
+              confirmationNext === 'review' ? onAuthorize() : onStep(confirmationNext)
+            }
+          >
+            {confirmationNext !== 'review'
+              ? label('continue')
+              : request.recurring && request.dueTodayMinorUnits === 0
+                ? label('confirmSubscription')
+                : label('payAmount', { amount: money(request.dueTodayMinorUnits) })}
+          </Button>
+          {notice != null && (
+            <Text variant="caption-1-regular" style={{ ...muted, textAlign: 'center' }}>
+              {notice}
+            </Text>
+          )}
+        </>
+      )}
+
       {step === 'terms' && (
         <>
           <GroupedSection>
@@ -291,7 +333,7 @@ function CheckoutContent(props: CheckoutSheetProps) {
           <Button
             size="lg"
             disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim())}
-            onPress={() => onStep('review')}
+            onPress={() => continueWith()}
           >
             {label('continue')}
           </Button>
@@ -315,7 +357,7 @@ function CheckoutContent(props: CheckoutSheetProps) {
           <Button
             size="lg"
             disabled={Object.values(draft.shipping).some((value) => !value.trim())}
-            onPress={() => onStep('review')}
+            onPress={() => continueWith()}
           >
             {label('continue')}
           </Button>
@@ -339,7 +381,7 @@ function CheckoutContent(props: CheckoutSheetProps) {
               />
             ))}
           </GroupedSection>
-          <Button size="lg" disabled={!draft.delivery} onPress={() => onStep('review')}>
+          <Button size="lg" disabled={!draft.delivery} onPress={() => continueWith()}>
             {label('continue')}
           </Button>
         </>
@@ -370,7 +412,18 @@ function CheckoutContent(props: CheckoutSheetProps) {
                     }
                     onPress={() => {
                       onCard(card);
-                      onStep('review');
+                      continueWith({
+                        ...draft,
+                        card,
+                        paymentSelection:
+                          draft.paymentSelection === undefined
+                            ? undefined
+                            : {
+                                id: card.id,
+                                method: 'card',
+                                label: `${card.brand} ···· ${card.last4}`,
+                              },
+                      });
                     }}
                   />
                 );

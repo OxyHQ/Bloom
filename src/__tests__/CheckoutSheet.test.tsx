@@ -203,3 +203,39 @@ it('renders host account supporting rows only for account checkout and delegates
   expect(onPress).toHaveBeenCalledTimes(1);
   expect(input.onAuthorize).not.toHaveBeenCalled();
 });
+
+it('advances a selected card through the host with its updated draft, never authorizes selection', () => {
+  const input = props();
+  input.step = 'payment';
+  input.onContinue = jest.fn();
+  input.draft.paymentSelection = null;
+  const card = { id: 'card-token', brand: 'Card', last4: '1234', saveForLater: false };
+  input.savedCards = [card];
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  fireEvent.press(view.getByText('Card ···· 1234'));
+  expect(input.onContinue).toHaveBeenCalledWith(
+    expect.objectContaining({
+      card,
+      paymentSelection: expect.objectContaining({ id: 'card-token', method: 'card' }),
+    }),
+  );
+  expect(input.onStep).not.toHaveBeenCalled();
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+});
+it('requires explicit confirmation and still routes missing prerequisites forward', () => {
+  const input = props();
+  input.step = 'confirmation';
+  input.nextStep = 'confirmation';
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  fireEvent.press(view.getByText('continue'));
+  expect(input.onStep).toHaveBeenLastCalledWith('contact');
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+  input.draft.email = 'payer@example.test';
+  input.draft.card = { id: 'card-token', brand: 'Card', last4: '1234', saveForLater: false };
+  view.rerender(<CheckoutSheet {...input} />);
+  expect(view.queryByText('Item')).toBeNull();
+  expect(view.getByText('Card ···· 1234')).toBeTruthy();
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+  fireEvent.press(view.getByText('payAmount'));
+  expect(input.onAuthorize).toHaveBeenCalledTimes(1);
+});

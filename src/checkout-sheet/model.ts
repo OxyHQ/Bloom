@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 /** Merchant-neutral checkout view model. Amounts are quoted minor units, never client prices. */
 export type CheckoutStep =
   | 'review'
+  | 'confirmation'
   | 'contact'
   | 'shipping'
   | 'delivery'

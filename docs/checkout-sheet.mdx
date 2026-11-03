@@ -111,3 +111,10 @@ navigation title appears only after the measured heading has scrolled out, and
 hides when scrolling back. `methodTitle` supplies a method-specific heading;
 method content should not repeat it. Monetary balances can remain prominent
 body content. The host does not register a scroll listener or estimate offsets.
+
+Hosts can use `onContinue(updatedDraft)` to advance completed contact, delivery,
+shipping or saved-card selection to the next prerequisite. Without that callback,
+the existing return-to-review behavior remains. Card selection never authorizes.
+The optional `confirmation` step displays only the selected payment method and
+amount due, with an explicit payment button. Missing prerequisites still route
+forward before authorization; no second order-summary screen is required.
