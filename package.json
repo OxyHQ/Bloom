@@ -2993,6 +2993,20 @@
         "default": "./lib/commonjs/checkout-summary/index.js"
       }
     },
+    "./checkout-sheet": {
+      "react-native": {
+        "types": "./lib/typescript/module/checkout-sheet/index.d.ts",
+        "default": "./src/checkout-sheet/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/checkout-sheet/index.d.ts",
+        "default": "./lib/module/checkout-sheet/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/checkout-sheet/index.d.ts",
+        "default": "./lib/commonjs/checkout-sheet/index.js"
+      }
+    },
     "./delivery-slot": {
       "react-native": {
         "types": "./lib/typescript/module/delivery-slot/index.d.ts",
@@ -4800,6 +4814,9 @@
       ],
       "checkout-summary": [
         "./lib/typescript/module/checkout-summary/index.d.ts"
+      ],
+      "checkout-sheet": [
+        "./lib/typescript/module/checkout-sheet/index.d.ts"
       ],
       "delivery-slot": [
         "./lib/typescript/module/delivery-slot/index.d.ts"
