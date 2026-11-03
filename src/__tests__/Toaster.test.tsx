@@ -441,9 +441,11 @@ describe('ToastOutlet', () => {
     );
     const rear = measuredRows[0]!;
     expect(flattenStyle(rear.props.style).flexShrink).toBe(0);
+    // W14 — natively a clipped viewport is a scroll container, which Yoga lays
+    // out at its content's own height; `hidden` would squeeze the rear card.
     expect(flattenStyle(rear.parent!.props.style)).toMatchObject({
       maxHeight: 54,
-      overflow: 'hidden',
+      overflow: 'scroll',
     });
     expect(toastStore.getSnapshot().toastHeights.tall).toBe(180);
     show(() => toastStore.expand());
@@ -454,11 +456,61 @@ describe('ToastOutlet', () => {
         <ToastOutlet enableStacking duration={Infinity} />
       </BloomThemeProvider>,
     );
+    // Unclipped, the viewport sets no bound at all (`UNSET` is `null`).
     expect(flattenStyle(rear.parent!.props.style)).toMatchObject({
-      maxHeight: 180,
+      maxHeight: null,
       overflow: 'visible',
     });
     expect(toastStore.getSnapshot().toastHeights.tall).toBe(180);
+  });
+
+  /**
+   * W14 — A ROW IS NEVER BOUNDED BY ITS OWN HEIGHT. The measured height feeds
+   * the viewport's `maxHeight` through `visibleHeight`; natively Yoga lays a
+   * bounded, non-scrolling column's children out within the bound, so a viewport
+   * bounded by the row's own (still animating) height squeezed the card, the
+   * squeezed height was measured, and the target moved again. On OxyOS a toast
+   * with a description re-laid itself out ~7 times a second, 77 and 78 in turn,
+   * for as long as it stayed, and the window never went still. Jest runs no
+   * Yoga, so this pins the style that keeps the loop open: a front row, or a
+   * lone one, has no `maxHeight` whatever it measures, on the estimate (70)
+   * and on either side of it.
+   */
+  it.each([
+    ['taller than the estimate', 78],
+    ['the estimate', 70],
+    ['shorter than the estimate', 54],
+  ])('never bounds a lone row by its own height when it measures %s', (_label, height) => {
+    const rendered = renderOutlet({ duration: Infinity });
+    let id: string | number = '';
+    show(() => {
+      id = toast('Copiado', { description: '3 archivos' });
+    });
+    const measured = measuredRowOf(rendered);
+    const viewport = () => flattenStyle(measured.parent!.props.style);
+    expect(viewport()).toMatchObject({ maxHeight: null, overflow: 'visible' });
+
+    act(() => {
+      measured.props.onLayout({ nativeEvent: { layout: { height } } });
+    });
+    expect(toastStore.getSnapshot().toastHeights[id]).toBe(height);
+    expect(viewport()).toMatchObject({ maxHeight: null, overflow: 'visible' });
+
+    // A remeasurement a pixel off (Yoga's pixel grid) changes nothing either.
+    act(() => {
+      measured.props.onLayout({ nativeEvent: { layout: { height: height - 1 } } });
+    });
+    expect(viewport()).toMatchObject({ maxHeight: null, overflow: 'visible' });
+  });
+
+  it('clips with `hidden` on the web, where `scroll` would draw scrollbars (W14)', () => {
+    jest.isolateModules(() => {
+      const isolated = require('react-native') as typeof ReactNative;
+      jest.replaceProperty(isolated.Platform, 'OS', 'web');
+      const { CLIPPING_OVERFLOW } =
+        require('../toast/ToastRow') as typeof import('../toast/ToastRow');
+      expect(CLIPPING_OVERFLOW).toBe('hidden');
+    });
   });
 
   it('ignores a zero height so an unmeasured row keeps the estimate', () => {

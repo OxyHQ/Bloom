@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.12.0
+
+### Fixed
+
+- **A native toast is drawn above the app.** The rows now render inside the same pinned `OverlayRoot` at `TOAST_LAYER_Z` the web host portals. Rendered bare, the rows' own stacking order (front row on top, a negative `zIndex`) was resolved against the app's views once Fabric flattened the paintless positioner, so a toast drew beneath any screen with a background while its text stayed in the accessibility tree. Screen readers now reach toasts after the app's content.
+- **A native toast with a description goes still.** A row's viewport was bounded by the row's own measured height, and Yoga lays a bounded column's children out within the bound, so the card was squeezed, the squeezed height was measured and the bound moved again: on OxyOS the row re-laid out about seven times a second, 77 and 78 in turn, for as long as the toast stayed. A row is now bounded only by a shorter card in front of it; natively that clip is a scroll container, which keeps the card at its own height. A row that has not measured itself is no longer clipped to the 70px estimate as it appears.
+
+### Consumers
+
+No API changes. `ToasterOverlayWrapper` still wraps the native toast layer.
+
 ## 16.11.0
 
 ### Changed

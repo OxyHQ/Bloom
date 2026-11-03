@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react-native';
+import * as Reanimated from 'react-native-reanimated';
 import { Easing } from 'react-native-reanimated';
 
 import { useAnimatedTarget } from '../toast/use-animated-target';
@@ -44,6 +45,41 @@ describe('useAnimatedTarget', () => {
       rerender({ target: 10 });
     });
     expect(result.current).toBe(first);
+  });
+
+  /**
+   * An estimate is no state the user saw (a toast's height before it measured
+   * itself), so the value follows it, and leaves it, without animating. The
+   * mock resolves `withTiming` at once, so what is pinned is whether the hook
+   * asked for an animation at all.
+   */
+  it('follows and leaves an estimated target without animating', () => {
+    const timing = jest.spyOn(Reanimated, 'withTiming');
+    try {
+      const { result, rerender } = renderHook(
+        ({ target, estimated }: { target: number; estimated: boolean }) =>
+          useAnimatedTarget(target, { ...CONFIG, estimated }),
+        { initialProps: { target: Number.POSITIVE_INFINITY, estimated: true } },
+      );
+      act(() => {
+        rerender({ target: 80, estimated: true });
+      });
+      expect(result.current.value).toBe(80);
+      act(() => {
+        rerender({ target: 78, estimated: false });
+      });
+      expect(result.current.value).toBe(78);
+      expect(timing).not.toHaveBeenCalled();
+
+      // Once it rests on a real target, a change animates again.
+      act(() => {
+        rerender({ target: 54, estimated: false });
+      });
+      expect(timing).toHaveBeenCalledTimes(1);
+      expect(timing).toHaveBeenCalledWith(54, expect.objectContaining({ duration: 600 }));
+    } finally {
+      timing.mockRestore();
+    }
   });
 
   it('does not re-assign when the target is unchanged', () => {

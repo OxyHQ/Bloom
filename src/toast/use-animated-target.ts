@@ -38,24 +38,38 @@ export function useAnimatedTarget(
     duration,
     easing,
     from,
+    estimated = false,
   }: {
     duration: number;
     easing: EasingFunctionFactory | ((value: number) => number);
     from?: number;
+    /**
+     * The target is a placeholder (a row's height before it has measured
+     * itself): the value follows it, and leaves it, without animating. A
+     * stand-in is no state the user ever saw, so there is nothing to animate
+     * from.
+     */
+    estimated?: boolean;
   },
 ): SharedValue<number> {
   const value = useSharedValue(from ?? target);
   const isSeeded = useRef(false);
+  const wasEstimated = useRef(estimated);
 
   useLayoutEffect(() => {
+    const leavesEstimate = wasEstimated.current;
+    wasEstimated.current = estimated;
     if (!isSeeded.current) {
       isSeeded.current = true;
       if (from === undefined) {
         return;
       }
+    } else if (estimated || leavesEstimate) {
+      value.value = target;
+      return;
     }
     value.value = withTiming(target, { duration, easing });
-  }, [target, value, duration, easing, from]);
+  }, [target, value, duration, easing, from, estimated]);
 
   return value;
 }
