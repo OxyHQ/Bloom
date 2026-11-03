@@ -4170,7 +4170,7 @@
     "react-native-screens": ">=3.16.0",
     "react-native-svg": ">=13.0.0",
     "react-native-webview": ">=13.0.0",
-    "@oxy.so/bloom-avatar-native": "0.1.1"
+    "@oxy.so/bloom-avatar-native": "workspace:0.1.1"
   },
   "peerDependenciesMeta": {
     "@lottiefiles/dotlottie-react": {
