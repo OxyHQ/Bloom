@@ -381,6 +381,60 @@ export interface PlatformKeyboard {
   subscribe(listener: (event: PlatformKeyEvent) => boolean): () => void;
 }
 
+/**
+ * A standard editing action: what a Mac's Edit menu sends to the first
+ * responder (`undo:`, `cut:`, `pasteAsPlainText:`, …), Android's
+ * `TextView.onTextContextMenuItem` ids (`android.R.id.copy`, …) and
+ * Electron's menu roles. `pasteAndMatchStyle` pastes as plain text, which in a
+ * plain text field is a paste; `delete` deletes the selection.
+ */
+export type PlatformEditAction =
+  | 'undo'
+  | 'redo'
+  | 'cut'
+  | 'copy'
+  | 'paste'
+  | 'pasteAndMatchStyle'
+  | 'delete'
+  | 'selectAll';
+
+/**
+ * Which standard editing actions the first responder can perform now, as
+ * `NSTextView`'s `validateMenuItem:` answers: one flag per action.
+ */
+export type PlatformEditingState = Readonly<Record<PlatformEditAction, boolean>>;
+
+/**
+ * The window's first responder for the standard editing actions: the focused
+ * text field, whatever component it is (Bloom's `TextField`, a bare
+ * `TextInput`), as the platform knows it. Optional and not a capability: it
+ * changes no presentation. A `MenubarItem` with an `action` sends it here
+ * while a field is focused (an Edit menu's Copy copies the field's selection),
+ * and falls back to its own `onPress` when none is. An external store
+ * (`getState` + `subscribe`).
+ */
+export interface PlatformEditing {
+  /**
+   * What the focused text field can do now; null when no text field has focus
+   * (nothing in the window is a text field's first responder). While it is not
+   * null the field is the target of every action, as a Mac's first responder
+   * is of the actions it implements: an action it cannot perform now is
+   * disabled, never passed on.
+   */
+  getState(): PlatformEditingState | null;
+  /**
+   * Calls `listener` whenever `getState()` may have changed: focus, the
+   * field's text, selection or history, the clipboard. Returns the unsubscribe.
+   */
+  subscribe(listener: () => void): () => void;
+  /**
+   * Performs `action` on the focused text field, as its own key or context
+   * menu row would (the clipboard cites the person's latest input). Returns
+   * whether a field performed it.
+   */
+  perform(action: PlatformEditAction): boolean;
+}
+
 /** What the platform's appearance is now (`PlatformAppearance.getState`). */
 export interface PlatformAppearanceState {
   /**
@@ -579,6 +633,8 @@ export interface PlatformSurfaceAdapter {
   readonly appearance?: PlatformAppearance;
   /** The window's key presses, where they do not arrive through a DOM `document`. */
   readonly keyboard?: PlatformKeyboard;
+  /** The focused text field as the standard editing actions' target, where the platform knows it. */
+  readonly editing?: PlatformEditing;
   /** The person's places and the Trash, where the platform has them. */
   readonly files?: PlatformFiles;
   /** Required with `drag-and-drop`: the view that takes drops from any application. */

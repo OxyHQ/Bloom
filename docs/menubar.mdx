@@ -93,7 +93,7 @@ Sub-menus fly out beside their trigger row on web and on a native desktop, and r
 - **The row draws it** for the platform as its trailing hint: `⌘N` and `⇧⌘Z` on a Mac (⌃⌥⇧⌘, then the key), `Ctrl+N` and `Ctrl+Shift+Z` elsewhere. A row's own `trailing` wins. `MenubarShortcut` is still the drawn-only hint (`trailing={<MenubarShortcut>⌘N</MenubarShortcut>}`): its text is not a chord and runs nothing.
 - **Pressing it runs the item** exactly as pressing its row does (a check item toggles, a radio item selects, an open menu closes unless the item `keepOpen`), on every platform, whether its menu is open or closed and whether or not any bar shows it. A held chord runs it once. A disabled item's chord (or one in a disabled menu or submenu) runs nothing and is left to the page.
 - **Who takes a key.** A menu's chord comes before the focused control, as a Mac's key equivalents do, except:
-  - a focused text field keeps what it edits with: every key without Ctrl, Alt or Meta; moving and deleting (the arrows, Home, End, Page Up and Down, Backspace, Delete) with any modifiers; `Mod+C`, `Mod+X`, `Mod+V`, `Mod+A`, `Mod+Z` and `Mod+Shift+Z`; and on Apple platforms Option alone, which types characters. An Edit menu's Copy item acts through the field (the application's own `onPress`);
+  - a focused text field keeps what it edits with: every key without Ctrl, Alt or Meta; moving and deleting (the arrows, Home, End, Page Up and Down, Backspace, Delete) with any modifiers; `Mod+C`, `Mod+X`, `Mod+V`, `Mod+A`, `Mod+Z` and `Mod+Shift+Z`; and on Apple platforms Option alone, which types characters. An Edit menu's item with an `action` acts on the field instead (below);
   - while a menu or a list is open, a key without Ctrl, Alt or Meta is that menu's (its arrows, its typeahead);
   - a key something before it took (`defaultPrevented`), and an input method's composition.
 
@@ -102,6 +102,36 @@ Sub-menus fly out beside their trigger row on web and on a native desktop, and r
 - Several bars in one window share the keys: the first mounted bar with the chord runs it, once.
 
 Matching reads the character typed (`event.key`), and the physical key (`code`) where that character is not the key's name: under Alt (a Mac's Option+N types `˜`), Shift with a digit, and a non-Latin layout. A symbol that needs Shift to be typed (`Mod+?`) matches without `Shift` in the chord; a letter, digit or named key wants exactly the modifiers declared.
+
+## The Edit menu: standard editing actions
+
+An item's `action` makes it a standard editing command, sent to the focused text field first, as a Mac's Edit menu sends `copy:` to the first responder and Android's `EditText` takes `onTextContextMenuItem(android.R.id.copy)`:
+
+```tsx
+<MenubarMenu value="edit">
+  <MenubarTrigger>Edit</MenubarTrigger>
+  <MenubarContent>
+    <MenubarItem action="undo">Undo</MenubarItem>
+    <MenubarItem action="redo">Redo</MenubarItem>
+    <MenubarSeparator />
+    <MenubarItem action="cut">Cut</MenubarItem>
+    <MenubarItem action="copy" onPress={copySelectedFiles} disabled={!selection}>Copy</MenubarItem>
+    <MenubarItem action="paste">Paste</MenubarItem>
+    <MenubarItem action="pasteAndMatchStyle">Paste and Match Style</MenubarItem>
+    <MenubarItem action="delete">Delete</MenubarItem>
+    <MenubarItem action="selectAll">Select All</MenubarItem>
+    <MenubarSeparator />
+    <MenubarItem shortcut="Mod+F" onPress={focusSearch}>Find…</MenubarItem>
+  </MenubarContent>
+</MenubarMenu>
+```
+
+- **The actions:** `undo`, `redo`, `cut`, `copy`, `paste`, `pasteAndMatchStyle` (pastes as plain text: in a plain text field, a paste), `delete` (the selection) and `selectAll` (`PlatformEditAction`).
+- **A text field focused** (any: Bloom's `TextField`, a bare `TextInput`), as the platform's `editing` reports it ([Platform surfaces](/docs/bloom/main/platform-surface)): the field is the item's target. The item is enabled exactly when the field can do it now, as `NSTextView` validates its menu: Undo and Redo with its history, Cut and Delete with a selection in an editable field that is not secure, Copy with a selection in one that is not secure, Paste in an editable field while the clipboard holds text, Select All while it has text. Choosing it performs the action there, as the field's own key or context menu would. The item's `onPress` and `disabled` are not used then: an action the field cannot do now is disabled, not passed to the application, as a Mac's first responder takes the actions it implements.
+- **No text field focused**, or a platform that does not say which is: the item is the application's, its `onPress` (or `href`) and `disabled`, so Dropsea's Copy can copy the selected files; an item with neither is disabled, as an action no responder takes.
+- **Its shortcut** is the action's standard chord unless `shortcut` says otherwise: `Mod+Z`, `Mod+Shift+Z`, `Mod+X`, `Mod+C`, `Mod+V`, `Mod+Alt+Shift+V` and `Mod+A`; Delete has none. A focused field keeps the chords it edits with, so the field acts on them once, itself; Paste and Match Style is no key of the field's, and its chord performs it through the item.
+- **Find** is no editing action: a text field does not claim it (an `NSTextField` has no find bar, nor has `EditText`). Declare it as the application's command, enabled by its own `disabled`.
+- Without the platform's `editing` (the web today) an item with an `action` is an ordinary item with its standard chord.
 
 ## A platform's menu bar (`menu-bar`)
 
