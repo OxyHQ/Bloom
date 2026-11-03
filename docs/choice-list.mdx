@@ -1,0 +1,73 @@
+---
+title: ChoiceList
+description: A few choices, one chosen, whose choice decides what follows: one keyboard stop, the arrows moving, a press choosing.
+order: 31
+---
+
+# ChoiceList
+
+A list of a few choices drawn by the caller — the accounts of a login window,
+the profiles of a player — one of them chosen, the choice deciding what comes
+after the list (whose password is asked for, whose library opens). The list owns
+the keyboard and what a screen reader hears; the caller owns the data and what
+each option looks like.
+
+```tsx
+import { ChoiceList } from '@oxy.so/bloom/choice-list';
+
+<ChoiceList
+  label="Cuentas"
+  value={chosen}
+  onValueChange={choose}
+  options={accounts.map((account) => ({ value: account.user, label: account.name }))}
+  renderContent={(option, { selected }) => (
+    <>
+      <Picture of={option.value} />
+      <Text style={{ fontWeight: selected ? '600' : '400' }}>{option.label}</Text>
+    </>
+  )}
+/>
+```
+
+## Which prop decides what
+
+| prop                      | decides                                                        |
+| ------------------------- | -------------------------------------------------------------- |
+| `label`                   | the list's accessible name — required                          |
+| `value` / `onValueChange` | the choice; the list is controlled                             |
+| `options`                 | the choices, each named by its `label` (`disabled` skips one)  |
+| `renderContent`           | each option's drawn content, decorative, given `selected`      |
+| `orientation`             | `horizontal` (a row, ← →, the default) or `vertical` (↑ ↓)    |
+| `style` / `optionStyle`   | the list's layout (default gap 16) and each option's           |
+
+## The keyboard: the arrows move, a press chooses
+
+The list is ONE keyboard stop, the chosen option. The arrows of its orientation
+move the keyboard focus to the next enabled option without choosing it, stopping
+at the ends; Home and End reach the first and last; a press of the focused
+option — Space or Return, as a pointer's press — chooses it. This is a Mac
+login window's account chooser and WAI-ARIA's manual activation: choosing on
+every arrow, as a [`RadioGroup`](/docs/bloom/main/radio) does, would replace
+what follows the list (another account's password field) under the keyboard at
+each step. Leaving the list from an option the arrows moved to makes the chosen
+one the stop again. A press of the chosen option calls `onValueChange` with the
+value it has: going on with it (Return on a login window's chosen account goes
+to its password).
+
+On a native host that gives Bloom the window's keys (`PlatformKeyboard`,
+OxyOS's Full Keyboard Access) the list is a `list` of `listitem`s, the chosen
+one `selected`, so a screen reader says each option once, with its place
+("Ada Lovelace, seleccionado, 1 de 3"); the arrows are the platform keyboard's
+(`hooks/use-native-roving-group.ts` with `activation: 'manual'`), and the host's
+Space and Return press the focused option. Without such a host every option is
+focusable. On web it is a `listbox` of `option`s (`aria-selected`,
+`aria-orientation`) with the same one stop and keys (`hooks/roving-focus.ts`);
+Enter is react-native-web's press, Space the list's. RTL swaps ← and →.
+
+## What it looks like
+
+Bloom draws no chrome of its own: options sit 16px apart in a row (a column when
+`vertical`), centred, each drawing what `renderContent` returns. A disabled
+option dims to 50%. On web keyboard focus draws a 2px accent outline 2px off the
+option; a native host draws its own ring. Never put controls inside
+`renderContent`: the option is the control.

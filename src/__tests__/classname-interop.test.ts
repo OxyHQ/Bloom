@@ -70,6 +70,9 @@ const CAST_EXEMPTIONS = [
   // The same `dataSet` focus-ring hook.
   'radio/Radio.tsx',
   'segmented-control/SegmentedControl.tsx',
+  // The web-only `listbox` role and `aria-orientation` React Native's types do
+  // not name, and react-native-web's DOM `onKeyDown` on its options.
+  'choice-list/ChoiceList.tsx',
   // Web-only mouse handlers and `disabled` passed through, like `TextField`.
   'input-otp/InputOtp.tsx',
   'textarea/Textarea.tsx',

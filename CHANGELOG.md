@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.8.0
+
+### Added
+
+- **`ChoiceList`: a few choices, one chosen, whose choice decides what follows**, as a login window's accounts. The caller draws each option (`renderContent`, given `selected`) and names it (`label`); the list is ONE keyboard stop, the chosen option, and the arrows of its `orientation` (← → in a row, the default; ↑ ↓ in a column; Home, End) move the keyboard focus without choosing, stopping at the ends, while a press of the focused option (Space, Return, a pointer) chooses it — the chosen one too, as going on with it. Natively it is a `list` of `listitem`s, the chosen one `selected`, so a screen reader says each option once with its place ("Ada Lovelace, seleccionado, 1 de 3"), the arrows the platform keyboard's on a host that gives Bloom the window's keys; on web a `listbox` of `option`s with the same stop and keys. See `docs/choice-list.mdx`.
+- **Manual activation for a native composite's keys**: `useNativeRovingGroup`'s `activation: 'manual'` moves the keyboard focus alone (the option moved to is the stop while the keyboard is in the group, the chosen one again once it leaves), and the web's `handleRovingKeyDown` takes `wrap: false` for a list that stops at its ends.
+
+### Consumers
+
+Nothing to change.
+
 ## 16.7.0
 
 ### Added
