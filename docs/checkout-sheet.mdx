@@ -134,6 +134,8 @@ provider fields mounted (for example, while a host handles authentication).
 It uses the same backdrop, gesture, Escape, native Back and callback guards as
 processing. External `open={false}` and unmount remain host-controlled.
 
-When a numeric tax quote is supplied, one Order total row contains the total
-and its complete subtotal/tax breakdown. The quote does not create separate
-subtotal and tax rows.
+When a numeric tax quote is supplied, one grouped item contains a canonical
+compact subtotal/tax/total breakdown: subtotal first, included/exclusive tax
+second, and emphasized Order total last. Amounts align at the right edge. The
+existing item padding and surface remain unchanged; there is no divider,
+nested card or separate grouped subtotal/tax row.

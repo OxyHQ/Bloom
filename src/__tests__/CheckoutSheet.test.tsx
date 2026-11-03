@@ -1,6 +1,6 @@
 import type React from 'react';
 import { Modal, Text } from 'react-native';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, within } from '@testing-library/react-native';
 import { CheckoutSheet, emptyCheckoutDraft, type CheckoutSheetProps } from '../checkout-sheet';
 import { Dialog } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -250,10 +250,13 @@ it('displays quoted inclusive tax without adding it again to the total due', () 
   };
   input.request.taxDescription = 'fallback';
   const view = render(<CheckoutSheet {...input} />, { wrapper });
-  expect(view.getByText('subtotal: 557 JPY\ntaxIncluded: 42 JPY')).toBeTruthy();
-  expect(view.queryByText('subtotal')).toBeNull();
-  expect(view.queryByText('taxIncluded')).toBeNull();
-  expect(view.getByTestId('bloom-checkout-order-total')).toBeTruthy();
+  const block = within(view.getByTestId('bloom-checkout-order-total'));
+  expect(block.getByText('557 JPY')).toBeTruthy();
+  expect(block.getByText('42 JPY')).toBeTruthy();
+  expect(block.getByText('599 JPY')).toBeTruthy();
+  const rendered = JSON.stringify(view.toJSON());
+  expect(rendered.indexOf('subtotal')).toBeLessThan(rendered.indexOf('taxIncluded'));
+  expect(rendered.indexOf('taxIncluded')).toBeLessThan(rendered.indexOf('orderTotal'));
   expect(view.queryByText('fallback')).toBeNull();
   expect(input.formatAmount).not.toHaveBeenCalledWith(641, 'JPY');
   expect(input.formatAmount).toHaveBeenCalledWith(599, 'JPY');
@@ -272,7 +275,7 @@ it('distinguishes a quoted zero tax from tax that has not been supplied', () => 
       }}
     />,
   );
-  expect(view.getByText('subtotal: 599 JPY\ntaxIncluded: 0 JPY')).toBeTruthy();
+  expect(within(view.getByTestId('bloom-checkout-order-total')).getByText('0 JPY')).toBeTruthy();
 });
 
 it('keeps provider fields mounted while blocking dismissal during host confirmation', () => {
