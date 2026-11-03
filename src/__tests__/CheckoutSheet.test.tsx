@@ -324,8 +324,17 @@ it('centers confirmation and opted-in method headings without changing form head
   input.step = 'confirmation';
   const view = render(<CheckoutSheet {...input} />, { wrapper });
   expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleAlign).toBe('center');
-  view.rerender(<CheckoutSheet {...input} step="method" methodTitleAlign="center" />);
+  expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleVariant).toBe('title-2-semibold');
+  view.rerender(
+    <CheckoutSheet
+      {...input}
+      step="method"
+      methodTitleAlign="center"
+      methodTitleVariant="title-2-semibold"
+    />,
+  );
   expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleAlign).toBe('center');
   view.rerender(<CheckoutSheet {...input} step="contact" methodTitleAlign="center" />);
   expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleAlign).toBeUndefined();
+  expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleVariant).toBeUndefined();
 });

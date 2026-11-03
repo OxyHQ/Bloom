@@ -9,7 +9,7 @@ import { Button } from '../button';
 import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { Dialog, useDialogFrame } from '../dialog';
 import { TextFieldInput } from '../text-field';
-import { Text } from '../typography';
+import { Text, type TypeScaleVariant } from '../typography';
 import { useTheme } from '../theme';
 import { RiMailLine } from '../icons/remix/RiMailLine';
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
@@ -50,6 +50,8 @@ export interface CheckoutSheetProps {
   methodTitle?: string;
   /** Center an amount-led method screen without changing form or picker headings. */
   methodTitleAlign?: 'left' | 'center';
+  /** Optional type-scale token when the method amount, rather than its heading, is primary. */
+  methodTitleVariant?: TypeScaleVariant;
   /** Distinguishes host-owned method substates for the shared size morph. */
   frameKey?: string;
   /** The host selects the content and navigates to the method step. */
@@ -571,6 +573,12 @@ export function CheckoutSheet(props: CheckoutSheetProps) {
                   ? 'center'
                   : step === 'method'
                     ? props.methodTitleAlign
+                    : undefined,
+              largeTitleVariant:
+                step === 'confirmation'
+                  ? 'title-2-semibold'
+                  : step === 'method'
+                    ? props.methodTitleVariant
                     : undefined,
               titleReveal: 'afterTitle',
               showClose: !blocked,
