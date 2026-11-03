@@ -42,7 +42,9 @@ import { CheckoutSheet } from '@oxy.so/bloom/checkout-sheet';
 host handles currency exponents and display preferences. Item amounts are line
 totals including quantity. The optional `taxDescription` is supplied by the
 quote's owner; omission hides that row. Recurring amounts and start dates are
-separate from the amount due today.
+separate from the amount due today. `totalMinorUnits`, when supplied, is the
+independently quoted full order total (for example, for installments). Bloom
+does not derive it from the first payment or a payment count.
 
 `label(key, values)` supplies localized copy. Keys cover `title`, `step.*`,
 `section.*`, field names, delivery options, action labels and `result.*`.
@@ -55,20 +57,24 @@ expiry or security codes. The optional `nextStep` lets a host supply prerequisit
 navigation for an additional payment method; the default helper handles contact,
 shipping, delivery and an available card.
 
-`footer` reserves layout height outside the scroller. Supply its padding; do not
+`footer` reserves bottom content space and floats transparently over the scroller.
+Supply its padding; do not
 position it absolutely or add another scroll container. The shared Dialog measures
 it separately during frame morphs. `onAuthorize` is an event for the host; the
 host owns authorization, pending state, cancellation and completion.
 
 The checkout footer pins to the visible viewport edge during downward dragging,
 clamped inside the moving panel. Navigation chrome appears on editing and retry
-steps; review, processing and success use the body and the shared dismissal paths.
+steps; review and success use the body and the shared dismissal paths. During
+`processing`, backdrop, Escape, native Back, drag dismissal and stale close/back
+callbacks are vetoed. The host can still close through `open={false}` or unmount
+for account changes or application navigation. Hosts should also guard their own
+external close actions while authorizing; this component cannot veto host state.
 
 `resultIllustration` optionally supplies host-owned artwork for result steps.
 The checkout never duplicates the footer status glyph in its body: without artwork,
 result content is text and actions only. Loading can remain text-only while the
 footer carries its progress indicator.
-
 
 ## Account and payment-method composition
 

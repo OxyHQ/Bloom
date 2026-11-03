@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useCallback, useRef, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { PaymentStatusBlock } from '../payment-status';
 import { sizes as iconSizes } from '../icons/shared';
@@ -149,6 +149,13 @@ function CheckoutContent(props: CheckoutSheetProps) {
               value={money(request.items.reduce((total, item) => total + item.amountMinorUnits, 0))}
               showChevron={false}
             />
+            {request.totalMinorUnits !== undefined && (
+              <GroupedSectionItem
+                title={label('orderTotal')}
+                value={money(request.totalMinorUnits)}
+                showChevron={false}
+              />
+            )}
             {request.taxDescription && (
               <GroupedSectionItem
                 title={label('tax')}
@@ -252,7 +259,7 @@ function CheckoutContent(props: CheckoutSheetProps) {
             disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim())}
             onPress={() => onStep('review')}
           >
-            {label('save')}
+            {label('continue')}
           </Button>
         </>
       )}
@@ -276,7 +283,7 @@ function CheckoutContent(props: CheckoutSheetProps) {
             disabled={Object.values(draft.shipping).some((value) => !value.trim())}
             onPress={() => onStep('review')}
           >
-            {label('save')}
+            {label('continue')}
           </Button>
         </>
       )}
@@ -299,7 +306,7 @@ function CheckoutContent(props: CheckoutSheetProps) {
             ))}
           </GroupedSection>
           <Button size="lg" disabled={!draft.delivery} onPress={() => onStep('review')}>
-            {label('save')}
+            {label('continue')}
           </Button>
         </>
       )}
@@ -398,6 +405,14 @@ function CheckoutContent(props: CheckoutSheetProps) {
 /** Controlled checkout composition; this component never authorizes or moves funds itself. */
 export function CheckoutSheet(props: CheckoutSheetProps) {
   const { open, onClose, onBack, step, label, footer } = props;
+  const latest = useRef({ step, onClose, onBack });
+  latest.current = { step, onClose, onBack };
+  const requestClose = useCallback(() => {
+    if (latest.current.step !== 'processing') latest.current.onClose();
+  }, []);
+  const requestBack = useCallback(() => {
+    if (latest.current.step !== 'processing') latest.current.onBack();
+  }, []);
   const hasBack = step !== 'review' && step !== 'processing' && step !== 'success';
   return (
     <Dialog
@@ -406,7 +421,8 @@ export function CheckoutSheet(props: CheckoutSheetProps) {
       detached
       showHandle={false}
       contentPadding={0}
-      onClose={onClose}
+      onClose={requestClose}
+      dismissOnBackdrop={step !== 'processing'}
       panelStyle={{ maxWidth: 540 }}
       header={
         hasBack
@@ -414,14 +430,14 @@ export function CheckoutSheet(props: CheckoutSheetProps) {
               title: label(`step.${step}`),
               largeTitle: false,
               showClose: true,
-              onBack,
+              onBack: requestBack,
             }
           : undefined
       }
       footer={footer}
       footerBehavior="viewport"
     >
-      <CheckoutContent {...props} />
+      <CheckoutContent {...props} onClose={requestClose} onBack={requestBack} />
     </Dialog>
   );
 }

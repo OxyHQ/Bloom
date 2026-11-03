@@ -1,7 +1,8 @@
 import type React from 'react';
-import { Text } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { Modal, Text } from 'react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import { CheckoutSheet, emptyCheckoutDraft, type CheckoutSheetProps } from '../checkout-sheet';
+import { Dialog } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 const wrapper = ({ children }: React.PropsWithChildren) => (
@@ -134,4 +135,28 @@ it('lists allowed methods and keeps the add-card row with or without saved cards
   expect(input.onCard).toHaveBeenCalledWith(card);
   expect(input.onStep).toHaveBeenCalledWith('review');
   expect(view.getByText('addCard')).toBeTruthy();
+});
+
+it('vetoes backdrop, native Back and stale close callbacks while processing, but allows terminal dismissal', () => {
+  const input = props();
+  const view = render(<CheckoutSheet {...input} step="review" />, { wrapper });
+  const earlierClose = view.UNSAFE_getByType(Dialog).props.onClose;
+  view.rerender(<CheckoutSheet {...input} step="processing" />);
+  fireEvent.press(view.getByLabelText('Dismiss'));
+  act(() => view.UNSAFE_getByType(Modal).props.onRequestClose());
+  act(() => earlierClose());
+  expect(input.onClose).not.toHaveBeenCalled();
+  expect(view.getByText('result.processing')).toBeTruthy();
+  view.rerender(<CheckoutSheet {...input} step="failure" />);
+  act(() => earlierClose());
+  expect(input.onClose).toHaveBeenCalledTimes(1);
+});
+it('renders an explicitly quoted full order total separately from the installment due today', () => {
+  const input = props();
+  input.request.totalMinorUnits = 2800;
+  input.request.dueTodayMinorUnits = 700;
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.getByText('orderTotal')).toBeTruthy();
+  expect(input.formatAmount).toHaveBeenCalledWith(2800, 'JPY');
+  expect(input.formatAmount).toHaveBeenCalledWith(700, 'JPY');
 });

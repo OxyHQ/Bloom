@@ -25,6 +25,8 @@ export interface CheckoutRequest {
   merchant: string;
   currency: string;
   dueTodayMinorUnits: number;
+  /** Full quoted order total when distinct from the amount due today. */
+  totalMinorUnits?: number;
   items: CheckoutItem[];
   requiresShipping: boolean;
   /** The host supplies account identity; false removes guest contact collection. */
