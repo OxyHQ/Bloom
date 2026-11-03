@@ -187,6 +187,7 @@ it('reveals the opted-in nav title only after the measured heading leaves and hi
   let controller: ReturnType<typeof useDialogHeaderController> | undefined;
   const header: DialogHeaderConfig = {
     title: 'Payment methods',
+    largeTitleAlign: 'center',
     titleReveal: 'afterTitle',
     largeTitle: true,
   };
@@ -205,6 +206,9 @@ it('reveals the opted-in nav title only after the measured heading leaves and hi
     </BloomThemeProvider>
   );
   const screen = render(draw());
+  expect(StyleSheet.flatten(screen.getByText('Payment methods').props.style).textAlign).toBe(
+    'center',
+  );
   const opacity = () =>
     StyleSheet.flatten(
       screen.getByTestId('dialog-nav-title-block', { includeHiddenElements: true }).props.style,

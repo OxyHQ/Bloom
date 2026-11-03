@@ -43,6 +43,8 @@ export interface DialogHeaderConfig {
    * visible, no collapse) and the content starts flush under the bar.
    */
   largeTitle?: boolean;
+  /** Alignment of the in-content heading; the collapsed navigation title stays centered. */
+  largeTitleAlign?: 'left' | 'center';
   /** Hero content owns its heading/media beneath the nav; nav title reveals on scroll. */
   titleLayout?: 'large' | 'bar' | 'hero';
   /** With a large title, reveal the bar title only after its measured bottom leaves the viewport. */

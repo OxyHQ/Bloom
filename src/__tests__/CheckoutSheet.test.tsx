@@ -318,3 +318,14 @@ it('groups recurring amount and supplied first-payment date after today total ju
   expect(rendered.indexOf('Quoted first payment date')).toBeLessThan(rendered.indexOf('continue'));
   expect(view.getByText('starts')).toBeTruthy();
 });
+
+it('centers confirmation and opted-in method headings without changing form headings', () => {
+  const input = props();
+  input.step = 'confirmation';
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleAlign).toBe('center');
+  view.rerender(<CheckoutSheet {...input} step="method" methodTitleAlign="center" />);
+  expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleAlign).toBe('center');
+  view.rerender(<CheckoutSheet {...input} step="contact" methodTitleAlign="center" />);
+  expect(view.UNSAFE_getByType(Dialog).props.header.largeTitleAlign).toBeUndefined();
+});

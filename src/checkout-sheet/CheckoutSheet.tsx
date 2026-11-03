@@ -48,6 +48,8 @@ export interface CheckoutSheetProps {
   methodContent?: ReactNode;
   /** Heading owned by the shared dialog for a host-specific payment-method screen. */
   methodTitle?: string;
+  /** Center an amount-led method screen without changing form or picker headings. */
+  methodTitleAlign?: 'left' | 'center';
   /** Distinguishes host-owned method substates for the shared size morph. */
   frameKey?: string;
   /** The host selects the content and navigates to the method step. */
@@ -564,6 +566,12 @@ export function CheckoutSheet(props: CheckoutSheetProps) {
                   ? (props.methodTitle ?? label('step.method'))
                   : label(`step.${step}`),
               largeTitle: true,
+              largeTitleAlign:
+                step === 'confirmation'
+                  ? 'center'
+                  : step === 'method'
+                    ? props.methodTitleAlign
+                    : undefined,
               titleReveal: 'afterTitle',
               showClose: !blocked,
               onBack: blocked ? undefined : requestBack,

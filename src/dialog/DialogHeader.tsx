@@ -172,6 +172,7 @@ function configsEqual(a: DialogHeaderConfig | null, b: DialogHeaderConfig | null
     a.titleContent === b.titleContent &&
     a.subtitle === b.subtitle &&
     a.largeTitle === b.largeTitle &&
+    a.largeTitleAlign === b.largeTitleAlign &&
     a.titleLayout === b.titleLayout &&
     a.titleReveal === b.titleReveal &&
     a.left === b.left &&
@@ -278,6 +279,7 @@ export function useDialogHeader(config: DialogHeaderConfig | null | undefined): 
     config?.titleContent,
     config?.subtitle,
     config?.largeTitle,
+    config?.largeTitleAlign,
     config?.titleLayout,
     config?.titleReveal,
     config?.left,
@@ -616,7 +618,13 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
           <>
             <View onLayout={onTitleLayout} testID="dialog-heading-anchor">
               <H1
-                style={[styles.largeTitle, { color: onImage ? ON_IMAGE_TEXT : theme.colors.text }]}
+                style={[
+                  styles.largeTitle,
+                  {
+                    color: onImage ? ON_IMAGE_TEXT : theme.colors.text,
+                    textAlign: config.largeTitleAlign ?? 'left',
+                  },
+                ]}
               >
                 {config.title}
               </H1>
@@ -625,6 +633,7 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
               <Subtitle
                 style={[
                   styles.largeSubtitle,
+                  { textAlign: config.largeTitleAlign ?? 'left' },
                   { color: onImage ? ON_IMAGE_SUBTEXT : theme.colors.textSecondary },
                 ]}
               >
