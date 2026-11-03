@@ -12,6 +12,9 @@ The host supplies the quoted request, draft, current step and callbacks. Bloom
 renders those values and reports interactions; it does not create payments,
 store card details, grant access or decide a provider outcome.
 
+Pure request/draft types and prerequisite helpers are also available from
+`@oxy.so/bloom/checkout-sheet/model`, which imports no UI runtime.
+
 ```tsx
 import { CheckoutSheet } from '@oxy.so/bloom/checkout-sheet';
 

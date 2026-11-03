@@ -315,6 +315,7 @@ const SUBPATHS = /** @type {const} */ ([
   // says it is placed.
   ['./checkout-summary', 'checkout-summary/index.ts'],
   ['./checkout-sheet', 'checkout-sheet/index.ts'],
+  ['./checkout-sheet/model', 'checkout-sheet/model.ts'],
   ['./delivery-slot', 'delivery-slot/index.ts'],
   ['./order-confirmation', 'order-confirmation/index.ts'],
   // Ordering food: the vendor, the dish and the basket.
