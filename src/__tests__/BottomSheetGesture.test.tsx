@@ -1,9 +1,11 @@
-import React, { createRef } from 'react';
+import type React from 'react';
+import { createRef } from 'react';
 import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
+import { CheckoutSheet, emptyCheckoutDraft } from '../checkout-sheet';
 import { Dialog, useDialogControl } from '../dialog';
 
 /**
@@ -224,4 +226,45 @@ it('a controlled centred native Dialog reports a committed swipe-down through on
   act(() => gesture?.onEnd?.({ velocityY: 1500, translationY: 500 }));
   expect(onClose).toHaveBeenCalledTimes(1);
   expect(screen.queryByText('Controlled body')).toBeNull();
+});
+
+it('vetoes a checkout processing swipe through the real shared gesture handler', () => {
+  mockPanGestures.length = 0;
+  const onClose = jest.fn();
+  const view = render(
+    <BloomThemeProvider fonts={false}>
+      <CheckoutSheet
+        open
+        step="processing"
+        direction="forward"
+        request={{
+          merchant: 'Shop',
+          currency: 'USD',
+          dueTodayMinorUnits: 599,
+          items: [],
+          requiresShipping: false,
+          paymentMethods: ['card'],
+        }}
+        draft={emptyCheckoutDraft()}
+        savedCards={[]}
+        label={(key) => key}
+        formatAmount={String}
+        onClose={onClose}
+        onBack={() => {}}
+        onDraft={() => {}}
+        onStep={() => {}}
+        onAuthorize={() => {}}
+        onCard={() => {}}
+      />
+    </BloomThemeProvider>,
+  );
+  expect(mockPanGestures.length).toBeGreaterThan(0);
+  for (const gesture of mockPanGestures) {
+    act(() => {
+      gesture.onUpdate?.({ translationY: 500 });
+      gesture.onEnd?.({ velocityY: 1500, translationY: 500 });
+    });
+  }
+  expect(onClose).not.toHaveBeenCalled();
+  expect(view.getByText('result.processing')).toBeTruthy();
 });
