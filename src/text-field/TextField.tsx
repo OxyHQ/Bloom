@@ -346,12 +346,12 @@ function LeadingAddon({
 }
 
 /** The filled shell behind the input: fill + inset ring for the current state. */
-function Chrome({ invalid }: { invalid: boolean }) {
+function Chrome({ invalid, focused }: { invalid: boolean; focused?: boolean }) {
   const ctx = useTextFieldContext();
   if (ctx.bare) return null;
   const paint = resolveShellPaint(ctx.palette, {
     hovered: ctx.hovered,
-    focused: ctx.focused || ctx.addonFocused,
+    focused: focused ?? (ctx.focused || ctx.addonFocused),
     invalid,
     disabled: ctx.disabled,
   });
@@ -387,7 +387,7 @@ function Chrome({ invalid }: { invalid: boolean }) {
         stateStyle={
           ctx.disabled || invalid
             ? { backgroundColor: 'transparent', borderColor: paint.borderColor }
-            : ctx.focused || ctx.addonFocused
+            : (focused ?? (ctx.focused || ctx.addonFocused))
               ? { borderColor: paint.borderColor }
               : undefined
         }
@@ -661,6 +661,34 @@ export function TextFieldInput({
       {reveal}
 
       <Chrome invalid={invalid} />
+    </>
+  );
+}
+
+/** Shared chrome for an externally hosted control. Never renders or receives input values. */
+export function TextFieldHostedContent({
+  children,
+  focused,
+}: {
+  children: React.ReactNode;
+  focused: boolean;
+}) {
+  const ctx = useTextFieldContext();
+  return (
+    <>
+      <View
+        pointerEvents={ctx.disabled ? 'none' : 'auto'}
+        style={{
+          flex: 1,
+          minWidth: 0,
+          minHeight: TEXT_FIELD_GEOMETRY[ctx.size].height,
+          justifyContent: 'center',
+          zIndex: 20,
+        }}
+      >
+        {children}
+      </View>
+      <Chrome invalid={ctx.invalid} focused={focused && !ctx.disabled} />
     </>
   );
 }

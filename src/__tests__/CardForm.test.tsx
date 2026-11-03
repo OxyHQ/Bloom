@@ -23,6 +23,7 @@ import {
   CARD_FORM_EMPTY_VALUE,
   CardForm,
   CardFormExpiry,
+  CardFormHostedField,
   CardFormNumber,
   CardFormSecurityCode,
   applyCardExpiryEdit,
@@ -54,7 +55,12 @@ import {
 setupHarness();
 
 /** INVENTED schemes. Bloom ships none; these exist only in this file. */
-const AURORA: CardScheme = { id: 'aurora', name: 'Aurora', prefixes: ['7'], lengths: [16] };
+const AURORA: CardScheme = {
+  id: 'aurora',
+  name: 'Aurora',
+  prefixes: ['7'],
+  lengths: [16],
+};
 const MERIDIAN: CardScheme = {
   id: 'meridian',
   name: 'Meridian',
@@ -64,7 +70,12 @@ const MERIDIAN: CardScheme = {
   securityCodeLength: 4,
   securityCodeLabel: 'Card code',
 };
-const HOUSE: CardScheme = { id: 'house', name: 'House', prefixes: ['81'], lengths: [16] };
+const HOUSE: CardScheme = {
+  id: 'house',
+  name: 'House',
+  prefixes: ['81'],
+  lengths: [16],
+};
 const SCHEMES = [AURORA, MERIDIAN];
 
 // ---------------------------------------------------------------------------
@@ -461,4 +472,93 @@ it('allows deletion until an overlong value fits a newly shorter scheme', () => 
   expect(
     applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 012 3456 789', undefined, 16),
   ).toBe('1234 5678 012 3456 789');
+});
+
+describe('hosted secure card field', () => {
+  it('uses shared membership and chrome without creating a native input', () => {
+    mount(
+      <Field label="Secure number" disabled required error="Unavailable">
+        <CardFormHostedField label="Number" focused disabled={false}>
+          {(control) => (
+            <div
+              data-testid="hosted"
+              data-disabled={String(control.disabled)}
+              data-required={String(control.required)}
+              aria-label={control.accessibilityLabel}
+              aria-describedby={control.describedBy}
+            />
+          )}
+        </CardFormHostedField>
+      </Field>,
+    );
+    expect(byTestId('hosted').getAttribute('data-disabled')).toBe('true');
+    expect(byTestId('hosted').getAttribute('data-required')).toBe('true');
+    expect(byTestId('hosted').getAttribute('aria-label')).toBe('Secure number');
+    expect(byTestId('hosted').getAttribute('aria-describedby')).toBeTruthy();
+    expect(root$().querySelector('input')).toBeNull();
+  });
+  it('keeps the provider subtree mounted when focus changes and cleans it on unmount', () => {
+    const cleanup = jest.fn();
+    const start = jest.fn();
+    function Hosted() {
+      React.useEffect(() => {
+        start();
+        return cleanup;
+      }, []);
+      return <div data-testid="provider" />;
+    }
+    const render = (focused: boolean) => (
+      <CardFormHostedField label="Number" focused={focused}>
+        {() => <Hosted />}
+      </CardFormHostedField>
+    );
+    mount(render(false));
+    mount(render(true));
+    expect(start).toHaveBeenCalledTimes(1);
+    expect(cleanup).not.toHaveBeenCalled();
+    mount(<div />);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+  });
+});
+
+it('atomically replaces all sensitive fields while preserving billing fields and constraints', () => {
+  const slot = (label: string) => (
+    <CardFormHostedField label={label} focused={false}>
+      {(control) => (
+        <div data-testid={`secure-${label}`} data-disabled={String(control.disabled)} />
+      )}
+    </CardFormHostedField>
+  );
+  mount(
+    <CardForm
+      disabled
+      hostedFields={{
+        number: slot('number'),
+        expiry: slot('expiry'),
+        securityCode: slot('code'),
+      }}
+      fields={{ name: false, postcode: true }}
+    />,
+  );
+  expect(root$().querySelectorAll('input')).toHaveLength(1);
+  expect(byTestId('secure-number').getAttribute('data-disabled')).toBe('true');
+  expect(byTestId('secure-expiry')).toBeTruthy();
+  expect(byTestId('secure-code')).toBeTruthy();
+});
+it('rejects incomplete hosted slots without mounting an insecure fallback', () => {
+  expect(() =>
+    mount(<CardForm hostedFields={{ number: <div />, expiry: <div />, securityCode: null }} />),
+  ).toThrow('all three secure control');
+  expect(root$().querySelector('input')).toBeNull();
+});
+
+it('refuses sensitive local values in hosted mode', () => {
+  expect(() =>
+    mount(
+      <CardForm
+        value={{ number: 'not-a-card' }}
+        hostedFields={{ number: <div />, expiry: <div />, securityCode: <div /> }}
+      />,
+    ),
+  ).toThrow('cannot receive sensitive local values');
 });

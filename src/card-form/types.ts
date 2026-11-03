@@ -159,6 +159,13 @@ export interface CardFormCountryProps extends Omit<CardFormPartProps, 'placehold
 }
 
 export interface CardFormProps {
+  /** Atomic secure-control slots. All three are required; never falls back to local inputs. */
+  hostedFields?: {
+    number: React.ReactNode;
+    expiry: React.ReactNode;
+    securityCode: React.ReactNode;
+  };
+
   /** Controlled value. */
   value?: Partial<CardFormValue>;
   /** Initial value when uncontrolled. */
