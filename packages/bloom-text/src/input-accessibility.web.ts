@@ -1,10 +1,10 @@
 import { type RefObject, useLayoutEffect } from 'react';
-import type { View } from 'react-native';
+import type { ViewInstance } from './view-ref';
 import type { InputAccessibility } from './input-accessibility';
 
 /** The upstream web input does not forward View accessibility props to its editor. */
 export function useInputAccessibility(
-  ref: RefObject<View | null>,
+  ref: RefObject<ViewInstance | null>,
   props: InputAccessibility,
 ): void {
   const {

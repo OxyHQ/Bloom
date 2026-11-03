@@ -1,9 +1,9 @@
 import type { RefObject } from 'react';
-import type { View } from 'react-native';
+import type { ViewInstance } from './view-ref';
 import type { PasteData } from './types';
 
 /** Native: the platform input pastes on its own; there is no paste to claim. */
 export function usePasteCapture(
-  _ref: RefObject<View | null>,
+  _ref: RefObject<ViewInstance | null>,
   _handler: ((paste: PasteData) => boolean) | undefined,
 ): void {}

@@ -24,6 +24,7 @@ import { InputSync } from './input-sync';
 import { usePasteCapture } from './paste-capture';
 import { useInputAccessibility } from './input-accessibility';
 import type { ActiveMarks, RichTextInputHandle, RichTextInputProps, ToggleableMark } from './types';
+import type { ViewInstance } from './view-ref';
 
 /** Block-level shortcuts belong to the block editor, never to one input. */
 const NO_TEXT_SHORTCUTS: [] = [];
@@ -66,7 +67,7 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
   } = props;
 
   const inputRef = useRef<EnrichedTextInputInstance | null>(null);
-  const wrapperRef = useRef<View | null>(null);
+  const wrapperRef = useRef<ViewInstance | null>(null);
   const focusedRef = useRef(false);
   useKeyCapture(wrapperRef, editable ? onKeyCommand : undefined);
   usePasteCapture(wrapperRef, editable ? onPaste : undefined);
