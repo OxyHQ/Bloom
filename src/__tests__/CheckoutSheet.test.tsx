@@ -250,9 +250,10 @@ it('displays quoted inclusive tax without adding it again to the total due', () 
   };
   input.request.taxDescription = 'fallback';
   const view = render(<CheckoutSheet {...input} />, { wrapper });
-  expect(view.getByText('taxIncluded')).toBeTruthy();
-  expect(view.getByText('42 JPY')).toBeTruthy();
-  expect(view.getByText('557 JPY')).toBeTruthy();
+  expect(view.getByText('subtotal: 557 JPY\ntaxIncluded: 42 JPY')).toBeTruthy();
+  expect(view.queryByText('subtotal')).toBeNull();
+  expect(view.queryByText('taxIncluded')).toBeNull();
+  expect(view.getByTestId('bloom-checkout-order-total')).toBeTruthy();
   expect(view.queryByText('fallback')).toBeNull();
   expect(input.formatAmount).not.toHaveBeenCalledWith(641, 'JPY');
   expect(input.formatAmount).toHaveBeenCalledWith(599, 'JPY');
@@ -271,6 +272,46 @@ it('distinguishes a quoted zero tax from tax that has not been supplied', () => 
       }}
     />,
   );
-  expect(view.getByText('taxIncluded')).toBeTruthy();
-  expect(view.getByText('0 JPY')).toBeTruthy();
+  expect(view.getByText('subtotal: 599 JPY\ntaxIncluded: 0 JPY')).toBeTruthy();
+});
+
+it('keeps provider fields mounted while blocking dismissal during host confirmation', () => {
+  const input = props();
+  input.step = 'card';
+  input.cardEntry = <Text>Secure provider fields</Text>;
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  const fields = view.getByText('Secure provider fields');
+  const close = view.UNSAFE_getByType(Dialog).props.onClose;
+  const back = view.UNSAFE_getByType(Dialog).props.header.onBack;
+  view.rerender(<CheckoutSheet {...input} interactionBlocked />);
+  fireEvent.press(view.getByLabelText('Dismiss'));
+  act(() => {
+    view.UNSAFE_getByType(Modal).props.onRequestClose();
+    close();
+    back();
+  });
+  expect(view.getByText('Secure provider fields')).toBe(fields);
+  expect(input.onClose).not.toHaveBeenCalled();
+  expect(input.onBack).not.toHaveBeenCalled();
+  expect(view.UNSAFE_getByType(Dialog).props.header.showClose).toBe(false);
+  view.rerender(<CheckoutSheet {...input} interactionBlocked={false} />);
+  act(() => close());
+  expect(input.onClose).toHaveBeenCalledTimes(1);
+});
+it('groups recurring amount and supplied first-payment date after today total just before Continue', () => {
+  const input = props();
+  input.request.requiresContact = false;
+  input.accountSummary = { name: 'Buyer account' };
+  input.request.recurring = {
+    amountMinorUnits: 599,
+    interval: 'month',
+    startsOn: 'Quoted first payment date',
+  };
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  const rendered = JSON.stringify(view.toJSON());
+  expect(rendered.indexOf('Buyer account')).toBeLessThan(rendered.indexOf('recurring'));
+  expect(rendered.lastIndexOf('dueToday')).toBeLessThan(rendered.indexOf('recurring'));
+  expect(rendered.indexOf('recurring')).toBeLessThan(rendered.indexOf('Quoted first payment date'));
+  expect(rendered.indexOf('Quoted first payment date')).toBeLessThan(rendered.indexOf('continue'));
+  expect(view.getByText('starts')).toBeTruthy();
 });

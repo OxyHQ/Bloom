@@ -27,6 +27,8 @@ import {
 
 export interface CheckoutSheetProps {
   open: boolean;
+  /** Prevent dismissal while a host operation requires its current fields to remain mounted. */
+  interactionBlocked?: boolean;
   /** Account identity supplied by the host; rendered instead of guest contact collection. */
   accountSummary?: {
     name: string;
@@ -165,24 +167,25 @@ function CheckoutContent(props: CheckoutSheetProps) {
                 }
               />
             ))}
-            <GroupedSectionItem
-              title={label('subtotal')}
-              value={money(
-                request.tax?.subtotalMinorUnits ??
-                  request.items.reduce((total, item) => total + item.amountMinorUnits, 0),
-              )}
-              showChevron={false}
-            />
-            {request.tax && (
+            {!request.tax && (
               <GroupedSectionItem
-                title={label(request.tax.inclusive ? 'taxIncluded' : 'tax')}
-                value={money(request.tax.taxMinorUnits)}
+                title={label('subtotal')}
+                value={money(
+                  request.items.reduce((total, item) => total + item.amountMinorUnits, 0),
+                )}
                 showChevron={false}
               />
             )}
             {(request.tax || request.totalMinorUnits !== undefined) && (
               <GroupedSectionItem
                 title={label('orderTotal')}
+                testID="bloom-checkout-order-total"
+                description={
+                  request.tax
+                    ? `${label('subtotal')}: ${money(request.tax.subtotalMinorUnits)}\n${label(request.tax.inclusive ? 'taxIncluded' : 'tax')}: ${money(request.tax.taxMinorUnits)}`
+                    : undefined
+                }
+                descriptionLines={0}
                 value={money(
                   request.tax?.totalMinorUnits ??
                     request.totalMinorUnits ??
@@ -199,26 +202,6 @@ function CheckoutContent(props: CheckoutSheetProps) {
               />
             )}
           </GroupedSection>
-          {request.recurring && (
-            <View style={{ gap: 7 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text variant="body-2-regular" style={muted}>
-                  {label('recurring')}
-                </Text>
-                <Text variant="body-2-regular">
-                  {money(request.recurring.amountMinorUnits)} / {label(request.recurring.interval)}
-                </Text>
-              </View>
-              {request.recurring.startsOn && (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text variant="body-2-regular" style={muted}>
-                    {label('starts')}
-                  </Text>
-                  <Text variant="body-2-regular">{request.recurring.startsOn}</Text>
-                </View>
-              )}
-            </View>
-          )}
           <GroupedSection>
             {request.requiresContact === false && props.accountSummary ? (
               <>
@@ -255,6 +238,27 @@ function CheckoutContent(props: CheckoutSheetProps) {
               <Text variant="body-semibold">{label('dueToday')}</Text>
               <Text variant="body-semibold">{money(request.dueTodayMinorUnits)}</Text>
             </View>
+            {request.recurring && (
+              <View style={{ gap: 7 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text variant="body-2-regular" style={muted}>
+                    {label('recurring')}
+                  </Text>
+                  <Text variant="body-2-regular">
+                    {money(request.recurring.amountMinorUnits)} /{' '}
+                    {label(request.recurring.interval)}
+                  </Text>
+                </View>
+                {request.recurring.startsOn && (
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text variant="body-2-regular" style={muted}>
+                      {label('starts')}
+                    </Text>
+                    <Text variant="body-2-regular">{request.recurring.startsOn}</Text>
+                  </View>
+                )}
+              </View>
+            )}
             <Button size="lg" onPress={() => (next === 'review' ? onAuthorize() : onStep(next))}>
               {next === 'review'
                 ? request.recurring && request.dueTodayMinorUnits === 0
@@ -506,13 +510,14 @@ function CheckoutContent(props: CheckoutSheetProps) {
 /** Controlled checkout composition; this component never authorizes or moves funds itself. */
 export function CheckoutSheet(props: CheckoutSheetProps) {
   const { open, onClose, onBack, step, label, footer } = props;
-  const latest = useRef({ step, onClose, onBack });
-  latest.current = { step, onClose, onBack };
+  const blocked = step === 'processing' || props.interactionBlocked === true;
+  const latest = useRef({ blocked, onClose, onBack });
+  latest.current = { blocked, onClose, onBack };
   const requestClose = useCallback(() => {
-    if (latest.current.step !== 'processing') latest.current.onClose();
+    if (!latest.current.blocked) latest.current.onClose();
   }, []);
   const requestBack = useCallback(() => {
-    if (latest.current.step !== 'processing') latest.current.onBack();
+    if (!latest.current.blocked) latest.current.onBack();
   }, []);
   const hasBack = step !== 'review' && step !== 'processing' && step !== 'success';
   return (
@@ -523,7 +528,7 @@ export function CheckoutSheet(props: CheckoutSheetProps) {
       showHandle={false}
       contentPadding={0}
       onClose={requestClose}
-      dismissOnBackdrop={step !== 'processing'}
+      dismissOnBackdrop={!blocked}
       panelStyle={{ maxWidth: 540 }}
       header={
         hasBack
@@ -534,8 +539,8 @@ export function CheckoutSheet(props: CheckoutSheetProps) {
                   : label(`step.${step}`),
               largeTitle: true,
               titleReveal: 'afterTitle',
-              showClose: true,
-              onBack: requestBack,
+              showClose: !blocked,
+              onBack: blocked ? undefined : requestBack,
             }
           : undefined
       }

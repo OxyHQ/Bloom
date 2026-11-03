@@ -124,3 +124,16 @@ forward before authorization; no second order-summary screen is required.
 using `taxIncluded` for an included amount or `tax` otherwise. It never adds an
 included amount again or infers a rate. A zero tax quote remains distinct from
 missing tax data; legacy `taxDescription` remains the fallback without a quote.
+
+The review's bottom summary groups today's total, the recurring amount and the
+host-supplied first-payment date immediately before Continue or Pay. Moving the
+date does not reinterpret it as a renewal date.
+
+`interactionBlocked` vetoes user dismissal while keeping the current step and
+provider fields mounted (for example, while a host handles authentication).
+It uses the same backdrop, gesture, Escape, native Back and callback guards as
+processing. External `open={false}` and unmount remain host-controlled.
+
+When a numeric tax quote is supplied, one Order total row contains the total
+and its complete subtotal/tax breakdown. The quote does not create separate
+subtotal and tax rows.
