@@ -184,20 +184,6 @@ function CheckoutContent(props: CheckoutSheetProps) {
               )}
             </View>
           )}
-          {(request.recurring?.renewalTerms || request.recurring?.cancellationTerms) && (
-            <View style={{ gap: 4 }}>
-              {request.recurring.renewalTerms && (
-                <Text variant="body-2-regular" style={muted}>
-                  {request.recurring.renewalTerms}
-                </Text>
-              )}
-              {request.recurring.cancellationTerms && (
-                <Text variant="body-2-regular" style={muted}>
-                  {request.recurring.cancellationTerms}
-                </Text>
-              )}
-            </View>
-          )}
           <GroupedSection>
             {request.requiresContact === false && props.accountSummary ? (
               <GroupedSectionItem
@@ -207,6 +193,9 @@ function CheckoutContent(props: CheckoutSheetProps) {
                 showChevron={false}
               />
             ) : null}
+            {(request.recurring?.renewalTerms || request.recurring?.cancellationTerms) && (
+              <GroupedSectionItem title={label('terms')} onPress={() => onStep('terms')} />
+            )}
             {checkoutSections(request).map((section) => {
               const Icon = sectionIcons[section];
               return (
@@ -239,6 +228,32 @@ function CheckoutContent(props: CheckoutSheetProps) {
               </Text>
             )}
           </View>
+        </>
+      )}
+
+      {step === 'terms' && (
+        <>
+          <GroupedSection>
+            {request.recurring?.renewalTerms && (
+              <GroupedSectionItem
+                title={label('terms.renewal')}
+                description={request.recurring.renewalTerms}
+                descriptionLines={0}
+                showChevron={false}
+              />
+            )}
+            {request.recurring?.cancellationTerms && (
+              <GroupedSectionItem
+                title={label('terms.cancellation')}
+                description={request.recurring.cancellationTerms}
+                descriptionLines={0}
+                showChevron={false}
+              />
+            )}
+          </GroupedSection>
+          <Button size="lg" onPress={() => onStep('review')}>
+            {label('continue')}
+          </Button>
         </>
       )}
 

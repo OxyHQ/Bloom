@@ -8,6 +8,7 @@ export type CheckoutStep =
   | 'payment'
   | 'card'
   | 'method'
+  | 'terms'
   | 'processing'
   | 'success'
   | 'failure';

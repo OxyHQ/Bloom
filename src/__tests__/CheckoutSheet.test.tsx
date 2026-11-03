@@ -160,3 +160,28 @@ it('renders an explicitly quoted full order total separately from the installmen
   expect(input.formatAmount).toHaveBeenCalledWith(2800, 'JPY');
   expect(input.formatAmount).toHaveBeenCalledWith(700, 'JPY');
 });
+
+it('opens supplied terms separately and returns without changing draft or authorizing', () => {
+  const input = props();
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.queryByText('terms')).toBeNull();
+  input.request.recurring = {
+    amountMinorUnits: 599,
+    interval: 'month',
+    renewalTerms: 'Quoted renewal clause',
+    cancellationTerms: 'Quoted cancellation clause',
+  };
+  view.rerender(<CheckoutSheet {...input} />);
+  expect(view.queryByText('Quoted renewal clause')).toBeNull();
+  fireEvent.press(view.getByText('terms'));
+  expect(input.onStep).toHaveBeenLastCalledWith('terms');
+  view.rerender(<CheckoutSheet {...input} step="terms" />);
+  expect(view.getByText('Quoted renewal clause')).toBeTruthy();
+  expect(view.getByText('Quoted cancellation clause')).toBeTruthy();
+  act(() => view.UNSAFE_getByType(Dialog).props.header.onBack());
+  expect(input.onBack).toHaveBeenCalledTimes(1);
+  fireEvent.press(view.getByText('continue'));
+  expect(input.onStep).toHaveBeenLastCalledWith('review');
+  expect(input.onDraft).not.toHaveBeenCalled();
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+});
