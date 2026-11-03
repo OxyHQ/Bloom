@@ -94,7 +94,10 @@ the `adjustable` element (`role="slider"` on web) carrying `aria-valuenow`,
   the pointer route to the same action, and a guest picker of four rows would
   otherwise cost twelve tab stops.
 - **Native** — the value answers the `increment` / `decrement` accessibility
-  actions (swipe up and down on iOS).
+  actions (swipe up and down on iOS), and is the stepper's one keyboard stop
+  (`focusable`): a platform's keyboard focus (OxyOS's Full Keyboard Access)
+  steps it with the arrows through those actions, and the buttons stay out of
+  the Tab order there too.
 
 The label is required in the type because nothing else can name the control:
 it draws a number and two glyphs, and a title beside it is a sibling element.

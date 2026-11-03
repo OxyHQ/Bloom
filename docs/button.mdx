@@ -217,3 +217,13 @@ PageHeader's navigation presentation supplies this local environment. Overlays
 and independent ScreenScopes reset density to default while retaining size,
 tone and panel radius; form controls inside an opened dialog are not navigation
 actions. A scope inside the overlay may deliberately opt in again.
+
+## Out of the keyboard's Tab order
+
+`tabIndex={-1}` leaves a button out of the keyboard's Tab order on both
+platforms (the DOM's `tabIndex` on web; React Native's on native, its
+`focusable`, which a native host's keyboard focus reads), while a pointer and an
+assistive technology still press it. It is for a control whose action the
+keyboard reaches another way: a list's column headers, which a View menu's Sort
+By sorts from the keyboard, as a Mac's table headers are not in the window's key
+view loop. A control the keyboard has no other way to reach keeps its stop.

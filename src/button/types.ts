@@ -193,6 +193,15 @@ export interface ButtonProps {
    */
   accessibilityActions?: ViewProps['accessibilityActions'];
   onAccessibilityAction?: ViewProps['onAccessibilityAction'];
+  /**
+   * Whether the keyboard's Tab stops here: -1 leaves the button out of the Tab
+   * order, a pointer and assistive technologies still pressing it (a list's
+   * column header, sorted from the keyboard by a View menu's Sort By, as a
+   * Mac's table header is not in the key view loop). Both platforms: the DOM's
+   * `tabIndex` on web, React Native's (its `focusable`) on native, which a
+   * native host's keyboard focus reads.
+   */
+  tabIndex?: number;
   hitSlop?: number | { top: number; bottom: number; left: number; right: number };
   testID?: string;
   className?: string;
@@ -274,10 +283,6 @@ export interface ButtonProps {
    * `autoFocus` the button on mount (web only).
    */
   autoFocus?: boolean;
-  /**
-   * `tabIndex` override (web only).
-   */
-  tabIndex?: number;
   /**
    * Stretch the button to fill its container's main axis (web only). Equivalent
    * to passing `className="w-full"`; provided as a prop for ergonomics.

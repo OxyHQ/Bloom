@@ -207,6 +207,62 @@ describe('RadioGroup on a native host with the window keys', () => {
   });
 });
 
+describe('A swatch RadioGroup on a native host with the window keys', () => {
+  const ACCENTS = [
+    { value: 'blue', label: 'Blue', color: '#2563EB', testID: 'accent-blue' },
+    { value: 'teal', label: 'Teal', color: '#0D9488', testID: 'accent-teal' },
+    { value: 'rose', label: 'Rose', color: '#E11D48', testID: 'accent-rose' },
+  ];
+
+  /** The accent a platform keeps: a choice lands only once the platform answers. */
+  function Accents({ onAsk }: { onAsk: (value: string) => void }) {
+    const [value, setValue] = useState('teal');
+    return (
+      <>
+        <RadioGroup
+          label="Accent"
+          variant="swatch"
+          value={value}
+          onValueChange={onAsk}
+          options={ACCENTS}
+        />
+        <RNText testID="land" onPress={() => setValue('rose')}>
+          land
+        </RNText>
+      </>
+    );
+  }
+
+  it('is one Tab stop on the chosen swatch, each a named radio, the arrows choosing the next', () => {
+    const keyboard = fakeKeyboard();
+    const onAsk = jest.fn();
+    const screen = wrap(<Accents onAsk={onAsk} />, keyboard);
+    const swatch = (value: string) => host(screen, `accent-${value}`);
+    expect(ACCENTS.map((accent) => swatch(accent.value).props.accessibilityRole)).toEqual([
+      'radio',
+      'radio',
+      'radio',
+    ]);
+    expect(swatch('teal').props.accessibilityLabel).toBe('Teal');
+    expect(swatch('teal').props['aria-checked']).toBe(true);
+    const stops = () =>
+      ACCENTS.filter((accent) => swatch(accent.value).props.focusable === true).map(
+        (accent) => accent.value,
+      );
+    expect(stops()).toEqual(['teal']);
+    focus(swatch('teal'));
+    expect(press(keyboard, 'ArrowRight')).toBe(true);
+    expect(onAsk).toHaveBeenLastCalledWith('rose');
+    // Not chosen until the platform says so: neither the stop nor the focus moves.
+    expect(stops()).toEqual(['teal']);
+    expect(send).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByTestId('land'));
+    expect(stops()).toEqual(['rose']);
+    expect(swatch('rose').props['aria-checked']).toBe(true);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('The settings rail beside its page on a native host with the window keys', () => {
   const GROUPS: SettingsNavGroup[] = [
     {

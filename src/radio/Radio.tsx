@@ -32,6 +32,7 @@ import { RadioIndicator } from '../radio-indicator';
 import { useFieldMembership } from '../field/membership';
 import { RadioCard } from './RadioCard';
 import { RadioChip } from './RadioChip';
+import { RadioSwatch } from './RadioSwatch';
 import { RadioHost, RadioGroupHost, RadioLabel } from './RadioHost';
 import type { RadioGroupProps, RadioProps } from './types';
 import { IS_WEB } from '../styles/platform';
@@ -313,6 +314,8 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
     { size: 'md', tone: variant === 'chip' ? 'neutral' : 'accent' },
   );
   const size = scopedSize;
+  // A swatch option with no colour of its own shows the accent.
+  const theme = useTheme();
   const rtl = useIsRtl();
   const direction = useDirectionProps();
   const nodes = useRef(new Map<string, React.RefObject<ComponentRef<typeof View> | null>>());
@@ -399,7 +402,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
         style={[
           !className && {
             gap: space.sm,
-            ...(variant === 'chip'
+            ...(variant === 'chip' || variant === 'swatch'
               ? { flexDirection: 'row' as const, flexWrap: 'wrap' as const }
               : {}),
           },
@@ -425,7 +428,24 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
               ? optionLabelClassName(state)
               : optionLabelClassName;
           const ownedControl =
-            variant === 'chip' ? (
+            variant === 'swatch' ? (
+              <RadioSwatch
+                key={option.value}
+                value={option.value}
+                color={option.color ?? theme.colors.primary}
+                foreground={option.foreground}
+                checked={checked}
+                onValueChange={onValueChange}
+                label={option.label}
+                accessibilityLabel={option.accessibilityLabel}
+                description={option.description}
+                disabled={optionDisabled}
+                size={size}
+                style={optionStyle}
+                className={optionClasses}
+                testID={option.testID}
+              />
+            ) : variant === 'chip' ? (
               <RadioChip
                 key={option.value}
                 value={option.value}

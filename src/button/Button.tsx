@@ -391,6 +391,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
     'aria-current': ariaCurrent,
     'aria-expanded': ariaExpanded,
     'aria-haspopup': ariaHasPopup,
+    tabIndex,
   },
   ref,
 ) {
@@ -593,6 +594,11 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
       aria-hidden={ariaHidden}
       accessibilityElementsHidden={accessibilityElementsHidden}
       importantForAccessibility={importantForAccessibility}
+      // React Native's own `tabIndex`: -1 leaves the button out of the
+      // keyboard's Tab order (its `focusable`, which a native host's keyboard
+      // focus reads), as the DOM's does on web; a pointer and an assistive
+      // technology still press it.
+      {...(tabIndex === undefined ? {} : { tabIndex: tabIndex < 0 ? (-1 as const) : (0 as const) })}
       className={className}
       baseStyle={baseStyles}
       style={style}

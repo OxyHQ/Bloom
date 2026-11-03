@@ -52,10 +52,27 @@ export interface RadioChipProps<Value extends string = string> extends RadioProp
   appearance?: BloomAppearance;
 }
 
+/**
+ * A radio that is its colour (an accent colour picker's choice). Nothing is
+ * drawn beside it: `label` or `accessibilityLabel` is the colour's NAME, said
+ * by a screen reader, and `description` its hint.
+ */
+export interface RadioSwatchProps<Value extends string = string>
+  extends Omit<RadioProps<Value>, 'labelContent' | 'labelClassName' | 'labelStyle' | 'tone'> {
+  /** The colour the swatch shows. */
+  color: string;
+  /** The chosen swatch's centre dot: a colour readable on `color`. Default white. */
+  foreground?: string;
+}
+
 /** One option, as data, for {@link RadioGroupProps}. */
 export interface RadioOption<Value extends string = string> {
   value: Value;
   label?: string;
+  /** `variant="swatch"`: the colour the option shows (its `label` is the colour's name). */
+  color?: string;
+  /** `variant="swatch"`: the chosen option's centre dot, readable on `color`. Default white. */
+  foreground?: string;
   /** Decorative layout inside the radio; interactive siblings belong in renderOption. */
   labelContent?: ReactNode;
   accessibilityLabel?: string;
@@ -116,9 +133,11 @@ export interface RadioGroupProps<Value extends string = string> {
    * `default` renders each option as a `Radio` row; `card` as a `RadioCard`
    * (title + description left, the dot right, the whole
    * card selectable). `chip` renders a wrapping row of pill-shaped radios
-   * without an indicator. A card's title is the option's `label`.
+   * without an indicator. `swatch` renders a wrapping row of `RadioSwatch`
+   * discs, each its option's `color`, named by its `label`. A card's title is
+   * the option's `label`.
    */
-  variant?: 'default' | 'card' | 'chip';
+  variant?: 'default' | 'card' | 'chip' | 'swatch';
   testID?: string;
 }
 
