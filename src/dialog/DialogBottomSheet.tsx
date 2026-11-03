@@ -66,6 +66,7 @@ export function DialogBottomSheet({
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
   detached = false,
   footer,
+  footerBehavior,
   progress,
   showHandle = true,
   dismissOnBackdrop = true,
@@ -274,6 +275,7 @@ export function DialogBottomSheet({
     <BottomSheet
       detached={detached}
       footer={fixedFooter.node}
+      footerBehavior={footerBehavior}
       backdrop={backdrop}
       transition={transition}
       material={surfaceMaterial}
@@ -434,6 +436,7 @@ export type DialogBottomSheetProps = DialogPresentationLifecycle &
     | 'maxHeightRatio'
     | 'detached'
     | 'footer'
+    | 'footerBehavior'
     | 'progress'
     | 'showHandle'
     | 'dismissOnBackdrop'

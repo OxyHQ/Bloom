@@ -196,6 +196,7 @@ function CenteredOrSideDialog({
   label,
   children,
   footer,
+  footerBehavior,
 }: Omit<DialogProps, 'placement'> &
   DialogPresentationLifecycle & { placement: 'center' | DialogSidePlacement }) {
   const isControlled = controlledOpen !== undefined;
@@ -517,6 +518,7 @@ function CenteredOrSideDialog({
 
   return (
     <BottomSheet
+      footerBehavior={footerBehavior}
       footer={fixedFooter.node}
       backdrop={backdrop}
       transition={transition}

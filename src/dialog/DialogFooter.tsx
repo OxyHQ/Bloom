@@ -11,6 +11,7 @@ export function useDialogFooter(footer: React.ReactNode) {
     node: present ? (
       <View
         testID="bloom-dialog-footer"
+        pointerEvents="box-none"
         style={{ flexShrink: 0 }}
         onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
       >

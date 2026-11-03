@@ -301,6 +301,8 @@ export type DialogProps = React.PropsWithChildren<{
   detached?: boolean;
   /** Fixed content below the scrolling body, inside the modal surface. Owns its padding. */
   footer?: React.ReactNode;
+  /** Bottom sheets: keep the footer at the visible viewport edge during downward dragging. */
+  footerBehavior?: 'sheet' | 'viewport';
   /** Side-sheet width (px) on wide screens. Defaults to `460`. */
   width?: number;
   /** Minimum space beyond a side sheet and its insets. Defaults to 24; zero permits full viewport width. */

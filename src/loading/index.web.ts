@@ -13,3 +13,5 @@ export type {
   TopLoadingProps,
   InlineLoadingProps,
 } from './types';
+export { StatusRing } from './StatusRing';
+export type { StatusRingProps } from './StatusRing';

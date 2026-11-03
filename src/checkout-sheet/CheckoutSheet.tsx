@@ -88,7 +88,12 @@ function CheckoutContent(props: CheckoutSheetProps) {
   return (
     <View
       testID="bloom-checkout-step"
-      style={{ paddingHorizontal: 20, paddingBottom: 20, gap: 16 }}
+      style={{
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        paddingTop: ['review', 'processing', 'success'].includes(step) ? 20 : 0,
+        gap: 16,
+      }}
     >
       {step === 'review' && (
         <>
@@ -332,15 +337,21 @@ export function CheckoutSheet(props: CheckoutSheetProps) {
       placement="bottom"
       detached
       showHandle={false}
+      contentPadding={0}
       onClose={onClose}
       panelStyle={{ maxWidth: 540 }}
-      header={{
-        title: label(step === 'review' ? 'title' : `step.${step}`),
-        largeTitle: false,
-        showClose: true,
-        onBack: hasBack ? onBack : undefined,
-      }}
+      header={
+        hasBack
+          ? {
+              title: label(`step.${step}`),
+              largeTitle: false,
+              showClose: true,
+              onBack,
+            }
+          : undefined
+      }
       footer={footer}
+      footerBehavior="viewport"
     >
       <CheckoutContent {...props} />
     </Dialog>
