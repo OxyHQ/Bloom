@@ -586,3 +586,20 @@ it('renders detached bottom placement on the same web modal surface', () => {
   expect(panel.contains(byTestId('detached-input'))).toBe(true);
   expect(document.querySelector('[data-testid="dialog-sheet-safe-area"]')).toBeNull();
 });
+
+it.each(['bottom', 'center', 'left'] as const)(
+  'includes a fixed footer inside the %s modal keyboard boundary',
+  (placement) => {
+    mount(
+      <Dialog
+        open
+        placement={placement}
+        label="Footer dialog"
+        footer={<TextInput testID="footer-control" />}
+      >
+        <Text>Body</Text>
+      </Dialog>,
+    );
+    expect(dialogNamed('Footer dialog').contains(byTestId('footer-control'))).toBe(true);
+  },
+);

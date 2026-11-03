@@ -88,6 +88,7 @@ export interface CenteredCardProps {
   scrollY?: SharedValue<number>;
   /** Drawn over the scrolling body, clipped to the card (a sticky nav header). */
   headerOverlay?: React.ReactNode;
+  footer?: React.ReactNode;
   onLayout?: (event: LayoutChangeEvent) => void;
   style?: StyleProp<AnimatedStyle<ViewStyle>>;
   accessibilityLabel?: string;
@@ -122,6 +123,7 @@ export const CenteredCard = forwardRef(
       scrollable = true,
       scrollY,
       headerOverlay,
+      footer,
       onLayout,
       style,
       accessibilityLabel,
@@ -351,6 +353,7 @@ export const CenteredCard = forwardRef(
                   ) : (
                     <View style={styles.bounded}>{body}</View>
                   )}
+                  {footer != null && <View style={{ flexShrink: 0 }}>{footer}</View>}
                   {headerOverlay}
                 </SurfaceLevelProvider>
               </View>

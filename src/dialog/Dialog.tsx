@@ -3,6 +3,7 @@ import {
   usePresentationSession,
   type DialogPresentationLifecycle,
 } from './use-presentation-session';
+import { useDialogFooter } from './DialogFooter';
 import { CenteredCard } from './CenteredCard';
 import { BloomColorScope } from '../theme/color-scope/ColorScope';
 import {
@@ -193,6 +194,7 @@ function CenteredOrSideDialog({
   containerClassName,
   label,
   children,
+  footer,
 }: Omit<DialogProps, 'placement'> &
   DialogPresentationLifecycle & { placement: 'center' | DialogSidePlacement }) {
   const isControlled = controlledOpen !== undefined;
@@ -212,7 +214,9 @@ function CenteredOrSideDialog({
   // have no size to morph, so they never pin (`measurable: false`). The card's
   // own `maxHeight` (inside `BottomSheet`) does the exact capping — the viewport
   // is just the bound the reshape may not exceed.
+  const fixedFooter = useDialogFooter(footer);
   const morphState = useDialogMorph({
+    footerHeight: fixedFooter.height,
     enabled: morph !== false && !isSide,
     measurable: scrollableResolved && !isSide,
     maxWidth: desktop ? maxWidth : undefined,
@@ -394,6 +398,7 @@ function CenteredOrSideDialog({
     return (
       <Context.Provider value={context}>
         <SideSheet
+          footer={fixedFooter.node}
           backdrop={backdrop}
           transition={transition}
           material={surfaceMaterial}
@@ -470,6 +475,7 @@ function CenteredOrSideDialog({
   if (desktop) {
     return (
       <CenteredCard
+        footer={fixedFooter.node}
         backdrop={backdrop}
         transition={transition}
         material={surfaceMaterial}
@@ -504,6 +510,7 @@ function CenteredOrSideDialog({
 
   return (
     <BottomSheet
+      footer={fixedFooter.node}
       backdrop={backdrop}
       transition={transition}
       material={surfaceMaterial}
@@ -589,6 +596,7 @@ function SideSheet({
   containerClassName,
   style,
   children,
+  footer,
 }: {
   material?: DialogProps['material'];
   backdrop?: DialogProps['backdrop'];
@@ -619,6 +627,7 @@ function SideSheet({
   containerClassName?: string;
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   const motion = useSurfaceTransition(transition);
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
@@ -838,6 +847,7 @@ function SideSheet({
               {surfaceChildren}
             </View>
           )}
+          {footer != null && <View style={{ flexShrink: 0 }}>{footer}</View>}
         </SurfaceLevelProvider>
       </AnimatedStyledView>
     </OverlayRoot>

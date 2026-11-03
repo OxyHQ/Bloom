@@ -299,6 +299,8 @@ export type DialogProps = React.PropsWithChildren<{
    * and side gutters. Defaults to `false`; other placements are unchanged.
    */
   detached?: boolean;
+  /** Fixed content below the scrolling body, inside the modal surface. Owns its padding. */
+  footer?: React.ReactNode;
   /** Side-sheet width (px) on wide screens. Defaults to `460`. */
   width?: number;
   /** Minimum space beyond a side sheet and its insets. Defaults to 24; zero permits full viewport width. */

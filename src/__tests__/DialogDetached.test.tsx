@@ -61,3 +61,45 @@ it('retains the detached surface and input while the public frame changes', () =
   expect(view.getByTestId('bloom-dialog-frame-content')).toBeTruthy();
   expect(panel(view.toJSON()).marginBottom).toBe(28);
 });
+
+it.each(['bottom', 'center', 'left'] as const)(
+  'keeps a fixed footer outside the %s scroll body',
+  (placement) => {
+    const view = render(
+      <Dialog open placement={placement} detached footer={<Text>Fixed footer</Text>}>
+        <Text>Scrolling body</Text>
+      </Dialog>,
+      { wrapper },
+    );
+    let ancestor = view.getByText('Fixed footer').parent;
+    while (ancestor) {
+      expect(ancestor.type).not.toBe('Animated.ScrollView');
+      ancestor = ancestor.parent;
+    }
+    expect(view.getByText('Scrolling body')).toBeTruthy();
+  },
+);
+
+it('clips the header to the detached surface corners without clipping the shadow host', () => {
+  const view = render(
+    <Dialog
+      open
+      placement="bottom"
+      detached
+      header={{ title: 'Payment', largeTitle: false }}
+      panelStyle={{ maxWidth: 540 }}
+    >
+      <Text>Body</Text>
+    </Dialog>,
+    { wrapper },
+  );
+  const clip = view.getByTestId('bloom-sheet-header-clip');
+  expect(resolvedStyle(clip.props.style)).toMatchObject({
+    position: 'absolute',
+    overflow: 'hidden',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  });
+  expect(clip.props.pointerEvents).toBe('box-none');
+  expect(panel(view.toJSON()).overflow).not.toBe('hidden');
+});

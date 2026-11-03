@@ -259,6 +259,8 @@ export interface DialogMorphOptions {
    * height one. `undefined` on placements whose width is fixed.
    */
   maxWidth?: number;
+  /** Measured fixed chrome outside the scroll body. */
+  footerHeight?: number;
 }
 
 /**
@@ -279,7 +281,13 @@ export interface DialogMorphOptions {
 /** The window's height now, for a bound read when a morph starts. */
 const windowHeight = () => Dimensions.get('window').height;
 
-export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: DialogMorphOptions) {
+export function useDialogMorph({
+  enabled,
+  measurable,
+  maxHeight,
+  maxWidth,
+  footerHeight = 0,
+}: DialogMorphOptions) {
   const channel = useMemo(() => createFrameChannel(), []);
 
   /** 1 while the panel height is driven by an in-flight morph animation. */
@@ -323,6 +331,8 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
    * Self-calibrating, so no placement has to hard-code its own box math.
    */
   const chrome = useRef(0);
+  const footerHeightRef = useRef(footerHeight);
+  footerHeightRef.current = footerHeight;
   /** True between a frame change and the moment the incoming size arrives. */
   const awaitingSize = useRef(false);
   const releaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -385,7 +395,10 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
       const from = height.value;
       const to = Math.max(
         0,
-        Math.min(naturalContentHeight + chrome.current, maxHeightRef.current ?? windowHeight()),
+        Math.min(
+          naturalContentHeight + chrome.current + footerHeightRef.current,
+          maxHeightRef.current ?? windowHeight(),
+        ),
       );
       if (Math.abs(to - from) < 1) {
         release();
@@ -531,12 +544,15 @@ export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: Dia
     if (!measurableRef.current) return;
     if (pinned.value === 1 || awaitingSize.current) return;
     if (panelHeight.current <= 0 || contentHeight.current <= 0) return;
-    const delta = panelHeight.current - contentHeight.current;
+    const delta = panelHeight.current - contentHeight.current - footerHeight;
     // A panel SHORTER than its content is capped, and one far taller is not
     // reporting chrome at all — neither says anything usable.
     if (delta < 0 || delta > MAX_PANEL_CHROME) return;
     chrome.current = delta;
-  }, [pinned]);
+  }, [pinned, footerHeight]);
+
+  // Footer measurement can arrive after both panel and content layout events.
+  useLayoutEffect(calibrate, [calibrate]);
 
   /** Attach to the panel: tracks the size a morph starts from. */
   const onPanelLayout = useCallback(
