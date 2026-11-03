@@ -101,8 +101,14 @@ function PaymentStatusBlockComponent({
             <Glyph width={g.glyph} height={g.glyph} fill={accent.foreground} />
           </View>
         ) : null}
+        {/* The answer is said when it arrives: a failure interrupts (it answers
+            the payment the user just made), the rest wait their turn. The two
+            are different nodes (`key`), so a failure APPEARS rather than the
+            words gaining a role. A block on screen from the start says nothing. */}
         <Text
+          key={state === 'failed' ? 'alert' : 'status'}
           variant="title-2-semibold"
+          role={state === 'failed' ? 'alert' : 'status'}
           testID={testID ? `${testID}-status` : undefined}
           style={{ color: paint.text, textAlign: 'center' }}
         >

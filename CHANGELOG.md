@@ -2,6 +2,22 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.11.0
+
+### Changed
+
+- **Errors, toasts and status are said as VoiceOver, TalkBack and ARIA say them, on native too.** An error that answers what the user did is an `alert` on the text that holds it, said once, interrupting: `Field`'s error, an invalid `TextFieldHint` (so `CardForm`, `Textarea`, `PhoneInput` and every form that draws one), `FileUpload`'s rejection, the listing editor's and artwork uploader's errors, a failed payment in `PaymentStatusBlock`. News is a polite `status`: `TagField` being full, a sidebar section that could not load (was an `alert`), a note's "Not saved" and "Offline" (not "Saving" or "Saved"), an upload's phase, a payment's progress and success, a selection's count, a multi-agent chat's confirmation (was an `alert`), and an agent log's failed tool call (was assertive: a log entry does not interrupt; the reply's own error does). A callout that is part of the page is not live (`Admonition`, `EmptyState`, `ImportantAlertsCard`, `Announcement`, an empty project board column, which was). See `docs/composition.mdx` §Live regions.
+- **An error toast is assertive.** A toast is polite unless it is an `error` or `important`; `important: false` keeps an error polite. Its title and description are the region's text. See `docs/toast.mdx`.
+- **A native tooltip bubble is a `tooltip`, not an `alert`.** Its text is already the trigger's help; it no longer interrupts to say it again.
+
+### Fixed
+
+- **A live view reaches native.** React Native flattens a view that carries only a role, so `role="status"` / `role="alert"` views (`AgentThinking`, `AgentProgressPlan`'s decision, an image generation's status, `ProofOfDelivery`'s missing summary, `Notification`) never reached the platform; each now states `aria-live` beside its role. A live `Text` uses its role, since React Native's `Text` drops `aria-live` on native (`SelectionBar`'s count). An error replacing a description is a new node (`Field`, `TextFieldHint`), so it appears rather than a caption gaining a role. `AgentProgressPlan`'s decision is said once: by the focus after a press, by the region otherwise. `live-region-census.test.ts` pins every element that may interrupt.
+
+### Consumers
+
+Nothing to change. A consumer that drew an error under a field with `TextFieldHint invalid` now has it announced. A toast raised with `toast.error` now interrupts; pass `important: false` for one that should not.
+
 ## 16.10.0
 
 ### Added

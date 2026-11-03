@@ -84,6 +84,15 @@ cancelled order, and painting it red alarms one who asked for the refund.
 caller passes. A reason under a success is a reader hunting for a problem that is not
 there. Which admonition a state uses is `PAYMENT_STATUS_ADMONITION`.
 
+## The block says its answer when it arrives
+
+`PaymentStatusBlock`'s status words are a live region: a `failed` payment is an `alert`
+(it answers the payment the user just made, so it interrupts, once) and the other four
+are a polite `status`, so a checkout that goes from "Processing" to "Payment successful"
+in place is heard doing so. A block that is on screen from the start says nothing on its
+own, and the strip (`PaymentStatusBar`, a row among rows) is not live. See
+[Composition](/docs/composition) §Live regions.
+
 ## Nothing here computes anything
 
 `amount` is a string the app formatted, sign and currency included. `progress` is a value it

@@ -234,13 +234,14 @@ TalkBack and the web's ARIA say them:
   field's error (`Field`, an invalid `TextFieldHint`, so `CardForm`, `Textarea`,
   `PhoneInput` and every form that draws one), a file the user picked being refused
   (`FileUpload`, the artwork uploader), a form's missing pieces, a message that could
-  not be sent, an error toast or notification. It sits on the TEXT that holds the
+  not be sent, a payment that failed (`PaymentStatusBlock`), an error toast or
+  notification. It sits on the TEXT that holds the
   message (or a view holding only that text and its glyph), never on a container that
   also holds controls. Its text is said the moment it appears or changes.
 - **A polite `status` (or `log`) waits its turn.** News the user did not ask to be
   interrupted by: a tag field being full, a sidebar section that could not load,
-  "Not saved" and "Offline" in a note's status line, an upload's phase, a selection's
-  count, a confirmation, a toast that is not an error, an agent's progress and the
+  "Not saved" and "Offline" in a note's status line, an upload's phase, a payment's
+  progress and success, a selection's count, a confirmation, a toast that is not an error, an agent's progress and the
   entries of its log (a failed tool call too: the reply's own error is what
   interrupts).
 - **A callout that is part of the page is not live.** `Admonition`, `EmptyState`,

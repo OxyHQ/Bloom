@@ -46,6 +46,8 @@ const ASSERTIVE: Record<string, string> = {
   'cover-header/CoverHeader.tsx:Text': 'the cover position the user set could not be saved',
   'agent-chat/AgentChatBase.tsx:Text': 'the reply the user asked for failed',
   'notification/Notification.tsx:Animated.View': 'an `error` notification (the rest are polite)',
+  'payment-status/PaymentStatusBlock.tsx:Text':
+    'a `failed` payment, answering the payment the user just made (the rest are polite)',
   'toast/ToastSwipeHandler.tsx:Animated.View':
     'an `error` or `important` toast (`toastLiveness`; the rest are polite)',
 };
