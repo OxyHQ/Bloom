@@ -47,7 +47,7 @@ const VERTICAL_FADE_DISTANCE = 60;
 const SPRING_BACK_EASING_BOUNCINESS = 0.8;
 const WRONG_DIRECTION_SPRING_DURATION = 400;
 
-type ToastSwipeHandlerProps = Pick<ToastProps, 'important'> & {
+type ToastSwipeHandlerProps = Pick<ToastProps, 'important' | 'variant'> & {
   onRemove: () => void;
   style?: ViewStyle | (ViewStyle | undefined)[];
   onBegin: () => void;
@@ -67,6 +67,7 @@ export const ToastSwipeHandler: React.FC<React.PropsWithChildren<ToastSwipeHandl
   enabled,
   unstyled,
   important,
+  variant,
   position: positionProps,
   onPress,
 }) => {
@@ -210,8 +211,10 @@ export const ToastSwipeHandler: React.FC<React.PropsWithChildren<ToastSwipeHandl
         // a `bezierFn` result carries no easing-name symbol for the CSS mapper.
         // Accepted: the transition still runs, only its curve differs.
         layout={LinearTransition.easing(easeInOutCircFn)}
-        // https://reactnative.dev/docs/accessibility#aria-live-android
-        aria-live={important ? 'assertive' : 'polite'}
+        // The row is the toast's live region (`aria-live` on a View reaches
+        // native as `accessibilityLiveRegion`): a screen reader says its text,
+        // not its buttons, once when it appears or changes. See `toastLiveness`.
+        aria-live={toastLiveness(important, variant)}
       >
         {children}
       </Animated.View>
@@ -232,6 +235,22 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 });
+
+/**
+ * How a toast is announced. Polite by default: a toast is news the user did not
+ * ask to be interrupted by. An `error` toast is assertive — something the user
+ * started failed and they are about to act on the wrong belief — and so is one
+ * the caller marks `important`. An explicit `important: false` keeps an error
+ * polite: the caller's word wins over the variant's, as `aria-live` wins over a
+ * role's implied politeness. A promise toast changes variant in place, so its
+ * `loading` line is polite and its rejection is said assertively.
+ */
+export function toastLiveness(
+  important: boolean | undefined,
+  variant: ToastProps['variant'],
+): 'polite' | 'assertive' {
+  return (important ?? variant === 'error') ? 'assertive' : 'polite';
+}
 
 /**
  * Apple-style progressive resistance: the further the drag goes the less the row

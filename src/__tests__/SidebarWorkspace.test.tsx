@@ -242,7 +242,9 @@ describe('Sidebar page tree', () => {
       />,
     );
     expect(screen.getByText('Loading…')).toBeTruthy();
-    expect(screen.getByText('Could not load').props.role).toBe('alert');
+    // A section that could not load is news, not an interruption: polite.
+    expect(screen.getByText('Could not load').props.role).toBe('status');
+    expect(screen.getByText('Loading…').props.role).toBeUndefined();
     expect(screen.getByText('Nothing here yet')).toBeTruthy();
     // No rows and nothing to say: not drawn.
     expect(screen.queryByText('Hidden')).toBeNull();

@@ -73,6 +73,11 @@ two are set by hand.
 Anything the user might need to read twice belongs in an admonition. A toast is
 gone in four seconds and cannot be recovered.
 
+An admonition is therefore **not a live region**: it is part of the page and read
+where it is, so showing one says nothing. When one appears BECAUSE of what the user
+did (a form's missing pieces), the caller wraps it in the alert, as `ProofOfDelivery`
+does. See [Composition](/docs/composition) §Live regions.
+
 ## `apology` exists because the wording differs
 
 "Something went wrong" and "we couldn't do this, and it is our fault" are

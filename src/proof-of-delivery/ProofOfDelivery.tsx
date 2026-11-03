@@ -250,7 +250,10 @@ function ProofOfDeliveryComponent({
     asked && missing.length > 0 ? (
       // `role="alert"` so the answer reaches a screen reader in the same
       // gesture that asked for it; `Admonition` paints it and says nothing.
-      <View role="alert" testID={id('missing')}>
+      // `aria-live` too: a View carrying only a role is flattened away on
+      // native (Fabric keeps a view for a live region, not for a role), so the
+      // region would never reach the platform.
+      <View role="alert" aria-live="assertive" testID={id('missing')}>
         <Admonition type="error">
           {`${labels.missingSummary(missing.length)}: ${missing
             .map((kind) => labels[kind])

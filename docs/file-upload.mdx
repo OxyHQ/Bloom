@@ -62,7 +62,7 @@ Inactive status lines remain mounted for their visual transition but are exclude
 
 ## Validation and copy
 
-`allowedExtensions` (default `pdf, jpg, jpeg, png, xlsx`) and `maxBytes` (default 8 MB) drive both the checks and the hint line (`PDF, JPG, PNG, XLSX (max 8 MB)` — `JPEG` is accepted but left out of the hint). A rejection replaces the prompt in the error colour for 2.6s. Every visible string is overridable through `labels` (`prompt`, `select`, `uploading(size)`, `uploaded`, `unsupported(exts)`, `tooLarge(max)`). On native the default prompt reads "Tap to select a file", since there is nothing to drag.
+`allowedExtensions` (default `pdf, jpg, jpeg, png, xlsx`) and `maxBytes` (default 8 MB) drive both the checks and the hint line (`PDF, JPG, PNG, XLSX (max 8 MB)` — `JPEG` is accepted but left out of the hint). A rejection replaces the prompt in the error colour for 2.6s; it is an `alert` (it answers the file the user just dropped or picked), said once, and the phase lines ("Uploading 2.4 MB...", "Uploaded successfully!") are polite `status`es, each exposed only while its phase is current. Every visible string is overridable through `labels` (`prompt`, `select`, `uploading(size)`, `uploaded`, `unsupported(exts)`, `tooLarge(max)`). On native the default prompt reads "Tap to select a file", since there is nothing to drag.
 
 `formatFileSize(bytes)` is exported (`312 KB`, `2.4 MB`, `15 MB`).
 

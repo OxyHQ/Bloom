@@ -93,7 +93,10 @@ export function ProjectBoardEmptyState() {
       pointerEvents="none"
       className="absolute inset-0 flex items-center justify-center"
       accessibilityLabel={m.noTickets}
-      accessibilityLiveRegion="polite"
+      // Not a live region: an empty column is part of the board, read where it
+      // is. A column emptied by a move is already said by the move's own
+      // announcement (`use-board-engine.ts`), and a live region here spoke
+      // "No tickets" again on top of it.
     >
       <StyledView className="relative h-[146px] w-[170px]">
         <StyledView

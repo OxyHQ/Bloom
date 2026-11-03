@@ -118,6 +118,15 @@ explanation, or an explanation after the user already fixed it.
 <Field error={touched ? validate(value) : null}>
 ```
 
+## The error is an alert, said once
+
+The error is `accessibilityRole="alert"` on its text, so a screen reader says it the
+moment it appears or changes, interrupting, once — and, on native, again as the
+control's hint when the control is reached (the hint is the control's description, not
+an announcement). It is a different node from the description, so an error that takes
+the description's place appears rather than the caption gaining a role. A description
+is not live. See [Composition](/docs/composition) §Live regions.
+
 ## A description is not an error, and an error is not a description
 
 Keep both. The description says what the field is for and stays put; the error

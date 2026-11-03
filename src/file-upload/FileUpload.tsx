@@ -886,19 +886,30 @@ const FileUploadComponent = function FileUpload({
           </StaggerLine>
           <View style={{ alignItems: 'center', gap: 8 }}>
             <StaggerLine state={idleReveal} kind="line" order={2} reducedMotion={reducedMotion}>
-              <Text
-                variant="body-medium"
-                style={{ color: rejection ? paint.error : paint.prompt, textAlign: 'center' }}
-              >
-                {rejection ?? (
-                  <>
-                    {labels.prompt}{' '}
-                    <Text variant="body-medium" style={{ color: paint.select }}>
-                      {labels.select}
-                    </Text>
-                  </>
-                )}
-              </Text>
+              {/* A rejection answers what the user just dropped or picked: an
+                  `alert`, said once, interrupting. It is its own node (`key`), so
+                  it APPEARS rather than the prompt gaining a role. */}
+              {rejection ? (
+                <Text
+                  key="rejection"
+                  variant="body-medium"
+                  accessibilityRole="alert"
+                  style={{ color: paint.error, textAlign: 'center' }}
+                >
+                  {rejection}
+                </Text>
+              ) : (
+                <Text
+                  key="prompt"
+                  variant="body-medium"
+                  style={{ color: paint.prompt, textAlign: 'center' }}
+                >
+                  {labels.prompt}{' '}
+                  <Text variant="body-medium" style={{ color: paint.select }}>
+                    {labels.select}
+                  </Text>
+                </Text>
+              )}
             </StaggerLine>
             <StaggerLine state={idleReveal} kind="line" order={3} reducedMotion={reducedMotion}>
               <Text variant="body-2-regular" style={{ color: paint.hint, textAlign: 'center' }}>
@@ -961,7 +972,14 @@ const FileUploadComponent = function FileUpload({
               reducedMotion={reducedMotion}
               style={{ position: 'absolute', left: 0, right: 0 }}
             >
-              <Text variant="body-2-regular" style={{ color: paint.status, textAlign: 'center' }}>
+              {/* The phase lines are polite `status`es: each is exposed only while
+                  its phase is current (`StaggerLine`), so a screen reader hears
+                  "Uploading…" and then "Uploaded" without being interrupted. */}
+              <Text
+                variant="body-2-regular"
+                role="status"
+                style={{ color: paint.status, textAlign: 'center' }}
+              >
                 {labels.uploading(file ? formatFileSize(file.size, locale) : '')}
               </Text>
             </StaggerLine>
@@ -971,7 +989,11 @@ const FileUploadComponent = function FileUpload({
               reducedMotion={reducedMotion}
               style={{ position: 'absolute', left: 0, right: 0 }}
             >
-              <Text variant="body-2-regular" style={{ color: paint.status, textAlign: 'center' }}>
+              <Text
+                variant="body-2-regular"
+                role="status"
+                style={{ color: paint.status, textAlign: 'center' }}
+              >
                 {labels.uploaded}
               </Text>
             </StaggerLine>

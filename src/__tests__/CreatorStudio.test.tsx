@@ -764,6 +764,9 @@ describe('ArtworkUploader', () => {
     expect(maybe('art-dropzone')).toBeNull();
     expect(container.querySelector('[aria-label="Release artwork"]')).not.toBeNull();
     expect(byTestId('art-error').textContent).toBe('Artwork is too small.');
+    // A rejection of what the user picked: an alert, said once, interrupting.
+    expect(byTestId('art-error').getAttribute('role')).toBe('alert');
+    expect(byTestId('art-error').getAttribute('aria-live')).toBe('assertive');
     expect(byTestId('art-error-ring').style.borderTopColor).toBe(
       normalise(resolveCreatorStudioPaint(theme).error),
     );

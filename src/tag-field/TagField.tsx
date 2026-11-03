@@ -433,10 +433,13 @@ export function TagField({
         />
       </View>
 
+      {/* Being full is news, not an error: a polite `status`, said once when the
+          last tag fills the field (a field that opens full says nothing). */}
       {hint ? (
         <Text
           nativeID={hintId}
           variant="caption-1-medium"
+          role="status"
           style={{ paddingTop: 1, marginTop: TEXT_FIELD_STACK_GAP, color: palette.hint }}
           testID={testID ? `${testID}-hint` : undefined}
         >

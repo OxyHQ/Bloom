@@ -268,6 +268,7 @@ Greyed completion text drawn behind the input, for "type `acme`, see `acme.oxy.s
 - On web the browser's own focus ring is stripped, because it follows the input's box rather than the field's and pokes out of a pill's corners. The inset ring IS the focus signal.
 - `invalid` and `disabled` reach the input as `aria-invalid` / `aria-disabled` — react-native-web reads only the `aria-*` spellings.
 - Invalid state paints the chrome. Surface the reason as text under the field — colour alone is not an announcement.
+- An invalid `TextFieldHint` is that text: an `alert`, said once when it appears or changes. A valid hint is a plain caption. The two are different nodes, so a hint that turns into an error appears as one. See [Composition](/docs/composition) §Live regions.
 
 ## Right to left
 

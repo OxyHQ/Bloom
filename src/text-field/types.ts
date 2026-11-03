@@ -97,7 +97,10 @@ export type TextFieldLabelProps = React.PropsWithChildren<
 
 export type TextFieldHintProps = React.PropsWithChildren<
   {
-    /** Paint the hint in the error colour. */
+    /**
+     * The hint is the field's ERROR: painted in the error colour and an `alert`,
+     * so a screen reader says it once, interrupting, when it appears or changes.
+     */
     invalid?: boolean;
     isInvalid?: boolean;
     nativeID?: string;

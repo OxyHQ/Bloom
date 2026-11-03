@@ -1482,9 +1482,9 @@ describe('AgentLogToolCall states its status and disclosure on web', () => {
     expect(status.textContent).toBe('Running');
   });
 
-  it('announces a failure assertively', () => {
+  it('announces a failure politely: a log entry, not an interruption', () => {
     const c = mount(<AgentLogToolCall name="t" status="error" error="boom" testID="tc" />);
-    expect(byTestId(c, 'tc-status').getAttribute('aria-live')).toBe('assertive');
+    expect(byTestId(c, 'tc-status').getAttribute('aria-live')).toBe('polite');
     expect(byTestId(c, 'tc-status').textContent).toBe('Failed');
   });
 

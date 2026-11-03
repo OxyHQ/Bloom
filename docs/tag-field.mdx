@@ -78,7 +78,9 @@ telling them off for it is noise. The comparison is case-insensitive —
 
 **Being full is the one refusal with a consequence**, so it is the one reported
 back (`onMaxReached`) and the one the hint names. At the ceiling the input stops
-accepting; it is not hidden, because a disappearing caret reads as a bug.
+accepting; it is not hidden, because a disappearing caret reads as a bug. The hint is a
+polite `status`: said once when the last tag fills the field, not as an error, and not
+at all for a field that opens full.
 
 **Suggestions exclude what is committed**, and match on a case-insensitive
 **substring** rather than a prefix: tag vocabularies are compound ("Q3 planning",

@@ -114,10 +114,13 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
       {`${common.loading}…`}
     </Text>
   ) : section.error ? (
+    // A section that could not load is news, not an interruption: a polite
+    // `status`, its own node (`key`) so it appears rather than "Loading…"
+    // gaining a role.
     <Text
+      key="error"
       variant={tree.status}
-      role="alert"
-      accessibilityLiveRegion="polite"
+      role="status"
       style={[statusStyle, { color: palette.menu.destructive }]}
     >
       {section.error}

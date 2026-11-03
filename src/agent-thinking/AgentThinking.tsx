@@ -446,6 +446,9 @@ function ThinkingRow({
   return (
     <View
       role={statusRole ? 'status' : undefined}
+      // A View with only a role is flattened away on native: the live region
+      // keeps it, so "Thinking" is said politely when the row appears.
+      aria-live={statusRole ? 'polite' : undefined}
       testID={testID}
       style={[{ flexDirection: 'row', alignItems: 'center', gap: 10 }, style]}
     >

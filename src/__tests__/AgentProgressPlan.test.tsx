@@ -155,11 +155,17 @@ describe('AgentProgressPlan focus', () => {
     click(approve());
     mount({ decision: 'approved' });
     expect(document.activeElement).toBe(status());
+    // The focus says it; the region stands down so a reader says it once.
+    expect(status().getAttribute('role')).toBeNull();
+    expect(status().getAttribute('aria-live')).toBeNull();
   });
 
   it('leaves focus alone when the decision arrives from elsewhere', () => {
     mount();
     mount({ decision: 'approved' });
     expect(document.activeElement).not.toBe(status());
+    // Nothing moved focus: the polite region says it.
+    expect(status().getAttribute('role')).toBe('status');
+    expect(status().getAttribute('aria-live')).toBe('polite');
   });
 });

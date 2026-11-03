@@ -29,6 +29,9 @@ import { RiHeartPulseFill } from '@oxy.so/bloom/icons';
 
 `count` is the period's total, which may be larger than `alerts.length` — the feed shows only the most recent ones. `title` (`"Important alerts"`) and `countCaption` (`"this week"`) are props. `rangeLabel` renders a static 151×32 week pill; omit it to hide the pill.
 
+Its alerts are a feed the user came to read, not news: the card is not a live region
+and showing it says nothing (see [Composition](/docs/composition) §Live regions).
+
 ## Layout
 
 - **Card:** 330 tall (`height`), radius 20, padding 10 on the top and sides and **none at the bottom**. The feed runs flush to the bottom edge and clips there; the last row has 10px of padding after it, so it clears the edge once scrolled to the end. The card has a 1px border in its own colour: content clips inside the border, so a scrolled row stops 1px short of the rounded edge.

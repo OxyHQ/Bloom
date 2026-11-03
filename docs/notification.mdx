@@ -76,7 +76,7 @@ The card, description and timestamp use the shared card and text roles.
 | `onDismiss?` | `() => void` | Fires after the exit animation, once the card has unmounted. |
 | `autoDismissDuration?` | `number` (ms) | Dismisses after this long (plus `introDelay`) and draws the countdown bar. |
 | `introDelay?` | `number` (**seconds**) | Opts into the entrance animation. |
-| `role?` | `'alert' \| 'status'` | Default `alert` for `error`, `status` otherwise. |
+| `role?` | `'alert' \| 'status'` | Default `alert` for `error`, `status` otherwise. The card is a live region (`aria-live` follows the role): a screen reader says its text, not its buttons, when it appears or changes. A card on screen from the start — one of a list — is not said as it renders. |
 | `style?`, `testID?` | | |
 
 ## Motion

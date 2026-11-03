@@ -114,7 +114,7 @@ import { AgentProgressPlan } from '@oxy.so/bloom/agent-progress';
 
 Approve is `Button` `solid` `accent`; Reject is `outline` `neutral`. The component holds no decision: after a press the caller changes `decision`, and a failed send simply leaves it `pending`. `approved` and `rejected` remove the buttons and show a `Badge` (`success` / `danger`) that reads "Approved" or "Rejected": the outcome is text, not colour. A rejected plan strikes its steps through.
 
-The status region is mounted from the start, empty, so the change is announced. After a press the deciding button unmounts and would take focus with it, so focus moves to the status: `focus()` on web, the screen reader's cursor on native. A decision that arrives without a press moves nothing. Every string is localised via `BloomProvider locale`.
+The status region is mounted from the start, empty, so the change is announced. After a press the deciding button unmounts and would take focus with it, so focus moves to the status: `focus()` on web, the screen reader's cursor on native. A decision that arrives without a press moves nothing and is said by the region, politely; after a press the region stands down (no `status` role, no `aria-live`) so the decision is said once, by the focus. Every string is localised via `BloomProvider locale`.
 
 ## Props
 

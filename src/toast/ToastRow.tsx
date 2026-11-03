@@ -462,6 +462,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
           style={mergedStyles.toastContainer}
           unstyled={unstyled}
           important={important}
+          variant={variant}
           position={positionProp}
         >
           <Animated.View style={rowStyle}>

@@ -347,9 +347,12 @@ function Bubble({
         onPress={requestCloseWrapped}
         accessibilityRole="none"
       />
+      {/* A `tooltip`, not an `alert`: its text is already the trigger's help
+          (said after the control), so the bubble must not interrupt to say it
+          again. It stays one element a reader can move to while it is open. */}
       <View
         accessible
-        role="alert"
+        role="tooltip"
         accessibilityHint=""
         accessibilityLabel={label}
         importantForAccessibility="yes"

@@ -243,7 +243,7 @@ Per-toast options (`ToastOptions`):
 | `position?` | `'top-center' \| 'bottom-center' \| 'bottom-right' \| 'center'` | Override the outlet's position for this toast. |
 | `icon?` | `ReactNode` | Replaces the variant icon. |
 | `richColors?` | `boolean` | Show the status colour more prominently: the status glyph colour moves to the border and title as well. The surface stays neutral, as do the description and close button. No effect on `loading` or a variant-less toast, which have no status colour. |
-| `important?` | `boolean` | Announce assertively to screen readers. |
+| `important?` | `boolean` | Announce assertively to screen readers. Defaults to `true` for an `error` toast and `false` for the rest; `important: false` keeps an error polite. |
 | `onDismiss?` / `onAutoClose?` | `(id) => void` | Called when the toast goes away. |
 | `onPress?` | `() => void` | Press anywhere on the row. |
 | `style?` / `styles?` / `unstyled?` | — | Escape hatches for the row's own styling. |

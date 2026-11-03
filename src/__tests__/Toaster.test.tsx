@@ -521,6 +521,60 @@ describe('ToastOutlet', () => {
   });
 
   /**
+   * The row is the toast's live region: polite by default, assertive for an
+   * error or an `important` toast, and the caller's `important: false` wins
+   * over the variant. Its title and description are plain text inside it, the
+   * text a reader collects.
+   */
+  describe('live region', () => {
+    const liveOf = (rendered: ReturnType<typeof renderOutlet>) =>
+      rowBoxOf(rendered).props['aria-live'];
+
+    it('is polite for a plain, success, info, warning and loading toast', () => {
+      for (const raise of [
+        () => toast('Saved'),
+        () => toast.success('Saved'),
+        () => toast.info('Heads up'),
+        () => toast.warning('Reconnecting'),
+        () => toast.loading('Saving'),
+      ]) {
+        const rendered = renderOutlet();
+        show(raise);
+        expect(liveOf(rendered)).toBe('polite');
+        rendered.unmount();
+        act(() => {
+          toast.dismiss();
+          jest.runOnlyPendingTimers();
+        });
+      }
+    });
+
+    it('is assertive for an error toast and for an important one', () => {
+      const rendered = renderOutlet();
+      show(() => toast.error('Could not send', { description: 'Check your connection' }));
+      expect(liveOf(rendered)).toBe('assertive');
+      // The message is text the region holds, not hidden from accessibility.
+      expect(textsIn(rowBoxOf(rendered))).toEqual(
+        expect.arrayContaining(['Could not send', 'Check your connection']),
+      );
+      rendered.unmount();
+      act(() => {
+        toast.dismiss();
+        jest.runOnlyPendingTimers();
+      });
+      const important = renderOutlet();
+      show(() => toast('Payment due', { important: true }));
+      expect(liveOf(important)).toBe('assertive');
+    });
+
+    it('keeps an error polite when the caller says important: false', () => {
+      const rendered = renderOutlet();
+      show(() => toast.error('Draft not synced', { important: false }));
+      expect(liveOf(rendered)).toBe('polite');
+    });
+  });
+
+  /**
    * The outlet's `toastOptions` style slots and a per-toast `styles` object are
    * folded into ONE styles object (`mergeToastStyles`). Upstream threads all
    * fifteen slots down as separate props, so this is Bloom-specific plumbing that
