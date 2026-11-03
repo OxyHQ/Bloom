@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.9.0
+
+### Added
+
+- **`aria-describedby` is said on native: a control's description is its hint.** React Native drops `aria-describedby` before it reaches the platform, so a field's description and its error were never said with the field on iOS, Android or OxyOS. On native a Bloom `Text` with a `nativeID` now publishes its text under that id, and a control described by it carries the text as its `accessibilityHint`, which a native screen reader says after the control (VoiceOver's help, TalkBack's hint). The order is the caller's own hint first, then each described text in `aria-describedby`'s order, joined with a space; a text equal to the control's name, or one already said, is left out. The hint follows the texts as they change: a Field's description, then its error once it replaces the description. `useFieldMembership()` takes and returns `accessibilityHint`, and every Field member, `TextFieldInput`, `TagField`, `Select` (the field's text, then "required"), the selection and card controls, dialogs and `SidebarItem` carry it. Write your own control with `useDescribedByHint({ describedBy, hint, name })` from `@oxy.so/bloom/hooks`. The web is unchanged: it keeps `aria-describedby` and gets no hint. See `docs/field.mdx`.
+- **A tooltip is its trigger's help on native.** As a Mac's help tag is a control's help, a `Button` (or any Field member) inside `TooltipTrigger` says the tooltip's text after its own hint. It never says a tooltip that is its own name (a dock icon's). See `docs/tooltip.mdx`.
+
+### Consumers
+
+Nothing to change. A control that sets `aria-describedby` by hand still describes itself on the web; on native, pass it through `useDescribedByHint` to have it said.
+
 ## 16.8.0
 
 ### Added
