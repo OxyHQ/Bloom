@@ -2,6 +2,12 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.14.1
+
+### Fixed
+
+- CheckoutSheet accepts `continueDisabled` to keep the existing review visible while the host prepares payment authority. Review and confirmation cannot advance until ready; closing the sheet remains available.
+
 ## 16.14.0
 
 ### Added
