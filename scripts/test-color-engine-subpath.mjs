@@ -10,8 +10,8 @@
  * Each runtime also lists every module it loaded for the import, and the list
  * must hold nothing outside `theme/color-engine/`: the subpath exists so a
  * process that never renders gets the engine without React or React Native.
- * The positive control is `@oxy.so/bloom/theme`, which does import React; the
- * same listing must see it, or the probe is blind and its pass means nothing.
+ * The positive control loads React in the same probe first; the listing must
+ * see it, or the probe is blind and its pass means nothing.
  *
  * The expected values come from the SOURCE barrel under Bun, so the built
  * subpath must have the same surface and give the same colours.
@@ -88,56 +88,71 @@ describe('@oxy.so/bloom/color-engine as built', () => {
     assert.ok(Array.isArray(expected.keys) && expected.keys.length > 5, 'source barrel read');
   });
 
-  it('loads under Bun with the source barrel’s surface and colours, and nothing else', () => {
-    const out = run('bun', [
-      '-e',
-      `const m = await import('${SPECIFIER}');
-       console.log(JSON.stringify({ result: ${RESULT}, loaded: Object.keys(require.cache) }));`,
-    ]);
-    assert.deepEqual(out.result, expected);
-    assert.ok(out.loaded.length > 5, 'Bun lists the modules it loaded');
-    assert.deepEqual(foreign(out.loaded), []);
-  });
+  /**
+   * One probe per runtime: import the subpath (after `prelude`), print its
+   * answers and every module the runtime loaded.
+   * `load` is how that runtime's probe pulls in another module.
+   * @type {[string, string, (prelude: string) => string[], (path: string) => string][]}
+   */
+  const runtimes = [
+    [
+      'Bun',
+      'bun',
+      (prelude) => [
+        '-e',
+        `${prelude}
+         const m = await import('${SPECIFIER}');
+         console.log(JSON.stringify({ result: ${RESULT}, loaded: Object.keys(require.cache) }));`,
+      ],
+      (path) => `await import(${path});`,
+    ],
+    [
+      "Node's ESM loader",
+      process.execPath,
+      (prelude) => [
+        '--input-type=module',
+        '-e',
+        `import { registerHooks } from 'node:module';
+         const loaded = [];
+         registerHooks({ load(url, context, next) { loaded.push(url); return next(url, context); } });
+         ${prelude}
+         const m = await import('${SPECIFIER}');
+         console.log(JSON.stringify({ result: ${RESULT}, loaded }));`,
+      ],
+      (path) => `await import(${path});`,
+    ],
+    [
+      "Node's CommonJS loader",
+      process.execPath,
+      (prelude) => [
+        '-e',
+        `${prelude}
+         const m = require('${SPECIFIER}');
+         console.log(JSON.stringify({ result: ${RESULT}, loaded: Object.keys(require.cache) }));`,
+      ],
+      (path) => `require(${path});`,
+    ],
+  ];
 
-  it("loads under Node's ESM loader the same, and nothing else", () => {
-    const out = run(process.execPath, [
-      '--input-type=module',
-      '-e',
-      `import { registerHooks } from 'node:module';
-       const loaded = [];
-       registerHooks({ load(url, context, next) { loaded.push(url); return next(url, context); } });
-       const m = await import('${SPECIFIER}');
-       console.log(JSON.stringify({ result: ${RESULT}, loaded }));`,
-    ]);
-    assert.deepEqual(out.result, expected);
-    assert.ok(out.loaded.length > 5, 'Node lists the modules it loaded');
-    assert.deepEqual(foreign(out.loaded), []);
-  });
+  // React as Bloom's own tree resolves it: what a stray import would load.
+  const react = JSON.stringify(createRequire(join(REPO_ROOT, 'package.json')).resolve('react'));
 
-  it("loads under Node's CommonJS loader the same, and nothing else", () => {
-    const out = run(process.execPath, [
-      '-e',
-      `const m = require('${SPECIFIER}');
-       console.log(JSON.stringify({ result: ${RESULT}, loaded: Object.keys(require.cache) }));`,
-    ]);
-    assert.deepEqual(out.result, expected);
-    assert.ok(out.loaded.length > 5, 'Node lists the modules it loaded');
-    assert.deepEqual(foreign(out.loaded), []);
-  });
+  for (const [name, command, probe, load] of runtimes) {
+    it(`loads under ${name} with the source barrel’s surface and colours, and nothing else`, () => {
+      const out = run(command, probe(''));
+      assert.deepEqual(out.result, expected);
+      assert.ok(out.loaded.length > 5, `${name} lists the modules it loaded`);
+      assert.deepEqual(foreign(out.loaded), []);
+    });
 
-  it('positive control: the same listing sees React behind `@oxy.so/bloom/theme`', () => {
-    const out = run('bun', [
-      '-e',
-      // `./theme` dies in React Native's Flow source under a bare runtime;
-      // React has loaded by then, which is all this asks.
-      `await import('@oxy.so/bloom/theme').catch(() => {});
-       console.log(JSON.stringify(Object.keys(require.cache)));`,
-    ]);
-    assert.ok(
-      foreign(out).some((file) => /\/node_modules\/react\//.test(file)),
-      'the probe cannot see a package import, so its clean result proves nothing',
-    );
-  });
+    it(`positive control: the ${name} listing sees React when something imports it`, () => {
+      const out = run(command, probe(load(react)));
+      assert.ok(
+        foreign(out.loaded).some((file) => /\/node_modules\/react\//.test(file)),
+        'the probe cannot see a package import, so its clean result proves nothing',
+      );
+    });
+  }
 
   it('typechecks for a node16 consumer, ESM and CommonJS', () => {
     const use = `import { argbFromRgb, generateRoleColors, hexFromArgb, seedsFromImagePixels, seedsFromRgbBytes, type RoleColors } from '${SPECIFIER}';
