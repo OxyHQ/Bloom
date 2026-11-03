@@ -138,6 +138,8 @@ export interface BottomSheetProps {
    * Dialog to float its sticky nav header over the sheet's scroll content.
    */
   headerOverlay?: React.ReactNode;
+  /** Non-scrolling content below the body; its height is reserved within the sheet. */
+  footer?: React.ReactNode;
   /**
    * Layout callback for the SHEET CARD — the same box `style` targets. Lets a
    * host observe the card's rendered size (the Dialog measures it to morph the

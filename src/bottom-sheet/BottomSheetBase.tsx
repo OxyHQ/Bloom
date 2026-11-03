@@ -89,6 +89,7 @@ export const BottomSheetBase = forwardRef(
       handleComponent,
       scrollY: externalScrollY,
       headerOverlay,
+      footer,
       onLayout,
     } = props;
 
@@ -931,10 +932,19 @@ export const BottomSheetBase = forwardRef(
                 {handleSlot}
 
                 {bodyContent}
+                {footer != null && <View style={{ flexShrink: 0 }}>{footer}</View>}
 
                 {/* Sticky nav-header overlay (Dialog nav-header mode): floats
                             above the scroll body, clipped to the sheet's rounded top. */}
-                {headerOverlay}
+                {headerOverlay != null && (
+                  <View
+                    testID="bloom-sheet-header-clip"
+                    pointerEvents="box-none"
+                    style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}
+                  >
+                    {headerOverlay}
+                  </View>
+                )}
               </SurfaceLevelProvider>
             </Animated.View>
           </GestureDetector>

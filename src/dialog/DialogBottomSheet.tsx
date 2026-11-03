@@ -1,3 +1,4 @@
+import { useDialogFooter } from './DialogFooter';
 import type { DialogPresentationLifecycle } from './use-presentation-session';
 import { useDialogFrameScrollReset } from './DialogFrameContent';
 import { surfaceStyle } from '../shapes/surface-style';
@@ -64,6 +65,7 @@ export function DialogBottomSheet({
   material: surfaceMaterial = 'surface',
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
   detached = false,
+  footer,
   progress,
   showHandle = true,
   dismissOnBackdrop = true,
@@ -190,7 +192,19 @@ export function DialogBottomSheet({
   // width is fixed by the placement. The sheet's own `maxHeight` (the ratio
   // percentage + the safe-area clamp inside `BottomSheet`) does the exact
   // capping — the viewport is just the bound the reshape may not exceed.
+  const hasFooter = footer !== undefined && footer !== null && footer !== false;
+  const fixedFooter = useDialogFooter(
+    hasFooter ? (
+      <>
+        {footer}
+        {!detached && bottomInset > 0 ? (
+          <SafeAreaSpacer testID="dialog-footer-safe-area" inset={bottomInset} />
+        ) : null}
+      </>
+    ) : null,
+  );
   const morphState = useDialogMorph({
+    footerHeight: fixedFooter.height,
     enabled: morph !== false,
     measurable: scrollableResolved,
   });
@@ -259,6 +273,7 @@ export function DialogBottomSheet({
   return (
     <BottomSheet
       detached={detached}
+      footer={fixedFooter.node}
       backdrop={backdrop}
       transition={transition}
       material={surfaceMaterial}
@@ -365,7 +380,7 @@ export function DialogBottomSheet({
               rather than a padding: the content box keeps the caller's
               `padding`/`contentPadding` untouched on both platforms, and the
               morph layer above still measures the content alone. */}
-          {!detached && bottomInset > 0 ? (
+          {!hasFooter && !detached && bottomInset > 0 ? (
             <SafeAreaSpacer testID={SAFE_AREA_SPACER_TESTID} inset={bottomInset} />
           ) : null}
         </StyledView>
@@ -418,6 +433,7 @@ export type DialogBottomSheetProps = DialogPresentationLifecycle &
     | 'material'
     | 'maxHeightRatio'
     | 'detached'
+    | 'footer'
     | 'progress'
     | 'showHandle'
     | 'dismissOnBackdrop'

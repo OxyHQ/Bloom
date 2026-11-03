@@ -99,6 +99,7 @@ Drop the declarative props entirely — `children` owns every pixel.
 | `control?` | `DialogControl` | — | From `useDialogControl()`. Omit when using controlled `open`. |
 | `open?` | `boolean` | — | Controlled open state. When provided, wins over `control`. |
 | `placement?` | `DialogPlacement \| ResponsiveDialogPlacement` | `'center'` | Surface anchor. See [Placement](#placement). |
+| `footer?` | `React.ReactNode` | — | Fixed content below the scroll body, inside the surface. Its measured height is reserved during frame morphs; supply its own padding. |
 | `detached?` | `boolean` | `false` | Float bottom placement with rounded corners, side gutters and safe-area gaps. Other placements are unchanged. |
 | `title?` | `string` | — | Header text. |
 | `description?` | `string` | — | Supporting copy below the title. |
