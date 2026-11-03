@@ -366,6 +366,9 @@ it('shows explicitly unavailable capabilities with reasons without expanding pay
 it('blocks review advancement until ready without preventing dismissal', () => {
   const input = props();
   const view = render(<CheckoutSheet {...input} continueDisabled />, { wrapper });
+  const paymentRow = view.getByLabelText(/^section.payment:/);
+  expect(paymentRow.props.accessibilityState?.disabled).toBe(true);
+  fireEvent.press(paymentRow);
   fireEvent.press(view.getByText('continue'));
   expect(input.onStep).not.toHaveBeenCalled();
   expect(input.onAuthorize).not.toHaveBeenCalled();

@@ -52,7 +52,7 @@ export interface CheckoutSheetProps {
   notice?: ReactNode;
   /** Override prerequisite navigation for a host-supplied payment method. */
   nextStep?: CheckoutStep;
-  /** Disable review/confirmation advancement while host authority is pending; dismissal stays available. */
+  /** Disable payment selection and review/confirmation advancement while host authority is pending; dismissal stays available. */
   continueDisabled?: boolean;
   /** Advance completed details with the updated draft; defaults to returning to review. */
   onContinue?(draft: CheckoutDraft): void;

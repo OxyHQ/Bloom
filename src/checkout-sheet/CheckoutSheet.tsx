@@ -193,7 +193,10 @@ function CheckoutContent(props: CheckoutSheetProps) {
                   description={sectionText[section]}
                   icon={<Icon size="md" fill={colors.textSecondary} />}
                   accessibilityLabel={`${label(`section.${section}`)}: ${sectionText[section]}`}
-                  onPress={() => onStep(section)}
+                  disabled={section === 'payment' && props.continueDisabled}
+                  onPress={() => {
+                    if (!(section === 'payment' && props.continueDisabled)) onStep(section);
+                  }}
                 />
               );
             })}
