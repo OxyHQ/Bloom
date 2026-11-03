@@ -567,3 +567,39 @@ it('Escape closes only a standalone sheet above a managed dialog, then the dialo
   act(() => jest.runOnlyPendingTimers());
   expect(getSnapshot()).toHaveLength(0);
 });
+
+it('renders detached bottom placement on the same web modal surface', () => {
+  mount(
+    <Dialog
+      open
+      placement="bottom"
+      detached
+      label="Detached payment"
+      panelStyle={{ maxWidth: 540 }}
+    >
+      <TextInput testID="detached-input" placeholder="Payment reference" />
+    </Dialog>,
+  );
+  const panel = dialogNamed('Detached payment');
+  expect(panel.getAttribute('aria-modal')).toBe('true');
+  expect(panel.tabIndex).toBe(-1);
+  expect(panel.contains(byTestId('detached-input'))).toBe(true);
+  expect(document.querySelector('[data-testid="dialog-sheet-safe-area"]')).toBeNull();
+});
+
+it.each(['bottom', 'center', 'left'] as const)(
+  'includes a fixed footer inside the %s modal keyboard boundary',
+  (placement) => {
+    mount(
+      <Dialog
+        open
+        placement={placement}
+        label="Footer dialog"
+        footer={<TextInput testID="footer-control" />}
+      >
+        <Text>Body</Text>
+      </Dialog>,
+    );
+    expect(dialogNamed('Footer dialog').contains(byTestId('footer-control'))).toBe(true);
+  },
+);

@@ -68,6 +68,7 @@ import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { Context, useDialogContext } from './context';
+import { useDialogFooter } from './DialogFooter';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
 import {
@@ -255,6 +256,7 @@ function CenterOrSideDialog({
   containerClassName,
   label,
   children,
+  footer,
 }: Omit<DialogProps, 'placement'> &
   DialogPresentationLifecycle & { placement: 'center' | DialogSidePlacement }) {
   // Inject the required @keyframes on mount (before the panel ever appears —
@@ -439,6 +441,7 @@ function CenterOrSideDialog({
                 ]}
               >
                 <DialogPanel
+                  footer={footer}
                   transition={transition}
                   material={surfaceMaterial}
                   presentation={presentation}
@@ -473,6 +476,7 @@ function CenterOrSideDialog({
         <ClosingContext.Provider value={isClosing}>
           <RemoveScrollBar />
           <SheetSurface
+            footer={footer}
             backdrop={backdrop}
             transition={transition}
             material={surfaceMaterial}
@@ -525,6 +529,7 @@ function DialogPanel({
   morph,
   isClosing,
   children,
+  footer,
 }: {
   material?: DialogProps['material'];
   transition?: DialogProps['transition'];
@@ -544,6 +549,7 @@ function DialogPanel({
   morph?: boolean;
   isClosing: boolean;
   children?: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   const motion = useSurfaceTransition(transition);
   const entered = useEnteredPresence(!isClosing);
@@ -605,7 +611,9 @@ function DialogPanel({
   // placement whose width can vary too, so `maxWidth` is handed over as well.
   // The card's own `maxHeight` (the ratio percentage below) does the exact
   // capping — the viewport is just the bound the reshape may not exceed.
+  const fixedFooter = useDialogFooter(footer);
   const morphState = useDialogMorph({
+    footerHeight: fixedFooter.height,
     enabled: presentation === 'default' && morph !== false,
     measurable: scrollable !== false,
     maxHeight: viewportHeight,
@@ -753,6 +761,7 @@ function DialogPanel({
             <DialogMorphContent morph={morphState}>{body}</DialogMorphContent>
           </ScrollArea>
         )}
+        {fixedFooter.node}
       </SurfaceLevelProvider>
     </Animated.View>
   );
@@ -793,6 +802,7 @@ function SheetSurface({
   containerClassName,
   style,
   children,
+  footer,
 }: {
   material?: DialogProps['material'];
   backdrop?: DialogProps['backdrop'];
@@ -819,6 +829,7 @@ function SheetSurface({
   containerClassName?: string;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   const motion = useSurfaceTransition(transition);
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
@@ -1070,6 +1081,7 @@ function SheetSurface({
               </DialogBody>
             </View>
           )}
+          {footer != null && <View style={{ flexShrink: 0 }}>{footer}</View>}
         </SurfaceLevelProvider>
       </StyledView>
     </OverlayRoot>

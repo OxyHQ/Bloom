@@ -385,3 +385,19 @@ it('gives an explicit radius precedence over caller style on the material host',
   const pane = container.querySelector('[data-testid="explicit-radius"]') as HTMLElement;
   expect(getComputedStyle(pane).borderTopLeftRadius).toBe('20px');
 });
+
+it('can omit an owned outline while preserving default surface edge optics elsewhere', () => {
+  act(() =>
+    root.render(
+      <>
+        <Surface testID="plain-circle" radius={24} rim={false} sheen={false} />
+        <Surface testID="normal-surface" />
+      </>,
+    ),
+  );
+  const plain = container.querySelector<HTMLElement>('[data-testid="plain-circle"]');
+  const normal = container.querySelector<HTMLElement>('[data-testid="normal-surface"]');
+  expect(plain?.style.getPropertyValue('--bloom-surface-highlight-filter')).toBe('none');
+  expect(plain?.style.getPropertyValue('--bloom-surface-hairline')).toBe('transparent');
+  expect(normal?.style.getPropertyValue('--bloom-surface-highlight-filter')).not.toBe('none');
+});

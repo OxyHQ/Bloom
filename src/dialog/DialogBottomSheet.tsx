@@ -1,8 +1,9 @@
+import { useDialogFooter } from './DialogFooter';
 import type { DialogPresentationLifecycle } from './use-presentation-session';
 import { useDialogFrameScrollReset } from './DialogFrameContent';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef } from 'react';
 import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import Animated, { useAnimatedStyle, type AnimatedStyle } from 'react-native-reanimated';
@@ -63,6 +64,9 @@ export function DialogBottomSheet({
   header,
   material: surfaceMaterial = 'surface',
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
+  detached = false,
+  footer,
+  footerBehavior,
   progress,
   showHandle = true,
   dismissOnBackdrop = true,
@@ -94,10 +98,11 @@ export function DialogBottomSheet({
     ref.current?.scrollTo(0, false);
     headerController.scrollY.value = 0;
   });
-  // The sheet is flush with the bottom of the window (a `<Modal>` drawn
+  // A flush sheet reaches the bottom of the window (a `<Modal>` drawn
   // edge-to-edge on Android, and under the home indicator on iOS), and
   // `BottomSheet` deliberately leaves the safe area to its content. This Dialog
   // IS the content's chrome, so it owns the inset (the spacer after the body).
+  // Detached sheets already clear it through BottomSheet's window-edge gap.
   const { bottom: bottomInset } = useCssSafeAreaInsets(useSafeAreaInsets());
 
   // Read the latest controlled flag / `onClose` inside stable callbacks without
@@ -188,7 +193,19 @@ export function DialogBottomSheet({
   // width is fixed by the placement. The sheet's own `maxHeight` (the ratio
   // percentage + the safe-area clamp inside `BottomSheet`) does the exact
   // capping — the viewport is just the bound the reshape may not exceed.
+  const hasFooter = footer !== undefined && footer !== null && footer !== false;
+  const fixedFooter = useDialogFooter(
+    hasFooter ? (
+      <>
+        {footer}
+        {!detached && bottomInset > 0 ? (
+          <SafeAreaSpacer testID="dialog-footer-safe-area" inset={bottomInset} />
+        ) : null}
+      </>
+    ) : null,
+  );
   const morphState = useDialogMorph({
+    footerHeight: fixedFooter.height,
     enabled: morph !== false,
     measurable: scrollableResolved,
   });
@@ -201,7 +218,7 @@ export function DialogBottomSheet({
     return [
       {
         backgroundColor: theme.colors.background,
-        ...surfaceStyle(SURFACE_SHAPES.dialogSheet),
+        ...surfaceStyle(detached ? SURFACE_SHAPES.dialog : SURFACE_SHAPES.dialogSheet),
         maxHeight: maxHeightPercent,
       },
       panelStyle,
@@ -209,7 +226,7 @@ export function DialogBottomSheet({
       // resolves to `height: 'auto'` — the sheet's normal content sizing.
       morphState.panelStyle,
     ];
-  }, [theme.colors.background, maxHeightRatio, panelStyle, morphState.panelStyle]);
+  }, [theme.colors.background, detached, maxHeightRatio, panelStyle, morphState.panelStyle]);
 
   // Does this dialog render bloom's declarative chrome (title / description /
   // actions)? This no longer gates the SCROLL decision (that is now the explicit
@@ -256,6 +273,9 @@ export function DialogBottomSheet({
 
   return (
     <BottomSheet
+      detached={detached}
+      footer={fixedFooter.node}
+      footerBehavior={footerBehavior}
       backdrop={backdrop}
       transition={transition}
       material={surfaceMaterial}
@@ -362,7 +382,7 @@ export function DialogBottomSheet({
               rather than a padding: the content box keeps the caller's
               `padding`/`contentPadding` untouched on both platforms, and the
               morph layer above still measures the content alone. */}
-          {bottomInset > 0 ? (
+          {!hasFooter && !detached && bottomInset > 0 ? (
             <SafeAreaSpacer testID={SAFE_AREA_SPACER_TESTID} inset={bottomInset} />
           ) : null}
         </StyledView>
@@ -414,6 +434,9 @@ export type DialogBottomSheetProps = DialogPresentationLifecycle &
     | 'header'
     | 'material'
     | 'maxHeightRatio'
+    | 'detached'
+    | 'footer'
+    | 'footerBehavior'
     | 'progress'
     | 'showHandle'
     | 'dismissOnBackdrop'

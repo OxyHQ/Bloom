@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Admonition } from '../admonition';
@@ -58,6 +58,8 @@ function PaymentStatusBlockComponent({
   reason,
   actions,
   icon,
+  illustration,
+  showIcon = true,
   variant = 'surface',
   labels,
   accessibilityLabel,
@@ -82,19 +84,23 @@ function PaymentStatusBlockComponent({
   const body = (
     <View style={{ gap: g.gap, alignItems: 'stretch' }}>
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <View
-          testID={testID ? `${testID}-tile` : undefined}
-          style={{
-            width: g.tile,
-            height: g.tile,
-            borderRadius: g.tile / 2,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: accent.background,
-          }}
-        >
-          <Glyph width={g.glyph} height={g.glyph} fill={accent.foreground} />
-        </View>
+        {illustration !== undefined ? (
+          illustration
+        ) : showIcon ? (
+          <View
+            testID={testID ? `${testID}-tile` : undefined}
+            style={{
+              width: g.tile,
+              height: g.tile,
+              borderRadius: g.tile / 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: accent.background,
+            }}
+          >
+            <Glyph width={g.glyph} height={g.glyph} fill={accent.foreground} />
+          </View>
+        ) : null}
         <Text
           variant="title-2-semibold"
           testID={testID ? `${testID}-status` : undefined}

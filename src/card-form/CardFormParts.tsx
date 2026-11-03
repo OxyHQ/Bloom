@@ -13,7 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../select';
-import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel } from '../text-field';
+import {
+  TextField,
+  TextFieldHostedContent,
+  TextFieldHint,
+  TextFieldInput,
+  TextFieldLabel,
+} from '../text-field';
 import { TEXT_FIELD_RADIUS } from '../text-field/shared';
 import { CARD_FORM_PLACEHOLDERS } from './constants';
 import { CARD_FORM_MESSAGES } from './messages';
@@ -554,7 +560,7 @@ function CardFormCountryComponent({
     <View style={[{ width: '100%', minWidth: 0 }, style]} testID={testID}>
       {label ? <TextFieldLabel required={member.required}>{label}</TextFieldLabel> : null}
       <FieldControlProvider value={republish(member)}>
-        <Select value={value} onValueChange={onValueChange} disabled={member.disabled}>
+        <Select value={value || undefined} onValueChange={onValueChange} disabled={member.disabled}>
           <SelectTrigger
             label={member.name}
             disabled={member.disabled}
@@ -592,3 +598,49 @@ function CardFormCountryComponent({
 
 export const CardFormCountry = memo(CardFormCountryComponent);
 CardFormCountry.displayName = 'CardFormCountry';
+
+/** Accessibility and state passed to an external secure control, never its contents. */
+export interface CardFormHostedFieldControl {
+  accessibilityLabel: string;
+  nativeID?: string;
+  describedBy?: string;
+  required: boolean;
+  disabled: boolean;
+  invalid: boolean;
+}
+export interface CardFormHostedFieldProps {
+  label: string;
+  accessibilityLabel?: string;
+  nativeID?: string;
+  error?: string;
+  disabled?: boolean;
+  required?: boolean;
+  invalid?: boolean;
+  /** Report the hosted control's focus; disabled membership always wins. */
+  focused: boolean;
+  children: (control: CardFormHostedFieldControl) => ReactNode;
+  testID?: string;
+}
+
+/** Uses the same label, error and TextField chrome as the native card parts.
+ * The caller owns provider mounting, focus events and teardown. No insecure fallback.
+ */
+export function CardFormHostedField(props: CardFormHostedFieldProps) {
+  const member = useCardFormPart({ ...props, fallbackName: props.label });
+  return (
+    <PartShell member={member} label={props.label} error={props.error} testID={props.testID}>
+      <TextField invalid={member.invalid} disabled={member.disabled}>
+        <TextFieldHostedContent focused={props.focused}>
+          {props.children({
+            accessibilityLabel: member.name,
+            nativeID: member.nativeID,
+            describedBy: member.describedBy,
+            required: member.required,
+            disabled: member.disabled,
+            invalid: member.invalid,
+          })}
+        </TextFieldHostedContent>
+      </TextField>
+    </PartShell>
+  );
+}

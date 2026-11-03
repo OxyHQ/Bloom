@@ -75,6 +75,10 @@ export interface PaymentStatusBlockProps {
   actions?: ReactNode;
   /** The glyph, overriding the state's own. */
   icon?: BloomIconComponent;
+  /** Replaces the status glyph tile. Pass null for text-only status. */
+  illustration?: ReactNode;
+  /** Hide the default glyph tile while retaining text or a custom illustration. */
+  showIcon?: boolean;
   /** `surface` paints a card of its own; `plain` draws only the content. */
   variant?: 'surface' | 'plain';
   /** Replaces the default words for any of the five states. */

@@ -6,6 +6,10 @@ export interface SurfaceProps extends Omit<ViewProps, 'style' | 'children'> {
   children?: ReactNode;
   /** Tint source. On the web opaque colours paint at 72% over the frosted backdrop; native keeps them opaque. Supplied alpha is preserved. */
   fill?: string;
+  /** Disable the material edge when a control owns its own outline. Defaults to true. */
+  rim?: boolean;
+  /** Native material sheen. Defaults to true. */
+  sheen?: boolean;
   /** Radius shared by host and paint. Explicit prop wins over style.borderRadius, then default 20. */
   radius?: number | 'concentric';
   /** Platform-adaptive corners shared by the host and material. */

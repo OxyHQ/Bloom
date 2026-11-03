@@ -1,5 +1,6 @@
 export { CardForm } from './CardForm';
 export {
+  CardFormHostedField,
   CardFormCountry,
   CardFormExpiry,
   CardFormName,
@@ -34,7 +35,10 @@ export {
   schemeSecurityCodeLength,
 } from './shared';
 export { useCardFormPart } from './use-card-form-part';
-export type { CardFormPartInput, CardFormPartMembership } from './use-card-form-part';
+export type {
+  CardFormPartInput,
+  CardFormPartMembership,
+} from './use-card-form-part';
 export type {
   CardFormCountryOption,
   CardFormCountryProps,
@@ -51,3 +55,8 @@ export type {
   CardFormValue,
   CardScheme,
 } from './types';
+
+export type {
+  CardFormHostedFieldProps,
+  CardFormHostedFieldControl,
+} from './CardFormParts';

@@ -87,6 +87,10 @@ export function PanelRouterProvider({
       setParams: (params) => {
         const url = new URL(href, 'https://panel.invalid');
         for (const [key, value] of Object.entries(params)) {
+          if (key === '#') {
+            url.hash = value == null ? '' : String(value);
+            continue;
+          }
           url.searchParams.delete(key);
           if (value != null)
             for (const item of Array.isArray(value) ? value : [value])

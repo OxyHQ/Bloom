@@ -154,3 +154,12 @@ precedence.
   </Screen>
 </BottomSheet>
 ```
+
+A `footer` node stays below the scrolling body inside the sheet. It reserves its own layout height rather than overlaying the final rows; supply its padding.
+
+With `footerBehavior="viewport"`, the scrolling sheet instead overlays a transparent
+footer host and reserves the measured footer height at the scroll content's end.
+Only the footer's own artwork/material paints. Downward drag countertranslation
+keeps it at the visible bottom edge until the panel boundary reaches it; it remains
+inside the same modal and disappears with dismissal. The default `sheet` behavior
+retains the ordinary fixed sibling below the body.

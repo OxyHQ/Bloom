@@ -1,3 +1,4 @@
+import { sheetFooterOffset } from './footer-position';
 import { pointerEventsStyles } from '../styles/pointer-events';
 import { useSurfaceTransition } from '../motion/use-surface-transition';
 import { MOTION_RECIPES } from '../motion/recipes';
@@ -89,6 +90,8 @@ export const BottomSheetBase = forwardRef(
       handleComponent,
       scrollY: externalScrollY,
       headerOverlay,
+      footer,
+      footerBehavior = 'sheet',
       onLayout,
     } = props;
 
@@ -600,6 +603,28 @@ export const BottomSheetBase = forwardRef(
       [backdropProgress],
     );
 
+    const footerHeight = useSharedValue(0);
+    const [footerInset, setFooterInset] = useState(0);
+    const overlayFooter = footerBehavior === 'viewport' && scrollable && footer != null;
+    const footerStyle = useAnimatedStyle(() => {
+      const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
+      return {
+        transform: [
+          {
+            translateY:
+              footerBehavior === 'viewport'
+                ? sheetFooterOffset(
+                    translateY.value,
+                    scale,
+                    sheetHeightSV.value,
+                    footerHeight.value,
+                  )
+                : 0,
+          },
+        ],
+      };
+    }, [footerBehavior, translateY, screenHeightSV, sheetHeightSV, footerHeight]);
+
     const sheetStyle = useAnimatedStyle(() => {
       const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
       return {
@@ -776,7 +801,11 @@ export const BottomSheetBase = forwardRef(
       <Animated.ScrollView
         ref={scrollViewRef}
         style={[styles.scrollView, surfaceCorners]}
-        contentContainerStyle={dynamicStyles.scrollContent}
+        contentContainerStyle={
+          overlayFooter
+            ? [dynamicStyles.scrollContent, { paddingBottom: footerInset }]
+            : dynamicStyles.scrollContent
+        }
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScroll={scrollHandler}
@@ -931,10 +960,36 @@ export const BottomSheetBase = forwardRef(
                 {handleSlot}
 
                 {bodyContent}
+                {footer != null && (
+                  <Animated.View
+                    testID="bloom-sheet-footer"
+                    pointerEvents="box-none"
+                    onLayout={(event) => {
+                      const height = event.nativeEvent.layout.height;
+                      footerHeight.value = height;
+                      setFooterInset(height);
+                    }}
+                    style={[
+                      { flexShrink: 0 },
+                      overlayFooter && { position: 'absolute', left: 0, right: 0, bottom: 0 },
+                      footerStyle,
+                    ]}
+                  >
+                    {footer}
+                  </Animated.View>
+                )}
 
                 {/* Sticky nav-header overlay (Dialog nav-header mode): floats
                             above the scroll body, clipped to the sheet's rounded top. */}
-                {headerOverlay}
+                {headerOverlay != null && (
+                  <View
+                    testID="bloom-sheet-header-clip"
+                    pointerEvents="box-none"
+                    style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}
+                  >
+                    {headerOverlay}
+                  </View>
+                )}
               </SurfaceLevelProvider>
             </Animated.View>
           </GestureDetector>

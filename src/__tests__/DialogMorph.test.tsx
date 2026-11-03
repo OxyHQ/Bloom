@@ -1,4 +1,5 @@
 import React from 'react';
+import * as Reanimated from 'react-native-reanimated';
 import { act, render } from '@testing-library/react-native';
 import type { LayoutChangeEvent, ViewStyle } from 'react-native';
 
@@ -21,6 +22,7 @@ const layout = (height: number): LayoutChangeEvent =>
 interface HarnessProps {
   morphEnabled?: boolean;
   measurable?: boolean;
+  footerHeight?: number;
   frameKey: string;
   frameMorph?: boolean;
   onState: (state: {
@@ -34,11 +36,12 @@ interface HarnessProps {
 function Harness({
   morphEnabled = true,
   measurable = true,
+  footerHeight,
   frameKey,
   frameMorph,
   onState,
 }: HarnessProps) {
-  const morph = useDialogMorph({ enabled: morphEnabled, measurable, maxHeight: 800 });
+  const morph = useDialogMorph({ enabled: morphEnabled, measurable, footerHeight, maxHeight: 800 });
   onState({
     panelStyle: morph.panelStyle as ViewStyle,
     onPanelLayout: morph.onPanelLayout,
@@ -223,4 +226,16 @@ describe('useDialogFrame outside a morph-capable surface', () => {
   it('is a no-op (a side sheet, or a plain confirm dialog)', () => {
     expect(() => render(<Frame frameKey="only" />)).not.toThrow();
   });
+});
+
+it('includes a tall fixed footer once when morphing, without treating it as stretched chrome', () => {
+  const timing = jest.spyOn(Reanimated, 'withTiming');
+  const h = mountHarness({ footerHeight: 160 });
+  h.measure(480, 300); // content + 20px ordinary chrome + 160px footer
+  h.swapTo('b');
+  timing.mockClear();
+  h.measureContent(500);
+  expect(timing).toHaveBeenCalledWith(680, expect.any(Object), expect.any(Function));
+  h.unmount();
+  timing.mockRestore();
 });

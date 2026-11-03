@@ -9,6 +9,8 @@ export interface GroupedSectionItemProps {
   icon?: React.ReactNode;
   /** Primary label */
   title: string;
+  /** Replaces the standard title/description/value body; row padding and surface remain shared. */
+  content?: ReactNode;
   /**
    * How many lines the title may take before it truncates. Default `1`.
    *

@@ -1,0 +1,148 @@
+---
+title: CheckoutSheet
+---
+
+# CheckoutSheet
+
+`@oxy.so/bloom/checkout-sheet` composes a controlled checkout inside a detached
+`Dialog`. The shared header, fixed footer, scroll body and frame morph remain
+inside the same modal surface on native and web.
+
+The host supplies the quoted request, draft, current step and callbacks. Bloom
+renders those values and reports interactions; it does not create payments,
+store card details, grant access or decide a provider outcome.
+
+Pure request/draft types and prerequisite helpers are also available from
+`@oxy.so/bloom/checkout-sheet/model`, which imports no UI runtime.
+
+```tsx
+import { CheckoutSheet } from '@oxy.so/bloom/checkout-sheet';
+
+<CheckoutSheet
+  open={open}
+  request={quote}
+  draft={draft}
+  step={step}
+  direction={direction}
+  savedCards={maskedCards}
+  label={checkoutLabel}
+  formatAmount={formatQuotedAmount}
+  onDraft={setDraft}
+  onStep={navigate}
+  onBack={back}
+  onClose={close}
+  onAuthorize={authorize}
+  onCard={selectCard}
+  cardEntry={providerFields}
+  footer={brandMark}
+/>
+```
+
+`formatAmount(minorUnits, currency)` receives the original quoted integer. The
+host handles currency exponents and display preferences. Item amounts are line
+totals including quantity. The optional `taxDescription` is supplied by the
+quote's owner; omission hides that row. Recurring amounts and start dates are
+separate from the amount due today. `totalMinorUnits`, when supplied, is the
+independently quoted full order total (for example, for installments). Bloom
+does not derive it from the first payment or a payment count.
+
+`label(key, values)` supplies localized copy. Keys cover `title`, `step.*`,
+`section.*`, field names, delivery options, action labels and `result.*`.
+`payMerchant`, `quantity` and `payAmount` receive interpolation values.
+`notice` optionally adds a disclosure below the confirmation button.
+
+`cardEntry` is the host's provider-owned field surface. `CheckoutCard` contains
+only masked display metadata. This component never accepts full card numbers,
+expiry or security codes. The optional `nextStep` lets a host supply prerequisite
+navigation for an additional payment method; the default helper handles contact,
+shipping, delivery and an available card.
+
+`footer` reserves bottom content space and floats transparently over the scroller.
+Supply its padding; do not
+position it absolutely or add another scroll container. The shared Dialog measures
+it separately during frame morphs. `onAuthorize` is an event for the host; the
+host owns authorization, pending state, cancellation and completion.
+
+The checkout footer pins to the visible viewport edge during downward dragging,
+clamped inside the moving panel. Navigation chrome appears on editing and retry
+steps; review and success use the body and the shared dismissal paths. During
+`processing`, backdrop, Escape, native Back, drag dismissal and stale close/back
+callbacks are vetoed. The host can still close through `open={false}` or unmount
+for account changes or application navigation. Hosts should also guard their own
+external close actions while authorizing; this component cannot veto host state.
+
+`resultIllustration` optionally supplies host-owned artwork for result steps.
+The checkout never duplicates the footer status glyph in its body: without artwork,
+result content is text and actions only. Loading can remain text-only while the
+footer carries its progress indicator.
+
+## Account and payment-method composition
+
+`request.requiresContact` defaults to true. A host that already knows the account
+sets it to false and supplies `accountSummary: { name, detail?, avatar? }`; Bloom
+renders that identity through the same `GroupedSectionItem` as the other review
+rows. Optional `accountSummary.supportingRows` adds host-owned context immediately
+below that identity in the same group. Each row supplies `id`, `title`, optional
+`value`, `description` and `onPress`. These rows never appear for guest checkout.
+No identity, balance or authentication lookup happens here.
+
+`paymentMethods` supplies display entries (`id`, `label`, `detail`, `kind`,
+optional `artwork`); entries are filtered against `request.paymentMethods`.
+Saved cards, available methods and the final add-card action use the default
+`GroupedSection` rows. Selecting a saved card calls `onCard`; selecting a method
+calls `onMethod(id)`. The host supplies `methodContent` and navigates to `method`.
+`frameKey` can identify nested method substates so the existing frame morph runs
+when their content changes.
+
+`draft.paymentSelection` carries only an id, allowed method id and masked/display
+labels. Undefined preserves the earlier card-only draft; null explicitly clears
+selection. Unsupported selections never pass the prerequisite helper. The host
+owns provider fields, wallet access, balances, addresses, QR payloads and actual
+authorization. A renderer in `methodContent` does not make a rail available.
+
+Recurring renewal/cancellation clauses appear behind a conditional terms row,
+not in the review summary. The `terms` step shows the complete supplied text;
+Continue returns to review. Opening or leaving terms does not record acceptance
+or change the draft. Hosts supply `terms`, `terms.renewal`, `terms.cancellation`
+and `step.terms` labels and route the header Back action to review.
+
+Editing and terms screens use the Dialog's own large heading. Their compact
+navigation title appears only after the measured heading has scrolled out, and
+hides when scrolling back. `methodTitle` supplies a method-specific heading;
+method content should not repeat it. Monetary balances can remain prominent
+body content. The host does not register a scroll listener or estimate offsets.
+
+Hosts can use `onContinue(updatedDraft)` to advance completed contact, delivery,
+shipping or saved-card selection to the next prerequisite. Without that callback,
+the existing return-to-review behavior remains. Card selection never authorizes.
+The optional `confirmation` step displays only the selected payment method and
+amount due, with an explicit payment button. Missing prerequisites still route
+forward before authorization; no second order-summary screen is required.
+
+`request.tax` optionally supplies quoted `subtotalMinorUnits`, `taxMinorUnits`,
+`totalMinorUnits` and `inclusive`. The summary displays those values unchanged,
+using `taxIncluded` for an included amount or `tax` otherwise. It never adds an
+included amount again or infers a rate. A zero tax quote remains distinct from
+missing tax data; legacy `taxDescription` remains the fallback without a quote.
+
+The review's bottom summary groups today's total, the recurring amount and the
+host-supplied first-payment date immediately before Continue or Pay. Moving the
+date does not reinterpret it as a renewal date.
+
+`interactionBlocked` vetoes user dismissal while keeping the current step and
+provider fields mounted (for example, while a host handles authentication).
+It uses the same backdrop, gesture, Escape, native Back and callback guards as
+processing. External `open={false}` and unmount remain host-controlled.
+
+When a numeric tax quote is supplied, one grouped item contains a canonical
+compact subtotal/tax/total breakdown: subtotal first, included/exclusive tax
+second, and emphasized Order total last. Amounts align at the right edge. The
+existing item padding and surface remain unchanged; there is no divider,
+nested card or separate grouped subtotal/tax row.
+
+### Unavailable payment methods
+
+`paymentMethods` display metadata may include `disabled: true` and a localized
+`detail` explaining why a method is unavailable. Those rows remain visible but
+cannot dispatch `onMethod`. The request's `paymentMethods` remains the authority
+for selectable methods; displaying a capability never adds it to that list.

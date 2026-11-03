@@ -1,6 +1,7 @@
 export {
   TextField,
   TextFieldInput,
+  TextFieldHostedContent,
   TextFieldLabel,
   TextFieldHint,
   TextFieldIcon,

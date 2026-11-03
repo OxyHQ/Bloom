@@ -1,8 +1,8 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import { PanelNavigation } from '../app-shell/PanelNavigation';
-import { PanelRouterProvider } from '../panel-routing/PanelRouter';
+import { PanelRouterProvider, useOptionalPanelRouter } from '../panel-routing/PanelRouter';
 import { Link, useBackWithFallback, usePathname, useRouter } from '../panel-routing/expo-router';
 const mockGlobal = { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn() };
 jest.mock('expo-router', () => ({
@@ -71,4 +71,36 @@ it('goes back through the history while it has one, else replaces the page with 
   back();
   expect(mockGlobal.replace).toHaveBeenCalledWith('/');
   expect(mockGlobal.back).toHaveBeenCalledTimes(1);
+});
+
+it('updates and clears a fragment without remounting the panel or leaking it into query params', () => {
+  const router: { current: ReturnType<typeof useOptionalPanelRouter> } = { current: null };
+  const mounted = jest.fn();
+  function Probe() {
+    router.current = useOptionalPanelRouter();
+    React.useEffect(() => {
+      mounted();
+    }, []);
+    return <Text testID="fragment-href">{router.current?.href}</Text>;
+  }
+  const panel = render(
+    <PanelNavigation
+      id="hash"
+      active
+      options={{
+        initialEntries: [{ key: 'stable', name: '/plus?plan=month#payer%20capability' }],
+        render: () => <PanelRouterProvider routes={[{ path: '/plus', component: Probe }]} />,
+      }}
+    />,
+  );
+  expect(router.current?.params['#']).toBe('payer capability');
+  const originalKey = router.current?.key;
+  act(() => router.current?.setParams({ '#': undefined }));
+  expect(panel.getByTestId('fragment-href').props.children).toBe('/plus?plan=month');
+  expect(router.current?.params['#']).toBeUndefined();
+  expect(router.current?.key).toBe(originalKey);
+  act(() => router.current?.setParams({ '#': 'new section', plan: 'year' }));
+  expect(panel.getByTestId('fragment-href').props.children).toBe('/plus?plan=year#new%20section');
+  expect(router.current?.params['#']).toBe('new section');
+  expect(mounted).toHaveBeenCalledTimes(1);
 });

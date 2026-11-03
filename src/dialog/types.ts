@@ -1,3 +1,4 @@
+import type { TypeScaleVariant } from '../typography/scale';
 import type { TypographyMode } from '../typography/TypographyScope';
 import type { AppColorName } from '../theme/color-presets';
 import type { BackdropAppearance } from '../overlay/types';
@@ -43,8 +44,14 @@ export interface DialogHeaderConfig {
    * visible, no collapse) and the content starts flush under the bar.
    */
   largeTitle?: boolean;
+  /** Alignment of the in-content heading; the collapsed navigation title stays centered. */
+  largeTitleAlign?: 'left' | 'center';
+  /** Optional type-scale token for a quieter in-content heading; default large-title styling is unchanged. */
+  largeTitleVariant?: TypeScaleVariant;
   /** Hero content owns its heading/media beneath the nav; nav title reveals on scroll. */
   titleLayout?: 'large' | 'bar' | 'hero';
+  /** With a large title, reveal the bar title only after its measured bottom leaves the viewport. */
+  titleReveal?: 'collapse' | 'afterTitle';
   /** Custom left slot node. Overrides the default back button. */
   left?: ReactNode;
   /** Custom right slot node. Overrides the default close button. */
@@ -294,6 +301,15 @@ export type DialogProps = React.PropsWithChildren<{
    * `{ base: 'bottom', md: 'left' }` (drawer on wide, sheet on narrow).
    */
   placement?: ResponsiveDialogPlacement;
+  /**
+   * Float bottom placement above the window's safe area with rounded corners
+   * and side gutters. Defaults to `false`; other placements are unchanged.
+   */
+  detached?: boolean;
+  /** Fixed content below the scrolling body, inside the modal surface. Owns its padding. */
+  footer?: React.ReactNode;
+  /** Bottom sheets: keep the footer at the visible viewport edge during downward dragging. */
+  footerBehavior?: 'sheet' | 'viewport';
   /** Side-sheet width (px) on wide screens. Defaults to `460`. */
   width?: number;
   /** Minimum space beyond a side sheet and its insets. Defaults to 24; zero permits full viewport width. */
