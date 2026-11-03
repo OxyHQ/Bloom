@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.0.1
+
+### Changed
+
+- **The avatar runtime is built with Vite 8** (Rolldown). `assets/character-runtime/` and `@oxy.so/bloom-avatar-native`'s bundled factory are rebuilt from the same `runtime/` source, so the hosted manifest and the native package's `AVATAR_RUNTIME_REVISION` change together: the peer is now `@oxy.so/bloom-avatar-native` **0.1.1**. Rolldown does not tree-shake the unused keys of a default-imported JSON module, so the recipe now imports the catalog's `donors` by name; the index's provenance block, which names the retired renderer's files, stays out of the bundle as before (the build's own check).
+- Vite 8 also drives Storybook (`@vitejs/plugin-react` 6 already required it). Its transformer keeps the imports that `expo-modules-core`'s type-only `ts-declarations/global.ts` re-exports inside a `declare namespace`, which Rolldown rejects; Storybook compiles those files with TypeScript's own isolated-module rules (to `export {}`, as TypeScript does). `storybook build` completes again; under Vite 7 it ran out of a 4 GB heap here.
+
+### Consumers
+
+An app that installs `@oxy.so/bloom-avatar-native` moves it to 0.1.1 with this release and rebuilds natively; 0.1.0 against 17.0.1's hosted runtime fails the revision check and falls back to the WebView renderer, as any mismatch does.
+
 ## 17.0.0
 
 ### Removed

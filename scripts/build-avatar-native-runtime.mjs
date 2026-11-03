@@ -49,7 +49,6 @@ await build({
       output: {
         format: 'iife',
         name: 'BloomNativeAvatarEngine',
-        inlineDynamicImports: true,
         entryFileNames: 'runtime.js',
         assetFileNames: 'assets/[name]-[hash][extname]',
       },

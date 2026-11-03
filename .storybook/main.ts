@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
 import type { PluginBuild } from 'esbuild';
 import tailwindcss from '@tailwindcss/vite';
+import ts from 'typescript';
 import { mergeConfig, type ViteDevServer } from 'vite';
 import { avatarMotionTransport } from '../scripts/avatar-motion-transport.mjs';
 import { avatarSurfaceTransport } from '../scripts/avatar-surface-transport.mjs';
@@ -94,6 +95,32 @@ const config: StorybookConfig = {
             };
             server.watcher.on('change', reload);
             server.httpServer?.once('close', () => server.watcher.off('change', reload));
+          },
+        },
+        {
+          name: 'bloom-expo-type-declarations',
+          enforce: 'pre' as const,
+          // `expo-modules-core/src/ts-declarations/` holds types only;
+          // TypeScript compiles `global.ts` to `export {}`. Its ambient
+          // `declare namespace` re-exports four imported classes, which Oxc
+          // (Vite 8's transformer) reads as value uses, so it keeps imports of
+          // names those modules export only as types and Rolldown rejects them
+          // (MISSING_EXPORT). Compile these files with TypeScript's own
+          // isolated-module rules, which is what esbuild matched under Vite 7.
+          transform(code: string, id: string) {
+            if (!/\/expo-modules-core\/src\/ts-declarations\/[^/]+\.ts$/.test(id.split('?')[0]!)) {
+              return null;
+            }
+            const output = ts.transpileModule(code, {
+              fileName: id,
+              compilerOptions: {
+                module: ts.ModuleKind.ESNext,
+                target: ts.ScriptTarget.ES2022,
+                isolatedModules: true,
+                sourceMap: true,
+              },
+            });
+            return { code: output.outputText, map: output.sourceMapText ?? null };
           },
         },
         {

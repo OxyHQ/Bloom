@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "17.0.0",
+  "version": "17.0.1",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -4144,7 +4144,7 @@
     "three": "^0.186.1",
     "ts-jest": "^29.4.15",
     "typescript": "~6.0.3",
-    "vite": "^7.3.7"
+    "vite": "^8.3.5"
   },
   "peerDependencies": {
     "@lottiefiles/dotlottie-react": ">=0.13.0",
@@ -4170,7 +4170,7 @@
     "react-native-screens": ">=3.16.0",
     "react-native-svg": ">=13.0.0",
     "react-native-webview": ">=13.0.0",
-    "@oxy.so/bloom-avatar-native": "0.1.0"
+    "@oxy.so/bloom-avatar-native": "0.1.1"
   },
   "peerDependenciesMeta": {
     "@lottiefiles/dotlottie-react": {

@@ -2,14 +2,18 @@ import { CHARACTER_COLORS } from '../../src/agent-avatar/character-colors';
 import { CHARACTER_PRESET_DEFAULTS } from '../../src/agent-avatar/character-preset-defaults';
 import type { EditorRenderProps, EditorRecipe } from '../avatar-contract';
 import type { CatalogRecipe } from './catalog-compose';
-import catalog from './assets/catalog-library/index.json';
+// The donors alone, by name: the index's provenance (`sourceHashes`, which
+// names the retired renderer's files) must not reach the bundle. A default
+// import keeps the whole object; Rollup tree-shook its unused keys, Rolldown
+// (Vite 8) does not.
+import { donors } from './assets/catalog-library/index.json';
 import type { AvatarPreset } from './catalog';
 
 const groups = {
-  shape: catalog.donors.body,
-  eyes: catalog.donors.eyes,
-  eyewear: catalog.donors.eyewear,
-  accessory: catalog.donors.accessory,
+  shape: donors.body,
+  eyes: donors.eyes,
+  eyewear: donors.eyewear,
+  accessory: donors.accessory,
 };
 export type CompleteEditorRecipe = Omit<EditorRecipe, 'preset'> & {
   preset: string;
