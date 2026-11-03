@@ -67,6 +67,8 @@ class ResizeObserverStub {
 globalThis.ResizeObserver = ResizeObserverStub;
 
 const ROW_HEIGHT = 64;
+/** Past TanStack Virtual's `isScrollingResetDelay` (150 ms), and a frame. */
+const SCROLL_SETTLE_MS = 200;
 
 beforeAll(() => {
   jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
@@ -516,6 +518,23 @@ describe('VirtualList retained row geometry', () => {
       transform: 'translateY(700px)',
     });
   };
+  /**
+   * A reader's scroll: the window moves, the rows in range are measured, and
+   * the scroll ENDS. TanStack Virtual holds a size correction above the fold
+   * while the scroll is live (writing the offset would stop a fling) and
+   * writes it once `isScrolling` resets, so a reading taken mid-scroll is one
+   * the page never shows at rest.
+   */
+  const scrollWindowAndSettle = (offset: number) => {
+    act(() => {
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: offset });
+      window.dispatchEvent(new Event('scroll'));
+      ResizeObserverStub.deliverRows();
+    });
+    act(() => jest.advanceTimersByTime(SCROLL_SETTLE_MS));
+    act(() => ResizeObserverStub.deliverRows());
+    act(() => jest.advanceTimersByTime(SCROLL_SETTLE_MS));
+  };
   let restoreGeometry = () => {};
   beforeEach(() => {
     const offsetHeight = jest
@@ -527,6 +546,14 @@ describe('VirtualList retained row geometry', () => {
             768,
         );
       });
+    // A scroll element's viewport is its client box (TanStack Virtual reads
+    // clientWidth/clientHeight there, offsetHeight only for rows).
+    const clientHeight = jest
+      .spyOn(Element.prototype, 'clientHeight', 'get')
+      .mockImplementation(function (this: Element) {
+        return Number(this.getAttribute('data-viewport-height') ?? 768);
+      });
+    const clientWidth = jest.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(600);
     const rect = jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(() => ({
       x: 0,
       y: -window.scrollY,
@@ -549,6 +576,8 @@ describe('VirtualList retained row geometry', () => {
       });
     restoreGeometry = () => {
       offsetHeight.mockRestore();
+      clientHeight.mockRestore();
+      clientWidth.mockRestore();
       rect.mockRestore();
       scrollTo.mockRestore();
     };
@@ -814,15 +843,11 @@ describe('VirtualList retained row geometry', () => {
         )}
       </ScrollRestorationProvider>
     );
+    jest.useFakeTimers();
     try {
       mount(ui(true));
       act(() => ResizeObserverStub.deliverRows());
-      for (const offset of [1800, 3600, 5400])
-        act(() => {
-          Object.defineProperty(window, 'scrollY', { configurable: true, value: offset });
-          window.dispatchEvent(new Event('scroll'));
-          ResizeObserverStub.deliverRows();
-        });
+      for (const offset of [1800, 3600, 5400]) scrollWindowAndSettle(offset);
       const anchor = [...container.querySelectorAll<HTMLDivElement>('[data-index]')].find(
         (node) => {
           const top = Number.parseFloat(node.style.transform.replace('translateY(', ''));
@@ -844,6 +869,7 @@ describe('VirtualList retained row geometry', () => {
       mount(ui(true));
       expect(container.querySelector(`[data-index="${index}"]`)).toHaveStyle({ transform });
     } finally {
+      jest.useRealTimers();
       Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
     }
   });
@@ -908,15 +934,11 @@ describe('VirtualList retained row geometry', () => {
         />
       </ScreenViewportContext.Provider>
     );
+    jest.useFakeTimers();
     try {
       mount(ui(true));
       act(() => ResizeObserverStub.deliverRows());
-      for (const offset of [1800, 3600, 5400])
-        act(() => {
-          Object.defineProperty(window, 'scrollY', { configurable: true, value: offset });
-          window.dispatchEvent(new Event('scroll'));
-          ResizeObserverStub.deliverRows();
-        });
+      for (const offset of [1800, 3600, 5400]) scrollWindowAndSettle(offset);
       expect(container.querySelector('[data-index="0"]')).toBeNull();
       const anchor = container.querySelector<HTMLDivElement>('[data-index]');
       if (!anchor) throw new Error('Expected a mounted deep row');
@@ -940,6 +962,7 @@ describe('VirtualList retained row geometry', () => {
       act(() => ResizeObserverStub.deliverRows());
       expect(container.querySelector(`[data-index="${index}"]`)).toHaveStyle({ transform });
     } finally {
+      jest.useRealTimers();
       Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
     }
   });
