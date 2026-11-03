@@ -66,6 +66,8 @@ export interface CheckoutPaymentSelection {
   detail?: string;
 }
 export interface CheckoutPaymentMethod {
+  /** Display an unavailable capability with its reason; never makes it selectable. */
+  disabled?: boolean;
   id: string;
   label: string;
   detail?: string;

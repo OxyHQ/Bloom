@@ -478,11 +478,14 @@ function CheckoutContent(props: CheckoutSheetProps) {
               })}
             {(props.paymentMethods ?? [])
               .filter(
-                (method) => method.id !== 'card' && request.paymentMethods.includes(method.id),
+                (method) =>
+                  method.disabled === true ||
+                  (method.id !== 'card' && request.paymentMethods.includes(method.id)),
               )
               .map((method) => {
                 const Icon = PAYMENT_METHOD_KIND_ICON[method.kind ?? 'wallet'];
-                const selected = draft.paymentSelection?.method === method.id;
+                const enabled = !method.disabled && request.paymentMethods.includes(method.id);
+                const selected = enabled && draft.paymentSelection?.method === method.id;
                 return (
                   <GroupedSectionItem
                     key={`method:${method.id}`}
@@ -498,8 +501,10 @@ function CheckoutContent(props: CheckoutSheetProps) {
                     rightElement={
                       selected ? <RiCheckLine size="md" fill={colors.primary} /> : undefined
                     }
-                    disabled={!props.onMethod}
-                    onPress={() => props.onMethod?.(method.id)}
+                    disabled={!enabled || !props.onMethod}
+                    onPress={() => {
+                      if (enabled) props.onMethod?.(method.id);
+                    }}
                   />
                 );
               })}

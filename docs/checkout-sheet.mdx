@@ -139,3 +139,10 @@ compact subtotal/tax/total breakdown: subtotal first, included/exclusive tax
 second, and emphasized Order total last. Amounts align at the right edge. The
 existing item padding and surface remain unchanged; there is no divider,
 nested card or separate grouped subtotal/tax row.
+
+### Unavailable payment methods
+
+`paymentMethods` display metadata may include `disabled: true` and a localized
+`detail` explaining why a method is unavailable. Those rows remain visible but
+cannot dispatch `onMethod`. The request's `paymentMethods` remains the authority
+for selectable methods; displaying a capability never adds it to that list.
