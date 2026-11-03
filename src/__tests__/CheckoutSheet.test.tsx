@@ -101,3 +101,37 @@ it('keeps result status in the footer and allows host-owned illustrations withou
   expect(view.getByText('Host artwork')).toBeTruthy();
   expect(view.queryByTestId('bloom-checkout-result-tile')).toBeNull();
 });
+
+it('uses a canonical account row in place of guest contact collection', () => {
+  const input = props();
+  input.request.requiresContact = false;
+  input.accountSummary = { name: 'Account name', detail: 'Known account' };
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.getByText('Account name')).toBeTruthy();
+  expect(view.queryByText('section.contact')).toBeNull();
+  fireEvent.press(view.getByText('continue'));
+  expect(input.onStep).toHaveBeenCalledWith('payment');
+});
+it('lists allowed methods and keeps the add-card row with or without saved cards', () => {
+  const input = props();
+  input.step = 'payment';
+  input.request.paymentMethods = ['card', 'account'];
+  input.paymentMethods = [
+    { id: 'account', label: 'Bank option', kind: 'account' },
+    { id: 'wallet', label: 'Unavailable option', kind: 'wallet' },
+  ];
+  input.onMethod = jest.fn();
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.queryByText('Unavailable option')).toBeNull();
+  fireEvent.press(view.getByText('Bank option'));
+  expect(input.onMethod).toHaveBeenCalledWith('account');
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+  fireEvent.press(view.getByText('addCard'));
+  expect(input.onStep).toHaveBeenCalledWith('card');
+  const card = { id: 'known', brand: 'Card', last4: '1234', saveForLater: true };
+  view.rerender(<CheckoutSheet {...input} savedCards={[card]} />);
+  fireEvent.press(view.getByText('Card ···· 1234'));
+  expect(input.onCard).toHaveBeenCalledWith(card);
+  expect(input.onStep).toHaveBeenCalledWith('review');
+  expect(view.getByText('addCard')).toBeTruthy();
+});

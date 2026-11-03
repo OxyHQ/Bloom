@@ -68,3 +68,25 @@ steps; review, processing and success use the body and the shared dismissal path
 The checkout never duplicates the footer status glyph in its body: without artwork,
 result content is text and actions only. Loading can remain text-only while the
 footer carries its progress indicator.
+
+
+## Account and payment-method composition
+
+`request.requiresContact` defaults to true. A host that already knows the account
+sets it to false and supplies `accountSummary: { name, detail?, avatar? }`; Bloom
+renders that identity through the same `GroupedSectionItem` as the other review
+rows. No identity or authentication lookup happens here.
+
+`paymentMethods` supplies display entries (`id`, `label`, `detail`, `kind`,
+optional `artwork`); entries are filtered against `request.paymentMethods`.
+Saved cards, available methods and the final add-card action use the default
+`GroupedSection` rows. Selecting a saved card calls `onCard`; selecting a method
+calls `onMethod(id)`. The host supplies `methodContent` and navigates to `method`.
+`frameKey` can identify nested method substates so the existing frame morph runs
+when their content changes.
+
+`draft.paymentSelection` carries only an id, allowed method id and masked/display
+labels. Undefined preserves the earlier card-only draft; null explicitly clears
+selection. Unsupported selections never pass the prerequisite helper. The host
+owns provider fields, wallet access, balances, addresses, QR payloads and actual
+authorization. A renderer in `methodContent` does not make a rail available.
