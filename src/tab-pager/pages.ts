@@ -83,7 +83,7 @@ export function barItemsOf(destinations: readonly AppDestination[]): TabBarItem[
 
 /** The sidebar's rows, in declaration order. */
 export function sidebarItemsOf(destinations: readonly AppDestination[]): SidebarNavItem[] {
-  return destinations.flatMap(
+  const items = destinations.flatMap(
     ({ name, href, label, icon, activeIcon, badge, sidebar, onLongPress }) =>
       (sidebar ?? Boolean(label && icon)) && label && icon
         ? [
@@ -99,6 +99,16 @@ export function sidebarItemsOf(destinations: readonly AppDestination[]): Sidebar
           ]
         : [],
   );
+  // `sidebarAfter` moves a row behind another one; everything else keeps the
+  // declaration order the pager and the bar use.
+  for (const { name, sidebarAfter } of destinations) {
+    if (!sidebarAfter || sidebarAfter === name) continue;
+    const from = items.findIndex((item) => item.key === name);
+    if (from < 0 || !items.some((item) => item.key === sidebarAfter)) continue;
+    const [moved] = items.splice(from, 1);
+    items.splice(items.findIndex((item) => item.key === sidebarAfter) + 1, 0, moved);
+  }
+  return items;
 }
 
 /**

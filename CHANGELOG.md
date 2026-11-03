@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.16.0
+
+### Added
+
+- **`AppDestination.sidebarAfter`.** Names the destination whose sidebar row this one follows, for a sidebar that reads in another order than the pager and the bottom bar (Profile second in the sidebar, last in the bar). The pages and the bar keep the declaration order; the shell still composes the rows' selection, navigation and compose action. Ignored when the named destination draws no row.
+
+### Consumers
+
+Nothing to change.
+
 ## 16.15.0
 
 ### Added

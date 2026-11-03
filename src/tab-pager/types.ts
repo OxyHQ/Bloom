@@ -57,6 +57,13 @@ export interface AppDestination {
   /** Draw a sidebar row. Defaults to whether it has a label and an icon. */
   sidebar?: boolean;
   /**
+   * Draw this sidebar row right after the named destination's row, when the
+   * sidebar should read in another order than the pager and the bar (Profile
+   * second in the sidebar, last in the bar). The pager's pages and the bar keep
+   * the declaration order. Ignored when that destination draws no row.
+   */
+  sidebarAfter?: string;
+  /**
    * An action rather than a place (Settings opening a dialog): pressing the row
    * or item runs this instead of navigating.
    */

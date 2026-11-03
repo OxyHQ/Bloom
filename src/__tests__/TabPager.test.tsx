@@ -3,7 +3,13 @@ import { BottomBar } from '../bottom-bar';
 import { useTabPager, type AppDestination, type TabPagerState } from '../tab-pager';
 import { TabPagerBottomBar } from '../tab-pager/TabPagerBottomBar';
 import { useTabPagerContext, type TabCommitter } from '../tab-pager/context';
-import { createPageModel, valueAtPage } from '../tab-pager/pages';
+import {
+  barItemsOf,
+  createPageModel,
+  pagesOf,
+  sidebarItemsOf,
+  valueAtPage,
+} from '../tab-pager/pages';
 import { TabPagerLayout } from '../tab-pager/expo-router/TabPagerLayout';
 import { TabPagerProvider } from '../tab-pager/expo-router/TabPagerProvider';
 import { stateLeavingTab } from '../tab-pager/expo-router/leave-tab';
@@ -205,4 +211,25 @@ it('drops the page being left from the back history', () => {
     ],
   });
   expect(stateLeavingTab(state, 'write', 'missing')).toBeNull();
+});
+
+it('orders a sidebar row after another with sidebarAfter, leaving the bar in declaration order', () => {
+  const icon = () => null;
+  const destinations: AppDestination[] = [
+    { name: 'index', href: '/', bar: true, label: 'Home', icon },
+    { name: 'explore', href: '/explore', label: 'Explore', icon },
+    { name: 'videos', href: '/videos', bar: true, label: 'Videos', icon },
+    { name: 'you', href: '/you', bar: true, label: 'You', icon, sidebarAfter: 'index' },
+  ];
+  expect(sidebarItemsOf(destinations).map((item) => item.key)).toEqual([
+    'index',
+    'you',
+    'explore',
+    'videos',
+  ]);
+  expect(barItemsOf(pagesOf(destinations)).map((item) => item.name)).toEqual([
+    'index',
+    'videos',
+    'you',
+  ]);
 });
