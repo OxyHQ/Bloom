@@ -362,3 +362,29 @@ it('shows explicitly unavailable capabilities with reasons without expanding pay
   fireEvent.press(view.getByText('Wallet'));
   expect(input.onMethod).not.toHaveBeenCalled();
 });
+
+it('blocks review advancement until ready without preventing dismissal', () => {
+  const input = props();
+  const view = render(<CheckoutSheet {...input} continueDisabled />, { wrapper });
+  fireEvent.press(view.getByText('continue'));
+  expect(input.onStep).not.toHaveBeenCalled();
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+  act(() => view.UNSAFE_getByType(Dialog).props.onClose());
+  expect(input.onClose).toHaveBeenCalledTimes(1);
+  view.rerender(<CheckoutSheet {...input} continueDisabled={false} />);
+  fireEvent.press(view.getByText('continue'));
+  expect(input.onStep).toHaveBeenCalledTimes(1);
+});
+it('blocks confirmation authorization while host authority is pending', () => {
+  const input = props();
+  input.draft.email = 'person@example.test';
+  input.draft.card = { id: 'token', brand: 'Card', last4: '1234', saveForLater: false };
+  const view = render(<CheckoutSheet {...input} step="confirmation" continueDisabled />, {
+    wrapper,
+  });
+  fireEvent.press(view.getByText('payAmount'));
+  expect(input.onAuthorize).not.toHaveBeenCalled();
+  view.rerender(<CheckoutSheet {...input} step="confirmation" continueDisabled={false} />);
+  fireEvent.press(view.getByText('payAmount'));
+  expect(input.onAuthorize).toHaveBeenCalledTimes(1);
+});

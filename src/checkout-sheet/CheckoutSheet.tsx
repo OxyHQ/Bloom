@@ -224,7 +224,16 @@ function CheckoutContent(props: CheckoutSheetProps) {
                 )}
               </View>
             )}
-            <Button size="lg" onPress={() => (next === 'review' ? onAuthorize() : onStep(next))}>
+            <Button
+              size="lg"
+              disabled={props.continueDisabled}
+              onPress={() => {
+                if (!props.continueDisabled) {
+                  if (next === 'review') onAuthorize();
+                  else onStep(next);
+                }
+              }}
+            >
               {next === 'review'
                 ? request.recurring && request.dueTodayMinorUnits === 0
                   ? label('confirmSubscription')
@@ -257,9 +266,13 @@ function CheckoutContent(props: CheckoutSheetProps) {
           </GroupedSection>
           <Button
             size="lg"
-            onPress={() =>
-              confirmationNext === 'review' ? onAuthorize() : onStep(confirmationNext)
-            }
+            disabled={props.continueDisabled}
+            onPress={() => {
+              if (!props.continueDisabled) {
+                if (confirmationNext === 'review') onAuthorize();
+                else onStep(confirmationNext);
+              }
+            }}
           >
             {confirmationNext !== 'review'
               ? label('continue')
