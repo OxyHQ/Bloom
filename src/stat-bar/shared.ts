@@ -1,3 +1,4 @@
+import { formatPercent } from '../locale/format-number';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 
@@ -52,6 +53,16 @@ export function meterValue(value: number, max: number): number {
 export function meterFraction(value: number, max: number): number {
   if (!Number.isFinite(max) || max <= 0) return 0;
   return meterValue(value, max) / max;
+}
+
+/**
+ * What a meter says without its caller's words: the share of the track, in the
+ * reader's locale (`0.42` of 1 → `42%`, `42 %` in Spanish), as a screen reader
+ * says a bare number. React Native keeps `aria-valuenow` as a WHOLE number, so
+ * a fraction of 1 would otherwise read as nothing, natively.
+ */
+export function meterValueText(value: number, max: number, locale?: string): string {
+  return formatPercent(meterFraction(value, max), locale);
 }
 
 // ---------------------------------------------------------------------------

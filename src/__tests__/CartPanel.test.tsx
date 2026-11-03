@@ -324,7 +324,7 @@ describe('the minimum-order shortfall', () => {
       }),
     );
     const meter = byTestId('c-minimum-meter');
-    expect(meter.getAttribute('role')).toBe('progressbar');
+    expect(meter.getAttribute('role')).toBe('meter');
     expect(meter.getAttribute('aria-label')).toBe('Progress to the minimum order');
     expect(meter.getAttribute('aria-valuenow')).toBe('9.5');
     expect(meter.getAttribute('aria-valuetext')).toBe('€9.50 of €14');

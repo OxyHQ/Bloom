@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  *
  * `Meter` and `MeterRing` — the ONE determinate bar and ring behind every
- * progress bar in Bloom — rendered through the REAL react-native-web, so the
+ * meter and progress bar in Bloom — rendered through the REAL react-native-web, so the
  * assertions read the emitted DOM rather than the props that went in. That
  * distinction is the whole point for the accessibility half: a prop-level test
  * cannot see that react-native-web drops `accessibilityValue` on the floor.
@@ -15,6 +15,7 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { Meter, MeterRing, meterFraction, meterValue, resolveMeterColors } from '../stat-bar';
 import { stopSide } from '../stat-bar/MeterRing';
+import { LocaleProvider } from '../locale/context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -159,7 +160,7 @@ describe('Meter geometry', () => {
 });
 
 describe('Meter accessibility', () => {
-  it('emits a named progressbar with the FLAT aria-value attributes', () => {
+  it('emits a named meter with the FLAT aria-value attributes', () => {
     // The flat props are the whole reason this is a runtime suite:
     // react-native-web's `createDOMProps` reads `aria-*` and has no handling
     // for `accessibilityValue` at all, so a bar setting only the object
@@ -169,12 +170,31 @@ describe('Meter accessibility', () => {
       <Meter value={4} max={5} accessibilityLabel="Cleanliness" valueText="4 of 5" testID="m" />,
     );
     const bar = byTestId('m');
-    expect(bar.getAttribute('role')).toBe('progressbar');
+    // A measurement within a range is a meter, a level indicator (`MeterRole`).
+    expect(bar.getAttribute('role')).toBe('meter');
     expect(bar.getAttribute('aria-label')).toBe('Cleanliness');
     expect(bar.getAttribute('aria-valuemin')).toBe('0');
     expect(bar.getAttribute('aria-valuemax')).toBe('5');
     expect(bar.getAttribute('aria-valuenow')).toBe('4');
     expect(bar.getAttribute('aria-valuetext')).toBe('4 of 5');
+  });
+
+  it('is a progressbar when it measures a task (role="progressbar")', () => {
+    mount(<Meter role="progressbar" value={0.25} accessibilityLabel="Uploading" testID="m" />);
+    expect(byTestId('m').getAttribute('role')).toBe('progressbar');
+    expect(byTestId('m').getAttribute('aria-valuenow')).toBe('0.25');
+  });
+
+  it("says its share, in the reader's locale, when its caller gives no words", () => {
+    // React Native keeps aria-valuenow as a whole number: a fraction of 1 would say nothing.
+    mount(<Meter value={0.42} accessibilityLabel="Battery" testID="m" />);
+    expect(byTestId('m').getAttribute('aria-valuetext')).toBe('42%');
+    mount(
+      <LocaleProvider locale="es">
+        <Meter value={3} max={4} accessibilityLabel="Batería" testID="m" />
+      </LocaleProvider>,
+    );
+    expect(byTestId('m').getAttribute('aria-valuetext')).toBe('75\u00a0%');
   });
 
   it('reports a CLAMPED aria-valuenow, never a value past its own max', () => {
@@ -259,7 +279,7 @@ describe('MeterRing', () => {
     expect(circles()[1]!.getAttribute('stroke')).toBe('rgb(255, 0, 0)');
   });
 
-  it('is a named progressbar with the flat aria-value attributes', () => {
+  it('is a named meter with the flat aria-value attributes', () => {
     mount(
       <MeterRing
         value={50}
@@ -270,7 +290,7 @@ describe('MeterRing', () => {
       />,
     );
     const ring = byTestId('r');
-    expect(ring.getAttribute('role')).toBe('progressbar');
+    expect(ring.getAttribute('role')).toBe('meter');
     expect(ring.getAttribute('aria-label')).toBe('Listing quality');
     expect(ring.getAttribute('aria-valuemin')).toBe('0');
     expect(ring.getAttribute('aria-valuemax')).toBe('100');
@@ -302,6 +322,7 @@ describe('MeterRing as a download ring', () => {
         size={28}
         thickness={2.5}
         accessibilityLabel="Installing Notes"
+        role="progressbar"
         testID="r"
       />,
     );
@@ -320,8 +341,18 @@ describe('MeterRing as a download ring', () => {
   });
 
   it('determinate again once the amount is known: its value, no turn', () => {
-    mount(<MeterRing value={0.4} max={1} accessibilityLabel="Installing Notes" testID="r" />);
+    mount(
+      <MeterRing
+        value={0.4}
+        max={1}
+        role="progressbar"
+        accessibilityLabel="Installing Notes"
+        testID="r"
+      />,
+    );
+    expect(byTestId('r').getAttribute('role')).toBe('progressbar');
     expect(byTestId('r').getAttribute('aria-valuenow')).toBe('0.4');
+    expect(byTestId('r').getAttribute('aria-valuetext')).toBe('40%');
     expect(byTestId('r').getAttribute('aria-busy')).toBeNull();
     expect(document.querySelector('[data-bloom-meter-spin]')).toBeNull();
   });

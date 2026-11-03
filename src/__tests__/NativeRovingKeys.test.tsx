@@ -1,9 +1,10 @@
 /**
  * A composite's keyboard on a native host that gives Bloom the window's keys
- * (`hooks/use-native-roving-group.ts`): a segmented control, a radio group and
- * a settings rail beside its page are ONE Tab stop (the chosen option is the
- * only `focusable` one), and while an option has the keyboard focus the arrows
- * choose the next option, the focus following once the choice lands.
+ * (`hooks/use-native-roving-group.ts`): a segmented control, a radio group, a
+ * tab strip, a category bar and a settings rail beside its page are ONE Tab
+ * stop (the chosen option is the only `focusable` one), and while an option has
+ * the keyboard focus the arrows choose the next option, the focus following
+ * once the choice lands.
  */
 import { useState } from 'react';
 import { AccessibilityInfo, Text as RNText } from 'react-native';
@@ -11,6 +12,8 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
 import { RiSchoolLine, RiSettings6Line } from '../icons/remix';
+import { CategoryBar } from '../category-bar';
+import { Tabs, TabsTrigger } from '../tabs';
 import { PlatformSurfaceProvider } from '../platform-surface/context';
 import type { PlatformKeyboard } from '../platform-surface/types';
 import { ChoiceList } from '../choice-list';
@@ -420,5 +423,181 @@ describe('A ChoiceList on a native host with the window keys', () => {
       ),
     ).toEqual(['ada']);
     expect(press(keyboard, 'ArrowRight')).toBe(false);
+  });
+});
+
+describe('Tabs on a native host with the window keys', () => {
+  const TABS = ['general', 'advanced', 'about', 'legal'] as const;
+
+  function Strip({
+    onChange,
+    follow = true,
+  }: {
+    onChange: (value: string) => void;
+    follow?: boolean;
+  }) {
+    const [value, setValue] = useState<string>('general');
+    return (
+      <>
+        <Tabs
+          label="Sections"
+          value={value}
+          onValueChange={(next) => {
+            onChange(next);
+            if (follow) setValue(next);
+          }}
+          testID="strip"
+        >
+          {TABS.map((tab) => (
+            <TabsTrigger
+              key={tab}
+              value={tab}
+              label={tab}
+              disabled={tab === 'about'}
+              testID={`tab-${tab}`}
+            />
+          ))}
+        </Tabs>
+        <RNText testID="land" onPress={() => setValue('advanced')}>
+          land
+        </RNText>
+      </>
+    );
+  }
+
+  function mount(ui: React.ReactElement, keyboard: PlatformKeyboard | undefined) {
+    return render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <PlatformSurfaceProvider value={keyboard ? menuBarAdapter(undefined, keyboard) : null}>
+          {ui}
+        </PlatformSurfaceProvider>
+      </BloomThemeProvider>,
+      // A host view the strip can measure, and send the focus event to.
+      { createNodeMock: () => ({ measure: () => {}, scrollTo: () => {} }) },
+    );
+  }
+
+  const stops = (screen: ReturnType<typeof render>) =>
+    TABS.filter((tab) => host(screen, `tab-${tab}`).props.focusable === true);
+
+  it('is a named tab list of tabs, one Tab stop on the selected tab', () => {
+    const screen = mount(<Strip onChange={jest.fn()} />, fakeKeyboard());
+    const strip = host(screen, 'strip');
+    expect(strip.props.role).toBe('tablist');
+    expect(strip.props.accessibilityLabel).toBe('Sections');
+    expect(TABS.map((tab) => host(screen, `tab-${tab}`).props.accessibilityRole)).toEqual([
+      'tab',
+      'tab',
+      'tab',
+      'tab',
+    ]);
+    expect(host(screen, 'tab-general').props['aria-selected']).toBe(true);
+    expect(stops(screen)).toEqual(['general']);
+  });
+
+  it('selects the tab an arrow reaches, skipping a disabled one, round the ends, Home and End', () => {
+    const keyboard = fakeKeyboard();
+    const onChange = jest.fn();
+    const screen = mount(<Strip onChange={onChange} />, keyboard);
+    expect(press(keyboard, 'ArrowRight')).toBe(false);
+    focus(host(screen, 'tab-general'));
+    expect(press(keyboard, 'ArrowRight')).toBe(true);
+    expect(onChange).toHaveBeenLastCalledWith('advanced');
+    expect(stops(screen)).toEqual(['advanced']);
+    expect(host(screen, 'tab-advanced').props['aria-selected']).toBe(true);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0]?.[1]).toBe('focus');
+    focus(host(screen, 'tab-advanced'));
+    press(keyboard, 'ArrowRight');
+    expect(onChange).toHaveBeenLastCalledWith('legal');
+    focus(host(screen, 'tab-legal'));
+    press(keyboard, 'ArrowRight');
+    expect(onChange).toHaveBeenLastCalledWith('general');
+    focus(host(screen, 'tab-general'));
+    press(keyboard, 'End');
+    expect(onChange).toHaveBeenLastCalledWith('legal');
+    focus(host(screen, 'tab-legal'));
+    press(keyboard, 'Home');
+    expect(onChange).toHaveBeenLastCalledWith('general');
+    // A tab strip is a row: ↓ is not its key.
+    focus(host(screen, 'tab-general'));
+    expect(press(keyboard, 'ArrowDown')).toBe(false);
+    expect(send).toHaveBeenCalledTimes(5);
+  });
+
+  it('moves the keyboard only once the value lands', () => {
+    const keyboard = fakeKeyboard();
+    const onChange = jest.fn();
+    const screen = mount(<Strip onChange={onChange} follow={false} />, keyboard);
+    focus(host(screen, 'tab-general'));
+    press(keyboard, 'ArrowRight');
+    expect(onChange).toHaveBeenLastCalledWith('advanced');
+    expect(stops(screen)).toEqual(['general']);
+    expect(send).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByTestId('land'));
+    expect(stops(screen)).toEqual(['advanced']);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves every tab focusable without the window keys (iOS, Android)', () => {
+    const screen = mount(<Strip onChange={jest.fn()} />, undefined);
+    for (const tab of TABS) expect(host(screen, `tab-${tab}`).props.focusable).not.toBe(false);
+  });
+});
+
+describe('A CategoryBar on a native host with the window keys', () => {
+  const ITEMS = [
+    { key: 'rooms', label: 'Rooms', icon: RiSchoolLine },
+    { key: 'homes', label: 'Homes', icon: RiSettings6Line },
+    { key: 'views', label: 'Views', icon: RiSchoolLine },
+  ];
+
+  function Bar({ onChange }: { onChange: (value: string) => void }) {
+    const [value, setValue] = useState('rooms');
+    return (
+      <CategoryBar
+        accessibilityLabel="Categories"
+        items={ITEMS}
+        value={value}
+        onValueChange={(next) => {
+          onChange(next);
+          setValue(next);
+        }}
+        testID="bar"
+      />
+    );
+  }
+
+  it('is one Tab stop, the arrows selecting the item they reach, stopping at the ends', () => {
+    const keyboard = fakeKeyboard();
+    const onChange = jest.fn();
+    const screen = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <PlatformSurfaceProvider value={menuBarAdapter(undefined, keyboard)}>
+          <Bar onChange={onChange} />
+        </PlatformSurfaceProvider>
+      </BloomThemeProvider>,
+      { createNodeMock: () => ({ scrollTo: () => {} }) },
+    );
+    const item = (key: string) => host(screen, `bar-item-${key}`);
+    expect(host(screen, 'bar-track').props.role).toBe('tablist');
+    expect(ITEMS.map((entry) => item(entry.key).props.role)).toEqual(['tab', 'tab', 'tab']);
+    const stops = () => ITEMS.filter((entry) => item(entry.key).props.focusable === true);
+    expect(stops().map((entry) => entry.key)).toEqual(['rooms']);
+    focus(item('rooms'));
+    expect(press(keyboard, 'ArrowRight')).toBe(true);
+    expect(onChange).toHaveBeenLastCalledWith('homes');
+    expect(stops().map((entry) => entry.key)).toEqual(['homes']);
+    expect(item('homes').props['aria-selected']).toBe(true);
+    focus(item('homes'));
+    press(keyboard, 'End');
+    expect(onChange).toHaveBeenLastCalledWith('views');
+    // The end stops the arrows: the key is the bar's, and nothing changes.
+    focus(item('views'));
+    expect(press(keyboard, 'ArrowRight')).toBe(true);
+    expect(onChange).toHaveBeenCalledTimes(2);
+    press(keyboard, 'Home');
+    expect(onChange).toHaveBeenLastCalledWith('rooms');
+    expect(send).toHaveBeenCalledTimes(3);
   });
 });

@@ -2,7 +2,8 @@ import React, { memo } from 'react';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { useTheme } from '../theme/use-theme';
-import { meterFraction, meterValue, resolveMeterColors } from './shared';
+import { useResolvedBloomLocale } from '../locale/context';
+import { meterFraction, meterValue, meterValueText, resolveMeterColors } from './shared';
 import type { AnyMeterProps } from './types';
 import { useMeterReveal } from './use-meter-reveal.web';
 
@@ -16,6 +17,7 @@ const CSS = `@layer base {
 export const Meter = memo(function Meter(props: AnyMeterProps) {
   useInteractiveWebCss('bloom-meter-classes', CSS);
   const theme = useTheme();
+  const locale = useResolvedBloomLocale();
   const colors = resolveMeterColors(theme);
   const {
     value,
@@ -67,12 +69,12 @@ export const Meter = memo(function Meter(props: AnyMeterProps) {
   return (
     <div
       {...root}
-      role="progressbar"
+      role={props.role ?? 'meter'}
       aria-label={props.accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={meterValue(value, max)}
-      aria-valuetext={props.valueText}
+      aria-valuetext={props.valueText ?? meterValueText(value, max, locale)}
     >
       {contents}
     </div>

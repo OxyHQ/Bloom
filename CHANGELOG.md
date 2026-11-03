@@ -2,6 +2,23 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.13.0
+
+### Added
+
+- **Tabs and `CategoryBar` by the arrows on native.** On a native host that gives Bloom the window's keys (OxyOS's Full Keyboard Access), `Tabs` and `CategoryBar` are ONE Tab stop, the selected tab, and while a tab has the keyboard focus ← → Home End select the tab they reach (automatic activation, as a Mac's segmented tabs and ARIA's recommended tabs pattern), the keyboard following once the value lands, so a screen reader says the tab once, already selected — the mechanism `SegmentedControl` and `RadioGroup` already use (`hooks/use-native-roving-group.ts`). `Tabs` wraps round its ends and skips a disabled tab; `CategoryBar` stops at its ends, as the web's do. On the focus-driven path (`tabs/expo-router`) selecting is navigating: the arrows move the keyboard alone and Space or Return opens the tab. Without such a host every tab stays focusable.
+- **`Meter` and `MeterRing` take `role`** (`MeterRole`: `'meter' | 'progressbar'`), and `meterValueText` is exported.
+
+### Changed
+
+- **A `Meter` is a meter.** `Meter` and `MeterRing` are ARIA's `meter` by default, on both platforms (a level indicator: a score, the share of the ratings, a charge), and `role="progressbar"` for a task's progress (an upload, a download, an install, an episode listened, a lease's elapsed time, an application's steps). Bloom's own progress families pass it: `creator-studio`'s upload, `media-card`'s and `media-header`'s listened bars, `track-list`'s episode, `order-status`, `outline-nav`, `listing-actions`' checklist, `tenancy`'s lease. Ratings, scores, `StatBar` and the cart's minimum are meters.
+- **A meter without words says its share.** Without `valueText`, `Meter` (and `MeterRing`, which said `42%` in English alone) says the share of its track in the reader's locale (`formatPercent`: "42%", "42 %"): React Native keeps `aria-valuenow` as a whole number, so a fraction of 1 said nothing natively.
+- **The `Tabs` strip is a `tablist` on native too**, named by `label`, so a screen reader says each tab with its place ("General, selected, tab, 1 of 3"). It is no element of its own: its tabs are still each one.
+
+### Consumers
+
+A `Meter` or `MeterRing` that shows a task's progress passes `role="progressbar"` (an app store's download ring: `<MeterRing indeterminate={…} role="progressbar" …>`); one that measures something needs nothing. Tests that found a bar by `role="progressbar"` find a meter by `role="meter"`.
+
 ## 16.12.0
 
 ### Fixed

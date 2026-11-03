@@ -13,6 +13,7 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import {
   View,
@@ -41,6 +42,9 @@ import { borderRadius, animation } from '../styles/tokens';
 import { hairlineOn, surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
+import { useNativeRovingGroup, type NativeRovingItemProps } from '../hooks/use-native-roving-group';
+import { mergeRefs } from '../hooks/merge-refs';
+import { usePlatformKeyboard } from '../platform-surface/context';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { TabsContentProps, TabsProps, TabsTriggerProps, TabsVariant } from './types';
 import { IS_WEB } from '../styles/platform';
@@ -335,6 +339,13 @@ interface TabsContextValue {
   /** A trigger reports that the ROUTER considers it focused. */
   reportFocused: (value: string) => void;
   /**
+   * A trigger joins the strip's native keyboard (`hooks/use-native-roving-group.ts`)
+   * with whether it is disabled, and leaves it on unmount.
+   */
+  registerKeyboardTrigger: (value: string, disabled: boolean) => () => void;
+  /** A trigger's keyboard props on a native host that gives Bloom the window's keys. */
+  rovingItem: (value: string, disabled: boolean) => NativeRovingItemProps;
+  /**
    * What an arrow key does on web: `follow` selects the tab it lands on
    * (automatic activation, the controlled path), `manual` only moves focus and
    * leaves Enter/Space to select (the focus-driven path, where selecting is a
@@ -616,9 +627,56 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     [applyTriggerLayout, scheduleRemeasure],
   );
 
+  // Native keyboard (a host giving Bloom the window's keys, as OxyOS's): the
+  // strip is ONE Tab stop, the selected tab, and ← → Home End move between the
+  // tabs, as the web's do (`hooks/roving-focus.ts` below) and as a Mac's tab
+  // view and segmented control are one key view. On the controlled path an
+  // arrow selects the tab it reaches (automatic activation) and the keyboard
+  // moves once the value lands, so the tab is said once, already selected; on
+  // the focus-driven path selecting is navigating, so the arrows move the
+  // keyboard alone and Space or Return opens the tab (manual activation). The
+  // tabs in the order they are laid out, left to right, so → is always the
+  // one to the right.
+  const platformKeyboard = usePlatformKeyboard();
+  const nativeKeys = !IS_WEB && platformKeyboard !== null;
+  const keyboardTriggersRef = useRef(new Map<string, boolean>());
+  // The router's tab, on the focus-driven path: the one the keyboard rests on.
+  const [routedValue, setRoutedValue] = useState<string | undefined>(undefined);
+  // A tab joining or leaving can change which one is the strip's stop.
+  const [, setKeyboardTriggerCount] = useState(0);
+  const registerKeyboardTrigger = useCallback(
+    (tabValue: string, disabled: boolean) => {
+      keyboardTriggersRef.current.set(tabValue, disabled);
+      if (nativeKeys) setKeyboardTriggerCount((count) => count + 1);
+      return () => {
+        keyboardTriggersRef.current.delete(tabValue);
+        if (nativeKeys) setKeyboardTriggerCount((count) => count + 1);
+      };
+    },
+    [nativeKeys],
+  );
+  const roving = useNativeRovingGroup<string>({
+    items: () =>
+      [...keyboardTriggersRef.current]
+        .map(([tabValue, disabled]) => ({ value: tabValue, disabled }))
+        .sort(
+          (a, b) =>
+            (triggerLayoutsRef.current[a.value]?.x ?? 0) -
+            (triggerLayoutsRef.current[b.value]?.x ?? 0),
+        ),
+    value: value ?? routedValue,
+    select: (next) => onValueChange?.(next),
+    orientation: 'horizontal',
+    homeEnd: true,
+    wrap: true,
+    activation: value === undefined ? 'manual' : 'follow',
+  });
+  const rovingItem = roving.itemProps;
+
   const reportFocused = useCallback(
     (tabValue: string) => {
       selectedValueRef.current = tabValue;
+      setRoutedValue(tabValue);
       applySelection(tabValue);
     },
     [applySelection],
@@ -754,6 +812,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       registerTrigger,
       reportTriggerLayout,
       reportFocused,
+      registerKeyboardTrigger,
+      rovingItem,
       activation: value === undefined ? 'manual' : 'follow',
     }),
     [
@@ -767,6 +827,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       registerTrigger,
       reportTriggerLayout,
       reportFocused,
+      registerKeyboardTrigger,
+      rovingItem,
     ],
   );
 
@@ -789,12 +851,13 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     [isUnderline, paint.separator],
   );
 
-  // Web only: `role="tablist"` and its name. On native the strip stays a plain
-  // container — a named native View would become ONE accessibility element
-  // and swallow its tabs on iOS.
+  // `role="tablist"` and its name, on both platforms: a tab is said with its
+  // place among the list's tabs ("2 of 3"), as VoiceOver and TalkBack say a
+  // tab's. Natively the strip is no element of its own (`accessible` stays
+  // false), so its tabs are still each one: iOS maps the role to no trait.
   const stripA11y: Record<string, unknown> = IS_WEB
     ? { role: 'tablist', 'aria-label': label, dataSet: { bloomTabsStrip: '' } }
-    : {};
+    : { role: 'tablist', accessibilityLabel: label };
 
   // The underline sits OVER the baseline: it is `bottom-0` of a wrapper whose
   // child carries the border. An absolute child is placed inside the border,
@@ -936,6 +999,8 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     registerTrigger,
     reportTriggerLayout,
     reportFocused,
+    registerKeyboardTrigger,
+    rovingItem,
     activation,
   } = useTabsContext('TabsTrigger');
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
@@ -1010,6 +1075,11 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // Registration IS the insertion/removal signal the strip acts on, so it must
   // outlive nothing: the cleanup drops both the measure hook and the geometry.
   useEffect(() => registerTrigger(value, measureSelf), [registerTrigger, value, measureSelf]);
+  useEffect(
+    () => registerKeyboardTrigger(value, disabled),
+    [registerKeyboardTrigger, value, disabled],
+  );
+  const roving = rovingItem(value, disabled);
 
   // FOCUS-DRIVEN path only. This covers programmatic navigation too — a deep
   // link, a browser Back, a back gesture — because nothing here asks HOW the
@@ -1140,7 +1210,8 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // which carries that padding instead.
   const tab = (
     <Pressable
-      ref={pressRef}
+      {...roving}
+      ref={roving.ref ? mergeRefs([pressRef, roving.ref]) : pressRef}
       testID={testID}
       {...webDataSet({ bloomTabsTrigger: variant })}
       {...webKeyboard}

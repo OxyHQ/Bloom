@@ -65,6 +65,8 @@ so selecting never reflows the strip. Colour changes only — nothing scales.
   the item half-hidden under a fade lands in full view. Smooth unless the reader
   asked for reduced motion.
 - **Native.** A plain horizontal `ScrollView` — swipe it. No arrows, no fades.
+  On a host that gives Bloom the window's keys (OxyOS), the keyboard's arrows
+  below move along it.
 - **Both.** The selected item is scrolled into view on the first layout
   (without animation) and whenever `value` changes — so a restored or deep-linked
   category is never off-screen.
@@ -78,6 +80,16 @@ item, or the first when nothing is selected — and inside it ArrowLeft /
 ArrowRight / Home / End move focus, Enter or Space select. The keyboard ring is
 drawn above the selection bar so it never hides it. The arrow buttons stay out
 of the tab order; focus moving along the strip scrolls it.
+
+Natively, on a host that gives Bloom the window's keys (`PlatformKeyboard`:
+OxyOS's Full Keyboard Access), the strip is ONE Tab stop too, the selected item
+(`hooks/use-native-roving-group.ts`, as `SegmentedControl`'s): while an item has
+the keyboard focus, ArrowLeft / ArrowRight / Home / End SELECT the item they
+reach (automatic activation, as a Mac's segmented tabs: a native strip has no
+Enter of its own to wait for), stopping at the ends as the web's do, and the
+keyboard follows once `value` is that item, so a screen reader says it once,
+already selected, with its place ("Homes, selected, tab, 2 of 3"). Without such
+a host every item stays focusable.
 
 Selecting a tab calls `onValueChange` — the bar controls no panel, so what the
 selection filters is the app's.

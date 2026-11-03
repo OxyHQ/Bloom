@@ -115,7 +115,7 @@ describe('the score is a measurement, announced as one', () => {
       />,
     );
     const ring = byTestId('s-ring');
-    expect(ring.getAttribute('role')).toBe('progressbar');
+    expect(ring.getAttribute('role')).toBe('meter');
     expect(ring.getAttribute('aria-label')).toBe('Lead score for Larkspur Freight');
     expect(ring.getAttribute('aria-valuemin')).toBe('0');
     expect(ring.getAttribute('aria-valuemax')).toBe('100');
@@ -285,14 +285,14 @@ describe('the header is a TINTED panel, and the tint is the band', () => {
 });
 
 describe('the factors are ROWS on their own panel — there are no bars', () => {
-  it('draws exactly ONE progressbar in the whole card: the score', () => {
+  it('draws exactly ONE meter in the whole card: the score', () => {
     // Five bars down a card is a chart pretending to be a measurement, and it
     // announces the same role five more times. The contribution is a NUMBER.
     mount(
       <LeadScoreCard score={82} accessibilityLabel="Lead score" factors={FACTORS} testID="s" />,
     );
-    expect(container.querySelectorAll('[role="progressbar"]').length).toBe(1);
-    expect(container.querySelectorAll('[role="progressbar"]')[0]).toBe(byTestId('s-ring'));
+    expect(container.querySelectorAll('[role="meter"]').length).toBe(1);
+    expect(container.querySelectorAll('[role="meter"]')[0]).toBe(byTestId('s-ring'));
   });
 
   it('paints the factors panel a real step off the card, and reads its text off THAT', () => {

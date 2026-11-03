@@ -409,10 +409,10 @@ describe('ListingQualityMeter', () => {
     expect(listingQualityScore(items.map((i) => ({ ...i, done: true })))).toBe(100);
   });
 
-  it('draws a named progressbar with the score and the summary', async () => {
+  it('draws a named meter with the score and the summary', async () => {
     await mount(<ListingQualityMeter items={items} testID="q" />);
     const ring = byTestId('q-ring');
-    expect(ring.getAttribute('role')).toBe('progressbar');
+    expect(ring.getAttribute('role')).toBe('meter');
     expect(ring.getAttribute('aria-label')).toBe('Listing quality score');
     expect(ring.getAttribute('aria-valuenow')).toBe('50');
     expect(ring.getAttribute('aria-valuemin')).toBe('0');

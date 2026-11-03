@@ -4,6 +4,7 @@ import Svg, { Circle } from 'react-native-svg';
 
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useResolvedBloomLocale } from '../locale/context';
 import { useTheme } from '../theme/use-theme';
 import {
   METER_DURATION_VAR,
@@ -11,6 +12,7 @@ import {
   adoptMeterStyleSheet,
   meterFraction,
   meterValue,
+  meterValueText,
   resolveMeterColors,
 } from './shared';
 import type { MeterRingProps } from './types';
@@ -29,7 +31,8 @@ import type { MeterRingProps } from './types';
  * `cap: 'round'` at value 0 would paint a dot on an empty ring — a 0% score
  * that reads as "a little" — so it degrades to `'butt'` there.
  *
- * Accessibility: a `progressbar` named by `accessibilityLabel` with the flat
+ * Accessibility: a `meter` (`role="progressbar"` for a task's progress, as a
+ * download's ring is) named by `accessibilityLabel` with the flat
  * `aria-value*` props, for the reason spelled out on `Meter`. `children` are
  * hidden from assistive technology: the centred score is the same number
  * `aria-valuetext` already carries, and announcing it twice is noise.
@@ -51,6 +54,7 @@ function MeterRingComponent({
   cap = 'round',
   accessibilityLabel,
   valueText,
+  role = 'meter',
   transitionMs = 0,
   indeterminate = false,
   onStop,
@@ -60,6 +64,7 @@ function MeterRingComponent({
   testID,
 }: MeterRingProps) {
   const theme = useTheme();
+  const locale = useResolvedBloomLocale();
   const defaults = useMemo(() => resolveMeterColors(theme), [theme]);
   const web = Platform.OS === 'web';
 
@@ -99,16 +104,15 @@ function MeterRingComponent({
 
   return (
     <View
-      accessibilityRole="progressbar"
+      role={role}
       accessibilityLabel={accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={indeterminate ? undefined : meterValue(value, max)}
-      // Without the caller's words, how far along it is as a share ("42%"): React Native keeps
-      // `now` as a whole number, so a fraction of 1 (an install's progress) would read as nothing.
-      aria-valuetext={
-        indeterminate ? undefined : (valueText ?? `${Math.round(meterFraction(value, max) * 100)}%`)
-      }
+      // Without the caller's words, how far along it is as a share in the reader's locale
+      // ("42%", "42 %"): React Native keeps `now` as a whole number, so a fraction of 1 (an
+      // install's progress) would read as nothing.
+      aria-valuetext={indeterminate ? undefined : (valueText ?? meterValueText(value, max, locale))}
       aria-busy={indeterminate || undefined}
       testID={testID}
       style={[boxStyle, style]}

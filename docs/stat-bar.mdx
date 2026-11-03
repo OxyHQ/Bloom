@@ -1,13 +1,14 @@
 ---
 title: Meter and StatBar
-description: The one determinate bar and ring behind every progress bar in Bloom, and the labelled bar built on it.
+description: The one determinate bar and ring behind every meter and progress bar in Bloom, and the labelled bar built on it.
 order: 63
 ---
 
 # Meter
 
-`Meter` is the determinate bar. Every progress bar in Bloom is this one —
-seventeen families used to hand-roll it, and they disagreed about both colours.
+`Meter` is the determinate bar. Every meter and progress bar in Bloom is this
+one — seventeen families used to hand-roll it, and they disagreed about both
+colours.
 
 ```tsx
 import { Meter, MeterRing } from '@oxy.so/bloom/stat-bar';
@@ -32,8 +33,9 @@ with a label is `StatBar`; a bar inside a card is that card's business.
 | `fill` / `track`      | the two colours — see below before you pass either             |
 | `transitionMs`        | ease the fill on WEB; native snaps, reduced motion snaps       |
 | `accessibilityLabel`  | what the bar measures — REQUIRED                               |
-| `valueText`           | `aria-valuetext`, the reading ("4 of 5" rather than "80%")     |
-| `decorative`          | no role at all, for one segment of a larger progressbar        |
+| `valueText`           | `aria-valuetext`, the reading ("4 of 5"); without it the share in the reader's locale ("80%", "80 %") |
+| `role`                | `meter` (default) for a measurement, `progressbar` for a task's progress — see Accessibility |
+| `decorative`          | no role at all, for one segment of a larger meter              |
 | `className` / `fillClassName` | actual track and fill hosts; classes override default geometry and paint, while fill width remains data-owned |
 | `fillTestID`          | the fill's own `testID`; defaults to `` `${testID}-fill` ``    |
 
@@ -53,6 +55,7 @@ known, its `value` once it is, and with `onStop` the control that stops it.
   size={30}
   thickness={2.5}
   accessibilityLabel={`Installing ${name}`}
+  role="progressbar"
   onStop={cancel}
   stopLabel={`Stop installing ${name}`}
 />
@@ -103,15 +106,30 @@ move it here, not before.
 
 ## Accessibility
 
-A `progressbar` named by `accessibilityLabel`, with the FLAT `aria-value*`
-attributes. react-native-web drops the `accessibilityValue` object entirely, so
-a bar setting only that announces its role and no value at all; React Native
-folds the flat props back, so native is unchanged. ARIA never computes a name
-for `progressbar` from its contents and the bar draws no text of its own, which
-is why the label is required rather than optional.
+A `meter` named by `accessibilityLabel`, with the FLAT `aria-value*`
+attributes, on both platforms. `role` says which of ARIA's two it is, as a Mac
+says a level indicator and a progress indicator:
 
-A bar that is one segment of a larger progressbar passes `decorative` and is
-hidden: two nested progressbars announce the same measurement twice.
+- `meter` (the default): a measurement within a known range — a score, the
+  share of the ratings, how full a cart's minimum is. "Level indicator".
+- `progressbar`: how far a TASK has got — an upload, a download or an install
+  (a download's ring, `indeterminate` included), an episode listened, a lease's
+  elapsed time, an application's steps. "Progress indicator". Bloom's own
+  progress families (`creator-studio`, `media-card`, `media-header`,
+  `track-list`, `order-status`, `outline-nav`, `listing-actions`, `tenancy`)
+  pass it.
+
+react-native-web drops the `accessibilityValue` object entirely, so a bar
+setting only that announces its role and no value at all; React Native folds the
+flat props back. React Native keeps `aria-valuenow` as a WHOLE number, so a
+fraction of 1 would say nothing natively: without `valueText` the bar says its
+share of the track in the reader's locale (`meterValueText`, `formatPercent`:
+"42%", "42 %"), on both platforms. ARIA never computes a name for a `meter` or a
+`progressbar` from its contents and the bar draws no text of its own, which is
+why the label is required rather than optional.
+
+A bar that is one segment of a larger meter passes `decorative` and is hidden:
+two nested meters announce the same measurement twice.
 
 # StatBar
 

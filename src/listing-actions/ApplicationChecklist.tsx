@@ -105,6 +105,7 @@ function ApplicationChecklistComponent({
       </View>
 
       <Meter
+        role="progressbar"
         value={done}
         max={total}
         height={6}
