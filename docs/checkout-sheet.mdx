@@ -96,3 +96,9 @@ labels. Undefined preserves the earlier card-only draft; null explicitly clears
 selection. Unsupported selections never pass the prerequisite helper. The host
 owns provider fields, wallet access, balances, addresses, QR payloads and actual
 authorization. A renderer in `methodContent` does not make a rail available.
+
+Recurring renewal/cancellation clauses appear behind a conditional terms row,
+not in the review summary. The `terms` step shows the complete supplied text;
+Continue returns to review. Opening or leaving terms does not record acceptance
+or change the draft. Hosts supply `terms`, `terms.renewal`, `terms.cancellation`
+and `step.terms` labels and route the header Back action to review.
