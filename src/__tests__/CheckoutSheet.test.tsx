@@ -239,3 +239,38 @@ it('requires explicit confirmation and still routes missing prerequisites forwar
   fireEvent.press(view.getByText('payAmount'));
   expect(input.onAuthorize).toHaveBeenCalledTimes(1);
 });
+
+it('displays quoted inclusive tax without adding it again to the total due', () => {
+  const input = props();
+  input.request.tax = {
+    subtotalMinorUnits: 557,
+    taxMinorUnits: 42,
+    totalMinorUnits: 599,
+    inclusive: true,
+  };
+  input.request.taxDescription = 'fallback';
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.getByText('taxIncluded')).toBeTruthy();
+  expect(view.getByText('42 JPY')).toBeTruthy();
+  expect(view.getByText('557 JPY')).toBeTruthy();
+  expect(view.queryByText('fallback')).toBeNull();
+  expect(input.formatAmount).not.toHaveBeenCalledWith(641, 'JPY');
+  expect(input.formatAmount).toHaveBeenCalledWith(599, 'JPY');
+});
+
+it('distinguishes a quoted zero tax from tax that has not been supplied', () => {
+  const input = props();
+  const view = render(<CheckoutSheet {...input} />, { wrapper });
+  expect(view.queryByText('taxIncluded')).toBeNull();
+  view.rerender(
+    <CheckoutSheet
+      {...input}
+      request={{
+        ...input.request,
+        tax: { subtotalMinorUnits: 599, taxMinorUnits: 0, totalMinorUnits: 599, inclusive: true },
+      }}
+    />,
+  );
+  expect(view.getByText('taxIncluded')).toBeTruthy();
+  expect(view.getByText('0 JPY')).toBeTruthy();
+});

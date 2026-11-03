@@ -118,3 +118,9 @@ the existing return-to-review behavior remains. Card selection never authorizes.
 The optional `confirmation` step displays only the selected payment method and
 amount due, with an explicit payment button. Missing prerequisites still route
 forward before authorization; no second order-summary screen is required.
+
+`request.tax` optionally supplies quoted `subtotalMinorUnits`, `taxMinorUnits`,
+`totalMinorUnits` and `inclusive`. The summary displays those values unchanged,
+using `taxIncluded` for an included amount or `tax` otherwise. It never adds an
+included amount again or infers a rate. A zero tax quote remains distinct from
+missing tax data; legacy `taxDescription` remains the fallback without a quote.
