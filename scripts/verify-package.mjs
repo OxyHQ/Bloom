@@ -96,13 +96,14 @@ const REQUIRED_ROOT_DOCS = [
  * Subpaths a plain Node process must be able to load, and which of them work
  * under ESM as opposed to only CommonJS.
  *
- * Deliberately short: 7 of Bloom's 87 subpaths load under bare Node at all,
- * the rest pull `react-native` and die in its Flow/JSX source. Six of those
- * seven are here because something documents them as Node-facing — `./fonts`
- * carries a `node` export condition for the SSR path, `./design-tokens`,
- * `./preset-vars` and `./color-presets` are the react-free resolvers a build
- * script imports, `./tailwind-preset` is loaded by a consumer's tailwind
- * config, and `./image-resolver` is one universal pure-JS file. The seventh,
+ * Deliberately short: few of Bloom's subpaths load under bare Node at all,
+ * the rest pull `react-native` and die in its Flow/JSX source. Those listed
+ * are here because something documents them as Node-facing — `./fonts`
+ * carries a `node` export condition for the SSR path, `./color-engine` is the
+ * colour engine for servers, `./design-tokens`, `./preset-vars` and
+ * `./color-presets` are the react-free resolvers a build script imports,
+ * `./tailwind-preset` is loaded by a consumer's tailwind config, and
+ * `./image-resolver` is one universal pure-JS file. One more,
  * `./scroll`, loads today by accident rather than by contract, so pinning it
  * would go red on an honest change.
  *
@@ -114,7 +115,7 @@ const REQUIRED_ROOT_DOCS = [
  *
  * ESM is a SEPARATE question from CommonJS and this check used to conflate
  * them: it ran `require()` and reported "require()-able under Node", which
- * reads as Node coverage. Measured, `import()` fails for three of the six.
+ * reads as Node coverage. Measured, `import()` fails for three of the seven.
  * bob leaves a relative specifier extensionless exactly when the target has
  * platform variants, so a bundler can pick one — 114 of the 114 bare
  * specifiers in `lib/module` are that shape. Node's ESM resolver demands the
@@ -124,6 +125,7 @@ const REQUIRED_ROOT_DOCS = [
  * resolving under ESM fails this check too, because the entry is then a lie.
  */
 const NODE_LOADABLE_SUBPATHS = [
+  './color-engine',
   './color-presets',
   './design-tokens',
   './fonts',
@@ -133,9 +135,9 @@ const NODE_LOADABLE_SUBPATHS = [
 ];
 
 /**
- * The three of those six that Node's ESM resolver cannot load. Not a
+ * The three of those seven that Node's ESM resolver cannot load. Not a
  * suppression list — `assertNodeLoadable()` asserts membership exactly, so the
- * other three are this probe's positive control: if the scratch package or the
+ * other four are this probe's positive control: if the scratch package or the
  * symlink were wrong, they would fail too, instead of the run quietly
  * "confirming" the expected breakage.
  */

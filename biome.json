@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "defaultBranch": "main" },
   "files": {
     "ignoreUnknown": true,
@@ -44,6 +44,8 @@
     }
   },
   "json": { "formatter": { "trailingCommas": "none" } },
+  "yaml": { "formatter": { "quoteStyle": "single" } },
+  "markdown": { "formatter": { "enabled": false } },
   "css": { "parser": { "tailwindDirectives": true } },
   "assist": { "enabled": true, "actions": { "source": { "organizeImports": "off" } } },
   "linter": {
@@ -81,10 +83,12 @@
       },
       "correctness": {
         "noChildrenProp": "warn",
+        "noComponentHookFactories": "warn",
         "noUnsafeOptionalChaining": "warn",
         "noUnusedFunctionParameters": "warn",
         "noUnusedImports": "warn",
         "noUnusedVariables": "warn",
+        "noReactNativeRawText": "warn",
         "useExhaustiveDependencies": {
           "level": "warn",
           "options": {

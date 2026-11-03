@@ -18,12 +18,12 @@
  * lightningcss 1.32's AST ("expected an object-like struct named Specifier").
  */
 
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { TYPOGRAPHY, type TypeRoleName } from '../design-tokens/scales';
+import { buildTailwindCss } from './support/tailwind-css';
 
 // react-native-css's built files, addressed by path: the package `exports`
 // hide them, and Jest applies neither Metro's `.native.js` platform extension
@@ -60,19 +60,9 @@ jest.mock('react-native', () => ({
 const ROLES = Object.keys(TYPOGRAPHY) as TypeRoleName[];
 const CUSTOM_METRICS = ['native-line-px', 'native-line-variable', 'native-line-ratio'];
 
-async function buildTailwindCss(candidates: string[]): Promise<string> {
-  const { compile } = require('@tailwindcss/node') as typeof import('@tailwindcss/node');
-  const themeCss = readFileSync(join(__dirname, '..', 'design-tokens', 'theme.css'), 'utf8');
-  const input = [
-    '@import "tailwindcss/theme.css" layer(theme);',
-    '@import "tailwindcss/utilities.css" layer(utilities);',
-    themeCss,
-  ].join('\n');
-  const compiler = await compile(input, {
-    base: join(__dirname, '..', '..'),
-    onDependency: () => {},
-  });
-  return `${compiler.build(candidates)}
+/** Tailwind's CSS for `candidates`, plus three hand-authored line-height shapes. */
+function buildCss(candidates: string[]): string {
+  return `${buildTailwindCss(candidates)}
     :root { --native-line-height: 20px; }
     .native-line-px { font-size: 18px; line-height: 20px; }
     .native-line-variable { font-size: 18px; line-height: var(--native-line-height); }
@@ -90,14 +80,14 @@ function flattenStyle(style: unknown): Record<string, unknown> {
 describe('type-scale line-height on native (Tailwind v4 → react-native-css)', () => {
   let resolved: Record<string, Record<string, unknown>>;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     const candidates = [
       ...ROLES.map((role) => `text-${role}`),
       'text-sm',
       'leading-[20px]',
       ...CUSTOM_METRICS,
     ];
-    const css = await buildTailwindCss(candidates);
+    const css = buildCss(candidates);
 
     const { compile } =
       require('react-native-css/compiler') as typeof import('react-native-css/compiler');
@@ -151,14 +141,14 @@ describe('type-scale line-height on native (Tailwind v4 → react-native-css)', 
 
 // Third-party native components still need the public explicit mapping. The
 // compiler upgrade must preserve authored image dimensions through that adapter.
-it('preserves NativeWind styled image dimensions on the native runtime', async () => {
+it('preserves NativeWind styled image dimensions on the native runtime', () => {
   const { styled } = require('nativewind') as typeof import('nativewind');
   const { Image } = require('expo-image') as typeof import('expo-image');
   const { compile } =
     require('react-native-css/compiler') as typeof import('react-native-css/compiler');
   const { StyleCollection } = require('react-native-css/native');
   const StyledImage = styled(Image, { className: 'style' });
-  StyleCollection.inject(compile(await buildTailwindCss(['w-24', 'h-20']), {}).stylesheet());
+  StyleCollection.inject(compile(buildCss(['w-24', 'h-20']), {}).stylesheet());
   const screen = render(
     <StyledImage
       testID="styled-image"

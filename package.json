@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "16.16.0",
+  "version": "16.17.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -202,6 +202,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/theme/color-presets.d.ts",
         "default": "./lib/commonjs/theme/color-presets.js"
+      }
+    },
+    "./color-engine": {
+      "react-native": {
+        "types": "./lib/typescript/module/theme/color-engine/index.d.ts",
+        "default": "./src/theme/color-engine/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/theme/color-engine/index.d.ts",
+        "default": "./lib/module/theme/color-engine/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/theme/color-engine/index.d.ts",
+        "default": "./lib/commonjs/theme/color-engine/index.js"
       }
     },
     "./preset-vars": {
@@ -4088,35 +4102,35 @@
     "build:avatar-native": "node scripts/build-avatar-native-runtime.mjs"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.3",
     "@lottiefiles/dotlottie-react": "^0.20.0",
     "@react-native-community/netinfo": "12.0.1",
-    "@storybook/addon-docs": "^10",
-    "@storybook/react-vite": "^10",
-    "@tailwindcss/vite": "4.3.2",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
+    "@storybook/addon-docs": "^10.6.5",
+    "@storybook/react-vite": "^10.6.5",
+    "@tailwindcss/vite": "4.3.3",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.3.0",
     "@types/react-dom": "~19.3.0",
     "@types/react-test-renderer": "~19.3.0",
     "@types/three": "^0.186.0",
-    "@vitejs/plugin-react": "^6.0.2",
-    "expo": "~58.0.14",
-    "expo-blur": "~58.0.4",
-    "expo-font": "~58.0.8",
+    "@vitejs/plugin-react": "^6.1.2",
+    "expo": "~58.0.20",
+    "expo-blur": "~58.0.5",
+    "expo-font": "~58.0.10",
     "expo-haptics": "~58.0.7",
-    "expo-image": "~58.0.15",
-    "expo-router": "~58.0.23",
-    "expo-video": "~58.0.11",
-    "jest": "^30.3.0",
-    "jest-environment-jsdom": "^30.4.1",
+    "expo-image": "~58.0.17",
+    "expo-router": "~58.0.27",
+    "expo-video": "~58.0.12",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
     "nativewind": "5.0.0-rc.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.0",
-    "react-native-builder-bob": "^0.40.16",
+    "react-native-builder-bob": "^0.44.1",
     "react-native-gesture-handler": "~3.3.0",
     "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.10.1",
@@ -4125,12 +4139,12 @@
     "react-native-web": "~0.21.4",
     "react-native-worklets": "0.13.0",
     "react-test-renderer": "19.3.0",
-    "storybook": "^10",
-    "tailwindcss": "4.3.2",
+    "storybook": "^10.6.5",
+    "tailwindcss": "4.3.3",
     "three": "^0.186.1",
-    "ts-jest": "^29.4.6",
-    "typescript": "~5.9.2",
-    "vite": "^7"
+    "ts-jest": "^29.4.15",
+    "typescript": "~6.0.3",
+    "vite": "^7.3.7"
   },
   "peerDependencies": {
     "@lottiefiles/dotlottie-react": ">=0.13.0",
@@ -4299,6 +4313,9 @@
       ],
       "color-presets": [
         "./lib/typescript/module/theme/color-presets.d.ts"
+      ],
+      "color-engine": [
+        "./lib/typescript/module/theme/color-engine/index.d.ts"
       ],
       "preset-vars": [
         "./lib/typescript/module/theme/preset-vars.d.ts"
