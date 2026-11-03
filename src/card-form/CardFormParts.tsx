@@ -560,7 +560,7 @@ function CardFormCountryComponent({
     <View style={[{ width: '100%', minWidth: 0 }, style]} testID={testID}>
       {label ? <TextFieldLabel required={member.required}>{label}</TextFieldLabel> : null}
       <FieldControlProvider value={republish(member)}>
-        <Select value={value} onValueChange={onValueChange} disabled={member.disabled}>
+        <Select value={value || undefined} onValueChange={onValueChange} disabled={member.disabled}>
           <SelectTrigger
             label={member.name}
             disabled={member.disabled}
