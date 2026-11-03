@@ -69,11 +69,6 @@ export function codePanelActions(messages: AiChatMessages): ReadonlyArray<AiChat
   ];
 }
 
-/** The English actions; the panel's own default follows the locale. */
-export const DEFAULT_CODE_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = codePanelActions(
-  AI_CHAT_MESSAGES.en,
-);
-
 /** A panel-wide placeholder on the secondary surface (the Browser / Styles tabs). */
 export function PanelPlaceholder({ label, palette }: { label: string; palette: AiChatPalette }) {
   return (

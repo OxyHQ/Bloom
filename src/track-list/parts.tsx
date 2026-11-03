@@ -1,4 +1,4 @@
-import React, { Fragment, memo, useMemo } from 'react';
+import { Fragment, memo, useMemo } from 'react';
 import { View, type GestureResponderEvent } from 'react-native';
 
 import { GlyphButton } from '../button';
@@ -16,13 +16,14 @@ import { useImageResolver } from '../image-resolver/context';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { resolveTrackListPaint } from './shared';
-import type { TrackIconComponent, TrackMenuItem } from './types';
+import type { TrackMenuItem } from './types';
 import { IS_WEB } from '../styles/platform';
 import { BloomImage } from '../image';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** The props `DropdownMenuTrigger asChild` merges onto its child. */
 interface TrackIconButtonProps {
-  icon: TrackIconComponent;
+  icon: BloomIconComponent;
   accessibilityLabel: string;
   onPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;

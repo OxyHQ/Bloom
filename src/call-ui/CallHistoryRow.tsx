@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar/Avatar';
@@ -12,7 +12,8 @@ import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
 import { CALL_UI_MESSAGES } from './messages';
 import { isNegativeDirection, resolveCallPaint } from './shared';
-import type { CallDirection, CallGlyph, CallHistoryRowProps } from './types';
+import type { CallDirection, CallHistoryRowProps } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * `CallHistoryRow`: one entry in the call log.
@@ -31,7 +32,7 @@ import type { CallDirection, CallGlyph, CallHistoryRowProps } from './types';
  * long 4 minutes 32 seconds is written.
  */
 
-const DIRECTION_GLYPH: Record<CallDirection, CallGlyph> = {
+const DIRECTION_GLYPH: Record<CallDirection, BloomIconComponent> = {
   incoming: RiArrowLeftDownLine,
   outgoing: RiArrowRightUpLine,
   missed: RiArrowLeftDownLine,

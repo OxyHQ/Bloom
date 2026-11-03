@@ -10,7 +10,8 @@ import React, {
 
 import type { LyricLine } from '../../src/lyrics';
 import type { PlaybackDevice, RepeatMode, SleepTimerValue } from '../../src/media-player';
-import { moveQueueItem, type QueueSection, type QueueTrack } from '../../src/queue-panel';
+import { moveItem } from '../../src/hooks';
+import type { QueueSection, QueueTrack } from '../../src/queue-panel';
 import type { Track } from '../../src/track-list';
 import { formatDuration } from '../../src/media-controls';
 import {
@@ -414,8 +415,8 @@ export function PlayerProvider({
   );
 
   const reorder = useCallback((section: QueueSection, from: number, to: number) => {
-    if (section === 'queue') setQueue((list) => moveQueueItem(list, from, to));
-    else setUpNext((list) => moveQueueItem(list, from, to));
+    if (section === 'queue') setQueue((list) => moveItem(list, from, to));
+    else setUpNext((list) => moveItem(list, from, to));
   }, []);
 
   const remove = useCallback((section: QueueSection, index: number) => {

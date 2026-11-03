@@ -1,7 +1,7 @@
 import React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
-import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
+import { ResizeHandle } from '../layout/ResizeHandle';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -1633,7 +1633,7 @@ describe('AppShellPanels', () => {
     });
     // The grip reports arrow keys (±16) through `onNudge` and a drag through
     // `onResize`, measured from the width the panel was DRAWN at.
-    const grip = screen.UNSAFE_getByType(AiChatResizeHandle);
+    const grip = screen.UNSAFE_getByType(ResizeHandle);
     act(() => grip.props.onNudge(-16));
     expect(onWidthChange).toHaveBeenLastCalledWith(344);
     act(() => {

@@ -1,5 +1,6 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { RiArrowGoBackLine } from '../icons/remix/RiArrowGoBackLine';
@@ -20,13 +21,14 @@ import { RiSkipForwardFill } from '../icons/remix/RiSkipForwardFill';
 import { PlayButton } from '../media-controls/PlayButton';
 import { useTheme } from '../theme/use-theme';
 import { PlaybackSpeedMenu } from './PlaybackSpeedMenu';
-import { PlayerIconButton, type PlayerGlyph } from './PlayerIconButton';
+import { PlayerIconButton } from './PlayerIconButton';
 import { nextRepeatMode, TRANSPORT_GEOMETRY } from './shared';
 import type { TransportControlsLabels, TransportControlsProps } from './types';
 import { useMessages } from '../locale/messages';
-import { COMMON_MESSAGES, useCommonMessages, type CommonMessages } from '../locale/common-messages';
+import { useCommonMessages, type CommonMessages } from '../locale/common-messages';
 import { MEDIA_CONTROLS_MESSAGES, type MediaControlsMessages } from '../media-controls/messages';
 import { MEDIA_PLAYER_MESSAGES, type MediaPlayerMessages } from './messages';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** The transport's names from the three catalogs it speaks through. */
 function transportLabels(
@@ -47,20 +49,13 @@ function transportLabels(
   };
 }
 
-/** The English names; the component speaks the locale's (`BloomProvider locale`). */
-export const DEFAULT_TRANSPORT_LABELS: TransportControlsLabels = transportLabels(
-  MEDIA_PLAYER_MESSAGES.en,
-  MEDIA_CONTROLS_MESSAGES.en,
-  COMMON_MESSAGES.en,
-);
-
-const REPLAY_GLYPHS: Record<number, PlayerGlyph> = {
+const REPLAY_GLYPHS: Record<number, BloomIconComponent> = {
   5: RiReplay5Line,
   10: RiReplay10Line,
   15: RiReplay15Line,
   30: RiReplay30Line,
 };
-const FORWARD_GLYPHS: Record<number, PlayerGlyph> = {
+const FORWARD_GLYPHS: Record<number, BloomIconComponent> = {
   5: RiForward5Line,
   10: RiForward10Line,
   15: RiForward15Line,
@@ -68,7 +63,7 @@ const FORWARD_GLYPHS: Record<number, PlayerGlyph> = {
 };
 
 /** The numbered skip glyph for 5 / 10 / 15 / 30 seconds; a plain curved arrow for any other count. */
-export function skipGlyphFor(direction: 'back' | 'forward', seconds: number): PlayerGlyph {
+export function skipGlyphFor(direction: 'back' | 'forward', seconds: number): BloomIconComponent {
   if (direction === 'back') return REPLAY_GLYPHS[seconds] ?? RiArrowGoBackLine;
   return FORWARD_GLYPHS[seconds] ?? RiArrowGoForwardLine;
 }

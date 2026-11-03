@@ -1,5 +1,4 @@
-import { COMMON_MESSAGES } from '../locale/common-messages';
-import { STAY_SEARCH_MESSAGES, type StaySearchMessages } from './messages';
+import { type StaySearchMessages } from './messages';
 import type { DateFlexibilityOption, GuestKind, StaySearchBarLabels } from './types';
 
 /**
@@ -51,17 +50,6 @@ export function staySearchBarLabels(
   };
 }
 
-/** The English labels. The components read the locale's catalog instead. */
-export const DEFAULT_STAY_SEARCH_BAR_LABELS: StaySearchBarLabels = staySearchBarLabels(
-  STAY_SEARCH_MESSAGES.en,
-  COMMON_MESSAGES.en.search,
-);
-
-export const DEFAULT_GUEST_LABELS: Record<GuestKind, string> = STAY_SEARCH_MESSAGES.en.guests;
-
-export const DEFAULT_GUEST_DESCRIPTIONS: Record<GuestKind, string> =
-  STAY_SEARCH_MESSAGES.en.guestDescriptions;
-
 export const GUEST_KINDS: readonly GuestKind[] = ['adults', 'children', 'infants', 'pets'];
 
 /** Exact, ± 1, ± 2, ± 3, ± 7 days in one language. */
@@ -71,6 +59,3 @@ export function dateFlexibilityOptions(messages: StaySearchMessages): DateFlexib
     ...[1, 2, 3, 7].map((n) => ({ value: String(n), label: messages.plusMinusDays(n) })),
   ];
 }
-
-export const DEFAULT_DATE_FLEXIBILITY_OPTIONS: readonly DateFlexibilityOption[] =
-  dateFlexibilityOptions(STAY_SEARCH_MESSAGES.en);

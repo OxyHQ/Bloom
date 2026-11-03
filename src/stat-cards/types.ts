@@ -1,10 +1,6 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
-
-/** An icon COMPONENT (`RiGroupLine`, not `<RiGroupLine />`) — the card sizes and colours it. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type StatCardsIcon = BloomIconComponent;
 
 /**
  * Two looks:
@@ -22,7 +18,7 @@ export type StatCardsTone = 'blue' | 'orange' | 'purple' | 'pink' | 'sky' | 'eme
 export type StatCardsDeltaColor = 'lime' | 'rose' | 'neutral';
 
 export interface StatCardsItem {
-  icon: StatCardsIcon;
+  icon: BloomIconComponent;
   label: string;
   /** Pre-formatted value (`"14,592"`, `"$152,313.92"`). */
   value: string;

@@ -1,4 +1,4 @@
-import React, { isValidElement, useEffect, useRef, type ComponentType } from 'react';
+import React, { isValidElement, useEffect, useRef } from 'react';
 import {
   Animated,
   Easing,
@@ -24,14 +24,10 @@ import type { BloomIconComponent } from '../icons/icon-component';
  * scrub on native, a width that grows in, and the icon slot.
  */
 
-/** An icon component (`RiEyeLine`) — sized and tinted by the card. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type ChartIconComponent = BloomIconComponent;
-
 /** A leading glyph: a rendered node the caller sizes, or an icon component the card sizes and tints. */
-export type ChartIcon = React.ReactNode | ChartIconComponent;
+export type ChartIcon = React.ReactNode | BloomIconComponent;
 
-function isIconComponent(icon: ChartIcon): icon is ChartIconComponent {
+function isIconComponent(icon: ChartIcon): icon is BloomIconComponent {
   if (typeof icon === 'function') return true;
   return typeof icon === 'object' && icon !== null && !isValidElement(icon) && '$$typeof' in icon;
 }

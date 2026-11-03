@@ -1,7 +1,7 @@
 import { useCardFill } from '../card/use-card-fill';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { Card } from '../card/Card';
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 
 import { Badge } from '../badge';
@@ -38,7 +38,6 @@ import { useCommonMessages } from '../locale/common-messages';
  * uses Bloom's Button interaction; the footer's buttons are its siblings.
  */
 
-export const SAVED_SEARCH_CARD_RADIUS = 16;
 const TILE = 44;
 
 function SavedSearchCardComponent({

@@ -1,16 +1,13 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { ExplicitBadge } from '../media-controls';
 import { RiDiscFill } from '../icons/remix/RiDiscFill';
 import { MediaCard } from './MediaCard';
 import { joinMeta } from './shared';
-import type { AlbumCardProps, AlbumCardType } from './types';
+import type { AlbumCardProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CARD_MESSAGES } from './messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
-
-/** The English type words; the card speaks the locale's (`BloomProvider locale`). */
-export const ALBUM_TYPE_LABELS: Record<AlbumCardType, string> = MEDIA_CARD_MESSAGES.en.albumTypes;
 
 /**
  * An album, single or EP: square cover (radius 8), the title, "2026 · Album"

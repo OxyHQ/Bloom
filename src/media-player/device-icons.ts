@@ -6,10 +6,10 @@ import { RiSpeaker3Line } from '../icons/remix/RiSpeaker3Line';
 import { RiSpeakerLine } from '../icons/remix/RiSpeakerLine';
 import { RiTabletLine } from '../icons/remix/RiTabletLine';
 import { RiTvLine } from '../icons/remix/RiTvLine';
-import type { PlayerGlyph } from './PlayerIconButton';
+import type { BloomIconComponent } from '../icons/icon-component';
 import type { PlaybackDeviceKind } from './types';
 
-export const DEVICE_GLYPHS: Record<PlaybackDeviceKind, PlayerGlyph> = {
+export const DEVICE_GLYPHS: Record<PlaybackDeviceKind, BloomIconComponent> = {
   computer: RiComputerLine,
   phone: RiSmartphoneLine,
   tablet: RiTabletLine,

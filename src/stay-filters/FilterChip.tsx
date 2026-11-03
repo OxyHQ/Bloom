@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import { Chip, CHIP_GEOMETRY, resolveChipPaint } from '../chip';
@@ -34,7 +34,6 @@ import type { FilterIconComponent } from './types';
  * Colour change only on hover and press — no scale.
  */
 
-export const FILTER_CHIP_HEIGHT = CHIP_GEOMETRY['2xl'].height;
 const ICON_SIZE = CHIP_GEOMETRY['2xl'].icon;
 
 export interface FilterChipProps {

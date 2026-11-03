@@ -80,8 +80,6 @@ export const TEXT_FIELD_TRANSITION_MS = animation.duration.fast;
 
 /** `text-body-regular` — the control. */
 export const TEXT_FIELD_TEXT = TYPE_SCALE['body-regular'];
-/** `text-body-medium` — the label. */
-export const TEXT_FIELD_LABEL_TEXT = TYPE_SCALE['body-medium'];
 /** `text-caption-1-medium` — hint and counter. */
 export const TEXT_FIELD_HINT_TEXT = TYPE_SCALE['caption-1-medium'];
 
@@ -144,7 +142,6 @@ export interface TextFieldPalette {
 }
 
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
-export { TRANSPARENT as TEXT_FIELD_TRANSPARENT };
 
 /**
  * Resolve the input tokens against a Bloom theme and the SURFACE the field sits

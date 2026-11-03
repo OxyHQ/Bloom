@@ -197,12 +197,13 @@ pinned in `src/__tests__/icon-render-slot.test.tsx`.
 Today this is on `Button` and `ButtonGroupItem`. The other icon slots still take
 the component only.
 
-### The per-family names still work
+### The per-family names
 
-Twenty-five families had declared this same type under their own name
-(`SidebarIcon`, `TrackIconComponent`, `ListingFactIcon`, `PlayerGlyph`,
-`BadgeIcon`, `CallGlyph`, …). Those names still work — they are `@deprecated`
-aliases of this one — so nothing needs changing; new code should reach for
+Twenty-six families had declared this same type under their own name. Six
+still work as `@deprecated` aliases of this one because apps import them
+(`SidebarIcon`, `ButtonIconComponent`, `BadgeIcon`, `TabsIconComponent`,
+`ChatComposerIcon`, `SavedSearchIcon`); 17.0.0 removed the other twenty
+(`TrackIconComponent`, `ListingFactIcon`, `CallGlyph`, …). Write
 `BloomIconComponent`.
 
 That sentence is checked rather than promised. Writing the shape out again is

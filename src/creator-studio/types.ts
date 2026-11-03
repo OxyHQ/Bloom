@@ -1,12 +1,8 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { FileUploadFile } from '../file-upload/types';
 import type { BloomIconComponent } from '../icons/icon-component';
-
-/** A Remix-style icon component: `width`, `height`, `fill`. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type CreatorStudioIcon = BloomIconComponent;
 
 /** Which way a figure moved against the previous period. */
 export type CreatorTrend = 'up' | 'down' | 'flat';
@@ -37,7 +33,7 @@ export interface AudienceMetric {
   /** The period's values, oldest first, for the sparkline. None drawn when omitted. */
   series?: readonly number[];
   /** Overrides the kind's icon. */
-  icon?: CreatorStudioIcon;
+  icon?: BloomIconComponent;
 }
 
 /** The overview's default periods. */
@@ -242,7 +238,7 @@ export interface ReleaseStatusBadgeProps {
 export interface ReleaseAction {
   label: string;
   onPress?: () => void;
-  icon?: CreatorStudioIcon;
+  icon?: BloomIconComponent;
   destructive?: boolean;
   disabled?: boolean;
 }

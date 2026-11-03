@@ -18,7 +18,6 @@ The pieces of the AI chat and AI image generation screens. Everything is data an
 | `AiChatShell` | Compatibility adapter to AppShell navigation, conversation and resizable context panels |
 | `AiChatMobileHeader` | The in-container header below `xl` (menu button, title, panel button), wired to the shell |
 | `AiChatHeader` | A header with a title node of yours centred between the shell's menu and panel buttons, at every width |
-| `AiChatResizeHandle` | Shared accessible resize separator, also used by AppShell panelLayout |
 | `AiChatContainer` | The chat card: breadcrumb header, thread, composer slot, `AgentThinking` while working |
 | `AiChatThread` | The bottom-anchored, self-following scroll of turns — with the follow, upward pagination and `ref` a host with history needs |
 | `AiChatUserMessage` / `AiChatAssistantMessage` | The turns, with the staggered blur-in |
@@ -113,8 +112,8 @@ controls the context’s floating presentation on compact layouts; closing leave
 the conversation in place. `panel` receives the width
 selected by the shared engine. Resize limits remain 320–560px by default, with
 410px as the resting context width. `sidebarCollapsed` and explicit sidebar
-width overrides remain host preferences. `navSwipeEnabled` is retained for API
-compatibility; the shell no longer installs a private swipe recognizer.
+width overrides remain host preferences. The shell installs no swipe recognizer
+of its own.
 
 Hidden panels retain their mounted content and state after first presentation.
 The shared engine makes them inert, inaccessible and inactive. Keep descriptor

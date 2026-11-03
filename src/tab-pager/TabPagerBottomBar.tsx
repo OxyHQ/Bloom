@@ -11,9 +11,7 @@ import type { TabPagerBottomBarProps } from './types';
  * over a page without an item, a press doing what pressing that destination
  * does anywhere (`selectDestination`), a long press its `onLongPress`.
  */
-export function useTabPagerBottomBar(
-  onReselect?: (name: string) => void,
-): Required<
+export function useTabPagerBottomBar(): Required<
   Pick<BottomBarProps, 'items' | 'value' | 'onValueChange' | 'activeProgress' | 'hideProgress'>
 > &
   Pick<BottomBarProps, 'onValueLongPress'> {
@@ -27,10 +25,9 @@ export function useTabPagerBottomBar(
   const onValueChange = useCallback(
     (name: string) => {
       haptics.tap();
-      if (onReselect && name === value) onReselect(name);
-      else selectDestination(name);
+      selectDestination(name);
     },
-    [haptics, value, onReselect, selectDestination],
+    [haptics, selectDestination],
   );
   const onValueLongPress = useCallback(
     (name: string) =>
@@ -56,7 +53,7 @@ export function useTabPagerBottomBar(
  * else is `BottomBar`'s own props — `action` for a compose button,
  * `minimizeProgress`.
  */
-export function TabPagerBottomBar({ onReselect, ...props }: TabPagerBottomBarProps) {
-  const { onValueLongPress, ...bound } = useTabPagerBottomBar(onReselect);
+export function TabPagerBottomBar(props: TabPagerBottomBarProps) {
+  const { onValueLongPress, ...bound } = useTabPagerBottomBar();
   return <BottomBar onValueLongPress={onValueLongPress} {...props} {...bound} />;
 }

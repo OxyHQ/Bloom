@@ -13,10 +13,6 @@ import type { BloomIconComponent } from '../icons/icon-component';
  * audio-level meter the app runs.
  */
 
-/** A glyph component, sized and coloured by whatever draws it. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type CallGlyph = BloomIconComponent;
-
 /** An avatar source: a URL, an `ImageResolver` id, or a portable Shapes image source. */
 export type CallAvatarSource = string | ImageSource | null;
 
@@ -105,9 +101,9 @@ export interface CallControlLabels {
 
 export interface CallControlButtonProps {
   /** The glyph drawn when the button is NOT active (or always, with no `activeIcon`). */
-  icon: CallGlyph;
+  icon: BloomIconComponent;
   /** The glyph drawn while `active` — a muted mic, a crossed-out camera. */
-  activeIcon?: CallGlyph;
+  activeIcon?: BloomIconComponent;
   /**
    * The accessible name, and the caption under the button when `showLabel`.
    * REQUIRED: the button draws one glyph and no text of its own.

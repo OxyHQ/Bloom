@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { memo, useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import {
   Select,
@@ -21,12 +21,8 @@ import { ArtistChipsInput, IsrcField } from './MetadataFields';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import { resolveCreatorStudioPaint } from './shared';
-import type {
-  CreatorOption,
-  TrackMetadata,
-  TrackMetadataFormLabels,
-  TrackMetadataFormProps,
-} from './types';
+import type { CreatorOption, TrackMetadata, TrackMetadataFormProps } from './types';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * `TrackMetadataForm`: everything a track needs before distribution, composed
@@ -45,9 +41,6 @@ import type {
  * 20 between fields. Controlled: every edit calls `onChange` with the whole
  * next value; `errors` paints a field invalid and shows its message.
  */
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const TRACK_METADATA_LABELS: TrackMetadataFormLabels = CREATOR_STUDIO_MESSAGES.en.metadata;
 
 const TWO_UP_FROM = 560;
 
@@ -111,11 +104,8 @@ function TrackMetadataFormComponent({
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const labels = { ...messages.metadata, ...labelOverrides };
-  const [width, setWidth] = useState(0);
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    const next = Math.round(event.nativeEvent.layout.width);
-    setWidth((prev) => (prev === next ? prev : next));
-  }, []);
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const twoUp = width >= TWO_UP_FROM;
   const pair = twoUp ? styles.pair : styles.stack;
 

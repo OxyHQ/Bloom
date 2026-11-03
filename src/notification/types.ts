@@ -13,10 +13,6 @@ export type NotificationStatus = 'neutral' | 'information' | 'success' | 'warnin
 
 export type NotificationPresence = 'online' | 'busy' | 'offline';
 
-/** A leading glyph component — pass the component (`RiMailFill`), not an element. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type NotificationIconComponent = BloomIconComponent;
-
 /** Avatar leading visual. `size` is fixed at 40 by the card. */
 export type NotificationAvatar = Omit<AvatarProps, 'size'> & {
   /** Presence dot on the avatar's bottom-right. */
@@ -39,7 +35,7 @@ export interface NotificationProps {
   /** Colours the leading disc. Defaults to `neutral`. */
   status?: NotificationStatus;
   /** Custom leading glyph. Defaults to the icon associated with `status`. */
-  icon?: NotificationIconComponent;
+  icon?: BloomIconComponent;
   /** Avatar leading visual. Takes precedence over `icon`. */
   avatar?: NotificationAvatar;
   /** Small action buttons below the message. */

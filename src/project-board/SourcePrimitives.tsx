@@ -31,8 +31,7 @@ import {
 import { Text as BloomText } from '../typography';
 import { RiMoreLine as SourceMore } from './RiMoreLine';
 import { RiRestartLine as SourceRestart } from './RiRestartLine';
-import { CHIP_BASE, cx, PRIORITY_STYLES } from './constants';
-import type { TicketPriority } from './types';
+import { CHIP_BASE, cx } from './constants';
 
 /** HTML flex is row by default; Yoga defaults to column. Preserve the source
  * class recipe and add only that platform layout equivalent. */
@@ -103,15 +102,6 @@ export function SourceChip({ className, ...props }: ChipProps) {
       )}
     />
   );
-}
-export function PriorityChip({
-  priority,
-  className,
-}: {
-  priority: TicketPriority;
-  className?: string;
-}) {
-  return <SourceChip className={cx(PRIORITY_STYLES[priority], className)}>{priority}</SourceChip>;
 }
 /** Bloom's SVG icon components already read a styled colour; wrap at module
  * scope so the original icon utility classes resolve on both platforms. */

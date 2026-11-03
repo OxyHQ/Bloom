@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -19,7 +19,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
-import type { PayoutSummaryCardLabels, PayoutSummaryCardProps } from './types';
+import type { PayoutSummaryCardProps } from './types';
 
 import { useChartCardSurfacePalette } from '../chart-cards/primitives/use-chart-palette';
 import { formatCurrency } from '../locale/format-number';
@@ -39,9 +39,6 @@ import { formatCurrency } from '../locale/format-number';
  *             tabular, a hairline between the plot and the rows
  *   link      "View statements" link button with a chevron
  */
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const PAYOUT_SUMMARY_LABELS: PayoutSummaryCardLabels = CREATOR_STUDIO_MESSAGES.en.payout;
 
 const PLOT_HEIGHT = 112;
 const BAR_RADIUS = 6;

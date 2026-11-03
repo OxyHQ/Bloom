@@ -7,7 +7,7 @@ import {
   hairlineOn,
 } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
-import type { CreatorOption, ReleaseStatus, ReleaseType, TrackUploadStatus } from './types';
+import type { CreatorOption, ReleaseStatus, TrackUploadStatus } from './types';
 import { clamp } from '../styles/clamp';
 import { pickMessages } from '../locale/messages';
 import {
@@ -92,10 +92,6 @@ export function resolveCreatorStudioPaint(theme: Theme): CreatorStudioPaint {
 // ---------------------------------------------------------------------------
 //  Releases
 // ---------------------------------------------------------------------------
-
-/** The English release types; components read the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const RELEASE_TYPE_LABELS: Record<ReleaseType, string> =
-  CREATOR_STUDIO_MESSAGES.en.releaseTypes;
 
 /** The English status names; components read the localised ones from `CREATOR_STUDIO_MESSAGES`. */
 export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> =

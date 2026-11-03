@@ -2,13 +2,12 @@ import { useBloomAppearance } from '../appearance';
 import { useCardFill } from '../card/use-card-fill';
 import { Card } from '../card/Card';
 import { surfaceFillOn } from '../styles/surface-levels';
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
 import { GlyphButton } from '../button';
-import { Chip } from '../chip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +33,7 @@ import {
   releaseStatusNeedsReason,
   resolveCreatorStudioPaint,
 } from './shared';
-import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
+import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { ReleaseCardLabels, ReleaseCardProps, ReleaseStatusBadgeProps } from './types';
@@ -74,14 +73,6 @@ export function ReleaseStatusBadge({
     />
   );
 }
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const RELEASE_CARD_LABELS: ReleaseCardLabels = {
-  types: CREATOR_STUDIO_MESSAGES.en.releaseTypes,
-  statuses: CREATOR_STUDIO_MESSAGES.en.releaseStatuses,
-  tracks: CREATOR_STUDIO_MESSAGES.en.tracks,
-  actions: (title) => COMMON_MESSAGES.en.labelFor(COMMON_MESSAGES.en.moreActions, title),
-};
 
 /**
  * `ReleaseCard`: one release in the catalog.

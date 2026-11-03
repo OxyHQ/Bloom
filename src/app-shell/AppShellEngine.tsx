@@ -104,7 +104,7 @@ import { IS_WEB } from '../styles/platform';
  *
  *   root       row, background-full; one screen tall at least (document
  *              scroll), exactly (`fixed`), or its parent's height (`container`).
- *              It MEASURES ITSELF (`useShellWidth`) and every breakpoint below
+ *              It MEASURES ITSELF (`useMeasuredSizeClass`) and every breakpoint below
  *              is read off that width, not off the window, so a shell embedded
  *              in a preview pane lays out for the pane.
  *   nav        the sidebar in flow from `navFrom` (`lg` for the panel, `sm` for
@@ -363,7 +363,6 @@ export function createAppShellEngine() {
     const navVariant = cssShell ? (cssShell.mode === 'rail' ? 'rail' : 'panel') : nativeNavVariant;
     const wide = cssShell ? cssShell.mode !== 'drawer' : width >= breakpointPx(navTier);
     const small = cssShell ? cssShell.small : width >= BREAKPOINTS.sm;
-    const revealTopGutter = gutterProp ?? (small ? 24 : 12);
     // `focus` is the one shape with no navigation at all.
     const hasNav = variant !== 'focus' && sidebar != null;
     const navInFlow = hasNav && wide;

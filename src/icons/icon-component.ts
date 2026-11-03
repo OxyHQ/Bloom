@@ -14,9 +14,10 @@ import type { ComponentType } from 'react';
  * structurally the WIDEST icon a component can be handed — a component with
  * stricter props is not assignable, and that is on purpose.
  *
- * Twenty-six identical aliases of this type existed, one per family
- * (`SidebarIcon`, `TrackIconComponent`, `PlayerGlyph`, …). The public ones
- * survive as deprecated re-exports; the private ones are gone.
+ * Twenty-six identical aliases of this type existed, one per family. The six
+ * apps still import (`SidebarIcon`, `ButtonIconComponent`, `BadgeIcon`,
+ * `TabsIconComponent`, `ChatComposerIcon`, `SavedSearchIcon`) survive as
+ * deprecated re-exports; 17.0.0 removed the rest.
  */
 export type BloomIconComponent = ComponentType<{
   width?: number;

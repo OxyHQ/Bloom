@@ -1,10 +1,5 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
-
-/** An icon COMPONENT (`RiHeartPulseFill`, not an element) — the row sizes it and paints it white. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type ImportantAlertsCardIcon = BloomIconComponent;
 
 /**
  * The icon circle's tint: `rose` is `rose-600`, `amber` `amber-400`,
@@ -15,7 +10,7 @@ export type ImportantAlertsCardIcon = BloomIconComponent;
 export type ImportantAlertsCardTone = 'rose' | 'amber' | 'emerald' | 'blue' | 'purple' | 'teal';
 
 export interface ImportantAlertsCardAlert {
-  icon: ImportantAlertsCardIcon;
+  icon: BloomIconComponent;
   /** Icon circle tint. Ignored when `iconBackground` is set. */
   tone?: ImportantAlertsCardTone;
   /** An explicit icon circle colour (opaque). Wins over `tone`. */

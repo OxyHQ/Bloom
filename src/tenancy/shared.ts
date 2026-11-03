@@ -50,7 +50,6 @@ export interface HousingPalette {
 export function resolveHousingPalette(theme: Theme): HousingPalette {
   const menu = resolveMenuPalette(theme);
   const { accent } = resolveButtonRamps(theme);
-  const dark = theme.isDark;
   return {
     surface: menu.surface,
     border: menu.border,
@@ -70,8 +69,6 @@ export function resolveHousingPalette(theme: Theme): HousingPalette {
   };
 }
 
-/** Card geometry, shared by every housing card. */
-export const HOUSING_CARD_RADIUS = 20;
 export const HOUSING_CARD_PADDING = 20;
 export const HOUSING_TILE_RADIUS = 12;
 

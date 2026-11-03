@@ -31,7 +31,7 @@ import {
   uploadBarKind,
   type CreatorStudioPaint,
 } from './shared';
-import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
+import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { TrackUploadRowLabels, TrackUploadRowProps } from './types';
@@ -54,12 +54,6 @@ import { IS_WEB } from '../styles/platform';
  *             failed     the message in the error colour + a "Retry" button
  *   remove    secondary icon button, "Remove <file>"
  */
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const TRACK_UPLOAD_LABELS: TrackUploadRowLabels = {
-  ...CREATOR_STUDIO_MESSAGES.en.upload,
-  retry: COMMON_MESSAGES.en.retry,
-};
 
 const BAR_HEIGHT = 4;
 const WAVE_HEIGHT = 20;

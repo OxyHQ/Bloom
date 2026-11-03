@@ -14,10 +14,9 @@ import { cardLayout } from './support/card-surface';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useCardFill } from '../card/use-card-fill';
 import { render } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { SETTINGS_LIST_GROUP_TEST_ID } from '../settings-list/surface';
+import { GROUPED_SECTION_TEST_ID } from '../grouped-section/surface';
 import { SettingsListGroup, SettingsListItem } from '../settings-list/SettingsList';
 import { useTheme } from '../theme/use-theme';
 import { pressHost } from './support/press-host';
@@ -198,7 +197,7 @@ describe('SettingsListGroup card radius', () => {
       </SettingsListGroup>,
     );
     expect(
-      resolvedStyle(screen.getByTestId(SETTINGS_LIST_GROUP_TEST_ID).props.style).borderRadius,
+      resolvedStyle(screen.getByTestId(GROUPED_SECTION_TEST_ID).props.style).borderRadius,
     ).toBe(expected);
   });
 });
@@ -210,7 +209,7 @@ it('separates grouped settings with parent-colored spacing by default', () => {
       <SettingsListItem title="Second" />
     </SettingsListGroup>,
   );
-  const group = screen.getByTestId(SETTINGS_LIST_GROUP_TEST_ID);
+  const group = screen.getByTestId(GROUPED_SECTION_TEST_ID);
   expect(cardLayout(group)).toMatchObject({
     backgroundColor: 'transparent',
     overflow: 'hidden',
@@ -228,9 +227,9 @@ it('keeps explicit legacy divider separation and supports no separator', () => {
     </SettingsListGroup>,
   );
   expect(screen.queryAllByTestId('grouped-section-divider')).toHaveLength(1);
-  expect(
-    resolvedStyle(screen.getByTestId(SETTINGS_LIST_GROUP_TEST_ID).props.style).borderRadius,
-  ).toBe(16);
+  expect(resolvedStyle(screen.getByTestId(GROUPED_SECTION_TEST_ID).props.style).borderRadius).toBe(
+    16,
+  );
   screen.unmount();
   const plain = renderWithTheme(
     <SettingsListGroup separator="none">

@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { memo, useMemo, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Button } from '../button';
 import { RiAddLine } from '../icons/remix/RiAddLine';
@@ -20,7 +20,8 @@ import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import { creditRoleOptions, resolveCreatorStudioPaint } from './shared';
-import type { CreditsEditorLabels, CreditsEditorProps, CreatorOption, TrackCredit } from './types';
+import type { CreditsEditorProps, CreatorOption, TrackCredit } from './types';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * `CreditsEditor`: who wrote, produced and performed a track.
@@ -35,9 +36,6 @@ import type { CreditsEditorLabels, CreditsEditorProps, CreatorOption, TrackCredi
  *
  * Controlled: every change calls `onCreditsChange` with the whole list.
  */
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const CREDITS_EDITOR_LABELS: CreditsEditorLabels = CREATOR_STUDIO_MESSAGES.en.credits;
 
 const STACK_BELOW = 480;
 let creditCounter = 0;
@@ -58,11 +56,8 @@ function CreditsEditorComponent({
   const labels = { ...messages.credits, ...labelOverrides };
   const localRoles = useMemo(() => creditRoleOptions(messages), [messages]);
   const roles = rolesProp ?? localRoles;
-  const [width, setWidth] = useState(0);
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    const next = Math.round(event.nativeEvent.layout.width);
-    setWidth((prev) => (prev === next ? prev : next));
-  }, []);
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const stacked = width > 0 && width < STACK_BELOW;
   const createIdRef = useRef(createId);
   createIdRef.current = createId;

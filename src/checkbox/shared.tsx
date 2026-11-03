@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -8,7 +8,7 @@ import type { Theme } from '../theme/types';
 import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, resolveButtonRamps } from '../button/shared';
 import type { TypeScaleVariant } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
-import { focusRingShadow, RING_OFFSET_FALLBACK } from '../styles/interactive-web-css';
+import { focusRingShadow } from '../styles/interactive-web-css';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -62,20 +62,6 @@ const DASH_PATH = 'M4.5 8H8H11.5';
  * draw-in dashes the stroke by this length and slides it into place.
  */
 const CHECK_PATH_LENGTH = 11.1;
-
-/**
- * @deprecated The ring GAP is no longer a literal. Build the shadow with
- * `focusRingShadow()` from `styles/interactive-web-css.ts` and set the gap
- * colour inline with `useRingOffsetStyle()` from `styles/surface-levels.ts`.
- *
- * It was `#FFFFFF`, Tailwind's `ring-offset-color` default, and nothing ever
- * overrode it — so in DARK mode every control that used this drew a 2px white
- * halo when focused: the filter chip, the filter text button, the stepper value,
- * the slider thumb, the checkbox, the radio and its card, the property tiles,
- * the energy-rating filter and the sortable photo grid. Kept only as the
- * fallback for a control that sets no surface.
- */
-export const FOCUS_RING_OFFSET_COLOR = RING_OFFSET_FALLBACK;
 
 export interface CheckboxPaint {
   surface: string;

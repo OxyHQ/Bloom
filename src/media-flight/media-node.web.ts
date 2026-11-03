@@ -383,12 +383,6 @@ export function releaseMediaNode(id: string, el: HTMLElement, rank: number): voi
   publish(reg);
 }
 
-/** Whether anything holds a shared node for this id. */
-export function hasMediaNode(id: string): boolean {
-  const record = registry().nodes.get(id);
-  return record !== undefined && record.claims.length > 0;
-}
-
 /** Subscribe to the shared-node set. The layer's `useSyncExternalStore` half. */
 export function subscribeToMediaNodes(listener: () => void): () => void {
   const reg = registry();

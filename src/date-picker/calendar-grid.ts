@@ -325,17 +325,6 @@ export function dayCellPaint(
   };
 }
 
-/** The keys a focused day moves on, react-aria's calendar set. */
-export type CalendarNavigationKey =
-  | 'ArrowLeft'
-  | 'ArrowRight'
-  | 'ArrowUp'
-  | 'ArrowDown'
-  | 'Home'
-  | 'End'
-  | 'PageUp'
-  | 'PageDown';
-
 /**
  * The day focus moves to for `key`, or `null` for any other key. The week row
  * mirrors in RTL, so the horizontal arrows follow what is drawn: `ArrowLeft`
@@ -367,13 +356,6 @@ export function moveFocusedDate(
     default:
       return null;
   }
-}
-
-/** Clamp a day into `[minDate, maxDate]`. */
-export function clampDate(date: Date, { minDate, maxDate }: DateConstraints): Date {
-  if (minDate && compareDays(date, minDate) < 0) return startOfDay(minDate);
-  if (maxDate && compareDays(date, maxDate) > 0) return startOfDay(maxDate);
-  return startOfDay(date);
 }
 
 /** Quick-select presets, relative to `now`. Their names are `DatePickerMessages.presets`. */

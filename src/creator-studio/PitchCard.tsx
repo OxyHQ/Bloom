@@ -1,7 +1,7 @@
 import { surfaceFillOn } from '../styles/surface-levels';
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button } from '../button';
@@ -28,7 +28,7 @@ import { Text } from '../typography';
 import { resolveCreatorStudioPaint, toggleTag } from './shared';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
-import type { CreatorOption, PitchCardLabels, PitchCardProps } from './types';
+import type { CreatorOption, PitchCardProps } from './types';
 
 /**
  * `PitchCard`: pitch an upcoming release to the editorial team.
@@ -48,9 +48,6 @@ import type { CreatorOption, PitchCardLabels, PitchCardProps } from './types';
  *             submitted date — sent (clock, accent), accepted (check, positive),
  *             declined (cross, negative); "Edit pitch" while still `submitted`
  */
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const PITCH_CARD_LABELS: PitchCardLabels = CREATOR_STUDIO_MESSAGES.en.pitch;
 
 function TagGroup({
   label,

@@ -4,7 +4,6 @@ export type {
   StatCardsProps,
   StatCardProps,
   StatCardsItem,
-  StatCardsIcon,
   StatCardsVariant,
   StatCardsTone,
   StatCardsDeltaColor,

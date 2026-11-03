@@ -4,7 +4,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { AppShell, AppShellPanels } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
+import { ResizeHandle } from '../layout/ResizeHandle';
 import { applyPanelSpans, resolvePanelTracks, splitPairSpans } from '../app-shell/panel-layout';
 import { panelLayoutCss } from '../app-shell/panel-layout-css';
 import { mockWindowSize } from './support/window-size';
@@ -110,12 +110,12 @@ describe('resizing a split', () => {
     };
     const screen = render(<AppShell testID="shell" panelLayout={layout} />, { wrapper });
     measure(screen);
-    fireEvent(screen.UNSAFE_getByType(AiChatResizeHandle), 'nudge', 100);
+    fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', 100);
     expect(onWidthsChange).not.toHaveBeenCalled();
     expect(onSpansChange).toHaveBeenLastCalledWith({ a: 1.25, b: 0.75 });
     expect(onWidthChange).toHaveBeenLastCalledWith(500);
     screen.rerender(<AppShell testID="shell" panelLayout={layout} />);
-    fireEvent(screen.UNSAFE_getByType(AiChatResizeHandle), 'nudge', -50);
+    fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', -50);
     expect(onSpansChange).toHaveBeenLastCalledWith({ a: 1.125, b: 0.875 });
   });
 
@@ -132,7 +132,7 @@ describe('resizing a split', () => {
     };
     const screen = render(<AppShell testID="shell" panelLayout={layout} />, { wrapper });
     measure(screen);
-    const grip = screen.UNSAFE_getByType(AiChatResizeHandle);
+    const grip = screen.UNSAFE_getByType(ResizeHandle);
     fireEvent(grip, 'nudge', 100);
     fireEvent(grip, 'nudge', 100);
     expect(onSpansChange).toHaveBeenLastCalledWith({ a: 1.25, b: 0.75 });
@@ -152,7 +152,7 @@ describe('resizing a split', () => {
     };
     const screen = render(<AppShell testID="shell" panelLayout={layout} />, { wrapper });
     measure(screen);
-    fireEvent(screen.UNSAFE_getByType(AiChatResizeHandle), 'nudge', 100);
+    fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', 100);
     expect(onSpansChange).not.toHaveBeenCalled();
     expect(onWidthsChange).toHaveBeenCalledWith({ a: 500, b: 300 });
   });
@@ -202,6 +202,6 @@ describe('resizing a split', () => {
     expect(screen.getByText('Left')).toBeTruthy();
     expect(screen.getByText('Top')).toBeTruthy();
     expect(screen.getByText('Bottom')).toBeTruthy();
-    expect(screen.UNSAFE_getAllByType(AiChatResizeHandle).length).toBe(2);
+    expect(screen.UNSAFE_getAllByType(ResizeHandle).length).toBe(2);
   });
 });

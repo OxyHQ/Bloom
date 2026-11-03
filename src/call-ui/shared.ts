@@ -207,8 +207,6 @@ export const CALL_SCREEN_LABELS: CallScreenLabels = {
   ...CALL_UI_MESSAGES.en.screen,
 };
 
-export const CALL_PIP_CORNER_NAMES: Record<CallPipCorner, string> = CALL_UI_MESSAGES.en.pipCorners;
-
 /**
  * The corner the PiP moves to next — clockwise from wherever it is.
  *

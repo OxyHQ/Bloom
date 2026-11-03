@@ -92,8 +92,6 @@ export interface ScrollSurfaceProps extends ScrollAreaProps {
   scrollRef?: Ref<ComponentRef<typeof ScrollView>>;
   label?: string;
   fadeBottom?: boolean;
-  /** @deprecated No effect. Use Screen restoration for persistent scroll position. */
-  chatId?: string;
 }
 
 /** A responsive command row: tools scroll while primary actions stay reachable. */

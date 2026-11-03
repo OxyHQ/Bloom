@@ -426,14 +426,6 @@ export type DialogProps = React.PropsWithChildren<{
   label?: string;
 }>;
 
-/**
- * Web-only options. Native uses bloom's `BottomSheet` underneath which has
- * its own positioning model.
- */
-export type DialogWebOptions = {
-  alignCenter?: boolean;
-};
-
 /** Declarative identity, header and geometry for a screen inside a Dialog. */
 export interface DialogScreenFrame {
   /** Local palette for the entire panel and header. */

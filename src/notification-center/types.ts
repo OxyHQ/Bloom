@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { ButtonProps } from '../button/types';
@@ -7,10 +6,6 @@ import type { BloomIconComponent } from '../icons/icon-component';
 export type NotificationCenterTab = 'all' | 'mentions' | 'system';
 export type NotificationCenterCategory = Exclude<NotificationCenterTab, 'all'> | 'activity';
 export type NotificationCenterStatus = 'neutral' | 'information' | 'success' | 'error';
-
-/** A Remix-style icon: `width` / `height` / `fill`. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type NotificationCenterIcon = BloomIconComponent;
 
 /**
  * Avatar tints for initials (`neutral`, `blue`, `lime`, `pink`),
@@ -50,7 +45,7 @@ export interface NotificationCenterItem {
   /** Tints the icon disc when there is no avatar. Defaults to `neutral`. */
   status?: NotificationCenterStatus;
   /** Replaces the status's default glyph inside the disc. */
-  icon?: NotificationCenterIcon;
+  icon?: BloomIconComponent;
   /** A person instead of a disc. */
   avatar?: NotificationCenterAvatar;
   actions?: NotificationCenterAction[];

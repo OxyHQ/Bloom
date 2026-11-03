@@ -158,13 +158,8 @@ export const TILE_RADIUS = 12;
 /** Banner rail: a 3px accent bar with a 2px radius, full height of the row. */
 export const BANNER_RAIL_WIDTH = 3;
 export const BANNER_RADIUS = 12;
-/** Suggestion rows and their panel. */
-export const SUGGESTION_ROW_HEIGHT = 44;
 export const SUGGESTION_MAX_HEIGHT = 232;
 export const PANEL_RADIUS = 16;
-/** The emoji grid's cell edge, and the category bar's height. */
-export const EMOJI_CELL = 36;
-export const EMOJI_CATEGORY_SIZE = 32;
 /** Voice recorder waveform: bar width, gap, and the tallest bar. */
 export const WAVE_BAR_WIDTH = 2;
 export const WAVE_BAR_GAP = 2;
@@ -428,11 +423,6 @@ export function voiceRecorderLabels(
     recording: messages.recording,
   };
 }
-
-/** The English strings, kept for callers that import them. */
-export const CHAT_COMPOSER_LABELS: ChatComposerLabels = chatComposerLabels();
-
-export const VOICE_RECORDER_LABELS: VoiceRecorderLabels = voiceRecorderLabels();
 
 // ---------------------------------------------------------------------------
 //  Web stylesheet

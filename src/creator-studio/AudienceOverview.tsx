@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { memo, useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Sparkline } from '../chart-cards/primitives/Sparkline';
 import { RiBookmarkLine } from '../icons/remix/RiBookmarkLine';
@@ -25,6 +25,7 @@ import type {
   CreatorOption,
   CreatorTrend,
 } from './types';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * `AudienceOverview`: the dashboard's opening row — a heading with a period
@@ -46,9 +47,6 @@ const PERIOD_ORDER: readonly AudiencePeriod[] = ['7d', '28d', '12m', 'all'];
 function periodOptions(messages: CreatorStudioMessages): CreatorOption[] {
   return PERIOD_ORDER.map((value) => ({ value, label: messages.periods[value] }));
 }
-
-/** The default periods in English; the component defaults to the localised ones. */
-export const AUDIENCE_PERIODS: readonly CreatorOption[] = periodOptions(CREATOR_STUDIO_MESSAGES.en);
 
 const KIND_ICONS: Record<AudienceMetricKind, StatCardsItem['icon']> = {
   listeners: RiHeadphoneLine,
@@ -87,11 +85,8 @@ function AudienceOverviewComponent({
   const periodLabel = periodLabelProp ?? messages.audience.period;
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
-  const [width, setWidth] = useState(0);
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    const next = Math.round(event.nativeEvent.layout.width);
-    setWidth((prev) => (prev === next ? prev : next));
-  }, []);
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const stacked = width > 0 && width < STACK_BELOW;
 
   const stats = useMemo<StatCardsItem[]>(

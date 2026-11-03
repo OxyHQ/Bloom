@@ -7,7 +7,7 @@ import { RiInformationLine } from '../icons/remix/RiInformationLine';
 import { RiShieldCheckLine } from '../icons/remix/RiShieldCheckLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
-import type { HousingIcon } from '../tenancy/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { EVICTION_MESSAGES } from './messages';
 import type { EvictionEventKind, EvictionStatus } from './types';
 
@@ -27,7 +27,10 @@ export const EVICTION_STATUS: Record<
 };
 
 /** A history entry's marker. */
-export const EVICTION_EVENT: Record<EvictionEventKind, { icon: HousingIcon; tone: AccentTone }> = {
+export const EVICTION_EVENT: Record<
+  EvictionEventKind,
+  { icon: BloomIconComponent; tone: AccentTone }
+> = {
   published: { icon: RiFileTextLine, tone: 'primary' },
   'date-set': { icon: RiCalendarLine, tone: 'warning' },
   postponed: { icon: RiTimeLine, tone: 'info' },

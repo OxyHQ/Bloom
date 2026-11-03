@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BloomImage } from '../image';
 
@@ -13,7 +13,7 @@ import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
+import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import { CARD_RADIUS, resolveCreatorStudioPaint } from './shared';
@@ -38,12 +38,6 @@ import type { ArtworkUploaderLabels, ArtworkUploaderProps } from './types';
  * passes `error` — `artworkDimensionsError(width, height)` builds the "too
  * small" message.
  */
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const ARTWORK_UPLOADER_LABELS: ArtworkUploaderLabels = {
-  ...CREATOR_STUDIO_MESSAGES.en.artwork,
-  cancel: COMMON_MESSAGES.en.cancel,
-};
 
 const DEFAULT_MAX = 320;
 const DEFAULT_EXTENSIONS = ['jpg', 'jpeg', 'png'] as const;

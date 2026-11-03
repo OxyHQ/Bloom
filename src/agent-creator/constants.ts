@@ -22,24 +22,6 @@ export const DEFAULT_AGENT_PREFERENCES: AgentPreferences = {
   language: 'auto',
   notifications: true,
 };
-export const EMOTION_NAMES = {
-  neutral: 'Neutral',
-  happy: 'Happy',
-  angry: 'Angry',
-  thinking: 'Thinking',
-  shook: 'Shook',
-  curious: 'Curious',
-  wink: 'Wink',
-  sleepy: 'Sleepy',
-  sad: 'Sad',
-  worried: 'Worried',
-  skeptical: 'Skeptical',
-  focused: 'Focused',
-  excited: 'Excited',
-  calm: 'Calm',
-  shy: 'Shy',
-  confused: 'Confused',
-} as const;
 export const PREVIEW_TEXT: Record<AgentLanguage, string> = {
   auto: 'Hello! Ready when you are.',
   en: 'Hello! Ready when you are.',

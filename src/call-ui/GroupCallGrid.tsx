@@ -1,5 +1,5 @@
-import React, { memo, useMemo, useState } from 'react';
-import { View, type LayoutChangeEvent } from 'react-native';
+import { memo, useMemo } from 'react';
+import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -8,6 +8,7 @@ import { GroupCallTile } from './GroupCallTile';
 import { CALL_UI_MESSAGES } from './messages';
 import { CALL_UI_RADIUS, callGridLayout, callSpotlightIndex, resolveCallPaint } from './shared';
 import type { GroupCallGridProps } from './types';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * `GroupCallGrid`: everyone on the call.
@@ -48,13 +49,8 @@ function GroupCallGridComponent({
   const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme), [theme]);
-  const [measured, setMeasured] = useState(0);
-  const available = width ?? measured;
-
-  const onLayout = (event: LayoutChangeEvent) => {
-    const next = Math.round(event.nativeEvent.layout.width);
-    setMeasured((current) => (current === next ? current : next));
-  };
+  const { width: measured, onLayout } = useContainerWidth();
+  const available = width ?? measured ?? 0;
 
   const overflowText = formatOverflow ?? messages.overflow;
   const spotlightAt = layout === 'spotlight' ? callSpotlightIndex(participants, spotlightId) : -1;

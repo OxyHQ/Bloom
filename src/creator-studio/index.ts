@@ -31,7 +31,6 @@ export type {
   BreakdownDatum,
   CreatorOption,
   CreatorRelease,
-  CreatorStudioIcon,
   CreatorTrend,
   CreditsEditorLabels,
   CreditsEditorProps,

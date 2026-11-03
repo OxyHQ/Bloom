@@ -15,8 +15,7 @@ Start with [Compose application layouts](/docs/bloom/main/compose-layouts) for t
 chooses the resize axis; `onResizeStart`, `onResize` and `onResizeEnd` describe a
 drag, while `onNudge` receives keyboard movement. AppShell's panel engine owns
 constraints, RTL geometry and committing widths. Use AppShellPanels for ordinary
-resizable panels. `AiChatResizeHandle` remains a deprecated alias to the same
-primitive.
+resizable panels.
 
 On web the grip uses pointer capture and CSS variables for its pointer position;
 movement does not require a React update or a new bounds read on every event.
@@ -65,8 +64,7 @@ scrolling destination region, the actual ScrollView ref for tree drag auto-scrol
 and fixed header/footer controls. Web uses the shared overlay scrollbar; native
 keeps the system indicator.
 
-The legacy `chatId` prop has no effect and is deprecated. Persistent scroll
-position belongs to the Screen/restoration contract.
+Persistent scroll position belongs to the Screen/restoration contract.
 
 The questions every floating surface and every piece of scroll-linked chrome has
 to answer, answered once for all of them.

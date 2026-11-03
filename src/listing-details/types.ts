@@ -1,14 +1,6 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
-
-/**
- * An icon COMPONENT (`RiWifiLine`, not `<RiWifiLine />`). The part sizes and
- * colours it, so a caller cannot pass the wrong size or a colour that ignores
- * the theme.
- */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type ListingIcon = BloomIconComponent;
 
 // ---------------------------------------------------------------------------
 //  ListingPhotoGrid
@@ -82,7 +74,7 @@ export interface ListingHeaderProps {
 
 export interface ListingHeaderActionProps {
   label: string;
-  icon?: ListingIcon;
+  icon?: BloomIconComponent;
   onPress?: () => void;
   /** A toggled action ("Saved"): `aria-pressed` on web, `selected` on native. */
   pressed?: boolean;
@@ -99,7 +91,7 @@ export interface ListingHeaderActionProps {
 // ---------------------------------------------------------------------------
 
 export interface ListingHighlight {
-  icon: ListingIcon;
+  icon: BloomIconComponent;
   title: string;
   description?: string;
 }
@@ -118,7 +110,7 @@ export interface ListingHighlightsProps {
 
 export interface Amenity {
   label: string;
-  icon?: ListingIcon;
+  icon?: BloomIconComponent;
   /** A second line ("Available in the building"). */
   description?: string;
   /** `false` strikes the label through and mutes the icon. Default `true`. */
@@ -157,7 +149,7 @@ export interface HostStat {
 }
 
 export interface HostDetail {
-  icon: ListingIcon;
+  icon: BloomIconComponent;
   text: string;
 }
 
@@ -171,7 +163,7 @@ export interface HostCardProps {
   verifiedLabel?: string;
   /** A short label under the name ("Top host"). */
   label?: string;
-  labelIcon?: ListingIcon;
+  labelIcon?: BloomIconComponent;
   /** The column on the card's right, separated by hairlines. */
   stats?: readonly HostStat[];
   /** Lines with icons under the card ("Speaks English and Portuguese"). */
@@ -200,7 +192,7 @@ export interface ReviewCategory {
   value: number;
   /** Default `value.toFixed(1)`. */
   display?: string;
-  icon?: ListingIcon;
+  icon?: BloomIconComponent;
 }
 
 export interface ReviewDistributionRow {
@@ -294,7 +286,7 @@ export interface ListingSectionProps {
 // ---------------------------------------------------------------------------
 
 export interface PropertyFact {
-  icon?: ListingIcon;
+  icon?: BloomIconComponent;
   /** "Built area", "Bedrooms", "Energy rating". */
   label: string;
   /** Pre-formatted ("96 m²", "3", "2nd of 5", "Yes"). */

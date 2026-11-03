@@ -11,7 +11,6 @@ export type {
   AddressPrecision,
   AddressPrecisionOption,
   AddressPrecisionPickerProps,
-  ListingEditorIcon,
   ListingPreviewData,
   ListingPreviewMode,
   ListingPreviewPaneProps,

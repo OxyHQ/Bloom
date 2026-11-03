@@ -52,7 +52,7 @@ export interface CommonMessages {
   send: string;
   clear: string;
   seeAll: string;
-  /** The divider between two resizable panes (`AiChatResizeHandle`). */
+  /** The divider between two resizable panes (`ResizeHandle`). */
   resizePanels: string;
 }
 

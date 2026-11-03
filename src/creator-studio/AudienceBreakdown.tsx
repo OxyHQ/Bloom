@@ -1,12 +1,13 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { memo, useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { BarListCard } from '../chart-cards/BarListCard';
 import { RadialChartCard } from '../chart-cards/RadialChartCard';
 import { groupThousands } from '../chart-cards/primitives/format';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
-import type { AudienceBreakdownLabels, AudienceBreakdownProps } from './types';
+import type { AudienceBreakdownProps } from './types';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * `AudienceBreakdown`: who is listening and where they came from, as four
@@ -20,10 +21,6 @@ import type { AudienceBreakdownLabels, AudienceBreakdownProps } from './types';
  * Two columns (16 apart) from 720px of its own width, one below. Every card
  * keeps its own hover, motion and accessible summary.
  */
-
-/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const AUDIENCE_BREAKDOWN_LABELS: AudienceBreakdownLabels =
-  CREATOR_STUDIO_MESSAGES.en.breakdown;
 
 const TWO_COLUMNS_FROM = 720;
 const GAP = 16;
@@ -43,11 +40,8 @@ function AudienceBreakdownComponent({
   const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const format = formatProp ?? ((value: number) => groupThousands(value, locale));
   const labels = { ...messages.breakdown, ...labelOverrides };
-  const [width, setWidth] = useState(0);
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    const next = Math.round(event.nativeEvent.layout.width);
-    setWidth((prev) => (prev === next ? prev : next));
-  }, []);
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const twoColumns = width >= TWO_COLUMNS_FROM;
   // Equal shares in a row only: a zero basis in a column collapses an auto-height card.
   const cell = twoColumns ? styles.cell : undefined;

@@ -1,9 +1,7 @@
 import { resolveSurfaceLevel } from '../styles/surface-levels';
 
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
-import { LYRICS_MESSAGES } from './messages';
 import type { LyricLine, LyricsPalette, LyricsSize } from './types';
 import {
   AAA_TEXT_CONTRAST,
@@ -14,9 +12,6 @@ import {
   relativeLuminance,
 } from '../styles/color-contrast';
 import { mixColors } from '../styles/color-contrast';
-
-/** The English empty line; components read the localised one from `LYRICS_MESSAGES`. */
-export const DEFAULT_EMPTY_TEXT = LYRICS_MESSAGES.en.empty;
 
 // ---------------------------------------------------------------------------
 //  Lines

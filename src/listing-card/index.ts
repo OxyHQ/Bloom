@@ -10,7 +10,6 @@ export type {
   ListingCardLayout,
   ListingCardProps,
   ListingFact,
-  ListingFactIcon,
   ListingPriceLine,
   ListingStatus,
   Offering,

@@ -2,7 +2,6 @@
 /** Real RNW events: the AppShell adapter must not take gestures from text or scrollers.
  * The removed chat-specific responder's measured thresholds are archived in docs/ai-chat.mdx.
  */
-import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -40,7 +39,7 @@ afterEach(() => {
   container.remove();
 });
 
-function mount(onNavOpenChange: (open: boolean) => void, navSwipeEnabled?: boolean) {
+function mount(onNavOpenChange: (open: boolean) => void) {
   act(() => {
     root.render(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -48,7 +47,6 @@ function mount(onNavOpenChange: (open: boolean) => void, navSwipeEnabled?: boole
           testID="shell"
           sidebar={null}
           mobileSidebar={<Text>nav</Text>}
-          navSwipeEnabled={navSwipeEnabled}
           onNavOpenChange={onNavOpenChange}
         >
           <View />
@@ -147,15 +145,6 @@ describe('AiChatShell nav swipe on web', () => {
     const shell = mount(onNavOpenChange);
 
     drag(shell, 'touch', { x: 300, y: 400 }, { x: 540, y: 404 });
-
-    expect(onNavOpenChange).not.toHaveBeenCalled();
-  });
-
-  it('ignores every drag once navSwipeEnabled is false', () => {
-    const onNavOpenChange = jest.fn();
-    const shell = mount(onNavOpenChange, false);
-
-    drag(shell, 'touch', { x: 6, y: 400 }, { x: 240, y: 404 });
 
     expect(onNavOpenChange).not.toHaveBeenCalled();
   });

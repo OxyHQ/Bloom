@@ -219,35 +219,16 @@ describe('BloomIconComponent has one home', () => {
   it('is aliased by exactly the families that had their own name for it', () => {
     // An EQUALITY, not a floor. Dropping a name here is a breaking change for
     // whoever imports it; ADDING one is a new spelling of a type that already
-    // has a name, and the twenty-six existed because nobody had to look. Both
+    // has a name, and the twenty-six existed because nobody had to look. The six
+    // left are the ones apps still import (17.0.0 removed the other twenty). Both
     // directions should make somebody edit this list on purpose.
     expect([...aliases].map((a) => a.name).sort()).toEqual([
-      'AiChatShellIcon',
-      'AnnouncementIconComponent',
       'BadgeIcon',
       'ButtonIconComponent',
-      'CallGlyph',
-      'CategoryBarIcon',
-      'ChartIconComponent',
       'ChatComposerIcon',
-      'CreatorStudioIcon',
-      'DataTableIconComponent',
-      'HousingIcon',
-      'ImportantAlertsCardIcon',
-      'InsightIcon',
-      'ListingEditorIcon',
-      'ListingFactIcon',
-      'ListingIcon',
-      'NotificationCenterIcon',
-      'NotificationIconComponent',
-      'OfferingBadgeIcon',
-      'PatientInfoCardIcon',
-      'PlayerGlyph',
       'SavedSearchIcon',
       'SidebarIcon',
-      'StatCardsIcon',
       'TabsIconComponent',
-      'TrackIconComponent',
     ]);
   });
 

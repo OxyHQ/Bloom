@@ -7,7 +7,7 @@
  *
  * The pointer drag itself (PanResponder) and the row menu's surface are
  * verified in a real browser; jest sees the arithmetic both of them commit
- * through (`queueDragTarget`) and the keyboard path that shares their callback.
+ * through (`dragTarget`) and the keyboard path that shares their callback.
  */
 import React from 'react';
 import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
@@ -21,16 +21,13 @@ import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import {
   DEFAULT_QUEUE_PANEL_LABELS,
-  QUEUE_ROW_HEIGHT,
   QueuePanel,
   RecentlyPlayedList,
-  moveQueueItem,
-  queueDragShift,
-  queueDragTarget,
   type QueuePanelProps,
   type QueueTrack,
 } from '../queue-panel';
 import { resolveQueuePanelPaint } from '../queue-panel/shared';
+import { moveItem } from '../hooks/list-reorder';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -116,64 +113,6 @@ function panel(props: Partial<QueuePanelProps> = {}) {
     />
   );
 }
-
-// `moveQueueItem` / `queueDragTarget` / `queueDragShift` are re-exports of
-// `moveItem` / `dragTarget` / `dragShift` from `@oxy.so/bloom/hooks`, kept as
-// the queue panel's published names. These pin the published behaviour.
-describe('moveQueueItem', () => {
-  it('moves down, up, and to both ends, returning a new array', () => {
-    const list = ['a', 'b', 'c', 'd'];
-    expect(moveQueueItem(list, 0, 2)).toEqual(['b', 'c', 'a', 'd']);
-    expect(moveQueueItem(list, 3, 1)).toEqual(['a', 'd', 'b', 'c']);
-    expect(moveQueueItem(list, 1, 0)).toEqual(['b', 'a', 'c', 'd']);
-    expect(moveQueueItem(list, 1, 3)).toEqual(['a', 'c', 'd', 'b']);
-    expect(moveQueueItem(list, 0, 0)).not.toBe(list);
-    expect(list).toEqual(['a', 'b', 'c', 'd']);
-  });
-
-  it('clamps the target and ignores an out-of-range source', () => {
-    expect(moveQueueItem(['a', 'b', 'c'], 0, 99)).toEqual(['b', 'c', 'a']);
-    expect(moveQueueItem(['a', 'b', 'c'], 2, -5)).toEqual(['c', 'a', 'b']);
-    expect(moveQueueItem(['a', 'b'], 5, 0)).toEqual(['a', 'b']);
-    expect(moveQueueItem(['a', 'b'], -1, 0)).toEqual(['a', 'b']);
-    expect(moveQueueItem([], 0, 1)).toEqual([]);
-  });
-});
-
-describe('queueDragTarget', () => {
-  const H = QUEUE_ROW_HEIGHT;
-
-  it('lands on the nearest whole row: past half a row moves one slot', () => {
-    expect(queueDragTarget(1, 0, H, 5)).toBe(1);
-    expect(queueDragTarget(1, H / 2 - 1, H, 5)).toBe(1);
-    expect(queueDragTarget(1, H / 2 + 1, H, 5)).toBe(2);
-    expect(queueDragTarget(1, -(H / 2 + 1), H, 5)).toBe(0);
-    expect(queueDragTarget(0, 2 * H, H, 5)).toBe(2);
-  });
-
-  it('clamps to the first and last slot, and survives degenerate input', () => {
-    expect(queueDragTarget(0, -10 * H, H, 5)).toBe(0);
-    expect(queueDragTarget(4, 10 * H, H, 5)).toBe(4);
-    // Degenerate input answers "it has not moved" — `from`, not slot 0. The
-    // two copies of this function disagreed here; sending a row to the top of
-    // a list nobody has measured yet is the one that was wrong.
-    expect(queueDragTarget(0, 100, H, 0)).toBe(0);
-    expect(queueDragTarget(2, 100, 0, 5)).toBe(2);
-  });
-});
-
-describe('queueDragShift', () => {
-  const H = QUEUE_ROW_HEIGHT;
-
-  it('slides the rows between source and target one row towards the source', () => {
-    // 0 dragged to 2: rows 1 and 2 move up, 3 stays.
-    expect([0, 1, 2, 3].map((i) => queueDragShift(i, 0, 2, H))).toEqual([0, -H, -H, 0]);
-    // 3 dragged to 1: rows 1 and 2 move down, 0 stays.
-    expect([0, 1, 2, 3].map((i) => queueDragShift(i, 3, 1, H))).toEqual([0, H, H, 0]);
-    // Not moved yet: nothing shifts.
-    expect([0, 1, 2].map((i) => queueDragShift(i, 1, 1, H))).toEqual([0, 0, 0]);
-  });
-});
 
 describe('QueuePanel structure', () => {
   it('draws the three sections as headings, with lists of rows', () => {
@@ -294,7 +233,7 @@ describe('QueuePanel callbacks', () => {
         <QueuePanel
           testID="qp"
           queue={queue}
-          onReorder={(_s, from, to) => setQueue((list) => moveQueueItem(list, from, to))}
+          onReorder={(_s, from, to) => setQueue((list) => moveItem(list, from, to))}
         />
       );
     }

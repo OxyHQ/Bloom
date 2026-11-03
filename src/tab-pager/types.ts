@@ -8,7 +8,6 @@
 import type { SharedValue } from 'react-native-reanimated';
 import type { BottomBarProps } from '../bottom-bar/types';
 import type { BloomIconComponent } from '../icons/icon-component';
-import type { TabBarItem } from '../tab-bar/types';
 
 /**
  * One place the app's navigation leads, declared once. `TabPagerProvider`
@@ -72,31 +71,6 @@ export interface AppDestination {
   onLongPress?: () => void;
 }
 
-/**
- * One root page of the app, in pager order.
- *
- * @deprecated Declare `AppDestination`s and pass them as `destinations`; a
- * destination with `bar` (or `page`) is a page.
- */
-export interface TabPage {
-  /** The route's name inside the tabs group: the navigator's own identifier. */
-  name: string;
-  /** The page's exact path. It is how a pathname is recognised as this page. */
-  href: string;
-  /**
-   * Mount this page ahead of a visit — as a neighbour of the page in front, and
-   * kept laid out while the bar can reach it — so a swipe or a tap never lands
-   * on a blank screen. Off by default: a heavy page (a composer) or one that
-   * holds hardware (a camera) mounts only when the reader lands on it.
-   */
-  preload?: boolean;
-  /**
-   * The item this page draws in the bottom bar. A page without one is reached
-   * by swiping or by `selectTab`, and the bar fades away while it is in front.
-   */
-  bar?: Omit<TabBarItem, 'name'>;
-}
-
 /** What `useTabPager()` returns. */
 export interface TabPagerState {
   /** The destinations that are pages, in pager order. */
@@ -138,7 +112,4 @@ export interface TabPagerState {
 export type TabPagerBottomBarProps = Omit<
   BottomBarProps,
   'items' | 'value' | 'onValueChange' | 'activeProgress' | 'hideProgress'
-> & {
-  /** @deprecated Pass `onReselect` to `TabPagerProvider`; the sidebar shares it. */
-  onReselect?: (name: string) => void;
-};
+>;

@@ -172,5 +172,3 @@ export function createAlertDialog(Dialog: DialogComponent) {
   AlertDialog.displayName = 'AlertDialog';
   return AlertDialog;
 }
-
-export type AlertDialogType = ReturnType<typeof createAlertDialog>;

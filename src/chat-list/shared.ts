@@ -27,7 +27,6 @@ import type {
   ChatPreview,
   ChatSearchResult,
   ChatSearchResultKind,
-  ChatSearchResultsLabels,
   HighlightedRun,
   StoryEntry,
 } from './types';
@@ -289,9 +288,6 @@ export function hasUnread(unreadCount?: number, unreadDot?: boolean): boolean {
  * `CHAT_LIST_MESSAGES` (see `docs/locale.mdx`).
  */
 export const DEFAULT_ITEM_LABELS: Required<ChatListItemLabels> = CHAT_LIST_MESSAGES.en.item;
-
-export const DEFAULT_SEARCH_LABELS: Required<ChatSearchResultsLabels> =
-  CHAT_LIST_MESSAGES.en.search;
 
 /** The marker a row draws beside the name, and what it is called. */
 export function chatMarker(

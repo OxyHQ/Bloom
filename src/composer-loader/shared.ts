@@ -19,14 +19,6 @@ import type { ComposerLoaderColors } from './types';
  * trails it. A `taper` stacks each layer as 14 shorter, centred copies.
  */
 
-/** @deprecated Legacy explicit rainbow override. Component defaults now use resolveComposerLoaderColors(theme). */
-export const DEFAULT_COMPOSER_LOADER_COLORS: ComposerLoaderColors = [
-  '#5eead4',
-  '#46baec',
-  '#e633a4',
-  '#00faa7',
-];
-
 /** Theme foreground roles keep the moving light legible over the card material. */
 export function resolveComposerLoaderColors(theme: Theme): ComposerLoaderColors {
   const c = theme.colors;

@@ -18,13 +18,6 @@ export const MENU_ITEM_DIETS: readonly MenuItemDiet[] = [
 export const MENU_ITEM_DIET_LABELS: Readonly<Record<MenuItemDiet, string>> =
   MENU_ITEM_MESSAGES.en.diets;
 
-/**
- * The two diets that are about what the dish is MADE OF get a glyph; the other
- * four are certifications and preparations with no drawing, and inventing one
- * for them would be Bloom asserting a symbol an app's customers have to learn.
- */
-export const MENU_ITEM_DIET_WITH_GLYPH: readonly MenuItemDiet[] = ['vegetarian', 'vegan'];
-
 /** The hottest level the flames can say. */
 export const MENU_ITEM_SPICE_MAX = 3;
 

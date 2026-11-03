@@ -1,12 +1,7 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { AccentTone } from '../theme/accent-colors';
 import type { BloomIconComponent } from '../icons/icon-component';
-
-/** An icon COMPONENT (`RiBusLine`, not `<RiBusLine />`); the part sizes and colours it. */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type InsightIcon = BloomIconComponent;
 
 // ---------------------------------------------------------------------------
 //  EnergyLabel / EnergyBadge
@@ -228,7 +223,7 @@ export interface NeighbourhoodScore {
   display?: string;
   /** "Metro 4 min, 6 bus lines". */
   description?: string;
-  icon?: InsightIcon;
+  icon?: BloomIconComponent;
 }
 
 export type NeighbourhoodScoresVariant = 'bars' | 'rings';
@@ -248,14 +243,14 @@ export interface NeighbourhoodScoresProps {
 }
 
 export interface NearbyPlace {
-  icon: InsightIcon;
+  icon: BloomIconComponent;
   name: string;
   /** "Metro station", "Primary school". */
   category?: string;
   /** Pre-formatted ("4 min"). */
   time: string;
   /** Default: walking. */
-  modeIcon?: InsightIcon;
+  modeIcon?: BloomIconComponent;
 }
 
 export interface NearbyPlacesProps {

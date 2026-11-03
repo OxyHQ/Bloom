@@ -54,7 +54,7 @@ export interface AiChatMessages {
     breadcrumb: string;
     share: string;
   };
-  /** `AiChatShell` and `AiChatResizeHandle`. */
+  /** `AiChatShell`. */
   shell: {
     openNavigation: string;
     closeNavigation: string;

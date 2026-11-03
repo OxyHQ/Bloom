@@ -33,7 +33,6 @@ export type {
   CallControlTone,
   CallControlsProps,
   CallDirection,
-  CallGlyph,
   CallHistoryItem,
   CallHistoryLabels,
   CallHistoryListProps,

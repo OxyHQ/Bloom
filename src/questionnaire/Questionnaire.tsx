@@ -78,6 +78,7 @@ import type {
   QuestionnaireSelect,
 } from './types';
 import { IS_WEB } from '../styles/platform';
+import { webDataSet } from '../styles/web-data';
 import { UNSET } from '../styles/animated-style';
 
 /**
@@ -240,10 +241,6 @@ ${INPUT}::placeholder { color: var(--bloom-questionnaire-placeholder); opacity: 
 }
 `;
 
-function dataSet(entries: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: entries } : {};
-}
-
 function useHover() {
   const [hovered, setHovered] = useState(false);
   const onHoverIn = useCallback(() => setHovered(true), []);
@@ -319,7 +316,7 @@ function OptionKey({
 }) {
   return (
     <View
-      {...dataSet({ bloomQuestionnaireKey: '' })}
+      {...webDataSet({ bloomQuestionnaireKey: '' })}
       aria-hidden
       style={{
         flexShrink: 0,
@@ -371,7 +368,7 @@ function CheckboxRow({
       aria-invalid={field.invalid || undefined}
       aria-describedby={field.describedBy}
       accessibilityHint={field.accessibilityHint}
-      {...dataSet({ bloomQuestionnaireRow: 'check', bloomCheckboxFocusable: '' })}
+      {...webDataSet({ bloomQuestionnaireRow: 'check', bloomCheckboxFocusable: '' })}
       testID={testID}
       role="checkbox"
       aria-checked={checked}
@@ -439,7 +436,7 @@ function PickRow({
       aria-invalid={field.invalid || undefined}
       aria-describedby={field.describedBy}
       accessibilityHint={field.accessibilityHint}
-      {...dataSet({ bloomQuestionnaireRow: 'pick' })}
+      {...webDataSet({ bloomQuestionnaireRow: 'pick' })}
       testID={testID}
       role="button"
       aria-pressed={selected}
@@ -489,7 +486,7 @@ function OtherToggle({
       aria-invalid={field.invalid || undefined}
       aria-describedby={field.describedBy}
       accessibilityHint={field.accessibilityHint}
-      {...dataSet({ bloomQuestionnaireToggle: '', bloomCheckboxFocusable: '' })}
+      {...webDataSet({ bloomQuestionnaireToggle: '', bloomCheckboxFocusable: '' })}
       testID={testID}
       role="checkbox"
       aria-checked={checked}
@@ -566,7 +563,7 @@ function OtherRow({
 
   return (
     <Pressable
-      {...dataSet({ bloomQuestionnaireRow: 'other' })}
+      {...webDataSet({ bloomQuestionnaireRow: 'other' })}
       testID={testID}
       // A press on the row itself lands in the field.
       disabled={field.disabled}
@@ -582,7 +579,7 @@ function OtherRow({
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[BODY_MEDIUM, { color: palette.text }]}>{label}</Text>
         <TextInput
-          {...dataSet({ bloomQuestionnaireInput: '' })}
+          {...webDataSet({ bloomQuestionnaireInput: '' })}
           ref={inputRef}
           testID={testID ? `${testID}-input` : undefined}
           accessibilityLabel={field.accessibilityLabel}
@@ -658,7 +655,7 @@ function StepPill({
 
   return (
     <Pressable
-      {...dataSet({ bloomQuestionnairePill: '' })}
+      {...webDataSet({ bloomQuestionnairePill: '' })}
       testID={testID}
       role="button"
       disabled={field.disabled}
@@ -890,7 +887,7 @@ function SlidingPanel({
   return (
     <Animated.View
       ref={attach}
-      {...dataSet({ bloomQuestionnairePanel: '' })}
+      {...webDataSet({ bloomQuestionnairePanel: '' })}
       {...(IS_WEB && role === 'enter' ? { tabIndex: -1 } : {})}
       onLayout={onLayout}
       pointerEvents={role === 'exit' ? 'none' : 'auto'}

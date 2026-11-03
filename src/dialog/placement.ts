@@ -108,11 +108,6 @@ export const EASE_OUT = 'cubic-bezier(0.33, 1, 0.68, 1)';
 /** Stable testID for the dimmed backdrop of a side/bottom placement dialog. */
 export const DIALOG_SHEET_BACKDROP_TESTID = 'bloom-dialog-sheet-backdrop';
 
-/** Drag-handle pill geometry for the bottom-sheet. */
-export const HANDLE_WIDTH = 36;
-export const HANDLE_HEIGHT = 5;
-export const HANDLE_RADIUS = 3;
-
 /**
  * Minimum gutter kept between a wide side-sheet and the opposite viewport edge
  * when capping its width by default. Callers can opt into a zero gutter.

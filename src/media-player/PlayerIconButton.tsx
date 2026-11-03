@@ -9,15 +9,11 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { RefComponent } from '../styles/native-refs';
 
-/** A glyph component (any `Ri*` icon). */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type PlayerGlyph = BloomIconComponent;
-
 /** The dot under an active glyph. */
 export const ACTIVE_DOT = 4;
 
 export interface PlayerIconButtonProps {
-  icon?: PlayerGlyph;
+  icon?: BloomIconComponent;
   /** Draws text instead of a glyph ("1.5×"). */
   text?: string;
   glyph: number;

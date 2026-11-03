@@ -7,7 +7,6 @@ export type { NotificationPaint, NotificationStatusPaint } from './shared';
 export type {
   NotificationAction,
   NotificationAvatar,
-  NotificationIconComponent,
   NotificationPresence,
   NotificationProps,
   NotificationStatus,
