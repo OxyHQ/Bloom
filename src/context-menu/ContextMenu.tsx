@@ -26,6 +26,7 @@ import { BloomScope } from '../appearance';
  * `ContextMenu*` names — one implementation, three families.
  */
 import React, {
+  isValidElement,
   useCallback,
   useLayoutEffect,
   useMemo,
@@ -172,6 +173,18 @@ export function ContextMenuTrigger({
     [disabled, openAt],
   );
 
+  // Whether the trigger is a control with a menu, which says whether its menu is
+  // open (an ARIA menu button's `aria-expanded`, a Mac's control with a menu): an
+  // `asChild` child that is a button or states no role of its own (a `Button`, a
+  // dock's icon). Bloom's own trigger around content, and a child that is
+  // something else (a list, a row, a grid of items), is an area with a menu, no
+  // disclosure: it says only that it has one.
+  const childRole = isValidElement<{ accessibilityRole?: string; role?: string }>(children)
+    ? (children.props.accessibilityRole ?? children.props.role)
+    : undefined;
+  const control =
+    asChild && (childRole === undefined || childRole === 'button' || childRole === 'imagebutton');
+
   // Without `asChild` the trigger is Bloom's own, and it is a `LongPressArea`
   // rather than TriggerSlot's `Pressable`: a Pressable holds the touch
   // responder, which on Android keeps a horizontal ScrollView inside the
@@ -181,11 +194,10 @@ export function ContextMenuTrigger({
       asChild
       anchorRef={menu.triggerRef}
       onPointerDown={onPointerDown}
-      // A context menu's area is no disclosure: it says it has a menu, and
-      // claims no expanded state (Android's long-pressable views have none, nor
-      // an ARIA context menu's area), but screen-reader focus still comes back
-      // to it as its menu closes — unless the menu hangs from a view of the caller's, which gets
-      // it back instead (`ContextMenu`).
+      // A control with a menu says it has one and whether it is open (`control`
+      // above); screen-reader focus comes back to the trigger as its menu closes —
+      // unless the menu hangs from a view of the caller's, which gets it back
+      // instead (`ContextMenu`).
       open={menu.open}
       restoreFocus={menu.anchorRef === menu.triggerRef}
       className={className}
@@ -203,6 +215,7 @@ export function ContextMenuTrigger({
         accessibilityLabel: label,
         accessibilityRole: 'button',
         'aria-haspopup': MENU_TRIGGER_POPUP,
+        ...(control ? { 'aria-expanded': menu.open } : {}),
         accessibilityActions,
         onAccessibilityAction,
       }}

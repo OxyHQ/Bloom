@@ -174,7 +174,7 @@ it('an asChild child keeps its own actions beside the longpress, each answered b
   expect(calls.open).toHaveBeenCalledWith(true);
 });
 
-it("gives a Button child the trigger's longpress, with no expanded state", () => {
+it("gives a Button child the trigger's longpress, and says whether its menu is open", () => {
   const screen = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
       <ContextMenu onOpenChange={calls.open}>
@@ -188,8 +188,8 @@ it("gives a Button child the trigger's longpress, with no expanded state", () =>
   );
   const icon = screen.getByTestId('icon');
   expect(icon.props.accessibilityActions).toEqual([{ name: 'longpress', label: 'Show menu' }]);
-  expect(icon.props['aria-expanded']).toBeUndefined();
-  expect(icon.props.accessibilityState?.expanded).toBeUndefined();
+  // A control with a menu is a menu button: collapsed until its menu opens.
+  expect(icon.props['aria-expanded']).toBe(false);
   fireEvent(icon, 'accessibilityAction', { nativeEvent: { actionName: 'longpress' } });
   expect(calls.open).toHaveBeenCalledWith(true);
 });

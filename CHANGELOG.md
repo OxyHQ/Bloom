@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.5.0
+
+### Fixed
+
+- **A control with a context menu says whether its menu is open again.** 16.4.0 took the expanded state off every native `ContextMenuTrigger`; a trigger whose `asChild` child is a button or states no role of its own (a `Button`, a dock's icon) is a menu button, and says collapsed or expanded again, as an ARIA menu button and a Mac's control with a menu do. An area with a menu (Bloom's own trigger around content, or a child that states another role: a list, a row) still claims no expanded state. See `docs/context-menu.mdx`.
+
+### Consumers
+
+Nothing to change.
+
 ## 16.4.0
 
 ### Added
