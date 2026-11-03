@@ -2,6 +2,21 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 16.6.0
+
+### Added
+
+- **Colour swatches in a radio group: `RadioGroup variant="swatch"` and `RadioSwatch`.** Each option is a round disc of its `color`, named by its `label` (the colour's name, which a screen reader says; nothing is drawn beside it), the chosen one marked by a dot of its `foreground` (white unless given) at its centre, as a desktop's accent colour picker draws its choices. The group is the same one keyboard stop as every radio group: on web the chosen swatch takes the tab stop and the arrows choose the next; on a native host that gives Bloom the window's keys the chosen swatch is the only `focusable` one and the four arrows choose the next round the ends, the focus following once the value lands. `xs`–`lg` discs are 16/18/22/26px in a wrapping row 8px apart. See `docs/radio.mdx`.
+- **`Button`'s `tabIndex` on native.** It was web only; it is now React Native's own `tabIndex` on native too, so `tabIndex={-1}` leaves a button out of the keyboard's Tab order on both platforms (its `focusable` on native, which OxyOS's host reads) while a pointer and an assistive technology still press it: a list's column headers, sorted from the keyboard by a View menu, as a Mac's table headers are not in the key view loop. See `docs/button.mdx`.
+
+### Fixed
+
+- **A native `Stepper` is one keyboard stop, its value**, as on web: the value is focusable and the platform's keyboard focus steps it with the arrows through its increment and decrement; the buttons beside it, `tabIndex={-1}` for the web, are now no stops on native either.
+
+### Consumers
+
+Nothing to change. A `Button` given `tabIndex={-1}` for the web now also leaves the keyboard's Tab order on native.
+
 ## 16.5.0
 
 ### Fixed

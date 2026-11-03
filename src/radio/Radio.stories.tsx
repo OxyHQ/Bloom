@@ -363,3 +363,37 @@ export const Chips: Story = {
     );
   },
 };
+
+/** Colour swatches: one stop, the arrows choosing the next, each named by its colour. */
+export const Swatches: Story = {
+  render: function RadioSwatchesStory() {
+    const [value, setValue] = useState('blue');
+    return (
+      <View style={{ padding: 24, gap: 24 }}>
+        <RadioGroup
+          label="Accent colour"
+          variant="swatch"
+          value={value}
+          onValueChange={setValue}
+          options={[
+            { value: 'blue', label: 'Blue', color: '#2563EB' },
+            { value: 'teal', label: 'Teal', color: '#0D9488' },
+            { value: 'amber', label: 'Amber', color: '#F59E0B', foreground: '#1F2937' },
+            { value: 'rose', label: 'Rose', color: '#E11D48' },
+            { value: 'slate', label: 'Slate', color: '#475569', disabled: true },
+          ]}
+        />
+        <RadioGroup
+          label="Small swatches"
+          variant="swatch"
+          size="sm"
+          defaultValue="a"
+          options={[
+            { value: 'a', label: 'Violet', color: '#7C3AED' },
+            { value: 'b', label: 'Green', color: '#16A34A' },
+          ]}
+        />
+      </View>
+    );
+  },
+};

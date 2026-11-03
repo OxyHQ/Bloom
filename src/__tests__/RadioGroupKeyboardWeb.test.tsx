@@ -23,7 +23,7 @@ const options = [
 ];
 const key = (el: HTMLElement, key: string, type = 'keydown') =>
   act(() => el.dispatchEvent(new KeyboardEvent(type, { key, bubbles: true, cancelable: true })));
-for (const variant of ['default', 'card', 'chip'] as const)
+for (const variant of ['default', 'card', 'chip', 'swatch'] as const)
   for (const rtl of [false, true]) {
     it(`${variant} owns one tab stop, skips disabled options and wraps in ${rtl ? 'RTL' : 'LTR'}`, () => {
       document.documentElement.dir = rtl ? 'rtl' : 'ltr';
@@ -155,7 +155,7 @@ for (const variant of ['default', 'card', 'chip'] as const)
     expect(firstRef?.current).toBe(radios[0]);
   });
 
-for (const variant of ['default', 'card', 'chip'] as const)
+for (const variant of ['default', 'card', 'chip', 'swatch'] as const)
   it(`${variant} owns Space activation, cancellation and stable controlled focus`, () => {
     const change = jest.fn();
     const draw = (value: string | undefined) =>

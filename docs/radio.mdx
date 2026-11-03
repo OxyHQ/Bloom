@@ -209,3 +209,34 @@ default layout. Explicit `optionStyle`, `labelStyle` and `style` remain last.
 The semantic disabled state and group keyboard handling stay owned by Bloom.
 Standalone `RadioChip` accepts the corresponding `className` and
 `labelClassName` props and the same `checked`/`onValueChange` contract as `Radio`.
+
+## Colour swatches
+
+`RadioGroup variant="swatch"` renders `RadioSwatch` controls: round discs, each
+its option's `color`, as a desktop's accent colour picker draws its choices.
+Nothing is drawn beside a swatch, so its option's `label` (or
+`accessibilityLabel`) is the colour's NAME, which a screen reader says ("Blue,
+selected, radio button"); `description` is its hint. The chosen swatch shows a
+dot at its centre in the option's `foreground` (white unless given: pass the
+colour's readable foreground for a light one).
+
+```tsx
+<RadioGroup label="Accent colour" variant="swatch" value={accent} onValueChange={setAccent}
+  options={ACCENTS.map((name) => ({ value: name, label: names[name], color: hex[name] }))} />
+```
+
+|      | `xs` | `sm` | `md` | `lg` |
+| ---- | ---- | ---- | ---- | ---- |
+| disc | 16   | 18   | 22   | 26   |
+| dot  | 6    | 6    | 8    | 10   |
+
+The swatches sit in a wrapping row 8px apart, each target reaching 4px into
+the gap so neighbours meet without overlapping. The group is the same ONE
+keyboard stop as every radio group: on web the chosen swatch takes the tab stop
+and the arrows choose the next; on a native host that gives Bloom the window's
+keys the chosen swatch is the only `focusable` one and the four arrows choose
+the next round the ends, the focus following once the value lands (a session
+preference the platform keeps lands later, and the reader then says the swatch
+once, already chosen). Disabled dims a disc to 50%. On web keyboard focus draws
+a 2px accent outline 2px off the disc. `RadioSwatch` is also exported for a
+layout of its own inside your own `radiogroup`.

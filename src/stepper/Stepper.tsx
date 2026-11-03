@@ -318,6 +318,10 @@ function StepperComponent({
         accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
         onAccessibilityAction={onAccessibilityAction}
         {...webValueProps}
+        // Native: the value is the stepper's one keyboard stop, as on web, and the platform's
+        // keyboard focus steps it with the arrows through its increment and decrement (the
+        // buttons beside it are no stops: `tabIndex={-1}` holds on native too), as the slider's.
+        {...(IS_WEB ? {} : { accessible: true, focusable: !disabled })}
         {...webDataSet({ bloomStepperValue: '' })}
         testID={testID ? `${testID}-value` : undefined}
         style={valueStyle}
