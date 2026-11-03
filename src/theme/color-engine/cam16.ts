@@ -78,7 +78,7 @@ export class Cam16 {
     const eHue = (1.0 / 4.0) * (Math.cos((huePrime * Math.PI) / 180.0 + 2.0) + 3.8);
     const p1 = (50000.0 / 13.0) * eHue * vc.nc * vc.ncb;
     const t = (p1 * Math.sqrt(a * a + b * b)) / (u + 0.305);
-    const alpha = Math.pow(t, 0.9) * Math.pow(1.64 - Math.pow(0.29, vc.n), 0.73);
+    const alpha = Math.pow(t, 0.9) * vc.chromaFactor;
     const C = alpha * Math.sqrt(J / 100.0);
     const M = C * vc.fLRoot;
     const s = 50.0 * Math.sqrt((alpha * vc.c) / (vc.aw + 4.0));
@@ -139,7 +139,7 @@ export class Cam16 {
   xyzInViewingConditions(vc: ViewingConditions): [number, number, number] {
     const alpha =
       this.chroma === 0.0 || this.j === 0.0 ? 0.0 : this.chroma / Math.sqrt(this.j / 100.0);
-    const t = Math.pow(alpha / Math.pow(1.64 - Math.pow(0.29, vc.n), 0.73), 1.0 / 0.9);
+    const t = Math.pow(alpha / vc.chromaFactor, 1.0 / 0.9);
     const hRad = (this.hue * Math.PI) / 180.0;
     const eHue = 0.25 * (Math.cos(hRad + 2.0) + 3.8);
     const ac = vc.aw * Math.pow(this.j / 100.0, 1.0 / vc.c / vc.z);

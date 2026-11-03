@@ -27,7 +27,16 @@ export class ViewingConditions {
     readonly fl: number,
     readonly fLRoot: number,
     readonly z: number,
-  ) {}
+  ) {
+    this.chromaFactor = Math.pow(1.64 - Math.pow(0.29, n), 0.73);
+  }
+
+  /**
+   * CAM16's `(1.64 - 0.29^n)^0.73`, which every chroma conversion multiplies or
+   * divides by. It depends only on the conditions, so it is computed with them
+   * instead of twice per colour.
+   */
+  readonly chromaFactor: number;
 
   static make(
     whitePoint: [number, number, number] = whitePointD65(),

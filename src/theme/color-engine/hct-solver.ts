@@ -49,10 +49,13 @@ function chromaticAdaptation(component: number): number {
 }
 
 function hueOf(linrgb: Vec3): number {
-  const scaledDiscount = matrixMultiply(linrgb, SCALED_DISCOUNT_FROM_LINRGB);
-  const rA = chromaticAdaptation(scaledDiscount[0]);
-  const gA = chromaticAdaptation(scaledDiscount[1]);
-  const bA = chromaticAdaptation(scaledDiscount[2]);
+  // `matrixMultiply(linrgb, SCALED_DISCOUNT_FROM_LINRGB)`, term for term, without
+  // the array it would allocate: the out-of-gamut search calls this ~20 times
+  // per colour.
+  const m = SCALED_DISCOUNT_FROM_LINRGB;
+  const rA = chromaticAdaptation(linrgb[0] * m[0][0] + linrgb[1] * m[0][1] + linrgb[2] * m[0][2]);
+  const gA = chromaticAdaptation(linrgb[0] * m[1][0] + linrgb[1] * m[1][1] + linrgb[2] * m[1][2]);
+  const bA = chromaticAdaptation(linrgb[0] * m[2][0] + linrgb[1] * m[2][1] + linrgb[2] * m[2][2]);
   const a = (11.0 * rA + -12.0 * gA + bA) / 11.0;
   const b = (rA + gA - 2.0 * bA) / 9.0;
   return Math.atan2(b, a);
@@ -120,6 +123,37 @@ function nthVertex(y: number, n: number): Vec3 {
   }
 }
 
+/**
+ * Where the plane of luminance `y` cuts the edges of the RGB cube, in edge order,
+ * with each point's hue. It depends on `y` alone, and a palette search solves the
+ * same few tones for dozens of hues (the colour policy's accent search: 63 tones
+ * for each of ~50 hues), so the cut is kept per luminance, bounded.
+ */
+interface CubeCut {
+  readonly vertices: readonly Vec3[];
+  readonly hues: readonly number[];
+}
+
+const CUBE_CUT_LIMIT = 512;
+const CUBE_CUTS = new Map<number, CubeCut>();
+
+function cubeCut(y: number): CubeCut {
+  const cached = CUBE_CUTS.get(y);
+  if (cached !== undefined) return cached;
+  const vertices: Vec3[] = [];
+  const hues: number[] = [];
+  for (let n = 0; n < 12; n++) {
+    const vertex = nthVertex(y, n);
+    if (vertex[0] < 0) continue;
+    vertices.push(vertex);
+    hues.push(hueOf(vertex));
+  }
+  const cut = { vertices, hues };
+  CUBE_CUTS.set(y, cut);
+  if (CUBE_CUTS.size > CUBE_CUT_LIMIT) CUBE_CUTS.delete(CUBE_CUTS.keys().next().value as number);
+  return cut;
+}
+
 function bisectToSegment(y: number, targetHue: number): [Vec3, Vec3] {
   let left: Vec3 = [-1.0, -1.0, -1.0];
   let right: Vec3 = left;
@@ -127,10 +161,10 @@ function bisectToSegment(y: number, targetHue: number): [Vec3, Vec3] {
   let rightHue = 0.0;
   let initialized = false;
   let uncut = true;
-  for (let n = 0; n < 12; n++) {
-    const mid = nthVertex(y, n);
-    if (mid[0] < 0) continue;
-    const midHue = hueOf(mid);
+  const { vertices, hues } = cubeCut(y);
+  for (let i = 0; i < vertices.length; i++) {
+    const mid = vertices[i] as Vec3;
+    const midHue = hues[i] as number;
     if (!initialized) {
       left = mid;
       right = mid;
@@ -210,7 +244,7 @@ function findResultByJ(hueRadians: number, chroma: number, y: number): number {
   let j = Math.sqrt(y) * 11.0;
   // Read the CAM16 default viewing conditions directly (no magic constants).
   const vc = ViewingConditions.DEFAULT;
-  const tInnerCoeff = 1 / Math.pow(1.64 - Math.pow(0.29, vc.n), 0.73);
+  const tInnerCoeff = 1 / vc.chromaFactor;
   const eHue = 0.25 * (Math.cos(hueRadians + 2.0) + 3.8);
   const p1 = eHue * (50000.0 / 13.0) * vc.nc * vc.ncb;
   const hSin = Math.sin(hueRadians);

@@ -7,6 +7,7 @@
  * tones per role.
  */
 import { Hct } from './hct';
+import { solveToInt } from './hct-solver';
 
 export class TonalPalette {
   private readonly cache = new Map<number, number>();
@@ -43,7 +44,9 @@ export class TonalPalette {
   tone(tone: number): number {
     let argb = this.cache.get(tone);
     if (argb === undefined) {
-      argb = Hct.from(this.hue, this.chroma, tone).toInt();
+      // The solver's own result: `Hct.from(...).toInt()` returns exactly this
+      // integer after deriving a CAM16 of it that nothing here reads.
+      argb = solveToInt(this.hue, this.chroma, tone);
       this.cache.set(tone, argb);
     }
     return argb;
