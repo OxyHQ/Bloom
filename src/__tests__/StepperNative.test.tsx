@@ -35,28 +35,31 @@ describe.each(['separate', 'outline'] as const)('native Stepper %s', (appearance
   });
 });
 
-describe.each(['separate', 'outline'] as const)('native Stepper %s from the keyboard', (appearance) => {
-  it('is one keyboard stop, its value; the buttons beside it are none', () => {
-    const { getAllByTestId } = render(
-      <BloomThemeProvider>
-        <Stepper
-          appearance={appearance}
-          value={2}
-          min={1}
-          max={3}
-          onValueChange={jest.fn()}
-          testID="stepper"
-          accessibilityLabel="Quantity"
-        />
-      </BloomThemeProvider>,
-    );
-    const host = (id: string) => {
-      const all = getAllByTestId(id);
-      return all.find((node) => typeof node.type === 'string') ?? all[0]!;
-    };
-    expect(host('stepper-value').props.focusable).toBe(true);
-    expect(host('stepper-value').props.accessible).toBe(true);
-    expect(host('stepper-decrement').props.tabIndex).toBe(-1);
-    expect(host('stepper-increment').props.tabIndex).toBe(-1);
-  });
-});
+describe.each(['separate', 'outline'] as const)(
+  'native Stepper %s from the keyboard',
+  (appearance) => {
+    it('is one keyboard stop, its value; the buttons beside it are none', () => {
+      const { getAllByTestId } = render(
+        <BloomThemeProvider>
+          <Stepper
+            appearance={appearance}
+            value={2}
+            min={1}
+            max={3}
+            onValueChange={jest.fn()}
+            testID="stepper"
+            accessibilityLabel="Quantity"
+          />
+        </BloomThemeProvider>,
+      );
+      const host = (id: string) => {
+        const all = getAllByTestId(id);
+        return all.find((node) => typeof node.type === 'string') ?? all[0]!;
+      };
+      expect(host('stepper-value').props.focusable).toBe(true);
+      expect(host('stepper-value').props.accessible).toBe(true);
+      expect(host('stepper-decrement').props.tabIndex).toBe(-1);
+      expect(host('stepper-increment').props.tabIndex).toBe(-1);
+    });
+  },
+);
