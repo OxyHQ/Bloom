@@ -110,6 +110,8 @@ Menus, selects, tooltips and the date popover opened inside a page stack above i
 
 `useSettingsSavedToast()` returns the enclosing modal's trigger (a no-op outside one). `SettingsTextField` and `SettingsDateField` call it when a changed value commits (`showSavedToast={false}` opts out); a custom control calls it itself. It rises 12px in, holds 2s and drifts 10px up as it fades.
 
+Unseen, it is no part of the accessibility tree. On native, where nothing animates it, it is not mounted until shown (it was in the tree at opacity 0 for as long as the settings were open, and a screen reader's cursor read "Saved" there); its row is a polite `status` that comes into the tree with its text, which the screen reader says once. The web keeps the pill mounted for its fade, `aria-hidden` while not shown, inside a `status` region that is always there, so the text appearing in it is said once.
+
 It is centred by a full-width row, never by its own measured width. It used to sit at `left: 50%` with `marginLeft: -width / 2` from its own `onLayout` — a size fed back into its own position. Yoga rounds a width as round(right) − round(left), so moving the edge by half the width can flip the rounded width by one device pixel, which moves the edge back. On a Pixel 8a (2.625) every odd-pixel label width alternated 201 ↔ 200px forever, and Fabric reports every frame change: the open, idle modal committed a layout on every vsync (601 frames in 5 s, ~146 % CPU, uiautomator never idle) behind a toast at opacity 0. Its height is still measured, and feeds only a transform. `SettingsModalIdle.test.tsx` replays Fabric's pixel grid on the toast and checks that no host's own `onLayout` moves or resizes that host, over this modal and every `Dialog` placement.
 
 ## Rows

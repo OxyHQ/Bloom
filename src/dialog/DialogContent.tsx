@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { View, type GestureResponderEvent } from 'react-native';
+import React, { useCallback, useEffect, useLayoutEffect, type ComponentRef } from 'react';
+import { AccessibilityInfo, View, type GestureResponderEvent } from 'react-native';
 
 import { Text } from '../typography';
 
@@ -7,6 +7,9 @@ import { useTheme } from '../theme/use-theme';
 import { ScreenScope } from '../layout';
 import { Button } from '../button';
 import type { ButtonProps } from '../button/types';
+import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
+import { usePlatformKeyboard } from '../platform-surface/context';
+import { IS_WEB } from '../styles/platform';
 import { useDialogContext } from './context';
 import type { DialogAction, DialogActionColor } from './types';
 
@@ -94,6 +97,31 @@ export function ActionRow({ actions }: { actions: DialogAction[] }) {
 
 function ActionButton({ action }: { action: DialogAction }) {
   const { close } = useDialogContext();
+  // The default button: the keyboard and the screen reader start on it, as a
+  // Mac's alert starts on its default button.
+  //  - A native host that gives Bloom the window's keys (OxyOS's) moves its
+  //    keyboard with the focus asked in the commit that mounts the dialog, as a
+  //    roving group's (`use-native-roving-group.ts`): asked then, the dialog
+  //    starts on it rather than on its first control, and is said once.
+  //  - iOS and Android drop a focus asked before the view is laid out: asked
+  //    once it is (`useAccessibilityFocus`).
+  //  - The web: it focuses itself as it mounts, which the modal's own focus
+  //    (`ModalKeyboard`, a frame later) then keeps.
+  const initialFocus = action.initialFocus === true;
+  const keyboard = usePlatformKeyboard();
+  const inCommit = !IS_WEB && keyboard !== null;
+  const ref = useAccessibilityFocus<ComponentRef<typeof Button>>(initialFocus && !inCommit);
+  useLayoutEffect(() => {
+    if (!initialFocus || !inCommit || ref.current == null) return;
+    AccessibilityInfo.sendAccessibilityEvent(
+      ref.current as unknown as Parameters<typeof AccessibilityInfo.sendAccessibilityEvent>[0],
+      'focus',
+    );
+  }, [initialFocus, inCommit, ref]);
+  useEffect(() => {
+    if (!IS_WEB || !initialFocus) return;
+    (ref.current as unknown as HTMLElement | null)?.focus?.({ preventScroll: true });
+  }, [initialFocus, ref]);
   const color: DialogActionColor = action.color ?? 'default';
   const shouldCloseOnPress = action.shouldCloseOnPress ?? true;
 
@@ -130,6 +158,7 @@ function ActionButton({ action }: { action: DialogAction }) {
   // its states and its focus ring, rather than a private pill.
   return (
     <Button
+      ref={ref}
       {...ACTION_APPEARANCE[color]}
       size="lg"
       disabled={action.disabled}

@@ -1416,6 +1416,15 @@ export function createSettings(
     // 601 frames in 5 s, ~146 % CPU — behind a toast at opacity 0. The row
     // below centres it instead, so nothing about its position depends on it.
     const [height, setHeight] = useState(26);
+    // Hidden, the toast is no part of the screen reader's world. On native,
+    // where nothing animates it, it is not there at all until shown: an
+    // invisible "Saved" in the tree (at opacity 0, for as long as the settings
+    // were open) was read by the screen reader's cursor, and its row coming
+    // into the tree with its text is the polite status a live view says once.
+    // The web keeps the pill mounted for its CSS fade in and out, hidden from
+    // assistive technologies while it is not shown, inside a status region that
+    // is always there, so the text appearing in it is said once.
+    if (!IS_WEB && !shown) return null;
     // `translate-y-1/2`, `calc(50% + 12px)` (rising in) and `calc(50% - 10px)` (drifting out).
     const half = height / 2;
     const translateY = phase === 'shown' ? half : phase === 'hidden' ? half + 12 : half - 10;
@@ -1434,12 +1443,16 @@ export function createSettings(
     return (
       <View
         pointerEvents="none"
+        // The row is the live region (a status, polite): a view with no words
+        // of its own, whose text the screen reader says as it appears.
+        role="status"
+        aria-live="polite"
+        accessibilityLiveRegion="polite"
         style={inset ? [styles.toastRow, { bottom: inset }] : styles.toastRow}
       >
         <View
           pointerEvents="none"
-          aria-live="polite"
-          accessibilityLiveRegion="polite"
+          aria-hidden={shown ? undefined : true}
           onLayout={(event) => {
             const next = event.nativeEvent.layout.height;
             setHeight((previous) => (previous === next ? previous : next));

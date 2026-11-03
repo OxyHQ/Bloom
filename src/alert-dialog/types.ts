@@ -17,7 +17,12 @@ export interface AlertDialogProps {
   cancelLabel?: string;
   /** Confirm handler. The dialog closes after it runs (sync). */
   onConfirm?: () => void;
-  /** Cancel handler. Runs in addition to `onOpenChange(false)`. */
+  /**
+   * Cancel handler: the cancel button, and a dismissal no button answered
+   * (Escape, the backdrop, Android Back), as a Mac's Escape presses an alert's
+   * Cancel button. Runs in addition to `onOpenChange(false)`; never with
+   * `hideCancel`.
+   */
   onCancel?: () => void;
   /**
    * Style the confirm button as destructive (negative color). Defaults to
@@ -33,6 +38,13 @@ export interface AlertDialogProps {
    * safe by default; pass `false` for a truly blocking confirm.
    */
   dismissible?: boolean;
+  /**
+   * The button the keyboard and the screen reader start on, as a Mac's alert's
+   * default button: `'cancel'` where the safe answer is to cancel (a change on
+   * trial that may have left the screen unreadable, reverted by Return).
+   * Unset, they start on the dialog's first control, the confirm button.
+   */
+  defaultAction?: 'confirm' | 'cancel';
   cardStyle?: StyleProp<ViewStyle>;
   testID?: string;
 }

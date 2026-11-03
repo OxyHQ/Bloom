@@ -220,6 +220,13 @@ export type DialogAction = {
    * mounted (e.g. while an async confirmation is in flight).
    */
   shouldCloseOnPress?: boolean;
+  /**
+   * The dialog's default button: the keyboard's focus and the screen reader's
+   * start on it as the dialog opens, rather than on its first control, as a
+   * Mac's alert starts on its default button (Return presses it). For a dialog
+   * whose safe answer is not its first action. At most one action sets it.
+   */
+  initialFocus?: boolean;
   testID?: string;
 };
 

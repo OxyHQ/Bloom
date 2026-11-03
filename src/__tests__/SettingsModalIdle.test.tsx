@@ -11,9 +11,13 @@
  * the edge back — and Fabric reports every frame change. Jest has no layout
  * pass, so the suite never saw it.
  *
- * These cases supply the layout pass: Fabric's pixel grid, applied to the
- * toast, and a census that no host's own `onLayout` rewrites that host's own
- * position or size (the shape of the feedback, wherever it would come from).
+ * The hidden toast is no longer mounted on native at all (it was in the screen
+ * reader's tree, invisible), but the shown one is for its two seconds, and an
+ * idle modal can be showing it. These cases supply the layout pass, with the
+ * toast shown (the page view's page reports a save): Fabric's pixel grid,
+ * applied to the toast, and a census that no host's own `onLayout` rewrites
+ * that host's own position or size (the shape of the feedback, wherever it
+ * would come from).
  */
 import React from 'react';
 import { StyleSheet, Text as RNText } from 'react-native';
@@ -22,7 +26,7 @@ import type { ReactTestInstance } from 'react-test-renderer';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { RiSettings6Line } from '../icons/remix';
-import { SettingsModal } from '../settings-modal';
+import { SettingsModal, useSettingsSavedToast } from '../settings-modal';
 import { OverlayInertBoundary, PortalOutlet, PortalProvider } from '../portal';
 import { Dialog } from '../dialog/Dialog';
 import { useDialogControl } from '../dialog/context';
@@ -45,6 +49,13 @@ const SCREEN_PX = 1080;
 /** Yoga's `roundValueToPixelGrid`, round half up. */
 const roundPx = (value: number) => Math.floor(value + 0.5);
 
+/** A page that reports a save as it mounts: the modal shows its toast. */
+function SavedPage() {
+  const showSaved = useSettingsSavedToast();
+  React.useEffect(() => showSaved(), [showSaved]);
+  return <RNText>body</RNText>;
+}
+
 function renderOpenModal(initialView: 'navigation' | 'page') {
   mockWindowSize({
     width: SCREEN_PX / DENSITY,
@@ -61,7 +72,7 @@ function renderOpenModal(initialView: 'navigation' | 'page') {
             testID="settings"
             onClose={() => {}}
             groups={GROUPS}
-            pages={{ general: { title: 'General', content: <RNText>body</RNText> } }}
+            pages={{ general: { title: 'General', content: <SavedPage /> } }}
             initialView={initialView}
           />
         </OverlayInertBoundary>
@@ -122,7 +133,8 @@ afterEach(() => {
 describe('an idle open SettingsModal', () => {
   it('the saved toast settles on the pixel grid for every label width', () => {
     for (const textPx of [100, 101, 137, 200, 201]) {
-      const screen = renderOpenModal('navigation');
+      // The page view: its page reports a save, so the toast is shown.
+      const screen = renderOpenModal('page');
       // Border 2 + padding 16 + icon 16 + gap 4 dp, plus the label in whole px.
       const widthPx = 38 * DENSITY + textPx;
       let events = 0;

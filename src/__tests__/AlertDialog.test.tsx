@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { AlertDialog } from '../alert-dialog';
@@ -177,6 +178,66 @@ describe('AlertDialog (built on Dialog)', () => {
       renderWithTheme(<TestAlertDialog open onOpenChange={() => {}} title="Delete?" />);
       // Matches the shared Dialog default + Mention's ConfirmPrompt.
       expect(captured.props?.dismissOnBackdrop).toBe(true);
+    });
+
+    it('answers Escape and the backdrop as its cancel button, never after a button answered', () => {
+      const { captured, MockDialog } = captureDialogProps();
+      const TestAlertDialog = createAlertDialog(MockDialog);
+      const calls: string[] = [];
+      function Harness({ open }: { open: boolean }) {
+        return (
+          <TestAlertDialog
+            open={open}
+            onOpenChange={(next) => calls.push(`open:${next}`)}
+            onConfirm={() => calls.push('confirm')}
+            onCancel={() => calls.push('cancel')}
+            title="Keep these display settings?"
+          />
+        );
+      }
+      // Mounted closed, then shown: its first dismissal is the person's, and heard.
+      const screen = renderWithTheme(<Harness open={false} />);
+      screen.rerender(
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Harness open />
+        </BloomThemeProvider>,
+      );
+      // Escape (or the backdrop): the Dialog closes on its own, no button pressed.
+      act(() => captured.props?.onClose?.());
+      expect(calls).toEqual(['cancel', 'open:false']);
+      calls.length = 0;
+      // Keep: the button's answer, then the close that follows it, which is no cancel.
+      act(() => {
+        captured.props?.actions?.[0]?.onPress?.(undefined as never);
+        captured.props?.onClose?.();
+      });
+      expect(calls).toEqual(['confirm', 'open:false']);
+      calls.length = 0;
+      // Revert: cancel once.
+      act(() => {
+        captured.props?.actions?.[1]?.onPress?.(undefined as never);
+        captured.props?.onClose?.();
+      });
+      expect(calls).toEqual(['cancel', 'open:false']);
+    });
+
+    it('an acknowledgement without a cancel button answers nothing on Escape', () => {
+      const { captured, MockDialog } = captureDialogProps();
+      const TestAlertDialog = createAlertDialog(MockDialog);
+      const onCancel = jest.fn();
+      const onOpenChange = jest.fn();
+      renderWithTheme(
+        <TestAlertDialog
+          open
+          hideCancel
+          onCancel={onCancel}
+          onOpenChange={onOpenChange}
+          title="Done"
+        />,
+      );
+      act(() => captured.props?.onClose?.());
+      expect(onCancel).not.toHaveBeenCalled();
+      expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
     it('still supports an opt-in blocking confirm via dismissible={false}', () => {
