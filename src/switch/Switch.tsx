@@ -47,7 +47,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
     } = props;
     const [checked, setChecked] = useControllableState({
       value: checkedProp ?? false,
-      controlled: Object.hasOwn(props, 'checked'),
+      controlled: Object.prototype.hasOwnProperty.call(props, 'checked'),
       defaultValue: defaultChecked,
       onChange: onCheckedChange,
     });

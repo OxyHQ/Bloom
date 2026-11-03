@@ -941,7 +941,7 @@ function QuestionnaireComponent({
     parentFill: surfaceLayer.parentFill,
     parentLevel: surfaceLayer.parentLevel,
   });
-  const { paintFill, publishedFill: surfaceFill } = material;
+  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
   const palette = useMemo(
     () => resolveQuestionnairePalette(theme, surfaceFill),
     [theme, surfaceFill],

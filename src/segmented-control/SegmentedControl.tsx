@@ -11,12 +11,12 @@ import {
 } from 'react';
 import {
   type GestureResponderEvent,
-  type Pressable,
+  Pressable,
   type PressableProps,
   type StyleProp,
   StyleSheet,
   type TextStyle,
-  type View,
+  View,
   type ViewStyle,
 } from 'react-native';
 import Animated, {

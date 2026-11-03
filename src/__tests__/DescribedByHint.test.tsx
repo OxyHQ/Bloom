@@ -152,7 +152,11 @@ describe('the families that build their own id list', () => {
         <Text nativeID="own">Letters and digits</Text>
         <Field label="User name" error="Already taken">
           <TextField>
-            <TextFieldInput aria-describedby="own" accessibilityHint="Your public name" />
+            <TextFieldInput
+              label="User name"
+              aria-describedby="own"
+              accessibilityHint="Your public name"
+            />
           </TextField>
         </Field>
       </>,

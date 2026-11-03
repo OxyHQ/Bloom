@@ -1,5 +1,4 @@
-import type React from 'react';
-import { useCallback, useId, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Pressable,

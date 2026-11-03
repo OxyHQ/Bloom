@@ -25,7 +25,7 @@
  * join is the gate that quietly stops measuring anything (`aria-state-web` was
  * exactly that, and three `progressbar` siblings sat outside it).
  */
-import type React from 'react';
+import React from 'react';
 import { TextInput } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

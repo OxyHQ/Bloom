@@ -2,8 +2,7 @@ import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
-import type React from 'react';
-import { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -103,7 +102,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
   } = props;
   const [checked, setChecked] = useControllableState({
     value: checkedProp ?? false,
-    controlled: Object.hasOwn(props, 'checked'),
+    controlled: Object.prototype.hasOwnProperty.call(props, 'checked'),
     defaultValue: defaultChecked,
     onChange: onCheckedChange,
   });

@@ -66,7 +66,7 @@ it('a field control carries the id list as the attribute, and no hint text', () 
   mount(
     <Field label="Password" description="At least 8 characters">
       <TextField>
-        <TextFieldInput />
+        <TextFieldInput label="Password" />
       </TextField>
     </Field>,
   );

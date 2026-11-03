@@ -116,7 +116,7 @@ export function Select(props: SelectProps) {
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
-    controlled: Object.hasOwn(props, 'value'),
+    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);
     },

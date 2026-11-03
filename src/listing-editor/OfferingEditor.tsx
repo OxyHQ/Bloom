@@ -1,7 +1,6 @@
 import { FieldConstraintScope } from '../field/FieldConstraintScope';
 import { useFieldMembership } from '../field/membership';
-import type React from 'react';
-import { memo, useMemo, useState } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { groupThousands } from '../chart-cards/primitives/format';
