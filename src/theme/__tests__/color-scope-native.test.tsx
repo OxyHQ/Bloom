@@ -5,6 +5,7 @@ import { BloomThemeProvider } from '../BloomThemeProvider';
 import { BloomColorScope } from '../color-scope/ColorScope';
 import { useTheme } from '../use-theme';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
+import { buildSeedScopeVars } from '../color-scope/seed-scope';
 import { Portal, PortalOutlet, PortalProvider } from '../../portal/Portal';
 
 jest.mock('nativewind', () => {
@@ -104,4 +105,34 @@ it('publishes the same exact seed through native variables and theme without rem
   expect(result.vars['--background']).toBe(expected.colors.background);
   expect(result.vars['--color-primary']).toBe(expected.colors.primary);
   expect(mounts).toBe(1);
+});
+
+it('solves a seed once for every scope that uses it, on mount and under a new parent theme', () => {
+  const charts = jest.requireActual<typeof import('../chart-colors')>('../chart-colors');
+  const solve = jest.spyOn(charts, 'chartColorsFromTokens');
+  const seedPrimary = buildSeedScopeVars({ seed: '#4464ba', mode: 'dark' })['--primary'];
+  function Scopes({ count, mode }: { count: number; mode: 'light' | 'dark' }) {
+    return (
+      <BloomThemeProvider colorPreset="blue" mode={mode} fonts={false}>
+        {['scope-0', 'scope-1', 'scope-2'].slice(0, count).map((id) => (
+          <BloomColorScope key={id} seed="#4464ba" mode="dark" tokens={{ foreground: '#fff' }}>
+            <Probe id={id} />
+          </BloomColorScope>
+        ))}
+      </BloomThemeProvider>
+    );
+  }
+  const { getByTestId, rerender } = render(<Scopes count={1} mode="light" />);
+  rerender(<Scopes count={3} mode="light" />);
+  rerender(<Scopes count={3} mode="dark" />);
+  const first = getByTestId('scope-0').props.children as string;
+  expect(getByTestId('scope-2').props.children).toBe(first);
+  expect(JSON.parse(first).theme.colors.primary).toBe(
+    buildThemeFromSeed('#4464ba', 'dark').colors.primary,
+  );
+  // The theme object is built from the seed's tokens once; every later scope reads it.
+  expect(solve.mock.calls.filter(([tokens]) => tokens['--primary'] === seedPrimary)).toHaveLength(
+    1,
+  );
+  solve.mockRestore();
 });

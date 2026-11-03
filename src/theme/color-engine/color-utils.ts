@@ -133,11 +133,22 @@ export function lstarFromY(y: number): number {
 
 /** sRGB component (0–255) → linear (0–100). */
 export function linearized(rgbComponent: number): number {
+  return LINEARIZED[rgbComponent] ?? solveLinearized(rgbComponent);
+}
+
+function solveLinearized(rgbComponent: number): number {
   const normalized = rgbComponent / 255.0;
   return normalized <= 0.040449936
     ? (normalized / 12.92) * 100.0
     : Math.pow((normalized + 0.055) / 1.055, 2.4) * 100.0;
 }
+
+/**
+ * Every channel an ARGB integer can hold, linearized once: each CAM16 of a
+ * colour reads three, and a theme solve converts thousands of colours, which on
+ * Hermes was three `Math.pow` calls each. Same function, same values.
+ */
+const LINEARIZED: readonly number[] = Array.from({ length: 256 }, (_, i) => solveLinearized(i));
 
 /** Linear component (0–100) → sRGB (0–255). */
 export function delinearized(rgbComponent: number): number {

@@ -3,7 +3,7 @@ import { generateRoleColors, type RoleColors, type SchemeVariant } from './color
 import { buildSeedScopeVars } from './color-scope/seed-scope';
 import { STATUS_COLORS } from './build-theme';
 import { THEME_GRADIENTS } from './gradients';
-import type { Theme, ThemeColors } from './types';
+import type { Theme, ThemeChartColor, ThemeColors } from './types';
 
 /**
  * Optional explicit accent seeds for the arbitrary-seed theme path. Pinning a
@@ -36,7 +36,7 @@ function buildSeedThemeValues(
   variant?: SchemeVariant,
   contrastLevel?: number,
   accents?: SeedAccents,
-): Pick<Theme, 'colors' | 'chartColors'> {
+): { colors: ThemeColors; chartColors: readonly ThemeChartColor[] } {
   const t = buildSeedScopeVars({
     seed,
     mode: resolved,
@@ -138,13 +138,18 @@ export function buildColorsFromSeed(
   contrastLevel?: number,
   accents?: SeedAccents,
 ): ThemeColors {
-  return buildSeedThemeValues(seed, resolved, variant, contrastLevel, accents).colors;
+  return buildThemeFromSeed(seed, resolved, variant, contrastLevel, accents).colors;
 }
 
 /**
  * Build a full `Theme` from a seed colour and a resolved light/dark mode. Unlike
  * `buildTheme`, there is no adaptive (Material You / iOS dynamic) override — a
  * seed IS the dynamic source here.
+ *
+ * The result is a pure function of the arguments, so it is solved once per
+ * process and shared, frozen, like `generateRoleColors`' roles: every
+ * `BloomColorScope` with that seed, and every re-render of one whose parent
+ * theme changed, reads the same object.
  */
 export function buildThemeFromSeed(
   seed: string,
@@ -153,11 +158,60 @@ export function buildThemeFromSeed(
   contrastLevel?: number,
   accents?: SeedAccents,
 ): Theme {
-  return {
+  const key = cacheKey(seed, resolved, variant, contrastLevel, accents);
+  let theme = CACHE.get(key);
+  if (theme !== undefined) {
+    // Refresh recency: Map iterates in insertion order, so re-insert on hit.
+    CACHE.delete(key);
+  } else {
+    theme = solveThemeFromSeed(seed, resolved, variant, contrastLevel, accents);
+  }
+  CACHE.set(key, theme);
+  if (CACHE.size > CACHE_LIMIT) CACHE.delete(CACHE.keys().next().value as string);
+  return theme;
+}
+
+/** Bounded as the engine's role cache is: an artwork seed per track churns the tail. */
+const CACHE_LIMIT = 128;
+const CACHE = new Map<string, Theme>();
+
+function cacheKey(
+  seed: string,
+  resolved: 'light' | 'dark',
+  variant: SchemeVariant | undefined,
+  contrastLevel: number | undefined,
+  accents: SeedAccents | undefined,
+): string {
+  return JSON.stringify([
+    seed,
+    resolved,
+    variant ?? null,
+    contrastLevel ?? null,
+    accents?.secondarySeed ?? null,
+    accents?.tertiarySeed ?? null,
+  ]);
+}
+
+function solveThemeFromSeed(
+  seed: string,
+  resolved: 'light' | 'dark',
+  variant?: SchemeVariant,
+  contrastLevel?: number,
+  accents?: SeedAccents,
+): Theme {
+  const { colors, chartColors } = buildSeedThemeValues(
+    seed,
+    resolved,
+    variant,
+    contrastLevel,
+    accents,
+  );
+  return Object.freeze({
     mode: resolved,
-    ...buildSeedThemeValues(seed, resolved, variant, contrastLevel, accents),
+    chartColors: Object.freeze(chartColors),
+    colors: Object.freeze(colors),
     gradients: THEME_GRADIENTS,
     isDark: resolved === 'dark',
     isLight: resolved === 'light',
-  };
+  });
 }
