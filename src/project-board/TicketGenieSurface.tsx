@@ -3,13 +3,13 @@ import { useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 import { useDialogContext } from '../dialog/context';
 import { StyledView } from '../styles/styled-primitives';
 import { TicketGenieEnteredContext } from './context';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 function phase(start: number, end: number, value: number) {
   'worklet';
@@ -24,7 +24,7 @@ export function TicketGenieSurface({
   corner?: boolean;
 }) {
   const { isClosing = false } = useDialogContext();
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const progress = useSharedValue(reduced ? 0 : 1);
   const [height, setHeight] = useState(280);
   const [entered, setEntered] = useState(reduced || !corner);

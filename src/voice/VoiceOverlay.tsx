@@ -6,7 +6,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -28,6 +27,7 @@ import { VOICE_MESSAGES } from './messages';
 import type { VoiceOverlayProps } from './types';
 import { VoiceControls } from './VoiceControls';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The panel carries `className`, the safe-area padding AND the fade, so all
@@ -72,7 +72,7 @@ export function VoiceOverlay({
   const { colors } = useTheme();
   const { messages } = useMessages(VOICE_MESSAGES);
   const insets = useCssSafeAreaInsets(useSafeAreaInsets());
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const panelRef = useRef<React.ComponentRef<typeof View>>(null);
   const captionRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const [open, setOpen] = useControllableState({

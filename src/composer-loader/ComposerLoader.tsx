@@ -6,7 +6,6 @@ import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
   useFrameCallback,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type SharedValue,
@@ -26,6 +25,7 @@ import {
   type ComposerLoaderStroke,
 } from './shared';
 import type { ComposerLoaderProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * A composer loader: an iridescent light band orbiting a composer pill's
@@ -115,7 +115,7 @@ function ComposerLoaderComponent({
   testID,
 }: ComposerLoaderProps) {
   const theme = useTheme();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const gradientId = `bloom-cl-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const [box, setBox] = useState({ w: 640, h: 52 });
 

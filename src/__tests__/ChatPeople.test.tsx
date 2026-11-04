@@ -23,8 +23,12 @@ jest.mock('react-native-reanimated', () => {
   return {
     ...actual,
     __esModule: true,
-    useReducedMotion: () => state.reduced,
   };
+});
+
+jest.mock('../hooks/use-prefers-reduced-motion', () => {
+  const g = globalThis as { __peopleMotion?: MotionState };
+  return { usePrefersReducedMotion: () => (g.__peopleMotion ??= { reduced: false }).reduced };
 });
 
 const motion = ((globalThis as { __peopleMotion?: MotionState }).__peopleMotion ??= {

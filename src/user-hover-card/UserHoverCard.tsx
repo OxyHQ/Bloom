@@ -16,7 +16,6 @@ import type React from 'react';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { BloomImage } from '../image';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { Avatar } from '../avatar';
 import { resolveButtonRamps } from '../button/shared';
@@ -43,6 +42,7 @@ import {
 } from './constants';
 import type { UserHoverCardProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * A profile hover card, built from Bloom's existing component vocabulary:
@@ -125,7 +125,7 @@ export function resolveUserHoverCardPalette(theme: Theme): HoverCardPalette {
  * Native fades the card itself, as before.
  */
 function useEntrance(enabled: boolean, host: unknown) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const animate = enabled && !reducedMotion;
   const progress = useRef(new Animated.Value(animate ? 0 : 1)).current;
   const [settled, setSettled] = useState(false);

@@ -3,7 +3,6 @@ import Animated, {
   Easing,
   interpolateColor,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -18,6 +17,7 @@ import { useSidebarPalette } from './palette';
 import { useSidebarWebCss } from './parts';
 import type { SidebarRailItemProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** The indicator pill behind the icon. */
 const INDICATOR_WIDTH = 48;
@@ -61,7 +61,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
   const tooltipRef = useBrowserTitle<ComponentRef<typeof View>>(iconOnly ? label : undefined);
   const selectedFill =
     selectedAppearance === 'icon' ? (hovered ? palette.rowHover : 'transparent') : palette.selected;
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const selection = useSharedValue(selected ? 1 : 0);
   useEffect(() => {
     selection.value = reducedMotion

@@ -4,7 +4,6 @@ import Animated, {
   cancelAnimation,
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withTiming,
@@ -36,6 +35,7 @@ import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { TrackUploadRowLabels, TrackUploadRowProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `TrackUploadRow`: one audio file on its way into a release.
@@ -62,7 +62,7 @@ const WAVE_GAP = 2;
 const SWEEP_MS = 1400;
 
 function IndeterminateBar({ paint, testID }: { paint: CreatorStudioPaint; testID?: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [width, setWidth] = useState(0);
   const x = useSharedValue(0);
 

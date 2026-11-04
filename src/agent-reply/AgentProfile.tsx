@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Platform, StyleSheet } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { AgentProfileProps } from './types';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The conversation's profile target: animated artwork above an intrinsically sized name capsule.
@@ -23,7 +23,7 @@ export function AgentProfile({
   avatarHidden = false,
 }: AgentProfileProps) {
   const { colors } = useTheme();
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const [pressed, setPressed] = useState(false);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   // Every avatar in the profile waves when it is pressed, not only the first.

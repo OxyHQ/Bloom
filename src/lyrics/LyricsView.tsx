@@ -8,7 +8,6 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -31,6 +30,7 @@ import {
 } from './shared';
 import type { LyricsSize, LyricsViewProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Synced lyrics that follow playback.
@@ -90,7 +90,7 @@ function LyricsViewComponent({
   useEffect(() => {
     adoptStyleSheet(LYRICS_STYLE_ID, LYRICS_CSS);
   }, []);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const palette = useMemo(() => resolveLyricsPalette(theme, artworkColor), [theme, artworkColor]);
   const { lines, synced } = useMemo(() => normalizeLyricLines(linesProp, text), [linesProp, text]);
   const active = synced ? activeLyricIndex(lines, currentTime) : -1;

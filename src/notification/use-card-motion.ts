@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** One end of the card's entrance or exit: where it comes from / goes to. */
 export interface CardMotionPose {
@@ -60,7 +60,7 @@ export function useCardMotion({
   dismiss: () => void;
   gone: boolean;
 } {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const animateIntro = introDelay !== undefined && !reducedMotion;
   const enter = useRef(new Animated.Value(animateIntro ? 0 : 1)).current;
   const leave = useRef(new Animated.Value(0)).current;

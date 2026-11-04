@@ -38,11 +38,33 @@ The offline toast is shown immediately because the user is about to hit a
 failure; the *reconnecting* escalation waits, so a two-second blip never
 escalates at all.
 
+## `useNetworkStatus`
+
+The reading the toasts are built on, for an app's own decisions: whether the
+device is online, and whether its connection is metered.
+
+```tsx
+import { useNetworkStatus } from '@oxy.so/bloom/connection-status';
+
+const { online, metered } = useNetworkStatus();
+```
+
+On native, `online` is netinfo's link being up with the internet not known to
+be unreachable, and `metered` is a cellular connection or one netinfo marks
+`isConnectionExpensive`. On the web, `online` is `navigator.onLine` (the link,
+not reachability) and `metered` is a cellular connection or the viewer's
+Save-Data, where the browser exposes the Network Information API. Until the
+platform answers, and without netinfo installed, it reads
+`{ online: true, metered: false }`: nothing is held back and no outage is
+announced on a guess. Every caller shares one subscription. Media autoplay's
+"Wi-Fi only" preference reads `metered` from it.
+
 ## Optional peer
 
-Connectivity comes from `@react-native-community/netinfo`, loaded through
-Bloom's optional-require boundary. Without the package installed the component
-mounts and does nothing rather than failing the build.
+Connectivity on native comes from `@react-native-community/netinfo`, loaded
+through Bloom's optional-require boundary. Without the package installed the
+component mounts and does nothing (and says why once, in development) rather
+than failing the build.
 
 That is why the require is written the way it is — a literal specifier, as a
 direct statement of a `try` block. Metro's optionality walk returns at the

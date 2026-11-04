@@ -1,9 +1,5 @@
 import React, { memo } from 'react';
-import Animated, {
-  useAnimatedStyle,
-  useReducedMotion,
-  type SharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { resolveBloomColors } from '../appearance';
 import { StyledView } from '../styles/styled-primitives';
@@ -11,6 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { DEFAULT_WAVE_BARS, WAVE_METRICS } from './constants';
 import type { AudioWaveVisualizerProps } from './types';
 import { useWaveLevels } from './use-wave-levels';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * One bar. Its height is its slice of the eased levels, read on the UI thread:
@@ -65,7 +62,7 @@ export const AudioWaveVisualizer = memo(function AudioWaveVisualizer({
   testID,
 }: AudioWaveVisualizerProps) {
   const { colors } = useTheme();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const count = Math.max(1, Math.floor(bars));
   const eased = useWaveLevels(levels, count, active && !reducedMotion);
   const metrics = WAVE_METRICS[size];

@@ -1,6 +1,5 @@
 import { useContext, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
-import { AccessibilityInfo, AppState, Platform, type View } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+import { AppState, Platform, type View } from 'react-native';
 import { useMessages } from '../locale/messages';
 import { StyledView, StyledText } from '../styles/styled-primitives';
 import {
@@ -18,6 +17,7 @@ import type { NativeAvatarAdapterProps } from './native-avatar-adapter';
 import { useNativeAvatarCompatibility } from './use-avatar-renderer-capabilities';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 export type RenderProps = Pick<
   AgentAvatarProps,
@@ -295,8 +295,7 @@ function NativeCharacterRouter(
 export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes' }) {
   const { runtimeUrl, stills } = useContext(CharacterRuntimeContext);
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
-  const initialReduced = useReducedMotion();
-  const [reduced, setReduced] = useState(initialReduced);
+  const reduced = usePrefersReducedMotion();
   const [active, setActive] = useState(AppState.currentState !== 'background');
   const [failed, setFailed] = useState(false);
   const {
@@ -311,18 +310,8 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
     size = 64,
   } = props;
   useEffect(() => {
-    const motion = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
     const state = AppState.addEventListener('change', (next) => setActive(next === 'active'));
-    const media =
-      Platform.OS === 'web' ? window.matchMedia('(prefers-reduced-motion: reduce)') : undefined;
-    const change = () => setReduced(media!.matches);
-    media?.addEventListener('change', change);
-    if (media) change();
-    return () => {
-      motion?.remove?.();
-      state?.remove?.();
-      media?.removeEventListener('change', change);
-    };
+    return () => state?.remove?.();
   }, []);
   // The one place a character becomes what the renderer takes; an invalid one throws here,
   // at the component that was handed it, not later inside the engine.

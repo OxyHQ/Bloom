@@ -1,12 +1,12 @@
 import React, { memo, useMemo } from 'react';
 import {
-  Linking,
   Pressable,
   StyleSheet,
   useWindowDimensions,
   View,
   type GestureResponderEvent,
 } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
@@ -306,7 +306,7 @@ function PlaceRow({ props, paint }: { props: PlaceCardProps; paint: PlaceCardPai
       onPress();
       return;
     }
-    if (!IS_WEB && href) void Linking.openURL(href).catch(() => undefined);
+    if (!IS_WEB && href) openHref(href);
   };
 
   const linkStyle: WebCssStyle = {

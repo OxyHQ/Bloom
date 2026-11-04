@@ -5,10 +5,10 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 type Placement = 'rail' | 'sidebar';
 interface Props {
@@ -21,7 +21,7 @@ const EASE = Easing.bezier(0.4, 0, 0.2, 1);
 
 /** A single navigation tree: fade out, replace at zero opacity, resize and reveal. */
 export function ResponsiveNavigation({ placement, children, style, testID }: Props) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [shown, setShown] = useState(placement);
   const [transitioning, setTransitioning] = useState(false);
   const shownRef = useRef(placement);

@@ -3,12 +3,12 @@ import { Platform } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
-  useReducedMotion,
   FadeOut,
   SlideInLeft,
   SlideInRight,
 } from 'react-native-reanimated';
 import type { ScreenTransitionProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** CSS-smooth deceleration for the native slide. */
 const SLIDE_EASING = Easing.out(Easing.exp);
@@ -31,7 +31,7 @@ export function ScreenTransition({
   children,
 }: ScreenTransitionProps) {
   const isWeb = Platform.OS === 'web';
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   const entering = isWeb
     ? enabledWeb

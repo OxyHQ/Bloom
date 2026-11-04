@@ -14,7 +14,6 @@ import React, {
 import { resolveIconSlot } from '../icons/render-icon';
 import {
   ActivityIndicator,
-  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -24,6 +23,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { styled } from 'react-native-css';
 
@@ -594,7 +594,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
     (ariaCurrent === undefined ? undefined : ariaCurrent !== false && ariaCurrent !== 'false');
   const handlePress = isInteractionBlocked
     ? undefined
-    : (onPress ?? (href != null ? () => void Linking.openURL(href) : undefined));
+    : (onPress ?? (href != null ? () => openHref(href) : undefined));
 
   return (
     <StyledPressable

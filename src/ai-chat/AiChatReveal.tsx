@@ -3,12 +3,12 @@ import { type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The message motion (`motion/react`-style variants), without the library:
@@ -81,7 +81,7 @@ export function RevealLine({
   delay?: number;
 }) {
   const slot = useRevealSlot();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const animate = slot.animate && !reducedMotion;
   const delay = delayOverride ?? slot.delay;
   const progress = useSharedValue(animate ? 0 : 1);
@@ -121,7 +121,7 @@ export function RevealFade({
   delay?: number;
   testID?: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const run = animate && !reducedMotion;
   const progress = useSharedValue(run ? 0 : 1);
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)

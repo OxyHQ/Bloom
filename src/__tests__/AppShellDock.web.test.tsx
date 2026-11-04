@@ -36,6 +36,7 @@ import type { AppShellProps } from '../app-shell/types';
 import { shellLayoutCss } from '../app-shell/shell-layout-css';
 import { DOCK_PROPERTY_CSS } from '../app-shell/EdgeDock';
 import { motionCss } from '../motion/spec';
+import * as ReducedMotion from '../hooks/use-prefers-reduced-motion';
 import { RiHomeLine } from '../icons/remix';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useSidebarMetrics } from '../sidebar/metrics';
@@ -288,13 +289,12 @@ describe('the web dock', () => {
     });
 
     it('lands at once under reduced motion', () => {
-      jest
-        .spyOn(jest.requireMock('react-native-reanimated'), 'useReducedMotion')
-        .mockReturnValue(true);
+      const reduced = jest.spyOn(ReducedMotion, 'usePrefersReducedMotion').mockReturnValue(true);
       fading();
       act(() => shell!.navigationDock.peek(true));
       expect(node('shell-navigation-host').style.transitionDuration).toBe('0ms, 0ms');
       expect(node('row').style.opacity).toBe('1');
+      reduced.mockRestore();
     });
 
     it('leaves a peek without fade untouched', () => {

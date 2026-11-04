@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  runOnJS,
-  useReducedMotion,
-  useSharedValue,
-  type SharedValue,
-} from 'react-native-reanimated';
+import { runOnJS, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { IS_WEB } from '../styles/platform';
 import { animateWithSpec, motionDurationMs } from '../motion/spec';
 import { NO_DOCK, type AppShellDockState } from './context';
 import { resolveDock, type PeekPhase, type ResolvedDock } from './dock';
 import type { AppShellDock } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const LANDING_FALLBACK_MS = 250;
 
@@ -49,7 +45,7 @@ export function useEdgeDock(
   );
   // biome-ignore lint/correctness/useExhaustiveDependencies: Track the declared values rather than an inline config object identity, so a rerender never restarts the motion.
   const resolved = useMemo(() => resolveDock(dock), [declared]);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [storedHidden, setStoredHidden] = useControllableState<boolean>({
     value: dock?.hidden,
     defaultValue: dock?.defaultHidden ?? false,

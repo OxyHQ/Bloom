@@ -15,7 +15,6 @@
  */
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { ResizeHandle } from '../layout/ResizeHandle';
 import { IS_WEB } from '../styles/platform';
@@ -34,6 +33,7 @@ import {
   type RetainedBox,
   type RetainedEdge,
 } from './retained-geometry';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const RESIZE_HANDLE_PANE_REACH = 2;
 const REGION: ViewStyle = {
@@ -159,7 +159,7 @@ export function RetainedPanelLayout({
   testID?: string;
 }) {
   const rtl = useIsRtl();
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const windowed = usePlatformWindow() != null;
   const handedWindowChrome = useWindowChrome();
   const axis =

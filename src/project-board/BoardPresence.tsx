@@ -10,13 +10,13 @@ import Animated, {
   Easing,
   LinearTransition,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type AnimatedStyle,
 } from 'react-native-reanimated';
 import { StyledView } from '../styles/styled-primitives';
 import { UNSET } from '../styles/animated-style';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 const DURATION = 320;
@@ -104,7 +104,7 @@ function BoardPresence({
   onExit: () => void;
   children: (paintStyle: AnimatedStyle<ViewStyle>, onHeight: (height: number) => void) => ReactNode;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const progress = useSharedValue(initial || reduced ? 1 : 0);
   const height = useSharedValue(0);
   const exit = useRef(onExit);

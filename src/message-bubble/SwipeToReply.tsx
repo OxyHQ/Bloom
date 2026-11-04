@@ -4,7 +4,6 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -14,6 +13,7 @@ import { useTheme } from '../theme/use-theme';
 import { resolveMessageBubblePaint } from './shared';
 import type { MessageDirection } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Swipe a bubble towards the centre to reply.
@@ -59,7 +59,7 @@ export function SwipeToReply({
 }) {
   const theme = useTheme();
   const paint = resolveMessageBubblePaint(theme);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   // Incoming bubbles are dragged right, outgoing left — towards the centre in
   // both cases, so the gesture always means "pull this one out to answer it".
   const sign = direction === 'outgoing' ? -1 : 1;

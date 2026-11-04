@@ -10,11 +10,11 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-  useReducedMotion,
   withTiming,
 } from 'react-native-reanimated';
 import { Screen } from 'react-native-screens';
 import type { TabsDescriptor, TabsSlotRenderOptions } from 'expo-router/ui';
+import { usePrefersReducedMotion } from '../../hooks/use-prefers-reduced-motion';
 
 /** Strong ease-out — entering content should feel instant, then settle. */
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
@@ -24,7 +24,7 @@ const ENTER_SCALE = 0.985;
 
 function FadeIn({ focused, children }: PropsWithChildren<{ focused: boolean }>) {
   const progress = useSharedValue(1);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const isFirstRender = useRef(true);
 
   useEffect(() => {

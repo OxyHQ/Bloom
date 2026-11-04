@@ -1,6 +1,7 @@
 import { ScrollArea } from '../layout/ScrollArea';
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Platform, useWindowDimensions } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 import { TicketTokenChart } from './TicketTokenChart';
 import { useDialogControl } from '../dialog/context';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -532,13 +533,7 @@ export function TicketDetailDialog({
                               target="_blank"
                               rel="noreferrer"
                               className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                              onPress={
-                                Platform.OS === 'web'
-                                  ? undefined
-                                  : () => {
-                                      void Linking.openURL(r.href);
-                                    }
-                              }
+                              onPress={Platform.OS === 'web' ? undefined : () => openHref(r.href)}
                             >
                               <Chip className="bg-ticket-detail-resource-background px-[7px] py-0.5 text-body-medium text-ticket-detail-resource-text">
                                 {r.label}

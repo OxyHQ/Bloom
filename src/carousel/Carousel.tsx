@@ -22,7 +22,6 @@ import {
   type NativeSyntheticEvent,
   type KeyDownEvent,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
@@ -42,6 +41,7 @@ import { CAROUSEL_MESSAGES } from './messages';
 import type { CarouselControls, CarouselItemProps, CarouselProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { surfaceRevealCss } from '../surface/use-surface-presence';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * A gallery carousel: a horizontal run of slides you scroll through, with
@@ -365,7 +365,7 @@ const CarouselComponent = function Carousel({
   const rtl = useIsRtl();
   const directionProps = useDirectionProps();
   useInteractiveWebCss(STYLE_ID, BLOOM_CAROUSEL_CSS);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const paint = useMemo(() => resolveCarouselPaint(theme), [theme]);
 
   const slides = Children.toArray(children).filter(isValidElement);

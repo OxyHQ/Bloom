@@ -3,7 +3,6 @@ import { PanResponder, Pressable, View, type LayoutChangeEvent } from 'react-nat
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withTiming,
@@ -24,6 +23,7 @@ import { CALL_UI_MESSAGES } from './messages';
 import { CALL_UI_RADIUS, resolveCallPaint, slideAnswers, type CallPaint } from './shared';
 import type { IncomingCallScreenProps } from './types';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `IncomingCallScreen`: the whole screen, for a call arriving on a locked or
@@ -141,7 +141,7 @@ function IncomingCallScreenComponent({
   const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const l = { ...messages.incoming, ...labels };
   const line = subtitle ?? (mode === 'video' ? l.video : l.voice);
 

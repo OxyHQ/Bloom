@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { Linking, Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
+import { Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
@@ -343,7 +344,7 @@ function VendorCardComponent(props: VendorCardProps) {
       onPress();
       return;
     }
-    if (!IS_WEB && href) void Linking.openURL(href).catch(() => undefined);
+    if (!IS_WEB && href) openHref(href);
   };
 
   const linkProps = {

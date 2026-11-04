@@ -4,13 +4,13 @@ import { BloomImage } from '../image';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 
 import type { AuthMediaCarouselProps, AuthMediaSlide } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Auto-advancing artwork for the auth card's `media` slot.
@@ -217,7 +217,7 @@ function AuthMediaCarouselComponent({
   style,
   testID,
 }: AuthMediaCarouselProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('idle');
   const [width, setWidth] = useState(0);

@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -18,6 +17,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text, TYPE_SCALE } from '../typography';
 import { AGENT_REPLY_MESSAGES } from './messages';
 import type { AgentReplyIdentityProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
@@ -40,7 +40,7 @@ export function AgentReplyIdentity({
 }: AgentReplyIdentityProps) {
   const { messages } = useMessages(AGENT_REPLY_MESSAGES);
   const { colors } = useTheme();
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const rtl = useIsRtl();
   // Fixed on the first render: a reply that is already thinking starts its working animation
   // once, and a finished one never does.

@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withTiming,
@@ -27,6 +26,7 @@ import {
 } from './shared';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import type { LocationMessageProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** The placeholder grid's cell size, when the app renders no map. */
 const GRID_CELL = 28;
@@ -91,7 +91,7 @@ function MapPlaceholder({
  * makes for exactly the same reason.
  */
 function LivePulse({ color, ringColor }: { color: string; ringColor: string }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const pulse = useSharedValue(0);
   useEffect(() => {
     if (reduced) return undefined;

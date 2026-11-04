@@ -3,7 +3,6 @@ import { type View } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -12,6 +11,7 @@ import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
 import { StyledPressable } from '../styles/styled-primitives';
 import type { PressableScaleProps } from './types';
 import type { RefComponent } from '../styles/native-refs';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** Press-in / press-out timing, in ms. */
 const DURATION = 100;
@@ -48,7 +48,7 @@ export const PressableScale: RefComponent<PressableScaleProps> = forwardRef<
   { targetScale = 0.98, className, style, onPressIn, onPressOut, ...rest },
   ref,
 ) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const animate = SUPPORTS_PRESS_SCALE && !reducedMotion;
 
   const scale = useSharedValue(1);

@@ -11,7 +11,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -39,6 +38,7 @@ import type { ThemeToggleVariant, ThemeToggleProps } from './types';
 import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './view-transition';
 import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * A theme toggle, driving Bloom's own mode through `useBloomTheme().setMode`
@@ -384,7 +384,7 @@ const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
 }) => {
   const { theme, setMode } = useBloomTheme();
   const palette = useMemo(() => resolveThemeTogglePalette(theme), [theme]);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const dark = theme.isDark;
 
   useEffect(() => {

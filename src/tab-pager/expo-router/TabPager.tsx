@@ -15,7 +15,6 @@ import Animated, {
   useAnimatedStyle,
   useEvent,
   useHandler,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type SharedValue,
@@ -34,6 +33,7 @@ import {
   type PagerViewHandle,
   type PagerViewLikeProps,
 } from './pager-view-module';
+import { usePrefersReducedMotion } from '../../hooks/use-prefers-reduced-motion';
 
 export interface TabPagerProps {
   model: PageModel;
@@ -167,7 +167,7 @@ export function TabPager({
   // drives the pager, the pager reports the page again: this ref is what keeps
   // the two directions from echoing.
   const pageRef = useRef(focusedPage);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   // The fade-through's visibility of the pager, 1 at rest.
   const fade = useSharedValue(1);
   const fadeStyle = useAnimatedStyle(

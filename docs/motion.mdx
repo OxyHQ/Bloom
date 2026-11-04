@@ -27,6 +27,18 @@ fast things feel" happens in one place rather than being renegotiated per
 component. It is also where the web rules below are already applied, which is
 the stronger reason to use them rather than hand-writing an enter.
 
+## One reading of reduced motion
+
+Every Bloom animation asks `usePrefersReducedMotion()` (`@oxy.so/bloom/hooks`)
+whether the viewer prefers reduced motion, never Reanimated's
+`useReducedMotion()`. Reanimated's reads the OS setting once, at launch, so a
+viewer who turned Reduce Motion on mid-session kept every animation until the
+app restarted; Bloom's follows the setting live and gives every component the
+same answer (native's is asked for when Bloom loads, so a component mounting
+later reads it synchronously). An animation config may still pass Reanimated's
+`ReduceMotion` for its own handling. Tests mock
+`../hooks/use-prefers-reduced-motion`, not Reanimated.
+
 ## Panel layout motion
 
 Declare `transition: 'exit-before-enter'` on the shared panel layout to fade and

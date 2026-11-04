@@ -4,7 +4,6 @@ import { Pressable, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
 } from 'react-native-reanimated';
 
@@ -28,6 +27,7 @@ import {
 import { WINDOW_MESSAGES } from './messages';
 import type { WindowControlsProps } from './types';
 import { useWindow } from './use-window';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** Pressing in shrinks the disc; letting go springs it back as the control acts. */
 const PRESS_IN: MotionSpec = { duration: 100, easing: [0.25, 0.1, 0.25, 1] };
@@ -61,7 +61,7 @@ function WindowControl({
   onPress: () => void;
   testID?: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const scale = useSharedValue(1);
   // `scale` in the deps: web without the worklets plugin does not track reads.
   const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }), [scale]);

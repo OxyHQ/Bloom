@@ -1,5 +1,6 @@
 import React, { memo, useMemo, type ReactNode } from 'react';
-import { Linking, Text, type GestureResponderEvent } from 'react-native';
+import { Text, type GestureResponderEvent } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 
 import { Code } from '../code';
 import { IS_WEB } from '../styles/platform';
@@ -33,7 +34,7 @@ export const InlineMarkdown = memo(function InlineMarkdown({
       event.preventDefault();
       onLinkPress(url);
     } else if (!IS_WEB) {
-      void Linking.openURL(url);
+      openHref(url);
     }
   };
 

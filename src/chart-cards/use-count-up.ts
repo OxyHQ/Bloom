@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useReducedMotion } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
@@ -13,7 +13,7 @@ export const COUNT_UP_MS = 320;
  * category changes. Under reduced motion the number snaps.
  */
 export function useCountUp(target: number, duration = COUNT_UP_MS): number {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [display, setDisplay] = useState(target);
   const fromRef = useRef(target);
 

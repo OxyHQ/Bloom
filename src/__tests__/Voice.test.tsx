@@ -18,13 +18,15 @@ const mockClock: {
 const mockRestyle = new Set<() => void>();
 const mockFlags = { reducedMotion: false, restyle: true };
 
+jest.mock('../hooks/use-prefers-reduced-motion', () => ({
+  usePrefersReducedMotion: () => mockFlags.reducedMotion,
+}));
 jest.mock('react-native-reanimated', () => {
   const React = require('react') as typeof import('react');
   const base = jest.requireActual('../../__mocks__/react-native-reanimated');
   return {
     ...base,
     __esModule: true,
-    useReducedMotion: () => mockFlags.reducedMotion,
     useFrameCallback: (callback: typeof mockClock.callback, autostart = true) => {
       mockClock.callback = callback;
       const handle = React.useRef({

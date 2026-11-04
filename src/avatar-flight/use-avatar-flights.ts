@@ -1,10 +1,10 @@
 import { type ComponentRef, useCallback, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import type { CaptureAvatarSnapshot } from '../agent-avatar/context';
 import { measureAvatar } from './geometry';
 import type { ActiveAvatarFlight, AvatarFlightLayerState, AvatarFlightSpec } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 export interface AvatarFlights {
   /**
@@ -41,7 +41,7 @@ export interface AvatarFlights {
  * Render one `AvatarFlightLayer` with it; see `docs/avatar-flight.mdx`.
  */
 export function useAvatarFlights(): AvatarFlights {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const nodes = useRef(new Map<string, ComponentRef<typeof View>>());
   const captures = useRef(new Map<string, CaptureAvatarSnapshot>());
   const anchors = useRef(new Map<string, (node: ComponentRef<typeof View> | null) => void>());

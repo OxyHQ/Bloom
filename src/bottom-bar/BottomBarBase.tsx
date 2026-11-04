@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
   runOnJS,
-  useReducedMotion,
   useSharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,6 +29,7 @@ import type { ProgressiveBlurProps } from '../progressive-blur/types';
 import type { BottomBarProps } from './types';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { UNSET } from '../styles/animated-style';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 interface Props extends BottomBarProps {
   Navigation: ComponentType<TabBarProps>;
@@ -60,7 +60,7 @@ export function BottomBarBase({
   const dirProps = useDirectionProps();
   const minimize = useMinimizeState();
   const progress = minimizeProgress ?? minimize.progress;
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const hideAction = actionBehavior === 'hide' && items.length > 0;
   const [actionHidden, setActionHidden] = useState(() => hideAction && progress.value > 0.01);
   const actionRef = useRef<ComponentRef<typeof View>>(null);

@@ -37,7 +37,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -47,6 +46,7 @@ import { TRANSITION_MS } from './shared';
 import type { ComposerPopoverProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const GUTTER = 8;
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
@@ -92,7 +92,7 @@ export function ComposerPopover({
   const common = useCommonMessages();
   const window = useWindowDimensions();
   const insets = useCssSafeAreaInsets(useSafeAreaInsets());
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [mounted, setMounted] = useState(open);
   const [anchor, setAnchor] = useState<Box | null>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);

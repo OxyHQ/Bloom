@@ -1,6 +1,5 @@
 import { type ComponentRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Defs, RadialGradient, Rect, Stop, Circle } from 'react-native-svg';
 
 import { ACCENT_TABLE, colorRamp } from '../button/shared';
@@ -8,6 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { useSettingsPalette } from './context';
 import type { SettingsPlanArtProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The settings modal's artwork pieces.
@@ -227,7 +227,7 @@ export function SettingsPlanArt({
   style,
 }: SettingsPlanArtProps) {
   const blobs = useBlobs();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const hostRef = useRef<ComponentRef<typeof View>>(null);
   const [failed, setFailed] = useState(!IS_WEB);
 

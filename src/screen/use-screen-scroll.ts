@@ -5,7 +5,6 @@ import {
   runOnJS,
   useAnimatedScrollHandler,
   useComposedEventHandler,
-  useReducedMotion,
   useSharedValue,
 } from 'react-native-reanimated';
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
@@ -13,6 +12,7 @@ import { recordScrollMetrics } from '../layout/scroll-metrics-events';
 import { useScreenContext, type ScreenContextValue } from './context';
 import { useRegisterScreenScroller } from './reselect';
 import type { ScreenScrollOptions } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 type ScreenScrollState = Pick<
   ScreenContextValue,
@@ -62,7 +62,7 @@ export function useScreenScroll({
   const restoring = restoration?.restorePending ?? false;
   const id = useId();
   const previousY = useSharedValue(0);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
     if (!active) return;
     screen.activeScrollerId.value = id;

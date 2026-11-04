@@ -2,7 +2,6 @@ import React, { memo, useEffect, useMemo, useRef } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSequence,
   withTiming,
@@ -47,6 +46,7 @@ import type { MessageBubbleProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { MessageMediaHoldContext } from '../message-media/context';
 import { mixColors } from '../styles/color-contrast';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * One message in a transcript.
@@ -160,7 +160,7 @@ function MessageBubbleComponent({
   // The jump flash: one band, up fast and down slow, and nothing at all under
   // reduced motion — where the band still appears, it just does not animate.
   const flash = useSharedValue(0);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
     if (!highlighted) {
       flash.value = 0;

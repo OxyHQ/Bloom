@@ -5,7 +5,6 @@ import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -25,11 +24,12 @@ import { COMPOSER_PANEL_MESSAGES } from './messages';
 import { EFFORT_WIDTH, resolveComposerPalette, type ComposerPalette } from './shared';
 import type { ComposerStatusBarFolder, ComposerStatusBarProps } from './types';
 import { useComposerWebCss } from './web-hooks';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 
 function Caret({ open, color }: { open: boolean; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const rotation = useSharedValue(open ? 180 : 0);
   useEffect(() => {
     const target = open ? 180 : 0;

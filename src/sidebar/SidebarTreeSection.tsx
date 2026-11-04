@@ -21,7 +21,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -49,6 +48,7 @@ import {
 } from './SidebarTreeDrag';
 import { dropPositionAt, isExpandable, sectionKey, treeMoves, type TreeMove } from './tree';
 import type { SidebarTree, SidebarTreeDrop, SidebarTreeFolder, SidebarTreeItem } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
 /** One level of nesting: a row's content starts this much further in than its parent's. */
@@ -272,7 +272,7 @@ function SectionLabel({
 
 function Chevron({ open, size, color }: { open: boolean; size: number; color: string }) {
   const rtl = useIsRtl();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const turn = useSharedValue(open ? 90 : 0);
   // The glyph points to the END edge; under RTL it is mirrored, and so is its turn.
   const sign = rtl ? -1 : 1;
@@ -299,7 +299,7 @@ function Chevron({ open, size, color }: { open: boolean; size: number; color: st
  * nothing.
  */
 function Reveal({ open, children }: { open: boolean; children: ReactNode }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [mounted, setMounted] = useState(open);
   const progress = useSharedValue(open ? 1 : 0);
   const height = useSharedValue(0);

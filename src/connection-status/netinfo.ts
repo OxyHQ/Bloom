@@ -47,11 +47,11 @@
  */
 declare const require: (moduleName: string) => unknown;
 
-/** The slice of netinfo's state Bloom reads (the connection toasts and media autoplay). */
+/** The slice of netinfo's state Bloom reads (`useNetworkStatus`). */
 export interface NetInfoStateLike {
   isConnected: boolean | null;
   isInternetReachable: boolean | null | undefined;
-  /** `wifi`, `cellular`, `ethernet`, `unknown`, … — read by media autoplay's "Wi-Fi only". */
+  /** `wifi`, `cellular`, `ethernet`, `unknown`, … — `cellular` is metered. */
   type?: string;
   /** netinfo's per-type details; only `isConnectionExpensive` is read. */
   details?: { isConnectionExpensive?: boolean } | null;

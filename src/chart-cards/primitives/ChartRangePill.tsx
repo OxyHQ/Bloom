@@ -8,7 +8,6 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import {
   DropdownMenu,
@@ -27,6 +26,7 @@ import { useWebTransition } from './use-web-transition';
 import { CHART_CARDS_MESSAGES } from '../messages';
 import { useMessages } from '../../locale/messages';
 import { useInteractionState } from '../../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../../hooks/use-prefers-reduced-motion';
 
 const ICON = 16;
 /** `w-[188px]` on the period menu. */
@@ -180,7 +180,7 @@ export function ChartRangeSelect({
 }
 
 function TurningChevron({ open, color }: { open: boolean; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const turn = useRef(new Animated.Value(open ? 1 : 0)).current;
   useEffect(() => {
     if (reducedMotion) {

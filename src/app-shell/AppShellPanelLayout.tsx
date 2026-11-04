@@ -14,7 +14,6 @@ import { Dimensions, Platform, View, type ViewStyle } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   runOnJS,
@@ -104,6 +103,7 @@ import type {
   AppShellPanelLayout,
   PanelNavigationController,
 } from './panel-layout-types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** How far a split's pill divider reaches into each pane beside its gap, px. */
 const RESIZE_HANDLE_PANE_REACH = 2;
@@ -487,7 +487,7 @@ export function createPanelLayoutView(
     const mounted = useRef(false);
     if (track.visible || floatingOpen || panel.keepMounted) mounted.current = true;
     const start = useRef(0);
-    const reduced = useReducedMotion();
+    const reduced = usePrefersReducedMotion();
     // The track's flex along the group's axis (`resolvePanelFlex`), as shared
     // values: Yoga sizes it from these in the pass that lays the window out, so
     // a resize runs no JavaScript; only a change of the layout itself (a panel
@@ -1014,7 +1014,7 @@ export function createPanelLayoutView(
     const deck = layout.mode === 'deck';
     const documentHorizontal =
       !!cssScope && deck && !vertical && layout.horizontalScroll !== 'contained';
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     // The group's own size matters only at thresholds: the room below which a
     // split shows its active track alone (its minimum, in every range of the
     // shell's width), and, for a group deciding eligibility itself, the

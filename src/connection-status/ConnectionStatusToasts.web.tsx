@@ -6,28 +6,12 @@
  * behaviour. (The browser only knows about the link, not reachability; that is
  * the honest limit of what a web app can detect without polling.)
  */
-import { useEffect, useState } from 'react';
-
 import { useConnectionStatusToasts, type ConnectionStatusToastsProps } from './shared';
+import { useNetworkStatus } from './use-network-status.web';
 
 /** Mount once at the app root. Renders nothing. */
 export function ConnectionStatusToasts(props: ConnectionStatusToastsProps = {}): null {
-  const [isOnline, setIsOnline] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || typeof window === 'undefined') return undefined;
-
-    setIsOnline(navigator.onLine);
-    const update = () => setIsOnline(navigator.onLine);
-    window.addEventListener('online', update);
-    window.addEventListener('offline', update);
-    return () => {
-      window.removeEventListener('online', update);
-      window.removeEventListener('offline', update);
-    };
-  }, []);
-
-  useConnectionStatusToasts(isOnline, props);
+  useConnectionStatusToasts(useNetworkStatus().online, props);
   return null;
 }
 

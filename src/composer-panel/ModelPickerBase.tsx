@@ -6,7 +6,6 @@ import { Pressable, ScrollView, TextInput, View, type TextInputKeyPressEvent } f
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -44,6 +43,7 @@ import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useReducedTransparency } from '../theme/reduced-transparency';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** CSS `ease`, the chevrons' 200ms turn. */
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -87,7 +87,7 @@ function searchModels(providers: ReadonlyArray<ModelPickerProvider>, query: stri
 
 /** A chevron that turns to `degrees` over 200ms `ease`. */
 function TurningChevron({ degrees, color }: { degrees: number; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const rotation = useSharedValue(degrees);
   useEffect(() => {
     rotation.value = reducedMotion ? degrees : withTiming(degrees, { duration: 200, easing: EASE });
@@ -227,7 +227,7 @@ function ScrollFade({ visible, palette }: { visible: boolean; palette: ComposerP
 
 /** The effort level blurs in each time it changes (350ms `ease-out`). */
 function BlurInLevel({ level, palette }: { level: string; palette: ComposerPalette }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     progress.value = 0;
@@ -513,7 +513,7 @@ export function ModelPickerBase({
   );
   const effortLevels: ReadonlyArray<string> = effortLevelsProp ?? messages.effortLevels;
   const Popover = useComposerPopover();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const [open, setOpenState] = useState(false);

@@ -45,7 +45,7 @@ const SRC = join(__dirname, '..');
  * the `collapsible` mistake. An EQUALITY: a new one fails until somebody decides
  * about it, and a stale one fails when its module stops doing it.
  *
- * Neither is a global flag flipped on a consumer's behalf. Both are a module
+ * None is a global flag flipped on a consumer's behalf. Each is a module
  * wiring ITSELF to a store it owns, at the only moment early enough to matter.
  */
 const ACCEPTED: ReadonlyArray<{ where: string; statement: string; why: string }> = [
@@ -56,6 +56,15 @@ const ACCEPTED: ReadonlyArray<{ where: string; statement: string; why: string }>
       "Sets react-native-css-interop's darkMode flag before css-interop's " +
       'MutationObserver can fire. An effect would be too late: observers run ' +
       'during the initial render. Idempotent, and a no-op off web.',
+  },
+  {
+    where: 'hooks/use-prefers-reduced-motion.ts',
+    statement: 'queryNative();',
+    why:
+      "Asks the OS for Reduce Motion once, into this module's own store, so every " +
+      'component mounted after the answer reads it synchronously. Native only ' +
+      'answers asynchronously; asked from an effect, each first screen would start ' +
+      'still and move a frame later. A read, never a flag; nothing on web.',
   },
   {
     where: 'toast/use-stack-hover.ts',
@@ -345,7 +354,7 @@ describe('the census reaches the package', () => {
 });
 
 describe('nothing does work when a consumer imports it', () => {
-  it('the module-scope effects are exactly the two that were argued for', () => {
+  it('the module-scope effects are exactly the ones that were argued for', () => {
     expect(EFFECTS.map(key).sort()).toEqual(ACCEPTED.map(key).sort());
   });
 

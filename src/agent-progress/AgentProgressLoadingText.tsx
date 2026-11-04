@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Text as RNText } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { parseRgba } from '../theme/color-utils';
@@ -8,6 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { AgentProgressLoadingTextProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * A label in `text-secondary` with a soft `text-primary`
@@ -95,7 +95,7 @@ function AgentProgressLoadingTextComponent({
   testID,
 }: AgentProgressLoadingTextProps) {
   const theme = useTheme();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const base = theme.colors.textSecondary;
   const highlight = theme.colors.text;
   const key = shimmerKey(base, highlight);

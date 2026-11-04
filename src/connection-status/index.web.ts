@@ -8,3 +8,5 @@ export type { ConnectionStatusToastsProps } from './shared';
 // deliver the peer even when it is installed. See `netinfo.ts`.
 export { provideNetInfo, type NetInfoLike } from './netinfo';
 export { ConnectionStatusToasts } from './ConnectionStatusToasts.web';
+export { useNetworkStatus } from './use-network-status.web';
+export type { NetworkStatus } from './network-status';

@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSequence,
   withTiming,
@@ -40,6 +39,7 @@ import {
 } from './shared';
 import type { CalendarViewEvent, CalendarViewMonthGridProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The month grid: seven weekday
@@ -123,7 +123,7 @@ function HighlightRing({
   radius: number;
   onEnd: () => void;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const opacity = useSharedValue<number>(reducedMotion ? 1 : 0);
   const scale = useSharedValue<number>(1);
   const onEndRef = useRef(onEnd);

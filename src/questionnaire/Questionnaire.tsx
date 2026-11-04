@@ -44,7 +44,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -80,6 +79,7 @@ import type {
 import { IS_WEB } from '../styles/platform';
 import { webDataSet } from '../styles/web-data';
 import { UNSET } from '../styles/animated-style';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The questions an agent asks before it commits to a plan, one at a time, as
@@ -642,7 +642,7 @@ function StepPill({
   testID?: string;
 }) {
   const field = useFieldMembership();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const { hovered, onHoverIn, onHoverOut } = useHover();
   const hover = useSharedValue(0);
   useEffect(() => {
@@ -726,7 +726,7 @@ function StepPills({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const { messages } = useMessages(QUESTIONNAIRE_MESSAGES);
   const [boxes, setBoxes] = useState<Record<number, PillBox>>({});
   const x = useSharedValue(0);
@@ -943,7 +943,7 @@ function QuestionnaireComponent({
     () => resolveQuestionnairePalette(theme, surfaceFill),
     [theme, surfaceFill],
   );
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const headingId = `bloom-questionnaire-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const text: Required<QuestionnaireLabels> = {
     previous: common.previous,

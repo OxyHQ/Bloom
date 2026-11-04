@@ -7,7 +7,6 @@ import Animated, {
   Easing,
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withSequence,
@@ -22,6 +21,7 @@ import { Text } from '../typography';
 import { CONTROL_SIZE, type ComposerPalette } from './shared';
 import type { ComposerVoiceState } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
@@ -36,7 +36,7 @@ const MIC_BARS = [
 
 /** One equalizer bar: CSS keyframes on web, a reanimated loop on native. */
 function MicBar({ bar, color }: { bar: (typeof MIC_BARS)[number]; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const scale = useSharedValue(0.7);
   useEffect(() => {
     if (IS_WEB) return;
@@ -73,7 +73,7 @@ function MicBar({ bar, color }: { bar: (typeof MIC_BARS)[number]; color: string 
 
 /** A layer that blurs/scales out to 0.8 as it leaves and back in as it arrives (280ms ease-out). */
 function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactNode }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
     progress.value = reducedMotion

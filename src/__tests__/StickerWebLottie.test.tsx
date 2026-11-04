@@ -20,11 +20,6 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-jest.mock('react-native-reanimated', () => ({
-  ...jest.requireActual('react-native-reanimated'),
-  useReducedMotion: () => false,
-}));
-
 type Listener = () => void;
 
 const mockState = {

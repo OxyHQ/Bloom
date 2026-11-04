@@ -3,7 +3,6 @@ import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -15,6 +14,7 @@ import type { StickyMediaTopBarProps } from './types';
 import { clamp01 } from '../styles/clamp';
 import { IS_WEB } from '../styles/platform';
 import { useSurfacePresence } from '../surface/use-surface-presence';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** Built once, at module scope, so the fade, `style` and the a11y props share one node. */
 const FadeView = Animated.createAnimatedComponent(View);
@@ -53,7 +53,7 @@ function StickyMediaTopBarComponent({
   testID,
 }: StickyMediaTopBarProps) {
   const paint = useMediaHeaderPaint(artworkColor);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const driven = progress !== undefined;
   const target = driven ? clamp01(progress) : visible ? 1 : 0;
 

@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -35,6 +34,7 @@ import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `AgentMessage`: one turn of the transcript.
@@ -266,7 +266,7 @@ export function AgentChatMessage({
   const parentFill = useSurfaceFill();
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const lines = useMemo(() => text.split('\n').filter((line) => line.trim() !== ''), [text]);
   const { messages } = useMessages(AGENT_CHAT_MESSAGES);
   const common = useCommonMessages();
@@ -359,7 +359,7 @@ AgentChatMessage.displayName = 'AgentChatMessage';
 
 /** Paragraph reveal shared by conversation surfaces. Each line enters only once. */
 export function StreamedText({ text, paragraphs = false }: { text: string; paragraphs?: boolean }) {
-  const reduced = useReducedMotion(),
+  const reduced = usePrefersReducedMotion(),
     palette = useAgentChatPalette();
   const lines = text.split('\n').filter((line) => line.trim() !== '');
   return (

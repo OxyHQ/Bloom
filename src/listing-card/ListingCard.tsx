@@ -8,7 +8,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  Linking,
   Pressable,
   ScrollView,
   View,
@@ -18,7 +17,7 @@ import {
   type NativeSyntheticEvent,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+import { openHref } from '../hooks/link-activation';
 
 import { Button } from '../button';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
@@ -65,6 +64,7 @@ import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
 import { useCommonMessages } from '../locale/common-messages';
 import { IS_WEB } from '../styles/platform';
 import { BloomImage } from '../image';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * A home in a results grid — a stay, a rental, a home for sale or a swap.
@@ -728,7 +728,7 @@ function ListingCardComponent(props: ListingCardProps) {
   const theme = useTheme();
   useInteractiveWebCss(LISTING_CARD_STYLE_ID, LISTING_CARD_CSS);
   const paint = useMemo(() => resolveListingCardPaint(theme), [theme]);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const [width, setWidth] = useState(0);
@@ -804,7 +804,7 @@ function ListingCardComponent(props: ListingCardProps) {
       onPress();
       return;
     }
-    if (!IS_WEB && href) void Linking.openURL(href).catch(() => undefined);
+    if (!IS_WEB && href) openHref(href);
   };
 
   const linkProps = {

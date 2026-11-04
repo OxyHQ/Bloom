@@ -11,7 +11,6 @@ import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -36,6 +35,7 @@ import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
 import { dataHook } from '../styles/data-hook';
 import { BloomImage } from '../image';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const QUINT = Easing.bezier(...EASE_OUT_QUINT);
 const TILE_MS = 280;
@@ -443,7 +443,7 @@ function PresenceTile({
   onLeft: () => void;
   children: React.ReactNode;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   const onLeftRef = useRef(onLeft);
   onLeftRef.current = onLeft;

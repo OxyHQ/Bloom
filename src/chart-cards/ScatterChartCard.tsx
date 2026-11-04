@@ -12,7 +12,6 @@ import {
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Circle, G, Line } from 'react-native-svg';
 
 import { Text } from '../typography';
@@ -35,6 +34,7 @@ import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { svgTextType, textTopForBaseline } from './svg-text';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 export interface ScatterPoint {
   x: number;
@@ -170,7 +170,7 @@ interface Symbol {
  * resize, new ones grow. Snaps under reduced motion.
  */
 function useScatterAnimation(target: Symbol[][]): Symbol[][] {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const key = target.map((s) => s.map((p) => `${p.cx},${p.cy},${p.r}`).join(';')).join('|');
   const shownRef = useRef<Symbol[][] | null>(null);
   const [frame, setFrame] = useState<Symbol[][] | null>(null);

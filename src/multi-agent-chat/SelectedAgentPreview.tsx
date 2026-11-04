@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -16,6 +15,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { Agent } from './data';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
 /** The selected-preview composition: one large avatar, a trio, or a ring from four up. */
@@ -58,7 +58,7 @@ function PreviewAvatar({
   const key = `${anchor}:${agent.id}`;
   // Hidden while its flight is in the air: the layer draws it, either leaving or arriving.
   const hidden = flights.isLeaving(key) || flights.isLanding(key);
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const progress = useSharedValue(reduced ? 1 : 0);
   const { size, x, y } = previewAvatarGeometry(count, index);
   useEffect(() => {

@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import { dragShift, dragTarget } from '../hooks/list-reorder';
+import { useHapticFeedback } from '../hooks/use-haptics';
 import {
   PanResponder,
   View,
@@ -343,23 +344,38 @@ function QueueReorderListComponent({
   );
 
   const dragRef = useRef<DragState | null>(null);
+  // The drag ticks as the row lifts and as it crosses into another slot; the
+  // move buttons and keys stay silent.
+  const haptics = useHapticFeedback();
   const onDragStart = useCallback(
     (index: number) => {
       dragRef.current = { from: index, dy: 0 };
       setDrag(dragRef.current);
       onDragActiveChange?.(true);
+      haptics.tap();
     },
-    [onDragActiveChange],
+    [onDragActiveChange, haptics],
   );
-  const onDragMove = useCallback((dy: number) => {
-    if (!dragRef.current) return;
-    // The row travels no further than the first and last slot of its own section.
-    const { from } = dragRef.current;
-    const max = (tracksRef.current.length - 1 - from) * QUEUE_ROW_HEIGHT;
-    const clamped = Math.min(max, Math.max(-from * QUEUE_ROW_HEIGHT, dy));
-    dragRef.current = { ...dragRef.current, dy: clamped };
-    setDrag(dragRef.current);
-  }, []);
+  const onDragMove = useCallback(
+    (dy: number) => {
+      const current = dragRef.current;
+      if (!current) return;
+      // The row travels no further than the first and last slot of its own section.
+      const { from } = current;
+      const count = tracksRef.current.length;
+      const max = (count - 1 - from) * QUEUE_ROW_HEIGHT;
+      const clamped = Math.min(max, Math.max(-from * QUEUE_ROW_HEIGHT, dy));
+      dragRef.current = { ...current, dy: clamped };
+      setDrag(dragRef.current);
+      if (
+        dragTarget(from, clamped, QUEUE_ROW_HEIGHT, count) !==
+        dragTarget(from, current.dy, QUEUE_ROW_HEIGHT, count)
+      ) {
+        haptics.selection();
+      }
+    },
+    [haptics],
+  );
   const onDragEnd = useCallback(
     (commit: boolean) => {
       const current = dragRef.current;

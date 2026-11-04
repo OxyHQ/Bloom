@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import type { Theme } from '../theme/types';
 import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, resolveButtonRamps } from '../button/shared';
@@ -16,6 +15,7 @@ import type { CheckboxSize } from './types';
 import { DISABLED_OPACITY, animation } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
 import { CHOICE_CONTROL_SIZES } from '../styles/choice-control-sizes';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The checkbox glyph — the box and its tick — shared by `Checkbox` and
@@ -182,7 +182,7 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
  * dash offset does, since native has no stylesheet to carry a keyframe.
  */
 function CheckMark({ size, color }: { size: number; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const offset = useRef(
     new Animated.Value(IS_WEB || reducedMotion ? 0 : CHECK_PATH_LENGTH),
   ).current;

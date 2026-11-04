@@ -8,7 +8,6 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -21,6 +20,7 @@ import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
 import { useCommonMessages } from '../locale/common-messages';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Chrome shared by the medical dashboard cards (`StepsCard`,
@@ -229,7 +229,7 @@ const LABEL_EASE = Easing.bezier(0, 0, 0.58, 1);
  * line box so it reads as a counter tick. Snaps under reduced motion.
  */
 function RollingLabel({ label, color }: { label: string; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [previous, setPrevious] = useState<string | null>(null);
   const shown = useRef(label);
   const progress = useRef(new Animated.Value(1)).current;

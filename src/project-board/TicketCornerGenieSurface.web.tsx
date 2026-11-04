@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useReducedMotion } from 'react-native-reanimated';
 import { useDialogContext } from '../dialog/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { TicketGenieEnteredContext } from './context';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 const styles = {
   band: 'bloom-ticket-detail-band',
   bands: 'bloom-ticket-detail-bands',
@@ -182,7 +182,7 @@ export function TicketCornerGenieSurface({ children }: { children: ReactNode }) 
   const bandsRef = useRef<HTMLDivElement>(null);
   const shadowRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(1);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [entered, setEntered] = useState(reducedMotion);
 
   useEffect(() => {

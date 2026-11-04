@@ -1,12 +1,12 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { useMessages } from '../locale/messages';
 import { MESSAGE_MEDIA_MESSAGES } from '../message-media/messages';
 import { MediaImage } from '../message-media/parts';
 import type { ComponentType } from 'react';
 import type { LottiePlayerProps, StickerProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 export interface StickerPlatform {
   /** The platform's Lottie player, or `null` when its optional peer is missing. */
@@ -43,7 +43,7 @@ export function createSticker({ loadLottiePlayer, warnLottieUnavailable }: Stick
     testID,
   }: StickerProps) {
     const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     const [loaded, setLoaded] = useState(false);
     const [failed, setFailed] = useState(false);
 

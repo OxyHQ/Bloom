@@ -17,7 +17,6 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
@@ -47,6 +46,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_SHELF_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * A section of a home or search page: a header over a run of items.
@@ -104,7 +104,7 @@ function ShelfComponent({
   const previousLabel = previousLabelProp ?? common.previous;
   const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
     adoptStyleSheet(MEDIA_SHELF_STYLE_ID, MEDIA_SHELF_CSS);
   }, []);

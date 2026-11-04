@@ -34,7 +34,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -88,6 +87,7 @@ import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { UNSET } from '../styles/animated-style';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `Sidebar` — the floating app rail, expanded or collapsed.
@@ -304,7 +304,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const size = scopedSize === 'xs' ? 'sm' : scopedSize;
   const metrics = SIDEBAR_METRICS[size];
   useSidebarWebCss();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   // Insets below are logical and mirror by themselves; the header control's
   // `translateX` and the collapse glyph's `scaleX` are signs, and flip here.
   const dir = useIsRtl() ? -1 : 1;

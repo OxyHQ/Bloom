@@ -117,7 +117,21 @@ export type {
   PopupSurfaceProps,
   SurfaceCapability,
 } from './platform-surface';
-export { LocaleProvider, useBloomLocale, BLOOM_LANGUAGES, resolveBloomLanguage } from './locale';
+export {
+  LocaleProvider,
+  useBloomLocale,
+  BLOOM_LANGUAGES,
+  resolveBloomLanguage,
+  formatClock,
+  formatCompactCurrency,
+  formatCompactNumber,
+  formatCurrency,
+  formatInteger,
+  formatMultiplier,
+  formatNumber,
+  formatPercent,
+  formatSignedPercent,
+} from './locale';
 export type { BloomLanguage } from './locale';
 // A namespace, not seven loose verbs: `getAspectRatio`/`setAspectRatio`/
 // `hasAspectRatio` are exactly the collision-prone shape the namespace rule
@@ -135,8 +149,8 @@ export type {
   ScrollRouterAdapter,
   UseScrollRestorationOptions,
 } from './scroll';
-export { ConnectionStatusToasts } from './connection-status';
-export type { ConnectionStatusToastsProps } from './connection-status';
+export { ConnectionStatusToasts, useNetworkStatus } from './connection-status';
+export type { ConnectionStatusToastsProps, NetworkStatus } from './connection-status';
 
 // Core components
 export * from './portal';

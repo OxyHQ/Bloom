@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -16,6 +15,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveChatIndicatorPaint } from './shared';
 import type { TypingDotsProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Three dots bouncing — someone is writing.
@@ -103,7 +103,7 @@ function TypingDotsComponent({
 }: TypingDotsProps) {
   const theme = useTheme();
   const paint = useMemo(() => resolveChatIndicatorPaint(theme), [theme]);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const animate = !reducedMotion;
   const dotColor = color ?? paint.textMuted;
   const named = label != null && label !== '';

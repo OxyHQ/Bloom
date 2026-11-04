@@ -18,7 +18,6 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { DANGER_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
 import { RiFileExcel2Line } from '../icons/remix/RiFileExcel2Line';
@@ -100,6 +99,7 @@ import { formatFileSize } from './shared';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { useFieldMembership } from '../field/membership';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 export { formatFileSize };
 
@@ -484,7 +484,7 @@ const FileUploadComponent = function FileUpload({
   const field = useFieldMembership({ accessibilityLabel, disabled: disabledProp });
   const disabled = field.disabled;
   useInteractiveWebCss(STYLE_ID, BLOOM_FILE_UPLOAD_CSS);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const paint = useMemo(() => resolveFileUploadPaint(theme), [theme]);
 
   const labels: FileUploadLabels = {

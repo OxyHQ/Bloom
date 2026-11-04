@@ -10,7 +10,6 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -30,6 +29,7 @@ import { USAGE_CARD_MESSAGES } from './messages';
 import { useTheme } from '../theme/use-theme';
 import type { UsageCardProps, UsageData, UsageGroup, UsageLimit } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * A shared usage card for storage, budgets, quotas, and context windows.
@@ -210,7 +210,7 @@ function RotatingIcon({
   degrees: number;
   children: React.ReactNode;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const rotation = useSharedValue(active ? degrees : 0);
   useEffect(() => {
     const target = active ? degrees : 0;
@@ -241,7 +241,7 @@ function BarFill({
   rounded?: boolean;
   testID?: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const width = useSharedValue(percent);
   useEffect(() => {
     width.value = reducedMotion

@@ -13,7 +13,6 @@ import Animated, {
   runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   type SharedValue,
@@ -28,6 +27,7 @@ import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
 import { ShapeSilhouette } from './ShapeSilhouette';
 import { svgA11yProps } from '../styles/svg-a11y';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 // RNW supports these listbox properties; native handles equivalent accessibility actions.
 type ListboxViewProps = Omit<ViewProps, 'role'> & {
@@ -138,7 +138,7 @@ export function ShapeArc({
   const target = useSharedValue(initial);
   const position = useSharedValue(initial);
   const [center, setCenter] = useState(initial);
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const sign = useIsRtl() ? -1 : 1;
   const dragStart = useSharedValue(initial);
   const suppressClick = useSharedValue(false);

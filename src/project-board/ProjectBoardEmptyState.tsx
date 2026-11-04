@@ -5,7 +5,6 @@ import Animated, {
   FadeIn,
   FadeOut,
   useAnimatedProps,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withTiming,
@@ -17,6 +16,7 @@ import { getResolvedTokens } from '../theme/token-registry';
 import { useBloomTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PROJECT_BOARD_MESSAGES } from './messages';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 const AnimatedG = Animated.createAnimatedComponent(G);
@@ -30,7 +30,7 @@ function EmptyCard({
   minimumScale?: number;
   children: ReactNode;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     progress.value = reducedMotion
@@ -58,7 +58,7 @@ function EmptyLine({
   delay: number;
   color: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     progress.value = reducedMotion
@@ -85,7 +85,7 @@ export function ProjectBoardEmptyState() {
   const colors = theme.colors;
   const tokens = getResolvedTokens(colorPreset, theme.mode);
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   return (
     <AnimatedView
       entering={reducedMotion ? undefined : FadeIn.duration(160)}

@@ -3,7 +3,6 @@ import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -16,6 +15,7 @@ import { type AiChatPalette } from './shared';
 import type { AiChatTurnAction } from './types';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The family's small interactive pieces, shared by the message, image, code
@@ -151,7 +151,7 @@ export function SwapGlyph({
   size: number;
   children: React.ReactNode;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
     const target = shown ? 1 : 0;

@@ -17,6 +17,7 @@ import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { Gesture } from 'react-native-gesture-handler';
 import * as Reanimated from 'react-native-reanimated';
+import * as ReducedMotion from '../hooks/use-prefers-reduced-motion';
 
 import { AppShell } from '../app-shell';
 import { DRAWER_SWIPE } from '../app-shell/constants';
@@ -272,7 +273,7 @@ describe('AppShell drawerSwipe: overlay', () => {
   });
 
   it('reduced motion: the release snaps rather than easing', () => {
-    jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
+    jest.spyOn(ReducedMotion, 'usePrefersReducedMotion').mockReturnValue(true);
     const timing = jest.spyOn(Reanimated, 'withTiming');
     setWidth(WIDTH);
     const pans = recordPans();

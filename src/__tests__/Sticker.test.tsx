@@ -14,10 +14,9 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-let reducedMotion = false;
-jest.mock('react-native-reanimated', () => ({
-  ...jest.requireActual('react-native-reanimated'),
-  useReducedMotion: () => reducedMotion,
+let mockReducedMotion = false;
+jest.mock('../hooks/use-prefers-reduced-motion', () => ({
+  usePrefersReducedMotion: () => mockReducedMotion,
 }));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -62,7 +61,7 @@ function opacityOf(id: string): string {
 }
 
 beforeEach(() => {
-  reducedMotion = false;
+  mockReducedMotion = false;
   lastPlayer = null;
   resetLottiePlayer();
   container = document.createElement('div');
@@ -101,7 +100,7 @@ describe('Sticker', () => {
   });
 
   it('never animates for a person who asked for reduced motion', () => {
-    reducedMotion = true;
+    mockReducedMotion = true;
     provideLottiePlayer(FakePlayer);
     mount(<Sticker animation={ANIMATION} fallback={STILL} testID="s" />);
     expect(has('s-still')).toBe(true);

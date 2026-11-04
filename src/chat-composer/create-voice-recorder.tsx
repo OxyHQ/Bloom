@@ -17,7 +17,6 @@ import Animated, {
   Easing,
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withSequence,
@@ -53,6 +52,7 @@ import { useChatComposerWebCss } from './web-hooks';
 import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
 export function createVoiceRecorder({
@@ -68,7 +68,7 @@ export function createVoiceRecorder({
 
   /** The live "we are recording" dot. CSS keyframes on web, a reanimated loop on native. */
   function RecordDot({ color, active }: { color: string; active: boolean }) {
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     const opacity = useSharedValue(1);
     useEffect(() => {
       if (IS_WEB || !active || reducedMotion) return;
