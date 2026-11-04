@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import React, { useMemo } from 'react';
+import { Easing, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
@@ -13,7 +13,7 @@ import { useChartCardSurfacePalette, useChartTones } from './primitives/use-char
 import { useWebTransition } from './primitives/use-web-transition';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
-import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useEasedValues } from '../motion/use-eased-values';
 
 /** One goal ring and its stat tile. */
 export interface ActivityRing {
@@ -57,42 +57,10 @@ const MAX_SVG_HEIGHT = 210;
 const DEFAULT_HUES: readonly ChartHue[] = [3, 2, 4];
 /** `duration-200 ease-out` on `stroke-dasharray`. */
 const DASH_MS = 200;
+/** CSS `ease-out`, `cubic-bezier(0, 0, 0.58, 1)`: the arcs' dash eases on it. */
+const DASH_EASE = Easing.bezier(0, 0, 0.58, 1);
 
 const clampPct = (pct: number) => Math.max(0, Math.min(100, Number.isFinite(pct) ? pct : 0));
-
-/** Tweens a list of numbers toward `target` over `ms` with CSS `ease-out`; snaps under reduced motion. */
-function useTween(target: readonly number[], ms: number): readonly number[] {
-  const reducedMotion = usePrefersReducedMotion();
-  const [shown, setShown] = useState<readonly number[]>(target);
-  const shownRef = useRef(shown);
-  shownRef.current = shown;
-  const key = target.join(',');
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised values
-  useEffect(() => {
-    const from = shownRef.current;
-    if (
-      reducedMotion ||
-      typeof requestAnimationFrame !== 'function' ||
-      from.length !== target.length
-    ) {
-      setShown(target);
-      return;
-    }
-    if (from.every((v, i) => v === target[i])) return;
-    const start = Date.now();
-    let raf = 0;
-    const tick = () => {
-      const t = Math.min(1, (Date.now() - start) / ms);
-      // `ease-out` = cubic-bezier(0, 0, 0.58, 1) ≈ 1 − (1 − t)².
-      const e = 1 - (1 - t) * (1 - t);
-      setShown(target.map((v, i) => from[i]! + (v - from[i]!) * e));
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [key, ms, reducedMotion]);
-  return shown.length === target.length ? shown : target;
-}
 
 /**
  * Three concentric goal rings, Apple Watch-style, under a row of stat tiles.
@@ -144,9 +112,10 @@ export function ActivityRingsCard({
     onActiveIndexChange,
   );
   const hovering = activeIndex !== null;
-  const pcts = useTween(
+  const pcts = useEasedValues(
     useMemo(() => shown.map((r) => clampPct(r.goalPct)), [shown]),
     DASH_MS,
+    DASH_EASE,
   );
 
   const fade = useWebTransition('opacity', 200);

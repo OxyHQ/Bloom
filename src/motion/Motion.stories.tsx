@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ScaleAndFadeIn, ScaleAndFadeOut, ScreenTransition, ShrinkAndPop } from './index';
+import {
+  RollingText,
+  ScaleAndFadeIn,
+  ScaleAndFadeOut,
+  ScreenTransition,
+  ShrinkAndPop,
+  useCountUp,
+} from './index';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
@@ -99,5 +107,29 @@ export const Transition: Story = {
       );
     }
     return <Demo />;
+  },
+};
+
+/** Text that rolls when it changes: a whole label, a count, and per-digit wheels. */
+export const Rolling: Story = {
+  render: function RollingStory() {
+    const [n, setN] = useState(9);
+    const count = useCountUp(n * 100);
+    return (
+      <View style={{ gap: 16, alignItems: 'flex-start' }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable accessibilityLabel="Down" onPress={() => setN((v) => Math.max(0, v - 1))}>
+            <Text>−</Text>
+          </Pressable>
+          <Pressable accessibilityLabel="Up" onPress={() => setN((v) => v + 1)}>
+            <Text>+</Text>
+          </Pressable>
+        </View>
+        <RollingText value={`Week ${n}`} align="center" clip containerStyle={{ width: 120 }} />
+        <RollingText value={String(n)} variant="title-2-regular" />
+        <RollingText mode="digits" value={`$${n}.99`} variant="title-2-regular" />
+        <Text>{count}</Text>
+      </View>
+    );
   },
 };

@@ -53,7 +53,7 @@ import { SankeyChartCard } from '@oxy.so/bloom/chart-cards';
 
 ## Hover
 
-Web hover, native press-and-scrub (letting go clears). The pointer is hit-tested in `hitTestSankey`: nodes first (they paint on top), then the topmost ribbon whose filled band contains the point. A node lifts its ribbons to 0.7, fades the rest to 0.08 and every unconnected node to 35%; a link isolates itself and its two ends. The node fill steps to its `-active` colour. Opacities ease over 200ms and the fill over 150ms (`use-eased-values.ts` — react-native-svg can't CSS-transition presentation attributes); snaps under reduced motion.
+Web hover, native press-and-scrub (letting go clears). The pointer is hit-tested in `hitTestSankey`: nodes first (they paint on top), then the topmost ribbon whose filled band contains the point. A node lifts its ribbons to 0.7, fades the rest to 0.08 and every unconnected node to 35%; a link isolates itself and its two ends. The node fill steps to its `-active` colour. Opacities ease over 200ms and the fill over 150ms (`useEasedValues` from `@oxy.so/bloom/motion` — react-native-svg can't CSS-transition presentation attributes); snaps under reduced motion.
 
 
 ## Narrow cards

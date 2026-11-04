@@ -1,6 +1,6 @@
 import type React from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useEffect, useMemo } from 'react';
+import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -9,10 +9,10 @@ import { Text } from '../typography';
 import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useChartCardPalette } from './primitives/use-chart-palette';
-import { useCountUp } from './use-count-up';
+import { RollingText } from '../motion/RollingText';
+import { useCountUp } from '../motion/use-count-up';
 import { useCommonMessages } from '../locale/common-messages';
 import { MonthChevron, MonthNavButton } from '../date-picker/MonthNavButton';
-import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Chrome shared by the medical dashboard cards (`StepsCard`,
@@ -192,113 +192,6 @@ export function MedicalHeader({ children }: { children: React.ReactNode }) {
 //  WeekRangePill
 // ---------------------------------------------------------------------------
 
-const LABEL_MS = 220;
-const LABEL_SHIFT = 10;
-/** CSS `ease-out`. */
-const LABEL_EASE = Easing.bezier(0, 0, 0.58, 1);
-
-/**
- * When the label changes the old one lifts 10px and fades out while the new
- * one rises 10px into place and fades in, both 220ms ease-out, clipped to the
- * line box so it reads as a counter tick. Snaps under reduced motion.
- */
-function RollingLabel({ label, color }: { label: string; color: string }) {
-  const reducedMotion = usePrefersReducedMotion();
-  const [previous, setPrevious] = useState<string | null>(null);
-  const shown = useRef(label);
-  const progress = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (label === shown.current) return;
-    const outgoing = shown.current;
-    shown.current = label;
-    if (reducedMotion) {
-      setPrevious(null);
-      progress.setValue(1);
-      return;
-    }
-    setPrevious(outgoing);
-    progress.setValue(0);
-    const animation = Animated.timing(progress, {
-      toValue: 1,
-      duration: LABEL_MS,
-      easing: LABEL_EASE,
-      useNativeDriver: Platform.OS !== 'web',
-    });
-    // `finished` is false when a newer label interrupted this roll.
-    animation.start((result) => {
-      if (result?.finished !== false) setPrevious(null);
-    });
-    return () => animation.stop();
-  }, [label, reducedMotion, progress]);
-
-  const textStyle = { color, textAlign: 'center' as const };
-  const layer: ViewStyle = {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-  return (
-    <View style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-      {/* Invisible spacer keeps the line box for the absolute layers. */}
-      <Text variant="body-medium" numberOfLines={1} style={[textStyle, { opacity: 0 }]} aria-hidden>
-        {label}
-      </Text>
-      {previous !== null ? (
-        <Animated.View
-          pointerEvents="none"
-          aria-hidden
-          style={[
-            layer,
-            {
-              opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
-              transform: [
-                {
-                  translateY: progress.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -LABEL_SHIFT],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <Text variant="body-medium" numberOfLines={1} style={textStyle}>
-            {previous}
-          </Text>
-        </Animated.View>
-      ) : null}
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          layer,
-          previous !== null
-            ? {
-                opacity: progress,
-                transform: [
-                  {
-                    translateY: progress.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [LABEL_SHIFT, 0],
-                    }),
-                  },
-                ],
-              }
-            : null,
-        ]}
-      >
-        <Text variant="body-medium" numberOfLines={1} style={textStyle}>
-          {label}
-        </Text>
-      </Animated.View>
-    </View>
-  );
-}
-
 export interface WeekRangePillProps {
   label: string;
   /** With `onPrev` / `onNext` the chevrons are buttons and the label rolls on change; without, a static pill. */
@@ -378,7 +271,15 @@ export function WeekRangePill({
         </View>
       )}
       {interactive ? (
-        <RollingLabel label={label} color={palette.text} />
+        <RollingText
+          value={label}
+          align="center"
+          clip
+          variant="body-medium"
+          numberOfLines={1}
+          style={{ color: palette.text }}
+          containerStyle={{ flex: 1, minWidth: 0 }}
+        />
       ) : (
         <Text
           variant="body-medium"

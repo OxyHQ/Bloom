@@ -422,6 +422,10 @@ export {
   ScaleAndFadeOut,
   ShrinkAndPop,
   ScreenTransition,
+  RollingText,
+  useCountUp,
+  useCountUpPrecise,
+  useEasedValues,
   MOTION_RECIPES,
   animateMotion,
   animateWithSpec,
@@ -433,6 +437,8 @@ export {
   springSettleMs,
 } from './motion/index.web';
 export type {
+  RollingTextMode,
+  RollingTextProps,
   ScreenTransitionProps,
   ScreenTransitionDirection,
   MotionIntent,

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Text } from '../../typography';
-import { useCountUpPrecise } from '../use-count-up';
+import { useCountUpPrecise } from '../../motion/use-count-up';
 import { TABULAR } from './ChartHeader';
 import { FadeOnChange } from './FadeOnChange';
 import { formatNumber } from './format';

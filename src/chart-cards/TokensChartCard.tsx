@@ -22,7 +22,7 @@ import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useCountUp } from './use-count-up';
+import { useCountUp } from '../motion/use-count-up';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 import { formatGregorian } from '../locale/format-date';
