@@ -66,7 +66,7 @@ import {
   type ColorClaim,
 } from './context';
 import { useLatestClaim } from '../hooks/use-latest-claim';
-import type { AppColorName } from '../theme/color-presets';
+import type { ProfileColor } from '../theme/color-presets';
 import { PlacementBoundaryContext } from '../overlay/placement-boundary';
 import { PanelNavigation, PanelScrollScope } from './PanelNavigation';
 import {
@@ -136,7 +136,9 @@ export interface PanelLayoutViewProps {
 /** Shared implementation for native and web; only material and scrollbar implementations differ. */
 export function createPanelLayoutView(
   ContentPanel: ComponentType<ContentPanelProps>,
-  ColorScope: ComponentType<Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>>,
+  ColorScope: ComponentType<
+    Pick<BloomColorScopeProps, 'colorPreset' | 'seed' | 'asChild' | 'children'>
+  >,
   ScrollArea: ComponentType<ScrollAreaProps>,
   ScrollBar: ComponentType<ScrollBarProps>,
   useScrollRestoration: typeof UseScrollRestoration,
@@ -427,19 +429,22 @@ export function createPanelLayoutView(
       () => ({ scrollY, contentHeight, viewportHeight: scrollViewportHeight }),
       [scrollY, contentHeight, scrollViewportHeight],
     );
-    const [screenPreset, claimPanelPreset] = useLatestClaim<AppColorName>();
-    const claimShellPreset = useContext(ShellColorClaimContext);
-    const claimColorPreset = useCallback<ColorClaim>(
-      (preset) => {
-        const releasePanel = claimPanelPreset(preset);
-        const releaseShell = claimShellPreset?.(preset);
+    const [screenColor, claimPanelColor] = useLatestClaim<ProfileColor>();
+    const claimShellColor = useContext(ShellColorClaimContext);
+    const claimColor = useCallback<ColorClaim>(
+      (color) => {
+        const releasePanel = claimPanelColor(color);
+        const releaseShell = claimShellColor?.(color);
         return () => {
           releasePanel();
           releaseShell?.();
         };
       },
-      [claimPanelPreset, claimShellPreset],
+      [claimPanelColor, claimShellColor],
     );
+    // A claimed colour, seed or preset, replaces the panel's own preset.
+    const scopeColorPreset = screenColor ? screenColor.colorPreset : panel.colorPreset;
+    const scopeSeed = screenColor?.seed;
     // The app's route Back passes through the panel; a panel `navigation`
     // history takes precedence over it where it can go back.
     const { back } = useContext(ScreenHostContext);
@@ -464,7 +469,7 @@ export function createPanelLayoutView(
           ) : (
             panel.headerActions
           ),
-        claimColorPreset,
+        claimColor,
         metrics,
       }),
       [
@@ -475,7 +480,7 @@ export function createPanelLayoutView(
         panel.headerActions,
         reorderHandle,
         panel.bottomBar,
-        claimColorPreset,
+        claimColor,
         track.floating,
       ],
     );
@@ -813,7 +818,7 @@ export function createPanelLayoutView(
                   {/* A viewport mask may bleed past its own surface by a pixel. Bound
                 that paint to this track so zero-gap neighbors keep their border.
                 clip/visible preserves the document's vertical sticky scroll root. */}
-                  <ColorScope colorPreset={screenPreset ?? panel.colorPreset} asChild>
+                  <ColorScope colorPreset={scopeColorPreset} seed={scopeSeed} asChild>
                     <View
                       testID={testID ? `${testID}-surface-bounds` : undefined}
                       style={[
@@ -893,7 +898,7 @@ export function createPanelLayoutView(
           {track.floating && panel.floating ? (
             <PanelFloatingSurface panel={panel} open={floatingOpen} testID={testID}>
               <AppShellPanelContext.Provider value={floatingValue}>
-                <ColorScope colorPreset={screenPreset ?? panel.colorPreset} asChild>
+                <ColorScope colorPreset={scopeColorPreset} seed={scopeSeed} asChild>
                   <View style={FILL}>
                     {panel.errorBoundary ? (
                       <PanelErrorBoundary

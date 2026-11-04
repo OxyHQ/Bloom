@@ -5,11 +5,11 @@
 import { createContext, useContext, type RefObject } from 'react';
 import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
 import type { Claim } from '../hooks/use-latest-claim';
-import type { AppColorName } from '../theme/color-presets';
+import type { ProfileColor } from '../theme/color-presets';
 import type { SharedValue } from 'react-native-reanimated';
 
-/** A screen's claim on the colour preset of the panel or shell hosting it. */
-export type ColorClaim = Claim<AppColorName>;
+/** A screen's claim on the colour (a preset or an exact seed) of the panel or shell hosting it. */
+export type ColorClaim = Claim<ProfileColor>;
 
 export interface AppShellContextValue {
   /**
@@ -150,9 +150,9 @@ export function usePanelScrollContainer<T = unknown>(): RefObject<T | null> | nu
 }
 
 /**
- * Where an active screen's colour preset is forwarded so the whole shell — the
- * sidebar, the bottom bar and every sibling panel — adopts it. Absent when each
- * panel is its own surface (deck): there a preset themes its own column only.
+ * Where an active screen's colour (preset or seed) is forwarded so the whole
+ * shell — the sidebar, the bottom bar and every sibling panel — adopts it. Absent
+ * when each panel is its own surface (deck): there it themes its own column only.
  */
 export const ShellColorClaimContext = createContext<ColorClaim | null>(null);
 ShellColorClaimContext.displayName = 'BloomShellColorClaimContext';

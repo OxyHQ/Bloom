@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.2.0
+
+### Added
+
+- **`Screen`'s `seed`: an exact colour themes the whole shell, as a preset does.** `<Screen seed="#8e5137">` takes an exact RGB seed with `BloomColorScope`'s semantics (roles from Bloom's colour engine; it takes precedence over `colorPreset`). Before, a screen could claim only a preset for its host, so an app showing a profile with an exact colour scoped its content column alone and the page background, sidebar, sibling panels and bottom bar kept the app's theme. The claim now carries a `ProfileColor` (`{ colorPreset }` or `{ seed }`): the panel's scope and, in a `split` layout, the shell-wide scope apply whichever was claimed (a `deck` still keeps it in its own column), and leaving the screen restores the previous colour as before. The internal host hook is renamed `ScreenHostValue.claimColorPreset` → `claimColor`; no app provides or calls it.
+
+### Consumers
+
+- `<Screen seed="#rrggbb">` now themes the whole shell like `<Screen colorPreset>`. An app that wraps only its content in `<BloomColorScope seed>` because a seed had no claim (Mention's profile) passes the seed to its `Screen` instead; `resolveProfileColor(value)` already returns `{ colorPreset }` or `{ seed }`, which spreads straight onto `Screen`.
+
 ## 17.1.1
 
 ### Fixed

@@ -8,6 +8,7 @@ import { useBloomTheme } from '../theme';
 import { ResizeHandle } from '../layout/ResizeHandle';
 import { resolvedStyle } from './support/rendered-style';
 import { Screen } from '../screen';
+import { buildThemeFromSeed } from '../theme/build-theme-from-seed';
 import { mockWindowSize } from './support/window-size';
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BloomThemeProvider mode="light" colorPreset="teal">
@@ -269,6 +270,9 @@ describe('a screen colour preset', () => {
   function Preset({ testID }: { testID: string }) {
     return <Native.Text testID={testID}>{useBloomTheme().colorPreset}</Native.Text>;
   }
+  function Primary({ testID }: { testID: string }) {
+    return <Native.Text testID={testID}>{useBloomTheme().theme.colors.primary}</Native.Text>;
+  }
   const ui = (mode: 'split' | 'deck') => (
     <AppShell
       sidebar={{ render: () => <Preset testID="sidebar" /> }}
@@ -301,5 +305,32 @@ describe('a screen colour preset', () => {
     expect(tree.getByTestId('main').props.children).toBe('rose');
     expect(tree.getByTestId('side').props.children).toBe('teal');
     expect(tree.getByTestId('sidebar').props.children).toBe('teal');
+  });
+
+  it('themes the whole shell from an exact seed too', () => {
+    const tree = render(
+      <AppShell
+        sidebar={{ render: () => <Primary testID="sidebar" /> }}
+        panelLayout={{
+          mode: 'split',
+          panels: [
+            {
+              id: 'main',
+              width: 620,
+              content: (
+                <Screen scroll="content" seed="#8e5137">
+                  <Primary testID="main" />
+                </Screen>
+              ),
+            },
+            { id: 'side', width: 350, content: <Primary testID="side" /> },
+          ],
+        }}
+      />,
+      { wrapper },
+    );
+    const seeded = buildThemeFromSeed('#8e5137', 'light').colors.primary;
+    for (const id of ['sidebar', 'main', 'side'])
+      expect(tree.getByTestId(id).props.children).toBe(seeded);
   });
 });

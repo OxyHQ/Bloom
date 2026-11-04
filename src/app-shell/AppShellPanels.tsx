@@ -94,7 +94,7 @@ function useRegion(): AppShellRegionValue {
 /** Where a panel sits in its group — positions, never the siblings' props. */
 type ContentPanelComponent = React.ComponentType<ContentPanelProps>;
 type ColorScopeComponent = React.ComponentType<
-  Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>
+  Pick<BloomColorScopeProps, 'colorPreset' | 'seed' | 'asChild' | 'children'>
 >;
 
 export function createAppShellPanels(

@@ -386,7 +386,7 @@ it('is visible to the reader only while its Screen is active and the app is in t
 
 it('declares and releases its color recipe on its own host without replacing content', () => {
   const release = jest.fn();
-  const claimColorPreset = jest.fn(() => release);
+  const claimColor = jest.fn(() => release);
   let mounts = 0;
   function Body() {
     useEffect(() => {
@@ -394,21 +394,25 @@ it('declares and releases its color recipe on its own host without replacing con
     }, []);
     return <View testID="color-body" />;
   }
-  const ui = (preset: 'teal' | undefined) =>
+  const ui = (preset: 'teal' | undefined, seed?: string) =>
     wrap(
-      <ScreenHostContext.Provider value={{ active: true, claimColorPreset }}>
-        <Screen colorPreset={preset}>
+      <ScreenHostContext.Provider value={{ active: true, claimColor }}>
+        <Screen colorPreset={preset} seed={seed}>
           <Body />
         </Screen>
       </ScreenHostContext.Provider>,
     );
   const tree = render(ui('teal'));
-  expect(claimColorPreset).toHaveBeenCalledWith('teal');
+  expect(claimColor).toHaveBeenLastCalledWith({ colorPreset: 'teal' });
   expect(mounts).toBe(1);
   tree.rerender(ui(undefined));
   expect(release).toHaveBeenCalledTimes(1);
   expect(mounts).toBe(1);
-  tree.rerender(ui('teal'));
+  // An exact seed is claimed the same way, and wins over a preset.
+  tree.rerender(ui('teal', '#8e5137'));
+  expect(claimColor).toHaveBeenLastCalledWith({ seed: '#8e5137' });
+  expect(claimColor).toHaveBeenCalledTimes(2);
+  expect(mounts).toBe(1);
   tree.unmount();
   expect(release).toHaveBeenCalledTimes(2);
 });

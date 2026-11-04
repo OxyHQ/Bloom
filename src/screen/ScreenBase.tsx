@@ -46,6 +46,7 @@ import { useStatusBarClaim } from '../theme/SystemStatusBar';
 import { useRegisterReselectHandler } from './reselect';
 import { ScreenActionOwnerContext, useScreenActionClaim } from '../app-shell/screen-action';
 import type { ScreenProps } from './types';
+import type { ProfileColor } from '../theme/color-presets';
 import { useCssSafeAreaInsets, NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 import type { ScreenKeyboardComponents } from './keyboard-components';
 import { usePlatformWindow } from '../platform-surface/context';
@@ -63,7 +64,7 @@ import { WindowDragRegion } from '../window/WindowDragRegion';
 export function createScreen(
   ScrollBar: ComponentType<ScrollBarProps>,
   BloomColorScope: ComponentType<
-    Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>
+    Pick<BloomColorScopeProps, 'colorPreset' | 'seed' | 'asChild' | 'children'>
   >,
   useScrollRestoration: typeof UseScrollRestoration,
   getKeyboardComponents: (() => ScreenKeyboardComponents) | null,
@@ -72,7 +73,7 @@ export function createScreen(
   /** One continuous canvas; chrome overlays it and content reserves its measured footprint. */
   function Screen(props: ScreenProps) {
     return (
-      <BloomColorScope colorPreset={props.colorPreset} asChild>
+      <BloomColorScope colorPreset={props.colorPreset} seed={props.seed} asChild>
         <ScreenCanvas {...props} />
       </BloomColorScope>
     );
@@ -80,6 +81,7 @@ export function createScreen(
 
   function ScreenCanvas({
     colorPreset,
+    seed,
     header,
     scroll = 'auto',
     headerPlacement = 'inset',
@@ -170,9 +172,15 @@ export function createScreen(
     const restoration = useOptionalScrollRestorationContext();
     const region = useAppShellRegion();
     const active = requestedActive && host.active && (parentScreen?.active ?? true);
+    // One object per colour, so the claim is made again only when the colour changes.
+    // A seed takes precedence over a preset, exactly as in the scope above.
+    const color = useMemo<ProfileColor | undefined>(
+      () => (seed !== undefined ? { seed } : colorPreset ? { colorPreset } : undefined),
+      [seed, colorPreset],
+    );
     useEffect(() => {
-      if (active && colorPreset) return host.claimColorPreset?.(colorPreset);
-    }, [active, colorPreset, host.claimColorPreset]);
+      if (active && color) return host.claimColor?.(color);
+    }, [active, color, host.claimColor]);
     // A dark screen in a light app (or the reverse) owns the status bar content
     // while it is the active one.
     useStatusBarClaim(active);
