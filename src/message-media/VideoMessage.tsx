@@ -1,6 +1,5 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
 
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { formatDuration, PlayButton } from '../media-controls';
@@ -9,6 +8,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
+import { MeterRing } from '../stat-bar';
 import { Text } from '../typography';
 import { formatFileSize } from '../file-upload/shared';
 import {
@@ -34,66 +34,6 @@ import type { VideoMessageProps } from './types';
 const NOTE_RING = 3;
 
 /**
- * A video in a bubble, in two shapes.
- *
- * `thumbnail` — a poster frame with the shared `PlayButton` (`inverse`, so it is
- * a light disc with a dark glyph and reads on any frame) and a duration pill.
- * `watched` dims the pill and adds a tick rather than hiding anything: a watched
- * video is still a video, and removing its duration would make the two states
- * different SHAPES.
- *
- * `videoNote` — the round short note. The circle is a mask, the ring around it is
- * the playback position, and the duration sits under the button rather than in a
- * corner, because a rectangle's corner is outside a circle.
- *
- * The ring is drawn with `react-native-svg` and NOT with a border trick: a border
- * can only be a full circle or four independent quarters, and a fraction of a
- * turn needs `strokeDasharray`.
- */
-function VideoNoteRing({
-  size,
-  value,
-  color,
-  track,
-}: {
-  size: number;
-  value: number;
-  color: string;
-  track: string;
-}) {
-  const radius = (size - NOTE_RING) / 2;
-  const circumference = 2 * Math.PI * radius;
-  return (
-    <View
-      pointerEvents="none"
-      style={{ position: 'absolute', width: size, height: size, transform: [{ rotate: '-90deg' }] }}
-    >
-      <Svg width={size} height={size}>
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={track}
-          strokeWidth={NOTE_RING}
-          fill="none"
-        />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={color}
-          strokeWidth={NOTE_RING}
-          strokeLinecap="round"
-          fill="none"
-          strokeDasharray={`${circumference}`}
-          strokeDashoffset={circumference * (1 - value)}
-        />
-      </Svg>
-    </View>
-  );
-}
-
-/**
  * The centred play disc.
  *
  * It IS `media-controls`' `PlayButton` — one play affordance in the library —
@@ -115,6 +55,22 @@ function PlayGlyph({ playing }: { playing: boolean }) {
   );
 }
 
+/**
+ * A video in a bubble, in two shapes.
+ *
+ * `thumbnail` — a poster frame with the shared `PlayButton` (`inverse`, so it is
+ * a light disc with a dark glyph and reads on any frame) and a duration pill.
+ * `watched` dims the pill and adds a tick rather than hiding anything: a watched
+ * video is still a video, and removing its duration would make the two states
+ * different SHAPES.
+ *
+ * `videoNote` — the round short note. The circle is a mask, the ring around it is
+ * the playback position, and the duration sits under the button rather than in a
+ * corner, because a rectangle's corner is outside a circle.
+ *
+ * The ring is a decorative `MeterRing`: a border can only be a full circle or
+ * four independent quarters, and a fraction of a turn needs a stroked arc.
+ */
 function VideoMessageComponent({
   source,
   sourceVariant,
@@ -196,7 +152,14 @@ function VideoMessageComponent({
           pointerEvents="none"
           style={{ position: 'absolute', width: diameter, height: diameter }}
         >
-          <VideoNoteRing size={diameter} value={fraction} color={paint.accent} track={paint.rail} />
+          <MeterRing
+            decorative
+            value={fraction}
+            size={diameter}
+            thickness={NOTE_RING}
+            fill={paint.accent}
+            track={paint.rail}
+          />
         </View>
         {clock ? (
           <View

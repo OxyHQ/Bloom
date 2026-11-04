@@ -41,7 +41,27 @@ with a label is `StatBar`; a bar inside a card is that card's business.
 | `fillTestID`          | the fill's own `testID`; defaults to `` `${testID}-fill` ``    |
 
 `MeterRing` takes `size` (56) and `thickness` (5) instead of `height`/`width`,
-plus `cap` and centred `children`.
+plus `cap`, centred `children` and `backdrop`, a disc painted under the whole
+ring (the scrim that lets an upload ring read over a photo).
+
+### A decorative ring
+
+`decorative` draws the ring with no role, hidden from assistive technology, as
+`Meter`'s decorative segment is: for the drawing inside a control that carries
+its own name (`message-media`'s cancel ring, `media-header`'s download toggle),
+a video note's playback position, a plan's progress beside its own text. A
+decorative ring may follow a Reanimated shared value instead of `value` —
+`progress`, the drawn share 0–1, moved on the UI thread (a step loader filling
+over its own duration in `agent-progress`). Only a decorative ring takes one: a
+shared value has no accessible reading.
+
+```tsx
+<MeterRing decorative value={0.4} size={28} thickness={2.5} backdrop="rgba(0, 0, 0, 0.35)">
+  <RiCloseLine width={11} height={11} fill="#fff" />
+</MeterRing>
+
+<MeterRing decorative progress={sharedProgress} size={16} thickness={2.5} />
+```
 
 ### A download ring
 

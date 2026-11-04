@@ -2134,6 +2134,7 @@ export type {
   MeterColors,
   MeterDecorativeProps,
   MeterProps,
+  MeterRingDecorativeProps,
   MeterRingProps,
   StatBarProps,
   StatBarProgressProps,
