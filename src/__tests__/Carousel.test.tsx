@@ -1,13 +1,13 @@
-import React from 'react';
+import type React from 'react';
 import { Platform } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Carousel, CarouselItem, type CarouselControls } from '../carousel';
+import { Carousel, CarouselDots, CarouselItem, type CarouselControls } from '../carousel';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { Text } from '../typography';
-import { resolveCarouselPaint } from '../carousel/Carousel';
+import { resolveCarouselPaint } from '../carousel/shared';
 import type { Theme } from '../theme/types';
 
 const scrollTo = jest.fn();
@@ -669,6 +669,29 @@ describe('controlled Carousel', () => {
       expect(onIndexChange).toHaveBeenLastCalledWith(0);
     },
   );
+});
+
+describe('CarouselDots', () => {
+  it('names each dot and requests its slide; without a handler it is a hidden, windowed indicator', () => {
+    const onIndexChange = jest.fn();
+    const api = renderWithTheme(<CarouselDots count={3} index={1} onIndexChange={onIndexChange} />);
+    expect(api.getAllByLabelText(/^Go to slide \d$/)).toHaveLength(3);
+    expect(api.getByLabelText('Go to slide 2').props['aria-current']).toBe(true);
+    fireEvent.press(api.getByLabelText('Go to slide 3'));
+    expect(onIndexChange).toHaveBeenLastCalledWith(2);
+
+    const decorative = renderWithTheme(
+      <CarouselDots testID="dots" count={9} index={4} shape="dot" maxDots={5} />,
+    );
+    const row = decorative.getByTestId('dots', { includeHiddenElements: true });
+    expect(row.props['aria-hidden']).toBe(true);
+    expect(row.children).toHaveLength(5);
+    expect(decorative.queryAllByRole('button', { includeHiddenElements: true })).toHaveLength(0);
+
+    expect(
+      renderWithTheme(<CarouselDots testID="one" count={1} index={0} />).queryByTestId('one'),
+    ).toBeNull();
+  });
 });
 
 describe('resolveCarouselPaint', () => {
