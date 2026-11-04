@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react';
+
 /**
  * The connection as Bloom's components read it, shared by both forks of
  * `useNetworkStatus`: one subscription to the platform's source however many
@@ -63,4 +65,30 @@ export function createNetworkStatusStore(source: NetworkStatusSource) {
     getSnapshot: (): NetworkStatus => snapshot,
     getServerSnapshot: (): NetworkStatus => UNKNOWN_NETWORK_STATUS,
   };
+}
+
+/** {@link useNetworkStatus}'s options. */
+export interface UseNetworkStatusOptions {
+  /**
+   * Whether to watch the connection at all. Default `true`. `false` starts no
+   * subscription and reads {@link UNKNOWN_NETWORK_STATUS}, so a caller that only
+   * sometimes needs the answer (media autoplay outside "Wi-Fi only") costs the
+   * platform nothing.
+   */
+  enabled?: boolean;
+}
+
+const subscribeNothing = (): (() => void) => () => {};
+const readUnknown = (): NetworkStatus => UNKNOWN_NETWORK_STATUS;
+
+/** The hook body both forks share: the store when enabled, nothing when not. */
+export function useNetworkStatusFrom(
+  store: ReturnType<typeof createNetworkStatusStore>,
+  { enabled = true }: UseNetworkStatusOptions = {},
+): NetworkStatus {
+  return useSyncExternalStore(
+    enabled ? store.subscribe : subscribeNothing,
+    enabled ? store.getSnapshot : readUnknown,
+    enabled ? store.getServerSnapshot : readUnknown,
+  );
 }

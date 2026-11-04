@@ -9,4 +9,4 @@ export type { ConnectionStatusToastsProps } from './shared';
 export { provideNetInfo, type NetInfoLike } from './netinfo';
 export { ConnectionStatusToasts } from './ConnectionStatusToasts.web';
 export { useNetworkStatus } from './use-network-status.web';
-export type { NetworkStatus } from './network-status';
+export type { NetworkStatus, UseNetworkStatusOptions } from './network-status';

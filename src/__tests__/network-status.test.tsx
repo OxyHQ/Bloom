@@ -64,12 +64,17 @@ it('holds Wi-Fi-only autoplay back on a metered connection', () => {
     setPreference = useBloomPreferences().setPreference;
     return null;
   }
-  render(
+  const view = render(
     <BloomPreferencesProvider>
       <Probe />
     </BloomPreferencesProvider>,
   );
+  // "Always" (the default) never asks: an app's tests and screens that never
+  // choose "Wi-Fi only" never touch netinfo.
+  expect(netInfo.addEventListener).not.toHaveBeenCalled();
+
   act(() => setPreference?.('videoAutoplay', 'wifi'));
+  expect(netInfo.addEventListener).toHaveBeenCalledTimes(1);
   expect(autoplay).toBe(true);
   netInfo.emit({
     isConnected: true,
@@ -80,4 +85,8 @@ it('holds Wi-Fi-only autoplay back on a metered connection', () => {
   expect(autoplay).toBe(false);
   netInfo.emit({ isConnected: true, isInternetReachable: true, type: 'wifi', details: null });
   expect(autoplay).toBe(true);
+
+  act(() => setPreference?.('videoAutoplay', 'never'));
+  expect(netInfo.listeners.size).toBe(0);
+  view.unmount();
 });
