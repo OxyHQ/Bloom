@@ -2,6 +2,18 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.6.2
+
+### Fixed
+
+- **Media autoplay watches the connection only for "Wi-Fi only".** `useMediaAutoplay` (and so every `VideoPlaybackProvider` and `GifMessage`) subscribed to netinfo whatever the viewer's preference, so an app's Jest suite — where netinfo has no native module — crashed with `Cannot read properties of undefined (reading 'isInternetReachable')` as soon as one rendered. `useNetworkStatus` takes `{ enabled }` (default `true`); `false` starts no subscription and reads the unknown status, and autoplay passes `enabled: policy === 'wifi'`, as 17.4.0 did before the shared store.
+
+## 17.6.1
+
+### Fixed
+
+- **An avatar photo that failed for a moment is asked for again.** `Avatar` retried a failed photo only when its URL changed, so a transient 429 or 5xx (an image CDN shedding load) left the placeholder up for the component's lifetime — every avatar on screen during an incident stayed blank until the screen remounted. A primary photo that fails transiently now shows its fallback at once, as before, and is requested again after 2 s and then 8 s (`AVATAR_PHOTO_RETRY_DELAYS_MS`; two more requests, then it stays on the fallback). What counts as transient: 408, 425, 429 or 5xx in the renderer's message (SDWebImage and Glide both report the status), or a network failure (timeout, offline, connection lost). A 404, 403 or any other answer is never re-requested. On web the browser hides an `<img>`'s status, so a failure is first probed with one `HEAD` to the same URL: a transient status (or a now-healthy image) is retried, a 404 is not, and a host that refuses the cross-origin read is left alone. `onImageError` still fires once, for the first failure; the retry is Avatar's own and is mounted only while one is due, so a photo that loads allocates nothing for it.
+
 ## 17.6.0
 
 ### Added

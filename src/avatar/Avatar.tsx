@@ -2,7 +2,7 @@ import { pointerEventsStyles } from '../styles/pointer-events';
 import { useContext } from 'react';
 import { BloomAppearanceContext } from '../appearance/context';
 import type React from 'react';
-import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, Pressable, Platform } from 'react-native';
 import type { PressableStateCallbackType, TextStyle } from 'react-native';
 import { imageSourcesKey } from './source-key';
@@ -21,6 +21,12 @@ import { accountName, pickAccountCharacter } from './account';
 import { tryResolveAvatarCharacter } from '../agent-avatar/character';
 import { Fill as ShapeFill, Image as ShapeImage } from '../shapes';
 import type { Shape, ImageSource } from '../shapes';
+import type { BloomImageErrorInfo } from '../image';
+import {
+  canProbeImageFailure,
+  classifyImageFailure,
+  probeImageFailure,
+} from '../image/image-failure';
 import { Text } from '../typography';
 import type { WebCssStyle } from '../styles/web-view-style';
 import {
@@ -129,7 +135,77 @@ function ObservedAvatarImage({
   );
 }
 
-/** Keyed by resolved source values, so failed images retry only when their request changes. */
+/**
+ * The wait before each new request for a primary photo that failed transiently.
+ * Its length is the budget: two more requests, 2 s and then 8 s after a failure.
+ */
+export const AVATAR_PHOTO_RETRY_DELAYS_MS = [2_000, 8_000] as const;
+
+type PhotoStage = 'primary' | 'fallback' | 'placeholder';
+
+interface PhotoState {
+  stage: PhotoStage;
+  /** Requests of the primary photo made before the current one. */
+  attempt: number;
+  /** A failed primary is asked for again: known transient, or a web failure to probe. */
+  retry?: 'transient' | 'unknown';
+}
+
+function primaryUri(source: ImageSource | undefined): string | undefined {
+  return source && typeof source === 'object' && 'uri' in source ? source.uri : undefined;
+}
+
+/**
+ * Waits out a transiently failed primary, then requests it again. Mounted only
+ * while such a retry is due, so a photo that loads allocates nothing for it.
+ * A web failure (`unknown`: the browser hides the status) is retried only once a
+ * `HEAD` says it was transient, so a missing photo is never requested again.
+ */
+function AvatarPhotoRetry({
+  uri,
+  kind,
+  attempt,
+  setPhoto,
+}: {
+  uri: string | undefined;
+  kind: 'transient' | 'unknown';
+  attempt: number;
+  setPhoto: React.Dispatch<React.SetStateAction<PhotoState>>;
+}) {
+  useEffect(() => {
+    const delay = AVATAR_PHOTO_RETRY_DELAYS_MS[attempt];
+    if (delay === undefined) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      timer = setTimeout(
+        () =>
+          setPhoto((current) =>
+            current.retry && current.attempt === attempt
+              ? { stage: 'primary', attempt: attempt + 1 }
+              : current,
+          ),
+        delay,
+      );
+    };
+    if (kind === 'transient') schedule();
+    else if (canProbeImageFailure(uri))
+      void probeImageFailure(uri, controller.signal).then((verdict) => {
+        if (verdict === 'transient' && !controller.signal.aborted) schedule();
+      });
+    return () => {
+      controller.abort();
+      if (timer) clearTimeout(timer);
+    };
+  }, [uri, kind, attempt, setPhoto]);
+  return null;
+}
+
+/**
+ * Keyed by resolved source values: a new request starts the stages over. A
+ * primary that fails transiently shows the next stage at once and is requested
+ * again after {@link AVATAR_PHOTO_RETRY_DELAYS_MS}; a 404 is never re-requested.
+ */
 function AvatarImageContent({
   primarySource,
   fallbackSource,
@@ -140,30 +216,55 @@ function AvatarImageContent({
   fallbackSource?: ImageSource;
   onImageError?: () => void;
 }) {
-  const [stage, setStage] = useState<'primary' | 'fallback' | 'placeholder'>(
-    primarySource ? 'primary' : fallbackSource ? 'fallback' : 'placeholder',
-  );
+  const [photo, setPhoto] = useState<PhotoState>(() => ({
+    stage: primarySource ? 'primary' : fallbackSource ? 'fallback' : 'placeholder',
+    attempt: 0,
+  }));
+  const { stage, attempt, retry } = photo;
+  const uri = primaryUri(primarySource);
   const source =
     stage === 'primary' ? primarySource : stage === 'fallback' ? fallbackSource : undefined;
-  if (!source) return <ShapeFallback {...placeholder} />;
+  const pendingRetry =
+    retry && stage !== 'primary' ? (
+      <AvatarPhotoRetry uri={uri} kind={retry} attempt={attempt} setPhoto={setPhoto} />
+    ) : null;
+  if (!source)
+    return (
+      <>
+        <ShapeFallback {...placeholder} />
+        {pendingRetry}
+      </>
+    );
   const image = {
     source,
     shape: placeholder.shape,
     size: placeholder.size,
     alt: placeholder.alt,
-    onError: () =>
-      setStage((current) =>
-        current !== stage
-          ? current
-          : stage === 'primary' && fallbackSource
-            ? 'fallback'
-            : 'placeholder',
-      ),
+    onError: ({ error }: BloomImageErrorInfo) =>
+      setPhoto((current) => {
+        if (current.stage !== stage || current.attempt !== attempt) return current;
+        if (stage !== 'primary') return { ...current, stage: 'placeholder' };
+        const kind = classifyImageFailure(error);
+        const retriable =
+          attempt < AVATAR_PHOTO_RETRY_DELAYS_MS.length &&
+          (kind === 'transient' || (kind === 'unknown' && canProbeImageFailure(uri)));
+        return {
+          stage: fallbackSource ? 'fallback' : 'placeholder',
+          attempt,
+          ...(retriable ? { retry: kind } : {}),
+        };
+      }),
   };
-  return stage === 'primary' && onImageError ? (
-    <ObservedAvatarImage key={stage} {...image} onImageError={onImageError} />
-  ) : (
-    <ShapeImage key={stage} {...image} />
+  // The caller hears about the first failure of a photo only; a retry is Avatar's.
+  return (
+    <>
+      {stage === 'primary' && onImageError && attempt === 0 ? (
+        <ObservedAvatarImage key={stage} {...image} onImageError={onImageError} />
+      ) : (
+        <ShapeImage key={`${stage}:${attempt}`} {...image} />
+      )}
+      {pendingRetry}
+    </>
   );
 }
 
