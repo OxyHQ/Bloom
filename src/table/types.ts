@@ -15,8 +15,8 @@ export type TableSortDirection = 'ascending' | 'descending' | 'none';
  * a fixed `width`, or a `flex` share of what remains (default `1`).
  */
 export interface TableColumnLayout {
-  /** Fixed width in px. Wins over `flex`. */
-  width?: number;
+  /** Fixed width in px, or `'auto'` to hug the content (no share of the rest). Wins over `flex`. */
+  width?: number | 'auto';
   /** Share of the remaining width. Defaults to `1`. */
   flex?: number;
   /** Floor for a flexed column. */
@@ -53,6 +53,11 @@ export interface TableHeaderProps {
 export interface TableColumnProps extends TableColumnLayout {
   /** Header label. A string is rendered in the header's own type. */
   children?: React.ReactNode;
+  /**
+   * Drawn before the label, 8px from it and OUTSIDE the sort button — a select-all checkbox, which
+   * a `<button>` may not contain.
+   */
+  leading?: React.ReactNode;
   /**
    * Makes the header a sort button: label plus a sort chevron. Pair with
    * `sortDirection`.

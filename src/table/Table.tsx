@@ -190,9 +190,11 @@ function cellLayoutStyle(
   return {
     align,
     style: {
-      ...(width != null
-        ? { width, flexGrow: 0, flexShrink: 0 }
-        : { flexGrow: flex, flexShrink: 1, flexBasis: 0, minWidth: minWidth ?? 0 }),
+      ...(width === 'auto'
+        ? { flexGrow: 0, flexShrink: 0 }
+        : width != null
+          ? { width, flexGrow: 0, flexShrink: 0 }
+          : { flexGrow: flex, flexShrink: 1, flexBasis: 0, minWidth: minWidth ?? 0 }),
       // Longhands, so a caller's `paddingLeft` override wins on web too.
       paddingTop: g.paddingVertical,
       paddingBottom: g.paddingVertical,
@@ -370,6 +372,7 @@ function SortChevron({
 
 export function TableColumn({
   children,
+  leading,
   onSort,
   sortDirection = 'none',
   accessibilityLabel,
@@ -392,6 +395,32 @@ export function TableColumn({
   );
   const sortProps: WebSortProps = onSort ? { 'aria-sort': sortDirection } : {};
   const sortHook: WebDataSet = IS_WEB ? { dataSet: { bloomTableSort: '' } } : {};
+  const control = onSort ? (
+    <Pressable
+      {...sortHook}
+      role="button"
+      onPress={onSort}
+      accessibilityLabel={
+        accessibilityLabel ?? (isTextLike(children) ? String(children) : undefined)
+      }
+      style={
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 2,
+          '--bloom-table-ring': palette.ring,
+        } as WebCssStyle
+      }
+    >
+      {label}
+      <SortChevron
+        direction={sortDirection}
+        color={sortDirection === 'none' ? palette.headerText : palette.sortActive}
+      />
+    </Pressable>
+  ) : (
+    label
+  );
 
   return (
     <View
@@ -401,31 +430,13 @@ export function TableColumn({
       {...sortProps}
       style={[layout.style, CELL_TRANSITION, style]}
     >
-      {onSort ? (
-        <Pressable
-          {...sortHook}
-          role="button"
-          onPress={onSort}
-          accessibilityLabel={
-            accessibilityLabel ?? (isTextLike(children) ? String(children) : undefined)
-          }
-          style={
-            {
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 2,
-              '--bloom-table-ring': palette.ring,
-            } as WebCssStyle
-          }
-        >
-          {label}
-          <SortChevron
-            direction={sortDirection}
-            color={sortDirection === 'none' ? palette.headerText : palette.sortActive}
-          />
-        </Pressable>
+      {leading != null ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {leading}
+          {control}
+        </View>
       ) : (
-        label
+        control
       )}
     </View>
   );
