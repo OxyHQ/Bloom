@@ -1581,6 +1581,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `Başlık ${at}/${of}`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: 'Dokunsal geri bildirim',
+  hapticsDescription: 'Etkileşimlerde titreşim',
+  hapticsUnavailable: 'Mobil uygulamada kullanılabilir.',
+  videoAutoplay: 'Videoları otomatik oynat',
+  videoAutoplayDescription: 'Kendi başlattığın videolar her zaman oynar.',
+  autoplayAlways: 'Her zaman',
+  autoplayWifi: 'Yalnızca Wi-Fi\'da',
+  autoplayNever: 'Asla',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'Azalt', increase: 'Artır' };
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
@@ -3026,6 +3037,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,

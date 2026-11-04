@@ -247,6 +247,18 @@ export interface SettingsPlanArtProps {
   style?: StyleProp<ViewStyle>;
 }
 
+/** {@link SettingsSelect}: a settings row's compact choice of one of a few values. */
+export interface SettingsSelectProps<T extends string> {
+  /** The select's accessible name (and its sheet's title on compact layouts). */
+  label: string;
+  value: T;
+  onChange: (value: T) => void;
+  items: ReadonlyArray<{ value: T; label: string }>;
+  /** Padded to sit inside a row (default). `false` keeps the regular field size. */
+  compact?: boolean;
+  testID?: string;
+}
+
 export interface SettingsRowData {
   key: string;
   label: string;

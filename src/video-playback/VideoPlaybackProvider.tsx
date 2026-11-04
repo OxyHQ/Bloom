@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { Dimensions } from 'react-native';
 
+import { useMediaAutoplay } from '../preferences/use-media-autoplay';
 import { IS_WEB } from '../styles/platform';
 import {
   createValueStore,
@@ -24,8 +25,10 @@ const IDEAL_VIEWPORT_LINE_DIVISOR = 2.5;
  */
 export function VideoPlaybackProvider({
   children,
-  autoplay = true,
+  autoplay: autoplayOverride,
 }: VideoPlaybackProviderProps): ReactElement {
+  const preferredAutoplay = useMediaAutoplay();
+  const autoplay = autoplayOverride ?? preferredAutoplay;
   const [active] = useState(() => createValueStore<string | null>(null));
   // Read by `reselect`, which runs from handlers and effects. The effect below
   // keeps it current and re-runs the election when the policy changes.

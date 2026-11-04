@@ -1,6 +1,8 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMediaAutoplay } from '../preferences/use-media-autoplay';
+
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -41,7 +43,7 @@ function GifMessageComponent({
   placeholderColor,
   // i18n-exempt: a file-format name, written the same in every language
   badgeLabel = 'GIF',
-  playing = true,
+  playing: playingProp,
   onPress,
   state = 'idle',
   progress,
@@ -56,6 +58,9 @@ function GifMessageComponent({
 }: GifMessageProps) {
   const theme = useTheme();
   const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  // Unset, a GIF moves when media may start by itself (the viewer's autoplay preference).
+  const autoplay = useMediaAutoplay();
+  const playing = playingProp ?? autoplay;
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],

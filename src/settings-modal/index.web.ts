@@ -13,6 +13,7 @@ export {
   SettingsValueField,
 } from './SettingsRows';
 export { SettingsTextField, SettingsDateField } from './SettingsFields';
+export { SettingsSelect } from './SettingsSelect';
 export { SettingsPlanCard, SettingsGeneralPage, SettingsProfilePage } from './SettingsPlanCard';
 export { SettingsPlanArt } from './SettingsArt';
 export { SettingsToolsPage, SettingsServerList } from './SettingsTools';
@@ -40,6 +41,7 @@ export type {
   SettingsPlanCardProps,
   SettingsProfilePageProps,
   SettingsRowData,
+  SettingsSelectProps,
   SettingsRowProps,
   SettingsSectionLabelProps,
   SettingsSectionProps,

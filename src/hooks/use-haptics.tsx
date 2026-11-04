@@ -1,6 +1,8 @@
-import React, { createContext, useCallback, useContext, useMemo } from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { Platform } from 'react-native';
 
+import { useBloomPreferences } from '../preferences/context';
 import { loadHaptics, warnHapticsUnavailable } from './haptics-module';
 
 /** Impact strength requested by a caller. */
@@ -24,7 +26,10 @@ export interface BloomHapticsProviderProps {
  * provider is present.
  */
 export function BloomHapticsProvider({ enabled = true, children }: BloomHapticsProviderProps) {
-  const value = useMemo(() => ({ enabled }), [enabled]);
+  // The app's switch AND the viewer's preference: either one turns haptics off.
+  const { preferences } = useBloomPreferences();
+  const on = enabled && preferences.haptics;
+  const value = useMemo(() => ({ enabled: on }), [on]);
   return <BloomHapticsContext.Provider value={value}>{children}</BloomHapticsContext.Provider>;
 }
 

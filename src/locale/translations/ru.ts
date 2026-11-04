@@ -1822,6 +1822,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `Заголовок ${at} из ${of}`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: 'Тактильный отклик',
+  hapticsDescription: 'Вибрация при взаимодействии',
+  hapticsUnavailable: 'Доступно в мобильном приложении.',
+  videoAutoplay: 'Автовоспроизведение видео',
+  videoAutoplayDescription: 'Видео, которые вы запускаете сами, воспроизводятся всегда.',
+  autoplayAlways: 'Всегда',
+  autoplayWifi: 'Только по Wi-Fi',
+  autoplayNever: 'Никогда',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
   decrease: 'Уменьшить',
   increase: 'Увеличить',
@@ -3390,6 +3401,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,

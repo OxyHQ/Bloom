@@ -426,7 +426,10 @@ export interface GifMessageProps extends MessageMediaToneProps {
   placeholderColor?: string;
   /** Draws the pill. Default "GIF". */
   badgeLabel?: string;
-  /** `false` shows the play affordance for a click-to-play GIF. */
+  /**
+   * `false` shows the play affordance for a click-to-play GIF. Unset, it follows
+   * the viewer's autoplay preference (`useMediaAutoplay`).
+   */
   playing?: boolean;
   onPress?: () => void;
   state?: MessageMediaState;

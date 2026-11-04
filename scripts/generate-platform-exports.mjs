@@ -224,6 +224,9 @@ const SUBPATHS = /** @type {const} */ ([
   // Which video plays now: one audible player, visibility-driven, paused off a
   // visible screen. Links no package (the player is a structural slice).
   ['./video-playback', 'video-playback/index.ts'],
+  // The viewer's preferences Bloom's components honour (haptics, media
+  // autoplay), persisted with the theme, plus their ready-made settings rows.
+  ['./preferences', 'preferences/index.ts'],
   ['./teleport', 'teleport/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],

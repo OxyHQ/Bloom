@@ -1845,6 +1845,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `العنوان ${at} من ${of}`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: 'الاستجابة اللمسية',
+  hapticsDescription: 'اهتزاز عند التفاعل',
+  hapticsUnavailable: 'متاح في تطبيق الهاتف.',
+  videoAutoplay: 'التشغيل التلقائي للفيديو',
+  videoAutoplayDescription: 'تُشغَّل مقاطع الفيديو التي تبدؤها بنفسك دائمًا.',
+  autoplayAlways: 'دائمًا',
+  autoplayWifi: 'على Wi-Fi فقط',
+  autoplayNever: 'أبدًا',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'إنقاص', increase: 'زيادة' };
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
@@ -3446,6 +3457,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
