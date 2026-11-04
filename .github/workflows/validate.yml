@@ -11,6 +11,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # Must match scripts/native-check/build.gradle (React Native 0.88's own NDK).
+  ANDROID_NDK_VERSION: 27.1.12297006
+  ANDROID_CMAKE_VERSION: 3.30.5
+
 concurrency:
   group: bloom-validate-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -181,7 +186,24 @@ jobs:
       - run: bun install --frozen-lockfile --ignore-scripts
       - name: Current Android SDK
         if: matrix.variant != 'legacy'
-        run: sdkmanager 'platforms;android-36' 'platforms;android-37.0' 'build-tools;37.0.0' 'ndk;27.1.12297006' 'cmake;3.30.5'
+        run: sdkmanager 'platforms;android-36' 'platforms;android-37.0' 'build-tools;37.0.0'
+      # Only predictive compiles native code (React Native and Hermes from
+      # source); Bloom's own Android library has no native build.
+      - name: The cached NDK is the one the fixture builds with
+        if: matrix.variant == 'predictive'
+        run: grep -qxF "  ndkVersion = '${ANDROID_NDK_VERSION}'" scripts/native-check/build.gradle
+      - name: Restore NDK and CMake
+        id: native-toolchain
+        if: matrix.variant == 'predictive'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
+            ${{ env.ANDROID_HOME }}/cmake/${{ env.ANDROID_CMAKE_VERSION }}
+          key: android-native-ndk-${{ env.ANDROID_NDK_VERSION }}-cmake-${{ env.ANDROID_CMAKE_VERSION }}
+      - name: Install NDK and CMake
+        if: matrix.variant == 'predictive' && steps.native-toolchain.outputs.cache-hit != 'true'
+        run: bash .github/scripts/install-android-native-toolchain.sh
       - name: Declared minimum React Native toolchain SDK
         if: matrix.variant == 'legacy'
         run: sdkmanager 'platforms;android-34' 'build-tools;33.0.1' 'build-tools;34.0.0'
@@ -222,6 +244,50 @@ jobs:
       - name: Prove unresolved-target host regression coverage
         if: matrix.variant == 'predictive'
         run: python3 scripts/native-check/verify-host-regression.py
+
+  # Keeps the predictive gate's NDK and CMake in main's Actions cache, the one
+  # scope every pull request and merge-queue run can restore from. The android
+  # job itself never runs on a queue-verified push, so without this nothing
+  # would ever save the cache there and every run would re-download ~700 MB.
+  # A cache warmer, not a gate: a miss downstream installs it directly.
+  native-toolchain-cache:
+    name: Warm Android NDK cache
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          packages: platform-tools
+          cmdline-tools-version: '15859902' # 22.0; understands API 37.0 package versions
+      - name: Is the toolchain already cached?
+        id: lookup
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
+            ${{ env.ANDROID_HOME }}/cmake/${{ env.ANDROID_CMAKE_VERSION }}
+          key: android-native-ndk-${{ env.ANDROID_NDK_VERSION }}-cmake-${{ env.ANDROID_CMAKE_VERSION }}
+          lookup-only: true
+      - name: Install NDK and CMake
+        if: steps.lookup.outputs.cache-hit != 'true'
+        run: bash .github/scripts/install-android-native-toolchain.sh
+      - name: Save NDK and CMake
+        if: steps.lookup.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
+            ${{ env.ANDROID_HOME }}/cmake/${{ env.ANDROID_CMAKE_VERSION }}
+          key: android-native-ndk-${{ env.ANDROID_NDK_VERSION }}-cmake-${{ env.ANDROID_CMAKE_VERSION }}
 
   # The one required check of the main merge queue: green only when every job
   # above is, so a skipped or cancelled shard can never read as a pass. The ONE
