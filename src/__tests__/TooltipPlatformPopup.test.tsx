@@ -24,10 +24,10 @@ function adapter(popup: (props: PopupSurfaceProps) => void): PlatformSurfaceAdap
   };
 }
 
-function Hovered({ initial = false }: { initial?: boolean }) {
+function Hovered({ initial = false, delay }: { initial?: boolean; delay?: number }) {
   const [visible, setVisible] = useState(initial);
   return (
-    <Tooltip visible={visible} onVisibleChange={setVisible} position="top">
+    <Tooltip visible={visible} onVisibleChange={setVisible} position="top" delay={delay}>
       <TooltipTrigger>
         <Pressable
           testID="icon"
@@ -83,4 +83,31 @@ it('closes when the platform closes the popup', () => {
   const props = popup.mock.lastCall?.[0] as PopupSurfaceProps;
   act(() => props.onDismiss('closed'));
   expect(screen.queryByTestId('platform-popup')).toBeNull();
+});
+
+it('opens only after `delay` of continuous hover, and closes at once', () => {
+  jest.useFakeTimers();
+  try {
+    const screen = render(
+      <BloomProvider mode="light" platform={adapter(jest.fn())}>
+        <Hovered delay={200} />
+      </BloomProvider>,
+      hostViews,
+    );
+    const icon = screen.getByTestId('icon');
+    fireEvent(icon, 'hoverIn');
+    act(() => jest.advanceTimersByTime(150));
+    fireEvent(icon, 'hoverOut');
+    act(() => jest.advanceTimersByTime(200));
+    expect(screen.queryByTestId('platform-popup')).toBeNull();
+    fireEvent(icon, 'hoverIn');
+    act(() => jest.advanceTimersByTime(199));
+    expect(screen.queryByTestId('platform-popup')).toBeNull();
+    act(() => jest.advanceTimersByTime(1));
+    expect(screen.getByTestId('platform-popup')).toBeTruthy();
+    fireEvent(icon, 'hoverOut');
+    expect(screen.queryByTestId('platform-popup')).toBeNull();
+  } finally {
+    jest.useRealTimers();
+  }
 });

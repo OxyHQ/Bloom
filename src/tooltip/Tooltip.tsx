@@ -33,6 +33,8 @@ import {
   type TooltipSize,
 } from './constants';
 import { createTextBubble } from './TextBubble';
+import type { TooltipProps } from './types';
+import { useDelayedVisibility } from './use-delayed-visibility';
 import { TooltipCaret } from './TooltipCaret';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { TooltipDescriptionContext } from '../hooks/use-described-by-hint';
@@ -82,14 +84,11 @@ TargetContext.displayName = 'TargetContext';
 export function Tooltip({
   children,
   position = 'bottom',
-  visible: requestVisible,
+  visible: visibleProp,
+  delay = 0,
   onVisibleChange,
-}: {
-  children: React.ReactNode;
-  position?: 'top' | 'bottom';
-  visible: boolean;
-  onVisibleChange: (visible: boolean) => void;
-}) {
+}: TooltipProps) {
+  const requestVisible = useDelayedVisibility(visibleProp, delay);
   /**
    * Lagging state to track the externally-controlled visibility of the
    * tooltip, which needs to wait for the target to be measured before

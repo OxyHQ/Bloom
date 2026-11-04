@@ -61,6 +61,17 @@ desktop pointer, long-press on touch, focus for a keyboard — and the right
 answer depends on what the trigger already does with a press. `Tooltip` takes
 `visible` and leaves that decision at the call site rather than guessing.
 
+## Opening delay
+
+`delay` holds a `visible` request back until it has stayed true that many
+milliseconds, so a pointer that only crosses a row of icon buttons opens nothing.
+Closing is immediate and the default is `0`. A request that should show at once
+(keyboard focus) can pass `delay={0}` while it is the reason:
+
+```tsx
+<Tooltip visible={hovered || focused} delay={focused ? 0 : 200} onVisibleChange={setOpen}>
+```
+
 `TooltipTextBubble` renders its own content surface, so it is a **sibling** of
 the trigger inside `Tooltip`, not something you wrap in a `TooltipContent`.
 

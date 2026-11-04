@@ -38,6 +38,8 @@ import {
   type TooltipSize,
 } from './constants';
 import { createTextBubble } from './TextBubble';
+import type { TooltipProps } from './types';
+import { useDelayedVisibility } from './use-delayed-visibility';
 import { TooltipCaret } from './TooltipCaret';
 
 /**
@@ -95,14 +97,11 @@ TooltipContext.displayName = 'TooltipContext';
 export function Tooltip({
   children,
   position = 'bottom',
-  visible,
+  visible: visibleProp,
+  delay = 0,
   onVisibleChange,
-}: {
-  children: React.ReactNode;
-  position?: 'top' | 'bottom';
-  visible: boolean;
-  onVisibleChange: (visible: boolean) => void;
-}) {
+}: TooltipProps) {
+  const visible = useDelayedVisibility(visibleProp, delay);
   const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const ctx = useMemo(
     () => ({ position, visible, onVisibleChange, triggerRef }),
