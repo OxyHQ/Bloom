@@ -3,14 +3,14 @@ import { StyleSheet } from 'react-native';
 import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 import { resolve } from './resolve';
 import { assertSize, assertImageSource } from './validation';
-import { useSvgId } from './use-svg-id';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import type { ImageProps } from './types';
 import { svgA11yProps } from '../styles/svg-a11y';
 import { BloomImage } from '../image';
 
 /** Clips an image on every platform. SVG cannot clip arbitrary React Native views. */
 export function Image({ shape = 'circle', source, size, alt, onError }: ImageProps) {
-  const clipId = useSvgId('shape-image');
+  const clipId = `${useSvgIdPrefix('bloom-shape-image')}clip`;
   assertSize(size);
   assertImageSource(source);
   const outline = resolve(shape);

@@ -1,7 +1,8 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Easing } from 'react-native-reanimated';
 import { useDialogContext } from '../dialog/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import { animateNumber } from './animation.web';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 const styles = {
@@ -46,7 +47,7 @@ const WARP_MAP = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://ww
 export function TicketGenieSurface({ children }: { children: ReactNode }) {
   const { isClosing: exiting = false } = useDialogContext();
   adoptStyleSheet('bloom-ticket-create', CSS);
-  const id = `ticket-genie-${useId().replace(/:/g, '')}`;
+  const id = `${useSvgIdPrefix('ticket-genie')}filter`;
   const surfaceRef = useRef<HTMLDivElement>(null);
   const shadowRef = useRef<HTMLDivElement>(null);
   const displacementRef = useRef<SVGFEDisplacementMapElement>(null);

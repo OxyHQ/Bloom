@@ -21,7 +21,10 @@ export interface FieldProps {
    * field context, the control itself.
    *
    * It is a CONSTRAINT rather than a default: a control inside a disabled field
-   * combines it with `||`, so nothing inside can re-enable itself.
+   * combines it with `||`, so nothing inside can re-enable itself — a `Field`
+   * nested inside one included: it takes the enclosing field's `disabled`,
+   * `invalid` and `required` on top of its own, and keeps its own label, id and
+   * description.
    */
   disabled?: boolean;
   /**

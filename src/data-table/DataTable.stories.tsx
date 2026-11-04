@@ -22,15 +22,14 @@ import { Text, TYPE_SCALE } from '../typography';
 import {
   DataTable,
   DataTableFilter,
-  DataTableRowActions,
   DataTableSearch,
   DataTableSelect,
   type DataTableColumn,
   type DataTableLayout,
-  type DataTableRowActionItem,
   type DataTableSelectOption,
   type DataTableSize,
 } from './index';
+import { RowActions, type RowActionItem } from '../row-actions';
 
 const meta: Meta<typeof DataTable> = {
   argTypes: {
@@ -264,12 +263,12 @@ function CustomerAvatar({ customer, size }: { customer: Customer; size: DataTabl
   );
 }
 
-const ROW_ACTIONS: DataTableRowActionItem[] = [
+const ROW_ACTIONS: RowActionItem[] = [
   { icon: RiDeleteBin6Line, label: 'Delete' },
   { icon: RiEditLine, label: 'Edit' },
 ];
 
-const MORE_MENU_ACTIONS: DataTableRowActionItem[] = [
+const MORE_MENU_ACTIONS: RowActionItem[] = [
   { icon: RiUserLine, label: 'View profile' },
   { icon: RiFileCopyLine, label: 'Duplicate row' },
   { icon: RiDownload2Line, label: 'Download invoice' },
@@ -349,7 +348,7 @@ function buildColumns(): DataTableColumn<Customer>[] {
       // width for the row's three actions.
       minWidth: 140,
       cell: ({ row }) => (
-        <DataTableRowActions name={row.name} actions={ROW_ACTIONS} menu={MORE_MENU_ACTIONS} />
+        <RowActions name={row.name} actions={ROW_ACTIONS} menu={MORE_MENU_ACTIONS} />
       ),
     },
   ];
@@ -541,7 +540,7 @@ const ADMISSIONS: DataTableSelectOption[] = [
  * The cell and toolbar parts on their own: a `DataTableSelect` whose options
  * lead with a status dot, one whose options lead with an icon (the trigger's
  * left inset drops to 8), a `DataTableFilter`, a `DataTableSearch` and a row's
- * `DataTableRowActions`.
+ * `RowActions`.
  */
 export const Parts: Story = {
   parameters: { controls: { disable: true } },
@@ -601,11 +600,7 @@ export const Parts: Story = {
             <DataTableSearch label="Search customers" value={query} onValueChange={setQuery} />
           </View>
           <View style={{ width: 140 }}>
-            <DataTableRowActions
-              name="John Clarkson"
-              actions={ROW_ACTIONS}
-              menu={MORE_MENU_ACTIONS}
-            />
+            <RowActions name="John Clarkson" actions={ROW_ACTIONS} menu={MORE_MENU_ACTIONS} />
           </View>
         </View>
       </Page>

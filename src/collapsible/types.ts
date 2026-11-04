@@ -15,6 +15,12 @@ export interface CollapsibleProps {
    */
   appear?: boolean;
   children?: ReactNode;
+  /**
+   * Children stay mounted while shut, so edits and selections survive closure (default). `false`
+   * unmounts them once the exit finishes and mounts them again on opening: for a closed branch
+   * that should cost nothing, such as a large tree.
+   */
+  keepMounted?: boolean;
   /** Defaults to 300ms CSS ease-in-out. Live reduced motion settles immediately. */
   transition?: SurfaceTransition;
   /** Used only if focus was inside when closing; never steals deliberate outside focus. */

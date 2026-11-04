@@ -21,13 +21,8 @@ import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
-import {
-  MediaFailure,
-  MediaProgressRing,
-  useHovered,
-  useMessageMediaCss,
-  HoldPressable,
-} from './parts';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { MediaFailure, MediaProgressRing, useMessageMediaCss, HoldPressable } from './parts';
 import {
   fileKindFor,
   fileMetaLine,
@@ -115,7 +110,7 @@ function FileMessageComponent({
     () => resolveFileKindPaint(theme, resolvedKind, paint),
     [theme, resolvedKind, paint],
   );
-  const [hovered, handlers] = useHovered();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const size =
     sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes, locale) : undefined);
@@ -234,13 +229,15 @@ function FileMessageComponent({
 
   return (
     <View style={style ?? null} testID={testID}>
-      <View style={rowStyle} {...handlers} testID={testID ? `${testID}-row` : undefined}>
+      <View style={rowStyle} testID={testID ? `${testID}-row` : undefined}>
         {onPress ? (
           <HoldPressable
             {...webDataSet({ bloomMessageMediaPressable: '' })}
             role="button"
             accessibilityLabel={rowName}
             onPress={onPress}
+            onHoverIn={onHoverIn}
+            onHoverOut={onHoverOut}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -291,7 +288,7 @@ function DownloadButton({
   onPress: () => void;
   testID?: string;
 }) {
-  const [hovered, handlers] = useHovered();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const style: WebCssStyle = {
     width: 32,
     height: 32,
@@ -304,7 +301,8 @@ function DownloadButton({
   return (
     <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
-      {...handlers}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       role="button"
       accessibilityLabel={label}
       onPress={onPress}

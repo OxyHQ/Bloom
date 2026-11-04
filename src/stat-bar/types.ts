@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 
 export type StatBarVariant = 'progress' | 'split';
 
@@ -126,6 +127,16 @@ interface MeterGeometryProps {
    * @default 0
    */
   transitionMs?: number;
+  /**
+   * The amount is not known yet — a file transcoding, a step that reports none:
+   * a segment 40% of the track wide sweeps across it every 1.4 s (parked 30%
+   * along under reduced motion), and the bar is a `progressbar` that reports no
+   * value (`aria-valuenow` absent, `aria-busy`), which is what makes it
+   * indeterminate to assistive technology. `value`, `reveal` and `transitionMs`
+   * are not drawn meanwhile.
+   * @default false
+   */
+  indeterminate?: boolean;
   /** Container style override. Applied to the track. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -182,9 +193,7 @@ export interface MeterDecorativeProps extends MeterGeometryProps {
 export type AnyMeterProps = MeterProps | MeterDecorativeProps;
 
 /** The same measurement drawn as a ring. */
-interface MeterRingBaseProps {
-  /** Current value. Clamped into `[0, max]`. */
-  value: number;
+interface MeterRingGeometryProps {
   /** @default 1 */
   max?: number;
   /**
@@ -209,20 +218,16 @@ interface MeterRingBaseProps {
    */
   track?: string;
   /**
+   * A disc painted under the whole ring — the scrim that lets an upload ring
+   * read over a photo. None by default.
+   */
+  backdrop?: string;
+  /**
    * The arc's end cap. `'round'` reads as a needle tip; at value 0 it would
    * draw a dot on an empty ring, so `'round'` degrades to `'butt'` there.
    * @default 'round'
    */
   cap?: 'round' | 'butt';
-  /** What the ring measures. Required, for the reason `Meter` states. */
-  accessibilityLabel: string;
-  /** `aria-valuetext`. Without it, the share of the ring, as `Meter`'s. */
-  valueText?: string;
-  /**
-   * @default 'meter' — see {@link MeterRole}. A download's or an install's ring
-   * (`indeterminate`, `onStop`) is a `progressbar`.
-   */
-  role?: MeterRole;
   /**
    * Milliseconds the arc eases over, on WEB only — native snaps. Ignored under
    * `prefers-reduced-motion`.
@@ -244,12 +249,54 @@ interface MeterRingBaseProps {
   testID?: string;
 }
 
+interface MeterRingAccessibleProps extends MeterRingGeometryProps {
+  /** Current value. Clamped into `[0, max]`. */
+  value: number;
+  /** What the ring measures. Required, for the reason `Meter` states. */
+  accessibilityLabel: string;
+  /** `aria-valuetext`. Without it, the share of the ring, as `Meter`'s. */
+  valueText?: string;
+  /**
+   * @default 'meter' — see {@link MeterRole}. A download's or an install's ring
+   * (`indeterminate`, `onStop`) is a `progressbar`.
+   */
+  role?: MeterRole;
+  decorative?: false;
+  progress?: never;
+}
+
+/**
+ * A ring with NO role, hidden from assistive technology: the drawing inside a
+ * control that carries its own name (a cancel button, a download toggle), a
+ * video note's playback position, a plan's progress beside its own text.
+ */
+export interface MeterRingDecorativeProps extends MeterRingGeometryProps {
+  decorative: true;
+  /** Current value. Clamped into `[0, max]`. Ignored when `progress` is given. */
+  value?: number;
+  /**
+   * The drawn share, 0–1, followed on the UI thread from a Reanimated shared
+   * value — a loader that fills over its own duration, a ring that eases
+   * between steps — instead of `value`. A shared value has no accessible
+   * reading, which is why only a decorative ring takes one. The cap stays
+   * `'round'` throughout.
+   */
+  progress?: SharedValue<number>;
+  accessibilityLabel?: never;
+  valueText?: never;
+  role?: never;
+  onStop?: never;
+  stopLabel?: never;
+}
+
 /**
  * {@link MeterRing}'s props. `onStop` makes the ring the control that stops what
  * it measures, as an app store's download ring is: a stop square in its centre
  * and the whole ring pressable, named by `stopLabel` ("Stop downloading Notes"),
  * which it then requires. Without it the ring is not interactive. `children` are
- * not drawn with it.
+ * not drawn with it. `decorative` draws the ring with no role at all.
  */
-export type MeterRingProps = MeterRingBaseProps &
-  ({ onStop?: undefined; stopLabel?: undefined } | { onStop: () => void; stopLabel: string });
+export type MeterRingProps =
+  | (MeterRingAccessibleProps &
+      ({ onStop?: undefined; stopLabel?: undefined } | { onStop: () => void; stopLabel: string }))
+  | MeterRingDecorativeProps;

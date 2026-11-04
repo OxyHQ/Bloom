@@ -12,6 +12,8 @@ import {
   TextFieldIcon,
   TextFieldInput,
   TextFieldLabel,
+  TextFieldPrefix,
+  TextFieldSuffix,
   type TextFieldSize,
 } from './index';
 
@@ -111,6 +113,39 @@ export const Composition: Story = {
       <ControlledField label="First name" placeholder="Ada" />
       <ControlledField label="Last name" placeholder="Lovelace" />
       <ControlledField label="Email" initial="invalid-email" invalid />
+    </View>
+  ),
+};
+
+function AffixField({
+  label,
+  prefix,
+  suffix,
+}: {
+  label: string;
+  prefix?: string;
+  suffix?: string;
+}) {
+  const [value, setValue] = useState('');
+  return (
+    <View style={{ width: 320, maxWidth: '100%' }}>
+      <TextFieldLabel>{label}</TextFieldLabel>
+      <TextField>
+        {prefix ? <TextFieldPrefix label={prefix}>{prefix}</TextFieldPrefix> : null}
+        <TextFieldInput label={label} value={value} onValueChange={setValue} inputMode="decimal" />
+        {suffix ? <TextFieldSuffix label={suffix}>{suffix}</TextFieldSuffix> : null}
+      </TextField>
+    </View>
+  );
+}
+
+/** `TextFieldPrefix` before the input (a currency), `TextFieldSuffix` after it (a unit). */
+export const PrefixAndSuffix: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ gap: 16 }}>
+      <AffixField label="Monthly rent" prefix="€" />
+      <AffixField label="Weight" suffix="kg" />
     </View>
   ),
 };

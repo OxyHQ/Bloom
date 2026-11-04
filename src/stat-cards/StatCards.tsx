@@ -11,6 +11,7 @@ import { RiIndeterminateCircleFill } from '../icons/remix/RiIndeterminateCircleF
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
 import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import type { Theme } from '../theme/types';
@@ -47,11 +48,6 @@ import { IS_WEB } from '../styles/platform';
  * this reads `useWindowDimensions`, and rows stretch their cards to one height
  * the way CSS grid rows do.
  */
-
-/** Tailwind `sm` / `lg` / `xl`. */
-const BREAKPOINT_SM = 640;
-const BREAKPOINT_LG = 1024;
-const BREAKPOINT_XL = 1280;
 
 const GRID_GAP = 16;
 const TOOLTIP_DELAY_MS = 200;
@@ -366,12 +362,12 @@ export function statCardsColumnCount(
 ): number {
   if (columns === 1) return 1;
   if (variant === 'footer') {
-    if (columns === 4 && windowWidth >= BREAKPOINT_XL) return 4;
-    if (columns === 3 && windowWidth >= BREAKPOINT_LG) return 3;
-    return windowWidth >= BREAKPOINT_SM ? 2 : 1;
+    if (columns === 4 && windowWidth >= BREAKPOINTS.xl) return 4;
+    if (columns === 3 && windowWidth >= BREAKPOINTS.lg) return 3;
+    return windowWidth >= BREAKPOINTS.sm ? 2 : 1;
   }
-  if (columns === 4 && windowWidth >= BREAKPOINT_LG) return 4;
-  if (columns === 3 && windowWidth >= BREAKPOINT_LG) return 3;
+  if (columns === 4 && windowWidth >= BREAKPOINTS.lg) return 4;
+  if (columns === 3 && windowWidth >= BREAKPOINTS.lg) return 3;
   return 2;
 }
 

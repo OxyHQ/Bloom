@@ -45,6 +45,7 @@ import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { SOCIAL_PROVIDERS } from '../social-button/providers';
 import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -200,9 +201,6 @@ const STEP_INSET = 14;
 
 const MARK = 20;
 const MARK_OVERLAP = 6;
-/** Tailwind's `sm` breakpoint, below which link rows drop the domain. */
-const SM_BREAKPOINT = 640;
-
 /**
  * Marks whose brand colour is black or near-black. Painted in their own colour
  * they vanish on a dark surface, so they take the text colour instead.
@@ -629,7 +627,7 @@ function SourcesRow({
   const [countWidth, setCountWidth] = useState(0);
   const uid = useId();
   const { width: windowWidth } = useWindowDimensions();
-  const showDomain = windowWidth >= SM_BREAKPOINT;
+  const showDomain = windowWidth >= BREAKPOINTS.sm;
 
   const rootRef = useRef<HostNode>(null);
   const registry = useMemo<FlightRegistry>(

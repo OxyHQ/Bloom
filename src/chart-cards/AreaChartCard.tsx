@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, {
   Circle,
@@ -27,6 +27,7 @@ import type { AreaChartCardProps, AreaPoint, AreaSeries } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
+import { useSvgIdPrefix } from '../styles/svg-id';
 
 /**
  * `AreaChartCard`: a multi-series area chart — composition over time — in
@@ -173,9 +174,7 @@ export function AreaChartCard({
 
   const categories = useMemo(() => data.map((row) => String(row.label)), [data]);
 
-  // `useId` yields `«r0»` / `:r0:`, which a CSS `url(#…)` cannot reference.
-  const rawId = useId();
-  const id = `bloom-area-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-area');
   const topOpacity = variant === 'overlap' ? 0.4 : 0.55;
 
   return (
@@ -242,21 +241,21 @@ export function AreaChartCard({
               <Svg width={size.width} height={size.height} pointerEvents="none">
                 <Defs>
                   {tones.map((tone, s) => (
-                    <LinearGradient key={`g-${s}`} id={`${id}-${s}`} x1="0" y1="0" x2="0" y2="1">
+                    <LinearGradient key={`g-${s}`} id={`${id}${s}`} x1="0" y1="0" x2="0" y2="1">
                       <Stop offset="0" stopColor={tone.color} stopOpacity={topOpacity} />
                       <Stop offset="1" stopColor={tone.color} stopOpacity={0.04} />
                     </LinearGradient>
                   ))}
-                  <ClipPath id={`${id}-reveal`}>
+                  <ClipPath id={`${id}reveal`}>
                     <Rect x={0} y={0} width={revealWidth} height={size.height} />
                   </ClipPath>
                 </Defs>
-                <G clipPath={`url(#${id}-reveal)`}>
+                <G clipPath={`url(#${id}reveal)`}>
                   {shapes.map(({ top, bottom }, s) => (
                     <G key={series[s]!.key}>
                       <Path
                         d={areaBandPath(top, bottom, curve)}
-                        fill={`url(#${id}-${s})`}
+                        fill={`url(#${id}${s})`}
                         fillOpacity={AREA_FILL_OPACITY}
                         stroke="none"
                       />

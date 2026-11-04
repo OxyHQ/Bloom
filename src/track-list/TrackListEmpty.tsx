@@ -1,22 +1,13 @@
-import { surfaceFillOn } from '../styles/surface-levels';
-import React, { useMemo } from 'react';
-import { View } from 'react-native';
-
-import { Button } from '../button';
+import { EmptyState } from '../empty-state';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
-import { borderRadius } from '../styles/tokens';
-import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
-import { resolveTrackListPaint } from './shared';
 import type { TrackListEmptyProps } from './types';
 
 /**
- * What a track list shows with nothing in it: a 64px round neutral well with
- * an icon, a `title-3-semibold` title, a muted description and an optional
- * primary button. Centred, 360 wide at most.
+ * What a track list shows with nothing in it: `EmptyState` on its screen rung
+ * with the glyph on a disc, a title, a line and an optional primary button.
  */
 export function TrackListEmpty({
-  icon: Icon = RiMusic2Line,
+  icon = RiMusic2Line,
   title,
   description,
   actionLabel,
@@ -24,64 +15,15 @@ export function TrackListEmpty({
   style,
   testID,
 }: TrackListEmptyProps) {
-  const theme = useTheme();
-  const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
   return (
-    <View
-      style={[
-        {
-          alignItems: 'center',
-          paddingTop: 48,
-          paddingBottom: 48,
-          paddingLeft: 16,
-          paddingRight: 16,
-        },
-        style,
-      ]}
+    <EmptyState
+      icon={icon}
+      media="circle"
+      title={title}
+      description={description}
+      action={actionLabel && onAction ? { label: actionLabel, onPress: onAction } : undefined}
+      style={[{ paddingLeft: 16, paddingRight: 16 }, style]}
       testID={testID}
-    >
-      <View
-        aria-hidden
-        importantForAccessibility="no-hide-descendants"
-        style={{
-          width: 64,
-          height: 64,
-          borderRadius: borderRadius.full,
-          backgroundColor: surfaceFillOn(theme, theme.colors.background),
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 16,
-        }}
-      >
-        <Icon width={28} height={28} fill={paint.textMuted} />
-      </View>
-      <Text
-        variant="title-3-semibold"
-        role="heading"
-        aria-level={2}
-        style={{ color: paint.text, textAlign: 'center', maxWidth: 360 }}
-      >
-        {title}
-      </Text>
-      {description ? (
-        <Text
-          variant="body-regular"
-          style={{ color: paint.textMuted, textAlign: 'center', maxWidth: 360, marginTop: 8 }}
-        >
-          {description}
-        </Text>
-      ) : null}
-      {actionLabel && onAction ? (
-        <Button
-          size="md"
-          onPress={onAction}
-          style={{ marginTop: 20 }}
-          tone="accent"
-          appearance="solid"
-        >
-          {actionLabel}
-        </Button>
-      ) : null}
-    </View>
+    />
   );
 }

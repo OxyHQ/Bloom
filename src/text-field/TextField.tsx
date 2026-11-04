@@ -1076,17 +1076,26 @@ export function TextFieldIcon({ icon: Comp, position = 'leading', size = 20 }: T
   );
 }
 
-export function TextFieldSuffix({
+type TextFieldAffixProps = React.PropsWithChildren<
+  TextStyleProp & {
+    /** What the adornment says to a screen reader — the unit or currency it names. */
+    label: string;
+    accessibilityHint?: AccessibilityProps['accessibilityHint'];
+  }
+>;
+
+/**
+ * A text adornment on one side of the input — a unit after it, a currency
+ * before it — in the hint colour, `text-primary` while the field is hovered or
+ * focused, dimmed when it is disabled.
+ */
+function TextFieldAffix({
   children,
   label,
   accessibilityHint,
   style,
-}: React.PropsWithChildren<
-  TextStyleProp & {
-    label: string;
-    accessibilityHint?: AccessibilityProps['accessibilityHint'];
-  }
->) {
+  position,
+}: TextFieldAffixProps & { position: 'leading' | 'trailing' }) {
   const ctx = useTextFieldContext();
   const color = ctx.disabled
     ? ctx.palette.textDisabled
@@ -1102,10 +1111,10 @@ export function TextFieldSuffix({
       style={
         StyleSheet.flatten([
           a.z_20,
-          {
-            marginLeft: TEXT_FIELD_TRAILING_GAP,
-            color,
-          },
+          position === 'leading'
+            ? { marginRight: TEXT_FIELD_LEADING_GAP }
+            : { marginLeft: TEXT_FIELD_TRAILING_GAP },
+          { color },
           a.pointer_events_none,
           style,
         ]) as TextStyle
@@ -1114,6 +1123,16 @@ export function TextFieldSuffix({
       {children}
     </Text>
   );
+}
+
+/** Text after the input: a unit (`kg`), a domain (`.oxy.so`). */
+export function TextFieldSuffix(props: TextFieldAffixProps) {
+  return <TextFieldAffix {...props} position="trailing" />;
+}
+
+/** Text before the input: a currency (`€`), a protocol (`https://`). */
+export function TextFieldPrefix(props: TextFieldAffixProps) {
+  return <TextFieldAffix {...props} position="leading" />;
 }
 
 export function TextFieldGhost({ children, value }: { children: string; value: string }) {

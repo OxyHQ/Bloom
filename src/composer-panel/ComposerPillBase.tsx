@@ -31,7 +31,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text, TYPE_SCALE } from '../typography';
 import { AddMenu } from './AddMenu';
 import { AttachmentStrip } from './AttachmentStrip';
-import { Collapse } from './Collapse';
+import { Collapsible } from '../collapsible';
 import { ComposerDock } from './ComposerDock';
 import { ComposerTrailingActions } from './ComposerTrailingActions';
 import { PermissionMenu } from './PermissionMenu';
@@ -39,6 +39,7 @@ import { useComposerPopover } from './context';
 import { EffortSlider } from './EffortSlider';
 import { useAttachmentLabels } from './use-attachment-labels';
 import {
+  ATTACHMENTS_REVEAL,
   composerAddMenu,
   CONTROL_SIZE,
   DEFAULT_EFFORT,
@@ -743,7 +744,7 @@ export function ComposerPillBase({
       surface={surface}
       radius={typeof customSurface?.borderRadius === 'number' ? customSurface.borderRadius : radius}
     >
-      <Collapse open={hasAttachments}>
+      <Collapsible open={hasAttachments} transition={ATTACHMENTS_REVEAL} keepMounted={false}>
         <View style={{ paddingTop: 8, paddingLeft: 8, paddingRight: 8 }}>
           <AttachmentStrip
             attachments={attachments ?? []}
@@ -754,7 +755,7 @@ export function ComposerPillBase({
             retryLabel={retryFileLabel}
           />
         </View>
-      </Collapse>
+      </Collapsible>
       <View style={rowStyle}>
         {addMenu.length > 0 ? (
           <View style={{ position: 'relative', flexShrink: 0 }}>

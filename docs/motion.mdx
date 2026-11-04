@@ -27,6 +27,62 @@ fast things feel" happens in one place rather than being renegotiated per
 component. It is also where the web rules below are already applied, which is
 the stronger reason to use them rather than hand-writing an enter.
 
+## Rolling text
+
+`RollingText` is text that rolls when it changes — a count ticking, a range
+label stepping, a price switching plans. Bloom used to carry four copies of it.
+
+```tsx
+import { RollingText } from '@oxy.so/bloom/motion';
+
+<RollingText value={label} align="center" clip variant="body-medium" numberOfLines={1} />
+<RollingText value={formatCount(likes)} direction={up ? 'up' : 'down'} style={countStyle} />
+<RollingText mode="digits" value={formatPrice(amount)} style={typeScale('title-2-regular')} />
+```
+
+| Prop | What it does |
+| --- | --- |
+| `mode` | `'whole'` (default): the old text lifts `distance` (10) px and fades while the new one rises in and fades in. `'digits'`: every figure turns on its own 0–9 wheel; other characters stay put, keyed from the end so `9.99` → `29.99` keeps its cents on the same wheels |
+| `direction` | `'up'` (default) or `'down'`, for a count going down |
+| `duration` / `easing` | 220 ms on CSS `ease-out` (`'whole'`); 350 ms ease-out cubic (`'digits'`) |
+| `from` | roll from this text on mount — a roll mounted for one change, as `EngagementBar` mounts its count roll only after a press |
+| `onRollEnd` | the roll has landed (at once under reduced motion) |
+| `align` / `clip` / `numberOfLines` | centre the text, clip the travel to its box, truncate it |
+| `variant` / `style` / `containerStyle` | the text is Bloom's `Text`; in `'digits'` the wheel's line box is the variant's or style's `lineHeight` |
+
+The incoming text sizes the box and is the one assistive technology reads; the
+outgoing one is hidden. In `'digits'` the wheels are hidden and the whole is one
+element named by `value` (or `accessibilityLabel`). Both modes snap under
+reduced motion, including a change while mounted. `EngagementBar`'s count roll,
+the chart cards' week pill and `SubscriptionPrice` render it.
+
+## Number tweens
+
+Two hooks animate numbers that no CSS transition reaches — a headline count, an
+SVG attribute react-native-svg cannot transition — by stepping React state on
+animation frames. Both snap under reduced motion and when there is no
+`requestAnimationFrame`.
+
+```tsx
+import { useCountUp, useCountUpPrecise, useEasedValues } from '@oxy.so/bloom/motion';
+
+const shown = useCountUp(total);                 // whole units, 320 ms ease-out cubic
+const rate = useCountUpPrecise(48.8);            // keeps up to two decimals
+const [opacity, fill] = useEasedValues([o, f], 200); // Tailwind ease-out by default
+```
+
+- `useCountUp(target, duration?)` counts from the number on screen to `target`
+  in whole units; a change mid-count starts from where it is.
+- `useEasedValues(targets, durationMs, easing?)` is a CSS transition for a list
+  of numbers: every change eases from what is on screen now, a change mid-flight
+  restarts from the in-between values, and the first render or a change of
+  length snaps. `ActivityRingsCard`'s arcs and `SankeyChartCard`'s opacities run
+  on it.
+
+They re-render per frame, so they suit a handful of numbers on a card. Motion
+that a shared value can carry — a transform, an opacity on a native view — stays
+on Reanimated.
+
 ## One reading of reduced motion
 
 Every Bloom animation asks `usePrefersReducedMotion()` (`@oxy.so/bloom/hooks`)

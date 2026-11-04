@@ -9,7 +9,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { useHovered, useMessageMediaCss, HoldPressable } from './parts';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { useMessageMediaCss, HoldPressable } from './parts';
 import {
   formatVoteCount,
   MESSAGE_MEDIA_RADIUS,
@@ -66,7 +67,7 @@ const OptionRow = memo(function OptionRow({
   onPress,
   testID,
 }: OptionRowProps) {
-  const [hovered, handlers] = useHovered();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const correct = quiz && option.correct === true;
   const wrong = quiz && results && picked && option.correct !== true;
@@ -179,7 +180,8 @@ const OptionRow = memo(function OptionRow({
   return (
     <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
-      {...handlers}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       role={multiple ? 'checkbox' : 'radio'}
       accessibilityLabel={option.label}
       aria-checked={picked}
@@ -291,7 +293,11 @@ function PollMessageComponent({
 
   const subline = [...labels, results ? undefined : hint].filter(Boolean).join(' · ');
 
-  const [actionHovered, actionHandlers] = useHovered();
+  const {
+    state: actionHovered,
+    onIn: onActionHoverIn,
+    onOut: onActionHoverOut,
+  } = useInteractionState();
   const actionStyle: WebCssStyle = {
     alignItems: 'center',
     justifyContent: 'center',
@@ -358,7 +364,8 @@ function PollMessageComponent({
       {action ? (
         <HoldPressable
           {...webDataSet({ bloomMessageMediaPressable: '' })}
-          {...actionHandlers}
+          onHoverIn={onActionHoverIn}
+          onHoverOut={onActionHoverOut}
           role="button"
           accessibilityLabel={action.label}
           onPress={action.press}

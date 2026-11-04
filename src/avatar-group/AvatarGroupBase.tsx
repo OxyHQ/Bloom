@@ -20,9 +20,9 @@ import { computeClusterLayout } from './cluster-layout';
 import { AVATAR_GROUP_MESSAGES } from './messages';
 import type { AvatarGroupItem, AvatarGroupProps } from './types';
 
-/** Ring (border) thickness around each avatar, in pixels. Matches the
+/** Default ring (border) thickness around each avatar, in pixels. Matches the
  * original Mention `AvatarStack` (a single hairline-ish 1px separator). */
-const RING_WIDTH = 1;
+const DEFAULT_RING_WIDTH = 1;
 /** Default horizontal overlap as a fraction of avatar size — the original
  * stack pulled each avatar left by `size / 3`. */
 const DEFAULT_OVERLAP_RATIO = 1 / 3;
@@ -157,6 +157,7 @@ function AvatarGroupCell({
         source={item.uri ?? undefined}
         account={{ kind: item.kind, character: item.character }}
         name={showInitials ? name : undefined}
+        initials={item.initials}
         variant={variant}
         motion={motion}
         size={innerSize}
@@ -197,6 +198,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   overlap,
   spacing,
   ringColor,
+  ringWidth = DEFAULT_RING_WIDTH,
   showInitials = false,
   onPressItem,
   style,
@@ -211,14 +213,15 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   // defaults to the page background so avatars read as cleanly punched out of
   // the surface behind them — matching the original Mention stack, which used
   // `theme.colors.background`, not a large `card`-colored ring cell.
-  const ring = ringColor ?? theme.colors.background;
+  const ringFill = ringColor ?? theme.colors.background;
 
   const effectiveMax = max ?? DEFAULT_MAX;
   const effectiveOverlap = overlap ?? Math.round(size * DEFAULT_OVERLAP_RATIO);
   // Each avatar after the first is pulled left by `overlap`. The cell carries a
-  // 1px border on each side, so the negative margin absorbs both borders to
-  // keep the visual overlap equal to `effectiveOverlap`.
-  const negativeMargin = -(effectiveOverlap + RING_WIDTH * 2);
+  // `ringWidth` border on each side, so the negative margin absorbs both borders
+  // to keep the visual overlap of the faces equal to `effectiveOverlap`.
+  const ring = Math.max(0, ringWidth);
+  const negativeMargin = -(effectiveOverlap + ring * 2);
   // Row layout: a positive gap between adjacent avatars (no overlap, no ring).
   const rowGap = spacing ?? Math.round(size * DEFAULT_OVERLAP_RATIO);
   // Horizontal offset applied to every avatar after the first.
@@ -229,10 +232,10 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   const realTotal = total ?? items.length;
   const overflow = Math.max(0, realTotal - shown.length);
 
-  // Stack: each cell is a circular, clipped container with a 1px ring border,
+  // Stack: each cell is a circular, clipped container with a `ringWidth` border,
   // and the inner Avatar is inset by the border on both sides. Row: no ring, so
   // the Avatar fills the full cell.
-  const innerSize = isRow ? size : size - RING_WIDTH * 2;
+  const innerSize = isRow ? size : size - ring * 2;
   const cellStyle = useMemo((): ViewStyle => {
     if (isRow) {
       return {
@@ -247,13 +250,13 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
       width: size,
       height: size,
       borderRadius: size / 2,
-      borderWidth: RING_WIDTH,
-      borderColor: ring,
+      borderWidth: ring,
+      borderColor: ringFill,
       overflow: 'hidden',
       alignItems: 'center',
       justifyContent: 'center',
     };
-  }, [isRow, size, ring]);
+  }, [isRow, size, ring, ringFill]);
 
   const overflowTextStyle = useMemo(
     (): TextStyle => ({
@@ -283,7 +286,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
         motion={motion}
         max={max}
         total={total}
-        ring={ring}
+        ring={ringFill}
         showInitials={showInitials}
         onPressItem={onPressItem}
         style={style}

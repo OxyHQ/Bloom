@@ -2,7 +2,7 @@ import React, { useMemo, type ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { BloomImage } from '../image';
 
-import { Avatar } from '../avatar';
+import { AvatarGroup } from '../avatar-group';
 import { LinkButton } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
@@ -347,17 +347,14 @@ export function MetaLine({
       testID={testID}
     >
       {withAvatars.length > 0 ? (
-        <View style={{ flexDirection: 'row', marginRight: 4 }}>
-          {withAvatars.map((person, i) => (
-            <Avatar
-              key={`${person.name}-${i}`}
-              source={person.avatar}
-              name={person.name}
-              size={24}
-              style={i > 0 ? { marginLeft: -6 } : undefined}
-            />
-          ))}
-        </View>
+        <AvatarGroup
+          items={withAvatars.map((person) => ({ uri: person.avatar, name: person.name }))}
+          size={24}
+          overlap={6}
+          ringWidth={0}
+          showInitials
+          style={{ marginRight: 4 }}
+        />
       ) : null}
       {(people ?? []).map((person, i) => (
         <React.Fragment key={`${person.name}-${i}`}>

@@ -9,6 +9,7 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
+import { CarouselDots } from '../carousel/CarouselDots';
 import type { AuthMediaCarouselProps, AuthMediaSlide } from './types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
@@ -25,8 +26,8 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  *
  * Only the slides moving in a beat transition; everything else is repositioned
  * instantly, so the one leaving on the left can jump to the back of the queue
- * without streaking across. Dots at the bottom (6px, the current one 20px wide
- * at 90%, the rest 45%) follow the index over 500ms ease-out.
+ * without streaking across. `CarouselDots` at the bottom (6px, the current one
+ * 20px wide at 90%, the rest 45%) follow the index over 500ms ease-out.
  *
  * `translateZ` has no React Native equivalent, so the push-back is expressed as
  * the projection it produces: with perspective P = 850 and depth D = 220,
@@ -55,9 +56,8 @@ const SLIDE_MS = 700;
 const GROW_MS = 500;
 const DOT_MS = 500;
 
-/** Tailwind `ease-in-out` / `ease-out`. */
+/** Tailwind `ease-in-out`. */
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
-const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 
 /**
  * `idle`   at rest, full bleed
@@ -186,31 +186,6 @@ const Slide = memo(function Slide({
   );
 });
 
-function Dot({ active, reducedMotion }: { active: boolean; reducedMotion: boolean }) {
-  const progress = useSharedValue(active ? 1 : 0);
-  useEffect(() => {
-    const target = active ? 1 : 0;
-    progress.value = reducedMotion
-      ? target
-      : withTiming(target, { duration: DOT_MS, easing: EASE_OUT });
-  }, [active, reducedMotion, progress]);
-  const style = useAnimatedStyle(
-    () => ({
-      width: 6 + 14 * progress.value,
-      opacity: 0.45 + 0.45 * progress.value,
-    }),
-    [progress],
-  );
-  return (
-    <Animated.View
-      aria-hidden
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={[{ height: 6, borderRadius: 9999, backgroundColor: '#FFFFFF' }, style]}
-    />
-  );
-}
-
 function AuthMediaCarouselComponent({
   slides,
   interval = 3200,
@@ -274,28 +249,16 @@ function AuthMediaCarouselComponent({
           })
         : null}
 
-      {count > 1 ? (
-        <View
-          style={{
-            pointerEvents: 'none',
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 16,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 6,
-          }}
-        >
-          {slides.map((slide, slideIndex) => (
-            <Dot
-              key={typeof slide.source === 'string' ? slide.source : slideIndex}
-              active={slideIndex === index}
-              reducedMotion={reducedMotion}
-            />
-          ))}
-        </View>
-      ) : null}
+      <CarouselDots
+        count={count}
+        index={index}
+        appearance="onMedia"
+        activeWidth={20}
+        activeOpacity={0.9}
+        inactiveOpacity={0.45}
+        duration={DOT_MS}
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 16 }}
+      />
     </View>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -6,7 +7,7 @@ import { Text } from '../typography';
 import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Carousel, CarouselItem } from './index';
+import { Carousel, CarouselDots, CarouselItem } from './index';
 
 const meta: Meta<typeof Carousel> = {
   argTypes: {
@@ -451,6 +452,34 @@ export const GroupedNavigation: Story = {
         <Button onPress={() => setCount((value) => Math.max(1, value - 1))}>
           Remove final card
         </Button>
+      </Frame>
+    );
+  },
+};
+
+/** The position indicator on its own: interactive below a gallery, decorative over a photo. */
+export const Dots: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => {
+    const [index, setIndex] = useState(2);
+    const theme = useTheme();
+    return (
+      <Frame>
+        <View style={{ gap: 24, paddingVertical: 16 }}>
+          <CarouselDots count={5} index={index % 5} onIndexChange={setIndex} />
+          <View
+            style={{
+              height: 120,
+              borderRadius: 12,
+              backgroundColor: theme.colors.text,
+              justifyContent: 'flex-end',
+              paddingBottom: 10,
+            }}
+          >
+            <CarouselDots count={12} index={index} shape="dot" appearance="onMedia" maxDots={5} />
+          </View>
+          <Button onPress={() => setIndex((value) => (value + 1) % 12)}>Next</Button>
+        </View>
       </Frame>
     );
   },

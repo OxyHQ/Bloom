@@ -34,6 +34,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { OfferingBadge } from '../offering-badge/OfferingBadge';
 import { OFFERING_BADGE_MESSAGES, type OfferingBadgeMessages } from '../offering-badge/messages';
+import { CarouselDots } from '../carousel/CarouselDots';
 import { FavoriteButton } from './FavoriteButton';
 import { ListingFacts, ListingLocationLine, ListingPriceLines, ListingStatusPill } from './parts';
 import {
@@ -41,12 +42,10 @@ import {
   COMPACT_PHOTO_SIZE,
   describeFacts,
   describePriceLine,
-  DOT_INACTIVE_OPACITY,
-  DOT_SIZE,
-  dotWindow,
   HORIZONTAL_PHOTO_WIDTH,
   LISTING_CARD_CSS,
   LISTING_CARD_STYLE_ID,
+  MAX_DOTS,
   PHOTO_ASPECT_RATIO,
   PHOTO_RADIUS,
   resolveListingCardPaint,
@@ -238,50 +237,6 @@ function PhotoTrack({
 // ---------------------------------------------------------------------------
 //  Overlay parts
 // ---------------------------------------------------------------------------
-
-function Dots({
-  count,
-  active,
-  paint,
-}: {
-  count: number;
-  active: number;
-  paint: ListingCardPaint;
-}) {
-  const slots = dotWindow(count, active);
-  if (slots.length === 0) return null;
-  return (
-    <View
-      pointerEvents="none"
-      aria-hidden
-      style={{
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 10,
-        height: DOT_SIZE,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 5,
-      }}
-    >
-      {slots.map((slot) => (
-        <View
-          key={slot.index}
-          {...webDataSet({ bloomListingCardDot: slot.active ? 'active' : '' })}
-          style={{
-            width: slot.size,
-            height: slot.size,
-            borderRadius: borderRadius.full,
-            backgroundColor: paint.onMedia,
-            opacity: slot.active ? 1 : DOT_INACTIVE_OPACITY,
-          }}
-        />
-      ))}
-    </View>
-  );
-}
 
 function BadgePill({ label, paint }: { label: string; paint: ListingCardPaint }) {
   return (
@@ -879,7 +834,14 @@ function ListingCardComponent(props: ListingCardProps) {
       </Pressable>
 
       <View pointerEvents="box-none" style={overlayStyle}>
-        <Dots count={count} active={active} paint={paint} />
+        <CarouselDots
+          count={count}
+          index={active}
+          shape="dot"
+          appearance="onMedia"
+          maxDots={MAX_DOTS}
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 10 }}
+        />
 
         {shownStatus || hasBadge || offeringList.length > 0 ? (
           <View

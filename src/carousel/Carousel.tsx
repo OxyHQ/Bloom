@@ -12,9 +12,7 @@ import React, {
   useState,
 } from 'react';
 import {
-  Animated,
   Platform,
-  Pressable,
   ScrollView,
   View,
   type LayoutChangeEvent,
@@ -24,19 +22,17 @@ import {
 } from 'react-native';
 
 import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { useMessages } from '../locale/messages';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
-import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
-import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { CarouselContext, CarouselItemIndexContext } from './context';
+import { CarouselDots } from './CarouselDots';
+import { resolveCarouselPaint } from './shared';
 import { CAROUSEL_MESSAGES } from './messages';
 import type { CarouselControls, CarouselItemProps, CarouselProps } from './types';
 import { IS_WEB } from '../styles/platform';
@@ -53,9 +49,9 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  *              (Bloom's pill `Button`, sized to a 32px square icon button)
  *   track      native horizontal scrolling that SNAPS to each slide — CSS
  *              `scroll-snap` on web, `snapToOffsets` on native — gap 16
- *   dots       centred row, gap 6; 6px tall pills, the active one 16 wide in
- *              `text-primary`, the rest 6 wide in `background-tertiary`
- *              (hover `border-button-active`), width/colour eased 200ms
+ *   dots       `CarouselDots`: centred row, gap 6; 6px tall pills, the active
+ *              one 16 wide in `text-primary`, the rest 6 wide in
+ *              `background-tertiary` (hover `border-button-active`), eased 200ms
  *
  * The track is a real scroller rather than a transformed strip, so swipe,
  * trackpad, momentum and (on web) keyboard scrolling all come free.
@@ -65,41 +61,11 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  * nearest-slide search would never light the last dot.
  */
 
-/** `transition-all duration-200 ease-out` on the dots. */
-const DOT_TRANSITION_MS = 200;
-const DOT_HEIGHT = 6;
-const DOT_WIDTH = 6;
-const DOT_ACTIVE_WIDTH = 16;
-
-interface CarouselPaint {
-  dotActive: string;
-  dot: string;
-  dotHover: string;
-  ring: string;
-}
-
-/**
- * Every colour the carousel paints (the arrows are `Button`'s own). Pure.
- *
- *   dot active   text/primary
- *   dot          background/tertiary/default   neutral-200  (dark neutral-800)
- *   dot hover    border/button/active          neutral-400  (dark neutral-600)
- */
-export function resolveCarouselPaint(theme: Theme): CarouselPaint {
-  const { accent } = resolveButtonRamps(theme);
-  return {
-    dotActive: theme.colors.text,
-    dot: theme.colors.backgroundSecondary,
-    dotHover: theme.colors.textSecondary,
-    ring: accent[500],
-  };
-}
-
 // ---------------------------------------------------------------------------
 //  Web CSS
 //
-//  Scroll snapping, the hidden scrollbar, the track's keyboard focus ring and
-//  the dots' eased width/colour have no inline-style spelling, so they live in
+//  Scroll snapping, the hidden scrollbar and the track's keyboard focus ring
+//  have no inline-style spelling, so they live in
 //  an adopted sheet hanging off `dataSet` attributes (a class never reaches
 //  the DOM through react-native-web). `adoptStyleSheet` no-ops without a
 //  `document`, so native pays for a hook call and nothing else.
@@ -110,7 +76,6 @@ const ROOT = '[data-bloom-carousel]';
 const HOVER_ROOT = '[data-bloom-carousel="hover"]';
 const ARROW = '[data-bloom-carousel-arrow]';
 const TRACK = '[data-bloom-carousel-track]';
-const DOT = '[data-bloom-carousel-dot]';
 
 const BLOOM_CAROUSEL_CSS = `
 ${surfaceRevealCss({ scope: ARROW, shown: `${ARROW}:not([data-bloom-carousel-arrow="hidden"])` })}
@@ -140,20 +105,11 @@ ${TRACK} [data-bloom-carousel-item] {
 ${TRACK}[data-bloom-carousel-track="center"] [data-bloom-carousel-item] {
   scroll-snap-align: center;
 }
-${DOT} {
-  cursor: pointer;
-  outline: none;
-  transition: width ${DOT_TRANSITION_MS}ms ease-out, background-color ${DOT_TRANSITION_MS}ms ease-out;
-}
-${DOT}:focus-visible {
-  outline: 2px solid var(--bloom-carousel-ring, currentColor);
-  outline-offset: 2px;
-}
 @media (prefers-reduced-motion: reduce) {
 ${ARROW} {
   --bloom-surface-presence-ms: 0ms;
 }
-${DOT}, ${ARROW} .bloom-btn--surface > * {
+${ARROW} .bloom-btn--surface > * {
   transition: none;
 }
 }
@@ -217,79 +173,6 @@ const CarouselItemComponent = function CarouselItem({
 
 export const CarouselItem = memo(CarouselItemComponent);
 CarouselItem.displayName = 'CarouselItem';
-
-// ---------------------------------------------------------------------------
-//  Dot
-// ---------------------------------------------------------------------------
-
-function CarouselDot({
-  active,
-  paint,
-  label,
-  reducedMotion,
-  onPress,
-}: {
-  active: boolean;
-  paint: CarouselPaint;
-  label: string;
-  reducedMotion: boolean;
-  onPress: () => void;
-}) {
-  const { state: hovered, onIn, onOut } = useInteractionState();
-  // Native has no stylesheet to carry the width transition, so it is driven.
-  const width = useRef(new Animated.Value(active ? DOT_ACTIVE_WIDTH : DOT_WIDTH)).current;
-
-  useEffect(() => {
-    if (IS_WEB) return;
-    const to = active ? DOT_ACTIVE_WIDTH : DOT_WIDTH;
-    if (reducedMotion) {
-      width.setValue(to);
-      return;
-    }
-    Animated.timing(width, {
-      toValue: to,
-      duration: DOT_TRANSITION_MS,
-      // `width` is a layout property, which the native driver cannot animate.
-      useNativeDriver: false,
-    }).start();
-  }, [active, reducedMotion, width]);
-
-  const background = active ? paint.dotActive : hovered ? paint.dotHover : paint.dot;
-
-  return (
-    <Pressable
-      {...webDataSet({ bloomCarouselDot: '' })}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      aria-current={active}
-      onPress={onPress}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
-      hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-      style={
-        IS_WEB
-          ? {
-              height: DOT_HEIGHT,
-              width: active ? DOT_ACTIVE_WIDTH : DOT_WIDTH,
-              borderRadius: borderRadius.full,
-              backgroundColor: background,
-            }
-          : undefined
-      }
-    >
-      {IS_WEB ? null : (
-        <Animated.View
-          style={{
-            height: DOT_HEIGHT,
-            width,
-            borderRadius: borderRadius.full,
-            backgroundColor: background,
-          }}
-        />
-      )}
-    </Pressable>
-  );
-}
 
 // ---------------------------------------------------------------------------
 //  Carousel
@@ -918,33 +801,20 @@ const CarouselComponent = function Carousel({
         track
       )}
 
-      {showDots && dotCount > 1 ? (
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-            paddingHorizontal: inset,
+      {showDots ? (
+        <CarouselDots
+          count={dotCount}
+          index={active}
+          onIndexChange={(index) => scrollToStop(stops[index])}
+          // One dot per STOP: slides that share a resting place share a dot,
+          // so no dot scrolls nowhere. Until the slides are measured there is
+          // one per slide, which is what full-width slides settle on anyway.
+          dotLabel={(dot) => {
+            const slide = (stops[dot - 1]?.slide ?? dot - 1) + 1;
+            return dotLabel ? dotLabel(slide) : messages.goToSlide(slide);
           }}
-        >
-          {Array.from({ length: dotCount }, (_, index) => {
-            // One dot per STOP: slides that share a resting place share a dot,
-            // so no dot scrolls nowhere. Until the slides are measured there is
-            // one per slide, which is what full-width slides settle on anyway.
-            const slide = stops[index]?.slide ?? index;
-            return (
-              <CarouselDot
-                key={index}
-                active={index === active}
-                paint={paint}
-                label={dotLabel ? dotLabel(slide + 1) : messages.goToSlide(slide + 1)}
-                reducedMotion={reducedMotion}
-                onPress={() => scrollToStop(stops[index])}
-              />
-            );
-          })}
-        </View>
+          style={{ paddingHorizontal: inset }}
+        />
       ) : null}
       {footer != null || (arrowsVisible && arrowsPlacement === 'footer') ? (
         <View

@@ -15,6 +15,7 @@ import {
   SelectValue,
   SelectIcon,
   SelectContent,
+  SelectField,
   SelectGroup,
   SelectItem,
   SelectItemIndicator,
@@ -214,6 +215,33 @@ export const Composition: Story = {
     <View style={{ gap: 16 }}>
       <BasicSelect />
       <UncontrolledSelect />
+    </View>
+  ),
+};
+
+function FieldExample() {
+  const [fruit, setFruit] = useState<string | undefined>(undefined);
+  return (
+    <SelectField
+      label="Fruit"
+      placeholder="Choose a fruit"
+      items={FRUITS}
+      value={fruit}
+      onValueChange={setFruit}
+      description="Picked fresh every morning."
+      error={fruit === 'cherry' ? 'Cherries are out of season.' : undefined}
+      required
+      testID="select-field"
+    />
+  );
+}
+
+/** `SelectField`: the field's label, the trigger and its description or error in one. */
+export const Field: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ width: 280, paddingBottom: 240 }}>
+      <FieldExample />
     </View>
   ),
 };

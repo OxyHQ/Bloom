@@ -9,6 +9,7 @@ function CollapsibleFrameComponent({
   hidden,
   settled = false,
   progress,
+  keepMounted = true,
   children,
   style,
   contentStyle,
@@ -96,7 +97,7 @@ function CollapsibleFrameComponent({
           onLayout={measure}
           style={[{ flexShrink: 0 }, contentStyle, hidden ? { display: 'none' } : undefined]}
         >
-          {children}
+          {hidden && !keepMounted ? null : children}
         </View>
       </Animated.View>
     </CollapsibleVisibilityContext.Provider>

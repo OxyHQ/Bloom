@@ -400,6 +400,11 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason:
         'passes `size` straight through to `TextField`, which inherits density — so a `BloomScope` reaches the phone field without this family reading anything.',
     },
+    'settings-modal': {
+      verdict: 'delegated',
+      reason:
+        '`SettingsSelect` passes `size` straight through to `Select`, which inherits density — so a `BloomScope` reaches the row\u2019s select without this family reading anything.',
+    },
   },
   trigger: {
     dialog: {

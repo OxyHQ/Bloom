@@ -155,7 +155,7 @@ function DevicePickerComponent({
   const helpLabel = helpLabelProp ?? messages.deviceHelp;
   const theme = useTheme();
   const palette = useMemo(() => resolveMenuPalette(theme), [theme]);
-  const [helpHovered, setHelpHovered] = useState(false);
+  const { state: helpHovered, onIn: onHelpHoverIn, onOut: onHelpHoverOut } = useInteractionState();
   const heading = (text: string) => (
     <Text
       variant="body-medium"
@@ -211,8 +211,8 @@ function DevicePickerComponent({
           role="link"
           accessibilityLabel={helpLabel}
           onPress={onHelpPress}
-          onHoverIn={() => setHelpHovered(true)}
-          onHoverOut={() => setHelpHovered(false)}
+          onHoverIn={onHelpHoverIn}
+          onHoverOut={onHelpHoverOut}
           style={{
             flexDirection: 'row',
             alignItems: 'center',

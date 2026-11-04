@@ -71,19 +71,21 @@ export type SelectTriggerProps = {
  * Pass a `children` function to extract a display string from the selected
  * item when items are not plain `{ value, label }` objects.
  */
-export type SelectValueProps = {
+export type SelectValueProps<T = unknown> = {
   /**
-   * Extracts the display text from the currently-selected item.
+   * Extracts the display text from the currently-selected ITEM — the entry of
+   * `SelectContent`'s `items` whose value is chosen, on both platforms, never
+   * the bare value string. A value no item matches shows as itself.
    * Defaults to `item => item.label`.
    */
-  children?: (value: unknown) => React.ReactNode;
+  children?: (item: T) => React.ReactNode;
   /**
    * A node before the value — a status dot, an icon — laid out `gap-[5px]`
    * (`gap-1` on `sm`), the way the trigger shows an option whose content
    * leads with one. A function receives the selected item (`undefined` while
    * nothing is chosen), so the mark can follow the value.
    */
-  leading?: React.ReactNode | ((item: unknown) => React.ReactNode);
+  leading?: React.ReactNode | ((item: T | undefined) => React.ReactNode);
   placeholder?: string;
   className?: string;
   style?: TextStyle;
@@ -188,4 +190,40 @@ export type SelectItemContextValue = {
    * and the rule beside it, written out twice.
    */
   size: SelectSize;
+};
+
+/** One choice of a {@link SelectFieldProps | SelectField} (and of `SettingsSelect`). */
+export type SelectOption<T extends string = string> = {
+  value: T;
+  label: string;
+  /** Not choosable. */
+  disabled?: boolean;
+};
+
+/**
+ * `SelectField`: a labelled select — `Field`'s label, the trigger and its
+ * description or error — choosing one of `items`.
+ */
+export type SelectFieldProps<T extends string = string> = {
+  /** The visible label above the trigger, and the trigger's and the list's name. */
+  label: string;
+  items: readonly SelectOption<T>[];
+  value?: T;
+  /** Initial selection when `value` is uncontrolled. */
+  defaultValue?: T;
+  onValueChange?: (value: T) => void;
+  /** Shown in the trigger while nothing is chosen. */
+  placeholder?: string;
+  /** Helper text under the trigger; an `error` replaces it. */
+  description?: React.ReactNode;
+  /** A non-empty message paints the field invalid and shows under the trigger. */
+  error?: string | null;
+  required?: boolean;
+  disabled?: boolean;
+  /** Trigger size; otherwise the nearest BloomScope (default md). */
+  size?: SelectSize;
+  /** The field stack's own box. */
+  style?: StyleProp<ViewStyle>;
+  /** On the trigger. */
+  testID?: string;
 };

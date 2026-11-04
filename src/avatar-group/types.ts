@@ -25,6 +25,11 @@ export interface AvatarGroupItem {
   displayName?: string;
   /** Handle without the leading `@`. */
   username?: string;
+  /**
+   * Explicit initials for a member without an image (e.g. `"AL"`), drawn on
+   * Avatar's neutral disc whether or not `showInitials` is set.
+   */
+  initials?: string;
   /** `'bot'` with a `character` draws that character (a still at facepile sizes); see `Avatar`. */
   kind?: string;
   character?: AvatarAccount['character'];
@@ -95,6 +100,11 @@ export interface AvatarGroupProps {
    * avatars read as punched out of the surface behind them.
    */
   ringColor?: string;
+  /**
+   * Thickness of that ring, px; `0` draws none. It sits inside `size`, so a
+   * face is `size - 2 × ringWidth` across. Defaults to `1`. `layout='stack'` only.
+   */
+  ringWidth?: number;
   /**
    * When true, an item with no `uri` renders {@link Avatar}'s colored
    * deterministic initial (derived from its name) instead of the neutral

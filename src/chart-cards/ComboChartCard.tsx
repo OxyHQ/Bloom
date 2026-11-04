@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect } from 'react-native-svg';
 
@@ -18,6 +18,7 @@ import { roundedBarPath, singleBarSlot } from './rounded-bar-geometry';
 import { lerp, useChartProgress } from './use-chart-progress';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
+import { useSvgIdPrefix } from '../styles/svg-id';
 
 /**
  * `ComboChartCard`: a bar series on the left axis and a line series on its
@@ -203,8 +204,7 @@ export function ComboChartCard({
 
   const barEase = useWebTransition('fill, opacity', 200);
 
-  const rawId = useId();
-  const id = `bloom-combo-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-combo');
 
   return (
     <ChartCardSurface height={tiles ? 'auto' : undefined} style={style} testID={testID}>
@@ -287,7 +287,7 @@ export function ComboChartCard({
             return (
               <Svg width={size.width} height={size.height} pointerEvents="none">
                 <Defs>
-                  <ClipPath id={`${id}-reveal`}>
+                  <ClipPath id={`${id}reveal`}>
                     <Rect x={0} y={0} width={revealWidth} height={size.height} />
                   </ClipPath>
                 </Defs>
@@ -313,7 +313,7 @@ export function ComboChartCard({
                     {...(barEase ? { style: barEase } : null)}
                   />
                 ))}
-                <G clipPath={`url(#${id}-reveal)`}>
+                <G clipPath={`url(#${id}reveal)`}>
                   <Path
                     d={d}
                     fill="none"

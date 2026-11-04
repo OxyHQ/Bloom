@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -7,18 +7,10 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
 
-import { Button } from '../button';
 import { Checkbox } from '../checkbox';
 import { Chip } from '../chip';
 import { FileUpload, formatFileSize } from '../file-upload';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../dropdown-menu';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiDeleteBin6Line } from '../icons/remix/RiDeleteBin6Line';
 import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
@@ -26,30 +18,32 @@ import { RiEditLine } from '../icons/remix/RiEditLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiFileExcel2Line } from '../icons/remix/RiFileExcel2Line';
 import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
-import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { Pagination } from '../pagination';
+import { RowActions } from '../row-actions';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  type TableSortDirection,
+} from '../table';
 import { borderRadius } from '../styles/tokens';
 import { SettingsSelect } from './SettingsSelect';
-import { webDataSet } from '../styles/web-data';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
-import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import { Text } from '../typography';
 import { useSettingsLayout, useSettingsPalette } from './context';
 import { SETTINGS_MODAL_MESSAGES, type SettingsModalMessages } from './messages';
 import type { SettingsPalette } from './palette';
 import { settingsRingVars } from './SettingsRows';
-import type {
-  SettingsFileKind,
-  SettingsMenuAction,
-  SettingsStoragePageProps,
-  SettingsStoredFile,
-} from './types';
+import type { SettingsFileKind, SettingsMenuAction, SettingsStoragePageProps } from './types';
 import { useSettingsWebCss } from './web-css';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
@@ -85,88 +79,7 @@ const EASE_IN = Easing.bezier(0.4, 0, 1, 1);
 // ---------------------------------------------------------------------------
 
 type SortKey = 'name' | 'uploadedAt' | 'size';
-type SortState = { key: SortKey; dir: 'asc' | 'desc' } | null;
-
-/** The sort caret. */
-function SortCaret({ color, up }: { color: string; up: boolean }) {
-  return (
-    <View style={[styles.caret, up ? styles.caretUp : null]}>
-      <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-        <Path
-          d="M12.7071 15.2929C12.3166 15.6834 11.6834 15.6834 11.2929 15.2929L7.70711 11.7071C7.07714 11.0771 7.52331 10 8.41421 10H15.5858C16.4767 10 16.9229 11.0771 16.2929 11.7071L12.7071 15.2929Z"
-          fill={color}
-        />
-      </Svg>
-    </View>
-  );
-}
-
-function SortableHeader({
-  label,
-  sortKey,
-  sort,
-  onSort,
-}: {
-  label: string;
-  sortKey: SortKey;
-  sort: SortState;
-  onSort: (key: SortKey) => void;
-}) {
-  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
-  const palette = useSettingsPalette();
-  const active = sort?.key === sortKey;
-  return (
-    <Pressable
-      role="button"
-      accessibilityLabel={messages.storage.sortBy[sortKey]}
-      {...webDataSet({ bloomSettingsPress: '', ringOffset: '' })}
-      onPress={() => onSort(sortKey)}
-      style={styles.sortable}
-    >
-      <Text
-        variant="body-medium"
-        numberOfLines={1}
-        style={{ color: active ? palette.text : palette.textTertiary }}
-      >
-        {label}
-      </Text>
-      <SortCaret
-        color={active ? palette.textSecondary : palette.textTertiary}
-        up={active && sort?.dir === 'asc'}
-      />
-    </Pressable>
-  );
-}
-
-/** A hover/focus tooltip around a control that already has its own name. */
-function HoverTooltip({ label, children }: { label: string; children: ReactNode }) {
-  const [visible, setVisible] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-  const enter = () => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setVisible(true), 200);
-  };
-  const leave = () => {
-    if (timer.current) clearTimeout(timer.current);
-    setVisible(false);
-  };
-  return (
-    <Tooltip visible={visible} onVisibleChange={setVisible} position="top">
-      <TooltipTrigger>
-        <View onPointerEnter={enter} onPointerLeave={leave}>
-          {children}
-        </View>
-      </TooltipTrigger>
-      <TooltipTextBubble>{label}</TooltipTextBubble>
-    </Tooltip>
-  );
-}
+type SortState = { key: SortKey; dir: Exclude<TableSortDirection, 'none'> } | null;
 
 function defaultFileActions(messages: SettingsModalMessages): SettingsMenuAction[] {
   return [
@@ -174,72 +87,6 @@ function defaultFileActions(messages: SettingsModalMessages): SettingsMenuAction
     { id: 'rename', label: messages.storage.rename, icon: RiEditLine },
     { id: 'copy-link', label: messages.storage.copyLink, icon: RiFileCopyLine },
   ];
-}
-
-function RowMoreMenu({
-  file,
-  actions,
-  onAction,
-}: {
-  file: SettingsStoredFile;
-  actions: SettingsMenuAction[];
-  onAction?: (fileId: string, actionId: string) => void;
-}) {
-  const common = useCommonMessages();
-  const palette = useSettingsPalette();
-  const [open, setOpen] = useState(false);
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const label = common.labelFor(common.moreActions, file.name);
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <HoverTooltip label={common.moreActions}>
-        <DropdownMenuTrigger asChild label={label} style={CENTERED}>
-          <Pressable
-            role="button"
-            accessibilityLabel={label}
-            aria-expanded={open}
-            accessibilityState={{ expanded: open }}
-            {...webDataSet({ bloomSettingsPress: '', ringOffset: '' })}
-            onHoverIn={onHoverIn}
-            onHoverOut={onHoverOut}
-            style={[
-              styles.moreTrigger,
-              {
-                borderColor: open
-                  ? palette.borderButtonActive
-                  : hovered
-                    ? palette.borderButtonHover
-                    : palette.borderButton,
-                backgroundColor: open
-                  ? palette.primaryActive
-                  : hovered
-                    ? palette.primaryHover
-                    : palette.primary,
-                boxShadow: palette.shadowXs,
-              },
-            ]}
-          >
-            <RiMore2Fill width={16} height={16} fill={palette.iconPrimary} />
-          </Pressable>
-        </DropdownMenuTrigger>
-      </HoverTooltip>
-      <DropdownMenuContent label={label} align="end" minWidth={200} maxWidth={200}>
-        {actions.map((action) => (
-          <DropdownMenuItem
-            key={action.id}
-            leading={
-              action.icon ? (
-                <action.icon width={18} height={18} fill={palette.iconSecondary} />
-              ) : undefined
-            }
-            onPress={() => onAction?.(file.id, action.id)}
-          >
-            {action.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
 }
 
 type RowPhase = 'idle' | 'entering' | 'exiting';
@@ -304,7 +151,7 @@ function AnimatedRow({
     [progress, opacity, measured],
   );
   return (
-    <Animated.View style={outer}>
+    <Animated.View style={outer} pointerEvents={phase === 'exiting' ? 'none' : 'auto'}>
       <Animated.View
         style={inner}
         onLayout={(event) => {
@@ -398,8 +245,8 @@ export function SettingsStoragePage({
 
   const onSort = (key: SortKey) => {
     setSort((prev) => {
-      if (!prev || prev.key !== key) return { key, dir: 'asc' };
-      if (prev.dir === 'asc') return { key, dir: 'desc' };
+      if (!prev || prev.key !== key) return { key, dir: 'ascending' };
+      if (prev.dir === 'ascending') return { key, dir: 'descending' };
       return null;
     });
   };
@@ -420,7 +267,7 @@ export function SettingsStoragePage({
             : key === 'size'
               ? a.size - b.size
               : a.uploadedAt - b.uploadedAt;
-        return dir === 'asc' ? cmp : -cmp;
+        return dir === 'ascending' ? cmp : -cmp;
       });
     } else {
       rows.sort((a, b) =>
@@ -472,6 +319,22 @@ export function SettingsStoragePage({
   const typeItems = useMemo(
     () => [{ value: 'all', label: copy.fileType }, ...kinds],
     [copy, kinds],
+  );
+
+  const sortable = (key: SortKey) => ({
+    onSort: () => onSort(key),
+    sortDirection: sort?.key === key ? sort.dir : ('none' as const),
+    accessibilityLabel: copy.sortBy[key],
+  });
+  // The sorted column's label reads in the primary text colour.
+  const headerLabel = (label: string, active: boolean) => (
+    <Text
+      variant="body-medium"
+      numberOfLines={1}
+      style={{ color: active ? palette.text : palette.textTertiary }}
+    >
+      {label}
+    </Text>
   );
 
   return (
@@ -532,80 +395,71 @@ export function SettingsStoragePage({
           </View>
         </View>
 
-        <View
-          style={[
-            styles.headerRow,
-            { borderColor: palette.separator, backgroundColor: palette.secondary },
-          ]}
-        >
-          <View style={styles.nameCell}>
-            <Checkbox
-              checked={allOnPage}
-              indeterminate={someOnPage}
-              onCheckedChange={toggleAll}
-              accessibilityLabel={copy.selectAllOnPage}
-            />
-            <SortableHeader label={copy.fileName} sortKey="name" sort={sort} onSort={onSort} />
-          </View>
-          {compact ? null : (
-            <>
-              <View style={[styles.cell, styles.dateCol]}>
-                <SortableHeader
-                  label={copy.uploadedOn}
-                  sortKey="uploadedAt"
-                  sort={sort}
-                  onSort={onSort}
+        <Table size="md" containerStyle={styles.tableBody}>
+          <TableHeader style={styles.inset}>
+            <TableColumn
+              leading={
+                <Checkbox
+                  checked={allOnPage}
+                  indeterminate={someOnPage}
+                  onCheckedChange={toggleAll}
+                  accessibilityLabel={copy.selectAllOnPage}
                 />
-              </View>
-              <View style={[styles.cell, styles.sizeCol]}>
-                <SortableHeader label={copy.fileSize} sortKey="size" sort={sort} onSort={onSort} />
-              </View>
-            </>
-          )}
-          <View style={[styles.cell, compact ? null : styles.actionsCol]}>
-            <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
-              {messages.actions}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.rows}>
-          {rows.length > 0 ? (
-            rows.map((file) => (
-              <AnimatedRow
-                key={file.id}
-                phase={
-                  exiting.has(file.id) ? 'exiting' : entering.has(file.id) ? 'entering' : 'idle'
-                }
-                onExited={() => finishDelete(file.id)}
-              >
-                <View
-                  pointerEvents={exiting.has(file.id) ? 'none' : 'auto'}
-                  style={[styles.row, { borderBottomColor: palette.separator }]}
-                  testID={testID ? `${testID}-row-${file.id}` : undefined}
+              }
+              {...sortable('name')}
+              style={styles.flush}
+            >
+              {headerLabel(copy.fileName, sort?.key === 'name')}
+            </TableColumn>
+            {compact ? null : (
+              <TableColumn width={150} {...sortable('uploadedAt')}>
+                {headerLabel(copy.uploadedOn, sort?.key === 'uploadedAt')}
+              </TableColumn>
+            )}
+            {compact ? null : (
+              <TableColumn width={104} {...sortable('size')}>
+                {headerLabel(copy.fileSize, sort?.key === 'size')}
+              </TableColumn>
+            )}
+            <TableColumn width={compact ? 'auto' : 116} align="end">
+              {headerLabel(messages.actions, false)}
+            </TableColumn>
+          </TableHeader>
+          <TableBody style={styles.inset}>
+            {rows.length > 0 ? (
+              rows.map((file) => (
+                <AnimatedRow
+                  key={file.id}
+                  phase={
+                    exiting.has(file.id) ? 'exiting' : entering.has(file.id) ? 'entering' : 'idle'
+                  }
+                  onExited={() => finishDelete(file.id)}
                 >
-                  <View style={styles.nameCell}>
-                    <Checkbox
-                      checked={selectedSet.has(file.id)}
-                      onCheckedChange={(on) => toggleRow(file.id, on)}
-                      accessibilityLabel={copy.selectFile(file.name)}
-                    />
-                    <View style={styles.fileName2}>
-                      {renderFileIcon
-                        ? renderFileIcon(file)
-                        : defaultStoredIcon(file.kind, palette)}
-                      <Text
-                        variant="body-medium"
-                        numberOfLines={1}
-                        style={[styles.shrink, { color: palette.text }]}
-                      >
-                        {file.name}
-                      </Text>
-                    </View>
-                  </View>
-                  {compact ? null : (
-                    <>
-                      <View style={[styles.cell, styles.dateCol]}>
+                  <TableRow
+                    style={styles.row}
+                    testID={testID ? `${testID}-row-${file.id}` : undefined}
+                  >
+                    <TableCell style={[styles.flush, styles.nameCell]}>
+                      <Checkbox
+                        checked={selectedSet.has(file.id)}
+                        onCheckedChange={(on) => toggleRow(file.id, on)}
+                        accessibilityLabel={copy.selectFile(file.name)}
+                      />
+                      <View style={styles.fileName}>
+                        {renderFileIcon
+                          ? renderFileIcon(file)
+                          : defaultStoredIcon(file.kind, palette)}
+                        <Text
+                          variant="body-medium"
+                          numberOfLines={1}
+                          style={[styles.shrink, { color: palette.text }]}
+                        >
+                          {file.name}
+                        </Text>
+                      </View>
+                    </TableCell>
+                    {compact ? null : (
+                      <TableCell>
                         <Text
                           variant="body-medium"
                           numberOfLines={1}
@@ -613,8 +467,10 @@ export function SettingsStoragePage({
                         >
                           {file.uploadedOn}
                         </Text>
-                      </View>
-                      <View style={[styles.cell, styles.sizeCol]}>
+                      </TableCell>
+                    )}
+                    {compact ? null : (
+                      <TableCell>
                         <Chip
                           size="lg"
                           style={{ backgroundColor: palette.secondary }}
@@ -622,33 +478,41 @@ export function SettingsStoragePage({
                         >
                           {file.sizeLabel ?? formatFileSize(file.size, locale)}
                         </Chip>
-                      </View>
-                    </>
-                  )}
-                  <View style={[styles.cell, compact ? null : styles.actionsCol, styles.actions]}>
-                    <HoverTooltip label={copy.deleteFile}>
-                      <Button
-                        size="sm"
-                        icon={RiDeleteBin6Line}
-                        accessibilityLabel={copy.deleteNamed(file.name)}
-                        onPress={() => deleteFile(file.id)}
-                        appearance="plain"
-                        tone="neutral"
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <RowActions
+                        name={file.name}
+                        actions={[
+                          {
+                            icon: RiDeleteBin6Line,
+                            label: copy.deleteFile,
+                            accessibilityLabel: copy.deleteNamed(file.name),
+                            onPress: () => deleteFile(file.id),
+                          },
+                        ]}
+                        menu={fileActions.map((action) => ({
+                          // A settings icon is drawn with the same width, height and fill.
+                          icon: action.icon as BloomIconComponent | undefined,
+                          label: action.label,
+                          onPress: () => onFileAction?.(file.id, action.id),
+                        }))}
+                        menuAppearance="outline"
+                        menuWidth={200}
                       />
-                    </HoverTooltip>
-                    <RowMoreMenu file={file} actions={fileActions} onAction={onFileAction} />
-                  </View>
-                </View>
-              </AnimatedRow>
-            ))
-          ) : (
-            <View style={styles.empty}>
-              <Text variant="body-medium" style={{ color: palette.textTertiary }}>
-                {copy.noMatches}
-              </Text>
-            </View>
-          )}
-        </View>
+                    </TableCell>
+                  </TableRow>
+                </AnimatedRow>
+              ))
+            ) : (
+              <View style={styles.empty}>
+                <Text variant="body-medium" style={{ color: palette.textTertiary }}>
+                  {copy.noMatches}
+                </Text>
+              </View>
+            )}
+          </TableBody>
+        </Table>
 
         <View style={styles.footer}>
           <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
@@ -700,79 +564,37 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     minWidth: 160,
   },
-  headerRow: {
+  tableBody: {
     marginTop: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+  },
+  /** Header and rows sit behind a 12px leading gutter, so row hairlines start at 12. */
+  inset: {
     paddingLeft: 12,
+  },
+  /** The first column runs flush against that gutter. */
+  flush: {
+    paddingLeft: 0,
+    paddingRight: 0,
   },
   nameCell: {
-    flex: 1,
-    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
     gap: 8,
-    paddingTop: 10,
-    paddingBottom: 10,
   },
-  cell: {
-    flexShrink: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 12,
-    paddingRight: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
-  dateCol: { width: 150 },
-  sizeCol: { width: 104 },
-  actionsCol: { width: 116 },
-  actions: {
-    justifyContent: 'flex-end',
-    gap: 10,
-  },
-  sortable: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    borderRadius: 4,
-  },
-  caret: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  caretUp: {
-    transform: [{ rotate: '180deg' }],
-  },
-  rows: {
-    paddingLeft: 12,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-  },
-  fileName2: {
+  fileName: {
     flexShrink: 1,
     minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  /** Every row draws its hairline, the last one too: the footer draws none. */
+  row: {
+    borderBottomWidth: 1,
   },
   shrink: {
     flexShrink: 1,
-  },
-  moreTrigger: {
-    width: 32,
-    height: 32,
-    borderWidth: 1,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   empty: {
     alignItems: 'center',
@@ -787,6 +609,3 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
 });
-
-/** Trigger slots default to `alignSelf: flex-start`; these sit centred in their row. */
-const CENTERED = { alignSelf: 'center' } as const;

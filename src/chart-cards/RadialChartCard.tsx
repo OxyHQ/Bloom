@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -38,6 +38,7 @@ import { useWebTransition } from './primitives/use-web-transition';
 import { lerp, useChartProgress } from './use-chart-progress';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
+import { useSvgIdPrefix } from '../styles/svg-id';
 
 /** One ring / segment of a radial chart. */
 export interface RadialDatum {
@@ -243,8 +244,7 @@ export function RadialChartCard({
 
   const fade = useWebTransition('opacity', 200);
   const fillFade = useWebTransition('fill, opacity', 200);
-  const rawId = useId();
-  const id = `bloom-radial-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-radial');
 
   const isPhone = viewportWidth < BREAKPOINTS.sm;
   const halfFit = isStacked && !tiles && isPhone;
@@ -427,7 +427,7 @@ export function RadialChartCard({
                   {arcs.map((arc, i) => (
                     <Path
                       key={`label-path-${i}`}
-                      id={`${id}-${i}`}
+                      id={`${id}${i}`}
                       d={radialLabelArc(cx, cy, arc, arc.startAngle, arc.endAngle, LABEL_OFFSET)}
                     />
                   ))}
@@ -443,7 +443,7 @@ export function RadialChartCard({
                     // Chrome ignores `alignment-baseline` on <text>; recharts sets `dominant-baseline`.
                     {...WEB_CENTRAL_BASELINE}
                   >
-                    <TextPath href={`#${id}-${i}`}>{data[i]!.label}</TextPath>
+                    <TextPath href={`#${id}${i}`}>{data[i]!.label}</TextPath>
                   </SvgText>
                 ))}
               </>

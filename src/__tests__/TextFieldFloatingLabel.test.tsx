@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -9,6 +9,7 @@ import {
   TextFieldInput,
   TextFieldLabel,
   TextFieldSuffix,
+  TextFieldPrefix,
 } from '../text-field';
 import { RiSearchLine as MagnifyingGlassIcon } from '../icons/remix/RiSearchLine';
 
@@ -125,6 +126,7 @@ describe('TextField context', () => {
   it('refuses to render a state-reading part outside a root', () => {
     expectThrows(<TextFieldIcon icon={MagnifyingGlassIcon} />);
     expectThrows(<TextFieldSuffix label="domain">.oxy.so</TextFieldSuffix>);
+    expectThrows(<TextFieldPrefix label="protocol">https://</TextFieldPrefix>);
   });
 
   it('renders those same parts inside a root, so the throw is about the ROOT', () => {
@@ -133,10 +135,12 @@ describe('TextField context', () => {
     const { getByLabelText } = renderWithTheme(
       <TextField>
         <TextFieldIcon icon={MagnifyingGlassIcon} />
+        <TextFieldPrefix label="protocol">https://</TextFieldPrefix>
         <TextFieldInput label="Domain" value="" onValueChange={() => {}} />
         <TextFieldSuffix label="domain">.oxy.so</TextFieldSuffix>
       </TextField>,
     );
+    expect(getByLabelText('protocol')).toBeTruthy();
     expect(getByLabelText('domain')).toBeTruthy();
     expect(getByLabelText('Domain')).toBeTruthy();
   });

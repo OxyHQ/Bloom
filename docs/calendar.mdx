@@ -116,7 +116,7 @@ The event and swatch hues are hardcoded (Tailwind blue, pink, purple, lime, emer
 ## Design decisions
 
 - **Panel motion:** the inbox and details panels wear `Popover`'s motion (fade + zoom + a short slide, 200ms). The motion belongs to the overlay family, not the block itself.
-- **Switcher chevrons** are full pills rather than a 3px corner, as in `date-picker`'s panel.
+- **Switcher chevrons** are `date-picker`'s `MonthNavButton` (a 16px `GlyphButton`), full pills as in its panel.
 - **Slots, not ports:** the breadcrumb (with its workspace avatars), the notification bell and the dashboard sidebar are the app shell's; the block takes `breadcrumb` and `actions` and leaves the sidebar to the page.
 - **Keyboard (switcher grid):** one tab stop, arrow keys / Home / End / PageUp / PageDown move focus; leaving the month pages the pill's own month.
 

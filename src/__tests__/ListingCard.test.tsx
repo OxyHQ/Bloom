@@ -55,18 +55,21 @@ import type { Theme } from '../theme/types';
 import { FavoriteButton, ListingCard, ListingCardGrid, WishlistCard } from '../listing-card';
 import {
   describePriceLine,
-  DOT_EDGE_SIZE,
-  DOT_SIZE,
-  dotWindow,
   locationText,
   resolveListingCardPaint,
   resolvePhoto,
   resolvePriceLines,
   LISTING_CARD_CSS,
+  MAX_DOTS,
   PHOTO_ZOOM_SCALE,
   STATUS_WASH_OPACITY,
   statusLabelFor,
 } from '../listing-card/shared';
+import {
+  CAROUSEL_DOT_EDGE_SIZE as DOT_EDGE_SIZE,
+  CAROUSEL_DOT_SIZE as DOT_SIZE,
+  carouselDotWindow,
+} from '../carousel/shared';
 import { RiDropLine, RiFolderLine, RiHotelBedLine, RiRulerLine } from '../icons/remix';
 import { resolveOfferingBadgePaint } from '../offering-badge/shared';
 import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
@@ -144,22 +147,28 @@ const stay = {
 // ---------------------------------------------------------------------------
 
 describe('pure helpers', () => {
-  it('dotWindow: every dot up to five; beyond, a window of five with shrinking edges', () => {
-    expect(dotWindow(1, 0)).toEqual([]);
-    expect(dotWindow(3, 1).map((d) => [d.index, d.size, d.active])).toEqual([
+  it('the pager draws every dot up to five; beyond, a window of five with shrinking edges', () => {
+    expect(carouselDotWindow(1, 0, MAX_DOTS)).toEqual([]);
+    expect(carouselDotWindow(3, 1, MAX_DOTS).map((d) => [d.index, d.size, d.active])).toEqual([
       [0, DOT_SIZE, false],
       [1, DOT_SIZE, true],
       [2, DOT_SIZE, false],
     ]);
     // 9 photos, first in view: 0..4, the far edge small.
-    expect(dotWindow(9, 0).map((d) => d.size)).toEqual([6, 6, 6, 6, DOT_EDGE_SIZE]);
+    expect(carouselDotWindow(9, 0, MAX_DOTS).map((d) => d.size)).toEqual([
+      6,
+      6,
+      6,
+      6,
+      DOT_EDGE_SIZE,
+    ]);
     // Middle: both edges small, active centred.
-    const mid = dotWindow(9, 4);
+    const mid = carouselDotWindow(9, 4, MAX_DOTS);
     expect(mid.map((d) => d.index)).toEqual([2, 3, 4, 5, 6]);
     expect(mid.map((d) => d.size)).toEqual([DOT_EDGE_SIZE, 6, 6, 6, DOT_EDGE_SIZE]);
     expect(mid[2]?.active).toBe(true);
     // Last: the near edge small, the window pinned to the end.
-    const last = dotWindow(9, 8);
+    const last = carouselDotWindow(9, 8, MAX_DOTS);
     expect(last.map((d) => d.index)).toEqual([4, 5, 6, 7, 8]);
     expect(last.map((d) => d.size)).toEqual([DOT_EDGE_SIZE, 6, 6, 6, 6]);
   });
@@ -308,9 +317,9 @@ describe('ListingCard', () => {
         .closest('[data-bloom-listing-card-arrow]')
         ?.getAttribute('data-bloom-listing-card-arrow'),
     ).toBe('next');
-    const activeDots = () => container.querySelectorAll('[data-bloom-listing-card-dot="active"]');
+    const activeDots = () => container.querySelectorAll('[data-bloom-carousel-dot="active"]');
     expect(activeDots()).toHaveLength(1);
-    expect(container.querySelectorAll('[data-bloom-listing-card-dot]')).toHaveLength(5);
+    expect(container.querySelectorAll('[data-bloom-carousel-dot]')).toHaveLength(5);
 
     act(() => {
       byTestId('c-next').click();
@@ -331,7 +340,7 @@ describe('ListingCard', () => {
     mount(<ListingCard {...stay} photos={[PHOTOS[0] as string]} testID="c" />);
     await flushLayout();
     expect(maybe('c-next')).toBeNull();
-    expect(container.querySelectorAll('[data-bloom-listing-card-dot]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-bloom-carousel-dot]')).toHaveLength(0);
   });
 
   it('mounts photos lazily: the one in view and the next', async () => {
@@ -708,7 +717,7 @@ describe('ListingCard — compact density', () => {
     expect(byTestId('c').getAttribute('data-bloom-listing-card')).toBe('compact');
     // One static photo: no dots, no arrows, no track.
     expect(
-      container.querySelectorAll('[data-bloom-listing-card-dot], [data-bloom-listing-card-track]'),
+      container.querySelectorAll('[data-bloom-carousel-dot], [data-bloom-listing-card-track]'),
     ).toHaveLength(0);
     expect(link.getAttribute('aria-label')).toContain('Townhouse with a patio, For sale, For rent');
   });

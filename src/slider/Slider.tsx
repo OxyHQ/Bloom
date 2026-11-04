@@ -32,6 +32,7 @@ import { useMessages } from '../locale/messages';
 import { SLIDER_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 const ADJUST_ACTIONS = [{ name: 'increment' }, { name: 'decrement' }];
 
@@ -239,7 +240,11 @@ function SliderBase({
   const [trackWidth, setTrackWidth] = useState(0);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [trackHovered, setTrackHovered] = useState(false);
+  const {
+    state: trackHovered,
+    onIn: onTrackHoverIn,
+    onOut: onTrackHoverOut,
+  } = useInteractionState();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   // The thumb a press focused. Chrome matches `:focus-visible` on a scripted
   // focus that follows a pointer-down, but this follows React Aria's modality:
@@ -390,9 +395,9 @@ function SliderBase({
   const webTrackProps: Record<string, unknown> =
     IS_WEB && !disabled
       ? {
-          onPointerEnter: () => setTrackHovered(true),
+          onPointerEnter: onTrackHoverIn,
           onPointerLeave: () => {
-            setTrackHovered(false);
+            onTrackHoverOut();
             setHoveredIndex(null);
           },
           onPointerMove: (e: { nativeEvent: { offsetX?: number; offsetY?: number } }) => {

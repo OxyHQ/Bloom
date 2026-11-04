@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Platform, Pressable, View } from 'react-native';
+import Reanimated, { useAnimatedProps, type SharedValue } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
 import { webDataSet } from '../styles/web-data';
@@ -16,6 +17,45 @@ import {
   resolveMeterColors,
 } from './shared';
 import type { MeterRingProps } from './types';
+
+const AnimatedCircle = Reanimated.createAnimatedComponent(Circle);
+
+/**
+ * The arc of a decorative ring that follows a shared value on the UI thread.
+ * The dash moves by OFFSET, never by length: an animated `strokeDasharray`
+ * never reaches the DOM through react-native-svg on web (it stays at its first
+ * value).
+ */
+function SharedArc({
+  progress,
+  circumference,
+  ...circle
+}: {
+  progress: SharedValue<number>;
+  circumference: number;
+  cx: number;
+  cy: number;
+  r: number;
+  stroke: string;
+  strokeWidth: number;
+  strokeLinecap: 'round' | 'butt';
+  testID?: string;
+}) {
+  const animatedProps = useAnimatedProps(
+    () => ({
+      strokeDashoffset: circumference * (1 - Math.min(1, Math.max(0, progress.value))),
+    }),
+    [progress, circumference],
+  );
+  return (
+    <AnimatedCircle
+      {...circle}
+      animatedProps={animatedProps}
+      fill="none"
+      strokeDasharray={`${circumference} ${circumference}`}
+    />
+  );
+}
 
 /**
  * The same measurement as {@link Meter}, drawn as a ring: a full circle in the
@@ -37,6 +77,11 @@ import type { MeterRingProps } from './types';
  * hidden from assistive technology: the centred score is the same number
  * `aria-valuetext` already carries, and announcing it twice is noise.
  *
+ * `decorative` drops the role and hides the ring, for the drawing inside a
+ * control that carries its own name or beside text that already says it; a
+ * decorative ring may follow a Reanimated shared value (`progress`) on the UI
+ * thread instead of `value`. `backdrop` paints a disc under the ring.
+ *
  * As an app store's download ring: `indeterminate` while the amount is not
  * known (a quarter of the ring turns, the progressbar reports no value), and
  * `onStop` makes the ring the control that stops it, a stop square in its
@@ -44,25 +89,25 @@ import type { MeterRingProps } from './types';
  * in CSS on web (react-native-web has no native driver, and JavaScript frames
  * there starve other work), one turn a second on both.
  */
-function MeterRingComponent({
-  value,
-  max = 1,
-  size = 56,
-  thickness = 5,
-  fill,
-  track,
-  cap = 'round',
-  accessibilityLabel,
-  valueText,
-  role = 'meter',
-  transitionMs = 0,
-  indeterminate = false,
-  onStop,
-  stopLabel,
-  children,
-  style,
-  testID,
-}: MeterRingProps) {
+function MeterRingComponent(props: MeterRingProps) {
+  const {
+    value = 0,
+    max = 1,
+    size = 56,
+    thickness = 5,
+    fill,
+    track,
+    backdrop,
+    cap = 'round',
+    transitionMs = 0,
+    indeterminate = false,
+    onStop,
+    stopLabel,
+    children,
+    style,
+    testID,
+  } = props;
+  const progress = props.decorative ? props.progress : undefined;
   const theme = useTheme();
   const locale = useResolvedBloomLocale();
   const defaults = useMemo(() => resolveMeterColors(theme), [theme]);
@@ -99,24 +144,21 @@ function MeterRingComponent({
     height: size,
     alignItems: 'center',
     justifyContent: 'center',
+    ...(backdrop ? { borderRadius: size / 2, backgroundColor: backdrop } : null),
     ...(transitionMs > 0 ? { [METER_DURATION_VAR]: `${transitionMs}ms` } : null),
   };
 
-  return (
-    <View
-      role={role === 'progressbar' ? 'progressbar' : 'meter'}
-      accessibilityLabel={accessibilityLabel}
-      aria-valuemin={0}
-      aria-valuemax={max}
-      aria-valuenow={indeterminate ? undefined : meterValue(value, max)}
-      // Without the caller's words, how far along it is as a share in the reader's locale
-      // ("42%", "42 %"): React Native keeps `now` as a whole number, so a fraction of 1 (an
-      // install's progress) would read as nothing.
-      aria-valuetext={indeterminate ? undefined : (valueText ?? meterValueText(value, max, locale))}
-      aria-busy={indeterminate || undefined}
-      testID={testID}
-      style={[boxStyle, style]}
-    >
+  const arc = {
+    cx: size / 2,
+    cy: size / 2,
+    r: radius,
+    stroke: fill ?? defaults.fill,
+    strokeWidth: thickness,
+    testID: testID ? `${testID}-arc` : undefined,
+  };
+
+  const drawing = (
+    <>
       <Animated.View
         {...(transitionMs > 0 && !indeterminate ? webDataSet({ bloomMeterArc: '' }) : null)}
         {...(indeterminate && web ? webDataSet({ bloomMeterSpin: '' }) : null)}
@@ -147,21 +189,27 @@ function MeterRingComponent({
             fill="none"
             testID={testID ? `${testID}-track` : undefined}
           />
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke={fill ?? defaults.fill}
-            strokeWidth={thickness}
-            fill="none"
-            strokeLinecap={fraction > 0 ? cap : 'butt'}
-            strokeDasharray={`${circumference} ${circumference}`}
-            strokeDashoffset={circumference * (1 - fraction)}
-            testID={testID ? `${testID}-arc` : undefined}
-          />
+          {progress && !indeterminate ? (
+            <SharedArc
+              {...arc}
+              progress={progress}
+              circumference={circumference}
+              strokeLinecap={cap}
+            />
+          ) : (
+            <Circle
+              {...arc}
+              fill="none"
+              strokeLinecap={fraction > 0 ? cap : 'butt'}
+              strokeDasharray={`${circumference} ${circumference}`}
+              strokeDashoffset={circumference * (1 - fraction)}
+            />
+          )}
         </Svg>
       </Animated.View>
-      {onStop ? (
+      {props.decorative ? (
+        children
+      ) : onStop ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={stopLabel}
@@ -196,6 +244,43 @@ function MeterRingComponent({
           {children}
         </View>
       ) : null}
+    </>
+  );
+
+  // The two branches are written out rather than folded into a spread on purpose:
+  // `aria-state-source-census.test.ts` reads the SOURCE.
+  if (props.decorative) {
+    return (
+      <View
+        aria-hidden
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+        testID={testID}
+        style={[boxStyle, style]}
+      >
+        {drawing}
+      </View>
+    );
+  }
+
+  return (
+    <View
+      role={props.role === 'progressbar' ? 'progressbar' : 'meter'}
+      accessibilityLabel={props.accessibilityLabel}
+      aria-valuemin={0}
+      aria-valuemax={max}
+      aria-valuenow={indeterminate ? undefined : meterValue(value, max)}
+      // Without the caller's words, how far along it is as a share in the reader's locale
+      // ("42%", "42 %"): React Native keeps `now` as a whole number, so a fraction of 1 (an
+      // install's progress) would read as nothing.
+      aria-valuetext={
+        indeterminate ? undefined : (props.valueText ?? meterValueText(value, max, locale))
+      }
+      aria-busy={indeterminate || undefined}
+      testID={testID}
+      style={[boxStyle, style]}
+    >
+      {drawing}
     </View>
   );
 }

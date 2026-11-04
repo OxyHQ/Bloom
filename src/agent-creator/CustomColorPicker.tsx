@@ -4,7 +4,6 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState,
 } from 'react';
@@ -21,6 +20,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useFieldMembership } from '../field/membership';
 import { StyledView } from '../styles/styled-primitives';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { GlossArt } from './GlossArt';
@@ -53,7 +53,7 @@ export function CustomColorPicker({
   const messages = useAgentCreatorMessages();
   const membership = useFieldMembership({ label: messages.hexColor });
   const { colors } = useTheme();
-  const id = useId().replace(/:/g, '');
+  const id = useSvgIdPrefix('bloom-color-picker');
   const fieldRef = useRef<ComponentRef<typeof View>>(null);
   const railRef = useRef<ComponentRef<typeof View>>(null);
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(value) ?? { h: 259, s: 0.83, v: 1 });
@@ -213,17 +213,17 @@ export function CustomColorPicker({
             style={{ position: 'absolute', left: 0, top: 0 }}
           >
             <Defs>
-              <LinearGradient id={`${id}-sat`} x1="0" x2="1" y1="0" y2="0">
+              <LinearGradient id={`${id}sat`} x1="0" x2="1" y1="0" y2="0">
                 <Stop offset="0" stopColor="#ffffff" />
                 <Stop offset="1" stopColor={hueColor} />
               </LinearGradient>
-              <LinearGradient id={`${id}-value`} x1="0" x2="0" y1="0" y2="1">
+              <LinearGradient id={`${id}value`} x1="0" x2="0" y1="0" y2="1">
                 <Stop offset="0" stopColor="#000000" stopOpacity={0} />
                 <Stop offset="1" stopColor="#000000" />
               </LinearGradient>
             </Defs>
-            <Rect rx={16} width="100%" height="100%" fill={`url(#${id}-sat)`} />
-            <Rect rx={16} width="100%" height="100%" fill={`url(#${id}-value)`} />
+            <Rect rx={16} width="100%" height="100%" fill={`url(#${id}sat)`} />
+            <Rect rx={16} width="100%" height="100%" fill={`url(#${id}value)`} />
           </Svg>
           <StyledView
             pointerEvents="none"
@@ -281,7 +281,7 @@ export function CustomColorPicker({
             style={{ position: 'absolute', left: 0, top: 0 }}
           >
             <Defs>
-              <LinearGradient id={`${id}-hue`} x1="0" x2="1" y1="0" y2="0">
+              <LinearGradient id={`${id}hue`} x1="0" x2="1" y1="0" y2="0">
                 {['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff', '#ff0000'].map(
                   (color, index) => (
                     <Stop key={color + index} offset={index / 6} stopColor={color} />
@@ -289,7 +289,7 @@ export function CustomColorPicker({
                 )}
               </LinearGradient>
             </Defs>
-            <Rect rx={6} width="100%" height={12} fill={`url(#${id}-hue)`} />
+            <Rect rx={6} width="100%" height={12} fill={`url(#${id}hue)`} />
           </Svg>
           <StyledView
             pointerEvents="none"

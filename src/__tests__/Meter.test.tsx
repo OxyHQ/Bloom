@@ -312,6 +312,22 @@ describe('MeterRing', () => {
   });
 });
 
+describe('MeterRing, decorative', () => {
+  it('has no role, is hidden, and paints its backdrop disc', () => {
+    mount(
+      <MeterRing decorative value={0.5} size={32} backdrop="rgb(0, 0, 255)" testID="r">
+        <span>×</span>
+      </MeterRing>,
+    );
+    const ring = byTestId('r');
+    expect(ring.getAttribute('role')).toBeNull();
+    expect(ring.getAttribute('aria-hidden')).toBe('true');
+    expect(ring.getAttribute('aria-valuenow')).toBeNull();
+    expect(getComputedStyle(ring).backgroundColor).toBe('rgb(0, 0, 255)');
+    expect(ring.textContent).toBe('×');
+  });
+});
+
 describe('MeterRing as a download ring', () => {
   it('indeterminate: a quarter of the ring turning, and no value reported', () => {
     mount(

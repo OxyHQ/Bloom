@@ -97,24 +97,9 @@ With `inset`, give columns `flex` shares (`flex: 1.4` for the first, `1` for the
 
 `selectable` puts a checkbox in the first column. The header checkbox is **page-scoped**, like TanStack's `toggleAllPageRowsSelected`: checked when every row on the page is selected, `mixed` when some are, and pressing it selects (or clears) the page only. Selection is by `getRowId`, so it survives sorting, paging and filtering. A selectable table's rows carry `aria-selected` (web) and `accessibilityState.selected` (native); a non-selectable table's rows carry neither. The checkboxes' names ("Select all rows on this page", "Select row …") and the density control's words are English defaults, localised via `BloomProvider locale`; `selectAllLabel`, `getSelectRowLabel` and `sizeToggle*` props still win.
 
-## `DataTableRowAction`
+## Row actions
 
-A small icon button under a 200ms `md` tooltip: Bloom's plain neutral `Button`, 32×32 with a 16px glyph — a full pill, per Bloom's radius rule. `label` is both its accessible name and the tooltip's text; `accessibilityLabel` overrides the name (e.g. "More actions for John Clarkson" with the tooltip "More actions"). `active` paints the pressed state while a menu it opened is showing. It forwards the props an anchored family's `asChild` trigger merges in, so it is the trigger of a row's `DropdownMenu`:
-
-```tsx
-<DropdownMenu open={open} onOpenChange={setOpen}>
-  <DropdownMenuTrigger asChild label={`More actions for ${name}`}>
-    <DataTableRowAction icon={RiMore2Fill} label="More actions" active={open} />
-  </DropdownMenuTrigger>
-  <DropdownMenuContent align="end" minWidth={220} maxWidth={220}>…</DropdownMenuContent>
-</DropdownMenu>
-```
-
-The tooltip opens on hover after 200ms and on KEYBOARD focus, closes on leave, blur and press — react-aria's behaviour. It is web-only; on native the button is named and the tooltip is not rendered.
-
-### Hazard: the web `Tooltip` backdrop under a hover tooltip
-
-The web `Tooltip` lays a full-screen press-to-dismiss backdrop over the page while it is open. Under a hover tooltip that backdrop lands **under the pointer**: measured in Chrome, the trigger received `pointerleave` with the backdrop as `relatedTarget` in the frame the bubble opened, so the tooltip closed again after one frame — and a click in that window would have hit the backdrop instead of the button. `DataTableRowAction` wraps its `Tooltip` in a `pointerEvents="none"` View (react-native-web emits `>* { pointer-events: none }`, which makes the backdrop inert) and hands the button its events back with a `pointerEvents="auto"` View. Keep both props — a `pointerEvents` STYLE entry is silently dropped (see `docs/overlay.mdx`). Jest cannot see this; verify hover in a real browser.
+`DataTableRowAction` and `DataTableRowActions` are [`RowActionButton` and `RowActions`](./row-actions.mdx), exported here under their data-table names, with the `DataTableRowAction*Props`/`Item` types as aliases. New code imports them from `@oxy.so/bloom/row-actions`.
 
 ## Cell and toolbar parts
 
@@ -147,7 +132,7 @@ toolbar={<>
 | `DataTableFilter` | `<Select className="shrink-0" popoverClassName="min-w-40">`; the trigger hugs its value; the standard 266px list; the chosen row marked by the row wash alone — no check drawn. Uncontrolled from the first option unless `value`/`defaultValue` |
 | `DataTableSearch` | `InputBase` with `leadingIcon={RiSearchLine}`; `body-medium`, full pill; `w-[153px]` from `sm`, below it `flex-1 min-w-[153px]` in the scrolling toolbar row (window width, like the class) |
 | `DataTableSelect` | a `w-[Npx]` select; an option's `dot` (a `Badge dot`: `green` = `success`, `yellow` = `warning`, `indigo` = `info`) or 18px `icon` (`foreground-icon-secondary`) leads its label in the list and in the trigger (`gap-[5px]`, via `SelectValue`'s [`leading`](./select.mdx#leading-marks)); an icon option trims the trigger's left inset to 8 (`pl-2`) |
-| `DataTableRowActions` | `justify-end gap-2.5`; one `DataTableRowAction` per `actions` entry, then — when `menu` has entries — the "⋮" trigger of a `DropdownMenu` (`placement="bottom end"`, `w-[220px] p-2`, entries `px-2 py-1.5` with an 18px `foreground-icon-secondary` glyph), painted pressed while open and named `` `${menuLabel} for ${name}` `` |
+| `DataTableRowActions` | [`RowActions`](./row-actions.mdx) |
 
 ### `DataTableSelect` shrinks like a width class
 
@@ -155,5 +140,5 @@ toolbar={<>
 
 ## Known gaps
 
-- Jest resolves no platform extensions, so the suite exercises the native `Button`, `Select` and `DropdownMenu`; the tooltip path is web-only and verified in Chrome, not in jest.
+- Jest resolves no platform extensions, so the suite exercises the native `Button`, `Select` and `DropdownMenu`.
 - Native was not run on a device.

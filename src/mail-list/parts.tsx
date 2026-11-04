@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -20,6 +20,7 @@ import { Text } from '../typography';
 import { MAIL_LABEL_DOT, MAIL_ROW_RADIUS, MAIL_TOUCH_TARGET, type MailPaint } from './shared';
 import type { MailAction, MailLabel, MailStrings } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 // ---------------------------------------------------------------------------
 //  The link that covers a row
@@ -166,7 +167,7 @@ export function MailGlyphButton({
 }: MailGlyphButtonProps) {
   // Hover is mirrored (Pressable reports no hover on native); PRESS is read from
   // Pressable itself, so a lost press-out cannot leave the button lit.
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   // The DRAWN control and the TOUCH target are two numbers. A 44-tall button in
   // the row's right column sets the row's height — a list of two-line rows came
   // out at 88 because of it — so the glyph is drawn at `size` and the target is
@@ -198,8 +199,8 @@ export function MailGlyphButton({
         : { 'aria-pressed': pressed, accessibilityState: { selected: pressed } })}
       onPress={onPress}
       hitSlop={{ top: slop, bottom: slop, left: slop, right: slop }}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={({ pressed: down }) => [buttonStyle(hovered || down), style]}
       testID={testID}
     >

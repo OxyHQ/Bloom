@@ -22,9 +22,6 @@ export const PHOTO_ASPECT_RATIO = 20 / 19;
 export const HORIZONTAL_PHOTO_WIDTH = '40%';
 /** The most dots the pager draws; longer runs slide a window. */
 export const MAX_DOTS = 5;
-export const DOT_SIZE = 6;
-/** A dot at a window edge that has more photos beyond it. */
-export const DOT_EDGE_SIZE = 4;
 /**
  * How far `hoverZoom` scales the photo under a pointer. 1.06 — enough to read
  * as the photo coming forward, small enough that the crop barely moves and a
@@ -65,9 +62,6 @@ export const COMPACT_PHOTO_RADIUS = 12;
 
 /** The heart's dark body over imagery is this opaque. */
 export const HEART_SCRIM_OPACITY = 0.5;
-/** An inactive dot is this opaque; the active one is solid. */
-export const DOT_INACTIVE_OPACITY = 0.6;
-
 /**
  * Every colour the listing card family paints. Pure.
  *
@@ -175,36 +169,6 @@ export function resolvePhoto(
   return isImageUrl(photo) ? photo : resolver?.(photo, variant);
 }
 
-export interface DotSlot {
-  /** The photo this dot stands for. */
-  index: number;
-  size: number;
-  active: boolean;
-}
-
-/**
- * The dots to draw for `count` photos with `active` in view: all of them up to
- * {@link MAX_DOTS}, otherwise a window of five that follows the active photo,
- * whose edge dots shrink while more photos lie beyond them.
- */
-export function dotWindow(count: number, active: number): DotSlot[] {
-  if (count <= 1) return [];
-  const visible = Math.min(count, MAX_DOTS);
-  const start = Math.min(Math.max(0, active - Math.floor(visible / 2)), count - visible);
-  const end = start + visible - 1;
-  const slots: DotSlot[] = [];
-  for (let index = start; index <= end; index++) {
-    const moreBefore = index === start && start > 0;
-    const moreAfter = index === end && end < count - 1;
-    slots.push({
-      index,
-      size: moreBefore || moreAfter ? DOT_EDGE_SIZE : DOT_SIZE,
-      active: index === active,
-    });
-  }
-  return slots;
-}
-
 // ---------------------------------------------------------------------------
 //  Web CSS — hover-only arrows, the snapping track and focus rings have no
 //  inline-style spelling, so they hang off `dataSet` attributes in an adopted
@@ -218,7 +182,6 @@ const LINK = '[data-bloom-listing-card-link]';
 const TRACK = '[data-bloom-listing-card-track]';
 const PHOTO = '[data-bloom-listing-card-photo]';
 const ARROW = '[data-bloom-listing-card-arrow]';
-const DOT = '[data-bloom-listing-card-dot]';
 const WISHLIST = '[data-bloom-wishlist-card]';
 
 export const LISTING_CARD_CSS = `
@@ -250,9 +213,6 @@ ${surfaceRevealCss({ scope: ARROW, shown: `${CARD}:hover ${ARROW}, ${ARROW}:focu
     display: none;
   }
 }
-${DOT} {
-  transition: width 200ms ease-out, height 200ms ease-out, opacity 200ms ease-out;
-}
 ${CARD}[data-bloom-listing-card-zoom] ${PHOTO} {
   transition: transform 400ms cubic-bezier(0.2, 0, 0.2, 1);
   transform-origin: center;
@@ -266,7 +226,7 @@ ${CARD}[data-bloom-listing-card-zoom] ${PHOTO} {
   ${ARROW} {
     --bloom-surface-presence-ms: 0ms;
   }
-  ${ARROW} .bloom-btn--surface > *, ${DOT} {
+  ${ARROW} .bloom-btn--surface > * {
     transition: none;
   }
   ${CARD}[data-bloom-listing-card-zoom] ${PHOTO},

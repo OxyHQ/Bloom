@@ -267,12 +267,13 @@ export * from './pagination';
 export * from './agent-limits-card';
 export * from './usage-card';
 export * from './subscription-plans';
-export { Carousel, CarouselItem } from './carousel';
+export { Carousel, CarouselDots, CarouselItem } from './carousel';
 export type {
   CarouselProps,
   CarouselItemProps,
   CarouselControlProps,
   CarouselControls,
+  CarouselDotsProps,
 } from './carousel';
 export { FileUpload, formatFileSize } from './file-upload';
 export type { FileUploadFile, FileUploadLabels, FileUploadProps } from './file-upload';
@@ -288,6 +289,7 @@ export type {
 export * from './notification';
 export * from './announcement';
 export * from './data-table';
+export * from './row-actions';
 export * from './chart-cards';
 export * from './calendar';
 export * from './stat-cards';
@@ -422,6 +424,10 @@ export {
   ScaleAndFadeOut,
   ShrinkAndPop,
   ScreenTransition,
+  RollingText,
+  useCountUp,
+  useCountUpPrecise,
+  useEasedValues,
   MOTION_RECIPES,
   animateMotion,
   animateWithSpec,
@@ -433,6 +439,8 @@ export {
   springSettleMs,
 } from './motion/index.web';
 export type {
+  RollingTextMode,
+  RollingTextProps,
   ScreenTransitionProps,
   ScreenTransitionDirection,
   MotionIntent,
@@ -2139,6 +2147,7 @@ export type {
   MeterColors,
   MeterDecorativeProps,
   MeterProps,
+  MeterRingDecorativeProps,
   MeterRingProps,
   StatBarProps,
   StatBarProgressProps,

@@ -7,11 +7,12 @@
  * bands from drifting apart while still looking like one component.
  */
 import { Surface } from '../surface/index.web';
-import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
 import { BUTTON_SHADOW } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import {
@@ -70,7 +71,7 @@ function ComposerLoaderComponent({
   testID,
 }: ComposerLoaderProps) {
   const theme = useTheme();
-  const gradientId = `bloom-cl-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
   const [box, setBox] = useState({ w: 640, h: 52 });
 
   useEffect(() => {

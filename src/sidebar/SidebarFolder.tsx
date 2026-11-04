@@ -1,15 +1,10 @@
-import React, { memo, useCallback, useEffect } from 'react';
-import { Pressable, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
+import React, { memo } from 'react';
+import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { borderRadius } from '../styles/tokens';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
+import { Collapsible } from '../collapsible';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -22,9 +17,10 @@ import { useSidebarPalette, type SidebarPalette } from './palette';
 import { useSidebarWebCss } from './parts';
 import type { SidebarFolderProps, SidebarTreeFolder, SidebarTreeItem } from './types';
 import { IS_WEB } from '../styles/platform';
-import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import type { SurfaceTransition } from '../motion/types';
 
-const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
+/** A tree branch's reveal: height and opacity together, 300ms ease-in-out. */
+export const SIDEBAR_TREE_REVEAL: SurfaceTransition = { duration: 300, easing: [0.4, 0, 0.2, 1] };
 const ROW_PITCH = 32; // a 30px row and its 2px gap
 const FIRST_CENTER = 15;
 
@@ -193,7 +189,6 @@ function SidebarFolderComponent({
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const { tree } = useSidebarMetrics();
-  const reducedMotion = usePrefersReducedMotion();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const [isOpen, setOpen] = useControllableState<boolean>({
     value: open ?? folder.open,
@@ -202,28 +197,6 @@ function SidebarFolderComponent({
   });
   const expanded = forceOpen || isOpen;
   const Icon = expanded ? RiFolderOpenLine : RiFolderLine;
-
-  const progress = useSharedValue(expanded ? 1 : 0);
-  const contentHeight = useSharedValue(0);
-  useEffect(() => {
-    const target = expanded ? 1 : 0;
-    progress.value = reducedMotion
-      ? target
-      : withTiming(target, { duration: 300, easing: EASE_IN_OUT });
-  }, [expanded, reducedMotion, progress]);
-  const onContentLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      contentHeight.value = event.nativeEvent.layout.height;
-    },
-    [contentHeight],
-  );
-  const clipStyle = useAnimatedStyle(
-    () => ({
-      opacity: progress.value,
-      height: progress.value >= 1 ? 'auto' : contentHeight.value * progress.value,
-    }),
-    [progress, contentHeight],
-  );
 
   const rowStyle: WebCssStyle = {
     flex: 1,
@@ -264,38 +237,30 @@ function SidebarFolderComponent({
         </Pressable>
         {folder.actions}
       </View>
-      <Animated.View
-        aria-hidden={!expanded}
-        pointerEvents={expanded ? 'auto' : 'none'}
-        accessibilityElementsHidden={!expanded}
-        importantForAccessibility={expanded ? 'auto' : 'no-hide-descendants'}
-        {...(IS_WEB && !expanded ? { inert: true } : {})}
-        style={[{ overflow: 'hidden' }, clipStyle]}
+      <Collapsible
+        open={expanded}
+        transition={SIDEBAR_TREE_REVEAL}
+        contentStyle={{
+          position: 'relative',
+          width: '100%',
+          flexDirection: 'column',
+          gap: 2,
+          paddingTop: 2,
+        }}
       >
-        <View
-          onLayout={onContentLayout}
-          style={{
-            position: 'relative',
-            width: '100%',
-            flexDirection: 'column',
-            gap: 2,
-            paddingTop: 2,
-          }}
-        >
-          <TreeConnector count={folder.items.length} color={palette.iconQuaternary} />
-          {folder.items.map((item) => (
-            <SidebarTreeRow
-              key={item.key}
-              item={item}
-              folder={folder}
-              selected={item.key === selectedItem}
-              focusable={expanded}
-              onPress={onItemPress}
-              palette={palette}
-            />
-          ))}
-        </View>
-      </Animated.View>
+        <TreeConnector count={folder.items.length} color={palette.iconQuaternary} />
+        {folder.items.map((item) => (
+          <SidebarTreeRow
+            key={item.key}
+            item={item}
+            folder={folder}
+            selected={item.key === selectedItem}
+            focusable={expanded}
+            onPress={onItemPress}
+            palette={palette}
+          />
+        ))}
+      </Collapsible>
     </View>
   );
 }

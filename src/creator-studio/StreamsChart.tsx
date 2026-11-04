@@ -1,5 +1,5 @@
 import { useControllableState } from '../hooks/use-controllable-state';
-import React, { useCallback, useId, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, {
   Circle,
@@ -29,6 +29,7 @@ import {
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { RiAlbumLine } from '../icons/remix/RiAlbumLine';
 import { Text } from '../typography';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { StreamsChartProps, StreamsEvent } from './types';
@@ -123,8 +124,7 @@ export function StreamsChart({
   const hoveredEvent = hovering ? events.find((e) => e.index === activeIndex) : undefined;
   const visibleEvents = events.filter((e) => e.index >= 0 && e.index < data.length);
 
-  const rawId = useId();
-  const id = `bloom-streams-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-streams');
   const title = current?.label ?? '';
 
   return (
@@ -177,11 +177,11 @@ export function StreamsChart({
               <>
                 <Svg width={size.width} height={size.height} pointerEvents="none">
                   <Defs>
-                    <LinearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
+                    <LinearGradient id={`${id}fill`} x1="0" y1="0" x2="0" y2="1">
                       <Stop offset="0" stopColor={tone.color} stopOpacity={0.3} />
                       <Stop offset="1" stopColor={tone.color} stopOpacity={0} />
                     </LinearGradient>
-                    <ClipPath id={`${id}-reveal`}>
+                    <ClipPath id={`${id}reveal`}>
                       <Rect x={0} y={0} width={revealWidth} height={size.height} />
                     </ClipPath>
                   </Defs>
@@ -202,10 +202,10 @@ export function StreamsChart({
                       />
                     );
                   })}
-                  <G clipPath={`url(#${id}-reveal)`}>
+                  <G clipPath={`url(#${id}reveal)`}>
                     <Path
                       d={closedAreaPath(points, box.bottom, 'monotone')}
-                      fill={`url(#${id}-fill)`}
+                      fill={`url(#${id}fill)`}
                       stroke="none"
                     />
                     <Path

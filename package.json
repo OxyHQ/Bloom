@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "17.6.2",
+  "version": "17.7.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -832,6 +832,20 @@
         "default": "./lib/commonjs/data-table/index.js"
       }
     },
+    "./row-actions": {
+      "react-native": {
+        "types": "./lib/typescript/module/row-actions/index.d.ts",
+        "default": "./src/row-actions/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/row-actions/index.d.ts",
+        "default": "./lib/module/row-actions/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/row-actions/index.d.ts",
+        "default": "./lib/commonjs/row-actions/index.js"
+      }
+    },
     "./chart-cards": {
       "react-native": {
         "types": "./lib/typescript/module/chart-cards/index.d.ts",
@@ -1084,6 +1098,11 @@
       "react-native": {
         "types": "./lib/typescript/module/settings-modal/rows.d.ts",
         "default": "./src/settings-modal/rows.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/settings-modal/rows.web.d.ts",
+        "import": "./lib/module/settings-modal/rows.web.js",
+        "require": "./lib/commonjs/settings-modal/rows.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/settings-modal/rows.d.ts",
@@ -4442,6 +4461,9 @@
       ],
       "data-table": [
         "./lib/typescript/module/data-table/index.d.ts"
+      ],
+      "row-actions": [
+        "./lib/typescript/module/row-actions/index.d.ts"
       ],
       "chart-cards": [
         "./lib/typescript/module/chart-cards/index.d.ts"

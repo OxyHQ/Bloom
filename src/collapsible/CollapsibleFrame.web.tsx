@@ -1,4 +1,4 @@
-import React, { forwardRef, useLayoutEffect, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { Animated, type StyleProp, type ViewStyle } from 'react-native';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -6,6 +6,7 @@ import { CollapsibleVisibilityContext, useCollapsibleVisibility } from './contex
 import type { CollapsibleFrameProps } from './frame-types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { surfacePresenceVars, useSurfacePresenceContent } from '../surface/use-surface-presence';
+import { resolveSurfaceTransition } from '../motion/surface-transition';
 import { DEFAULT_COLLAPSIBLE_TRANSITION } from './use-collapsible-motion';
 
 const CSS = `@layer base {
@@ -25,8 +26,11 @@ const AnimatedPanel = Animated.createAnimatedComponent(PanelHost);
 
 export function CollapsibleFrame({
   open,
+  hidden,
   settled = false,
   progress,
+  keepMounted = true,
+  transition = DEFAULT_COLLAPSIBLE_TRANSITION,
   children,
   style,
   className,
@@ -46,18 +50,22 @@ export function CollapsibleFrame({
   const body = useRef<HTMLDivElement>(null);
   const previousOutside = useRef<HTMLElement | null>(null);
   const [height, setHeight] = useState(0);
+  const measure = useCallback(() => {
+    const next = body.current?.getBoundingClientRect().height ?? 0;
+    if (next > 0) setHeight((old) => (Math.abs(old - next) > 0.5 ? next : old));
+  }, []);
   useLayoutEffect(() => {
     const node = body.current;
     if (!node) return;
-    const measure = () => {
-      const next = node.getBoundingClientRect().height;
-      if (next > 0) setHeight((old) => (Math.abs(old - next) > 0.5 ? next : old));
-    };
-    measure();
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [measure]);
+  // Children mounting again on opening are measured before paint, not a frame late.
+  const mounted = keepMounted || !hidden;
+  useLayoutEffect(() => {
+    if (mounted) measure();
+  }, [mounted, measure]);
   useLayoutEffect(() => {
     const active = document.activeElement;
     if (visible) {
@@ -80,12 +88,12 @@ export function CollapsibleFrame({
       active.blur();
   }, [visible, returnFocusRef, returnFocusId]);
   const reduced = usePrefersReducedMotion();
-  const fadeMs = reduced ? 0 : DEFAULT_COLLAPSIBLE_TRANSITION.duration;
-  const fadeEasing = `cubic-bezier(${(DEFAULT_COLLAPSIBLE_TRANSITION.easing ?? [0.42, 0, 0.58, 1]).join(', ')})`;
+  const fade = resolveSurfaceTransition(transition);
+  const fadeMs = reduced ? 0 : fade.duration;
   useSurfacePresenceContent(panel, {
     presence: visible ? 1 : 0,
     duration: fadeMs,
-    easing: fadeEasing,
+    easing: fade.cssEasing,
   });
   const maxHeight = progress.interpolate({
     inputRange: [0, 1],
@@ -122,7 +130,7 @@ export function CollapsibleFrame({
           className={['bloom-collapsible-content', contentClassName].filter(Boolean).join(' ')}
           style={resolveNativeWebStyle(contentStyle)}
         >
-          {children}
+          {mounted ? children : null}
         </div>
       </AnimatedPanel>
     </CollapsibleVisibilityContext.Provider>

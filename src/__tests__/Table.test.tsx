@@ -119,6 +119,32 @@ describe('Table', () => {
     expect(onSort).toHaveBeenCalledTimes(1);
   });
 
+  it('draws `leading` beside the sort button, not inside it, and lets an auto column hug', () => {
+    const { getByLabelText, getByTestId } = renderWithTheme(
+      <Table>
+        <TableHeader>
+          <TableColumn
+            leading={<Text testID="select-all">all</Text>}
+            onSort={() => {}}
+            accessibilityLabel="Sort by name"
+          >
+            Name
+          </TableColumn>
+          <TableColumn width="auto" testID="col-actions">
+            Actions
+          </TableColumn>
+        </TableHeader>
+      </Table>,
+    );
+    const button = getByLabelText('Sort by name');
+    expect(button.findAll((node) => node.props.testID === 'select-all')).toHaveLength(0);
+    expect(getByTestId('select-all')).toBeTruthy();
+    const auto = resolvedStyle(getByTestId('col-actions').props.style);
+    expect(auto).toMatchObject({ flexGrow: 0, flexShrink: 0 });
+    expect(auto.flexBasis).toBeUndefined();
+    expect(auto.width).toBeUndefined();
+  });
+
   it('shows the empty state when the body has no rows', () => {
     const { getByText } = renderWithTheme(
       <Table>

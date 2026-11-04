@@ -1,4 +1,4 @@
-import { type ComponentRef, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop, Circle } from 'react-native-svg';
 
@@ -7,6 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { useSettingsPalette } from './context';
 import type { SettingsPlanArtProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
@@ -192,12 +193,8 @@ function paintBlobs(size: number, blobs: Blobs): HTMLCanvasElement | null {
 }
 
 /** The static discs as SVG — native, and the no-WebGL fallback. */
-function useSvgId(prefix: string): string {
-  return `${prefix}-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
-}
-
 function BlobsSvg({ size, blobs }: { size: number; blobs: Blobs }) {
-  const id = useSvgId('bloom-plan');
+  const id = useSvgIdPrefix('bloom-plan');
   const disc = (gradientId: string, color: string) => (
     <RadialGradient id={gradientId} cx="50%" cy="50%" r="50%">
       <Stop offset="0" stopColor={color} stopOpacity={0.7} />
@@ -208,14 +205,14 @@ function BlobsSvg({ size, blobs }: { size: number; blobs: Blobs }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
       <Defs>
-        {disc(`${id}-a`, blobs.a)}
-        {disc(`${id}-b`, blobs.b)}
-        {disc(`${id}-c`, blobs.c)}
+        {disc(`${id}a`, blobs.a)}
+        {disc(`${id}b`, blobs.b)}
+        {disc(`${id}c`, blobs.c)}
       </Defs>
       <Rect x={0} y={0} width={100} height={100} fill={blobs.background} />
-      <Circle cx={12.5} cy={12.5} r={42} fill={`url(#${id}-a)`} />
-      <Circle cx={83} cy={58} r={38} fill={`url(#${id}-b)`} />
-      <Circle cx={50} cy={95} r={42} fill={`url(#${id}-c)`} />
+      <Circle cx={12.5} cy={12.5} r={42} fill={`url(#${id}a)`} />
+      <Circle cx={83} cy={58} r={38} fill={`url(#${id}b)`} />
+      <Circle cx={50} cy={95} r={42} fill={`url(#${id}c)`} />
     </Svg>
   );
 }
@@ -375,7 +372,7 @@ export function SettingsPlanArt({
  * that alpha on native.
  */
 export function RadialFade({ color, size }: { color: string; size: number }) {
-  const id = useSvgId('bloom-settings-plan-fade');
+  const id = `${useSvgIdPrefix('bloom-settings-plan-fade')}gradient`;
   return (
     <Svg width={size} height={size} style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>

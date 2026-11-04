@@ -2,6 +2,50 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.7.0
+
+Duplicates across the families now go through one canonical primitive each. Every old exported name keeps working.
+
+### Added
+
+- **`SelectField` is the labelled select.** A `Select` inside a `Field` — label, trigger with check-marked options, description or error — from `{ value, label }` `items`, typed by the options' values (`@oxy.so/bloom/select`, root). Each platform binds its own `Select`: the anchored list on web, the sheet on native. `TrackMetadataForm` uses it.
+- **`TextFieldPrefix` puts text before the input** — the leading twin of `TextFieldSuffix` (a currency, a protocol), sharing its colours and states.
+- **`SettingsSelect` takes `size`, `disabled`, `width` and `style`**, so one compact select covers every settings row, Bloom's own and an app's.
+- **`RowActions` and `RowActionButton` are a family of their own: `@oxy.so/bloom/row-actions`** — icon buttons, then a "⋮" menu, generalized from `DataTableRowActions`. New: an item can carry an `accessibilityLabel` beside its tooltip `label`, menu entries may have no icon, `menuAppearance` (`'plain' | 'outline'`) and `menuWidth`. The settings storage page uses it.
+- **`Tooltip` takes `delay`.** A `visible` request shows only after it has held that long, so a pointer that just crosses a trigger opens nothing; closing is immediate. `TooltipProps` is exported.
+- **`TableColumn` takes `leading` and `width="auto"`.** `leading` sits beside the sort button, never inside it (a select-all checkbox); `'auto'` lets a column hug its content.
+- **`useCollapsibleMotion` is public, and `Collapsible` can unmount its children.** `keepMounted={false}` unmounts the body once the exit finishes and mounts it again on opening. The hook drives a part that moves with a reveal it does not draw, such as a turning chevron.
+- **`CarouselDots` is the one position indicator** (`@oxy.so/bloom/carousel`, root): pill or round dots, the default or an on-photo appearance, and an optional sliding window whose edge dots shrink while more slides lie beyond. With `onIndexChange` each dot is a named button; without it the row is decorative and hidden from assistive technology. `Carousel`, the auth card's artwork and the listing card's photo pager draw it.
+- **`useKeyboardMetrics()` is the one keyboard listener** (`@oxy.so/bloom/hooks`, root): `{ visible, height, top }`, always hidden on the web, with `timing: 'will'` for a page that moves with the keyboard on iOS. `useKeyboardVisible` reads it, and the chat composer's suggestion panel stops at its `top`.
+- **`useKeyboardReveal` is public** (with `KEYBOARD_REVEAL_MARGIN`): it keeps a scrolling page's focused field above the software keyboard on native and returns the keyboard height to pad by. It moves from the settings modal to the hooks family.
+- **`AvatarGroup` takes `ringWidth` and an item's `initials`.** The ring can be thicker, or `0` for none; a member's explicit initials draw on Avatar's neutral disc without `showInitials`.
+- **`BREAKPOINTS` gains `2xl` (1536).**
+- **`RollingText` is the one rolling text: `@oxy.so/bloom/motion`** (root). `mode="whole"` (the default) rolls the old text out and the new one in; `mode="digits"` turns every figure on its own 0–9 wheel while the other characters stay put. Both snap under reduced motion. The engagement count, `SubscriptionPrice` and the medical chart cards' range pill use it.
+- **`useCountUp`, `useCountUpPrecise` and `useEasedValues` are public** (`@oxy.so/bloom/motion`, root), moved out of the chart cards; `ActivityRingsCard`'s own tween is `useEasedValues`.
+- **`Meter` takes `indeterminate`.** A segment 40% of the track sweeps it every 1.4 s (parked under reduced motion), and the track reports a busy progressbar with no value. `TrackUploadRow`'s processing bar uses it, and the dialog header's wizard step is a determinate `Meter`.
+- **`MeterRing` can be decorative.** `decorative` drops the role and hides the ring, `backdrop` paints a disc under it, and a decorative ring can follow a Reanimated shared value through `progress`. The message-media send ring, the media header's download toggle, the video note ring and agent-progress's rings are `MeterRing` now.
+- **`GlyphButton` takes `hitSlop`**, so a small glyph keeps a finger-sized press target. The date picker, the calendar's month switcher and the chart cards' range pill share one month-nav button built on it.
+
+### Changed
+
+- **`SelectValue`'s label function always receives the chosen item**, never the bare value, on both platforms, typed by `SelectValue<T>`. A value no item matches shows as itself on native too, where it showed the placeholder. `SettingsSelect` and its callers drop their object-or-string check.
+- **A `Field` inside another field keeps the outer constraints**: it takes the enclosing `disabled`, `invalid` and `required` on top of its own, so a sub-field cannot re-enable itself.
+- **`SettingsSelect` opens the web list on every web bundler**: `settings-modal` and `settings-modal/rows` bind it to the web `Select`.
+- **Bloom's own forms use the canonical parts.** The agent creator's and multi-agent chat's settings selects are `SettingsSelect` (the chat's trigger no longer pins a height; the agent creator's options gain the check mark). `OfferingEditor` and `MortgageCalculator` fields are `Field` + `TextField`: their labels are linked to their inputs, the currency sits in `TextFieldPrefix`, and the editor's field spacing follows `Field`'s.
+- **One reveal for the composer attachment strip, the settings tool chips and the sidebar trees**: `Collapsible`, with the timing each had. `Collapsible`'s web fade now follows its `transition` (it was fixed at 300 ms ease-in-out).
+- **The settings storage table is a `Table`** with `aria-sort` on its sort headers, and its delete button and "⋮" menu are `RowActions` (the menu takes the row-actions layout: 8 px panel padding, 32 px rows). `DataTable`'s selection column puts its checkbox in `TableColumn`'s `leading`, so its sort button and `aria-sort` are `TableColumn`'s own.
+- **Every overlapping avatar stack is an `AvatarGroup`** — the project board's ticket card and detail dialog, the media header's meta line. The first face now sits on top, as `AvatarGroup` always has.
+- **The hand-rolled empty states draw `EmptyState`**: `TrackListEmpty` (its icon on the tinted disc instead of a neutral well), `ChatEmptyState`, the chat list's empty list and empty search results, and the payment method list, keeping their props and test ids.
+- **Width branches read `BREAKPOINTS`** (calendar, stat cards, web search, data table, ticket dialog), and **every per-instance SVG id comes from `useSvgIdPrefix`** (composer loader, scroll edge fade, settings art, agent creator, ticket genie surface, the chart cards, chat wallpaper, streams and price-history charts, shapes — whose own encoder is gone).
+- **Hover state is `useInteractionState`**: message-media's private `useHovered`, the questionnaire's `useHover`/`usePressed`, the date picker's day cells and the plain `useState` hover flags across the families. The file message's row wash listens on its pressable (it was attached to a `View`, which has no hover events, so it never showed).
+
+### Consumers
+
+- Nothing to change. `DataTableRowAction`, `DataTableRowActions` and their types are aliases of the row-actions exports (import from `@oxy.so/bloom/row-actions` in new code); `DataTableRowActionProps.appearance` is `'plain' | 'outline'` (other values were ignored).
+- A `SelectValue` label function that checked for an object or a string can read `item.label`.
+- A `Record<Breakpoint, …>` listing every tier needs a `2xl` entry.
+- The message-media indeterminate send ring is announced as a busy progressbar rather than a busy image, and the auth card's dots are the neutral-50 token instead of pure white.
+
 ## 17.6.2
 
 ### Fixed

@@ -83,6 +83,14 @@ describe('GlyphButton geometry', () => {
     expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 20, height: 20 });
   });
 
+  it('`hitSlop` widens the press target, not the box', () => {
+    const { getByTestId } = renderWithTheme(
+      <GlyphButton testID="g" size={16} hitSlop={8} icon={makeGlyph()} accessibilityLabel="Next" />,
+    );
+    expect(getByTestId('g').props.hitSlop).toBe(8);
+    expect(resolvedStyle(getByTestId('g').props.style).width).toBe(16);
+  });
+
   it('`grow` makes the box a MINIMUM width, for a text glyph', () => {
     const { getByTestId } = renderWithTheme(
       <GlyphButton testID="g" size={32} grow accessibilityLabel="Speed">

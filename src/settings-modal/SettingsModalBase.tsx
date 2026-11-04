@@ -57,7 +57,7 @@ import type {
   SettingsNavGroup,
   SettingsNavItem,
 } from './types';
-import { useKeyboardReveal } from './use-keyboard-reveal';
+import { useKeyboardReveal } from '../hooks/use-keyboard-reveal';
 import { useSettingsWebCss } from './web-css';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';

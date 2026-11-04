@@ -45,6 +45,7 @@ import type { DialogHeaderConfig } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { DIALOG_MESSAGES } from './messages';
+import { Meter } from '../stat-bar';
 
 export type { DialogHeaderConfig } from './types';
 
@@ -394,37 +395,18 @@ function HeaderProgressBar({
 }): React.ReactElement {
   const theme = useTheme();
   const common = useCommonMessages();
-  const fraction = total > 0 ? Math.min(1, Math.max(0, step / total)) : 0;
   return (
-    <View
-      accessibilityRole="progressbar"
-      // The FLAT `aria-value*` props: react-native-web drops the
-      // `accessibilityValue` object entirely, so the wizard step announced a
-      // progressbar with no step count. React Native folds these back into
-      // `accessibilityValue`, so native is unchanged.
-      aria-valuemin={0}
-      aria-valuemax={total}
-      aria-valuenow={step}
-      // The NAME, which the value props do not supply and which `progressbar`
-      // never computes from contents: unnamed, the bar announced a bare "2 of
-      // 5" with no subject. This one Bloom can answer itself — the bar always
-      // means the same thing — so unlike `Slider` it takes
-      // no prop. `aria-valuetext` carries the reading, since the raw number is
-      // announced as a percentage otherwise.
+    <Meter
+      role="progressbar"
+      value={step}
+      max={total}
+      height={4}
+      track={onImage ? 'rgba(255,255,255,0.25)' : theme.colors.border}
+      // The NAME and the reading: the bar always means the same thing, so Bloom
+      // supplies both itself rather than taking a prop for them.
       accessibilityLabel={common.progress}
-      aria-valuetext={common.stepOf(step, total)}
-      style={[
-        styles.progressTrack,
-        { backgroundColor: onImage ? 'rgba(255,255,255,0.25)' : theme.colors.border },
-      ]}
-    >
-      <View
-        style={[
-          styles.progressFill,
-          { width: `${Math.round(fraction * 100)}%`, backgroundColor: theme.colors.primary },
-        ]}
-      />
-    </View>
+      valueText={common.stepOf(step, total)}
+    />
   );
 }
 
@@ -742,16 +724,5 @@ const styles = StyleSheet.create({
   /** Spacing between the large title and each large-title-zone extra. */
   extraRow: {
     marginTop: 12,
-  },
-  /** Thin wizard progress bar in the large-title zone. */
-  progressTrack: {
-    height: 4,
-    width: '100%',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
   },
 });

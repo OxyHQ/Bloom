@@ -13,11 +13,11 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CreateTicketDialog } from './CreateTicketDialog';
 import { ProjectBoardControls } from './ProjectBoardControls';
+import { MemberAvatars } from './MemberAvatars';
 import { ProjectBoardEmptyState } from './ProjectBoardEmptyState';
 import {
   RiMoreLine,
   RiArrowRightSLine as SourceArrow,
-  SourceAvatar,
   SourceChip,
   RiFolder6Line as SourceFolder,
   SourceText,
@@ -50,7 +50,7 @@ const getTicketLabel = (ticket: ProjectTicket) => ticket.code;
 const EMPTY_COLUMNS: readonly ProjectColumn[] = [];
 const EMPTY_MEMBERS: Readonly<Record<string, ProjectMember>> = {};
 
-function MemberAvatars({
+function TicketAssignees({
   ids,
   members,
 }: {
@@ -65,24 +65,7 @@ function MemberAvatars({
         .filter(Boolean)
         .join(', ')}
     >
-      {ids.map((id, index) => {
-        const member = members[id];
-        return (
-          member && (
-            <SourceAvatar
-              key={id}
-              size="sm"
-              source={member.avatar}
-              alt={member.name}
-              initials={member.initials}
-              className={cx(
-                'size-[22px] ring-2 ring-background-primary-default',
-                index > 0 && '-ms-1.5',
-              )}
-            />
-          )
-        );
-      })}
+      <MemberAvatars ids={ids} members={members} size={22} />
     </SourceView>
   );
 }
@@ -105,7 +88,7 @@ function TicketCard({
             {ticket.area}
           </SourceText>
         </SourceView>
-        <MemberAvatars ids={ticket.assignees} members={members} />
+        <TicketAssignees ids={ticket.assignees} members={members} />
       </SourceView>
       <SourceView className="flex flex-col items-start gap-2">
         <SourceView className="flex items-center gap-1.5">

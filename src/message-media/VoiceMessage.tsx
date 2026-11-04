@@ -17,7 +17,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { useMessageMediaHold } from './context';
-import { MediaFailure, useHovered, useMessageMediaCss, HoldPressable } from './parts';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { MediaFailure, useMessageMediaCss, HoldPressable } from './parts';
 import {
   formatPlaybackRate,
   MESSAGE_MEDIA_WIDTH,
@@ -252,7 +253,7 @@ function SpeedPill({
   paint: MessageMediaPaint;
   testID?: string;
 }) {
-  const [hovered, handlers] = useHovered();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const style: WebCssStyle = {
     paddingTop: 2,
     paddingBottom: 2,
@@ -265,7 +266,8 @@ function SpeedPill({
   return (
     <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
-      {...handlers}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       role="button"
       accessibilityLabel={label}
       onPress={onPress}
@@ -352,7 +354,11 @@ function VoiceMessageComponent({
   const clock = formatDuration(started ? position : duration);
   const name = accessibilityLabel ?? messages.voiceMessage(formatDuration(duration));
 
-  const [toggleHovered, toggleHandlers] = useHovered();
+  const {
+    state: toggleHovered,
+    onIn: onToggleHoverIn,
+    onOut: onToggleHoverOut,
+  } = useInteractionState();
   const toggleStyle: WebCssStyle = {
     paddingTop: 2,
     paddingBottom: 2,
@@ -437,7 +443,8 @@ function VoiceMessageComponent({
         {transcript ? (
           <HoldPressable
             {...webDataSet({ bloomMessageMediaPressable: '' })}
-            {...toggleHandlers}
+            onHoverIn={onToggleHoverIn}
+            onHoverOut={onToggleHoverOut}
             role="button"
             accessibilityLabel={open ? hideTranscriptLabel : transcribeLabel}
             aria-expanded={open}

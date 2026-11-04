@@ -193,10 +193,8 @@ describe('StepsCard', () => {
     fireEvent.press(getByTestId('steps-range-next'));
     expect(onPrev).toHaveBeenCalledTimes(1);
     expect(onNext).toHaveBeenCalledTimes(1);
-    // The rolling label keeps an invisible spacer copy for its line box.
-    expect(
-      getAllByText('29 Jun - 5 Jul', { includeHiddenElements: true }).length,
-    ).toBeGreaterThanOrEqual(2);
+    // The rolling label (`RollingText`) shows the range once while it is still.
+    expect(getAllByText('29 Jun - 5 Jul')).toHaveLength(1);
   });
 
   it('renders a static pill without buttons', () => {

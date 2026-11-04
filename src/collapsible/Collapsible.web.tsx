@@ -14,5 +14,5 @@ export const Collapsible = memo(function Collapsible({
 }: CollapsibleProps) {
   const open = useAppearingOpen(props.open, appear);
   const motion = useCollapsibleMotion(open, transition);
-  return <CollapsibleFrame {...props} open={open} {...motion} />;
+  return <CollapsibleFrame {...props} open={open} transition={transition} {...motion} />;
 });

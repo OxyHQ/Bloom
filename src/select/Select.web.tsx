@@ -49,6 +49,7 @@ import {
   defaultExtractLabel,
   defaultItemValueExtractor,
   ItemContext,
+  resolveSelectDisplay,
   SelectChevron,
   SelectTriggerStateContext,
   SelectValueRow,
@@ -68,6 +69,7 @@ import type {
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
+import { createSelectField } from './SelectField';
 import { isSpaceKey, rovingItems, rovingMove, rovingTarget } from '../hooks/roving-focus';
 import { hostElement, useReturnFocusOnClose } from '../floating/menu-keyboard';
 
@@ -392,33 +394,25 @@ export function SelectTrigger({
 // SelectValue
 // ---------------------------------------------------------------------------
 
-export function SelectValue({
+export function SelectValue<T = unknown>({
   children: extractLabel = defaultExtractLabel,
   leading,
   placeholder,
   className,
   style,
-}: SelectValueProps) {
+}: SelectValueProps<T>) {
   const { value } = useSelectContext();
-  const [storedItem] = useContext(ValueStoreContext);
+  const [storedItem] = useContext(ValueStoreContext) as [T | undefined, unknown];
   const trigger = useContext(SelectTriggerStateContext);
   const palette = useMenuPalette();
 
-  // The selected ITEM's label (`item => item.label` by default), exactly as the
-  // native fork reads it. Before any `SelectContent` has resolved an item the raw
-  // value is the fallback, so a select with no content still shows something.
-  const display =
-    value == null
-      ? (placeholder ?? '')
-      : storedItem !== undefined
-        ? extractLabel(storedItem)
-        : value;
+  const { chosen, display } = resolveSelectDisplay(value, storedItem, extractLabel, placeholder);
   // `text-text-primary`, `text-placeholder` while nothing is chosen,
   // and `disabled:text-text-tertiary`. Inline only without a caller
   // `className` — an inline colour outranks a caller's `text-*` utility.
   const color = trigger.disabled
     ? palette.trigger.disabledForeground
-    : value
+    : chosen
       ? palette.text
       : palette.textPlaceholder;
 
@@ -428,7 +422,7 @@ export function SelectValue({
       className={cx(
         SELECT_VALUE_CLASS[trigger.size],
         menuTypeClass(VALUE_TYPE[trigger.size], className),
-        className && (value ? 'text-foreground' : 'text-muted-foreground'),
+        className && (chosen ? 'text-foreground' : 'text-muted-foreground'),
         className,
       )}
       style={[
@@ -769,3 +763,12 @@ const styles = StyleSheet.create({
 });
 
 export { useSelectItemContext };
+
+export const SelectField = createSelectField({
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectIcon,
+  SelectContent,
+  SelectItem,
+});

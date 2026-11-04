@@ -1,4 +1,3 @@
-import { useId } from 'react';
 import { Platform } from 'react-native';
 import Svg, {
   Circle,
@@ -14,6 +13,7 @@ import Svg, {
   Stop,
 } from 'react-native-svg';
 import { StyledImage, StyledView } from '../styles/styled-primitives';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { RAINBOW_DARK, RAINBOW_LIGHT } from './rainbow-artwork';
@@ -33,7 +33,7 @@ export function GlossArt({
   active?: boolean;
   size?: number;
 }) {
-  const id = useId().replace(/:/g, '');
+  const id = useSvgIdPrefix('bloom-gloss');
   const { isDark } = useTheme();
   if (rainbow)
     return (
@@ -90,58 +90,58 @@ export function GlossArt({
   return (
     <Svg width={size} height={size} viewBox="0 0 26 26" {...svgA11yProps()}>
       <Defs>
-        <ClipPath id={`${id}-clip`}>
+        <ClipPath id={`${id}clip`}>
           <Circle cx={13} cy={13} r={13} />
         </ClipPath>
-        <RadialGradient id={`${id}-base`} cx="50%" cy="50%" r="50%">
+        <RadialGradient id={`${id}base`} cx="50%" cy="50%" r="50%">
           <Stop offset="0" stopColor={center} />
           <Stop offset="1" stopColor={edge} />
         </RadialGradient>
-        <LinearGradient id={`${id}-sheen`} x1="0" y1="0" x2="0" y2="1">
+        <LinearGradient id={`${id}sheen`} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor="#ffffff" stopOpacity={0} />
           <Stop offset="1" stopColor="#ffffff" stopOpacity={0.3} />
         </LinearGradient>
-        <LinearGradient id={`${id}-reflection`} x1="0" y1="0" x2="0" y2="1">
+        <LinearGradient id={`${id}reflection`} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor="#ffffff" stopOpacity={0.5} />
           <Stop offset="1" stopColor="#ffffff" stopOpacity={0} />
         </LinearGradient>
-        <LinearGradient id={`${id}-bounce`} x1="0" y1="0" x2="0" y2="1">
+        <LinearGradient id={`${id}bounce`} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor="#ffffff" stopOpacity={0} />
           <Stop offset="1" stopColor="#ffffff" stopOpacity={0.5} />
         </LinearGradient>
-        <Filter id={`${id}-soft`} x="-25%" y="-25%" width="150%" height="150%">
+        <Filter id={`${id}soft`} x="-25%" y="-25%" width="150%" height="150%">
           <FeGaussianBlur stdDeviation={0.5} />
         </Filter>
-        <Filter id={`${id}-hotspot`} x="-50%" y="-50%" width="200%" height="200%">
+        <Filter id={`${id}hotspot`} x="-50%" y="-50%" width="200%" height="200%">
           <FeGaussianBlur stdDeviation={1} />
         </Filter>
       </Defs>
-      <G clipPath={`url(#${id}-clip)`}>
-        <Circle cx={13} cy={13} r={13} fill={`url(#${id}-base)`} />
-        <Rect width={26} height={26} fill={`url(#${id}-sheen)`} />
+      <G clipPath={`url(#${id}clip)`}>
+        <Circle cx={13} cy={13} r={13} fill={`url(#${id}base)`} />
+        <Rect width={26} height={26} fill={`url(#${id}sheen)`} />
         <Ellipse
           cx={13}
           cy={5}
           rx={11}
           ry={5}
-          fill={`url(#${id}-reflection)`}
-          filter={`url(#${id}-soft)`}
+          fill={`url(#${id}reflection)`}
+          filter={`url(#${id}soft)`}
         />
         <Ellipse
           cx={13}
           cy={1.5}
           rx={4}
           ry={1.5}
-          fill={`url(#${id}-reflection)`}
-          filter={`url(#${id}-hotspot)`}
+          fill={`url(#${id}reflection)`}
+          filter={`url(#${id}hotspot)`}
         />
         <Ellipse
           cx={12}
           cy={26}
           rx={18}
           ry={7}
-          fill={`url(#${id}-bounce)`}
-          filter={`url(#${id}-soft)`}
+          fill={`url(#${id}bounce)`}
+          filter={`url(#${id}soft)`}
         />
         {active && (
           <Circle

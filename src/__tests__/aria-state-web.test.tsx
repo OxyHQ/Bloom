@@ -780,6 +780,16 @@ describe('meters and progressbars announce their value', () => {
     expect(el.getAttribute('aria-valuetext')).toBe('75%');
   });
 
+  it('Meter, indeterminate: a busy progressbar that reports no value', () => {
+    const c = mount(<Meter indeterminate value={0.5} accessibilityLabel="Processing" testID="m" />);
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-label')).toBe('Processing');
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    expect(el.getAttribute('aria-valuenow')).toBeNull();
+    expect(el.getAttribute('aria-valuetext')).toBeNull();
+    expect(byTestId(c, 'm-fill').style.width).toBe('40%');
+  });
+
   it('Meter: a decorative segment announces NOTHING rather than an unnamed value', () => {
     // The wizard's step segments. A nested progressbar would announce the same
     // measurement a second time, with no name of its own.

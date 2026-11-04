@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, {
   Circle,
@@ -13,6 +13,7 @@ import Svg, {
 } from 'react-native-svg';
 
 import { borderRadius } from '../styles/tokens';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import { niceTicks, type Point } from '../chart-cards/geometry';
 import { CartesianPlot } from '../chart-cards/primitives/CartesianPlot';
 import { ChartCardSurface } from '../chart-cards/primitives/ChartCardSurface';
@@ -194,8 +195,7 @@ export function PriceHistoryChart({
   const anim = useChartProgress(values);
 
   const stroke = theme.colors.primary;
-  const rawId = useId();
-  const id = `bloom-price-history-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-price-history');
 
   const last = data[data.length - 1];
   const resting = currentPrice ?? last?.value;
@@ -283,16 +283,16 @@ export function PriceHistoryChart({
                 <>
                   <Svg width={size.width} height={size.height} pointerEvents="none">
                     <Defs>
-                      <LinearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
+                      <LinearGradient id={`${id}fill`} x1="0" y1="0" x2="0" y2="1">
                         <Stop offset="0" stopColor={stroke} stopOpacity={0.16} />
                         <Stop offset="1" stopColor={stroke} stopOpacity={0} />
                       </LinearGradient>
-                      <ClipPath id={`${id}-reveal`}>
+                      <ClipPath id={`${id}reveal`}>
                         <Rect x={0} y={0} width={revealWidth} height={size.height} />
                       </ClipPath>
                     </Defs>
-                    <G clipPath={`url(#${id}-reveal)`}>
-                      <Path d={area} fill={`url(#${id}-fill)`} stroke="none" />
+                    <G clipPath={`url(#${id}reveal)`}>
+                      <Path d={area} fill={`url(#${id}fill)`} stroke="none" />
                       <Path
                         d={path}
                         fill="none"

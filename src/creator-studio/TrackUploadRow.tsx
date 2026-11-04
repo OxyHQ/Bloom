@@ -1,13 +1,6 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import type React from 'react';
+import { memo, useMemo, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Button } from '../button';
 import { formatFileSize } from '../file-upload/FileUpload';
@@ -24,18 +17,14 @@ import {
   clampProgress,
   CREATOR_STUDIO_CSS,
   CREATOR_STUDIO_STYLE_ID,
-  indeterminateDataSet,
   placeholderWaveform,
   resolveCreatorStudioPaint,
   uploadBarKind,
-  type CreatorStudioPaint,
 } from './shared';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { TrackUploadRowLabels, TrackUploadRowProps } from './types';
-import { IS_WEB } from '../styles/platform';
-import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `TrackUploadRow`: one audio file on its way into a release.
@@ -47,8 +36,8 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  *   status    queued     "Queued" text-secondary
  *             uploading  4px bar (track / accent) + "42% · About 20 s left",
  *                        tabular; a `Meter` named "Uploading <file>"
- *             processing a 40%-wide segment sweeping the track every 1.4s
- *                        (static under reduced motion) + "Transcoding…"
+ *             processing an indeterminate decorative `Meter` (its segment
+ *                        sweeps the track) + "Transcoding…"
  *             ready      a placeholder waveform (bars from the file name) +
  *                        "Ready · 3:42"
  *             failed     the message in the error colour + a "Retry" button
@@ -59,56 +48,6 @@ const BAR_HEIGHT = 4;
 const WAVE_HEIGHT = 20;
 const WAVE_BAR = 2;
 const WAVE_GAP = 2;
-const SWEEP_MS = 1400;
-
-function IndeterminateBar({ paint, testID }: { paint: CreatorStudioPaint; testID?: string }) {
-  const reducedMotion = usePrefersReducedMotion();
-  const [width, setWidth] = useState(0);
-  const x = useSharedValue(0);
-
-  useEffect(() => {
-    if (IS_WEB || reducedMotion || width === 0) return;
-    x.value = 0;
-    x.value = withRepeat(
-      withTiming(1, { duration: SWEEP_MS, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      false,
-    );
-    return () => cancelAnimation(x);
-  }, [reducedMotion, width, x]);
-
-  const animated = useAnimatedStyle(() => {
-    // Native: from fully left of the track to past its right edge.
-    const segment = width * 0.4;
-    return { transform: [{ translateX: -segment + x.value * (width + segment) }] };
-  }, [width, x]);
-
-  const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
-
-  return (
-    <View
-      testID={testID}
-      onLayout={onLayout}
-      aria-hidden
-      style={[styles.bar, { backgroundColor: paint.track }]}
-    >
-      {IS_WEB ? (
-        <View
-          {...indeterminateDataSet()}
-          style={[styles.segment, { backgroundColor: paint.accent }]}
-        />
-      ) : (
-        <Animated.View
-          style={[
-            styles.segment,
-            { backgroundColor: paint.accent },
-            reducedMotion ? { transform: [{ translateX: width * 0.3 }] } : animated,
-          ]}
-        />
-      )}
-    </View>
-  );
-}
 
 function Waveform({ seed, color, testID }: { seed: string; color: string; testID?: string }) {
   const [width, setWidth] = useState(0);
@@ -257,7 +196,15 @@ function TrackUploadRowComponent({
             testID={testID ? `${testID}-progress` : undefined}
           />
         ) : bar === 'indeterminate' ? (
-          <IndeterminateBar paint={paint} testID={testID ? `${testID}-processing` : undefined} />
+          <Meter
+            decorative
+            indeterminate
+            value={0}
+            height={BAR_HEIGHT}
+            fill={paint.accent}
+            track={paint.track}
+            testID={testID ? `${testID}-processing` : undefined}
+          />
         ) : status === 'ready' ? (
           <Waveform
             seed={fileName}
@@ -327,16 +274,6 @@ const styles = StyleSheet.create({
   name: { flexShrink: 1, minWidth: 0 },
   size: { flexShrink: 0 },
   tabular: { fontVariant: ['tabular-nums'] },
-  bar: { width: '100%', height: BAR_HEIGHT, borderRadius: BAR_HEIGHT / 2, overflow: 'hidden' },
-  fill: { height: BAR_HEIGHT, borderRadius: BAR_HEIGHT / 2 },
-  segment: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    width: '40%',
-    borderRadius: BAR_HEIGHT / 2,
-  },
   wave: {
     width: '100%',
     height: WAVE_HEIGHT,

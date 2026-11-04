@@ -23,6 +23,7 @@ const exceptions = new Set([
   'button/shared.ts', // Public legacy ramp generator; neutral Button recipes use roles.
   'settings-modal/palette.ts', // Legacy ramp handed only to inverse server tile and artwork.
   'listing-card/shared.ts', // Paired light text and dark scrim drawn over photographs.
+  'carousel/shared.ts', // On-media page dots drawn over photographs; normal dots use roles.
   'listing-details/shared.ts', // Photograph hover scrim only.
   'listing-details/FloorPlan.tsx', // Light paper backing for authored floorplan line art.
   'sortable-media/SortablePhotoGrid.tsx', // Upload progress label and scrim over arbitrary media.

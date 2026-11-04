@@ -1,5 +1,5 @@
 import { Surface } from '../surface';
-import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
@@ -14,6 +14,7 @@ import Svg, { Defs, FeGaussianBlur, Filter, LinearGradient, Rect, Stop } from 'r
 
 import { BUTTON_SHADOW } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import {
   COMPOSER_LOADER_FADE_MS,
   resolveComposerLoaderColors,
@@ -116,7 +117,7 @@ function ComposerLoaderComponent({
 }: ComposerLoaderProps) {
   const theme = useTheme();
   const reducedMotion = usePrefersReducedMotion();
-  const gradientId = `bloom-cl-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
   const [box, setBox] = useState({ w: 640, h: 52 });
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {

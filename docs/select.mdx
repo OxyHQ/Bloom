@@ -47,7 +47,7 @@ const [country, setCountry] = useState('us');
 
 `SelectContent` takes the whole `items` array rather than children, so the native fork can hand it to a `FlatList` and the web fork can measure and scroll it. `renderItem` receives `(item, index, selectedValue)`.
 
-`SelectValue` shows the selected ITEM's label on both platforms (`item => item.label` by default; pass a `children` function for other item shapes — it receives the item, not the value). `SelectContent` resolves that item even while its panel is closed, so the trigger reads `Apple`, not `apple`, from the first paint; the web fork used to print the raw value. A value that matches no item clears it, so resetting to `undefined` brings the placeholder back.
+`SelectValue` shows the selected ITEM's label on both platforms (`item => item.label` by default; pass a `children` function for other item shapes). The function receives the item — the entry of `items` whose value is chosen — and never the bare value string, on either platform, so it reads `item.label` without checking which shape arrived; type it with `<SelectValue<Country>>`. `SelectContent` resolves that item even while its panel is closed, so the trigger reads `Apple`, not `apple`, from the first paint. A value that matches no item shows as itself (both forks; native used to fall back to the placeholder), and resetting to `undefined` brings the placeholder back. The two forks resolve this in one shared function, so they cannot drift again.
 
 Type is the shared ramp, inline in Inter: `text-body-medium` on `md` triggers, `text-body-2-medium` on `sm`. Option rows independently inherit the shared menu recipe from BloomScope.
 
@@ -123,7 +123,7 @@ The field's geometry (row, border, gap, padding longhands, min height per size) 
 ```tsx
 <Select value={status} onValueChange={setStatus}>
   <SelectTrigger label="Purchase status">
-    <SelectValue leading={(item) => item && <Badge dot tone={(item as Status).tone} />} />
+    <SelectValue<Status> leading={(item) => item && <Badge dot tone={item.tone} />} />
     <SelectIcon />
   </SelectTrigger>
   <SelectContent
@@ -181,6 +181,32 @@ name ("Medium" says nothing about what is medium), so either the prop or a field
 has to supply one. A `Popover` or a `DropdownMenu` inside a field deliberately
 does NOT take the field's id: it is not the field's control. See
 [Composition](/docs/composition).
+
+### `SelectField`
+
+The labelled select — `Field`'s label, the trigger with a check-marked option
+list, and the description or error — as one component, for a form that picks one
+of a list of `{ value, label }` options:
+
+```tsx
+<SelectField
+  label="Genre"
+  placeholder="Choose a genre"
+  items={genres}
+  value={genre}
+  onValueChange={setGenre}
+  error={errors.genre}
+  required
+/>
+```
+
+Props: `label` (visible label and the trigger's and list's name), `items`
+(`SelectOption[]`: `value`, `label`, optional `disabled`), `value` /
+`defaultValue` / `onValueChange` (typed by the options' value union),
+`placeholder`, `description`, `error`, `required`, `disabled`, `size`, `style`
+(the field stack) and `testID` (the trigger). Each fork binds its own `Select`,
+so the web field opens the anchored list and the native one the sheet. Compose
+the parts inside a `Field` yourself when an option needs more than a label.
 
 ## Keyboard (web)
 

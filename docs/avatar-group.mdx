@@ -33,10 +33,15 @@ import { AvatarGroup } from '@oxy.so/bloom/avatar-group';
 | `total`            | the number the overflow chip counts to (its name, "N more", is localised via `BloomProvider locale`) |
 | `size` / `overlap` | the geometry                                                    |
 | `ringColor`        | the colour of the gap between overlapping faces                 |
+| `ringWidth`        | that gap's thickness (default 1, `0` for none); it sits inside `size`, so a face is `size − 2 × ringWidth` |
 | `motion`           | bot character playback in every layout: `auto` (default), `always`, or `never`; reduced motion always wins |
 | `onPressItem`      | makes each face a link to that profile                          |
 | `hoverCard`        | a hover card on web; a no-op on native, where there is no hover |
 | `renderItemAction` | a slot on each face                                             |
+
+An item's `initials` (e.g. `"AL"`) draw on Avatar's neutral disc when it has no
+image, whether or not `showInitials` is set; `showInitials` instead derives a
+tinted initial from the name.
 
 `total` is separate from `items.length` on purpose: a list endpoint usually
 returns a page of members plus a full count, and the overflow chip should say

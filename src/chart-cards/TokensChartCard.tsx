@@ -1,5 +1,5 @@
 import { Card } from '../card';
-import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Easing,
   StyleSheet,
@@ -22,7 +22,7 @@ import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useCountUp } from './use-count-up';
+import { useCountUp } from '../motion/use-count-up';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 import { formatGregorian } from '../locale/format-date';
@@ -30,6 +30,7 @@ import { formatGregorian } from '../locale/format-date';
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 import { IS_WEB } from '../styles/platform';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useSvgIdPrefix } from '../styles/svg-id';
 /**
  * `TokensChartCard`: daily token usage as a sharp line over a fading
  * area, idle stretches drawn as a grey dashed baseline, the plot bleeding to
@@ -289,8 +290,7 @@ export function TokensChartCard({
         }),
   };
 
-  const rawId = useId();
-  const id = `bloom-tokens-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-tokens');
   const active = activeIndex !== null ? points[activeIndex] : undefined;
   const summary =
     accessibilityLabel ??
@@ -366,11 +366,11 @@ export function TokensChartCard({
               pointerEvents="none"
             >
               <Defs>
-                <LinearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
+                <LinearGradient id={`${id}fill`} x1="0" y1="0" x2="0" y2="1">
                   <Stop offset="0" stopColor={colors.line} stopOpacity={0.32} />
                   <Stop offset="1" stopColor={colors.line} stopOpacity={0} />
                 </LinearGradient>
-                <ClipPath id={`${id}-reveal`}>
+                <ClipPath id={`${id}reveal`}>
                   <Rect
                     testID={testID ? `${testID}-reveal` : undefined}
                     x={0}
@@ -380,11 +380,11 @@ export function TokensChartCard({
                   />
                 </ClipPath>
               </Defs>
-              <G clipPath={`url(#${id}-reveal)`}>
+              <G clipPath={`url(#${id}reveal)`}>
                 <Path
                   testID={testID ? `${testID}-area` : undefined}
                   d={tokensAreaPath(points, bottom)}
-                  fill={`url(#${id}-fill)`}
+                  fill={`url(#${id}fill)`}
                   stroke="none"
                 />
                 {segments.map((seg) => (

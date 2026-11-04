@@ -5,6 +5,7 @@ export {
   SelectIcon,
   SelectContent,
   SelectItem,
+  SelectField,
 } from './Select';
 export {
   useSelectItemContext,
@@ -30,4 +31,6 @@ export type {
   SelectGroupProps,
   SelectLabelProps,
   SelectSize,
+  SelectOption,
+  SelectFieldProps,
 } from './types';
