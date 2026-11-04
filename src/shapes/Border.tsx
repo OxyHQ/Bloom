@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import Svg, { Circle, ClipPath, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import { resolve } from './resolve';
 import { assertSize, assertWidth } from './validation';
-import { useSvgId } from './use-svg-id';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import { svgColor } from './svg-color';
 import type { BorderProps } from './types';
 import { svgA11yProps } from '../styles/svg-a11y';
@@ -17,7 +17,7 @@ export function Border({
   colors,
   gradientDirection = 'diagonal',
 }: BorderProps) {
-  const id = useSvgId('shape-border');
+  const id = useSvgIdPrefix('bloom-shape-border');
   assertSize(size);
   assertWidth(width);
   const outline = resolve(shape);
@@ -41,7 +41,7 @@ export function Border({
       />
     );
   const span = outline?.viewBox ?? size;
-  const stroke = gradient ? `url(#${id}-gradient)` : (list[0] ?? 'transparent');
+  const stroke = gradient ? `url(#${id}gradient)` : (list[0] ?? 'transparent');
   return (
     <Svg
       style={pointerEventsStyles.none}
@@ -52,13 +52,13 @@ export function Border({
     >
       <Defs>
         {outline && (
-          <ClipPath id={`${id}-clip`}>
+          <ClipPath id={`${id}clip`}>
             <Path d={outline.d} />
           </ClipPath>
         )}
         {gradient && (
           <LinearGradient
-            id={`${id}-gradient`}
+            id={`${id}gradient`}
             x1="0"
             y1="0"
             x2={gradientDirection === 'vertical' ? '0' : '1'}
@@ -84,7 +84,7 @@ export function Border({
           fill="none"
           stroke={stroke}
           strokeWidth={(2 * thickness * span) / size}
-          clipPath={`url(#${id}-clip)`}
+          clipPath={`url(#${id}clip)`}
         />
       ) : (
         <Circle

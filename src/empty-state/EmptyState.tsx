@@ -38,8 +38,8 @@ import type { EmptyStateAction, EmptyStateProps } from './types';
  * five of them the same glyph-over-headline-over-line, at five different
  * paddings, with the two text slots spelled `emptyTitle`/`emptyDescription`,
  * `emptyMessage`, `emptyQueueHint`, `emptyLabel`, `emptyText` and
- * `noResultsLabel`. This is the one shape; migrating those call sites is a
- * separate change, and this family is designed to cover them as they stand.
+ * `noResultsLabel`. This is the one shape, designed to cover them as they
+ * stand; see "Migrating a hand-rolled one" in docs/empty-state.mdx.
  */
 function EmptyStateComponent({
   icon: Icon,

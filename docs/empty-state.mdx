@@ -100,8 +100,12 @@ block is exactly as tall as what it contains, which is what a list wants.
 
 ## Migrating a hand-rolled one
 
-Not done yet, and deliberately: this family is designed to cover the existing call sites
-as they stand, and moving them is a separate change with its own screenshots. The ones it
-was measured against are `cart-panel`'s `EmptyBasket`, `carrier-quote`'s empty offers
-list, `mail-list`, `chat-list`, `address`'s `AddressList` and `data-table`'s empty band —
-six shapes between them, from a 32-glyph column to a text-only 160-tall band.
+`track-list`'s `TrackListEmpty` (the screen rung on a disc), `chat-screen`'s
+`ChatEmptyState` (the notice pill as content, the caller's action as footer),
+`chat-list`'s empty conversations list and empty search results, and
+`payment-method`'s empty list (the panel rung) draw `EmptyState`. A copy that needs a
+slot the family lacks gets the slot here rather than keeping its own block.
+
+The others it was measured against are `cart-panel`'s `EmptyBasket`, `carrier-quote`'s empty offers
+list, `mail-list`, `address`'s `AddressList` and `data-table`'s empty band — moving
+those is a separate change with its own screenshots.

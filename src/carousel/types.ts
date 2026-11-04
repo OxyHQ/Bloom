@@ -114,3 +114,46 @@ export interface CarouselItemProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
+
+export interface CarouselDotsProps {
+  /** How many slides (or stops) the dots stand for. No dots are drawn for fewer than two. */
+  count: number;
+  /** The zero-based active slide. */
+  index: number;
+  /**
+   * Makes each dot a button that requests its slide. Without it the dots are a
+   * decorative position indicator: hidden from assistive technology and inert
+   * to pointers, for a gallery whose own controls already name the position.
+   */
+  onIndexChange?: (index: number) => void;
+  /** Accessible name of a dot. Defaults to the localised `` n => `Go to slide ${n}` `` (in English). */
+  dotLabel?: (slide: number) => string;
+  /**
+   * `'pill'` stretches the active dot to `activeWidth`; `'dot'` keeps every dot
+   * round and tells the active one by opacity. Defaults to `'pill'`.
+   */
+  shape?: 'pill' | 'dot';
+  /**
+   * `'default'` paints the text colour over the tertiary surface; `'onMedia'`
+   * paints every dot in the light drawn over a photo, the inactive ones at
+   * `inactiveOpacity`. Defaults to `'default'`.
+   */
+  appearance?: 'default' | 'onMedia';
+  /**
+   * The most dots drawn; a longer run slides a window that follows the active
+   * slide, its edge dots shrinking to 4px while more slides lie beyond.
+   * Defaults to every slide.
+   */
+  maxDots?: number;
+  /** The active pill's width, px. Defaults to `16`. */
+  activeWidth?: number;
+  /** Opacity of the active dot. Defaults to `1`. */
+  activeOpacity?: number;
+  /** Opacity of the other dots. Defaults to `0.6` on media, `1` otherwise. */
+  inactiveOpacity?: number;
+  /** How long a dot eases between states, ms; skipped under reduced motion. Defaults to `200`. */
+  duration?: number;
+  /** Style of the row — position it here (an overlay's `position: 'absolute'`, an inset). */
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}

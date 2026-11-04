@@ -43,5 +43,8 @@ export { clipboardAvailable, writeClipboardText } from './clipboard';
 export { useTextareaAutosize } from './use-textarea-autosize';
 export type { TextareaAutosizeOptions } from './use-textarea-autosize';
 export { useKeyboardVisible } from './use-keyboard-visible';
+export { useKeyboardMetrics } from './use-keyboard-metrics';
+export type { KeyboardMetrics, KeyboardMetricsOptions } from './use-keyboard-metrics';
+export { useKeyboardReveal, KEYBOARD_REVEAL_MARGIN } from './use-keyboard-reveal';
 export { useBrowserTitle } from './use-browser-title';
 export { isPlainLinkActivation, openHref } from './link-activation';

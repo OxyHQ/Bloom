@@ -262,12 +262,13 @@ export * from './pagination';
 export * from './agent-limits-card';
 export * from './usage-card';
 export * from './subscription-plans';
-export { Carousel, CarouselItem } from './carousel';
+export { Carousel, CarouselDots, CarouselItem } from './carousel';
 export type {
   CarouselProps,
   CarouselItemProps,
   CarouselControlProps,
   CarouselControls,
+  CarouselDotsProps,
 } from './carousel';
 export { FileUpload, formatFileSize } from './file-upload';
 export type { FileUploadFile, FileUploadLabels, FileUploadProps } from './file-upload';

@@ -1,7 +1,8 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { Keyboard, useWindowDimensions, View } from 'react-native';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
+import { useKeyboardMetrics } from '../hooks/use-keyboard-metrics';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { Portal } from '../portal';
@@ -35,22 +36,12 @@ export function SuggestionPanel({
   const [rect, setRect] = useState<FloatingAnchor | null>(null);
   const [height, setHeight] = useState(0);
   const [host, setHost] = useState<ViewRef | null>(null);
-  const [keyboardTop, setKeyboardTop] = useState<number | null>(
-    () => Keyboard.metrics()?.screenY ?? null,
-  );
+  const { visible: keyboardVisible, top: keyboardTop } = useKeyboardMetrics();
+  const keyboardWasVisible = useRef(keyboardVisible);
   useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', (e) =>
-      setKeyboardTop(e.endCoordinates.screenY),
-    );
-    const hide = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardTop(null);
-      onOpenChange?.(false);
-    });
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, [onOpenChange]);
+    if (keyboardWasVisible.current && !keyboardVisible) onOpenChange?.(false);
+    keyboardWasVisible.current = keyboardVisible;
+  }, [keyboardVisible, onOpenChange]);
   useLayoutEffect(() => {
     if (!open) return;
     let active = true;

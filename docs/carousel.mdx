@@ -60,7 +60,7 @@ The track is a real horizontal `ScrollView` — a native scroller rather than a 
 - **The ends are pinned, not measured.** Within 1px of either end the first/last stop is active, so the last dot always lights at the far end.
 - Programmatic scrolls animate unless the user prefers reduced motion.
 
-Web CSS (snap, hidden scrollbar, the track's `:focus-visible` ring, dot transitions) is self-injected through `adoptStyleSheet` on `dataSet` hooks — nothing to copy into a consumer stylesheet.
+Web CSS (snap, hidden scrollbar, the track's `:focus-visible` ring) is self-injected through `adoptStyleSheet` on `dataSet` hooks — nothing to copy into a consumer stylesheet.
 
 ## Overlay controls
 
@@ -250,3 +250,28 @@ Custom controls own their visual recipe and visibility. `arrowButtonProps`,
 The supplied previous/next props retain navigation semantics, including grouped
 stops, controlled indices and looping. No controls render for an empty carousel;
 a single non-scrollable slide disables both directions.
+
+## `CarouselDots`
+
+The carousel's position indicator, published on its own for any pager that
+draws one — a photo pager on a listing card, the auth card's artwork. `Carousel`
+draws it below the track; another gallery passes its own `count` and `index`.
+
+```tsx
+<CarouselDots count={photos.length} index={active} shape="dot" appearance="onMedia" maxDots={5}
+  style={{ position: 'absolute', left: 0, right: 0, bottom: 10 }} />
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `count` / `index` | | How many slides, and the zero-based active one. Nothing is drawn for fewer than two. |
+| `onIndexChange` | | Makes each dot a button (`dotLabel`, localised "Go to slide n", `aria-current` on the active one) that requests its slide. Without it the row is decorative: hidden from assistive technology and inert to pointers, for a gallery whose own controls already name the position. |
+| `shape` | `'pill'` | `'pill'`: 6px tall, 6 apart, the active one stretched to `activeWidth`. `'dot'`: 6px round, 5 apart, the active one told by opacity. |
+| `appearance` | `'default'` | `'default'`: the active dot in the text colour, the rest in the tertiary surface, hovering to neutral-400 (dark neutral-600). `'onMedia'`: every dot in neutral-50 over a photo, the inactive ones at `inactiveOpacity`. |
+| `maxDots` | every slide | A longer run slides a window that follows the active slide; its edge dots shrink to 4px while more slides lie beyond. |
+| `activeWidth` | `16` | The active pill's width. |
+| `activeOpacity` / `inactiveOpacity` | `1` / `0.6` on media, `1` otherwise | |
+| `duration` | `200` | Width, size, opacity and colour ease over it (Tailwind `ease-out`), skipped under reduced motion. |
+
+Web eases through a self-injected adopted sheet on `data-bloom-carousel-dot`
+(`"active"` on the active dot), never JS frames; native drives the same values.

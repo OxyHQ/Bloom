@@ -1,7 +1,8 @@
 import type React from 'react';
-import { memo, useId } from 'react';
+import { memo } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { BloomImage } from '../image';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import Svg, { Defs, LinearGradient, Path, Pattern, Rect, Stop } from 'react-native-svg';
 
 import {
@@ -37,7 +38,7 @@ function PatternLayer({
   // One id per instance. Two wallpapers on one page (a split layout showing two
   // conversations) would otherwise both resolve `url(#chat-pattern)` to whichever
   // `<Defs>` the document happened to parse last.
-  const id = `chat-pattern-${useId().replace(/[^A-Za-z0-9-]/g, '')}`;
+  const id = `${useSvgIdPrefix('chat-pattern')}pattern`;
   const ink = tint ?? paint.patternTint;
   return (
     // The `testID` sits on a View, not on the `<Svg>`: an SVG host element is not
@@ -137,7 +138,7 @@ function PatternImageLayer({
 }
 
 function GradientLayer({ colors }: { colors: string[] }) {
-  const id = `chat-gradient-${useId().replace(/[^A-Za-z0-9-]/g, '')}`;
+  const id = `${useSvgIdPrefix('chat-gradient')}gradient`;
   const last = colors.length - 1;
   return (
     <View pointerEvents="none" testID="chat-background-gradient" style={StyleSheet.absoluteFill}>

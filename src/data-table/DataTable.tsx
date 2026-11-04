@@ -19,6 +19,7 @@ import {
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../segmented-control';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '../table';
 import type { Theme } from '../theme/types';
@@ -61,7 +62,7 @@ import { IS_WEB } from '../styles/platform';
  */
 
 /** The `sm` breakpoint, applied to the surface's own width. */
-const NARROW_WIDTH = 640;
+const NARROW_WIDTH = BREAKPOINTS.sm;
 const DEFAULT_PAGE_SIZE = 8;
 
 interface DataTablePalette {

@@ -2,6 +2,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { EmptyState } from '../empty-state';
 import { webDataSet } from '../styles/web-data';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -200,20 +201,12 @@ function ChatSearchResultsComponent({
       testID={testID}
     >
       {groups.length === 0 ? (
-        <View
-          style={{
-            paddingLeft: geo.paddingHorizontal,
-            paddingRight: geo.paddingHorizontal,
-            paddingTop: 24,
-            paddingBottom: 24,
-            alignItems: 'center',
-          }}
+        <EmptyState
+          variant="compact"
+          description={text.empty}
+          style={{ paddingLeft: geo.paddingHorizontal, paddingRight: geo.paddingHorizontal }}
           testID={testID ? `${testID}-empty` : undefined}
-        >
-          <Text variant="body-regular" style={{ color: paint.textMuted }}>
-            {text.empty}
-          </Text>
-        </View>
+        />
       ) : (
         groups.map((group) => (
           <View key={group.kind}>

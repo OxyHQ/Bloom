@@ -152,6 +152,10 @@ export const Animated = {
     start: (cb?: () => void) => cb?.(),
     stop: () => {},
   }),
+  parallel: (_animations: unknown[]) => ({
+    start: (cb?: () => void) => cb?.(),
+    stop: () => {},
+  }),
   multiply: (a: unknown, _b: unknown) => a,
   add: (a: unknown, _b: unknown) => a,
   createAnimatedComponent: (comp: unknown) => comp,

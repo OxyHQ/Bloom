@@ -1,5 +1,5 @@
 import { useControllableState } from '../hooks/use-controllable-state';
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import {
   Animated,
@@ -15,6 +15,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { borderRadius } from '../styles/tokens';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Tabs, TabsTrigger } from '../tabs';
 import { Text } from '../typography';
@@ -529,8 +530,7 @@ function BarRow({
  * paints the same pixels — and works on native, which has no `mask-image`.
  */
 function BottomFade({ color }: { color: string }) {
-  // `useId` yields `«r0»` / `:r0:`, which a `url(#…)` cannot reference.
-  const id = `bloom-barlist-fade-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = `${useSvgIdPrefix('bloom-barlist-fade')}gradient`;
   return (
     <View
       pointerEvents="none"
