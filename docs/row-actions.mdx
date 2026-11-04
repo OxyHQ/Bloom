@@ -1,0 +1,78 @@
+---
+title: Row Actions
+description: The icon buttons and "⋮" menu a list or table row ends with — one recipe for tables, settings lists and file browsers.
+order: 14
+---
+
+# Row Actions
+
+The actions cell a row ends with: a few icon buttons, then a "⋮" button that opens a menu of
+the rest. `RowActions` draws it from data; `RowActionButton` is one of its buttons, for a row that
+composes its own.
+
+```tsx
+import { RowActions } from '@oxy.so/bloom/row-actions';
+
+<RowActions
+  name={file.name}
+  actions={[
+    {
+      icon: RiDeleteBin6Line,
+      label: 'Delete file',
+      accessibilityLabel: `Delete ${file.name}`,
+      onPress: () => remove(file.id),
+    },
+  ]}
+  menu={[
+    { icon: RiDownload2Line, label: 'Download', onPress: () => download(file.id) },
+    { icon: RiEditLine, label: 'Rename', onPress: () => rename(file.id) },
+  ]}
+/>
+```
+
+## `RowActions`
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `name` | `string` | — | Names the row in the menu's accessible name: `` `${menuLabel} for ${name}` ``. |
+| `actions?` | `RowActionItem[]` | `[]` | The icon buttons before the menu, in order. |
+| `menu?` | `RowActionMenuItem[]` | `[]` | The menu's entries. Without any, no "⋮" button is drawn. |
+| `menuLabel?` | `string` | "More actions" (localised) | The "⋮" button's tooltip, and the start of its name. |
+| `menuAppearance?` | `'plain' \| 'outline'` | `'plain'` | The "⋮" button's look: borderless like the icon buttons, or a bordered button for a row that has no other chrome around its menu. |
+| `menuWidth?` | `number` | `220` | The menu's width in px. |
+| `style?`, `testID?` | | | The cell's row. |
+
+An item is `{ icon, label, accessibilityLabel?, onPress? }`. `label` is the button's tooltip and,
+unless `accessibilityLabel` says more ("Delete Invoice.pdf" under the tooltip "Delete file"), its
+name. A menu entry's `icon` is optional.
+
+Geometry: `justify-end gap-2.5`; the menu opens end-aligned under its trigger, `p-2`, entries
+`px-2 py-1.5` with an 18px secondary glyph. The "⋮" button paints its pressed state while the
+menu is open, and its tooltip does not show over the open menu.
+
+## `RowActionButton`
+
+A small icon button under a 200ms `md` tooltip: Bloom's neutral `Button` at `sm`, 32×32 with a
+16px glyph — a full pill, per Bloom's radius rule. `label` is both its accessible name and the
+tooltip's text; `accessibilityLabel` overrides the name. `appearance` is `'plain'` (default) or
+`'outline'`. `active` paints the pressed state while a menu it opened is showing. It forwards the
+props an anchored family's `asChild` trigger merges in, so it can be the trigger of any menu:
+
+```tsx
+<DropdownMenu open={open} onOpenChange={setOpen}>
+  <DropdownMenuTrigger asChild label={`More actions for ${name}`}>
+    <RowActionButton icon={RiMore2Fill} label="More actions" active={open} />
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="end" minWidth={220} maxWidth={220}>…</DropdownMenuContent>
+</DropdownMenu>
+```
+
+The tooltip ([`Tooltip`](./tooltip.mdx) with `delay`) opens on hover after 200ms and at once on
+KEYBOARD focus; it closes on leave, blur and press, and a press-focus does not open it. It is
+web-only: on native the button is named and the tooltip is not rendered.
+
+## Also exported as
+
+`DataTableRowActions` and `DataTableRowAction` from `@oxy.so/bloom/data-table`, with
+`DataTableRowActionsProps`, `DataTableRowActionProps` and `DataTableRowActionItem` as type
+aliases.

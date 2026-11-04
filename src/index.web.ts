@@ -288,6 +288,7 @@ export type {
 export * from './notification';
 export * from './announcement';
 export * from './data-table';
+export * from './row-actions';
 export * from './chart-cards';
 export * from './calendar';
 export * from './stat-cards';

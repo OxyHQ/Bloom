@@ -832,6 +832,20 @@
         "default": "./lib/commonjs/data-table/index.js"
       }
     },
+    "./row-actions": {
+      "react-native": {
+        "types": "./lib/typescript/module/row-actions/index.d.ts",
+        "default": "./src/row-actions/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/row-actions/index.d.ts",
+        "default": "./lib/module/row-actions/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/row-actions/index.d.ts",
+        "default": "./lib/commonjs/row-actions/index.js"
+      }
+    },
     "./chart-cards": {
       "react-native": {
         "types": "./lib/typescript/module/chart-cards/index.d.ts",
@@ -4442,6 +4456,9 @@
       ],
       "data-table": [
         "./lib/typescript/module/data-table/index.d.ts"
+      ],
+      "row-actions": [
+        "./lib/typescript/module/row-actions/index.d.ts"
       ],
       "chart-cards": [
         "./lib/typescript/module/chart-cards/index.d.ts"

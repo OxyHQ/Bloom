@@ -9,16 +9,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
-import { Button } from '../button';
 import { Checkbox } from '../checkbox';
 import { Chip } from '../chip';
 import { FileUpload, formatFileSize } from '../file-upload';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../dropdown-menu';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiDeleteBin6Line } from '../icons/remix/RiDeleteBin6Line';
 import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
@@ -26,30 +19,24 @@ import { RiEditLine } from '../icons/remix/RiEditLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiFileExcel2Line } from '../icons/remix/RiFileExcel2Line';
 import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
-import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { Pagination } from '../pagination';
+import { RowActions } from '../row-actions';
 import { borderRadius } from '../styles/tokens';
 import { SettingsSelect } from './SettingsSelect';
 import { webDataSet } from '../styles/web-data';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
-import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import { Text } from '../typography';
 import { useSettingsLayout, useSettingsPalette } from './context';
 import { SETTINGS_MODAL_MESSAGES, type SettingsModalMessages } from './messages';
 import type { SettingsPalette } from './palette';
 import { settingsRingVars } from './SettingsRows';
-import type {
-  SettingsFileKind,
-  SettingsMenuAction,
-  SettingsStoragePageProps,
-  SettingsStoredFile,
-} from './types';
+import type { SettingsFileKind, SettingsMenuAction, SettingsStoragePageProps } from './types';
 import { useSettingsWebCss } from './web-css';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
@@ -138,108 +125,12 @@ function SortableHeader({
   );
 }
 
-/** A hover/focus tooltip around a control that already has its own name. */
-function HoverTooltip({ label, children }: { label: string; children: ReactNode }) {
-  const [visible, setVisible] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-  const enter = () => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setVisible(true), 200);
-  };
-  const leave = () => {
-    if (timer.current) clearTimeout(timer.current);
-    setVisible(false);
-  };
-  return (
-    <Tooltip visible={visible} onVisibleChange={setVisible} position="top">
-      <TooltipTrigger>
-        <View onPointerEnter={enter} onPointerLeave={leave}>
-          {children}
-        </View>
-      </TooltipTrigger>
-      <TooltipTextBubble>{label}</TooltipTextBubble>
-    </Tooltip>
-  );
-}
-
 function defaultFileActions(messages: SettingsModalMessages): SettingsMenuAction[] {
   return [
     { id: 'download', label: messages.storage.downloadFile, icon: RiDownload2Line },
     { id: 'rename', label: messages.storage.rename, icon: RiEditLine },
     { id: 'copy-link', label: messages.storage.copyLink, icon: RiFileCopyLine },
   ];
-}
-
-function RowMoreMenu({
-  file,
-  actions,
-  onAction,
-}: {
-  file: SettingsStoredFile;
-  actions: SettingsMenuAction[];
-  onAction?: (fileId: string, actionId: string) => void;
-}) {
-  const common = useCommonMessages();
-  const palette = useSettingsPalette();
-  const [open, setOpen] = useState(false);
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const label = common.labelFor(common.moreActions, file.name);
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <HoverTooltip label={common.moreActions}>
-        <DropdownMenuTrigger asChild label={label} style={CENTERED}>
-          <Pressable
-            role="button"
-            accessibilityLabel={label}
-            aria-expanded={open}
-            accessibilityState={{ expanded: open }}
-            {...webDataSet({ bloomSettingsPress: '', ringOffset: '' })}
-            onHoverIn={onHoverIn}
-            onHoverOut={onHoverOut}
-            style={[
-              styles.moreTrigger,
-              {
-                borderColor: open
-                  ? palette.borderButtonActive
-                  : hovered
-                    ? palette.borderButtonHover
-                    : palette.borderButton,
-                backgroundColor: open
-                  ? palette.primaryActive
-                  : hovered
-                    ? palette.primaryHover
-                    : palette.primary,
-                boxShadow: palette.shadowXs,
-              },
-            ]}
-          >
-            <RiMore2Fill width={16} height={16} fill={palette.iconPrimary} />
-          </Pressable>
-        </DropdownMenuTrigger>
-      </HoverTooltip>
-      <DropdownMenuContent label={label} align="end" minWidth={200} maxWidth={200}>
-        {actions.map((action) => (
-          <DropdownMenuItem
-            key={action.id}
-            leading={
-              action.icon ? (
-                <action.icon width={18} height={18} fill={palette.iconSecondary} />
-              ) : undefined
-            }
-            onPress={() => onAction?.(file.id, action.id)}
-          >
-            {action.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
 }
 
 type RowPhase = 'idle' | 'entering' | 'exiting';
@@ -626,17 +517,25 @@ export function SettingsStoragePage({
                     </>
                   )}
                   <View style={[styles.cell, compact ? null : styles.actionsCol, styles.actions]}>
-                    <HoverTooltip label={copy.deleteFile}>
-                      <Button
-                        size="sm"
-                        icon={RiDeleteBin6Line}
-                        accessibilityLabel={copy.deleteNamed(file.name)}
-                        onPress={() => deleteFile(file.id)}
-                        appearance="plain"
-                        tone="neutral"
-                      />
-                    </HoverTooltip>
-                    <RowMoreMenu file={file} actions={fileActions} onAction={onFileAction} />
+                    <RowActions
+                      name={file.name}
+                      actions={[
+                        {
+                          icon: RiDeleteBin6Line,
+                          label: copy.deleteFile,
+                          accessibilityLabel: copy.deleteNamed(file.name),
+                          onPress: () => deleteFile(file.id),
+                        },
+                      ]}
+                      menu={fileActions.map((action) => ({
+                        // A settings icon is drawn with the same width, height and fill.
+                        icon: action.icon as BloomIconComponent | undefined,
+                        label: action.label,
+                        onPress: () => onFileAction?.(file.id, action.id),
+                      }))}
+                      menuAppearance="outline"
+                      menuWidth={200}
+                    />
                   </View>
                 </View>
               </AnimatedRow>
@@ -731,7 +630,6 @@ const styles = StyleSheet.create({
   actionsCol: { width: 116 },
   actions: {
     justifyContent: 'flex-end',
-    gap: 10,
   },
   sortable: {
     flexDirection: 'row',
@@ -766,14 +664,6 @@ const styles = StyleSheet.create({
   shrink: {
     flexShrink: 1,
   },
-  moreTrigger: {
-    width: 32,
-    height: 32,
-    borderWidth: 1,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   empty: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -787,6 +677,3 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
 });
-
-/** Trigger slots default to `alignSelf: flex-start`; these sit centred in their row. */
-const CENTERED = { alignSelf: 'center' } as const;
