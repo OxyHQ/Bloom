@@ -39,9 +39,17 @@ function Player(options: UseVideoPlaybackOptions): null {
 const playing = (): string[] =>
   [...probes].filter(([, probe]) => probe.shouldPlay).map(([id]) => id);
 
-function Feed({ keys, children }: { keys: string[]; children: ReactElement | ReactElement[] }) {
+function Feed({
+  keys,
+  children,
+  autoplay,
+}: {
+  keys: string[];
+  children: ReactElement | ReactElement[];
+  autoplay?: boolean;
+}) {
   return (
-    <VideoPlaybackProvider>
+    <VideoPlaybackProvider autoplay={autoplay}>
       <VideoViewabilityProvider viewableKeys={new Set(keys)}>{children}</VideoViewabilityProvider>
     </VideoPlaybackProvider>
   );
@@ -92,6 +100,25 @@ describe('video playback authority', () => {
     view.rerender(<Feed keys={['post-a']}>{players}</Feed>);
     view.rerender(<Feed keys={['post-a', 'post-b']}>{players}</Feed>);
     expect(playing()).toEqual(['a']);
+  });
+
+  it('without autoplay plays only what the viewer starts, and re-elects when it comes back', () => {
+    const players = [
+      <Player key="gif" id="gif" viewabilityKey="gif" silent />,
+      <Player key="a" id="a" viewabilityKey="post-a" />,
+    ];
+    const view = render(
+      <Feed keys={['gif', 'post-a']} autoplay={false}>
+        {players}
+      </Feed>,
+    );
+    expect(playing()).toEqual([]);
+
+    act(() => probes.get('gif')?.claimActive());
+    expect(playing()).toEqual(['gif']);
+
+    view.rerender(<Feed keys={['gif', 'post-a']}>{players}</Feed>);
+    expect(playing().sort()).toEqual(['a', 'gif']);
   });
 
   it('plays nothing on a hidden screen, except the Picture-in-Picture owner', () => {

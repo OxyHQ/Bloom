@@ -74,6 +74,8 @@ export interface PlayerRegistration {
 export interface VideoPlaybackContextValue {
   /** The single player allowed to be audible, or `null`. A new winner wakes only the old and the new one. */
   active: ValueStore<string | null>;
+  /** The provider's `autoplay`: whether silent players may run without being started. */
+  autoplay: boolean;
   publish: (id: string, registration: PlayerRegistration) => void;
   unpublish: (id: string) => void;
   claimActive: (id: string) => void;

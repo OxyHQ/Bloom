@@ -2,6 +2,12 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.3.0
+
+### Added
+
+- **Autoplay can be turned off: `VideoPlaybackProvider`'s `autoplay`.** With `autoplay={false}` nothing is elected by position and silent players stop too; a video plays only once the viewer starts it (`claimActive()`, which now also starts a silent player) or while it owns the Picture-in-Picture window. Default `true`, so nothing changes for an app that does not pass it. The app owns the policy ("never", "on Wi-Fi only") and passes the answer for now; a change re-runs the election.
+
 ## 17.2.0
 
 ### Added

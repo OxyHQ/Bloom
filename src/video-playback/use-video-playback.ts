@@ -41,7 +41,7 @@ export function useVideoPlayback({
   if (!authority) {
     throw new Error('useVideoPlayback must be used inside a <VideoPlaybackProvider>');
   }
-  const { active, publish, unpublish, claimActive: claimActiveById } = authority;
+  const { active, autoplay, publish, unpublish, claimActive: claimActiveById } = authority;
   // This player's own slice of the election, so a new winner wakes two players.
   const readIsActive = (): boolean => active.get() === id;
   const isActive = useSyncExternalStore(active.subscribe, readIsActive, readIsActive);
@@ -107,7 +107,7 @@ export function useVideoPlayback({
   const claimActive = useCallback(() => claimActiveById(id), [claimActiveById, id]);
 
   return {
-    shouldPlay: eligible && (silent || isActive),
+    shouldPlay: eligible && (isActive || (silent && autoplay)),
     canLoad: ownsSession || screenVisible,
     claimActive,
     reportVisibility,

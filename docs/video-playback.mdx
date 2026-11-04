@@ -47,6 +47,10 @@ A player plays when it is **visible** and, unless it is `silent`, **elected**.
   Equal ranks resolve on the id, so the winner never depends on mount order.
 - `claimActive()` (a manual play) takes the slot while that player stays
   visible; once it leaves view the claim is dropped for good.
+- `autoplay={false}` on the provider turns both automatic paths off: nothing is
+  elected by position and silent players stop. A player then plays only after
+  `claimActive()` (silent ones included) or while it `ownsSession`. The app owns
+  the policy ("never", "Wi-Fi only") and passes the current answer.
 - `ownsSession` marks the player the OS is showing in its Picture-in-Picture
   window: it takes the slot outright and ignores both the layout and the
   foreground gate, because the viewer is watching it outside the app's layout.
