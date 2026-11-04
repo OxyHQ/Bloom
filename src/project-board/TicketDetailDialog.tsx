@@ -6,6 +6,7 @@ import { TicketTokenChart } from './TicketTokenChart';
 import { useDialogControl } from '../dialog/context';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import { Textarea } from '../textarea';
 import { BoardTooltip } from './BoardTooltip';
 import { cx } from './constants';
@@ -157,7 +158,7 @@ export function TicketDetailDialog({
       containerStyle={{
         alignItems: 'flex-end',
         justifyContent: 'flex-start',
-        padding: viewportWidth < 640 ? 8 : 12,
+        padding: viewportWidth < BREAKPOINTS.sm ? 8 : 12,
       }}
       panelStyle={{
         width: '100%',

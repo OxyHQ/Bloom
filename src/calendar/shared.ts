@@ -4,23 +4,21 @@ import { useWindowDimensions } from 'react-native';
 import { addDays, buildMonthGrid, isSameMonth, startOfDay } from '../date-picker/calendar-grid';
 import type { CalendarViewEvent } from './types';
 import { formatGregorian } from '../locale/format-date';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import { CALENDAR_MESSAGES, type CalendarMessages } from './messages';
 
 /** `dataSet` is react-native-web's channel for a `data-*` attribute; RN has no type for it. */
 export type WebDataSet = { dataSet?: Record<string, string> };
-
-/** Tailwind's breakpoints, the ones the calendar switches layout at. */
-export const BREAKPOINT = { sm: 640, lg: 1024, xl: 1280, '2xl': 1536 } as const;
 
 export type CalendarViewBreakpoint = 'base' | 'sm' | 'lg' | 'xl' | '2xl';
 
 /** The viewport's breakpoint — layout keys off the viewport, not the container. */
 export function useBreakpoint(): CalendarViewBreakpoint {
   const { width } = useWindowDimensions();
-  if (width >= BREAKPOINT['2xl']) return '2xl';
-  if (width >= BREAKPOINT.xl) return 'xl';
-  if (width >= BREAKPOINT.lg) return 'lg';
-  if (width >= BREAKPOINT.sm) return 'sm';
+  if (width >= BREAKPOINTS['2xl']) return '2xl';
+  if (width >= BREAKPOINTS.xl) return 'xl';
+  if (width >= BREAKPOINTS.lg) return 'lg';
+  if (width >= BREAKPOINTS.sm) return 'sm';
   return 'base';
 }
 

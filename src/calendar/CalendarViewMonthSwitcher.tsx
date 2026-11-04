@@ -30,7 +30,8 @@ import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { CALENDAR_MESSAGES } from './messages';
 import { resolveCalendarViewPalette, type CalendarViewPalette } from './palette';
-import { BREAKPOINT, dayKey, formatShortMonth, type WebDataSet } from './shared';
+import { BREAKPOINTS } from '../styles/breakpoints';
+import { dayKey, formatShortMonth, type WebDataSet } from './shared';
 import type { CalendarViewMonthSwitcherProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -312,7 +313,7 @@ export function CalendarViewMonthSwitcher({
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const { width: viewport } = useWindowDimensions();
-  const isSm = viewport >= BREAKPOINT.sm;
+  const isSm = viewport >= BREAKPOINTS.sm;
   const reducedMotion = usePrefersReducedMotion();
 
   const [open, setOpen] = useState(false);
