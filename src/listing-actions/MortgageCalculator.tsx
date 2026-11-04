@@ -1,3 +1,4 @@
+import { Field } from '../field';
 import { FieldConstraintScope } from '../field/FieldConstraintScope';
 import { useFieldMembership } from '../field/membership';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
@@ -60,11 +61,12 @@ function NumberField({
   }, [value, format, parse]);
 
   return (
-    <View style={{ flex: 1, minWidth: 0 }}>
-      <TextFieldLabel>{caption ?? label}</TextFieldLabel>
+    <Field label={caption ?? label} style={{ flex: 1, minWidth: 0 }}>
       <TextField>
         <TextFieldInput
           label={label}
+          // A caption shorter than the name ("Percent") still announces the name.
+          accessibilityLabel={caption === undefined ? undefined : label}
           value={text}
           inputMode="decimal"
           keyboardType="decimal-pad"
@@ -77,7 +79,7 @@ function NumberField({
         />
         {suffix ? <TextFieldSuffix label={suffix}>{suffix}</TextFieldSuffix> : null}
       </TextField>
-    </View>
+    </Field>
   );
 }
 

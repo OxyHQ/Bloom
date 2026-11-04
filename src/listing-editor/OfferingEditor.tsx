@@ -1,3 +1,4 @@
+import { Field } from '../field';
 import { FieldConstraintScope } from '../field/FieldConstraintScope';
 import { useFieldMembership } from '../field/membership';
 import type React from 'react';
@@ -12,7 +13,7 @@ import { RiPriceTag3Line } from '../icons/remix/RiPriceTag3Line';
 import { RiSuitcaseLine } from '../icons/remix/RiSuitcaseLine';
 import { FilterChip } from '../stay-filters/FilterChip';
 import { StepperRow } from '../stepper';
-import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel } from '../text-field';
+import { TextField, TextFieldInput, TextFieldPrefix } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
@@ -157,7 +158,7 @@ function OfferingEditorComponent({
           disabled={disabled}
           testID={tid('rent-deposit')}
         />
-        <FieldShell label={labels.availableFrom} error={errors['rent.availableFrom']}>
+        <Field label={labels.availableFrom} error={errors['rent.availableFrom']}>
           <DatePicker
             value={rent.availableFrom ?? null}
             onChange={(availableFrom) => setRent({ availableFrom })}
@@ -165,8 +166,8 @@ function OfferingEditorComponent({
             disabled={disabled}
             testID={tid('rent-available')}
           />
-        </FieldShell>
-        <FieldShell error={errors['rent.minimumMonths']}>
+        </Field>
+        <Field error={errors['rent.minimumMonths']}>
           <StepperRow
             title={labels.minimumStay}
             value={rent.minimumMonths ?? 12}
@@ -179,7 +180,7 @@ function OfferingEditorComponent({
             style={{ paddingTop: 0, paddingBottom: 0 }}
             testID={tid('rent-minimum')}
           />
-        </FieldShell>
+        </Field>
       </>
     ),
     sale: () => (
@@ -247,7 +248,7 @@ function OfferingEditorComponent({
             testID={tid('stay-cleaning')}
           />
         </View>
-        <FieldShell error={errors['stay.minimumNights']}>
+        <Field error={errors['stay.minimumNights']}>
           <StepperRow
             title={labels.minimumNights}
             value={stay.minimumNights ?? 1}
@@ -260,7 +261,7 @@ function OfferingEditorComponent({
             style={{ paddingTop: 0, paddingBottom: 0 }}
             testID={tid('stay-minimum')}
           />
-        </FieldShell>
+        </Field>
       </>
     ),
     swap: () => (
@@ -334,24 +335,6 @@ function OfferingEditorComponent({
 //  Field parts
 // ---------------------------------------------------------------------------
 
-function FieldShell({
-  label,
-  error,
-  children,
-}: {
-  label?: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <View style={{ gap: 6 }}>
-      {label ? <TextFieldLabel>{label}</TextFieldLabel> : null}
-      {children}
-      {error ? <TextFieldHint isInvalid>{error}</TextFieldHint> : null}
-    </View>
-  );
-}
-
 function MoneyField({
   label,
   currencySymbol,
@@ -371,23 +354,10 @@ function MoneyField({
   style?: { flex: number };
   testID?: string;
 }) {
-  const theme = useTheme();
   return (
-    <View style={[{ gap: 6 }, style]}>
-      <TextFieldLabel>{label}</TextFieldLabel>
-      <TextField isInvalid={!!error} disabled={disabled}>
-        <Text
-          variant="body-regular"
-          aria-hidden
-          // Above the field's chrome, which the input paints behind its siblings.
-          style={{
-            zIndex: 20,
-            color: disabled ? theme.colors.textTertiary : theme.colors.textSecondary,
-            marginRight: 2,
-          }}
-        >
-          {currencySymbol}
-        </Text>
+    <Field label={label} error={error} disabled={disabled} style={style}>
+      <TextField>
+        <TextFieldPrefix label={currencySymbol}>{currencySymbol}</TextFieldPrefix>
         <TextFieldInput
           label={label}
           placeholder={null}
@@ -395,13 +365,10 @@ function MoneyField({
           onChangeText={(text) => onChangeText(sanitizeAmount(text))}
           keyboardType="number-pad"
           inputMode="numeric"
-          isInvalid={!!error}
-          disabled={disabled}
           testID={testID}
         />
       </TextField>
-      {error ? <TextFieldHint isInvalid>{error}</TextFieldHint> : null}
-    </View>
+    </Field>
   );
 }
 
@@ -423,7 +390,7 @@ function ChoiceRow<T extends string | number>({
   testID?: string;
 }) {
   return (
-    <FieldShell label={label} error={error}>
+    <Field label={label} error={error}>
       <View
         collapsable={false}
         role="radiogroup"
@@ -443,7 +410,7 @@ function ChoiceRow<T extends string | number>({
           />
         ))}
       </View>
-    </FieldShell>
+    </Field>
   );
 }
 

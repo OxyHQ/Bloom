@@ -6,7 +6,7 @@ import { useDescribedByHint } from '../hooks/use-described-by-hint';
 import { Label } from '../label';
 import { atoms as a } from '../styles';
 import { TEXT_FIELD_STACK_GAP, useTextFieldPalette } from '../text-field/shared';
-import { FieldControlProvider, type FieldControlValue } from './context';
+import { FieldControlProvider, useFieldControl, type FieldControlValue } from './context';
 import type { FieldProps } from './types';
 
 /**
@@ -42,7 +42,7 @@ const FieldComponent = function Field({
   error,
   required = false,
   requiredLabel,
-  disabled = false,
+  disabled: disabledProp = false,
   multiple = false,
   nativeID,
   style,
@@ -50,6 +50,14 @@ const FieldComponent = function Field({
 }: FieldProps) {
   const palette = useTextFieldPalette();
   const hasError = typeof error === 'string' && error.length > 0;
+  // A field inside another field — or inside a composite's `FieldConstraintScope`
+  // — is one of its parts, so the enclosing CONSTRAINTS still bind it: they
+  // combine with `||` and cannot be undone from inside. The association (id,
+  // name, description) stays this field's own.
+  const enclosing = useFieldControl();
+  const disabled = disabledProp || enclosing?.disabled === true;
+  const invalid = hasError || enclosing?.invalid === true;
+  const requiredControl = required || enclosing?.required === true;
   // `useId` is the seed only when the caller gave no id, so an explicit
   // `nativeID` still owns every derived id and a consumer that wired its own
   // `aria-describedby` keeps working.
@@ -87,8 +95,8 @@ const FieldComponent = function Field({
             ? descriptionID
             : undefined,
       labelText: typeof label === 'string' ? label : undefined,
-      invalid: hasError,
-      required,
+      invalid,
+      required: requiredControl,
       disabled,
     }),
     [
@@ -97,10 +105,11 @@ const FieldComponent = function Field({
       label,
       labelID,
       hasError,
+      invalid,
       errorID,
       hasDescription,
       descriptionID,
-      required,
+      requiredControl,
       disabled,
     ],
   );

@@ -6,7 +6,7 @@ order: 11
 
 # TextField
 
-A composable text input. `TextField` is the field itself; put a `TextFieldInput` inside it, plus any of `TextFieldIcon`, `TextFieldSuffix` and `TextFieldGhost`. The field tracks focus, hover, invalid and disabled state and hands it to those parts, so the whole chrome reacts as one.
+A composable text input. `TextField` is the field itself; put a `TextFieldInput` inside it, plus any of `TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix` and `TextFieldGhost`. The field tracks focus, hover, invalid and disabled state and hands it to those parts, so the whole chrome reacts as one.
 
 ## Look
 
@@ -73,7 +73,7 @@ The field lays its children out in a row and focuses the input when you click an
 
 ## Which parts need the field
 
-`TextFieldIcon` and `TextFieldSuffix` read the field's focus, hover and invalid state, and **throw** when rendered outside a `TextField` — they have nothing to colour themselves against, and a part that renders anyway would look finished while never reacting to anything. The message names what is missing:
+`TextFieldIcon`, `TextFieldPrefix` and `TextFieldSuffix` read the field's focus, hover and invalid state, and **throw** when rendered outside a `TextField` — they have nothing to colour themselves against, and a part that renders anyway would look finished while never reacting to anything. The message names what is missing:
 
 ```
 TextField parts must be rendered inside a <TextField>.
@@ -253,9 +253,20 @@ A visible label rendered ABOVE the field, outside it. `required` appends the ast
 
 The caption under the field. `invalid` paints it in the error colour; `nativeID` and `style` are optional.
 
-### `TextFieldSuffix`
+### `TextFieldSuffix` and `TextFieldPrefix`
 
-Inline trailing text — domain suffixes, units. `label` is its accessible name; `accessibilityHint` and `style` are optional.
+Inline text after the input — domain suffixes, units — or before it — a currency, a protocol:
+
+```tsx
+<Field label="Monthly rent" error={errors.rent}>
+  <TextField>
+    <TextFieldPrefix label="€">€</TextFieldPrefix>
+    <TextFieldInput label="Monthly rent" value={rent} onChangeText={setRent} inputMode="numeric" />
+  </TextField>
+</Field>
+```
+
+One adornment, two sides: `body-regular` in the hint colour, `text-primary` while the field is hovered or focused, dimmed when disabled; the suffix sits 8px after the input, the prefix 2px before it. `label` is its accessible name; `accessibilityHint` and `style` are optional.
 
 ### `TextFieldGhost`
 

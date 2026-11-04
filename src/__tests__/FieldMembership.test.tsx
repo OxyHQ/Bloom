@@ -25,7 +25,7 @@
  * join is the gate that quietly stops measuring anything (`aria-state-web` was
  * exactly that, and three `progressbar` siblings sat outside it).
  */
-import React from 'react';
+import type React from 'react';
 import { TextInput } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -1021,7 +1021,10 @@ describe('FieldConstraintScope', () => {
     const screen = wrap(<MortgageCalculator testID="bare" />);
     const price = screen.getByTestId('bare-price').props as Props;
     expect(price.accessibilityLabel).toBe('Property price');
-    expect(price.nativeID).toBeUndefined();
+    // The id is the input's OWN field's — the one its caption labels — not one
+    // a scope with no field around it invented.
+    const caption = screen.getByText('Property price').props as Props;
+    expect(price.nativeID).toBe(String(caption.nativeID).replace(/-label$/, ''));
     expect(price['aria-required']).toBeUndefined();
     expect(price.editable).not.toBe(false);
   });
