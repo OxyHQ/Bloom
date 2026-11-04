@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.8.1
+
+### Changed
+
+- **The text family is developed and tested against `react-native-enriched-html` 1.2.0**, the release built for React Native 0.88 (Tiptap 3.31, DOMPurify 3.4.16), now out of the install quarantine. `@oxy.so/bloom-text`'s peer range stays `^1.1.1`.
+
+### Consumers
+
+Nothing to change. An app that installs `react-native-enriched-html` itself can move it to 1.2.0 and rebuild natively.
+
 ## 17.8.0
 
 Every family now reads Bloom's shared systems — app state, storage, the clipboard, the locale's formatters and catalogs, the type scale and `BREAKPOINTS` — and the gaps app adoption reported are filled.
