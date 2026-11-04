@@ -2,6 +2,12 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.6.0
+
+### Added
+
+- **`LinkPreviewCard`'s `author`: the byline.** A card can now credit who wrote the page — one name, or several the app has joined — as a quiet line under the title and description. Without it nothing changes. Clarity documents carry `authors` (`{ name, url? }[]`); pass `authors.map((a) => a.name).join(', ')`.
+
 ## 17.5.0
 
 ### Added
