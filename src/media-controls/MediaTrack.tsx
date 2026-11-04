@@ -18,6 +18,7 @@ import { clamp } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
 import { MEDIA_CONTROLS_CSS, MEDIA_CONTROLS_STYLE_ID, resolveMediaControlsPaint } from './shared';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /** Height of the pointer target. The drawn rail is centred in it. */
 export const MEDIA_TRACK_HIT = 16;
@@ -83,7 +84,7 @@ export function MediaTrack({
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
   const [width, setWidth] = useState(0);
   const [dragValue, setDragValue] = useState<number | null>(null);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
 
   const safeMax = max > 0 ? max : 0;
   const shown = clamp(dragValue ?? value, 0, safeMax);
@@ -156,8 +157,8 @@ export function MediaTrack({
   const webProps: Record<string, unknown> = IS_WEB
     ? {
         tabIndex: disabled ? -1 : 0,
-        onPointerEnter: () => setHovered(true),
-        onPointerLeave: () => setHovered(false),
+        onPointerEnter: onHoverIn,
+        onPointerLeave: onHoverOut,
         onKeyDown: (e: { key: string; preventDefault: () => void }) => {
           switch (e.key) {
             case 'ArrowRight':

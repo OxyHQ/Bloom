@@ -833,7 +833,11 @@ function AgentProgressComponent({
   const fastReopenRef = useRef(false);
   const [processingStarted, setProcessingStarted] = useState(false);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const [minimizeHovered, setMinimizeHovered] = useState(false);
+  const {
+    state: minimizeHovered,
+    onIn: onMinimizeHoverIn,
+    onOut: onMinimizeHoverOut,
+  } = useInteractionState();
 
   const remainingCount = stepCount - completedCount;
   const currentStep = progressSteps[Math.min(completedCount, stepCount - 1)] ?? '';
@@ -1082,8 +1086,8 @@ function AgentProgressComponent({
                 accessibilityRole="button"
                 accessibilityLabel={labels?.minimize ?? messages.minimize}
                 onPress={minimize}
-                onHoverIn={() => setMinimizeHovered(true)}
-                onHoverOut={() => setMinimizeHovered(false)}
+                onHoverIn={onMinimizeHoverIn}
+                onHoverOut={onMinimizeHoverOut}
                 style={[styles.minimize, { opacity: minimizeHovered ? 0.8 : 1 }]}
                 testID={`${testID}-minimize`}
                 {...(IS_WEB

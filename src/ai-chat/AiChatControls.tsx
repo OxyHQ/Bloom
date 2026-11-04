@@ -16,6 +16,7 @@ import type { AiChatTurnAction } from './types';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The family's small interactive pieces, shared by the message, image, code
@@ -243,7 +244,7 @@ export function SurfaceAction({
 }) {
   const isToggle = active !== undefined;
   const tip = useHoverTooltip({ open: tooltipOpen, onOpenChange: onTooltipOpenChange });
-  const [hoveredRaw, setHovered] = useState(false);
+  const { state: hoveredRaw, onIn: onHoverRawIn, onOut: onHoverRawOut } = useInteractionState();
   const hovered = hoveredRaw && !disabled;
   const lit = hovered || active === true;
   // A press focuses the control too; only keyboard focus should raise the tooltip.
@@ -282,11 +283,11 @@ export function SurfaceAction({
         }}
         onPress={onPress}
         onHoverIn={() => {
-          setHovered(true);
+          onHoverRawIn();
           tip.onHoverIn();
         }}
         onHoverOut={() => {
-          setHovered(false);
+          onHoverRawOut();
           tip.onHoverOut();
         }}
         onFocus={() => {

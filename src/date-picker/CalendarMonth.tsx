@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Pressable, View, type Role, type TextStyle } from 'react-native';
 
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text, TYPE_SCALE } from '../typography';
@@ -118,7 +119,7 @@ const DayCell = memo(function DayCell({
   registerNode,
   testID,
 }: DayCellProps) {
-  const [hovered, setHovered] = React.useState(false);
+  const hover = useInteractionState();
   const paint = dayCellPaint(state, column, isRange, DAY_SIZE, rtl);
   const key = dayKey(date);
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarDay: '' } } : {};
@@ -130,7 +131,8 @@ const DayCell = memo(function DayCell({
     alignItems: 'center',
     justifyContent: 'center',
     // Hover fill only when unselected and enabled.
-    backgroundColor: !state.isSelected && hovered && !isDisabled ? palette.hover : 'transparent',
+    backgroundColor:
+      !state.isSelected && hover.state && !isDisabled ? palette.hover : 'transparent',
     '--bloom-calendar-ring': palette.ring,
   };
   const textStyle: TextStyle = {
@@ -178,11 +180,11 @@ const DayCell = memo(function DayCell({
         tabIndex={isTabStop ? 0 : -1}
         onPress={() => onPress(date)}
         onHoverIn={() => {
-          setHovered(true);
+          hover.onIn();
           onHover(date);
         }}
         onHoverOut={() => {
-          setHovered(false);
+          hover.onOut();
           onHover(null);
         }}
         style={dayStyle}

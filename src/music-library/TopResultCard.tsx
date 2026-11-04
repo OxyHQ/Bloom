@@ -14,6 +14,7 @@ import { useMessages } from '../locale/messages';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import type { TopResultCardProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The large first search result.
@@ -54,7 +55,7 @@ function TopResultCardComponent({
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);
   const paint = useMemo(() => resolveMusicLibraryPaint(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const label = kindLabel ?? messages.topResultKinds[kind];
   const round = kind === 'artist' || kind === 'profile';
   const name = accessibilityLabel ?? [title, label, subtitle].filter(Boolean).join(', ');
@@ -73,8 +74,8 @@ function TopResultCardComponent({
       {...webDataSet({ bloomTopResult: '' })}
       // Hover is the WHOLE card, play button included, so moving onto the button
       // does not drop the card's fill.
-      onPointerEnter={IS_WEB ? () => setHovered(true) : undefined}
-      onPointerLeave={IS_WEB ? () => setHovered(false) : undefined}
+      onPointerEnter={IS_WEB ? onHoverIn : undefined}
+      onPointerLeave={IS_WEB ? onHoverOut : undefined}
       style={[{ position: 'relative', minWidth: 0 }, style]}
       testID={testID}
     >

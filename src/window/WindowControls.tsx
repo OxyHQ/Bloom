@@ -28,6 +28,7 @@ import { WINDOW_MESSAGES } from './messages';
 import type { WindowControlsProps } from './types';
 import { useWindow } from './use-window';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /** Pressing in shrinks the disc; letting go springs it back as the control acts. */
 const PRESS_IN: MotionSpec = { duration: 100, easing: [0.25, 0.1, 0.25, 1] };
@@ -149,7 +150,7 @@ export function WindowControls({
   const { messages } = useMessages(WINDOW_MESSAGES);
   const { colors } = useTheme();
   const dirProps = useDirectionProps();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   if (appWindow?.controls !== 'bloom' || appWindow.fullscreen) return null;
 
   const { start, top, width, height } = appWindow.metrics.controls;
@@ -203,8 +204,8 @@ export function WindowControls({
     >
       {plate ? <SurfacePaint fill={colors.card} radius={plateHeight / 2} /> : null}
       <View
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
+        onPointerEnter={onHoverIn}
+        onPointerLeave={onHoverOut}
         testID={testID ? `${testID}-group` : undefined}
         style={{ position: 'absolute', top: pad, insetInlineStart: pad, width, height }}
       >

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect } from 'react';
 import { Pressable, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import { BloomImage } from '../image';
 
@@ -27,6 +27,7 @@ import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { useReducedTransparency } from '../theme/reduced-transparency';
 import { MeterRing } from '../stat-bar';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The pieces every block in `message-media` is built from.
@@ -499,7 +500,7 @@ export const MediaFailure = memo(function MediaFailure({
   const label = labelProp ?? messages.notSent;
   const retryLabel = retryLabelProp ?? common.retry;
   useMessageMediaCss();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   return (
     <View
       style={{
@@ -520,8 +521,8 @@ export const MediaFailure = memo(function MediaFailure({
           role="button"
           accessibilityLabel={retryLabel}
           onPress={onRetry}
-          onHoverIn={() => setHovered(true)}
-          onHoverOut={() => setHovered(false)}
+          onHoverIn={onHoverIn}
+          onHoverOut={onHoverOut}
           style={retryStyle(hovered, paint)}
         >
           <Text variant="caption-1-medium" style={{ color: paint.text }}>
@@ -532,17 +533,3 @@ export const MediaFailure = memo(function MediaFailure({
     </View>
   );
 });
-
-// ---------------------------------------------------------------------------
-//  Small helpers
-// ---------------------------------------------------------------------------
-
-/** A hover flag that costs one state hook and never fires on native. */
-export function useHovered(): [boolean, { onHoverIn: () => void; onHoverOut: () => void }] {
-  const [hovered, setHovered] = useState(false);
-  const handlers = useMemo(
-    () => ({ onHoverIn: () => setHovered(true), onHoverOut: () => setHovered(false) }),
-    [],
-  );
-  return [hovered, handlers];
-}

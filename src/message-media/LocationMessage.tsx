@@ -16,7 +16,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { MediaPressable, useHovered, useMessageMediaCss, HoldPressable } from './parts';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { MediaPressable, useMessageMediaCss, HoldPressable } from './parts';
 import {
   fileMetaLine,
   MESSAGE_MEDIA_RADIUS,
@@ -177,7 +178,7 @@ function LocationMessageComponent({
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],
   );
-  const [stopHovered, stopHandlers] = useHovered();
+  const { state: stopHovered, onIn: onStopHoverIn, onOut: onStopHoverOut } = useInteractionState();
   // The width the block is actually drawn at: `width`, or less inside a bubble
   // that is narrower. The map is drawn for THAT width, so an app's map is not
   // rendered wider than it is shown and cropped off-centre.
@@ -282,7 +283,8 @@ function LocationMessageComponent({
       {live && onStopSharing ? (
         <HoldPressable
           {...webDataSet({ bloomMessageMediaPressable: '' })}
-          {...stopHandlers}
+          onHoverIn={onStopHoverIn}
+          onHoverOut={onStopHoverOut}
           role="button"
           accessibilityLabel={stopSharingLabel}
           onPress={onStopSharing}

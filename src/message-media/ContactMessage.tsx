@@ -8,7 +8,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { useHovered, useMessageMediaCss, HoldPressable } from './parts';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { useMessageMediaCss, HoldPressable } from './parts';
 import {
   fileMetaLine,
   MESSAGE_MEDIA_RADIUS,
@@ -33,7 +34,7 @@ function ContactAction({
   emphasis: boolean;
   testID?: string;
 }) {
-  const [hovered, handlers] = useHovered();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const style: WebCssStyle = {
     flexGrow: 1,
     flexBasis: 0,
@@ -50,7 +51,8 @@ function ContactAction({
   return (
     <HoldPressable
       {...webDataSet({ bloomMessageMediaPressable: '' })}
-      {...handlers}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       role="button"
       accessibilityLabel={label}
       onPress={onPress}
