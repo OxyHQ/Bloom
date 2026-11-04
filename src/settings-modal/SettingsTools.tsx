@@ -22,6 +22,7 @@ import {
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { Switch } from '../switch';
@@ -145,15 +146,15 @@ function InlineAction({
   accessibilityLabel: string;
 }) {
   const palette = useSettingsPalette();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   return (
     <Pressable
       role="button"
       accessibilityLabel={accessibilityLabel}
       {...webDataSet({ bloomSettingsPress: '' })}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={styles.inlineAction}
     >
       <Text
@@ -207,7 +208,7 @@ function ServerMenu({
   const common = useCommonMessages();
   const palette = useSettingsPalette();
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const label = common.labelFor(messages.actions, server.name);
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -216,8 +217,8 @@ function ServerMenu({
           role="button"
           accessibilityLabel={label}
           {...webDataSet({ bloomSettingsPress: '' })}
-          onHoverIn={() => setHovered(true)}
-          onHoverOut={() => setHovered(false)}
+          onHoverIn={onHoverIn}
+          onHoverOut={onHoverOut}
           style={[
             styles.menuTrigger,
             { backgroundColor: open || hovered ? palette.secondaryHover : 'transparent' },
@@ -265,7 +266,11 @@ function ServerRow({
   const palette = useSettingsPalette();
   const last = useSettingsRowIsLast();
   const [expanded, setExpanded] = useState(false);
-  const [chevronHovered, setChevronHovered] = useState(false);
+  const {
+    state: chevronHovered,
+    onIn: onChevronHoverIn,
+    onOut: onChevronHoverOut,
+  } = useInteractionState();
   const hasTools = server.tools !== undefined && server.tools.length > 0;
   return (
     <View
@@ -307,8 +312,8 @@ function ServerRow({
                   accessibilityState={{ expanded }}
                   {...webDataSet({ bloomSettingsPress: '' })}
                   onPress={() => setExpanded((v) => !v)}
-                  onHoverIn={() => setChevronHovered(true)}
-                  onHoverOut={() => setChevronHovered(false)}
+                  onHoverIn={onChevronHoverIn}
+                  onHoverOut={onChevronHoverOut}
                   testID={testID ? `${testID}-expand` : undefined}
                   style={styles.chevron}
                 >
@@ -366,15 +371,15 @@ function NewServerRow({
   onPress?: () => void;
 }) {
   const palette = useSettingsPalette();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   return (
     <Pressable
       role="button"
       accessibilityLabel={label}
       {...webDataSet({ bloomSettingsPress: '', ringInset: '' })}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
       style={styles.newRow}
     >
       <View
