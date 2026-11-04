@@ -9,7 +9,7 @@ export interface MultiAgentChatComponents extends ScreenComponents {
   AppShell: ComponentType<import('../app-shell/types').AppShellProps>;
   Portal: ComponentType<{ children: React.ReactElement }>;
   Surface: ComponentType<import('../surface/types').SurfaceProps>;
-  Select: typeof import('../select');
+  SettingsSelect: typeof import('../settings-modal/SettingsSelect').SettingsSelect;
   Dropdown: typeof import('../dropdown-menu');
   ConversationSidebar: ComponentType<import('../conversation-sidebar').ConversationSidebarProps>;
   Dialog: ComponentType<DialogProps>;

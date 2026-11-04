@@ -1,3 +1,4 @@
+import { SettingsSelect } from '../settings-modal/SettingsSelect.web';
 import { SettingsModal } from '../settings-modal/modal.web';
 import { Screen, ScreenScrollView } from '../screen/index.web';
 import { ScrollSurface } from '../layout/ScrollSurface.web';
@@ -8,7 +9,6 @@ import { ConversationSidebar } from '../conversation-sidebar/index.web';
 import { Dialog } from '../dialog/index.web';
 import * as Dropdown from '../dropdown-menu/index.web';
 import { Portal } from '../portal/index.web';
-import * as Select from '../select/index.web';
 import { Surface } from '../surface/index.web';
 import { ComponentsContext } from './context';
 import { MultiAgentChatBase } from './MultiAgentChatBase';
@@ -21,7 +21,7 @@ const components = {
   AppShell,
   Portal,
   Surface,
-  Select,
+  SettingsSelect,
   Dropdown,
   ConversationSidebar,
   Dialog,

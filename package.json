@@ -1085,6 +1085,11 @@
         "types": "./lib/typescript/module/settings-modal/rows.d.ts",
         "default": "./src/settings-modal/rows.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/settings-modal/rows.web.d.ts",
+        "import": "./lib/module/settings-modal/rows.web.js",
+        "require": "./lib/commonjs/settings-modal/rows.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/settings-modal/rows.d.ts",
         "default": "./lib/module/settings-modal/rows.js"
