@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-avatar-native",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shared native GPU presentation for Bloom's existing avatar engine",
   "main": "src/index.ts",
   "react-native": "src/index.ts",

@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.1.1
+
+### Fixed
+
+- **A slow GPU no longer turns every avatar on the page into "Avatar unavailable".** The web avatar engine reads its atlas back through a pixel-pack buffer and a GPU fence, and gave that fence 30 seconds of wall-clock time; past it the read was rejected as a failure, which failed the whole shared pool, so every avatar in the document showed "Avatar unavailable" and never came back. A fence on a live context always signals, and the blocking `readPixels` this replaced waited for it as long as it took. On a software rasterizer the queue in front of a fence can exceed 30 s: under SwiftShader pinned to four CPUs a fence took 38 s, and the website's Bloom landing gate failed this way in its merge queue. The read now has no deadline; it ends when the fence signals, on `WAIT_FAILED`, on context loss (already its own recovery path) or when its owner cancels it, and a test holds a fence across ten minutes of clock without the read settling. `readPixelsAsync` no longer takes a `timeoutMs` argument (internal to the runtime).
+
+### Consumers
+
+`assets/character-runtime/` is rebuilt, so `AVATAR_RUNTIME_REVISION` changes with it: `@oxy.so/bloom-avatar-native` **0.1.2** pairs with this release. A host that self-serves the runtime copies the new directory.
+
 ## 17.1.0
 
 ### Added

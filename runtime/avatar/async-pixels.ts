@@ -1,5 +1,10 @@
 /** A web-only RGBA8 readback. Unlike a client-memory readPixels, its fence is
- * polled without waiting on the UI thread. Every exit owns its GL cleanup. */
+ * polled without waiting on the UI thread. Every exit owns its GL cleanup.
+ *
+ * No deadline: a fence on a live context always signals, and a slow GPU (a
+ * software rasterizer, a loaded device) is slow, not broken. A 30 s limit failed
+ * the whole pool on SwiftShader, every avatar "Avatar unavailable" for good. A
+ * read ends on signal, WAIT_FAILED, context loss or its owner's cancel. */
 export function readPixelsAsync(
   gl: WebGL2RenderingContext,
   framebuffer: WebGLFramebuffer | null,
@@ -7,7 +12,6 @@ export function readPixelsAsync(
   y: number,
   width: number,
   height: number,
-  timeoutMs = 30000,
   destination?: Uint8Array,
 ) {
   let buffer: WebGLBuffer | null = null;
@@ -49,7 +53,6 @@ export function readPixelsAsync(
       sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
       if (!sync) throw new Error('Avatar readback fence allocation failed');
       gl.flush();
-      const started = performance.now();
       const poll = () => {
         if (settled) return;
         try {
@@ -57,8 +60,6 @@ export function readPixelsAsync(
           const status = gl.clientWaitSync(sync!, 0, 0);
           if (status === gl.WAIT_FAILED) throw new Error('Avatar readback fence failed');
           if (status === gl.TIMEOUT_EXPIRED) {
-            if (performance.now() - started >= timeoutMs)
-              throw new Error('Avatar readback fence timed out');
             timer = setTimeout(poll, 4);
             return;
           }
