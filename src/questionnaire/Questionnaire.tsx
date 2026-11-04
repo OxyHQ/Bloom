@@ -1,6 +1,7 @@
 import { FieldConstraintScope } from '../field/FieldConstraintScope';
 import { useFieldMembership } from '../field/membership';
 import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -241,20 +242,6 @@ ${INPUT}::placeholder { color: var(--bloom-questionnaire-placeholder); opacity: 
 }
 `;
 
-function useHover() {
-  const [hovered, setHovered] = useState(false);
-  const onHoverIn = useCallback(() => setHovered(true), []);
-  const onHoverOut = useCallback(() => setHovered(false), []);
-  return { hovered, onHoverIn, onHoverOut };
-}
-
-function usePressed() {
-  const [pressed, setPressed] = useState(false);
-  const onPressIn = useCallback(() => setPressed(true), []);
-  const onPressOut = useCallback(() => setPressed(false), []);
-  return { pressed, onPressIn, onPressOut };
-}
-
 type RowState = 'rest' | 'hover' | 'pressed' | 'selected';
 
 function rowStyle(palette: QuestionnairePalette, state: RowState): ViewStyle {
@@ -348,8 +335,8 @@ function CheckboxRow({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
-  const { hovered, onHoverIn, onHoverOut } = useHover();
-  const { pressed, onPressIn, onPressOut } = usePressed();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const name = typeof option.label === 'string' ? option.label : option.value;
   const field = useFieldMembership({ label: name, labelPlacement: 'adjacent' });
   const activate = () => {
@@ -422,8 +409,8 @@ function PickRow({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
-  const { hovered, onHoverIn, onHoverOut } = useHover();
-  const { pressed, onPressIn, onPressOut } = usePressed();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const name = typeof option.label === 'string' ? option.label : option.value;
   const field = useFieldMembership({ label: name, labelPlacement: 'adjacent' });
   const activate = () => {
@@ -472,7 +459,7 @@ function OtherToggle({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
-  const { hovered, onHoverIn, onHoverOut } = useHover();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const field = useFieldMembership({ label: label, labelPlacement: 'adjacent' });
   const activate = () => {
     if (!field.disabled) onChange(!checked);
@@ -543,7 +530,7 @@ function OtherRow({
   palette: QuestionnairePalette;
   testID?: string;
 }) {
-  const { hovered, onHoverIn, onHoverOut } = useHover();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const field = useFieldMembership({ label, labelPlacement: 'adjacent' });
   const [focused, setFocused] = useState(false);
   const lifted = focused || (mode === 'single' && selected);
@@ -643,7 +630,7 @@ function StepPill({
 }) {
   const field = useFieldMembership();
   const reducedMotion = usePrefersReducedMotion();
-  const { hovered, onHoverIn, onHoverOut } = useHover();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const hover = useSharedValue(0);
   useEffect(() => {
     const target = hovered && !selected ? 1 : 0;
@@ -938,7 +925,7 @@ function QuestionnaireComponent({
     parentFill: surfaceLayer.parentFill,
     parentLevel: surfaceLayer.parentLevel,
   });
-  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
+  const { paintFill, publishedFill: surfaceFill } = material;
   const palette = useMemo(
     () => resolveQuestionnairePalette(theme, surfaceFill),
     [theme, surfaceFill],

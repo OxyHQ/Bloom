@@ -104,6 +104,8 @@ A field with ONE control gives it the field's id and describes the error BY that
 
 Inside Bloom, a composite gets this by wrapping its parts in `FieldConstraintScope` (`src/field/FieldConstraintScope.tsx`, internal — not exported). Without it each part that reads the field takes the id and the error for itself, and every `TextFieldInput` inside announces the field's label — `multiple` does not prevent that last one, because the label text still travels.
 
+A part can be a `Field` of its own — the calculator's "Property price", the offering editor's "Monthly rent" with its own error. A `Field` nested inside another field (or inside a composite's scope) keeps its own label, id and description, and takes the enclosing `disabled`, `invalid` and `required` on top of its own, with `||`: a sub-field cannot re-enable itself inside a disabled field any more than a bare control can.
+
 ## Floating labels are an alternative, not a layer
 
 `<TextFieldInput floatingLabel>` inside a `Field label="…"` shows the same words above the box and inside it. The ids and the described-by still travel, so the error is still announced — but pick one of the two labels.

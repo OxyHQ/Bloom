@@ -15,6 +15,7 @@ export type AgentCreatorBindings = Pick<
   | 'SelectItemText'
 > &
   Pick<typeof PopoverParts, 'Popover' | 'PopoverTrigger' | 'PopoverContent'> &
+  Pick<typeof import('../settings-modal/SettingsSelect'), 'SettingsSelect'> &
   import('../screen/types').ScreenComponents;
 export const AgentCreatorContext = createContext<AgentCreatorBindings | null>(null);
 export const AgentCreatorCopyContext = createContext<{

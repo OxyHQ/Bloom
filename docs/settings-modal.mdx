@@ -125,6 +125,9 @@ It is centred by a full-width row, never by its own measured width. It used to s
 | `SettingsValueField` | 32×202, radius 10, background/tertiary |
 | `SettingsTextField` | small `TextField`, 202 wide, commits on submit/blur only when changed |
 | `SettingsDateField` | 32×202 bordered trigger (pill) opening `Calendar` in a `Popover` |
+| `SettingsSelect` | compact `Select` trigger (padding `px 8 py 5`, never a height) over `{ value, label }` items, check-marked options |
+
+`SettingsSelect` is the one select for a settings row — Bloom's own pages and an app's. Beyond `label`, `value`, `onChange`, `items` and `compact` (default `true`; `false` keeps the regular field padding) it takes `size` (the trigger's; otherwise the nearest `BloomScope`), `disabled`, `width` (a fixed web dropdown width) and `style` (the trigger's box — a `maxWidth` caps a long value in a tight row). The web entries (`settings-modal`, `settings-modal/rows`) bind it to the web `Select` and the native ones to the native `Select`, so the anchored list opens on web whichever bundler resolves the import.
 
 **The hairline stops 12px short of the card's left edge** because the padding lives on the card, not the row — rows must be direct children of `SettingsCard` (fragments are flattened). "Last" is derived from the card's children, since React Native has no `:last-child`.
 
@@ -141,7 +144,7 @@ you draw:
 | `@oxy.so/bloom/settings-modal` | everything on this page | — |
 | `@oxy.so/bloom/settings-modal/modal` | `SettingsModal` (not `SettingsLayout`, which links `AppShell`), `SettingsCard`, `SettingsRow`, `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField`, `useSettingsSavedToast` and the modal/nav/page/row prop types | the General/Profile/Tools/Storage pages, `SettingsPlanCard`/`SettingsPlanArt`, the text/date fields — and through them `Select`, `FileUpload`, `Pagination`, `DropdownMenu`, `Checkbox`, `Chip`, `Tooltip`, `EmptyState`, `TextField`, `Popover` and the calendar |
 | `@oxy.so/bloom/settings-modal/fields` | `SettingsTextField`, `SettingsDateField` and their prop types | the modal and every page |
-| `@oxy.so/bloom/settings-modal/rows` | `SettingsCard`, `SettingsRow`, `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField` and their prop types | the modal, every page and the fields |
+| `@oxy.so/bloom/settings-modal/rows` | `SettingsCard`, `SettingsRow`, `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField`, `SettingsSelect` and their prop types | the modal, every page and the fields |
 
 Every entry hands out the same components (identical references) as the full one,
 so mixing entries in one app is safe.

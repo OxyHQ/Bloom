@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../select';
+import { SettingsSelect } from '../settings-modal/SettingsSelect';
 import { AgentCreatorBase } from './AgentCreatorBase';
 import { AgentCreatorContext } from './context';
 import type { AgentCreatorProps } from './types';
@@ -25,6 +26,7 @@ const bindings = {
   Popover,
   PopoverTrigger,
   PopoverContent,
+  SettingsSelect,
 };
 export function AgentCreator(props: AgentCreatorProps) {
   return (

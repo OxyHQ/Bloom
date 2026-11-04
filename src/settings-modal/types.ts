@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { DialogControlProps } from '../dialog/types';
+import type { SelectSize } from '../select/types';
 import type { FileUploadProps } from '../file-upload/types';
 import type { Props as SVGIconProps } from '../icons/shared';
 
@@ -256,6 +257,13 @@ export interface SettingsSelectProps<T extends string> {
   items: ReadonlyArray<{ value: T; label: string }>;
   /** Padded to sit inside a row (default). `false` keeps the regular field size. */
   compact?: boolean;
+  /** Trigger size; otherwise the nearest BloomScope. The list sizes itself independently. */
+  size?: SelectSize;
+  disabled?: boolean;
+  /** A fixed width for the web dropdown; the native sheet sizes itself. */
+  width?: number;
+  /** The trigger's box — a `maxWidth` to cap a long value in a tight row. */
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 

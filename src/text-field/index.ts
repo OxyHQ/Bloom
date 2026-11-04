@@ -6,6 +6,7 @@ export {
   TextFieldHint,
   TextFieldIcon,
   TextFieldSuffix,
+  TextFieldPrefix,
   TextFieldGhost,
 } from './TextField';
 export type {

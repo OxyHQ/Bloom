@@ -1,9 +1,9 @@
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Field } from '../field';
+import { Field, useFieldControl } from '../field';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -14,6 +14,25 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 describe('Field', () => {
+  it("keeps an enclosing field's constraints on a field nested inside it", () => {
+    // A composite's sub-field is one of its parts: it cannot re-enable itself.
+    const seen: Array<ReturnType<typeof useFieldControl>> = [];
+    function Probe() {
+      seen.push(useFieldControl());
+      return null;
+    }
+    renderWithTheme(
+      <Field label="Offer" disabled error="Pick one" required>
+        <Field label="Price">
+          <Probe />
+        </Field>
+      </Field>,
+    );
+    const inner = seen[seen.length - 1];
+    expect(inner).toMatchObject({ disabled: true, invalid: true, required: true });
+    expect(inner?.labelText).toBe('Price');
+  });
+
   it('renders label, children and description', () => {
     const { getByText } = renderWithTheme(
       <Field label="Username" description="Pick something unique">

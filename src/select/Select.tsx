@@ -46,6 +46,7 @@ import {
   defaultExtractLabel,
   defaultItemValueExtractor,
   ItemContext,
+  resolveSelectDisplay,
   SelectChevron,
   SelectTriggerStateContext,
   SelectValueRow,
@@ -65,6 +66,7 @@ import type {
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
+import { createSelectField } from './SelectField';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -258,19 +260,24 @@ export function SelectTrigger({
 // SelectValue
 // ---------------------------------------------------------------------------
 
-export function SelectValue({
+export function SelectValue<T = unknown>({
   placeholder,
   children: extractLabel = defaultExtractLabel,
   leading,
   className,
   style,
-}: SelectValueProps) {
-  const [storedValue] = useContext(ValueStoreContext);
+}: SelectValueProps<T>) {
+  const { value } = useSelectContext();
+  const [storedItem] = useContext(ValueStoreContext) as [T | undefined, unknown];
   const trigger = useContext(SelectTriggerStateContext);
   const palette = useMenuPalette();
 
-  const hasValue = storedValue != null;
-  const display = hasValue ? extractLabel(storedValue) : placeholder;
+  const { chosen: hasValue, display } = resolveSelectDisplay(
+    value,
+    storedItem,
+    extractLabel,
+    placeholder,
+  );
   const tell = useContext(SelectDisplayContext);
   const spoken =
     hasValue && (typeof display === 'string' || typeof display === 'number')
@@ -311,7 +318,7 @@ export function SelectValue({
   return (
     <SelectValueRow
       size={trigger.size}
-      leading={typeof leading === 'function' ? leading(storedValue) : leading}
+      leading={typeof leading === 'function' ? leading(storedItem) : leading}
     >
       {text}
     </SelectValueRow>
@@ -550,3 +557,12 @@ const styles = StyleSheet.create({
 });
 
 export { useSelectItemContext };
+
+export const SelectField = createSelectField({
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectIcon,
+  SelectContent,
+  SelectItem,
+});

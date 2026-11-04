@@ -23,58 +23,6 @@ import { useAgentVoices } from './use-agent-voices';
 const PreviewPlayIcon = createSinglePathSVG({
   path: 'M7.75194 5.43872L18.2596 11.5682C18.4981 11.7073 18.5787 12.0135 18.4396 12.252C18.3961 12.3265 18.3341 12.3885 18.2596 12.432L7.75194 18.5615C7.51341 18.7006 7.20725 18.62 7.06811 18.3815C7.0235 18.305 7 18.2181 7 18.1296V5.87061C7 5.59446 7.22386 5.37061 7.5 5.37061C7.58853 5.37061 7.67547 5.39411 7.75194 5.43872Z',
 });
-function PreferenceSelect({
-  value,
-  onChange,
-  label,
-  items,
-  disabled = false,
-  popoverWidth = 192,
-  className,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  label: string;
-  items: readonly { id: string; label: string }[];
-  disabled?: boolean;
-  popoverWidth?: number;
-  className?: string;
-}) {
-  const messages = useAgentCreatorMessages();
-  const {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectIcon,
-    SelectContent,
-    SelectItem,
-    SelectItemText,
-  } = useAgentCreatorBindings();
-  return (
-    <Select size="sm" value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger
-        label={label}
-        className={className}
-        style={className ? { minWidth: 0, maxWidth: 144 } : undefined}
-      >
-        <SelectValue />
-        <SelectIcon />
-      </SelectTrigger>
-      <SelectContent
-        label={label}
-        width={popoverWidth}
-        items={items}
-        valueExtractor={(item) => item.id}
-        renderItem={(item) => (
-          <SelectItem value={item.id} label={item.label}>
-            <SelectItemText>{item.label}</SelectItemText>
-          </SelectItem>
-        )}
-      />
-    </Select>
-  );
-}
-
 /** Device voices preview locally; preferences travel with the agent to onRespond. */
 export function AgentPreferencesPanel(props: AgentCreatorProps) {
   const messages = useAgentCreatorMessages();
@@ -82,6 +30,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
   const { colors } = useTheme();
   const preferences = normalizeAgentPreferences(agent.preferences);
   const { voices, canPreview, canSelect, preview } = useAgentVoices(props);
+  const { SettingsSelect } = useAgentCreatorBindings();
   const update = (patch: Partial<AgentPreferences>) =>
     onChange({ ...agent, preferences: { ...preferences, ...patch } });
   const selectedVoice = voices.find((voice) =>
@@ -100,14 +49,14 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
     .slice(0, 12);
   if (selectedVoice && !choices.includes(selectedVoice)) choices.push(selectedVoice);
   const voiceItems = [
-    { id: 'off', label: messages.off },
-    { id: 'system', label: messages.systemVoice },
-    ...choices.map((voice) => ({ id: voice.id, label: voice.name })),
+    { value: 'off', label: messages.off },
+    { value: 'system', label: messages.systemVoice },
+    ...choices.map((voice) => ({ value: voice.id, label: voice.name })),
     ...(preferences.voice &&
     preferences.voice !== 'system' &&
     preferences.voice !== 'alice' &&
     !selectedVoice
-      ? [{ id: preferences.voice, label: messages.savedVoice }]
+      ? [{ value: preferences.voice, label: messages.savedVoice }]
       : []),
   ];
   return (
@@ -128,12 +77,15 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
               {messages.language}
             </Text>
           </StyledView>
-          <PreferenceSelect
+          <SettingsSelect
             label={messages.languageInput}
+            size="sm"
+            compact={false}
+            width={192}
             value={preferences.language}
-            onChange={(language) => update({ language: language as AgentPreferences['language'] })}
+            onChange={(language) => update({ language })}
             items={AGENT_LANGUAGES.map((language) => ({
-              id: language.id,
+              value: language.id,
               label: messages.languages[language.id],
             }))}
           />
@@ -199,14 +151,16 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
                 onPress={() => preview(preferences)}
               />
             )}
-            <PreferenceSelect
+            <SettingsSelect
               label={messages.voiceInput}
+              size="sm"
+              compact={false}
+              width={240}
+              style={{ maxWidth: 144 }}
               disabled={!canSelect}
               value={selectedVoiceKey}
               onChange={(voice) => update({ voice: voice === 'off' ? '' : voice })}
               items={voiceItems}
-              className="min-w-0 max-w-36"
-              popoverWidth={240}
             />
           </StyledView>
         </StyledView>

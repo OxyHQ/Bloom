@@ -13,7 +13,7 @@ export {
   SettingsValueField,
 } from './SettingsRows';
 export { SettingsTextField, SettingsDateField } from './SettingsFields';
-export { SettingsSelect } from './SettingsSelect';
+export { SettingsSelect } from './SettingsSelect.web';
 export { SettingsPlanCard, SettingsGeneralPage, SettingsProfilePage } from './SettingsPlanCard';
 export { SettingsPlanArt } from './SettingsArt';
 export { SettingsToolsPage, SettingsServerList } from './SettingsTools';

@@ -152,61 +152,9 @@ const FILES: SettingsStoredFile[] = (() => {
 //  Pages, wired with local state
 // ---------------------------------------------------------------------------
 
-function CompactSelect({
-  label,
-  value,
-  onChange,
-  items,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  items: { value: string; label: string }[];
-}) {
-  const {
-    Select: {
-      Select,
-      SelectContent,
-      SelectIcon,
-      SelectItem,
-      SelectItemIndicator,
-      SelectItemText,
-      SelectTrigger,
-      SelectValue,
-    },
-  } = useChatComponents();
-  return (
-    // A compact row trigger: `h-8 gap-1 px-2 py-1.5` on the md select.
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger label={label} className="h-8 gap-1 px-2 py-1.5">
-        <SelectValue>
-          {(v) => {
-            const key =
-              typeof v === 'object' && v !== null && 'value' in v
-                ? (v as { value: string }).value
-                : v;
-            return items.find((i) => i.value === key)?.label ?? String(key);
-          }}
-        </SelectValue>
-        <SelectIcon />
-      </SelectTrigger>
-      <SelectContent
-        label={label}
-        items={items}
-        valueExtractor={(i) => i.value}
-        renderItem={(i) => (
-          <SelectItem value={i.value} label={i.label}>
-            <SelectItemIndicator />
-            <SelectItemText>{i.label}</SelectItemText>
-          </SelectItem>
-        )}
-      />
-    </Select>
-  );
-}
-
 function GeneralDemo() {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
+  const { SettingsSelect } = useChatComponents();
   const [toggles, setToggles] = useState({
     critical: true,
     system: false,
@@ -258,7 +206,7 @@ function GeneralDemo() {
               label: messages.reviewProvider,
               description: messages.selectGithubOrOtherProvidersForReviews,
               control: (
-                <CompactSelect
+                <SettingsSelect
                   label={messages.reviewProvider}
                   value={provider}
                   onChange={setProvider}
@@ -275,7 +223,7 @@ function GeneralDemo() {
               label: messages.prDestination,
               description: messages.openPullRequestLinksInsideYourApp,
               control: (
-                <CompactSelect
+                <SettingsSelect
                   label={messages.prDestination}
                   value={destination}
                   onChange={setDestination}
