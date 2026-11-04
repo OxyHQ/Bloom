@@ -64,7 +64,6 @@ export function createPBOAvatarPresenter() {
         stage.height - bottom,
         width,
         height,
-        30000,
         slot.bytes,
       );
       slot.read = read;

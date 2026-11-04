@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+The bundled runtime factory is rebuilt from the same source as Bloom 17.1.1's hosted runtime, whose GPU readback no longer has a deadline; `AVATAR_RUNTIME_REVISION` matches that manifest. No API change. Pair it with `@oxy.so/bloom` 17.1.1 and rebuild natively.
+
 ## 0.1.1
 
 The bundled runtime factory is rebuilt with Vite 8 from the same source as Bloom 17.0.1's hosted runtime; `AVATAR_RUNTIME_REVISION` matches that manifest. No API change. Pair it with `@oxy.so/bloom` 17.0.1 and rebuild natively.

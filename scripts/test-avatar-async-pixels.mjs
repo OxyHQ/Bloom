@@ -46,7 +46,7 @@ function context(mode) {
     isContextLost: () => mode === 'lost',
     clientWaitSync: () => {
       state.polls++;
-      return mode === 'held' || mode === 'timeout' ? 6 : mode === 'wait-fail' ? 5 : 7;
+      return mode === 'held' ? 6 : mode === 'wait-fail' ? 5 : 7;
     },
     getBufferSubData: (_target, _offset, pixels) => pixels.fill(17),
   };
@@ -60,13 +60,12 @@ for (const mode of [
   'wait-fail',
   'lost',
   'held',
-  'timeout',
 ])
   test(`web pixel readback: ${mode} restores bindings and releases every owned object`, async () => {
     const { gl, state } = context(mode),
       framebuffer = state.readFramebuffer,
       pack = state.packBuffer;
-    const task = readPixelsAsync(gl, {}, 0, 0, 2, 2, mode === 'timeout' ? 1 : 30000);
+    const task = readPixelsAsync(gl, {}, 0, 0, 2, 2);
     assert.equal(state.readFramebuffer, framebuffer);
     assert.equal(state.packBuffer, pack);
     if (mode === 'held') task.cancel();
@@ -89,7 +88,7 @@ for (const mode of [
 test('streaming readback reuses the caller-owned destination and accepts the default framebuffer', async () => {
   const { gl, state } = context('success'),
     destination = new Uint8Array(16);
-  const task = readPixelsAsync(gl, null, 0, 0, 2, 2, 30000, destination);
+  const task = readPixelsAsync(gl, null, 0, 0, 2, 2, destination);
   assert.equal(await task.promise, destination);
   assert.deepEqual(destination, new Uint8Array(16).fill(17));
   assert.equal(state.deletedBuffers, 1);
@@ -99,9 +98,39 @@ test('streaming readback reuses the caller-owned destination and accepts the def
 test('invalid streaming destination fails before allocating GPU objects', async () => {
   const { gl, state } = context('success');
   await assert.rejects(
-    readPixelsAsync(gl, null, 0, 0, 2, 2, 30000, new Uint8Array(4)).promise,
+    readPixelsAsync(gl, null, 0, 0, 2, 2, new Uint8Array(4)).promise,
     /wrong length/,
   );
   assert.equal(state.deletedBuffers, 0);
   assert.equal(state.deletedFences, 0);
+});
+
+// A software GPU (CI's SwiftShader) can hold a fence for longer than any fixed
+// limit; a wall-clock deadline there failed the whole avatar pool for good.
+test('a held fence stays pending, still polled, until it signals: there is no deadline', async () => {
+  const { gl, state } = context('held');
+  const originalNow = performance.now;
+  let now = 0;
+  performance.now = () => now;
+  try {
+    let settled = false;
+    const task = readPixelsAsync(gl, {}, 0, 0, 2, 2);
+    task.promise.then(
+      () => (settled = true),
+      () => (settled = true),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 12));
+    now = 10 * 60 * 1000;
+    const before = state.polls;
+    await new Promise((resolve) => setTimeout(resolve, 24));
+    assert.equal(settled, false);
+    assert.ok(state.polls > before, 'the fence is still polled');
+    assert.equal(state.deletedFences, 0);
+    gl.clientWaitSync = () => gl.CONDITION_SATISFIED;
+    assert.deepEqual(await task.promise, new Uint8Array(16).fill(17));
+    assert.equal(state.deletedBuffers, 1);
+    assert.equal(state.deletedFences, 1);
+  } finally {
+    performance.now = originalNow;
+  }
 });
