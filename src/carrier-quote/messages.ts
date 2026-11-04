@@ -33,6 +33,8 @@ export interface CarrierQuoteMessages {
   list: string;
   /** Names a card's price-breakdown toggle, as one phrase per language. */
   priceDetailsFor: (name: string) => string;
+  /** The carrier's rating in its name: "4.8 out of 5". */
+  rating: (rating: string) => string;
 }
 
 export const CARRIER_QUOTE_MESSAGES: MessageCatalog<CarrierQuoteMessages> =
@@ -60,4 +62,5 @@ export const CARRIER_QUOTE_MESSAGES: MessageCatalog<CarrierQuoteMessages> =
       'Carriers are looking at your job. The first offers usually arrive within a few minutes.',
     list: 'Offers',
     priceDetailsFor: (name) => `Price details for ${name}`,
+    rating: (rating) => `${rating} out of 5`,
   });

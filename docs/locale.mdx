@@ -57,7 +57,7 @@ back to plain English formatting rather than throwing.
 | `formatCompactNumber(value, locale?)` | `12500` → `12.5K` (`12,5 mil` in `es`) |
 | `formatPercent(ratio, locale?, digits?)` | `0.25` → `25%` (`%25` in `tr`) |
 | `formatSignedPercent(ratio, locale?, digits?)` | `0.052` → `+5.2%` |
-| `formatCurrency(amount, currency, locale?, digits?)` | `385000, 'EUR'` → `€385,000` (`385.000 €` in `es`) |
+| `formatCurrency(amount, currency, locale?, digits?)` | `385000, 'EUR'` → `€385,000` (`385.000 €` in `es`); `digits` `'currency'` → `$9.99`, `¥980` |
 | `formatCompactCurrency(amount, currency, locale?)` | `385000, 'EUR'` → `€385K` |
 | `formatMultiplier(value, locale?)` | `1.5` → `1.5×` |
 | `formatClock(seconds)` | `83` → `1:23`, the same in every locale |
@@ -66,6 +66,10 @@ back to plain English formatting rather than throwing.
 const locale = useBloomLocale();
 <Text>{formatCurrency(price, 'EUR', locale)}</Text>
 ```
+
+Each formatter is built once per locale and set of options and then reused
+(`src/locale/formatter-cache.ts`), the dates' `formatGregorian` too, so a
+long list of prices or dates constructs one `Intl` formatter, not one per row.
 
 A file size is `formatFileSize` from `@oxy.so/bloom/file-upload`.
 

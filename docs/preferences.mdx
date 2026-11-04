@@ -54,6 +54,15 @@ Each hook returns a `SettingsRowData` (label, description, control) in Bloom's
 language catalogs; the select is `SettingsSelect`, the same compact control any
 settings row can use.
 
+Metro does not tree-shake barrel exports, so `@oxy.so/bloom/preferences` links
+both rows — and through the autoplay row, `Select`. A screen with only one of
+them imports it from its own entry:
+
+| Entry | Exports | Does not link |
+| --- | --- | --- |
+| `@oxy.so/bloom/preferences/haptics-setting-row` | `useHapticsSettingRow` | the autoplay row, `SettingsSelect` and `Select` |
+| `@oxy.so/bloom/preferences/video-autoplay-setting-row` | `useVideoAutoplaySettingRow` | the haptics row |
+
 ## Reading them
 
 `useBloomPreferences()` returns `{ preferences, setPreference }`.

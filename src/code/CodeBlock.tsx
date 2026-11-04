@@ -9,15 +9,10 @@ import { CodeLines } from './CodeLines';
 import { CODE_MESSAGES } from './messages';
 import { CARD_RADIUS, CONFIRM_MS, MONO_FAMILY, useCodePalette, useCodeWebCss } from './shared';
 import type { CodeBlockProps } from './types';
-import { writeClipboardText } from '../hooks/clipboard';
+import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useInteractionState } from '../hooks/use-interaction-state';
-
-function writeClipboard(text: string): Promise<void> {
-  if (!IS_WEB) return Promise.reject(new Error('clipboard unavailable'));
-  return writeClipboardText(text);
-}
 
 function mono(fontSize: number, lineHeight: number, extra: TextStyle): TextStyle {
   return { fontFamily: MONO_FAMILY, fontSize, lineHeight, ...extra };
@@ -68,10 +63,12 @@ function CodeBlockComponent({
     return () => clearTimeout(timer);
   }, [copied]);
 
-  const canCopy = copyable && (onCopy !== undefined || IS_WEB);
+  // The web always draws it (the server cannot know the browser's clipboard);
+  // native, when there is a clipboard to write to.
+  const canCopy = copyable && (onCopy !== undefined || IS_WEB || clipboardAvailable());
   const copy = async () => {
     try {
-      await (onCopy ?? writeClipboard)(code);
+      await (onCopy ?? writeClipboardText)(code);
       setCopied(true);
     } catch {
       // A refused clipboard leaves the glyph as it was.

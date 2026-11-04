@@ -16,7 +16,8 @@ export interface WebSearchSource {
   domain: string;
   /**
    * Opens the source. On web the row renders a real `<a target="_blank">`; on
-   * native it calls `Linking.openURL`. Rows without one are not pressable.
+   * native it calls `openExternal` (the in-app browser). Rows without one are
+   * not pressable.
    */
   href?: string;
   /** Draws that site's real mark in its own colour. */

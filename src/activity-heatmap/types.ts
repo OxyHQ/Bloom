@@ -68,7 +68,7 @@ export interface ActivityHeatmapProps {
   weekStartsOn?: 0 | 1;
   /**
    * 12 short month names indexed by month (0 = January), for the month-label
-   * row. Pass localized names; defaults to English abbreviations.
+   * row. Defaults to the locale's short month names (`monthNames`).
    */
   monthLabels?: string[];
   /**

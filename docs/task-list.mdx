@@ -33,7 +33,7 @@ The component is UI only. Let the ticker pace it (`stepInterval`, `startDelay`, 
 
 ## Units
 
-Each task contributes one unit for its header and one per step, so a header always lands a tick ahead of the steps it introduces. While a task's steps are still arriving its header shows `runningTitle` with a travelling shimmer; once the last one lands it swaps to `title` — the old title lifts 4px out into a 3px blur as the new one rises in, 260ms on the soft curve. The newest step shimmers too, and a **Working** indicator (`working`, or `false`) trails the whole log. Uncontrolled, the ticker runs one tick past the last step so it holds before `onComplete`.
+Each task contributes one unit for its header and one per step, so a header always lands a tick ahead of the steps it introduces. While a task's steps are still arriving its header shows `runningTitle` with a travelling shimmer; once the last one lands it swaps to `title` — the old title lifts 4px out into a 3px blur as the new one rises in, 260ms on the soft curve. The newest step shimmers too, and a **Working** indicator (`working`, or `false`; the default is `COMMON_MESSAGES.working` in the app's language) trails the whole log. Uncontrolled, the ticker runs one tick past the last step so it holds before `onComplete`.
 
 The guide ends on the last **revealed** step, not the last in the data, and extends as the log grows.
 

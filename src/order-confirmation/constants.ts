@@ -1,7 +1,12 @@
-/** The words the confirmation says when the app says nothing. */
-export const ORDER_CONFIRMATION_TITLE = 'Your order is placed';
-export const ORDER_CONFIRMATION_REFERENCE_LABEL = 'Order number';
-export const ORDER_CONFIRMATION_ITEMS_LABEL = 'What you ordered';
+import { ORDER_CONFIRMATION_MESSAGES } from './messages';
+
+/**
+ * The English words the confirmation says when the app says nothing. The
+ * component itself says them in the app's language (`ORDER_CONFIRMATION_MESSAGES`).
+ */
+export const ORDER_CONFIRMATION_TITLE = ORDER_CONFIRMATION_MESSAGES.en.title;
+export const ORDER_CONFIRMATION_REFERENCE_LABEL = ORDER_CONFIRMATION_MESSAGES.en.referenceLabel;
+export const ORDER_CONFIRMATION_ITEMS_LABEL = ORDER_CONFIRMATION_MESSAGES.en.itemsLabel;
 
 /**
  * The drawn-on check. 56 is the size at which the 4px stroke of

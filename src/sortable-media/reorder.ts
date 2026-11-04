@@ -1,3 +1,5 @@
+import { BREAKPOINTS } from '../styles/breakpoints';
+
 /**
  * The GRID maths behind `SortablePhotoGrid` — where a point falls and how many
  * columns fit. The list maths (`moveItem`) is shared: `hooks/list-reorder`.
@@ -24,5 +26,5 @@ export function slotAtPoint(
 
 /** The default column count for a grid `width` wide. */
 export function sortableGridColumns(width: number): number {
-  return width >= 640 ? 4 : 3;
+  return width >= BREAKPOINTS.sm ? 4 : 3;
 }

@@ -91,7 +91,8 @@ export interface GroupedProjectBoardProps<Item>
 export type TicketSubtask = { id: string; title: string; done: boolean };
 export type TicketComment = {
   id: string;
-  author: string;
+  /** The member's name. Absent for a comment the viewer posted with no `currentUserId`. */
+  author?: string;
   body: string;
   time: string;
 };
@@ -141,6 +142,7 @@ export interface ProjectBoardTemplateProps {
   onMenuClick?: () => void;
   title?: string;
   teamName?: string;
+  /** The owner crumb between the team and the board. None by default. */
   ownerName?: string;
   /** Product notification center or other header actions. */
   headerActions?: ReactNode;

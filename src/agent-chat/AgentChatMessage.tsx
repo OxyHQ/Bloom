@@ -29,7 +29,7 @@ import {
 } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatMessageProps } from './types';
-import { writeClipboardText } from '../hooks/clipboard';
+import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
@@ -90,10 +90,6 @@ const Line = memo(function Line({
   );
 });
 
-function defaultCopy(text: string): Promise<void> {
-  return writeClipboardText(text);
-}
-
 interface SpeechLike {
   cancel: () => void;
   speak: (utterance: unknown) => void;
@@ -150,7 +146,7 @@ function MessageActions({
     return () => webSpeech()?.synth.cancel();
   }, [onReadAloud]);
 
-  const copyHandler = onCopy ?? (IS_WEB ? defaultCopy : undefined);
+  const copyHandler = onCopy ?? (IS_WEB || clipboardAvailable() ? writeClipboardText : undefined);
   const copy = useCallback(async () => {
     if (!copyHandler) return;
     try {

@@ -33,6 +33,7 @@ import {
 } from './medical-parts';
 import { lerp, useChartProgress } from './use-chart-progress';
 import { CHART_CARDS_MESSAGES } from './messages';
+import { formatGregorian } from '../locale/format-date';
 import { useMessages } from '../locale/messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
@@ -100,15 +101,24 @@ export interface StepsCardProps {
   testID?: string;
 }
 
-const DAY_FULL: Record<string, string> = {
-  Mon: 'Monday',
-  Tue: 'Tuesday',
-  Wed: 'Wednesday',
-  Thu: 'Thursday',
-  Fri: 'Friday',
-  Sat: 'Saturday',
-  Sun: 'Sunday',
+/** A weekday abbreviation's day, Monday first. */
+const WEEKDAY_INDEX: Record<string, number> = {
+  Mon: 0,
+  Tue: 1,
+  Wed: 2,
+  Thu: 3,
+  Fri: 4,
+  Sat: 5,
+  Sun: 6,
 };
+
+/** `Mon` → "Monday" in the locale's words (1 January 2024 was a Monday). */
+function weekdayTitle(label: string, locale: string | undefined): string | null {
+  const index = WEEKDAY_INDEX[label];
+  return index === undefined
+    ? null
+    : formatGregorian(new Date(2024, 0, 1 + index), locale, { weekday: 'long' });
+}
 
 /** `-mx-[5.5px]` on the chart container. */
 export const STEPS_BLEED = 5.5;
@@ -194,7 +204,9 @@ export function StepsCard({
   const hovering = activeIndex !== null;
   const point = hovering ? data[activeIndex]! : null;
   const label = point
-    ? (getPointTitle?.(point, activeIndex!) ?? DAY_FULL[point.label] ?? point.label)
+    ? (getPointTitle?.(point, activeIndex!) ??
+      weekdayTitle(point.label, chartLocale) ??
+      point.label)
     : title;
 
   const domainMax = useMemo(() => {
@@ -252,7 +264,7 @@ export function StepsCard({
   const hasStats = stats !== undefined && stats.length > 0;
   const summary =
     accessibilityLabel ??
-    `${title} bar chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
+    chartText.barChart(title, data.map((d) => `${d.label} ${format(d.value)}`).join(', '));
 
   return (
     <ChartCardSurface

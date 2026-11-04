@@ -1,3 +1,6 @@
+import { act, renderHook } from '@testing-library/react-native';
+
+import type { BloomThemeStorage } from '../../theme/persistence';
 import {
   INITIAL_WORKSPACE,
   conversationFor,
@@ -8,6 +11,7 @@ import {
 } from '../data';
 import { MARKETPLACE_ITEMS, addMarketplaceBot, filterMarketplace } from '../marketplace-data';
 import { streamReply, waitForReply } from '../stream-reply';
+import { useWorkspace } from '../use-workspace';
 
 describe('multi-agent workspace', () => {
   it('deduplicates membership and ignores unavailable agents', () => {
@@ -125,4 +129,24 @@ describe('abortable word streaming', () => {
     await expect(waitForReply(500, controller.signal)).rejects.toBe('cancelled');
     expect(jest.getTimerCount()).toBe(0);
   });
+});
+
+it('restores and saves the workspace through an asynchronous storage adapter', async () => {
+  const saved = { ...INITIAL_WORKSPACE, activeId: INITIAL_WORKSPACE.chats[1]!.id };
+  const store = new Map([['chat', JSON.stringify(saved)]]);
+  const storage: BloomThemeStorage = {
+    getItem: async (key) => store.get(key) ?? null,
+    setItem: async (key, value) => {
+      store.set(key, value);
+    },
+  };
+  const { result } = renderHook(() => useWorkspace({ storageKey: 'chat', storage }));
+  await act(async () => {});
+  expect(result.current.loaded).toBe(true);
+  expect(result.current.workspace.activeId).toBe(saved.activeId);
+
+  await act(async () => {
+    result.current.update((workspace) => ({ ...workspace, activeId: workspace.chats[0]!.id }));
+  });
+  expect(JSON.parse(store.get('chat')!).activeId).toBe(INITIAL_WORKSPACE.chats[0]!.id);
 });

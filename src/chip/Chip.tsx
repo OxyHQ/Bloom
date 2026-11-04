@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { useCommonMessages } from '../locale/common-messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { borderRadius } from '../styles/tokens';
@@ -174,6 +175,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
   ref,
 ) {
   const theme = useTheme();
+  const common = useCommonMessages();
   const scoped = useBloomAppearance(
     {
       size: ['xs', 'sm', 'md', 'lg'].includes(sizeProp ?? '')
@@ -271,7 +273,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
   // with no way to tell which pill goes. The chip names it from its own label
   // when that label is words; `closeLabel` is for the rest.
   const removeLabel =
-    closeLabel ?? (typeof children === 'string' ? `Remove ${children}` : 'Remove');
+    closeLabel ?? (typeof children === 'string' ? common.removeItem(children) : common.remove);
   const closeButton = onClose ? (
     <Pressable
       onPress={(event) => {

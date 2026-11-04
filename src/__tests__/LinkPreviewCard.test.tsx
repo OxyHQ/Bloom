@@ -153,10 +153,11 @@ describe('LinkPreviewCard', () => {
      * suggests — asserting on the composite reads `undefined` for every style
      * key and would pass whatever the block is padded with.
      */
-    function contentBlock(text: {
-      parent: { parent: { props: Record<string, unknown> } | null } | null;
-    }) {
-      const block = text.parent?.parent;
+    type Node = { type: unknown; parent: Node | null; props: Record<string, unknown> };
+    /** The nearest host `View` above the line: the block the lines sit in. */
+    function contentBlock(text: Node) {
+      let block = text.parent;
+      while (block && block.type !== 'View') block = block.parent;
       if (!block || block.props.style === undefined) {
         throw new Error('no host content block above the site-name line');
       }

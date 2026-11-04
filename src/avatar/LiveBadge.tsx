@@ -1,9 +1,19 @@
-import React, { memo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import type React from 'react';
+import { memo } from 'react';
+import { View, StyleSheet } from 'react-native';
 
+import { fontSize } from '../styles/tokens';
 import { Z_INDEX } from '../styles/z-index';
+import { Text } from '../typography';
 
 export type LiveBadgeVariant = 'tiny' | 'small';
+
+/**
+ * The label's size per pill. `small` is the smallest step of the size scale;
+ * `tiny` hangs off avatars too small for any step of it and stays legible only
+ * as the familiar word (`allowFontScaling` is off for the same reason).
+ */
+const LABEL_SIZE: Record<LiveBadgeVariant, number> = { small: fontSize._2xs, tiny: 7 };
 
 interface LiveBadgeProps {
   /** Size variant — `'tiny'` for small avatars, `'small'` for larger ones. */
@@ -35,7 +45,7 @@ const LiveBadgeComponent: React.FC<LiveBadgeProps> = ({
         <Text
           allowFontScaling={false}
           numberOfLines={1}
-          style={[styles.text, { color: textColor, fontSize: variant === 'small' ? 10 : 7 }]}
+          style={[styles.text, { color: textColor, fontSize: LABEL_SIZE[variant] }]}
         >
           {label}
         </Text>

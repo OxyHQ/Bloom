@@ -70,7 +70,7 @@ export interface HeatmapChartCardProps {
   format?: (value: number) => string;
   /** Show every n-th column label (default fits ~12 labels). */
   columnLabelEvery?: number;
-  /** The ramp legend's end captions. Default `['Less', 'More']`. */
+  /** The ramp legend's end captions. Default: "Less" / "More" in the app's language. */
   legendLabels?: readonly [string, string];
   /** The hovered cell. Controlled when set (`null` = none). */
   activeCell?: HeatmapCell | null;
@@ -88,7 +88,6 @@ const GAP = 4;
 /** The column-label row: `pt-0.5` + a 16px caption line. */
 const COLUMN_LABEL_HEIGHT = 18;
 
-const LEGEND_LABELS = ['Less', 'More'] as const;
 const NO_ROWS: readonly HeatmapRow[] = [];
 const NO_COLUMNS: readonly string[] = [];
 
@@ -143,7 +142,7 @@ export function HeatmapChartCard({
   onRangeChange,
   format: formatProp,
   columnLabelEvery,
-  legendLabels = LEGEND_LABELS,
+  legendLabels: legendLabelsProp,
   activeCell: controlled,
   onActiveCellChange,
   stats,
@@ -153,6 +152,7 @@ export function HeatmapChartCard({
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const title = titleProp ?? chartText.titles.activeUsers;
+  const legendLabels = legendLabelsProp ?? [chartText.legendLess, chartText.legendMore];
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);

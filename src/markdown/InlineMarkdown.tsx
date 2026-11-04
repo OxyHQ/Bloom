@@ -1,6 +1,6 @@
 import React, { memo, useMemo, type ReactNode } from 'react';
 import { Text, type GestureResponderEvent } from 'react-native';
-import { openHref } from '../hooks/link-activation';
+import { openExternal } from '../hooks/link-activation';
 
 import { Code } from '../code';
 import { IS_WEB } from '../styles/platform';
@@ -34,7 +34,8 @@ export const InlineMarkdown = memo(function InlineMarkdown({
       event.preventDefault();
       onLinkPress(url);
     } else if (!IS_WEB) {
-      openHref(url);
+      // The web opens a page in a new tab; native, outside the app too.
+      openExternal(url);
     }
   };
 

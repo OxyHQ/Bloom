@@ -203,7 +203,10 @@ export function EarningsChartCard({
           outside="clear"
           onActiveIndexChange={setActiveIndex}
           palette={palette}
-          accessibilityLabel={accessibilityLabel ?? `${title} bar chart`}
+          accessibilityLabel={
+            accessibilityLabel ??
+            chartText.barChart(title, data.map((d) => `${d.label} ${format(d.value)}`).join(', '))
+          }
           testID={testID ? `${testID}-plot` : undefined}
         >
           {({ size, box, band, y }) => {

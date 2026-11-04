@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   Easing,
@@ -22,6 +23,7 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { useCommonMessages } from '../locale/common-messages';
 import { Text } from '../typography';
 import type { TaskListChip, TaskListProps, TaskListStep, TaskListTask } from './types';
 import { IS_WEB } from '../styles/platform';
@@ -565,12 +567,14 @@ function TaskListComponent({
   startDelay = 320,
   revealed: controlledRevealed,
   collapseOnComplete = false,
-  working = 'Working',
+  working: workingProp,
   onComplete,
   reduce: reduceProp,
   style,
   testID,
 }: TaskListProps) {
+  const common = useCommonMessages();
+  const working = workingProp ?? common.working;
   const theme = useTheme();
   const palette = useMemo(() => resolveTaskListPalette(theme), [theme]);
   const systemReduce = useAgentLogMotion();

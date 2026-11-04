@@ -1,9 +1,12 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 
 import { withAlpha } from '../theme/color-utils';
+import { useResolvedBloomLocale } from '../locale/context';
+import { monthNames } from '../locale/format-date';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ActivityHeatmapDay, ActivityHeatmapProps } from './types';
@@ -16,20 +19,6 @@ const DEFAULT_NUM_DAYS = 364;
  * is the strongest. The buckets are 1–2 / 3–5 / 6–9 / 10+.
  */
 const DEFAULT_LEVELS = [3, 6, 10];
-const DEFAULT_MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
 /**
  * Opacity steps (low→high) used to derive the default color scale from primary.
  *
@@ -118,7 +107,8 @@ const ActivityHeatmapComponent: React.FC<ActivityHeatmapProps> = ({
     [colorScale, colors.primary],
   );
   const sortedLevels = useMemo(() => [...levels].sort((a, b) => a - b), [levels]);
-  const months = monthLabels ?? DEFAULT_MONTHS;
+  const locale = useResolvedBloomLocale();
+  const months = useMemo(() => monthLabels ?? monthNames(locale, 'short'), [monthLabels, locale]);
 
   const grid = useMemo(() => {
     // Sum counts per UTC day.
@@ -171,7 +161,7 @@ const ActivityHeatmapComponent: React.FC<ActivityHeatmapProps> = ({
       if (month !== lastMonth) {
         monthMarks.push({
           x: c * (cellSize + gap),
-          label: months[month] ?? DEFAULT_MONTHS[month] ?? '',
+          label: months[month] ?? '',
         });
         lastMonth = month;
       }

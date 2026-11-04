@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
-import { AppState, Platform, type View } from 'react-native';
+import { Platform, type View } from 'react-native';
 import { useMessages } from '../locale/messages';
 import { StyledView, StyledText } from '../styles/styled-primitives';
 import {
@@ -18,6 +18,7 @@ import { useNativeAvatarCompatibility } from './use-avatar-renderer-capabilities
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useAppForeground } from '../hooks/use-app-state';
 
 export type RenderProps = Pick<
   AgentAvatarProps,
@@ -296,7 +297,8 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
   const { runtimeUrl, stills } = useContext(CharacterRuntimeContext);
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
   const reduced = usePrefersReducedMotion();
-  const [active, setActive] = useState(AppState.currentState !== 'background');
+  // Paused while the app is backgrounded or its tab is hidden.
+  const active = useAppForeground();
   const [failed, setFailed] = useState(false);
   const {
     character,
@@ -309,10 +311,6 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
     interactive,
     size = 64,
   } = props;
-  useEffect(() => {
-    const state = AppState.addEventListener('change', (next) => setActive(next === 'active'));
-    return () => state?.remove?.();
-  }, []);
   // The one place a character becomes what the renderer takes; an invalid one throws here,
   // at the component that was handed it, not later inside the engine.
   const resolved = useMemo(() => resolveAvatarCharacter(character), [character]);

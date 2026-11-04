@@ -9,6 +9,8 @@ import Animated, {
 import { Text, typeScale } from '../typography';
 import { useTheme } from '../theme/use-theme';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useResolvedBloomLocale } from '../locale/context';
+import { formatCurrency } from '../locale/format-number';
 import { RollingText } from '../motion/RollingText';
 import type { SubscriptionPriceValue } from './types';
 
@@ -23,7 +25,9 @@ export function SubscriptionPrice({
 }: SubscriptionPriceValue) {
   const theme = useTheme();
   const reduced = usePrefersReducedMotion();
-  const formatted = new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
+  // The price's own locale, else the app's (`BloomProvider locale`).
+  const resolvedLocale = useResolvedBloomLocale(locale);
+  const formatted = formatCurrency(amount, currency, resolvedLocale, 'currency');
   const accessibleAmount = [formatted, suffix].filter(Boolean).join(' ');
   const copyOpacity = useSharedValue(1);
   useLayoutEffect(() => {

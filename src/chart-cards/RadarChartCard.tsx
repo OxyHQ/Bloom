@@ -38,7 +38,8 @@ import { useChartCardSurfacePalette, useChartTones } from './primitives/use-char
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { lerp, useChartProgress } from './use-chart-progress';
-import { useResolvedBloomLocale } from '../locale/context';
+import { useMessages } from '../locale/messages';
+import { CHART_CARDS_MESSAGES, type ChartCardsMessages } from './messages';
 import { useReducedTransparency } from '../theme/reduced-transparency';
 
 /** One axis of a radar: its category `label` plus one numeric field per series. */
@@ -149,12 +150,15 @@ const valueOf = (row: RadarPoint | undefined, key: string) => {
   return Number.isFinite(v) ? v : 0;
 };
 
-/** Qualitative caption under the centre score. */
-export function defaultRadarScoreCaption(score: number): string {
-  if (score >= 90) return 'Excellent';
-  if (score >= 75) return 'Strong';
-  if (score >= 50) return 'Fair';
-  return 'Needs work';
+/** Qualitative caption under the centre score, in the words of `verdicts`. */
+export function defaultRadarScoreCaption(
+  score: number,
+  verdicts: ChartCardsMessages['verdicts'] = CHART_CARDS_MESSAGES.en.verdicts,
+): string {
+  if (score >= 90) return verdicts.excellent;
+  if (score >= 75) return verdicts.strong;
+  if (score >= 50) return verdicts.fair;
+  return verdicts.needsWork;
 }
 
 function AxisLabel({
@@ -227,7 +231,7 @@ export function RadarChartCard({
   style,
   testID,
 }: RadarChartCardProps) {
-  const chartLocale = useResolvedBloomLocale();
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
@@ -240,7 +244,7 @@ export function RadarChartCard({
   const maxOverride = selected?.max ?? maxProp;
   const headline = selected?.headline ?? headlineProp;
   const delta = selected?.delta ?? deltaProp;
-  const label = title ?? (isScore ? 'Weekly score' : 'Visitors');
+  const label = title ?? (isScore ? chartText.titles.weeklyScore : chartText.titles.visitors);
   const tones = useMemo(
     () => series.map((s, i) => resolveTone(palettes, i, s.color, s.activeColor)),
     [series, palettes],
@@ -277,7 +281,7 @@ export function RadarChartCard({
   const caption =
     typeof scoreCaption === 'function'
       ? scoreCaption(score)
-      : (scoreCaption ?? defaultRadarScoreCaption(score));
+      : (scoreCaption ?? defaultRadarScoreCaption(score, chartText.verdicts));
 
   const legendItems =
     series.length > 1
@@ -327,10 +331,13 @@ export function RadarChartCard({
   };
 
   const count = data.length;
-  const kind = isScore ? 'score radar chart' : 'radar chart';
+  const describe = isScore ? chartText.scoreRadarChart : chartText.radarChart;
   const a11y =
     accessibilityLabel ??
-    `${label} ${kind}: ${data.map((row) => String(row.label)).join(', ')}${series.length > 1 ? ` — ${series.map((s) => s.label).join(', ')}` : ''}`;
+    describe(
+      label,
+      `${data.map((row) => String(row.label)).join(', ')}${series.length > 1 ? ` — ${series.map((s) => s.label).join(', ')}` : ''}`,
+    );
 
   const plot = (
     <View

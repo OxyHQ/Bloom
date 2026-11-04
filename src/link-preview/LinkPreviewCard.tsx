@@ -33,25 +33,18 @@
 import type React from 'react';
 import { memo, useCallback, useMemo } from 'react';
 import { Image } from 'expo-image';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { openExternal } from '../hooks/link-activation';
 
 import { Card } from '../card';
 import { useTheme } from '../theme/use-theme';
 import { fontSize, space } from '../styles/tokens';
+import { Text } from '../typography';
+import { TYPE_SCALE } from '../typography/scale';
 import type { LinkPreviewCardProps, LinkPreviewImageSource } from './types';
 
 /** Height (px) of the optional cover image at the top of the card. */
 const COVER_IMAGE_HEIGHT = 160;
-
-/**
- * `text-xs` pairs with a 16px leading in Tailwind's own type scale, and
- * `text-[13px] leading-[18px]` / `text-[15px]` state theirs (the title's
- * arbitrary size carries no paired leading upstream, so it takes the one Bloom's
- * `body` role uses at that size).
- */
-const SITE_NAME_LINE_HEIGHT = 16;
-const TITLE_LINE_HEIGHT = 22;
-const DESCRIPTION_LINE_HEIGHT = 18;
 
 /** `tracking-wide` is 0.025em, which at the site name's 12px is 0.3px. */
 const SITE_NAME_LETTER_SPACING = fontSize.xs * 0.025;
@@ -131,10 +124,9 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
       onPress();
       return;
     }
-    // No explicit handler: open the URL with the system handler. A rejected
-    // promise (unsupported scheme / no handler) is non-actionable for a
-    // presentational card, so it is swallowed rather than surfaced.
-    void Linking.openURL(url).catch(() => undefined);
+    // No explicit handler: open the page outside the app (a new tab, the
+    // in-app browser). A URL nothing can open does nothing.
+    openExternal(url);
   }, [onPress, url]);
 
   return (
@@ -168,7 +160,11 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
 
       <View style={styles.content}>
         {displaySiteName ? (
-          <Text numberOfLines={1} style={[styles.siteName, { color: colors.textSecondary }]}>
+          <Text
+            variant="caption-1-medium"
+            numberOfLines={1}
+            style={[styles.siteName, { color: colors.textSecondary }]}
+          >
             {displaySiteName}
           </Text>
         ) : null}
@@ -180,13 +176,21 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
         ) : null}
 
         {description ? (
-          <Text numberOfLines={2} style={[styles.description, { color: colors.textSecondary }]}>
+          <Text
+            variant="body-2-regular"
+            numberOfLines={2}
+            style={[styles.description, { color: colors.textSecondary }]}
+          >
             {description}
           </Text>
         ) : null}
 
         {author ? (
-          <Text numberOfLines={1} style={[styles.author, { color: colors.textSecondary }]}>
+          <Text
+            variant="caption-1-medium"
+            numberOfLines={1}
+            style={[styles.author, { color: colors.textSecondary }]}
+          >
             {author}
           </Text>
         ) : null}
@@ -212,33 +216,23 @@ const styles = StyleSheet.create({
   content: {
     padding: space.md,
   },
-  // `text-xs font-medium uppercase tracking-wide text-muted-foreground`.
+  // `caption-1-medium` (12/16), uppercase and tracked wide.
   siteName: {
-    fontSize: fontSize.xs,
-    lineHeight: SITE_NAME_LINE_HEIGHT,
-    fontWeight: '500',
     textTransform: 'uppercase',
     letterSpacing: SITE_NAME_LETTER_SPACING,
   },
-  // `text-[15px] font-semibold text-foreground mt-1`.
+  // `headline-semibold`'s 22 line and weight at the 15px size step.
   title: {
+    ...TYPE_SCALE['headline-semibold'],
     fontSize: fontSize.md,
-    lineHeight: TITLE_LINE_HEIGHT,
-    fontWeight: '600',
     marginTop: space.xs,
   },
-  // `text-[13px] leading-[18px] text-muted-foreground mt-1`.
+  // `body-2-regular` (13/18).
   description: {
-    fontSize: fontSize.sm,
-    lineHeight: DESCRIPTION_LINE_HEIGHT,
     marginTop: space.xs,
   },
-  // `text-xs font-medium text-muted-foreground mt-1`: the byline, a quiet
-  // footer under the text it credits.
+  // `caption-1-medium`: the byline, a quiet footer under the text it credits.
   author: {
-    fontSize: fontSize.xs,
-    lineHeight: SITE_NAME_LINE_HEIGHT,
-    fontWeight: '500',
     marginTop: space.xs,
   },
 });

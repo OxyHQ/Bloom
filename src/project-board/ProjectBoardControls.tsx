@@ -164,7 +164,12 @@ export function ProjectBoardControls({
         <DropdownMenuContent label={m.filterTickets} className={MENU} style={{ width: 220 }}>
           <Text className="px-2 pt-2 pb-1 text-body-2-medium text-text-tertiary">{m.priority}</Text>
           {(['all', ...PRIORITIES] as const).map((v) =>
-            option(v === 'all' ? m.allPriorities : v, priority === v, () => onPriority(v), v),
+            option(
+              v === 'all' ? m.allPriorities : m.priorityLabels[v],
+              priority === v,
+              () => onPriority(v),
+              v,
+            ),
           )}
           <Text className="px-2 pt-2 pb-1 text-body-2-medium text-text-tertiary">{m.project}</Text>
           {['all', ...projects].map((v) =>

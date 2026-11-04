@@ -2,6 +2,39 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.8.0
+
+Every family now reads Bloom's shared systems — app state, storage, the clipboard, the locale's formatters and catalogs, the type scale and `BREAKPOINTS` — and the gaps app adoption reported are filled.
+
+### Added
+
+- **`openExternal(href)`** (`@oxy.so/bloom/hooks`, root), `openHref`'s companion for a page outside the app: a new tab on the web, the in-app browser on native through the optional `expo-web-browser` peer, and `Linking.openURL` for other schemes or without the peer. `LinkPreviewCard` and `LinkPreviewMessage` (without `onPress`), `WebSearch`'s sources, `InlineMarkdown`'s links, the project board's ticket resources and a `Button` with `href` and `target="_blank"` on native open through it.
+- **`writeClipboardText` works on native** through the optional `expo-clipboard` peer (`clipboardAvailable()` reports it). `CodeBlock`, `AgentChatMessage`, `MultiAgentChat` and the project board's ticket id copy through it; on native the copy buttons appear once the peer is installed.
+- **`useHapticFeedback().warning()`**: iOS's warning notification, Android's long-press feedback.
+- **`@oxy.so/bloom/settings-modal/select`**: `SettingsSelect` alone, without the rows (`/rows` cost Syra ~8.5 KB of first load for it).
+- **`@oxy.so/bloom/preferences/haptics-setting-row` and `/video-autoplay-setting-row`**: one settings row each, so the haptics row no longer links `Select`. The hooks now live in their own files; `@oxy.so/bloom/preferences` still exports both.
+- **`formatCurrency(amount, currency, locale, 'currency')`** takes the currency's own minor units (`$9.99`, `¥980`). `SubscriptionPrice` formats through it, and follows `BloomProvider locale` when the price names none.
+- **`MultiAgentChat` takes `storage`** (the theme's `BloomThemeStorage` adapter, synchronous or asynchronous; `localStorage` by default on the web) **and `team`** (the sidebar's team card and menu).
+- **`ConnectionStatusToasts` takes `locale`.**
+
+### Changed
+
+- **The locale's number and date formatters are built once per locale and options** and reused, instead of a new `Intl.NumberFormat` / `DateTimeFormat` on every call.
+- **No English left in the drawn or announced defaults**: the connection toasts, `TaskList`'s and `WebSearch`'s "Working" (now one `COMMON_MESSAGES.working`), the project board's priorities, "Since just now" and a viewer's comment, `OrderConfirmation`'s title and labels, `CompositionBar`'s readout, `Chip`'s remove label, `CarrierQuoteCard`'s rating, `ActivityHeatmap`'s month labels (the locale's short months), and the chart cards' summaries, verdicts, legend, "New" pill, "Show N more", weekday titles and default agent count. Each has a catalog entry in all fifteen languages; the props that set them still win.
+- **Library code carries no demo data.** `ProjectBoard` draws the owner crumb only with `ownerName` and no longer falls back to a sample member as a ticket's creator; `MultiAgentChat`'s sidebar has no team card unless `team` is passed (the story passes the old one).
+- **App state, storage and the clipboard go through their shared owners**: `CharacterAvatar`, `EmotionPicker` and scroll restoration use `use-app-state` (SSR-safe) instead of `AppState` directly; `MultiAgentChat` persists through the storage adapter instead of raw `localStorage`; the project board and multi-agent chat copy through `writeClipboardText`.
+- **Raw `Intl` and `toLocale*` calls go through the locale formatters** (`SubscriptionPrice`, the settings storage file count, the demo workspace's upload dates).
+- **Text uses the type scale.** `GroupedSection`, `LinkPreviewCard`, `LiveBadge`, `Accordion` and `Loading` draw Bloom's `Text`, sized by type-scale variants or the size tokens; `ErrorBoundary`'s fallback keeps React Native's `Text` (it must not read context) but takes its sizes from `TYPE_SCALE`.
+- **Width branches read `BREAKPOINTS`** in fourteen more families (listing details and actions, composer pill, earnings, chat screen, settings modal, marketplace, agent chat history, property-type selector, track-list selection bar, sortable media, now-playing bar, tenancy, home search). Values are unchanged.
+
+### Consumers
+
+- Optional peers: install `expo-clipboard` for native copy and `expo-web-browser` for the in-app browser. Without them nothing breaks: copy buttons stay hidden on native as before, and links open in the system browser.
+- `ProjectBoard` without `ownerName` no longer shows a sample owner crumb; pass `ownerName` to keep one. A comment posted with no `currentUserId` now has no `author` (it was the string `'you'`).
+- `MultiAgentChat` shows no team card by default; pass `team` for one.
+- Visual: `GroupedSection`'s descriptions and values take `body-2`'s 18px line (was 17), its group title and footer the caption steps' line height and tracking; `LinkPreviewCard`'s byline takes `caption-1`'s 0.15px tracking; the web `Accordion` trigger is set in Bloom's sans face instead of the system stack; `ErrorBoundary`'s title and button take the type scale's line heights.
+- `CompositionBar`'s and `AgentsChartCard`'s defaults group thousands ("1,200 pts"), and one agent reads "1 agent".
+
 ## 17.7.0
 
 Duplicates across the families now go through one canonical primitive each. Every old exported name keeps working.

@@ -1,6 +1,7 @@
 import type { AccentTone } from '../theme/accent-colors';
 import type { ApplicationItemStatus, ExchangeMode, RentalStatus, SaleStatus } from './types';
 import { LISTING_ACTIONS_MESSAGES } from './messages';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 interface OfferStatusInfo {
   tone: AccentTone;
@@ -83,5 +84,5 @@ export const MORTGAGE_TERM_OPTIONS: readonly number[] = [10, 15, 20, 25, 30];
 
 /** `auto` layouts: homes stack under this card width, the calculator splits from this width. */
 export const EXCHANGE_STACK_BELOW = 360;
-export const MORTGAGE_SPLIT_FROM = 640;
+export const MORTGAGE_SPLIT_FROM = BREAKPOINTS.sm;
 export const APPLICATION_CHECKLIST_MAX_WIDTH = 560;

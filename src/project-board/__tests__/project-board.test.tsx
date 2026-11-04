@@ -224,11 +224,12 @@ describe('ProjectBoard interactions', () => {
     fireEvent.press(screen.getByLabelText('Post comment'));
     const next = onColumnsChange.mock.calls.slice(-1)[0]?.[0] as ProjectColumn[];
     expect(next[0]?.tickets[0]?.isFavorite).toBe(true);
-    expect(next[0]?.tickets[0]?.comments?.[0]).toMatchObject({
-      author: 'you',
-      body: 'Reviewed with the team',
-    });
+    const posted = next[0]?.tickets[0]?.comments?.[0];
+    expect(posted).toMatchObject({ body: 'Reviewed with the team' });
+    // No `currentUserId`: the viewer's comment carries no author and reads "You".
+    expect(posted?.author).toBeUndefined();
     expect(screen.getByText('Reviewed with the team')).toBeTruthy();
+    expect(screen.getAllByText('You').length).toBeGreaterThan(0);
   });
   it('moves with native accessibility actions while preserving every ticket', () => {
     const onColumnsChange = jest.fn();

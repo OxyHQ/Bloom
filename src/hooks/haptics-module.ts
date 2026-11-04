@@ -54,7 +54,7 @@ export interface HapticsLike {
   ImpactFeedbackStyle: Record<'Light' | 'Medium' | 'Heavy', string>;
   impactAsync(style?: string): Promise<void>;
   selectionAsync?(): Promise<void>;
-  NotificationFeedbackType?: Record<'Success' | 'Error', string>;
+  NotificationFeedbackType?: Record<'Success' | 'Warning' | 'Error', string>;
   notificationAsync?(type?: string): Promise<void>;
   performAndroidHapticsAsync?(type: string): Promise<void>;
 }

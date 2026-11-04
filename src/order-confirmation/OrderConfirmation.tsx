@@ -12,13 +12,9 @@ import { surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import {
-  ORDER_CONFIRMATION_GAP,
-  ORDER_CONFIRMATION_ITEMS_LABEL,
-  ORDER_CONFIRMATION_MARK,
-  ORDER_CONFIRMATION_REFERENCE_LABEL,
-  ORDER_CONFIRMATION_TITLE,
-} from './constants';
+import { useMessages } from '../locale/messages';
+import { ORDER_CONFIRMATION_GAP, ORDER_CONFIRMATION_MARK } from './constants';
+import { ORDER_CONFIRMATION_MESSAGES } from './messages';
 import type { OrderConfirmationProps } from './types';
 
 /**
@@ -63,17 +59,17 @@ const FLUSH_ROW = { paddingLeft: 0, paddingRight: 0 } as const;
  * Every amount, every time and every reading is a string the app formatted.
  */
 function OrderConfirmationComponent({
-  title = ORDER_CONFIRMATION_TITLE,
+  title: titleProp,
   description,
   mark,
   markSize = ORDER_CONFIRMATION_MARK,
   reference,
-  referenceLabel = ORDER_CONFIRMATION_REFERENCE_LABEL,
+  referenceLabel: referenceLabelProp,
   status,
   address,
   facts,
   items,
-  itemsLabel = ORDER_CONFIRMATION_ITEMS_LABEL,
+  itemsLabel: itemsLabelProp,
   action,
   secondaryAction,
   footer,
@@ -82,6 +78,10 @@ function OrderConfirmationComponent({
   style,
   testID,
 }: OrderConfirmationProps) {
+  const { messages } = useMessages(ORDER_CONFIRMATION_MESSAGES);
+  const title = titleProp ?? messages.title;
+  const referenceLabel = referenceLabelProp ?? messages.referenceLabel;
+  const itemsLabel = itemsLabelProp ?? messages.itemsLabel;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => surfaceTextOn(theme, surface), [theme, surface]);

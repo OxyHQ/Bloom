@@ -84,7 +84,7 @@ export function CreateTicketDialog({
   const member = assignee ? members[assignee] : undefined;
   const selectedColumn = columns.find((column) => column.id === columnId);
   const priorityChip = (value: TicketPriority) => (
-    <Chip className={`px-[7px] py-[3px] ${PRIORITY_STYLES[value]}`}>{value}</Chip>
+    <Chip className={`px-[7px] py-[3px] ${PRIORITY_STYLES[value]}`}>{m.priorityLabels[value]}</Chip>
   );
   function submit() {
     if (!title.trim()) {
@@ -248,7 +248,7 @@ export function CreateTicketDialog({
                     }
                     options={PRIORITIES.map((v) => ({
                       id: v,
-                      label: v,
+                      label: m.priorityLabels[v],
                       icon: priorityChip(v),
                       hideLabel: true,
                     }))}

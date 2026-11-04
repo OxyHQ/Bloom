@@ -1,5 +1,6 @@
 import { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, type ScrollView, Share } from 'react-native';
+import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
 import Animated from 'react-native-reanimated';
 import { PageHeader } from '../page-header';
 import { PageFooter } from '../page-footer';
@@ -275,8 +276,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const copy = async (text: string, message = messages.copied) => {
     try {
       if (onCopy) await onCopy(text);
-      else if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard)
-        await navigator.clipboard.writeText(text);
+      else if (clipboardAvailable()) await writeClipboardText(text);
       else await Share.share({ message: text });
       replies.setNotice(message);
     } catch {
@@ -395,6 +395,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const sidebar = (sidebarProps: SidebarProps) => (
     <ChatSidebar
       sidebarProps={sidebarProps}
+      team={props.team}
       agents={workspace.agents}
       chats={sortedChats}
       activeId={workspace.activeId}

@@ -1,16 +1,5 @@
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
-import { THEME_TOGGLE_MESSAGES } from '../theme-toggle/messages';
-import { RiBankLine } from '../icons/remix/RiBankLine';
-import { RiFolder6Line } from '../icons/remix/RiFolder6Line';
-import { RiMessage2Line } from '../icons/remix/RiMessage2Line';
-import { RiBankCardLine } from '../icons/remix/RiBankCardLine';
-import { RiSchoolLine } from '../icons/remix/RiSchoolLine';
-import { RiBox3Line } from '../icons/remix/RiBox3Line';
-import { RiNotification3Line } from '../icons/remix/RiNotification3Line';
-import { RiShieldUserLine } from '../icons/remix/RiShieldUserLine';
-import { RiLogoutBoxRLine } from '../icons/remix/RiLogoutBoxRLine';
-import { RiPaletteLine } from '../icons/remix/RiPaletteLine';
 import React from 'react';
 import { Button } from '../button';
 import { AgentAvatar } from '../agent-avatar';
@@ -25,16 +14,14 @@ import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiHashtag } from '../icons/remix/RiHashtag';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
-import { StyledView } from '../styles/styled-primitives';
-import { Text } from '../typography';
 import { Sidebar, SidebarItem, SidebarToolbar } from '../sidebar';
-import { ThemeToggle } from '../theme-toggle';
 import { useChatComponents } from './context';
 import type { Agent, Conversation } from './data';
-import type { SidebarProps } from '../sidebar/types';
+import type { SidebarProps, SidebarTeam } from '../sidebar/types';
 
 export interface ChatSidebarProps {
   sidebarProps?: SidebarProps;
+  team?: SidebarTeam;
   agents: Agent[];
   chats: Conversation[];
   activeId: string;
@@ -56,7 +43,6 @@ export interface ChatSidebarProps {
 }
 export function ChatSidebar(props: ChatSidebarProps) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
-  const { messages: themeMessages } = useMessages(THEME_TOGGLE_MESSAGES);
   const { ConversationSidebar } = useChatComponents();
   const chats = new Map(props.chats.map((chat) => [chat.id, chat]));
   const items = props.chats.map((chat) => {
@@ -151,81 +137,7 @@ export function ChatSidebar(props: ChatSidebarProps) {
             'justify-start bg-transparent text-text-secondary hover:bg-background-secondary-hover active:bg-background-secondary-hover',
         },
       ]}
-      team={{
-        name: 'Bloom team',
-        email: 'team@oxy.so',
-        avatar: { initials: 'B', color: 'blue' },
-        footer: { label: messages.bloom },
-        groups: [
-          {
-            id: 'workspace',
-            items: [
-              {
-                key: 'profile',
-                label: messages.viewTeamProfile,
-                icon: RiBankLine,
-              },
-              { key: 'folders', label: messages.folders, icon: RiFolder6Line },
-              {
-                key: 'messages',
-                label: messages.messages,
-                icon: RiMessage2Line,
-                badge: '94',
-              },
-              { key: 'people', label: messages.people, icon: RiGroupLine },
-            ],
-          },
-          {
-            id: 'company',
-            label: messages.company,
-            items: [
-              { key: 'billing', label: messages.billing, icon: RiBankCardLine },
-              {
-                key: 'details',
-                label: messages.companyDetails,
-                icon: RiSchoolLine,
-              },
-              {
-                key: 'integrations',
-                label: messages.integrations,
-                icon: RiBox3Line,
-              },
-            ],
-          },
-          {
-            id: 'personal',
-            label: messages.personal,
-            items: [
-              {
-                key: 'notifications',
-                label: messages.notifications,
-                icon: RiNotification3Line,
-              },
-              {
-                key: 'account',
-                label: messages.accountDetails,
-                icon: RiShieldUserLine,
-              },
-              {
-                key: 'sign-out',
-                label: messages.signOut,
-                icon: RiLogoutBoxRLine,
-              },
-            ],
-            content: (
-              <StyledView className="flex w-full items-center justify-between gap-2.5 rounded-2lg px-2 py-1 flex-row">
-                <StyledView className="flex min-w-0 flex-1 items-center gap-2 flex-row">
-                  <RiPaletteLine width={20} height={20} />
-                  <Text className="truncate text-body-medium text-text-primary">
-                    {themeMessages.theme}
-                  </Text>
-                </StyledView>
-                <ThemeToggle variant="segmented" />
-              </StyledView>
-            ),
-          },
-        ],
-      }}
+      team={props.team}
     />
   );
 }

@@ -15,7 +15,7 @@ import { useActiveIndex } from './primitives/use-active-index';
 import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useChartProgress } from './use-chart-progress';
-import { CHART_CARDS_MESSAGES } from './messages';
+import { CHART_CARDS_MESSAGES, type ChartCardsMessages } from './messages';
 import { useMessages } from '../locale/messages';
 
 /** One sub-score: an arc on the ring and a row in the panel. */
@@ -63,12 +63,15 @@ const PADDING_ANGLE = 4;
 /** `cornerRadius={99}`, clamped to half the thickness. */
 const ROUND = 99;
 
-/** The verdict for a total. */
-export function defaultSleepScoreLabel(total: number): string {
-  if (total >= 90) return 'Excellent';
-  if (total >= 75) return 'Good';
-  if (total >= 50) return 'Fair';
-  return 'Poor';
+/** The verdict for a total, in the words of `verdicts`. */
+export function defaultSleepScoreLabel(
+  total: number,
+  verdicts: ChartCardsMessages['verdicts'] = CHART_CARDS_MESSAGES.en.verdicts,
+): string {
+  if (total >= 90) return verdicts.excellent;
+  if (total >= 75) return verdicts.good;
+  if (total >= 50) return verdicts.fair;
+  return verdicts.poor;
 }
 
 const CHEVRON_LEFT = 'M9 4L5.70711 7.29289C5.31658 7.68342 5.31658 8.31658 5.70711 8.70711L9 12';
@@ -157,7 +160,7 @@ export function SleepScoreCard({
   const verdict =
     typeof scoreLabel === 'function'
       ? scoreLabel(total)
-      : (scoreLabel ?? defaultSleepScoreLabel(total));
+      : (scoreLabel ?? defaultSleepScoreLabel(total, chartText.verdicts));
   const centerValue = hovering ? (metrics[activeIndex]?.score ?? total) : total;
 
   // Coloured arcs + a transparent filler for the unearned points.

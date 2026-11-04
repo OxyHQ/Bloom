@@ -61,12 +61,13 @@ import { dataHook } from '../styles/data-hook';
 import { useEnteredPresence } from '../surface/use-surface-presence';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 const FROST_MS = 480;
 /** `max-width: 639px`, until the pill has measured itself. */
-const COMPACT_WIDTH = 640;
+const COMPACT_WIDTH = BREAKPOINTS.sm;
 /**
  * The pill's own width below which it goes compact (the short placeholder and an
  * icon-only model picker). Its own width, not the window's: a pill in a narrow

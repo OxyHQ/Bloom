@@ -77,6 +77,8 @@ export interface HapticFeedback {
   selection(): void;
   toggle(on: boolean): void;
   success(): void;
+  /** Something needs attention but did not fail: firmer than `tap`, short of `error`. */
+  warning(): void;
   error(): void;
 }
 
@@ -87,6 +89,7 @@ type HapticIntent =
   | 'toggleOn'
   | 'toggleOff'
   | 'success'
+  | 'warning'
   | 'error';
 
 /** Android constants introduced after API 24 fall back to older view feedback. */
@@ -97,6 +100,8 @@ export function resolveAndroidHapticIntent(intent: HapticIntent, apiLevel: numbe
     case 'confirm':
     case 'success':
       return apiLevel >= 30 ? 'confirm' : 'virtual-key';
+    case 'warning':
+      return 'long-press';
     case 'error':
       return apiLevel >= 30 ? 'reject' : 'long-press';
     case 'selection':
@@ -143,7 +148,9 @@ export function useHapticFeedback(): HapticFeedback {
             ? haptics.notificationAsync(
                 kind === 'success'
                   ? haptics.NotificationFeedbackType.Success
-                  : haptics.NotificationFeedbackType.Error,
+                  : kind === 'warning'
+                    ? haptics.NotificationFeedbackType.Warning
+                    : haptics.NotificationFeedbackType.Error,
               )
             : undefined;
       if (result) void result.catch(() => {});
@@ -156,6 +163,7 @@ export function useHapticFeedback(): HapticFeedback {
       selection: () => play('selection'),
       toggle: (on: boolean) => play(on ? 'toggleOn' : 'toggleOff'),
       success: () => play('success'),
+      warning: () => play('warning'),
       error: () => play('error'),
     };
   }, [enabled, impact]);

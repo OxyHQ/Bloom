@@ -7,6 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { AGENT_CHAT_MESSAGES, type AgentChatMessages } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { animation } from '../styles/tokens';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 /** Shared semantic surfaces, text and action roles for every agent-chat part. */
 export interface AgentChatPalette {
@@ -95,7 +96,7 @@ export const TRANSITION_MS = animation.duration.fast;
 /** How long the ✓ stays after a copy or share. */
 export const CONFIRM_MS = 1600;
 /** Window width at which the rail shows (`xl`). */
-export const HISTORY_BREAKPOINT = 1280;
+export const HISTORY_BREAKPOINT = BREAKPOINTS.xl;
 
 /** Rows in a `DropdownItem className="px-2 py-1.5"`: 32 tall. */
 export const DENSE_ROW_CLASS = 'py-1.5';

@@ -25,7 +25,7 @@ import { useChartRange } from './primitives/use-chart-range';
 import { resolveTone } from './palette';
 import type { AreaChartCardProps, AreaPoint, AreaSeries } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
-import { CHART_CARDS_MESSAGES } from './messages';
+import { CHART_CARDS_MESSAGES, type ChartCardsMessages } from './messages';
 import { useMessages } from '../locale/messages';
 import { useSvgIdPrefix } from '../styles/svg-id';
 
@@ -69,17 +69,18 @@ const valueOf = (row: AreaPoint | undefined, key: string) => {
 };
 
 function defaultAccessibilityLabel(
+  text: ChartCardsMessages,
   title: string,
   variant: string,
   series: readonly AreaSeries[],
 ): string {
-  const kind =
+  const describe =
     variant === 'percent'
-      ? '100% stacked area chart'
+      ? text.percentAreaChart
       : variant === 'overlap'
-        ? 'area chart'
-        : 'stacked area chart';
-  return `${title} ${kind}: ${series.map((s) => s.label).join(', ')}`;
+        ? text.areaChart
+        : text.stackedAreaChart;
+  return describe(title, series.map((s) => s.label).join(', '));
 }
 
 export function AreaChartCard({
@@ -215,7 +216,7 @@ export function AreaChartCard({
           onActiveIndexChange={setActiveIndex}
           palette={palette}
           accessibilityLabel={
-            accessibilityLabel ?? defaultAccessibilityLabel(title, variant, series)
+            accessibilityLabel ?? defaultAccessibilityLabel(chartText, title, variant, series)
           }
           testID={testID ? `${testID}-plot` : undefined}
         >

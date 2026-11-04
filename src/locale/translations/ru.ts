@@ -155,6 +155,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: 'Назад и вперёд',
   goBack: 'Вернуться',
   loading: 'Загрузка',
+  working: 'Работаю',
   more: 'Ещё',
   moreOptions: 'Другие параметры',
   moreActions: 'Другие действия',
@@ -168,6 +169,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: 'Удалить',
   edit: 'Изменить',
   remove: 'Убрать',
+  removeItem: (name) => `Убрать ${name}`,
   retry: 'Повторить',
   search: 'Поиск',
   showMore: 'Показать больше',
@@ -1691,7 +1693,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: 'Источники',
-  working: 'Работаю',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1765,6 +1766,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: 'Воронка продаж',
     steps: 'Шаги',
     tokens: 'Токены',
+    weeklyScore: 'Недельный балл',
   },
   weekly: 'По неделям',
   monthly: 'По месяцам',
@@ -1810,6 +1812,32 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
           other: `{n} вклада${on}`,
         });
   },
+  verdicts: {
+    excellent: 'Отлично',
+    strong: 'Уверенно',
+    good: 'Хорошо',
+    fair: 'Удовлетворительно',
+    poor: 'Плохо',
+    needsWork: 'Нужно улучшить',
+  },
+  newChange: 'Новое',
+  legendLess: 'Меньше',
+  legendMore: 'Больше',
+  showFewer: 'Показать меньше',
+  showCountMore: (count) => `Показать ещё ${count}`,
+  agentCount: (count) =>
+    plural('ru', count, {
+      one: '{n} агент',
+      few: '{n} агента',
+      many: '{n} агентов',
+      other: '{n} агента',
+    }),
+  funnelChart: (title, items) => `Воронка «${title}»: ${items}`,
+  areaChart: (title, series) => `Диаграмма с областями «${title}»: ${series}`,
+  stackedAreaChart: (title, series) => `Диаграмма с областями и накоплением «${title}»: ${series}`,
+  percentAreaChart: (title, series) => `Нормированная диаграмма с областями «${title}»: ${series}`,
+  radarChart: (title, items) => `Лепестковая диаграмма «${title}»: ${items}`,
+  scoreRadarChart: (title, items) => `Лепестковая диаграмма оценки «${title}»: ${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
@@ -2887,6 +2915,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     'Перевозчики изучают ваш заказ. Первые предложения обычно приходят в течение нескольких минут.',
   list: 'Предложения',
   priceDetailsFor: (name) => `Детали цены: ${name}`,
+  rating: (rating) => `${rating} из 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3024,7 +3053,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'Небольшая помощь',
   aFewMindsOneConversation: 'Несколько умов. Один разговор.',
   aLittleRoomForSomethingNew: 'Немного места для чего-то нового',
-  accountDetails: 'Детали учетной записи',
   add: 'Добавить',
   add2: 'Добавить {0}',
   added: 'Добавлено',
@@ -3037,7 +3065,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'Вернуться на торговую площадку',
   billing: 'Биллинг',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'Боты',
   bringYourAgentsIntoOneChat: 'Объедините своих агентов в один чат.',
   category: 'Категория',
@@ -3051,8 +3078,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'Выберите товарищей по команде',
   closeMarketplace: 'Закрыть торговую площадку',
   closeSearch: 'Закрыть поиск',
-  company: 'Компания',
-  companyDetails: 'Подробная информация о компании',
   completionSound: 'Звук завершения',
   connectedAccount: 'Подключенный аккаунт',
   connector: 'Разъем',
@@ -3091,7 +3116,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: 'Найдите своего следующего товарища по команде',
   findYourNextToolOrTeammate: 'Найдите свой следующий инструмент или товарища по команде',
   firstName: 'Имя',
-  folders: 'Папки',
   general: 'Общие',
   getNotifiedWhenTheModeNeedsTo:
     'Получайте уведомления, когда режиму необходимо принять критическое решение',
@@ -3103,7 +3127,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: 'Включает',
   insideTheApp: 'Внутри приложения',
   installed: 'Установлено',
-  integrations: 'Интеграции',
   iLlApproachThisFromThePerspective: 'Я подхожу к этому с точки зрения {0}.',
   lastName: 'Фамилия',
   limits: 'Ограничения',
@@ -3125,8 +3148,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     'Откройте Marketplace, чтобы изучить плагины и ботов. Используйте меню разговора, чтобы редактировать внешний вид и детали его бота. Выберите выражение из колеса эмоций. Прокрутите или перетащите дугу фигуры или используйте клавиши со стрелками, чтобы изучить фигуры.',
   prDestination: 'PR-направление',
-  people: 'Люди',
-  personal: 'Персональный',
   pinChat: 'Закрепить чат',
   pinnedChat: 'Закрепленный чат',
   plugins: 'Плагины',
@@ -3155,7 +3176,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: 'Поделиться',
   showFundamentalNotificationsWhenAnAgentCompletes:
     'Показывать основные уведомления, когда агент выполняет задачу',
-  signOut: 'Выйти',
   skills: 'Навыки',
   skills2: 'Навыки · {0}',
   soundEffectATaskIsCompleted: 'Звуковой эффект выполнения задания',
@@ -3177,7 +3197,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     'Используйте +, чтобы создать бота или начать общение с несколькими агентами.',
   viewAdded: 'Посмотреть добавлено {0}',
   viewAll: 'Посмотреть все',
-  viewTeamProfile: 'Посмотреть профиль команды',
   viewItem: 'Посмотреть {0}',
   website: 'Сайт',
   whenEnabledYourProfilePageWillBe:
@@ -3239,6 +3258,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'Изменить масштаб',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'Нет подключения к интернету',
+  reconnecting: 'Переподключение…',
+  restored: 'Снова в сети',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'Заказ оформлен',
+  referenceLabel: 'Номер заказа',
+  itemsLabel: 'Что вы заказали',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `Баллы: ${points} · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Изменить обложку',
@@ -3272,6 +3307,8 @@ const translations: Translations = {
     display: 'Отображение',
     manualOrder: 'Ручной порядок',
     priority: 'Приоритет',
+    priorityLabels: { Low: 'Низкий', Medium: 'Средний', High: 'Высокий', Urgent: 'Срочный' },
+    sinceJustNow: 'Только что',
     title: 'Название',
     project: 'Проект',
     allPriorities: 'Все приоритеты',
@@ -3471,6 +3508,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

@@ -146,6 +146,9 @@ import type { CHAT_PEOPLE_MESSAGES } from '../../chat-people/messages';
 import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
 import type { SHARE_SHEET_MESSAGES } from '../../share-sheet/messages';
 import type { WINDOW_MESSAGES } from '../../window/messages';
+import type { CONNECTION_STATUS_MESSAGES } from '../../connection-status/messages';
+import type { ORDER_CONFIRMATION_MESSAGES } from '../../order-confirmation/messages';
+import type { COMPOSITION_BAR_MESSAGES } from '../../composition-bar/messages';
 
 export interface Translations {
   COVER_HEADER_MESSAGES: CatalogMessages<typeof COVER_HEADER_MESSAGES>;
@@ -292,4 +295,7 @@ export interface Translations {
   readonly VOICE_MESSAGES: CatalogMessages<typeof VOICE_MESSAGES>;
   readonly SHARE_SHEET_MESSAGES: CatalogMessages<typeof SHARE_SHEET_MESSAGES>;
   readonly WINDOW_MESSAGES: CatalogMessages<typeof WINDOW_MESSAGES>;
+  readonly CONNECTION_STATUS_MESSAGES: CatalogMessages<typeof CONNECTION_STATUS_MESSAGES>;
+  readonly ORDER_CONFIRMATION_MESSAGES: CatalogMessages<typeof ORDER_CONFIRMATION_MESSAGES>;
+  readonly COMPOSITION_BAR_MESSAGES: CatalogMessages<typeof COMPOSITION_BAR_MESSAGES>;
 }

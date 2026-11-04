@@ -22,6 +22,7 @@ import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
 import type { BloomIconComponent } from '../icons/icon-component';
 import { useCommonMessages } from '../locale/common-messages';
+import { formatInteger } from '../locale/format-number';
 import { useMessages } from '../locale/messages';
 import { Pagination } from '../pagination';
 import { RowActions } from '../row-actions';
@@ -353,7 +354,7 @@ export function SettingsStoragePage({
               {copy.storedIn}
             </Text>
             <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
-              {copy.fileCount(filtered.length, filtered.length.toLocaleString(locale))}
+              {copy.fileCount(filtered.length, formatInteger(filtered.length, locale))}
             </Text>
           </View>
           <View style={[styles.tools, compact ? styles.toolsCompact : null]}>

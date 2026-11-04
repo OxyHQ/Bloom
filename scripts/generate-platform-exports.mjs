@@ -138,6 +138,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./settings-modal', 'settings-modal/index.ts'],
   // Rows on a screen should not link the dialog, its pages or the calendar.
   ['./settings-modal/rows', 'settings-modal/rows.ts'],
+  // The settings select alone, without the rows it usually sits in.
+  ['./settings-modal/select', 'settings-modal/select.ts'],
   // The dialog shell and its rows, without the Storage/Tools/Plan pages (and
   // their Select, FileUpload, Pagination) or the fields' calendar.
   ['./settings-modal/modal', 'settings-modal/modal.ts'],
@@ -228,6 +230,10 @@ const SUBPATHS = /** @type {const} */ ([
   // The viewer's preferences Bloom's components honour (haptics, media
   // autoplay), persisted with the theme, plus their ready-made settings rows.
   ['./preferences', 'preferences/index.ts'],
+  // One settings row each, so the haptics row does not link the autoplay row's
+  // `Select`.
+  ['./preferences/haptics-setting-row', 'preferences/haptics-setting-row.ts'],
+  ['./preferences/video-autoplay-setting-row', 'preferences/video-autoplay-setting-row.ts'],
   ['./teleport', 'teleport/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],
@@ -415,6 +421,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './settings-modal',
   './settings-modal/modal',
   './settings-modal/rows',
+  './settings-modal/select',
   './queue-panel',
   './chat-screen',
   './music-library',
@@ -785,7 +792,11 @@ const WEB_BARREL_EXTRAS = {
 
 /** Every `src/**\/index.ts` that has an `index.web.ts` beside it, `src`-relative. */
 // Lean public entries share the same generated platform retargeting as index barrels.
-const WEB_NON_INDEX_BARRELS = new Set(['settings-modal/modal.ts', 'settings-modal/rows.ts']);
+const WEB_NON_INDEX_BARRELS = new Set([
+  'settings-modal/modal.ts',
+  'settings-modal/rows.ts',
+  'settings-modal/select.ts',
+]);
 
 function discoverWebBarrels() {
   /** @type {string[]} */

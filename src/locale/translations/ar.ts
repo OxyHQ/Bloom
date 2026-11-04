@@ -153,6 +153,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: 'رجوع وللأمام',
   goBack: 'العودة',
   loading: 'جارٍ التحميل',
+  working: 'جارٍ العمل',
   more: 'المزيد',
   moreOptions: 'خيارات إضافية',
   moreActions: 'إجراءات إضافية',
@@ -166,6 +167,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: 'حذف',
   edit: 'تعديل',
   remove: 'إزالة',
+  removeItem: (name) => `إزالة ${name}`,
   retry: 'إعادة المحاولة',
   search: 'بحث',
   showMore: 'عرض المزيد',
@@ -1712,7 +1714,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: 'المصادر',
-  working: 'جارٍ العمل',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1792,6 +1793,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: 'مسار المبيعات',
     steps: 'الخطوات',
     tokens: 'الرموز',
+    weeklyScore: 'النتيجة الأسبوعية',
   },
   weekly: 'أسبوعي',
   monthly: 'شهري',
@@ -1836,6 +1838,32 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
           other: `{n} مساهمة${on}`,
         });
   },
+  verdicts: {
+    excellent: 'ممتاز',
+    strong: 'قوي',
+    good: 'جيد',
+    fair: 'مقبول',
+    poor: 'ضعيف',
+    needsWork: 'يحتاج إلى تحسين',
+  },
+  newChange: 'جديد',
+  legendLess: 'أقل',
+  legendMore: 'أكثر',
+  showFewer: 'عرض أقل',
+  showCountMore: (count) => `عرض ${count} أخرى`,
+  agentCount: (count) =>
+    plural('ar', count, {
+      one: '{n} وكيل',
+      two: '{n} وكيلان',
+      few: '{n} وكلاء',
+      other: '{n} وكيل',
+    }),
+  funnelChart: (title, items) => `مخطط قمعي لـ${title}: ${items}`,
+  areaChart: (title, series) => `مخطط مساحي لـ${title}: ${series}`,
+  stackedAreaChart: (title, series) => `مخطط مساحي مكدس لـ${title}: ${series}`,
+  percentAreaChart: (title, series) => `مخطط مساحي مكدس بنسبة 100% لـ${title}: ${series}`,
+  radarChart: (title, items) => `مخطط راداري لـ${title}: ${items}`,
+  scoreRadarChart: (title, items) => `مخطط راداري للنتيجة لـ${title}: ${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'نسخ الرمز', copied: 'تم نسخ الرمز' };
@@ -2923,6 +2951,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   emptyDescription: 'يطّلع الناقلون على طلبك. تصل العروض الأولى عادةً خلال دقائق قليلة.',
   list: 'العروض',
   priceDetailsFor: (name) => `تفاصيل سعر ${name}`,
+  rating: (rating) => `${rating} من 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3073,7 +3102,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'بعض المساعدة',
   aFewMindsOneConversation: 'قليل من العقول. محادثة واحدة.',
   aLittleRoomForSomethingNew: 'مساحة صغيرة لشيء جديد',
-  accountDetails: 'تفاصيل الحساب',
   add: 'إضافة',
   add2: 'أضف {0}',
   added: 'تمت الإضافة',
@@ -3086,7 +3114,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'العودة إلى السوق',
   billing: 'الفواتير',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'البوتات',
   bringYourAgentsIntoOneChat: 'قم بإحضار وكلائك في دردشة واحدة.',
   category: 'الفئة',
@@ -3100,8 +3127,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'اختر زملائك في الفريق',
   closeMarketplace: 'إغلاق السوق',
   closeSearch: 'إغلاق البحث',
-  company: 'الشركة',
-  companyDetails: 'تفاصيل الشركة',
   completionSound: 'صوت الإكمال',
   connectedAccount: 'حساب متصل',
   connector: 'موصل',
@@ -3140,7 +3165,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: 'ابحث عن زميلك التالي في الفريق',
   findYourNextToolOrTeammate: 'ابحث عن أداتك أو زميلك التالي في الفريق',
   firstName: 'الاسم الأول',
-  folders: 'المجلدات',
   general: 'عام',
   getNotifiedWhenTheModeNeedsTo: 'احصل على إشعار عندما يحتاج الوضع إلى اتخاذ قرار حاسم',
   git: 'Git',
@@ -3151,7 +3175,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: 'يشمل',
   insideTheApp: 'داخل التطبيق',
   installed: 'تم التثبيت',
-  integrations: 'التكامل',
   iLlApproachThisFromThePerspective: 'سأتعامل مع هذا من منظور {0}.',
   lastName: 'الاسم الأخير',
   limits: 'الحدود',
@@ -3172,8 +3195,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     'افتح Marketplace لاستكشاف المكونات الإضافية والروبوتات. استخدم قائمة المحادثة لتعديل مظهر الروبوت الخاص بها وتفاصيله. اختر تعبيرًا من عجلة المشاعر. قم بالتمرير أو سحب قوس الشكل، أو استخدم مفاتيح الأسهم الخاصة به، لاستكشاف الأشكال.',
   prDestination: 'وجهة العلاقات العامة',
-  people: 'الأشخاص',
-  personal: 'شخصي',
   pinChat: 'تثبيت الدردشة',
   pinnedChat: 'الدردشة المثبتة',
   plugins: 'المكوّنات الإضافية',
@@ -3201,7 +3222,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: 'مشاركة',
   showFundamentalNotificationsWhenAnAgentCompletes:
     'إظهار الإشعارات الأساسية عندما يكمل الوكيل مهمة',
-  signOut: 'تسجيل الخروج',
   skills: 'المهارات',
   skills2: 'المهارات · {0}',
   soundEffectATaskIsCompleted: 'المؤثرات الصوتية اكتملت المهمة',
@@ -3222,7 +3242,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   useToCreateABotOrStart: 'استخدم + لإنشاء روبوت أو بدء محادثة مع العديد من الوكلاء.',
   viewAdded: 'عرض تمت إضافته {0}',
   viewAll: 'عرض الكل',
-  viewTeamProfile: 'عرض ملف تعريف الفريق',
   viewItem: 'عرض {0}',
   website: 'الموقع',
   whenEnabledYourProfilePageWillBe: 'عند التمكين، ستكون صفحة ملفك الشخصي مرئية لأي شخص',
@@ -3295,6 +3314,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'تكبير',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'لا يوجد اتصال بالإنترنت',
+  reconnecting: 'جارٍ إعادة الاتصال…',
+  restored: 'عاد الاتصال',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'تم تقديم طلبك',
+  referenceLabel: 'رقم الطلب',
+  itemsLabel: 'ما طلبته',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points} نقطة · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'تغيير الغلاف',
@@ -3328,6 +3363,8 @@ const translations: Translations = {
     display: 'العرض',
     manualOrder: 'ترتيب يدوي',
     priority: 'الأولوية',
+    priorityLabels: { Low: 'منخفضة', Medium: 'متوسطة', High: 'عالية', Urgent: 'عاجلة' },
+    sinceJustNow: 'منذ لحظات',
     title: 'العنوان',
     project: 'المشروع',
     allPriorities: 'كل الأولويات',
@@ -3527,6 +3564,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

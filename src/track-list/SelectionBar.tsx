@@ -12,9 +12,10 @@ import { resolveTrackListPaint } from './shared';
 import type { SelectionBarProps } from './types';
 import { useMessages } from '../locale/messages';
 import { TRACK_LIST_MESSAGES } from './messages';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 /** Below this width the actions draw as icon buttons only. */
-const LABELS_MIN_WIDTH = 640;
+const LABELS_MIN_WIDTH = BREAKPOINTS.sm;
 
 /**
  * The bar that appears while several tracks are selected: "3 selected", the

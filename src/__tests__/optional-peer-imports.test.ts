@@ -125,6 +125,8 @@ const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: 'react-native-webview', file: 'agent-avatar/character-webview.ts' },
   { peer: '@react-native-community/netinfo', file: 'connection-status/netinfo.ts' },
   { peer: 'expo-haptics', file: 'hooks/haptics-module.ts' },
+  { peer: 'expo-clipboard', file: 'hooks/clipboard-module.ts' },
+  { peer: 'expo-web-browser', file: 'hooks/web-browser-module.ts' },
   { peer: 'nativewind', file: 'theme/color-scope/style-builder.ts' },
   { peer: 'expo-router', file: 'theme/adaptive-colors.native.ts' },
   { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/BottomSheet.tsx' },

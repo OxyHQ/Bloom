@@ -1,3 +1,5 @@
+import { FormatterCache } from './formatter-cache';
+
 /**
  * `Intl.DateTimeFormat` pinned to the GREGORIAN calendar, keeping the locale's
  * language, digits and order.
@@ -14,13 +16,30 @@ export function formatGregorian(
   locale: string | undefined,
   options: Intl.DateTimeFormatOptions,
 ): string | null {
+  const format = dateFormats.get(locale, options, () => gregorianFormat(locale, options));
+  if (!format) return null;
   try {
-    return new Intl.DateTimeFormat(locale, { ...options, calendar: 'gregory' }).format(date);
+    return format.format(date);
+  } catch {
+    // An invalid `Date` (`new Date(NaN)`) has nothing to say.
+    return null;
+  }
+}
+
+/** Built once per (locale, options) — see `formatter-cache.ts`. */
+const dateFormats = new FormatterCache<Intl.DateTimeFormat | null>();
+
+function gregorianFormat(
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat | null {
+  try {
+    return new Intl.DateTimeFormat(locale, { ...options, calendar: 'gregory' });
   } catch {
     // An engine that rejects the `calendar` option still formats the locale's
     // words; only a tag it cannot read at all falls through to `null`.
     try {
-      return new Intl.DateTimeFormat(locale, options).format(date);
+      return new Intl.DateTimeFormat(locale, options);
     } catch {
       return null;
     }

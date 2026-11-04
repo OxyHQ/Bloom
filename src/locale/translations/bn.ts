@@ -143,6 +143,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: 'পিছনে ও সামনে',
   goBack: 'ফিরে যান',
   loading: 'লোড হচ্ছে',
+  working: 'কাজ চলছে',
   more: 'আরও',
   moreOptions: 'আরও বিকল্প',
   moreActions: 'আরও কাজ',
@@ -156,6 +157,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: 'মুছুন',
   edit: 'সম্পাদনা করুন',
   remove: 'সরান',
+  removeItem: (name) => `${name} সরান`,
   retry: 'আবার চেষ্টা করুন',
   search: 'অনুসন্ধান',
   showMore: 'আরও দেখান',
@@ -1462,7 +1464,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: 'উৎস',
-  working: 'কাজ চলছে',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1518,6 +1519,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: 'বিক্রয় পাইপলাইন',
     steps: 'পদক্ষেপ',
     tokens: 'টোকেন',
+    weeklyScore: 'সাপ্তাহিক স্কোর',
   },
   weekly: 'সাপ্তাহিক',
   monthly: 'মাসিক',
@@ -1554,6 +1556,26 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     const on = date ? `${date}-এ ` : '';
     return n === 0 ? `${on}কোনো অবদান নেই` : `${on}${n}টি অবদান`;
   },
+  verdicts: {
+    excellent: 'চমৎকার',
+    strong: 'শক্তিশালী',
+    good: 'ভালো',
+    fair: 'মোটামুটি',
+    poor: 'দুর্বল',
+    needsWork: 'উন্নতি প্রয়োজন',
+  },
+  newChange: 'নতুন',
+  legendLess: 'কম',
+  legendMore: 'বেশি',
+  showFewer: 'কম দেখান',
+  showCountMore: (count) => `আরও ${count}টি দেখান`,
+  agentCount: (count) => plural('bn', count, { other: '{n} জন এজেন্ট' }),
+  funnelChart: (title, items) => `${title} ফানেল চার্ট: ${items}`,
+  areaChart: (title, series) => `${title} এরিয়া চার্ট: ${series}`,
+  stackedAreaChart: (title, series) => `${title} স্তূপীকৃত এরিয়া চার্ট: ${series}`,
+  percentAreaChart: (title, series) => `${title} ১০০% স্তূপীকৃত এরিয়া চার্ট: ${series}`,
+  radarChart: (title, items) => `${title} রাডার চার্ট: ${items}`,
+  scoreRadarChart: (title, items) => `${title} স্কোর রাডার চার্ট: ${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
@@ -2503,6 +2525,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   emptyDescription: 'পরিবাহকেরা আপনার কাজটি দেখছেন। প্রথম অফারগুলো সাধারণত কয়েক মিনিটের মধ্যে আসে।',
   list: 'অফার',
   priceDetailsFor: (name) => `${name}-এর দামের বিবরণ`,
+  rating: (rating) => `৫-এর মধ্যে ${rating}`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2618,7 +2641,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'একটু সাহায্য',
   aFewMindsOneConversation: 'কয়েক মন। এক কথোপকথন।',
   aLittleRoomForSomethingNew: 'নতুন কিছুর জন্য একটু জায়গা',
-  accountDetails: 'অ্যাকাউন্টের বিবরণ',
   add: 'যোগ করুন',
   add2: 'যোগ করুন {0}',
   added: 'যোগ করা হয়েছে',
@@ -2631,7 +2653,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'মার্কেটপ্লেসে ফিরে যান',
   billing: 'বিলিং',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'বট',
   bringYourAgentsIntoOneChat: 'আপনার এজেন্টদের এক চ্যাটে আনুন।',
   category: 'বিভাগ',
@@ -2645,8 +2666,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'আপনার সতীর্থদের বেছে নিন',
   closeMarketplace: 'মার্কেটপ্লেস বন্ধ করুন',
   closeSearch: 'অনুসন্ধান বন্ধ করুন',
-  company: 'কোম্পানি',
-  companyDetails: 'কোম্পানির বিবরণ',
   completionSound: 'সমাপ্তি শব্দ',
   connectedAccount: 'সংযুক্ত অ্যাকাউন্ট',
   connector: 'সংযোগকারী',
@@ -2685,7 +2704,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: 'আপনার পরবর্তী সতীর্থ খুঁজুন',
   findYourNextToolOrTeammate: 'আপনার পরবর্তী টুল বা টিমমেট খুঁজুন',
   firstName: 'প্রথম নাম',
-  folders: 'ফোল্ডার',
   general: 'সাধারণ',
   getNotifiedWhenTheModeNeedsTo: 'যখন মোডের একটি গুরুত্বপূর্ণ সিদ্ধান্ত নেওয়ার প্রয়োজন হয় তখন বিজ্ঞপ্তি পান',
   git: 'Git',
@@ -2696,7 +2714,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: 'অন্তর্ভুক্ত',
   insideTheApp: 'অ্যাপের ভিতরে',
   installed: 'ইনস্টল করা হয়েছে',
-  integrations: 'ইন্টিগ্রেশন',
   iLlApproachThisFromThePerspective: 'আমি {0} এর দৃষ্টিকোণ থেকে এটির সাথে যোগাযোগ করব৷',
   lastName: 'শেষ নাম',
   limits: 'সীমা',
@@ -2717,8 +2734,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     'প্লাগইন এবং বট অন্বেষণ করতে মার্কেটপ্লেস খুলুন। একটি কথোপকথনের মেনু ব্যবহার করে এর বটের চেহারা এবং বিবরণ সম্পাদনা করুন। আবেগ চাকা থেকে একটি অভিব্যক্তি চয়ন করুন. আকৃতির চাপটি স্ক্রোল করুন বা টেনে আনুন, বা আকারগুলি অন্বেষণ করতে এর তীর কীগুলি ব্যবহার করুন৷',
   prDestination: 'পিআর গন্তব্য',
-  people: 'লোকজন',
-  personal: 'ব্যক্তিগত',
   pinChat: 'পিন চ্যাট',
   pinnedChat: 'পিন করা চ্যাট',
   plugins: 'প্লাগইন',
@@ -2746,7 +2761,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: 'শেয়ার করুন',
   showFundamentalNotificationsWhenAnAgentCompletes:
     'কোনো এজেন্ট কোনো কাজ সম্পন্ন করলে মৌলিক বিজ্ঞপ্তি দেখান',
-  signOut: 'সাইন আউট করুন',
   skills: 'দক্ষতা',
   skills2: 'দক্ষতা · {0}',
   soundEffectATaskIsCompleted: 'সাউন্ড ইফেক্ট একটি কাজ সম্পন্ন হয়',
@@ -2767,7 +2781,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   useToCreateABotOrStart: 'একটি বট তৈরি করতে বা একাধিক এজেন্টের সাথে কথোপকথন শুরু করতে + ব্যবহার করুন।',
   viewAdded: 'ভিউ যোগ করা হয়েছে {0}',
   viewAll: 'সব দেখুন',
-  viewTeamProfile: 'টিম প্রোফাইল দেখুন',
   viewItem: 'দেখুন {0}',
   website: 'ওয়েবসাইট',
   whenEnabledYourProfilePageWillBe: 'সক্রিয় হলে আপনার প্রোফাইল পৃষ্ঠাটি যে কারো কাছে দৃশ্যমান হবে',
@@ -2822,6 +2835,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'জুম করুন',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'ইন্টারনেট সংযোগ নেই',
+  reconnecting: 'আবার সংযোগ করা হচ্ছে…',
+  restored: 'আবার অনলাইনে',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'আপনার অর্ডার দেওয়া হয়েছে',
+  referenceLabel: 'অর্ডার নম্বর',
+  itemsLabel: 'আপনি যা অর্ডার করেছেন',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points} পয়েন্ট · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'কভার পরিবর্তন',
@@ -2855,6 +2884,8 @@ const translations: Translations = {
     display: 'প্রদর্শন',
     manualOrder: 'হাতে সাজানো ক্রম',
     priority: 'অগ্রাধিকার',
+    priorityLabels: { Low: 'নিম্ন', Medium: 'মাঝারি', High: 'উচ্চ', Urgent: 'জরুরি' },
+    sinceJustNow: 'এইমাত্র থেকে',
     title: 'শিরোনাম',
     project: 'প্রকল্প',
     allPriorities: 'সব অগ্রাধিকার',
@@ -3054,6 +3085,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

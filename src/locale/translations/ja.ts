@@ -143,6 +143,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: '戻る/進む',
   goBack: '前に戻る',
   loading: '読み込み中',
+  working: '作業中',
   more: 'その他',
   moreOptions: 'その他のオプション',
   moreActions: 'その他の操作',
@@ -156,6 +157,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: '削除',
   edit: '編集',
   remove: '取り除く',
+  removeItem: (name) => `${name}を取り除く`,
   retry: '再試行',
   search: '検索',
   showMore: 'もっと見る',
@@ -1462,7 +1464,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: '情報源',
-  working: '作業中',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1518,6 +1519,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: '営業パイプライン',
     steps: '歩数',
     tokens: 'トークン',
+    weeklyScore: '週間スコア',
   },
   weekly: '週ごと',
   monthly: '月ごと',
@@ -1554,6 +1556,26 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     const on = date ? `${date}の` : '';
     return n === 0 ? `${on}コントリビューションなし` : `${on}コントリビューション${n}件`;
   },
+  verdicts: {
+    excellent: '非常に良い',
+    strong: '良好',
+    good: '良い',
+    fair: '普通',
+    poor: '悪い',
+    needsWork: '要改善',
+  },
+  newChange: '新規',
+  legendLess: '少',
+  legendMore: '多',
+  showFewer: '表示を減らす',
+  showCountMore: (count) => `さらに${count}件を表示`,
+  agentCount: (count) => plural('ja', count, { other: '{n}人のエージェント' }),
+  funnelChart: (title, items) => `${title}のファネルチャート：${items}`,
+  areaChart: (title, series) => `${title}の面グラフ：${series}`,
+  stackedAreaChart: (title, series) => `${title}の積み上げ面グラフ：${series}`,
+  percentAreaChart: (title, series) => `${title}の100%積み上げ面グラフ：${series}`,
+  radarChart: (title, items) => `${title}のレーダーチャート：${items}`,
+  scoreRadarChart: (title, items) => `${title}のスコアレーダーチャート：${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
@@ -2530,6 +2552,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     '運送業者があなたの依頼を確認しています。最初の見積もりは通常数分以内に届きます。',
   list: '見積もり',
   priceDetailsFor: (name) => `${name}の料金の内訳`,
+  rating: (rating) => `5点中${rating}点`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2646,7 +2669,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'ちょっとしたヘルプ',
   aFewMindsOneConversation: 'いくつかの考え。会話がひとつ。',
   aLittleRoomForSomethingNew: '新しいものを入れる小さな余地',
-  accountDetails: 'アカウントの詳細',
   add: '追加',
   add2: '{0} を追加',
   added: '追加済み',
@@ -2659,7 +2681,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'マーケットプレイスに戻る',
   billing: '請求',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'ボット',
   bringYourAgentsIntoOneChat: 'エージェントを 1 つのチャットに参加させます。',
   category: 'カテゴリ',
@@ -2674,8 +2695,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'チームメイトを選択してください',
   closeMarketplace: 'マーケットプレイスを閉じる',
   closeSearch: '検索を閉じる',
-  company: '会社',
-  companyDetails: '会社概要',
   completionSound: '完了音',
   connectedAccount: '接続されたアカウント',
   connector: 'コネクタ',
@@ -2714,7 +2733,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: '次のチームメイトを見つけよう',
   findYourNextToolOrTeammate: '次のツールまたはチームメイトを見つける',
   firstName: '名',
-  folders: 'フォルダー',
   general: '一般',
   getNotifiedWhenTheModeNeedsTo: 'モードが重要な決定を下す必要があるときに通知を受け取る',
   git: 'Git',
@@ -2725,7 +2743,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: '含まれるもの',
   insideTheApp: 'アプリ内',
   installed: 'インストールされました',
-  integrations: '統合',
   iLlApproachThisFromThePerspective: '{0} の観点からこれにアプローチします。',
   lastName: '姓',
   limits: '制限',
@@ -2746,8 +2763,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     'マーケットプレイスを開いてプラグインやボットを調べてください。会話のメニューを使用して、ボットの外観と詳細を編集します。感情ホイールから表情を選択します。図形の円弧をスクロールまたはドラッグするか、矢印キーを使用して、図形を探索します。',
   prDestination: 'PR先',
-  people: 'ユーザー',
-  personal: '個人',
   pinChat: 'チャットをピン留めする',
   pinnedChat: '固定チャット',
   plugins: 'プラグイン',
@@ -2777,7 +2792,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: '共有',
   showFundamentalNotificationsWhenAnAgentCompletes:
     'エージェントがタスクを完了したときに基本的な通知を表示する',
-  signOut: 'サインアウト',
   skills: 'スキル',
   skills2: 'スキル · {0}',
   soundEffectATaskIsCompleted: 'タスクが完了したときの効果音',
@@ -2799,7 +2813,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     '+ を使用してボットを作成するか、複数のエージェントとの会話を開始します。',
   viewAdded: 'ビューが追加されました {0}',
   viewAll: 'すべて表示',
-  viewTeamProfile: 'チームプロフィールを見る',
   viewItem: '{0} を見る',
   website: 'ウェブサイト',
   whenEnabledYourProfilePageWillBe: '有効にすると、プロフィール ページが誰にでも表示されます',
@@ -2855,6 +2868,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'ズーム',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'インターネットに接続されていません',
+  reconnecting: '再接続しています…',
+  restored: 'オンラインに戻りました',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'ご注文を承りました',
+  referenceLabel: '注文番号',
+  itemsLabel: 'ご注文内容',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points}ポイント · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'カバーを変更',
@@ -2888,6 +2917,8 @@ const translations: Translations = {
     display: '表示',
     manualOrder: '手動順序',
     priority: '優先度',
+    priorityLabels: { Low: '低', Medium: '中', High: '高', Urgent: '緊急' },
+    sinceJustNow: 'たった今から',
     title: 'タイトル',
     project: 'プロジェクト',
     allPriorities: 'すべての優先度',
@@ -3087,6 +3118,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

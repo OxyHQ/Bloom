@@ -30,8 +30,8 @@ export interface MarkdownProps {
   onLinkPress?: (url: string) => void;
   /**
    * Draws a fenced block yourself, in place of the default `CodeBlock`; what it
-   * returns is drawn as is. Use it to wire `onCopy` (native has no clipboard
-   * default), a filename, or your own code card. Called once per render of the
+   * returns is drawn as is. Use it to wire `onCopy` (a product clipboard),
+   * a filename, or your own code card. Called once per render of the
    * block, so keep its identity stable (module scope or `useCallback`).
    */
   renderCodeBlock?: (code: string, language?: string) => ReactNode;

@@ -12,6 +12,7 @@ export interface SubscriptionBenefit {
 export interface SubscriptionPriceValue {
   amount: number;
   currency: string;
+  /** The price's locale; the app's (`BloomProvider locale`) by default. */
   locale?: string;
   suffix?: string;
   description?: string;

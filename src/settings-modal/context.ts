@@ -3,10 +3,11 @@ import { createContext, useContext, useMemo } from 'react';
 import { useTheme } from '../theme/use-theme';
 import { resolveSettingsPalette, type SettingsPalette } from './palette';
 import type { SettingsModalLayout } from './types';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 export type { SettingsModalLayout };
 
-export const SETTINGS_COMPACT_MAX = 640;
+export const SETTINGS_COMPACT_MAX = BREAKPOINTS.sm;
 export const SETTINGS_MEDIUM_MAX = 900;
 
 export function settingsLayoutFor(width: number): SettingsModalLayout {
