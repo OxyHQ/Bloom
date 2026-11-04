@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { Dimensions } from 'react-native';
 
 import { IS_WEB } from '../styles/platform';
@@ -22,8 +22,14 @@ const IDEAL_VIEWPORT_LINE_DIVISOR = 2.5;
  * The single app-wide authority answering "may this player play right now?".
  * Mount ONE, above every screen that plays video. Contract: `docs/video-playback.mdx`.
  */
-export function VideoPlaybackProvider({ children }: VideoPlaybackProviderProps): ReactElement {
+export function VideoPlaybackProvider({
+  children,
+  autoplay = true,
+}: VideoPlaybackProviderProps): ReactElement {
   const [active] = useState(() => createValueStore<string | null>(null));
+  // Read by `reselect`, which runs from handlers and effects. The effect below
+  // keeps it current and re-runs the election when the policy changes.
+  const autoplayRef = useRef(autoplay);
 
   // Mounted players and the viewer's manual override live outside React state on
   // purpose: registrations churn while scrolling and must not re-render the tree.
@@ -51,15 +57,22 @@ export function VideoPlaybackProvider({ children }: VideoPlaybackProviderProps):
     }
 
     // A manually played video keeps the slot while it stays visible. Once it
-    // scrolls away (or unmounts) the override is dropped for good.
+    // scrolls away (or unmounts) the override is dropped for good. Without
+    // autoplay a silent player is started the same way, so it may hold it too.
     const manualId = manualIdRef.current;
     if (manualId !== null) {
       const manual = players.get(manualId);
-      if (manual?.eligible && !manual.silent) {
+      if (manual?.eligible && (!manual.silent || !autoplayRef.current)) {
         active.set(manualId);
         return;
       }
       manualIdRef.current = null;
+    }
+
+    // Without autoplay nothing is elected by position: only a viewer's play does.
+    if (!autoplayRef.current) {
+      active.set(null);
+      return;
     }
 
     let bestId: string | null = null;
@@ -107,9 +120,14 @@ export function VideoPlaybackProvider({ children }: VideoPlaybackProviderProps):
     [reselect],
   );
 
+  useEffect(() => {
+    autoplayRef.current = autoplay;
+    reselect();
+  }, [autoplay, reselect]);
+
   const value = useMemo<VideoPlaybackContextValue>(
-    () => ({ active, publish, unpublish, claimActive }),
-    [active, publish, unpublish, claimActive],
+    () => ({ active, autoplay, publish, unpublish, claimActive }),
+    [active, autoplay, publish, unpublish, claimActive],
   );
 
   return <VideoPlaybackContext.Provider value={value}>{children}</VideoPlaybackContext.Provider>;
