@@ -2,15 +2,16 @@
 
 This fixture compiles the production Bloom Android source and runs its real
 AndroidX dispatcher tests. The default variant resolves the unmodified published
-React Native 0.88.0 AAR. The predictive variant builds React Native itself from
-its official 0.88.0 npm source with the exact public-coordinator backport below;
+React Native 0.88.1 AAR. The predictive variant builds React Native itself from
+its official 0.88.1 npm source with the exact public-coordinator backport below;
 there are no substitute API classes or mocked React Native compilation inputs.
 Activity 1.11.0 matches the integrating Expo application's resolved runtime.
 
 The source patch derives from [React Native PR #59712](https://github.com/react/react-native/pull/59712),
 commit `937d913770a85ffd05edc6e73ded9129188edd31`; it also includes the separate upstream
 [Hermes archive-layout fix](https://github.com/facebook/react-native/pull/59589)
-required to build the released 0.88.0 source. Its SHA-256 is
+required to build the released 0.88.0 and 0.88.1 sources. Written against 0.88.0, it
+applies to 0.88.1 unchanged (0.88.1 touches none of its files). Its SHA-256 is
 `16b6577b14184ca971fb19692930ab85936103880bf42ccbaafce8e93ccf0a51`.
 This is a test fixture, excluded from the published Bloom package. Consumers need
 the supported source backport and a native rebuild; shipping a JS patch alongside
@@ -51,7 +52,7 @@ default JVM target. Install platform 34 and Build Tools 33.0.1 (AGP default) / 3
 
 ## Screens capability and actual source compilation
 
-The predictive fixture also compiles official React Native Screens 4.30.0 with
+The predictive fixture also compiles official React Native Screens 4.30.1 with
 the ownership adapter from [Screens PR #5118](https://github.com/software-mansion/react-native-screens/pull/5118),
 commit `76cfa7b`.
 The exact fixture backport SHA-256 is
