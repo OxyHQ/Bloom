@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.8.2
+
+### Changed
+
+- **A `Text` costs a third of what it did on native.** Without a `className` there is nothing for `react-native-css` to resolve, so `Text` now renders React Native's text node directly instead of through the interop host: per text, 3 components, 3 hook slots and 5 context reads become 1, 0 and 2. The display face's Bold cut is chosen from the same style as before, and a `Text` with a `className` keeps the interop host that resolves it. On the web a `Text` without a `className` skips `StyledText`, which would have passed it through unchanged.
+- **`useThemePaint` reads no prepaint context on native.** Prepaint exists only on the web, so native resolves `theme/prepaint/use-paint-colors.native.ts` and returns the theme's colours as they are: one context read and one hook slot fewer for every component that paints (every `Text` among them). The web is unchanged.
+
+### Consumers
+
+Nothing to change. Rendered styles are identical; apps with structural row budgets (hooks, context reads, components per row) can lower them.
+
 ## 17.8.1
 
 ### Changed

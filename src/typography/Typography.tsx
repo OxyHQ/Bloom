@@ -39,7 +39,7 @@ function fontFamilyStyle(kind: 'display' | 'sans' | 'mono'): { fontFamily: strin
   // On RN the literal family name is the only thing that matters; the .ttf is
   // registered via `useFonts(FONT_ASSETS)` in `FontLoader.native.tsx`. `sans`
   // is Inter (the UI face); `display` keeps BlomusModernus, named here by its
-  // Regular cut: `TextHost` swaps in the Bold cut once the weight is known.
+  // Regular cut: the text host swaps in the Bold cut once the weight is known.
   if (kind === 'display') return { fontFamily: DISPLAY_FACE_FAMILIES.regular };
   return { fontFamily: 'Inter' };
 }
@@ -87,7 +87,10 @@ function textFamily(variant: string | undefined, className: string | undefined) 
   return display ? DISPLAY_FONT_FAMILY : SANS_FONT_FAMILY;
 }
 
-type TextHostProps = RNTextProps & { ref?: Ref<ComponentRef<typeof RNText>> };
+type TextHostProps = RNTextProps & {
+  className?: string;
+  ref?: Ref<ComponentRef<typeof RNText>>;
+};
 
 /**
  * NATIVE ONLY: the text node, drawing the display face in the cut its weight
@@ -104,15 +107,26 @@ function DisplayFaceText({ style, ...rest }: TextHostProps) {
 }
 
 /**
- * The web keeps `StyledText`: one `BlomusModernus` family with a 400 and a 700
- * `@font-face`, matched by the browser.
+ * The host for a text WITH a className: `react-native-css` resolves the utilities
+ * into `style`. The web keeps `StyledText`: one `BlomusModernus` family with a
+ * 400 and a 700 `@font-face`, matched by the browser.
  */
-const TextHost: ComponentType<TextHostProps> =
+const ClassNameTextHost: ComponentType<TextHostProps> =
   Platform.OS === 'web'
     ? StyledText
     : styled(DisplayFaceText as (props: { style?: StyleProp<TextStyle> }) => ReactNode, {
         className: 'style',
       });
+
+/**
+ * A text WITHOUT a className has nothing for `react-native-css` to resolve: its
+ * interop would hand the style through unchanged, after a component, two hook
+ * slots and two context reads of its own. So it renders the react-native text
+ * directly, with the display cut chosen from the style it already holds, as
+ * `DisplayFaceText` would choose it under `styled()`.
+ */
+const plainTextStyle: (style: StyleProp<TextStyle>) => StyleProp<TextStyle> =
+  Platform.OS === 'web' ? (style) => style : withDisplayFaceCut;
 
 const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
   fontSize: 13,
@@ -129,21 +143,23 @@ const TextComponent = function Text({ children, style, className, variant, ...re
   const systemFamily = useTypographySystemFamily();
   const trimmedClassName = className?.trim() ? className : undefined;
 
-  const host = (
-    <TextHost
-      {...rest}
-      {...(trimmedClassName ? { className: trimmedClassName } : {})}
-      style={mergeTypographyStyle(
-        trimmedClassName,
-        { ...(variant ? TYPE_SCALE[variant] : DEFAULT_TEXT_TYPOGRAPHY), color: colors.text },
-        rest.accessibilityRole === 'header' || rest.role === 'heading'
-          ? DISPLAY_FONT_FAMILY
-          : textFamily(variant, trimmedClassName),
-        [style, systemFamily],
-      )}
-    >
+  const merged = mergeTypographyStyle(
+    trimmedClassName,
+    { ...(variant ? TYPE_SCALE[variant] : DEFAULT_TEXT_TYPOGRAPHY), color: colors.text },
+    rest.accessibilityRole === 'header' || rest.role === 'heading'
+      ? DISPLAY_FONT_FAMILY
+      : textFamily(variant, trimmedClassName),
+    [style, systemFamily],
+  );
+
+  const host = trimmedClassName ? (
+    <ClassNameTextHost {...rest} className={trimmedClassName} style={merged}>
       {children}
-    </TextHost>
+    </ClassNameTextHost>
+  ) : (
+    <RNText {...rest} style={plainTextStyle(merged)}>
+      {children}
+    </RNText>
   );
   // On native a text with an id is findable by it, as a DOM element is: a control
   // whose `aria-describedby` names the id says this text as its hint.

@@ -2,8 +2,9 @@ import { createElement, type DependencyList, useContext, useId, useMemo } from '
 import { Platform } from 'react-native';
 import { useTheme } from './use-theme';
 import { ThemeScopeContext } from './color-scope/context';
-import { usePrepaintTheme, usePrepaintThemeConfig } from './prepaint/context';
-import { themePaintRecipe, themePaintColors, themePaintCss, presetPaintCss } from './paint';
+import { usePrepaintThemeConfig } from './prepaint/context';
+import { usePaintColors } from './prepaint/use-paint-colors';
+import { themePaintRecipe, themePaintCss, presetPaintCss } from './paint';
 import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
 import { ServerStyleSheetFactory } from '../styles/ServerStyleSheetFactory';
 import type { Theme, ThemeColors } from './types';
@@ -87,13 +88,7 @@ export function useThemeRecipe<T>(
 
 /** Semantic colours for final styles; useTheme() retains RGB for colour math. */
 export function useThemePaint(): ThemeColors {
-  const theme = useTheme();
-  const prepaint = usePrepaintTheme();
-  const colors = theme.colors;
-  const paint = useMemo(
-    () => (colors && Platform.OS === 'web' && prepaint ? themePaintColors(colors) : colors),
-    [colors, prepaint],
-  );
+  const paint = usePaintColors(useTheme().colors);
   if (!paint) throw new Error('useThemePaint must be used within a <BloomThemeProvider>');
   return paint;
 }

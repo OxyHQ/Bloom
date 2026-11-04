@@ -89,6 +89,10 @@ Because the family is inline, a family utility cannot beat it, so `Text` reads t
 
 Layout classes on web need the consumer's Tailwind pipeline to be scanning Bloom's `lib/`. Colours work regardless, because Bloom applies those inline — which is what makes a missing pipeline look like a layout bug rather than a missing stylesheet.
 
+## What a `Text` costs
+
+A feed row draws dozens of texts, so `Text` is kept cheap. Without a `className` there is nothing for react-native-css to resolve, and `Text` renders React Native's text node directly: on native one component, no hook slot, and two context reads (the theme and the typography scope). The display face's Bold cut is chosen from the same style it would be under the interop. Only a `Text` with a `className` mounts the interop host that resolves the utilities. `useThemePaint` reads the prepaint context on the web alone (`theme/prepaint/use-paint-colors.native.ts`). `src/typography/__tests__/text-host-cost.test.tsx` pins these numbers.
+
 ## Local system-font scope
 
 `<TypographyScope mode="system">` changes the font family of Bloom text and composed controls in its subtree to the platform system font. Semantic variants retain their size, weight and spacing. It applies to headings, body text, buttons and segmented controls without changing global fonts. `mode="default"` explicitly returns to Bloom families; omitted mode inherits the enclosing scope. The provider is stable across mode changes, preserving mounted controls and media.
