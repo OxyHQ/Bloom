@@ -70,7 +70,7 @@
     "react-native-builder-bob": "^0.44.1",
     "ts-jest": "^29.4.15",
     "typescript": "~6.0.3",
-    "react-native-enriched-html": "1.1.1"
+    "react-native-enriched-html": "1.2.0"
   },
   "react-native-builder-bob": {
     "source": "src",
