@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   type LayoutChangeEvent,
@@ -8,6 +8,7 @@ import {
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useSurfaceFill } from '../styles/surface-levels';
+import { useSvgIdPrefix } from '../styles/svg-id';
 
 /** Pixels from an end within which the strip counts as scrolled to it. */
 const EDGE_EPSILON = 2;
@@ -86,7 +87,7 @@ export function useHorizontalScrollEdges(): HorizontalScrollEdges {
  */
 export function ScrollEdgeFade({ edge, testID }: { edge: 'start' | 'end'; testID?: string }) {
   const fill = useSurfaceFill();
-  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const id = `${useSvgIdPrefix('bloom-scroll-edge-fade')}gradient`;
   const atStart = edge === 'start';
   return (
     <View

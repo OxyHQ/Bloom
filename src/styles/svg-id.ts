@@ -14,9 +14,9 @@ import { useId } from 'react';
  * reference different gradients and one of them is not there. `useId` is the
  * hook React added for exactly this and is stable across the two passes.
  *
- * Lives in `styles/` rather than beside its first caller because it now has
- * three (`social-button`'s mark and button, `page-header`'s edge gradient) —
- * the second real need is the bar for extracting it, and this cleared it.
+ * An SVG that defines a gradient, clip, pattern or filter takes its
+ * ids from here; the returned prefix ends in `-`, so callers append a bare
+ * suffix (`${prefix}fill`).
  */
 export function useSvgIdPrefix(prefix: string): string {
   return `${prefix}-${useId().replace(/[^a-zA-Z0-9]/g, '')}-`;
