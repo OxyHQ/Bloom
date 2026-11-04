@@ -1,4 +1,4 @@
-import React, { useId, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
@@ -6,6 +6,7 @@ import { useTheme } from '../../theme/use-theme';
 import { areaBandPath, curvePath, type Point } from '../geometry';
 import { chartHueTone } from '../palette';
 import { useChartCardPalette } from './use-chart-palette';
+import { useSvgIdPrefix } from '../../styles/svg-id';
 
 /** Which colour the line takes: status tones for a trend, the chart blue for plain data. */
 export type SparklineTone = 'accent' | 'positive' | 'negative' | 'neutral';
@@ -90,8 +91,7 @@ export function Sparkline({
     }
   }, [color, tone, palette, theme]);
 
-  const rawId = useId();
-  const id = `bloom-sparkline-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-sparkline');
   const points = useMemo(
     () => sparklinePoints(data, width, height, strokeWidth + 1),
     [data, width, height, strokeWidth],
@@ -115,7 +115,7 @@ export function Sparkline({
         <Svg width={width} height={height} pointerEvents="none">
           {fill ? (
             <Defs>
-              <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+              <LinearGradient id={`${id}fill`} x1="0" y1="0" x2="0" y2="1">
                 <Stop offset="0" stopColor={stroke} stopOpacity={0.24} />
                 <Stop offset="1" stopColor={stroke} stopOpacity={0} />
               </LinearGradient>
@@ -128,7 +128,7 @@ export function Sparkline({
                 points.map((p) => ({ x: p.x, y: height })),
                 curve,
               )}
-              fill={`url(#${id})`}
+              fill={`url(#${id}fill)`}
               stroke="none"
             />
           ) : null}

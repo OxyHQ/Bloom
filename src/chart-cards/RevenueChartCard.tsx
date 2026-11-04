@@ -1,4 +1,4 @@
-import React, { useId, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import Svg, {
   Circle,
   ClipPath,
@@ -28,6 +28,7 @@ import { CHART_CARDS_MESSAGES } from './messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 import { formatCurrency } from '../locale/format-number';
+import { useSvgIdPrefix } from '../styles/svg-id';
 /**
  * `RevenueChartCard`: a year of revenue against the year before.
  *
@@ -77,9 +78,7 @@ export function RevenueChartCard({
     onActiveIndexChange,
   );
 
-  // `useId` yields `«r0»` / `:r0:`, which a CSS `url(#…)` cannot reference.
-  const rawId = useId();
-  const id = `bloom-revenue-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-revenue');
 
   const current = useMemo(() => data.map((d) => d.current), [data]);
   const previous = useMemo(() => data.map((d) => d.previous), [data]);
@@ -133,14 +132,14 @@ export function RevenueChartCard({
           return (
             <Svg width={size.width} height={size.height} pointerEvents="none">
               <Defs>
-                <LinearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
+                <LinearGradient id={`${id}fill`} x1="0" y1="0" x2="0" y2="1">
                   <Stop offset="0" stopColor={fill} stopOpacity={0.35} />
                   <Stop offset="1" stopColor={fill} stopOpacity={0} />
                 </LinearGradient>
-                <ClipPath id={`${id}-reveal-current`}>
+                <ClipPath id={`${id}reveal-current`}>
                   <Rect x={0} y={0} width={revealWidth(currentAnim)} height={size.height} />
                 </ClipPath>
-                <ClipPath id={`${id}-reveal-previous`}>
+                <ClipPath id={`${id}reveal-previous`}>
                   <Rect x={0} y={0} width={revealWidth(previousAnim)} height={size.height} />
                 </ClipPath>
               </Defs>
@@ -155,7 +154,7 @@ export function RevenueChartCard({
                   strokeDasharray="4 4"
                 />
               ) : null}
-              <G clipPath={`url(#${id}-reveal-previous)`}>
+              <G clipPath={`url(#${id}reveal-previous)`}>
                 <Path
                   d={monotoneXPath(previousPoints)}
                   fill="none"
@@ -164,10 +163,10 @@ export function RevenueChartCard({
                   strokeDasharray="5 5"
                 />
               </G>
-              <G clipPath={`url(#${id}-reveal-current)`}>
+              <G clipPath={`url(#${id}reveal-current)`}>
                 <Path
                   d={monotoneXAreaPath(currentPoints, box.bottom)}
-                  fill={`url(#${id}-fill)`}
+                  fill={`url(#${id}fill)`}
                   stroke="none"
                 />
                 <Path

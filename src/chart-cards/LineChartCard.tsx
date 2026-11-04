@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
@@ -20,6 +20,7 @@ import { useMessages } from '../locale/messages';
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 import { monthNames } from '../locale/format-date';
 import { formatCompactCurrency, formatCurrency } from '../locale/format-number';
+import { useSvgIdPrefix } from '../styles/svg-id';
 /**
  * One series as a line over a soft gradient, a Weekly / Monthly / Yearly
  * switcher, a count-up headline that follows the hovered point, and a
@@ -219,8 +220,7 @@ export function LineChartCard({
       : monthTitle(point.label, chartLocale)
     : title;
 
-  const rawId = useId();
-  const id = `bloom-line-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = useSvgIdPrefix('bloom-line');
 
   const hasStats = !!stats?.length;
 
@@ -281,18 +281,18 @@ export function LineChartCard({
             return (
               <Svg width={size.width} height={size.height} pointerEvents="none">
                 <Defs>
-                  <LinearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
+                  <LinearGradient id={`${id}fill`} x1="0" y1="0" x2="0" y2="1">
                     <Stop offset="0" stopColor={fill} stopOpacity={0.35} />
                     <Stop offset="1" stopColor={fill} stopOpacity={0} />
                   </LinearGradient>
-                  <ClipPath id={`${id}-reveal`}>
+                  <ClipPath id={`${id}reveal`}>
                     <Rect x={0} y={0} width={revealWidth} height={size.height} />
                   </ClipPath>
                 </Defs>
-                <G clipPath={`url(#${id}-reveal)`}>
+                <G clipPath={`url(#${id}reveal)`}>
                   <Path
                     d={closedAreaPath(points, box.bottom, curve)}
-                    fill={`url(#${id}-fill)`}
+                    fill={`url(#${id}fill)`}
                     stroke="none"
                   />
                   <Path
