@@ -1,8 +1,6 @@
 import React, { memo } from 'react';
 import { Pressable, View, type Role, type TextStyle } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
-import { borderRadius } from '../styles/tokens';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text, TYPE_SCALE } from '../typography';
@@ -17,6 +15,7 @@ import {
 import type { CalendarPalette } from './palette';
 import type { WeekStart } from './types';
 import { IS_WEB } from '../styles/platform';
+import { MONTH_NAV_SIZE, MonthNavButton } from './MonthNavButton';
 
 /**
  * One month panel: header, weekday row and day grid.
@@ -40,7 +39,6 @@ const HEADER_GAP = 20;
 export const DAY_SIZE = 32;
 const CELL_GAP = 12;
 const WEEKDAY_ROW_HEIGHT = 24;
-const NAV_SIZE = 16;
 const DAY_RADIUS = 8;
 
 /**
@@ -85,68 +83,6 @@ const BODY_MEDIUM: TextStyle = TYPE_SCALE['body-medium'];
 
 export function dayKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-}
-
-function Chevron({ direction, color }: { direction: 'left' | 'right'; color: string }) {
-  return (
-    <Svg width={NAV_SIZE} height={NAV_SIZE} viewBox="0 0 16 16" fill="none">
-      <Path
-        d={
-          direction === 'left'
-            ? 'M9 4L5.70711 7.29289C5.31658 7.68342 5.31658 8.31658 5.70711 8.70711L9 12'
-            : 'M7 4L10.2929 7.29289C10.6834 7.68342 10.6834 8.31658 10.2929 8.70711L7 12'
-        }
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
-function NavButton({
-  direction,
-  label,
-  onPress,
-  disabled,
-  palette,
-}: {
-  direction: 'left' | 'right';
-  label: string;
-  onPress: () => void;
-  disabled: boolean;
-  palette: CalendarPalette;
-}) {
-  const [hovered, setHovered] = React.useState(false);
-  const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarNav: '' } } : {};
-  const style: WebCssStyle = {
-    width: NAV_SIZE,
-    height: NAV_SIZE,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: hovered && !disabled ? palette.hover : 'transparent',
-    '--bloom-calendar-ring': palette.ring,
-  };
-  return (
-    <Pressable
-      {...hook}
-      role="button"
-      accessibilityLabel={label}
-      aria-disabled={disabled}
-      disabled={disabled}
-      onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      hitSlop={8}
-      style={style}
-    >
-      <Chevron
-        direction={direction}
-        color={disabled ? palette.disabledText : palette.secondaryText}
-      />
-    </Pressable>
-  );
 }
 
 interface DayCellProps {
@@ -373,15 +309,18 @@ export function CalendarMonth({
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         {onPrevious ? (
           // The earlier month lies to the right in RTL, so its chevron points there.
-          <NavButton
+          <MonthNavButton
             direction={rtl ? 'right' : 'left'}
-            label={previousLabel}
+            accessibilityLabel={previousLabel}
             onPress={onPrevious}
             disabled={previousDisabled}
-            palette={palette}
+            color={palette.secondaryText}
+            disabledColor={palette.disabledText}
+            hoverFill={palette.hover}
+            ring={palette.ring}
           />
         ) : (
-          <View style={{ width: NAV_SIZE, height: NAV_SIZE }} />
+          <View style={{ width: MONTH_NAV_SIZE, height: MONTH_NAV_SIZE }} />
         )}
         <Text
           role="heading"
@@ -390,15 +329,18 @@ export function CalendarMonth({
           {title}
         </Text>
         {onNext ? (
-          <NavButton
+          <MonthNavButton
             direction={rtl ? 'left' : 'right'}
-            label={nextLabel}
+            accessibilityLabel={nextLabel}
             onPress={onNext}
             disabled={nextDisabled}
-            palette={palette}
+            color={palette.secondaryText}
+            disabledColor={palette.disabledText}
+            hoverFill={palette.hover}
+            ring={palette.ring}
           />
         ) : (
-          <View style={{ width: NAV_SIZE, height: NAV_SIZE }} />
+          <View style={{ width: MONTH_NAV_SIZE, height: MONTH_NAV_SIZE }} />
         )}
       </View>
       <View

@@ -1,14 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  Platform,
-  Pressable,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Easing, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -19,7 +11,7 @@ import { FadeOnChange } from './primitives/FadeOnChange';
 import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
 import { useCommonMessages } from '../locale/common-messages';
-import { useInteractionState } from '../hooks/use-interaction-state';
+import { MonthChevron, MonthNavButton } from '../date-picker/MonthNavButton';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
@@ -200,24 +192,6 @@ export function MedicalHeader({ children }: { children: React.ReactNode }) {
 //  WeekRangePill
 // ---------------------------------------------------------------------------
 
-/** The date picker's 16px month-nav chevrons: a 2px round-capped stroke. */
-function Chevron16({ direction, color }: { direction: 'left' | 'right'; color: string }) {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
-      <Path
-        d={
-          direction === 'left'
-            ? 'M9 4L5.70711 7.29289C5.31658 7.68342 5.31658 8.31658 5.70711 8.70711L9 12'
-            : 'M7 4L10.2929 7.29289C10.6834 7.68342 10.6834 8.31658 10.2929 8.70711L7 12'
-        }
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
 const LABEL_MS = 220;
 const LABEL_SHIFT = 10;
 /** CSS `ease-out`. */
@@ -325,57 +299,6 @@ function RollingLabel({ label, color }: { label: string; color: string }) {
   );
 }
 
-function NavButton({
-  direction,
-  label,
-  onPress,
-  testID,
-}: {
-  direction: 'left' | 'right';
-  label: string;
-  onPress: () => void;
-  testID?: string;
-}) {
-  const palette = useChartCardPalette();
-  const medical = useMedicalPalette();
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const { hook, ring } = useChartFocusRing('outset', medical.focusRing);
-  const ease: WebCssStyle | null =
-    Platform.OS === 'web'
-      ? {
-          transitionProperty: 'background-color',
-          transitionDuration: '150ms',
-          transitionTimingFunction: 'ease',
-        }
-      : null;
-  return (
-    <Pressable
-      {...hook}
-      testID={testID}
-      role="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      onHoverIn={onHoverIn}
-      onHoverOut={onHoverOut}
-      style={[
-        {
-          width: 16,
-          height: 16,
-          flexShrink: 0,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: 3,
-          backgroundColor: hovered ? medical.secondaryHover : 'transparent',
-        },
-        ease,
-        ring,
-      ]}
-    >
-      <Chevron16 direction={direction} color={palette.textSecondary} />
-    </Pressable>
-  );
-}
-
 export interface WeekRangePillProps {
   label: string;
   /** With `onPrev` / `onNext` the chevrons are buttons and the label rolls on change; without, a static pill. */
@@ -394,8 +317,8 @@ export interface WeekRangePillProps {
  * `WeekRangePill`: 32 tall, radius 10 (a panel radius — the pill is not a
  * button), 1px `border-button`, `background-primary`, `shadow-xs`, padding 4,
  * a 16px chevron at each end and the label (`body-medium` text-primary)
- * centred between them. The chevron buttons are 16px squares, radius 3, with a
- * `background-secondary-hover` wash (150ms).
+ * centred between them. The chevrons are the date picker's `MonthNavButton`s
+ * (16px full pills with a `background-secondary-hover` wash, 150ms).
  */
 export function WeekRangePill({
   label,
@@ -411,6 +334,7 @@ export function WeekRangePill({
   const prevLabel = prevLabelProp ?? common.previous;
   const nextLabel = nextLabelProp ?? common.next;
   const palette = useChartCardPalette();
+  const medical = useMedicalPalette();
   const interactive = !!(onPrev || onNext);
   const noop = () => {};
   return (
@@ -439,15 +363,18 @@ export function WeekRangePill({
       ]}
     >
       {interactive ? (
-        <NavButton
+        <MonthNavButton
           direction="left"
-          label={prevLabel}
+          accessibilityLabel={prevLabel}
           onPress={onPrev ?? noop}
+          color={palette.textSecondary}
+          hoverFill={medical.secondaryHover}
+          ring={medical.focusRing}
           testID={testID ? `${testID}-prev` : undefined}
         />
       ) : (
         <View aria-hidden style={{ width: 16, height: 16, flexShrink: 0 }}>
-          <Chevron16 direction="left" color={palette.textSecondary} />
+          <MonthChevron direction="left" color={palette.textSecondary} />
         </View>
       )}
       {interactive ? (
@@ -462,15 +389,18 @@ export function WeekRangePill({
         </Text>
       )}
       {interactive ? (
-        <NavButton
+        <MonthNavButton
           direction="right"
-          label={nextLabel}
+          accessibilityLabel={nextLabel}
           onPress={onNext ?? noop}
+          color={palette.textSecondary}
+          hoverFill={medical.secondaryHover}
+          ring={medical.focusRing}
           testID={testID ? `${testID}-next` : undefined}
         />
       ) : (
         <View aria-hidden style={{ width: 16, height: 16, flexShrink: 0 }}>
-          <Chevron16 direction="right" color={palette.textSecondary} />
+          <MonthChevron direction="right" color={palette.textSecondary} />
         </View>
       )}
     </View>
