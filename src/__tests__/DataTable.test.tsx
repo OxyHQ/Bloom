@@ -199,7 +199,7 @@ describe('DataTable', () => {
     )!;
     act(() => pressHost(sortName));
     expect(firstCells(utils)).toEqual(['Row 1', 'Row 2', 'Row 3', 'Row 9', 'Row 10']);
-    expect(sortName.props['aria-sort']).toBe('ascending');
+    expect(hostsByRole(utils, 'columnheader')[0]!.props['aria-sort']).toBe('ascending');
   });
 
   it('keeps rows out of selection semantics when the table is not selectable', () => {

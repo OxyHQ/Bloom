@@ -1,13 +1,6 @@
 import { useBloomAppearance } from '../appearance';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Pressable,
-  View,
-  type LayoutChangeEvent,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { View, type LayoutChangeEvent, type TextStyle, type ViewStyle } from 'react-native';
 
 import { Checkbox } from '../checkbox';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -20,7 +13,6 @@ import {
   SegmentedControlItemText,
 } from '../segmented-control';
 import { BREAKPOINTS } from '../styles/breakpoints';
-import type { WebCssStyle } from '../styles/web-view-style';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '../table';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -28,7 +20,6 @@ import { Text, TYPE_SCALE } from '../typography';
 import { DATA_TABLE_MESSAGES } from './messages';
 import { clampPage, isSortable, nextSort, pageCount, sortRows } from './sorting';
 import type { DataTableColumn, DataTableProps, DataTableSize, DataTableSort } from './types';
-import { IS_WEB } from '../styles/platform';
 
 /**
  * The advanced data table, styled after the dashboard template's customers table).
@@ -337,44 +328,6 @@ export function DataTable<T>({
                   minWidth: column.minWidth,
                   align: column.align,
                 };
-                if (selectable && columnIndex === 0) {
-                  return (
-                    <TableColumn
-                      key={column.id}
-                      {...layout}
-                      accessibilityLabel={column.headerAccessibilityLabel}
-                      style={[basisStyle(column), flushCell]}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <Checkbox
-                          checked={allPageSelected}
-                          indeterminate={somePageSelected}
-                          onCheckedChange={toggleAllOnPage}
-                          accessibilityLabel={selectAllLabel}
-                        />
-                        {sortable ? (
-                          <SortButton
-                            label={column.header}
-                            accessibilityLabel={column.headerAccessibilityLabel}
-                            direction={direction}
-                            color={labelColor}
-                            textStyle={bodyText}
-                            onPress={() => pressSort(column)}
-                          />
-                        ) : isTextLike(column.header) ? (
-                          <Text
-                            numberOfLines={1}
-                            style={[bodyText, { color: palette.textTertiary }]}
-                          >
-                            {column.header}
-                          </Text>
-                        ) : (
-                          column.header
-                        )}
-                      </View>
-                    </TableColumn>
-                  );
-                }
                 const primaryLabel =
                   labelColor !== palette.textTertiary && isTextLike(column.header);
                 return (
@@ -384,6 +337,16 @@ export function DataTable<T>({
                     accessibilityLabel={
                       column.headerAccessibilityLabel ??
                       (primaryLabel ? String(column.header) : undefined)
+                    }
+                    leading={
+                      selectable && columnIndex === 0 ? (
+                        <Checkbox
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onCheckedChange={toggleAllOnPage}
+                          accessibilityLabel={selectAllLabel}
+                        />
+                      ) : undefined
                     }
                     onSort={sortable ? () => pressSort(column) : undefined}
                     sortDirection={direction}
@@ -536,85 +499,4 @@ function formatValue(
       value.toDateString()
     );
   return String(value);
-}
-
-// ---------------------------------------------------------------------------
-//  The header sort button, for the ONE column `TableColumn` cannot draw it in:
-//  the selection column, whose checkbox has to sit BESIDE the button (a checkbox
-//  inside a `<button>` is invalid markup and unreachable by keyboard). Same
-//  geometry and hooks as `TableColumn`'s own: label + 24px chevron, gap 2, the
-//  `data-bloom-table-sort` focus rule `Table` adopts.
-// ---------------------------------------------------------------------------
-
-const SORT_ICON_SIZE = 24;
-const SORT_PATH =
-  'M12.7071 15.2929C12.3166 15.6834 11.6834 15.6834 11.2929 15.2929L7.70711 11.7071C7.07714 11.0771 7.52331 10 8.41421 10H15.5858C16.4767 10 16.9229 11.0771 16.2929 11.7071L12.7071 15.2929Z';
-
-/** `dataSet` is react-native-web's channel for a `data-*` attribute; RN has no type for it. */
-type WebDataSet = { dataSet?: Record<string, string> };
-/** `aria-sort` is forwarded by react-native-web and untyped in React Native. */
-type WebSortProps = { 'aria-sort'?: 'ascending' | 'descending' | 'none' };
-
-function SortButton({
-  label,
-  accessibilityLabel,
-  direction,
-  color,
-  textStyle,
-  onPress,
-}: {
-  label: React.ReactNode;
-  accessibilityLabel?: string;
-  direction: 'ascending' | 'descending' | 'none';
-  color: string;
-  textStyle: TextStyle;
-  onPress: () => void;
-}) {
-  const theme = useTheme();
-  const hook: WebDataSet = IS_WEB ? { dataSet: { bloomTableSort: '' } } : {};
-  const sortProps: WebSortProps = { 'aria-sort': direction };
-  const ring: WebCssStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    '--bloom-table-ring': theme.colors.primary,
-  };
-  return (
-    <Pressable
-      {...hook}
-      role="button"
-      onPress={onPress}
-      accessibilityLabel={accessibilityLabel ?? (isTextLike(label) ? String(label) : undefined)}
-      {...sortProps}
-      style={ring}
-    >
-      {isTextLike(label) ? (
-        <Text numberOfLines={1} style={[textStyle, { color }]}>
-          {label}
-        </Text>
-      ) : (
-        label
-      )}
-      <SortGlyph
-        direction={direction}
-        color={direction === 'none' ? color : theme.colors.textSecondary}
-      />
-    </Pressable>
-  );
-}
-
-function SortGlyph({
-  direction,
-  color,
-}: {
-  direction: 'ascending' | 'descending' | 'none';
-  color: string;
-}) {
-  return (
-    <View style={direction === 'ascending' ? { transform: [{ rotate: '180deg' }] } : undefined}>
-      <Svg width={SORT_ICON_SIZE} height={SORT_ICON_SIZE} viewBox="0 0 24 24">
-        <Path d={SORT_PATH} fill={color} />
-      </Svg>
-    </View>
-  );
 }
