@@ -1,10 +1,14 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 
+import { formatNumber, formatPercent } from '../locale/format-number';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { COMPOSITION_BAR_MESSAGES } from './messages';
 import type { CompositionBarProps } from './types';
 
 const BAR_HEIGHT = 44;
@@ -14,10 +18,6 @@ const RADIUS_FULL = BAR_HEIGHT / 2;
 const RADIUS_INNER = 8;
 /** Floor so a tiny category stays tappable/visible; flexbox renormalizes the rest. */
 const MIN_SEGMENT_WIDTH = 18;
-
-function defaultFormatReadout(points: number, percent: number): string {
-  return `${points} pts · ${percent}%`;
-}
 
 /**
  * The distribution bar — the signature composition visual. A single thick
@@ -34,10 +34,15 @@ const CompositionBarComponent: React.FC<CompositionBarProps> = ({
   selectedKey,
   onSelect,
   hintLabel,
-  formatReadout = defaultFormatReadout,
+  formatReadout: formatReadoutProp,
   style,
   testID,
 }) => {
+  const { locale, messages } = useMessages(COMPOSITION_BAR_MESSAGES);
+  const formatReadout =
+    formatReadoutProp ??
+    ((points: number, percent: number) =>
+      messages.readout(formatNumber(points, locale), formatPercent(percent / 100, locale)));
   const { colors } = useTheme();
 
   const positive = useMemo(

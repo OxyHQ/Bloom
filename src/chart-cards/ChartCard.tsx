@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -113,7 +114,7 @@ export function ChartCardFrame({
   const point = activeIndex !== null ? (data[activeIndex] ?? null) : null;
   const headlineValue = point ? point.current : totalCurrent;
   const comparison = point ? point.previous : totalPrevious;
-  const delta = describeDelta(headlineValue, comparison);
+  const delta = describeDelta(headlineValue, comparison, chartText.newChange);
   const label = point
     ? getPointTitle
       ? getPointTitle(point, activeIndex ?? 0)

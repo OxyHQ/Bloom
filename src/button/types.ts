@@ -137,7 +137,10 @@ export interface ButtonProps {
    * while disabled); on native a press opens the URL unless `onPress` is set.
    */
   href?: string;
-  /** Anchor `target` (web only, with `href`). */
+  /**
+   * Anchor `target`, with `href`. On native, `'_blank'` opens the URL outside the
+   * app (`openExternal`: the in-app browser) instead of with the system handler.
+   */
   target?: string;
   /** Anchor `rel` (web only, with `href`). */
   rel?: string;

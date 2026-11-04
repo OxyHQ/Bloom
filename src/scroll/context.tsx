@@ -9,8 +9,7 @@
  */
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { AppState } from 'react-native';
-
+import { subscribeToAppState } from '../hooks/use-app-state';
 import { ScrollOffsetStore } from './store';
 import type {
   ScrollRestorationPersistence,
@@ -154,21 +153,18 @@ function usePersistentScrollStore(options: ScrollRestorationPersistence): Scroll
       timer = setTimeout(flush, 200);
     });
     const unsubscribeFlush = store.subscribeFlush(flush);
-    const appState = AppState.addEventListener('change', (state) => {
+    // Leaving the app — or hiding the tab, which React Native Web reports
+    // through the same app state — saves now rather than after the debounce.
+    const unsubscribeAppState = subscribeToAppState((state) => {
       if (state !== 'active') flush();
     });
-    const hide = () => {
-      if (document.visibilityState === 'hidden') flush();
-    };
     const browser = hasWindowEvents();
     if (browser) window.addEventListener('pagehide', flush);
-    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', hide);
     return () => {
       unsubscribe();
       unsubscribeFlush();
-      appState.remove();
+      unsubscribeAppState();
       if (browser) window.removeEventListener('pagehide', flush);
-      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', hide);
       flush();
     };
   }, [store, observed]);

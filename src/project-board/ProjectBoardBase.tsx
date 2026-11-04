@@ -76,6 +76,7 @@ function TicketCard({
   ticket: ProjectTicket;
   members: Readonly<Record<string, ProjectMember>>;
 }) {
+  const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
   return (
     <SourceView className="flex w-full flex-col gap-2 p-3">
       <SourceView className="flex min-h-[22px] items-start justify-between gap-3">
@@ -93,7 +94,7 @@ function TicketCard({
       <SourceView className="flex flex-col items-start gap-2">
         <SourceView className="flex items-center gap-1.5">
           <SourceChip className={cx('text-body-2-medium', PRIORITY_STYLES[ticket.priority])}>
-            {ticket.priority}
+            {m.priorityLabels[ticket.priority]}
           </SourceChip>
           <SourceChip className="gap-1 bg-background-primary-default text-body-2-medium text-text-primary ring-1 ring-inset ring-border-button-default">
             <SourceFolder className="size-[13px] shrink-0 opacity-30" />
@@ -205,7 +206,7 @@ function TicketProjectBoard({
   onMenuClick,
   title: titleProp,
   teamName: teamNameProp,
-  ownerName = 'Mertcan',
+  ownerName,
   headerActions,
   onInboxClick,
   initialColumns = EMPTY_COLUMNS,
@@ -338,11 +339,11 @@ function TicketProjectBoard({
     const ticket: ProjectTicket = {
       id,
       code: `FE-${sequence}`,
-      area: 'Project board',
+      area: m.board,
       title: draft.title,
       description: draft.description,
       createdBy: currentUserId,
-      since: 'Since just now',
+      since: m.sinceJustNow,
       priority: draft.priority,
       project: draft.project,
       assignees: draft.assignees,
@@ -384,9 +385,11 @@ function TicketProjectBoard({
           <BreadcrumbItem leading={<Avatar size="xs" color="blue" initials={teamName[0]} />}>
             {teamName}
           </BreadcrumbItem>
-          <BreadcrumbItem leading={<Avatar size="xs" color="neutral" initials={ownerName[0]} />}>
-            {ownerName}
-          </BreadcrumbItem>
+          {ownerName ? (
+            <BreadcrumbItem leading={<Avatar size="xs" color="neutral" initials={ownerName[0]} />}>
+              {ownerName}
+            </BreadcrumbItem>
+          ) : null}
           <BreadcrumbItem current icon={RiKanbanView2}>
             {m.board}
           </BreadcrumbItem>

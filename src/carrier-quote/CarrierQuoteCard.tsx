@@ -36,6 +36,7 @@ import {
   type CarrierQuotePaint,
 } from './shared';
 import type { CarrierQuoteCardProps } from './types';
+import { formatNumber } from '../locale/format-number';
 import { useMessages } from '../locale/messages';
 import { CARRIER_QUOTE_MESSAGES } from './messages';
 
@@ -111,7 +112,7 @@ function CarrierQuoteCardComponent({
   style,
   testID,
 }: CarrierQuoteCardProps) {
-  const { messages: quoteText } = useMessages(CARRIER_QUOTE_MESSAGES);
+  const { locale, messages: quoteText } = useMessages(CARRIER_QUOTE_MESSAGES);
   const theme = useTheme();
   const comfortable = density === 'comfortable';
   const paint = useQuotePaint(comfortable);
@@ -223,7 +224,11 @@ function CarrierQuoteCardComponent({
     ...marks.map((markName) => labels.marks[markName]),
     carrier.rating === undefined || carrier.rating === null
       ? undefined
-      : `${carrier.rating} out of 5`,
+      : quoteText.rating(
+          typeof carrier.rating === 'number'
+            ? formatNumber(carrier.rating, locale)
+            : carrier.rating,
+        ),
     jobs,
     carrier.detail,
     quote.price,

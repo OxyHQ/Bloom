@@ -68,7 +68,7 @@ Appending text re-reads only the tail. The document is split into top-level bloc
 
 ## Code blocks
 
-A fence is a `CodeBlock` with no `onCopy`, and native has no clipboard default, so its copy button does nothing there. `renderCodeBlock(code, language)` is the one slot: return your own `<CodeBlock onCopy={...} />` (or any node) and that is what is drawn. It is a render slot rather than an `onCopy` prop because a host also wants a filename, a different card or a lazily loaded highlighter, and a callback prop would need a new prop for each. Keep it at module scope or in `useCallback` so the memoized block views do not re-render.
+A fence is a `CodeBlock` with no `onCopy`: its copy button uses Bloom's clipboard, which on native needs the optional `expo-clipboard` peer. `renderCodeBlock(code, language)` is the one slot: return your own `<CodeBlock onCopy={...} />` (or any node) and that is what is drawn. It is a render slot rather than an `onCopy` prop because a host also wants a filename, a different card or a lazily loaded highlighter, and a callback prop would need a new prop for each. Keep it at module scope or in `useCallback` so the memoized block views do not re-render.
 
 ```tsx
 const renderCodeBlock = (code: string, language?: string) => (

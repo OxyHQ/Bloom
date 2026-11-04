@@ -25,6 +25,7 @@ import { useCountUp } from '../motion/use-count-up';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 import { formatGregorian } from '../locale/format-date';
+import { formatNumber } from '../locale/format-number';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 import { IS_WEB } from '../styles/platform';
@@ -66,7 +67,7 @@ export interface AgentsChartCardProps {
   title?: string;
   /** Headline at rest — the period's agent count (e.g. 32). */
   headline: number;
-  /** Formats the headline (resting and hovered). Default `"32 agents"`. */
+  /** Formats the headline (resting and hovered). Default `"32 agents"`, in the app's language. */
   format?: (value: number) => string;
   /** Header label for a hovered day. Default: the point's `label`. */
   getPointTitle?: (point: AgentsPoint, index: number) => string;
@@ -109,8 +110,6 @@ const RISE_MS = 360;
 const RISE_STAGGER_MS = 22;
 const RISE_EASE = Easing.bezier(0.22, 1, 0.36, 1);
 
-const defaultFormat = (value: number) => `${value} agents`;
-
 /** Bar heights for the data: `value / max × maxBarHeight`, a zero day the stub. */
 export function agentsBarHeights(
   values: readonly number[],
@@ -140,7 +139,7 @@ export function AgentsChartCard({
   data,
   title: titleProp,
   headline,
-  format = defaultFormat,
+  format: formatProp,
   getPointTitle,
   range,
   onPrevRange,
@@ -163,6 +162,8 @@ export function AgentsChartCard({
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const title = titleProp ?? chartText.titles.agents;
   const endLabel = endLabelProp ?? chartText.today;
+  const format =
+    formatProp ?? ((value: number) => chartText.agentCount(formatNumber(value, chartLocale)));
   // The sample range's start (June 14), written the locale's way.
   const startLabel =
     startLabelProp ??

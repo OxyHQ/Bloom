@@ -140,7 +140,7 @@ describe('EarningsChartCard', () => {
     );
     layoutPlot(getByTestId, 'earn-plot');
     const surface = getByTestId('earn-plot-surface');
-    expect(surface.props.accessibilityLabel).toBe('Earned so far bar chart');
+    expect(surface.props.accessibilityLabel).toMatch(/^Earned so far bar chart: Jan \$3,240, Feb /);
     act(() => {
       fireEvent(surface, 'pointerMove', { nativeEvent: { offsetX: 240, offsetY: 90 } });
     });

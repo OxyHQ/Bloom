@@ -1,3 +1,4 @@
+import { FormatterCache } from './formatter-cache';
 import { defineMessages, type MessageCatalog } from './messages';
 import { pickMessages } from './messages';
 
@@ -17,7 +18,7 @@ import { pickMessages } from './messages';
  * runtime's.
  */
 
-function numberFormat(
+function createNumberFormat(
   locale: string | undefined,
   options: Intl.NumberFormatOptions,
 ): Intl.NumberFormat | null {
@@ -30,6 +31,20 @@ function numberFormat(
       return null;
     }
   }
+}
+
+const numberFormats = new FormatterCache<Intl.NumberFormat | null>();
+
+/**
+ * The formatter for `locale` and `options`, built once and reused: a list of a
+ * hundred prices formats a hundred times but builds one `Intl.NumberFormat`,
+ * which is the expensive half (Hermes especially).
+ */
+function numberFormat(
+  locale: string | undefined,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat | null {
+  return numberFormats.get(locale, options, () => createNumberFormat(locale, options));
 }
 
 /** English grouping with up to `maximumFractionDigits` (default 3) — the fallback only. */
@@ -109,14 +124,19 @@ export function formatSignedPercent(
 /**
  * Money in an ISO 4217 `currency`, placed and spaced the locale's way:
  * `formatCurrency(385000, 'EUR', 'es')` → `385.000 €`, in `en` → `€385,000`.
- * Whole units unless `fractionDigits` says otherwise.
+ * Whole units unless `fractionDigits` says otherwise; `'currency'` takes the
+ * currency's own minor units (`$9.99`, `¥980`, `1.234,500 KWD`).
  */
 export function formatCurrency(
   amount: number,
   currency: string,
   locale?: string,
-  fractionDigits: number | { minimum: number; maximum: number } = 0,
+  fractionDigits: number | { minimum: number; maximum: number } | 'currency' = 0,
 ): string {
+  if (fractionDigits === 'currency') {
+    const format = numberFormat(locale, { style: 'currency', currency });
+    return format ? format.format(amount) : `${currency} ${plainNumber(amount, 2)}`;
+  }
   const [minimum, maximum] =
     typeof fractionDigits === 'number'
       ? [fractionDigits, fractionDigits]

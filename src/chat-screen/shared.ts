@@ -10,6 +10,7 @@ import { useTheme } from '../theme/use-theme';
 import type { ChatBackgroundVariant } from './types';
 import { CHAT_SCREEN_MESSAGES, type ChatScreenMessages } from './messages';
 import { mixColors } from '../styles/color-contrast';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 /** `true` on every platform that is not the web. */
 export const IS_NATIVE = Platform.OS !== 'web';
@@ -19,7 +20,7 @@ export const IS_NATIVE = Platform.OS !== 'web';
  * gutters. It is the width at which a desktop list pane stops fitting beside a
  * conversation, which is the same question "is there anywhere to go back to".
  */
-export const CHAT_COMPACT_BREAKPOINT = 1024;
+export const CHAT_COMPACT_BREAKPOINT = BREAKPOINTS.lg;
 
 /** Below this `ChatSplitLayout` shows ONE pane instead of two or three. */
 export const CHAT_SPLIT_BREAKPOINT = 900;

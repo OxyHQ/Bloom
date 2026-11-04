@@ -19,6 +19,8 @@ export interface CommonMessages {
   goBack: string;
   /** Names a busy region or skeleton. */
   loading: string;
+  /** The indicator trailing a running agent log (`TaskList`, `WebSearch`). */
+  working: string;
   /** A compact overflow trigger ("More"). */
   more: string;
   moreOptions: string;
@@ -39,6 +41,8 @@ export interface CommonMessages {
   delete: string;
   edit: string;
   remove: string;
+  /** A remove control named by what it removes: "Remove Ana". */
+  removeItem: (name: string) => string;
   retry: string;
   search: string;
   showMore: string;
@@ -66,6 +70,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = defineMessages<Co
     backAndForward: 'Back and forward',
     goBack: 'Go back',
     loading: 'Loading',
+    working: 'Working',
     more: 'More',
     moreOptions: 'More options',
     moreActions: 'More actions',
@@ -79,6 +84,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = defineMessages<Co
     delete: 'Delete',
     edit: 'Edit',
     remove: 'Remove',
+    removeItem: (name) => `Remove ${name}`,
     retry: 'Retry',
     search: 'Search',
     showMore: 'Show more',

@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useMessages } from '../locale/messages';
+import { TYPE_SCALE } from '../typography/scale';
 import { ERROR_BOUNDARY_MESSAGES } from './messages';
 import type { ErrorBoundaryProps } from './types';
 
@@ -141,18 +142,17 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#FFFFFF',
   },
+  // The type scale's steps as plain data: the raw `Text` stays (see above).
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...TYPE_SCALE['title-1-bold'],
     marginBottom: 12,
     textAlign: 'center',
     color: '#111111',
   },
   message: {
-    fontSize: 16,
+    ...TYPE_SCALE['headline-regular'],
     textAlign: 'center',
     marginBottom: 24,
-    lineHeight: 22,
     paddingHorizontal: 16,
     color: '#555555',
   },
@@ -168,8 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0066FF',
   },
   retryText: {
+    ...TYPE_SCALE['headline-semibold'],
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

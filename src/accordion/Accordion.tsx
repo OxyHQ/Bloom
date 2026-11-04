@@ -1,12 +1,14 @@
 import { CollapsibleFrame } from '../collapsible/CollapsibleFrame';
 import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
-import React, { memo, useCallback, useContext } from 'react';
-import { View, Text, Pressable, Animated, StyleSheet, type TextStyle } from 'react-native';
+import type React from 'react';
+import { memo, useCallback, useContext } from 'react';
+import { View, Pressable, Animated, StyleSheet, type TextStyle } from 'react-native';
 
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { DISABLED_OPACITY, space } from '../styles/tokens';
+import { DISABLED_OPACITY, fontSize, space } from '../styles/tokens';
+import { Text } from '../typography';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import { styled } from 'react-native-css';
 import { AccordionContext, AccordionItemContext } from './context';
@@ -72,6 +74,8 @@ const AccordionItemComponent: React.FC<AccordionItemProps> = ({
 
 /** The trigger's label box: fills the row, sized from its content (`flexBasis: 'auto'`). */
 const TRIGGER_LABEL_STYLE = { flexGrow: 1, flexShrink: 1 } as const;
+/** A string trigger's label: the 15px size step, semibold. */
+const TRIGGER_TEXT: TextStyle = { fontSize: fontSize.md, fontWeight: '600' };
 
 const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
   children,
@@ -145,17 +149,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
           Android while web (max-content sizing) kept it on one. */}
       <View testID="accordion-trigger-label" style={TRIGGER_LABEL_STYLE}>
         {typeof children === 'string' ? (
-          <Text
-            style={[
-              {
-                fontSize: 15,
-                fontWeight: '600',
-                color: theme.colors.text,
-              },
-              callerText,
-              textStyle,
-            ]}
-          >
+          <Text style={[TRIGGER_TEXT, { color: theme.colors.text }, callerText, textStyle]}>
             {children}
           </Text>
         ) : (

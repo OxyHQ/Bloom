@@ -19,6 +19,7 @@ import type {
   TenancyDocumentType,
 } from './types';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 interface StatusInfo {
   tone: AccentTone;
@@ -95,5 +96,5 @@ export const TENANCY_DOCUMENT_ICON: Record<TenancyDocumentType, BloomIconCompone
 
 /** Width breakpoints of the `auto` layouts. */
 export const LEASE_CARD_WIDE_MIN_WIDTH = 520;
-export const RENT_PAYMENT_LIST_WIDE_MIN_WIDTH = 640;
+export const RENT_PAYMENT_LIST_WIDE_MIN_WIDTH = BREAKPOINTS.sm;
 export const DOCUMENT_LIST_WIDE_MIN_WIDTH = 560;

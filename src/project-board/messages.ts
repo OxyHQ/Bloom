@@ -18,6 +18,10 @@ export const PROJECT_BOARD_MESSAGES = defineMessages('PROJECT_BOARD_MESSAGES', {
   display: 'Display',
   manualOrder: 'Manual order',
   priority: 'Priority',
+  /** A ticket's priority, as its chip and the menus name it. */
+  priorityLabels: { Low: 'Low', Medium: 'Medium', High: 'High', Urgent: 'Urgent' },
+  /** A ticket created on the board, before any time has passed. */
+  sinceJustNow: 'Since just now',
   title: 'Title',
   project: 'Project',
   allPriorities: 'All priorities',

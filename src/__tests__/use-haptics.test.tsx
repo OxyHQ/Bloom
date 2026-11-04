@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 import type * as ExpoHaptics from 'expo-haptics';
@@ -257,7 +257,7 @@ describe('useHapticFeedback', () => {
     const impactAsync = jest.fn(async (_style?: string) => {});
     const { useHapticFeedback } = loadWithHaptics(() => ({
       ImpactFeedbackStyle: STYLES,
-      NotificationFeedbackType: { Success: 'success', Error: 'error' },
+      NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
       impactAsync,
       selectionAsync,
       notificationAsync,
@@ -269,11 +269,16 @@ describe('useHapticFeedback', () => {
       result.current.selection();
       result.current.toggle(true);
       result.current.success();
+      result.current.warning();
       result.current.error();
     });
     expect(impactAsync.mock.calls.map(([style]) => style)).toEqual(['light', 'medium']);
     expect(selectionAsync).toHaveBeenCalledTimes(2);
-    expect(notificationAsync.mock.calls.map(([type]) => type)).toEqual(['success', 'error']);
+    expect(notificationAsync.mock.calls.map(([type]) => type)).toEqual([
+      'success',
+      'warning',
+      'error',
+    ]);
   });
 
   it('falls back to impact on iOS when the peer lacks semantic methods', () => {
@@ -296,7 +301,7 @@ describe('useHapticFeedback', () => {
     const notificationAsync = jest.fn(async (_type?: string) => {});
     const { useHapticFeedback } = loadWithHaptics(() => ({
       ImpactFeedbackStyle: STYLES,
-      NotificationFeedbackType: { Success: 'success', Error: 'error' },
+      NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
       impactAsync,
       selectionAsync,
       notificationAsync,
@@ -312,14 +317,24 @@ describe('useHapticFeedback', () => {
       result.current.toggle(true);
       result.current.toggle(false);
       result.current.success();
+      result.current.warning();
       result.current.error();
     });
     const apiLevel =
       typeof ReactNative.Platform.Version === 'number' ? ReactNative.Platform.Version : 24;
     expect(performAndroidHapticsAsync.mock.calls.map(([value]) => value)).toEqual(
-      (['tap', 'confirm', 'selection', 'toggleOn', 'toggleOff', 'success', 'error'] as const).map(
-        (intent) => resolveAndroidHapticIntent(intent, apiLevel),
-      ),
+      (
+        [
+          'tap',
+          'confirm',
+          'selection',
+          'toggleOn',
+          'toggleOff',
+          'success',
+          'warning',
+          'error',
+        ] as const
+      ).map((intent) => resolveAndroidHapticIntent(intent, apiLevel)),
     );
     expect(impactAsync).not.toHaveBeenCalled();
     expect(selectionAsync).not.toHaveBeenCalled();
@@ -334,6 +349,7 @@ describe('useHapticFeedback', () => {
     expect(resolveAndroidHapticIntent('error', 29)).toBe('long-press');
     expect(resolveAndroidHapticIntent('success', 30)).toBe('confirm');
     expect(resolveAndroidHapticIntent('error', 30)).toBe('reject');
+    expect(resolveAndroidHapticIntent('warning', 34)).toBe('long-press');
   });
 
   it('stays silent on Android when the peer lacks view feedback', () => {
@@ -381,7 +397,7 @@ describe('useHapticFeedback', () => {
       ReactNative.Platform.OS = platform;
       const { useHapticFeedback } = loadWithHaptics(() => ({
         ImpactFeedbackStyle: STYLES,
-        NotificationFeedbackType: { Success: 'success', Error: 'error' },
+        NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
         impactAsync: reject,
         selectionAsync: reject,
         notificationAsync: reject,

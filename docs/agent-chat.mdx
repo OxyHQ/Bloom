@@ -113,7 +113,7 @@ a line break, and IME composition does not submit.
 On **native**:
 
 - There is no hover, so the assistant action row simply shows (except while streaming), and a thread row's `⋮` trigger is transparent over the age — pressing the slot still opens the menu, as expected on touch.
-- Copy and read aloud render only when `onCopyMessage` / `onReadAloud` are given (web defaults to `navigator.clipboard` and `speechSynthesis`). Share defaults to the Web Share sheet or the clipboard on web and does nothing on native without `onShare`.
+- Copy and read aloud render only when `onCopyMessage` / `onReadAloud` are given or a default exists: copy defaults to Bloom's clipboard (`writeClipboardText` — the browser's, or `expo-clipboard` on native), read aloud to `speechSynthesis` on the web. Share defaults to the Web Share sheet or the clipboard on web and does nothing on native without `onShare`.
 - Header materials follow PageHeader; message lines animate without the blur.
 
 ## Language

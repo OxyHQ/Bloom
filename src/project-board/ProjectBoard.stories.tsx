@@ -5,6 +5,7 @@ const meta: Meta<typeof ProjectBoard> = {
   title: 'Patterns/Productivity/Project Board',
   component: ProjectBoard,
   args: {
+    ownerName: 'Maya',
     initialColumns: [
       {
         id: 'backlog',

@@ -55,7 +55,7 @@ export interface TaskListProps {
   /**
    * The indicator at the tail of the log while it is still running, so it
    * always ends on the thing being worked on. Pass a label to change it, or
-   * `false` to drop it. Default `'Working'`.
+   * `false` to drop it. Default: "Working" in the app's language.
    */
   working?: string | false;
   /** Fires once, after the last step lands. */

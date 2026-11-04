@@ -18,6 +18,11 @@ import { RiAddLine } from '@oxy.so/bloom/icons';
 <Button href="/help" tone="accent" appearance="plain">Read the guide</Button>
 ```
 
+`href` makes the button a link: a real `<a href>` on the web, `openHref` on native.
+With `target="_blank"` it opens outside the app — a new tab on the web, and on
+native `openExternal` (the in-app browser with the optional `expo-web-browser`
+peer, otherwise the system browser).
+
 `size` (`xs`, `sm`, `md`, `lg`) and `tone` inherit from `BloomScope`; defaults are `md` and `accent`. `appearance` defaults to `solid`. Appearance controls the fill, independently of semantic tone. The shared material rim is used instead of a coloured outline; the legacy outline geometry is retained. Surface appearances share the glass paint described below; semantic fill/foreground pairs remain authoritative.
 
 The Color roles prototype assigns `accent` to identity and links, `support` to contextual emphasis, and `action` to the main CTA. Use `tone="action"` for a task’s Create/Send/Save button and keep secondary controls neutral. `tone="support" appearance="subtle"` can emphasize a related option when that distinction has meaning; it is not a replacement for every secondary button. All eight tones remain available through the shared contract.

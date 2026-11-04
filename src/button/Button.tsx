@@ -23,7 +23,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import { openHref } from '../hooks/link-activation';
+import { openExternal, openHref } from '../hooks/link-activation';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { styled } from 'react-native-css';
 
@@ -380,6 +380,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
     textVariant,
     numberOfLines,
     href,
+    target,
     loading = false,
     loadingColor,
     accessibilityLabel,
@@ -594,7 +595,10 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
     (ariaCurrent === undefined ? undefined : ariaCurrent !== false && ariaCurrent !== 'false');
   const handlePress = isInteractionBlocked
     ? undefined
-    : (onPress ?? (href != null ? () => openHref(href) : undefined));
+    : (onPress ??
+      (href != null
+        ? () => (target === '_blank' ? openExternal(href) : openHref(href))
+        : undefined));
 
   return (
     <StyledPressable

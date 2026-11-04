@@ -150,6 +150,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: 'Indietro e avanti',
   goBack: 'Torna indietro',
   loading: 'Caricamento',
+  working: 'In corso',
   more: 'Altro',
   moreOptions: 'Altre opzioni',
   moreActions: 'Altre azioni',
@@ -163,6 +164,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: 'Elimina',
   edit: 'Modifica',
   remove: 'Rimuovi',
+  removeItem: (name) => `Rimuovi ${name}`,
   retry: 'Riprova',
   search: 'Cerca',
   showMore: 'Mostra di più',
@@ -1531,7 +1533,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: 'Fonti',
-  working: 'In corso',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1588,6 +1589,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: 'Pipeline di vendita',
     steps: 'Passi',
     tokens: 'Token',
+    weeklyScore: 'Punteggio settimanale',
   },
   weekly: 'Settimanale',
   monthly: 'Mensile',
@@ -1627,6 +1629,26 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
       ? `Nessun contributo${on}`
       : plural('it', n, { one: `{n} contributo${on}`, other: `{n} contributi${on}` });
   },
+  verdicts: {
+    excellent: 'Eccellente',
+    strong: 'Solido',
+    good: 'Buono',
+    fair: 'Discreto',
+    poor: 'Scarso',
+    needsWork: 'Da migliorare',
+  },
+  newChange: 'Nuovo',
+  legendLess: 'Meno',
+  legendMore: 'Più',
+  showFewer: 'Mostra meno',
+  showCountMore: (count) => `Mostra altri ${count}`,
+  agentCount: (count) => plural('it', count, { one: '{n} agente', other: '{n} agenti' }),
+  funnelChart: (title, items) => `Grafico a imbuto ${title}: ${items}`,
+  areaChart: (title, series) => `Grafico ad area ${title}: ${series}`,
+  stackedAreaChart: (title, series) => `Grafico ad aree sovrapposte ${title}: ${series}`,
+  percentAreaChart: (title, series) => `Grafico ad aree sovrapposte al 100% ${title}: ${series}`,
+  radarChart: (title, items) => `Grafico radar ${title}: ${items}`,
+  scoreRadarChart: (title, items) => `Grafico radar del punteggio ${title}: ${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
@@ -2621,6 +2643,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     'I corrieri stanno guardando la tua spedizione. Le prime offerte di solito arrivano in pochi minuti.',
   list: 'Offerte',
   priceDetailsFor: (name) => `Dettagli del prezzo di ${name}`,
+  rating: (rating) => `${rating} su 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2737,7 +2760,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'Un po’ di aiuto',
   aFewMindsOneConversation: 'Poche menti. Una conversazione.',
   aLittleRoomForSomethingNew: 'Un piccolo spazio per qualcosa di nuovo',
-  accountDetails: "Dettagli dell'account",
   add: 'Aggiungi',
   add2: 'Aggiungi {0}',
   added: 'Aggiunto',
@@ -2750,7 +2772,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'Ritorno al mercato',
   billing: 'Fatturazione',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'Bot',
   bringYourAgentsIntoOneChat: "Porta i tuoi agenti in un'unica chat.",
   category: 'Categoria',
@@ -2764,8 +2785,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'Scegli i tuoi compagni di squadra',
   closeMarketplace: 'Chiudi il mercato',
   closeSearch: 'Chiudi ricerca',
-  company: 'Azienda',
-  companyDetails: 'Dettagli aziendali',
   completionSound: 'Suono di completamento',
   connectedAccount: 'Account collegato',
   connector: 'Connettore',
@@ -2804,7 +2823,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: 'Trova il tuo prossimo compagno di squadra',
   findYourNextToolOrTeammate: 'Trova il tuo prossimo strumento o compagno di squadra',
   firstName: 'Nome',
-  folders: 'Cartelle',
   general: 'Generale',
   getNotifiedWhenTheModeNeedsTo:
     'Ricevi una notifica quando la modalità deve prendere una decisione critica',
@@ -2816,7 +2834,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: 'Include',
   insideTheApp: "All'interno dell'app",
   installed: 'Installato',
-  integrations: 'Integrazioni',
   iLlApproachThisFromThePerspective: 'Affronterò la questione dal punto di vista di {0}.',
   lastName: 'Cognome',
   limits: 'Limiti',
@@ -2837,8 +2854,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     "Apri il Marketplace per esplorare plugin e bot. Utilizza il menu di una conversazione per modificare l'aspetto e i dettagli del suo bot. Scegli un'espressione dalla ruota delle emozioni. Scorri o trascina l'arco della forma oppure utilizza i tasti freccia per esplorare le forme.",
   prDestination: 'Destinazione PR',
-  people: 'Persone',
-  personal: 'Personale',
   pinChat: 'Blocca chat',
   pinnedChat: 'Chat fissata',
   plugins: 'Plugin',
@@ -2867,7 +2882,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: 'Condividi',
   showFundamentalNotificationsWhenAnAgentCompletes:
     "Mostra notifiche fondamentali quando un agente completa un'attività",
-  signOut: 'Esci',
   skills: 'Competenze',
   skills2: 'Competenze · {0}',
   soundEffectATaskIsCompleted: "Effetto sonoro un'attività è completata",
@@ -2888,7 +2902,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   useToCreateABotOrStart: 'Usa + per creare un bot o avviare una conversazione con più agenti.',
   viewAdded: 'Visualizza aggiunto {0}',
   viewAll: 'Visualizza tutto',
-  viewTeamProfile: 'Visualizza il profilo della squadra',
   viewItem: 'Visualizza {0}',
   website: 'Sito web',
   whenEnabledYourProfilePageWillBe:
@@ -2945,6 +2958,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'Ingrandisci',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'Nessuna connessione a Internet',
+  reconnecting: 'Riconnessione in corso…',
+  restored: 'Di nuovo online',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'Il tuo ordine è stato effettuato',
+  referenceLabel: 'Numero d’ordine',
+  itemsLabel: 'Cosa hai ordinato',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points} punti · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Cambia copertina',
@@ -2978,6 +3007,8 @@ const translations: Translations = {
     display: 'Visualizzazione',
     manualOrder: 'Ordine manuale',
     priority: 'Priorità',
+    priorityLabels: { Low: 'Bassa', Medium: 'Media', High: 'Alta', Urgent: 'Urgente' },
+    sinceJustNow: 'Da poco fa',
     title: 'Titolo',
     project: 'Progetto',
     allPriorities: 'Tutte le priorità',
@@ -3177,6 +3208,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

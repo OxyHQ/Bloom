@@ -1,5 +1,6 @@
 import { useControllableState } from '../hooks/use-controllable-state';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import {
   Animated,
@@ -604,6 +605,7 @@ function MoreButton({
   onPress: () => void;
   testID?: string;
 }) {
+  const { messages: text } = useMessages(CHART_CARDS_MESSAGES);
   const palette = useChartCardPalette();
   const medical = useMedicalPalette();
   const reducedMotion = usePrefersReducedMotion();
@@ -627,7 +629,7 @@ function MoreButton({
     return () => animation.stop();
   }, [expanded, reducedMotion, turn]);
 
-  const label = expanded ? 'Show fewer' : `Show ${hiddenCount} more`;
+  const label = expanded ? text.showFewer : text.showCountMore(hiddenCount);
   const rotate = useMemo(
     () => turn.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }),
     [turn],

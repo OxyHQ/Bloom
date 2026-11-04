@@ -2,6 +2,7 @@ import { RADIUS } from '../design-tokens/scales';
 import type { AccentTone } from '../theme/accent-colors';
 import { EARNINGS_MESSAGES } from './messages';
 import type { EarningsLabels, EarningsPayoutState } from './types';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 /**
  * Every default word the family draws, in English. The components speak
@@ -54,7 +55,7 @@ export const EARNINGS_GEOMETRY = {
   glyph: 40,
   glyphRadius: RADIUS['radius-12'],
   /** Under this the tiles stack two to a row. */
-  narrowWidth: 640,
+  narrowWidth: BREAKPOINTS.sm,
 } as const;
 
 export type EarningsGeometry = typeof EARNINGS_GEOMETRY;

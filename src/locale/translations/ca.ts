@@ -150,6 +150,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: 'Enrere i endavant',
   goBack: 'Torna enrere',
   loading: "S'està carregant",
+  working: 'Treballant',
   more: 'Més',
   moreOptions: 'Més opcions',
   moreActions: 'Més accions',
@@ -163,6 +164,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: 'Suprimeix',
   edit: 'Edita',
   remove: 'Treu',
+  removeItem: (name) => `Treu ${name}`,
   retry: 'Torna-ho a provar',
   search: 'Cerca',
   showMore: "Mostra'n més",
@@ -1510,7 +1512,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: 'Fonts',
-  working: 'Treballant',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1568,6 +1569,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: 'Embut de vendes',
     steps: 'Passos',
     tokens: 'Tokens',
+    weeklyScore: 'Puntuació setmanal',
   },
   weekly: 'Setmanal',
   monthly: 'Mensual',
@@ -1608,6 +1610,29 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
       ? `Cap contribució${on}`
       : plural('ca', n, { one: `{n} contribució${on}`, other: `{n} contribucions${on}` });
   },
+  verdicts: {
+    excellent: 'Excel·lent',
+    strong: 'Sòlid',
+    good: 'Bo',
+    fair: 'Acceptable',
+    poor: 'Fluix',
+    needsWork: 'Cal millorar',
+  },
+  newChange: 'Nou',
+  legendLess: 'Menys',
+  legendMore: 'Més',
+  showFewer: 'Mostra’n menys',
+  showCountMore: (count) => `Mostra’n ${count} més`,
+  agentCount: (count) => plural('ca', count, { one: '{n} agent', other: '{n} agents' }),
+  funnelChart: (title, items) => `Gràfic d’embut de ${title.toLowerCase()}: ${items}`,
+  areaChart: (title, series) => `Gràfic d’àrees de ${title.toLowerCase()}: ${series}`,
+  stackedAreaChart: (title, series) =>
+    `Gràfic d’àrees apilades de ${title.toLowerCase()}: ${series}`,
+  percentAreaChart: (title, series) =>
+    `Gràfic d’àrees apilades al 100% de ${title.toLowerCase()}: ${series}`,
+  radarChart: (title, items) => `Gràfic de radar de ${title.toLowerCase()}: ${items}`,
+  scoreRadarChart: (title, items) =>
+    `Gràfic de radar de puntuació de ${title.toLowerCase()}: ${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
@@ -2589,6 +2614,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     'Els transportistes estan mirant el teu enviament. Les primeres ofertes solen arribar en pocs minuts.',
   list: 'Ofertes',
   priceDetailsFor: (name) => `Desglossament del preu de ${name}`,
+  rating: (rating) => `${rating} de 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2705,7 +2731,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'Una mica d’ajuda',
   aFewMindsOneConversation: 'Unes quantes ments. Una conversa.',
   aLittleRoomForSomethingNew: 'Un petit espai per a alguna cosa nova',
-  accountDetails: 'Detalls del compte',
   add: 'Afegeix',
   add2: 'Afegeix {0}',
   added: 'Afegit',
@@ -2718,7 +2743,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'Tornar al mercat',
   billing: 'Facturació',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'Bots',
   bringYourAgentsIntoOneChat: 'Porta els teus agents en un sol xat.',
   category: 'Categoria',
@@ -2732,8 +2756,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'Tria els teus companys',
   closeMarketplace: 'Tancar el mercat',
   closeSearch: 'Tanca la cerca',
-  company: 'Empresa',
-  companyDetails: "Dades de l'empresa",
   completionSound: 'So de finalització',
   connectedAccount: 'Compte connectat',
   connector: 'Connector',
@@ -2772,7 +2794,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: "Troba el teu proper company d'equip",
   findYourNextToolOrTeammate: "Troba la teva propera eina o company d'equip",
   firstName: 'Nom',
-  folders: 'Carpetes',
   general: 'General',
   getNotifiedWhenTheModeNeedsTo:
     'Rebeu una notificació quan el mode hagi de prendre una decisió crítica',
@@ -2784,7 +2805,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: 'Inclou',
   insideTheApp: "Dins de l'aplicació",
   installed: 'Instal·lat',
-  integrations: 'Integracions',
   iLlApproachThisFromThePerspective: 'Ho abordaré des de la perspectiva de {0}.',
   lastName: 'Cognoms',
   limits: 'Límits',
@@ -2806,8 +2826,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     "Obriu el Marketplace per explorar connectors i bots. Utilitzeu el menú d'una conversa per editar l'aparença i els detalls del bot. Trieu una expressió de la roda de les emocions. Desplaceu-vos o arrossegueu l'arc de forma, o utilitzeu les tecles de fletxa per explorar les formes.",
   prDestination: 'PR destinació',
-  people: 'Persones',
-  personal: 'Personal',
   pinChat: 'Fixa el xat',
   pinnedChat: 'Xat fixat',
   plugins: 'Complements',
@@ -2837,7 +2855,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: 'Comparteix',
   showFundamentalNotificationsWhenAnAgentCompletes:
     'Mostra les notificacions fonamentals quan un agent completa una tasca',
-  signOut: 'Tanca la sessió',
   skills: 'Habilitats',
   skills2: 'Habilitats · {0}',
   soundEffectATaskIsCompleted: "Efecte de so una tasca s'ha completat",
@@ -2859,7 +2876,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     'Utilitzeu + per crear un bot o iniciar una conversa amb diversos agents.',
   viewAdded: 'Visualització afegida {0}',
   viewAll: 'Mostra-ho tot',
-  viewTeamProfile: "Veure el perfil de l'equip",
   viewItem: 'Mostra {0}',
   website: 'Lloc web',
   whenEnabledYourProfilePageWillBe:
@@ -2915,6 +2931,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'Maximitza',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'No hi ha connexió a internet',
+  reconnecting: 'S’està tornant a connectar…',
+  restored: 'De nou en línia',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'S’ha fet la comanda',
+  referenceLabel: 'Número de comanda',
+  itemsLabel: 'Què has demanat',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points} punts · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Canvia la portada',
@@ -2948,6 +2980,8 @@ const translations: Translations = {
     display: 'Visualització',
     manualOrder: 'Ordre manual',
     priority: 'Prioritat',
+    priorityLabels: { Low: 'Baixa', Medium: 'Mitjana', High: 'Alta', Urgent: 'Urgent' },
+    sinceJustNow: 'Des d’ara mateix',
     title: 'Títol',
     project: 'Projecte',
     allPriorities: 'Totes les prioritats',
@@ -3147,6 +3181,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

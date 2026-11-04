@@ -1,11 +1,15 @@
 import { useEffect, useRef } from 'react';
 
+import { useMessages } from '../locale/messages';
 import { toast } from '../toast';
+import { CONNECTION_STATUS_MESSAGES } from './messages';
 
 /** One id for the whole lifecycle, so the toast updates in place. */
 const TOAST_ID = 'bloom-connection-status';
 
 export interface ConnectionStatusToastsProps {
+  /** The language of the default messages; the nearest `LocaleProvider`'s by default. */
+  locale?: string;
   /** Shown as soon as the device reports no connection. */
   offlineMessage?: string;
   /** Replaces `offlineMessage` once the outage has lasted `reconnectingDelayMs`. */
@@ -19,9 +23,6 @@ export interface ConnectionStatusToastsProps {
 }
 
 const DEFAULTS = {
-  offlineMessage: 'No internet connection',
-  reconnectingMessage: 'Reconnecting…',
-  restoredMessage: 'Back online',
   reconnectingDelayMs: 3000,
   restoredDurationMs: 2500,
 } as const;
@@ -39,13 +40,18 @@ const DEFAULTS = {
 export function useConnectionStatusToasts(
   isOnline: boolean | null,
   {
-    offlineMessage = DEFAULTS.offlineMessage,
-    reconnectingMessage = DEFAULTS.reconnectingMessage,
-    restoredMessage = DEFAULTS.restoredMessage,
+    locale,
+    offlineMessage: offlineProp,
+    reconnectingMessage: reconnectingProp,
+    restoredMessage: restoredProp,
     reconnectingDelayMs = DEFAULTS.reconnectingDelayMs,
     restoredDurationMs = DEFAULTS.restoredDurationMs,
   }: ConnectionStatusToastsProps = {},
 ): void {
+  const { messages } = useMessages(CONNECTION_STATUS_MESSAGES, locale);
+  const offlineMessage = offlineProp ?? messages.offline;
+  const reconnectingMessage = reconnectingProp ?? messages.reconnecting;
+  const restoredMessage = restoredProp ?? messages.restored;
   // Whether an outage toast is currently up, so coming back online only
   // announces itself to someone who saw the outage.
   const wasOffline = useRef(false);

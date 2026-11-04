@@ -23,6 +23,8 @@
  *                   half the bar
  */
 
+import { CHART_CARDS_MESSAGES } from './messages';
+
 export interface PlotBox {
   left: number;
   top: number;
@@ -350,13 +352,14 @@ export type ChartDeltaTone = 'positive' | 'negative' | 'neutral';
 
 /**
  * `describeDelta` for the dashboard chart cards: percent change to
- * one decimal, `+` on a rise, `New` with nothing to compare against.
+ * one decimal, `+` on a rise, `newLabel` ("New") with nothing to compare against.
  */
 export function describeDelta(
   current: number,
   previous: number,
+  newLabel = CHART_CARDS_MESSAGES.en.newChange,
 ): { label: string; tone: ChartDeltaTone } {
-  if (previous === 0) return { label: 'New', tone: 'neutral' };
+  if (previous === 0) return { label: newLabel, tone: 'neutral' };
   const change = ((current - previous) / previous) * 100;
   const rounded = Math.round(change * 10) / 10;
   if (rounded === 0) return { label: '0%', tone: 'neutral' };

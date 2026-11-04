@@ -21,7 +21,7 @@ export interface CompositionBarProps {
   /**
    * Formats the readout shown below the bar for the selected segment. Receives
    * the raw amount (points) and the rounded share percentage (0–100).
-   * @default `(points, percent) => `${points} pts · ${percent}%``
+   * @default "120 pts · 35%", in the app's language
    */
   formatReadout?: (points: number, percent: number) => string;
   /** Container style override. */

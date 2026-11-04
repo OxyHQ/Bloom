@@ -25,6 +25,7 @@ it('publishes the shared hooks, helpers and formatters', () => {
     'useBrowserTitle',
     'isPlainLinkActivation',
     'openHref',
+    'openExternal',
   ]) {
     expect(typeof (hooks as Record<string, unknown>)[name]).toBe('function');
   }
@@ -51,4 +52,47 @@ it('openHref opens through Linking on native and navigates the document on web',
   }
   expect(assign).toHaveBeenCalledWith('/inbox');
   expect(openURL).toHaveBeenCalledTimes(1);
+});
+
+it('openExternal opens a tab on web, the in-app browser on native, else the system handler', () => {
+  const openBrowserAsync = jest.fn((_url: string) => Promise.resolve());
+  jest.isolateModules(() => {
+    jest.doMock('expo-web-browser', () => ({ openBrowserAsync }), { virtual: true });
+    const { openExternal } = require('../hooks/link-activation') as typeof hooks;
+    const { Linking: isolatedLinking } = require('react-native') as typeof import('react-native');
+    openExternal('https://oxy.so');
+    openExternal('mailto:hi@oxy.so');
+    expect(openBrowserAsync).toHaveBeenCalledWith('https://oxy.so');
+    expect(jest.mocked(isolatedLinking.openURL).mock.calls).toEqual([['mailto:hi@oxy.so']]);
+  });
+  jest.dontMock('expo-web-browser');
+
+  const open = jest.fn();
+  const previous = Platform.OS;
+  (globalThis as { open?: unknown }).open = open;
+  Platform.OS = 'web';
+  try {
+    hooks.openExternal('https://oxy.so');
+  } finally {
+    Platform.OS = previous;
+    delete (globalThis as { open?: unknown }).open;
+  }
+  expect(open).toHaveBeenCalledWith('https://oxy.so', '_blank', 'noopener,noreferrer');
+});
+
+it('writeClipboardText writes through expo-clipboard where there is no browser clipboard', async () => {
+  const setStringAsync = jest.fn((_text: string) => Promise.resolve(true));
+  let written: Promise<void> | undefined;
+  jest.isolateModules(() => {
+    jest.doMock('expo-clipboard', () => ({ setStringAsync }), { virtual: true });
+    const clipboard = require('../hooks/clipboard') as typeof hooks;
+    expect(clipboard.clipboardAvailable()).toBe(true);
+    written = clipboard.writeClipboardText('FE-12');
+  });
+  jest.dontMock('expo-clipboard');
+  await written;
+  expect(setStringAsync).toHaveBeenCalledWith('FE-12');
+  // Without the peer there is nothing to write to.
+  expect(hooks.clipboardAvailable()).toBe(false);
+  await expect(hooks.writeClipboardText('FE-12')).rejects.toThrow('clipboard unavailable');
 });

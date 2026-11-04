@@ -102,7 +102,11 @@ export interface CodeBlockProps {
   wrap?: boolean;
   /** Show the copy button. Default `true`. */
   copyable?: boolean;
-  /** Copy handler; the glyph shows a check for 1.6s after. Default on web: the clipboard. */
+  /**
+   * Copy handler; the glyph shows a check for 1.6s after. Default: Bloom's
+   * clipboard — on native with the optional `expo-clipboard` peer, without which
+   * (and with no handler) the button is not drawn.
+   */
   onCopy?: (code: string) => void | Promise<void>;
   /** Extra header content before the diff counts. */
   headerAccessory?: ReactNode;

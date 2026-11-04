@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { useResolvedBloomLocale } from '../locale/context';
+import { formatGregorian } from '../locale/format-date';
 import { useMessages } from '../locale/messages';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 const DEMO_DEVICE_ID = '593e2611-b9e3-44e2-1289-ab3f9d21';
@@ -399,6 +401,7 @@ function ToolsDemo() {
 }
 
 function StorageDemo() {
+  const locale = useResolvedBloomLocale();
   const [files, setFiles] = useState(FILES);
   return (
     <SettingsStoragePage
@@ -414,11 +417,12 @@ function StorageDemo() {
               id: `upload-${now}`,
               name: file.name.replace(/\.[^.]+$/, ''),
               kind: ext === 'xlsx' ? 'spreadsheet' : 'document',
-              uploadedOn: new Date(now).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              }),
+              uploadedOn:
+                formatGregorian(new Date(now), locale, {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                }) ?? '',
               uploadedAt: 10_000 + now / 1000,
               size: file.size,
             },

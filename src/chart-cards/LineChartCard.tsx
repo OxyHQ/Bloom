@@ -241,7 +241,7 @@ export function LineChartCard({
         ranges={ranges}
         rangeId={selectedId}
         onRangeChange={selectRange}
-        rangesLabel={rangesLabel ?? `${title} period`}
+        rangesLabel={rangesLabel ?? chartText.periodOf(title)}
         testID={testID}
       />
       <View

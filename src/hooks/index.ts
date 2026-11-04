@@ -47,4 +47,4 @@ export { useKeyboardMetrics } from './use-keyboard-metrics';
 export type { KeyboardMetrics, KeyboardMetricsOptions } from './use-keyboard-metrics';
 export { useKeyboardReveal, KEYBOARD_REVEAL_MARGIN } from './use-keyboard-reveal';
 export { useBrowserTitle } from './use-browser-title';
-export { isPlainLinkActivation, openHref } from './link-activation';
+export { isPlainLinkActivation, openExternal, openHref } from './link-activation';

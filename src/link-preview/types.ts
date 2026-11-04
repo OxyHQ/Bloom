@@ -19,7 +19,7 @@ export interface LinkPreviewImageSource {
  * consumer can spread an SDK `LinkPreview` straight onto this component.
  */
 export interface LinkPreviewCardProps {
-  /** The previewed URL. Opened via `Linking.openURL` when `onPress` is omitted. */
+  /** The previewed URL. Opened with `openExternal` when `onPress` is omitted. */
   url: string;
   /** OpenGraph / page title. Falls back to the URL hostname when absent. */
   title?: string;
@@ -54,7 +54,7 @@ export interface LinkPreviewCardProps {
    *   fits a fixed-height row alongside other attachments without overflowing.
    */
   coverFill?: boolean;
-  /** Press handler. When omitted, the card opens `url` via `Linking.openURL`. */
+  /** Press handler. When omitted, the card opens `url` with `openExternal`. */
   onPress?: () => void;
   /** Extra NativeWind utilities merged onto the card surface. */
   className?: string;

@@ -118,7 +118,9 @@ Mount `BloomHapticsProvider` if the app needs to turn haptics off globally
 (a user setting, or a platform where they are inappropriate).
 
 Use `useHapticFeedback()` for actions: `tap()`, `confirm()`, `selection()`,
-`toggle(on)`, `success()`, and `error()`. Android uses view feedback and falls
+`toggle(on)`, `success()`, `warning()` and `error()`. `warning()` is iOS's
+warning notification and Android's long-press feedback — firmer than a tap,
+short of `error()`'s rejection. Android uses view feedback and falls
 back to older Android constants where necessary. It is silent if an older peer
 lacks Android view feedback. On iOS, selection and notification feedback fall
 back to a light impact when the installed peer lacks those methods. The
@@ -275,10 +277,14 @@ focusable, as before.
 
 ## `writeClipboardText` / `clipboardAvailable`
 
-The web clipboard as one guarded call. `writeClipboardText(text)` rejects where
-there is none (native, or a browser refusing the permission), so the caller
+The clipboard as one guarded call: the browser's `navigator.clipboard` on the
+web, the optional `expo-clipboard` peer on native (`npx expo install
+expo-clipboard`). `writeClipboardText(text)` rejects where there is none
+(native without the peer, or a browser refusing the permission), so the caller
 decides what that means; `clipboardAvailable()` says whether it can succeed at
-all.
+all. Bloom's own copy buttons (`CodeBlock`, `AgentChatMessage`,
+`MultiAgentChat`, `ProjectBoard`'s ticket id) use it, so on native they copy
+once the peer is installed and stay hidden or fall back without it.
 
 ## `useTextareaAutosize`
 
@@ -345,5 +351,23 @@ onPress={() => {
   if (onPress) onPress();
   else if (!IS_WEB && href) openHref(href);
 }}
+```
+
+## `openExternal`
+
+`openExternal(href)` opens a page outside the app — the companion of
+`openHref` for a link that should not replace the app: a new tab on the web
+(`noopener`), the in-app browser on native through the optional
+`expo-web-browser` peer (`npx expo install expo-web-browser`), and the system
+handler (`Linking.openURL`) for a URL the in-app browser cannot show (`mailto:`,
+`tel:`) or when the peer is absent. A URL nothing can open does nothing.
+
+Bloom's families that open the web call it: `LinkPreviewCard` and
+`LinkPreviewMessage` without an `onPress`, `WebSearch`'s sources,
+`InlineMarkdown`'s `http(s)` links, `ProjectBoard`'s ticket resources and a
+`Button` with `href` and `target="_blank"` on native.
+
+```tsx
+<Button onPress={() => openExternal('https://oxy.so/terms')}>Terms</Button>
 ```
 

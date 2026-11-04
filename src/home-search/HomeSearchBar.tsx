@@ -22,6 +22,7 @@ import { TYPE_SCALE } from '../typography/scale';
 import type { HomeSearchBarProps, HomeSearchSegment } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { IS_WEB } from '../styles/platform';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 /**
  * Bloom's wide housing search: one full pill split into any segments — the
@@ -112,7 +113,7 @@ export function HomeSearchBar<K extends string = string>({
   const searchLabel = searchLabelProp ?? common.search;
   const palette = useStaySearchPalette();
   const [barWidth, setBarWidth] = useState<number | null>(null);
-  const compact = barWidth !== null && barWidth < 640;
+  const compact = barWidth !== null && barWidth < BREAKPOINTS.sm;
   const [hovered, setHovered] = useState<K | null>(null);
   const rootRef = useRef<ComponentRef<typeof View>>(null);
   const open = activeSegment !== null;

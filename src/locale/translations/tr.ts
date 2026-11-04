@@ -146,6 +146,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: 'Geri ve ileri',
   goBack: 'Geri dön',
   loading: 'Yükleniyor',
+  working: 'Çalışıyor',
   more: 'Daha fazla',
   moreOptions: 'Diğer seçenekler',
   moreActions: 'Diğer işlemler',
@@ -159,6 +160,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: 'Sil',
   edit: 'Düzenle',
   remove: 'Kaldır',
+  removeItem: (name) => `Kaldır: ${name}`,
   retry: 'Yeniden dene',
   search: 'Ara',
   showMore: 'Daha fazla göster',
@@ -1476,7 +1478,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: 'Kaynaklar',
-  working: 'Çalışıyor',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1532,6 +1533,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: 'Satış hunisi',
     steps: 'Adımlar',
     tokens: 'Jetonlar',
+    weeklyScore: 'Haftalık puan',
   },
   weekly: 'Haftalık',
   monthly: 'Aylık',
@@ -1569,6 +1571,26 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     const on = date ? `${date} tarihinde ` : '';
     return n === 0 ? `${on}katkı yok` : plural('tr', n, { other: `${on}{n} katkı` });
   },
+  verdicts: {
+    excellent: 'Mükemmel',
+    strong: 'Güçlü',
+    good: 'İyi',
+    fair: 'Orta',
+    poor: 'Zayıf',
+    needsWork: 'Geliştirilmeli',
+  },
+  newChange: 'Yeni',
+  legendLess: 'Az',
+  legendMore: 'Çok',
+  showFewer: 'Daha az göster',
+  showCountMore: (count) => `${count} tane daha göster`,
+  agentCount: (count) => plural('tr', count, { other: '{n} ajan' }),
+  funnelChart: (title, items) => `${title} huni grafiği: ${items}`,
+  areaChart: (title, series) => `${title} alan grafiği: ${series}`,
+  stackedAreaChart: (title, series) => `${title} yığılmış alan grafiği: ${series}`,
+  percentAreaChart: (title, series) => `${title} %100 yığılmış alan grafiği: ${series}`,
+  radarChart: (title, items) => `${title} radar grafiği: ${items}`,
+  scoreRadarChart: (title, items) => `${title} puan radar grafiği: ${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
@@ -2549,6 +2571,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     'Taşıyıcılar işinizi inceliyor. İlk teklifler genellikle birkaç dakika içinde gelir.',
   list: 'Teklifler',
   priceDetailsFor: (name) => `${name} için fiyat ayrıntıları`,
+  rating: (rating) => `5 üzerinden ${rating}`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2665,7 +2688,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'Biraz yardım',
   aFewMindsOneConversation: 'Birkaç akıl. Bir konuşma.',
   aLittleRoomForSomethingNew: 'Yeni bir şey için küçük bir yer',
-  accountDetails: 'Hesap Detayları',
   add: 'Ekle',
   add2: '{0} ekle',
   added: 'Eklendi',
@@ -2678,7 +2700,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'Pazara geri dön',
   billing: 'Faturalandırma',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'Botlar',
   bringYourAgentsIntoOneChat: 'Temsilcilerinizi tek bir sohbete getirin.',
   category: 'Kategori',
@@ -2693,8 +2714,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'Takım arkadaşlarınızı seçin',
   closeMarketplace: 'Pazar yerini kapat',
   closeSearch: 'Aramayı kapat',
-  company: 'Şirket',
-  companyDetails: 'Şirket Detayları',
   completionSound: 'Tamamlanma sesi',
   connectedAccount: 'Bağlı hesap',
   connector: 'Bağlayıcı',
@@ -2733,7 +2752,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: 'Bir sonraki takım arkadaşınızı bulun',
   findYourNextToolOrTeammate: 'Bir sonraki aracınızı veya takım arkadaşınızı bulun',
   firstName: 'Ad',
-  folders: 'Klasörler',
   general: 'Genel',
   getNotifiedWhenTheModeNeedsTo: 'Modun kritik bir karar vermesi gerektiğinde bildirim alın',
   git: 'Git',
@@ -2744,7 +2762,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: 'İçerir',
   insideTheApp: 'Uygulamanın içinde',
   installed: 'Yüklendi',
-  integrations: 'Entegrasyonlar',
   iLlApproachThisFromThePerspective: 'Buna {0} perspektifinden yaklaşacağım.',
   lastName: 'Soyadı',
   limits: 'Sınırlar',
@@ -2765,8 +2782,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     "Eklentileri ve botları keşfetmek için Marketplace'i açın. Botun görünümünü ve ayrıntılarını düzenlemek için bir konuşmanın menüsünü kullanın. Duygu çarkından bir ifade seçin. Şekilleri keşfetmek için şekil yayını kaydırın veya sürükleyin ya da ok tuşlarını kullanın.",
   prDestination: 'PR hedefi',
-  people: 'Kişiler',
-  personal: 'Kişisel',
   pinChat: 'Sohbeti sabitle',
   pinnedChat: 'Sabitlenmiş sohbet',
   plugins: 'Eklentiler',
@@ -2796,7 +2811,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: 'Paylaş',
   showFundamentalNotificationsWhenAnAgentCompletes:
     'Bir aracı bir görevi tamamladığında temel bildirimleri göster',
-  signOut: 'Oturumu kapat',
   skills: 'Beceriler',
   skills2: 'Beceriler · {0}',
   soundEffectATaskIsCompleted: 'Ses efekti bir görev tamamlandı',
@@ -2818,7 +2832,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     'Bir bot oluşturmak veya birkaç temsilciyle görüşme başlatmak için + tuşunu kullanın.',
   viewAdded: 'Görünüm eklendi {0}',
   viewAll: 'Tümünü görüntüle',
-  viewTeamProfile: 'Ekip profilini görüntüle',
   viewItem: 'Görünüm {0}',
   website: 'Web sitesi',
   whenEnabledYourProfilePageWillBe:
@@ -2875,6 +2888,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'Büyüt',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'İnternet bağlantısı yok',
+  reconnecting: 'Yeniden bağlanılıyor…',
+  restored: 'Yeniden çevrimiçi',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'Siparişiniz verildi',
+  referenceLabel: 'Sipariş numarası',
+  itemsLabel: 'Sipariş ettikleriniz',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points} puan · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Kapağı değiştir',
@@ -2908,6 +2937,8 @@ const translations: Translations = {
     display: 'Görünüm',
     manualOrder: 'Elle sıralama',
     priority: 'Öncelik',
+    priorityLabels: { Low: 'Düşük', Medium: 'Orta', High: 'Yüksek', Urgent: 'Acil' },
+    sinceJustNow: 'Az önceden beri',
     title: 'Başlık',
     project: 'Proje',
     allPriorities: 'Tüm öncelikler',
@@ -3107,6 +3138,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

@@ -143,6 +143,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: '后退和前进',
   goBack: '返回上一页',
   loading: '正在加载',
+  working: '处理中',
   more: '更多',
   moreOptions: '更多选项',
   moreActions: '更多操作',
@@ -156,6 +157,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: '删除',
   edit: '编辑',
   remove: '移除',
+  removeItem: (name) => `移除${name}`,
   retry: '重试',
   search: '搜索',
   showMore: '显示更多',
@@ -1437,7 +1439,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: '来源',
-  working: '处理中',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1493,6 +1494,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: '销售管道',
     steps: '步数',
     tokens: '令牌',
+    weeklyScore: '每周得分',
   },
   weekly: '每周',
   monthly: '每月',
@@ -1529,6 +1531,26 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     const on = date ? `${date} ` : '';
     return n === 0 ? `${on}无贡献` : `${on}${n} 次贡献`;
   },
+  verdicts: {
+    excellent: '优秀',
+    strong: '强',
+    good: '良好',
+    fair: '一般',
+    poor: '较差',
+    needsWork: '需改进',
+  },
+  newChange: '新增',
+  legendLess: '少',
+  legendMore: '多',
+  showFewer: '收起',
+  showCountMore: (count) => `再显示 ${count} 项`,
+  agentCount: (count) => plural('zh', count, { other: '{n} 个智能体' }),
+  funnelChart: (title, items) => `${title}漏斗图：${items}`,
+  areaChart: (title, series) => `${title}面积图：${series}`,
+  stackedAreaChart: (title, series) => `${title}堆叠面积图：${series}`,
+  percentAreaChart: (title, series) => `${title}百分比堆叠面积图：${series}`,
+  radarChart: (title, items) => `${title}雷达图：${items}`,
+  scoreRadarChart: (title, items) => `${title}得分雷达图：${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: '复制代码', copied: '代码已复制' };
@@ -2465,6 +2487,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   emptyDescription: '承运人正在查看你的订单，第一批报价通常会在几分钟内到达。',
   list: '报价',
   priceDetailsFor: (name) => `${name}的价格明细`,
+  rating: (rating) => `${rating} 分（满分 5 分）`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2580,7 +2603,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: '帮助',
   aFewMindsOneConversation: '一些想法。一次谈话。',
   aLittleRoomForSomethingNew: '一个容纳新事物的小空间',
-  accountDetails: '帐户详细信息',
   add: '添加',
   add2: '添加 {0}',
   added: '已添加',
@@ -2593,7 +2615,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: '返回市场',
   billing: '计费',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: '机器人',
   bringYourAgentsIntoOneChat: '让您的代理参与一次聊天。',
   category: '类别',
@@ -2607,8 +2628,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: '选择你的队友',
   closeMarketplace: '关闭市场',
   closeSearch: '关闭搜索',
-  company: '公司',
-  companyDetails: '公司详情',
   completionSound: '完成声音',
   connectedAccount: '关联帐户',
   connector: '连接器',
@@ -2646,7 +2665,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: '寻找你的下一个队友',
   findYourNextToolOrTeammate: '寻找你的下一个工具或队友',
   firstName: '名字',
-  folders: '文件夹',
   general: '一般',
   getNotifiedWhenTheModeNeedsTo: '当模式需要做出关键决策时收到通知',
   git: 'Git',
@@ -2657,7 +2675,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: '包括',
   insideTheApp: '应用程序内部',
   installed: '已安装',
-  integrations: '集成',
   iLlApproachThisFromThePerspective: '我将从 {0} 的角度来解决这个问题。',
   lastName: '姓氏',
   limits: '限制',
@@ -2678,8 +2695,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     '打开市场来探索插件和机器人。使用对话的菜单编辑机器人的外观和详细信息。从情感轮中选择一种表达方式。滚动或拖动形状弧，或使用其箭头键来探索形状。',
   prDestination: '公关目的地',
-  people: '用户',
-  personal: '个人',
   pinChat: '固定聊天',
   pinnedChat: '固定聊天',
   plugins: '插件',
@@ -2706,7 +2721,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   settings: '设置',
   share: '分享',
   showFundamentalNotificationsWhenAnAgentCompletes: '当代理完成任务时显示基本通知',
-  signOut: '退出',
   skills: '技能',
   skills2: '技能 · {0}',
   soundEffectATaskIsCompleted: '音效任务完成',
@@ -2727,7 +2741,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   useToCreateABotOrStart: '使用 + 创建机器人或开始与多个代理对话。',
   viewAdded: '视图已添加 {0}',
   viewAll: '查看全部',
-  viewTeamProfile: '查看团队简介',
   viewItem: '查看{0}',
   website: '网站',
   whenEnabledYourProfilePageWillBe: '启用后，任何人都可以看到您的个人资料页面',
@@ -2782,6 +2795,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: '缩放',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: '无网络连接',
+  reconnecting: '正在重新连接…',
+  restored: '已恢复联网',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: '订单已提交',
+  referenceLabel: '订单号',
+  itemsLabel: '您订购的商品',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points} 分 · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: '更换封面',
@@ -2815,6 +2844,8 @@ const translations: Translations = {
     display: '显示',
     manualOrder: '手动排序',
     priority: '优先级',
+    priorityLabels: { Low: '低', Medium: '中', High: '高', Urgent: '紧急' },
+    sinceJustNow: '刚刚起',
     title: '标题',
     project: '项目',
     allPriorities: '所有优先级',
@@ -3013,6 +3044,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

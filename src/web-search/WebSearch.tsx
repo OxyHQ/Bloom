@@ -18,7 +18,7 @@ import {
   type LayoutChangeEvent,
   type TextStyle,
 } from 'react-native';
-import { openHref } from '../hooks/link-activation';
+import { openExternal } from '../hooks/link-activation';
 import { BloomImage } from '../image';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
@@ -43,6 +43,7 @@ import {
 } from '../agent-log';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { SOCIAL_PROVIDERS } from '../social-button/providers';
+import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -585,8 +586,8 @@ function SourceLinkRow({
             onHoverIn={onHoverIn}
             onHoverOut={onHoverOut}
             onPress={() => {
-              // On web the rendered `<a href>` navigates by itself.
-              if (!IS_WEB) openHref(href);
+              // On web the rendered `<a target="_blank">` opens it by itself.
+              if (!IS_WEB) openExternal(href);
             }}
             style={[rowStyle, { backgroundColor: hovered ? palette.rowHover : 'transparent' }]}
           >
@@ -960,7 +961,8 @@ function WebSearchComponent({
   testID,
 }: WebSearchProps) {
   const { messages } = useMessages(WEB_SEARCH_MESSAGES);
-  const working = workingProp ?? messages.working;
+  const common = useCommonMessages();
+  const working = workingProp ?? common.working;
   const theme = useTheme();
   const palette = useMemo(() => resolveWebSearchPalette(theme), [theme]);
   const systemReduce = useAgentLogMotion();

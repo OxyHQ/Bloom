@@ -27,6 +27,7 @@ import {
 } from '../card/SelectionCard';
 import type { PropertyType, PropertyTypeOption, PropertyTypeSelectorProps } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 /**
  * The kind of home, picked from large icon tiles. Single select.
@@ -73,7 +74,7 @@ export const DEFAULT_PROPERTY_TYPES: ReadonlyArray<PropertyTypeOption<PropertyTy
 
 export function propertyTypeColumns(width: number): number {
   if (width < 400) return 2;
-  if (width < 640) return 3;
+  if (width < BREAKPOINTS.sm) return 3;
   return 4;
 }
 

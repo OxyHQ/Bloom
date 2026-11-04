@@ -22,12 +22,13 @@ import type { NowPlayingBarLabels, NowPlayingBarProps } from './types';
 import { webDataSet } from '../styles/web-data';
 import { useMessages } from '../locale/messages';
 import { MEDIA_PLAYER_MESSAGES } from './messages';
+import { BREAKPOINTS } from '../styles/breakpoints';
 
 export const NOW_PLAYING_BAR_HEIGHT = 80;
 /** At and above: every control. Below: no fullscreen button, a shorter volume slider. */
-export const NOW_PLAYING_BAR_WIDE = 1024;
+export const NOW_PLAYING_BAR_WIDE = BREAKPOINTS.lg;
 /** Below: no lyrics, device (unless casting) or volume; no times beside the scrubber. */
-export const NOW_PLAYING_BAR_MEDIUM = 768;
+export const NOW_PLAYING_BAR_MEDIUM = BREAKPOINTS.md;
 
 export type NowPlayingBarLayout = 'wide' | 'medium' | 'narrow';
 

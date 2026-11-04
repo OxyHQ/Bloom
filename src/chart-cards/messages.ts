@@ -28,7 +28,27 @@ export interface ChartCardsMessages {
     pipeline: string;
     steps: string;
     tokens: string;
+    weeklyScore: string;
   };
+  /** A score's qualitative caption (`RadarChartCard`, `SleepScoreCard`). */
+  verdicts: {
+    excellent: string;
+    strong: string;
+    good: string;
+    fair: string;
+    poor: string;
+    needsWork: string;
+  };
+  /** The change pill with nothing to compare against. */
+  newChange: string;
+  /** `HeatmapChartCard`'s legend ends. */
+  legendLess: string;
+  legendMore: string;
+  /** `BarListCard`'s expand control. */
+  showFewer: string;
+  showCountMore: (count: number) => string;
+  /** `AgentsChartCard`'s default value: "12 agents", the count already formatted. */
+  agentCount: (count: string) => string;
   weekly: string;
   monthly: string;
   yearly: string;
@@ -54,6 +74,12 @@ export interface ChartCardsMessages {
   chartVs: (title: string, current: string, previous: string) => string;
   lineChart: (title: string) => string;
   barChart: (title: string, items: string) => string;
+  funnelChart: (title: string, items: string) => string;
+  areaChart: (title: string, series: string) => string;
+  stackedAreaChart: (title: string, series: string) => string;
+  percentAreaChart: (title: string, series: string) => string;
+  radarChart: (title: string, items: string) => string;
+  scoreRadarChart: (title: string, items: string) => string;
   comboChart: (title: string, bar: string, line: string) => string;
   scatterChart: (title: string, series: string) => string;
   bubbleChart: (title: string, series: string) => string;
@@ -84,7 +110,22 @@ export const CHART_CARDS_MESSAGES: MessageCatalog<ChartCardsMessages> =
       pipeline: 'Pipeline',
       steps: 'Steps',
       tokens: 'Tokens',
+      weeklyScore: 'Weekly score',
     },
+    verdicts: {
+      excellent: 'Excellent',
+      strong: 'Strong',
+      good: 'Good',
+      fair: 'Fair',
+      poor: 'Poor',
+      needsWork: 'Needs work',
+    },
+    newChange: 'New',
+    legendLess: 'Less',
+    legendMore: 'More',
+    showFewer: 'Show fewer',
+    showCountMore: (count) => `Show ${count} more`,
+    agentCount: (count) => plural('en', count, { one: '{n} agent', other: '{n} agents' }),
     weekly: 'Weekly',
     monthly: 'Monthly',
     yearly: 'Yearly',
@@ -111,6 +152,12 @@ export const CHART_CARDS_MESSAGES: MessageCatalog<ChartCardsMessages> =
       `${title} chart: ${current.toLowerCase()} against ${previous.toLowerCase()}`,
     lineChart: (title) => `${title} line chart`,
     barChart: (title, items) => `${title} bar chart: ${items}`,
+    funnelChart: (title, items) => `${title} funnel: ${items}`,
+    areaChart: (title, series) => `${title} area chart: ${series}`,
+    stackedAreaChart: (title, series) => `${title} stacked area chart: ${series}`,
+    percentAreaChart: (title, series) => `${title} 100% stacked area chart: ${series}`,
+    radarChart: (title, items) => `${title} radar chart: ${items}`,
+    scoreRadarChart: (title, items) => `${title} score radar chart: ${items}`,
     comboChart: (title, bar, line) => `${title} chart: ${bar} bars against ${line} line`,
     scatterChart: (title, series) => `${title} scatter chart: ${series}`,
     bubbleChart: (title, series) => `${title} bubble chart: ${series}`,

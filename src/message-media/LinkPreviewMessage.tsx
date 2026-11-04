@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
-import { Linking, View } from 'react-native';
+import { View } from 'react-native';
+import { openExternal } from '../hooks/link-activation';
 
 import { fontSize, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -80,7 +81,7 @@ function LinkPreviewMessageComponent({
       onPress();
       return;
     }
-    void Linking.openURL(url).catch(() => undefined);
+    openExternal(url);
   }, [onPress, url]);
 
   const root: WebCssStyle = {

@@ -21,8 +21,13 @@ import { ConnectionStatusToasts } from '@oxy.so/bloom/connection-status';
 | `offlineMessage`       | shown while there is no connection                    |
 | `reconnectingMessage`  | shown after `reconnectingDelayMs` offline             |
 | `restoredMessage`      | shown when the connection comes back                  |
+| `locale`               | the language of the three default messages            |
 | `reconnectingDelayMs`  | how long to wait before escalating                    |
 | `restoredDurationMs`   | how long the restored toast stays                     |
+
+The three messages default to Bloom's own strings in the app's language
+("No internet connection", "Reconnecting…", "Back online" in English; see
+[Locale](/docs/locale)); a message prop replaces its string.
 
 ## "Back online" is only shown to someone who saw the outage
 

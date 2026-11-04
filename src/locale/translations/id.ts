@@ -147,6 +147,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: 'Kembali dan maju',
   goBack: 'Kembali ke sebelumnya',
   loading: 'Memuat',
+  working: 'Sedang bekerja',
   more: 'Lainnya',
   moreOptions: 'Opsi lainnya',
   moreActions: 'Tindakan lainnya',
@@ -160,6 +161,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: 'Hapus',
   edit: 'Edit',
   remove: 'Keluarkan',
+  removeItem: (name) => `Keluarkan ${name}`,
   retry: 'Coba lagi',
   search: 'Cari',
   showMore: 'Tampilkan lebih banyak',
@@ -1495,7 +1497,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: 'Sumber',
-  working: 'Sedang bekerja',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1551,6 +1552,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: 'Pipeline penjualan',
     steps: 'Langkah',
     tokens: 'Token',
+    weeklyScore: 'Skor mingguan',
   },
   weekly: 'Mingguan',
   monthly: 'Bulanan',
@@ -1589,6 +1591,27 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     const on = date ? ` pada ${date}` : '';
     return n === 0 ? `Tidak ada kontribusi${on}` : `${n} kontribusi${on}`;
   },
+  verdicts: {
+    excellent: 'Sangat baik',
+    strong: 'Kuat',
+    good: 'Baik',
+    fair: 'Cukup',
+    poor: 'Buruk',
+    needsWork: 'Perlu ditingkatkan',
+  },
+  newChange: 'Baru',
+  legendLess: 'Sedikit',
+  legendMore: 'Banyak',
+  showFewer: 'Tampilkan lebih sedikit',
+  showCountMore: (count) => `Tampilkan ${count} lainnya`,
+  agentCount: (count) => plural('id', count, { other: '{n} agen' }),
+  funnelChart: (title, items) => `Grafik corong ${title.toLowerCase()}: ${items}`,
+  areaChart: (title, series) => `Grafik area ${title.toLowerCase()}: ${series}`,
+  stackedAreaChart: (title, series) => `Grafik area bertumpuk ${title.toLowerCase()}: ${series}`,
+  percentAreaChart: (title, series) =>
+    `Grafik area bertumpuk 100% ${title.toLowerCase()}: ${series}`,
+  radarChart: (title, items) => `Grafik radar ${title.toLowerCase()}: ${items}`,
+  scoreRadarChart: (title, items) => `Grafik radar skor ${title.toLowerCase()}: ${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'Salin kode', copied: 'Kode disalin' };
@@ -2579,6 +2602,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     'Para pengangkut sedang melihat pekerjaan Anda. Penawaran pertama biasanya tiba dalam beberapa menit.',
   list: 'Penawaran',
   priceDetailsFor: (name) => `Rincian harga untuk ${name}`,
+  rating: (rating) => `${rating} dari 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2695,7 +2719,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'Sedikit bantuan',
   aFewMindsOneConversation: 'Beberapa pemikiran. Satu percakapan.',
   aLittleRoomForSomethingNew: 'Sedikit ruang untuk sesuatu yang baru',
-  accountDetails: 'Detail Akun',
   add: 'Tambah',
   add2: 'Tambahkan {0}',
   added: 'Ditambahkan',
@@ -2708,7 +2731,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'Kembali ke pasar',
   billing: 'Penagihan',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'Bot',
   bringYourAgentsIntoOneChat: 'Ajak agen Anda ke dalam satu obrolan.',
   category: 'Kategori',
@@ -2722,8 +2744,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'Pilih rekan satu tim Anda',
   closeMarketplace: 'Tutup pasar',
   closeSearch: 'Tutup pencarian',
-  company: 'Perusahaan',
-  companyDetails: 'Detail Perusahaan',
   completionSound: 'Suara penyelesaian',
   connectedAccount: 'Akun terhubung',
   connector: 'Konektor',
@@ -2762,7 +2782,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: 'Temukan rekan setim Anda berikutnya',
   findYourNextToolOrTeammate: 'Temukan alat atau rekan satu tim Anda berikutnya',
   firstName: 'Nama depan',
-  folders: 'Folder',
   general: 'Umum',
   getNotifiedWhenTheModeNeedsTo: 'Dapatkan pemberitahuan saat mode perlu membuat keputusan penting',
   git: 'Git',
@@ -2773,7 +2792,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: 'Termasuk',
   insideTheApp: 'Di dalam aplikasi',
   installed: 'Terpasang',
-  integrations: 'Integrasi',
   iLlApproachThisFromThePerspective: 'Saya akan melakukan pendekatan ini dari sudut pandang {0}.',
   lastName: 'Nama belakang',
   limits: 'Batasan',
@@ -2794,8 +2812,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     'Buka Marketplace untuk menjelajahi plugin dan bot. Gunakan menu percakapan untuk mengedit tampilan dan detail botnya. Pilih ekspresi dari roda emosi. Gulir atau seret busur bentuk, atau gunakan tombol panahnya, untuk menjelajahi bentuk.',
   prDestination: 'tujuan PR',
-  people: 'Orang',
-  personal: 'Pribadi',
   pinChat: 'Sematkan obrolan',
   pinnedChat: 'Obrolan yang disematkan',
   plugins: 'Plugin',
@@ -2824,7 +2840,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: 'Bagikan',
   showFundamentalNotificationsWhenAnAgentCompletes:
     'Menampilkan pemberitahuan mendasar ketika agen menyelesaikan tugas',
-  signOut: 'Keluar',
   skills: 'Keterampilan',
   skills2: 'Keterampilan · {0}',
   soundEffectATaskIsCompleted: 'Efek suara tugas selesai',
@@ -2846,7 +2861,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     'Gunakan + untuk membuat bot atau memulai percakapan dengan beberapa agen.',
   viewAdded: 'Lihat ditambahkan {0}',
   viewAll: 'Lihat semua',
-  viewTeamProfile: 'Lihat profil tim',
   viewItem: 'Lihat {0}',
   website: 'Situs web',
   whenEnabledYourProfilePageWillBe:
@@ -2903,6 +2917,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'Perbesar',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'Tidak ada koneksi internet',
+  reconnecting: 'Menyambungkan ulang…',
+  restored: 'Kembali online',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'Pesanan Anda telah dibuat',
+  referenceLabel: 'Nomor pesanan',
+  itemsLabel: 'Yang Anda pesan',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points} poin · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'Ganti sampul',
@@ -2936,6 +2966,8 @@ const translations: Translations = {
     display: 'Tampilan',
     manualOrder: 'Urutan manual',
     priority: 'Prioritas',
+    priorityLabels: { Low: 'Rendah', Medium: 'Sedang', High: 'Tinggi', Urgent: 'Mendesak' },
+    sinceJustNow: 'Sejak baru saja',
     title: 'Judul',
     project: 'Proyek',
     allPriorities: 'Semua prioritas',
@@ -3135,6 +3167,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

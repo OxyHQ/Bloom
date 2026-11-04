@@ -1,5 +1,5 @@
 import { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, Platform, type View } from 'react-native';
+import type { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
@@ -19,6 +19,7 @@ import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useAppForeground } from '../hooks/use-app-state';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 export type EmotionChoice = {
@@ -140,21 +141,11 @@ export function EmotionPicker({
     if (!reduced && !hovered && !focused && !dragging.value && visible.value)
       target.value += Math.min(frame.timeSincePreviousFrame ?? 0, 64) * 0.003;
   });
+  // The spin stops while the app is backgrounded or its tab is hidden.
+  const foreground = useAppForeground();
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (state) => {
-      visible.value = state === 'active';
-    });
-    const visibility = () => {
-      visible.value = !document.hidden;
-    };
-    if (Platform.OS === 'web' && typeof document !== 'undefined')
-      document.addEventListener('visibilitychange', visibility);
-    return () => {
-      subscription?.remove?.();
-      if (Platform.OS === 'web' && typeof document !== 'undefined')
-        document.removeEventListener('visibilitychange', visibility);
-    };
-  }, [visible]);
+    visible.value = foreground;
+  }, [foreground, visible]);
   useTrackEvents(
     ref,
     (delta) => {

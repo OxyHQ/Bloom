@@ -19,6 +19,7 @@ import { resolveTone, type ChartSeriesTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
+import { formatPercent } from '../locale/format-number';
 import { useActiveIndex } from './primitives/use-active-index';
 import {
   useChartCardSurfacePalette,
@@ -340,7 +341,12 @@ export function FunnelChartCard({
 
   const summary =
     accessibilityLabel ??
-    `${title} funnel: ${stages.map((s) => `${s.label} ${format(s.value)} (${Math.round((s.value / top) * 100)}%)`).join(', ')}`;
+    chartText.funnelChart(
+      title,
+      stages
+        .map((s) => `${s.label} ${format(s.value)} (${formatPercent(s.value / top, chartLocale)})`)
+        .join(', '),
+    );
 
   return (
     <ChartCardSurface style={style} testID={testID}>

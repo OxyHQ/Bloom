@@ -21,10 +21,12 @@
  */
 import { resolveBloomColors } from '../appearance/colors';
 import { useBloomAppearance } from '../appearance';
-import React, { memo } from 'react';
-import { View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import type React from 'react';
+import { memo } from 'react';
+import { View, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { Text } from '../typography';
 import type {
   LoadingProps,
   SpinnerLoadingProps,

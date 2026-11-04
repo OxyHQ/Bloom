@@ -154,12 +154,33 @@ describe('lean entries stay lean', () => {
     },
   );
 
+  // Measured in Syra: `SettingsSelect` from `/rows` cost ~8.5 KB of first load,
+  // and a screen with only the haptics row linked `Select` through the
+  // autoplay row beside it in `preferences`.
+  it.each(['native', 'web'] as const)(
+    'settings-modal/select and preferences/haptics-setting-row link no more than they need (%s)',
+    (platform) => {
+      const suffix = platform === 'web' ? '.web' : '';
+      const select = graph(`settings-modal/select${suffix}.ts`, platform);
+      expect(select.has(`settings-modal/SettingsSelect${suffix}.tsx`)).toBe(true);
+      expect(select.has('settings-modal/SettingsRows.tsx')).toBe(false);
+      const haptics = graph('preferences/haptics-setting-row.ts', platform);
+      expect(haptics.has('preferences/use-haptics-setting-row.tsx')).toBe(true);
+      expect([...haptics].filter((file) => file.startsWith('select/'))).toEqual([]);
+      // The control: the whole family does reach `Select`.
+      expect(
+        [...graph('preferences/index.ts', platform)].some((f) => f.startsWith('select/')),
+      ).toBe(true);
+    },
+  );
+
   it('the lean settings entries hand out the same components as the full one', () => {
     const full = require('../settings-modal');
     for (const lean of [
       require('../settings-modal/modal'),
       require('../settings-modal/fields'),
       require('../settings-modal/rows'),
+      require('../settings-modal/select'),
     ]) {
       expect(Object.keys(lean).length).toBeGreaterThan(0);
       for (const [name, value] of Object.entries(lean)) {

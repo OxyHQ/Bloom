@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "17.7.0",
+  "version": "17.8.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1113,6 +1113,25 @@
         "default": "./lib/commonjs/settings-modal/rows.js"
       }
     },
+    "./settings-modal/select": {
+      "react-native": {
+        "types": "./lib/typescript/module/settings-modal/select.d.ts",
+        "default": "./src/settings-modal/select.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/settings-modal/select.web.d.ts",
+        "import": "./lib/module/settings-modal/select.web.js",
+        "require": "./lib/commonjs/settings-modal/select.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/settings-modal/select.d.ts",
+        "default": "./lib/module/settings-modal/select.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/settings-modal/select.d.ts",
+        "default": "./lib/commonjs/settings-modal/select.js"
+      }
+    },
     "./settings-modal/modal": {
       "react-native": {
         "types": "./lib/typescript/module/settings-modal/modal.d.ts",
@@ -1777,6 +1796,34 @@
       "require": {
         "types": "./lib/typescript/commonjs/preferences/index.d.ts",
         "default": "./lib/commonjs/preferences/index.js"
+      }
+    },
+    "./preferences/haptics-setting-row": {
+      "react-native": {
+        "types": "./lib/typescript/module/preferences/haptics-setting-row.d.ts",
+        "default": "./src/preferences/haptics-setting-row.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/preferences/haptics-setting-row.d.ts",
+        "default": "./lib/module/preferences/haptics-setting-row.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/preferences/haptics-setting-row.d.ts",
+        "default": "./lib/commonjs/preferences/haptics-setting-row.js"
+      }
+    },
+    "./preferences/video-autoplay-setting-row": {
+      "react-native": {
+        "types": "./lib/typescript/module/preferences/video-autoplay-setting-row.d.ts",
+        "default": "./src/preferences/video-autoplay-setting-row.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/preferences/video-autoplay-setting-row.d.ts",
+        "default": "./lib/module/preferences/video-autoplay-setting-row.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/preferences/video-autoplay-setting-row.d.ts",
+        "default": "./lib/commonjs/preferences/video-autoplay-setting-row.js"
       }
     },
     "./teleport": {
@@ -4186,11 +4233,13 @@
     "@shopify/flash-list": ">=2.0.0",
     "expo": "*",
     "expo-blur": "*",
+    "expo-clipboard": "*",
     "expo-font": "*",
     "expo-haptics": "*",
     "expo-image": "*",
     "expo-router": ">=3.0.0",
     "expo-video": "*",
+    "expo-web-browser": "*",
     "lottie-react-native": ">=7.0.0",
     "nativewind": ">=5.0.0 || 5.0.0-rc.0",
     "react": ">=18.0.0",
@@ -4219,6 +4268,9 @@
     "expo": {
       "optional": true
     },
+    "expo-clipboard": {
+      "optional": true
+    },
     "expo-font": {
       "optional": true
     },
@@ -4229,6 +4281,9 @@
       "optional": true
     },
     "expo-video": {
+      "optional": true
+    },
+    "expo-web-browser": {
       "optional": true
     },
     "lottie-react-native": {
@@ -4519,6 +4574,9 @@
       "settings-modal/rows": [
         "./lib/typescript/module/settings-modal/rows.d.ts"
       ],
+      "settings-modal/select": [
+        "./lib/typescript/module/settings-modal/select.d.ts"
+      ],
       "settings-modal/modal": [
         "./lib/typescript/module/settings-modal/modal.d.ts"
       ],
@@ -4650,6 +4708,12 @@
       ],
       "preferences": [
         "./lib/typescript/module/preferences/index.d.ts"
+      ],
+      "preferences/haptics-setting-row": [
+        "./lib/typescript/module/preferences/haptics-setting-row.d.ts"
+      ],
+      "preferences/video-autoplay-setting-row": [
+        "./lib/typescript/module/preferences/video-autoplay-setting-row.d.ts"
       ],
       "teleport": [
         "./lib/typescript/module/teleport/index.d.ts"

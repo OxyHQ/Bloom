@@ -1,7 +1,10 @@
 import React, { createContext, useContext, memo } from 'react';
-import { View, Text, Pressable, Platform, StyleSheet } from 'react-native';
+import { View, Pressable, Platform, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { fontSize } from '../styles/tokens';
+import { Text } from '../typography';
+import { TYPE_SCALE } from '../typography/scale';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Card } from '../card';
@@ -165,7 +168,8 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
             </Text>
             {description ? (
               <Text
-                style={[styles.description, { color: theme.colors.textSecondary }]}
+                variant="body-2-regular"
+                style={{ color: theme.colors.textSecondary }}
                 numberOfLines={descriptionLines === 0 ? undefined : descriptionLines}
               >
                 {description}
@@ -174,7 +178,11 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
           </View>
 
           {value ? (
-            <Text style={[styles.value, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+            <Text
+              variant="body-2-regular"
+              style={{ color: theme.colors.textSecondary }}
+              numberOfLines={1}
+            >
               {value}
             </Text>
           ) : null}
@@ -260,7 +268,12 @@ export const GroupedSection = memo<GroupedSectionProps>(function GroupedSection(
   return (
     <View style={[styles.groupContainer, style]}>
       {title ? (
-        <Text style={[styles.groupTitle, { color: theme.colors.textSecondary }]}>{title}</Text>
+        <Text
+          variant="caption-2-semibold"
+          style={[styles.groupTitle, { color: theme.colors.textSecondary }]}
+        >
+          {title}
+        </Text>
       ) : null}
 
       {/*
@@ -283,7 +296,12 @@ export const GroupedSection = memo<GroupedSectionProps>(function GroupedSection(
       </Card>
 
       {footer ? (
-        <Text style={[styles.groupFooter, { color: theme.colors.textTertiary }]}>{footer}</Text>
+        <Text
+          variant="caption-1-regular"
+          style={[styles.groupFooter, { color: theme.colors.textTertiary }]}
+        >
+          {footer}
+        </Text>
       ) : null}
     </View>
   );
@@ -328,18 +346,10 @@ const styles = StyleSheet.create({
     minWidth: 0,
     gap: 2,
   },
+  // The row label: `body-medium`'s 20 line and weight at the 15px size step.
   title: {
-    fontSize: 15,
-    fontWeight: '500',
-    lineHeight: 20,
-  },
-  description: {
-    fontSize: 13,
-    lineHeight: 17,
-  },
-  value: {
-    fontSize: 13,
-    lineHeight: 17,
+    ...TYPE_SCALE['body-medium'],
+    fontSize: fontSize.md,
   },
   disabled: {
     opacity: 0.5,
@@ -349,9 +359,8 @@ const styles = StyleSheet.create({
   groupContainer: {
     marginBottom: 16,
   },
+  // `caption-2-semibold`, tracked wider for its capitals.
   groupTitle: {
-    fontSize: 11,
-    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     paddingHorizontal: 20,
@@ -359,8 +368,6 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   groupFooter: {
-    fontSize: 12,
-    lineHeight: 16,
     paddingHorizontal: 20,
     paddingTop: 6,
   },

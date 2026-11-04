@@ -104,8 +104,9 @@ export interface AgentChatMessageProps {
   at?: number;
   /**
    * Copy handler. Resolve (or return) to show the ✓ for 1.6s; throw to leave
-   * the icon unchanged. Default on web: `navigator.clipboard.writeText`. With no
-   * handler on native the copy button is not rendered.
+   * the icon unchanged. Default: Bloom's clipboard (`writeClipboardText`) — on
+   * native that needs the optional `expo-clipboard` peer; without it and with
+   * no handler the copy button is not rendered.
    */
   onCopy?: (text: string) => void | Promise<void>;
   /**

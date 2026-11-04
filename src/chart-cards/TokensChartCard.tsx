@@ -294,7 +294,7 @@ export function TokensChartCard({
   const active = activeIndex !== null ? points[activeIndex] : undefined;
   const summary =
     accessibilityLabel ??
-    `${title} line chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
+    `${chartText.lineChart(title)}: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
   return (
     <Card

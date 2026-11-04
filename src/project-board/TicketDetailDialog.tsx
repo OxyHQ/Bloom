@@ -1,7 +1,8 @@
 import { ScrollArea } from '../layout/ScrollArea';
 import { useEffect, useRef, useState } from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
-import { openHref } from '../hooks/link-activation';
+import { writeClipboardText } from '../hooks/clipboard';
+import { openExternal } from '../hooks/link-activation';
 import { TicketTokenChart } from './TicketTokenChart';
 import { useDialogControl } from '../dialog/context';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -101,18 +102,24 @@ export function TicketDetailDialog({
     },
     [],
   );
-  const creator = members[ticket.createdBy ?? ticket.assignees[0] ?? 'maya'];
+  const creatorId = ticket.createdBy ?? ticket.assignees[0];
+  const creator = creatorId === undefined ? undefined : members[creatorId];
   const owner = members[ticket.assignees[0] ?? ''];
   async function copy(kind: 'link' | 'id') {
     if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
     try {
       if (kind === 'link' && onCopyTicketLink) await onCopyTicketLink(ticket);
       else if (kind === 'id' && onCopyTicketId) await onCopyTicketId(ticket.code);
-      else if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+      else if (kind === 'id') await writeClipboardText(ticket.code);
+      else {
+        // The link is the page's own address with the ticket in its hash, so
+        // only the web has one; native products pass `onCopyTicketLink`.
+        if (Platform.OS !== 'web' || typeof window === 'undefined')
+          throw new Error('Product ticket link callback required.');
         const url = new URL(window.location.href);
         url.hash = `ticket=${encodeURIComponent(ticket.id)}`;
-        await navigator.clipboard.writeText(kind === 'id' ? ticket.code : url.toString());
-      } else throw new Error('Product clipboard callback required.');
+        await writeClipboardText(url.toString());
+      }
       setCopyMessage(kind === 'id' ? m.idCopied : m.linkCopied);
     } catch {
       setCopyMessage(m.copyFailed);
@@ -127,7 +134,8 @@ export function TicketDetailDialog({
         ...(ticket.comments ?? []),
         {
           id: `${ticket.id}-comment-${Date.now()}-${sequence.current}`,
-          author: currentUserId ? (members[currentUserId]?.name ?? currentUserId) : 'you',
+          // No `currentUserId`: the viewer, drawn as "You" in their language.
+          ...(currentUserId ? { author: members[currentUserId]?.name ?? currentUserId } : {}),
           body: comment.trim(),
           time: m.justNow,
         },
@@ -411,7 +419,7 @@ export function TicketDetailDialog({
                           chip
                           label={m.priority}
                           value={ticket.priority}
-                          options={PRIORITIES.map((p) => ({ id: p, label: p }))}
+                          options={PRIORITIES.map((p) => ({ id: p, label: m.priorityLabels[p] }))}
                           onChange={(p) => onUpdate({ priority: p as TicketPriority })}
                           renderValue={
                             <Chip
@@ -421,7 +429,7 @@ export function TicketDetailDialog({
                                 PRIORITY_STYLES[ticket.priority],
                               )}
                             >
-                              {ticket.priority}
+                              {m.priorityLabels[ticket.priority]}
                             </Chip>
                           }
                         />
@@ -521,7 +529,9 @@ export function TicketDetailDialog({
                               target="_blank"
                               rel="noreferrer"
                               className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                              onPress={Platform.OS === 'web' ? undefined : () => openHref(r.href)}
+                              onPress={
+                                Platform.OS === 'web' ? undefined : () => openExternal(r.href)
+                              }
                             >
                               <Chip className="bg-ticket-detail-resource-background px-[7px] py-0.5 text-body-medium text-ticket-detail-resource-text">
                                 {r.label}
@@ -542,6 +552,7 @@ export function TicketDetailDialog({
                     <View className="flex flex-col" accessibilityLiveRegion="polite">
                       {(ticket.comments ?? []).map((entry, index) => {
                         const author = Object.values(members).find((p) => p.name === entry.author);
+                        const authorName = entry.author ?? m.you;
                         return (
                           <View
                             key={entry.id}
@@ -557,14 +568,16 @@ export function TicketDetailDialog({
                             <View className="flex min-w-0 items-center gap-2">
                               <Avatar
                                 source={author?.avatar}
-                                initials={entry.author === 'you' ? 'ME' : author?.initials}
-                                alt={entry.author === 'you' ? m.you : entry.author}
+                                initials={author?.initials}
+                                name={authorName}
+                                color="neutral"
+                                alt={authorName}
                                 className="size-6"
                                 size={24}
                               />
                               <View className="flex min-w-0 flex-wrap items-center gap-x-2">
                                 <Text className="truncate text-body-medium text-text-primary">
-                                  {entry.author === 'you' ? m.you : entry.author}
+                                  {authorName}
                                 </Text>
                                 <Text className="shrink-0 text-body-2-medium text-text-tertiary">
                                   {entry.time}

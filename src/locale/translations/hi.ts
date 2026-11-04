@@ -143,6 +143,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   backAndForward: 'पीछे और आगे',
   goBack: 'वापस जाएं',
   loading: 'लोड हो रहा है',
+  working: 'काम चल रहा है',
   more: 'और',
   moreOptions: 'और विकल्प',
   moreActions: 'और कार्रवाइयां',
@@ -156,6 +157,7 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   delete: 'हटाएं',
   edit: 'संपादित करें',
   remove: 'निकालें',
+  removeItem: (name) => `${name} निकालें`,
   retry: 'फिर से कोशिश करें',
   search: 'खोजें',
   showMore: 'और दिखाएं',
@@ -1478,7 +1480,6 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
 
 const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
   sources: 'स्रोत',
-  working: 'काम चल रहा है',
 };
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
@@ -1534,6 +1535,7 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     pipeline: 'सेल्स पाइपलाइन',
     steps: 'कदम',
     tokens: 'टोकन',
+    weeklyScore: 'साप्ताहिक स्कोर',
   },
   weekly: 'साप्ताहिक',
   monthly: 'मासिक',
@@ -1570,6 +1572,26 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
     const on = date ? `${date} को ` : '';
     return n === 0 ? `${on}कोई योगदान नहीं` : `${on}${n} योगदान`;
   },
+  verdicts: {
+    excellent: 'उत्कृष्ट',
+    strong: 'मज़बूत',
+    good: 'अच्छा',
+    fair: 'ठीक-ठाक',
+    poor: 'कमज़ोर',
+    needsWork: 'सुधार की ज़रूरत',
+  },
+  newChange: 'नया',
+  legendLess: 'कम',
+  legendMore: 'अधिक',
+  showFewer: 'कम दिखाएं',
+  showCountMore: (count) => `${count} और दिखाएं`,
+  agentCount: (count) => plural('hi', count, { one: '{n} एजेंट', other: '{n} एजेंट' }),
+  funnelChart: (title, items) => `${title} फ़नल चार्ट: ${items}`,
+  areaChart: (title, series) => `${title} एरिया चार्ट: ${series}`,
+  stackedAreaChart: (title, series) => `${title} स्टैक्ड एरिया चार्ट: ${series}`,
+  percentAreaChart: (title, series) => `${title} 100% स्टैक्ड एरिया चार्ट: ${series}`,
+  radarChart: (title, items) => `${title} रडार चार्ट: ${items}`,
+  scoreRadarChart: (title, items) => `${title} स्कोर रडार चार्ट: ${items}`,
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
@@ -2522,6 +2544,7 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   emptyDescription: 'वाहक आपका काम देख रहे हैं। पहले ऑफ़र आमतौर पर कुछ ही मिनटों में आ जाते हैं।',
   list: 'ऑफ़र',
   priceDetailsFor: (name) => `${name} की कीमत का विवरण`,
+  rating: (rating) => `5 में से ${rating}`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2638,7 +2661,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   aLittleHelp: 'थोड़ी मदद',
   aFewMindsOneConversation: 'कुछ मन। एक बातचीत.',
   aLittleRoomForSomethingNew: 'कुछ नया करने के लिए थोड़ी सी जगह',
-  accountDetails: 'खाता विवरण',
   add: 'जोड़ें',
   add2: 'जोड़ें {0}',
   added: 'जोड़ा गया',
@@ -2651,7 +2673,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   backToMarketplace: 'बाज़ार पर वापस',
   billing: 'बिलिंग',
   bitbucket: 'Bitbucket',
-  bloom: 'Bloom',
   bots: 'बॉट',
   bringYourAgentsIntoOneChat: 'अपने एजेंटों को एक चैट में लाएँ।',
   category: 'श्रेणी',
@@ -2665,8 +2686,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   chooseYourTeammates: 'अपने साथियों को चुनें',
   closeMarketplace: 'बाज़ार बंद करें',
   closeSearch: 'खोज बंद करें',
-  company: 'कंपनी',
-  companyDetails: 'कंपनी विवरण',
   completionSound: 'समापन ध्वनि',
   connectedAccount: 'कनेक्टेड खाता',
   connector: 'कनेक्टर',
@@ -2705,7 +2724,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   findYourNextTeammate: 'अपना अगला साथी ढूंढें',
   findYourNextToolOrTeammate: 'अपना अगला टूल या टीम-साथी ढूंढें',
   firstName: 'पहला नाम',
-  folders: 'फ़ोल्डर्स',
   general: 'सामान्य',
   getNotifiedWhenTheModeNeedsTo: 'जब मोड को कोई महत्वपूर्ण निर्णय लेने की आवश्यकता हो तो सूचित करें',
   git: 'Git',
@@ -2716,7 +2734,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   includes: 'शामिल है',
   insideTheApp: 'ऐप के अंदर',
   installed: 'स्थापित',
-  integrations: 'एकीकरण',
   iLlApproachThisFromThePerspective: 'मैं इसे {0} के परिप्रेक्ष्य से देखूंगा।',
   lastName: 'अंतिम नाम',
   limits: 'सीमाएं',
@@ -2737,8 +2754,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   openTheMarketplaceToExplorePluginsAnd:
     'प्लगइन्स और बॉट्स का पता लगाने के लिए मार्केटप्लेस खोलें। किसी वार्तालाप के बॉट की उपस्थिति और विवरण को संपादित करने के लिए उसके मेनू का उपयोग करें। भावना चक्र से एक अभिव्यक्ति चुनें. आकृतियों का पता लगाने के लिए आकृति चाप को स्क्रॉल करें या खींचें, या इसकी तीर कुंजियों का उपयोग करें।',
   prDestination: 'पीआर गंतव्य',
-  people: 'लोग',
-  personal: 'व्यक्तिगत',
   pinChat: 'चैट पिन करें',
   pinnedChat: 'पिन की गई चैट',
   plugins: 'प्लगइन',
@@ -2766,7 +2781,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   share: 'शेयर करें',
   showFundamentalNotificationsWhenAnAgentCompletes:
     'जब कोई एजेंट कोई कार्य पूरा कर लेता है तो मूलभूत सूचनाएं दिखाएं',
-  signOut: 'साइन आउट करें',
   skills: 'कौशल',
   skills2: 'कौशल · {0}',
   soundEffectATaskIsCompleted: 'ध्वनि प्रभाव से कोई कार्य पूरा हो जाता है',
@@ -2787,7 +2801,6 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   useToCreateABotOrStart: 'बॉट बनाने या कई एजेंटों के साथ बातचीत शुरू करने के लिए + का उपयोग करें।',
   viewAdded: 'जोड़ा गया दृश्य {0}',
   viewAll: 'सभी देखें',
-  viewTeamProfile: 'टीम प्रोफ़ाइल देखें',
   viewItem: 'देखें {0}',
   website: 'वेबसाइट',
   whenEnabledYourProfilePageWillBe: 'सक्षम होने पर आपका प्रोफ़ाइल पृष्ठ किसी को भी दिखाई देगा',
@@ -2842,6 +2855,22 @@ const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   zoom: 'ज़ूम करें',
 };
 
+const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
+  offline: 'इंटरनेट कनेक्शन नहीं है',
+  reconnecting: 'फिर से कनेक्ट हो रहा है…',
+  restored: 'फिर से ऑनलाइन',
+};
+
+const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
+  title: 'आपका ऑर्डर दे दिया गया है',
+  referenceLabel: 'ऑर्डर नंबर',
+  itemsLabel: 'आपने क्या ऑर्डर किया',
+};
+
+const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
+  readout: (points, percent) => `${points} अंक · ${percent}`,
+};
+
 const translations: Translations = {
   COVER_HEADER_MESSAGES: {
     changeCover: 'कवर बदलें',
@@ -2875,6 +2904,8 @@ const translations: Translations = {
     display: 'प्रदर्शन',
     manualOrder: 'मैन्युअल क्रम',
     priority: 'प्राथमिकता',
+    priorityLabels: { Low: 'कम', Medium: 'मध्यम', High: 'उच्च', Urgent: 'अत्यावश्यक' },
+    sinceJustNow: 'अभी-अभी से',
     title: 'शीर्षक',
     project: 'परियोजना',
     allPriorities: 'सभी प्राथमिकताएँ',
@@ -3073,6 +3104,9 @@ const translations: Translations = {
   VOICE_MESSAGES,
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
+  CONNECTION_STATUS_MESSAGES,
+  ORDER_CONFIRMATION_MESSAGES,
+  COMPOSITION_BAR_MESSAGES,
 };
 
 export default translations;

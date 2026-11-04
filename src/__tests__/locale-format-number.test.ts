@@ -80,6 +80,29 @@ describe('formatCurrency', () => {
   it('falls back instead of throwing on a bad currency code', () => {
     expect(formatCurrency(10, 'not-a-code', 'en')).toBe('not-a-code 10');
   });
+
+  it("takes the currency's own minor units with 'currency'", () => {
+    expect(formatCurrency(9.99, 'USD', 'en', 'currency')).toBe('$9.99');
+    expect(formatCurrency(980, 'JPY', 'en', 'currency')).toBe('¥980');
+  });
+});
+
+it('builds one Intl formatter per locale and options, not one per call', () => {
+  const NumberFormat = Intl.NumberFormat;
+  const constructed = jest.fn();
+  // A subclass, so `new` still yields a real formatter while counting constructions.
+  Intl.NumberFormat = class extends NumberFormat {
+    constructor(...args: ConstructorParameters<typeof NumberFormat>) {
+      super(...args);
+      constructed();
+    }
+  } as typeof Intl.NumberFormat;
+  try {
+    for (let i = 0; i < 50; i++) formatNumber(i, 'pt-PT', { maximumFractionDigits: 2 });
+    expect(constructed).toHaveBeenCalledTimes(1);
+  } finally {
+    Intl.NumberFormat = NumberFormat;
+  }
 });
 
 describe('formatFileSize', () => {
