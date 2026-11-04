@@ -264,23 +264,12 @@ const PRESS = '[data-bloom-studio-press]';
 export const CREATOR_STUDIO_CSS = `
 ${PRESS} { outline: none; cursor: pointer; transition: background-color 150ms ease; }
 ${PRESS}:focus-visible { outline: 2px solid var(--bloom-studio-ring, currentColor); outline-offset: 2px; }
-@keyframes bloom-studio-indeterminate {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(250%); }
-}
-[data-bloom-studio-indeterminate] { animation: bloom-studio-indeterminate 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   ${PRESS} { transition: none; }
-  [data-bloom-studio-indeterminate] { animation: none; transform: translateX(75%); }
 }
 `;
 
 /** The `dataSet` hook of a pressable that takes the studio's focus ring (web only). */
 export function pressDataSet(): { dataSet?: Record<string, string> } {
   return IS_WEB ? { dataSet: { bloomStudioPress: '' } } : {};
-}
-
-/** The `dataSet` hook of the running segment of an indeterminate bar (web only; native animates it). */
-export function indeterminateDataSet(): { dataSet?: Record<string, string> } {
-  return IS_WEB ? { dataSet: { bloomStudioIndeterminate: '' } } : {};
 }

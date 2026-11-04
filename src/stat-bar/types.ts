@@ -126,6 +126,16 @@ interface MeterGeometryProps {
    * @default 0
    */
   transitionMs?: number;
+  /**
+   * The amount is not known yet — a file transcoding, a step that reports none:
+   * a segment 40% of the track wide sweeps across it every 1.4 s (parked 30%
+   * along under reduced motion), and the bar is a `progressbar` that reports no
+   * value (`aria-valuenow` absent, `aria-busy`), which is what makes it
+   * indeterminate to assistive technology. `value`, `reveal` and `transitionMs`
+   * are not drawn meanwhile.
+   * @default false
+   */
+  indeterminate?: boolean;
   /** Container style override. Applied to the track. */
   style?: StyleProp<ViewStyle>;
   testID?: string;

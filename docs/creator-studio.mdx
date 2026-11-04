@@ -119,7 +119,7 @@ The estimate this month (`title-1-medium`) with a delta chip, a 112px monthly ba
 |---|---|
 | `queued` | "Queued" |
 | `uploading` | a 4px `progressbar` (named "Uploading &lt;file&gt;", flat `aria-value*`) + "42% · About 20 s left" |
-| `processing` | a decorative running segment (CSS keyframes on web, reanimated on native, still under reduced motion) + "Transcoding…" |
+| `processing` | an indeterminate decorative `Meter` (its segment sweeps the track, parked under reduced motion) + "Transcoding…" |
 | `ready` | an accent check tile, a placeholder waveform derived from the file name, "Ready · 3:42" |
 | `failed` | a warning tile, the message in the error colour, and a "Retry" button |
 
@@ -145,7 +145,7 @@ A release `Select`, Mood and Genre chip groups (selectable `Chip`s with `aria-pr
 
 ## Native
 
-Everything renders on native with the same props. Web-only: hover states (colour changes), the focus ring, drag and drop in the upload zones, and the CSS keyframes of the processing bar (native runs the same sweep with reanimated). On native the upload zones need `onPickFiles`.
+Everything renders on native with the same props. Web-only: hover states (colour changes), the focus ring, drag and drop in the upload zones, and the processing bar's CSS keyframes (`Meter indeterminate` runs the same sweep natively). On native the upload zones need `onPickFiles`.
 
 ## Quiet text is floored on the card
 
