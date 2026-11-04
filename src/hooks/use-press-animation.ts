@@ -1,10 +1,10 @@
 import { useCallback, useRef } from 'react';
 import { Animated } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { animation } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
+import { usePrefersReducedMotion } from './use-prefers-reduced-motion';
 
 /**
  * Hook that provides press-scale animation feedback.
@@ -49,7 +49,7 @@ import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
  */
 export function usePressAnimation(pressScale: number | undefined) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const enabled = pressScale !== undefined && SUPPORTS_PRESS_SCALE && !reducedMotion;
 
   const onPressIn = useCallback(() => {

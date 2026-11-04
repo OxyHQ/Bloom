@@ -6,7 +6,6 @@ import { StyleSheet, View, type NativeScrollEvent, type NativeSyntheticEvent } f
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -26,6 +25,7 @@ import type {
   ImportantAlertsCardTone,
 } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The important alerts card. Geometry, to the pixel:
@@ -131,7 +131,7 @@ let fadeIdCounter = 0;
 
 function TopFade({ color, visible }: { color: string; visible: boolean }) {
   const id = useMemo(() => `bloom-alerts-fade${fadeIdCounter++}`, []);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const opacity = useSharedValue(visible ? 1 : 0);
 
   useEffect(() => {

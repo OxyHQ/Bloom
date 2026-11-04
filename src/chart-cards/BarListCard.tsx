@@ -11,7 +11,6 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
@@ -43,6 +42,7 @@ import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 import { mixColors } from '../styles/color-contrast';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `BarListCard`: the analytics breakdown list (traffic by country, device,
@@ -556,7 +556,7 @@ function BottomFade({ color }: { color: string }) {
  * `pt-1` — the list grows 4px, smoothly, while the extra rows appear at once.
  */
 function RestSpacer({ expanded, testID }: { expanded: boolean; testID?: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [present, setPresent] = useState(expanded);
   const progress = useRef(new Animated.Value(expanded ? 1 : 0)).current;
 
@@ -606,7 +606,7 @@ function MoreButton({
 }) {
   const palette = useChartCardPalette();
   const medical = useMedicalPalette();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { hook, ring } = useChartFocusRing('outset', medical.focusRing);
   const colorEase = useWebTransition('background-color', 150);

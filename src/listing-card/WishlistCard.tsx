@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { Linking, Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
+import { Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -141,7 +142,7 @@ function WishlistCardComponent({
           onPress();
           return;
         }
-        if (!IS_WEB && href) void Linking.openURL(href).catch(() => undefined);
+        if (!IS_WEB && href) openHref(href);
       }}
       style={[rootStyle, style]}
       testID={testID}

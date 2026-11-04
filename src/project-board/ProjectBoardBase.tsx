@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import { Avatar } from '../avatar';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -44,6 +43,7 @@ import type {
   ProjectTicket,
   TicketPriority,
 } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const getTicketId = (ticket: ProjectTicket) => ticket.id;
 const getTicketLabel = (ticket: ProjectTicket) => ticket.code;
@@ -246,7 +246,7 @@ function TicketProjectBoard({
   const direction = useIsRtl() ? 'rtl' : 'ltr';
   const { Button, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } =
     useProjectBoardPlatform();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [columns, setColumns] = useState(() => cloneColumns(initialColumns));
   const columnsRef = useRef(columns);
   columnsRef.current = columns;

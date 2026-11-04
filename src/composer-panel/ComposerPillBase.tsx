@@ -15,7 +15,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -60,6 +59,7 @@ import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useEnteredPresence } from '../surface/use-surface-presence';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
@@ -79,7 +79,7 @@ const LINE_HEIGHT = 20;
 
 /** Shared surface paint behind an explicitly frosted control; fades with its existing transition. */
 function FrostedChip({ shown, radius, dark }: { shown: boolean; radius: number; dark: boolean }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const opacity = useSharedValue(shown ? 1 : 0);
   const [mounted, setMounted] = useState(shown);
   useEffect(() => {
@@ -116,7 +116,7 @@ function FrostedChip({ shown, radius, dark }: { shown: boolean; radius: number; 
 
 /** A chevron that turns to `degrees` over 200ms `ease`. */
 function TurningChevron({ degrees, color }: { degrees: number; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const rotation = useSharedValue(degrees);
   useEffect(() => {
     rotation.value = reducedMotion ? degrees : withTiming(degrees, { duration: 200, easing: EASE });
@@ -134,7 +134,7 @@ function TurningChevron({ degrees, color }: { degrees: number; color: string }) 
 
 /** The effort value after "Effort", blurring in (350ms ease-out) each time it changes. */
 function EffortValue({ value, color }: { value: string; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(1);
   const first = useRef(true);
   useEffect(() => {

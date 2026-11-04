@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Easing } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** `animationDuration={450}` on every dashboard series. */
 export const SERIES_ANIMATION_MS = 450;
@@ -24,7 +24,7 @@ export function useChartProgress(values: readonly number[]): {
   progress: number;
   from: readonly number[] | null;
 } {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const key = values.join(',');
   const [progress, setProgress] = useState(reducedMotion ? 1 : 0);
   const shownRef = useRef<readonly number[] | null>(null);

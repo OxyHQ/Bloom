@@ -11,7 +11,6 @@ import {
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { Chip } from '../chip';
@@ -30,6 +29,7 @@ import { formatGregorian } from '../locale/format-date';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 /**
  * `TokensChartCard`: daily token usage as a sharp line over a fading
  * area, idle stretches drawn as a grey dashed baseline, the plot bleeding to
@@ -222,7 +222,7 @@ export function TokensChartCard({
     '6/14';
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [activeIndex, setActiveIndex] = useActiveIndex(
     data.length,

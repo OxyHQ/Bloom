@@ -12,7 +12,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -50,6 +49,7 @@ import { DISABLED_OPACITY } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The chat-history rail, a card of its own
@@ -104,7 +104,7 @@ function ChevronDownSmall({ color }: { color: string }) {
 }
 
 function RotatingChevron({ open, color }: { open: boolean; color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const rotation = useSharedValue(open ? 180 : 0);
   useEffect(() => {
     const target = open ? 180 : 0;

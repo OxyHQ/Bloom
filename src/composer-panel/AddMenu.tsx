@@ -5,7 +5,6 @@ import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -22,6 +21,7 @@ import type {
   ComposerPanelLabels,
 } from './types';
 import { InlineAside } from './InlineAside';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** CSS `ease`. */
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -49,7 +49,7 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
   const Popover = useComposerPopover();
   const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const [open, setOpen] = useState(false);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const rotation = useSharedValue(0);
 
   useEffect(() => {

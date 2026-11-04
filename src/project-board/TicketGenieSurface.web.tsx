@@ -1,8 +1,9 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
-import { Easing, useReducedMotion } from 'react-native-reanimated';
+import { Easing } from 'react-native-reanimated';
 import { useDialogContext } from '../dialog/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { animateNumber } from './animation.web';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 const styles = {
   dark: 'bloom-ticket-create-dark',
   genie: 'bloom-ticket-create-genie',
@@ -52,7 +53,7 @@ export function TicketGenieSurface({ children }: { children: ReactNode }) {
   const blurRef = useRef<SVGFEGaussianBlurElement>(null);
   const mapRef = useRef<SVGFEImageElement>(null);
   const progressRef = useRef(1);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const surface = surfaceRef.current;

@@ -4,7 +4,6 @@ import { BloomImage } from '../image';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withTiming,
@@ -24,6 +23,7 @@ import { AI_CHAT_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useReducedTransparency } from '../theme/reduced-transparency';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const FRAME_WIDTH = 200;
 const FRAME_HEIGHT = 250;
@@ -90,7 +90,7 @@ function DotWaveCanvas({ palette, running }: { palette: AiChatPalette; running: 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const colors = useRef({ active: palette.iconPrimary, neutral: palette.iconQuaternary });
   colors.current = { active: palette.iconPrimary, neutral: palette.iconQuaternary };
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -214,7 +214,7 @@ function FlapHalf({
 
 /** Native leaf: `flap-fall` (150ms ease-in to −90°) or `flap-rise` (230ms, from 90° with a slap past 0°, 150ms late). */
 function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React.ReactNode }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const angle = useSharedValue(kind === 'fall' ? 0 : 90);
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
@@ -361,7 +361,7 @@ function FrameToast({
   leaving: boolean;
   palette: AiChatPalette;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const reduced = useReducedTransparency();
   const progress = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
@@ -410,7 +410,7 @@ function FrameToast({
 
 /** Opacity (and on web the blur) of a layer that eases between two states. */
 function useEased(target: number, duration: number, easing = EASE_STANDARD) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const value = useSharedValue(target);
   useEffect(() => {
     value.value = reducedMotion ? target : withTiming(target, { duration, easing });
@@ -454,7 +454,7 @@ export function AiChatImageGenerationBase({
 }: AiChatImageGenerationProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const { messages } = useMessages(AI_CHAT_MESSAGES);
   const l = useMemo(() => ({ ...messages.imageGeneration, ...labels }), [messages, labels]);
   const [timedReady, setTimedReady] = useState(false);

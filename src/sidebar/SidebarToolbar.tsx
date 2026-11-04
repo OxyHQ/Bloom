@@ -3,7 +3,6 @@ import type { TextInput } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -17,6 +16,7 @@ import { useSidebarPalette } from './palette';
 
 import type { SidebarToolbarProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
@@ -32,7 +32,7 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
   const input = useRef<ComponentRef<typeof TextInput>>(null);
   const trigger = useRef<React.ComponentRef<typeof Button>>(null);
   const [width, setWidth] = useState(0);
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const progress = useSharedValue(Number(search.open));
   const actionsProgress = useSharedValue(Number(search.open));
   useEffect(() => {

@@ -1,12 +1,12 @@
 import { isScrollLocked } from './scroll-lock';
 import { type ComponentRef, useContext, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { dataHook } from '../styles/data-hook';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { offsetOfThumb, thumbOf, type ScrollAxis } from './scroll-area-geometry';
 import type { ScrollAreaScrollbar } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** How long the bar stays after the last scroll event in `scroll` mode. */
 const LINGER_MS = 900;
@@ -63,7 +63,7 @@ export function ScrollAreaBar({
 }: ScrollAreaBarProps) {
   // Optional, like the native fork: outside a provider the bar is a plain grey.
   const color = useContext(BloomThemeContext)?.theme.colors.textTertiary ?? '#888888';
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const rtl = useIsRtl();
   const track = useRef<ComponentRef<typeof View>>(null);
   const thumb = useRef<ComponentRef<typeof View>>(null);

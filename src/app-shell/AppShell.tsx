@@ -1,5 +1,6 @@
 import { cloneElement, isValidElement, useMemo, useState, useId, type ComponentType } from 'react';
-import { Linking, Platform, View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { useScreen } from '../screen/context';
 import type { ScreenComponents } from '../screen/types';
@@ -49,10 +50,7 @@ function selectSidebarItem(sidebar: AppShellSidebarProps | undefined, key: strin
   if (!item) return;
   if (item.onPress) item.onPress();
   else if (sidebar?.onNavigate) sidebar.onNavigate(item);
-  else if (item.href) {
-    if (Platform.OS === 'web') window.location.assign(item.href);
-    else void Linking.openURL(item.href).catch(() => undefined);
-  }
+  else if (item.href) openHref(item.href);
 }
 
 export function resolveNavigationPlacement(

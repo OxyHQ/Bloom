@@ -4,10 +4,10 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The footer summary motion: the date chips (and the "N days selected" pill)
@@ -29,7 +29,7 @@ export function SummaryPresence({
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [mounted, setMounted] = useState(show);
   // The last content shown, so a leaving summary keeps it while it animates out.
   const lastChildren = useRef(children);

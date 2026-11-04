@@ -10,7 +10,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -37,6 +36,7 @@ import {
 } from './parts';
 import type { SidebarAvatar, SidebarIdentityForm } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -253,7 +253,7 @@ const CardTrigger = React.forwardRef<ComponentRef<typeof View>, TriggerProps & {
   ) {
     const palette = useSidebarPalette();
     const { state: hovered, onIn, onOut } = useInteractionState();
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     const turn = useSharedValue(0);
     useEffect(() => {
       const target = open ? 180 : 0;

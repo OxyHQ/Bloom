@@ -1,5 +1,5 @@
-import { Linking, Platform, type GestureResponderEvent } from 'react-native';
-import { isPlainLinkActivation } from '../hooks/link-activation';
+import { Platform, type GestureResponderEvent } from 'react-native';
+import { isPlainLinkActivation, openHref } from '../hooks/link-activation';
 import { useMenuDensity } from './use-menu-density';
 /**
  * The menu ROW vocabulary — ONE implementation, published by all three menu
@@ -152,7 +152,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
           if (onPress) event.preventDefault();
         }
         if (onPress) onPress();
-        else if (href != null && Platform.OS !== 'web') void Linking.openURL(href);
+        else if (href != null && Platform.OS !== 'web') openHref(href);
         if (!keepOpen) surface.close();
       },
       [href, onPress, keepOpen, surface],

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { Platform } from 'react-native';
-import { useReducedMotion, useSharedValue } from 'react-native-reanimated';
+import { useSharedValue } from 'react-native-reanimated';
 import { animateMotion } from '../motion/recipes';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
 import type { ScrollRestorationTarget } from '../scroll/types';
@@ -9,6 +9,7 @@ import { useOptionalScrollRestorationContext } from '../scroll/context';
 import { recordScrollOwnerHandoff } from '../scroll/owner-handoff';
 import type { ScreenViewportValue, ScreenHostValue } from './context';
 import { useRegisterScreenScroller } from './reselect';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const useNoContentId = () => null;
 
@@ -42,7 +43,7 @@ export function useScreenViewportBinding(
   const restoring = useRef(false);
   const active = useRef(screen.active);
   active.current = screen.active;
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const owner = useRef<{
     documentFlow: boolean;
     active: boolean;

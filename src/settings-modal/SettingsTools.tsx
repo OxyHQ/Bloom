@@ -5,7 +5,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -48,6 +47,7 @@ import type {
 } from './types';
 import { useSettingsWebCss } from './web-css';
 import { webDataSet } from '../styles/web-data';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The Tools page (`settings/settings-tools.tsx`) — MCP server management:
@@ -134,7 +134,7 @@ function ChevronUpDown({ color }: { color: string }) {
 // ---------------------------------------------------------------------------
 
 function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [mounted, setMounted] = useState(open);
   const progress = useSharedValue(open ? 1 : 0);
   const measured = useSharedValue(0);
@@ -500,7 +500,7 @@ function ScopePills({
 }) {
   const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   const palette = useSettingsPalette();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [boxes, setBoxes] = useState<Record<string, Box>>({});
   const [hovered, setHovered] = useState<string | null>(null);
   const x = useSharedValue(0);

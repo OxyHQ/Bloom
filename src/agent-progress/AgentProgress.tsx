@@ -16,7 +16,6 @@ import Animated, {
   runOnJS,
   useAnimatedProps,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withSpring,
@@ -42,6 +41,7 @@ import { AGENT_PROGRESS_MESSAGES } from './messages';
 import type { AgentProgressProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The card that lists an agent's plan and ticks it off step by step.
@@ -216,7 +216,7 @@ function Presence({
   testID?: string;
   children: React.ReactNode;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [mounted, setMounted] = useState(show);
   const firstRender = useRef(true);
   const start = show && initial && !reducedMotion ? { ...REST, ...from } : REST;
@@ -442,7 +442,7 @@ const glyph = StyleSheet.create({
 
 /** The 24px slot the persistent ring sits over; collapses to 0 once complete (400ms). */
 function RingSpacer({ complete }: { complete: boolean }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const width = useSharedValue(complete ? 0 : SPACER_WIDTH);
   const opacity = useSharedValue(complete ? 0 : 1);
   useEffect(() => {
@@ -549,7 +549,7 @@ const labelStyles = StyleSheet.create({
 
 /** The strikethrough drawn across a completed label: scaleX 0 → 1 from the left, opacity → 0.8 (380ms). */
 function StrikeLine({ color }: { color: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const scale = useSharedValue(reducedMotion ? 1 : 0);
   const opacity = useSharedValue(reducedMotion ? 0.8 : 0);
   useEffect(() => {
@@ -595,7 +595,7 @@ function StepLoader({
   duration: number;
   palette: ProgressPalette;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(0);
   useEffect(() => {
     if (!running || reducedMotion) {
@@ -639,7 +639,7 @@ function StepRow({
   palette: ProgressPalette;
   testID: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const complete = index < completedCount;
   const active = index === completedCount && completedCount < stepCount;
   const pending = !complete && !active;
@@ -779,7 +779,7 @@ function ActiveBorder({
   reopening: boolean;
   palette: ProgressPalette;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const top = useSharedValue(index * (ROW_HEIGHT + ROW_GAP));
   useEffect(() => {
     const target = index * (ROW_HEIGHT + ROW_GAP);
@@ -868,7 +868,7 @@ function AgentProgressComponent({
   });
   const { paintFill, publishedFill: surfaceFill } = material;
   const palette = resolvePalette(theme);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     if (IS_WEB) adoptStyleSheet(STYLE_ID, WEB_CSS);

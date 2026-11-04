@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import type { WebCssStyle } from '../../styles/web-view-style';
+import { usePrefersReducedMotion } from '../../hooks/use-prefers-reduced-motion';
 
 /**
  * A CSS transition for a react-native-web node, or `null` on native (RN has no
@@ -10,7 +10,7 @@ import type { WebCssStyle } from '../../styles/web-view-style';
  * `ease-out`, `cubic-bezier(0, 0, 0.2, 1)`.
  */
 export function useWebTransition(property: string, durationMs: number): WebCssStyle | null {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   if (Platform.OS !== 'web' || reducedMotion) return null;
   return {
     transitionProperty: property,

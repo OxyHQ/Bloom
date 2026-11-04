@@ -21,7 +21,6 @@ import {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type AnimatedStyle,
@@ -32,6 +31,7 @@ import { PROJECT_BOARD_MESSAGES } from './messages';
 import { boardDropTarget, boardOccurrence, projectBoardMove } from './board-engine';
 import type { BoardColumn, BoardMove } from './types';
 import type { BoardRect } from './shared';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 type Origin = { itemId: string; fromColumnId: string };
 type Target = { columnId: string; index: number; beforeItemId?: string };
@@ -84,7 +84,7 @@ export function useBoardEngine<Item>({
   const boardId = useId();
   const rtl = useIsRtl();
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const columnNodes = useRef<Record<string, ComponentRef<typeof View> | null>>({});
   const itemNodes = useRef<Record<string, ComponentRef<typeof View> | null>>({});
   const columnRects = useRef<Record<string, BoardRect>>({});

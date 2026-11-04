@@ -5,7 +5,6 @@ import { borderRadius } from '../styles/tokens';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -23,6 +22,7 @@ import { useSidebarPalette, type SidebarPalette } from './palette';
 import { useSidebarWebCss } from './parts';
 import type { SidebarFolderProps, SidebarTreeFolder, SidebarTreeItem } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
 const ROW_PITCH = 32; // a 30px row and its 2px gap
@@ -193,7 +193,7 @@ function SidebarFolderComponent({
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const { tree } = useSidebarMetrics();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const [isOpen, setOpen] = useControllableState<boolean>({
     value: open ?? folder.open,

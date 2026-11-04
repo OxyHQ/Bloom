@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withTiming,
@@ -18,6 +17,7 @@ import { useMessages } from '../locale/messages';
 import { CALL_UI_MESSAGES } from './messages';
 import { CALL_SPEAKING_PULSE_MS, CALL_UI_RADIUS, resolveCallPaint } from './shared';
 import type { GroupCallTileProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `GroupCallTile`: one participant in a group call.
@@ -37,7 +37,7 @@ import type { GroupCallTileProps } from './types';
 const RING_WIDTH = 3;
 
 function SpeakingRing({ color, radius }: { color: string; radius: number }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const pulse = useSharedValue(1);
 
   useEffect(() => {

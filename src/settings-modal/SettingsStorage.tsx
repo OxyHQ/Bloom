@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -51,6 +50,7 @@ import type {
 } from './types';
 import { useSettingsWebCss } from './web-css';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The Storage page.
@@ -258,7 +258,7 @@ function AnimatedRow({
   onExited: () => void;
   children: ReactNode;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const measured = useSharedValue(0);
   const progress = useSharedValue(phase === 'entering' ? 0 : 1);
   const opacity = useSharedValue(phase === 'entering' ? 0 : 1);

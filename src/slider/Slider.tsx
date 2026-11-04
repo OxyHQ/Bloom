@@ -25,6 +25,7 @@ import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
 import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
+import { useHapticFeedback } from '../hooks/use-haptics';
 import type { RangeSliderProps, SliderProps } from './types';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
@@ -84,6 +85,17 @@ const BUBBLE_HEIGHT = 28;
 /** `-bottom-[4.5px]`: the arrow's bottom edge below the bubble's padding box. */
 const ARROW_OVERHANG = 4.5;
 const TRANSITION_MS = animation.duration.fast;
+/**
+ * The most positions a drag ticks through one by one. Past it a step is a
+ * sliver of the track, so a tick per step would buzz continuously under the
+ * finger; such a slider ticks only as a thumb reaches either end.
+ */
+const HAPTIC_DETENTS = 20;
+
+/** Whether a drag that lands a thumb on `value` ticks. */
+function isHapticDetent(value: number, min: number, max: number, step: number): boolean {
+  return value === min || value === max || (step > 0 && (max - min) / step <= HAPTIC_DETENTS);
+}
 
 function gradientStyle(angle: number, top: string, bottom: string): WebCssStyle {
   const image = `linear-gradient(${angle}deg, ${top} 0%, ${bottom} 100%)`;
@@ -239,8 +251,11 @@ function SliderBase({
   // reads current values without being re-created mid-gesture.
   const stateRef = useRef({ values, trackWidth, min, max, step, disabled });
   stateRef.current = { values, trackWidth, min, max, step, disabled };
-  const callbacksRef = useRef({ onValuesChange, onSlidingComplete });
-  callbacksRef.current = { onValuesChange, onSlidingComplete };
+  // A drag ticks as a thumb lands on a step (`isHapticDetent`); a key or an
+  // assistive technology's adjustment stays silent, as the platforms' own do.
+  const haptics = useHapticFeedback();
+  const callbacksRef = useRef({ onValuesChange, onSlidingComplete, haptics });
+  callbacksRef.current = { onValuesChange, onSlidingComplete, haptics };
   const gestureRef = useRef({ index: 0, startValue: 0 });
 
   const range = max - min;
@@ -264,8 +279,13 @@ function SliderBase({
   }, []);
 
   const commit = useCallback((next: number[]) => {
-    const current = stateRef.current.values;
-    if (next.some((v, i) => v !== current[i])) callbacksRef.current.onValuesChange(next);
+    const s = stateRef.current;
+    const moved = next.filter((v, i) => v !== s.values[i]);
+    if (moved.length === 0) return;
+    callbacksRef.current.onValuesChange(next);
+    if (moved.some((v) => isHapticDetent(v, s.min, s.max, s.step))) {
+      callbacksRef.current.haptics.selection();
+    }
   }, []);
 
   const panResponder = useMemo(

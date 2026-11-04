@@ -65,16 +65,12 @@
  * same shape.
  */
 import { Platform } from 'react-native';
-import {
-  Easing,
-  Keyframe,
-  useReducedMotion,
-  type ReanimatedKeyframe,
-} from 'react-native-reanimated';
+import { Easing, Keyframe, type ReanimatedKeyframe } from 'react-native-reanimated';
 
 import { ENTERING_ANIMATION_DURATION, toastDefaults } from './constants';
 import { useToastContext } from './context';
 import type { ToastAnimation, ToastEntryExitAnimation, ToastPosition } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `Easing.bezier()` (not `bezierFn`) returns an easing *factory*, which is what
@@ -275,7 +271,7 @@ export const useToastLayoutAnimations = (
   const { position: positionCtx, gap, animation: animationCtx } = useToastContext();
   const position = positionProp ?? positionCtx;
   const stackGap = gap ?? toastDefaults.stackGap;
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   if (reducedMotion) {
     return { entering: undefined, exiting: undefined, enterTranslateY: undefined };

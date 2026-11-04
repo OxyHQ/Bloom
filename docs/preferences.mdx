@@ -14,12 +14,13 @@ it only places the settings rows where its settings page wants them.
 
 | Preference | Default | Honoured by |
 |---|---|---|
-| `haptics` | `true` | every `useHaptics()` call (with `BloomProvider`'s `haptics` prop still able to force it off) |
+| `haptics` | `true` | every `useHaptics()` / `useHapticFeedback()` call — `Switch`, `Slider`, `SegmentedControl`, `Stepper`, `RatingInput`, `SwipeRow`, `SortablePhotoGrid`, `QueuePanel`, `TabBar`, `TabPagerBottomBar` and `EngagementBar` (with `BloomProvider`'s `haptics` prop still able to force it off) |
 | `videoAutoplay` | `'always'` | `VideoPlaybackProvider` (its `autoplay`) and `GifMessage` (its `playing`) |
 
 `videoAutoplay` is `'always'`, `'wifi'` or `'never'`. "Wi-Fi only" holds back on
-a cellular or otherwise metered connection (read through the optional
-`@react-native-community/netinfo` peer) and allows anything else, so it never
+a cellular or otherwise metered connection (`useNetworkStatus().metered`:
+the optional `@react-native-community/netinfo` peer on native, the browser's
+Network Information API on the web) and allows anything else, so it never
 silently means "never". Media the viewer starts — `claimActive()` — plays
 whatever the preference says.
 

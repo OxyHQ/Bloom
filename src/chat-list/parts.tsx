@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Linking,
   Pressable,
   StyleSheet,
   View,
@@ -8,6 +7,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 
 import { webDataSet } from '../styles/web-data';
 import { AvatarPresence } from '../chat-indicators';
@@ -72,7 +72,7 @@ export function RowLink({
       onPress();
       return;
     }
-    if (!IS_WEB && href) void Linking.openURL(href).catch(() => undefined);
+    if (!IS_WEB && href) openHref(href);
   };
   const interactive = Boolean(onPress || href || onLongPress);
   const style: WebCssStyle = {

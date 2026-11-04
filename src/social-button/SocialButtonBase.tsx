@@ -2,7 +2,8 @@ import { pointerEventsStyle } from '../styles/pointer-events';
 import { pickMessages, useMessages } from '../locale/messages';
 import { SOCIAL_BUTTON_MESSAGES } from './messages';
 import React, { memo, useCallback, useMemo, type ComponentType } from 'react';
-import { Linking, Platform, View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import { useBloomAppearance } from '../appearance';
 import { useSvgIdPrefix } from '../styles/svg-id';
@@ -164,7 +165,7 @@ export function createSocialButton(Button: ComponentType<ButtonProps>) {
       if (disabled) return;
       onPress?.();
       // Social navigation keeps its existing contract: notify, then open the URL.
-      if (href != null && Platform.OS !== 'web') void Linking.openURL(href).catch(() => {});
+      if (href != null && Platform.OS !== 'web') openHref(href);
     }, [disabled, onPress, href]);
     const phrase = messages.actions[action](label);
     return (

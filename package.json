@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "17.4.0",
+  "version": "17.5.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -9,6 +9,7 @@
   "react-native": "src/index.ts",
   "source": "src/index.ts",
   "sideEffects": [
+    "**/hooks/use-prefers-reduced-motion.*",
     "**/theme/init-css-interop.*",
     "**/toast/use-stack-hover.*"
   ],

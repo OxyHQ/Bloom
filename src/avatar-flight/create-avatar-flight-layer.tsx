@@ -12,7 +12,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withTiming,
@@ -23,6 +22,7 @@ import { OverlayRoot } from '../overlay';
 import { StyledImage, StyledView } from '../styles/styled-primitives';
 import { avatarFlightPoint, measureAvatar } from './geometry';
 import type { ActiveAvatarFlight, AvatarFlightLayerState, AvatarRect } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
@@ -59,7 +59,7 @@ function FlyingAvatar({
   target: AvatarRect;
   onArrive: (key: string) => void;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const progress = useSharedValue(0);
   const { from, spec } = flight;
   const { key, merge = false, path = 'arc', ease = 'linear' } = spec;

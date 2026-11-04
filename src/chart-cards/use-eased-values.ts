@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Easing } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** Tailwind `ease-out`, `cubic-bezier(0, 0, 0.2, 1)`. */
 export const TAILWIND_EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
@@ -19,7 +19,7 @@ export function useEasedValues(
   durationMs: number,
   easing: (t: number) => number = TAILWIND_EASE_OUT,
 ): readonly number[] {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const key = targets.join(',');
   const [shown, setShown] = useState<readonly number[]>(targets);
   const shownRef = useRef<readonly number[]>(targets);

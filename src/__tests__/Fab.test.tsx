@@ -1,5 +1,6 @@
 import React from 'react';
 import * as Reanimated from 'react-native-reanimated';
+import * as ReducedMotion from '../hooks/use-prefers-reduced-motion';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { Fab } from '../fab';
@@ -146,7 +147,7 @@ it.each([
 });
 
 it('honors reduced motion without starting a label timing animation', () => {
-  const reduced = jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
+  const reduced = jest.spyOn(ReducedMotion, 'usePrefersReducedMotion').mockReturnValue(true);
   const timing = jest.spyOn(Reanimated, 'withTiming');
   try {
     const ui = (collapsed: boolean) => (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Circle, G } from 'react-native-svg';
-import { useReducedMotion } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../../hooks/use-prefers-reduced-motion';
 
 /** One halo cycle: `dur="1.4s"`. */
 export const PULSE_MS = 1400;
@@ -27,7 +27,7 @@ export interface PulsingDotProps {
  * element's static attributes).
  */
 export function PulsingDot({ cx, cy, color, ring, testID }: PulsingDotProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [phase, setPhase] = useState<number | null>(null);
 
   useEffect(() => {

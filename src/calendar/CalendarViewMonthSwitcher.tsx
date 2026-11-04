@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -35,6 +34,7 @@ import { BREAKPOINT, dayKey, formatShortMonth, type WebDataSet } from './shared'
 import type { CalendarViewMonthSwitcherProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `CalendarMonthSwitcher`: a pill with prev/next chevrons around the month
@@ -313,7 +313,7 @@ export function CalendarViewMonthSwitcher({
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const { width: viewport } = useWindowDimensions();
   const isSm = viewport >= BREAKPOINT.sm;
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   const [open, setOpen] = useState(false);
   // Mounted while open AND while the collapse plays out.

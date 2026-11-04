@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withSequence,
@@ -32,6 +31,7 @@ import {
   resolveLocationPuckPaint,
 } from './shared';
 import type { LocationPuckProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * WHERE YOU ARE, drawn on a map the app owns.
@@ -70,7 +70,7 @@ import type { LocationPuckProps } from './types';
  * Only `locating` moves: the dot swells 18% and the halo breathes, once every
  * 1600ms, out of one shared driver. A pulse that never stops is a battery cost
  * and a distraction, so it stops the moment there is a fix — and
- * `useReducedMotion()` (or the `reducedMotion` prop) stops it outright. The
+ * `usePrefersReducedMotion()` (or the `reducedMotion` prop) stops it outright. The
  * driver is written IMPERATIVELY from an effect and only READ in
  * `useAnimatedStyle`, with every shared value in the deps array, which is what
  * `docs/motion.mdx` requires for the animation to tick on web at all.
@@ -105,7 +105,7 @@ function LocationPuckComponent({
   const { messages } = useMessages(LOCATION_PUCK_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveLocationPuckPaint(theme), [theme]);
-  const systemReduceMotion = useReducedMotion();
+  const systemReduceMotion = usePrefersReducedMotion();
   const animate = state === 'locating' && !(reducedMotion ?? systemReduceMotion);
 
   const progress = useSharedValue(0);

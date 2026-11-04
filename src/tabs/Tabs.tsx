@@ -27,7 +27,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -48,6 +47,7 @@ import { usePlatformKeyboard } from '../platform-surface/context';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { TabsContentProps, TabsProps, TabsTriggerProps, TabsVariant } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Tabs and its pill tab switcher.
@@ -442,7 +442,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   const isUnderline = resolvedVariant === 'underline';
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveTabsPaint(theme, variant, surface), [theme, variant, surface]);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const slideTiming = isUnderline ? UNDERLINE_TIMING : PILL_TIMING;
 
   // One shared underline that translates + resizes between triggers. Triggers

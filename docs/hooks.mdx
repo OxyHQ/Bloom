@@ -125,6 +125,15 @@ back to a light impact when the installed peer lacks those methods. The
 existing `useHaptics()` strength callback remains available for consumers that
 need it. Both APIs are inert on web and when haptics are disabled.
 
+The controls a finger operates use it already: `Switch` (`toggle`), `Slider`
+(a tick per step while its steps are at most 20 detents, otherwise at either
+end), `SegmentedControl`, `Stepper`'s − and +, `RatingInput` and
+`SortablePhotoGrid`'s move buttons (`selection`, only when the value changes),
+`SwipeRow` opening a side's actions and `QueuePanel`'s drag (`tap` as a row
+lifts, `selection` as it crosses a slot). Keys and an assistive technology's
+adjustments stay silent, as the platforms' own controls do. To silence one
+subtree, wrap it in `<BloomHapticsProvider enabled={false}>`.
+
 `TabPagerBottomBar` uses `tap()` on selection. On Android with an older
 `expo-haptics` that lacks `performAndroidHapticsAsync`, this makes its feedback
 silent; navigation is unchanged. Install a compatible peer to restore feedback.
@@ -194,3 +203,120 @@ Note the return type: `(instance: T | null) => void`, **not**
 `React.RefCallback<T>`. That is deliberate — the plain function type stays
 assignable across duplicate copies of `@types/react` in a consumer's tree,
 which the branded type does not.
+
+## `useControllableState`
+
+The value of a control that may be controlled or not: `value` when the caller
+passes one, its own state otherwise, and `onChange` either way. Every Bloom
+control with a `value` / `defaultValue` pair is built on it.
+
+```tsx
+const [checked, setChecked] = useControllableState({
+  value: props.checked,
+  defaultValue: props.defaultChecked ?? false,
+  onChange: props.onCheckedChange,
+});
+```
+
+`controlled` overrides the detection where an explicit `undefined` is a
+controlled empty value.
+
+## `usePrefersReducedMotion`
+
+Whether the viewer asked the OS for reduced motion — live (it follows a change
+made mid-session) and the same answer for every component. It is Bloom's one
+reading of the setting: every Bloom animation consults it, never Reanimated's
+`useReducedMotion`, which reads the setting once at launch. Native's answer is
+asked for when Bloom loads and shared, so a component mounting later reads it
+synchronously; until the very first answer (and on the server) it reads `true`.
+It loads no animation runtime. A Reanimated animation config can still carry
+`ReduceMotion` for its own handling.
+
+```tsx
+const reduced = usePrefersReducedMotion();
+progress.value = reduced ? 1 : withTiming(1, { duration: 240 });
+```
+
+## `useCssSafeAreaInsets`
+
+The safe-area insets a component was given, raised on the web to CSS
+`env(safe-area-inset-*)`: Expo Router's web root reports zero insets from
+SDK 58, so an installed iOS web app would lose its home-indicator padding.
+Native returns its input untouched.
+
+```tsx
+const insets = useCssSafeAreaInsets(useSafeAreaInsets());
+```
+
+## `useRovingTabIndex` / `handleRovingKeyDown`
+
+The keyboard half of a composite widget (tabs, a radio group, a listbox) on the
+web, where react-native-web supplies none of it: ONE tab stop — the selected
+option — with the arrows moving between options, Home and End where
+`homeEnd`, and Space selecting. Both read the options from the DOM
+(`aria-selected` / `aria-checked`, `aria-disabled`, document order).
+
+```tsx
+useRovingTabIndex(() => groupRef.current, '[role="radio"]', isChecked, '[role="radiogroup"]');
+
+<Pressable onKeyDown={(e) => handleRovingKeyDown(e, {
+  selector: '[role="radio"]', owner: '[role="radiogroup"]',
+  orientation: 'horizontal', activate: 'follow',
+})} />
+```
+
+## `useNativeRovingGroup`
+
+The same single stop and arrows on a native host that hands Bloom the window's
+keys (`PlatformKeyboard`): only the chosen option is `focusable`, the arrows
+choose the next one and the focus follows the choice. Spread
+`itemProps(value)` onto each option. Off such a host every option stays
+focusable, as before.
+
+## `writeClipboardText` / `clipboardAvailable`
+
+The web clipboard as one guarded call. `writeClipboardText(text)` rejects where
+there is none (native, or a browser refusing the permission), so the caller
+decides what that means; `clipboardAvailable()` says whether it can succeed at
+all.
+
+## `useTextareaAutosize`
+
+The web half of a composer's autosize: measures the `<textarea>`
+react-native-web renders and reports its content height, collapsing the field
+to measure only when the draft could have got shorter (a pure insertion cannot
+remove a line). Native measures through `onContentSizeChange`; pass
+`enabled: IS_WEB`.
+
+## `useKeyboardVisible`
+
+Whether the native software keyboard is up. Always `false` on the web, where the
+browser resizes the visual viewport instead.
+
+## `useBrowserTitle`
+
+A ref callback that sets the browser's own tooltip (`title`) on a `Pressable` or
+`View`'s host node, which react-native-web otherwise drops. Pass the forwarded
+ref through it.
+
+```tsx
+const ref = useBrowserTitle(tooltip, forwardedRef);
+<Pressable ref={ref} />
+```
+
+## `isPlainLinkActivation` / `openHref`
+
+`isPlainLinkActivation(event)` is whether a press on a link was an unmodified
+primary activation — the only kind a router callback should take over, so a
+Cmd-click still opens a new tab. `openHref(href)` follows an `href` for a press
+with no anchor of its own to follow: `Linking.openURL` on native (a URL nothing
+can open does nothing), navigating the document on the web. A component that
+renders a real `<a href>` on the web calls it on native only.
+
+```tsx
+onPress={() => {
+  if (onPress) onPress();
+  else if (!IS_WEB && href) openHref(href);
+}}
+```
+

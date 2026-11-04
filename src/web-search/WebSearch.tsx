@@ -10,7 +10,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  Linking,
   Platform,
   Pressable,
   Text as RNText,
@@ -19,6 +18,7 @@ import {
   type LayoutChangeEvent,
   type TextStyle,
 } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 import { BloomImage } from '../image';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
@@ -588,7 +588,7 @@ function SourceLinkRow({
             onHoverOut={onHoverOut}
             onPress={() => {
               // On web the rendered `<a href>` navigates by itself.
-              if (!IS_WEB) Linking.openURL(href).catch(() => {});
+              if (!IS_WEB) openHref(href);
             }}
             style={[rowStyle, { backgroundColor: hovered ? palette.rowHover : 'transparent' }]}
           >

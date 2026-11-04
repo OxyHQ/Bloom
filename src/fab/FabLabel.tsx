@@ -3,7 +3,6 @@ import { View, type StyleProp, type TextStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -11,6 +10,7 @@ import { animation } from '../styles/tokens';
 import type { TypeScaleVariant } from '../typography/scale';
 import { Text } from '../typography';
 import { UNSET } from '../styles/animated-style';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** Measures once per label layout; reversals start at the current visual width. */
 export function FabLabel({
@@ -28,7 +28,7 @@ export function FabLabel({
   style?: StyleProp<TextStyle>;
   testID?: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(Number(collapsed));
   const naturalWidth = useSharedValue(0);
   useEffect(() => {

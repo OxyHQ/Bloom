@@ -18,6 +18,7 @@ import { useMessages } from '../locale/messages';
 import { RATING_MESSAGES } from './messages';
 import type { RatingInputProps, RatingInputSize } from './types';
 import { useFieldMembership } from '../field/membership';
+import { useHapticFeedback } from '../hooks/use-haptics';
 import { IS_WEB } from '../styles/platform';
 
 /**
@@ -113,17 +114,21 @@ function RatingInputComponent({
   // The hover preview never survives a disabled group.
   const shown = disabled ? chosen : (hovered ?? chosen);
 
+  /** Whether the rating changed. */
   const choose = useCallback(
-    (next: number) => {
-      if (disabled) return;
+    (next: number): boolean => {
+      if (disabled) return false;
       const clamped = Math.min(total, Math.max(1, next));
       // Re-choosing the chosen star is a no-op, as on `Radio`: firing would
       // report a change that did not happen.
-      if (clamped === chosen) return;
+      if (clamped === chosen) return false;
       onChange(clamped);
+      return true;
     },
     [disabled, total, chosen, onChange],
   );
+  // A press that changes the rating ticks; the arrows stay silent.
+  const haptics = useHapticFeedback();
 
   const onKeyDown = useCallback(
     (e: { key: string; preventDefault: () => void }) => {
@@ -207,7 +212,9 @@ function RatingInputComponent({
             aria-checked={star === chosen}
             accessibilityLabel={name}
             disabled={disabled}
-            onPress={() => choose(star)}
+            onPress={() => {
+              if (choose(star)) haptics.selection();
+            }}
             onHoverIn={() => setHovered(star)}
             onHoverOut={() => setHovered((current) => (current === star ? null : current))}
             hitSlop={HIT_SLOP}

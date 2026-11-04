@@ -24,6 +24,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { moveItem } from '../hooks/list-reorder';
+import { useHapticFeedback } from '../hooks/use-haptics';
 import { slotAtPoint, sortableGridColumns } from './reorder';
 import type { SortablePhoto, SortablePhotoGridLabels, SortablePhotoGridProps } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
@@ -334,6 +335,9 @@ function SortablePhotoGridComponent({
   // ---------------------------------------------------------------------------
   //  Move buttons
   // ---------------------------------------------------------------------------
+  // The move buttons are how a touch reorders (the drag is the web pointer's),
+  // so a move ticks as it lands.
+  const haptics = useHapticFeedback();
   const move = useCallback(
     (id: string, direction: MoveDirection) => {
       const from = photos.findIndex((photo) => photo.id === id);
@@ -341,10 +345,11 @@ function SortablePhotoGridComponent({
       const to = direction === 'earlier' ? from - 1 : from + 1;
       if (to < 0 || to >= photos.length) return;
       pendingFocus.current = { id, direction };
+      haptics.selection();
       onReorder(moveItem(photos, from, to));
       setAnnouncement(labels.moved(to + 1, photos.length));
     },
-    [photos, onReorder, labels],
+    [photos, onReorder, labels, haptics],
   );
 
   // Keep focus on the moved photo's button: the tile has moved in the DOM, and a

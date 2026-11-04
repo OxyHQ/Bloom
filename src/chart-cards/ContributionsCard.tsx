@@ -16,7 +16,6 @@ import {
   type ViewStyle,
   type ScrollView,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { ACCENT_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
 import {
@@ -44,6 +43,7 @@ import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 import { monthNames as localMonthNames } from '../locale/format-date';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 // ---------------------------------------------------------------------------
 //  Grid
@@ -121,7 +121,7 @@ export function ContributionsGrid({
 }: ContributionsGridProps) {
   const { messages: gridText } = useMessages(CHART_CARDS_MESSAGES);
   const tiers = useContributionTiers(color);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [width, setWidth] = useState(0);
 
   const [active, setSelection] = useControllableState<number | null>({

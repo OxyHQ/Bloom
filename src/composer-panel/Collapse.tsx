@@ -4,10 +4,10 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 
@@ -17,7 +17,7 @@ const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
  * unmounts once the collapse finishes. Mounted-open does not animate.
  */
 export function Collapse({ open, children }: { open: boolean; children: React.ReactNode }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [mounted, setMounted] = useState(open);
   const progress = useSharedValue(open ? 1 : 0);
   const measured = useSharedValue(0);

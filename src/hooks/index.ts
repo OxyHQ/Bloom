@@ -27,3 +27,21 @@ export { useIsRtl } from './use-is-rtl';
 export { useAppForeground } from './use-app-state';
 export { useDescribedByHint } from './use-described-by-hint';
 export type { DescribedByHintInput } from './use-described-by-hint';
+export { useControllableState } from './use-controllable-state';
+export type { UseControllableStateOptions } from './use-controllable-state';
+export { usePrefersReducedMotion } from './use-prefers-reduced-motion';
+export { useCssSafeAreaInsets } from './use-css-safe-area-insets';
+export { useRovingTabIndex, handleRovingKeyDown } from './roving-focus';
+export type { RovingKeyOptions, RovingOrientation } from './roving-focus';
+export { useNativeRovingGroup } from './use-native-roving-group';
+export type {
+  NativeRovingGroupOptions,
+  NativeRovingItem,
+  NativeRovingItemProps,
+} from './use-native-roving-group';
+export { clipboardAvailable, writeClipboardText } from './clipboard';
+export { useTextareaAutosize } from './use-textarea-autosize';
+export type { TextareaAutosizeOptions } from './use-textarea-autosize';
+export { useKeyboardVisible } from './use-keyboard-visible';
+export { useBrowserTitle } from './use-browser-title';
+export { isPlainLinkActivation, openHref } from './link-activation';

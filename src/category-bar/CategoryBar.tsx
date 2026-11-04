@@ -9,7 +9,6 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { Button } from '../button';
 import { chipRowOverflow } from '../chip/shared';
@@ -30,6 +29,7 @@ import { Text } from '../typography';
 import { CATEGORY_BAR_MESSAGES } from './messages';
 import type { CategoryBarItem, CategoryBarProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Bloom's category strip: a horizontal, scrollable row of icon-over-label tabs
@@ -293,7 +293,7 @@ function CategoryBarComponent({
   useEffect(() => {
     adoptStyleSheet(STYLE_ID, BLOOM_CATEGORY_BAR_CSS);
   }, []);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const paint = useMemo(() => resolveCategoryBarPaint(theme), [theme]);
   const surface = useSurfaceFill();
   const fade = fadeColor ?? surface;

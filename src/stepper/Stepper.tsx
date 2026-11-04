@@ -5,6 +5,7 @@ import { View, type AccessibilityActionEvent } from 'react-native';
 import { Button, type ButtonProps } from '../button';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useHapticFeedback } from '../hooks/use-haptics';
 import { webDataSet } from '../styles/web-data';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { RiAddLine } from '../icons/remix/RiAddLine';
@@ -201,17 +202,29 @@ function StepperComponent({
   // At the floor with `onRemove`, the decrement slot IS the remove control.
   const removes = onRemove !== undefined && !disabled && value <= min;
 
+  /** Whether the value moved: a press that changes nothing does not tick. */
   const change = useCallback(
-    (target: number) => {
-      if (disabled) return;
+    (target: number): boolean => {
+      if (disabled) return false;
       const next = stepperClamp(target, min, max, step);
-      if (next !== value) onValueChange(next);
+      if (next === value) return false;
+      onValueChange(next);
+      return true;
     },
     [disabled, min, max, step, value, onValueChange],
   );
 
   const decrement = useCallback(() => change(value - step), [change, value, step]);
   const increment = useCallback(() => change(value + step), [change, value, step]);
+  // A press of − or + ticks; the arrows and an assistive technology's
+  // adjustments stay silent, as the platforms' own steppers do.
+  const haptics = useHapticFeedback();
+  const pressDecrement = useCallback(() => {
+    if (decrement()) haptics.selection();
+  }, [decrement, haptics]);
+  const pressIncrement = useCallback(() => {
+    if (increment()) haptics.selection();
+  }, [increment, haptics]);
 
   const onAccessibilityAction = useCallback(
     (e: AccessibilityActionEvent) => {
@@ -298,7 +311,7 @@ function StepperComponent({
         size={config.button}
         iconOnly
         icon={removes ? RiDeleteBinLine : RiSubtractLine}
-        onPress={removes ? onRemove : decrement}
+        onPress={removes ? onRemove : pressDecrement}
         disabled={!(canDecrement || removes)}
         accessibilityLabel={removes ? removeLabel : decrementLabel}
         tabIndex={removes ? 0 : -1}
@@ -345,7 +358,7 @@ function StepperComponent({
         size={config.button}
         iconOnly
         icon={RiAddLine}
-        onPress={increment}
+        onPress={pressIncrement}
         disabled={!canIncrement}
         accessibilityLabel={incrementLabel}
         tabIndex={-1}

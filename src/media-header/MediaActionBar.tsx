@@ -3,7 +3,6 @@ import React, { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   withTiming,
@@ -45,6 +44,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MEDIA_HEADER_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The row of controls under a media header.
@@ -338,7 +338,7 @@ function FollowButtonComponent({
   const label = labelProp ?? messages.follow;
   const followingLabel = followingLabelProp ?? messages.following;
   const theme = useTheme();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const progress = useSharedValue(Number(following));
   const pressOffset = useSharedValue(0);
   const restoreLabel = useCallback(() => {

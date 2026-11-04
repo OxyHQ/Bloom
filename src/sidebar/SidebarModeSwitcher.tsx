@@ -3,7 +3,6 @@ import { Pressable, type View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type SharedValue,
@@ -31,6 +30,7 @@ import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { displayShortcut } from './shortcuts';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `SidebarModeSwitcher`: a vertical segmented control for the modes a sidebar
@@ -194,7 +194,7 @@ const SegmentedModeSwitcher: React.FC<SidebarModeSwitcherProps> = ({
   const { messages } = useMessages(SIDEBAR_MESSAGES);
   const accessibilityLabel = accessibilityLabelProp ?? messages.mode;
   useSidebarWebCss();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const metrics = useSidebarMetrics();
   const progress = useSidebarCollapseProgress(collapsed);
   const inSidebar = useInSidebar();

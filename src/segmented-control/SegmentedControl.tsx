@@ -52,6 +52,7 @@ import { mergeRefs } from '../hooks/merge-refs';
 import { webDataSet } from '../styles/web-data';
 import { IS_WEB } from '../styles/platform';
 import { useIsRtl } from '../hooks/use-is-rtl';
+import { useHapticFeedback } from '../hooks/use-haptics';
 
 /**
  * A segmented control using Bloom's canonical surface and text roles.
@@ -259,6 +260,9 @@ export function SegmentedControl<T extends string>({
     x: number;
   } | null>(null);
 
+  // A touch that changes the choice (a press, or a drag released on another
+  // segment) ticks; the keyboard's arrows stay silent, as the platforms' own do.
+  const haptics = useHapticFeedback();
   const segments = useSharedValue<SegmentPosition[]>([]);
   const dragging = useSharedValue(false);
   const originEnabled = useSharedValue(false);
@@ -330,12 +334,14 @@ export function SegmentedControl<T extends string>({
         commit &&
         next !== value &&
         segments.value.some((item) => item.value === next && !item.disabled)
-      )
+      ) {
+        haptics.selection();
         onValueChange(next as T);
+      }
       // Also settle when a controlled parent rejects the proposed value.
       setRelease((count) => count + 1);
     },
-    [onValueChange, segments, value],
+    [onValueChange, segments, value, haptics],
   );
   const gesture = useMemo(
     () =>
@@ -405,6 +411,7 @@ export function SegmentedControl<T extends string>({
       selectedValue: value,
       selectedPosition,
       onSelectValue: (val: string, position: { width: number; x: number } | null) => {
+        if (val !== value) haptics.selection();
         onValueChange(val as T);
         // Selection geometry follows the controlled value's item layout effect.
       },
@@ -431,6 +438,7 @@ export function SegmentedControl<T extends string>({
     register,
     dragging,
     isDisabled,
+    haptics,
   ]);
 
   const solid = variant === 'solid';

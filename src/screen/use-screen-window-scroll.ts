@@ -1,10 +1,10 @@
 import { animateMotion } from '../motion/recipes';
 import { useEffect } from 'react';
-import { useReducedMotion } from 'react-native-reanimated';
 import { useScreen, type ScreenContextValue } from './context';
 import { useRegisterScreenScroller, type ScreenScroller } from './reselect';
 import { useScreenScroll } from './use-screen-scroll';
 import type { ScreenScrollOptions } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const DOCUMENT_SCROLLER: ScreenScroller = {
   offset: () => window.scrollY,
@@ -25,7 +25,7 @@ export function useScreenWindowBinding(
   options: ScreenScrollOptions = {},
   owner: string | null = null,
 ) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const bound = screen.active && options.active !== false && typeof window !== 'undefined';
   // The document answers a reselect when no list inside the page does.
   useRegisterScreenScroller(bound ? DOCUMENT_SCROLLER : null, bound, true);

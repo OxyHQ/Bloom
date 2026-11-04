@@ -19,7 +19,7 @@
 import * as React from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 import * as ReactNative from 'react-native';
-import * as Reanimated from 'react-native-reanimated';
+import * as ReducedMotion from '../hooks/use-prefers-reduced-motion';
 
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -34,7 +34,7 @@ type Hook = typeof import('../hooks/use-press-animation');
  *
  * `SUPPORTS_PRESS_SCALE` is resolved once at module load (a pointer type does
  * not change under a running app), so the pointer cases have to re-require it.
- * Both `doMock`s hand back the SAME module object the outer test holds:
+ * The `doMock`s hand back the SAME module object the outer test holds:
  * `react-native` because otherwise the isolated graph builds a second `Platform`
  * and the OS the case set lands on an object the module under test never reads,
  * and `react` because a second copy has its own null hook dispatcher — the
@@ -54,6 +54,9 @@ function loadHook(os: 'ios' | 'web', coarsePointer: boolean): Hook['usePressAnim
     jest.isolateModules(() => {
       jest.doMock('react-native', () => ReactNative);
       jest.doMock('react', () => React);
+      // The viewer's motion preference is not what these cases vary: the
+      // outer module, which asked the (mocked) OS when it loaded.
+      jest.doMock('../hooks/use-prefers-reduced-motion', () => ReducedMotion);
       mod = require('../hooks/use-press-animation') as Hook;
     });
   } finally {
@@ -92,7 +95,7 @@ describe('usePressAnimation suppressions', () => {
   });
 
   it('starts no spring when the OS asks for reduced motion', () => {
-    jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
+    jest.spyOn(ReducedMotion, 'usePrefersReducedMotion').mockReturnValue(true);
     expect(press(usePressAnimation, 0.97)).toBe(false);
     expect(spring).not.toHaveBeenCalled();
   });

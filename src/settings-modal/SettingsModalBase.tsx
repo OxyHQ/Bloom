@@ -23,7 +23,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -78,6 +77,7 @@ import { WindowControls } from '../window/WindowControls';
 import { WindowDragRegion } from '../window/WindowDragRegion';
 import type { AppShellProps } from '../app-shell/types';
 import type { PanelNavigationEntry, PanelNavigationState } from '../app-shell/panel-layout-types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 export function createSettings(
   { Screen, ScreenScrollView }: ScreenComponents,
@@ -331,7 +331,7 @@ export function createSettings(
       fill: palette.full,
       parentFill: parentFill,
     }).publishedFill;
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     const isControlled = controlledOpen !== undefined;
 
     const [mounted, setMounted] = useState(controlledOpen === true);
@@ -641,7 +641,7 @@ export function createSettings(
     const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
     useSettingsWebCss();
     const palette = useSettingsPalette();
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     const dirProps = useDirectionProps();
     // The window until the first layout, so a layout that spans the window is
     // right on frame one; an embedded one pays a single layout pass.

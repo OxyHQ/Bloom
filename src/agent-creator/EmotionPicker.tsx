@@ -5,7 +5,6 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useFrameCallback,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   type SharedValue,
@@ -18,6 +17,7 @@ import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 export type EmotionChoice = {
@@ -125,7 +125,7 @@ export function EmotionPicker({
   const ref = useRef<ComponentRef<typeof View>>(null);
   const visible = useSharedValue(true);
   const target = useSharedValue(0);
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const rotation = useDerivedValue(
     () => (reduced ? target.value : withSpring(target.value, { stiffness: 180, damping: 28 })),
     [target, reduced],

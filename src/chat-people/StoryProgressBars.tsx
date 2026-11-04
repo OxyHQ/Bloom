@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -14,6 +13,7 @@ import { useTheme } from '../theme/use-theme';
 import { STORY_DURATION_MS, resolveChatPeoplePaint, storyProgressFill } from './shared';
 import type { StoryProgressBarsProps } from './types';
 import { CHAT_PEOPLE_MESSAGES } from './messages';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `StoryProgressBars`: the segmented strip at the top of a story.
@@ -130,7 +130,7 @@ function StoryProgressBarsComponent({
   const theme = useTheme();
   const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const controlled = progress !== undefined;
   const bars = Math.max(0, Math.floor(count));
   const [restartKey, setRestartKey] = useState(0);

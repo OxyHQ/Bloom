@@ -2,7 +2,7 @@ import { resolveSurfaceTint } from '../surface/shared';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
-import * as Reanimated from 'react-native-reanimated';
+import * as ReducedMotion from '../hooks/use-prefers-reduced-motion';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import {
@@ -43,7 +43,7 @@ describe('AgentProgress', () => {
   it('keeps the card geometry: 341 wide, radius 16, 1px border, 45 + 38·n tall', () => {
     // Settled geometry: under reduced motion the height starts where it lands
     // (jest's reanimated mock never re-renders on a shared-value write).
-    jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
+    jest.spyOn(ReducedMotion, 'usePrefersReducedMotion').mockReturnValue(true);
     const { getByTestId } = renderProgress(<AgentProgress />);
     const theme = buildTheme('teal', 'light');
     const card = resolvedStyle(getByTestId('agent-progress').props.style);
@@ -176,7 +176,7 @@ describe('AgentProgress', () => {
   });
 
   it('minimizes to the 44px bar with the current step, and expands back', () => {
-    jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
+    jest.spyOn(ReducedMotion, 'usePrefersReducedMotion').mockReturnValue(true);
     const onMinimizedChange = jest.fn();
     // A fresh `steps` array per call, so the memoised card re-renders.
     const ui = () => (

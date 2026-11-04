@@ -5,7 +5,6 @@ import { BloomImage } from '../image';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withTiming,
@@ -41,6 +40,7 @@ import { dataHook } from '../styles/data-hook';
 import { useAiChatPlatform } from './context';
 import { ButtonGroupItem } from '../button-group';
 import { useReducedTransparency } from '../theme/reduced-transparency';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_QUINT_CSS = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -218,7 +218,7 @@ function GenerationTile({
   palette,
   register,
 }: TileProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const run = !skipEntrance && !reducedMotion;
   const fade = useSharedValue(run ? 0 : 1);
   const grow = useSharedValue(run && !isNew ? 0 : 1);
@@ -396,7 +396,7 @@ export function AiChatGalleryPanelBase({
   const { Screen, ScreenScrollView } = useAiChatPlatform();
   useAiChatWebCss();
   const palette = useAiChatPalette();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const { messages } = useMessages(AI_CHAT_MESSAGES);
   const common = useCommonMessages();
   const l = useMemo<Labels>(

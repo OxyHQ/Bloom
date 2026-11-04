@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { Platform } from 'react-native';
 import {
-  useReducedMotion,
   useSharedValue,
   useAnimatedReaction,
   withTiming,
@@ -14,6 +13,7 @@ import { APP_SHELL_MESSAGES } from './messages';
 import { reorderPanelIds, panelReorderPreview, type PanelReorderGeometry } from './panel-reorder';
 import type { AppShellPanelLayout } from './panel-layout-types';
 import type { ResolvedPanelTrack } from './panel-layout';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 export interface PanelReorderPoint {
   x: number;
@@ -83,7 +83,7 @@ export function usePanelReorder({
   nativeScroll?: PanelReorderScroll;
 }) {
   const rtl = useIsRtl();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const { messages } = useMessages(APP_SHELL_MESSAGES);
   const [announcement, setAnnouncement] = useState({ text: '', sequence: 0 });
   const movable = layout.panels

@@ -1,11 +1,10 @@
 import { useSurfaceFill } from '../styles/surface-levels';
-import { type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -25,8 +24,10 @@ import type { SwipeRowAction, SwipeRowProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SWIPE_ROW_MESSAGES } from './messages';
 import { SwipeRowScrollContext } from './context';
+import { useHapticFeedback } from '../hooks/use-haptics';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { webDataSet } from '../styles/web-data';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * ONE drag affordance for every list row in this library.
@@ -95,7 +96,7 @@ export function SwipeRow({
   const closeLabel = closeLabelProp ?? messages.closeActions;
   const theme = useTheme();
   const translateX = useSharedValue(0);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [open, setOpen] = useState<'left' | 'right' | null>(null);
   const [horizontalScrollers, setHorizontalScrollers] = useState(0);
   const registerScroller = useCallback(() => {
@@ -115,12 +116,23 @@ export function SwipeRow({
   const leftWidth = left.length * actionWidth;
   const rightWidth = right.length * actionWidth;
 
+  const openRef = useRef<'left' | 'right' | null>(null);
   const settle = useCallback(
     (next: 'left' | 'right' | null) => {
+      openRef.current = next;
       setOpen(next);
       onOpenChange?.(next);
     },
     [onOpenChange],
+  );
+  // A swipe that opens a side's actions ticks as it lands; closing is silent.
+  const haptics = useHapticFeedback();
+  const settleSwipe = useCallback(
+    (next: 'left' | 'right' | null) => {
+      if (next !== null && next !== openRef.current) haptics.tap();
+      settle(next);
+    },
+    [haptics, settle],
   );
 
   const close = useCallback(() => {
@@ -154,7 +166,7 @@ export function SwipeRow({
           translateX.value = reducedMotion
             ? target
             : withTiming(target, { duration: SWIPE_SNAP_DURATION });
-          runOnJS(settle)(commit ? opening : null);
+          runOnJS(settleSwipe)(commit ? opening : null);
         })
         .onFinalize((_event, success) => {
           'worklet';
@@ -162,7 +174,7 @@ export function SwipeRow({
           translateX.value = reducedMotion ? 0 : withTiming(0, { duration: SWIPE_SNAP_DURATION });
           runOnJS(settle)(null);
         }),
-    [leftWidth, reducedMotion, rightWidth, settle, translateX],
+    [leftWidth, reducedMotion, rightWidth, settle, settleSwipe, translateX],
   );
 
   const scrollContext = useMemo(

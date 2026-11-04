@@ -1,4 +1,3 @@
-import { useReducedMotion } from 'react-native-reanimated';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
@@ -15,9 +14,11 @@ import { animation, hitSlop } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { useIsRtl } from '../hooks/use-is-rtl';
+import { useHapticFeedback } from '../hooks/use-haptics';
 import { useFieldMembership } from '../field/membership';
 import type { SwitchProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const TRACK = {
   xs: { w: 30, h: 18 },
@@ -52,7 +53,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
       onChange: onCheckedChange,
     });
     const theme = useTheme();
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     const rtl = useIsRtl();
     const { size, tone } = useBloomAppearance(
       { size: sizeProp, tone: toneProp },
@@ -88,10 +89,12 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
       return () => transition.stop();
     }, [anim, checked, reducedMotion]);
 
+    const haptics = useHapticFeedback();
     const handlePress = useCallback(() => {
       if (isDisabled) return;
+      haptics.toggle(!checked);
       setChecked(!checked);
-    }, [isDisabled, checked, setChecked]);
+    }, [isDisabled, checked, setChecked, haptics]);
 
     const onPressIn = useCallback(() => {
       if (isDisabled) return;

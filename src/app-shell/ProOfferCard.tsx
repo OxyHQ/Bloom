@@ -18,7 +18,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -39,6 +38,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { APP_SHELL_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * `ProOfferCard`: the upgrade prompt anchored
@@ -106,7 +106,7 @@ function DefaultBackdrop({ from, via }: { from: string; via: string }) {
 }
 
 function Shimmer({ width }: { width: number }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   // The sweep runs start → end, so under RTL both its travel and its lean flip.
   const dir = useIsRtl() ? -1 : 1;
   const travel = useSharedValue(0);
@@ -186,7 +186,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   // the document's direction itself so its logical insets resolve against it.
   const dirProps = useDirectionProps();
   const { width: viewport } = useWindowDimensions();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [ctaWidth, setCtaWidth] = useState(0);
   const palette = useMemo(() => {
     return {

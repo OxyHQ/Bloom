@@ -77,7 +77,6 @@ import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -114,6 +113,7 @@ import type { FloatingPanelProps, FloatingSide } from './types';
 import { rectOf } from './use-anchor-rect';
 import { useFrameThrottle } from './use-frame-throttle';
 import { useCommonMessages } from '../locale/common-messages';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The one node: the panel's own chrome, the caller's classes, the computed
@@ -291,7 +291,7 @@ export function FloatingPanel({
   const published = useRef<DropdownPlacement | null>(null);
   const [phase, setPhase] = useState<Phase>(open ? 'open' : 'closed');
   const [lastOpen, setLastOpen] = useState(open);
-  const still = useReducedMotion() || instant;
+  const still = usePrefersReducedMotion() || instant;
   const progress = useSharedValue(0);
 
   const panelRefRef = useRef(panelRef);

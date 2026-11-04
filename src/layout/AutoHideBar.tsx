@@ -1,10 +1,6 @@
 import React, { useLayoutEffect, useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, View as RNView } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
 import { animateWithSpec, motionCss, type MotionSpec } from '../motion/spec';
@@ -27,6 +23,7 @@ import {
 import { LAYOUT_MESSAGES } from './messages';
 import type { AutoHideBarController, AutoHideBarOptions, AutoHideBarProps } from './types';
 import { useAutoHideBarMode } from './use-auto-hide-bar';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const DEFAULT_HEIGHT = 41;
 // The web runs on CSS transitions: its nodes are plain views, never per-frame
@@ -66,7 +63,7 @@ export function useAutoHideBar({
 }: AutoHideBarOptions): AutoHideBarController {
   const { messages } = useMessages(LAYOUT_MESSAGES);
   const surface = useSurfaceFill();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const hide: MotionSpec = motion?.hide ?? AUTO_HIDE_BAR_HIDE;
   const show: MotionSpec = motion?.show ?? AUTO_HIDE_BAR_SHOW;
   const strip = Math.max(0, Math.min(collapsedHeight, height));

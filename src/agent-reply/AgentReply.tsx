@@ -1,15 +1,11 @@
 import { type ComponentRef, useEffect, useRef, useState } from 'react';
 import { Platform, type View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useTrackEvents } from '../agent-creator/use-track-events';
 import { Collapsible } from '../collapsible';
 import { StyledView } from '../styles/styled-primitives';
 import type { AgentReplyProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
@@ -19,7 +15,7 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
  */
 export function AgentReply({ children, identity, actions, style }: AgentReplyProps) {
   const ref = useRef<ComponentRef<typeof View>>(null);
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   useTrackEvents(ref, undefined, undefined, setFocused);

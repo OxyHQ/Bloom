@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  Linking,
   Pressable,
   StyleSheet,
   View,
@@ -8,6 +7,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 import { BloomImage } from '../image';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
@@ -297,7 +297,7 @@ export function CardLink({
       onPress();
       return;
     }
-    if (!IS_WEB && href) void Linking.openURL(href).catch(() => undefined);
+    if (!IS_WEB && href) openHref(href);
   };
   const style: WebCssStyle = {
     ...StyleSheet.absoluteFill,

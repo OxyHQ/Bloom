@@ -5,7 +5,6 @@ import Animated, {
   type SharedValue,
   useAnimatedStyle,
   useDerivedValue,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withTiming,
@@ -14,6 +13,7 @@ import Animated, {
 import { useTheme } from '../theme/use-theme';
 import { ConnectionDotsBase } from './ConnectionDotsBase';
 import type { ConnectionDotsProps } from './types';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const DEFAULT_DOT_COUNT = 6;
 const DEFAULT_DOT_SIZE = 6;
@@ -82,7 +82,7 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
   reducedMotion,
 }) => {
   const theme = useTheme();
-  const systemReduceMotion = useReducedMotion();
+  const systemReduceMotion = usePrefersReducedMotion();
   const reduce = reducedMotion ?? systemReduceMotion;
   const color = theme.colors.primary;
 

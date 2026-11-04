@@ -11,7 +11,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type SharedValue,
@@ -31,6 +30,7 @@ import {
   useSurfacePresenceContent,
 } from '../surface/use-surface-presence';
 import { UNSET } from '../styles/animated-style';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** The `duration-300 ease-in-out` morph. */
 export const MORPH_MS = 300;
@@ -51,7 +51,7 @@ export function useInSidebar(): boolean {
 /** Share the panel's clock; standalone controls use the same reversible timing. */
 export function useSidebarCollapseProgress(collapsed: boolean): SharedValue<number> {
   const context = useContext(CollapseContext);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const local = useSharedValue(collapsed ? 1 : 0);
   useEffect(() => {
     if (!context) {
@@ -75,7 +75,7 @@ export function useMorphPresence(
   shown: boolean,
   blur = 0,
 ): { ref: (node: ViewRef | null) => void; style: ViewStyle | null } {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [node, setNode] = useState<ViewRef | null>(null);
   const duration = reducedMotion ? 0 : MORPH_MS;
   useSurfacePresenceContent(node, {

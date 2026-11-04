@@ -42,6 +42,33 @@ Bloom ships its strings in `BLOOM_LANGUAGES`: English, Spanish, Catalan, German,
 
 Bloom's calendars lay out and return Gregorian `Date`s, so every date they format goes through `formatGregorian` (`src/locale/format-date.ts`): the locale's language, digits and order, on the Gregorian calendar. Without it, a locale whose default calendar is another one — `fa-IR` (Persian), `th-TH` (Buddhist) — would title a Gregorian September with another calendar's month and year, and the day a reader picks would not be the day the app receives.
 
+## Numbers, money and durations
+
+The formatters Bloom's families use are published from `@oxy.so/bloom/locale`
+(and the root), so an app's own figures group, sign and place currency exactly
+as the components beside them do. Each takes the locale `useBloomLocale()`
+resolved, goes through `Intl.NumberFormat` (which Hermes implements) and falls
+back to plain English formatting rather than throwing.
+
+| formatter | example (`en`) |
+|---|---|
+| `formatNumber(value, locale?, options?)` | `12500` → `12,500` (`12.500` in `de`) |
+| `formatInteger(value, locale?)` | `1234567.8` → `1,234,568` |
+| `formatCompactNumber(value, locale?)` | `12500` → `12.5K` (`12,5 mil` in `es`) |
+| `formatPercent(ratio, locale?, digits?)` | `0.25` → `25%` (`%25` in `tr`) |
+| `formatSignedPercent(ratio, locale?, digits?)` | `0.052` → `+5.2%` |
+| `formatCurrency(amount, currency, locale?, digits?)` | `385000, 'EUR'` → `€385,000` (`385.000 €` in `es`) |
+| `formatCompactCurrency(amount, currency, locale?)` | `385000, 'EUR'` → `€385K` |
+| `formatMultiplier(value, locale?)` | `1.5` → `1.5×` |
+| `formatClock(seconds)` | `83` → `1:23`, the same in every locale |
+
+```tsx
+const locale = useBloomLocale();
+<Text>{formatCurrency(price, 'EUR', locale)}</Text>
+```
+
+A file size is `formatFileSize` from `@oxy.so/bloom/file-upload`.
+
 ## Overriding a string
 
 Each family keeps its `labels` prop. A key passed there wins over Bloom's string for the locale, one key at a time — for wording of your own, not for translation.

@@ -2,6 +2,23 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.5.0
+
+### Added
+
+- **The shared pieces Bloom's families are built on are public.** From `@oxy.so/bloom/hooks` (and the root): `useControllableState`, `usePrefersReducedMotion`, `useCssSafeAreaInsets`, `useRovingTabIndex` / `handleRovingKeyDown`, `useNativeRovingGroup`, `writeClipboardText` / `clipboardAvailable`, `useTextareaAutosize`, `useKeyboardVisible`, `useBrowserTitle`, `isPlainLinkActivation`, and a new `openHref(href)` — `Linking.openURL` on native (a URL nothing can open does nothing), navigating the document on the web — which replaces the fifteen hand-written copies across the families (chat list, mail list, listing, wishlist, place, vendor and media cards, social button, web search, menu rows, menubar, button, inline markdown, app shell sidebar, project board).
+- **The number formatters are public: `@oxy.so/bloom/locale`** (and the root) exports `formatNumber`, `formatInteger`, `formatCompactNumber`, `formatPercent`, `formatSignedPercent`, `formatCurrency`, `formatCompactCurrency`, `formatMultiplier` and `formatClock`, the ones the families already format with.
+- **`useNetworkStatus()`** (`@oxy.so/bloom/connection-status`, root): `{ online, metered }`, live, from one subscription shared by every caller — netinfo on native (the optional peer, as before), `navigator.onLine` and the Network Information API on the web. `ConnectionStatusToasts` and media autoplay's "Wi-Fi only" read it; the private metered-connection hook is gone.
+
+### Changed
+
+- **Haptics reach the controls a finger operates**, so the `haptics` preference does what it says: `Switch` (toggle), `Slider` (a tick per step while its steps are at most 20 detents, otherwise at either end), `SegmentedControl`, `Stepper`'s − and +, `RatingInput`, `SortablePhotoGrid`'s move buttons, `SwipeRow` opening its actions, and `QueuePanel`'s drag (a row lifting, crossing a slot). Only a touch that changes something ticks; keys and assistive-technology adjustments stay silent. All of it goes through `useHapticFeedback`, so `BloomHapticsProvider`, `BloomProvider`'s `haptics` and the viewer's preference turn it off.
+- **Reduced motion is one live reading.** Every Bloom animation now asks `usePrefersReducedMotion()` instead of Reanimated's `useReducedMotion()`, which reads the OS setting once at launch, so a viewer who turns Reduce Motion on mid-session no longer keeps Bloom's animations until a restart. The hook is a shared store: native's answer is asked for when Bloom loads (the package's one new module-scope effect, listed in `sideEffects`) and every component mounting after it reads it synchronously. `CharacterAvatar` drops its own copy of the same tracking.
+
+### Consumers
+
+A test that mocked `react-native-reanimated`'s `useReducedMotion` to drive a Bloom component's reduced-motion branch mocks `@oxy.so/bloom`'s `usePrefersReducedMotion` instead.
+
 ## 17.4.0
 
 ### Added

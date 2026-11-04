@@ -6,7 +6,6 @@ import Animated, {
   cancelAnimation,
   useAnimatedProps,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -32,6 +31,7 @@ import { ThinkingReasoning } from './ThinkingReasoning';
 import { AGENT_THINKING_MESSAGES } from './messages';
 import type { AgentThinkingProps, AgentThinkingTone, AgentThinkingVariant } from './types';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Agent Thinking: the agent "thinking" state that sits above a chat composer
@@ -425,7 +425,7 @@ function ThinkingRow({
   testID,
 }: ThinkingRowProps) {
   const theme = useTheme();
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const color = resolveTone(theme, tone ?? VARIANT_TONE[variant]);
   const label = useThinkingText({ label: labelProp, thinking, durationMs });
 

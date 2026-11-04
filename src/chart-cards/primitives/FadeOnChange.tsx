@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Platform, type StyleProp, type ViewStyle } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../../hooks/use-prefers-reduced-motion';
 
 /** `animate-number-fade`: 220ms `ease-out` from 0.35. */
 export const NUMBER_FADE_MS = 220;
@@ -19,7 +19,7 @@ export interface FadeOnChangeProps {
  * 220ms. The first render does not fade. Snaps under reduced motion.
  */
 export function FadeOnChange({ fadeKey, style, children }: FadeOnChangeProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const opacity = useRef(new Animated.Value(1)).current;
   const first = useRef(true);
   useEffect(() => {

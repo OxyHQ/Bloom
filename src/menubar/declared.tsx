@@ -32,7 +32,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Linking, Platform } from 'react-native';
+import { openHref } from '../hooks/link-activation';
 
 import { MenuRadioGroupProvider, useMenuRadioGroup } from '../floating/context';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -200,15 +200,6 @@ export function HeadlessDeclaration({ children }: { children?: ReactNode }) {
   );
 }
 
-/** A press on a row with only an `href`: the link, as the row's own press follows it. */
-function followLink(href: string): void {
-  if (Platform.OS === 'web') {
-    globalThis.location?.assign(href);
-    return;
-  }
-  void Linking.openURL(href);
-}
-
 /**
  * A fork's `MenubarContent`: its panel (`Panel`, the sheet or the anchored
  * panel) as before, with the content headless beside it while the menu is
@@ -262,7 +253,7 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
     const scope = useMenubarScope();
     const chord = useChord(shortcut ?? (action ? EDIT_ACTION_SHORTCUTS[action] : undefined));
     const { onPress, href } = props;
-    const handler = onPress ?? (href != null ? () => followLink(href) : undefined);
+    const handler = onPress ?? (href != null ? () => openHref(href) : undefined);
     // An editing action goes to the focused text field first (use-edit-action.ts).
     const item = useEditAction(action, props.disabled ?? false, handler);
     useMenuEntry(

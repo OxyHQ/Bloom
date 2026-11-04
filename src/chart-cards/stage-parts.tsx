@@ -9,7 +9,6 @@ import {
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { Text } from '../typography';
@@ -17,6 +16,7 @@ import { TABULAR } from './primitives/ChartHeader';
 import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * Parts shared by the stage-shaped cards — `BarListCard`, `StageBarsCard` and
@@ -78,7 +78,7 @@ export function useGrowWidth(
   percent: number,
   mounted: boolean,
 ): Animated.AnimatedInterpolation<string> {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const target = mounted ? percent : 0;
   const value = useRef(new Animated.Value(target)).current;
   useEffect(() => {

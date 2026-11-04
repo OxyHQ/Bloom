@@ -12,7 +12,6 @@ import {
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -29,6 +28,7 @@ import { formatGregorian } from '../locale/format-date';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 /**
  * A month of daily agent runs as plain rounded bars, with a month switcher
  * pill and a count-up headline that follows the hovered day.
@@ -170,7 +170,7 @@ export function AgentsChartCard({
     '6/14';
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [activeIndex, setActiveIndex] = useActiveIndex(
     data.length,
     controlledIndex,

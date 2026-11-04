@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -14,6 +13,7 @@ import { useChartCardSurfacePalette, useChartTones } from './primitives/use-char
 import { useWebTransition } from './primitives/use-web-transition';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** One goal ring and its stat tile. */
 export interface ActivityRing {
@@ -62,7 +62,7 @@ const clampPct = (pct: number) => Math.max(0, Math.min(100, Number.isFinite(pct)
 
 /** Tweens a list of numbers toward `target` over `ms` with CSS `ease-out`; snaps under reduced motion. */
 function useTween(target: readonly number[], ms: number): readonly number[] {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [shown, setShown] = useState<readonly number[]>(target);
   const shownRef = useRef(shown);
   shownRef.current = shown;

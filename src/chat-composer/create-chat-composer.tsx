@@ -19,7 +19,6 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -57,6 +56,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const SWAP_CSS_EASING = 'cubic-bezier(0, 0, 0.2, 1)';
 
@@ -89,7 +89,7 @@ export function createChatComposer({
    * one of the two is hidden on one platform only.
    */
   function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactNode }) {
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     const progress = useSharedValue(shown ? 1 : 0);
     React.useEffect(() => {
       progress.value = reducedMotion

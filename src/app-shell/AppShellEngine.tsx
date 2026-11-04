@@ -17,7 +17,6 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useDerivedValue,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -98,6 +97,7 @@ import {
 } from './use-drawer-swipe';
 import { UNSET } from '../styles/animated-style';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The page frame — one engine, four shapes (`variant`).
@@ -490,7 +490,7 @@ export function createAppShellEngine() {
       )
     ) : null;
 
-    const reducedMotion = useReducedMotion();
+    const reducedMotion = usePrefersReducedMotion();
     const spanProgress = useSharedValue(spanAside ? 1 : 0);
     useEffect(() => {
       animateMotion(spanProgress, spanAside ? 1 : 0, 'expand', reducedMotion);

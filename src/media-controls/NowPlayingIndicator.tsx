@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withRepeat,
   withSequence,
@@ -16,6 +15,7 @@ import { resolveMediaControlsPaint } from './shared';
 import type { NowPlayingIndicatorProps } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
  * The equalizer bars beside the row that is playing.
@@ -104,7 +104,7 @@ function NowPlayingIndicatorComponent({
   const label = labelProp ?? messages.nowPlaying;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const animate = playing && !reducedMotion;
   const barWidth = Math.max(2, Math.round(size * 0.2));
 

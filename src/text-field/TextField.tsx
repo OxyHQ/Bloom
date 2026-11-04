@@ -21,7 +21,6 @@ import {
   type TextStyle,
   View,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -72,6 +71,7 @@ import type {
 
 import { useFieldMembership } from '../field/membership';
 import { IS_WEB } from '../styles/platform';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 interface TextFieldContextValue {
   inputRef: React.RefObject<ComponentRef<typeof TextInput> | null>;
@@ -829,7 +829,7 @@ function FloatingLabelInput({
 }: FloatingLabelInputProps) {
   const theme = useTheme();
   const ctx = useTextFieldContext();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const rtl = useIsRtl();
 
   const hasValue = (value?.length ?? 0) > 0;
