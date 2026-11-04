@@ -22,10 +22,16 @@ export function useAppearingOpen(open: boolean, appear: boolean) {
   return open && armed;
 }
 
-/** Shared measured-reveal motion; Accordion retains its existing springs. */
+/**
+ * The motion behind `Collapsible` and `Accordion`, for a part that animates alongside a reveal (a
+ * turning chevron, a header that follows the body). `progress` runs 0 → 1 as the body opens;
+ * `hidden` is true once a closed body has finished leaving; `settled` once an open one is at
+ * rest. A timed `transition` eases; `'spring'` springs (`kind` picks the trigger's snappier
+ * spring). Live reduced motion settles immediately.
+ */
 export function useCollapsibleMotion(
   open: boolean,
-  transition: SurfaceTransition | 'spring',
+  transition: SurfaceTransition | 'spring' = DEFAULT_COLLAPSIBLE_TRANSITION,
   kind: 'trigger' | 'content' = 'content',
   useNativeDriver = false,
 ) {

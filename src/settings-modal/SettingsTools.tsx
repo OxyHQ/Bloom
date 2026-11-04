@@ -1,9 +1,8 @@
 import { ScrollArea } from '../layout/ScrollArea';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -13,6 +12,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Button } from '../button';
 import { ACCENT_TABLE, colorRamp, DANGER_TABLE } from '../button/shared';
 import { Chip } from '../chip';
+import { Collapsible } from '../collapsible';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +25,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { Switch } from '../switch';
+import type { SurfaceTransition } from '../motion/types';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -70,7 +71,8 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  *   sections 24 apart, labels inset 8
  */
 
-const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
+/** The tool chips' reveal: height and opacity, 300ms ease-out. */
+const TOOLS_REVEAL: SurfaceTransition = { duration: 300, easing: [0, 0, 0.2, 1] };
 const THUMB_EASE = Easing.bezier(0.34, 1.2, 0.64, 1);
 
 function defaultServerActions(messages: SettingsModalMessages): SettingsMenuAction[] {
@@ -126,51 +128,6 @@ function ChevronUpDown({ color }: { color: string }) {
         strokeLinecap="round"
       />
     </Svg>
-  );
-}
-
-// ---------------------------------------------------------------------------
-//  Collapse — `grid-rows-[0fr → 1fr]` + opacity, 300ms ease-out
-// ---------------------------------------------------------------------------
-
-function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
-  const reducedMotion = usePrefersReducedMotion();
-  const [mounted, setMounted] = useState(open);
-  const progress = useSharedValue(open ? 1 : 0);
-  const measured = useSharedValue(0);
-
-  useEffect(() => {
-    if (open) setMounted(true);
-    const target = open ? 1 : 0;
-    if (reducedMotion) {
-      progress.value = target;
-      if (!open) setMounted(false);
-      return;
-    }
-    progress.value = withTiming(target, { duration: 300, easing: EASE_OUT }, (finished) => {
-      'worklet';
-      if (finished && target === 0) runOnJS(setMounted)(false);
-    });
-  }, [open, reducedMotion, progress]);
-
-  const onLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      measured.value = event.nativeEvent.layout.height;
-    },
-    [measured],
-  );
-  const style = useAnimatedStyle(
-    () => ({
-      opacity: progress.value,
-      height: progress.value >= 1 ? 'auto' : progress.value * measured.value,
-    }),
-    [progress, measured],
-  );
-  if (!mounted) return null;
-  return (
-    <Animated.View style={[{ overflow: 'hidden' }, style]}>
-      <View onLayout={onLayout}>{children}</View>
-    </Animated.View>
   );
 }
 
@@ -380,7 +337,7 @@ function ServerRow({
         <ServerMenu server={server} actions={actions} onAction={onServerAction} />
       </View>
       {hasTools ? (
-        <Collapse open={expanded}>
+        <Collapsible open={expanded} transition={TOOLS_REVEAL} keepMounted={false}>
           <View style={styles.tools} testID={testID ? `${testID}-tools` : undefined}>
             {server.tools?.map((tool) => (
               <Chip
@@ -393,7 +350,7 @@ function ServerRow({
               </Chip>
             ))}
           </View>
-        </Collapse>
+        </Collapsible>
       ) : null}
     </View>
   );
