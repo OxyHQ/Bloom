@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { View } from 'react-native';
 
+import { EmptyState } from '../empty-state';
 import { RiLock2Line } from '../icons/remix/RiLock2Line';
 import { Text } from '../typography';
 import { useChatScreenPaint } from './shared';
@@ -19,6 +20,9 @@ import { CHAT_SCREEN_MESSAGES } from './messages';
  *
  * The title DOES default ("No messages yet"), because an empty transcript is a
  * fact this component can see for itself.
+ *
+ * It is `EmptyState` with the notice pill as its content and the caller's
+ * action as its footer.
  */
 function ChatEmptyStateComponent({
   title: titleProp,
@@ -36,41 +40,21 @@ function ChatEmptyStateComponent({
   const NoticeIcon = noticeIcon === false ? null : (noticeIcon ?? RiLock2Line);
 
   return (
-    <View
-      testID={testID}
+    <EmptyState
+      illustration={
+        illustration ? (
+          <View testID={testID ? `${testID}-illustration` : undefined}>{illustration}</View>
+        ) : null
+      }
+      title={title}
+      description={description}
+      footer={action}
       style={[
-        {
-          flexGrow: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 16,
-          paddingLeft: 24,
-          paddingRight: 24,
-          paddingTop: 32,
-          paddingBottom: 32,
-        },
+        { flexGrow: 1, paddingLeft: 24, paddingRight: 24, paddingTop: 32, paddingBottom: 32 },
         style,
       ]}
+      testID={testID}
     >
-      {illustration ? (
-        <View testID={testID ? `${testID}-illustration` : undefined}>{illustration}</View>
-      ) : null}
-
-      <View style={{ alignItems: 'center', gap: 6, maxWidth: 360 }}>
-        <Text
-          variant="headline-semibold"
-          accessibilityRole="header"
-          style={{ color: paint.text, textAlign: 'center' }}
-        >
-          {title}
-        </Text>
-        {description ? (
-          <Text variant="body-regular" style={{ color: paint.textSecondary, textAlign: 'center' }}>
-            {description}
-          </Text>
-        ) : null}
-      </View>
-
       {notice ? (
         <View
           testID={testID ? `${testID}-notice` : undefined}
@@ -101,9 +85,7 @@ function ChatEmptyStateComponent({
           </Text>
         </View>
       ) : null}
-
-      {action}
-    </View>
+    </EmptyState>
   );
 }
 

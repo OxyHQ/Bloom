@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { EmptyState } from '../empty-state';
 import { useFieldMembership } from '../field/membership';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiBankCardLine } from '../icons/remix/RiBankCardLine';
@@ -9,7 +10,6 @@ import { useMessages } from '../locale/messages';
 import * as Skeleton from '../skeleton';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import { PAYMENT_METHOD_MESSAGES } from './messages';
 import { PaymentMethodRow } from './PaymentMethodRow';
 import { PAYMENT_METHOD_GEOMETRY, PAYMENT_METHOD_LIST_GAP } from './constants';
@@ -61,7 +61,7 @@ const PICKER_ROW_ROLE = 'radio' as const;
  *   rows     4 apart, at the row's own geometry
  *   loading  placeholder rows at the plate's own size, announced busy so a
  *            reader is told to wait rather than told nothing
- *   empty    a 32 glyph, a title and a line, centred with 32 of air — and the
+ *   empty    `EmptyState`'s panel rung: a glyph, a title and a line — and the
  *            add row is still drawn under it, because an empty list is exactly
  *            when a reader needs it
  */
@@ -80,7 +80,7 @@ function PaymentMethodListComponent({
   empty,
   emptyTitle: emptyTitleProp,
   emptyDescription,
-  emptyIcon: EmptyIcon = RiBankCardLine,
+  emptyIcon = RiBankCardLine,
   accessibilityLabel,
   style,
   testID,
@@ -174,23 +174,14 @@ function PaymentMethodListComponent({
     return (
       <View testID={testID} style={[{ gap: PAYMENT_METHOD_LIST_GAP }, style]}>
         {empty ?? (
-          <View
+          <EmptyState
+            variant="compact"
+            icon={emptyIcon}
+            title={emptyTitle}
+            description={emptyDescription || undefined}
+            style={{ paddingLeft: 16, paddingRight: 16 }}
             testID={testID ? `${testID}-empty` : undefined}
-            style={{ alignItems: 'center', gap: 8, paddingVertical: 32, paddingHorizontal: 16 }}
-          >
-            <EmptyIcon width={32} height={32} fill={paint.textTertiary} />
-            <Text variant="body-medium" style={{ color: paint.text, textAlign: 'center' }}>
-              {emptyTitle}
-            </Text>
-            {emptyDescription ? (
-              <Text
-                variant="body-2-regular"
-                style={{ color: paint.textSecondary, textAlign: 'center' }}
-              >
-                {emptyDescription}
-              </Text>
-            ) : null}
-          </View>
+          />
         )}
         {addRow}
       </View>

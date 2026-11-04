@@ -2,9 +2,9 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { EmptyState } from '../empty-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import { ArchivedRow } from './ArchivedRow';
 import { ChatListItem } from './ChatListItem';
 import { ChatListItemSkeleton } from './ChatListItemSkeleton';
@@ -80,7 +80,6 @@ function ChatListComponent({
   }, [chats, sections]);
 
   const total = resolved.reduce((sum, section) => sum + section.chats.length, 0);
-  const EmptyIcon = CHAT_EMPTY_ICON;
 
   const body = loading ? (
     <ChatListItemSkeleton
@@ -90,28 +89,13 @@ function ChatListComponent({
     />
   ) : total === 0 ? (
     (empty ?? (
-      <View
-        style={{
-          paddingLeft: geo.paddingHorizontal,
-          paddingRight: geo.paddingHorizontal,
-          paddingTop: 48,
-          paddingBottom: 48,
-          alignItems: 'center',
-          gap: 8,
-        }}
+      <EmptyState
+        icon={CHAT_EMPTY_ICON}
+        title={labels?.emptyTitle ?? messages.emptyTitle}
+        description={labels?.emptyDescription ?? messages.emptyDescription}
+        style={{ paddingLeft: geo.paddingHorizontal, paddingRight: geo.paddingHorizontal }}
         testID={testID ? `${testID}-empty` : undefined}
-      >
-        <EmptyIcon width={32} height={32} fill={paint.heading} />
-        <Text variant="headline-semibold" style={{ color: paint.text, textAlign: 'center' }}>
-          {labels?.emptyTitle ?? messages.emptyTitle}
-        </Text>
-        <Text
-          variant="body-regular"
-          style={{ color: paint.textMuted, textAlign: 'center', maxWidth: 260 }}
-        >
-          {labels?.emptyDescription ?? messages.emptyDescription}
-        </Text>
-      </View>
+      />
     ))
   ) : (
     resolved.map((section) => (
