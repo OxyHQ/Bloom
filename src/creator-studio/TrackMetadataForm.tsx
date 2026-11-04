@@ -1,16 +1,7 @@
 import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import {
-  Select,
-  SelectContent,
-  SelectIcon,
-  SelectItem,
-  SelectItemIndicator,
-  SelectItemText,
-  SelectTrigger,
-  SelectValue,
-} from '../select';
+import { SelectField } from '../select';
 import { Switch } from '../switch';
 import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel } from '../text-field';
 import { Textarea } from '../textarea';
@@ -21,7 +12,7 @@ import { ArtistChipsInput, IsrcField } from './MetadataFields';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import { resolveCreatorStudioPaint } from './shared';
-import type { CreatorOption, TrackMetadata, TrackMetadataFormProps } from './types';
+import type { TrackMetadata, TrackMetadataFormProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
@@ -32,7 +23,7 @@ import { useContainerWidth } from '../hooks/use-container-width';
  *                           of the form's own width (1.6 : 1), stacked below
  *   explicit                `Switch` row: label `body-medium` + description
  *                           `body-2-regular` text-secondary, the switch right
- *   genre · language        two `Select`s, side by side from 560px
+ *   genre · language        two `SelectField`s, side by side from 560px
  *   primary / featured      `ArtistChipsInput` each (primary required)
  *   ISRC                    `IsrcField`
  *   lyrics                  `Textarea`, 6 rows, counter
@@ -43,49 +34,6 @@ import { useContainerWidth } from '../hooks/use-container-width';
  */
 
 const TWO_UP_FROM = 560;
-
-function OptionSelect({
-  label,
-  placeholder,
-  value,
-  options,
-  onChange,
-  error,
-  disabled,
-  testID,
-}: {
-  label: string;
-  placeholder: string;
-  value?: string;
-  options: readonly CreatorOption[];
-  onChange: (value: string) => void;
-  error?: string;
-  disabled?: boolean;
-  testID?: string;
-}) {
-  return (
-    <View style={styles.field}>
-      <TextFieldLabel>{label}</TextFieldLabel>
-      <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger label={label} testID={testID}>
-          <SelectValue placeholder={placeholder} />
-          <SelectIcon />
-        </SelectTrigger>
-        <SelectContent<CreatorOption>
-          label={label}
-          items={options}
-          renderItem={(item) => (
-            <SelectItem value={item.value} label={item.label}>
-              <SelectItemIndicator />
-              <SelectItemText>{item.label}</SelectItemText>
-            </SelectItem>
-          )}
-        />
-      </Select>
-      {error ? <TextFieldHint isInvalid>{error}</TextFieldHint> : null}
-    </View>
-  );
-}
 
 function TrackMetadataFormComponent({
   value,
@@ -168,26 +116,28 @@ function TrackMetadataFormComponent({
 
       <View style={pair}>
         <View style={twoUp ? styles.half : styles.field}>
-          <OptionSelect
+          <SelectField
             label={labels.genre}
             placeholder={labels.genrePlaceholder}
             value={value.genre}
-            options={genres}
-            onChange={(v) => set('genre', v)}
+            items={genres}
+            onValueChange={(v) => set('genre', v)}
             error={errors.genre}
             disabled={disabled}
+            style={styles.field}
             testID={id('genre')}
           />
         </View>
         <View style={twoUp ? styles.half : styles.field}>
-          <OptionSelect
+          <SelectField
             label={labels.language}
             placeholder={labels.languagePlaceholder}
             value={value.language}
-            options={languages}
-            onChange={(v) => set('language', v)}
+            items={languages}
+            onValueChange={(v) => set('language', v)}
             error={errors.language}
             disabled={disabled}
+            style={styles.field}
             testID={id('language')}
           />
         </View>

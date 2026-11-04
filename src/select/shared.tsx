@@ -394,3 +394,20 @@ export function defaultExtractLabel(item: unknown): React.ReactNode {
   }
   return String(item);
 }
+
+/**
+ * What a trigger's `SelectValue` shows, on both platforms: the chosen ITEM
+ * through `extractLabel`, the raw value while no item matches it, and the
+ * placeholder while nothing is chosen. `extractLabel` only ever receives the
+ * item `SelectContent` resolved — never the bare value — so a caller's
+ * extractor needs no shape check.
+ */
+export function resolveSelectDisplay<T>(
+  value: string | undefined,
+  item: T | undefined,
+  extractLabel: (item: T) => React.ReactNode,
+  placeholder: string | undefined,
+): { chosen: boolean; display: React.ReactNode } {
+  if (value == null) return { chosen: false, display: placeholder ?? '' };
+  return { chosen: true, display: item !== undefined ? extractLabel(item) : value };
+}
