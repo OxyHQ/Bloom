@@ -1648,7 +1648,7 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
 const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
   haptics: 'Retour haptique',
   hapticsDescription: 'Vibration lors des interactions',
-  hapticsUnavailable: 'Disponible dans l\'app mobile.',
+  hapticsUnavailable: "Disponible dans l'app mobile.",
   videoAutoplay: 'Lecture automatique des vidéos',
   videoAutoplayDescription: 'Les vidéos que vous lancez se lisent toujours.',
   autoplayAlways: 'Toujours',

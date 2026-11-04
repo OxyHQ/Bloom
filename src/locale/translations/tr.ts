@@ -1588,7 +1588,7 @@ const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
   videoAutoplay: 'Videoları otomatik oynat',
   videoAutoplayDescription: 'Kendi başlattığın videolar her zaman oynar.',
   autoplayAlways: 'Her zaman',
-  autoplayWifi: 'Yalnızca Wi-Fi\'da',
+  autoplayWifi: "Yalnızca Wi-Fi'da",
   autoplayNever: 'Asla',
 };
 

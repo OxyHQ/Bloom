@@ -1623,7 +1623,7 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
 const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
   haptics: 'Resposta hàptica',
   hapticsDescription: 'Vibració en interactuar',
-  hapticsUnavailable: 'Disponible a l\'app mòbil.',
+  hapticsUnavailable: "Disponible a l'app mòbil.",
   videoAutoplay: 'Reprodueix vídeos automàticament',
   videoAutoplayDescription: 'Els vídeos que inicies tu sempre es reprodueixen.',
   autoplayAlways: 'Sempre',

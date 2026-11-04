@@ -1642,7 +1642,7 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
 const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
   haptics: 'Feedback aptico',
   hapticsDescription: 'Vibrazione durante le interazioni',
-  hapticsUnavailable: 'Disponibile nell\'app mobile.',
+  hapticsUnavailable: "Disponibile nell'app mobile.",
   videoAutoplay: 'Riproduzione automatica dei video',
   videoAutoplayDescription: 'I video che avvii tu si riproducono sempre.',
   autoplayAlways: 'Sempre',

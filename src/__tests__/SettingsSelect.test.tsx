@@ -25,7 +25,12 @@ jest.mock('../select', () => ({
  */
 it('sizes the compact trigger by its padding, never a fixed height', () => {
   render(
-    <SettingsSelect label="Mode" value="a" onChange={() => {}} items={[{ value: 'a', label: 'A' }]} />,
+    <SettingsSelect
+      label="Mode"
+      value="a"
+      onChange={() => {}}
+      items={[{ value: 'a', label: 'A' }]}
+    />,
   );
   expect(String(mockTrigger.className ?? '')).not.toMatch(/(^|\s)(h|min-h|max-h)-/);
   const field = StyleSheet.flatten(mockTrigger.fieldStyle as object) as Record<string, unknown>;
