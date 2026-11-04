@@ -137,6 +137,24 @@ describe('AvatarGroup identity resolution', () => {
     expect(getByLabelText('Ada Lovelace (@ada)')).toBeTruthy();
   });
 
+  it('draws explicit initials without showInitials, the face inset by ringWidth', () => {
+    const rendered = render(
+      <BloomThemeProvider>
+        <AvatarGroup
+          items={[{ id: '1', name: 'Ada Lovelace', initials: 'AL' }]}
+          size={26}
+          ringWidth={2}
+        />
+      </BloomThemeProvider>,
+    );
+    expect(rendered.getByText('AL')).toBeTruthy();
+    const ringed = hostsOfType(rendered.toJSON(), 'View').filter(
+      (node) => (node.props.style as { borderWidth?: number } | undefined)?.borderWidth === 2,
+    );
+    expect(ringed).toHaveLength(1);
+    expect((ringed[0]?.props.style as { width?: number }).width).toBe(26);
+  });
+
   it('does not collapse two blank ids into one React key', () => {
     // `getItemKey` carried the identical `??` hazard with a different blast
     // radius: a blank `id` yielded the key `''`, and two of them collide.

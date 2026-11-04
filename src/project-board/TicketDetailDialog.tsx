@@ -9,6 +9,7 @@ import { useMessages } from '../locale/messages';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { Textarea } from '../textarea';
 import { BoardTooltip } from './BoardTooltip';
+import { MemberAvatars } from './MemberAvatars';
 import { cx } from './constants';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
@@ -432,25 +433,11 @@ export function TicketDetailDialog({
                             >
                               {ticket.assignees.length ? (
                                 <>
-                                  <View className="flex items-center -space-x-1.5">
-                                    {ticket.assignees.slice(0, 3).map((id, i) => {
-                                      const p = members[id];
-                                      return (
-                                        p && (
-                                          <Avatar
-                                            key={id}
-                                            source={p.avatar}
-                                            initials={p.initials}
-                                            alt={p.name}
-                                            className={cx(
-                                              'size-[18px] ring-2 ring-ticket-detail-surface',
-                                              i > 0 && '-ms-1.5',
-                                            )}
-                                          />
-                                        )
-                                      );
-                                    })}
-                                  </View>
+                                  <MemberAvatars
+                                    ids={ticket.assignees.slice(0, 3)}
+                                    members={members}
+                                    size={18}
+                                  />
                                   <Text className="text-body-medium text-text-primary">
                                     {owner?.name ?? ticket.assignees[0]}
                                     {ticket.assignees.length > 1
