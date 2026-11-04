@@ -3,9 +3,12 @@
  * through `./netinfo`. Without it the status stays unknown (online, unmetered)
  * rather than breaking the bundle. The web fork reads the browser instead.
  */
-import { useSyncExternalStore } from 'react';
-
-import { createNetworkStatusStore, type NetworkStatus } from './network-status';
+import {
+  createNetworkStatusStore,
+  type NetworkStatus,
+  type UseNetworkStatusOptions,
+  useNetworkStatusFrom,
+} from './network-status';
 import { loadNetInfo } from './netinfo';
 
 const store = createNetworkStatusStore((publish) => {
@@ -26,6 +29,6 @@ const store = createNetworkStatusStore((publish) => {
  * from one subscription shared by every caller. Before the platform answers, and
  * without netinfo installed, it reads `{ online: true, metered: false }`.
  */
-export function useNetworkStatus(): NetworkStatus {
-  return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
+export function useNetworkStatus(options?: UseNetworkStatusOptions): NetworkStatus {
+  return useNetworkStatusFrom(store, options);
 }

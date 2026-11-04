@@ -13,8 +13,9 @@ import { useBloomPreferences } from './context';
  */
 export function useMediaAutoplay(): boolean {
   const { preferences } = useBloomPreferences();
-  const { metered } = useNetworkStatus();
   const policy = preferences.videoAutoplay;
+  // Only "Wi-Fi only" needs the connection; "always" and "never" watch nothing.
+  const { metered } = useNetworkStatus({ enabled: policy === 'wifi' });
   if (policy === 'never') return false;
   if (policy === 'always') return true;
   return !metered;

@@ -2,6 +2,12 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.6.2
+
+### Fixed
+
+- **Media autoplay watches the connection only for "Wi-Fi only".** `useMediaAutoplay` (and so every `VideoPlaybackProvider` and `GifMessage`) subscribed to netinfo whatever the viewer's preference, so an app's Jest suite — where netinfo has no native module — crashed with `Cannot read properties of undefined (reading 'isInternetReachable')` as soon as one rendered. `useNetworkStatus` takes `{ enabled }` (default `true`); `false` starts no subscription and reads the unknown status, and autoplay passes `enabled: policy === 'wifi'`, as 17.4.0 did before the shared store.
+
 ## 17.6.1
 
 ### Fixed

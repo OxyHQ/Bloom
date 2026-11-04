@@ -76,3 +76,5 @@ optionality and turn a missing optional peer into a build failure.
 It presents through the shared [toast](/docs/bloom/main/toast) engine with a
 fixed id, so a second mount does not duplicate the toast — but it does double
 the listeners and the timers. One per app.
+
+`useNetworkStatus({ enabled: false })` starts no subscription and reads the unknown status (online, unmetered) — for a caller that only sometimes needs the answer, as media autoplay outside "Wi-Fi only".

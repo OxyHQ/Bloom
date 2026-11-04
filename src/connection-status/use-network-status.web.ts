@@ -4,9 +4,12 @@
  * `online`/`offline` events, and the Network Information API (`connection`,
  * where the browser has it) for a cellular link or the viewer's Save-Data.
  */
-import { useSyncExternalStore } from 'react';
-
-import { createNetworkStatusStore, type NetworkStatus } from './network-status';
+import {
+  createNetworkStatusStore,
+  type NetworkStatus,
+  type UseNetworkStatusOptions,
+  useNetworkStatusFrom,
+} from './network-status';
 
 interface NetworkInformationLike {
   type?: string;
@@ -38,6 +41,6 @@ const store = createNetworkStatusStore((publish) => {
  * Whether the browser is online, and whether its connection is metered — live,
  * from one subscription shared by every caller.
  */
-export function useNetworkStatus(): NetworkStatus {
-  return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
+export function useNetworkStatus(options?: UseNetworkStatusOptions): NetworkStatus {
+  return useNetworkStatusFrom(store, options);
 }
