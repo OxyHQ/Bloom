@@ -8,6 +8,7 @@ import type { BloomIconRenderer } from '../icons/render-icon';
 import type { AriaAttributes, ReactNode } from 'react';
 import type {
   GestureResponderEvent,
+  Insets,
   FocusEvent as NativeFocusEvent,
   MouseEvent as NativeMouseEvent,
   LayoutChangeEvent,
@@ -418,6 +419,12 @@ export interface GlyphButtonProps {
    * events) — the media player's 4px active dot. The family owns its geometry,
    * because the two that draw one place it differently.
    */
+  /**
+   * Extra pressable reach beyond the box, on every side (`8`) or per side. For
+   * a box smaller than a finger — a 16px month chevron — so the visible size
+   * stays measured while the target does not shrink with it. None by default.
+   */
+  hitSlop?: number | Insets;
   decoration?: ReactNode;
   /** Required — the control draws no text. */
   accessibilityLabel: string;

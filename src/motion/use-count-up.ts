@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
-/** `hooks/use-count-up.ts`: 320ms, ease-out cubic. */
+/** The count's default duration: 320ms, ease-out cubic. */
 export const COUNT_UP_MS = 320;
 
 /**
- * Rolls the displayed number from its current value to `target` on an
- * ease-out curve, stepping in whole units — `useCountUp`, which the
- * chart cards' headline runs through whenever the total or the hovered
- * category changes. Under reduced motion the number snaps.
+ * Counts the displayed number from its current value to `target` on an
+ * ease-out curve, stepping in whole units — the chart cards' headline runs
+ * through it whenever the total or the hovered category changes. A change
+ * mid-count starts from the number on screen. Under reduced motion it snaps.
  */
 export function useCountUp(target: number, duration = COUNT_UP_MS): number {
   const reducedMotion = usePrefersReducedMotion();
@@ -43,9 +43,9 @@ export function useCountUp(target: number, duration = COUNT_UP_MS): number {
 }
 
 /**
- * `useCountUp` that keeps up to two decimals by counting in scaled units —
- * `useCountUpPrecise`, so fractional data such as `48.8` keeps its
- * precision through the integer-stepping roll.
+ * {@link useCountUp} that keeps up to two decimals by counting in scaled
+ * units, so fractional data such as `48.8` keeps its precision through the
+ * whole-unit steps.
  */
 export function useCountUpPrecise(value: number, duration = COUNT_UP_MS): number {
   const places = Number.isInteger(value)

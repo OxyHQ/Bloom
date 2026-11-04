@@ -6,6 +6,7 @@ import { Collapsible } from '../collapsible';
 import { StyledView } from '../styles/styled-primitives';
 import type { AgentReplyProps } from './types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
@@ -16,7 +17,7 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
 export function AgentReply({ children, identity, actions, style }: AgentReplyProps) {
   const ref = useRef<ComponentRef<typeof View>>(null);
   const reduced = usePrefersReducedMotion();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focused, setFocused] = useState(false);
   useTrackEvents(ref, undefined, undefined, setFocused);
   const show = Platform.OS !== 'web' || hovered || focused;
@@ -28,8 +29,8 @@ export function AgentReply({ children, identity, actions, style }: AgentReplyPro
   return (
     <StyledView
       ref={ref}
-      onPointerEnter={() => setHovered(true)}
-      onPointerLeave={() => setHovered(false)}
+      onPointerEnter={onHoverIn}
+      onPointerLeave={onHoverOut}
       className="group/reply w-fit max-w-[min(520px,calc(100%-24px))] text-body-regular"
       style={[
         {

@@ -3,7 +3,7 @@ import { View, type StyleProp, type TextStyle, type ViewStyle } from 'react-nati
 
 import { Chip } from '../../chip';
 import { Text } from '../../typography';
-import { useCountUpPrecise } from '../use-count-up';
+import { useCountUpPrecise } from '../../motion/use-count-up';
 import { ChartRangePill, ChartRangeSelect } from './ChartRangePill';
 import { FadeOnChange } from './FadeOnChange';
 import { formatNumber, type ChartDelta } from './format';

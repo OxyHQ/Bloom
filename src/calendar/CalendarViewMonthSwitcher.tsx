@@ -7,7 +7,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
 
 import {
   buildMonthGrid,
@@ -20,7 +19,7 @@ import {
   weekdayLabels,
 } from '../date-picker/calendar-grid';
 import { CALENDAR_CSS } from '../date-picker/CalendarMonth';
-import { borderRadius } from '../styles/tokens';
+import { MonthNavButton } from '../date-picker/MonthNavButton';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -64,7 +63,6 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const DEFAULT_WIDTH = 320;
 const FOOTPRINT_HEIGHT = 36;
-const NAV_SIZE = 16;
 const DAY_SIZE = 32;
 const CELL_GAP = 12;
 const GRID_WIDTH = DAY_SIZE * 7 + CELL_GAP * 6;
@@ -73,63 +71,6 @@ const OPACITY_MS = 280;
 const HEIGHT_EASING = Easing.bezier(0.34, 1.2, 0.64, 1);
 const OPACITY_EASING = Easing.bezier(0, 0, 0.58, 1);
 const CSS_ID = 'bloom-calendar-web-css';
-
-/** A `ChevronDownSmall`, turned to point left or right. */
-function Chevron({ direction, color }: { direction: 'left' | 'right'; color: string }) {
-  return (
-    <Svg width={NAV_SIZE} height={NAV_SIZE} viewBox="0 0 16 16" fill="none">
-      <Path
-        d={
-          direction === 'left'
-            ? 'M9 4L5.70711 7.29289C5.31658 7.68342 5.31658 8.31658 5.70711 8.70711L9 12'
-            : 'M7 4L10.2929 7.29289C10.6834 7.68342 10.6834 8.31658 10.2929 8.70711L7 12'
-        }
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
-function NavButton({
-  direction,
-  label,
-  onPress,
-  palette,
-}: {
-  direction: 'left' | 'right';
-  label: string;
-  onPress: () => void;
-  palette: CalendarViewPalette;
-}) {
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const hook: WebDataSet = IS_WEB ? { dataSet: { bloomCalendarNav: '' } } : {};
-  const style: WebCssStyle = {
-    width: NAV_SIZE,
-    height: NAV_SIZE,
-    flexShrink: 0,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: hovered ? palette.secondaryHover : 'transparent',
-    '--bloom-calendar-ring': palette.ring,
-  };
-  return (
-    <Pressable
-      {...hook}
-      role="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      onHoverIn={onHoverIn}
-      onHoverOut={onHoverOut}
-      hitSlop={8}
-      style={style}
-    >
-      <Chevron direction={direction} color={palette.iconPrimary} />
-    </Pressable>
-  );
-}
 
 function SwitcherDay({
   date,
@@ -406,11 +347,13 @@ export function CalendarViewMonthSwitcher({
             paddingRight: 8,
           }}
         >
-          <NavButton
+          <MonthNavButton
             direction="left"
-            label={messages.previousMonth}
+            accessibilityLabel={messages.previousMonth}
             onPress={onPreviousMonth}
-            palette={palette}
+            color={palette.iconPrimary}
+            hoverFill={palette.secondaryHover}
+            ring={palette.ring}
           />
           <Pressable
             {...titleHook}
@@ -426,11 +369,13 @@ export function CalendarViewMonthSwitcher({
               {title}
             </Text>
           </Pressable>
-          <NavButton
+          <MonthNavButton
             direction="right"
-            label={messages.nextMonth}
+            accessibilityLabel={messages.nextMonth}
             onPress={onNextMonth}
-            palette={palette}
+            color={palette.iconPrimary}
+            hoverFill={palette.secondaryHover}
+            ring={palette.ring}
           />
         </View>
         {mounted ? (

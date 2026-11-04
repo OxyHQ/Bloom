@@ -672,8 +672,9 @@ describe('accessibility STATE reaches the DOM', () => {
 
     mount(<ImageMessage source="https://x.invalid/a.jpg" state="sending" testID="ind" />);
     const busy = byTestId('ind-progress');
-    expect(busy.getAttribute('role')).toBe('img');
+    expect(busy.getAttribute('role')).toBe('progressbar');
     expect(busy.getAttribute('aria-busy')).toBe('true');
+    expect(busy.getAttribute('aria-valuenow')).toBeNull();
   });
 
   it('turns the ring into a named CANCEL button when the caller can cancel', () => {

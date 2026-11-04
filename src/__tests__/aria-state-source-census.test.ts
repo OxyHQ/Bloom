@@ -216,8 +216,10 @@ const RN_HOSTS = new Set([
 // (`MeterRole`: a measurement or a task's progress) and puts it on its own host
 // element beside the flat `aria-value{min,max,now,text}` and its required
 // `accessibilityLabel`; a computed role the census cannot read, which
-// `aria-state-web.test.tsx` and `Meter.test.tsx` pin for both roles.
-const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'RadioHost'];
+// `aria-state-web.test.tsx` and `Meter.test.tsx` pin for both roles. `MeterRing`
+// does the same for the ring (`message-media`'s send ring hands it
+// `role="progressbar"`), pinned by the same two suites.
+const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'MeterRing', 'RadioHost'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -267,6 +269,7 @@ const NAME_DELEGATING_TAGS = [
   'MediaPressable',
   'MenuRowShell',
   'Meter',
+  'MeterRing',
   'PressableScale',
   'RadioHost',
 ];

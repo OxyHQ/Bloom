@@ -419,6 +419,10 @@ export {
   ScaleAndFadeOut,
   ShrinkAndPop,
   ScreenTransition,
+  RollingText,
+  useCountUp,
+  useCountUpPrecise,
+  useEasedValues,
   MOTION_RECIPES,
   animateMotion,
   animateWithSpec,
@@ -430,6 +434,8 @@ export {
   springSettleMs,
 } from './motion';
 export type {
+  RollingTextMode,
+  RollingTextProps,
   ScreenTransitionProps,
   ScreenTransitionDirection,
   MotionIntent,
@@ -2136,6 +2142,7 @@ export type {
   MeterColors,
   MeterDecorativeProps,
   MeterProps,
+  MeterRingDecorativeProps,
   MeterRingProps,
   StatBarProps,
   StatBarProgressProps,

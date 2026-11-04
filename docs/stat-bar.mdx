@@ -32,6 +32,7 @@ with a label is `StatBar`; a bar inside a card is that card's business.
 | `width`               | a fixed width; without one the bar fills its parent            |
 | `fill` / `track`      | the two colours — see below before you pass either             |
 | `transitionMs`        | ease the fill on WEB; native snaps, reduced motion snaps       |
+| `indeterminate`       | the amount is not known yet: a sweeping segment, no value reported — see below |
 | `accessibilityLabel`  | what the bar measures — REQUIRED                               |
 | `valueText`           | `aria-valuetext`, the reading ("4 of 5"); without it the share in the reader's locale ("80%", "80 %") |
 | `role`                | `meter` (default) for a measurement, `progressbar` for a task's progress — see Accessibility |
@@ -40,7 +41,27 @@ with a label is `StatBar`; a bar inside a card is that card's business.
 | `fillTestID`          | the fill's own `testID`; defaults to `` `${testID}-fill` ``    |
 
 `MeterRing` takes `size` (56) and `thickness` (5) instead of `height`/`width`,
-plus `cap` and centred `children`.
+plus `cap`, centred `children` and `backdrop`, a disc painted under the whole
+ring (the scrim that lets an upload ring read over a photo).
+
+### A decorative ring
+
+`decorative` draws the ring with no role, hidden from assistive technology, as
+`Meter`'s decorative segment is: for the drawing inside a control that carries
+its own name (`message-media`'s cancel ring, `media-header`'s download toggle),
+a video note's playback position, a plan's progress beside its own text. A
+decorative ring may follow a Reanimated shared value instead of `value` —
+`progress`, the drawn share 0–1, moved on the UI thread (a step loader filling
+over its own duration in `agent-progress`). Only a decorative ring takes one: a
+shared value has no accessible reading.
+
+```tsx
+<MeterRing decorative value={0.4} size={28} thickness={2.5} backdrop="rgba(0, 0, 0, 0.35)">
+  <RiCloseLine width={11} height={11} fill="#fff" />
+</MeterRing>
+
+<MeterRing decorative progress={sharedProgress} size={16} thickness={2.5} />
+```
 
 ### A download ring
 
@@ -96,13 +117,29 @@ neighbourhood and city, so the highlighted row takes the brand-anchored data hue
 and the comparators the single-ink neutral. Painting them with the accent would
 have said each row was progress toward something.
 
-## `Meter` is determinate only
+## An indeterminate bar
 
-There is no `indeterminate` prop. An indeterminate bar is a sweeping segment —
-reanimated on native, a keyframe on web, a layout measurement for the sweep
-distance — and none of that is shared with a determinate fill. `creator-studio`
-owns the one indeterminate bar in the library; a second caller is the moment to
-move it here, not before.
+`indeterminate` is the bar for an amount nobody knows yet — a file
+transcoding, a step that reports no progress. A segment 40% of the track wide
+sweeps across it every 1.4 s, `ease-in-out`, from off its left edge to off its
+right one; under reduced motion it parks 30% along, which still reads as
+"working". The bar is then a `progressbar` whatever `role` says (a `meter`
+always has a value) and reports none: `aria-valuenow` and `aria-valuetext` are
+absent and `aria-busy` is set. `value`, `reveal` and `transitionMs` are not
+drawn meanwhile.
+
+```tsx
+<Meter indeterminate value={0} accessibilityLabel={`Processing ${name}`} />
+
+// A segment of a row whose status text already says it (`TrackUploadRow`):
+<Meter decorative indeterminate value={0} height={4} />
+```
+
+The sweep needs no measurement: natively the segment's `left` moves as a share
+of the track on the JS driver (a layout property cannot take the native
+driver), and on the web a keyframe in Meter's adopted stylesheet moves it.
+`TrackUploadRow`'s processing bar is this one, and the dialog header's wizard
+step is a determinate `Meter`, rather than the hand-drawn bars they had.
 
 ## Accessibility
 
@@ -113,7 +150,7 @@ says a level indicator and a progress indicator:
 - `meter` (the default): a measurement within a known range — a score, the
   share of the ratings, how full a cart's minimum is. "Level indicator".
 - `progressbar`: how far a TASK has got — an upload, a download or an install
-  (a download's ring, `indeterminate` included), an episode listened, a lease's
+  (a download's ring or an indeterminate bar included), an episode listened, a lease's
   elapsed time, an application's steps. "Progress indicator". Bloom's own
   progress families (`creator-studio`, `media-card`, `media-header`,
   `track-list`, `order-status`, `outline-nav`, `listing-actions`, `tenancy`)

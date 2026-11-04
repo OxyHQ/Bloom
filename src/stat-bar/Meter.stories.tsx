@@ -284,3 +284,30 @@ export const DownloadRing: Story = {
     );
   },
 };
+
+/** An indeterminate bar: a segment sweeping the track, parked under reduced motion. */
+export const Indeterminate: Story = {
+  render: () => (
+    <View style={{ gap: 28, width: 480, maxWidth: '100%' }}>
+      <Section title="Indeterminate — a busy progressbar with no value">
+        <Labelled caption="6 (the default)">
+          <Meter indeterminate value={0} accessibilityLabel="Processing" />
+        </Labelled>
+        <Labelled caption="4, decorative">
+          <Meter decorative indeterminate value={0} height={4} />
+        </Labelled>
+      </Section>
+    </View>
+  ),
+};
+
+/** Decorative rings: no role, a backdrop disc, a centred glyph. */
+export const DecorativeRing: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+      <MeterRing decorative value={0.4} size={44} thickness={2.5} backdrop="rgba(0, 0, 0, 0.35)" />
+      <MeterRing decorative indeterminate size={32} thickness={2.5} />
+      <MeterRing decorative value={0.7} size={16} thickness={2.5} />
+    </View>
+  ),
+};

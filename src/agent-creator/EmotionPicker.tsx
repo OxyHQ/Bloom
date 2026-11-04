@@ -18,6 +18,7 @@ import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 export type EmotionChoice = {
@@ -133,7 +134,7 @@ export function EmotionPicker({
   const dragging = useSharedValue(false);
   const previousAngle = useSharedValue(0);
   const suppressClick = useSharedValue(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focused, setFocused] = useState(false);
   useFrameCallback((frame) => {
     if (!reduced && !hovered && !focused && !dragging.value && visible.value)
@@ -197,8 +198,8 @@ export function EmotionPicker({
         accessibilityLabel={messages.emotion}
         pointerEvents="auto"
         className="pointer-events-auto relative size-[268px] touch-none rounded-full"
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
+        onPointerEnter={onHoverIn}
+        onPointerLeave={onHoverOut}
       >
         <AnimatedView
           pointerEvents="box-none"

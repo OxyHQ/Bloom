@@ -7,7 +7,6 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Circle } from 'react-native-svg';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiArrowDownCircleFill } from '../icons/remix/RiArrowDownCircleFill';
@@ -26,6 +25,7 @@ import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { MeterRing } from '../stat-bar';
 import { Text } from '../typography';
 import { FollowLabel } from './FollowLabel';
 import { useMediaHeaderPaint } from './parts';
@@ -218,9 +218,6 @@ function DownloadButtonComponent({
     opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-media-header-ring': paint.ring,
   };
-  const stroke = 2.5;
-  const r = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * r;
   const value = clamp01(progress);
   const inner = Math.round(size * 0.55);
 
@@ -251,34 +248,16 @@ function DownloadButtonComponent({
           {downloaded ? (
             <RiArrowDownCircleFill width={size} height={size} fill={paint.accent} />
           ) : downloading ? (
-            <>
-              <Svg
-                width={size}
-                height={size}
-                style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}
-              >
-                <Circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={r}
-                  stroke={paint.border}
-                  strokeWidth={stroke}
-                  fill="none"
-                />
-                <Circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={r}
-                  stroke={paint.accent}
-                  strokeWidth={stroke}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray={`${circumference} ${circumference}`}
-                  strokeDashoffset={circumference * (1 - value)}
-                />
-              </Svg>
+            <MeterRing
+              decorative
+              value={value}
+              size={size}
+              thickness={2.5}
+              fill={paint.accent}
+              track={paint.border}
+            >
               <RiDownload2Line width={inner} height={inner} fill={paint.accent} />
-            </>
+            </MeterRing>
           ) : (
             <RiDownload2Line width={size} height={size} fill={idleColor} />
           )}

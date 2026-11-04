@@ -1,22 +1,13 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect } from 'react';
 import { Pressable, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import { BloomImage } from '../image';
-import Animated, {
-  Easing,
-  cancelAnimation,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
-import Svg, { Circle } from 'react-native-svg';
 
 import { webDataSet } from '../styles/web-data';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiErrorWarningFill } from '../icons/remix/RiErrorWarningFill';
 import { RiEyeOffLine } from '../icons/remix/RiEyeOffLine';
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
-import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -35,6 +26,8 @@ import { useMessages } from '../locale/messages';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { useReducedTransparency } from '../theme/reduced-transparency';
+import { MeterRing } from '../stat-bar';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The pieces every block in `message-media` is built from.
@@ -281,8 +274,8 @@ export interface MediaProgressRingProps {
   track: string;
   /** The disc under the ring. */
   fill: string;
-  /** `cancel` draws an X inside, `retry` a refresh glyph, `none` nothing. */
-  glyph?: 'cancel' | 'retry' | 'error' | 'none';
+  /** `cancel` draws an X inside, `none` nothing. */
+  glyph?: 'cancel' | 'none';
   accessibilityLabel: string;
   onPress?: () => void;
   ring: string;
@@ -290,16 +283,16 @@ export interface MediaProgressRingProps {
 }
 
 /**
- * The upload / download ring.
+ * The upload / download ring: a `MeterRing` on a disc.
  *
- * A determinate ring is a `progressbar` and carries the three `aria-value*`
- * attributes AND a name — react-native-web drops `accessibilityValue` entirely,
- * so a ring that only sets the native spelling announces a progress bar with no
- * progress in it. The INDETERMINATE one is `aria-busy` instead, which is the
- * honest reading of "something is happening and nobody knows how much".
+ * Without `onPress` it IS the `MeterRing` — a determinate `progressbar` with
+ * its value, or an indeterminate one (`aria-busy`, no value) whose quarter arc
+ * keeps turning under reduced motion: it reports a state, and a frozen spinner
+ * reads as a stall rather than as calm.
  *
- * It keeps turning under reduced motion: it reports a state, and a frozen
- * spinner reads as a stall rather than as calm.
+ * With `onPress` the whole ring is the family's named button (the cancel), so
+ * the ring inside is decorative: a `progressbar` nested in a button is flattened
+ * into the button's name, which is why it carries no role of its own there.
  */
 export const MediaProgressRing = memo(function MediaProgressRing({
   progress,
@@ -315,90 +308,23 @@ export const MediaProgressRing = memo(function MediaProgressRing({
 }: MediaProgressRingProps) {
   useMessageMediaCss();
   const determinate = typeof progress === 'number' && Number.isFinite(progress);
-  const value = determinate ? Math.min(1, Math.max(0, progress)) : 0;
-  const radius = (size - RING_STROKE) / 2;
-  const circumference = 2 * Math.PI * radius;
-
-  const rotation = useSharedValue(0);
-  useEffect(() => {
-    if (determinate) return undefined;
-    rotation.value = 0;
-    rotation.value = withRepeat(
-      withTiming(360, { duration: 900, easing: Easing.linear }),
-      -1,
-      false,
-    );
-    return () => cancelAnimation(rotation);
-  }, [determinate, rotation]);
-  const spin = useAnimatedStyle(
-    () => ({ transform: [{ rotate: `${rotation.value}deg` }] }),
-    [rotation],
-  );
-
-  const Glyph =
-    glyph === 'cancel'
-      ? RiCloseLine
-      : glyph === 'retry'
-        ? RiRefreshLine
-        : glyph === 'error'
-          ? RiErrorWarningFill
-          : null;
-
-  const percent = Math.round(value * 100);
-  const body = (
-    <View
-      style={{
-        width: size,
-        height: size,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: borderRadius.full,
-        backgroundColor: fill,
-      }}
-    >
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            width: size,
-            height: size,
-            // The arc starts at the top rather than at three o'clock.
-            transform: [{ rotate: '-90deg' }],
-          },
-          determinate ? null : spin,
-        ]}
-      >
-        <Svg width={size} height={size}>
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke={track}
-            strokeWidth={RING_STROKE}
-            fill="none"
-          />
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke={color}
-            strokeWidth={RING_STROKE}
-            strokeLinecap="round"
-            fill="none"
-            strokeDasharray={`${circumference}`}
-            strokeDashoffset={circumference * (1 - (determinate ? value : 0.25))}
-          />
-        </Svg>
-      </Animated.View>
-      {Glyph ? (
-        <Glyph width={Math.round(size * 0.4)} height={Math.round(size * 0.4)} fill={color} />
-      ) : null}
-    </View>
-  );
-
-  const rootStyle: WebCssStyle = { '--bloom-message-media-ring': ring };
+  const percent = determinate ? Math.round(Math.min(1, Math.max(0, progress)) * 100) : 0;
+  const geometry = {
+    value: percent,
+    max: 100,
+    size,
+    thickness: RING_STROKE,
+    fill: color,
+    track,
+    backdrop: fill,
+    indeterminate: !determinate,
+  };
+  const glyphSize = Math.round(size * 0.4);
+  const centre =
+    glyph === 'cancel' ? <RiCloseLine width={glyphSize} height={glyphSize} fill={color} /> : null;
 
   if (onPress) {
+    const rootStyle: WebCssStyle = { '--bloom-message-media-ring': ring };
     return (
       <HoldPressable
         {...webDataSet({ bloomMessageMediaPressable: '' })}
@@ -408,38 +334,21 @@ export const MediaProgressRing = memo(function MediaProgressRing({
         style={rootStyle}
         testID={testID}
       >
-        {body}
+        <MeterRing {...geometry} decorative>
+          {centre}
+        </MeterRing>
       </HoldPressable>
     );
   }
-  if (determinate) {
-    return (
-      <View
-        role="progressbar"
-        accessibilityLabel={accessibilityLabel}
-        aria-valuenow={percent}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuetext={`${percent}%`}
-        accessibilityValue={{ now: percent, min: 0, max: 100, text: `${percent}%` }}
-        style={rootStyle}
-        testID={testID}
-      >
-        {body}
-      </View>
-    );
-  }
   return (
-    <View
-      role="img"
+    <MeterRing
+      {...geometry}
+      role="progressbar"
       accessibilityLabel={accessibilityLabel}
-      aria-busy
-      accessibilityState={{ busy: true }}
-      style={rootStyle}
       testID={testID}
     >
-      {body}
-    </View>
+      {centre}
+    </MeterRing>
   );
 });
 
@@ -591,7 +500,7 @@ export const MediaFailure = memo(function MediaFailure({
   const label = labelProp ?? messages.notSent;
   const retryLabel = retryLabelProp ?? common.retry;
   useMessageMediaCss();
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   return (
     <View
       style={{
@@ -612,8 +521,8 @@ export const MediaFailure = memo(function MediaFailure({
           role="button"
           accessibilityLabel={retryLabel}
           onPress={onRetry}
-          onHoverIn={() => setHovered(true)}
-          onHoverOut={() => setHovered(false)}
+          onHoverIn={onHoverIn}
+          onHoverOut={onHoverOut}
           style={retryStyle(hovered, paint)}
         >
           <Text variant="caption-1-medium" style={{ color: paint.text }}>
@@ -624,17 +533,3 @@ export const MediaFailure = memo(function MediaFailure({
     </View>
   );
 });
-
-// ---------------------------------------------------------------------------
-//  Small helpers
-// ---------------------------------------------------------------------------
-
-/** A hover flag that costs one state hook and never fires on native. */
-export function useHovered(): [boolean, { onHoverIn: () => void; onHoverOut: () => void }] {
-  const [hovered, setHovered] = useState(false);
-  const handlers = useMemo(
-    () => ({ onHoverIn: () => setHovered(true), onHoverOut: () => setHovered(false) }),
-    [],
-  );
-  return [hovered, handlers];
-}

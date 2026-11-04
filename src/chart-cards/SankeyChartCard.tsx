@@ -30,7 +30,7 @@ import {
   type SankeyLayout,
 } from './sankey-layout';
 import { svgTextType, textTopForBaseline } from './svg-text';
-import { useEasedValues } from './use-eased-values';
+import { useEasedValues } from '../motion/use-eased-values';
 import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 import { mixColors } from '../styles/color-contrast';

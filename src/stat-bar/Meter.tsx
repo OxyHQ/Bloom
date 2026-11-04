@@ -1,21 +1,94 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import React, { memo, useEffect, useMemo, useRef } from 'react';
 import { styled } from 'react-native-css';
-import { Animated, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Easing, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useResolvedBloomLocale } from '../locale/context';
 import { useTheme } from '../theme/use-theme';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import {
   METER_DURATION_VAR,
+  METER_SWEEP_MS,
+  METER_SWEEP_PARKED,
+  METER_SWEEP_SHARE,
   adoptMeterStyleSheet,
   meterFraction,
   meterValue,
   meterValueText,
   resolveMeterColors,
+  sharePercent,
 } from './shared';
 import type { AnyMeterProps } from './types';
 import { useMeterReveal } from './use-meter-reveal';
+
+const SWEEP_FROM = sharePercent(-METER_SWEEP_SHARE);
+
+/**
+ * The indeterminate segment: {@link METER_SWEEP_SHARE} of the track, sweeping
+ * from off its left edge to off its right one. Natively its `left` moves, as a
+ * share of the track, on the JS driver (a layout property cannot take the
+ * native driver, and a share needs no measurement); on the web the shared
+ * stylesheet's keyframe moves it. Parked under reduced motion.
+ */
+function MeterSweep({
+  radius,
+  fill,
+  style,
+  testID,
+}: {
+  radius: number;
+  fill: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}) {
+  const web = Platform.OS === 'web';
+  const reducedMotion = usePrefersReducedMotion();
+  const sweep = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (web) {
+      adoptMeterStyleSheet();
+      return undefined;
+    }
+    if (reducedMotion) return undefined;
+    sweep.setValue(0);
+    const loop = Animated.loop(
+      Animated.timing(sweep, {
+        toValue: 1,
+        duration: METER_SWEEP_MS,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+        isInteraction: false,
+      }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [web, reducedMotion, sweep]);
+
+  const left = web
+    ? undefined
+    : reducedMotion
+      ? sharePercent(METER_SWEEP_PARKED)
+      : sweep.interpolate({ inputRange: [0, 1], outputRange: [SWEEP_FROM, '100%'] });
+
+  return (
+    <Animated.View
+      {...(web ? webDataSet({ bloomMeterSweep: '' }) : null)}
+      testID={testID}
+      style={[
+        {
+          width: sharePercent(METER_SWEEP_SHARE),
+          height: '100%',
+          borderRadius: radius,
+          backgroundColor: fill,
+        },
+        style,
+        left === undefined ? null : { left },
+      ]}
+    />
+  );
+}
 
 /**
  * ONE determinate bar. Every progress bar in Bloom is this one.
@@ -55,6 +128,7 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
     track = defaults.track,
     width,
     transitionMs = 0,
+    indeterminate = false,
     style,
     testID,
     fillStyle: callerFillStyle,
@@ -77,7 +151,9 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
   };
 
   const fillDataSet = transitionMs > 0 ? webDataSet({ bloomMeterFill: '' }) : null;
-  const bar = reveal ? (
+  const bar = indeterminate ? (
+    <MeterSweep radius={radius} fill={fill} style={callerFillStyle} testID={fillTestID} />
+  ) : reveal ? (
     <Animated.View
       {...fillDataSet}
       testID={fillTestID}
@@ -115,13 +191,17 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
 
   return (
     <View
-      // The two roles spelled out: a meter unless the caller says it measures a task (`MeterRole`).
-      role={props.role === 'progressbar' ? 'progressbar' : 'meter'}
+      // The two roles spelled out: a meter unless the caller says it measures a task
+      // (`MeterRole`). An amount nobody knows yet is a task's: a `meter` always has a value.
+      role={indeterminate || props.role === 'progressbar' ? 'progressbar' : 'meter'}
       accessibilityLabel={props.accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}
-      aria-valuenow={meterValue(value, max)}
-      aria-valuetext={props.valueText ?? meterValueText(value, max, locale)}
+      aria-valuenow={indeterminate ? undefined : meterValue(value, max)}
+      aria-valuetext={
+        indeterminate ? undefined : (props.valueText ?? meterValueText(value, max, locale))
+      }
+      aria-busy={indeterminate || undefined}
       testID={testID}
       style={trackStyle}
     >

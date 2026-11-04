@@ -7,7 +7,7 @@ import { Badge } from '../badge';
 import { violetBase } from '../chart-cards/ai-profile-hues';
 import { ContributionsGrid } from '../chart-cards/ContributionsCard';
 import { TABULAR } from '../chart-cards/primitives/ChartHeader';
-import { useCountUp } from '../chart-cards/use-count-up';
+import { useCountUp } from '../motion/use-count-up';
 import { Chip } from '../chip';
 import { CoverHeader } from '../cover-header';
 import { useControllableState } from '../hooks/use-controllable-state';

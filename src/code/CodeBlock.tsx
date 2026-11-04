@@ -12,6 +12,7 @@ import type { CodeBlockProps } from './types';
 import { writeClipboardText } from '../hooks/clipboard';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 function writeClipboard(text: string): Promise<void> {
   if (!IS_WEB) return Promise.reject(new Error('clipboard unavailable'));
@@ -59,7 +60,7 @@ function CodeBlockComponent({
   const { messages } = useMessages(CODE_MESSAGES);
   const l = { copy: labels?.copy ?? messages.copy, copied: labels?.copied ?? messages.copied };
   const [copied, setCopied] = useState(false);
-  const [copyHovered, setCopyHovered] = useState(false);
+  const { state: copyHovered, onIn: onCopyHoverIn, onOut: onCopyHoverOut } = useInteractionState();
 
   useEffect(() => {
     if (!copied) return;
@@ -182,8 +183,8 @@ function CodeBlockComponent({
                 accessibilityRole="button"
                 accessibilityLabel={copied ? l.copied : l.copy}
                 onPress={() => void copy()}
-                onHoverIn={() => setCopyHovered(true)}
-                onHoverOut={() => setCopyHovered(false)}
+                onHoverIn={onCopyHoverIn}
+                onHoverOut={onCopyHoverOut}
                 style={copyStyle}
               >
                 {copied ? (

@@ -14,7 +14,6 @@ import Animated, {
   Easing,
   cancelAnimation,
   runOnJS,
-  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -24,7 +23,7 @@ import Animated, {
   type EasingFunctionFactory,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { BUTTON_SHADOW } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -34,6 +33,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { MeterRing } from '../stat-bar';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { AgentProgressLoadingText } from './AgentProgressLoadingText';
@@ -111,10 +111,9 @@ const MINIMIZED_HEIGHT = 44;
 export const ROW_HEIGHT = 32;
 export const ROW_GAP = 6;
 const RING_SIZE = 16;
-const RING_R = 6.75;
-const RING_C = 2 * Math.PI * RING_R;
-const STEP_RING_R = 5.75;
-const STEP_RING_C = 2 * Math.PI * STEP_RING_R;
+/** The step ring's box is the 14px icon slot; the ring is 13 inside it (r 5.75). */
+const STEP_ICON_SIZE = 14;
+const STEP_RING_SIZE = 13;
 const SPACER_WIDTH = 24;
 
 export function agentProgressExpandedHeight(stepCount: number): number {
@@ -307,65 +306,6 @@ function Presence({
 // ---------------------------------------------------------------------------
 //  Glyphs
 // ---------------------------------------------------------------------------
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-/** A ring whose arc follows `progress` (0–1), drawn clockwise from 12 o'clock. */
-function ArcRing({
-  progress,
-  size,
-  viewBox,
-  r,
-  circumference,
-  strokeWidth,
-  track,
-  color,
-  testID,
-}: {
-  progress: SharedValue<number>;
-  size: number;
-  viewBox: number;
-  r: number;
-  circumference: number;
-  strokeWidth: number;
-  track: string;
-  color: string;
-  testID?: string;
-}) {
-  const c = viewBox / 2;
-  // The dash is animated by OFFSET, not length: an animated `strokeDasharray`
-  // array never reaches the DOM through react-native-svg on web (measured: it
-  // stayed at its first value). Cost: at exactly 0 a zero-length dash would
-  // draw its round cap as a dot at 12 o'clock; this draws nothing.
-  const animatedProps = useAnimatedProps(
-    () => ({ strokeDashoffset: circumference * (1 - progress.value) }),
-    [progress, circumference],
-  );
-  return (
-    <Svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${viewBox} ${viewBox}`}
-      aria-hidden
-      testID={testID}
-    >
-      <G transform={`rotate(-90 ${c} ${c})`}>
-        <Circle cx={c} cy={c} r={r} fill="none" stroke={track} strokeWidth={strokeWidth} />
-        <AnimatedCircle
-          animatedProps={animatedProps}
-          cx={c}
-          cy={c}
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={[circumference, circumference]}
-        />
-      </G>
-    </Svg>
-  );
-}
 
 function MinimizeIcon({ palette }: { palette: ProgressPalette }) {
   return (
@@ -605,15 +545,14 @@ function StepLoader({
     progress.value = withTiming(1, { duration, easing: Easing.linear });
   }, [running, duration, reducedMotion, progress]);
   return (
-    <ArcRing
+    <MeterRing
+      decorative
       progress={progress}
-      size={14}
-      viewBox={14}
-      r={STEP_RING_R}
-      circumference={STEP_RING_C}
-      strokeWidth={1.5}
+      size={STEP_RING_SIZE}
+      thickness={1.5}
       track={palette.border}
-      color={palette.ring}
+      fill={palette.ring}
+      style={{ margin: (STEP_ICON_SIZE - STEP_RING_SIZE) / 2 }}
     />
   );
 }
@@ -894,7 +833,11 @@ function AgentProgressComponent({
   const fastReopenRef = useRef(false);
   const [processingStarted, setProcessingStarted] = useState(false);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const [minimizeHovered, setMinimizeHovered] = useState(false);
+  const {
+    state: minimizeHovered,
+    onIn: onMinimizeHoverIn,
+    onOut: onMinimizeHoverOut,
+  } = useInteractionState();
 
   const remainingCount = stepCount - completedCount;
   const currentStep = progressSteps[Math.min(completedCount, stepCount - 1)] ?? '';
@@ -1143,8 +1086,8 @@ function AgentProgressComponent({
                 accessibilityRole="button"
                 accessibilityLabel={labels?.minimize ?? messages.minimize}
                 onPress={minimize}
-                onHoverIn={() => setMinimizeHovered(true)}
-                onHoverOut={() => setMinimizeHovered(false)}
+                onHoverIn={onMinimizeHoverIn}
+                onHoverOut={onMinimizeHoverOut}
                 style={[styles.minimize, { opacity: minimizeHovered ? 0.8 : 1 }]}
                 testID={`${testID}-minimize`}
                 {...(IS_WEB
@@ -1186,15 +1129,13 @@ function AgentProgressComponent({
           style={styles.ring}
           pointerEvents="none"
         >
-          <ArcRing
+          <MeterRing
+            decorative
             progress={ring}
             size={RING_SIZE}
-            viewBox={16}
-            r={RING_R}
-            circumference={RING_C}
-            strokeWidth={2.5}
+            thickness={2.5}
             track={palette.border}
-            color={palette.ring}
+            fill={palette.ring}
             testID={`${testID}-ring`}
           />
         </Presence>

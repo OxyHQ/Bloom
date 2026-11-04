@@ -1,9 +1,18 @@
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo, useEffect } from 'react';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { useTheme } from '../theme/use-theme';
 import { useResolvedBloomLocale } from '../locale/context';
-import { meterFraction, meterValue, meterValueText, resolveMeterColors } from './shared';
+import {
+  METER_SWEEP_SHARE,
+  adoptMeterStyleSheet,
+  meterFraction,
+  meterValue,
+  meterValueText,
+  resolveMeterColors,
+  sharePercent,
+} from './shared';
 import type { AnyMeterProps } from './types';
 import { useMeterReveal } from './use-meter-reveal.web';
 
@@ -29,6 +38,7 @@ export const Meter = memo(function Meter(props: AnyMeterProps) {
     fill = colors.fill,
     track = colors.track,
     transitionMs = 0,
+    indeterminate = false,
     style,
     testID,
     fillTestID = testID ? `${testID}-fill` : undefined,
@@ -36,6 +46,9 @@ export const Meter = memo(function Meter(props: AnyMeterProps) {
     fillClassName,
   } = props;
   const motion = useMeterReveal(meterFraction(value, max), reveal);
+  useEffect(() => {
+    if (indeterminate) adoptMeterStyleSheet();
+  }, [indeterminate]);
   const vars = {
     '--bloom-meter-width': width == null ? '100%' : `${width}px`,
     '--bloom-meter-height': `${height}px`,
@@ -47,7 +60,14 @@ export const Meter = memo(function Meter(props: AnyMeterProps) {
       ? { '--bloom-meter-delay': `${motion.delay}ms`, '--bloom-meter-easing': motion.easing }
       : {}),
   } as React.CSSProperties;
-  const contents = (
+  const contents = indeterminate ? (
+    <div
+      className={['bloom-meter-fill', fillClassName].filter(Boolean).join(' ')}
+      data-bloom-meter-sweep=""
+      data-testid={fillTestID}
+      style={{ width: sharePercent(METER_SWEEP_SHARE) }}
+    />
+  ) : (
     <div
       className={['bloom-meter-fill', fillClassName].filter(Boolean).join(' ')}
       data-transition={(reveal ? motion.duration : transitionMs) > 0 ? '' : undefined}
@@ -69,12 +89,15 @@ export const Meter = memo(function Meter(props: AnyMeterProps) {
   return (
     <div
       {...root}
-      role={props.role === 'progressbar' ? 'progressbar' : 'meter'}
+      role={indeterminate || props.role === 'progressbar' ? 'progressbar' : 'meter'}
       aria-label={props.accessibilityLabel}
       aria-valuemin={0}
       aria-valuemax={max}
-      aria-valuenow={meterValue(value, max)}
-      aria-valuetext={props.valueText ?? meterValueText(value, max, locale)}
+      aria-valuenow={indeterminate ? undefined : meterValue(value, max)}
+      aria-valuetext={
+        indeterminate ? undefined : (props.valueText ?? meterValueText(value, max, locale))
+      }
+      aria-busy={indeterminate || undefined}
     >
       {contents}
     </div>

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '../button';
@@ -20,6 +20,7 @@ import {
 } from './shared';
 import type { RecentSearchEntry, RecentSearchesProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The recent-searches list on an empty search page.
@@ -50,8 +51,12 @@ function RecentRow({
   removeLabel: string;
   testID?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const [removeHovered, setRemoveHovered] = useState(false);
+  const { state: hovered, onIn: onRowHoverIn, onOut: onRowHoverOut } = useInteractionState();
+  const {
+    state: removeHovered,
+    onIn: onRemoveHoverIn,
+    onOut: onRemoveHoverOut,
+  } = useInteractionState();
   const name = [item.title, item.meta].filter(Boolean).join(', ');
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
@@ -82,8 +87,8 @@ function RecentRow({
   };
   return (
     <View
-      onPointerEnter={IS_WEB ? () => setHovered(true) : undefined}
-      onPointerLeave={IS_WEB ? () => setHovered(false) : undefined}
+      onPointerEnter={IS_WEB ? onRowHoverIn : undefined}
+      onPointerLeave={IS_WEB ? onRowHoverOut : undefined}
       style={rowStyle}
       testID={testID}
     >
@@ -120,8 +125,8 @@ function RecentRow({
           role="button"
           accessibilityLabel={removeLabel}
           onPress={() => onRemove(item)}
-          onHoverIn={() => setRemoveHovered(true)}
-          onHoverOut={() => setRemoveHovered(false)}
+          onHoverIn={onRemoveHoverIn}
+          onHoverOut={onRemoveHoverOut}
           style={removeStyle}
           testID={testID ? `${testID}-remove` : undefined}
         >

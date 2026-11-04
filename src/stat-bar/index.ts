@@ -7,6 +7,7 @@ export type {
   AnyMeterProps,
   MeterDecorativeProps,
   MeterProps,
+  MeterRingDecorativeProps,
   MeterRingProps,
   MeterRole,
   StatBarProps,

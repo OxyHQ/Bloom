@@ -103,6 +103,7 @@ function GlyphButtonComponent(
     disabledOpacity = 0.5,
     grow = false,
     paddingHorizontal = 6,
+    hitSlop,
     decoration,
     accessibilityLabel,
     accessibilityHint,
@@ -184,6 +185,7 @@ function GlyphButtonComponent(
       onHoverOut={onHoverOut}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
+      hitSlop={hitSlop}
       style={[rootStyle, style]}
       testID={testID}
     >

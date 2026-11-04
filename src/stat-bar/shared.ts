@@ -86,8 +86,22 @@ export const METER_DURATION_VAR = '--bloom-meter-ms';
 const FILL = '[data-bloom-meter-fill]';
 const ARC = '[data-bloom-meter-arc] circle:last-child';
 const SPIN = '[data-bloom-meter-spin]';
+const SWEEP = '[data-bloom-meter-sweep]';
 /** One turn of an indeterminate ring, in ms: the same on native (MeterRing.tsx). */
 export const METER_SPIN_MS = 1000;
+/** One pass of an indeterminate bar's segment across the track, in ms: the same on native (Meter.tsx). */
+export const METER_SWEEP_MS = 1400;
+/**
+ * The indeterminate segment's width, as a share of the track. It travels from
+ * fully off the left edge to fully off the right one, and parks
+ * {@link METER_SWEEP_PARKED} along under reduced motion.
+ */
+export const METER_SWEEP_SHARE = 0.4;
+/** Where the parked segment's left edge sits, as a share of the track. */
+export const METER_SWEEP_PARKED = 0.3;
+
+/** A share as a CSS percentage, rounded so float error never reaches a style. */
+export const sharePercent = (share: number): `${number}%` => `${Math.round(share * 1000) / 10}%`;
 
 const CSS = `
 @keyframes bloomMeterSpin {
@@ -96,6 +110,13 @@ const CSS = `
 }
 ${SPIN} {
   animation: bloomMeterSpin ${METER_SPIN_MS}ms linear infinite;
+}
+@keyframes bloomMeterSweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(${sharePercent(1 / METER_SWEEP_SHARE)}); }
+}
+${SWEEP} {
+  animation: bloomMeterSweep ${METER_SWEEP_MS}ms ease-in-out infinite;
 }
 ${FILL} {
   transition: width var(${METER_DURATION_VAR}, 0ms) ease-out;
@@ -107,6 +128,10 @@ ${ARC} {
   ${FILL},
   ${ARC} {
     transition: none;
+  }
+  ${SWEEP} {
+    animation: none;
+    transform: translateX(${sharePercent(METER_SWEEP_PARKED / METER_SWEEP_SHARE)});
   }
 }
 `;
