@@ -2,6 +2,13 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.4.0
+
+### Added
+
+- **The viewer's preferences are Bloom's: `@oxy.so/bloom/preferences`.** One record — `haptics` (default on) and `videoAutoplay` (`'always'` | `'wifi'` | `'never'`, default `'always'`) — persisted in the storage and namespace the theme already uses (`` `${persistKey}:preferences` ``), mounted by `BloomProvider`, so an app wires nothing. The components that care read it: every `useHaptics()` call (the `haptics` prop still forces it off), `VideoPlaybackProvider` (its `autoplay` now defaults to the preference) and `GifMessage` (its `playing` now defaults to it). "Wi-Fi only" holds back on a cellular or metered connection through the optional netinfo peer and allows anything else. `useBloomPreferences()`, `useMediaAutoplay()`, and the ready-made, translated settings rows `useHapticsSettingRow()` / `useVideoAutoplaySettingRow()` for a `SettingsGeneralPage`.
+- **`SettingsSelect`** (`@oxy.so/bloom/settings-modal`, `/rows`): the compact select a settings row puts on its right, public instead of private to the storage page, which now uses it too.
+
 ## 17.3.0
 
 ### Added

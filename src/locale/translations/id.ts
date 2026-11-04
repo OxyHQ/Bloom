@@ -1598,6 +1598,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `Judul ${at} dari ${of}`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: 'Umpan balik haptik',
+  hapticsDescription: 'Getaran saat berinteraksi',
+  hapticsUnavailable: 'Tersedia di aplikasi seluler.',
+  videoAutoplay: 'Putar video otomatis',
+  videoAutoplayDescription: 'Video yang kamu mulai sendiri selalu diputar.',
+  autoplayAlways: 'Selalu',
+  autoplayWifi: 'Hanya di Wi-Fi',
+  autoplayNever: 'Tidak pernah',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
   decrease: 'Kurangi',
   increase: 'Tambah',
@@ -3054,6 +3065,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,

@@ -1582,6 +1582,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `${of} में से शीर्षक ${at}`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: 'हैप्टिक फ़ीडबैक',
+  hapticsDescription: 'इंटरैक्शन पर कंपन',
+  hapticsUnavailable: 'मोबाइल ऐप में उपलब्ध।',
+  videoAutoplay: 'वीडियो अपने-आप चलाएँ',
+  videoAutoplayDescription: 'आप जो वीडियो खुद शुरू करते हैं वे हमेशा चलते हैं।',
+  autoplayAlways: 'हमेशा',
+  autoplayWifi: 'केवल Wi-Fi पर',
+  autoplayNever: 'कभी नहीं',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'घटाएँ', increase: 'बढ़ाएँ' };
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
@@ -2992,6 +3003,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,

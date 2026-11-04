@@ -1566,6 +1566,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `見出し ${at}/${of}`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: '触覚フィードバック',
+  hapticsDescription: '操作時の振動',
+  hapticsUnavailable: 'モバイルアプリで利用できます。',
+  videoAutoplay: '動画の自動再生',
+  videoAutoplayDescription: '自分で再生した動画は常に再生されます。',
+  autoplayAlways: '常に',
+  autoplayWifi: 'Wi-Fi 接続時のみ',
+  autoplayNever: 'しない',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
   decrease: '減らす',
   increase: '増やす',
@@ -3006,6 +3017,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,

@@ -33,17 +33,8 @@ import { RiVideoLine } from '../icons/remix/RiVideoLine';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { Pagination } from '../pagination';
-import {
-  Select,
-  SelectContent,
-  SelectIcon,
-  SelectItem,
-  SelectItemIndicator,
-  SelectItemText,
-  SelectTrigger,
-  SelectValue,
-} from '../select';
 import { borderRadius } from '../styles/tokens';
+import { SettingsSelect } from './SettingsSelect';
 import { webDataSet } from '../styles/web-data';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
@@ -333,44 +324,6 @@ function defaultStoredIcon(kind: string, palette: SettingsPalette): ReactNode {
   return <Icon width={24} height={24} fill={palette.iconSecondary} />;
 }
 
-function ToolbarSelect({
-  label,
-  value,
-  onChange,
-  items,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  items: SettingsFileKind[];
-}) {
-  // The select hands over either the stored item or its raw value, by platform.
-  const labelFor = (v: unknown) => {
-    const key =
-      typeof v === 'object' && v !== null && 'value' in v ? (v as SettingsFileKind).value : v;
-    return items.find((item) => item.value === key)?.label ?? String(key);
-  };
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger label={label}>
-        <SelectValue>{labelFor}</SelectValue>
-        <SelectIcon />
-      </SelectTrigger>
-      <SelectContent
-        label={label}
-        items={items}
-        valueExtractor={(item) => item.value}
-        renderItem={(item) => (
-          <SelectItem value={item.value} label={item.label}>
-            <SelectItemIndicator />
-            <SelectItemText>{item.label}</SelectItemText>
-          </SelectItem>
-        )}
-      />
-    </Select>
-  );
-}
-
 // ---------------------------------------------------------------------------
 //  Page
 // ---------------------------------------------------------------------------
@@ -541,7 +494,8 @@ export function SettingsStoragePage({
             </Text>
           </View>
           <View style={[styles.tools, compact ? styles.toolsCompact : null]}>
-            <ToolbarSelect
+            <SettingsSelect
+              compact={false}
               label={copy.filterByType}
               value={kindFilter}
               onChange={(v) => {
@@ -550,7 +504,8 @@ export function SettingsStoragePage({
               }}
               items={typeItems}
             />
-            <ToolbarSelect
+            <SettingsSelect
+              compact={false}
               label={copy.orderBy}
               value={recency}
               onChange={(v) => {

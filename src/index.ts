@@ -195,6 +195,7 @@ export type {
 export * from './appearance';
 export * from './screen';
 export * from './video-playback';
+export * from './preferences';
 export * from './bottom-bar';
 export * from './tab-pager';
 export * from './button';

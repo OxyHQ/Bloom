@@ -1,0 +1,60 @@
+---
+title: Preferences
+description: The viewer's own settings Bloom's components honour — haptics and media autoplay — persisted with the theme, with ready-made settings rows.
+order: 80
+---
+
+# Preferences
+
+Some behaviour is the viewer's to decide, not the app's: whether the device
+vibrates on a tap, and whether a video starts on its own. Bloom keeps those
+choices in one record, persists it in the storage the theme already uses, and
+every component that cares reads it. An app mounts nothing and wires nothing;
+it only places the settings rows where its settings page wants them.
+
+| Preference | Default | Honoured by |
+|---|---|---|
+| `haptics` | `true` | every `useHaptics()` call (with `BloomProvider`'s `haptics` prop still able to force it off) |
+| `videoAutoplay` | `'always'` | `VideoPlaybackProvider` (its `autoplay`) and `GifMessage` (its `playing`) |
+
+`videoAutoplay` is `'always'`, `'wifi'` or `'never'`. "Wi-Fi only" holds back on
+a cellular or otherwise metered connection (read through the optional
+`@react-native-community/netinfo` peer) and allows anything else, so it never
+silently means "never". Media the viewer starts — `claimActive()` — plays
+whatever the preference says.
+
+## Storage
+
+`BloomProvider` mounts `BloomPreferencesProvider` with its own `storage` and
+`persistKey`, and the record lives under `` `${persistKey}:preferences` ``. Without
+both, preferences last for the session, exactly as the theme does.
+
+## Settings rows
+
+```tsx
+import { SettingsGeneralPage } from '@oxy.so/bloom/settings-modal';
+import { useHapticsSettingRow, useVideoAutoplaySettingRow } from '@oxy.so/bloom/preferences';
+
+function AccessibilitySettings() {
+  const haptics = useHapticsSettingRow();
+  const autoplay = useVideoAutoplaySettingRow();
+  return (
+    <SettingsGeneralPage
+      sections={[
+        { key: 'interaction', label: 'Interaction', rows: [haptics] },
+        { key: 'media', label: 'Media', rows: [autoplay] },
+      ]}
+    />
+  );
+}
+```
+
+Each hook returns a `SettingsRowData` (label, description, control) in Bloom's
+language catalogs; the select is `SettingsSelect`, the same compact control any
+settings row can use.
+
+## Reading them
+
+`useBloomPreferences()` returns `{ preferences, setPreference }`.
+`useMediaAutoplay()` returns the autoplay answer for NOW (preference and
+connection together) — the value a custom media surface should follow.

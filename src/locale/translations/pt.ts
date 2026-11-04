@@ -1650,6 +1650,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `Título ${at} de ${of}`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: 'Resposta tátil',
+  hapticsDescription: 'Vibração ao interagir',
+  hapticsUnavailable: 'Disponível no app para celular.',
+  videoAutoplay: 'Reproduzir vídeos automaticamente',
+  videoAutoplayDescription: 'Os vídeos que você inicia sempre são reproduzidos.',
+  autoplayAlways: 'Sempre',
+  autoplayWifi: 'Só no Wi-Fi',
+  autoplayNever: 'Nunca',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
   decrease: 'Diminuir',
   increase: 'Aumentar',
@@ -3112,6 +3123,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,

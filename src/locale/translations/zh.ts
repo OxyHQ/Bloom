@@ -1538,6 +1538,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `第 ${at} 个标题，共 ${of} 个`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: '触感反馈',
+  hapticsDescription: '交互时振动',
+  hapticsUnavailable: '可在移动应用中使用。',
+  videoAutoplay: '自动播放视频',
+  videoAutoplayDescription: '你自己开始播放的视频始终会播放。',
+  autoplayAlways: '始终',
+  autoplayWifi: '仅限 Wi-Fi',
+  autoplayNever: '从不',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: '减少', increase: '增加' };
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
@@ -2932,6 +2943,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,

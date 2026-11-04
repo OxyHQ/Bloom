@@ -1635,6 +1635,17 @@ const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
   progress: (at, of) => `Überschrift ${at} von ${of}`,
 };
 
+const PREFERENCES_MESSAGES: Translations['PREFERENCES_MESSAGES'] = {
+  haptics: 'Haptisches Feedback',
+  hapticsDescription: 'Vibration bei Interaktionen',
+  hapticsUnavailable: 'In der mobilen App verfügbar.',
+  videoAutoplay: 'Videos automatisch abspielen',
+  videoAutoplayDescription: 'Videos, die du selbst startest, werden immer abgespielt.',
+  autoplayAlways: 'Immer',
+  autoplayWifi: 'Nur im WLAN',
+  autoplayNever: 'Nie',
+};
+
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
   decrease: 'Verringern',
   increase: 'Erhöhen',
@@ -3103,6 +3114,7 @@ const translations: Translations = {
   CODE_MESSAGES,
   OUTLINE_NAV_MESSAGES,
   STEPPER_MESSAGES,
+  PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
   RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,

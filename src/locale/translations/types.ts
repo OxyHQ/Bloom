@@ -77,6 +77,7 @@ import type { CHART_CARDS_MESSAGES } from '../../chart-cards/messages';
 import type { CODE_MESSAGES } from '../../code/messages';
 import type { OUTLINE_NAV_MESSAGES } from '../../outline-nav/messages';
 import type { STEPPER_MESSAGES } from '../../stepper/messages';
+import type { PREFERENCES_MESSAGES } from '../../preferences/messages';
 import type { CALL_UI_MESSAGES } from '../../call-ui/messages';
 import type { RECENT_HIRES_CARD_MESSAGES } from '../../recent-hires-card/messages';
 import type { MAIL_LIST_MESSAGES } from '../../mail-list/messages';
@@ -221,6 +222,7 @@ export interface Translations {
   readonly CODE_MESSAGES: CatalogMessages<typeof CODE_MESSAGES>;
   readonly OUTLINE_NAV_MESSAGES: CatalogMessages<typeof OUTLINE_NAV_MESSAGES>;
   readonly STEPPER_MESSAGES: CatalogMessages<typeof STEPPER_MESSAGES>;
+  readonly PREFERENCES_MESSAGES: CatalogMessages<typeof PREFERENCES_MESSAGES>;
   readonly CALL_UI_MESSAGES: CatalogMessages<typeof CALL_UI_MESSAGES>;
   readonly RECENT_HIRES_CARD_MESSAGES: CatalogMessages<typeof RECENT_HIRES_CARD_MESSAGES>;
   readonly MAIL_LIST_MESSAGES: CatalogMessages<typeof MAIL_LIST_MESSAGES>;

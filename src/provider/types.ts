@@ -37,7 +37,11 @@ export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'child
    * keeps its default presentation.
    */
   platform?: PlatformSurfaceAdapter;
-  /** `false` disables haptic feedback app-wide (honored by every `useHaptics()` call). */
+  /**
+   * `false` disables haptic feedback app-wide (honored by every `useHaptics()` call),
+   * whatever the viewer's `haptics` preference says. The preference itself is
+   * Bloom's (`@oxy.so/bloom/preferences`).
+   */
   haptics?: boolean;
   /**
    * BCP 47 locale for every Bloom component below — dates, month names and

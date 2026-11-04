@@ -11,11 +11,13 @@ export {
   SettingsSectionLabel,
   SettingsValueField,
 } from './SettingsRows';
+export { SettingsSelect } from './SettingsSelect';
 export type {
   SettingsCardProps,
   SettingsIcon,
   SettingsRowProps,
   SettingsSectionLabelProps,
   SettingsSectionProps,
+  SettingsSelectProps,
   SettingsValueFieldProps,
 } from './types';
