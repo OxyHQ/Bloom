@@ -29,6 +29,16 @@ callback can remount the image node, but preserves the current fallback stage;
 it does not retry a failed primary or resurrect a failed fallback. Replacing one
 callback function with another keeps the observer mounted.
 
+A primary photo that fails **transiently** — a 408, 425, 429 or 5xx in the
+renderer's message, or a network failure — shows its fallback at once and is
+requested again after 2 s and then 8 s (`AVATAR_PHOTO_RETRY_DELAYS_MS`), then
+stays on the fallback. A 404 or any other answer is never re-requested. The
+browser hides an `<img>`'s status, so on web a failure is first probed with one
+`HEAD` to the same URL: a transient status or a healthy image is retried, a 404
+is not, and a host that refuses the cross-origin read is not retried.
+`onImageError` reports the first failure only. The retry component mounts only
+while a retry is due (`src/image/image-failure.ts` classifies the failure).
+
 ## Initials fallback
 
 ```tsx

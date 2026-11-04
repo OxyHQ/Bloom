@@ -3,6 +3,8 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Avatar } from '../avatar';
+import { AVATAR_PHOTO_RETRY_DELAYS_MS } from '../avatar/Avatar';
+import { classifyImageFailure } from '../image/image-failure';
 import { imageSourcesKey } from '../avatar/source-key';
 import { ImageResolverProvider } from '../image-resolver';
 import { PATHS, PATH_VIEW_BOX, resolve } from '../shapes';
@@ -390,6 +392,10 @@ describe('Avatar semantic image request identity', () => {
     // bundle starts fresh and resolves BloomImage through the RNW path.
     const webLoader =
       os === 'web' ? jest.spyOn(expoImageModule, 'loadExpoImage').mockReturnValue(null) : undefined;
+    // A web failure is probed before any retry; a missing photo answers 404.
+    const probe = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue({ ok: false, status: 404 } as Response);
     const onImageError = jest.fn();
     const wrap = (uri: string) => (
       <React.StrictMode>
@@ -428,6 +434,7 @@ describe('Avatar semantic image request identity', () => {
       act(() => nextError(error));
       expect(onImageError).toHaveBeenCalledTimes(2);
     } finally {
+      probe.mockRestore();
       webLoader?.mockRestore();
       Platform.OS = previousOS;
     }
@@ -530,5 +537,75 @@ describe('Avatar semantic image request identity', () => {
     // A late native event must not resurrect an already-failed request.
     act(() => primaryError({ nativeEvent: { error: 'late primary event' } }));
     expect(tree.UNSAFE_queryAllByType('SvgImage' as never)).toHaveLength(0);
+  });
+});
+
+describe('Avatar transient photo retry', () => {
+  const FALLBACK = { uri: 'https://example.com/fallback.png' };
+  const shown = (tree: ReturnType<typeof renderAvatar>) =>
+    tree.UNSAFE_getByType(Image).props.source.uri;
+
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('classifies what each renderer reports', () => {
+    expect(classifyImageFailure('invalid response status code 429')).toBe('transient');
+    expect(classifyImageFailure('Failed to connect or obtain data, status code: 503')).toBe(
+      'transient',
+    );
+    expect(classifyImageFailure('Failed to connect or obtain data, status code: 404')).toBe(
+      'permanent',
+    );
+    expect(classifyImageFailure('The Internet connection appears to be offline.')).toBe(
+      'transient',
+    );
+    expect(classifyImageFailure('Failed to load resource')).toBe('unknown');
+  });
+
+  it('shows the fallback at once, then asks for a transiently failed photo again, boundedly', () => {
+    const onImageError = jest.fn();
+    const tree = renderAvatar(
+      <Avatar uri={URI} fallbackSource={FALLBACK} name="Ada" onImageError={onImageError} />,
+    );
+    const fail = () =>
+      fireEvent(tree.UNSAFE_getByType(Image), 'error', { error: 'status code: 503' });
+    for (const delay of AVATAR_PHOTO_RETRY_DELAYS_MS) {
+      fail();
+      expect(shown(tree)).toBe(FALLBACK.uri);
+      act(() => jest.advanceTimersByTime(delay));
+      expect(shown(tree)).toBe(URI);
+    }
+    fail();
+    act(() => jest.advanceTimersByTime(60_000));
+    expect(shown(tree)).toBe(FALLBACK.uri);
+    expect(onImageError).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['a device reports 404', 'ios', 'status code: 404', undefined, false],
+    ['the web probe answers 404', 'web', 'failed', 404, false],
+    ['the web probe answers 429', 'web', 'failed', 429, true],
+  ] as const)('retries only when %s is transient', async (_case, os, error, probe, retried) => {
+    const previousOS = Platform.OS;
+    Platform.OS = os;
+    const webLoader =
+      os === 'web' ? jest.spyOn(expoImageModule, 'loadExpoImage').mockReturnValue(null) : undefined;
+    const fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue({ ok: false, status: probe ?? 500 } as Response);
+    try {
+      const tree = renderAvatar(<Avatar uri={URI} name="Ada" />);
+      const image = () =>
+        os === 'web' ? tree.UNSAFE_getByType(NativeImage) : tree.UNSAFE_getByType(Image);
+      fireEvent(image(), 'error', { error, nativeEvent: { error } });
+      await act(() => jest.advanceTimersByTimeAsync(AVATAR_PHOTO_RETRY_DELAYS_MS[0]));
+      expect(fetchSpy).toHaveBeenCalledTimes(probe ? 1 : 0);
+      if (retried) expect(image().props.source.uri).toBe(URI);
+      else expect(tree.getByText('A')).toBeTruthy();
+    } finally {
+      fetchSpy.mockRestore();
+      webLoader?.mockRestore();
+      Platform.OS = previousOS;
+    }
   });
 });
