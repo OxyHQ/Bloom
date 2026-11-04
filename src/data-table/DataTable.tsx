@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   View,
@@ -9,8 +9,6 @@ import {
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { Button } from '../button';
-import { resolveButtonPalette } from '../button/shared';
 import { Checkbox } from '../checkbox';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { formatGregorian } from '../locale/format-date';
@@ -25,17 +23,10 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '../table';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
-import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import { Text, TYPE_SCALE } from '../typography';
 import { DATA_TABLE_MESSAGES } from './messages';
 import { clampPage, isSortable, nextSort, pageCount, sortRows } from './sorting';
-import type {
-  DataTableColumn,
-  DataTableProps,
-  DataTableRowActionProps,
-  DataTableSize,
-  DataTableSort,
-} from './types';
+import type { DataTableColumn, DataTableProps, DataTableSize, DataTableSort } from './types';
 import { IS_WEB } from '../styles/platform';
 
 /**
@@ -72,8 +63,6 @@ import { IS_WEB } from '../styles/platform';
 /** The `sm` breakpoint, applied to the surface's own width. */
 const NARROW_WIDTH = 640;
 const DEFAULT_PAGE_SIZE = 8;
-/** react-aria's `TooltipTrigger delay={200}`. */
-const TOOLTIP_DELAY_MS = 200;
 
 interface DataTablePalette {
   border: string;
@@ -625,114 +614,6 @@ function SortGlyph({
       <Svg width={SORT_ICON_SIZE} height={SORT_ICON_SIZE} viewBox="0 0 24 24">
         <Path d={SORT_PATH} fill={color} />
       </Svg>
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-//  Row action — an `IconButton size="small"` under a `TooltipTrigger
-//  delay={200}` with a `md` tooltip. The button is Bloom's secondary `Button`
-//  (32×32, pill per Bloom's radius rule) with a 16px glyph.
-// ---------------------------------------------------------------------------
-
-/** `IconButton`'s small glyph. */
-const ROW_ACTION_ICON_SIZE = 16;
-
-export function DataTableRowAction({
-  icon: Icon,
-  label,
-  active = false,
-  tooltip = true,
-  accessibilityLabel,
-  style,
-  ...buttonProps
-}: DataTableRowActionProps) {
-  const theme = useTheme();
-  const [open, setOpen] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pointerDown = useRef(false);
-
-  const clearTimer = () => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = null;
-  };
-  useEffect(() => clearTimer, []);
-
-  const activeStyle = useMemo((): WebCssStyle | ViewStyle | undefined => {
-    if (!active) return undefined;
-    const paint = resolveButtonPalette('plain', theme, 'neutral').active;
-    return IS_WEB
-      ? {
-          '--bloom-btn-bg': paint.background,
-          '--bloom-btn-bg-hover': paint.background,
-          '--bloom-btn-border': paint.border,
-          '--bloom-btn-border-hover': paint.border,
-        }
-      : { backgroundColor: paint.background, borderColor: paint.border };
-  }, [active, theme]);
-
-  // Painted `currentColor` on web so the glyph follows the button's state
-  // colours; native has no inherited colour, so it takes the label colour.
-  const fill = IS_WEB ? 'currentColor' : theme.colors.text;
-
-  const button = (
-    <Button
-      {...buttonProps}
-      size="sm"
-      accessibilityLabel={accessibilityLabel ?? label}
-      leading={<Icon width={ROW_ACTION_ICON_SIZE} height={ROW_ACTION_ICON_SIZE} fill={fill} />}
-      style={[activeStyle, style]}
-      appearance="plain"
-      tone="neutral"
-    />
-  );
-
-  if (!tooltip || !IS_WEB) return button;
-
-  // The web `Tooltip` lays a full-screen press-to-dismiss backdrop over the page
-  // while it is open. Under a HOVER tooltip that backdrop lands under the
-  // pointer: the trigger reports a pointer-leave the moment the bubble opens
-  // (so it closed again after one frame), and the next click on the button hit
-  // the backdrop instead. `pointerEvents="none"` on this wrapper makes its
-  // direct children — the backdrop among them — inert (react-native-web emits
-  // `>* { pointer-events: none }`), and the `"auto"` View below hands the
-  // button its events back. A hover tooltip dismisses on leave and blur, so the
-  // backdrop has nothing to do here.
-  return (
-    <View pointerEvents="none">
-      <Tooltip position="top" visible={open && !active} onVisibleChange={setOpen}>
-        <TooltipTrigger>
-          <View
-            pointerEvents="auto"
-            onPointerEnter={() => {
-              clearTimer();
-              timer.current = setTimeout(() => setOpen(true), TOOLTIP_DELAY_MS);
-            }}
-            onPointerLeave={() => {
-              clearTimer();
-              setOpen(false);
-            }}
-            onPointerDown={() => {
-              // react-aria closes a tooltip on press, and a press-focus is not a
-              // keyboard focus — only the latter opens it.
-              pointerDown.current = true;
-              clearTimer();
-              setOpen(false);
-            }}
-            onFocus={() => {
-              if (!pointerDown.current) setOpen(true);
-              pointerDown.current = false;
-            }}
-            onBlur={() => {
-              clearTimer();
-              setOpen(false);
-            }}
-          >
-            {button}
-          </View>
-        </TooltipTrigger>
-        <TooltipTextBubble size="md">{label}</TooltipTextBubble>
-      </Tooltip>
     </View>
   );
 }

@@ -14,7 +14,7 @@ import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography';
 import { AddMenu } from './AddMenu';
 import { AttachmentStrip } from './AttachmentStrip';
-import { Collapse } from './Collapse';
+import { Collapsible } from '../collapsible';
 import { ComposerDock } from './ComposerDock';
 import { ComposerTrailingActions } from './ComposerTrailingActions';
 import { ModelPickerBase } from './ModelPickerBase';
@@ -24,6 +24,7 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { COMPOSER_PANEL_MESSAGES } from './messages';
 import {
+  ATTACHMENTS_REVEAL,
   CARD_PADDING,
   CARD_RADIUS,
   composerAddMenu,
@@ -198,7 +199,7 @@ export function ComposerPanelBase({
   return (
     <ComposerDock testID={testID} style={style} question={question} status={status}>
       <Surface radius={CARD_RADIUS} style={cardStyle}>
-        <Collapse open={hasAttachments}>
+        <Collapsible open={hasAttachments} transition={ATTACHMENTS_REVEAL} keepMounted={false}>
           <View style={{ paddingBottom: 4 }}>
             <AttachmentStrip
               attachments={attachments ?? []}
@@ -209,7 +210,7 @@ export function ComposerPanelBase({
               retryLabel={retryFileLabel}
             />
           </View>
-        </Collapse>
+        </Collapsible>
 
         <View style={{ flexDirection: 'column', gap: 20, paddingTop: 6 }}>
           <View style={{ paddingLeft: 6, paddingRight: 6 }}>

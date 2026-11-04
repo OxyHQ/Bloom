@@ -1,6 +1,9 @@
-export { DataTable, DataTableRowAction } from './DataTable';
+export { DataTable } from './DataTable';
 export { DataTableFilter } from './DataTableFilter';
-export { DataTableRowActions } from './DataTableRowActions';
+export {
+  RowActionButton as DataTableRowAction,
+  RowActions as DataTableRowActions,
+} from '../row-actions';
 export { DataTableSearch } from './DataTableSearch';
 export { DataTableSelect } from './DataTableSelect';
 export type {

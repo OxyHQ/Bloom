@@ -22,6 +22,7 @@ import { RiShieldCheckLine } from '../icons/remix/RiShieldCheckLine';
 import { RiSlideshow3Line } from '../icons/remix/RiSlideshow3Line';
 import { RiSpeedUpFill } from '../icons/remix/RiSpeedUpFill';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
+import type { SurfaceTransition } from '../motion/types';
 import type { Theme } from '../theme/types';
 import { COMPOSER_PANEL_MESSAGES, type ComposerPanelMessages } from './messages';
 import type {
@@ -170,6 +171,8 @@ export const EFFORT_WIDTH = 266;
 export const TRANSITION_MS = animation.duration.fast;
 /** `cubic-bezier(0.22, 1, 0.36, 1)` — the attachment tiles' and strip's curve. */
 export const EASE_OUT_QUINT = [0.22, 1, 0.36, 1] as const;
+/** The attachment strip's reveal: height and opacity, 250ms `ease-out`. */
+export const ATTACHMENTS_REVEAL: SurfaceTransition = { duration: 250, easing: [0, 0, 0.2, 1] };
 
 /** Rounded-rect progress path from top-centre, clockwise (`ringPath`). */
 export function ringPath(width: number, height: number, inset: number, radius: number): string {

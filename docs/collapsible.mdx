@@ -43,7 +43,8 @@ siblings of the radio, never children of its decorative label.
 | --- | --- |
 | `open` | Required controlled visibility; no internal toggle or default state. |
 | `appear` | Mounted open, it opens: height and fade run from nothing instead of starting settled. For content that arrives while the person watches (a new row in a thread). Default `false`: open at mount (a history, a restored page) does not move. |
-| `transition` | `{ duration, easing? }`, milliseconds and cubic-bezier coordinates. Defaults to 300ms and `[.42, 0, .58, 1]`. Duration is clamped non-negative; invalid values use the standard motion defaults. |
+| `transition` | `{ duration, easing? }`, milliseconds and cubic-bezier coordinates, for the height and the fade alike. Defaults to 300ms and `[.42, 0, .58, 1]`. Duration is clamped non-negative; invalid values use the standard motion defaults. |
+| `keepMounted` | Default `true`: children stay mounted while shut. `false` unmounts them once the exit finishes and mounts them again on opening, for a closed branch that should cost nothing (a large tree, an empty attachment strip). |
 | `returnFocusRef` | DOM or native focusable host to receive focus only when closing content owned it. Accepts `RadioOptionState.controlRef` directly. |
 | `className`, `style` | Outer frame, the node its parent lays out. Height clipping and opacity are animated by Bloom. |
 | `contentClassName`, `contentStyle` | Measured body; place padding/gaps and content decoration here. |
@@ -51,7 +52,7 @@ siblings of the radio, never children of its decorative label.
 
 The inner body's natural height is measured again when content or width changes;
 there is no fixed maximum height. Children stay mounted so edits and selections
-survive closure. Web uses `inert` and `aria-hidden` immediately. Native disables
+survive closure, unless `keepMounted={false}`. Web uses `inert` and `aria-hidden` immediately. Native disables
 pointer interaction and removes descendants from accessibility immediately, then
 removes the body from layout when the exit finishes. Live reduced motion cancels
 active animation and settles the body immediately. No global `LayoutAnimation`
@@ -67,6 +68,32 @@ focus cannot be detected without stealing unrelated accessibility focus.
 A nested Bloom `Select` closes its portaled popup when its body becomes hidden;
 its selected value survives and its popup stays closed on reopening. A custom
 portaled control must likewise coordinate its own open state with visibility.
+
+## `useCollapsibleMotion`
+
+The motion owner behind `Collapsible` and `Accordion`, public for a part that
+moves with a reveal it does not draw — a chevron that turns as a body opens, a
+header that follows it. Do not rebuild a height-and-opacity reveal on top of it;
+render `Collapsible`.
+
+```tsx
+import { useCollapsibleMotion } from '@oxy.so/bloom/collapsible';
+
+const { progress, hidden, settled } = useCollapsibleMotion(open, { duration: 200 });
+const turn = progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] });
+```
+
+| Argument / field | Meaning |
+| --- | --- |
+| `open` | Target state. |
+| `transition` | A `SurfaceTransition` (default 300ms `[.42, 0, .58, 1]`) or `'spring'`. |
+| `kind` | `'trigger'` uses the snappier spring, `'content'` (default) the gentle one; springs only. |
+| `useNativeDriver` | Default `false`; only for transform/opacity consumers. |
+| `progress` | React Native `Animated.Value`, 0 shut → 1 open. |
+| `hidden` | `true` once a closed body has finished leaving. |
+| `settled` | `true` once an open body is at rest. |
+
+Live reduced motion settles immediately.
 
 The old pre-1.0 `Collapsible` implementation was removed for a module-scope
 Android layout-animation side effect. The controlled API introduced in 7.22 is

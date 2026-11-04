@@ -1,12 +1,4 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ComponentRef,
-  type ReactNode,
-} from 'react';
+import React, { memo, useCallback, useEffect, useRef, type ComponentRef } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -14,7 +6,6 @@ import {
   type AccessibilityActionEvent,
   type GestureResponderEvent,
   type KeyDownEvent,
-  type LayoutChangeEvent,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -25,7 +16,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { Collapsible } from '../collapsible';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useCommonMessages } from '../locale/common-messages';
@@ -37,7 +30,7 @@ import { IS_WEB } from '../styles/platform';
 import { SIDEBAR_MESSAGES } from './messages';
 import { useSidebarMetrics } from './metrics';
 import type { SidebarPalette } from './palette';
-import { SidebarFolder } from './SidebarFolder';
+import { SIDEBAR_TREE_REVEAL, SidebarFolder } from './SidebarFolder';
 import {
   useMeasureInWindow,
   useTreeDrag,
@@ -139,7 +132,7 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
         onToggle={section.collapsible ? () => setOpen(!open) : undefined}
         palette={palette}
       />
-      <Reveal open={shown}>
+      <Collapsible open={shown} transition={SIDEBAR_TREE_REVEAL} keepMounted={false}>
         <View
           collapsable={false}
           role="navigation"
@@ -175,7 +168,7 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
             />
           ))}
         </View>
-      </Reveal>
+      </Collapsible>
     </View>
   );
 });
@@ -294,56 +287,6 @@ function Chevron({ open, size, color }: { open: boolean; size: number; color: st
 }
 
 /**
- * Shows and hides its children: height and opacity ease together (300ms), and
- * once shut the children unmount, so a closed branch of a large tree costs
- * nothing.
- */
-function Reveal({ open, children }: { open: boolean; children: ReactNode }) {
-  const reducedMotion = usePrefersReducedMotion();
-  const [mounted, setMounted] = useState(open);
-  const progress = useSharedValue(open ? 1 : 0);
-  const height = useSharedValue(0);
-  useEffect(() => {
-    if (open) setMounted(true);
-    const target = open ? 1 : 0;
-    if (reducedMotion) {
-      progress.value = target;
-      if (!open) setMounted(false);
-      return;
-    }
-    progress.value = withTiming(target, { duration: 300, easing: EASE_IN_OUT }, (finished) => {
-      if (finished && target === 0) runOnJS(setMounted)(false);
-    });
-  }, [open, reducedMotion, progress]);
-  const clip = useAnimatedStyle(
-    () => ({
-      opacity: progress.value,
-      height: progress.value >= 1 || height.value === 0 ? 'auto' : height.value * progress.value,
-    }),
-    [progress, height],
-  );
-  const onLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      height.value = event.nativeEvent.layout.height;
-    },
-    [height],
-  );
-  if (!mounted) return null;
-  return (
-    <Animated.View
-      aria-hidden={!open}
-      pointerEvents={open ? 'auto' : 'none'}
-      accessibilityElementsHidden={!open}
-      importantForAccessibility={open ? 'auto' : 'no-hide-descendants'}
-      {...(IS_WEB && !open ? { inert: true } : {})}
-      style={[{ overflow: 'hidden' }, clip]}
-    >
-      <View onLayout={onLayout}>{children}</View>
-    </Animated.View>
-  );
-}
-
-/**
  * A web drop target: the HTML drag events on `ref`'s node, turned into hovers
  * on the engine. `at(fraction)` names the place a pointer at that fraction of
  * the node's height means.
@@ -437,7 +380,7 @@ const TreeRow = memo(function TreeRow({
   const drag = useTreeDrag();
   const anyDragging = useTreeDragging();
   const { dragging, indicator } = useTreeRowDrag(item.key);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [open, setOpen] = useControllableState<boolean>({
     value: item.open,
     defaultValue: item.defaultOpen ?? false,
@@ -566,9 +509,9 @@ const TreeRow = memo(function TreeRow({
       {...(IS_WEB ? { dataSet: { bloomSidebarRow: item.actionsVisibility ?? 'always' } } : {})}
       onPointerEnter={() => {
         item.onPrefetch?.();
-        if (IS_WEB) setHovered(true);
+        if (IS_WEB) onHoverIn();
       }}
-      onPointerLeave={IS_WEB ? () => setHovered(false) : undefined}
+      onPointerLeave={IS_WEB ? onHoverOut : undefined}
       onTouchStart={item.onPrefetch}
       style={{
         position: 'relative',
@@ -758,7 +701,7 @@ const TreeRow = memo(function TreeRow({
         row
       )}
       {expandable ? (
-        <Reveal open={expanded}>
+        <Collapsible open={expanded} transition={SIDEBAR_TREE_REVEAL} keepMounted={false}>
           <View style={{ width: '100%', gap: 2, paddingTop: 2 }}>
             {children.length > 0 ? (
               children.map((child) => (
@@ -790,7 +733,7 @@ const TreeRow = memo(function TreeRow({
               </Text>
             ) : null}
           </View>
-        </Reveal>
+        </Collapsible>
       ) : null}
     </View>
   );

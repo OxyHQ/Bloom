@@ -119,3 +119,21 @@ it('uses the actual opening focus when no explicit return target is supplied', (
   draw(false);
   expect(document.activeElement).toBe(button);
 });
+it('unmounts its children once shut when keepMounted is false, and mounts them again on opening', () => {
+  const draw = (open: boolean) =>
+    act(() =>
+      root.render(
+        <Collapsible open={open} keepMounted={false} testID="body">
+          <input defaultValue="Fresh" />
+        </Collapsible>,
+      ),
+    );
+  draw(false);
+  expect(container.querySelector('input')).toBeNull();
+  draw(true);
+  const input = container.querySelector<HTMLInputElement>('input')!;
+  expect(input).not.toBeNull();
+  draw(false);
+  expect(container.querySelector('input')).toBeNull();
+  expect(container.querySelector('[data-testid=body]')).not.toBeNull();
+});

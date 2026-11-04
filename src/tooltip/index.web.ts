@@ -9,3 +9,4 @@ export {
   TooltipContent,
   TooltipTextBubble,
 } from './Tooltip.web';
+export type { TooltipProps } from './types';

@@ -5,6 +5,7 @@ import type { ButtonProps } from '../button/types';
 import type { BloomTone } from '../appearance';
 import type { TableColumnLayout, TableSize } from '../table/types';
 import type { BloomIconComponent } from '../icons/icon-component';
+import type { RowActionButtonProps, RowActionItem, RowActionsProps } from '../row-actions/types';
 
 /** The table's two densities, `md` ("Normal") and `sm` ("Compact"). */
 export type DataTableSize = TableSize;
@@ -156,41 +157,12 @@ export interface DataTableProps<T> {
   testID?: string;
 }
 
-export interface DataTableRowActionProps
-  extends Omit<
-    ButtonProps,
-    'children' | 'variant' | 'size' | 'iconOnly' | 'icon' | 'leadingIcon' | 'trailingIcon'
-  > {
-  /** The glyph, drawn at 16px. */
-  icon: BloomIconComponent;
-  /** Accessible name, and the tooltip's text. */
-  label: string;
-  /** Paints the pressed state while a menu this button opened is showing. */
-  active?: boolean;
-  /** Show the hover/focus tooltip. Defaults to `true`. */
-  tooltip?: boolean;
-}
-
-/** One icon action of a row — a `DataTableRowAction`, or a row menu entry. */
-export interface DataTableRowActionItem {
-  icon: BloomIconComponent;
-  /** The button's name and tooltip, or the menu entry's text. */
-  label: string;
-  onPress?: () => void;
-}
-
-export interface DataTableRowActionsProps {
-  /** Names the row in the menu's accessible name: `` `More actions for ${name}` ``. */
-  name: string;
-  /** The icon buttons before the menu, in order — e.g. Delete, Edit. */
-  actions?: readonly DataTableRowActionItem[];
-  /** The "⋮" menu's entries. Without any, no menu button is drawn. */
-  menu?: readonly DataTableRowActionItem[];
-  /** The menu button's tooltip (`"More actions"` in English). */
-  menuLabel?: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
+/** `RowActionButtonProps`, under the name it had before it left the data table. */
+export type DataTableRowActionProps = RowActionButtonProps;
+/** `RowActionItem`, under the name it had before it left the data table. */
+export type DataTableRowActionItem = RowActionItem;
+/** `RowActionsProps`, under the name it had before it left the data table. */
+export type DataTableRowActionsProps = RowActionsProps;
 
 /** An option of a `DataTableFilter` or a `DataTableSelect`. */
 export interface DataTableOption {

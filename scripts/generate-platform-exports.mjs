@@ -117,6 +117,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./notification', 'notification/index.ts'],
   ['./announcement', 'announcement/index.ts'],
   ['./data-table', 'data-table/index.ts'],
+  ['./row-actions', 'row-actions/index.ts'],
   ['./chart-cards', 'chart-cards/index.ts'],
   // Tiny trend charts should not link every full-size chart card in Metro.
   ['./chart-cards/sparkline', 'chart-cards/sparkline.ts'],
