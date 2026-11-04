@@ -37,6 +37,12 @@ export interface LinkPreviewCardProps {
   /** Site / brand name shown above the title. Falls back to the URL hostname. */
   siteName?: string;
   /**
+   * Who wrote it — a byline as the page states it (one name, or several
+   * already joined, e.g. `"Ana Ruiz, Ben Ode"`). Shown under the text block;
+   * nothing is drawn without one.
+   */
+  author?: string;
+  /**
    * Fill-height mode for the cover image. Defaults to `false`.
    *
    * - `false` (default): the cover image keeps its fixed intrinsic height —

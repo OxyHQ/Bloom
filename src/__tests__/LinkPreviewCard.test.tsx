@@ -24,8 +24,10 @@ describe('LinkPreviewCard', () => {
         siteName="Example"
         title="A great article"
         description="The summary of the article."
+        author="Ana Ruiz"
       />,
     );
+    expect(getByText('Ana Ruiz')).toBeTruthy();
     expect(getByText('Example')).toBeTruthy();
     expect(getByText('A great article')).toBeTruthy();
     expect(getByText('The summary of the article.')).toBeTruthy();

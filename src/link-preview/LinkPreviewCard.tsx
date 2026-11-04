@@ -2,7 +2,7 @@
  * `LinkPreviewCard` — the canonical Oxy link-preview surface.
  *
  * One component renders the OpenGraph-style "cover image + site name + title +
- * description" card across every Oxy app. It consumes the link-preview DATA
+ * description + byline" card across every Oxy app. It consumes the link-preview DATA
  * produced by the Oxy SDK (`@oxy.so/core` `getLinkPreview` / `getLinkPreviews`,
  * DTO `LinkPreview`) but takes a structural prop shape so Bloom never depends on
  * `@oxy.so/contracts`.
@@ -102,6 +102,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   description,
   image,
   siteName,
+  author,
   coverFill = false,
   onPress,
   className,
@@ -183,6 +184,12 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
             {description}
           </Text>
         ) : null}
+
+        {author ? (
+          <Text numberOfLines={1} style={[styles.author, { color: colors.textSecondary }]}>
+            {author}
+          </Text>
+        ) : null}
       </View>
     </Card>
   );
@@ -224,6 +231,14 @@ const styles = StyleSheet.create({
   description: {
     fontSize: fontSize.sm,
     lineHeight: DESCRIPTION_LINE_HEIGHT,
+    marginTop: space.xs,
+  },
+  // `text-xs font-medium text-muted-foreground mt-1`: the byline, a quiet
+  // footer under the text it credits.
+  author: {
+    fontSize: fontSize.xs,
+    lineHeight: SITE_NAME_LINE_HEIGHT,
+    fontWeight: '500',
     marginTop: space.xs,
   },
 });
