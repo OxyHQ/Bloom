@@ -1,5 +1,5 @@
 import { createContext, useContext, type RefObject, type ReactNode } from 'react';
-import type { AppColorName } from '../theme/color-presets';
+import type { ProfileColor } from '../theme/color-presets';
 import type { ScrollMetrics } from '../layout/scroll-metrics';
 import type { SharedValue } from 'react-native-reanimated';
 
@@ -70,7 +70,8 @@ export interface ScreenHostValue {
   headerActions?: ReactNode;
   /** Panel chrome appended once below the route Screen footer. */
   bottomBar?: ReactNode;
-  claimColorPreset?: (preset: AppColorName) => () => void;
+  /** The active screen's colour (a preset or an exact seed), for the panel or shell hosting it. */
+  claimColor?: (color: ProfileColor) => () => void;
   navigation?: { canGoBack: boolean; canGoForward: boolean; back(): void; forward(): void };
   /**
    * The app's route Back (`BloomProvider back`) for a host without a history of

@@ -7,6 +7,11 @@ import type { ScrollHandlerProcessed } from 'react-native-reanimated';
 export interface ScreenProps extends ViewProps {
   /** Local screen recipe, including its enclosing panel surface. Restored on departure. */
   colorPreset?: AppColorName;
+  /**
+   * Exact RGB seed (`#rrggbb`). Takes precedence over `colorPreset`; roles use Bloom's colour
+   * engine. Claimed like a preset: it themes the same content, panel and shell.
+   */
+  seed?: string;
   header?: ReactNode;
   /**
    * auto (the default) uses the host's document/column viewport. content lets an explicit list

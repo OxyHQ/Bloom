@@ -25,7 +25,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import { ShellColorClaimContext } from './context';
 import { useLatestClaim } from '../hooks/use-latest-claim';
-import type { AppColorName } from '../theme/color-presets';
+import type { ProfileColor } from '../theme/color-presets';
 import { createDestinationBottomBar, useDestinationNavigation } from './destinations';
 import { ShellReselectScope } from './reselect-scope';
 import {
@@ -74,7 +74,9 @@ export function createAppShell(
   Fab: ComponentType<FabProps>,
   { Screen, ScreenScrollView }: ScreenComponents,
   PanelLayoutView?: ComponentType<PanelLayoutViewProps>,
-  ColorScope?: ComponentType<Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>>,
+  ColorScope?: ComponentType<
+    Pick<BloomColorScopeProps, 'colorPreset' | 'seed' | 'asChild' | 'children'>
+  >,
 ) {
   const AppShellEngine = createAppShellEngine();
   const DestinationBottomBar = createDestinationBottomBar(BottomBar);
@@ -485,7 +487,7 @@ export function createAppShell(
     const envelope = panelEnvelope(layout, cssLayout ? Number.MAX_SAFE_INTEGER : width, gap);
     const document = layout.flow === 'document' && layout.mode !== 'deck' && Platform.OS === 'web';
     const deck = layout.mode === 'deck';
-    const [shellPreset, claimShellPreset] = useLatestClaim<AppColorName>();
+    const [shellColor, claimShellColor] = useLatestClaim<ProfileColor>();
     const normalized: AppShellProps = {
       ...props,
       panelLayout: undefined,
@@ -530,17 +532,18 @@ export function createAppShell(
       >
         <PanelCssContext.Provider value={cssLayout ? scope : null}>
           <PanelCssLayoutContext.Provider value={{ layout, gap }}>
-            <ShellColorClaimContext.Provider value={deck ? null : claimShellPreset}>
+            <ShellColorClaimContext.Provider value={deck ? null : claimShellColor}>
               <AppShellBody {...normalized} />
             </ShellColorClaimContext.Provider>
           </PanelCssLayoutContext.Provider>
         </PanelCssContext.Provider>
       </View>
     );
-    // One scope above the whole shell: a claimed preset themes the sidebar and
-    // bottom bar too, not just the panel whose screen claimed it.
+    // One scope above the whole shell: a claimed colour (preset or seed) themes the
+    // sidebar and bottom bar too, not just the panel whose screen claimed it.
+    const claimed = deck ? undefined : shellColor;
     return ColorScope ? (
-      <ColorScope colorPreset={deck ? undefined : shellPreset} asChild>
+      <ColorScope colorPreset={claimed?.colorPreset} seed={claimed?.seed} asChild>
         {shell}
       </ColorScope>
     ) : (

@@ -9,7 +9,7 @@ export type Claim<T> = (value: T) => () => void;
  * claim wins, so a screen underneath is restored when the one above it leaves.
  * `undefined` while nothing is claimed.
  *
- * Shared by the colour preset a screen gives its shell (`app-shell`) and the
+ * Shared by the colour (preset or seed) a screen gives its shell (`app-shell`) and the
  * status bar content a dark screen asks for (`theme/SystemStatusBar`).
  */
 export function useLatestClaim<T>(): [value: T | undefined, claim: Claim<T>] {
