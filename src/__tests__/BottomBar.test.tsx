@@ -92,7 +92,7 @@ it('omits the blur by default and hides on the native keyboard', () => {
   expect(view.queryByTestId('blur')).toBeNull();
   const calls = (Keyboard.addListener as jest.Mock).mock.calls;
   const show = [...calls].reverse().find((call: unknown[]) => call[0] === 'keyboardDidShow')?.[1];
-  act(() => show());
+  act(() => show({ endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 } }));
   expect(view.queryByTestId('bar')).toBeNull();
 });
 it('hides a minimized accessory from hit testing and accessibility and releases its gap', () => {

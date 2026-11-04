@@ -20,6 +20,8 @@ it('publishes the shared hooks, helpers and formatters', () => {
     'clipboardAvailable',
     'useTextareaAutosize',
     'useKeyboardVisible',
+    'useKeyboardMetrics',
+    'useKeyboardReveal',
     'useBrowserTitle',
     'isPlainLinkActivation',
     'openHref',

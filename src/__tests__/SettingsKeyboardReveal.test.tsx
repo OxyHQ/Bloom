@@ -10,7 +10,7 @@ import React from 'react';
 import * as ReactNative from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 
-import { KEYBOARD_REVEAL_MARGIN, useKeyboardReveal } from '../settings-modal/use-keyboard-reveal';
+import { KEYBOARD_REVEAL_MARGIN, useKeyboardReveal } from '../hooks/use-keyboard-reveal';
 
 type Listener = (event: unknown) => void;
 let listeners: Record<string, Listener>;

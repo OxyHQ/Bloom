@@ -288,10 +288,37 @@ to measure only when the draft could have got shorter (a pure insertion cannot
 remove a line). Native measures through `onContentSizeChange`; pass
 `enabled: IS_WEB`.
 
+## `useKeyboardMetrics`
+
+Where the native software keyboard is: `{ visible, height, top }` — whether it
+is up, its height and its top edge in screen coordinates (`0` / `null` while
+hidden). Always hidden on the web, where the browser resizes the visual viewport
+instead. `timing: 'will'` follows iOS's `keyboardWillShow` / `keyboardWillHide`,
+announced before the keyboard moves, for a page that moves with it (Android only
+reports once the keyboard is up); `enabled: false` stops listening.
+
+```tsx
+const keyboard = useKeyboardMetrics();
+const bottom = Math.min(viewport.height, keyboard.top ?? viewport.height) - gutter;
+```
+
 ## `useKeyboardVisible`
 
-Whether the native software keyboard is up. Always `false` on the web, where the
-browser resizes the visual viewport instead.
+Whether the native software keyboard is up: `useKeyboardMetrics().visible`.
+
+## `useKeyboardReveal`
+
+Keeps a scrolling page's focused field above the software keyboard, for a page
+drawn edge to edge that the keyboard slides over instead of resizing. Returns
+the keyboard's height for the page to pad its content by, and when the keyboard
+shows scrolls the page by exactly what the focused field sits below the
+keyboard's top, plus `KEYBOARD_REVEAL_MARGIN` (16). Native only; on the web the
+browser scrolls a focused field into view itself, so pass `enabled: !IS_WEB`.
+
+```tsx
+const keyboardHeight = useKeyboardReveal(scrollRef, scrollY, !IS_WEB);
+<ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: keyboardHeight }} />
+```
 
 ## `useBrowserTitle`
 

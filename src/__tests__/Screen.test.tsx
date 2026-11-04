@@ -159,13 +159,15 @@ it('deactivates all retained screen scroll writers at the scope boundary', () =>
   expect(state?.activeScrollerId.value).not.toBeNull();
 });
 
+const KEYBOARD_SHOWN = { endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 } };
+
 it('removes bottom chrome and its reserved footprint while the keyboard is visible', () => {
-  const handlers: Record<string, () => void> = {};
+  const handlers: Record<string, (event?: unknown) => void> = {};
   const originalOS = Platform.OS;
   Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
   const originalListener = Keyboard.addListener;
   Keyboard.addListener = (name, callback) => {
-    handlers[name] = callback as () => void;
+    handlers[name] = callback as (event?: unknown) => void;
     return { remove: jest.fn() } as unknown as ReturnType<typeof Keyboard.addListener>;
   };
   try {
@@ -181,7 +183,7 @@ it('removes bottom chrome and its reserved footprint while the keyboard is visib
         </Screen>,
       ),
     );
-    act(() => handlers.keyboardDidShow?.());
+    act(() => handlers.keyboardDidShow?.(KEYBOARD_SHOWN));
     expect(tree.queryByTestId('action')).toBeNull();
     expect(
       resolvedStyle(tree.getByTestId('scroll').props.contentContainerStyle).paddingBottom,
@@ -199,12 +201,12 @@ it('removes bottom chrome and its reserved footprint while the keyboard is visib
 });
 
 it('retains a composer and its footprint while the native keyboard is visible', () => {
-  const handlers: Record<string, () => void> = {};
+  const handlers: Record<string, (event?: unknown) => void> = {};
   const originalOS = Platform.OS;
   const originalListener = Keyboard.addListener;
   Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
   Keyboard.addListener = (name, callback) => {
-    handlers[name] = callback as () => void;
+    handlers[name] = callback as (event?: unknown) => void;
     return { remove: jest.fn() } as unknown as ReturnType<typeof Keyboard.addListener>;
   };
   try {
@@ -220,7 +222,7 @@ it('retains a composer and its footprint while the native keyboard is visible', 
         </Screen>,
       ),
     );
-    act(() => handlers.keyboardDidShow?.());
+    act(() => handlers.keyboardDidShow?.(KEYBOARD_SHOWN));
     expect(tree.getByTestId('composer')).toBeTruthy();
     expect(
       resolvedStyle(tree.getByTestId('scroll').props.contentContainerStyle).paddingBottom,
