@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.11.0
+
+### Added
+
+- **The platform's own sounds: `usePlatformSounds()`** (`@oxy.so/bloom/platform-surface`). An adapter may supply `sounds` (`PlatformSounds`, not a capability): `play('move-to-trash' | 'empty-trash')` plays the platform's sound for what the person just did, as a Mac's Finder and Dock play theirs, never when the person turned interface sound effects off or the output is muted. An application asks by meaning and ships no copy of the sound. The OxyOS runtime supplies it (its system sound service, OxyHQ/OxyOS); elsewhere the hook is null and nothing plays. `PlatformSounds.test.tsx`; `docs/platform-surface.mdx`, `sounds`.
+
+### Consumers
+
+Bump to 17.11.0. Nothing changes until an application calls `usePlatformSounds()`.
+
 ## 17.10.0
 
 ### Added

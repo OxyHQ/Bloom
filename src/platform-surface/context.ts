@@ -7,6 +7,7 @@ import type {
   PlatformFiles,
   PlatformKeyboard,
   PlatformMenuBar,
+  PlatformSounds,
   PlatformSurfaceAdapter,
   PlatformWindow,
   PopupSurfaceProps,
@@ -107,6 +108,14 @@ export function usePlatformKeyboard(): PlatformKeyboard | null {
  */
 export function usePlatformFiles(): PlatformFiles | null {
   return useContext(PlatformSurfaceContext)?.files ?? null;
+}
+
+/**
+ * The platform's own sounds (`PlatformSounds`), or null when it supplies none:
+ * then an application plays nothing for the actions the platform would sound.
+ */
+export function usePlatformSounds(): PlatformSounds | null {
+  return useContext(PlatformSurfaceContext)?.sounds ?? null;
 }
 
 /** The adapter, when it reports `drag-and-drop`; it throws if it lacks either part. */
