@@ -27,6 +27,8 @@ export interface RailItem {
 }
 
 export interface RailProps {
+  /** Size against a bounded host or stick to the document viewport. Auto follows AppShell. */
+  host?: 'auto' | 'bounded' | 'document';
   /** The destinations to render, top to bottom. */
   items: RailItem[];
   /**

@@ -4,6 +4,7 @@ import { BREAKPOINTS } from '../styles/breakpoints';
 import { useScreen } from '../screen/context';
 import type { ScreenComponents } from '../screen/types';
 import { SidebarSlot } from './SidebarSlot';
+import { RailHostContext } from '../rail/context';
 import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { APP_SHELL_DEFAULTS } from './constants';
 import { useTheme } from '../theme/use-theme';
@@ -222,28 +223,30 @@ export function createAppShell(
             }}
           >
             {(shownPlacement) => (
-              <SidebarSlot
-                {...(navigation ? { showSearch: false, showThemeToggle: false } : {})}
-                {...sidebar}
-                variant={shownPlacement === 'rail' ? 'rail' : 'panel'}
-                collapsed={sidebar?.collapsed ?? (capacityCollapsed || userCollapsed)}
-                collapseDisabled={
-                  sidebar?.collapseDisabled ??
-                  (sidebar?.collapsed === undefined && capacityCollapsed)
-                }
-                onCollapsedChange={(collapsed) => {
-                  setUserCollapsed(collapsed);
-                  sidebar?.onCollapsedChange?.(collapsed);
-                }}
-                items={sidebarItems ?? sidebar?.items}
-                selected={selected}
-                onNavigate={(item) =>
-                  onValueChange ? onValueChange(item.key) : sidebar?.onNavigate?.(item)
-                }
-                testID={testID ? `${testID}-sidebar` : sidebar?.testID}
-                style={[{ flex: 1, minHeight: 0, height: undefined }, sidebar?.style]}
-                {...(navRoom > 0 ? { windowControlsRoom: navRoom } : null)}
-              />
+              <RailHostContext.Provider value="bounded">
+                <SidebarSlot
+                  {...(navigation ? { showSearch: false, showThemeToggle: false } : {})}
+                  {...sidebar}
+                  variant={shownPlacement === 'rail' ? 'rail' : 'panel'}
+                  collapsed={sidebar?.collapsed ?? (capacityCollapsed || userCollapsed)}
+                  collapseDisabled={
+                    sidebar?.collapseDisabled ??
+                    (sidebar?.collapsed === undefined && capacityCollapsed)
+                  }
+                  onCollapsedChange={(collapsed) => {
+                    setUserCollapsed(collapsed);
+                    sidebar?.onCollapsedChange?.(collapsed);
+                  }}
+                  items={sidebarItems ?? sidebar?.items}
+                  selected={selected}
+                  onNavigate={(item) =>
+                    onValueChange ? onValueChange(item.key) : sidebar?.onNavigate?.(item)
+                  }
+                  testID={testID ? `${testID}-sidebar` : sidebar?.testID}
+                  style={[{ flex: 1, minHeight: 0, height: undefined }, sidebar?.style]}
+                  {...(navRoom > 0 ? { windowControlsRoom: navRoom } : null)}
+                />
+              </RailHostContext.Provider>
             )}
           </ResponsiveNavigation>
         ) : null}
