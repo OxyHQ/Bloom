@@ -61,4 +61,28 @@ import { DropZone } from '@oxy.so/bloom/drop-zone';
 
 Starting a drag of the application's own content to another application is
 the platform's `usePlatformDrag()` (`docs/platform-surface.mdx`), for an
-application that runs its own pointer gestures.
+application that runs its own pointer gestures. Its image is the dragged view
+itself (`previewRef`), stacked with a count for several items (`count`).
+
+## The image of an HTML5 drag
+
+On the web a drag starts in an element's `dragstart`, which the browser owns.
+`setDragImage(event.dataTransfer, element, { x, y, count })` gives it the same
+image the platform's drag shows: the dragged element as it looks, the point
+pressed in it (`x`, `y`, its own pixels) under the pointer, and for `count`
+above one the element over stacked copies of it with the count on a red badge
+at its top right, as a Mac's drag of several files. Call it in `dragstart`; the
+stack is built off screen, pictured by the browser at once and removed. On
+native it does nothing: there the platform's drag draws its image from
+`previewRef`.
+
+```tsx
+node.addEventListener('dragstart', (event) => {
+  event.dataTransfer?.setData('text/uri-list', uris.join('\n'));
+  setDragImage(event.dataTransfer, node, {
+    x: event.offsetX,
+    y: event.offsetY,
+    count: uris.length,
+  });
+});
+```

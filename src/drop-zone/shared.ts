@@ -133,3 +133,19 @@ export function chosenAction(
   if (forced) return both.includes(forced) ? forced : null;
   return both[0] ?? null;
 }
+
+/** The layers a drag image's stack draws behind the item: one for two items, two for more. */
+export function stackLayers(count: number): number {
+  return Math.min(Math.max(Math.floor(count) - 1, 0), 2);
+}
+
+/** How far each layer of a drag image's stack is from the one above it, down and right, in pixels. */
+export const STACK_STEP = 3;
+/** A drag image's count badge: its height (a pill at least as wide), and a Mac's red (systemRed). */
+export const BADGE_HEIGHT = 20;
+export const BADGE_COLOR = '#ff3b30';
+
+/** The count as the badge says it: past 999, `999+`. */
+export function badgeText(count: number): string {
+  return count > 999 ? '999+' : String(Math.floor(count));
+}

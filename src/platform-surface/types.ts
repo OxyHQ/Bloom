@@ -125,8 +125,21 @@ export interface PlatformDragRequest {
   readonly data: DragData;
   /** The actions it allows (at least one). */
   readonly actions: readonly DragAction[];
-  /** The view whose image follows the pointer; none for the platform's own. */
+  /**
+   * The dragged view itself, where it is (an item's icon and name, a card):
+   * the platform draws its rendered subtree as it looks, translucent, as the
+   * drag's image, with the point pressed in it kept under the pointer, as a
+   * Mac's dragged items are. It must be a view of its own: one that draws
+   * nothing itself takes `collapsable={false}`, as a view snapshot needs.
+   * None: the platform's own image.
+   */
   readonly previewRef?: RefObject<ComponentRef<typeof View> | null>;
+  /**
+   * How many items are dragged, the one `previewRef` shows among them. Above
+   * one the image is shown stacked, with the count on a badge at its top
+   * right, as a Mac's drag of several files. Default 1.
+   */
+  readonly count?: number;
 }
 
 /**

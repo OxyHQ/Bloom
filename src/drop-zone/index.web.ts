@@ -4,7 +4,8 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { DropZone } from './DropZone.web';
-export type { DropZoneProps } from './types';
+export { setDragImage } from './drag-image.web';
+export type { DragImageOptions, DropZoneProps } from './types';
 export type {
   DragAction,
   DropData,

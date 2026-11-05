@@ -39,3 +39,12 @@ export interface DropZoneProps {
   testID?: string;
   children?: ReactNode;
 }
+
+/** How an HTML5 drag's image is made from the dragged element (`setDragImage`). */
+export interface DragImageOptions {
+  /** The point pressed in the element (its own pixels from its top left), kept under the pointer. */
+  readonly x: number;
+  readonly y: number;
+  /** How many items are dragged, the element showing one of them. Above one, stacked and badged. Default 1. */
+  readonly count?: number;
+}
