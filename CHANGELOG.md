@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.13.1
+
+### Fixed
+
+- **A native desktop's menu bar moves the screen reader into a menu as it opens again** (`popup-surface`, an OxyOS session), as before 17.12.0: the reader's first row of the Oxy menu opened by the reader, the menu that replaces another included. 17.12.0's one surface sent the focus to the menu's layout box, a view of layout alone that Fabric flattens out of the platform's tree, so the focus landed on nothing and the reader stayed on the title. It is now sent to the menu's layer, a view the platform mounts (`collapsable={false}`). `MenubarMorph.test.tsx` checks the view the focus goes to is never one flattened away; OxyOS's `desktop-accessibility` scenario passes again.
+
+### Consumers
+
+Bump to 17.13.1. No API change.
+
 ## 17.13.0
 
 ### Added

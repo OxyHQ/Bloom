@@ -409,6 +409,10 @@ function PopupMenuLayer({
   );
   return (
     <View
+      // The screen reader's focus is sent to this view: it must be a view the platform has, never
+      // one flattened away (a view of layout alone is not mounted, and the focus sent to it lands
+      // nowhere).
+      ref={focusRef}
       collapsable={false}
       pointerEvents={exiting ? 'none' : 'auto'}
       importantForAccessibility={exiting ? 'no-hide-descendants' : 'auto'}
@@ -420,7 +424,6 @@ function PopupMenuLayer({
       {/* The menu as it would be alone: its 1px edge and its padding, its 266px floor and its
           limits. Laid out at its own size whatever the surface's is now. */}
       <StyledView
-        ref={focusRef}
         onLayout={exiting ? undefined : onLayout}
         className={props.className}
         style={[

@@ -118,6 +118,8 @@ function open(chosen = jest.fn(), initialFocus?: string) {
     const testID = (element.props as { testID?: string }).testID;
     return {
       testID,
+      // The element's props, as the platform's view would carry them (whether it is flattened).
+      hostProps: element.props as Record<string, unknown>,
       measureLayout(
         _relativeTo: unknown,
         onSuccess: (x: number, y: number, width: number, height: number) => void,
@@ -391,6 +393,35 @@ describe("a menu bar's one popup changing from one menu into the next", () => {
       frames(200);
       // One focus for Help's menu: none for the title File's menu closed under, none for File's.
       expect(focusedLayers().length).toBe(before + 1);
+    } finally {
+      send.mockRestore();
+    }
+  });
+  // Fabric flattens a view of layout alone out of the platform's tree (no `collapsable={false}`, no
+  // paint, no accessibility props of its own): focus sent to one lands nowhere, and the reader
+  // stays where it was as the menu opens (OxyOS's desktop-accessibility scenario, Bloom 17.12.0).
+  it("sends the screen reader's focus to a view the platform mounts, the open menu's", () => {
+    const send = jest
+      .spyOn(AccessibilityInfo, 'sendAccessibilityEvent')
+      .mockImplementation(() => {});
+    try {
+      const { screen } = open();
+      const targets = () =>
+        send.mock.calls
+          .filter(([, type]) => type === 'focus')
+          .map(([node]) => (node as unknown as { hostProps: Record<string, unknown> }).hostProps);
+      fireEvent.press(screen.getByText('File'));
+      laidOut(screen, 'New', 264, 80);
+      frames(64);
+      move(screen, 'help');
+      laidOut(screen, 'Documentation', 300, 40);
+      frames(200);
+      // File's menu as it opened, then Help's as the surface changed into it.
+      expect(targets()).toHaveLength(2);
+      for (const props of targets()) {
+        expect(props.collapsable).toBe(false);
+        expect(props.accessibilityElementsHidden).toBe(false);
+      }
     } finally {
       send.mockRestore();
     }

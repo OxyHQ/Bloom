@@ -63,6 +63,9 @@ function focusView(instance: unknown): void {
  * Attach the returned ref to the surface's container. That container must NOT be
  * `accessible`: collapsing it into one accessibility element would make its rows
  * unreachable, and focus would land on the group rather than on the first row.
+ * It must be a view the platform MOUNTS: Fabric flattens a view of layout alone
+ * (no `collapsable={false}`, no paint, no clipping) out of the native tree, and a
+ * focus sent to it lands on nothing, silently (a menu bar's menu, 17.12.0).
  */
 export function useAccessibilityFocus<T>(open: boolean): React.RefObject<T | null> {
   const ref = useRef<T | null>(null);
