@@ -198,3 +198,25 @@ export interface ChipRowProps {
   contentContainerStyle?: StyleProp<ViewStyle>;
   testID?: string;
 }
+
+export interface CappedChipRowProps {
+  /** The pills, in order. */
+  children?: React.ReactNode;
+  /**
+   * Most lines the row may take. Pills that would start a line past this are
+   * hidden behind a trailing "+N" pill, which expands the row. Default 2.
+   */
+  maxLines?: number;
+  /** Between pills, both across and down. Default 8. */
+  gap?: number;
+  /** Label of the expander pill. Default `+N`, where N is the hidden count. */
+  moreLabel?: (hidden: number) => React.ReactNode;
+  /** Names the expander for assistive technology. Default `Show N more`. */
+  moreAccessibilityLabel?: (hidden: number) => string;
+  /** What the row is. Default `group`. */
+  role?: 'group' | 'list';
+  /** Names the row. */
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}

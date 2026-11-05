@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.13.0
+
+### Added
+
+- **`CappedChipRow`** (`@oxy.so/bloom/chip`): a wrapping row of `Chip`s that holds to `maxLines` (default 2), hiding what does not fit behind a trailing `+N` pill that expands the row. Pills are measured once and never mounted twice, so a `testID` stays unique; hidden pills are out of the accessibility tree. The fit arithmetic is `visibleChipCount` in `chip/wrap-layout.ts`, exported for consumers that need it. `CappedChipRow.test.tsx`, `CappedChipRow.wrap-layout.test.ts`; `docs/chip.mdx`.
+
+### Consumers
+
+Bump to 17.13.0. Additive only: no existing API changes.
+
 ## 17.12.0
 
 ### Changed

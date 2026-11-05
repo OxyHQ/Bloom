@@ -208,3 +208,21 @@ When a chip provides both `onPress` (or `onCheckedChange`) and `onClose`, select
 and removal are two sibling controls inside one painted pill. Each is keyboard
 focusable and has its own accessible name. Closing does not select the chip;
 `disabled` disables both actions. The forwarded ref targets the selection control.
+
+## Wrapping, capped rows
+
+`ChipRow` scrolls sideways and suits a filter bar. When a set of pills has to stay on screen (a profile's links, a tag list), use `CappedChipRow`: it wraps, holds to `maxLines` (default 2), and hides what does not fit behind a `+N` pill that expands the row.
+
+```tsx
+import { CappedChipRow, Chip } from '@oxy.so/bloom/chip';
+
+<CappedChipRow maxLines={2} accessibilityLabel="Links">
+  {links.map((link) => (
+    <Chip key={link.id} variant="subtle" trailingIcon={RiExternalLinkLine}>
+      {link.label}
+    </Chip>
+  ))}
+</CappedChipRow>
+```
+
+Each pill is measured once and is never mounted twice, so a `testID` stays unique. Hidden pills are out of the accessibility tree until the row is expanded. The `+N` pill is `size="md"`; a row of other sizes will look uneven.
