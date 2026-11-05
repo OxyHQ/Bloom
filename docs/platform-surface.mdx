@@ -353,14 +353,24 @@ is missing, as the other hooks do):
   callbacks follow it, and `onDrop` receives the content (`DropData`: files as
   `file://` URIs, URLs, text, HTML, other named types). Applications use it
   through `DropZone` (`docs/drop-zone.mdx`), never directly.
-- **`drag`** (`PlatformDrag`): `start({ data, actions, previewRef })` begins a
-  drag from the press the application is handling, with what it drags (`files`
-  as `file://` URIs, `text`, `url`, `html`), the actions it allows and the view
-  whose image follows the pointer. It resolves with the action the drop took,
-  or null when it was cancelled or refused. An application that runs its own
-  pointer gestures (a file manager's items) calls it once its own drag begins
-  (the pointer moved past its slop while pressed), as macOS's
-  `beginDraggingSession` is called from `mouseDragged`:
+- **`drag`** (`PlatformDrag`): `start({ data, actions, previewRef, count })`
+  begins a drag from the press the application is handling, with what it drags
+  (`files` as `file://` URIs, `text`, `url`, `html`) and the actions it allows.
+  It resolves with the action the drop took, or null when it was cancelled or
+  refused. An application that runs its own pointer gestures (a file manager's
+  items) calls it once its own drag begins (the pointer moved past its slop
+  while pressed), as macOS's `beginDraggingSession` is called from
+  `mouseDragged`.
+
+  The drag's image is the dragged view itself, as a Mac's is: `previewRef` is
+  the view pressed, where it is on screen (an item's icon and name, a card),
+  never a view drawn for the purpose. The platform draws its rendered subtree
+  as it looks (React Native's view snapshot, `captureRef`), translucent, its
+  transparent margins left out, with the point pressed in it kept under the
+  pointer. `count` is how many items go: above one the image is stacked, with
+  the count on a red badge at its top right. The platform's pointer shows the
+  action (a copy's plus, a link's arrow), and a drag that drops nothing slides
+  its image back to the view:
 
 ```tsx
 const drag = usePlatformDrag();
@@ -369,7 +379,9 @@ if (drag) {
   const action = await drag.start({
     data: { files: selected.map((item) => item.uri) },
     actions: ['copy', 'move', 'link'],
+    // The row pressed, as it is drawn; the others selected go with it.
     previewRef: rowRef,
+    count: selected.length,
   });
 } else {
   // No platform drag (the web, a phone): the application's drag stays inside it.

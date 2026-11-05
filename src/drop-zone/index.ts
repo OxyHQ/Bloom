@@ -1,5 +1,6 @@
 export { DropZone } from './DropZone';
-export type { DropZoneProps } from './types';
+export { setDragImage } from './drag-image';
+export type { DragImageOptions, DropZoneProps } from './types';
 export type {
   DragAction,
   DropData,

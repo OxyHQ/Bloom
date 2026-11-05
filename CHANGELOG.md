@@ -2,6 +2,17 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.10.0
+
+### Added
+
+- **A drag's image is the dragged view itself, as a Mac's.** `PlatformDragRequest` takes `count`, how many items go, and documents `previewRef` as the view pressed, where it is on screen (an item's icon and name), never a view drawn for the purpose: the platform draws its rendered subtree as it looks, translucent, its transparent margins left out, the point pressed under the pointer, stacked with the count on a red badge for several items. OxyOS's adapter passes both to its drag (ADR 0035), which also badges the pointer for a copy or a link and slides the image back when nothing takes the drop.
+- **`setDragImage(dataTransfer, element, { x, y, count })`** (`@oxy.so/bloom/drop-zone`): the same image for an HTML5 drag on the web, from the dragged element in `dragstart` (stacked copies and the count's badge built off screen for several items, then removed). It does nothing on native, where the platform's drag draws its image. `drag-image.web.test.ts` checks the element held at its grip for one item, the stack, the badge, the offsets and its removal for three.
+
+### Consumers
+
+Bump to 17.10.0. An application that drew a view of its own for `previewRef` (an off-screen label) passes the pressed item's view and `count` instead.
+
 ## 17.9.0
 
 ### Added
