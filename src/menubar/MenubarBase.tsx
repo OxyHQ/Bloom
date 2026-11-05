@@ -8,6 +8,9 @@
  * re-exports them rather than keeping a second copy that has to be edited
  * twice.
  *
+ * The one fork-specific piece the bar itself draws, its one menu surface (`viewport.tsx`), is
+ * handed in by each fork (`createMenubar`), so this module never names a forked target.
+ *
  * NEUTRAL by construction: everything this module reaches (`floating/*`,
  * `hooks/*`, `styles/*`, `./context`, `./types`) is fork-free. That is not a
  * detail — `web-fork-reachability.test.ts` only scans `.web` files, so a
@@ -17,6 +20,7 @@
 import React, {
   Children,
   type ComponentRef,
+  type ComponentType,
   Fragment,
   isValidElement,
   type ReactNode,
@@ -59,6 +63,7 @@ import {
 } from './context';
 import { DeclaredChildren, textOf, useMenuEntry } from './declared';
 import { MenubarRegistry, nextMenuEntryId } from './registry';
+import { MenubarViewportStore } from './viewport';
 import type { MenubarMenuProps, MenubarProps, MenubarTriggerProps } from './types';
 import { useMenuShortcuts } from './use-menu-shortcuts';
 import { usePublishMenus } from './use-publish-menus';
@@ -82,13 +87,21 @@ function menuValues(children: ReactNode, into: string[] = []): string[] {
 }
 
 /**
- * The bar. Without the `menu-bar` capability it draws itself in the window, as
- * it always has. With it, it draws nothing: its declaration is mounted
- * headless, described to the platform's bar (`use-publish-menus.ts`), and an
- * item chosen there runs here. Either way each item's shortcut runs it
+ * The bar, drawing its menus in `Viewport`, the fork's one menu surface. Without the `menu-bar`
+ * capability it draws itself in the window, as it always has. With it, it draws nothing: its
+ * declaration is mounted headless, described to the platform's bar (`use-publish-menus.ts`),
+ * and an item chosen there runs here. Either way each item's shortcut runs it
  * (`use-menu-shortcuts.ts`).
  */
-export function Menubar(props: MenubarProps) {
+export function createMenubar(Viewport: ComponentType): ComponentType<MenubarProps> {
+  function Menubar(props: MenubarProps) {
+    return <MenubarRoot {...props} Viewport={Viewport} />;
+  }
+  Menubar.displayName = 'Menubar';
+  return Menubar;
+}
+
+function MenubarRoot(props: MenubarProps & { Viewport: ComponentType }) {
   const {
     children,
     value,
@@ -100,6 +113,7 @@ export function Menubar(props: MenubarProps) {
     className,
     style,
     testID,
+    Viewport,
   } = props;
   const { messages } = useMessages(MENUBAR_MESSAGES);
   const label = labelProp ?? messages.menuBar;
@@ -119,6 +133,7 @@ export function Menubar(props: MenubarProps) {
     onChange: onFocusValueChange,
   });
   const [menus] = useState(() => new Map<string, MenubarMenuHandle>());
+  const [viewport] = useState(() => new MenubarViewportStore());
   const barRef = useRef<ComponentRef<typeof RNView> | null>(null);
   const leave = useCallback(() => {
     if (focusValue !== undefined) setFocusValue(undefined);
@@ -131,8 +146,8 @@ export function Menubar(props: MenubarProps) {
     [setValue, focusValue, setFocusValue],
   );
   const context = useMemo(
-    () => ({ value: openValue, setValue, focusValue, leave, switchTo, barRef, menus }),
-    [openValue, setValue, focusValue, leave, switchTo, menus],
+    () => ({ value: openValue, setValue, focusValue, leave, switchTo, barRef, menus, viewport }),
+    [openValue, setValue, focusValue, leave, switchTo, menus, viewport],
   );
   // The bar from the keyboard (`use-menubar-keys.ts`): its titles in the order they are declared.
   useMenubarKeys(
@@ -204,6 +219,7 @@ export function Menubar(props: MenubarProps) {
           />
         ) : null}
         <MenubarScopeProvider value={scope}>{children}</MenubarScopeProvider>
+        <Viewport />
       </StyledView>
     </MenubarProvider>
   );

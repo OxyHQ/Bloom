@@ -2,6 +2,18 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.12.0
+
+### Changed
+
+- **A `Menubar`'s menus are one surface that changes from one menu into the next**, on the web and on native desktops (`popup-surface`), as a Mac's bar has one menu at a time. With a menu open, the pointer crossing onto another title (or <kbd>←</kbd> / <kbd>→</kbd>) no longer closes the panel for another to open: the same panel moves under the new title and takes the new menu's size while the two menus' rows crossfade, on the menu motion (`MENU_MORPH_MOTION`, 150ms ease-out, no overshoot); at once with Reduce Motion. The web's panel is one `FloatingPanel` whose place and size are CSS transitions; a native desktop's is one platform popup Bloom re-anchors (a box moving between the titles in the bar) and resizes frame by frame, so the platform keeps its grab and the bar's pointer tracking throughout. The menu being left is inert, hidden from assistive technology and out of the bar's declaration; the panel carries the open menu's role and name, and a menu opened from the keys starts on its first enabled row. `menubar/viewport.tsx`; `MenubarMorph.test.tsx` (native: one popup, monotonic geometry and crossfade, a change mid-change, the keys, shortcuts, the screen reader, Reduce Motion) and `MenubarMorph.web.test.tsx`; checked in Chrome (one panel element, its rectangle monotonic between the two menus' over eight frames, both layers mid-fade in seven).
+- `PopupSurfaceProps.anchorRef` may change while the popup is open; the platform places the same popup again against it.
+- On the web a menu's rows that are inert (a leaving layer) are no rows of the menu for its keys (`floating/menu-keyboard.ts`).
+
+### Consumers
+
+Bump to 17.12.0. No API change. A `MenubarContent`'s rows are now drawn in the bar's surface: a provider placed between a `Menubar` and a `MenubarContent` no longer reaches them (put it above the `Menubar`). A `MenubarContent`'s `className` and `style` style its menu inside the surface on native; on the web they style the surface, as before.
+
 ## 17.11.0
 
 ### Added

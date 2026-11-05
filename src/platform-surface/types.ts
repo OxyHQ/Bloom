@@ -173,7 +173,12 @@ export type PopupDismissReason =
  * keeps the panel on screen (flip on the side axis, slide on the other).
  */
 export interface PopupSurfaceProps {
-  /** The view the popup is anchored to (the trigger). */
+  /**
+   * The view the popup is anchored to (the trigger). It may change while the popup is open, and
+   * the content's size with it: the platform places the same popup again against the new view,
+   * at the new size, never closing it for another (a menu bar's one popup changing from one menu
+   * into the next, moving between the titles frame by frame).
+   */
   anchorRef: RefObject<ComponentRef<typeof View> | null>;
   /**
    * A point in the anchor, in layout pixels from its top-left corner, that the

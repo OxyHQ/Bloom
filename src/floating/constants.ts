@@ -129,6 +129,17 @@ export const MENU_MOTION_SCALE_FROM = 0.95;
 /** `blur-[2px]` — web only; `FloatingPanel` is itself web-only. */
 export const MENU_MOTION_BLUR = 2;
 
+/**
+ * A menu bar's one surface changing from one menu into the next (`menubar/viewport.ts`): its
+ * place, its size and the two menus' crossfade, on the menu motion's own duration and curve. A
+ * timing, never a spring: the surface passes between the two menus' rectangles without
+ * overshooting either, and a retarget mid-way starts from where it is.
+ */
+export const MENU_MORPH_MOTION = {
+  duration: MENU_MOTION_DURATION,
+  easing: MENU_MOTION_EASING,
+} as const;
+
 /* -------------------------------------------------------------------------- */
 /*  The floating panel                                                        */
 /* -------------------------------------------------------------------------- */

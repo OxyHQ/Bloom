@@ -47,6 +47,7 @@ import {
 } from './context';
 import { type MenuEntry, nextMenuEntryId } from './registry';
 import { EDIT_ACTION_SHORTCUTS, useEditAction } from './use-edit-action';
+import { useMenubarLeaving } from './viewport';
 import type {
   MenubarCheckboxItemProps,
   MenubarContentProps,
@@ -361,6 +362,9 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
 
   function MenubarSub({ open, defaultOpen = false, onOpenChange, children }: MenubarSubProps) {
     const scope = useMenubarScope();
+    // In a menu the bar's surface is changing from, a submenu shows nothing: its flyout goes as
+    // the menu's rows begin to leave.
+    const leaving = useMenubarLeaving();
     const [id] = useState(nextMenuEntryId);
     // The submenu's open state is held here and given to the fork's sub,
     // controlled, so its content knows when it is closed (and mounts headless
@@ -386,8 +390,8 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
     );
     if (scope?.headless) return <>{declared}</>;
     return (
-      <SubOpenContext.Provider value={isOpen}>
-        <rows.Sub open={isOpen} onOpenChange={setOpen}>
+      <SubOpenContext.Provider value={isOpen && !leaving}>
+        <rows.Sub open={isOpen && !leaving} onOpenChange={setOpen}>
           {declared}
         </rows.Sub>
       </SubOpenContext.Provider>
