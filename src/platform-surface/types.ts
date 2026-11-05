@@ -618,6 +618,30 @@ export interface PlatformFiles {
 }
 
 /**
+ * A sound the platform plays for something the person did, by its meaning:
+ * putting items in the Trash (`move-to-trash`) and emptying it for good
+ * (`empty-trash`), as a Mac's Finder and Dock play them.
+ */
+export type PlatformSystemSound = 'move-to-trash' | 'empty-trash';
+
+/**
+ * The platform's own sounds, for a platform that has them. Optional and not a
+ * capability (it changes no presentation). An application asks for a sound by
+ * its meaning and ships no copy of it: every application on the platform
+ * sounds the same, at the person's interface sounds setting.
+ */
+export interface PlatformSounds {
+  /**
+   * Plays `sound` for what the person just did, as the platform plays its
+   * own: never when they turned interface sound effects off or the sound
+   * output is muted, and without waiting for it. The platform cites the
+   * latest input the application received, so a sound follows the person's
+   * own action.
+   */
+  play(sound: PlatformSystemSound): void;
+}
+
+/**
  * A host platform's surfaces, registered with `BloomProvider platform={…}`
  * (or `PlatformSurfaceProvider`) by the runtime that runs the application. A
  * `BloomProvider` with no `platform` of its own keeps the one around it, so an
@@ -650,6 +674,8 @@ export interface PlatformSurfaceAdapter {
   readonly editing?: PlatformEditing;
   /** The person's places and the Trash, where the platform has them. */
   readonly files?: PlatformFiles;
+  /** The platform's own sounds, where it has them. */
+  readonly sounds?: PlatformSounds;
   /** Required with `drag-and-drop`: the view that takes drops from any application. */
   readonly DropTarget?: ComponentType<PlatformDropTargetProps>;
   /** Required with `drag-and-drop`: dragging the application's own content out. */

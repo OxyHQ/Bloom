@@ -1,6 +1,6 @@
 ---
 title: Platform surfaces
-description: The host platform's popups, windows, menu bar, keys, appearance and the person's files, registered once at the root by the runtime, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar, every application follows the system's accent and reduce transparency, a file manager reaches the person's places and Trash, and content is dragged between applications.
+description: The host platform's popups, windows, menu bar, keys, appearance and the person's files, registered once at the root by the runtime, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar, every application follows the system's accent and reduce transparency, a file manager reaches the person's places and Trash, applications play the platform's own sounds, and content is dragged between applications.
 order: 55
 ---
 
@@ -337,6 +337,34 @@ the panel asked before replacing an existing one), or `cancel`. The platform
 cites the latest press the application received for a choice, then closes the
 panel. Where the panel starts, and what it remembers between requests (the
 folder last used for each asking application), are the application's own.
+
+## `sounds`
+
+Not a capability either: the platform's own sounds, for a platform that has
+them. An application asks for a sound by what the person did, never by a file,
+and ships no copy of it: every application sounds the same, as a Mac's Finder
+and Dock sound alike when items go to the Trash.
+
+```ts
+type PlatformSystemSound = 'move-to-trash' | 'empty-trash';
+interface PlatformSounds {
+  play(sound: PlatformSystemSound): void;
+}
+```
+
+`play` plays the sound for what the person just did (`move-to-trash` once items
+are in the Trash, `empty-trash` once it is emptied), without waiting for it. The
+platform decides whether it is heard: never when the person turned interface
+sound effects off, nor while the sound output is muted, and only after the
+person's own input (it cites the latest the application received).
+`usePlatformSounds()` returns the adapter's `sounds`, or null: then the
+application plays nothing.
+
+```tsx
+const sounds = usePlatformSounds();
+const outcomes = await files.trash(uris);
+if (outcomes.some((outcome) => outcome.ok)) sounds?.play('move-to-trash');
+```
 
 ## `drag-and-drop`
 
