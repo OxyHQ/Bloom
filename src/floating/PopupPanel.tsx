@@ -45,6 +45,62 @@ export function usePanelPopupSurface(): ComponentType<PopupSurfaceProps> | null 
   return useContext(PopupSurfaceContext);
 }
 
+/** Rows drawn in `PopupSurface`'s popup: a submenu among them flies out in a popup of its own. */
+export function PopupPanelScope({
+  PopupSurface,
+  children,
+}: {
+  PopupSurface: ComponentType<PopupSurfaceProps>;
+  children?: React.ReactNode;
+}) {
+  return (
+    <PopupSurfaceContext.Provider value={PopupSurface}>{children}</PopupSurfaceContext.Provider>
+  );
+}
+
+/**
+ * A menu panel's surface alone: the material, `shadow-dropdown` and the corner, clipping what it
+ * holds, sized by what it holds (the rows, or a menu bar's layers). Its 1px edge is a border
+ * the material covers, or (`edge={0}`) none: the content keeps that pixel itself (a menu bar's
+ * layers, each laid out from the surface's own corner, so the surface's size is exactly theirs
+ * on every scale's pixel grid).
+ */
+export function PopupPanelSurface({
+  className,
+  style,
+  panelRef,
+  edge = POPUP_PANEL_BORDER,
+  children,
+}: {
+  className?: string;
+  style?: StyleProp<ViewStyle>;
+  panelRef?: React.Ref<ComponentRef<typeof View>>;
+  edge?: number;
+  children?: React.ReactNode;
+}) {
+  const palette = useMenuPalette();
+  return (
+    <StyledView
+      ref={panelRef}
+      className={className}
+      style={[styles.panel, { borderWidth: edge, boxShadow: palette.shadow }, style]}
+    >
+      <SurfacePaint fill={palette.surface} radius={PANEL_RADIUS} outset={edge} floating />
+      {children}
+    </StyledView>
+  );
+}
+
+/**
+ * The rows' box, which clips what reaches past it as the web panel's scroller does: a
+ * separator's negative margin ends at the rows' edges, under their highlight's, as it is drawn
+ * on the web, not at the panel's.
+ */
+export function PopupPanelRows({ children }: { children?: React.ReactNode }) {
+  const density = useMenuDensity();
+  return <StyledView style={[styles.rows, { gap: density.gap }]}>{children}</StyledView>;
+}
+
 /**
  * A menu panel's chrome and its rows, shared by a menu's panel and its flyouts' panels so the
  * two cannot drift.
@@ -66,35 +122,15 @@ export function PopupPanelChrome({
   panelRef?: React.Ref<ComponentRef<typeof View>>;
   children?: React.ReactNode;
 }) {
-  const palette = useMenuPalette();
   const density = useMenuDensity();
   return (
-    <StyledView
-      ref={panelRef}
+    <PopupPanelSurface
+      panelRef={panelRef}
       className={className}
-      style={[
-        styles.panel,
-        {
-          minWidth,
-          maxWidth,
-          maxHeight,
-          boxShadow: palette.shadow,
-          padding: density.panelPadding,
-        },
-        style,
-      ]}
+      style={[{ minWidth, maxWidth, maxHeight, padding: density.panelPadding }, style]}
     >
-      <SurfacePaint
-        fill={palette.surface}
-        radius={PANEL_RADIUS}
-        outset={POPUP_PANEL_BORDER}
-        floating
-      />
-      {/* The rows' box, which clips what reaches past it as the web panel's scroller does: a
-          separator's negative margin ends at the rows' edges, under their highlight's, as it
-          is drawn on the web, not at the panel's. */}
-      <StyledView style={[styles.rows, { gap: density.gap }]}>{children}</StyledView>
-    </StyledView>
+      <PopupPanelRows>{children}</PopupPanelRows>
+    </PopupPanelSurface>
   );
 }
 
@@ -184,9 +220,9 @@ export function PopupPanel({
         className={className}
         style={style}
       >
-        <PopupSurfaceContext.Provider value={PopupSurface}>
+        <PopupPanelScope PopupSurface={PopupSurface}>
           {navigation.provider(children)}
-        </PopupSurfaceContext.Provider>
+        </PopupPanelScope>
       </PopupPanelChrome>
     </PopupSurface>
   );

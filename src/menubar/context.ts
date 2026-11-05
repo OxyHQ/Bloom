@@ -20,6 +20,7 @@ import type { MenuFocusIntent } from '../floating/menu-keyboard';
 import type { PopupNavigation } from '../floating/popup-navigation';
 import type { OverlayShellContextValue } from '../floating/types';
 import type { MenubarRegistry } from './registry';
+import type { MenubarViewportStore } from './viewport';
 
 /** A menu of the bar as the bar's keyboard knows it (`use-menubar-keys.ts`). */
 export interface MenubarMenuHandle {
@@ -52,6 +53,11 @@ export interface MenubarContextValue {
   barRef: RefObject<ComponentRef<typeof View> | null>;
   /** Each menu's handle, by its `value`, while it is mounted. */
   menus: Map<string, MenubarMenuHandle>;
+  /**
+   * The menus' contents for the bar's one menu surface (`viewport.tsx`): an anchored menu's
+   * content publishes itself there, and the surface draws the open one.
+   */
+  viewport: MenubarViewportStore;
 }
 
 export interface MenubarMenuContextValue extends OverlayShellContextValue {

@@ -234,7 +234,11 @@ function menuRows(panel: Element): HTMLElement[] {
   // The owner is the nearest `role="menu"` — the panel itself, or (for a sub
   // panel, whose rows sit in an inner scroller) the panel around it.
   const owner = panel.closest(MENU_PANEL_SELECTOR) ?? panel;
-  return rovingItems(owner, MENU_ROW_SELECTOR, { owner: MENU_PANEL_SELECTOR });
+  // Rows in an inert subtree (a menu bar's menu leaving its panel, `menubar/viewport.tsx`) are
+  // no rows of the menu: they cannot take focus.
+  return rovingItems(owner, MENU_ROW_SELECTOR, { owner: MENU_PANEL_SELECTOR }).filter(
+    (row) => row.closest('[inert]') === null,
+  );
 }
 
 /**

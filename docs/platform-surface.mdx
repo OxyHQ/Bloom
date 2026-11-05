@@ -34,7 +34,10 @@ unchanged.
 ## `popup-surface`
 
 `PopupSurface` receives `PopupSurfaceProps`:
-- `anchorRef`: the trigger's view;
+- `anchorRef`: the trigger's view. It may change while the popup is open, and the
+  panel's size with it: the platform places the same popup again against the new
+  view, at the new size, never closing it for another (a menu bar's one popup
+  changing from one menu into the next, below);
 - `point` (optional): a point in the anchor, in layout pixels from its top-left
   corner, to place the popup against instead of the anchor's frame (a context
   menu opens where the pointer pressed); placement applies to it as to a frame
@@ -85,8 +88,12 @@ becomes `floating/PopupPanel` in the popup (the web menu panel's chrome: the
 menu surface painted as Bloom's material, its 1px edge under it,
 `shadow-dropdown`, the 16px corner, the 266px floor), with the same rows.
 `ContextMenu`'s secondary button (or a long press) opens its panel at the
-press, the trigger the anchor and the press its `point`; each `Menubar` menu
-hangs under its trigger with the web's menubar offsets. Where a pointer drives
+press, the trigger the anchor and the press its `point`; a `Menubar`'s menus are
+ONE popup, hanging under the open menu's trigger with the web's menubar offsets:
+moving to another menu while one is open changes that popup into the next menu
+([Menubar](/docs/bloom/main/menubar)), Bloom moving its anchor (a box in the bar,
+from title to title) and its size frame by frame, the platform placing the same
+popup again each time with its grab and the bar's `trackingRef` kept. Where a pointer drives
 the platform (`window` or `pointer`), a submenu flies out beside its row in a
 popup of its own, anchored to the row: its `PopupSurface` is rendered inside
 the menu's, so the platform knows it as the menu's child (OxyOS opens it on top

@@ -67,9 +67,20 @@ Uncontrolled by default (`defaultValue` sets the initially-open menu; omit it fo
 
 On web each menu is an anchored panel under its own trigger, aligned to the trigger's left edge. On a phone each is the bottom sheet the other menu families use — a phone has no room for a hanging panel, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system.
 
-On a native desktop — an adapter reporting [`popup-surface`](/docs/bloom/main/platform-surface) (an OxyOS window, or its shell) — each menu is the web's desktop menu instead: the same panel in the platform's popup, hanging under its trigger with the web's `sideOffset={8} alignOffset={-4}` and 266px floor, its chrome the web panel's (the menu surface as Bloom's material, its 1px edge under it, `shadow-dropdown`, the 16px corner, the separators ending at the rows' edges as the web's scroller clips them), its submenus flying out beside their rows when a pointer drives the platform (`window` or `pointer`), and its rows driven by the platform's keys. Never a bottom sheet there.
+On a native desktop — an adapter reporting [`popup-surface`](/docs/bloom/main/platform-surface) (an OxyOS window, or its shell) — each menu is the web's desktop menu instead: the same panel in the platform's popup (one for the bar, below), hanging under its trigger with the web's `sideOffset={8} alignOffset={-4}` and 266px floor, its chrome the web panel's (the menu surface as Bloom's material, its 1px edge under it, `shadow-dropdown`, the 16px corner, the separators ending at the rows' edges as the web's scroller clips them), its submenus flying out beside their rows when a pointer drives the platform (`window` or `pointer`), and its rows driven by the platform's keys. Never a bottom sheet there.
 
 Pressing an open menu's trigger closes it.
+
+## One menu surface
+
+The bar's menus are one surface, on the web and on a native desktop alike, as a Mac's menu bar has one menu at a time. While a menu is open, moving to another menu (the pointer crossing onto its title, or <kbd>←</kbd> / <kbd>→</kbd>) does not close that panel for another to open: the panel **changes into the next menu**. It moves under the new title and takes the new menu's size while the two menus' rows crossfade, all on the menu motion (`MENU_MORPH_MOTION`: the menu's own 150ms ease-out, a timing that never overshoots either menu's rectangle). A change during a change starts from wherever the panel is. With Reduce Motion the panel changes at once, still one surface.
+
+- **One surface.** On the web it is one `FloatingPanel`: the same element takes the next menu's name, its place and size as CSS transitions (`left`, `top`, `width`, `height`), and the layers' opacity as another. On a native desktop it is one platform popup (`popup-surface`): Bloom moves the box the popup hangs from in the bar, from title to title, and the panel's size, frame by frame, and the platform places the same popup again each time (OxyOS's `Reposition`), its grab and the bar's pointer tracking kept, so the window under the bar hears nothing between the two menus.
+- **Layers.** The open menu and, while the panel changes, the menus it changes from, each laid out at its own size (its padding, its rows, its 266px floor) over the others at the panel's corner. A menu being left is inert and hidden from assistive technology, its submenus closed, its rows out of the bar's declaration (its shortcuts are its closed menu's, once); it goes when it has faded.
+- **Accessible.** The panel carries the open menu's role and name, so the screen reader says the new menu as it would a menu opening. A menu that becomes the open one mounts as a menu opening does: opened from the keys (<kbd>←</kbd> / <kbd>→</kbd>, the bar's keyboard) it starts on its first enabled row, which takes the focus; opened by the pointer, none.
+- **Where the rows are drawn.** The rows of a `MenubarContent` are drawn in the bar's surface, not where they are declared: the bar's and the menu's own contexts are carried there, and everything above the `Menubar`. A provider between the `Menubar` and a `MenubarContent` does not reach its rows, as with Radix's `NavigationMenu` viewport.
+
+On a phone each menu is still its own bottom sheet: a sheet covers the bar, so there is no moving between menus while one is open.
 
 ## Rows
 
