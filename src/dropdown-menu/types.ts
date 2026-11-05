@@ -32,6 +32,13 @@ export type DropdownMenuProps = React.PropsWithChildren<
 export type DropdownMenuTriggerProps = OverlayTriggerProps & {
   /** An independent primary press surface, composed around the same control after menu handlers. */
   pressTrigger?: React.ReactElement<OverlayTriggerProps>;
+  /**
+   * Whether the screen reader's focus comes back to the trigger as the menu closes (default
+   * `true`). Read as it closes. `false` for a trigger that hands focus elsewhere itself: a system
+   * menu opened with the pointer, whose choice gives the keyboard back to the window that had it,
+   * as a Mac's menu bar extras do. Native only: on web the browser owns focus.
+   */
+  restoreFocus?: boolean;
 };
 export type DropdownMenuContentProps = MenuSurfaceProps;
 

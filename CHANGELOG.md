@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.9.0
+
+### Added
+
+- **`DropdownMenuTrigger` takes `restoreFocus`** (native), as `ContextMenu` and `Menubar` already decide it inside: whether the screen reader's focus comes back to the trigger as its menu closes (default `true`, as before). A system menu opened with the pointer passes `false` and hands the keyboard back to the window that had it itself: OxyOS's top bar input source menu (ADR 0041), whose return of the keyboard the trigger's restore, 50 ms later, otherwise took back. `DropdownMenuRestoreFocus.test.tsx` checks both, against a resolved trigger node.
+
+### Consumers
+
+Bump to 17.9.0. No change for existing triggers.
+
 ## 17.8.2
 
 ### Changed

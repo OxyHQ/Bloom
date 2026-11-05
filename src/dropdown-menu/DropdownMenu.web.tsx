@@ -118,6 +118,7 @@ export function DropdownMenuTrigger({
   style,
   testID,
   pressTrigger,
+  restoreFocus,
 }: DropdownMenuTriggerProps) {
   const menu = useDropdownMenu();
   const blocked =
@@ -143,6 +144,7 @@ export function DropdownMenuTrigger({
       pressTrigger={pressTrigger}
       onPrimaryOpenChange={menu.onPrimaryOpenChange}
       anchorRef={menu.anchorRef}
+      restoreFocus={restoreFocus}
       className={className}
       style={style}
       testID={testID}
