@@ -129,7 +129,9 @@ export interface PlatformDragRequest {
    * The dragged view itself, where it is (an item's icon and name, a card):
    * the platform draws its rendered subtree as it looks, translucent, as the
    * drag's image, with the point pressed in it kept under the pointer, as a
-   * Mac's dragged items are. None: the platform's own image.
+   * Mac's dragged items are. It must be a view of its own: one that draws
+   * nothing itself takes `collapsable={false}`, as a view snapshot needs.
+   * None: the platform's own image.
    */
   readonly previewRef?: RefObject<ComponentRef<typeof View> | null>;
   /**

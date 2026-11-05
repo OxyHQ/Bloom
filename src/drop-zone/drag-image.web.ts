@@ -1,3 +1,4 @@
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { BADGE_COLOR, BADGE_HEIGHT, badgeText, STACK_STEP, stackLayers } from './shared';
 import type { DragImageOptions } from './types';
 
@@ -29,7 +30,7 @@ export function setDragImage(
   const stack = document.createElement('div');
   stack.setAttribute('aria-hidden', 'true');
   Object.assign(stack.style, {
-    position: 'fixed',
+    position: WEB_POSITION_FIXED,
     left: '-10000px',
     top: '0px',
     width: `${width + layers * STACK_STEP + inset}px`,

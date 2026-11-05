@@ -364,8 +364,10 @@ is missing, as the other hooks do):
 
   The drag's image is the dragged view itself, as a Mac's is: `previewRef` is
   the view pressed, where it is on screen (an item's icon and name, a card),
-  never a view drawn for the purpose. The platform draws its rendered subtree
-  as it looks (React Native's view snapshot, `captureRef`), translucent, its
+  never a view drawn for the purpose, and a view of its own (one that draws
+  nothing itself takes `collapsable={false}`, as a view snapshot needs). The
+  platform draws its rendered subtree as it looks (React Native's view
+  snapshot, `captureRef`), translucent, its
   transparent margins left out, with the point pressed in it kept under the
   pointer. `count` is how many items go: above one the image is stacked, with
   the count on a red badge at its top right. The platform's pointer shows the
