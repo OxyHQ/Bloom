@@ -97,6 +97,7 @@ export function DropdownMenuTrigger({
   style,
   testID,
   pressTrigger,
+  restoreFocus,
 }: DropdownMenuTriggerProps) {
   const menu = useDropdownMenu();
   const primaryAction =
@@ -110,6 +111,7 @@ export function DropdownMenuTrigger({
       pressTrigger={pressTrigger}
       onPrimaryOpenChange={menu.onPrimaryOpenChange}
       anchorRef={menu.anchorRef}
+      restoreFocus={restoreFocus}
       className={className}
       style={style}
       testID={testID}
