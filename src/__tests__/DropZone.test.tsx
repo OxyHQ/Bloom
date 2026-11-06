@@ -23,7 +23,9 @@ import {
   usePlatformDropTarget,
 } from '../platform-surface/context';
 import type {
+  DragCancelReason,
   PlatformDrag,
+  PlatformDragRequest,
   PlatformDropTargetProps,
   PlatformSurfaceAdapter,
 } from '../platform-surface/types';
@@ -98,6 +100,35 @@ describe('DropZone (native)', () => {
   it('usePlatformDrag is the adapter’s drag with the capability, null without it', () => {
     expect(renderHook(() => usePlatformDrag(), { wrapper: on(ADAPTER) }).result.current).toBe(drag);
     expect(renderHook(() => usePlatformDrag()).result.current).toBeNull();
+  });
+
+  it('hands the adapter an application dragged, its vanishing and why it dropped nothing', async () => {
+    const requests: PlatformDragRequest[] = [];
+    const adapter: PlatformSurfaceAdapter = {
+      ...ADAPTER,
+      drag: {
+        start: async (request) => {
+          requests.push(request);
+          request.onCancel?.('not-accepted');
+          return null;
+        },
+      },
+    };
+    const platformDrag = renderHook(() => usePlatformDrag(), { wrapper: on(adapter) }).result
+      .current;
+    const reasons: DragCancelReason[] = [];
+    const action = await platformDrag?.start({
+      data: { other: { 'application/x-oxyos-application': 'so.oxy.inbox' } },
+      actions: ['move'],
+      vanish: true,
+      onCancel: (reason) => reasons.push(reason),
+    });
+    expect(action).toBeNull();
+    expect(requests[0]).toMatchObject({
+      data: { other: { 'application/x-oxyos-application': 'so.oxy.inbox' } },
+      vanish: true,
+    });
+    expect(reasons).toEqual(['not-accepted']);
   });
 
   it('an adapter reporting drag-and-drop without its parts throws', () => {

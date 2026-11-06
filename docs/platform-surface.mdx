@@ -392,7 +392,7 @@ is missing, as the other hooks do):
   them, before the drop; with `acceptFileTypes` a drag of files is taken only
   when every file is of a type named there. Applications use it through
   `DropZone` (`docs/drop-zone.mdx`), never directly.
-- **`drag`** (`PlatformDrag`): `start({ data, actions, previewRef, count, vanish })`
+- **`drag`** (`PlatformDrag`): `start({ data, actions, previewRef, count, vanish, onCancel })`
   begins a drag from the press the application is handling, with what it drags
   (`files` as `file://` URIs, `text`, `url`, `html`, and `other` media types by
   name, each with its content as text) and the actions it allows. The platform
@@ -416,7 +416,13 @@ is missing, as the other hooks do):
   its image back to the view, unless it was started with `vanish`: then a drop
   on nothing that takes it makes the image vanish in a puff of smoke where it
   is, as an icon dragged off a Mac's Dock does (Escape still puts it back). The
-  promise resolves null either way; the application removes the item:
+  promise resolves null either way. `onCancel(reason)` is called once, before
+  it resolves, when the drag ended without a drop: `escape`, `not-accepted`
+  (released over nothing that takes it), `refused` (at its start) or
+  `cancelled` (the source cancelled it, its window went, the session locked);
+  where Escape cannot be told from a release over nothing (HTML5's `dragend`),
+  the platform says `not-accepted`. The application removes the item for a
+  release off its list, not for Escape:
 
 ```tsx
 const drag = usePlatformDrag();
@@ -443,8 +449,10 @@ const action = await drag.start({
   actions: ['move'],
   previewRef: iconRef,
   vanish: !running,
+  onCancel: (reason) => {
+    if (reason === 'not-accepted' && left) removeFromDock(app.id);
+  },
 });
-if (action === null && left) removeFromDock(app.id);
 ```
 
 With `move` of data the application deletes its original once the promise

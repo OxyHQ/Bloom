@@ -15,6 +15,7 @@ export {
 export { usePlatformAppearanceState } from './use-platform-appearance';
 export type {
   DragAction,
+  DragCancelReason,
   DragData,
   DropData,
   DropKind,

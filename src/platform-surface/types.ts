@@ -143,6 +143,16 @@ export interface DragData {
   readonly other?: Readonly<Record<string, string>>;
 }
 
+/**
+ * Why a drag ended without a drop (`PlatformDragRequest.onCancel`), as
+ * Wayland's and OxyOS's drag cancellations say: the person pressed Escape; the
+ * drag was released over nothing that takes it (or over a target that would
+ * drop nothing); the platform refused it at its start (no press held); or it
+ * was cancelled otherwise (the source cancelled it, its window went, the
+ * session locked).
+ */
+export type DragCancelReason = 'escape' | 'not-accepted' | 'refused' | 'cancelled';
+
 /** A drag the application starts (`PlatformDrag.start`). */
 export interface PlatformDragRequest {
   readonly data: DragData;
@@ -172,6 +182,14 @@ export interface PlatformDragRequest {
    * image back. Default false.
    */
   readonly vanish?: boolean;
+  /**
+   * The drag ended without a drop, and why (`DragCancelReason`): called once,
+   * before the drag resolves with none. A dock tells a release off it (remove
+   * the icon) from Escape (put it back) by it. Where the platform cannot tell
+   * Escape from a release over nothing (HTML5's `dragend` with `dropEffect`
+   * `none`), it says `not-accepted`.
+   */
+  readonly onCancel?: (reason: DragCancelReason) => void;
 }
 
 /**
