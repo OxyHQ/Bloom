@@ -2,6 +2,12 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.14.0
+
+### Added
+
+- **`BottomPromo`**, a bottom-of-screen call to action: a fade into the surface, then a solid block with a centred headline, an optional supporting line and a full-width primary action. It is content only; the screen's or pane's bottom slot places it and reserves its height. `docs/bottom-promo.mdx`.
+
 ## 17.13.1
 
 ### Fixed
