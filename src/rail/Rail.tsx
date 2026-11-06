@@ -41,13 +41,17 @@ import { ScrollArea } from '../layout/ScrollArea';
  *    in this file rather than letting an inline `as ViewStyle` cast come back
  *    unnoticed anywhere else.
  */
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo, useContext } from 'react';
 import { Platform, type ViewStyle } from 'react-native';
 
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { WEB_POSITION_STICKY } from '../styles/web-view-style';
 import { Text } from '../typography';
 import type { RailProps } from './types';
+import { RailHostContext } from './context';
+import { RAIL_DESTINATION } from './geometry';
+import { RailDestinationBody } from './RailDestinationBody';
 
 const webStickyStyle: ViewStyle | undefined =
   Platform.OS === 'web'
@@ -67,14 +71,17 @@ const RailComponent: React.FC<RailProps> = ({
   activeId,
   onSelect,
   width = DEFAULT_WIDTH,
+  host = 'auto',
   style,
   testID,
 }) => {
+  const inheritedHost = useContext(RailHostContext);
+  const documentHost = (host === 'auto' ? (inheritedHost ?? 'document') : host) === 'document';
   return (
     <StyledView
       testID={testID}
       className="h-full shrink-0"
-      style={[webStickyStyle, { width }, style]}
+      style={[documentHost ? webStickyStyle : { height: '100%', minHeight: 0 }, { width }, style]}
     >
       <ScrollArea
         style={{ flex: 1 }}
@@ -102,19 +109,29 @@ const RailComponent: React.FC<RailProps> = ({
               // `TabBarButtonBody` uses. Gate: `aria-state-source-census.test.ts`.
               aria-selected={active}
               onPress={() => onSelect(item.id)}
-              className="min-h-[64px] items-center rounded-[20px] py-2 active:opacity-60"
-              style={{ flexDirection: 'column', gap: 5, paddingHorizontal: 0 }}
+              className="items-center active:opacity-60"
+              style={{
+                flexDirection: 'column',
+                gap: RAIL_DESTINATION.gap,
+                minHeight: RAIL_DESTINATION.minHeight,
+                borderRadius: RAIL_DESTINATION.radius,
+                paddingTop: RAIL_DESTINATION.paddingY,
+                paddingBottom: RAIL_DESTINATION.paddingY,
+                paddingHorizontal: 0,
+              }}
             >
-              <StyledView
-                className={`h-8 w-12 items-center justify-center rounded-full ${active ? 'bg-primary-subtle' : ''}`}
-              >
-                {active ? (item.activeIcon ?? item.icon) : item.icon}
-              </StyledView>
-              <Text
-                className={`max-w-full text-center text-[10px] ${active ? 'font-medium text-primary-text' : 'text-muted-foreground'}`}
-              >
-                {item.label}
-              </Text>
+              <RailDestinationBody
+                indicatorClassName={active ? 'bg-primary-subtle' : undefined}
+                icon={active ? (item.activeIcon ?? item.icon) : item.icon}
+                label={
+                  <Text
+                    className={`max-w-full text-center ${active ? 'font-medium text-primary-text' : 'text-muted-foreground'}`}
+                    style={{ fontSize: RAIL_DESTINATION.labelSize }}
+                  >
+                    {item.label}
+                  </Text>
+                }
+              />
             </StyledPressable>
           );
         })}

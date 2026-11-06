@@ -28,6 +28,7 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { SidebarSlot } from './SidebarSlot';
+import { RailHostContext } from '../rail/context';
 import { animateMotion } from '../motion/recipes';
 import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -650,12 +651,15 @@ export function createAppShellEngine() {
         safeFrame(node)
       );
 
-    const safeNavigation = (node: React.ReactElement) =>
-      navigationBottomInset ? (
-        <View style={{ flexShrink: 0, paddingBottom: navigationBottomInset }}>{node}</View>
-      ) : (
-        node
-      );
+    const safeNavigation = (node: React.ReactElement) => (
+      <RailHostContext.Provider value={doc ? 'document' : 'bounded'}>
+        {navigationBottomInset ? (
+          <View style={{ flexShrink: 0, paddingBottom: navigationBottomInset }}>{node}</View>
+        ) : (
+          node
+        )}
+      </RailHostContext.Provider>
+    );
     const [topBarHeight, setTopBarHeight] = useState(0);
     const [bottomBarHeight, setBottomBarHeight] = useState(0);
     const [floatingActionHeight, setFloatingActionHeight] = useState(0);
@@ -1739,7 +1743,9 @@ export function createAppShellEngine() {
     };
     const overlayPanel = drawerSidebar ? (
       <View pointerEvents={isOpen ? 'auto' : 'none'} style={{ height: '100%' }}>
-        <SidebarSlot {...drawerSidebar} mobile onClose={() => setOpen(false)} />
+        <RailHostContext.Provider value="bounded">
+          <SidebarSlot {...drawerSidebar} mobile onClose={() => setOpen(false)} />
+        </RailHostContext.Provider>
       </View>
     ) : null;
     const overlayFrameProps = {

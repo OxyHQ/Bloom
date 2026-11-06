@@ -11,17 +11,17 @@ import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
 import { useSidebarWebCss } from './parts';
 import type { SidebarRailItemProps } from './types';
 import { IS_WEB } from '../styles/platform';
+import { RAIL_DESTINATION } from '../rail/geometry';
+import { RailDestinationBody } from '../rail/RailDestinationBody';
 
 /** The indicator pill behind the icon. */
-const INDICATOR_WIDTH = 48;
-const INDICATOR_HEIGHT = 32;
+const INDICATOR_WIDTH = RAIL_DESTINATION.indicatorWidth;
 const ICON_SIZE = 22;
 const AnimatedText = Animated.createAnimatedComponent(Text);
 const SELECTION_DURATION = 220;
@@ -118,82 +118,79 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
       style={[
         {
           alignSelf: 'stretch',
-          minHeight: iconOnly ? 48 : 64,
+          minHeight: iconOnly ? RAIL_DESTINATION.iconOnlyMinHeight : RAIL_DESTINATION.minHeight,
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 5,
-          paddingTop: 8,
-          paddingBottom: 8,
-          borderRadius: 20,
+          gap: RAIL_DESTINATION.gap,
+          paddingTop: RAIL_DESTINATION.paddingY,
+          paddingBottom: RAIL_DESTINATION.paddingY,
+          borderRadius: RAIL_DESTINATION.radius,
           '--bloom-sidebar-ring': palette.ring,
         } as WebCssStyle,
         style,
       ]}
       testID={testID}
     >
-      <Animated.View
-        style={[
-          {
-            width: INDICATOR_WIDTH,
-            height: INDICATOR_HEIGHT,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: borderRadius.full,
-          },
-          indicatorStyle,
-        ]}
-        testID={testID ? `${testID}-indicator` : undefined}
-      >
-        <Animated.View
-          testID={testID ? `${testID}-inactive-glyph` : undefined}
-          pointerEvents="none"
-          aria-hidden
-          accessibilityElementsHidden
-          style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, inactiveStyle]}
-        >
-          <Icon width={ICON_SIZE} height={ICON_SIZE} fill={palette.textSecondary} />
-        </Animated.View>
-        <Animated.View
-          testID={testID ? `${testID}-active-glyph` : undefined}
-          pointerEvents="none"
-          aria-hidden
-          accessibilityElementsHidden
-          style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, activeStyle]}
-        >
-          <SelectedGlyph
-            width={ICON_SIZE}
-            height={ICON_SIZE}
-            fill={selectedAppearance === 'icon' ? palette.text : palette.selectedForeground}
-          />
-        </Animated.View>
-        {badge != null ? (
-          <View
-            pointerEvents="none"
-            style={{ position: 'absolute', top: -6, insetInlineStart: INDICATOR_WIDTH - 16 }}
-          >
-            {badge}
-          </View>
-        ) : null}
-      </Animated.View>
-      {!iconOnly ? (
-        <AnimatedText
-          variant="caption-2-regular"
-          numberOfLines={1}
-          style={[
-            {
-              maxWidth: '100%',
-              fontSize: 10,
-              lineHeight: 14,
-              letterSpacing: 0,
-              textAlign: 'center',
-              fontWeight: selected ? '500' : '400',
-            },
-            labelStyle,
-          ]}
-        >
-          {label}
-        </AnimatedText>
-      ) : null}
+      <RailDestinationBody
+        animated
+        indicatorStyle={indicatorStyle}
+        indicatorTestID={testID ? `${testID}-indicator` : undefined}
+        icon={
+          <>
+            <Animated.View
+              testID={testID ? `${testID}-inactive-glyph` : undefined}
+              pointerEvents="none"
+              aria-hidden
+              accessibilityElementsHidden
+              style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, inactiveStyle]}
+            >
+              <Icon width={ICON_SIZE} height={ICON_SIZE} fill={palette.textSecondary} />
+            </Animated.View>
+            <Animated.View
+              testID={testID ? `${testID}-active-glyph` : undefined}
+              pointerEvents="none"
+              aria-hidden
+              accessibilityElementsHidden
+              style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, activeStyle]}
+            >
+              <SelectedGlyph
+                width={ICON_SIZE}
+                height={ICON_SIZE}
+                fill={selectedAppearance === 'icon' ? palette.text : palette.selectedForeground}
+              />
+            </Animated.View>
+            {badge != null ? (
+              <View
+                pointerEvents="none"
+                style={{ position: 'absolute', top: -6, insetInlineStart: INDICATOR_WIDTH - 16 }}
+              >
+                {badge}
+              </View>
+            ) : null}
+          </>
+        }
+        label={
+          !iconOnly ? (
+            <AnimatedText
+              variant="caption-2-regular"
+              numberOfLines={1}
+              style={[
+                {
+                  maxWidth: '100%',
+                  fontSize: RAIL_DESTINATION.labelSize,
+                  lineHeight: 14,
+                  letterSpacing: 0,
+                  textAlign: 'center',
+                  fontWeight: selected ? '500' : '400',
+                },
+                labelStyle,
+              ]}
+            >
+              {label}
+            </AnimatedText>
+          ) : null
+        }
+      />
     </Pressable>
   );
 };
