@@ -81,6 +81,13 @@ export interface DropTargetDragEvent {
   readonly action: DragAction | null;
   /** The kinds the drag offers that the target accepts. */
   readonly kinds: readonly DropKind[];
+  /**
+   * The media type of each file dragged, as the source declares them, each
+   * once (HTML5's `DataTransferItem.type` of the items of kind `file`): known
+   * before the drop, where the content is not. Empty for a drag that carries
+   * no files, or whose source declares none of their types.
+   */
+  readonly fileTypes: readonly string[];
 }
 
 /** A drop on a target: where, the action it took and the content. */
@@ -98,6 +105,14 @@ export interface DropTargetDropEvent extends DropTargetDragEvent {
  */
 export interface PlatformDropTargetProps {
   readonly accept: readonly DropKind[];
+  /**
+   * The media types of files it takes (`image/png`, or `image/*`), case
+   * ignored and parameters too: a drag of files is taken (as `files`) only
+   * when every file dragged is of one of them, as a Mac's Dock lights an
+   * application's icon only for documents it opens. A drag whose files' types
+   * the source does not declare is not taken. Absent: files of any type.
+   */
+  readonly acceptFileTypes?: readonly string[];
   /** The actions it supports; the first is its preferred one unless `preferredAction` says. */
   readonly actions: readonly DragAction[];
   readonly preferredAction?: DragAction;
@@ -118,6 +133,14 @@ export interface DragData {
   readonly text?: string;
   readonly url?: string;
   readonly html?: string;
+  /**
+   * Other media types and their content as text, offered after the kinds
+   * above, each by its name: `{ 'application/x-oxyos-application':
+   * 'so.oxy.inbox' }`, an application dragged out of a launcher or a dock. A
+   * target takes one by naming it in `accept`, and finds it in `DropData`'s
+   * `other`.
+   */
+  readonly other?: Readonly<Record<string, string>>;
 }
 
 /** A drag the application starts (`PlatformDrag.start`). */
@@ -140,6 +163,15 @@ export interface PlatformDragRequest {
    * right, as a Mac's drag of several files. Default 1.
    */
   readonly count?: number;
+  /**
+   * Dropped on nothing that takes it, the image vanishes in a puff of smoke
+   * where it is, instead of sliding back to its item: an item dragged out of a
+   * list to remove it, as a Mac's Dock removes an icon dragged off it
+   * (`NSDraggingSession`'s `animatesToStartingPositionsOnCancelOrFail` off,
+   * and the poof). The drag still resolves with none; Escape still puts the
+   * image back. Default false.
+   */
+  readonly vanish?: boolean;
 }
 
 /**

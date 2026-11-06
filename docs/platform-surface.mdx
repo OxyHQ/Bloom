@@ -381,16 +381,22 @@ the capability (`usePlatformDropTarget()` and `usePlatformDrag()` throw if one
 is missing, as the other hooks do):
 
 - **`DropTarget`**, a host component taking `PlatformDropTargetProps`: what it
-  accepts (`files`, `text`, `url`, `html` or media types), its actions (its
-  preferred one first), `disabled`, and `onDragEnter`, `onDragOver`,
+  accepts (`files`, `text`, `url`, `html` or media types), the media types of
+  files it takes (`acceptFileTypes`), its actions (its preferred one first),
+  `disabled`, and `onDragEnter`, `onDragOver`,
   `onDragLeave` and `onDrop`. It renders its children. The platform answers the
   drag itself from those props, so a drag never waits on JavaScript; the
   callbacks follow it, and `onDrop` receives the content (`DropData`: files as
-  `file://` URIs, URLs, text, HTML, other named types). Applications use it
-  through `DropZone` (`docs/drop-zone.mdx`), never directly.
-- **`drag`** (`PlatformDrag`): `start({ data, actions, previewRef, count })`
+  `file://` URIs, URLs, text, HTML, other named types). Each drag event says
+  the media type of each file dragged (`fileTypes`), as the source declares
+  them, before the drop; with `acceptFileTypes` a drag of files is taken only
+  when every file is of a type named there. Applications use it through
+  `DropZone` (`docs/drop-zone.mdx`), never directly.
+- **`drag`** (`PlatformDrag`): `start({ data, actions, previewRef, count, vanish })`
   begins a drag from the press the application is handling, with what it drags
-  (`files` as `file://` URIs, `text`, `url`, `html`) and the actions it allows.
+  (`files` as `file://` URIs, `text`, `url`, `html`, and `other` media types by
+  name, each with its content as text) and the actions it allows. The platform
+  declares the type of each file dragged to the targets it passes over.
   It resolves with the action the drop took, or null when it was cancelled or
   refused. An application that runs its own pointer gestures (a file manager's
   items) calls it once its own drag begins (the pointer moved past its slop
@@ -407,7 +413,10 @@ is missing, as the other hooks do):
   pointer. `count` is how many items go: above one the image is stacked, with
   the count on a red badge at its top right. The platform's pointer shows the
   action (a copy's plus, a link's arrow), and a drag that drops nothing slides
-  its image back to the view:
+  its image back to the view, unless it was started with `vanish`: then a drop
+  on nothing that takes it makes the image vanish in a puff of smoke where it
+  is, as an icon dragged off a Mac's Dock does (Escape still puts it back). The
+  promise resolves null either way; the application removes the item:
 
 ```tsx
 const drag = usePlatformDrag();
@@ -423,6 +432,19 @@ if (drag) {
 } else {
   // No platform drag (the web, a phone): the application's drag stays inside it.
 }
+```
+
+An application dragged out of a launcher or a dock, removed when dropped on
+nothing:
+
+```tsx
+const action = await drag.start({
+  data: { other: { 'application/x-oxyos-application': app.id } },
+  actions: ['move'],
+  previewRef: iconRef,
+  vanish: !running,
+});
+if (action === null && left) removeFromDock(app.id);
 ```
 
 With `move` of data the application deletes its original once the promise

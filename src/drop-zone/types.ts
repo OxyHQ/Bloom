@@ -20,6 +20,13 @@ import type {
 export interface DropZoneProps {
   /** The kinds of content it takes: `files`, `text`, `url`, `html`, or media types. */
   accept: readonly DropKind[];
+  /**
+   * The media types of files it takes (`image/png`, `image/*`), case and
+   * parameters ignored: a drag of files is taken only when every file dragged
+   * is of one of them (an application's icon that lights only for documents it
+   * opens). A drag whose files' types are unknown is not taken. Absent: any.
+   */
+  acceptFileTypes?: readonly string[];
   /** The actions it supports, its preferred one first. Default: `['copy']`. */
   actions?: readonly DragAction[];
   /** Its preferred action, when not the first of `actions`. */

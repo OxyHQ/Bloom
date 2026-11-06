@@ -31,7 +31,13 @@ import { DropZone } from '@oxy.so/bloom/drop-zone';
 ## Props
 
 - `accept`: the kinds of content it takes: `files`, `text`, `url`, `html`, or
-  media types named exactly (`image/png`).
+  media types named exactly (`image/png`, or a platform's own, such as
+  `application/x-oxyos-application`, whose content `other` holds).
+- `acceptFileTypes`: the media types of the files it takes (`image/png`,
+  `image/*`; case and parameters ignored). A drag of files is taken only when
+  every file dragged is of one of them, as a Mac's Dock lights an
+  application's icon only for documents it opens; a drag whose files' types are
+  unknown is not taken. Absent, files of any type.
 - `actions` (default `['copy']`): the actions it supports, its preferred one
   first, or named by `preferredAction`. The action a drop takes is chosen as a
   Mac chooses it: Option (Alt) held forces a copy, Command (Meta) a move, both
@@ -39,8 +45,9 @@ import { DropZone } from '@oxy.so/bloom/drop-zone';
   allows, else the next it allows; none if none (nothing is dropped).
 - `disabled`: it takes nothing while true.
 - `onDragEnter`, `onDragOver` (`DropTargetDragEvent`: the point in the view,
-  the action a drop would take, the kinds offered that it accepts) and
-  `onDragLeave`, for a drag it would take.
+  the action a drop would take, the kinds offered that it accepts, and
+  `fileTypes`, the media type of each file dragged, each once, empty for a drag
+  of no files) and `onDragLeave`, for a drag it would take.
 - `onDrop` (`DropTargetDropEvent`): the action and the content (`DropData`):
   - `files`: each with its `name`, and its `file://` `uri` on a native
     platform (what `expo-file-system` takes) or the browser's `File` as `raw`
@@ -51,7 +58,8 @@ import { DropZone } from '@oxy.so/bloom/drop-zone';
 ## Where it works
 
 - **The web:** HTML5's drag and drop on its element. During a drag a page sees
-  the kinds offered and never the content, which it reads at the drop (the
+  the kinds offered and the type of each file (its `DataTransferItem`s) and
+  never the content, which it reads at the drop (the
   browser's protected mode); `dropEffect` follows the chosen action, and the
   zone is left only when the pointer leaves it, not when it crosses a child.
 - **A platform whose adapter reports `drag-and-drop`** (OxyOS): the platform's
@@ -62,7 +70,11 @@ import { DropZone } from '@oxy.so/bloom/drop-zone';
 Starting a drag of the application's own content to another application is
 the platform's `usePlatformDrag()` (`docs/platform-surface.mdx`), for an
 application that runs its own pointer gestures. Its image is the dragged view
-itself (`previewRef`), stacked with a count for several items (`count`).
+itself (`previewRef`), stacked with a count for several items (`count`); its
+`data.other` offers media types of the application's own, and `vanish` makes a
+drop on nothing a puff of smoke instead of the image sliding back. On the web
+those are the platform's alone: an HTML5 drag sets its own types in
+`dragstart` (`dataTransfer.setData`).
 
 ## The image of an HTML5 drag
 
