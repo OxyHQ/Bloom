@@ -1,18 +1,5 @@
 import type { NativeBridge, ExpoContext } from './types';
 
-// Literal requires directly inside try preserve Metro optional-peer resolution.
-let modules: typeof import('expo-modules-core');
-try {
-  const glVersion = require('expo-gl/package.json') as { version?: string };
-  const coreVersion = require('expo-modules-core/package.json') as { version?: string };
-  if (glVersion.version !== '58.0.3' || !coreVersion.version?.startsWith('58.'))
-    throw Error('Unsupported Expo graphics bindings');
-  require('expo-gl');
-  modules = require('expo-modules-core');
-} catch {
-  throw Error('Bloom native avatars require the optional Expo GL bindings');
-}
-
 type NativeModule = Omit<NativeBridge, 'present'> & {
   abiVersion: number;
   available?: boolean;
@@ -22,14 +9,36 @@ type NativeModule = Omit<NativeBridge, 'present'> & {
     callback: (event: { ticket: number; ids?: number[]; error?: string }) => void,
   ): { remove(): void };
 };
-const native = modules.requireNativeModule<NativeModule>('BloomAvatarGPU');
-// The original complete ABI 1 module predates this flag; only the new stub says false.
-if (native.available === false)
-  throw Error('Bloom native avatars require an Expo GL enabled native build');
-if (native.abiVersion !== 1)
-  throw Error('Bloom native avatar module requires a native rebuild (ABI 1)');
-// Reading this export must evaluate the guards even with Metro inlineRequires.
-export const isAvailable = true;
+function loadBindings() {
+  if (typeof require !== 'function') return null;
+  // Literal requires directly inside try preserve Metro optional-peer resolution.
+  // Expected absence must settle here: Metro reports module-initialization throws
+  // before a caller's outer try/catch can select the WebView fallback.
+  try {
+    const glVersion = require('expo-gl/package.json') as { version?: string };
+    const coreVersion = require('expo-modules-core/package.json') as { version?: string };
+    if (glVersion.version !== '58.0.3' || !coreVersion.version?.startsWith('58.')) return null;
+    const modules = require('expo-modules-core') as typeof import('expo-modules-core');
+    const native = modules.requireOptionalNativeModule<NativeModule>('BloomAvatarGPU');
+    // The original complete ABI 1 module predates the flag; only the new stub says false.
+    if (!native || native.available === false || native.abiVersion !== 1) return null;
+    // Check the linked module before loading GL's JS entry, which requires it eagerly.
+    if (!modules.requireOptionalNativeModule('ExpoGL')) return null;
+    require('expo-gl');
+    const view = modules.requireNativeViewManager('BloomAvatarGPU');
+    return { native, view };
+  } catch {
+    return null;
+  }
+}
+const bindings = loadBindings();
+const native = bindings?.native;
+// Reading this export evaluates the guards even with Metro inlineRequires.
+export const isAvailable = bindings !== null;
+function requireBridge() {
+  if (!native) throw Error('Bloom native avatar graphics are unavailable');
+  return native;
+}
 let nextTicket = 0;
 const pending = new Map<
   number,
@@ -40,7 +49,7 @@ const pending = new Map<
     timer: ReturnType<typeof setTimeout>;
   }
 >();
-native.addListener('onPresented', (event) => {
+native?.addListener('onPresented', (event) => {
   const request = pending.get(event.ticket);
   if (!request) return;
   pending.delete(event.ticket);
@@ -49,7 +58,7 @@ native.addListener('onPresented', (event) => {
   else request.resolve(event.ids ?? []);
 });
 export const bridge: NativeBridge = {
-  createContext: () => native.createContext(),
+  createContext: () => requireBridge().createContext(),
   destroyContext: (id) => {
     for (const [ticket, request] of pending)
       if (request.contextId === id) {
@@ -57,11 +66,11 @@ export const bridge: NativeBridge = {
         clearTimeout(request.timer);
         request.reject(Error('Avatar context was disposed'));
       }
-    return native.destroyContext(id);
+    return requireBridge().destroyContext(id);
   },
-  multisampleStorage: (...args) => native.multisampleStorage(...args),
-  snapshot: (id) => native.snapshot(id),
-  stats: () => native.stats(),
+  multisampleStorage: (...args) => requireBridge().multisampleStorage(...args),
+  snapshot: (id) => requireBridge().snapshot(id),
+  stats: () => requireBridge().stats(),
   present: (id, framebuffer, tiles) =>
     new Promise((resolve, reject) => {
       const ticket = ++nextTicket;
@@ -73,7 +82,7 @@ export const bridge: NativeBridge = {
       // Synchronous submission preserves ordering with the next EXGL flush, while
       // the completion event allows CPU/GPU overlap with a bounded queue.
       try {
-        native.present(id, framebuffer, tiles, ticket);
+        requireBridge().present(id, framebuffer, tiles, ticket);
       } catch (error) {
         pending.delete(ticket);
         clearTimeout(timer);
@@ -81,7 +90,11 @@ export const bridge: NativeBridge = {
       }
     }),
 };
-export const NativeView = modules.requireNativeViewManager('BloomAvatarGPU');
+export const NativeView =
+  bindings?.view ??
+  function UnavailableNativeView() {
+    throw Error('Bloom native avatar graphics are unavailable');
+  };
 
 /** Bloom owns the native context so it can present several surfaces.
  * Expo 58 registers that context's JSI object in this same per-runtime registry. */

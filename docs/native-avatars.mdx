@@ -80,6 +80,11 @@ and selects shared rendering only after the hosted `manifest.json` matches its c
 expected manifest, including `runtime.mjs`, every code chunk and every binary asset.
 A missing module, another runtime revision or an unavailable manifest retains the existing
 WebView route. Installing JavaScript alone does not enable a module absent from the binary.
+Expected unavailability settles to `false` inside the bridge initializer. Throwing from
+that module is unsafe even when its caller catches the error: Metro's guarded module
+loader reported a full-screen development LogBox on a real no-GL device while the
+WebView behind it emitted `onReady` and a nonempty 224×224 PNG. Native acceptance must
+inspect the visible screen and runtime errors as well as readiness and snapshots.
 Concurrent checks share one request. Failed checks expire after five seconds; successful
 checks expire after one minute for later mounts. A running adapter remains on its
 bundled code revision. Production hosting must use immutable versioned directories or
