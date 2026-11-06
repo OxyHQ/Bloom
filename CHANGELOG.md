@@ -2,6 +2,22 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.16.0
+
+### Added
+
+- **Drags of applications, of typed files, and drags that vanish** (`drag-and-drop`, what OxyOS's dock needs to be managed as a Mac's):
+  - `DragData.other`: other media types and their content as text, offered by name after the kinds Bloom knows (`{ 'application/x-oxyos-application': 'so.oxy.inbox' }`, an application dragged out of a launcher or a dock). A target names the type in `accept` and reads it in `DropData.other`, as before.
+  - `PlatformDragRequest.vanish`: dropped on nothing that takes it, the drag's image vanishes in a puff of smoke where it is instead of sliding back to its item, as an icon dragged off a Mac's Dock (`NSDraggingSession`'s `animatesToStartingPositionsOnCancelOrFail` off, and the poof). The drag still resolves null; Escape still puts the image back.
+  - `PlatformDragRequest.onCancel(reason)`: called once, before the drag resolves null, when it ended without a drop, with why (`DragCancelReason`: `escape`, `not-accepted` for a release over nothing that takes it, `refused` at its start, `cancelled` by the source, its window going or the lock), so a dock tells a release off it (remove the icon) from Escape (put it back). Where Escape cannot be told apart (HTML5's `dragend`), the platform says `not-accepted`.
+  - `DropTargetDragEvent.fileTypes` (and so the drop's): the media type of each file dragged, each once, as the source declares them, before the drop (HTML5's `DataTransferItem.type` of the items of kind `file`, which the web's protected mode shows).
+  - `DropZone`'s `acceptFileTypes` (and `PlatformDropTargetProps.acceptFileTypes`): media types or `type/*` of the files it takes, case and parameters ignored. A drag of files is taken only when every file is of one of them, as a Mac's Dock lights an application's icon only for documents it opens; a drag whose files' types are unknown is not taken. On the web the zone leaves such a drag alone (`dropEffect` `none`).
+  - `DropZone.web.test.tsx` (each file's type said once; files taken only when all match, a mixed or untyped drag left alone), `DropZone.test.tsx` (`takesFileTypes`, `offeredKinds` with file types, the prop handed to the platform). `docs/drop-zone.mdx`, `docs/platform-surface.mdx`.
+
+### Consumers
+
+Bump to 17.16.0. Nothing changes for a drop zone without `acceptFileTypes` or a drag without `other` and `vanish`. An adapter's `DropTarget` gives its drag events `fileTypes` (empty when it knows none) and honours `acceptFileTypes`; its `drag.start` offers `data.other`, honours `vanish` and calls `onCancel` with why a drag dropped nothing.
+
 ## 17.15.0
 
 ### Added

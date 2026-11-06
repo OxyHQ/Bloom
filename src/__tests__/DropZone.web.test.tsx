@@ -32,6 +32,7 @@ afterEach(() => {
 
 interface FakeTransfer {
   types: string[];
+  items: { kind: string; type: string }[];
   effectAllowed: string;
   dropEffect: string;
   files: File[];
@@ -45,6 +46,10 @@ function transfer(
 ): FakeTransfer {
   return {
     types: [...Object.keys(data), ...(files.length > 0 ? ['Files'] : [])],
+    items: [
+      ...Object.keys(data).map((type) => ({ kind: 'string', type })),
+      ...files.map((file) => ({ kind: 'file', type: file.type })),
+    ],
     effectAllowed,
     dropEffect: 'none',
     files,
@@ -109,7 +114,13 @@ describe('DropZone (web)', () => {
     expect(entered.defaultPrevented).toBe(true);
     expect(data.dropEffect).toBe('move');
     expect(calls.enter).toEqual([
-      { x: expect.any(Number), y: expect.any(Number), action: 'move', kinds: ['files', 'url'] },
+      {
+        x: expect.any(Number),
+        y: expect.any(Number),
+        action: 'move',
+        kinds: ['files', 'url'],
+        fileTypes: ['text/plain'],
+      },
     ]);
     fire(node, 'dragover', data);
     expect(calls.over).toHaveLength(1);
@@ -148,6 +159,47 @@ describe('DropZone (web)', () => {
     const disabled = zone({ disabled: true });
     const files = transfer({}, [new File(['x'], 'x.txt')]);
     expect(fire(disabled.node, 'dragenter', files).defaultPrevented).toBe(false);
+  });
+
+  it('says the types of the files dragged, each once, before the drop', () => {
+    const { node, calls } = zone();
+    const data = transfer({}, [
+      new File(['a'], 'a.png', { type: 'image/png' }),
+      new File(['b'], 'b.png', { type: 'image/png' }),
+      new File(['c'], 'c.pdf', { type: 'application/pdf' }),
+    ]);
+    fire(node, 'dragenter', data);
+    expect(calls.enter[0]?.fileTypes).toEqual(['image/png', 'application/pdf']);
+    fire(node, 'dragleave', data);
+    const text = zone({ accept: ['text'] });
+    fire(text.node, 'dragenter', transfer({ 'text/plain': 'hola' }));
+    expect(text.calls.enter[0]?.fileTypes).toEqual([]);
+  });
+
+  it('takes files only when every one is of a type it names', () => {
+    const { node, calls } = zone({ accept: ['files'], acceptFileTypes: ['image/*'] });
+    const images = transfer({}, [
+      new File(['a'], 'a.png', { type: 'image/png' }),
+      new File(['b'], 'b.jpg', { type: 'image/jpeg' }),
+    ]);
+    const entered = fire(node, 'dragenter', images);
+    expect(entered.defaultPrevented).toBe(true);
+    expect(images.dropEffect).toBe('move');
+    expect(calls.enter).toHaveLength(1);
+    fire(node, 'dragleave', images);
+    // A file of another type among them: left alone, nothing dropped.
+    const mixed = transfer({}, [
+      new File(['a'], 'a.png', { type: 'image/png' }),
+      new File(['c'], 'c.pdf', { type: 'application/pdf' }),
+    ]);
+    const refused = fire(node, 'dragover', mixed);
+    expect(refused.defaultPrevented).toBe(false);
+    expect(mixed.dropEffect).toBe('none');
+    fire(node, 'drop', mixed);
+    expect(calls.drop).toHaveLength(0);
+    // Files of no type the browser knows are not taken either.
+    const unknown = transfer({}, [new File(['x'], 'x')]);
+    expect(fire(node, 'dragenter', unknown).defaultPrevented).toBe(false);
   });
 
   it('is left only when the pointer leaves it, not when it crosses a child', () => {

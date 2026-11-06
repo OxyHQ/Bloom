@@ -13,6 +13,7 @@ import type { DropZoneProps } from './types';
  */
 function DropZoneComponent({
   accept,
+  acceptFileTypes,
   actions,
   preferredAction,
   disabled,
@@ -36,6 +37,7 @@ function DropZoneComponent({
   return (
     <DropTarget
       accept={accept}
+      acceptFileTypes={acceptFileTypes}
       actions={orderedActions(actions, preferredAction)}
       preferredAction={preferredAction}
       disabled={disabled}

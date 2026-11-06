@@ -9,14 +9,23 @@ import { render, renderHook } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 import { DropZone } from '../drop-zone';
-import { offeredKinds, dropData, chosenAction, orderedActions, uriList } from '../drop-zone/shared';
+import {
+  offeredKinds,
+  dropData,
+  chosenAction,
+  orderedActions,
+  takesFileTypes,
+  uriList,
+} from '../drop-zone/shared';
 import {
   PlatformSurfaceProvider,
   usePlatformDrag,
   usePlatformDropTarget,
 } from '../platform-surface/context';
 import type {
+  DragCancelReason,
   PlatformDrag,
+  PlatformDragRequest,
   PlatformDropTargetProps,
   PlatformSurfaceAdapter,
 } from '../platform-surface/types';
@@ -63,6 +72,20 @@ describe('DropZone (native)', () => {
     expect(received[0]).toMatchObject({ accept: ['files'], actions: ['move', 'copy'], onDrop });
   });
 
+  it('hands the platform the file types it takes', () => {
+    render(
+      <DropZone
+        accept={['files']}
+        acceptFileTypes={['image/*', 'application/pdf']}
+        onDrop={() => {}}
+      >
+        <Text>Vista previa</Text>
+      </DropZone>,
+      { wrapper: on(ADAPTER) },
+    );
+    expect(received[0]).toMatchObject({ acceptFileTypes: ['image/*', 'application/pdf'] });
+  });
+
   it('is a view that takes nothing without the capability', () => {
     const { getByText } = render(
       <DropZone accept={['files']} onDrop={() => {}}>
@@ -77,6 +100,35 @@ describe('DropZone (native)', () => {
   it('usePlatformDrag is the adapter’s drag with the capability, null without it', () => {
     expect(renderHook(() => usePlatformDrag(), { wrapper: on(ADAPTER) }).result.current).toBe(drag);
     expect(renderHook(() => usePlatformDrag()).result.current).toBeNull();
+  });
+
+  it('hands the adapter an application dragged, its vanishing and why it dropped nothing', async () => {
+    const requests: PlatformDragRequest[] = [];
+    const adapter: PlatformSurfaceAdapter = {
+      ...ADAPTER,
+      drag: {
+        start: async (request) => {
+          requests.push(request);
+          request.onCancel?.('not-accepted');
+          return null;
+        },
+      },
+    };
+    const platformDrag = renderHook(() => usePlatformDrag(), { wrapper: on(adapter) }).result
+      .current;
+    const reasons: DragCancelReason[] = [];
+    const action = await platformDrag?.start({
+      data: { other: { 'application/x-oxyos-application': 'so.oxy.inbox' } },
+      actions: ['move'],
+      vanish: true,
+      onCancel: (reason) => reasons.push(reason),
+    });
+    expect(action).toBeNull();
+    expect(requests[0]).toMatchObject({
+      data: { other: { 'application/x-oxyos-application': 'so.oxy.inbox' } },
+      vanish: true,
+    });
+    expect(reasons).toEqual(['not-accepted']);
   });
 
   it('an adapter reporting drag-and-drop without its parts throws', () => {
@@ -114,6 +166,31 @@ describe('the drop’s content and action', () => {
       text: 'hola',
       other: {},
     });
+  });
+
+  it('takes files only of the types it names, when it names them', () => {
+    // Absent: any files, even of no declared type.
+    expect(takesFileTypes(undefined, [])).toBe(true);
+    expect(takesFileTypes(undefined, ['image/png'])).toBe(true);
+    // Every file must be of a type named, exactly or by its group; case and parameters ignored.
+    expect(takesFileTypes(['image/*', 'application/pdf'], ['IMAGE/PNG', 'application/pdf'])).toBe(
+      true,
+    );
+    expect(takesFileTypes(['text/plain'], ['text/plain; charset=utf-8'])).toBe(true);
+    expect(takesFileTypes(['image/*'], ['image/png', 'text/plain'])).toBe(false);
+    // Files whose types the source does not declare are not taken by a target that names some.
+    expect(takesFileTypes(['image/*'], [])).toBe(false);
+    expect(
+      offeredKinds(
+        ['files'],
+        ['text/uri-list', 'application/x-oxyos-files'],
+        ['text/markdown'],
+        ['text/markdown'],
+      ),
+    ).toEqual(['files']);
+    expect(
+      offeredKinds(['files', 'text'], ['text/uri-list', 'text/plain'], ['image/png'], ['text/*']),
+    ).toEqual(['text']);
   });
 
   it('chooses the action as a Mac does', () => {

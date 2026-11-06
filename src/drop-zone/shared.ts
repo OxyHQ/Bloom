@@ -18,14 +18,55 @@ export function orderedActions(
   return [preferred, ...supported.filter((action) => action !== preferred)];
 }
 
+/** A media type without its parameters, in lower case: `Text/Plain; charset=utf-8` is `text/plain`. */
+function bareType(type: string): string {
+  return (type.split(';')[0] ?? '').trim().toLowerCase();
+}
+
+/**
+ * Whether files of `fileTypes` are taken by a target taking `acceptFileTypes`
+ * (`DropZoneProps.acceptFileTypes`): every one of them a type it names, or of
+ * a `type/*` it names, case and parameters ignored. Absent, any files are;
+ * given, files of no declared type (`fileTypes` empty) are not.
+ */
+export function takesFileTypes(
+  acceptFileTypes: readonly string[] | undefined,
+  fileTypes: readonly string[],
+): boolean {
+  if (!acceptFileTypes) return true;
+  if (fileTypes.length === 0) return false;
+  const accepted = acceptFileTypes.map(bareType);
+  return fileTypes.every((fileType) => {
+    const type = bareType(fileType);
+    const group = `${type.split('/')[0]}/*`;
+    return accepted.some((one) => one === type || one === group || one === '*/*');
+  });
+}
+
+/** Each type of `types` once, in its first order (a drag's files' types, as declared). */
+export function distinctTypes(types: readonly string[]): string[] {
+  return [...new Set(types.filter((type) => type.length > 0))];
+}
+
 /**
  * The kinds of `accept` a drag offering `types` carries (HTML5's
  * `DataTransfer.types`: `Files` for a browser's files, media types otherwise).
+ * With `acceptFileTypes`, files only when every one is of a type it takes
+ * (`fileTypes`, the dragged files' types, `takesFileTypes`).
  */
-export function offeredKinds(accept: readonly DropKind[], types: readonly string[]): DropKind[] {
+export function offeredKinds(
+  accept: readonly DropKind[],
+  types: readonly string[],
+  fileTypes: readonly string[] = [],
+  acceptFileTypes?: readonly string[],
+): DropKind[] {
   const offered = new Set(types.map((type) => type.toLowerCase()));
   return accept.filter((kind) => {
-    if (kind === 'files') return offered.has('files') || offered.has('text/uri-list');
+    if (kind === 'files')
+      return (
+        (offered.has('files') || offered.has('text/uri-list')) &&
+        takesFileTypes(acceptFileTypes, fileTypes)
+      );
     if (kind === 'url') return offered.has('text/uri-list') || offered.has('text/x-moz-url');
     if (kind === 'text')
       return offered.has('text/plain') || offered.has('text/plain;charset=utf-8');

@@ -5,6 +5,7 @@ import type { DragAction, DropKind, DroppedFile } from '../platform-surface/type
 import {
   allowedActions,
   chosenAction,
+  distinctTypes,
   dropData,
   KIND_TYPES,
   offeredKinds,
@@ -28,6 +29,16 @@ function domFile(file: File): DroppedFile {
 }
 
 /**
+ * The types of the files a drag carries, each once: its items of kind `file`,
+ * whose type the browser shows during the drag (protected mode keeps the
+ * content, not the kind and type).
+ */
+function draggedFileTypes(transfer: DataTransfer | null | undefined): string[] {
+  const items = Array.from(transfer?.items ?? []);
+  return distinctTypes(items.filter((item) => item.kind === 'file').map((item) => item.type));
+}
+
+/**
  * A view that takes drops (`DropZoneProps`), on the web: HTML5's drag and drop
  * on its element. A drag it would take is accepted in `dragenter` and
  * `dragover` (their default prevented, `dropEffect` the action); what it
@@ -36,6 +47,7 @@ function domFile(file: File): DroppedFile {
  */
 export function DropZone({
   accept,
+  acceptFileTypes,
   actions,
   preferredAction,
   disabled,
@@ -51,6 +63,7 @@ export function DropZone({
   const ref = useRef<ComponentRef<typeof View>>(null);
   const latest = useRef({
     accept,
+    acceptFileTypes,
     actions,
     preferredAction,
     disabled,
@@ -61,6 +74,7 @@ export function DropZone({
   });
   latest.current = {
     accept,
+    acceptFileTypes,
     actions,
     preferredAction,
     disabled,
@@ -79,14 +93,23 @@ export function DropZone({
     const describe = (event: DragEvent) => {
       const props = latest.current;
       const types = Array.from(event.dataTransfer?.types ?? []);
-      const kinds: DropKind[] = props.disabled ? [] : offeredKinds(props.accept, types);
+      const fileTypes = draggedFileTypes(event.dataTransfer);
+      const kinds: DropKind[] = props.disabled
+        ? []
+        : offeredKinds(props.accept, types, fileTypes, props.acceptFileTypes);
       const supported = orderedActions(props.actions, props.preferredAction);
       const action =
         kinds.length === 0
           ? null
           : chosenAction(supported, allowedActions(event.dataTransfer?.effectAllowed), event);
       const rect = node.getBoundingClientRect();
-      return { x: event.clientX - rect.left, y: event.clientY - rect.top, action, kinds };
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        action,
+        kinds,
+        fileTypes,
+      };
     };
     const answer = (event: DragEvent) => {
       const described = describe(event);
