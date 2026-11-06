@@ -1,0 +1,25 @@
+# BottomPromo
+
+A bottom-of-screen call to action: a fade into the surface, then a solid block
+with a centred headline, an optional supporting line and a full-width primary
+action. It is the invitation a signed-out reader sees at the foot of the main
+panel.
+
+```tsx
+import { BottomPromo } from '@oxy.so/bloom';
+
+<BottomPromo
+  title="Don’t miss what’s happening"
+  description="People on Mention are the first to know."
+  actionLabel="Sign In"
+  onAction={signIn}
+/>;
+```
+
+`BottomPromo` renders content only. Place it in the bottom slot of a `Screen`,
+`AppShell` or `PageFooter` so the surrounding layout owns its position and
+reserves its measured height. The fade and the block take the surrounding
+surface fill, and the block adds the bottom safe area on its own.
+
+`title` and `description` are centred. `actionLabel` and `onAction` drive the
+full-width inverse button. `style` styles the outer block and `testID` addresses it.
