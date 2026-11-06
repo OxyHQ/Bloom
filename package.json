@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "17.14.1",
+  "version": "17.15.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -3513,6 +3513,20 @@
         "default": "./lib/commonjs/sortable-media/index.js"
       }
     },
+    "./sortable-chip-row": {
+      "react-native": {
+        "types": "./lib/typescript/module/sortable-chip-row/index.d.ts",
+        "default": "./src/sortable-chip-row/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/sortable-chip-row/index.d.ts",
+        "default": "./lib/module/sortable-chip-row/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/sortable-chip-row/index.d.ts",
+        "default": "./lib/commonjs/sortable-chip-row/index.js"
+      }
+    },
     "./listing-editor": {
       "react-native": {
         "types": "./lib/typescript/module/listing-editor/index.d.ts",
@@ -5067,6 +5081,9 @@
       ],
       "sortable-media": [
         "./lib/typescript/module/sortable-media/index.d.ts"
+      ],
+      "sortable-chip-row": [
+        "./lib/typescript/module/sortable-chip-row/index.d.ts"
       ],
       "listing-editor": [
         "./lib/typescript/module/listing-editor/index.d.ts"

@@ -2698,6 +2698,11 @@ const CONTEXT_MENU_MESSAGES: Translations['CONTEXT_MENU_MESSAGES'] = {
   showMenu: 'Afficher le menu',
 };
 
+const SORTABLE_CHIP_ROW_MESSAGES: Translations['SORTABLE_CHIP_ROW_MESSAGES'] = {
+  moveEarlier: (l) => `Déplacer ${l} avant`,
+  moveLater: (l) => `Déplacer ${l} après`,
+};
+
 const SORTABLE_MEDIA_MESSAGES: Translations['SORTABLE_MEDIA_MESSAGES'] = {
   photo: (p, t) => `Photo ${p} sur ${t}`,
   cover: 'Couverture',
@@ -3217,6 +3222,7 @@ const translations: Translations = {
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,
   SORTABLE_MEDIA_MESSAGES,
+  SORTABLE_CHIP_ROW_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,

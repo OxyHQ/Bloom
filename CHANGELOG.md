@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.15.0
+
+### Added
+
+- **`SortableChipRow`**, a wrapping row of chips the user reorders: press and drag a chip past a small threshold (a tap still opens it), the arrow keys move it one place on web, and a screen reader's "move earlier / later" actions do the same on native. It orders the chips only: the caller keeps their data and passes each chip as a node. `src/sortable-chip-row`.
+
+### Consumers
+
+Bump to 17.15.0. Nothing else changes.
+
 ## 17.14.1
 
 ### Fixed

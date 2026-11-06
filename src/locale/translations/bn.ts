@@ -2569,6 +2569,11 @@ const CONTEXT_MENU_MESSAGES: Translations['CONTEXT_MENU_MESSAGES'] = {
   showMenu: 'মেনু দেখান',
 };
 
+const SORTABLE_CHIP_ROW_MESSAGES: Translations['SORTABLE_CHIP_ROW_MESSAGES'] = {
+  moveEarlier: (l) => `${l} আগে সরান`,
+  moveLater: (l) => `${l} পরে সরান`,
+};
+
 const SORTABLE_MEDIA_MESSAGES: Translations['SORTABLE_MEDIA_MESSAGES'] = {
   photo: (p, t) => `${t}টির মধ্যে ছবি ${p}`,
   cover: 'কভার',
@@ -3079,6 +3084,7 @@ const translations: Translations = {
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,
   SORTABLE_MEDIA_MESSAGES,
+  SORTABLE_CHIP_ROW_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
