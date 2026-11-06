@@ -141,6 +141,7 @@ import type { TEXT_FIELD_MESSAGES } from '../../text-field/messages';
 import type { CHAT_SCREEN_MESSAGES } from '../../chat-screen/messages';
 import type { CONTEXT_MENU_MESSAGES } from '../../context-menu/messages';
 import type { SORTABLE_MEDIA_MESSAGES } from '../../sortable-media/messages';
+import type { SORTABLE_CHIP_ROW_MESSAGES } from '../../sortable-chip-row/messages';
 import type { CONNECTION_DOTS_MESSAGES } from '../../connection-dots/messages';
 import type { CHAT_PEOPLE_MESSAGES } from '../../chat-people/messages';
 import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
@@ -289,6 +290,7 @@ export interface Translations {
   readonly CHAT_SCREEN_MESSAGES: CatalogMessages<typeof CHAT_SCREEN_MESSAGES>;
   readonly CONTEXT_MENU_MESSAGES: CatalogMessages<typeof CONTEXT_MENU_MESSAGES>;
   readonly SORTABLE_MEDIA_MESSAGES: CatalogMessages<typeof SORTABLE_MEDIA_MESSAGES>;
+  readonly SORTABLE_CHIP_ROW_MESSAGES: CatalogMessages<typeof SORTABLE_CHIP_ROW_MESSAGES>;
   readonly CONNECTION_DOTS_MESSAGES: CatalogMessages<typeof CONNECTION_DOTS_MESSAGES>;
   readonly CHAT_PEOPLE_MESSAGES: CatalogMessages<typeof CHAT_PEOPLE_MESSAGES>;
   readonly EMPTY_STATE_MESSAGES: CatalogMessages<typeof EMPTY_STATE_MESSAGES>;

@@ -2959,6 +2959,11 @@ const CONTEXT_MENU_MESSAGES: Translations['CONTEXT_MENU_MESSAGES'] = {
   showMenu: 'Показать меню',
 };
 
+const SORTABLE_CHIP_ROW_MESSAGES: Translations['SORTABLE_CHIP_ROW_MESSAGES'] = {
+  moveEarlier: (l) => `Переместить «${l}» выше`,
+  moveLater: (l) => `Переместить «${l}» ниже`,
+};
+
 const SORTABLE_MEDIA_MESSAGES: Translations['SORTABLE_MEDIA_MESSAGES'] = {
   photo: (p, t) => `Фото ${p} из ${t}`,
   cover: 'Обложка',
@@ -3502,6 +3507,7 @@ const translations: Translations = {
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,
   SORTABLE_MEDIA_MESSAGES,
+  SORTABLE_CHIP_ROW_MESSAGES,
   CONNECTION_DOTS_MESSAGES,
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
