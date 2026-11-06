@@ -1,0 +1,25 @@
+# SortableChipRow
+
+A wrapping row of chips the user reorders. Press and drag a chip past a small
+threshold to move it: a tap still reaches the chip, so a tap opens it. On web the
+arrow keys move the focused chip one place. On native the screen reader's
+"move earlier" and "move later" actions do the same.
+
+```tsx
+import { SortableChipRow } from '@oxy.so/bloom/sortable-chip-row';
+
+<SortableChipRow
+  items={links.map((link) => ({
+    key: link.id,
+    label: link.title,
+    node: <Chip onPress={() => open(link.url)}>{link.title}</Chip>,
+  }))}
+  onReorder={(keys) => saveOrder(keys)}
+  trailing={<Button onPress={addLink}>Add link</Button>}
+/>;
+```
+
+It orders the chips only. The caller keeps the data: `onReorder` receives the new
+order of `key`s, and the caller writes it. `trailing` is drawn after the chips and
+is not part of the order. `onDragStateChange` tells a parent a drag began or ended,
+so it can hold its own scrolling. `disabled` makes the row inert.
