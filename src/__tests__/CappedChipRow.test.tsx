@@ -34,6 +34,10 @@ describe('CappedChipRow', () => {
     });
 
     expect(queryByTestId('a')).not.toBeNull();
+    // A visible pill wrapper is never wider than the row, so its label can ellipsise.
+    expect(queryByTestId('a')?.parent?.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ maxWidth: '100%' })]),
+    );
     expect(queryByTestId('b')).toBeNull();
     expect(queryByTestId('c')).toBeNull();
     expect(getByText('+2')).toBeTruthy();

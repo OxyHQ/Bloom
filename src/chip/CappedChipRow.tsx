@@ -26,6 +26,9 @@ const DEFAULT_GAP = 8;
 const defaultMoreLabel = (hidden: number) => `+${hidden}`;
 const defaultMoreAccessibilityLabel = (hidden: number) => `Show ${hidden} more`;
 
+/** A visible pill is no wider than the row it wraps in. */
+const VISIBLE_STYLE: StyleProp<ViewStyle> = { maxWidth: '100%' };
+
 /** Out of flow and invisible, but still laid out so its width can be read. */
 const HIDDEN_STYLE: StyleProp<ViewStyle> = {
   position: 'absolute',
@@ -113,7 +116,9 @@ function CappedChipRowComponent({
           <View
             key={isValidElement(item) && item.key !== null ? item.key : index}
             onLayout={(event) => onItemLayout(index, event)}
-            style={isVisible ? undefined : HIDDEN_STYLE}
+            // A pill never wider than the row, so a long label ellipsises instead of
+            // pushing the row past its edge.
+            style={isVisible ? VISIBLE_STYLE : HIDDEN_STYLE}
             pointerEvents={isVisible ? 'auto' : 'none'}
             importantForAccessibility={isVisible ? 'auto' : 'no-hide-descendants'}
             accessibilityElementsHidden={!isVisible}
