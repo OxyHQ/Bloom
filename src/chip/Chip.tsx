@@ -234,6 +234,9 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       // neighbours into ellipsis. `overflow: hidden` keeps the content inside the
       // radius.
       flexShrink: 0,
+      // Never wider than the space it sits in: a long label ellipsises inside the
+      // pill (see the label below) instead of running past the row's edge.
+      maxWidth: '100%',
       ...(className ? {} : { overflow: 'hidden' as const }),
       // The `:focus-visible` ring colour, read by the adopted sheet. A custom
       // property because the value is a resolved theme token the static sheet

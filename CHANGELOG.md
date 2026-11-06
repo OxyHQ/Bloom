@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.14.1
+
+### Fixed
+
+- **`CappedChipRow` and `Chip` never run past their row.** A visible pill is `maxWidth: 100%` of the row it wraps in, and a `Chip` is `maxWidth: 100%` of its container, so a long label ellipsises inside the pill instead of pushing it off the screen. `CappedChipRow.test.tsx`.
+
+### Consumers
+
+Bump to 17.14.1. No API change.
+
 ## 17.14.0
 
 ### Added
