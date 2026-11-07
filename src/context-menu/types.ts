@@ -13,6 +13,9 @@ import type {
   MenuSubProps,
   MenuSubTriggerProps,
   MenuSurfaceProps,
+  MenuSwatch,
+  MenuSwatchRowProps,
+  MenuSwatchState,
 } from '../floating/types';
 
 /**
@@ -111,6 +114,9 @@ export type ContextMenuRadioItemProps = MenuRadioRowProps;
 export type ContextMenuLabelProps = MenuLabelProps;
 export type ContextMenuShortcutProps = MenuShortcutProps;
 export type ContextMenuGroupProps = MenuGroupProps;
+export type ContextMenuSwatchRowProps = MenuSwatchRowProps;
+export type ContextMenuSwatch = MenuSwatch;
+export type ContextMenuSwatchState = MenuSwatchState;
 export type ContextMenuSubProps = MenuSubProps;
 export type ContextMenuSubTriggerProps = MenuSubTriggerProps;
 export type ContextMenuSubContentProps = MenuSubContentProps;

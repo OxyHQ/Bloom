@@ -112,6 +112,41 @@ Both announce their state as `aria-checked`, which is the spelling react-native-
 
 The established defaults stay unchanged: checkbox rows use a check and radio rows use a dot, both in the leading gutter. `indicator` replaces that selected mark, `indicatorPosition="trailing"` moves its reserved gutter to the opposite edge, and `indicator={null}` suppresses the visual mark without removing `aria-checked`. These props are implemented once by the shared row factory, so `ContextMenu` and `Menubar` receive the identical contract.
 
+## Swatch rows: `DropdownMenuSwatchRow`
+
+A row of colour swatches, as a desktop file manager's context menu shows its colour tags: each swatch a small circle the selection can carry or not, pressed to add it or take it away.
+
+```tsx
+<DropdownMenuSwatchRow
+  accessibilityLabel={t('tags')}
+  swatches={[
+    { key: 'red', color: '#ff3b30', name: t('red'), state: 'on', caption: t('removeTag', { name: t('red') }) },
+    { key: 'blue', color: '#007aff', name: t('blue'), state: 'mixed', caption: t('addTag', { name: t('blue') }) },
+    { key: 'grey', color: '#8e8e93', name: t('grey'), state: 'off', caption: t('addTag', { name: t('grey') }) },
+  ]}
+  onSelect={(key) => toggleTag(key)}
+/>
+```
+
+| prop | |
+| --- | --- |
+| `swatches` | `MenuSwatch[]`: `key` (what `onSelect` receives), `color` (a hex or `rgb()` colour), `name` (the accessible name), `state` (`'on'`, `'off'`, or `'mixed'` when only some of the selection has it), `caption?`, `disabled?` |
+| `onSelect(key)` | a swatch was pressed: pointer, <kbd>Enter</kbd> or <kbd>Space</kbd> |
+| `keepOpen` | keep the menu open after a press; by default it closes, like any row |
+| `disabled` | disables every swatch |
+| `accessibilityLabel` | the row's name as a group ("Tags") |
+| `className`, `style`, `testID` | the row's; each swatch's `testID` is `` `${testID}-${key}` `` |
+
+**What it draws.** Each swatch is a 14px circle of its `color` with a thin ring of its own hue pulled toward the panel's opposite (darker on a light menu, lighter on a dark one), so a pale yellow keeps its edge on a white panel and a grey on a dark one. Its state is drawn at rest: a tick for `on`, a dash for `mixed`, nothing for `off`. Under the pointer or the keyboard the swatch grows to 20px and shows what a press does, `+` for off and mixed, `×` for on, and the line under the row shows its `caption`. The glyph is white wherever white holds 3:1 on the colour (WCAG 1.4.11), near-black on a colour too pale for it. Bloom has none of the application's words: the caption ("Add Tag “Red”", "Remove Tag “Red”") is the application's, per swatch and per state. The caption line is kept while empty, so the menu never changes height under the pointer; a row with no captions has none.
+
+**Keys.** The row is one stop for the menu's <kbd>↓</kbd> and <kbd>↑</kbd>, landing on the swatch it last had (its first, at first); <kbd>←</kbd> and <kbd>→</kbd> move between its enabled swatches, mirrored right to left; <kbd>Enter</kbd> and <kbd>Space</kbd> press the swatch reached. At either end the arrow is the menu's again, so in a submenu <kbd>←</kbd> from the first swatch closes it, as from any row. On the web each swatch takes real focus; in a platform popup (an OxyOS window) the row is one row of the popup's navigation, and the screen reader's focus follows the swatch the keys reach.
+
+**Screen readers.** Each swatch is a `menuitemcheckbox` on the web and a checkbox on native, named by its `name` and checked `true`, `false` or `mixed` (`aria-checked`, which React Native folds into `accessibilityState`), so it is read as "Red, checked" or "Blue, mixed". The row is a `group` named by `accessibilityLabel`. The caption is hidden from assistive technology: the name and the state say it.
+
+**In a sheet.** In a phone's bottom sheet there is no pointer: the swatches are a row of 44pt buttons with their state drawn at rest, and no caption line. A long row wraps.
+
+`ContextMenuSwatchRow` is the same row (one implementation, `floating/menu-swatch-row.tsx`). `Menubar` has none: a platform's own menu bar (OxyOS) draws only the menu items it is described, and a swatch row is not one of them; a menu bar puts a "Tags…" item there instead.
+
 ## Lining rows up: `alignRows`
 
 A check or radio row draws its indicator in a leading gutter, and a row with a `leading` icon starts its label after the icon. By default each row keeps its own layout and `inset` lines a plain row up with indicator rows by hand. `alignRows` on the content does it for the whole panel, like a desktop menu:
@@ -142,6 +177,7 @@ The web menu follows the ARIA menu-button pattern, and the same keys reach `Cont
 | menu | <kbd>Home</kbd> · <kbd>End</kbd> | first / last enabled row |
 | menu | <kbd>Enter</kbd> · <kbd>Space</kbd> | activates the row: a checkbox row toggles, a radio row selects, and `keepOpen` still decides whether the menu closes |
 | menu | <kbd>Esc</kbd> · <kbd>Tab</kbd> | closes the menu; a menu is not part of the page's tab order |
+| swatch row | <kbd>←</kbd> · <kbd>→</kbd> | the previous / next enabled swatch (mirrored right to left); at either end the menu's own arrow |
 | sub trigger | <kbd>→</kbd> · <kbd>Enter</kbd> · <kbd>Space</kbd> | opens the flyout on its first row (below) |
 | flyout | <kbd>←</kbd> · <kbd>Esc</kbd> | closes the flyout onto its trigger row, leaving the menu open |
 | flyout | <kbd>Tab</kbd> | closes the whole menu |

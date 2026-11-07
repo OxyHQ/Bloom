@@ -383,6 +383,7 @@ export const ContextMenuLabel = rows.Label;
 export const ContextMenuSeparator = rows.Separator;
 export const ContextMenuShortcut = rows.Shortcut;
 export const ContextMenuGroup = rows.Group;
+export const ContextMenuSwatchRow = rows.SwatchRow;
 export const ContextMenuSub = rows.Sub;
 export const ContextMenuSubTrigger = rows.SubTrigger;
 export const ContextMenuSubContent = rows.SubContent;

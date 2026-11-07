@@ -11,6 +11,9 @@ import type {
   MenuSubTriggerProps,
   OverlayOpenProps,
   MenuSurfaceProps,
+  MenuSwatch,
+  MenuSwatchRowProps,
+  MenuSwatchState,
   OverlayTriggerProps,
 } from '../floating/types';
 
@@ -53,6 +56,9 @@ export type DropdownMenuRadioItemProps = MenuRadioRowProps;
 export type DropdownMenuLabelProps = MenuLabelProps;
 export type DropdownMenuShortcutProps = MenuShortcutProps;
 export type DropdownMenuGroupProps = MenuGroupProps;
+export type DropdownMenuSwatchRowProps = MenuSwatchRowProps;
+export type DropdownMenuSwatch = MenuSwatch;
+export type DropdownMenuSwatchState = MenuSwatchState;
 export type DropdownMenuSubProps = MenuSubProps;
 export type DropdownMenuSubTriggerProps = MenuSubTriggerProps;
 export type DropdownMenuSubContentProps = MenuSubContentProps;

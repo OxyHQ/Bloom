@@ -2,6 +2,25 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.18.0
+
+### Added
+
+- **A menu row of colour swatches** (`DropdownMenuSwatchRow`, `ContextMenuSwatchRow`; what Dropsea's Finder tags need in its context menu): a row of small circles, each `{ key, color, name, state, caption?, disabled? }` with `state` `'on'`, `'off'` or `'mixed'` (some of the selection has it). Its state is drawn at rest (a tick, a dash); under the pointer or the keyboard the swatch grows and shows what a press does (`+` for off and mixed, `×` for on), and the line under the row shows the swatch's `caption`, the application's own words. A press (pointer, Enter, Space) calls `onSelect(key)` and closes the menu unless `keepOpen`. Each swatch is a `menuitemcheckbox` (web) or checkbox (native) named by its `name`, checked `true`, `false` or `'mixed'`; the row is a `group` named by `accessibilityLabel`. The ring is the swatch's own hue pulled toward the panel's opposite, light and dark; the glyph is white wherever white holds 3:1 on the colour, else near-black. In a phone's sheet the swatches are 44pt buttons with no caption. Types `DropdownMenuSwatchRowProps`, `DropdownMenuSwatch`, `DropdownMenuSwatchState` (and the `ContextMenu` ones).
+- **A row of several controls is one stop for a menu's keys.** On the web the panel's ↓ and ↑ stop on a swatch row once, at the swatch it last had, and the row moves between its swatches with ← and → (mirrored right to left); in a platform popup (OxyOS) the row is one row of the popup's navigation, taking ← and → while it has a swatch that way (`PopupRowAcross`), and the screen reader's focus follows the swatch reached. At either end the arrow is the menu's again: ← from the first swatch closes a submenu.
+
+### Fixed
+
+- **A web flyout's ← leaves a key something inside it already took** (`menu-sub-flyout.tsx` reads `defaultPrevented`, as the menu bar's keys already did).
+
+### Tests
+
+- `MenuSwatchRow.web.test.tsx` (roles, names and checked states; ↓/↑ one stop at the last swatch, ←/→ skipping a disabled swatch and stopping at the ends, mirrored right to left; Enter, Space and the pointer press and close, `keepOpen`; the caption; ← in a flyout; `ContextMenuSwatchRow`), `MenuSwatchRow.test.tsx` (the glyph, checked state and arrow rules; the sheet's 44pt buttons without a caption, a press, `keepOpen`, a disabled swatch; the paint in light and dark; the platform popup's keys, caption, a submenu's ← and the screen reader's focus), and the swatch row in `aria-state-web.test.tsx`. Each was broken on purpose and went red. Stories `Context Menu/ColourTags` and `Dropdown/Swatches`; `docs/dropdown-menu.mdx`, `docs/context-menu.mdx`.
+
+### Consumers
+
+Bump to 17.18.0. Nothing changes for a menu without a swatch row. `Menubar` has no swatch row: a platform's own menu bar draws only described items.
+
 ## 17.17.0
 
 ### Added

@@ -218,6 +218,7 @@ export const DropdownMenuLabel = rows.Label;
 export const DropdownMenuSeparator = rows.Separator;
 export const DropdownMenuShortcut = rows.Shortcut;
 export const DropdownMenuGroup = rows.Group;
+export const DropdownMenuSwatchRow = rows.SwatchRow;
 export const DropdownMenuSub = rows.Sub;
 export const DropdownMenuSubTrigger = rows.SubTrigger;
 export const DropdownMenuSubContent = rows.SubContent;

@@ -20,6 +20,11 @@
  * registered through the same React tree. The web flyout's own keys are
  * `menu-sub-flyout.tsx`'s.
  *
+ * A row of several controls side by side (a menu's row of swatches,
+ * `menu-swatch-row.tsx`) is ONE row here: ↓ and ↑ stop on it once, and it takes
+ * ← and → to move between its controls (`PopupRowAcross`) while it has one
+ * further that way; at its ends the arrow does what it does on any row.
+ *
  * A flyout also follows the pointer as the web's does: hovering its row opens
  * it, and hovering a row outside it closes it after `FLYOUT_CLOSE_MS`, long
  * enough for the pointer to cross from its row to its panel.
@@ -76,11 +81,23 @@ export interface PopupSubmenu {
   flyout?: boolean;
 }
 
+/**
+ * A row made of several controls side by side (a row of swatches): ← and → move
+ * between them while it is active. `takes` says whether there is one to move to
+ * in that direction; at its ends the arrow is the menu's again (a submenu's ←,
+ * a menu bar's next menu). Enter activates the control it moved to.
+ */
+export interface PopupRowAcross {
+  takes: (key: 'ArrowLeft' | 'ArrowRight') => boolean;
+  move: (key: 'ArrowLeft' | 'ArrowRight') => void;
+}
+
 interface Row {
   id: number;
   disabled: boolean;
   label: string | undefined;
   activate: () => void;
+  across: PopupRowAcross | undefined;
   /** The submenu this row opens, if it is a submenu's trigger. */
   submenu: PopupSubmenu | undefined;
   /** The submenu this row is inside, if any. */
@@ -127,12 +144,15 @@ export function usePopupNavigationRow({
   label,
   activate,
   submenu,
+  across,
 }: {
   disabled: boolean;
   label: string | undefined;
   activate: () => void;
   /** The submenu this row opens (a submenu's trigger). */
   submenu?: PopupSubmenu;
+  /** ← and → within the row, for a row of several controls. */
+  across?: PopupRowAcross;
 }): { active: boolean; byKeys: boolean; hover: () => void; inPopup: boolean } {
   const navigation = useContext(PopupNavigationContext);
   const activeId = useContext(ActiveRowContext);
@@ -140,7 +160,7 @@ export function usePopupNavigationRow({
   const owner = useContext(PopupSubmenuContext);
   const id = useRef<number | null>(null);
   if (id.current === null) id.current = ++nextRowId;
-  const row = { id: id.current, disabled, label, activate, submenu, owner };
+  const row = { id: id.current, disabled, label, activate, submenu, owner, across };
   const latest = useRef(row);
   latest.current = row;
   useEffect(() => {
@@ -160,6 +180,9 @@ export function usePopupNavigationRow({
       },
       get owner() {
         return latest.current.owner;
+      },
+      get across() {
+        return latest.current.across;
       },
       activate: () => latest.current.activate(),
     });
@@ -182,7 +205,8 @@ export interface PopupNavigation {
   onKey: (key: string) => void;
   /**
    * Whether `onKey` would act on an arrow across (← or →) rather than leave it to the owner: →
-   * on a row that opens a submenu, ← inside a submenu. A menu bar moves to its next or previous
+   * on a row that opens a submenu, ← inside a submenu, either within a row of several controls
+   * that has one further that way. A menu bar moves to its next or previous
    * menu with the keys the menu leaves.
    */
   takes: (key: 'ArrowLeft' | 'ArrowRight') => boolean;
@@ -289,6 +313,10 @@ export function usePopupNavigation(onClose: () => void, intent?: MenuFocusIntent
         if (trigger) setActive(trigger.id);
         return true;
       };
+      if ((key === 'ArrowLeft' || key === 'ArrowRight') && current?.across?.takes(key)) {
+        current.across.move(key);
+        return;
+      }
       switch (key) {
         case 'ArrowRight': {
           const submenu = current?.submenu;
@@ -348,6 +376,7 @@ export function usePopupNavigation(onClose: () => void, intent?: MenuFocusIntent
   const takes = useCallback(
     (key: 'ArrowLeft' | 'ArrowRight') => {
       const current = rows.current.find((row) => row.id === activeId && !row.disabled);
+      if (current?.across?.takes(key)) return true;
       return key === 'ArrowRight' ? current?.submenu !== undefined : current?.owner != null;
     },
     [activeId],

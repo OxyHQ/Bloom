@@ -113,7 +113,31 @@ Without `anchor` the menu is the uncontrolled right-click menu, exactly as befor
 
 ## Rows
 
-Everything `DropdownMenu` documents applies, under the `ContextMenu` prefix: `ContextMenuItem`, `ContextMenuCheckboxItem`, `ContextMenuRadioGroup` / `ContextMenuRadioItem`, `ContextMenuLabel`, `ContextMenuSeparator`, `ContextMenuShortcut`, `ContextMenuGroup`, and `ContextMenuSub` / `ContextMenuSubTrigger` / `ContextMenuSubContent`.
+Everything `DropdownMenu` documents applies, under the `ContextMenu` prefix: `ContextMenuItem`, `ContextMenuCheckboxItem`, `ContextMenuRadioGroup` / `ContextMenuRadioItem`, `ContextMenuLabel`, `ContextMenuSeparator`, `ContextMenuShortcut`, `ContextMenuGroup`, `ContextMenuSwatchRow`, and `ContextMenuSub` / `ContextMenuSubTrigger` / `ContextMenuSubContent`.
+
+A file manager's colour tags are a `ContextMenuSwatchRow` (documented with [DropdownMenu](/docs/bloom/main/dropdown-menu)), each swatch's state computed from the selection:
+
+```tsx
+<ContextMenuContent>
+  <ContextMenuItem onPress={open}>{t('open')}</ContextMenuItem>
+  <ContextMenuSeparator />
+  <ContextMenuSwatchRow
+    accessibilityLabel={t('tags')}
+    swatches={tags.map((tag) => {
+      const state = stateOf(tag, selection); // 'on' | 'off' | 'mixed'
+      return {
+        key: tag.name,
+        color: tag.color,
+        name: tag.name,
+        state,
+        caption: state === 'on' ? t('removeTag', tag) : t('addTag', tag),
+      };
+    })}
+    onSelect={(name) => toggleTag(name, selection)}
+  />
+  <ContextMenuItem onPress={showTags}>{t('tagsEllipsis')}</ContextMenuItem>
+</ContextMenuContent>
+```
 
 Sub-menus fly out beside their trigger row on web and render as an inline disclosure on native — see [DropdownMenu](/docs/bloom/main/dropdown-menu) for the hover, keyboard and placement behaviour, which is shared.
 
