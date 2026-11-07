@@ -15,7 +15,7 @@
  * `side` / `align` / offsets and the platform keeps the panel on screen.
  */
 import type React from 'react';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ComponentRef, ComponentType, RefObject } from 'react';
 import { StyleSheet, type View, type StyleProp, type ViewStyle } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
@@ -25,6 +25,7 @@ import { DEFAULT_ALIGN_OFFSET, DEFAULT_SIDE_OFFSET, MENU_WIDTH } from './constan
 import { useMenuPalette } from './menu-palette';
 import type { FloatingPositionProps } from './types';
 import { useMenuDensity } from './use-menu-density';
+import { pushFloatingEscape } from './escape-stack';
 import { type PopupNavigation, usePopupNavigation } from './popup-navigation';
 import type { MenuFocusIntent } from './menu-keyboard';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
@@ -190,6 +191,17 @@ export function PopupPanel({
   );
   // The platform's keys move an active row among the panel's rows (`popup-navigation`).
   const navigation = usePopupNavigation(onClose, focusIntent);
+  // An open anchored surface, as the web's `FloatingPanel` is one (`escape-stack.ts`), for as long
+  // as it is mounted: the window's own keys stand aside (`useWindowKeys`, a list's arrows and
+  // type-select; a menu's unmodified shortcuts), so the keys the platform sends to the popup reach
+  // its rows. A native host offers every key to the window's handlers before the popup
+  // (`PlatformKeyboard`); without this a file list's ↓ took the key meant for the menu's rows, as
+  // a Mac's menu tracking takes the keys from the window while a menu is open. There is no DOM
+  // listener on a native host, so the entry only says the panel is open; its Escape is the
+  // navigation's.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  useEffect(() => pushFloatingEscape(() => onCloseRef.current()), []);
   if (navigationRef) navigationRef.current = navigation;
   // Screen-reader focus moves into the menu when it opens, as into a sheet (`SheetShell`); the
   // panel is mounted only while open. The trigger takes it back on close

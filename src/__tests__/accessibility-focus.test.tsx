@@ -14,6 +14,7 @@
 import React, { useRef } from 'react';
 import { AccessibilityInfo, Platform, View } from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
+import { pushFloatingEscape } from '../floating/escape-stack';
 
 import {
   FOCUS_SETTLE_MS,
@@ -247,5 +248,26 @@ describe('useItemAccessibilityFocus', () => {
       jest.runOnlyPendingTimers();
     });
     expect(setFocus).not.toHaveBeenCalled();
+  });
+
+  it('leaves the cursor in a menu opened over the collection as its item became current', () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<Items shown={['a', 'b']} current={null} />, itemMock);
+    });
+    // A secondary press selects b and opens its menu: the menu has the cursor when b's turn comes.
+    const menu = pushFloatingEscape(() => {});
+    act(() => renderer.update(<Items shown={['a', 'b']} current="b" />));
+    act(() => {
+      jest.advanceTimersByTime(FOCUS_SETTLE_MS);
+    });
+    expect(setFocus).not.toHaveBeenCalled();
+    menu();
+    // With nothing open, the next item the keys move to takes it.
+    act(() => renderer.update(<Items shown={['a', 'b']} current="a" />));
+    act(() => {
+      jest.advanceTimersByTime(FOCUS_SETTLE_MS);
+    });
+    expect(focused()).toEqual(['a']);
   });
 });

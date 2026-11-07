@@ -89,7 +89,10 @@ useWindowKeys((event) => {
 - Not offered while a text field has focus (it types there) or an anchored
   menu, list or dialog is open (its own keys), unless `whileTyping` asks for
   them: the field's owner, taking only what the field does not act on (Escape
-  to cancel an edit). `enabled: false` stops listening.
+  to cancel an edit). `enabled: false` stops listening. A menu in a platform's
+  popup is open from its mount to its unmount, as a web panel is: a native
+  host offers the window its keys first, and they are the menu's rows' then,
+  as a Mac's menu tracking takes the window's keys.
 - `isCommandKey(event)` is the platform's command modifier on a key's or a
   pointer's event: ⌘ on Apple platforms, Ctrl elsewhere, as `Mod` in a chord.
 
