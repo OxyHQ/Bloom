@@ -82,16 +82,19 @@ it('fits the complete eye group in front of the body and aligns clip indices', a
   }
   expect(loader.eyewear).not.toHaveBeenCalled();
 });
-it('retains reference projection metadata and fits eyes within the gaze sphere', async () => {
+it('retains reference projection metadata without resizing an already fitted eye pair', async () => {
   const base = asset();
   base.referenceFace = { center: [0, 0], radius: 0.7, gazeScale: 0.65 };
   const result = await composeVectorCharacter(character(), loaders(base));
   expect(result.referenceFace).toBe(base.referenceFace);
-  for (const p of result.parts.filter((p) => p.role === 'eye')) {
+  const eyes = result.parts.filter((p) => p.role === 'eye');
+  for (const [index, p] of eyes.entries()) {
     expect(p.face).toBe(true);
-    for (const [x = 0, y = 0, z = 0] of p.points) {
-      expect(Math.hypot(x, y)).toBeLessThanOrEqual(0.7 * 0.85 + 0.00001);
-      expect(z).toBeGreaterThan(0);
+    const original = base.parts[index + 1]!;
+    for (const [i, q] of p.points.entries()) {
+      expect(q[0]).toBeCloseTo(original.points[i]![0]!);
+      expect(q[1]).toBeCloseTo(original.points[i]![1]!);
+      expect(q[2]).toBeGreaterThan(0);
     }
   }
 });
@@ -209,4 +212,63 @@ it('places custom eye pieces on their native tangent plane without bending the c
     );
     expect(Math.max(...offsets) - Math.min(...offsets)).toBeLessThanOrEqual(0.004001);
   }
+});
+
+it('does not rotate an intrinsically horizontal eye style toward the target oval axis', async () => {
+  const donor = asset();
+  for (const [index, cx] of [
+    [1, -0.2],
+    [2, 0.2],
+  ]) {
+    donor.parts[index!]!.points = [
+      [cx! - 0.15, 0, 1.01],
+      [cx! + 0.15, 0, 1.01],
+      [cx! + 0.15, 0.04, 1.01],
+      [cx! - 0.15, 0.04, 1.01],
+    ];
+    donor.parts[index!]!.faces = [
+      [0, 1, 2],
+      [0, 2, 3],
+    ];
+  }
+  const loader = loaders();
+  loader.eyes = jest.fn(async () => donor);
+  const result = await composeVectorCharacter({ ...character(), eyes: 'sleepy_lids' }, loader);
+  for (const eye of result.parts.filter((p) => p.role === 'eye')) {
+    const width =
+      Math.max(...eye.points.map((p) => p[0]!)) - Math.min(...eye.points.map((p) => p[0]!));
+    const height =
+      Math.max(...eye.points.map((p) => p[1]!)) - Math.min(...eye.points.map((p) => p[1]!));
+    expect(width / height).toBeGreaterThan(6);
+  }
+});
+
+it('fits a custom pair as one group instead of squeezing it into native capsule centers', async () => {
+  const base = asset();
+  base.referenceFace = { center: [0, 0], radius: 0.7, gazeScale: 0.4 };
+  base.parts[1]!.points = [
+    [-0.08, 0, 1],
+    [-0.04, 0, 1],
+    [-0.06, 0.2, 1],
+  ];
+  base.parts[2]!.points = [
+    [0.04, 0, 1],
+    [0.08, 0, 1],
+    [0.06, 0.2, 1],
+  ];
+  const donor = asset(),
+    loader = loaders(base);
+  loader.eyes = jest.fn(async () => donor);
+  const result = await composeVectorCharacter(
+    { ...character(), shape: 'bot_blob', eyes: 'dots' },
+    loader,
+  );
+  const eyes = result.parts.filter((p) => p.role === 'eye');
+  const center = (p: VectorPart) =>
+    (Math.min(...p.points.map((q) => q[0]!)) + Math.max(...p.points.map((q) => q[0]!))) / 2;
+  const width = (p: VectorPart) =>
+    Math.max(...p.points.map((q) => q[0]!)) - Math.min(...p.points.map((q) => q[0]!));
+  expect((center(eyes[1]!) - center(eyes[0]!)) / width(eyes[0]!)).toBeCloseTo(
+    (center(donor.parts[2]!) - center(donor.parts[1]!)) / width(donor.parts[1]!),
+  );
 });

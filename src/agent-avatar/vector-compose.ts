@@ -1,4 +1,4 @@
-import { referenceFaceDepth } from './vector-face';
+import { projectReferenceFacePoint, referenceFaceDepth } from './vector-face';
 import type { ResolvedAvatarCharacter } from './character';
 import { CHARACTER_COLORS } from './character-colors';
 import type { VectorData, VectorPart, VectorAction, VectorAssetLoader } from './vector-types';
@@ -267,6 +267,36 @@ function fitFaceTranslation(body: FitMesh[], points: number[][], width: number):
   return candidates.find((p) => inside(p[0]!, p[1]!)) ?? [0, 0, 0];
 }
 
+/** A style's one-time offset must fit the whole supported head-look range. */
+function fitGazeTranslation(
+  reference: NonNullable<VectorData['referenceFace']>,
+  body: FitMesh[],
+  points: number[][],
+  width: number,
+): number[] {
+  if (!reference.restBasis) return [0, 0, 0];
+  const sample = points.filter((_, i) => i % Math.max(1, Math.floor(points.length / 160)) === 0);
+  const looks = [-0.6, 0, 0.6].flatMap((yaw) =>
+    [-0.45, 0, 0.45].map((pitch) => ({ yaw, pitch, mix: 1 })),
+  );
+  const fits = (offset: number[]) =>
+    looks.every((look) =>
+      sample.every((p) => {
+        const q = projectReferenceFacePoint(
+          reference,
+          [p[0]! + offset[0]!, p[1]! + offset[1]!, p[2]!],
+          look,
+        );
+        return containsXY(body, q[0]!, q[1]!);
+      }),
+    );
+  if (fits([0, 0, 0])) return [0, 0, 0];
+  const candidates: number[][] = [];
+  for (let x = -8; x <= 8; x++)
+    for (let y = -8; y <= 8; y++) candidates.push([x * width * 0.025, y * width * 0.025, 0]);
+  candidates.sort((a, b) => Math.hypot(a[0]!, a[1]!) - Math.hypot(b[0]!, b[1]!));
+  return candidates.find(fits) ?? [0, 0, 0];
+}
 function eyePair(data: VectorData, selected: number[]): [Bounds, Bounds] {
   const all = bounds(data, selected),
     left = selected.filter((i) => bounds(data, [i]).center[0]! < all.center[0]!),
@@ -490,7 +520,7 @@ export async function composeVectorCharacter(
         faceBlend: [] as number[],
       };
     });
-    if (facial && !(role === 'eye' && id === 'cyclops')) {
+    if (role === 'eyewear') {
       const sourceCenters = sourcePair.map((p) => p.center),
         targetCenters = targetPair.map((p) => p.center);
       if (role === 'eyewear' && id === 'separate_trapezoid_lenses') {
@@ -509,16 +539,12 @@ export async function composeVectorCharacter(
       const sourceAngles = [0, 1].map((k) =>
         principal(eyePoints(donor, indices(donor, 'eye'), k), sourcePair[k]!.center),
       );
-      const targetAngles = [0, 1].map((k) =>
-        principal(
-          eyePoints(
-            role === 'eyewear' ? result : base,
-            role === 'eyewear' ? finalEyes : eyeIndices,
-            k,
-          ),
-          targetCenters[k]!,
-        ),
-      );
+      // Intrinsic lids, rings and brows keep their authored angle. Only native
+      // capsule head pose supplies an attachment orientation for eyewear.
+      const targetAngles =
+        role === 'eyewear' && preserveEyes
+          ? [0, 1].map((k) => principal(eyePoints(result, finalEyes, k), targetCenters[k]!))
+          : sourceAngles;
       const lensScales = [scale, scale],
         lensWidths = [1, 1];
       if (role === 'eyewear') {
@@ -700,41 +726,44 @@ export async function composeVectorCharacter(
       const zMin = Math.min(...all.map((p) => p[2]!)),
         zMax = Math.max(...all.map((p) => p[2]!));
       const lift = role === 'eyewear' ? 0.035 : 0;
-      const layers = [...baked].sort(
-        (a, b) =>
-          a.points.reduce((n, p) => n + p[2]!, 0) / a.points.length -
-          b.points.reduce((n, p) => n + p[2]!, 0) / b.points.length,
-      );
+      // Curved highlights may have a lower global mean depth than the iris
+      // while being in front at their own pixels. Preserve authored layer order.
+      const layers = baked;
       for (const v of baked) {
-        const center = [0, 1].map(
-          (axis) =>
-            (Math.min(...v.points.map((p) => p[axis]!)) +
-              Math.max(...v.points.map((p) => p[axis]!))) /
-            2,
-        );
+        const center =
+          role === 'eye' && id === 'cyclops'
+            ? face.center
+            : [0, 1].map(
+                (axis) =>
+                  (Math.min(...v.points.map((p) => p[axis]!)) +
+                    Math.max(...v.points.map((p) => p[axis]!))) /
+                  2,
+              );
         v.points = v.points.map((p, index) => {
           const x = p[0]! + translation[0]!,
             y = p[1]! + translation[1]!;
           const t = v.faceBlend[index];
           const depth =
-            t === undefined
-              ? referenceFaceDepth(reference, x, y, center[0], center[1])
-              : referenceFaceDepth(
-                  reference,
-                  x,
-                  y,
-                  targetPair[0].center[0],
-                  targetPair[0].center[1],
-                ) *
-                  (1 - t) +
-                referenceFaceDepth(
-                  reference,
-                  x,
-                  y,
-                  targetPair[1].center[0],
-                  targetPair[1].center[1],
-                ) *
-                  t;
+            role === 'eye' && id === 'cyclops'
+              ? (reference.sphereRadius ?? referenceFaceDepth(reference, center[0]!, center[1]!))
+              : t === undefined
+                ? referenceFaceDepth(reference, x, y, center[0], center[1])
+                : referenceFaceDepth(
+                    reference,
+                    x,
+                    y,
+                    targetPair[0].center[0],
+                    targetPair[0].center[1],
+                  ) *
+                    (1 - t) +
+                  referenceFaceDepth(
+                    reference,
+                    x,
+                    y,
+                    targetPair[1].center[0],
+                    targetPair[1].center[1],
+                  ) *
+                    t;
           return [
             x,
             y,
@@ -744,6 +773,17 @@ export async function composeVectorCharacter(
               ((p[2]! - zMin) / Math.max(0.001, zMax - zMin)) * 0.004,
           ];
         });
+      }
+      if (role === 'eye') {
+        const offset = fitGazeTranslation(
+          reference,
+          meshes(base, bodyIndices),
+          baked.flatMap((v) => v.points),
+          body.size[0]!,
+        );
+        if (offset[0] || offset[1])
+          for (const v of baked)
+            v.points = v.points.map((p) => [p[0]! + offset[0]!, p[1]! + offset[1]!, p[2]!]);
       }
     } else if (facial) {
       const front = frontSurface(base, bodyIndices);
