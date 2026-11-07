@@ -43,6 +43,7 @@ export type {
   SidebarTreeDrop,
   SidebarTreeFolder,
   SidebarTreeItem,
+  SidebarTreeItemDrop,
   SidebarUserMenuProps,
   SidebarVariant,
 } from './types';

@@ -5,6 +5,7 @@ import { borderRadius } from '../styles/tokens';
 import Svg, { Path } from 'react-native-svg';
 
 import { Collapsible } from '../collapsible';
+import { DropZone } from '../drop-zone';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -16,6 +17,7 @@ import { Text } from '../typography';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import { useSidebarWebCss } from './parts';
 import type { SidebarFolderProps, SidebarTreeFolder, SidebarTreeItem } from './types';
+import { useTreeRowDrop } from './use-tree-row-drop';
 import { IS_WEB } from '../styles/platform';
 import type { SurfaceTransition } from '../motion/types';
 
@@ -66,6 +68,8 @@ function TreeConnector({ count, color }: { count: number; color: string }) {
 /**
  * One row of the tree: inside a folder (indented past the connector) or
  * directly under a section label (`folder` absent, inset to the folder glyph).
+ * With a `drop` it is a drop zone, lit with the accent while a drag it would
+ * take is over it.
  */
 export function SidebarTreeRow({
   item,
@@ -84,6 +88,7 @@ export function SidebarTreeRow({
   palette: SidebarPalette;
 }) {
   const { state: hovered, onIn, onOut } = useInteractionState();
+  const { lit, zone } = useTreeRowDrop(item.drop);
   const { tree } = useSidebarMetrics();
   const style: WebCssStyle = {
     flex: 1,
@@ -98,10 +103,14 @@ export function SidebarTreeRow({
     // In a folder the label clears the connector and lines up with the
     // folder's own label; a section row starts where a folder's glyph does.
     paddingInlineStart: folder ? 36 : 8,
-    backgroundColor: selected || hovered ? palette.rowHover : 'transparent',
+    backgroundColor: lit
+      ? palette.selected
+      : selected || hovered
+        ? palette.rowHover
+        : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
   };
-  return (
+  const row = (
     <View
       style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}
       onPointerEnter={item.onPrefetch}
@@ -133,7 +142,11 @@ export function SidebarTreeRow({
         <Text
           variant={tree.label}
           numberOfLines={1}
-          style={{ minWidth: 0, flex: 1, color: palette.textSecondary }}
+          style={{
+            minWidth: 0,
+            flex: 1,
+            color: lit ? palette.selectedForeground : palette.textSecondary,
+          }}
         >
           {item.label}
         </Text>
@@ -160,6 +173,7 @@ export function SidebarTreeRow({
       {item.actions}
     </View>
   );
+  return zone ? <DropZone {...zone}>{row}</DropZone> : row;
 }
 
 /**

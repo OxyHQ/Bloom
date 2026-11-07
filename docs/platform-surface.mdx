@@ -442,15 +442,21 @@ is missing, as the other hooks do):
 - **`DropTarget`**, a host component taking `PlatformDropTargetProps`: what it
   accepts (`files`, `text`, `url`, `html` or media types), the media types of
   files it takes (`acceptFileTypes`), its actions (its preferred one first),
-  `disabled`, and `onDragEnter`, `onDragOver`,
+  the `folder` files dropped on it go into (a `file://` URI), `disabled`, and
+  `onDragEnter`, `onDragOver`,
   `onDragLeave` and `onDrop`. It renders its children. The platform answers the
   drag itself from those props, so a drag never waits on JavaScript; the
   callbacks follow it, and `onDrop` receives the content (`DropData`: files as
   `file://` URIs, URLs, text, HTML, other named types). Each drag event says
   the media type of each file dragged (`fileTypes`), as the source declares
   them, before the drop; with `acceptFileTypes` a drag of files is taken only
-  when every file is of a type named there. Applications use it through
-  `DropZone` (`docs/drop-zone.mdx`), never directly.
+  when every file is of a type named there. With a `folder`, where the
+  platform knows the volume each dragged file is on, it answers a drag of
+  files with a move when every one is on the folder's volume and a copy when
+  any is not, as Finder does, if the target's actions allow both (Option and
+  Command still force theirs); a drag that says no volumes keeps the preferred
+  action. Applications use it through `DropZone` (`docs/drop-zone.mdx`),
+  never directly.
 - **`drag`** (`PlatformDrag`): `start({ data, actions, previewRef, count, vanish, onCancel })`
   begins a drag from the press the application is handling, with what it drags
   (`files` as `file://` URIs, `text`, `url`, `html`, and `other` media types by
@@ -517,6 +523,14 @@ const action = await drag.start({
 With `move` of data the application deletes its original once the promise
 resolves; files are moved by the target, as Finder and every Linux file
 manager do, and the source deletes nothing.
+
+`drag.watchWindow(listener)`, optional, follows drags over the application's
+window from any application, for `useWindowDrag` (`docs/drop-zone.mdx`): the
+listener is told `{ type: 'enter' }` when a drag first comes over any of the
+window's surfaces and `{ type: 'exit', dropped }` when it has left all of them
+or ended, `dropped` true when it was dropped on one of them, told once that
+drop was delivered (after the target's `onDrop`). It returns the function that
+stops following. Without it, `useWindowDrag` tells nothing.
 
 ## Who registers the adapter
 

@@ -52,6 +52,7 @@ export type {
   PlatformTagName,
   PlatformTrashedItem,
   PlatformWindow,
+  PlatformWindowDragEvent,
   PlatformWindowMetrics,
   PlatformWindowSizeLimits,
   PlatformWindowState,

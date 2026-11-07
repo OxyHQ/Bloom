@@ -5,7 +5,8 @@
 
 export { DropZone } from './DropZone.web';
 export { setDragImage } from './drag-image.web';
-export type { DragImageOptions, DropZoneProps } from './types';
+export { useWindowDrag } from './use-window-drag.web';
+export type { DragImageOptions, DropZoneProps, WindowDragHandlers } from './types';
 export type {
   DragAction,
   DropData,

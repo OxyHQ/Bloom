@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Collapsible } from '../collapsible';
+import { DropZone } from '../drop-zone';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -41,6 +42,7 @@ import {
 } from './SidebarTreeDrag';
 import { dropPositionAt, isExpandable, sectionKey, treeMoves, type TreeMove } from './tree';
 import type { SidebarTree, SidebarTreeDrop, SidebarTreeFolder, SidebarTreeItem } from './types';
+import { useTreeRowDrop } from './use-tree-row-drop';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
@@ -68,7 +70,9 @@ type TreePress = (item: SidebarTreeItem, folder?: SidebarTreeFolder) => void;
  * 8), the label (`tree.label` text-secondary, truncating) and the `meta` chip.
  * Hover and selection fill the whole line with background-secondary-hover; the
  * actions sit inside it, at the end, never in the row's press target. Children
- * ease open and shut (300ms) and are only mounted while shown.
+ * ease open and shut (300ms) and are only mounted while shown. A row with a
+ * `drop` is a `DropZone`, filled with the accent (its label, glyph and
+ * disclosure in the accent's foreground) while a drag it would take is over it.
  */
 export const SidebarTreeSection = memo(function SidebarTreeSection({
   section,
@@ -329,6 +333,8 @@ function useWebDropTarget(
       if (hover && hover.key === mine.key && hover.section === mine.section) drag.setHover(null);
     };
     const onDrop = (event: DragEvent) => {
+      // Another application's drop is the row's `drop` zone's, never the tree's.
+      if (!event.dataTransfer?.types.includes(DRAG_MIME)) return;
       const hover = hoverAt(event);
       const source = drag.getState().dragging;
       event.preventDefault();
@@ -380,6 +386,7 @@ const TreeRow = memo(function TreeRow({
   const drag = useTreeDrag();
   const anyDragging = useTreeDragging();
   const { dragging, indicator } = useTreeRowDrag(item.key);
+  const { lit, zone } = useTreeRowDrop(item.drop);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [open, setOpen] = useControllableState<boolean>({
     value: item.open,
@@ -523,8 +530,9 @@ const TreeRow = memo(function TreeRow({
         // part of the row's press target, as a folder's row is.
         paddingInlineStart: nests ? inset : 0,
         paddingInlineEnd: item.actions != null ? 4 : 0,
-        backgroundColor:
-          indicator === 'inside'
+        backgroundColor: lit
+          ? palette.selected
+          : indicator === 'inside'
             ? palette.tertiaryHover
             : selected || hovered
               ? palette.rowHover
@@ -559,7 +567,11 @@ const TreeRow = memo(function TreeRow({
             }
             testID={`sidebar-tree-disclosure-${item.key}`}
           >
-            <Chevron open={expanded} size={lane - 4} color={palette.textTertiary} />
+            <Chevron
+              open={expanded}
+              size={lane - 4}
+              color={lit ? palette.selectedForeground : palette.textTertiary}
+            />
           </Pressable>
         ) : (
           <View style={{ width: lane + 4, flexShrink: 0 }} />
@@ -625,7 +637,11 @@ const TreeRow = memo(function TreeRow({
             }}
           >
             {Icon ? (
-              <Icon width={tree.icon} height={tree.icon} fill={palette.textSecondary} />
+              <Icon
+                width={tree.icon}
+                height={tree.icon}
+                fill={lit ? palette.selectedForeground : palette.textSecondary}
+              />
             ) : (
               item.leading
             )}
@@ -634,7 +650,15 @@ const TreeRow = memo(function TreeRow({
         <Text
           variant={tree.label}
           numberOfLines={1}
-          style={{ minWidth: 0, flex: 1, color: selected ? palette.text : palette.textSecondary }}
+          style={{
+            minWidth: 0,
+            flex: 1,
+            color: lit
+              ? palette.selectedForeground
+              : selected
+                ? palette.text
+                : palette.textSecondary,
+          }}
         >
           {item.label}
         </Text>
@@ -691,15 +715,17 @@ const TreeRow = memo(function TreeRow({
     </View>
   );
 
+  const handle =
+    canDrag && !IS_WEB ? (
+      <GestureDetector gesture={pan} touchAction="pan-y">
+        <Animated.View style={lifted}>{row}</Animated.View>
+      </GestureDetector>
+    ) : (
+      row
+    );
   return (
     <View style={{ width: '100%' }}>
-      {canDrag && !IS_WEB ? (
-        <GestureDetector gesture={pan} touchAction="pan-y">
-          <Animated.View style={lifted}>{row}</Animated.View>
-        </GestureDetector>
-      ) : (
-        row
-      )}
+      {zone ? <DropZone {...zone}>{handle}</DropZone> : handle}
       {expandable ? (
         <Collapsible open={expanded} transition={SIDEBAR_TREE_REVEAL} keepMounted={false}>
           <View style={{ width: '100%', gap: 2, paddingTop: 2 }}>

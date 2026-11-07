@@ -2,6 +2,28 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.19.0
+
+### Added
+
+- **Finder's drags** (what OxyOS's desktop and Dropsea need for files dragged as on a Mac, OxyOS ADR 0047):
+  - `DropZone`'s `folder` (and `PlatformDropTargetProps.folder`): the folder files dropped on it go into, as a `file://` URI. Where the platform knows the volume each dragged file is on (OxyOS), a drag of files prefers a move when every one is on that folder's volume and a copy when any is not, as Finder does; Option still forces a copy and Command a move. It matters only when `actions` allows both. Ignored on the web.
+  - `useWindowDrag({ onEnter, onExit })` (`@oxy.so/bloom/drop-zone`): `onEnter()` when a drag from any application first comes over the window, `onExit(dropped)` when it has left or ended, `dropped` true when it was dropped on this window, told after that drop's `onDrop`; what a spring-loaded folder needs to put its window back. Native: the adapter's optional `drag.watchWindow(listener)` (`PlatformWindowDragEvent`: `{ type: 'enter' }` or `{ type: 'exit', dropped }`); without it nothing is told. Web: the document's HTML5 drag events, a drag leaving the page when it leaves the element it last entered for nothing of the page (so a replaced element under the drag does not fool it), a `drop` reaching the document dropped, and a drag of the page's own ended by its `dragend`. The handlers are read when called, so they need not be memoised.
+  - `SidebarTreeItem.drop` (`SidebarTreeItemDrop`: `DropZone`'s props but its style, `className`, children and `testID`): the row, in a section at any depth or in a folder, becomes a drop zone, drawn as Finder draws a sidebar row under a drag it would take, the accent's rounded highlight with its label, glyph and disclosure in the accent's foreground, cleared when the drag leaves or drops or the row stops taking drops. The tree's own row drags (`draggable`, `onTreeItemDrop`) are unchanged.
+
+### Fixed
+
+- **A sidebar row no longer swallows another application's drop.** With `onTreeItemDrop` set, a row's web drop listener stopped every drop, not only the tree's own row drags; it now leaves the others to the row's drop zone.
+- **A web `DropZone` is left at a drop a child keeps from it.** A child that stopped a drop's propagation (a sidebar row's own drag, dropped on that row) left the zone's count of entries behind, so the next drag of files never left it; the zone now hears every drop in it first.
+
+### Tests
+
+- `DropZone.test.tsx` (the `folder` handed to the platform; `useWindowDrag` following `watchWindow` with the latest handlers, and nothing without it), `DropZone.web.test.tsx` (`useWindowDrag`: entering once, leaving the page, an element replaced under the drag, a drop told after the zone's `onDrop`, a page's own drag ended at `dragend`; the zone left at a drop a child keeps), `SidebarTreeRowDrop.test.tsx` and `SidebarTreeRowDrop.web.test.tsx` (a row's `drop` making a drop zone in a section and in a folder, its highlight lit and cleared, the tree's own row drags unchanged). `docs/drop-zone.mdx`, `docs/platform-surface.mdx`, `docs/sidebar.mdx`; stories `DropZone/WindowDrag` and `Sidebar/TreeDrops`.
+
+### Consumers
+
+Bump to 17.19.0. Nothing changes for a drop zone without `folder`, a tree row without `drop`, or an application that does not call `useWindowDrag`. An adapter's `DropTarget` takes `folder` and answers a drag of files from the files' volumes when it knows them; its `drag` may add `watchWindow`.
+
 ## 17.18.0
 
 ### Added

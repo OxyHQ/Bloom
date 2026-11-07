@@ -43,6 +43,12 @@ import { DropZone } from '@oxy.so/bloom/drop-zone';
   Mac chooses it: Option (Alt) held forces a copy, Command (Meta) a move, both
   a link, if both sides allow it; otherwise the preferred action the source
   allows, else the next it allows; none if none (nothing is dropped).
+- `folder`: the folder files dropped on it go into, as a `file://` URI. Where
+  the platform knows the volume each dragged file is on (OxyOS), a drag of
+  files prefers a move when every one is on this folder's volume and a copy
+  when any is not, as Finder does; Option still forces a copy and Command a
+  move. It matters only when `actions` allows both (`['move', 'copy']`).
+  Ignored on the web, whose drags name no folders.
 - `disabled`: it takes nothing while true.
 - `onDragEnter`, `onDragOver` (`DropTargetDragEvent`: the point in the view,
   the action a drop would take, the kinds offered that it accepts, and
@@ -61,7 +67,9 @@ import { DropZone } from '@oxy.so/bloom/drop-zone';
   the kinds offered and the type of each file (its `DataTransferItem`s) and
   never the content, which it reads at the drop (the
   browser's protected mode); `dropEffect` follows the chosen action, and the
-  zone is left only when the pointer leaves it, not when it crosses a child.
+  zone is left only when the pointer leaves it, not when it crosses a child,
+  or at a drop anywhere in it, also one a child keeps from it (a sidebar row's
+  own drag dropped on that row).
 - **A platform whose adapter reports `drag-and-drop`** (OxyOS): the platform's
   drop target (`docs/platform-surface.mdx`). Drops come from any application,
   the content only to the target dropped on.
@@ -75,6 +83,37 @@ itself (`previewRef`), stacked with a count for several items (`count`); its
 drop on nothing a puff of smoke instead of the image sliding back. On the web
 those are the platform's alone: an HTML5 drag sets its own types in
 `dragstart` (`dataTransfer.setData`).
+
+## A drag over the window
+
+`useWindowDrag({ onEnter, onExit })` follows drags over the whole window, from
+any application: `onEnter()` when a drag first comes over it, `onExit(dropped)`
+when it has left or ended, `dropped` true when it was dropped on this window,
+told after that drop's `onDrop`. A window that opened a folder under a drag
+(a spring-loaded folder) puts itself back when the drag exits without a drop,
+as Finder does. The handlers are read when called, so they need not be
+memoised.
+
+```tsx
+useWindowDrag({
+  onExit: (dropped) => {
+    if (!dropped && sprungFrom) navigate(sprungFrom);
+    setSprungFrom(null);
+  },
+});
+```
+
+- **The web:** the document's HTML5 drag events. A drag comes over the page
+  with its first `dragenter`; it has left the page when it leaves the element
+  it last entered for nothing of the page (within the page the next element is
+  entered before the last is left, which also holds when the element under the
+  drag is replaced); a `drop` that reaches the document is dropped, a release
+  over nothing that takes it or Escape is not; a drag of the page's own ends at
+  its `dragend`, dropped when its `dropEffect` is not `none`.
+- **A platform whose adapter reports `drag-and-drop`** and has `drag.watchWindow`
+  (OxyOS): the platform says when a drag comes over the window's surfaces and
+  leaves them all (`docs/platform-surface.mdx`).
+- **Elsewhere**, or an adapter without `watchWindow`: nothing is told.
 
 ## The image of an HTML5 drag
 

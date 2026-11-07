@@ -381,6 +381,38 @@ interface SidebarTreeDrop {
   twice (a favourite, and its place) takes two keys, and `selected: true` on
   each copy marks both while it is open. Folders' rows do not move.
 
+### Rows that take drops
+
+A row's `drop` (`SidebarTreeItemDrop`: `DropZone`'s props but its style,
+`className`, children and `testID`) makes it a drop zone for what is dragged
+from any application, as a Finder sidebar place takes files: what it accepts,
+its actions, the `folder` its files go into, and its callbacks
+(`docs/drop-zone.mdx`). It works for a section's rows, at any depth, and for a
+folder's rows.
+
+```tsx
+items: places.map((place) => ({
+  key: place.uri,
+  label: place.name,
+  icon: place.icon,
+  drop: {
+    accept: ['files'],
+    actions: ['move', 'copy'],
+    folder: place.uri,
+    onDrop: ({ action, data }) => transfer(data.files, place.uri, action),
+  },
+})),
+```
+
+While a drag it would take is over it (one whose drop would do something:
+Option and Command can make a drag drop nothing), the row is drawn as Finder
+draws a sidebar row under a drag: the accent's rounded highlight across the
+row, its label, glyph and disclosure in the accent's foreground. The light goes
+out when the drag leaves, is dropped, or the row stops taking drops
+(`disabled`, or `drop` removed). The tree's own row drags (`draggable`,
+`onTreeItemDrop`) are unchanged: a row being moved is never the zone's, and an
+application's drop is never the tree's.
+
 ## Surface and size: the app's identity
 
 Two apps with the same rows should not look like the same app. That difference is two props, not a fork of this component.

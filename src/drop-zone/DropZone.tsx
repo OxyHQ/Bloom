@@ -16,6 +16,7 @@ function DropZoneComponent({
   acceptFileTypes,
   actions,
   preferredAction,
+  folder,
   disabled,
   onDragEnter,
   onDragOver,
@@ -40,6 +41,7 @@ function DropZoneComponent({
       acceptFileTypes={acceptFileTypes}
       actions={orderedActions(actions, preferredAction)}
       preferredAction={preferredAction}
+      folder={folder}
       disabled={disabled}
       onDragEnter={onDragEnter}
       onDragOver={onDragOver}

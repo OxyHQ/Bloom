@@ -142,6 +142,12 @@ export function DropZone({
       depth = Math.max(0, depth - 1);
       if (depth === 0) leave();
     };
+    // A drop anywhere in the zone ends the drag there, also one a child keeps
+    // from it (a sidebar row's own drag, dropped on that row): heard first, so
+    // the zone is left and the next drag is counted from nothing.
+    const onDropCapture = () => {
+      leave();
+    };
     const onDropEvent = (event: DragEvent) => {
       const described = describe(event);
       leave();
@@ -171,8 +177,10 @@ export function DropZone({
     node.addEventListener('dragenter', onEnter);
     node.addEventListener('dragover', onOver);
     node.addEventListener('dragleave', onLeave);
+    node.addEventListener('drop', onDropCapture, true);
     node.addEventListener('drop', onDropEvent);
     return () => {
+      node.removeEventListener('drop', onDropCapture, true);
       node.removeEventListener('dragenter', onEnter);
       node.removeEventListener('dragover', onOver);
       node.removeEventListener('dragleave', onLeave);
