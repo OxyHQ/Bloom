@@ -28,6 +28,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Platform } from 'react-native';
 
+import { hasOpenFloatingSurface } from '../floating/escape-stack';
+
 /**
  * How long to wait before commanding the focus move, in ms.
  *
@@ -121,8 +123,16 @@ export function useRestoreAccessibilityFocus(
  *
  * Only a CHANGE of `current` moves focus: the collection appearing with an item
  * already current, or a row scrolled away and back, takes nothing from where
- * the cursor is. Native only, as the hooks above.
+ * the cursor is. Nor while an anchored menu, list or dialog is open
+ * (`hasOpenFloatingSurface`): a secondary press that selects an item and opens
+ * its menu leaves the cursor in the menu, which gives it back to the item as it
+ * closes. Native only, as the hooks above.
  */
+/** An item's view takes the cursor, unless a surface opened over the collection has it. */
+function focusItemView(view: unknown): void {
+  if (!hasOpenFloatingSurface()) focusView(view);
+}
+
 export function useItemAccessibilityFocus(
   current: string | null,
 ): (key: string, view: unknown) => void {
@@ -152,7 +162,7 @@ export function useItemAccessibilityFocus(
       return;
     }
     pending.current = null;
-    const timer = setTimeout(() => focusView(view), FOCUS_SETTLE_MS);
+    const timer = setTimeout(() => focusItemView(view), FOCUS_SETTLE_MS);
     return () => clearTimeout(timer);
   }, [current]);
 
@@ -167,7 +177,7 @@ export function useItemAccessibilityFocus(
     if (mounted.current !== null) clearTimeout(mounted.current);
     mounted.current = setTimeout(() => {
       mounted.current = null;
-      focusView(view);
+      focusItemView(view);
     }, FOCUS_SETTLE_MS);
   });
   return register;

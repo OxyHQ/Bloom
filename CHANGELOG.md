@@ -7,10 +7,11 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 ### Fixed
 
 - **A native menu in a platform popup has its keys.** A native host (OxyOS) offers every key to the window's handlers before the popup, and a window's own keys (`useWindowKeys`) stand aside only while an anchored surface is open; only the web's `FloatingPanel` said it was. Dropsea's file list took ↓ and ↑, so its context menu's rows, and its row of colour swatches, never moved from the keyboard. The native `PopupPanel` (every menu, select and popover in a platform popup) now registers on the same stack (`escape-stack.ts`'s `pushFloatingEscape`) for as long as it is mounted, so `hasOpenFloatingSurface()` is true while it is open: application keys and a menu's unmodified shortcuts stand aside, and the keys reach the popup. On a native host the entry adds no listener; the popup's Escape stays its navigation's.
+- **A secondary press no longer pulls the screen reader out of the menu it opened.** `useItemAccessibilityFocus` moved the cursor to the item that became current a moment after the press, by then inside the menu that press opened: the reader said the menu, then the item, then the menu's first row. It now leaves the cursor where an open anchored surface put it (`hasOpenFloatingSurface()`); the menu gives it back to its item as it closes.
 
 ### Tests
 
-- `PopupPanelWindowKeys.test.tsx`: a list's `useWindowKeys` takes ↓ with no menu open, the open menu's rows take ↓, ↓ and Enter while the list hears nothing, and the list takes ↑ again once it closed. Red before the fix. `docs/kbd.mdx`.
+- `PopupPanelWindowKeys.test.tsx`: a list's `useWindowKeys` takes ↓ with no menu open, the open menu's rows take ↓, ↓ and Enter while the list hears nothing, and the list takes ↑ again once it closed. `accessibility-focus.test.tsx`: an item made current while a menu is open takes no cursor, and the next one after it closed does. Both red before the fix. `docs/kbd.mdx`.
 
 ### Consumers
 
