@@ -12,6 +12,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { DropZone } from '../drop-zone/DropZone.web';
+import { useWindowDrag } from '../drop-zone/use-window-drag.web';
 import type { DropTargetDragEvent, DropTargetDropEvent } from '../platform-surface/types';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -61,7 +62,7 @@ function fire(
   node: Element,
   type: string,
   dataTransfer: FakeTransfer,
-  init: { altKey?: boolean; metaKey?: boolean } = {},
+  init: { altKey?: boolean; metaKey?: boolean; relatedTarget?: EventTarget | null } = {},
 ) {
   const event = new Event(type, { bubbles: true, cancelable: true }) as Event &
     Record<string, unknown>;
@@ -213,5 +214,128 @@ describe('DropZone (web)', () => {
     expect(calls.leave).toBe(0);
     fire(child, 'dragleave', data);
     expect(calls.leave).toBe(1);
+  });
+
+  it('is left at a drop a child keeps from it, and counts the next drag from nothing', () => {
+    const { node, calls } = zone({ children: <span id="row" /> } as never);
+    const row = container.querySelector('#row');
+    if (!row) throw new Error('no row');
+    // A child's own drop (a sidebar row's drag of itself) never reaches the zone.
+    row.addEventListener('drop', (event) => event.stopPropagation());
+    const files = transfer({}, [new File(['x'], 'x.txt')]);
+    fire(node, 'dragenter', files);
+    fire(row, 'dragenter', files);
+    fire(row, 'drop', files);
+    expect(calls.leave).toBe(1);
+    expect(calls.drop).toHaveLength(0);
+    // The next drag enters and leaves through the zone itself.
+    fire(node, 'dragenter', files);
+    expect(calls.enter).toHaveLength(2);
+    fire(node, 'dragleave', files);
+    expect(calls.leave).toBe(2);
+  });
+});
+
+/** What `useWindowDrag` tells the window, written down. */
+function Watcher({ told }: { told: string[] }) {
+  useWindowDrag({
+    onEnter: () => told.push('window enter'),
+    onExit: (dropped) => told.push(`window exit ${dropped}`),
+  });
+  return null;
+}
+
+describe('useWindowDrag (web)', () => {
+  function page(told: string[], onDrop = () => told.push('zone drop')) {
+    act(() => {
+      root.render(
+        <>
+          <Watcher told={told} />
+          <DropZone testID="zone" accept={['files']} actions={['move', 'copy']} onDrop={onDrop}>
+            <span id="inside" />
+          </DropZone>
+          <span id="elsewhere" />
+        </>,
+      );
+    });
+    const get = (selector: string) => {
+      const node = container.querySelector(selector);
+      if (!node) throw new Error(`no ${selector}`);
+      return node;
+    };
+    return {
+      zone: get('[data-testid="zone"]'),
+      inside: get('#inside'),
+      elsewhere: get('#elsewhere'),
+    };
+  }
+
+  const files = () => transfer({}, [new File(['x'], 'x.txt')]);
+
+  it('says a drag entering the page once, and leaving it when it leaves for nothing of the page', () => {
+    const told: string[] = [];
+    const { zone: node, inside, elsewhere } = page(told);
+    const data = files();
+    fire(elsewhere, 'dragenter', data);
+    // Moving within the page: the next element is entered before the last is left.
+    fire(inside, 'dragenter', data);
+    fire(elsewhere, 'dragleave', data, { relatedTarget: inside });
+    fire(node, 'dragover', data);
+    expect(told).toEqual(['window enter']);
+    // Leaving the page: the element last entered is left for nothing.
+    fire(inside, 'dragleave', data, { relatedTarget: null });
+    expect(told).toEqual(['window enter', 'window exit false']);
+  });
+
+  it('is not fooled when the element under the drag is replaced (a folder sprung open)', () => {
+    const told: string[] = [];
+    const { inside, elsewhere } = page(told);
+    const data = files();
+    fire(inside, 'dragenter', data);
+    // The element entered is replaced: its leaving never reaches the document,
+    // and the drag enters what took its place.
+    const replacement = document.createElement('span');
+    container.appendChild(replacement);
+    fire(replacement, 'dragenter', data);
+    fire(elsewhere, 'dragenter', data);
+    fire(replacement, 'dragleave', data, { relatedTarget: elsewhere });
+    expect(told).toEqual(['window enter']);
+    fire(elsewhere, 'dragleave', data, { relatedTarget: null });
+    expect(told).toEqual(['window enter', 'window exit false']);
+    replacement.remove();
+  });
+
+  it('says a drop on the page after the zone’s onDrop', () => {
+    const told: string[] = [];
+    const { inside } = page(told);
+    const data = files();
+    fire(inside, 'dragenter', data);
+    fire(inside, 'dragover', data);
+    fire(inside, 'drop', data);
+    expect(told).toEqual(['window enter', 'zone drop', 'window exit true']);
+    // Its drag's own end afterwards says nothing more.
+    fire(inside, 'dragend', data);
+    expect(told).toHaveLength(3);
+  });
+
+  it('ends a drag of the page’s own at its dragend, dropped by its effect', () => {
+    const told: string[] = [];
+    const { elsewhere } = page(told);
+    const kept = files();
+    fire(elsewhere, 'dragenter', kept);
+    kept.dropEffect = 'move';
+    fire(elsewhere, 'dragend', kept);
+    const cancelled = files();
+    fire(elsewhere, 'dragenter', cancelled);
+    fire(elsewhere, 'dragend', cancelled);
+    expect(told).toEqual(['window enter', 'window exit true', 'window enter', 'window exit false']);
+  });
+
+  it('stops listening when unmounted', () => {
+    const told: string[] = [];
+    const { elsewhere } = page(told);
+    act(() => root.render(null));
+    fire(elsewhere, 'dragenter', files());
+    expect(told).toEqual([]);
   });
 });

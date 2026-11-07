@@ -595,6 +595,61 @@ export const TreeSections: Story = {
   },
 };
 
+/**
+ * Rows that take drops, as Finder's sidebar places take files: drag a file
+ * from the desktop or another application over Documents, Downloads or Shared
+ * and the row is lit with the accent while the drag is over it; at the drop
+ * the row says what arrived.
+ */
+export const TreeDrops: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [arrived, setArrived] = useState<Record<string, string>>({});
+    const place = (key: string, label: string, icon: SidebarTreeItem['icon']): SidebarTreeItem => ({
+      key,
+      label,
+      icon,
+      meta: arrived[key],
+      drop: {
+        accept: ['files'],
+        actions: ['move', 'copy'],
+        folder: `file:///home/ana/${label}`,
+        onDrop: ({ data }) =>
+          setArrived((current) => ({ ...current, [key]: String(data.files.length) })),
+      },
+    });
+    return (
+      <Frame>
+        <Sidebar
+          testID="sidebar"
+          tree={[
+            {
+              key: 'favourites',
+              label: 'Favourites',
+              items: [
+                place('documents', 'Documents', RiFolder6Line),
+                place('downloads', 'Downloads', RiFolder6Line),
+              ],
+            },
+            {
+              key: 'locations',
+              label: 'Locations',
+              folders: [
+                {
+                  key: 'network',
+                  label: 'Network',
+                  defaultOpen: true,
+                  items: [place('shared', 'Shared', undefined)],
+                },
+              ],
+            },
+          ]}
+        />
+      </Frame>
+    );
+  },
+};
+
 interface DemoPage {
   key: string;
   label: string;

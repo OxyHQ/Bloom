@@ -1,4 +1,5 @@
 import type { ComponentRef, ReactNode, Ref } from 'react';
+import type { DropZoneProps } from '../drop-zone/types';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type {
   StyleProp,
@@ -603,7 +604,22 @@ export interface SidebarTreeItem {
    * a row dropped on it goes inside. Defaults to true.
    */
   dropBeside?: boolean;
+  /**
+   * The row takes drops from any application (`DropZone`), as a Finder
+   * sidebar place takes files: what it accepts, its actions and `folder`, and
+   * its callbacks. While a drag it would take is over it, the row is drawn as
+   * Finder draws a sidebar row under a drag, the accent's rounded highlight
+   * with its label and glyph in the accent's foreground. The sidebar's own row
+   * drags (`draggable`, `onTreeItemDrop`) are unchanged.
+   */
+  drop?: SidebarTreeItemDrop;
 }
+
+/** What a tree row takes dropped on it: `DropZone`'s props but its style and children. */
+export type SidebarTreeItemDrop = Omit<
+  DropZoneProps,
+  'style' | 'className' | 'children' | 'testID'
+>;
 
 /**
  * Where a dragged tree row landed: `before` or `after` `target` (as its

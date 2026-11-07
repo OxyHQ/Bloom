@@ -116,6 +116,15 @@ export interface PlatformDropTargetProps {
   /** The actions it supports; the first is its preferred one unless `preferredAction` says. */
   readonly actions: readonly DragAction[];
   readonly preferredAction?: DragAction;
+  /**
+   * The folder files dropped on it go into, as a `file://` URI. Where the
+   * platform knows the volume each dragged file is on, a drag of files
+   * prefers a move when every one is on this folder's volume and a copy when
+   * any is not, as Finder does, if `actions` allows both; Option still forces
+   * a copy and Command a move. Absent, or a drag that says no volumes: the
+   * preferred action stands.
+   */
+  readonly folder?: string;
   /** Takes nothing while true. */
   readonly disabled?: boolean;
   onDragEnter?(event: DropTargetDragEvent): void;
@@ -206,7 +215,21 @@ export interface PlatformDrag {
    * original; files are moved by the target.
    */
   start(request: PlatformDragRequest): Promise<DragAction | null>;
+  /**
+   * Follows drags over the application's window, from any application
+   * (`useWindowDrag`): `enter` when a drag first comes over any of the
+   * window's surfaces, `exit` when it has left all of them or ended, with
+   * `dropped` true when it was dropped on one of them, told once that drop
+   * was delivered (after the target's `onDrop`). Returns the function that
+   * stops following. Absent: the platform does not say, and nothing is told.
+   */
+  watchWindow?(listener: (event: PlatformWindowDragEvent) => void): () => void;
 }
+
+/** A drag coming over the application's window, or leaving it (`PlatformDrag.watchWindow`). */
+export type PlatformWindowDragEvent =
+  | { readonly type: 'enter' }
+  | { readonly type: 'exit'; readonly dropped: boolean };
 
 /** Why the platform closed a popup without the application asking. */
 export type PopupDismissReason =

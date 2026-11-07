@@ -8,7 +8,9 @@ import type React from 'react';
 import { render, renderHook } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import { DropZone } from '../drop-zone';
+import { act } from 'react';
+
+import { DropZone, useWindowDrag } from '../drop-zone';
 import {
   offeredKinds,
   dropData,
@@ -28,6 +30,7 @@ import type {
   PlatformDragRequest,
   PlatformDropTargetProps,
   PlatformSurfaceAdapter,
+  PlatformWindowDragEvent,
 } from '../platform-surface/types';
 
 const received: PlatformDropTargetProps[] = [];
@@ -86,6 +89,24 @@ describe('DropZone (native)', () => {
     expect(received[0]).toMatchObject({ acceptFileTypes: ['image/*', 'application/pdf'] });
   });
 
+  it('hands the platform the folder files dropped on it go into', () => {
+    render(
+      <DropZone
+        accept={['files']}
+        actions={['move', 'copy']}
+        folder="file:///home/ana/Documents"
+        onDrop={() => {}}
+      >
+        <Text>Documentos</Text>
+      </DropZone>,
+      { wrapper: on(ADAPTER) },
+    );
+    expect(received[0]).toMatchObject({
+      folder: 'file:///home/ana/Documents',
+      actions: ['move', 'copy'],
+    });
+  });
+
   it('is a view that takes nothing without the capability', () => {
     const { getByText } = render(
       <DropZone accept={['files']} onDrop={() => {}}>
@@ -140,6 +161,60 @@ describe('DropZone (native)', () => {
     expect(() => renderHook(() => usePlatformDropTarget(), { wrapper: on(broken) })).toThrow(
       /reports 'drag-and-drop' without a DropTarget and a drag/,
     );
+  });
+});
+
+describe('useWindowDrag (native)', () => {
+  function watched() {
+    const listeners = new Set<(event: PlatformWindowDragEvent) => void>();
+    const adapter: PlatformSurfaceAdapter = {
+      ...ADAPTER,
+      drag: {
+        start: async () => null,
+        watchWindow: (listener) => {
+          listeners.add(listener);
+          return () => listeners.delete(listener);
+        },
+      },
+    };
+    const tell = (event: PlatformWindowDragEvent) =>
+      act(() => {
+        for (const listener of listeners) listener(event);
+      });
+    return { adapter, listeners, tell };
+  }
+
+  it('follows the platform’s drags over the window, with the latest handlers', () => {
+    const { adapter, listeners, tell } = watched();
+    const told: string[] = [];
+    const { rerender, unmount } = renderHook(
+      ({ tag }: { tag: string }) =>
+        useWindowDrag({
+          onEnter: () => told.push(`${tag} enter`),
+          onExit: (dropped) => told.push(`${tag} exit ${dropped}`),
+        }),
+      { wrapper: on(adapter), initialProps: { tag: 'a' } },
+    );
+    expect(listeners.size).toBe(1);
+    tell({ type: 'enter' });
+    tell({ type: 'exit', dropped: false });
+    // New handlers each render, not memoised: the window is watched once, the latest told.
+    rerender({ tag: 'b' });
+    expect(listeners.size).toBe(1);
+    tell({ type: 'enter' });
+    tell({ type: 'exit', dropped: true });
+    expect(told).toEqual(['a enter', 'a exit false', 'b enter', 'b exit true']);
+    unmount();
+    expect(listeners.size).toBe(0);
+  });
+
+  it('tells nothing without a platform drag or without its watchWindow', () => {
+    const onEnter = jest.fn();
+    expect(() => renderHook(() => useWindowDrag({ onEnter }))).not.toThrow();
+    expect(() =>
+      renderHook(() => useWindowDrag({ onEnter }), { wrapper: on(ADAPTER) }),
+    ).not.toThrow();
+    expect(onEnter).not.toHaveBeenCalled();
   });
 });
 
