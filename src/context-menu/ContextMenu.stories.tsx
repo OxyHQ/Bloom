@@ -16,8 +16,10 @@ import {
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
+  ContextMenuSwatchRow,
   ContextMenuTrigger,
   type ContextMenuAnchor,
+  type ContextMenuSwatch,
 } from './index';
 
 const meta: Meta = {
@@ -97,6 +99,77 @@ export const WithSelectionAndSubmenu: Story = {
             </ContextMenuSub>
           </ContextMenuContent>
         </ContextMenu>
+      </View>
+    );
+  },
+};
+
+/** A desktop's seven colour tags, as a file manager colours them. */
+const TAG_COLOURS = [
+  { key: 'red', name: 'Red', color: '#ff3b30' },
+  { key: 'orange', name: 'Orange', color: '#ff9500' },
+  { key: 'yellow', name: 'Yellow', color: '#ffcc00' },
+  { key: 'green', name: 'Green', color: '#34c759' },
+  { key: 'blue', name: 'Blue', color: '#007aff' },
+  { key: 'purple', name: 'Purple', color: '#af52de' },
+  { key: 'grey', name: 'Grey', color: '#8e8e93' },
+] as const;
+
+/**
+ * A file manager's context menu for two selected files: the colour tags as a
+ * row of swatches. Red is on both files (a tick), Blue on one of them (a dash,
+ * `mixed`). Hover or arrow onto a swatch: it shows what a press does and the
+ * caption says it. A press adds the tag to both files, or removes it from both.
+ */
+export const ColourTags: Story = {
+  parameters: { controls: { disable: true } },
+  render: function ColourTagsContextMenu() {
+    const [files, setFiles] = useState<Record<string, readonly string[]>>({
+      'notes.md': ['red', 'blue'],
+      'plan.pdf': ['red'],
+    });
+    const names = Object.keys(files);
+    const swatches: ContextMenuSwatch[] = TAG_COLOURS.map((tag) => {
+      const carrying = names.filter((name) => files[name]?.includes(tag.key)).length;
+      const state = carrying === 0 ? 'off' : carrying === names.length ? 'on' : 'mixed';
+      return {
+        ...tag,
+        state,
+        caption: state === 'on' ? `Remove Tag “${tag.name}”` : `Add Tag “${tag.name}”`,
+      };
+    });
+    const toggle = (key: string) => {
+      const removing = swatches.find((swatch) => swatch.key === key)?.state === 'on';
+      setFiles((current) =>
+        Object.fromEntries(
+          Object.entries(current).map(([name, tags]) => [
+            name,
+            removing ? tags.filter((tag) => tag !== key) : [...new Set([...tags, key])],
+          ]),
+        ),
+      );
+    };
+    return (
+      <View style={{ width: 320, maxWidth: '100%', gap: 16 }}>
+        <ContextMenu>
+          <ContextMenuTrigger label="2 items">
+            <Card style={{ maxWidth: '100%', width: 320, height: 120, justifyContent: 'center' }}>
+              <Text style={{ textAlign: 'center' }}>Right-click or long-press: 2 items</Text>
+            </Card>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem>Open</ContextMenuItem>
+            <ContextMenuItem>Get Info</ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuSwatchRow accessibilityLabel="Tags" swatches={swatches} onSelect={toggle} />
+            <ContextMenuItem>Tags…</ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+        {names.map((name) => (
+          <Text key={name}>
+            {name}: {files[name]?.join(', ') || 'no tags'}
+          </Text>
+        ))}
       </View>
     );
   },

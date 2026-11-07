@@ -28,6 +28,7 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuSwatchRow,
   DropdownMenuTrigger,
 } from './index';
 
@@ -408,4 +409,51 @@ export const ScopedLongMenu: Story = {
       </View>
     </BloomScope>
   ),
+};
+
+/**
+ * A row of swatches that stays open (`keepOpen`), under a group label, and the
+ * same row in a submenu: ← and → move between swatches there, and ← from the
+ * first one closes the submenu as from any row.
+ */
+export const Swatches: Story = {
+  render: function SwatchesMenu() {
+    const [on, setOn] = useState<readonly string[]>(['blue']);
+    const swatches = [
+      { key: 'red', name: 'Red', color: '#ff3b30' },
+      { key: 'green', name: 'Green', color: '#34c759' },
+      { key: 'blue', name: 'Blue', color: '#007aff' },
+      { key: 'purple', name: 'Purple', color: '#af52de', disabled: true },
+    ].map((swatch) => {
+      const state = on.includes(swatch.key) ? ('on' as const) : ('off' as const);
+      return { ...swatch, state, caption: `${state === 'on' ? 'Remove' : 'Add'} ${swatch.name}` };
+    });
+    const toggle = (key: string) =>
+      setOn((current) =>
+        current.includes(key) ? current.filter((each) => each !== key) : [...current, key],
+      );
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>Label colour</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuLabel>Colour</DropdownMenuLabel>
+          <DropdownMenuSwatchRow
+            accessibilityLabel="Colour"
+            swatches={swatches}
+            onSelect={toggle}
+            keepOpen
+          />
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>More colours</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuSwatchRow swatches={swatches} onSelect={toggle} />
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  },
 };

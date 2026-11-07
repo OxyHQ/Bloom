@@ -47,6 +47,15 @@ export const MENU_ROW_SELECTOR =
 const MENU_PANEL_SELECTOR = '[role="menu"]';
 
 /**
+ * A row made of several controls side by side (a row of swatches), each a menu
+ * row to assistive technology: ↓ and ↑ stop on it ONCE, at the control marked
+ * `data-bloom-menu-entry` (the one it last had, else its first), and the row
+ * moves between its own controls with ← and →.
+ */
+export const MENU_ROW_GROUP_SELECTOR = '[data-bloom-menu-row-group]';
+const MENU_ROW_ENTRY_ATTRIBUTE = 'data-bloom-menu-entry';
+
+/**
  * `'panel'` focuses the menu itself with no row active, the way a desktop menu
  * opens from code: nothing is highlighted, and ↓ / ↑ then land on the first /
  * last row.
@@ -236,9 +245,31 @@ function menuRows(panel: Element): HTMLElement[] {
   const owner = panel.closest(MENU_PANEL_SELECTOR) ?? panel;
   // Rows in an inert subtree (a menu bar's menu leaving its panel, `menubar/viewport.tsx`) are
   // no rows of the menu: they cannot take focus.
-  return rovingItems(owner, MENU_ROW_SELECTOR, { owner: MENU_PANEL_SELECTOR }).filter(
+  const rows = rovingItems(owner, MENU_ROW_SELECTOR, { owner: MENU_PANEL_SELECTOR }).filter(
     (row) => row.closest('[inert]') === null,
   );
+  // A row of several controls is one stop: its entry control stands for it.
+  const groups = new Set<Element>();
+  const stops: HTMLElement[] = [];
+  for (const row of rows) {
+    const group = row.closest(MENU_ROW_GROUP_SELECTOR);
+    if (!group) {
+      stops.push(row);
+      continue;
+    }
+    if (groups.has(group)) continue;
+    groups.add(group);
+    const members = rows.filter((each) => each.closest(MENU_ROW_GROUP_SELECTOR) === group);
+    stops.push(members.find((each) => each.hasAttribute(MENU_ROW_ENTRY_ATTRIBUTE)) ?? row);
+  }
+  return stops;
+}
+
+/** The row standing for `current` in `rows`: itself, or its group's entry control. */
+function standingFor(rows: readonly HTMLElement[], current: Element | null): Element | null {
+  const group = current?.closest(MENU_ROW_GROUP_SELECTOR) ?? null;
+  if (!group) return current;
+  return rows.find((row) => row.closest(MENU_ROW_GROUP_SELECTOR) === group) ?? current;
 }
 
 /**
@@ -307,7 +338,8 @@ export function useMenuPanelKeys(
       const move = rovingMove(event.key, { orientation: 'vertical', homeEnd: true });
       if (move === null) return;
       event.preventDefault();
-      rovingTarget(menuRows(panel), current, move, true)?.focus();
+      const rows = menuRows(panel);
+      rovingTarget(rows, standingFor(rows, current), move, true)?.focus();
     };
     panel.addEventListener('keydown', onKeyDown);
     return () => panel.removeEventListener('keydown', onKeyDown);

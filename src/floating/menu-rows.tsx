@@ -61,6 +61,7 @@ import { useMenuPalette } from './menu-palette';
 import { menuType, menuTypeClass } from './menu-type';
 import { cx, MenuRowShell, splitChildren } from './shared';
 import { useMenuRowAlignment } from './menu-row-alignment';
+import { MenuSwatchRow } from './menu-swatch-row';
 
 const NO_ROW_TRAITS = { gutter: false, leading: false } as const;
 import type {
@@ -73,6 +74,7 @@ import type {
   MenuRowProps,
   MenuShortcutProps,
   MenuSubFactory,
+  MenuSwatchRowProps,
 } from './types';
 
 /**
@@ -381,6 +383,11 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
   }
   MenuGroup.displayName = `${prefix}Group`;
 
+  function MenuSwatchRowPart(props: MenuSwatchRowProps) {
+    return <MenuSwatchRow {...props} />;
+  }
+  MenuSwatchRowPart.displayName = `${prefix}SwatchRow`;
+
   return {
     Item: MenuItem,
     CheckboxItem: MenuCheckboxItem,
@@ -390,6 +397,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     Separator: MenuSeparator,
     Shortcut: MenuShortcut,
     Group: MenuGroup,
+    SwatchRow: MenuSwatchRowPart,
     ...createSub(prefix),
   };
 }

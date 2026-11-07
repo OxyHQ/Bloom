@@ -91,6 +91,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
+  DropdownMenuSwatchRow,
 } from '../dropdown-menu';
 import { MenuSurfaceProvider } from '../floating/context';
 import { DialogLargeTitle, useDialogHeaderController } from '../dialog/DialogHeader';
@@ -974,6 +975,36 @@ describe('menu rows spell their state per role', () => {
       ),
     );
     expect(byTestId(c, 'row').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('a swatch row: each swatch a named menuitemcheckbox, checked true, false or mixed', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuSwatchRow
+          accessibilityLabel="Tags"
+          onSelect={() => {}}
+          testID="tags"
+          swatches={[
+            { key: 'red', color: '#ff3b30', name: 'Red', state: 'on' },
+            { key: 'blue', color: '#007aff', name: 'Blue', state: 'off' },
+            { key: 'grey', color: '#8e8e93', name: 'Grey', state: 'mixed' },
+          ]}
+        />,
+      ),
+    );
+    const swatches = ['red', 'blue', 'grey'].map((key) => byTestId(c, `tags-${key}`));
+    expect(swatches.map((el) => el.getAttribute('role'))).toEqual([
+      'menuitemcheckbox',
+      'menuitemcheckbox',
+      'menuitemcheckbox',
+    ]);
+    expect(swatches.map((el) => el.getAttribute('aria-label'))).toEqual(['Red', 'Blue', 'Grey']);
+    expect(swatches.map((el) => el.getAttribute('aria-checked'))).toEqual([
+      'true',
+      'false',
+      'mixed',
+    ]);
+    expect(byTestId(c, 'tags').getAttribute('aria-label')).toBe('Tags');
   });
 
   it('a checkbox row emits aria-checked, which is what ARIA allows there', () => {

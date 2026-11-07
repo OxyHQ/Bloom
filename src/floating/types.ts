@@ -404,6 +404,57 @@ export interface MenuRadioRowProps
   indicatorPosition?: 'leading' | 'trailing';
 }
 
+/**
+ * A swatch's state for the selection it acts on: every item has what it
+ * stands for (`on`), none does (`off`), or some do (`mixed`).
+ */
+export type MenuSwatchState = 'on' | 'off' | 'mixed';
+
+/** One swatch of a {@link MenuSwatchRowProps} row: a colour tag, say. */
+export interface MenuSwatch {
+  /** What `onSelect` receives; unique in the row. */
+  key: string;
+  /**
+   * Its fill, a hex (`#ff3b30`) or `rgb()` colour. Bloom draws its glyph in
+   * white or near-black, whichever reads on it, and rings it with its own hue
+   * pulled toward the panel's opposite; a colour of another form is drawn as
+   * given, with a white glyph and the panel's border as its ring.
+   */
+  color: string;
+  /** Its accessible name ("Red"): what a screen reader says, with its checked state. */
+  name: string;
+  state: MenuSwatchState;
+  /**
+   * What pressing it does, in the application's words ("Add Tag “Red”",
+   * "Remove Tag “Red”"), shown under the row while the swatch is under the
+   * pointer or the keyboard. Not drawn in a touch sheet, which has no hover.
+   */
+  caption?: string;
+  disabled?: boolean;
+}
+
+/**
+ * A row of colour swatches in a menu, as a desktop file manager shows its
+ * colour tags: each a `menuitemcheckbox` named by its `name`, checked by its
+ * `state`. One stop for the menu's ↓ and ↑; ← and → move between swatches.
+ */
+export interface MenuSwatchRowProps {
+  swatches: readonly MenuSwatch[];
+  /** A swatch was pressed (pointer, Enter or Space): its `key`. */
+  onSelect: (key: string) => void;
+  /** Keep the menu open after a press. Defaults to closing it, like any row. */
+  keepOpen?: boolean;
+  /** Disables every swatch. */
+  disabled?: boolean;
+  /** The row's name as a group ("Tags"), for assistive technology. */
+  accessibilityLabel?: string;
+  /** Appended to the row's own classes — see {@link MenuRowProps.className}. */
+  className?: string;
+  style?: StyleProp<ViewStyle>;
+  /** The row's; each swatch's is `${testID}-${key}`. */
+  testID?: string;
+}
+
 export interface MenuLabelProps {
   children?: React.ReactNode;
   inset?: boolean;
@@ -502,4 +553,5 @@ export interface MenuRowParts extends MenuSubParts {
   Separator: React.ComponentType<Record<string, never>>;
   Shortcut: React.ComponentType<MenuShortcutProps>;
   Group: React.ComponentType<MenuGroupProps>;
+  SwatchRow: React.ComponentType<MenuSwatchRowProps>;
 }

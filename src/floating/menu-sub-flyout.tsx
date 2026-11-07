@@ -727,7 +727,8 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       };
       const onKeyDown = (event: Event) => {
         const key = (event as KeyboardEvent).key;
-        if (key !== 'ArrowLeft') return;
+        // A row of several controls inside took ← to move between them (`menu-swatch-row.tsx`).
+        if (key !== 'ArrowLeft' || event.defaultPrevented) return;
         event.preventDefault();
         sub.closeAndRefocus();
       };
