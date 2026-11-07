@@ -1,3 +1,4 @@
+import { resolveVectorEyeInk } from './vector-eye-ink';
 import { projectReferenceFacePoint, referenceFaceDepth } from './vector-face';
 import type { ResolvedAvatarCharacter } from './character';
 import { CHARACTER_COLORS } from './character-colors';
@@ -349,10 +350,20 @@ function paint(data: VectorData, character: ResolvedAvatarCharacter): VectorData
     'bodyColor' in character.paint
       ? character.paint.bodyColor
       : CHARACTER_COLORS[character.paint.color];
+  const readableEyeInk = data.referenceFace
+    ? resolveVectorEyeInk(
+        data.parts.filter((p) => p.role === 'eye').map((p) => p.color),
+        color,
+      )
+    : undefined;
   return {
     ...data,
     parts: data.parts.map((p) =>
-      p.role === 'body' || p.role === 'hand' || p.bodyPaint ? { ...p, color } : p,
+      p.role === 'body' || p.role === 'hand' || p.bodyPaint
+        ? { ...p, color }
+        : p.role === 'eye' && readableEyeInk
+          ? { ...p, color: readableEyeInk }
+          : p,
     ),
   };
 }

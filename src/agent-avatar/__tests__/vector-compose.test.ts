@@ -272,3 +272,46 @@ it('fits a custom pair as one group instead of squeezing it into native capsule 
     (center(donor.parts[2]!) - center(donor.parts[1]!)) / width(donor.parts[1]!),
   );
 });
+
+it('keeps single-ink expressions readable on a dark flat body and restores their original ink on repaint', async () => {
+  const source = asset();
+  source.referenceFace = { center: [0, 0], radius: 1, gazeScale: 0.4 };
+  const loader = loaders();
+  loader.template = jest.fn(async () => source);
+  const dark = await composeVectorCharacter(
+    { ...character(), paint: { bodyColor: '#171717' } },
+    loader,
+  );
+  expect(dark.parts.filter((p) => p.role === 'eye').map((p) => p.color)).toEqual([
+    '#f6f7f2',
+    '#f6f7f2',
+  ]);
+  const bright = await composeVectorCharacter(
+    { ...character(), paint: { bodyColor: '#ffcc38' } },
+    loader,
+  );
+  expect(bright.parts.filter((p) => p.role === 'eye').map((p) => p.color)).toEqual([
+    '#101010',
+    '#101010',
+  ]);
+  expect(source.parts[1]!.color).toBe('#101010');
+  source.parts[2]!.color = '#ffffff';
+  const multicolor = await composeVectorCharacter(
+    { ...character(), paint: { bodyColor: '#171717' } },
+    loader,
+  );
+  expect(multicolor.parts.filter((p) => p.role === 'eye').map((p) => p.color)).toEqual([
+    '#101010',
+    '#ffffff',
+  ]);
+  delete source.referenceFace;
+  source.parts[2]!.color = '#101010';
+  const approved = await composeVectorCharacter(
+    { ...character(), paint: { bodyColor: '#171717' } },
+    loader,
+  );
+  expect(approved.parts.filter((p) => p.role === 'eye').map((p) => p.color)).toEqual([
+    '#101010',
+    '#101010',
+  ]);
+});
