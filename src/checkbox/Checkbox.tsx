@@ -40,6 +40,12 @@ import { IS_WEB } from '../styles/platform';
  * scale.
  */
 
+/**
+ * The label's column beside the box: its own width, shrinking to what the row leaves (and then
+ * wrapping), never growing.
+ */
+const LABEL_STYLE = { flexShrink: 1, minWidth: 0 } as const;
+
 /** Space between the label and the description under it. */
 const DESCRIPTION_GAP = 2;
 
@@ -175,8 +181,11 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
         marginTop={hasText ? (checkboxLabelLineHeight(size) - sizeConfig.box) / 2 : 0}
       />
 
+      {/* The label as wide as its words, at most what is left: a control beside others in a
+          row (a settings row's name, its menu) keeps theirs. `flex: 1` grew it to the whole
+          row on a native layout, which sizes a row's child to the space it is offered. */}
       {hasText && (
-        <View style={{ flex: 1 }}>
+        <View style={LABEL_STYLE}>
           {labelContent != null ? (
             <View
               pointerEvents="none"

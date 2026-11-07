@@ -88,6 +88,12 @@ const STYLE_ID = 'bloom-radio-web-css';
 const ROW = '[data-bloom-radio]';
 const DOT = '[data-bloom-radio-dot]';
 
+/**
+ * The label's column beside the box: its own width, shrinking to what the row leaves (and then
+ * wrapping), never growing. As `Checkbox`'s.
+ */
+const LABEL_STYLE = { flexShrink: 1, minWidth: 0 } as const;
+
 const BLOOM_RADIO_CSS = `@layer base {${interactiveWebCss({
   selector: ROW,
   varPrefix: 'bloom-radio',
@@ -222,8 +228,11 @@ const RadioComponent = function Radio<Value extends string = string>({
         />
       </View>
 
+      {/* The label as wide as its words, at most what is left: a control beside others in a
+          row (a settings row's name, its menu) keeps theirs. `flex: 1` grew it to the whole
+          row on a native layout, which sizes a row's child to the space it is offered. */}
       {hasText && (
-        <View style={{ flex: 1 }}>
+        <View style={LABEL_STYLE}>
           {labelContent != null ? (
             <View
               pointerEvents="none"

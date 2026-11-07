@@ -2,6 +2,20 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.19.3
+
+### Fixed
+
+- **A labelled `Checkbox` or `Radio` is as wide as its label on native.** Its label's column was `flex: 1`, and a native layout (Yoga) sizes a row's child to the space the row offers it: a labelled checkbox beside other views in a row took the whole row and pushed them out (Dropsea's Settings › Tags rows on OxyOS: the tag's name had no width, its menu was drawn outside the panel). The column now shrinks to what the row leaves, and wraps there, and never grows (`flexShrink: 1`, `minWidth: 0`). A control alone in a column is drawn as before; on the web it was already sized to its words.
+
+### Tests
+
+- `ChoiceLabelWidth.test.tsx`: a labelled checkbox's and a radio's label column shrink and never grow. Red before the fix.
+
+### Consumers
+
+Bump to 17.19.3. A labelled checkbox or radio in a row now leaves its siblings their room; nothing changes for one alone in a column.
+
 ## 17.19.2
 
 ### Fixed
