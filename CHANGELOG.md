@@ -2,6 +2,20 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.19.2
+
+### Fixed
+
+- **A native menu in a platform popup has its keys.** A native host (OxyOS) offers every key to the window's handlers before the popup, and a window's own keys (`useWindowKeys`) stand aside only while an anchored surface is open; only the web's `FloatingPanel` said it was. Dropsea's file list took ↓ and ↑, so its context menu's rows, and its row of colour swatches, never moved from the keyboard. The native `PopupPanel` (every menu, select and popover in a platform popup) now registers on the same stack (`escape-stack.ts`'s `pushFloatingEscape`) for as long as it is mounted, so `hasOpenFloatingSurface()` is true while it is open: application keys and a menu's unmodified shortcuts stand aside, and the keys reach the popup. On a native host the entry adds no listener; the popup's Escape stays its navigation's.
+
+### Tests
+
+- `PopupPanelWindowKeys.test.tsx`: a list's `useWindowKeys` takes ↓ with no menu open, the open menu's rows take ↓, ↓ and Enter while the list hears nothing, and the list takes ↑ again once it closed. Red before the fix. `docs/kbd.mdx`.
+
+### Consumers
+
+Bump to 17.19.2. Nothing to change: an application's keys no longer take a key meant for an open native menu.
+
 ## 17.19.0
 
 ### Added
