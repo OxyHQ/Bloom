@@ -154,7 +154,7 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
                   section={section}
                   nests={nests}
                   searching={searching}
-                  selectedTreeItem={selectedTreeItem}
+                  selectedTreeItem={selectionWithin(item, selectedTreeItem)}
                   onTreeItemPress={onTreeItemPress}
                   palette={palette}
                 />
@@ -361,6 +361,18 @@ const MOVE_KEYS: Record<string, TreeMove> = {
   ArrowRight: 'in',
   ArrowLeft: 'out',
 };
+
+/**
+ * The selected row's key as `row` sees it: when it is the row or nests under it, else none. A
+ * row's `selectedTreeItem` then changes only when the selection moves onto, off or within it, so
+ * a selection moving draws again the rows it moves between and their parents, not every row.
+ */
+function selectionWithin(row: SidebarTreeItem, selected: string | undefined): string | undefined {
+  if (selected === undefined || row.key === selected) return selected;
+  return row.items?.some((child) => selectionWithin(child, selected) !== undefined)
+    ? selected
+    : undefined;
+}
 
 const TreeRow = memo(function TreeRow({
   item,
@@ -738,7 +750,7 @@ const TreeRow = memo(function TreeRow({
                   section={section}
                   nests={nests}
                   searching={searching}
-                  selectedTreeItem={selectedTreeItem}
+                  selectedTreeItem={selectionWithin(child, selectedTreeItem)}
                   onTreeItemPress={onTreeItemPress}
                   palette={palette}
                 />

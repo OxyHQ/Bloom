@@ -2,6 +2,19 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.20.2
+
+### Fixed
+
+- **A sidebar tree's selection moving draws only the rows it moves between.** Every `TreeRow` was handed `selectedTreeItem`, so a selection moving drew every row of the tree again, with its icon, its `leading`, its `actions` and its drop target, though only two changed. A row now sees the selection only when it is the row or nests under it (and the rows above it, which pass it down): with a `tree` kept the same objects while what it shows is the same, going to another place draws two rows. Dropsea's sidebar drew 18 rows and their 350 components at every navigation; going back to a folder on OxyOS spent a fifth of its JavaScript there (OxyOS's `perf-dropsea-scaled`, step 19).
+
+### Tests
+
+- `SidebarTreeSelectionRenders.test.tsx` (native): moving the selection draws again exactly the two rows it moves between, a nested row draws only its branch and the row it leaves, and keeping it draws nothing. Red before the fix.
+
+### Consumers
+
+Bump to 17.20.2. Keep `tree` and `onTreeItemPress` stable across renders (memoised, or compiled by the React Compiler) to have it: a tree made anew at each render still draws every row.
 ## 17.20.1
 
 ### Fixed
