@@ -15,6 +15,7 @@ Releases before 15.50.0 are described in their pull requests and in git history.
 ### Consumers
 
 Bump to 17.19.3. A labelled checkbox or radio in a row now leaves its siblings their room; nothing changes for one alone in a column.
+
 ## 17.19.2
 
 ### Fixed
