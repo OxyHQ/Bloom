@@ -106,6 +106,73 @@ export const Basic: Story = {
 };
 
 /**
+ * Rows chosen from a sub-menu with the mouse: a radio group (View › Sort By), a
+ * checkbox and plain rows (File › Tags). The sub-menu's flyout is a panel of its
+ * own, so a press on its row must count as inside the bar's menu, or the menu
+ * closes on the press before the click chooses the row.
+ */
+export const SubmenuRows: Story = {
+  name: 'Sub-menu rows',
+  parameters: { controls: { disable: true } },
+  render: function SubmenuRowsMenubar() {
+    const [sort, setSort] = useState('name');
+    const [folders, setFolders] = useState(false);
+    const [tag, setTag] = useState('none');
+    return (
+      <View style={{ padding: 40, gap: 16 }}>
+        <Text testID="result">{`sort: ${sort} · folders first: ${folders} · tag: ${tag}`}</Text>
+        <Menubar>
+          <MenubarMenu value="file">
+            <MenubarTrigger testID="menubar-file">File</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem>New Folder</MenubarItem>
+              <MenubarSub>
+                <MenubarSubTrigger testID="menubar-tags">Tags</MenubarSubTrigger>
+                <MenubarSubContent testID="menubar-tags-panel">
+                  <MenubarItem testID="menubar-tag-red" onPress={() => setTag('red')}>
+                    Red
+                  </MenubarItem>
+                  <MenubarItem testID="menubar-tag-blue" onPress={() => setTag('blue')}>
+                    Blue
+                  </MenubarItem>
+                </MenubarSubContent>
+              </MenubarSub>
+            </MenubarContent>
+          </MenubarMenu>
+          <MenubarMenu value="view">
+            <MenubarTrigger testID="menubar-view">View</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem>As Icons</MenubarItem>
+              <MenubarSub>
+                <MenubarSubTrigger testID="menubar-sort">Sort By</MenubarSubTrigger>
+                <MenubarSubContent testID="menubar-sort-panel">
+                  <MenubarRadioGroup value={sort} onValueChange={setSort}>
+                    <MenubarRadioItem testID="menubar-sort-name" value="name">
+                      Name
+                    </MenubarRadioItem>
+                    <MenubarRadioItem testID="menubar-sort-size" value="size">
+                      Size
+                    </MenubarRadioItem>
+                  </MenubarRadioGroup>
+                  <MenubarSeparator />
+                  <MenubarCheckboxItem
+                    testID="menubar-folders-first"
+                    checked={folders}
+                    onCheckedChange={setFolders}
+                  >
+                    Folders First
+                  </MenubarCheckboxItem>
+                </MenubarSubContent>
+              </MenubarSub>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
+      </View>
+    );
+  },
+};
+
+/**
  * Controlled: the bar's `value` IS the open menu, so switching menus is a single
  * state write rather than a close followed by an open.
  */

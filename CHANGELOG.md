@@ -2,6 +2,20 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.19.4
+
+### Fixed
+
+- **A row in a web menubar menu's submenu runs when it is clicked.** The in-window `Menubar`'s panel is the one non-modal menu: it closes on an outside `pointerdown` heard on the document, and a submenu's flyout, a panel in a portal of its own, was outside it in the DOM. A press on a `MenubarSubContent` row closed the whole menu on its `pointerdown`, before the click, so the row never ran (View › Sort By › Size left Name checked; File › Tags › Red did nothing). A context menu's submenus were unaffected: a modal menu dismisses through its backdrop, which the flyout sits above. Every anchored surface now counts the surfaces opened from inside it, at any depth, as inside it for that press (`floating/floating-tree.ts`); the other non-modal surfaces (`Popover modal={false}`, a hover-activated `DropdownMenu`, `HoverCard`, the composer's panels) follow the same rule for what is opened from them. A press outside them all still closes the menu.
+
+### Tests
+
+- `MenubarSubmenuPress.web.test.tsx`: a radio, a checkbox and a plain submenu row chosen by the events a browser sends (`pointerdown`, `mousedown`, `pointerup`, `mouseup`, `click`), and a press outside still closing the menu. Browser gate `scripts/verify-menubar-submenu-press.mjs` (real mouse, keyboard and touch, story `Menubar/Sub-menu rows`). `docs/menubar.mdx`, `docs/popover.mdx`.
+
+### Consumers
+
+Bump to 17.19.4. Nothing to change.
+
 ## 17.19.3
 
 ### Fixed
