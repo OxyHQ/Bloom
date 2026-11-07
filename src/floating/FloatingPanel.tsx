@@ -108,6 +108,7 @@ import {
 import { parseRgba } from '../theme/color-utils';
 import { useMenuPalette } from './menu-palette';
 import { pushFloatingEscape } from './escape-stack';
+import { FloatingTreeProvider, useFloatingTree } from './floating-tree';
 import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
 import { rectOf } from './use-anchor-rect';
@@ -300,6 +301,9 @@ export function FloatingPanel({
     setPanelNode(node);
     panelRefRef.current?.(node);
   }, []);
+  // This panel and every surface opened from inside it, though each sits in a
+  // portal of its own (`floating-tree.ts`).
+  const { tree, owns } = useFloatingTree(panelNode as unknown as Node | null);
 
   const store = useCallback((next: DropdownPlacement | null) => {
     if (samePlacement(published.current, next)) return;
@@ -547,16 +551,18 @@ export function FloatingPanel({
   // The NON-modal outside press. Deliberately `pointerdown` in the CAPTURE
   // phase and never `preventDefault`: the surface has to be gone before the
   // click resolves, and the click itself has to carry on to whatever is under
-  // it. The anchor is excluded by GEOMETRY rather than by node, because a
-  // context menu's anchor is a bare point with no element behind it — and
-  // excluding it is what lets a trigger keep toggling its own surface closed
-  // instead of reopening it after this handler shut it.
+  // it. "Outside" is outside this panel AND every surface opened from inside
+  // it: a sub-menu's flyout is a panel in a portal of its own, and a press on
+  // its row read as outside closed the menu before the click could choose the
+  // row (`floating-tree.ts`). The anchor is excluded by GEOMETRY rather than by
+  // node, because a context menu's anchor is a bare point with no element
+  // behind it — and excluding it is what lets a trigger keep toggling its own
+  // surface closed instead of reopening it after this handler shut it.
   useEffect(() => {
     if (phase !== 'open' || !dismissible || modal || typeof document === 'undefined') return;
     const onPointerDown = (event: PointerEvent) => {
-      const node = panelNode as unknown as Node | null;
       const target = event.target as Node | null;
-      if (node && target && node.contains(target)) return;
+      if (target && owns(target)) return;
       const context = contextRef?.current as unknown as Node | null;
       if (context && target && context.contains(target)) return;
       if (
@@ -572,7 +578,7 @@ export function FloatingPanel({
     };
     document.addEventListener('pointerdown', onPointerDown, true);
     return () => document.removeEventListener('pointerdown', onPointerDown, true);
-  }, [phase, dismissible, modal, onDismiss, panelNode, anchor, contextRef]);
+  }, [phase, dismissible, modal, onDismiss, owns, anchor, contextRef]);
 
   if (phase === 'closed') return null;
   if (phase === 'open' && !anchor) return null;
@@ -673,22 +679,24 @@ export function FloatingPanel({
             exists for.
           */}
           <SurfaceLevelProvider level={transparentFill ? 0 : 1} fill={publishedFill}>
-            <View style={styles.content}>
-              {scroll === 'external' ? (
-                children
-              ) : (
-                <ScrollArea
-                  ref={scrollRef}
-                  style={{ flexShrink: 1, minHeight: 0 }}
-                  contentContainerStyle={{
-                    gap: callerStyle?.gap ?? density.gap,
-                  }}
-                  keyboardShouldPersistTaps="handled"
-                >
-                  {children}
-                </ScrollArea>
-              )}
-            </View>
+            <FloatingTreeProvider value={tree}>
+              <View style={styles.content}>
+                {scroll === 'external' ? (
+                  children
+                ) : (
+                  <ScrollArea
+                    ref={scrollRef}
+                    style={{ flexShrink: 1, minHeight: 0 }}
+                    contentContainerStyle={{
+                      gap: callerStyle?.gap ?? density.gap,
+                    }}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {children}
+                  </ScrollArea>
+                )}
+              </View>
+            </FloatingTreeProvider>
           </SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>

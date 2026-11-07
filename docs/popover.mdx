@@ -143,7 +143,7 @@ Escape stops at the innermost open surface, so a popover opened from inside a di
 
 By default the outside press is caught by a transparent backdrop (it closes the popover and goes no further), so a popover opened inside a dialog cannot dismiss the dialog with the same click.
 
-`<Popover modal={false}>` lays down no backdrop: the outside press still closes the popover, and it also reaches whatever is under it. Use it for a panel that sits beside a control the user keeps working in — an @-mention picker under a text field, where a backdrop made the first click in the field only close the picker. It is the same option `Menubar` and `HoverCard` use. Web only: the native popover is a bottom sheet, which is always modal, or a platform popup, which a press outside always closes.
+`<Popover modal={false}>` lays down no backdrop: the outside press still closes the popover, and it also reaches whatever is under it. Use it for a panel that sits beside a control the user keeps working in — an @-mention picker under a text field, where a backdrop made the first click in the field only close the picker. A press on a surface opened from inside the popover (a menu, a submenu's flyout, a select's list, each in a portal of its own) counts as inside it. It is the same option `Menubar` and `HoverCard` use. Web only: the native popover is a bottom sheet, which is always modal, or a platform popup, which a press outside always closes.
 
 ## The panel publishes its surface
 

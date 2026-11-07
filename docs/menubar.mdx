@@ -88,6 +88,8 @@ On a phone each menu is still its own bottom sheet: a sheet covers the bar, so t
 
 Sub-menus fly out beside their trigger row on web and on a native desktop, and render as an inline disclosure in a phone's sheet — see [DropdownMenu](/docs/bloom/main/dropdown-menu).
 
+On the web the bar's panel has no backdrop: it closes on a press outside it, heard as the document's `pointerdown`. A submenu's flyout is a panel in a portal of its own, so the panel counts every surface opened from inside it (at any depth) as inside (`floating/floating-tree.ts`); a press on a submenu's row reaches its click and runs the row. Before 17.19.4 the menu closed on that `pointerdown` and the row never ran. Browser gate: `scripts/verify-menubar-submenu-press.mjs` (story `Menubar/Sub-menu rows`).
+
 ## Shortcuts
 
 `MenubarItem`, `MenubarCheckboxItem` and `MenubarRadioItem` take a `shortcut`: a key chord, `+`-separated modifiers and then one key.
