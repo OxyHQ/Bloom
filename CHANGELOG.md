@@ -2,6 +2,19 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.20.1
+
+### Fixed
+
+- **A `LinkButton` is its label's height on native.** A button's content wrapper grows (`flexGrow: 1`) to fill the button's height, which every sized button has. A `LinkButton` has none (it is its label's line box), and React Native's classic Yoga stretches a growing child to the height available to its parent: a link in a column became thousands of points tall, its label centred far below, everything after it pushed off the screen (the Oxy sign-in's "Check your email" on OxyOS: "Does your code have letters?" 2985 points tall, Continue out of sight). The content now grows only into a height the button has, its size's or one its caller gives it (`height`, `minHeight`, `flex`, `flexGrow`). The web already sized it to its words.
+
+### Tests
+
+- `Button.test.tsx`: a `LinkButton`'s content does not grow, a sized button's and a `LinkButton` given a height still do. Red before the fix.
+
+### Consumers
+
+Bump to 17.20.1. Nothing to change.
 ## 17.20.0
 
 ### Added
