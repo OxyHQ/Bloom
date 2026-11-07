@@ -1,3 +1,3 @@
 export { Search } from './Search';
 
-export type { SearchProps } from './types';
+export type { SearchProps, SearchToken } from './types';

@@ -762,6 +762,151 @@ export interface PlatformFiles {
 }
 
 /**
+ * What a search result is, by kind, as the person picks it in a search field's
+ * filters (Finder's "Kind"): an application, a page of Settings, a folder, a
+ * document by its kind (`pdf`, `text`, `source` code, `presentation`,
+ * `spreadsheet`), media (`image`, `movie`, `music`), an `archive`, an
+ * application's own item (`contact`, `event`, `mail`, `message`) or anything
+ * else (`other`).
+ */
+export type PlatformSearchCategory =
+  | 'application'
+  | 'settings'
+  | 'folder'
+  | 'document'
+  | 'pdf'
+  | 'text'
+  | 'source'
+  | 'presentation'
+  | 'spreadsheet'
+  | 'image'
+  | 'movie'
+  | 'music'
+  | 'archive'
+  | 'contact'
+  | 'event'
+  | 'mail'
+  | 'message'
+  | 'other';
+
+/** A search field's token (Finder's "Kind: PDF"), a filter the person chose. */
+export type PlatformSearchToken =
+  | { kind: 'category'; value: PlatformSearchCategory }
+  | { kind: 'tag'; value: string }
+  | { kind: 'date'; value: 'today' | 'yesterday' | 'week' | 'month' | 'year' }
+  | { kind: 'name'; value: string };
+
+/**
+ * A question to the platform's index (`PlatformSearch.query`), as a Mac's
+ * `NSMetadataQuery` asks Spotlight: the words typed, the filters chosen and
+ * where to look.
+ */
+export type PlatformSearchQuery = {
+  /** What the person typed: words matched as prefixes of words in names and contents, "quoted phrases", and typed filters (kind:pdf, tag:Work, date:today, name:report). */
+  text: string;
+  /** The filters the person chose as tokens; every one must match. */
+  tokens?: readonly PlatformSearchToken[];
+  /** Only items inside these folders (file:// URIs), recursively. */
+  within?: readonly string[];
+  /** Only these categories. */
+  categories?: readonly PlatformSearchCategory[];
+  /** At most this many items (the platform's default 60, at most 200). */
+  limit?: number;
+  /** The language titles are given in (a BCP 47 tag); the platform's own when absent. */
+  language?: string;
+};
+
+/**
+ * One result: a file or folder, an application, a page of Settings, or an
+ * application's own item it donated (`PlatformSearch.index`).
+ */
+export type PlatformSearchItem = {
+  /** Stable while the item exists: a file's URI, `application:<id>`, `settings:<page>`, `<application id>:<its id>` for an application's own items. */
+  id: string;
+  /** What it is. */
+  category: PlatformSearchCategory;
+  /** Its name as the person reads it, in the query's language. */
+  title: string;
+  /** A file's or folder's file:// URI. */
+  uri?: string;
+  /** What opens anything that is not a file: an application's or Settings' URL. */
+  url?: string;
+  /** The application it is, or the one whose item it is. */
+  application?: string;
+  /** A picture for it (an application's icon), file://. */
+  icon?: string;
+  /** A file's media type. */
+  contentType?: string;
+  /** A file's size in bytes. */
+  size?: number;
+  /** Milliseconds since the epoch. */
+  modified?: number;
+  /** When it was made, in milliseconds since the epoch. */
+  created?: number;
+  /** When the person last opened it, in milliseconds since the epoch. */
+  lastUsed?: number;
+  /** The person's tags on it (`PlatformFiles.tags`). */
+  tags?: readonly string[];
+  /** Text around what matched in its contents. */
+  snippet?: string;
+  /** Where a file is, as the person reads it (`Documents › Work`). */
+  location?: string;
+};
+
+/** What a query found (`PlatformSearch.query`), best first. */
+export type PlatformSearchResults = {
+  /** The items found, in the platform's order of relevance. */
+  items: readonly PlatformSearchItem[];
+  /** The id of the item the platform judged best, shown first. */
+  topHit: string | null;
+  /** Whether the platform is still indexing, so results may be incomplete. */
+  indexing: boolean;
+};
+
+/** An application's own item, donated to the platform's index (Core Spotlight's CSSearchableItem). */
+export type PlatformSearchableItem = {
+  /** The application's own id for it, unique within the application. */
+  id: string;
+  /** Its name as the person reads it. */
+  title: string;
+  /** What it is. */
+  category: 'contact' | 'event' | 'mail' | 'message' | 'other';
+  /** Its contents, matched as a file's are. */
+  text?: string;
+  /** More words it is found by, never shown. */
+  keywords?: readonly string[];
+  /** What opens it: the application's URL. */
+  url: string;
+  /** Milliseconds since the epoch. */
+  modified?: number;
+};
+
+/**
+ * The platform's search across the person's files, applications, Settings and
+ * applications' own items, for a platform that keeps an index (a desktop's
+ * Spotlight). Optional and not a capability, as `files` is: an application
+ * without it searches only what it holds itself. Modelled on a Mac's
+ * `NSMetadataQuery` (asking) and Core Spotlight (donating).
+ */
+export interface PlatformSearch {
+  /** Asks the index. A query the person has since changed may be dropped by its caller. */
+  query(query: PlatformSearchQuery): Promise<PlatformSearchResults>;
+  /** Told whenever the index changed, to query again; returns the unsubscribe. */
+  watch(listener: () => void): () => void;
+  /** The person opened this result: the platform ranks it higher. */
+  used(id: string): void;
+  /** The application's own items. */
+  readonly index: {
+    /** Adds the items, or replaces those with the same ids. */
+    donate(items: readonly PlatformSearchableItem[]): Promise<void>;
+    /** Removes the items with these ids. */
+    remove(ids: readonly string[]): Promise<void>;
+    /** Removes every item this application donated. */
+    removeAll(): Promise<void>;
+  };
+}
+
+/**
  * A sound the platform plays for something the person did, by its meaning:
  * putting items in the Trash (`move-to-trash`) and emptying it for good
  * (`empty-trash`), as a Mac's Finder and Dock play them.
@@ -818,6 +963,8 @@ export interface PlatformSurfaceAdapter {
   readonly editing?: PlatformEditing;
   /** The person's places and the Trash, where the platform has them. */
   readonly files?: PlatformFiles;
+  /** The platform's search of the person's files, applications and Settings, where it keeps an index. */
+  readonly search?: PlatformSearch;
   /** The platform's own sounds, where it has them. */
   readonly sounds?: PlatformSounds;
   /** Required with `drag-and-drop`: the view that takes drops from any application. */

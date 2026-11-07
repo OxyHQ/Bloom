@@ -57,6 +57,62 @@ leave the list filtered by a query the field no longer shows. Handle it:
 onClearText={() => { setQuery(''); refetch(); }}
 ```
 
+## Tokens
+
+A search can carry filters the person chose as **tokens** inside the field,
+before the text, as UIKit's `UISearchToken` and a Mac's search field draw them
+("Kind: PDF", "Tag: Work"):
+
+```tsx
+import { Search, type SearchToken } from '@oxy.so/bloom/search';
+
+const [tokens, setTokens] = useState<readonly SearchToken[]>([
+  { key: 'kind', label: 'Kind: PDF', icon: RiFilePdf2Line },
+]);
+
+<Search
+  value={query}
+  onValueChange={setQuery}
+  tokens={tokens}
+  onRemoveToken={(key) => setTokens((current) => current.filter((t) => t.key !== key))}
+  onClearText={() => { setQuery(''); setTokens([]); }}
+  label="Search files"
+/>
+```
+
+| prop            | decides                                                              |
+| --------------- | -------------------------------------------------------------------- |
+| `tokens`        | the tokens, in order: `key` (stable, unique), `label` (shown and announced), optional `icon` |
+| `onRemoveToken` | a token's removal, with its `key`                                    |
+
+- **Drawn** as compact `Chip`s sized to the field (20 in the `xs` field, 24 in
+  `sm` and `md`, 28 in `lg`), between the magnifier and the text. The row takes
+  at most two thirds of the field; past that it scrolls sideways, never
+  wrapping the field, and keeps its end (the token beside the caret) in view.
+  The text keeps the rest of the width. A field with tokens shows no
+  placeholder.
+- **Named** by its label ("Kind: PDF"), with a remove button named "Remove
+  Kind: PDF" that calls `onRemoveToken(key)`. A disabled field disables them.
+- **Backspace** with the caret at the start of the text and nothing selected
+  (empty text included) calls `onRemoveToken` with the LAST token's key, as a
+  Mac does. Never during an input method's composition (the web's
+  `isComposing`, or key code 229): that Backspace edits the composition. Native
+  knows the caret from `onSelectionChange`; the caller's own `onKeyPress` and
+  `onSelectionChange` still run.
+- **Controlled**, like the text: a token goes when the caller drops it from
+  `tokens`.
+
+### The clear button clears the whole query
+
+With tokens, the clear button shows when there is text **or** a token, and its
+press calls `onClearText()` once, and only that: the caller empties the text
+and the tokens there. It does not also call `onRemoveToken` per token. One
+call is one state update, where several calls from one press would each see
+the same stale `tokens` in a caller's closure and drop only the last.
+
+Without `tokens`, `Search` is exactly as before: no row, the same placeholder,
+the caller's key and selection handlers handed to the input untouched.
+
 ## The clear button is conditional on purpose
 
 It appears only when `value` is non-empty. A clear button on an empty field is
