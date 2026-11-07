@@ -1,13 +1,16 @@
 ---
 title: Agent Avatar
-description: One shared 3D engine for agents, editors and previews.
+description: One character model with SVG and legacy WebGL rendering.
 ---
 
 # Agent Avatar
 
-`AgentAvatar`, AgentCreator, MultiAgentChat, avatar selectors and chat previews use the same
-TypeScript/WebGL engine in `runtime/`, and they all describe an avatar the same way: a
-**character**. There is no second model, no second renderer and no fallback.
+`AgentAvatar`, AgentCreator, MultiAgentChat, avatar selectors and chat previews describe an
+avatar with the same flat **character**. `renderer="svg"` uses vector assets and pure frame
+projection; `renderer="webgl"` selects the existing engine in `runtime/`. AgentCreator uses
+SVG for its live preview and static vector portraits for its shape and eye controls.
+Existing consumers retain their renderer unless they select one of the new flat forms,
+which use SVG automatically.
 
 ```tsx
 import { AgentAvatar, AgentAvatarProvider } from '@oxy.so/bloom/agent-avatar';
@@ -21,6 +24,28 @@ import { AgentAvatar, AgentAvatarProvider } from '@oxy.so/bloom/agent-avatar';
 </AgentAvatarProvider>
 ```
 
+## SVG rendering
+
+```tsx
+<AgentAvatar renderer="svg" character={{ preset: 'lime_frog' }} size={128} interactive />
+```
+
+SVG rendering does not need a hosted character runtime. The current catalog supports 34
+shapes, 13 eye styles, five eyewear styles and nine accessories (plus `none`). All edits use
+`AvatarCharacter` and the existing validation and serialization boundary. Exact templates
+retain their extracted geometry and clips. Edited characters fit vector parts to the target
+body; painting preserves the chosen parts. Idle, reaction and work share the same frame
+projection on web and native, including the working hands and screen. The 13 flat forms
+keep their original outlines while the eyes follow pointer direction. Depth is approximated
+with projected vector contours and visibility masks; this is flat artwork with spatial
+motion, not the legacy renderer’s lighting or a promise of identical depth at every angle.
+
+AgentCreator loads the selected animated asset on demand. Shape and eye thumbnails are
+static SVG paths, so opening the editor does not load every animation. Web verification
+covered the existing Basic story: template, eyes, paint and accessory edits, work returning
+to idle, reaction playback, unchanged profile fields and no canvas. Native uses
+`react-native-svg`; this migration has not been verified on a device.
+
 ## The character
 
 One flat shape, the same in `AgentAvatar`, `AgentCreator` (`agent.avatar`), `MultiAgentChat`
@@ -29,7 +54,7 @@ and your saved JSON:
 | Field | Values |
 | --- | --- |
 | `preset` | `AVATAR_PRESETS`: a named template. Any part or paint you leave out comes from it. |
-| `shape` | `AVATAR_SHAPES`: the 21 catalog bodies. |
+| `shape` | `AVATAR_SHAPES`: 21 original bodies and 13 flat forms. |
 | `eyes` | `AVATAR_EYES`, or `'none'` to hide the face. |
 | `eyewear`, `accessory` | `AVATAR_EYEWEAR`, `AVATAR_ACCESSORIES`; `'none'` removes it. |
 | `color` | `AVATAR_COLORS`: named paint. |

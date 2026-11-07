@@ -1,5 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native';
-import { AgentAvatar } from '../../agent-avatar/AgentAvatar';
+import { VectorStaticPortrait } from '../../agent-avatar/VectorStaticPortrait';
+import { vectorShapePortraits } from '../../agent-avatar/vector-static';
 import type { AvatarCharacter } from '../../agent-avatar/character';
 import { CharacterRuntimeContext } from '../../agent-avatar/context';
 import { StyledImage } from '../../styles/styled-primitives';
@@ -7,8 +8,8 @@ import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ShapeArc, type ShapeArcChoice } from '../ShapeArc';
 import { ShapeSilhouette } from '../ShapeSilhouette';
 
-jest.mock('../../agent-avatar/AgentAvatar', () => ({
-  AgentAvatar: jest.fn(() => null),
+jest.mock('../../agent-avatar/VectorStaticPortrait', () => ({
+  VectorStaticPortrait: jest.fn(() => null),
 }));
 
 const base: AvatarCharacter = {
@@ -41,14 +42,11 @@ it('uses frozen previews from the one renderer for every body, without PNGs, and
       </BloomThemeProvider>
     </CharacterRuntimeContext.Provider>,
   );
-  expect(view.UNSAFE_getAllByType(AgentAvatar)).toHaveLength(9);
-  for (const preview of view.UNSAFE_getAllByType(AgentAvatar)) {
-    expect(preview.props).toMatchObject({ portrait: true, paused: true, interactive: false });
-    expect(preview.props.character).toMatchObject({
-      eyes: 'none',
-      eyewear: 'none',
-      accessory: 'none',
-    });
+  expect(view.UNSAFE_getAllByType(VectorStaticPortrait)).toHaveLength(9);
+  for (const preview of view.UNSAFE_getAllByType(VectorStaticPortrait)) {
+    expect(preview.props.size).toBe(56);
+    expect(preview.props.bodyColor).toBe('#cc5533');
+    expect(preview.props.frame.paths.length).toBeGreaterThan(0);
   }
   expect(view.UNSAFE_queryAllByType(StyledImage)).toHaveLength(0);
   fireEvent.press(view.getByLabelText('cloud shape'));
@@ -57,27 +55,19 @@ it('uses frozen previews from the one renderer for every body, without PNGs, and
 
 it('keeps the body and its paint while excluding the face and accessories from the preview', () => {
   const view = render(<ShapeSilhouette character={{ ...base, shape: 'todd', eyes: 'cyclops' }} />);
-  const { character, ...rest } = view.UNSAFE_getByType(AgentAvatar).props;
-  expect(character).toMatchObject({
-    shape: 'todd',
-    eyes: 'none',
-    eyewear: 'none',
-    accessory: 'none',
-    bodyColor: '#cc5533',
-  });
-  expect(rest).toMatchObject({ portrait: true, paused: true, interactive: false });
+  const preview = view.UNSAFE_getByType(VectorStaticPortrait).props;
+  expect(preview.frame).toBe(vectorShapePortraits.todd);
+  expect(preview.bodyColor).toBe('#cc5533');
+  expect(preview.size).toBe(56);
 });
 
 it('recolors the body preview without changing the input character', () => {
   const input: AvatarCharacter = { ...base, shape: 'heart' };
   const snapshot = JSON.stringify(input);
   const view = render(<ShapeSilhouette character={input} />);
-  expect(view.UNSAFE_getByType(AgentAvatar).props.character).toMatchObject({
-    shape: 'heart',
-    bodyColor: '#cc5533',
-    eyes: 'none',
-  });
+  expect(view.UNSAFE_getByType(VectorStaticPortrait).props.frame).toBe(vectorShapePortraits.heart);
+  expect(view.UNSAFE_getByType(VectorStaticPortrait).props.bodyColor).toBe('#cc5533');
   view.rerender(<ShapeSilhouette character={{ ...input, bodyColor: '#2255dd' }} />);
-  expect(view.UNSAFE_getByType(AgentAvatar).props.character.bodyColor).toBe('#2255dd');
+  expect(view.UNSAFE_getByType(VectorStaticPortrait).props.bodyColor).toBe('#2255dd');
   expect(JSON.stringify(input)).toBe(snapshot);
 });

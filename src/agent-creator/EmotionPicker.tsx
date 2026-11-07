@@ -1,11 +1,10 @@
 import { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, Platform, type View } from 'react-native';
+import type { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useFrameCallback,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   type SharedValue,
@@ -18,6 +17,9 @@ import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { useAppForeground } from '../hooks/use-app-state';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 export type EmotionChoice = {
@@ -92,6 +94,7 @@ function Emotion({
           }}
         >
           <CharacterAvatar
+            renderer="svg"
             previewPart="eyes"
             character={eyeCharacter}
             portrait
@@ -125,7 +128,7 @@ export function EmotionPicker({
   const ref = useRef<ComponentRef<typeof View>>(null);
   const visible = useSharedValue(true);
   const target = useSharedValue(0);
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const rotation = useDerivedValue(
     () => (reduced ? target.value : withSpring(target.value, { stiffness: 180, damping: 28 })),
     [target, reduced],
@@ -133,27 +136,17 @@ export function EmotionPicker({
   const dragging = useSharedValue(false);
   const previousAngle = useSharedValue(0);
   const suppressClick = useSharedValue(false);
-  const [hovered, setHovered] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focused, setFocused] = useState(false);
   useFrameCallback((frame) => {
     if (!reduced && !hovered && !focused && !dragging.value && visible.value)
       target.value += Math.min(frame.timeSincePreviousFrame ?? 0, 64) * 0.003;
   });
+  // The spin stops while the app is backgrounded or its tab is hidden.
+  const foreground = useAppForeground();
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (state) => {
-      visible.value = state === 'active';
-    });
-    const visibility = () => {
-      visible.value = !document.hidden;
-    };
-    if (Platform.OS === 'web' && typeof document !== 'undefined')
-      document.addEventListener('visibilitychange', visibility);
-    return () => {
-      subscription?.remove?.();
-      if (Platform.OS === 'web' && typeof document !== 'undefined')
-        document.removeEventListener('visibilitychange', visibility);
-    };
-  }, [visible]);
+    visible.value = foreground;
+  }, [foreground, visible]);
   useTrackEvents(
     ref,
     (delta) => {
@@ -191,13 +184,14 @@ export function EmotionPicker({
   return (
     <GestureDetector gesture={drag}>
       <StyledView
+        collapsable={false}
         ref={ref}
         role="group"
         accessibilityLabel={messages.emotion}
         pointerEvents="auto"
         className="pointer-events-auto relative size-[268px] touch-none rounded-full"
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
+        onPointerEnter={onHoverIn}
+        onPointerLeave={onHoverOut}
       >
         <AnimatedView
           pointerEvents="box-none"

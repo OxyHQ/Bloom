@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 import {
   AgentAvatar,
@@ -7,7 +7,6 @@ import {
   updateAvatarCharacter,
 } from '../agent-avatar';
 import { CHARACTER_SHAPES } from '../agent-avatar/character-shapes';
-import { CharacterRuntimeContext } from '../agent-avatar/context';
 import { Button } from '../button/Button';
 import { CloseButton } from '../button/CloseButton';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -46,7 +45,6 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     useAgentCreatorBindings();
   const [reactionKey, setReactionKey] = useState(0);
   const [workingKey, setWorkingKey] = useState(0);
-  const { runtimeUrl } = useContext(CharacterRuntimeContext);
   // Every control reads the resolved character and writes one edit to the saved one.
   const character = useMemo(() => resolveAvatarCharacter(agent.avatar), [agent.avatar]);
   const edit = (patch: Parameters<typeof updateAvatarCharacter>[1]) =>
@@ -54,24 +52,20 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   const paintColor = 'color' in character.paint ? character.paint.color : undefined;
   const customHex = 'bodyColor' in character.paint ? character.paint.bodyColor : undefined;
   const bodyHex = avatarBodyHex(character);
-  const shapeChoices = runtimeUrl
-    ? CHARACTER_SHAPES.map(([id, title]) => ({
-        id,
-        label:
-          id in messages.shapes
-            ? messages.shapes[id as keyof typeof messages.shapes]
-            : messages.characterOption('shape', id, title),
-        character: updateAvatarCharacter(agent.avatar, { shape: id }),
-      }))
-    : undefined;
-  const eyeChoices = runtimeUrl
-    ? CHARACTER_OPTIONS.eyes.map(([id, title]) => ({
-        id,
-        label: messages.characterOption('eyes', id, title),
-        character: updateAvatarCharacter(agent.avatar, { eyes: id }),
-        disabled: false,
-      }))
-    : undefined;
+  const shapeChoices = CHARACTER_SHAPES.map(([id, title]) => ({
+    id,
+    label:
+      id in messages.shapes
+        ? messages.shapes[id as keyof typeof messages.shapes]
+        : messages.characterOption('shape', id, title),
+    character: updateAvatarCharacter(agent.avatar, { shape: id }),
+  }));
+  const eyeChoices = CHARACTER_OPTIONS.eyes.map(([id, title]) => ({
+    id,
+    label: messages.characterOption('eyes', id, title),
+    character: updateAvatarCharacter(agent.avatar, { eyes: id }),
+    disabled: false,
+  }));
   return (
     <AgentCreatorCopyContext.Provider value={{ locale: props.locale, labels: props.labels }}>
       <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
@@ -139,8 +133,8 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   )}
                 </StyledView>
                 <StyledView
-                  pointerEvents={runtimeUrl ? 'auto' : 'none'}
-                  className={`${runtimeUrl ? 'pointer-events-auto' : 'pointer-events-none'} absolute left-1/2 top-[83px] -translate-x-1/2`}
+                  pointerEvents="auto"
+                  className="pointer-events-auto absolute left-1/2 top-[83px] -translate-x-1/2"
                   style={{
                     position: 'absolute',
                     left: '50%',
@@ -151,7 +145,8 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   <AgentAvatar
                     character={agent.avatar}
                     size={162}
-                    interactive={Boolean(runtimeUrl)}
+                    interactive
+                    renderer="svg"
                     reactionKey={reactionKey}
                     workingKey={workingKey}
                     label={messages.livePreview(agent.name || messages.newAgent)}
@@ -172,21 +167,20 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   )}
                 </StyledView>
               </StyledView>
-              {runtimeUrl && (
-                <StyledView className="mt-2 flex-row justify-center gap-2">
-                  <Button size="xs" onPress={() => setReactionKey((key) => key + 1)}>
-                    {messages.reaction}
-                  </Button>
-                  <Button size="xs" onPress={() => setWorkingKey((key) => key + 1)}>
-                    {messages.working}
-                  </Button>
-                </StyledView>
-              )}
+              <StyledView className="mt-2 flex-row justify-center gap-2">
+                <Button size="xs" onPress={() => setReactionKey((key) => key + 1)}>
+                  {messages.reaction}
+                </Button>
+                <Button size="xs" onPress={() => setWorkingKey((key) => key + 1)}>
+                  {messages.working}
+                </Button>
+              </StyledView>
               <StyledView
                 className="mt-[15px] flex shrink-0 flex-row justify-center"
                 style={{ flexShrink: 0 }}
               >
                 <StyledView
+                  collapsable={false}
                   role="group"
                   accessibilityLabel={messages.color}
                   testID="agent-avatar-color-selector"
@@ -197,29 +191,28 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                     boxShadow: '0 1px 2px rgba(0,0,0,.05)',
                   }}
                 >
-                  {runtimeUrl &&
-                    CHARACTER_OPTIONS.color.map(([id, title]) => {
-                      const active = paintColor === id;
-                      const hex = CHARACTER_COLORS[id];
-                      const disabled = false;
-                      return (
-                        <StyledPressable
-                          key={id}
-                          accessibilityRole="button"
-                          accessibilityLabel={messages.avatarColorLabel(
-                            messages.characterOption('color', id, title),
-                          )}
-                          aria-pressed={active}
-                          aria-disabled={disabled}
-                          accessibilityState={{ selected: active, disabled }}
-                          disabled={disabled}
-                          onPress={() => edit({ color: id as typeof paintColor })}
-                          className="relative shrink-0 cursor-pointer overflow-hidden rounded-full transition-transform duration-150 ease-out hover:scale-110 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2 size-[26px]"
-                        >
-                          <GlossArt center={hex} edge={hex} active={active} />
-                        </StyledPressable>
-                      );
-                    })}
+                  {CHARACTER_OPTIONS.color.map(([id, title]) => {
+                    const active = paintColor === id;
+                    const hex = CHARACTER_COLORS[id];
+                    const disabled = false;
+                    return (
+                      <StyledPressable
+                        key={id}
+                        accessibilityRole="button"
+                        accessibilityLabel={messages.avatarColorLabel(
+                          messages.characterOption('color', id, title),
+                        )}
+                        aria-pressed={active}
+                        aria-disabled={disabled}
+                        accessibilityState={{ selected: active, disabled }}
+                        disabled={disabled}
+                        onPress={() => edit({ color: id as typeof paintColor })}
+                        className="relative shrink-0 cursor-pointer overflow-hidden rounded-full transition-transform duration-150 ease-out hover:scale-110 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2 size-[26px]"
+                      >
+                        <GlossArt center={hex} edge={hex} active={active} />
+                      </StyledPressable>
+                    );
+                  })}
                   <Popover>
                     <PopoverTrigger asChild label={messages.customColor}>
                       <StyledPressable
@@ -252,12 +245,10 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   </Popover>
                 </StyledView>
               </StyledView>
-              {runtimeUrl && (
-                <CharacterControls
-                  character={agent.avatar}
-                  onChange={(avatar) => onChange({ ...agent, avatar })}
-                />
-              )}
+              <CharacterControls
+                character={agent.avatar}
+                onChange={(avatar) => onChange({ ...agent, avatar })}
+              />
               <StyledView
                 className="mt-[15px] overflow-hidden rounded-2xl bg-background-secondary-default ps-3"
                 style={{ backgroundColor: colors.backgroundSecondary }}

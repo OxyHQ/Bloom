@@ -1,4 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
+import { AVATAR_EYES } from '../../agent-avatar/catalog-ids';
 import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
 import type { AvatarCharacter } from '../../agent-avatar/character';
 import { StyledImage } from '../../styles/styled-primitives';
@@ -33,10 +34,11 @@ it('renders all eye styles as isolated eyes on a plain circle, preserving paint 
     </BloomThemeProvider>,
   );
   const eyes = view.UNSAFE_getAllByType(CharacterAvatar);
-  expect(eyes).toHaveLength(12);
+  expect(eyes).toHaveLength(AVATAR_EYES.length);
   expect(view.UNSAFE_queryAllByType(StyledImage)).toHaveLength(0);
   for (const [index, eye] of eyes.entries()) {
     expect(eye.props).toMatchObject({
+      renderer: 'svg',
       previewPart: 'eyes',
       paused: true,
       portrait: true,

@@ -1,16 +1,25 @@
-import { memo, useMemo } from 'react';
-import { AgentAvatar } from '../agent-avatar/AgentAvatar';
-import { type AvatarCharacter, updateAvatarCharacter } from '../agent-avatar/character';
+import { memo } from 'react';
+import { type AvatarCharacter, resolveAvatarCharacter } from '../agent-avatar/character';
+import { CHARACTER_COLORS } from '../agent-avatar/character-colors';
+import { VectorStaticPortrait } from '../agent-avatar/VectorStaticPortrait';
+import { vectorShapePortraits } from '../agent-avatar/vector-static';
 
-/** Body-only view of a shape in the current paint. Never alter the saved face or accessories. */
+/** Body contours are static: browsing shapes never downloads animation clips. */
 export const ShapeSilhouette = memo(function ShapeSilhouette({
   character,
 }: {
   character: AvatarCharacter;
 }) {
-  const body = useMemo(
-    () => updateAvatarCharacter(character, { eyes: 'none', eyewear: 'none', accessory: 'none' }),
-    [character],
+  const resolved = resolveAvatarCharacter(character);
+  const bodyColor =
+    'bodyColor' in resolved.paint
+      ? resolved.paint.bodyColor
+      : CHARACTER_COLORS[resolved.paint.color];
+  return (
+    <VectorStaticPortrait
+      frame={vectorShapePortraits[resolved.shape]!}
+      size={56}
+      bodyColor={bodyColor}
+    />
   );
-  return <AgentAvatar character={body} size={56} portrait paused interactive={false} />;
 });
