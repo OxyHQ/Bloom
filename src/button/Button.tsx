@@ -291,13 +291,26 @@ const ButtonPressable = forwardRef<ComponentRef<typeof View>, ButtonPressablePro
 function ButtonContent({
   loading,
   gap,
+  ownHeight,
   children,
 }: {
   loading: boolean;
   gap: number;
+  /** The button has a height of its own (its size's), which the content fills. */
+  ownHeight: boolean;
   children: (style: TextStyle) => React.ReactNode;
 }) {
   const { text, layout } = useContext(ContentStyleContext);
+  // The content grows vertically only into a height the button has: its size's, or one the caller
+  // gives it. A button that is its label's line box (LinkButton) has none, and growing there lets
+  // React Native's classic Yoga stretch the content to whatever height is available to the button
+  // (a LinkButton in a column became thousands of points tall on a native host).
+  const fills =
+    ownHeight ||
+    layout?.height !== undefined ||
+    layout?.minHeight !== undefined ||
+    layout?.flex !== undefined ||
+    layout?.flexGrow !== undefined;
   const contentLayout = layout && {
     ...(layout.flexDirection !== undefined && { flexDirection: layout.flexDirection }),
     ...(layout.flexWrap !== undefined && { flexWrap: layout.flexWrap }),
@@ -310,7 +323,13 @@ function ButtonContent({
   return (
     <View
       pointerEvents={loading ? 'none' : undefined}
-      style={[styles.content, { gap }, contentLayout, loading && { opacity: 0 }]}
+      style={[
+        styles.content,
+        !fills && styles.contentHugs,
+        { gap },
+        contentLayout,
+        loading && { opacity: 0 },
+      ]}
     >
       {/* Preserve the original descendants as the accessible name while busy. */}
       {children(text ?? {})}
@@ -682,7 +701,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
           radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
         />
       ) : null}
-      <ButtonContent loading={loading} gap={geometry.gap}>
+      <ButtonContent loading={loading} gap={geometry.gap} ownHeight={!(isLink && !isSquare)}>
         {content}
       </ButtonContent>
       {loading ? <ButtonLoading color={loadingColor} fallback={paint.foreground} /> : null}
@@ -699,6 +718,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // A button without a height of its own: the content is its height.
+  contentHugs: {
+    flexGrow: 0,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFill,

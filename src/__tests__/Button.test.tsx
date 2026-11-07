@@ -649,6 +649,37 @@ describe('button details', () => {
     expect(style.backgroundColor).toBe('transparent');
   });
 
+  /** The button's content wrapper: the nearest ancestor of its label that stretches across it. */
+  const contentOf = (label: { parent: unknown }) => {
+    let node = label as { parent: unknown; props?: { style?: unknown } } | null;
+    while (node && resolvedStyle(node.props?.style).alignSelf !== 'stretch') {
+      node = node.parent as typeof node;
+    }
+    return resolvedStyle(node?.props?.style);
+  };
+
+  it("LinkButton's content is its label's height: it grows into no height the button lacks", () => {
+    // Under React Native's classic Yoga a growing child of a button with no height of its own is
+    // stretched to the height available to the button: a link in a column became thousands of
+    // points tall on a native host.
+    const { getByText } = renderWithTheme(
+      <LinkButton linkTone="secondary">Use a different account</LinkButton>,
+    );
+    expect(contentOf(getByText('Use a different account')).flexGrow).toBe(0);
+  });
+
+  it("a sized button's content still fills its height", () => {
+    const { getByText } = renderWithTheme(<Button>Continue</Button>);
+    expect(contentOf(getByText('Continue')).flexGrow).toBe(1);
+  });
+
+  it('a LinkButton given a height by its caller fills it', () => {
+    const { getByText } = renderWithTheme(
+      <LinkButton style={{ height: 40 }}>Learn more</LinkButton>,
+    );
+    expect(contentOf(getByText('Learn more')).flexGrow).toBe(1);
+  });
+
   it('LinkButton variant picks the link colour', () => {
     const theme = captureTheme();
     const { getByText } = renderWithTheme(
