@@ -274,6 +274,7 @@ its label, before any folders: use them when the section IS the list. Keep
 
 - A direct row is a folder row without the connector: the same height, radius, `meta` chip, selection, hover, `actions`, `href`, `onPrefetch` and `onLongPress`, inset 8 (to the folder glyph) instead of 36.
 - `onTreeItemPress(item, folder)` gets the row's folder, or `undefined` for a direct row. `selectedTreeItem` matches a key in any section.
+- A row draws again when the selection moves onto, off or within it, never for a selection elsewhere: keep `tree` (and `onTreeItemPress`) the same objects while what they show is the same, and a selection moving at each navigation draws only the rows it moves between.
 - `key` identifies a section among several (defaults to `label`). `items` and `folders` are both optional; a section with neither, or with nothing left after quick search, is not drawn.
 - Quick search filters direct rows by their label and folders as above. Collapsed, every section hides, as the single tree did.
 - `plan` replaces the team card: radius 12, background-tertiary (the panel colour on a `plain` surface), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
