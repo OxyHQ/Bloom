@@ -1,3 +1,4 @@
+import { referenceFaceDepth } from './vector-face';
 import type { ResolvedAvatarCharacter } from './character';
 import { CHARACTER_COLORS } from './character-colors';
 import type { VectorData, VectorPart, VectorAction, VectorAssetLoader } from './vector-types';
@@ -480,7 +481,14 @@ export async function composeVectorCharacter(
       const part = donor.parts[i]!,
         rest = world(donor.clips.idle.parts[i] ?? restTrack, 0),
         matrix = multiply(fit, rest);
-      return { i, part, rest, matrix, points: part.points.map((p) => point(matrix, p)) };
+      return {
+        i,
+        part,
+        rest,
+        matrix,
+        points: part.points.map((p) => point(matrix, p)),
+        faceBlend: [] as number[],
+      };
     });
     if (facial && !(role === 'eye' && id === 'cyclops')) {
       const sourceCenters = sourcePair.map((p) => p.center),
@@ -614,6 +622,7 @@ export async function composeVectorCharacter(
               id === 'separate_trapezoid_lenses'
                 ? rigidSide
                 : Math.max(0, Math.min(1, (original[0]! - middle + bridge) / (2 * bridge)));
+          v.faceBlend[index] = t;
           const candidates = [0, 1].map((k) => {
             const dx = original[0]! - sourceCenters[k]![0]!,
               dy = original[1]! - sourceCenters[k]![1]!;
@@ -690,20 +699,52 @@ export async function composeVectorCharacter(
           : [0, 0, 0];
       const zMin = Math.min(...all.map((p) => p[2]!)),
         zMax = Math.max(...all.map((p) => p[2]!));
-      const depth = role === 'eyewear' ? fittedFace.max[2]! + 0.035 : 0.24;
+      const lift = role === 'eyewear' ? 0.035 : 0;
       const layers = [...baked].sort(
         (a, b) =>
           a.points.reduce((n, p) => n + p[2]!, 0) / a.points.length -
           b.points.reduce((n, p) => n + p[2]!, 0) / b.points.length,
       );
-      for (const v of baked)
-        v.points = v.points.map((p) => [
-          p[0]! + translation[0]!,
-          p[1]! + translation[1]!,
-          depth +
-            layers.indexOf(v) * 0.012 +
-            ((p[2]! - zMin) / Math.max(0.001, zMax - zMin)) * 0.004,
-        ]);
+      for (const v of baked) {
+        const center = [0, 1].map(
+          (axis) =>
+            (Math.min(...v.points.map((p) => p[axis]!)) +
+              Math.max(...v.points.map((p) => p[axis]!))) /
+            2,
+        );
+        v.points = v.points.map((p, index) => {
+          const x = p[0]! + translation[0]!,
+            y = p[1]! + translation[1]!;
+          const t = v.faceBlend[index];
+          const depth =
+            t === undefined
+              ? referenceFaceDepth(reference, x, y, center[0], center[1])
+              : referenceFaceDepth(
+                  reference,
+                  x,
+                  y,
+                  targetPair[0].center[0],
+                  targetPair[0].center[1],
+                ) *
+                  (1 - t) +
+                referenceFaceDepth(
+                  reference,
+                  x,
+                  y,
+                  targetPair[1].center[0],
+                  targetPair[1].center[1],
+                ) *
+                  t;
+          return [
+            x,
+            y,
+            depth +
+              lift +
+              layers.indexOf(v) * 0.012 +
+              ((p[2]! - zMin) / Math.max(0.001, zMax - zMin)) * 0.004,
+          ];
+        });
+      }
     } else if (facial) {
       const front = frontSurface(base, bodyIndices);
       let offset = 0;

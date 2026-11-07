@@ -189,3 +189,24 @@ it('changes native eye spacing as translation without resizing either eye or mut
   }
   expect(JSON.stringify(base)).toBe(snapshot);
 });
+
+it('places custom eye pieces on their native tangent plane without bending the contour', async () => {
+  const base = asset();
+  base.referenceFace = {
+    center: [0, 0],
+    radius: 1,
+    gazeScale: 0.4,
+    eyePlanes: [
+      { center: [-0.2, 0.1, 0.8], normal: [-0.3, 0, 1] },
+      { center: [0.2, 0.1, 0.8], normal: [0.3, 0, 1] },
+    ],
+  };
+  const result = await composeVectorCharacter(character(), loaders(base));
+  for (const p of result.parts.filter((p) => p.role === 'eye')) {
+    const cx = p.points.reduce((n, q) => n + q[0]!, 0) / p.points.length;
+    const offsets = p.points.map(
+      (q) => q[2]! - (0.8 - (q[0]! - (cx < 0 ? -0.2 : 0.2)) * (cx < 0 ? -0.3 : 0.3)),
+    );
+    expect(Math.max(...offsets) - Math.min(...offsets)).toBeLessThanOrEqual(0.004001);
+  }
+});
