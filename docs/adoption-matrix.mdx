@@ -38,7 +38,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
 | Field membership | 53 | 31 | 0 | 22 | 0 |
-| Control presentation | 55 | 53 | 2 | 0 | 0 |
+| Control presentation | 56 | 54 | 2 | 0 | 0 |
 | Trigger composition | 11 | 8 | 0 | 3 | 0 |
 | Controlled / uncontrolled state | 61 | 58 | 2 | 1 | 0 |
 
@@ -193,7 +193,7 @@ None.
 | `hooks` | `@oxy.so/bloom/hooks` + barrel | universal | `hooks.mdx` | yes | 49 |  |  |  | reads |
 | `hover-card` | `@oxy.so/bloom/hover-card` + barrel | web fork | `hover-card.mdx` | yes | 5 |  |  | reads | reads |
 | `icon-circle` | `@oxy.so/bloom/icon-circle` + barrel | universal | `icon-circle.mdx` | yes | 1 |  |  |  |  |
-| `icons` | `@oxy.so/bloom/icons` + barrel | universal | `icons.mdx` | yes | 92 |  |  |  |  |
+| `icons` | `@oxy.so/bloom/icons` + barrel | universal | `icons.mdx` | yes | 94 |  |  |  |  |
 | `image` | internal | universal | — | — | 6 |  |  |  |  |
 | `image-aspect-ratio-cache` | `@oxy.so/bloom/image-aspect-ratio-cache` + barrel | universal | `image-aspect-ratio-cache.mdx` | yes | 4 |  |  |  |  |
 | `image-resolver` | `@oxy.so/bloom/image-resolver` + barrel | universal | `image-resolver.mdx` | yes | 8 |  |  |  |  |
@@ -262,7 +262,7 @@ None.
 | `place-list` | `@oxy.so/bloom/place-list` + barrel | universal | `place-list.mdx` | yes | 2 |  |  |  |  |
 | `place-picker` | `@oxy.so/bloom/place-picker` + barrel | universal | `place-picker.mdx` | yes | 2 | reads | reads |  |  |
 | `place-reviews` | `@oxy.so/bloom/place-reviews` + barrel | universal | `place-reviews.mdx` | yes | 2 |  |  |  | reads |
-| `platform-surface` | `@oxy.so/bloom/platform-surface` + barrel | universal | `platform-surface.mdx` | yes | 35 |  |  |  |  |
+| `platform-surface` | `@oxy.so/bloom/platform-surface` + barrel | universal | `platform-surface.mdx` | yes | 36 |  |  |  |  |
 | `popover` | `@oxy.so/bloom/popover` + barrel | web fork | `popover.mdx` | yes | 17 |  |  | reads | reads |
 | `portal` | `@oxy.so/bloom/portal` + barrel | web fork | `portal.mdx` | yes | 51 |  |  |  |  |
 | `preferences` | `@oxy.so/bloom/preferences` + barrel | universal | `preferences.mdx` | yes | 2 |  |  |  |  |
@@ -272,7 +272,7 @@ None.
 | `project-board` | `@oxy.so/bloom/project-board` + barrel | web fork | `project-board.mdx` | yes | 8 | n/a¹ |  |  |  |
 | `proof-of-delivery` | `@oxy.so/bloom/proof-of-delivery` + barrel | universal | `proof-of-delivery.mdx` | yes | 1 |  |  |  | reads |
 | `property-insights` | `@oxy.so/bloom/property-insights` + barrel | universal | `property-insights.mdx` | yes | 5 |  |  |  | reads |
-| `provider` | `@oxy.so/bloom/provider` | universal | `provider.mdx` | yes | 20 |  |  |  |  |
+| `provider` | `@oxy.so/bloom/provider` | universal | `provider.mdx` | yes | 21 |  |  |  |  |
 | `questionnaire` | `@oxy.so/bloom/questionnaire` + barrel | universal | `questionnaire.mdx` | yes | 3 | reads |  |  | reads |
 | `queue-panel` | `@oxy.so/bloom/queue-panel` + barrel | web fork | `queue-panel.mdx` | yes | 4 |  |  |  | reads |
 | `radio` | `@oxy.so/bloom/radio` + barrel | universal | `radio.mdx` | yes | 10 | reads | reads |  | reads |
@@ -284,7 +284,7 @@ None.
 | `row-actions` | `@oxy.so/bloom/row-actions` + barrel | universal | `row-actions.mdx` | yes | 1 |  |  |  |  |
 | `screen` | `@oxy.so/bloom/screen` + barrel | web fork | `screen.mdx` | yes | 36 |  |  |  |  |
 | `scroll` | `@oxy.so/bloom/scroll` + barrel | web fork | `scroll.mdx` | yes | 11 |  |  |  |  |
-| `search` | `@oxy.so/bloom/search` + barrel | universal | `search.mdx` | yes | 6 | reads |  |  |  |
+| `search` | `@oxy.so/bloom/search` + barrel | universal | `search.mdx` | yes | 8 | reads | reads |  |  |
 | `segmented-control` | `@oxy.so/bloom/segmented-control` + barrel | universal | `segmented-control.mdx` | yes | 8 | reads | reads |  |  |
 | `select` | `@oxy.so/bloom/select` + barrel | web fork | `select.mdx` | yes | 19 | reads | reads | reads | reads |
 | `settings-list` | `@oxy.so/bloom/settings-list` + barrel | universal | `settings-list.mdx` | yes | 4 |  |  |  |  |
@@ -321,7 +321,7 @@ None.
 | `tenancy` | `@oxy.so/bloom/tenancy` + barrel | universal | `tenancy.mdx` | yes | 5 |  | reads |  |  |
 | `text-field` | `@oxy.so/bloom/text-field` + barrel | universal | `text-field.mdx` | yes | 23 | reads | reads |  |  |
 | `textarea` | `@oxy.so/bloom/textarea` + barrel | universal | `textarea.mdx` | yes | 6 | reads | reads |  | n/a¹ |
-| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 593 |  |  | n/a¹ | reads |
+| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 595 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 2 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 20 |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 6 |  | reads |  |  |

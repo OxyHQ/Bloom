@@ -3,7 +3,10 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Search } from './index';
+import { Search, type SearchToken } from './index';
+import { RiFilePdf2Line } from '../icons/remix/RiFilePdf2Line';
+import { RiPriceTag3Line } from '../icons/remix/RiPriceTag3Line';
+import { RiCalendarLine } from '../icons/remix/RiCalendarLine';
 import { Button } from '../button';
 import { Text } from '../typography';
 
@@ -150,6 +153,42 @@ export const CustomAffordances: Story = {
           style={{ fontSize: 16, lineHeight: 20 }}
         />
         <Button onPress={() => setDisabled((v) => !v)}>Toggle disabled</Button>
+      </View>
+    );
+  },
+};
+
+/**
+ * Filters as tokens inside the field, before the text: each has a remove
+ * button, and Backspace with the caret at the start of the text removes the
+ * last. The clear button clears the whole query, so `onClearText` empties the
+ * text and the tokens. Narrow the frame to see a long row scroll, the latest
+ * token kept beside the caret.
+ */
+export const Tokens: Story = {
+  parameters: { controls: { disable: true } },
+  render: function TokensStory() {
+    const ALL: readonly SearchToken[] = [
+      { key: 'kind', label: 'Kind: PDF', icon: RiFilePdf2Line },
+      { key: 'tag', label: 'Tag: Work', icon: RiPriceTag3Line },
+      { key: 'date', label: 'Modified: This week', icon: RiCalendarLine },
+    ];
+    const [value, setValue] = useState('report');
+    const [tokens, setTokens] = useState<readonly SearchToken[]>(ALL);
+    return (
+      <View style={{ width: 380, maxWidth: '100%', gap: 12 }}>
+        <Search
+          value={value}
+          onValueChange={setValue}
+          tokens={tokens}
+          onRemoveToken={(key) => setTokens((current) => current.filter((t) => t.key !== key))}
+          onClearText={() => {
+            setValue('');
+            setTokens([]);
+          }}
+          label="Search files"
+        />
+        <Button onPress={() => setTokens(ALL)}>Restore tokens</Button>
       </View>
     );
   },

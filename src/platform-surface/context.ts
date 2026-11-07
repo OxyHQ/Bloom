@@ -7,6 +7,7 @@ import type {
   PlatformFiles,
   PlatformKeyboard,
   PlatformMenuBar,
+  PlatformSearch,
   PlatformSounds,
   PlatformSurfaceAdapter,
   PlatformWindow,
@@ -108,6 +109,15 @@ export function usePlatformKeyboard(): PlatformKeyboard | null {
  */
 export function usePlatformFiles(): PlatformFiles | null {
   return useContext(PlatformSurfaceContext)?.files ?? null;
+}
+
+/**
+ * The platform's search of the person's files, applications, Settings and
+ * applications' own items (`PlatformSearch`), or null when it keeps no index:
+ * then an application searches only what it holds itself.
+ */
+export function usePlatformSearch(): PlatformSearch | null {
+  return useContext(PlatformSurfaceContext)?.search ?? null;
 }
 
 /**

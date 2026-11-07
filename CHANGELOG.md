@@ -2,6 +2,22 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.20.0
+
+### Added
+
+- **The platform's search** (`PlatformSurfaceAdapter.search`, what OxyOS's Spotlight-class search needs, OxyOS ADR 0051): `PlatformSearch`, optional and not a capability, as `files` is, present on a platform that keeps an index of the person's files, applications, Settings and applications' own items. `query(query)` answers from the index best first (`PlatformSearchResults`: `items`, the `topHit` id shown first, and `indexing` while results may be incomplete); `PlatformSearchQuery` is the typed `text` (prefixes of words in names and contents, "quoted phrases", typed filters `kind:pdf`, `tag:Work`, `date:today`, `name:report`), the chosen `tokens` (`PlatformSearchToken`: a `category`, `tag`, `date` or `name`), `within` folders, `categories`, `limit` (default 60, at most 200) and `language`. `watch(listener)` hears the index change; `used(id)` ranks an opened result higher; `index.donate`, `index.remove` and `index.removeAll` keep the application's own items (`PlatformSearchableItem`, Core Spotlight's `CSSearchableItem`: a contact, event, mail, message or other, opened by its `url`). A result is a `PlatformSearchItem` of a `PlatformSearchCategory`, a file by its `uri`, anything else by its `url`. `usePlatformSearch()` returns it, or null. All from `@oxy.so/bloom/platform-surface`. `docs/platform-surface.mdx`.
+- **Search tokens** (`Search`'s `tokens` and `onRemoveToken`, UIKit's `UISearchToken`, AppKit's search field tokens): filters drawn inside the field before the text, in order, as compact `Chip`s sized to the field (`SearchToken`: `key`, `label`, optional `icon`, from `@oxy.so/bloom/search`). The row takes at most two thirds of the field and scrolls sideways past that, its end kept in view; the text keeps the rest; a field with tokens shows no placeholder. Each token is named by its label, with a remove button ("Remove Kind: PDF") that calls `onRemoveToken(key)`. Backspace with the caret at the start of the text and nothing selected (empty text included) removes the last token, never during an input method's composition. The clear button shows for text or a token, and its press calls `onClearText()` alone: with tokens, the caller empties the text and the tokens there. Without `tokens`, `Search` is unchanged. `docs/search.mdx`, story `Search/Tokens`.
+
+### Tests
+
+- `PlatformSearch.test.tsx`: `usePlatformSearch` through the application's own provider and null without one; a query with every filter reaching the platform and its order and top hit coming back; `watch`, `used`, and donating, removing and removing all of an application's items; typed fixtures, so `tsc` holds the shapes (a donated item cannot be a file's category).
+- `SearchTokens.test.tsx` (native): tokens in order with their names and remove buttons; Backspace at the start removes the last, never with the caret elsewhere or a selection; the clear button shows for tokens alone and calls only `onClearText`; remove buttons disabled with the field; without `tokens` no row, the same placeholder and the caller's handlers untouched. `SearchTokensWeb.test.tsx` (react-native-web): the row before the input and bounded to two thirds, Backspace reading the input's own selection, a composition's Backspace (`isComposing`, key code 229) left alone.
+
+### Consumers
+
+Bump to 17.20.0. Nothing changes for a `Search` without `tokens` or an application that does not read `search`. An adapter whose platform keeps an index gives `search`; an application that draws tokens empties them in its `onClearText`.
+
 ## 17.19.4
 
 ### Fixed

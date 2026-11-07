@@ -10,6 +10,8 @@ import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { SEARCH_MESSAGES } from './messages';
+import { SearchTokens } from './SearchTokens';
+import { IS_WEB } from '../styles/platform';
 
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
@@ -27,9 +29,14 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   {
     value,
     label: labelProp,
+    placeholder: placeholderProp,
     onClearText,
+    tokens,
+    onRemoveToken,
     onFocus,
     onPressIn,
+    onKeyPress,
+    onSelectionChange,
     iconSize,
     clearButtonProps,
     disabled,
@@ -50,7 +57,11 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   const common = useCommonMessages();
   const { messages } = useMessages(SEARCH_MESSAGES);
   const label = labelProp ?? common.search;
-  const showClear = value != null && value.length > 0;
+  const hasTokens = tokens != null && tokens.length > 0;
+  const showClear = (value != null && value.length > 0) || hasTokens;
+  // A field with tokens shows no placeholder, as a Mac's does not: the tokens
+  // already say what is being searched.
+  const placeholder = hasTokens ? null : placeholderProp === undefined ? label : placeholderProp;
 
   // Select-on-focus, done here rather than through RN's `selectTextOnFocus`.
   // On Android that prop does not select on focus: it arms a one-shot flag and
@@ -87,6 +98,35 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
     [onFocus],
   );
 
+  // Backspace with the caret at the start of the text and nothing selected
+  // removes the last token, as a Mac's search field does. Native reports the
+  // selection only through `onSelectionChange`; the web reads it off the input
+  // at the key itself. Never during an input method's composition: that
+  // Backspace edits the composition.
+  const selectionRef = useRef<{ start: number; end: number } | null>(null);
+  const handleSelectionChange = useCallback<NonNullable<SearchProps['onSelectionChange']>>(
+    (event) => {
+      selectionRef.current = event.nativeEvent.selection;
+      onSelectionChange?.(event);
+    },
+    [onSelectionChange],
+  );
+  const tokensRef = useRef(tokens);
+  tokensRef.current = tokens;
+  const handleKeyPress = useCallback<NonNullable<SearchProps['onKeyPress']>>(
+    (event) => {
+      onKeyPress?.(event);
+      const current = tokensRef.current;
+      const last = current?.[current.length - 1];
+      if (!last || !onRemoveToken) return;
+      if (event.nativeEvent.key !== 'Backspace') return;
+      if (caretAtStart(event, valueRef.current, selectionRef.current)) {
+        onRemoveToken(last.key);
+      }
+    },
+    [onKeyPress, onRemoveToken],
+  );
+
   return (
     <FieldBox
       {...direction}
@@ -101,11 +141,14 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
         chromeClassName={fieldChromeClassName}
       >
         <TextFieldIcon icon={MagnifyingGlassIcon} size={iconSize} />
+        {hasTokens ? (
+          <SearchTokens tokens={tokens} onRemoveToken={onRemoveToken} disabled={isDisabled} />
+        ) : null}
         <TextFieldInput
           inputRef={refs}
           label={label}
           value={value}
-          placeholder={label}
+          placeholder={placeholder}
           returnKeyType="search"
           keyboardAppearance={theme.mode === 'light' ? 'light' : 'dark'}
           autoFocus={false}
@@ -118,6 +161,9 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
           style={style}
           onPressIn={handlePressIn}
           onFocus={handleFocus}
+          {...(tokens === undefined
+            ? { onKeyPress, onSelectionChange }
+            : { onKeyPress: handleKeyPress, onSelectionChange: handleSelectionChange })}
         />
         {showClear && (
           <GlyphButton
@@ -137,3 +183,29 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   );
 });
 Search.displayName = 'Search';
+
+/**
+ * Whether a Backspace finds the caret at the start of the text with nothing
+ * selected. The web's key event is the DOM's: an input method's composition
+ * (`isComposing`, or the 229 a browser gives the key that ends one) is never a
+ * removal, and the input itself says where its caret is. Native has the
+ * controlled text and the last `onSelectionChange`: empty text is the start,
+ * and no selection reported yet is the caret at the end, where a field's text
+ * puts it.
+ */
+function caretAtStart(
+  event: Parameters<NonNullable<SearchProps['onKeyPress']>>[0],
+  text: string | undefined,
+  selection: { start: number; end: number } | null,
+): boolean {
+  const key = event.nativeEvent as { isComposing?: boolean; keyCode?: number };
+  if (key.isComposing === true || key.keyCode === 229) return false;
+  const input = (event as { target?: unknown }).target as
+    | { selectionStart?: number | null; selectionEnd?: number | null }
+    | undefined;
+  if (IS_WEB && typeof input?.selectionStart === 'number') {
+    return input.selectionStart === 0 && input.selectionEnd === 0;
+  }
+  if (text === '') return true;
+  return selection != null && selection.start === 0 && selection.end === 0;
+}

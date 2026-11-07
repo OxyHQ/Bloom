@@ -1,6 +1,6 @@
 ---
 title: Platform surfaces
-description: The host platform's popups, windows, menu bar, keys, appearance and the person's files, registered once at the root by the runtime, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar, every application follows the system's accent and reduce transparency, a file manager reaches the person's places and Trash, applications play the platform's own sounds, and content is dragged between applications.
+description: The host platform's popups, windows, menu bar, keys, appearance and the person's files, registered once at the root by the runtime, so native menus can open beyond the window, a desktop window gets its controls, an application's menus can live in the platform's bar, every application follows the system's accent and reduce transparency, a file manager reaches the person's places and Trash, an application searches the platform's index, applications play the platform's own sounds, and content is dragged between applications.
 order: 55
 ---
 
@@ -403,6 +403,88 @@ the panel asked before replacing an existing one), or `cancel`. The platform
 cites the latest press the application received for a choice, then closes the
 panel. Where the panel starts, and what it remembers between requests (the
 folder last used for each asking application), are the application's own.
+
+## `search`
+
+Not a capability either: the platform's search across the person's files,
+applications, Settings and applications' own items, for a platform that keeps
+an index (a desktop's Spotlight; OxyOS's, ADR 0051 there). A Mac's
+`NSMetadataQuery` (asking) and Core Spotlight (donating) are the models:
+
+```ts
+type PlatformSearchCategory =
+  | 'application' | 'settings' | 'folder' | 'document' | 'pdf' | 'text' | 'source'
+  | 'presentation' | 'spreadsheet' | 'image' | 'movie' | 'music' | 'archive'
+  | 'contact' | 'event' | 'mail' | 'message' | 'other';
+
+type PlatformSearchToken =                       // a search field's token (Finder's "Kind: PDF")
+  | { kind: 'category'; value: PlatformSearchCategory }
+  | { kind: 'tag'; value: string }
+  | { kind: 'date'; value: 'today' | 'yesterday' | 'week' | 'month' | 'year' }
+  | { kind: 'name'; value: string };
+
+type PlatformSearchQuery = {
+  text: string;                                  // words, "phrases", kind:pdf tag:Work date:today name:report
+  tokens?: readonly PlatformSearchToken[];
+  within?: readonly string[];                    // file:// folders, recursively
+  categories?: readonly PlatformSearchCategory[];
+  limit?: number;                                // default 60, at most 200
+  language?: string;                             // BCP 47; the platform's own when absent
+};
+
+type PlatformSearchItem = {
+  id: string;                                    // file URI, application:<id>, settings:<page>, <app id>:<its id>
+  category: PlatformSearchCategory;
+  title: string;
+  uri?: string;                                  // a file's or folder's
+  url?: string;                                  // what opens anything else
+  application?: string; icon?: string; contentType?: string; size?: number;
+  modified?: number; created?: number; lastUsed?: number;   // ms since the epoch
+  tags?: readonly string[]; snippet?: string; location?: string;  // `Documents › Work`
+};
+
+type PlatformSearchResults = { items: readonly PlatformSearchItem[]; topHit: string | null; indexing: boolean };
+
+type PlatformSearchableItem = {                  // Core Spotlight's CSSearchableItem
+  id: string; title: string;
+  category: 'contact' | 'event' | 'mail' | 'message' | 'other';
+  text?: string; keywords?: readonly string[];
+  url: string;                                   // what opens it
+  modified?: number;
+};
+
+interface PlatformSearch {
+  query(query: PlatformSearchQuery): Promise<PlatformSearchResults>;
+  watch(listener: () => void): () => void;
+  used(id: string): void;
+  readonly index: {
+    donate(items: readonly PlatformSearchableItem[]): Promise<void>;
+    remove(ids: readonly string[]): Promise<void>;
+    removeAll(): Promise<void>;
+  };
+}
+```
+
+- **Asking:** `query` answers from the index, best first, with the id of the
+  item it judged best (`topHit`, shown first) and whether it is still indexing
+  (`indexing`: the results may be incomplete). `text` is what the person typed:
+  words matched as prefixes of words in names and contents, "quoted phrases",
+  and typed filters (`kind:pdf`, `tag:Work`, `date:today`, `name:report`);
+  `tokens` are the filters the person chose as a search field's tokens
+  ([Search](/docs/bloom/main/search) draws them); `within`, `categories` and
+  `limit` bound it; titles come in `language`.
+- **Staying current:** `watch` hears every change to the index, to query again.
+- **Ranking:** `used(id)` says the person opened a result, and the platform
+  ranks it higher.
+- **What opens:** a file or folder by its `uri` (`file://`), anything else by
+  its `url` (an application's, or Settings' page).
+- **An application's own items:** `index.donate` adds or replaces items by id,
+  `index.remove` removes some and `index.removeAll` all of this application's.
+  Each is found by its title, `text` and `keywords`, and opened by its `url`.
+  Results give its id as `<application id>:<its id>`.
+
+`usePlatformSearch()` returns the adapter's `search`, or null: then an
+application searches only what it holds itself.
 
 ## `sounds`
 
