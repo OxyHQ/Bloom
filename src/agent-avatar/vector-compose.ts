@@ -170,6 +170,149 @@ const restTrack: Track = {
   rotation: { value: [0, 0, 0, 1] },
   scale: { value: [1, 1, 1] },
 };
+type FitMesh = { points: number[][]; faces: number[][] };
+function meshes(data: VectorData, selected: number[]): FitMesh[] {
+  return selected.map((i) => ({
+    points: data.parts[i]!.points.map((p) =>
+      point(world(data.clips.idle.parts[i] ?? restTrack, 0), p),
+    ),
+    faces: data.parts[i]!.faces,
+  }));
+}
+function vertical(meshes: FitMesh[], x: number, z: number, top: boolean, flat = false): number {
+  let result = top ? -Infinity : Infinity;
+  for (const mesh of meshes)
+    for (const face of mesh.faces) {
+      const a = mesh.points[face[0]!]!,
+        b = mesh.points[face[1]!]!,
+        c = mesh.points[face[2]!]!;
+      if (flat) {
+        for (const [p, q] of [
+          [a, b],
+          [b, c],
+          [c, a],
+        ]) {
+          const dx = q![0]! - p![0]!;
+          if (Math.abs(dx) < 1e-9) continue;
+          const t = (x - p![0]!) / dx;
+          if (t < 0 || t > 1) continue;
+          const y = p![1]! + (q![1]! - p![1]!) * t;
+          result = top ? Math.max(result, y) : Math.min(result, y);
+        }
+        continue;
+      }
+      const det = (b[2]! - c[2]!) * (a[0]! - c[0]!) + (c[0]! - b[0]!) * (a[2]! - c[2]!);
+      if (Math.abs(det) < 1e-10) continue;
+      const u = ((b[2]! - c[2]!) * (x - c[0]!) + (c[0]! - b[0]!) * (z - c[2]!)) / det;
+      const v = ((c[2]! - a[2]!) * (x - c[0]!) + (a[0]! - c[0]!) * (z - c[2]!)) / det;
+      if (Math.min(u, v, 1 - u - v) < -1e-7) continue;
+      const y = u * a[1]! + v * b[1]! + (1 - u - v) * c[1]!;
+      result = top ? Math.max(result, y) : Math.min(result, y);
+    }
+  return result;
+}
+function meshContact(body: FitMesh[], attached: FitMesh[], flat = false): number {
+  const points = attached.flatMap((m) => m.points),
+    xs = points.map((p) => p[0]!),
+    zs = points.map((p) => p[2]!);
+  const minX = Math.min(...xs),
+    maxX = Math.max(...xs),
+    minZ = Math.min(...zs),
+    maxZ = Math.max(...zs);
+  let shift = -Infinity;
+  const sample = (x: number, z: number) => {
+    const top = vertical(body, x, z, true, flat),
+      bottom = vertical(attached, x, z, false, flat);
+    if (Number.isFinite(top) && Number.isFinite(bottom)) shift = Math.max(shift, top - bottom);
+  };
+  for (let x = 0; x <= 12; x++)
+    for (let z = 0; z <= 12; z++)
+      sample(minX + ((maxX - minX) * x) / 12, minZ + ((maxZ - minZ) * z) / 12);
+  for (const mesh of body)
+    for (
+      let i = 0;
+      i < mesh.points.length;
+      i += Math.max(1, Math.floor(mesh.points.length / 128))
+    ) {
+      const p = mesh.points[i]!;
+      sample(p[0]!, flat ? (minZ + maxZ) / 2 : p[2]!);
+    }
+  return Number.isFinite(shift) ? shift : 0;
+}
+function containsXY(body: FitMesh[], x: number, y: number): boolean {
+  for (const mesh of body)
+    for (const f of mesh.faces) {
+      const a = mesh.points[f[0]!]!,
+        b = mesh.points[f[1]!]!,
+        c = mesh.points[f[2]!]!;
+      const den = (b[1]! - c[1]!) * (a[0]! - c[0]!) + (c[0]! - b[0]!) * (a[1]! - c[1]!);
+      if (Math.abs(den) < 1e-10) continue;
+      const u = ((b[1]! - c[1]!) * (x - c[0]!) + (c[0]! - b[0]!) * (y - c[1]!)) / den,
+        v = ((c[1]! - a[1]!) * (x - c[0]!) + (a[0]! - c[0]!) * (y - c[1]!)) / den;
+      if (Math.min(u, v, 1 - u - v) >= -1e-6) return true;
+    }
+  return false;
+}
+/** One translation for the complete face. Never clamp or resize individual eyes. */
+function fitFaceTranslation(body: FitMesh[], points: number[][], width: number): number[] {
+  const sample = points.filter((_, i) => i % Math.max(1, Math.floor(points.length / 128)) === 0);
+  const inside = (dx: number, dy: number) =>
+    sample.every((p) => containsXY(body, p[0]! + dx, p[1]! + dy));
+  if (inside(0, 0)) return [0, 0, 0];
+  const candidates: number[][] = [];
+  for (let x = -16; x <= 16; x++)
+    for (let y = -16; y <= 16; y++) candidates.push([x * width * 0.015, y * width * 0.015, 0]);
+  candidates.sort((a, b) => Math.hypot(a[0]!, a[1]!) - Math.hypot(b[0]!, b[1]!));
+  return candidates.find((p) => inside(p[0]!, p[1]!)) ?? [0, 0, 0];
+}
+
+function eyePair(data: VectorData, selected: number[]): [Bounds, Bounds] {
+  const all = bounds(data, selected),
+    left = selected.filter((i) => bounds(data, [i]).center[0]! < all.center[0]!),
+    right = selected.filter((i) => !left.includes(i));
+  return left.length && right.length ? [bounds(data, left), bounds(data, right)] : [all, all];
+}
+function eyePoints(data: VectorData, selected: number[], side: number): number[][] {
+  const middle = bounds(data, selected).center[0]!;
+  const half = selected.filter((i) => (bounds(data, [i]).center[0]! < middle ? 0 : 1) === side);
+  return meshes(data, half.length ? half : selected).flatMap((m) => m.points);
+}
+function principal(points: number[][], center: number[]): number {
+  let xx = 0,
+    xy = 0,
+    yy = 0;
+  for (const p of points) {
+    const x = p[0]! - center[0]!,
+      y = p[1]! - center[1]!;
+    xx += x * x;
+    xy += x * y;
+    yy += y * y;
+  }
+  if (Math.hypot(xx - yy, 2 * xy) < (xx + yy) * 0.12) return Math.PI / 2;
+  let angle = Math.atan2(2 * xy, xx - yy) / 2;
+  if (angle < 0) angle += Math.PI;
+  return angle;
+}
+function rimDistance(mesh: FitMesh[], center: number[], dx: number, dy: number): number {
+  let near = Infinity;
+  for (const m of mesh)
+    for (const f of m.faces)
+      for (let i = 0; i < 3; i++) {
+        const a = m.points[f[i]!]!,
+          b = m.points[f[(i + 1) % 3]!]!,
+          ex = b[0]! - a[0]!,
+          ey = b[1]! - a[1]!;
+        const det = dx * ey - dy * ex;
+        if (Math.abs(det) < 1e-10) continue;
+        const ax = a[0]! - center[0]!,
+          ay = a[1]! - center[1]!,
+          t = (ax * ey - ay * ex) / det,
+          u = (ax * dy - ay * dx) / det;
+        if (t > 1e-6 && u >= 0 && u <= 1) near = Math.min(near, t);
+      }
+  return near;
+}
+
 function paint(data: VectorData, character: ResolvedAvatarCharacter): VectorData {
   const color =
     'bodyColor' in character.paint
@@ -190,8 +333,11 @@ export async function composeVectorCharacter(
   const template = await loader.template(character);
   if (template) return paint(template, character);
   const base = await loader.shape(character.shape);
+  const preserveEyes = !!base.referenceFace && character.eyes === 'bot';
   const kept = base.parts.flatMap((p, i) =>
-    ['eye', 'eyewear', 'accessory'].includes(p.role ?? '') ? [] : [i],
+    ['eyewear', 'accessory'].includes(p.role ?? '') || (p.role === 'eye' && !preserveEyes)
+      ? []
+      : [i],
   );
   const result: VectorData = {
     ...base,
@@ -228,7 +374,7 @@ export async function composeVectorCharacter(
     id: string;
     data: Promise<VectorData>;
   }> = [];
-  if (character.eyes !== 'none')
+  if (character.eyes !== 'none' && !preserveEyes)
     selections.push({ role: 'eye', id: character.eyes, data: loader.eyes(character.eyes) });
   if (character.eyewear !== 'none')
     selections.push({
@@ -242,6 +388,22 @@ export async function composeVectorCharacter(
       id: character.accessory,
       data: loader.accessory(character.accessory),
     });
+  if (preserveEyes && character.eyeSpacing !== undefined && character.eyeSpacing !== 1) {
+    const selected = indices(result, 'eye'),
+      pair = eyePair(result, selected),
+      middle = (pair[0].center[0]! + pair[1].center[0]!) / 2;
+    for (const i of selected) {
+      const m = world(result.clips.idle.parts[i] ?? restTrack, 0),
+        center = bounds(result, [i]).center[0]!,
+        side = center < middle ? 0 : 1;
+      const dx = (pair[side].center[0]! - middle) * (character.eyeSpacing - 1),
+        delta = vector(inverse(m), [dx, 0, 0]);
+      result.parts[i] = {
+        ...result.parts[i]!,
+        points: result.parts[i]!.points.map((p) => p.map((n, k) => n + delta[k]!)),
+      };
+    }
+  }
   const donors = await Promise.all(
     selections.map(async (selection) => ({ ...selection, data: await selection.data })),
   );
@@ -252,33 +414,48 @@ export async function composeVectorCharacter(
       group = bounds(donor, selected),
       donorFace = bounds(donor, indices(donor, 'eye'));
     const facial = role === 'eye' || role === 'eyewear';
-    const circle = role === 'eye' ? await loader.shape('circle') : undefined;
-    const neutralFace = circle ? bounds(circle, indices(circle, 'eye')) : donorFace;
+    const circle = await loader.shape('circle');
+    const finalEyes = indices(result, 'eye');
+    const fittedFace = role === 'eyewear' && finalEyes.length ? bounds(result, finalEyes) : face;
+    const targetPair = eyePair(
+        role === 'eyewear' ? result : base,
+        role === 'eyewear' ? finalEyes : eyeIndices,
+      ),
+      sourcePair = eyePair(donor, indices(donor, 'eye'));
+    const meanHeight = (pair: [Bounds, Bounds]) => (pair[0].size[1]! + pair[1].size[1]!) / 2;
     const scale =
       role === 'eye'
         ? Math.min(
-            face.size[1]! / Math.max(0.01, neutralFace.size[1]!),
+            meanHeight(targetPair) /
+              Math.max(0.01, meanHeight(eyePair(circle, indices(circle, 'eye')))),
             (body.size[0]! * 0.8) / Math.max(0.01, group.size[0]!),
           )
-        : Math.min(body.size[0]! / donorBody.size[0]!, body.size[1]! / donorBody.size[1]!);
+        : role === 'eyewear'
+          ? Math.min(
+              meanHeight(targetPair) / Math.max(0.01, meanHeight(sourcePair)),
+              (body.size[0]! * 0.96) / Math.max(0.01, group.size[0]!),
+            )
+          : Math.min(body.size[0]! / donorBody.size[0]!, body.size[1]! / donorBody.size[1]!);
     const from = [
       ...(role === 'eye' ? group.center : facial ? donorFace.center : donorBody.center),
     ];
-    const to = [...(facial ? face.center : body.center)];
+    const to = [...(facial ? fittedFace.center : body.center)];
     if (role === 'eye' && id === 'cyclops' && character.shape === 'rounded_head_two_ears')
       to[1] = body.center[1]! - 0.14 * body.size[1]!;
-    let sizing = shift([0, 0, 0], scale);
+    const headwear =
+      role === 'accessory' && ['felipe_beret', 'beret', 'beanie', 'hat', 'crown'].includes(id);
+    let sizing = shift([0, 0, 0], headwear ? body.size[0]! / donorBody.size[0]! : scale);
     if (role === 'accessory') {
       if (id === 'headphones') {
-        from[1] = donorFace.center[1]!;
-        to[1] = face.center[1]!;
+        from[1] = donorBody.center[1]!;
+        to[1] = body.center[1]!;
         sizing = [
-          (body.size[0]! / donorBody.size[0]!) * 1.04,
+          body.size[0]! / donorBody.size[0]!,
           0,
           0,
           0,
           0,
-          (body.size[1]! / donorBody.size[1]!) * 1.04,
+          body.size[1]! / donorBody.size[1]!,
           0,
           0,
           0,
@@ -305,6 +482,162 @@ export async function composeVectorCharacter(
         matrix = multiply(fit, rest);
       return { i, part, rest, matrix, points: part.points.map((p) => point(matrix, p)) };
     });
+    if (facial && !(role === 'eye' && id === 'cyclops')) {
+      const sourceCenters = sourcePair.map((p) => p.center),
+        targetCenters = targetPair.map((p) => p.center);
+      if (role === 'eyewear' && id === 'separate_trapezoid_lenses') {
+        const points = meshes(donor, selected).flatMap((m) => m.points),
+          middle = donorFace.center[0]!;
+        for (let k = 0; k < 2; k++) {
+          const half = points.filter((p) => (p[0]! < middle ? 0 : 1) === k);
+          if (half.length)
+            sourceCenters[k] = [0, 1, 2].map(
+              (axis) =>
+                (Math.min(...half.map((p) => p[axis]!)) + Math.max(...half.map((p) => p[axis]!))) /
+                2,
+            );
+        }
+      }
+      const sourceAngles = [0, 1].map((k) =>
+        principal(eyePoints(donor, indices(donor, 'eye'), k), sourcePair[k]!.center),
+      );
+      const targetAngles = [0, 1].map((k) =>
+        principal(
+          eyePoints(
+            role === 'eyewear' ? result : base,
+            role === 'eyewear' ? finalEyes : eyeIndices,
+            k,
+          ),
+          targetCenters[k]!,
+        ),
+      );
+      const lensScales = [scale, scale],
+        lensWidths = [1, 1];
+      if (role === 'eyewear') {
+        const geometry = meshes(donor, selected),
+          filled = frontSurface(donor, selected),
+          open = id === 'monocle' || id === 'tall_oval_frames';
+        for (let k = 0; k < 2; k++) {
+          const center = sourceCenters[k]!,
+            angle = targetAngles[k]!,
+            cos = Math.cos(angle),
+            sin = Math.sin(angle);
+          const points = eyePoints(result, finalEyes, k),
+            sample = points.filter((_, i) => i % Math.max(1, Math.floor(points.length / 96)) === 0);
+          const local = sample.map((p) => {
+            const x = p[0]! - targetCenters[k]![0]!,
+              y = p[1]! - targetCenters[k]![1]!;
+            return [x * cos + y * sin, -x * sin + y * cos];
+          });
+          const sourceAngle = sourceAngles[k]!,
+            sx = Math.cos(sourceAngle),
+            sy = Math.sin(sourceAngle);
+          if (open) {
+            const a = Math.min(
+              rimDistance(geometry, center, sx, sy),
+              rimDistance(geometry, center, -sx, -sy),
+            );
+            const b = Math.min(
+              rimDistance(geometry, center, -sy, sx),
+              rimDistance(geometry, center, sy, -sx),
+            );
+            if (Number.isFinite(a) && Number.isFinite(b) && a > 0.01 && b > 0.01)
+              lensScales[k] =
+                Math.max(...local.map((p) => Math.hypot(p[0]! / a, p[1]! / b))) * 1.08;
+          } else {
+            let fitted = scale;
+            const contained = (factor: number) =>
+              local.every((p) =>
+                Number.isFinite(
+                  filled(
+                    center[0]! + (p[0]! * sx - p[1]! * sy) / factor,
+                    center[1]! + (p[0]! * sy + p[1]! * sx) / factor,
+                  ),
+                ),
+              );
+            for (let attempt = 0; attempt < 28 && !contained(fitted); attempt++) fitted *= 1.07;
+            lensScales[k] = fitted * 1.05;
+            if (id === 'separate_trapezoid_lenses') {
+              const middle = (sourceCenters[0]![0]! + sourceCenters[1]![0]!) / 2;
+              const vertices = geometry
+                .flatMap((m) => m.points)
+                .filter((p) => (p[0]! < middle ? 0 : 1) === k);
+              const donorHalfWidth = Math.max(
+                ...vertices.map((p) =>
+                  Math.abs(-(p[0]! - center[0]!) * sy + (p[1]! - center[1]!) * sx),
+                ),
+              );
+              const spacing = Math.hypot(
+                targetCenters[1]![0]! - targetCenters[0]![0]!,
+                targetCenters[1]![1]! - targetCenters[0]![1]!,
+              );
+              const wanted = Math.max(
+                Math.max(...local.map((p) => Math.abs(p[1]!))) * 1.18,
+                Math.min(body.size[0]! * 0.21, spacing * 0.48),
+              );
+              let width = Math.min(1, wanted / Math.max(0.001, donorHalfWidth * lensScales[k]!));
+              const fits = (factor: number) =>
+                local.every((p) =>
+                  Number.isFinite(
+                    filled(
+                      center[0]! +
+                        (p[0]! * sx) / lensScales[k]! -
+                        (p[1]! * sy) / (lensScales[k]! * factor),
+                      center[1]! +
+                        (p[0]! * sy) / lensScales[k]! +
+                        (p[1]! * sx) / (lensScales[k]! * factor),
+                    ),
+                  ),
+                );
+              for (let attempt = 0; attempt < 40 && !fits(width) && width < 1; attempt++)
+                width = Math.min(1, width * 1.04);
+              const donorHalfHeight = Math.max(
+                ...vertices.map((p) =>
+                  Math.abs((p[0]! - center[0]!) * sx + (p[1]! - center[1]!) * sy),
+                ),
+              );
+              lensWidths[k] = Math.min(
+                1,
+                Math.max(width, (1.2 * donorHalfHeight) / Math.max(0.001, donorHalfWidth)),
+              );
+            }
+          }
+        }
+      }
+      const middle = (sourceCenters[0]![0]! + sourceCenters[1]![0]!) / 2,
+        bridge = Math.max(0.001, (sourceCenters[1]![0]! - sourceCenters[0]![0]!) * 0.12);
+      for (const v of baked) {
+        const rigidSide = bounds(donor, [v.i]).center[0]! < middle ? 0 : 1;
+        v.points = v.points.map((p, index) => {
+          const original = point(v.rest, v.part.points[index]!),
+            t =
+              id === 'separate_trapezoid_lenses'
+                ? rigidSide
+                : Math.max(0, Math.min(1, (original[0]! - middle + bridge) / (2 * bridge)));
+          const candidates = [0, 1].map((k) => {
+            const dx = original[0]! - sourceCenters[k]![0]!,
+              dy = original[1]! - sourceCenters[k]![1]!;
+            const sourceAngle = sourceAngles[k]!,
+              targetAngle = targetAngles[k]!;
+            const major =
+              (dx * Math.cos(sourceAngle) + dy * Math.sin(sourceAngle)) * lensScales[k]!;
+            const minor =
+              (-dx * Math.sin(sourceAngle) + dy * Math.cos(sourceAngle)) *
+              lensScales[k]! *
+              lensWidths[k]!;
+            return [
+              targetCenters[k]![0]! + major * Math.cos(targetAngle) - minor * Math.sin(targetAngle),
+              targetCenters[k]![1]! + major * Math.sin(targetAngle) + minor * Math.cos(targetAngle),
+            ];
+          });
+          return [
+            candidates[0]![0]! * (1 - t) + candidates[1]![0]! * t,
+            candidates[0]![1]! * (1 - t) + candidates[1]![1]! * t,
+            p[2]!,
+          ];
+        });
+      }
+    }
     // Move complete eye assemblies, keeping pupils and eyelids together.
     if (role === 'eye' && id !== 'cyclops' && character.eyeSpacing !== undefined) {
       for (const value of baked) {
@@ -315,31 +648,62 @@ export async function composeVectorCharacter(
       }
     }
     const reference = base.referenceFace;
+    if (role === 'accessory' && ['felipe_beret', 'beret', 'beanie', 'hat', 'crown'].includes(id)) {
+      const targetMesh = meshes(base, bodyIndices),
+        sourceMesh = meshes(circle, indices(circle, 'body'));
+      const targetContact = meshContact(
+        targetMesh,
+        baked.map((v) => ({ points: v.points, faces: v.part.faces })),
+        !!reference,
+      );
+      const authoredContact = meshContact(sourceMesh, meshes(donor, selected), !!reference);
+      const appliedScale = body.size[0]! / donorBody.size[0]!;
+      const dy =
+        targetContact - Math.max(0, authoredContact) * appliedScale - body.size[1]! * 0.004;
+      for (const v of baked) v.points = v.points.map((p) => [p[0]!, p[1]! + dy, p[2]!]);
+    }
+    if (role === 'accessory' && ['orb', 'three_lobe', 'bow'].includes(id)) {
+      const top = id !== 'bow',
+        targetPoints = baked.flatMap((v) => v.points),
+        targetX =
+          (Math.min(...targetPoints.map((p) => p[0]!)) +
+            Math.max(...targetPoints.map((p) => p[0]!))) /
+          2;
+      const sourceBody = meshes(circle, indices(circle, 'body')),
+        targetBody = meshes(base, bodyIndices);
+      const sourceSurface = vertical(sourceBody, group.center[0]!, 0, top, true),
+        targetSurface = vertical(targetBody, targetX, 0, top, true);
+      const sourceEdge = top ? group.min[1]! : group.max[1]!,
+        targetEdge = top
+          ? Math.min(...targetPoints.map((p) => p[1]!))
+          : Math.max(...targetPoints.map((p) => p[1]!));
+      if (Number.isFinite(sourceSurface) && Number.isFinite(targetSurface)) {
+        const dy = targetSurface - targetEdge - (sourceSurface - sourceEdge) * scale;
+        for (const v of baked) v.points = v.points.map((p) => [p[0]!, p[1]! + dy, p[2]!]);
+      }
+    }
     if (facial && reference) {
-      const all = baked.flatMap((v) => v.points),
-        cx = reference.center[0],
-        cy = reference.center[1];
-      const maxRadius = Math.max(...all.map((p) => Math.hypot(p[0]! - to[0]!, p[1]! - to[1]!))),
-        shrink = Math.min(1, (reference.radius * 0.85) / Math.max(0.001, maxRadius));
-      // Separate authored eye layers after flattening them onto the gaze sphere.
-      // Per-vertex depth normalization can make the iris intersect its white backing.
+      const all = baked.flatMap((v) => v.points);
+      const translation =
+        role === 'eye'
+          ? fitFaceTranslation(meshes(base, bodyIndices), all, body.size[0]!)
+          : [0, 0, 0];
+      const zMin = Math.min(...all.map((p) => p[2]!)),
+        zMax = Math.max(...all.map((p) => p[2]!));
+      const depth = role === 'eyewear' ? fittedFace.max[2]! + 0.035 : 0.24;
       const layers = [...baked].sort(
         (a, b) =>
-          a.points.reduce((sum, p) => sum + p[2]!, 0) / a.points.length -
-          b.points.reduce((sum, p) => sum + p[2]!, 0) / b.points.length,
+          a.points.reduce((n, p) => n + p[2]!, 0) / a.points.length -
+          b.points.reduce((n, p) => n + p[2]!, 0) / b.points.length,
       );
       for (const v of baked)
-        v.points = v.points.map((p) => {
-          const x = cx + (p[0]! - to[0]!) * shrink,
-            y = cy + (p[1]! - to[1]!) * shrink;
-          return [
-            x,
-            y,
-            Math.sqrt(Math.max(0.0001, reference.radius ** 2 - (x - cx) ** 2 - (y - cy) ** 2)) +
-              0.018 +
-              layers.indexOf(v) * 0.012,
-          ];
-        });
+        v.points = v.points.map((p) => [
+          p[0]! + translation[0]!,
+          p[1]! + translation[1]!,
+          depth +
+            layers.indexOf(v) * 0.012 +
+            ((p[2]! - zMin) / Math.max(0.001, zMax - zMin)) * 0.004,
+        ]);
     } else if (facial) {
       const front = frontSurface(base, bodyIndices);
       let offset = 0;

@@ -140,3 +140,52 @@ it('keeps eyelid parameters and donor-relative movement instead of freezing cust
   expect(eye.matrix?.samples?.slice(16, 32)).not.toEqual(eye.matrix?.samples?.slice(0, 16));
   expect(JSON.stringify(donor)).toBe(before);
 });
+
+it('preserves a flat shape’s original eye contours and carriers when adding headwear', async () => {
+  const base = asset();
+  base.referenceFace = { center: [0, 0], radius: 1, gazeScale: 0.4 };
+  const accessory = asset();
+  accessory.parts.push(
+    part(3, 'accessory', [
+      [-0.1, 1, 0.1],
+      [0.1, 1, 0.1],
+      [0, 1.2, 0.1],
+    ]),
+  );
+  accessory.clips = Object.fromEntries(
+    Object.entries(accessory.clips).map(([action, clip]) => [
+      action,
+      { ...clip, parts: [...clip.parts, track] },
+    ]),
+  ) as VectorData['clips'];
+  const loader = loaders(base);
+  loader.accessory = jest.fn(async () => accessory);
+  const result = await composeVectorCharacter(
+    { ...character(), shape: 'bot_blob', eyes: 'bot', accessory: 'crown' },
+    loader,
+  );
+  expect(loader.eyes).not.toHaveBeenCalled();
+  for (const index of [1, 2]) {
+    expect(result.parts[index]).toBe(base.parts[index]);
+    for (const action of ['idle', 'reaction', 'work'] as const)
+      expect(result.clips[action].parts[index]).toBe(base.clips[action].parts[index]);
+  }
+});
+
+it('changes native eye spacing as translation without resizing either eye or mutating the asset', async () => {
+  const base = asset();
+  base.referenceFace = { center: [0, 0], radius: 1, gazeScale: 0.4 };
+  const snapshot = JSON.stringify(base);
+  const result = await composeVectorCharacter(
+    { ...character(), shape: 'bot_blob', eyes: 'bot', eyeSpacing: 1.2 },
+    loaders(base),
+  );
+  for (const index of [1, 2]) {
+    const before = base.parts[index]!.points,
+      after = result.parts[index]!.points;
+    expect(after[1]![0]! - after[0]![0]!).toBeCloseTo(before[1]![0]! - before[0]![0]!);
+    expect(after[1]![1]! - after[0]![1]!).toBeCloseTo(before[1]![1]! - before[0]![1]!);
+    expect(after[0]![0]).not.toBe(before[0]![0]);
+  }
+  expect(JSON.stringify(base)).toBe(snapshot);
+});
