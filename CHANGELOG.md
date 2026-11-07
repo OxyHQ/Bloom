@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.17.0
+
+### Added
+
+- **Tags on the person's files** (`PlatformFiles.tags`, what Dropsea's Finder tags need from OxyOS): `PlatformFileTags`, optional like `chooser`, present on a platform that keeps the person's tags on their files. `inFolder(folderUri)` gives the tags of what a folder holds by each item's URI as `Directory.list()` writes it, items with none left out; `ofItems(uris)` each item's tags in order, null for one not there; `change(uris, { add, remove })` changes each item on its own with an outcome per item (each tag of `add` appended once, names compared without regard to case, the first spelling kept; each name of `remove` gone); `tagged(name)` and `names()` answer from the platform's index across the person's places (never the Trash); `watch(listener)` hears the index change. A tag is `PlatformFileTag` (`name`, and `color`, a `PlatformTagColor` of Finder's seven, only where the item itself says one, else null); also `PlatformTagChange`, `PlatformTaggedItem` and `PlatformTagName`, from `@oxy.so/bloom/platform-surface`. `PlatformTrashedItem.tags`: an item's tags as it sits in the Trash (Finder's Trash shows them), empty when it has none. `PlatformFiles.test.tsx`; `docs/platform-surface.mdx`.
+
+### Consumers
+
+Bump to 17.17.0. Types only: nothing changes for an application that does not read `files.tags`. An adapter that keeps tags gives `files.tags`; every adapter's `trashed()` gives each item's `tags` (empty where it keeps none).
+
 ## 17.16.0
 
 ### Added

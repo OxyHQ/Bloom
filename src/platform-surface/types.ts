@@ -568,6 +568,8 @@ export interface PlatformTrashedItem {
   readonly size: number | null;
   /** When its content last changed, in milliseconds since the epoch. */
   readonly lastModified: number | null;
+  /** Its tags as it sits in the Trash (Finder's Trash shows them); empty when it has none. */
+  readonly tags: readonly PlatformFileTag[];
 }
 
 /**
@@ -636,10 +638,68 @@ export interface PlatformFileChooser {
   cancel(): void;
 }
 
+/** A tag's colour: Finder's seven. */
+export type PlatformTagColor = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'grey';
+
+/** A tag on an item: its name and, where the item itself says one (a Mac's tags do), its colour. */
+export interface PlatformFileTag {
+  readonly name: string;
+  readonly color: PlatformTagColor | null;
+}
+
+/** An item the platform's index found carrying a tag (`PlatformFileTags.tagged`). */
+export interface PlatformTaggedItem {
+  readonly uri: string;
+  readonly name: string;
+  readonly isDirectory: boolean;
+  /** Bytes; null for a folder. */
+  readonly size: number | null;
+  /** Milliseconds since the epoch. */
+  readonly lastModified: number | null;
+  readonly tags: readonly PlatformFileTag[];
+}
+
+/** A change to items' tags: each of `add` once (case aside, appended in order), each of `remove` gone. */
+export interface PlatformTagChange {
+  readonly add?: readonly PlatformFileTag[];
+  readonly remove?: readonly string[];
+}
+
+/** A tag name the index found, and how many items carry it. */
+export interface PlatformTagName {
+  readonly name: string;
+  readonly count: number;
+}
+
+/**
+ * The person's tags on their files (a desktop's Finder tags), where the
+ * platform keeps them (`PlatformFiles.tags`). Tag names compare without
+ * regard to case, the first spelling kept. Every URI is `file://`, as
+ * `expo-file-system` gives them.
+ */
+export interface PlatformFileTags {
+  /** The tags of what a folder holds, by each item's URI as `Directory.list()` writes it; items with none left out. */
+  inFolder(folderUri: string): Promise<Readonly<Record<string, readonly PlatformFileTag[]>>>;
+  /** Each item's tags, in the order asked; null for an item that is not there. */
+  ofItems(uris: readonly string[]): Promise<readonly (readonly PlatformFileTag[] | null)[]>;
+  /** Changes items' tags, each on its own; an outcome per item, `result` its URI. */
+  change(
+    uris: readonly string[],
+    change: PlatformTagChange,
+  ): Promise<readonly PlatformFileOutcome[]>;
+  /** Every item in the person's places (not the Trash's) carrying `name`, case aside, from the platform's index. */
+  tagged(name: string): Promise<readonly PlatformTaggedItem[]>;
+  /** Every tag the index found on the person's items. */
+  names(): Promise<readonly PlatformTagName[]>;
+  /** Calls `listener` when the index changes (an item's tags, a tagged item moved, gone or come); the unsubscribe. */
+  watch(listener: () => void): () => void;
+}
+
 /**
  * The person's files beyond what `expo-file-system` reaches, for a platform
  * that has them: their places (a desktop's home, standard folders and
- * volumes) and the Trash every file manager on it shares. Optional and not a
+ * volumes), the Trash every file manager on it shares and, where it keeps
+ * them, their tags on their files. Optional and not a
  * capability (it changes no presentation). Without it an application has the
  * folders `expo-file-system` gives it (`Paths.document`) and deletes as that
  * API does, for good.
@@ -670,6 +730,12 @@ export interface PlatformFiles {
    * chooser (a file manager in its picker mode): the request it answers.
    */
   readonly chooser?: PlatformFileChooser;
+  /**
+   * The person's tags on their files, for a platform that keeps them (a
+   * desktop's Finder tags). Absent: the platform keeps none, and an
+   * application keeps its own or shows none.
+   */
+  readonly tags?: PlatformFileTags;
 }
 
 /**

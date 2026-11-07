@@ -1,6 +1,6 @@
 /**
  * The `files` part of the platform adapter (the person's places and the Trash,
- * and the file chooser's request) and who registers an adapter: the runtime wraps the application, and the
+ * the file chooser's request and the tags on the person's files) and who registers an adapter: the runtime wraps the application, and the
  * application's own `BloomProvider`, with no `platform` of its own, keeps it.
  */
 import type React from 'react';
@@ -14,6 +14,8 @@ import {
 import type {
   PlatformFileChooser,
   PlatformFiles,
+  PlatformFileTag,
+  PlatformFileTags,
   PlatformSurfaceAdapter,
 } from '../platform-surface/types';
 import { BloomProvider } from '../provider';
@@ -86,6 +88,51 @@ describe('the file chooser’s request', () => {
 
   it('is absent from an application the platform did not start as the chooser', () => {
     const { result } = renderHook(() => usePlatformFiles()?.chooser, {
+      wrapper: ({ children }) => runtime(children),
+    });
+    expect(result.current).toBeUndefined();
+  });
+});
+
+describe('the tags on the person’s files', () => {
+  it('reach the application through its files, where the platform keeps them', async () => {
+    const red: PlatformFileTag = { name: 'Red', color: 'red' };
+    const changes: string[] = [];
+    const tags: PlatformFileTags = {
+      inFolder: async (folderUri) => ({ [`${folderUri}/a.txt`]: [red] }),
+      ofItems: async (uris) => uris.map((uri) => (uri.endsWith('gone') ? null : [red])),
+      change: async (uris, change) => {
+        changes.push(
+          `${uris.join(' ')} +${(change.add ?? []).map((tag) => tag.name).join(',')} -${(change.remove ?? []).join(',')}`,
+        );
+        return uris.map((uri) => ({ uri, ok: true, result: uri }));
+      },
+      tagged: async () => [],
+      names: async () => [{ name: 'Red', count: 1 }],
+      watch: () => () => {},
+    };
+    const adapter: PlatformSurfaceAdapter = {
+      platform: 'runtime',
+      capabilities: new Set(),
+      files: { ...files, tags },
+    };
+    const { result } = renderHook(() => usePlatformFiles()?.tags, {
+      wrapper: ({ children }) =>
+        runtime(<BloomProvider fonts={false}>{children}</BloomProvider>, adapter),
+    });
+    expect(result.current).toBe(tags);
+    await expect(result.current?.inFolder('file:///home/ada')).resolves.toEqual({
+      'file:///home/ada/a.txt': [red],
+    });
+    await expect(
+      result.current?.ofItems(['file:///home/ada/a.txt', 'file:///home/ada/gone']),
+    ).resolves.toEqual([[red], null]);
+    await result.current?.change(['file:///home/ada/a.txt'], { add: [red], remove: ['Blue'] });
+    expect(changes).toEqual(['file:///home/ada/a.txt +Red -Blue']);
+  });
+
+  it('are absent where the platform keeps none', () => {
+    const { result } = renderHook(() => usePlatformFiles()?.tags, {
       wrapper: ({ children }) => runtime(children),
     });
     expect(result.current).toBeUndefined();
