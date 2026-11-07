@@ -277,8 +277,9 @@ interface PlatformEditing {
 ## `files`
 
 Not a capability either: the person's files beyond what `expo-file-system`
-reaches, for a platform that has them. A file manager needs two things that
-API does not have, and a desktop has both:
+reaches, for a platform that has them. A file manager needs three things that
+API does not have (the person's places, the Trash and their tags on their
+files), and a desktop has them:
 
 ```ts
 interface PlatformFiles {
@@ -291,6 +292,7 @@ interface PlatformFiles {
   erase(uris: readonly string[]): Promise<readonly PlatformFileOutcome[]>;
   emptyTrash(): Promise<void>;
   readonly chooser?: PlatformFileChooser;            // only in the person's file chooser
+  readonly tags?: PlatformFileTags;                  // the person's tags on their files
 }
 ```
 
@@ -309,6 +311,63 @@ Every URI is `file://`: what a place holds is read, changed and watched through
 API on every platform. `usePlatformFiles()` returns the adapter's `files`, or
 null: then an application has the folders `expo-file-system` gives it
 (`Paths.document`) and deletes as that API does, for good, saying so.
+
+### Tags: `tags`
+
+A desktop keeps the person's tags on their files, as a Mac's Finder does, so
+every file manager on it shows the same ones, a file keeps them when it is
+copied, moved or put in the Trash, and one index answers "everything tagged
+Red" without a crawl per question. `files.tags` is present on a platform that
+keeps them, and absent elsewhere: an application then keeps its own, or shows
+none.
+
+```ts
+type PlatformTagColor = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'grey';
+
+interface PlatformFileTag { name: string; color: PlatformTagColor | null }
+interface PlatformTagChange { add?: readonly PlatformFileTag[]; remove?: readonly string[] }
+interface PlatformTagName { name: string; count: number }
+interface PlatformTaggedItem {
+  uri: string; name: string; isDirectory: boolean;
+  size: number | null;                // bytes; null for a folder
+  lastModified: number | null;        // ms since the epoch
+  tags: readonly PlatformFileTag[];
+}
+
+interface PlatformFileTags {
+  inFolder(folderUri: string): Promise<Readonly<Record<string, readonly PlatformFileTag[]>>>;
+  ofItems(uris: readonly string[]): Promise<readonly (readonly PlatformFileTag[] | null)[]>;
+  change(uris: readonly string[], change: PlatformTagChange): Promise<readonly PlatformFileOutcome[]>;
+  tagged(name: string): Promise<readonly PlatformTaggedItem[]>;
+  names(): Promise<readonly PlatformTagName[]>;
+  watch(listener: () => void): () => void;
+}
+```
+
+- **What an item carries:** `inFolder` gives the tags of everything a folder
+  holds, keyed by each item's URI exactly as `Directory.list()` writes it, and
+  leaves out items with none (one call for a folder's view); `ofItems` gives
+  each item's tags in the order asked, null for an item that is not there.
+- **A tag's colour** is the item's own only where the item says one (a file
+  tagged on a Mac does); otherwise `null`, and the application colours the tag
+  from the person's own tag definitions, which are its to keep.
+- **Changing them:** `change` applies the same change to each item on its own:
+  each tag of `add` is appended once (names compare without regard to case, the
+  first spelling kept) and each name of `remove` goes. Each item gets its
+  outcome (`PlatformFileOutcome`, `result` its URI), so one that fails never
+  hides what came of the rest.
+- **Across the person's places:** `tagged(name)` lists every item in the
+  person's places (never the Trash) carrying a tag, and `names()` every tag
+  found with how many items carry it, both from the platform's index; `watch`
+  hears every change to it (an item's tags, a tagged item moved, gone or come),
+  for a view of a tag to stay current.
+- **In the Trash:** each `PlatformTrashedItem` says its `tags` as it sits
+  there, as Finder's Trash shows them (empty when it has none, and on a
+  platform that keeps no tags).
+
+On OxyOS the tags are the files' own extended attributes, written as the
+freedesktop.org `user.xdg.tags` and read from a Mac's own attribute when a file
+came from one, so they travel with the files.
 
 ### The file chooser: `chooser`
 
