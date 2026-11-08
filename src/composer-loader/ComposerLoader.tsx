@@ -1,3 +1,4 @@
+import { ComposerLoaderPaintContext } from './context';
 import { Surface } from '../surface';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
@@ -43,7 +44,7 @@ import { AndroidLight } from './AndroidLight';
  * react-native-svg 15 implements on iOS and Android.
  *
  * The component paints the pill surface itself and layers the light above it,
- * so the wrapped composer must not paint its own background while `active`.
+ * and ComposerPill inherits that paint ownership through semantic context.
  */
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
@@ -265,7 +266,9 @@ function ComposerLoaderComponent({
         ) : null}
       </Animated.View>
 
-      <View style={styles.content}>{children}</View>
+      <ComposerLoaderPaintContext.Provider value={active}>
+        <View style={styles.content}>{children}</View>
+      </ComposerLoaderPaintContext.Provider>
     </View>
   );
 }

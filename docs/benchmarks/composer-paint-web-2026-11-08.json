@@ -1,0 +1,35 @@
+{
+  "commit": "d131599ba36a82baf9eceafa2f6de81d68aa1536",
+  "workingTree": "",
+  "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "packages": {
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-web": "0.21.4",
+    "react-native-svg": "15.16.0",
+    "react-native-reanimated": "4.7.1",
+    "expo-blur": "58.0.5"
+  },
+  "story": "agents-composer-loader--lifecycle",
+  "browser": "Chrome/146.0.7680.31",
+  "cases": [
+    "active clock",
+    "inactive settles",
+    "explicit pause preserves phase",
+    "retained Screen",
+    "hide during fade cancels opacity work",
+    "AgentChat Stop uses real handler",
+    "background tab",
+    "resize 320",
+    "resize 390",
+    "resize 768",
+    "resize 1024",
+    "resize 1440",
+    "resize 390",
+    "height resize",
+    "reduced motion",
+    "offscreen"
+  ],
+  "command": "PUPPETEER_PATH=/path/to/puppeteer-core CHROME_PATH=/path/to/chrome STORYBOOK_URL=http://localhost:6143 OUT=.local/composer-paint-web node scripts/verify-composer-loader-lifecycle.mjs",
+  "limits": "Chrome Storybook source checkout; not packed/published consumer, Android, Alia, or optical parity acceptance."
+}

@@ -10,13 +10,18 @@ The loading state that wraps a chat composer while an agent works: an iridescent
 
 ```tsx
 import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
+import { ComposerPill } from '@oxy.so/bloom/composer-panel';
 
-<ComposerLoader active={isWaitingForReply}>
-  <MyComposer style={{ backgroundColor: 'transparent' }} />
-</ComposerLoader>
+export function WorkingComposer({ busy }: { busy: boolean }) {
+  return (
+    <ComposerLoader active={busy}>
+      <ComposerPill busy={busy} defaultValue="" />
+    </ComposerLoader>
+  );
+}
 ```
 
-**The loader paints the pill surface itself** (the shared Surface material with `shadow-xs`) and layers the light above it, beneath the children. A wrapped composer must not paint its own opaque background while `active`, or it covers the light entirely — swap it to `bg-transparent shadow-none` while busy.
+**The loader owns the pill surface** (the shared Surface material with `shadow-xs`) and layers the light beneath its children. `ComposerPill` automatically inherits that paint ownership and the nearest loader’s active state for frosted controls. Explicit `surface` and `frosted` values override inheritance. Outside a loader, the pill keeps its own surface and unfrosted controls. Custom children still own their paint contract; an opaque child can cover the decorative light.
 
 The loader takes its width from its container and its height from its children; the default radius is a full pill. It waits for a positive measured size before mounting the decorative SVG. The composer and its surface are present from the first render; the loader never paints a provisional 640 × 52 outline. Resizing updates the shared perimeter without replacing the composer.
 
@@ -52,7 +57,7 @@ mounting or from a window-size guess. Resuming preserves the lap phase.
 
 ```tsx
 <ComposerLoader active={busy} paused={!inView}>
-  <ComposerPill surface={false} frosted={busy} {...composerProps} />
+  <ComposerPill {...composerProps} />
 </ComposerLoader>
 ```
 
