@@ -2,6 +2,20 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.21.0
+
+### Added
+
+- **The person's backups** (`PlatformFiles.backups`, what a file manager's *Browse Versions…* and *Browse Backups* need, a Mac's Time Machine; OxyOS ADR 0059): `PlatformFileBackups`, optional as `tags` is, present on a platform that makes backups. `state()` says where they are kept (`PlatformBackupsState`: its `destinations`, `PlatformBackupDestination` a disk or a share, whether each is reachable, its newest and oldest backup; the `lastBackup`; whether one is `backingUp`) and `watch(listener)` hears it change; an application shows its backup commands only while a destination is named. `versions(uri)` lists an item's versions newest first (`PlatformFileVersion`: its `PlatformBackup`, size and time of change; a file once for each backup it changed in, a folder in every backup); `contents(backup, folderUri)` what a folder held then (`PlatformBackupItem`, each by its `uri` where it was); `restore(backup, uri, options)` writes it back as the person, where it is or was or into `to` (Restore to…), beside an item of the same name as Time Machine names it (`notes (original).txt`) unless `replace` is asked, with `onProgress` and an abortable `signal`, answering `PlatformRestored` (`uri`, and `skipped` items of a folder: links leading out of it, devices). Errors carry a `PlatformBackupError` `code` (the file errors, `unavailable`, `not-permitted`, `cancelled`). All from `@oxy.so/bloom/platform-surface`. `docs/platform-surface.mdx`.
+
+### Tests
+
+- `PlatformFiles.test.tsx`: the backups reach the application through its files and its own provider, absent where the platform makes none; a state, a version, a folder's contents and restores (Keep Both, Replace into another folder, progress) through typed fixtures, so `tsc` holds the shapes.
+
+### Consumers
+
+Bump to 17.21.0. Nothing changes for an application that does not read `backups`. An adapter whose platform makes backups gives `files.backups`.
+
 ## 17.20.3
 
 ### Fixed

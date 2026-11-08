@@ -718,11 +718,147 @@ export interface PlatformFileTags {
   watch(listener: () => void): () => void;
 }
 
+/** A place the person's backups are kept (`PlatformFileBackups.state`): a disk, or a share on a NAS. */
+export interface PlatformBackupDestination {
+  readonly id: string;
+  /** Its name as the person knows it: a disk's label, a share's. */
+  readonly name: string;
+  readonly kind: 'disk' | 'share';
+  /** Connected (a disk) or reachable (a share): its backups can be browsed and restored from now. */
+  readonly available: boolean;
+  /** Its newest backup, in milliseconds since the epoch; null before the first. */
+  readonly lastBackup: number | null;
+  /** Its oldest backup still kept, in milliseconds since the epoch. */
+  readonly oldestBackup: number | null;
+}
+
+/** Where the person's backups are kept, and when the last was made. */
+export interface PlatformBackupsState {
+  /** Empty where no backup is kept (none was set up): an application then shows none. */
+  readonly destinations: readonly PlatformBackupDestination[];
+  /** The newest backup of any destination, in milliseconds since the epoch. */
+  readonly lastBackup: number | null;
+  /** A backup is being made now. */
+  readonly backingUp: boolean;
+}
+
+/** One backup: the moment it was made, on the destination that keeps it. */
+export interface PlatformBackup {
+  /** The destination that keeps it (`PlatformBackupDestination.id`). */
+  readonly destination: string;
+  /** The backup's own id on it. */
+  readonly id: string;
+  /** When it was made, in milliseconds since the epoch. */
+  readonly time: number;
+}
+
+/**
+ * A version of an item: what one backup held of it (`PlatformFileBackups.versions`).
+ * A file has a version for each backup it changed in; a folder has one in
+ * every backup (what it holds may have changed though it did not).
+ */
+export interface PlatformFileVersion {
+  readonly backup: PlatformBackup;
+  readonly isDirectory: boolean;
+  /** Bytes; null for a folder. */
+  readonly size: number | null;
+  /** When its content had last changed, as the backup holds it, in milliseconds since the epoch. */
+  readonly lastModified: number | null;
+}
+
+/** An item a folder held in a backup (`PlatformFileBackups.contents`). */
+export interface PlatformBackupItem {
+  /** Where it was (and may still be), under the folder's URI as asked: what `versions` and `restore` take. */
+  readonly uri: string;
+  readonly name: string;
+  readonly isDirectory: boolean;
+  /** Bytes; null for a folder. */
+  readonly size: number | null;
+  /** Milliseconds since the epoch. */
+  readonly lastModified: number | null;
+}
+
+/** How a restore is told its progress: bytes written, of `totalBytes` (null for a folder, whose size is known only at the end). */
+export interface PlatformRestoreProgress {
+  readonly bytesWritten: number;
+  readonly totalBytes: number | null;
+}
+
+/** How an item is restored (`PlatformFileBackups.restore`). */
+export interface PlatformRestoreOptions {
+  /**
+   * The folder to restore into (Restore to…), as a `file://` URI. Absent:
+   * where the item is, or was.
+   */
+  readonly to?: string;
+  /**
+   * Where an item of the same name is there: replace it, in one step (true),
+   * or keep both (false, the default), the restored item beside it named as
+   * a Mac's Time Machine names it, `notes (original).txt`, then
+   * `notes (original 2).txt`. The platform never replaces what the person may
+   * not change (their home's standard folders).
+   */
+  readonly replace?: boolean;
+  /** Told as the item is written. */
+  readonly onProgress?: (progress: PlatformRestoreProgress) => void;
+  /** Aborting it stops the restore; nothing half written is left, and it rejects with `cancelled`. */
+  readonly signal?: AbortSignal;
+}
+
+/** What came of a restore. */
+export interface PlatformRestored {
+  /** Where the item is now: its own name, or the kept one beside it. */
+  readonly uri: string;
+  /**
+   * Items of a folder left out: links that led out of it, devices, pipes and
+   * sockets, none of which are a person's files.
+   */
+  readonly skipped: number;
+}
+
+/**
+ * Why a backup's question or restore failed, as the error's `code`: the
+ * file errors (`PlatformFileError`), and
+ *
+ * - `unavailable`: the backup is not reachable now (its disk is not
+ *   connected, its share not answering) or the platform's backups are not
+ *   running;
+ * - `not-permitted`: the application may not reach the person's backups;
+ * - `cancelled`: the restore's signal was aborted.
+ */
+export type PlatformBackupError = PlatformFileError | 'unavailable' | 'not-permitted' | 'cancelled';
+
+/**
+ * The person's backups of their files, for a platform that makes them (a
+ * desktop's Time Machine): an item's past versions, a folder as it was at a
+ * backup, and restoring either, as the person, beside what is there or in its
+ * place. Present only where the platform has backups at all; an application
+ * shows them only while `state()` names a destination. Every URI is
+ * `file://`, as `expo-file-system` gives them. A promise rejects with an
+ * `Error` whose `code` is a `PlatformBackupError`.
+ */
+export interface PlatformFileBackups {
+  /** Where backups are kept and when the last was made. */
+  state(): Promise<PlatformBackupsState>;
+  /** Calls `listener` when the state changes (a destination added or gone, a backup made); returns the unsubscribe. */
+  watch(listener: () => void): () => void;
+  /** The item's versions, newest first; empty for an item no backup holds. */
+  versions(uri: string): Promise<readonly PlatformFileVersion[]>;
+  /** What the folder at `folderUri` held in `backup`, its files and folders. */
+  contents(backup: PlatformBackup, folderUri: string): Promise<readonly PlatformBackupItem[]>;
+  /** Restores the item at `uri` as `backup` held it. */
+  restore(
+    backup: PlatformBackup,
+    uri: string,
+    options?: PlatformRestoreOptions,
+  ): Promise<PlatformRestored>;
+}
+
 /**
  * The person's files beyond what `expo-file-system` reaches, for a platform
  * that has them: their places (a desktop's home, standard folders and
  * volumes), the Trash every file manager on it shares and, where it keeps
- * them, their tags on their files. Optional and not a
+ * them, their tags on their files and their backups. Optional and not a
  * capability (it changes no presentation). Without it an application has the
  * folders `expo-file-system` gives it (`Paths.document`) and deletes as that
  * API does, for good.
@@ -759,6 +895,12 @@ export interface PlatformFiles {
    * application keeps its own or shows none.
    */
   readonly tags?: PlatformFileTags;
+  /**
+   * The person's backups of their files (an item's past versions, a folder as
+   * it was, restoring), for a platform that makes them. Absent: the platform
+   * keeps none, and an application shows nothing of backups.
+   */
+  readonly backups?: PlatformFileBackups;
 }
 
 /**

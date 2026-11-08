@@ -279,7 +279,8 @@ interface PlatformEditing {
 Not a capability either: the person's files beyond what `expo-file-system`
 reaches, for a platform that has them. A file manager needs three things that
 API does not have (the person's places, the Trash and their tags on their
-files), and a desktop has them:
+files), and a desktop has them; a desktop that backs them up gives their
+backups too:
 
 ```ts
 interface PlatformFiles {
@@ -293,6 +294,7 @@ interface PlatformFiles {
   emptyTrash(): Promise<void>;
   readonly chooser?: PlatformFileChooser;            // only in the person's file chooser
   readonly tags?: PlatformFileTags;                  // the person's tags on their files
+  readonly backups?: PlatformFileBackups;            // their backups: versions, a folder as it was
 }
 ```
 
@@ -368,6 +370,81 @@ interface PlatformFileTags {
 On OxyOS the tags are the files' own extended attributes, written as the
 freedesktop.org `user.xdg.tags` and read from a Mac's own attribute when a file
 came from one, so they travel with the files.
+
+### Backups: `backups`
+
+A desktop backs the person's files up (a Mac's Time Machine), and a file
+manager is where they get them back: an item's past versions (*Browse
+Versions…*), a folder as it was at a backup (*Browse Backups*, Time Machine's
+*Enter Time Machine*), and *Restore*. `files.backups` is present on a platform
+that makes backups, and absent elsewhere (the web, a phone). Present, it may
+still keep none (nobody set a backup disk up): an application shows its backup
+commands only while `state()` names a destination, and follows `watch` for one
+being added or taken away.
+
+```ts
+interface PlatformBackup { destination: string; id: string; time: number }   // ms since the epoch
+interface PlatformBackupDestination {
+  id: string; name: string; kind: 'disk' | 'share';
+  available: boolean;                 // connected or reachable: browsable now
+  lastBackup: number | null; oldestBackup: number | null;
+}
+interface PlatformBackupsState {
+  destinations: readonly PlatformBackupDestination[];
+  lastBackup: number | null; backingUp: boolean;
+}
+interface PlatformFileVersion {
+  backup: PlatformBackup; isDirectory: boolean;
+  size: number | null; lastModified: number | null;
+}
+interface PlatformBackupItem {
+  uri: string; name: string; isDirectory: boolean;
+  size: number | null; lastModified: number | null;
+}
+interface PlatformRestoreOptions {
+  to?: string;                        // Restore to…: a folder's file:// URI
+  replace?: boolean;                  // Replace, or (default) Keep Both
+  onProgress?: (progress: { bytesWritten: number; totalBytes: number | null }) => void;
+  signal?: AbortSignal;
+}
+
+interface PlatformFileBackups {
+  state(): Promise<PlatformBackupsState>;
+  watch(listener: () => void): () => void;
+  versions(uri: string): Promise<readonly PlatformFileVersion[]>;
+  contents(backup: PlatformBackup, folderUri: string): Promise<readonly PlatformBackupItem[]>;
+  restore(backup: PlatformBackup, uri: string, options?: PlatformRestoreOptions):
+    Promise<{ uri: string; skipped: number }>;
+}
+```
+
+- **Versions:** `versions(uri)` lists what the backups held of an item, newest
+  first: a file once for each backup it changed in, a folder in every backup
+  (what it holds may have changed though the folder did not), which is the
+  timeline *Browse Backups* shows beside it. An item no backup holds has none.
+- **A folder as it was:** `contents(backup, folderUri)` lists what the folder
+  held in that backup, each item's `uri` where it was (and may still be),
+  under the folder's URI as asked: an item deleted since is there to restore.
+- **Restoring** writes the item as the person, where it is or was, or into
+  the folder `to` names. Where an item of the same name is there, the platform
+  keeps both unless `replace` is asked: the restored item goes beside it, named
+  as a Mac's Time Machine names it, `notes (original).txt`, then
+  `notes (original 2).txt`. `replace` exchanges it with the one there in one
+  step; the person's home's standard folders are never replaced. An
+  application asks the person first, as a Mac does (*Keep Both*, *Replace*).
+  Nothing half written is ever left: a restore that fails, or whose `signal`
+  is aborted, leaves no trace. `onProgress` says the bytes written (`totalBytes`
+  is null for a folder). A folder's links that lead out of it, and its devices,
+  are not restored (`skipped` counts them).
+- **Errors:** a promise rejects with an `Error` whose `code` is a file error
+  (`not-found`, `exists`, `refused`, `denied`, `io`) or `unavailable` (the
+  backup's disk is not connected, the backups are not running),
+  `not-permitted` (the application may not reach the person's backups) or
+  `cancelled`.
+
+On OxyOS the backups are the system's backup service's (restic, OxyOS ADR
+0059), asked from the application's own process as the person: only what was
+in their own home, and only for an application granted `files`.
 
 ### The file chooser: `chooser`
 
