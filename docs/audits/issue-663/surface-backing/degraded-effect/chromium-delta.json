@@ -1,0 +1,866 @@
+[
+  {
+    "scene": "light-ltr-black",
+    "index": 0,
+    "targetId": "body-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 1,
+    "targetId": "group-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 2,
+    "targetId": "large-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 3,
+    "targetId": "body-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 4,
+    "targetId": "group-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 5,
+    "targetId": "large-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 6,
+    "targetId": "body-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 7,
+    "targetId": "group-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 8,
+    "targetId": "large-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 9,
+    "targetId": "body-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 10,
+    "targetId": "group-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-black",
+    "index": 11,
+    "targetId": "large-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 0,
+    "targetId": "body-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 1,
+    "targetId": "group-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 2,
+    "targetId": "large-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 3,
+    "targetId": "body-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 4,
+    "targetId": "group-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 5,
+    "targetId": "large-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 6,
+    "targetId": "body-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 7,
+    "targetId": "group-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 8,
+    "targetId": "large-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 9,
+    "targetId": "body-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 10,
+    "targetId": "group-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-ltr-white",
+    "index": 11,
+    "targetId": "large-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 0,
+    "targetId": "body-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 1,
+    "targetId": "group-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 2,
+    "targetId": "large-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 3,
+    "targetId": "body-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 4,
+    "targetId": "group-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 5,
+    "targetId": "large-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 6,
+    "targetId": "body-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 7,
+    "targetId": "group-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 8,
+    "targetId": "large-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 9,
+    "targetId": "body-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 10,
+    "targetId": "group-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-black",
+    "index": 11,
+    "targetId": "large-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 4.606169441351551,
+    "after": 6.282682862595072
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 0,
+    "targetId": "body-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 1,
+    "targetId": "group-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 2,
+    "targetId": "large-xs",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 3,
+    "targetId": "body-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 4,
+    "targetId": "group-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 5,
+    "targetId": "large-sm",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 6,
+    "targetId": "body-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 7,
+    "targetId": "group-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 8,
+    "targetId": "large-md",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 9,
+    "targetId": "body-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 10,
+    "targetId": "group-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "light-rtl-white",
+    "index": 11,
+    "targetId": "large-lg",
+    "beforeColor": "rgb(55, 77, 97)",
+    "afterColor": "rgb(33, 57, 77)",
+    "before": 7.139951618653447,
+    "after": 9.73868900079143
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 0,
+    "targetId": "body-xs",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 12.306216401701885,
+    "after": 12.388673776407908
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 1,
+    "targetId": "group-xs",
+    "beforeColor": "rgb(227, 239, 255)",
+    "afterColor": "rgb(227, 239, 255)",
+    "before": 13.33676952638302,
+    "after": 13.33676952638302
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 2,
+    "targetId": "large-xs",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 11.702241326035999,
+    "after": 11.780651786767683
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 3,
+    "targetId": "body-sm",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 11.970167242165754,
+    "after": 12.083277043680216
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 4,
+    "targetId": "group-sm",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 12.458874607904848,
+    "after": 12.542354863608566
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 5,
+    "targetId": "large-sm",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 11.700022674583092,
+    "after": 11.810579796773922
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 6,
+    "targetId": "body-md",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.634803280115667,
+    "after": 11.74593147313293
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 7,
+    "targetId": "group-md",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 11.970167242165754,
+    "after": 12.083277043680216
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 8,
+    "targetId": "large-md",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.372227257790392,
+    "after": 11.480847492728078
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 9,
+    "targetId": "body-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.634803280115667,
+    "after": 11.74593147313293
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 10,
+    "targetId": "group-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.634803280115667,
+    "after": 11.74593147313293
+  },
+  {
+    "scene": "dark-ltr-black",
+    "index": 11,
+    "targetId": "large-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.634803280115667,
+    "after": 11.74593147313293
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 0,
+    "targetId": "body-xs",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 4.791674897768775,
+    "after": 4.8237813486564844
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 1,
+    "targetId": "group-xs",
+    "beforeColor": "rgb(227, 239, 255)",
+    "afterColor": "rgb(227, 239, 255)",
+    "before": 5.192941654110624,
+    "after": 5.192941654110624
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 2,
+    "targetId": "large-xs",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 4.062143765907156,
+    "after": 4.089362018835718
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 3,
+    "targetId": "body-sm",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 4.7321028153750095,
+    "after": 4.776817914117126
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 4,
+    "targetId": "group-sm",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 4.925300909814503,
+    "after": 4.958302717145335
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 5,
+    "targetId": "large-sm",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 4.4000327147208855,
+    "after": 4.441609980681387
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 6,
+    "targetId": "body-md",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.5995251565264095,
+    "after": 4.643456876476998
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 7,
+    "targetId": "group-md",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 4.7321028153750095,
+    "after": 4.776817914117126
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 8,
+    "targetId": "large-md",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.3894340374841745,
+    "after": 4.431359101553606
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 9,
+    "targetId": "body-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.5995251565264095,
+    "after": 4.643456876476998
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 10,
+    "targetId": "group-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.5995251565264095,
+    "after": 4.643456876476998
+  },
+  {
+    "scene": "dark-ltr-white",
+    "index": 11,
+    "targetId": "large-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.5995251565264095,
+    "after": 4.643456876476998
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 0,
+    "targetId": "body-xs",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 12.306216401701885,
+    "after": 12.388673776407908
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 1,
+    "targetId": "group-xs",
+    "beforeColor": "rgb(227, 239, 255)",
+    "afterColor": "rgb(227, 239, 255)",
+    "before": 13.33676952638302,
+    "after": 13.33676952638302
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 2,
+    "targetId": "large-xs",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 11.702241326035999,
+    "after": 11.780651786767683
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 3,
+    "targetId": "body-sm",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 11.970167242165754,
+    "after": 12.083277043680216
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 4,
+    "targetId": "group-sm",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 12.458874607904848,
+    "after": 12.542354863608566
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 5,
+    "targetId": "large-sm",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 11.700022674583092,
+    "after": 11.810579796773922
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 6,
+    "targetId": "body-md",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.634803280115667,
+    "after": 11.74593147313293
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 7,
+    "targetId": "group-md",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 11.970167242165754,
+    "after": 12.083277043680216
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 8,
+    "targetId": "large-md",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.372227257790392,
+    "after": 11.480847492728078
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 9,
+    "targetId": "body-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.634803280115667,
+    "after": 11.74593147313293
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 10,
+    "targetId": "group-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.634803280115667,
+    "after": 11.74593147313293
+  },
+  {
+    "scene": "dark-rtl-black",
+    "index": 11,
+    "targetId": "large-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 11.634803280115667,
+    "after": 11.74593147313293
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 0,
+    "targetId": "body-xs",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 4.791674897768775,
+    "after": 4.8237813486564844
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 1,
+    "targetId": "group-xs",
+    "beforeColor": "rgb(227, 239, 255)",
+    "afterColor": "rgb(227, 239, 255)",
+    "before": 5.192941654110624,
+    "after": 5.192941654110624
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 2,
+    "targetId": "large-xs",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 4.062143765907156,
+    "after": 4.089362018835718
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 3,
+    "targetId": "body-sm",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 4.7321028153750095,
+    "after": 4.776817914117126
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 4,
+    "targetId": "group-sm",
+    "beforeColor": "rgb(219, 230, 246)",
+    "afterColor": "rgb(219, 231, 246)",
+    "before": 4.925300909814503,
+    "after": 4.958302717145335
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 5,
+    "targetId": "large-sm",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 4.4000327147208855,
+    "after": 4.441609980681387
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 6,
+    "targetId": "body-md",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.5995251565264095,
+    "after": 4.643456876476998
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 7,
+    "targetId": "group-md",
+    "beforeColor": "rgb(214, 226, 241)",
+    "afterColor": "rgb(215, 227, 242)",
+    "before": 4.7321028153750095,
+    "after": 4.776817914117126
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 8,
+    "targetId": "large-md",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.3894340374841745,
+    "after": 4.431359101553606
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 9,
+    "targetId": "body-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.5995251565264095,
+    "after": 4.643456876476998
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 10,
+    "targetId": "group-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.5995251565264095,
+    "after": 4.643456876476998
+  },
+  {
+    "scene": "dark-rtl-white",
+    "index": 11,
+    "targetId": "large-lg",
+    "beforeColor": "rgb(211, 223, 238)",
+    "afterColor": "rgb(212, 224, 239)",
+    "before": 4.5995251565264095,
+    "after": 4.643456876476998
+  }
+]

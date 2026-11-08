@@ -1,0 +1,3926 @@
+{
+  "engine": "webkit",
+  "browser": "27.2",
+  "records": [
+    {
+      "name": "light-ltr-black",
+      "samples": [
+        {
+          "id": "body-xs",
+          "rect": {
+            "x": 52,
+            "y": 48,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 48,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 57,
+            "maxY": 70,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "group-xs",
+          "rect": {
+            "x": 52,
+            "y": 90,
+            "width": 696,
+            "height": 24
+          },
+          "paint": {
+            "x": 48,
+            "y": 88,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 97,
+            "maxY": 110,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "large-xs",
+          "rect": {
+            "x": 52,
+            "y": 128,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 128,
+            "width": 704,
+            "height": 28
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 133,
+            "maxY": 155,
+            "minX": 56,
+            "maxX": 319
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ],
+            [
+              148,
+              180,
+              215
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "body-sm",
+          "rect": {
+            "x": 54,
+            "y": 208,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 208,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 219,
+            "maxY": 232,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "group-sm",
+          "rect": {
+            "x": 54,
+            "y": 254,
+            "width": 692,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 252,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 263,
+            "maxY": 276,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "large-sm",
+          "rect": {
+            "x": 54,
+            "y": 296,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 296,
+            "width": 704,
+            "height": 32
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 303,
+            "maxY": 325,
+            "minX": 58,
+            "maxX": 321
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "body-md",
+          "rect": {
+            "x": 56,
+            "y": 380,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 380,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 393,
+            "maxY": 406,
+            "minX": 60,
+            "maxX": 213
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "group-md",
+          "rect": {
+            "x": 56,
+            "y": 430,
+            "width": 688,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 428,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 441,
+            "maxY": 454,
+            "minX": 60,
+            "maxX": 213
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "large-md",
+          "rect": {
+            "x": 56,
+            "y": 476,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 476,
+            "width": 704,
+            "height": 36
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 485,
+            "maxY": 507,
+            "minX": 60,
+            "maxX": 323
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "body-lg",
+          "rect": {
+            "x": 58,
+            "y": 564,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 564,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 581,
+            "maxY": 594,
+            "minX": 62,
+            "maxX": 215
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "group-lg",
+          "rect": {
+            "x": 58,
+            "y": 622,
+            "width": 684,
+            "height": 40
+          },
+          "paint": {
+            "x": 48,
+            "y": 620,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 637,
+            "maxY": 650,
+            "minX": 62,
+            "maxX": 215
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "large-lg",
+          "rect": {
+            "x": 58,
+            "y": 676,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 676,
+            "width": 704,
+            "height": 44
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 689,
+            "maxY": 711,
+            "minX": 62,
+            "maxX": 325
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        }
+      ]
+    },
+    {
+      "name": "light-ltr-white",
+      "samples": [
+        {
+          "id": "body-xs",
+          "rect": {
+            "x": 52,
+            "y": 48,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 48,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 57,
+            "maxY": 70,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "group-xs",
+          "rect": {
+            "x": 52,
+            "y": 90,
+            "width": 696,
+            "height": 24
+          },
+          "paint": {
+            "x": 48,
+            "y": 88,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 97,
+            "maxY": 110,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "large-xs",
+          "rect": {
+            "x": 52,
+            "y": 128,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 128,
+            "width": 704,
+            "height": 28
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 133,
+            "maxY": 155,
+            "minX": 56,
+            "maxX": 319
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ],
+            [
+              148,
+              180,
+              215
+            ]
+          ],
+          "minimumContrast": 4.076151371015629
+        },
+        {
+          "id": "body-sm",
+          "rect": {
+            "x": 54,
+            "y": 208,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 208,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 219,
+            "maxY": 232,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "group-sm",
+          "rect": {
+            "x": 54,
+            "y": 254,
+            "width": 692,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 252,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 263,
+            "maxY": 276,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "large-sm",
+          "rect": {
+            "x": 54,
+            "y": 296,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 296,
+            "width": 704,
+            "height": 32
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 303,
+            "maxY": 325,
+            "minX": 58,
+            "maxX": 321
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "body-md",
+          "rect": {
+            "x": 56,
+            "y": 380,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 380,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 393,
+            "maxY": 406,
+            "minX": 60,
+            "maxX": 213
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "group-md",
+          "rect": {
+            "x": 56,
+            "y": 430,
+            "width": 688,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 428,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 441,
+            "maxY": 454,
+            "minX": 60,
+            "maxX": 213
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "large-md",
+          "rect": {
+            "x": 56,
+            "y": 476,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 476,
+            "width": 704,
+            "height": 36
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 485,
+            "maxY": 507,
+            "minX": 60,
+            "maxX": 323
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "body-lg",
+          "rect": {
+            "x": 58,
+            "y": 564,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 564,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 581,
+            "maxY": 594,
+            "minX": 62,
+            "maxX": 215
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "group-lg",
+          "rect": {
+            "x": 58,
+            "y": 622,
+            "width": 684,
+            "height": 40
+          },
+          "paint": {
+            "x": 48,
+            "y": 620,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 637,
+            "maxY": 650,
+            "minX": 62,
+            "maxX": 215
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "large-lg",
+          "rect": {
+            "x": 58,
+            "y": 676,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 676,
+            "width": 704,
+            "height": 44
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 689,
+            "maxY": 711,
+            "minX": 62,
+            "maxX": 325
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        }
+      ]
+    },
+    {
+      "name": "light-rtl-black",
+      "samples": [
+        {
+          "id": "body-xs",
+          "rect": {
+            "x": 52,
+            "y": 48,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 48,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 57,
+            "maxY": 70,
+            "minX": 52,
+            "maxX": 205
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "group-xs",
+          "rect": {
+            "x": 52,
+            "y": 90,
+            "width": 696,
+            "height": 24
+          },
+          "paint": {
+            "x": 48,
+            "y": 88,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 97,
+            "maxY": 110,
+            "minX": 52,
+            "maxX": 205
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "large-xs",
+          "rect": {
+            "x": 52,
+            "y": 128,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 128,
+            "width": 704,
+            "height": 28
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 133,
+            "maxY": 155,
+            "minX": 52,
+            "maxX": 315
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ],
+            [
+              148,
+              180,
+              215
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "body-sm",
+          "rect": {
+            "x": 54,
+            "y": 208,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 208,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 219,
+            "maxY": 232,
+            "minX": 54,
+            "maxX": 207
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "group-sm",
+          "rect": {
+            "x": 54,
+            "y": 254,
+            "width": 692,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 252,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 263,
+            "maxY": 276,
+            "minX": 54,
+            "maxX": 207
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "large-sm",
+          "rect": {
+            "x": 54,
+            "y": 296,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 296,
+            "width": 704,
+            "height": 32
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 303,
+            "maxY": 325,
+            "minX": 54,
+            "maxX": 317
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "body-md",
+          "rect": {
+            "x": 56,
+            "y": 380,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 380,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 393,
+            "maxY": 406,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "group-md",
+          "rect": {
+            "x": 56,
+            "y": 430,
+            "width": 688,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 428,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 441,
+            "maxY": 454,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "large-md",
+          "rect": {
+            "x": 56,
+            "y": 476,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 476,
+            "width": 704,
+            "height": 36
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 485,
+            "maxY": 507,
+            "minX": 56,
+            "maxX": 319
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "body-lg",
+          "rect": {
+            "x": 58,
+            "y": 564,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 564,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 581,
+            "maxY": 594,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "group-lg",
+          "rect": {
+            "x": 58,
+            "y": 622,
+            "width": 684,
+            "height": 40
+          },
+          "paint": {
+            "x": 48,
+            "y": 620,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 637,
+            "maxY": 650,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        },
+        {
+          "id": "large-lg",
+          "rect": {
+            "x": 58,
+            "y": 676,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 676,
+            "width": 704,
+            "height": 44
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 689,
+            "maxY": 711,
+            "minX": 58,
+            "maxX": 321
+          },
+          "backgrounds": [
+            [
+              152,
+              162,
+              174
+            ]
+          ],
+          "minimumContrast": 3.3857877873992916
+        }
+      ]
+    },
+    {
+      "name": "light-rtl-white",
+      "samples": [
+        {
+          "id": "body-xs",
+          "rect": {
+            "x": 52,
+            "y": 48,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 48,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 57,
+            "maxY": 70,
+            "minX": 52,
+            "maxX": 205
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "group-xs",
+          "rect": {
+            "x": 52,
+            "y": 90,
+            "width": 696,
+            "height": 24
+          },
+          "paint": {
+            "x": 48,
+            "y": 88,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 97,
+            "maxY": 110,
+            "minX": 52,
+            "maxX": 205
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "large-xs",
+          "rect": {
+            "x": 52,
+            "y": 128,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 128,
+            "width": 704,
+            "height": 28
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 133,
+            "maxY": 155,
+            "minX": 52,
+            "maxX": 315
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ],
+            [
+              148,
+              180,
+              215
+            ]
+          ],
+          "minimumContrast": 4.076151371015629
+        },
+        {
+          "id": "body-sm",
+          "rect": {
+            "x": 54,
+            "y": 208,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 208,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 219,
+            "maxY": 232,
+            "minX": 54,
+            "maxX": 207
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "group-sm",
+          "rect": {
+            "x": 54,
+            "y": 254,
+            "width": 692,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 252,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 263,
+            "maxY": 276,
+            "minX": 54,
+            "maxX": 207
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "large-sm",
+          "rect": {
+            "x": 54,
+            "y": 296,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 296,
+            "width": 704,
+            "height": 32
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 303,
+            "maxY": 325,
+            "minX": 54,
+            "maxX": 317
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "body-md",
+          "rect": {
+            "x": 56,
+            "y": 380,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 380,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 393,
+            "maxY": 406,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "group-md",
+          "rect": {
+            "x": 56,
+            "y": 430,
+            "width": 688,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 428,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 441,
+            "maxY": 454,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "large-md",
+          "rect": {
+            "x": 56,
+            "y": 476,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 476,
+            "width": 704,
+            "height": 36
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 485,
+            "maxY": 507,
+            "minX": 56,
+            "maxX": 319
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "body-lg",
+          "rect": {
+            "x": 58,
+            "y": 564,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 564,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 581,
+            "maxY": 594,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "group-lg",
+          "rect": {
+            "x": 58,
+            "y": 622,
+            "width": 684,
+            "height": 40
+          },
+          "paint": {
+            "x": 48,
+            "y": 620,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 59,
+          "glyphBounds": {
+            "minY": 637,
+            "maxY": 650,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        },
+        {
+          "id": "large-lg",
+          "rect": {
+            "x": 58,
+            "y": 676,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 676,
+            "width": 704,
+            "height": 44
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(55, 77, 97)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 546,
+          "glyphBounds": {
+            "minY": 689,
+            "maxY": 711,
+            "minX": 58,
+            "maxX": 321
+          },
+          "backgrounds": [
+            [
+              223,
+              233,
+              245
+            ]
+          ],
+          "minimumContrast": 7.139951618653447
+        }
+      ]
+    },
+    {
+      "name": "dark-ltr-black",
+      "samples": [
+        {
+          "id": "body-xs",
+          "rect": {
+            "x": 52,
+            "y": 48,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 48,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 57,
+            "maxY": 70,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.7858403369533
+        },
+        {
+          "id": "group-xs",
+          "rect": {
+            "x": 52,
+            "y": 90,
+            "width": 696,
+            "height": 24
+          },
+          "paint": {
+            "x": 48,
+            "y": 88,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(227, 239, 255)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 97,
+            "maxY": 110,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 14.9403008447043
+        },
+        {
+          "id": "large-xs",
+          "rect": {
+            "x": 52,
+            "y": 128,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 128,
+            "width": 704,
+            "height": 28
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 133,
+            "maxY": 155,
+            "minX": 56,
+            "maxX": 319
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ],
+            [
+              53,
+              85,
+              116
+            ]
+          ],
+          "minimumContrast": 6.164152505586423
+        },
+        {
+          "id": "body-sm",
+          "rect": {
+            "x": 54,
+            "y": 208,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 208,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 219,
+            "maxY": 232,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.245081887446345
+        },
+        {
+          "id": "group-sm",
+          "rect": {
+            "x": 54,
+            "y": 254,
+            "width": 692,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 252,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 263,
+            "maxY": 276,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.7858403369533
+        },
+        {
+          "id": "large-sm",
+          "rect": {
+            "x": 54,
+            "y": 296,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 296,
+            "width": 704,
+            "height": 32
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 303,
+            "maxY": 325,
+            "minX": 58,
+            "maxX": 321
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.245081887446345
+        },
+        {
+          "id": "body-md",
+          "rect": {
+            "x": 56,
+            "y": 380,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 380,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 393,
+            "maxY": 406,
+            "minX": 60,
+            "maxX": 213
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        },
+        {
+          "id": "group-md",
+          "rect": {
+            "x": 56,
+            "y": 430,
+            "width": 688,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 428,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 441,
+            "maxY": 454,
+            "minX": 60,
+            "maxX": 213
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.245081887446345
+        },
+        {
+          "id": "large-md",
+          "rect": {
+            "x": 56,
+            "y": 476,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 476,
+            "width": 704,
+            "height": 36
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 485,
+            "maxY": 507,
+            "minX": 60,
+            "maxX": 323
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        },
+        {
+          "id": "body-lg",
+          "rect": {
+            "x": 58,
+            "y": 564,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 564,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 581,
+            "maxY": 594,
+            "minX": 62,
+            "maxX": 215
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        },
+        {
+          "id": "group-lg",
+          "rect": {
+            "x": 58,
+            "y": 622,
+            "width": 684,
+            "height": 40
+          },
+          "paint": {
+            "x": 48,
+            "y": 620,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 637,
+            "maxY": 650,
+            "minX": 62,
+            "maxX": 215
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        },
+        {
+          "id": "large-lg",
+          "rect": {
+            "x": 58,
+            "y": 676,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 676,
+            "width": 704,
+            "height": 44
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 689,
+            "maxY": 711,
+            "minX": 62,
+            "maxX": 325
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        }
+      ]
+    },
+    {
+      "name": "dark-ltr-white",
+      "samples": [
+        {
+          "id": "body-xs",
+          "rect": {
+            "x": 52,
+            "y": 48,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 48,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 57,
+            "maxY": 70,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.925300909814503
+        },
+        {
+          "id": "group-xs",
+          "rect": {
+            "x": 52,
+            "y": 90,
+            "width": 696,
+            "height": 24
+          },
+          "paint": {
+            "x": 48,
+            "y": 88,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(227, 239, 255)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 97,
+            "maxY": 110,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 5.337757840273016
+        },
+        {
+          "id": "large-xs",
+          "rect": {
+            "x": 52,
+            "y": 128,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 128,
+            "width": 704,
+            "height": 28
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 133,
+            "maxY": 155,
+            "minX": 56,
+            "maxX": 319
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ],
+            [
+              53,
+              85,
+              116
+            ]
+          ],
+          "minimumContrast": 4.925300909814503
+        },
+        {
+          "id": "body-sm",
+          "rect": {
+            "x": 54,
+            "y": 208,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 208,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 219,
+            "maxY": 232,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.7321028153750095
+        },
+        {
+          "id": "group-sm",
+          "rect": {
+            "x": 54,
+            "y": 254,
+            "width": 692,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 252,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 263,
+            "maxY": 276,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.925300909814503
+        },
+        {
+          "id": "large-sm",
+          "rect": {
+            "x": 54,
+            "y": 296,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 296,
+            "width": 704,
+            "height": 32
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 303,
+            "maxY": 325,
+            "minX": 58,
+            "maxX": 321
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.7321028153750095
+        },
+        {
+          "id": "body-md",
+          "rect": {
+            "x": 56,
+            "y": 380,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 380,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 393,
+            "maxY": 406,
+            "minX": 60,
+            "maxX": 213
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        },
+        {
+          "id": "group-md",
+          "rect": {
+            "x": 56,
+            "y": 430,
+            "width": 688,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 428,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 441,
+            "maxY": 454,
+            "minX": 60,
+            "maxX": 213
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.7321028153750095
+        },
+        {
+          "id": "large-md",
+          "rect": {
+            "x": 56,
+            "y": 476,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 476,
+            "width": 704,
+            "height": 36
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 485,
+            "maxY": 507,
+            "minX": 60,
+            "maxX": 323
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        },
+        {
+          "id": "body-lg",
+          "rect": {
+            "x": 58,
+            "y": 564,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 564,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 581,
+            "maxY": 594,
+            "minX": 62,
+            "maxX": 215
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        },
+        {
+          "id": "group-lg",
+          "rect": {
+            "x": 58,
+            "y": 622,
+            "width": 684,
+            "height": 40
+          },
+          "paint": {
+            "x": 48,
+            "y": 620,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 637,
+            "maxY": 650,
+            "minX": 62,
+            "maxX": 215
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        },
+        {
+          "id": "large-lg",
+          "rect": {
+            "x": 58,
+            "y": 676,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 676,
+            "width": 704,
+            "height": 44
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "4px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 689,
+            "maxY": 711,
+            "minX": 62,
+            "maxX": 325
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        }
+      ]
+    },
+    {
+      "name": "dark-rtl-black",
+      "samples": [
+        {
+          "id": "body-xs",
+          "rect": {
+            "x": 52,
+            "y": 48,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 48,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 57,
+            "maxY": 70,
+            "minX": 52,
+            "maxX": 205
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.7858403369533
+        },
+        {
+          "id": "group-xs",
+          "rect": {
+            "x": 52,
+            "y": 90,
+            "width": 696,
+            "height": 24
+          },
+          "paint": {
+            "x": 48,
+            "y": 88,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(227, 239, 255)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 97,
+            "maxY": 110,
+            "minX": 52,
+            "maxX": 205
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 14.9403008447043
+        },
+        {
+          "id": "large-xs",
+          "rect": {
+            "x": 52,
+            "y": 128,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 128,
+            "width": 704,
+            "height": 28
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 133,
+            "maxY": 155,
+            "minX": 52,
+            "maxX": 315
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ],
+            [
+              53,
+              85,
+              116
+            ]
+          ],
+          "minimumContrast": 6.164152505586423
+        },
+        {
+          "id": "body-sm",
+          "rect": {
+            "x": 54,
+            "y": 208,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 208,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 219,
+            "maxY": 232,
+            "minX": 54,
+            "maxX": 207
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.245081887446345
+        },
+        {
+          "id": "group-sm",
+          "rect": {
+            "x": 54,
+            "y": 254,
+            "width": 692,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 252,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 263,
+            "maxY": 276,
+            "minX": 54,
+            "maxX": 207
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.7858403369533
+        },
+        {
+          "id": "large-sm",
+          "rect": {
+            "x": 54,
+            "y": 296,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 296,
+            "width": 704,
+            "height": 32
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 303,
+            "maxY": 325,
+            "minX": 54,
+            "maxX": 317
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.245081887446345
+        },
+        {
+          "id": "body-md",
+          "rect": {
+            "x": 56,
+            "y": 380,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 380,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 393,
+            "maxY": 406,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        },
+        {
+          "id": "group-md",
+          "rect": {
+            "x": 56,
+            "y": 430,
+            "width": 688,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 428,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 441,
+            "maxY": 454,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 13.245081887446345
+        },
+        {
+          "id": "large-md",
+          "rect": {
+            "x": 56,
+            "y": 476,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 476,
+            "width": 704,
+            "height": 36
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 485,
+            "maxY": 507,
+            "minX": 56,
+            "maxX": 319
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        },
+        {
+          "id": "body-lg",
+          "rect": {
+            "x": 58,
+            "y": 564,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 564,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 581,
+            "maxY": 594,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        },
+        {
+          "id": "group-lg",
+          "rect": {
+            "x": 58,
+            "y": 622,
+            "width": 684,
+            "height": 40
+          },
+          "paint": {
+            "x": 48,
+            "y": 620,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 637,
+            "maxY": 650,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        },
+        {
+          "id": "large-lg",
+          "rect": {
+            "x": 58,
+            "y": 676,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 676,
+            "width": 704,
+            "height": 44
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(0, 0, 0)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 689,
+            "maxY": 711,
+            "minX": 58,
+            "maxX": 321
+          },
+          "backgrounds": [
+            [
+              17,
+              27,
+              38
+            ]
+          ],
+          "minimumContrast": 12.873999090557353
+        }
+      ]
+    },
+    {
+      "name": "dark-rtl-white",
+      "samples": [
+        {
+          "id": "body-xs",
+          "rect": {
+            "x": 52,
+            "y": 48,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 48,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 57,
+            "maxY": 70,
+            "minX": 52,
+            "maxX": 205
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.925300909814503
+        },
+        {
+          "id": "group-xs",
+          "rect": {
+            "x": 52,
+            "y": 90,
+            "width": 696,
+            "height": 24
+          },
+          "paint": {
+            "x": 48,
+            "y": 88,
+            "width": 704,
+            "height": 28
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(227, 239, 255)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 97,
+            "maxY": 110,
+            "minX": 52,
+            "maxX": 205
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 5.337757840273016
+        },
+        {
+          "id": "large-xs",
+          "rect": {
+            "x": 52,
+            "y": 128,
+            "width": 696,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 128,
+            "width": 704,
+            "height": 28
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 133,
+            "maxY": 155,
+            "minX": 52,
+            "maxX": 315
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ],
+            [
+              53,
+              85,
+              116
+            ]
+          ],
+          "minimumContrast": 4.925300909814503
+        },
+        {
+          "id": "body-sm",
+          "rect": {
+            "x": 54,
+            "y": 208,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 208,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 219,
+            "maxY": 232,
+            "minX": 54,
+            "maxX": 207
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.7321028153750095
+        },
+        {
+          "id": "group-sm",
+          "rect": {
+            "x": 54,
+            "y": 254,
+            "width": 692,
+            "height": 28
+          },
+          "paint": {
+            "x": 48,
+            "y": 252,
+            "width": 704,
+            "height": 32
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(219, 230, 246)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 263,
+            "maxY": 276,
+            "minX": 54,
+            "maxX": 207
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.925300909814503
+        },
+        {
+          "id": "large-sm",
+          "rect": {
+            "x": 54,
+            "y": 296,
+            "width": 692,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 296,
+            "width": 704,
+            "height": 32
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 303,
+            "maxY": 325,
+            "minX": 54,
+            "maxX": 317
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.7321028153750095
+        },
+        {
+          "id": "body-md",
+          "rect": {
+            "x": 56,
+            "y": 380,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 380,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 393,
+            "maxY": 406,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        },
+        {
+          "id": "group-md",
+          "rect": {
+            "x": 56,
+            "y": 430,
+            "width": 688,
+            "height": 32
+          },
+          "paint": {
+            "x": 48,
+            "y": 428,
+            "width": 704,
+            "height": 36
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(214, 226, 241)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 441,
+            "maxY": 454,
+            "minX": 56,
+            "maxX": 209
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.7321028153750095
+        },
+        {
+          "id": "large-md",
+          "rect": {
+            "x": 56,
+            "y": 476,
+            "width": 688,
+            "height": 36
+          },
+          "paint": {
+            "x": 48,
+            "y": 476,
+            "width": 704,
+            "height": 36
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 485,
+            "maxY": 507,
+            "minX": 56,
+            "maxX": 319
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        },
+        {
+          "id": "body-lg",
+          "rect": {
+            "x": 58,
+            "y": 564,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 564,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 581,
+            "maxY": 594,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        },
+        {
+          "id": "group-lg",
+          "rect": {
+            "x": 58,
+            "y": 622,
+            "width": 684,
+            "height": 40
+          },
+          "paint": {
+            "x": 48,
+            "y": 620,
+            "width": 704,
+            "height": 44
+          },
+          "font": "14px",
+          "lineHeight": "20px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 54,
+          "glyphBounds": {
+            "minY": 637,
+            "maxY": 650,
+            "minX": 58,
+            "maxX": 211
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        },
+        {
+          "id": "large-lg",
+          "rect": {
+            "x": 58,
+            "y": 676,
+            "width": 684,
+            "height": 44
+          },
+          "paint": {
+            "x": 48,
+            "y": 676,
+            "width": 704,
+            "height": 44
+          },
+          "font": "24px",
+          "lineHeight": "32px",
+          "padding": [
+            "0px",
+            "4px",
+            "0px",
+            "0px"
+          ],
+          "color": "rgb(211, 223, 238)",
+          "backing": "rgb(255, 255, 255)",
+          "ink": 526,
+          "glyphBounds": {
+            "minY": 689,
+            "maxY": 711,
+            "minX": 58,
+            "maxX": 321
+          },
+          "backgrounds": [
+            [
+              88,
+              98,
+              109
+            ]
+          ],
+          "minimumContrast": 4.5995251565264095
+        }
+      ]
+    }
+  ]
+}
