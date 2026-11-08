@@ -1,0 +1,67 @@
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:18015:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:20665:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:664:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:960:10)
+      at render (src/__tests__/AppShellScrollSwitch.web.test.tsx:168:6)
+      at Object.<anonymous> (src/__tests__/AppShellScrollSwitch.web.test.tsx:454:3)
+
+  console.error
+    <Rect /> is using incorrect casing. Use PascalCase for React components, or lowercase for HTML elements.
+
+      166 |
+      167 | function render(shape: Partial<AppShellProps>, scroll: Scroll) {
+    > 168 |   act(() => {
+          |      ^
+      169 |     root.render(
+      170 |       <BloomThemeProvider mode="light" colorPreset="teal">
+      171 |         <AppShell testID="shell" sidebar={{ items: NAV }} {...shape} scroll={scroll}>
+
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:13075:37)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:19320:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:19193:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:19004:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:18985:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:18015:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:20665:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:664:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:960:10)
+      at render (src/__tests__/AppShellScrollSwitch.web.test.tsx:168:6)
+      at Object.<anonymous> (src/__tests__/AppShellScrollSwitch.web.test.tsx:454:3)
+
+  console.error
+    <Svg /> is using incorrect casing. Use PascalCase for React components, or lowercase for HTML elements.
+
+      166 |
+      167 | function render(shape: Partial<AppShellProps>, scroll: Scroll) {
+    > 168 |   act(() => {
+          |      ^
+      169 |     root.render(
+      170 |       <BloomThemeProvider mode="light" colorPreset="teal">
+      171 |         <AppShell testID="shell" sidebar={{ items: NAV }} {...shape} scroll={scroll}>
+
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:13075:37)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:19320:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:19193:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:19004:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:18985:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:18015:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:20665:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:664:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:960:10)
+      at render (src/__tests__/AppShellScrollSwitch.web.test.tsx:168:6)
+      at Object.<anonymous> (src/__tests__/AppShellScrollSwitch.web.test.tsx:454:3)
+
+Test Suites: 1 passed, 1 total
+Tests:       48 passed, 48 total
+Snapshots:   0 total
+Time:        123.667 s
+Ran all test suites matching src/__tests__/AppShellScrollSwitch.web.test.tsx.
+
+Additional unchanged-source targeted run:
+
+Test Suites: 1 passed, 1 total
+Tests:       46 skipped, 3 passed, 49 total
+Snapshots:   0 total
+Time:        7.329 s, estimated 124 s

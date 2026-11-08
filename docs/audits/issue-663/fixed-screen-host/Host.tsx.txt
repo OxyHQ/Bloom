@@ -1,0 +1,35 @@
+import '../style.css';
+import { createRoot } from 'react-dom/client';
+import { useState } from 'react';
+import { View } from 'react-native';
+import { BloomProvider } from '@oxy.so/bloom/provider';
+import { AppShell } from '@oxy.so/bloom/app-shell';
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+import { TextFieldInput } from '@oxy.so/bloom/text-field';
+
+function App() {
+  const [mode, setMode] = useState<'fixed' | 'document'>('fixed');
+  const [embedded, setEmbedded] = useState(false);
+  const [draft, setDraft] = useState('original');
+  return (
+    <BloomProvider mode="light" locale="en">
+      <div style={{position:'fixed',top:0,right:0,zIndex:1}}>
+        <button onClick={()=>setMode(value=>value==='fixed'?'document':'fixed')}>Toggle flow</button>
+        <button onClick={()=>setEmbedded(value=>!value)}>Toggle embedded</button>
+        <output>{`${mode}/${embedded?'embedded':'root'}`}</output>
+      </div>
+      <div data-testid="host" style={{height:mode==='fixed'?'100dvh':'auto',width:embedded?640:'100%',maxWidth:'100%',margin:embedded?'0 auto':'0',display:'flex',flexDirection:'column'}}>
+        <AppShell header={null} scroll={mode} contentMaxWidth="none">
+          <Screen>
+            <ScreenScrollView>
+              <TextFieldInput accessibilityLabel="Draft" value={draft} onChangeText={setDraft}/>
+              <View style={{height:2400}} />
+              <button>Last content</button>
+            </ScreenScrollView>
+          </Screen>
+        </AppShell>
+      </div>
+    </BloomProvider>
+  );
+}
+createRoot(document.getElementById('root')!).render(<App/>);
