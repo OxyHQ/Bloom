@@ -1,0 +1,2666 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-11-08T06:39:45.403Z",
+  "scope": "Immediate git checkouts under supplied workspace root; default remote refs for source and local filesystem for installed packages. Nested repositories, remote-only repositories and non-literal imports need separate review. Activity is not inferred from dependency presence.",
+  "repositories": [
+    {
+      "repository": "Alia",
+      "ref": "origin/main",
+      "sha": "cc76a858ff4359254cf51e3f649ea021bfc75ce7",
+      "fetch": "succeeded",
+      "checkoutSha": "0f259a861602be2148ee434e7a5561366f596255",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "alia-monorepo",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Alia/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.9.0"
+          }
+        },
+        {
+          "manifest": "packages/alia-canvas/package.json",
+          "name": "alia-canvas",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Alia/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.9.0"
+          }
+        },
+        {
+          "manifest": "packages/alia-chat/package.json",
+          "name": "@alia.onl/sdk",
+          "declarations": {
+            "peerDependencies": ">=17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Alia/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "peerDependencies": ">=17.5.0"
+          }
+        },
+        {
+          "manifest": "packages/alia-codea/webview-ui/package.json",
+          "name": "webview-ui",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "10.4.0",
+            "packagePath": "Alia/packages/alia-codea/webview-ui/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.9.0"
+          }
+        },
+        {
+          "manifest": "packages/alia-cowork/package.json",
+          "name": "alia-cowork",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Alia/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.9.0"
+          }
+        },
+        {
+          "manifest": "packages/app/package.json",
+          "name": "@alia/app",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Alia/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.9.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-preflight/composed-i05/inputs/bun.lock",
+          "versions": [
+            "6.2.1",
+            "6.3.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-i05-retirement-outcomes/ci-pending-registry/committed-inputs/bun.lock",
+          "versions": [
+            "6.3.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 325,
+      "ownershipCandidates": [
+        "packages/alia-chat/src/components/AliaAvatarProvider.tsx",
+        "packages/alia-chat/src/components/AliaChatHeader.tsx",
+        "packages/alia-chat/src/components/AliaChatScreen.tsx",
+        "packages/alia-chat/src/components/AliaComposer.tsx",
+        "packages/alia-chat/src/components/AliaParticipantsHeader.tsx",
+        "packages/alia-chat/src/components/ComposerDropZone.tsx",
+        "packages/alia-chat/src/components/ComposerSuggestions.tsx",
+        "packages/alia-chat/src/components/thought/ThoughtPanel.tsx",
+        "packages/alia-chat/src/hooks/useChatComposer.ts",
+        "packages/app/app/(app)/_layout.tsx",
+        "packages/app/app/(biglayout)/download.tsx",
+        "packages/app/app/(biglayout)/shared/[token].tsx",
+        "packages/app/app/(biglayout)/subscribe.tsx",
+        "packages/app/app/_layout.tsx",
+        "packages/app/src/features/agents/ui/detail/agent-header-actions.tsx",
+        "packages/app/src/features/agents/ui/edit/agent-resources-panel.tsx",
+        "packages/app/src/features/agents/ui/edit/agent-settings-panel.tsx",
+        "packages/app/src/features/automations/ui/work-list-header.tsx",
+        "packages/app/src/features/chat/ui/chat-header-actions.tsx",
+        "packages/app/src/features/chat/ui/composer/add-menu.tsx",
+        "packages/app/src/features/chat/ui/composer/power-level-options.ts",
+        "packages/app/src/features/chat/ui/composer/use-alia-composer.ts",
+        "packages/app/src/features/chat/ui/conversation-screen.tsx",
+        "packages/app/src/features/chat/ui/workspace/agent-panel.tsx",
+        "packages/app/src/shell/command-palette.tsx",
+        "packages/app/src/shell/error-boundary.tsx",
+        "packages/app/src/shell/keyboard-shortcuts-dialog.tsx",
+        "packages/app/src/shell/page-chrome.tsx",
+        "packages/app/src/shell/sidebar-menus.tsx",
+        "packages/app/src/shell/sidebar.tsx",
+        "packages/app/src/shell/workspace-panel.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Allo",
+      "ref": "origin/main",
+      "sha": "629fa549975b7492f2cde0fdce319fa6e6c6d7f4",
+      "fetch": "succeeded",
+      "checkoutSha": "e263cf00698d4b205306908f504166370a780503",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "allo",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.50.1",
+            "packagePath": "Allo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.50.6"
+          }
+        },
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@allo/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.50.1",
+            "packagePath": "Allo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.50.6"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-source-compat/current-main/candidate-install/bun.lock",
+          "versions": [
+            "7.1.2"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 81,
+      "ownershipCandidates": [
+        "packages/frontend/app/(chat)/(tabs)/_layout.tsx",
+        "packages/frontend/app/(chat)/_layout.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/AppSplashScreen.tsx",
+        "packages/frontend/components/NotFoundScreen.tsx",
+        "packages/frontend/components/backup/BackupPanel.tsx",
+        "packages/frontend/components/chat/ConversationScreen.tsx",
+        "packages/frontend/components/chat/composer/Composer.tsx",
+        "packages/frontend/components/chat/composer/EmojiButton.tsx",
+        "packages/frontend/components/chat/composer/PollComposer.tsx",
+        "packages/frontend/components/chat/composer/StickerPicker.tsx",
+        "packages/frontend/components/chat/composer/staging.ts",
+        "packages/frontend/components/phase2/StoryViewerScreen.tsx",
+        "packages/frontend/components/profile/ProfileScreen.tsx",
+        "packages/frontend/components/providers/AppProviders.tsx",
+        "packages/frontend/components/providers/NavigationTheme.tsx",
+        "packages/frontend/components/settings/AlloSettingsProvider.tsx",
+        "packages/frontend/components/shell/EmptyDetail.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Astro",
+      "ref": "origin/main",
+      "sha": "35ee9a7b5375a9ca3b3c824712c775e1f420a788",
+      "fetch": "succeeded",
+      "checkoutSha": "dbdc0f0372ef99c54519c8dce71df61196ab2e1c",
+      "checkoutDirtyEntries": 1,
+      "packages": [
+        {
+          "manifest": "apps/browser/package.json",
+          "name": "@astro-browser/browser",
+          "declarations": {
+            "dependencies": "^17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.59.0",
+            "packagePath": "Astro/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "^15.59.0"
+          }
+        },
+        {
+          "manifest": "apps/demo/package.json",
+          "name": "@astro-browser/demo",
+          "declarations": {
+            "dependencies": "^17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.59.0",
+            "packagePath": "Astro/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "^15.59.0"
+          }
+        },
+        {
+          "manifest": "apps/webui/package.json",
+          "name": "@astro-browser/webui",
+          "declarations": {
+            "dependencies": "^17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.59.0",
+            "packagePath": "Astro/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "^15.59.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "apps/dashboard/pnpm-lock.yaml",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "apps/site/pnpm-lock.yaml",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "apps/videos/pnpm-lock.yaml",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "versions": [
+            "17.5.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 42,
+      "ownershipCandidates": [
+        "apps/browser/src/components/CommandPanel.tsx",
+        "apps/browser/src/components/chat/ChatComposer.tsx",
+        "apps/browser/src/components/chat/ChatPanel.tsx",
+        "apps/browser/src/components/layout/SplitChrome.tsx",
+        "apps/browser/src/components/layout/TopTabStrip.tsx",
+        "apps/browser/src/components/layout/WindowShell.tsx",
+        "apps/browser/src/components/layout/dockMotion.ts",
+        "apps/demo/src/shims/shell.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Astro-legacy",
+      "ref": "origin/main",
+      "sha": "35ee9a7b5375a9ca3b3c824712c775e1f420a788",
+      "fetch": "succeeded",
+      "checkoutSha": "3031edf31236f49732505c5996968bb5da65bd5b",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "apps/browser/package.json",
+          "name": "@astro-browser/browser",
+          "declarations": {
+            "dependencies": "^17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": null
+        },
+        {
+          "manifest": "apps/demo/package.json",
+          "name": "@astro-browser/demo",
+          "declarations": {
+            "dependencies": "^17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": null
+        },
+        {
+          "manifest": "apps/webui/package.json",
+          "name": "@astro-browser/webui",
+          "declarations": {
+            "dependencies": "^17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": null
+        }
+      ],
+      "locks": [
+        {
+          "path": "apps/dashboard/pnpm-lock.yaml",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "apps/site/pnpm-lock.yaml",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "apps/videos/pnpm-lock.yaml",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "versions": [
+            "17.5.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 42,
+      "ownershipCandidates": [
+        "apps/browser/src/components/CommandPanel.tsx",
+        "apps/browser/src/components/chat/ChatComposer.tsx",
+        "apps/browser/src/components/chat/ChatPanel.tsx",
+        "apps/browser/src/components/layout/SplitChrome.tsx",
+        "apps/browser/src/components/layout/TopTabStrip.tsx",
+        "apps/browser/src/components/layout/WindowShell.tsx",
+        "apps/browser/src/components/layout/dockMotion.ts",
+        "apps/demo/src/shims/shell.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Atlas",
+      "ref": "origin/main",
+      "sha": "fc3b8217679dd9dd05f203579e49d1ddc12c2dd7",
+      "fetch": "succeeded",
+      "checkoutSha": "69883ae4544e18af82cc5ae599321ef853ec1b98",
+      "checkoutDirtyEntries": 4,
+      "packages": [
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@atlas/frontend",
+          "declarations": {
+            "dependencies": "^17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Atlas/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "^15.10.1"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-candidate/candidate-inputs/bun.lock",
+          "versions": [
+            "7.1.2"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 21,
+      "ownershipCandidates": [
+        "packages/frontend/app/(app)/(tabs)/_layout.tsx",
+        "packages/frontend/app/(app)/_layout.tsx",
+        "packages/frontend/app/_layout.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Authenticator",
+      "ref": "origin/main",
+      "sha": "871e254b1b67b24e8e72bad15bc5afac8cb47864",
+      "fetch": "succeeded",
+      "checkoutSha": "4d9033119d442f67c79a7c661a71b8e11507d219",
+      "checkoutDirtyEntries": 1,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "authenticator-by-oxy",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "12.0.0",
+            "packagePath": "Authenticator/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.0.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 10,
+      "ownershipCandidates": [
+        "app/(tabs)/_layout.tsx",
+        "app/_layout.tsx",
+        "components/SafeAreaHeader.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "BloomAiIcons",
+      "ref": "origin/main",
+      "sha": "0f236bc8f513d95bed3b59538f60157704d2cab7",
+      "fetch": "succeeded",
+      "checkoutSha": "cb876befed0a7d1418261c0e6993ed0d2fe1efdb",
+      "checkoutDirtyEntries": 0,
+      "packages": [],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [],
+          "status": "no text locator resolved"
+        }
+      ],
+      "importFileCount": 2,
+      "ownershipCandidates": [],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Clarity",
+      "ref": "origin/main",
+      "sha": "ca6934f64f4e00d77bd55373a1b5e4f79efdda28",
+      "fetch": "succeeded",
+      "checkoutSha": "e4b44ce102899cc63d45b3a9b99eba59599c7445",
+      "checkoutDirtyEntries": 5,
+      "packages": [
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@clarity/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Clarity/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "^15.10.1"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 56,
+      "ownershipCandidates": [
+        "packages/frontend/app/(app)/_layout.tsx",
+        "packages/frontend/app/(biglayout)/subscribe.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/chat-header.tsx",
+        "packages/frontend/components/settings/settings-header.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "CrowdSource",
+      "ref": "origin/main",
+      "sha": "1d146d66e3605dcf2cc7187784c28a463307eed6",
+      "fetch": "succeeded",
+      "checkoutSha": "5177a8469efe951279581617a6867f3e542b64bd",
+      "checkoutDirtyEntries": 1,
+      "packages": [
+        {
+          "manifest": "packages/console/package.json",
+          "name": "@crowdsource/console",
+          "declarations": {
+            "dependencies": "17.9.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "CrowdSource/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        },
+        {
+          "manifest": "packages/reviewer/package.json",
+          "name": "@crowdsource/reviewer",
+          "declarations": {
+            "dependencies": "17.9.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "CrowdSource/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.9.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-frontend/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-receiver/inputs/bun.lock",
+          "versions": [
+            "6.2.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 55,
+      "ownershipCandidates": [
+        "packages/console/app/(console)/_layout.tsx",
+        "packages/console/app/_layout.tsx",
+        "packages/console/components/shell/PanelChrome.tsx",
+        "packages/reviewer/app/(app)/_layout.tsx",
+        "packages/reviewer/app/_layout.tsx",
+        "packages/reviewer/components/Header.tsx",
+        "packages/reviewer/components/Screen.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Dropsea",
+      "ref": "origin/main",
+      "sha": "f1414df35a233e4a2ee0f59a88a8256279e6596d",
+      "fetch": "succeeded",
+      "checkoutSha": "53861651154e3bffa6862d8f2ec6afef31263356",
+      "checkoutDirtyEntries": 1,
+      "packages": [
+        {
+          "manifest": "packages/backend/package.json",
+          "name": "@dropsea/backend",
+          "declarations": {
+            "dependencies": "17.20.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": {
+            "dependencies": "17.20.0"
+          }
+        },
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@dropsea/frontend",
+          "declarations": {
+            "dependencies": "17.20.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": {
+            "dependencies": "17.20.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.20.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 65,
+      "ownershipCandidates": [
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/BrowserProvider.tsx",
+        "packages/frontend/components/BrowserShell.tsx",
+        "packages/frontend/components/GroupHeader.tsx",
+        "packages/frontend/components/ListHeader.tsx",
+        "packages/frontend/components/SignInPanel.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "examples",
+      "ref": "origin/main",
+      "sha": "ec05b5b0d45debd01eadf2fce9c2423d0a31a3c1",
+      "fetch": "failed; ref may be stale",
+      "checkoutSha": "1762b1432080a83a6165c5640a73fe53a893e339",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "expo-sign-in-with-oxy/package.json",
+          "name": "expo-sign-in-with-oxy",
+          "declarations": {
+            "dependencies": "17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": {
+            "dependencies": "6.2.1"
+          }
+        },
+        {
+          "manifest": "nextjs-sign-in-with-oxy/package.json",
+          "name": "nextjs-sign-in-with-oxy",
+          "declarations": {
+            "dependencies": "17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": {
+            "dependencies": "6.2.1"
+          }
+        },
+        {
+          "manifest": "vite-react-oxy/package.json",
+          "name": "vite-react-oxy",
+          "declarations": {
+            "dependencies": "17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": {
+            "dependencies": "6.2.1"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "docs/audits/2026-10-03-expo-candidate-adoption/candidate-install/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "expo-sign-in-with-oxy/bun.lock",
+          "versions": [
+            "17.5.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "nextjs-sign-in-with-oxy/bun.lock",
+          "versions": [
+            "17.5.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "vite-react-oxy/bun.lock",
+          "versions": [
+            "17.5.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 4,
+      "ownershipCandidates": [
+        "expo-sign-in-with-oxy/app/_layout.tsx",
+        "nextjs-sign-in-with-oxy/components/oxy-provider.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "FAIRWallet",
+      "ref": "origin/main",
+      "sha": "85c9679d4a6186c3e0af573634ae6a1ae44249a0",
+      "fetch": "succeeded",
+      "checkoutSha": "aadab795b892d660b4589b6683b2d2ad3d69292c",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "fairwallet",
+          "declarations": {
+            "dependencies": "17.9.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "17.9.0",
+            "packagePath": "FAIRWallet/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.9.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.9.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 52,
+      "ownershipCandidates": [
+        "app/(tabs)/_layout.tsx",
+        "app/(tabs)/map.tsx",
+        "app/_layout.tsx",
+        "app/buy/_layout.tsx",
+        "app/onboarding/_layout.tsx",
+        "app/peers/_layout.tsx",
+        "src/ui/components/LockScreenContent.tsx",
+        "src/ui/components/ScreenHeader.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "GoWay",
+      "ref": "origin/main",
+      "sha": "0a83b1d96b49599f7a4aba1ac4ac3d3aabde1d14",
+      "fetch": "succeeded",
+      "checkoutSha": "2f3048c2e42e37d00a7f1dfeb5cf31c5182e6601",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@goway/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "GoWay/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.0.0"
+          }
+        },
+        {
+          "manifest": "packages/maps/package.json",
+          "name": "@goway.to/maps",
+          "declarations": {
+            "devDependencies": "17.19.3",
+            "peerDependencies": ">=10.16.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "GoWay/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "devDependencies": "15.0.0",
+            "peerDependencies": ">=10.16.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-frontend/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-receiver/inputs/bun.lock",
+          "versions": [
+            "6.3.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 80,
+      "ownershipCandidates": [
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/map/MapCanvas.tsx",
+        "packages/frontend/components/map/MapCanvas.web.tsx",
+        "packages/frontend/components/map/TimeOfDayScrubber.web.tsx",
+        "packages/frontend/components/map/useMapStyle.ts",
+        "packages/frontend/components/sheet/MapSheet.tsx",
+        "packages/frontend/components/sheet/SidePanel.tsx",
+        "packages/frontend/features/cameras/CameraScreen.tsx",
+        "packages/frontend/features/contribute/ContributeScreen.tsx",
+        "packages/frontend/features/credits/AttributionScreen.tsx",
+        "packages/frontend/features/directions/DirectionsPanel.tsx",
+        "packages/frontend/features/explore/ExploreMapControls.tsx",
+        "packages/frontend/features/explore/ExploreScreen.tsx",
+        "packages/frontend/features/explore/MapSettingsButton.tsx",
+        "packages/frontend/features/explore/MapSettingsModal.tsx",
+        "packages/frontend/features/explore/MapStyleButton.tsx",
+        "packages/frontend/features/explore/MapStylePicker.tsx",
+        "packages/frontend/features/explore/MapTopBar.tsx",
+        "packages/frontend/features/flyover/studio/StudioScreen.tsx",
+        "packages/frontend/features/lists/OrganizationListsScreen.tsx",
+        "packages/frontend/features/live/LivePanel.tsx",
+        "packages/frontend/features/saved/SavedListScreen.tsx",
+        "packages/frontend/features/saved/SavedScreen.tsx",
+        "packages/frontend/features/street3d/Street3dScreen.tsx",
+        "packages/frontend/lib/map/style/themes.ts",
+        "packages/frontend/scripts/build-map-glyphs.ts",
+        "packages/frontend/scripts/build-map-sprite.ts",
+        "packages/frontend/scripts/mapgen/svg-path.ts",
+        "packages/maps/src/DefaultMapMarker.tsx",
+        "packages/maps/src/MapAttribution.tsx",
+        "packages/maps/src/MapBrand.tsx",
+        "packages/maps/src/MapErrorState.tsx",
+        "packages/maps/src/MapScale.tsx",
+        "packages/maps/src/MapView.tsx",
+        "packages/maps/src/MapView.web.tsx",
+        "packages/maps/src/Marker.web.tsx",
+        "packages/maps/src/UserPuck.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Homiio",
+      "ref": "origin/main",
+      "sha": "461e10fab14d2b8c8f7e47b606dd41ed546d42e2",
+      "fetch": "succeeded",
+      "checkoutSha": "f48b1bbd8ba2cec8a3f67318741050675c397b1b",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "homiio-monorepo",
+          "declarations": {
+            "dependencies": "17.11.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "Homiio/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.53.0"
+          }
+        },
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@homiio/frontend",
+          "declarations": {
+            "dependencies": "17.11.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "Homiio/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.53.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.11.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-source-compat/raw-transport/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "packages/backend/worker-runtime/bun.lock",
+          "versions": [],
+          "status": "no text locator resolved"
+        }
+      ],
+      "importFileCount": 277,
+      "ownershipCandidates": [
+        "packages/frontend/app/(pages)/_layout.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/AppSplashScreen.tsx",
+        "packages/frontend/components/NotFoundScreen.tsx",
+        "packages/frontend/components/property/create/FullscreenMapModal.tsx",
+        "packages/frontend/components/search/ResultsMap.tsx",
+        "packages/frontend/components/ui/MapFab.tsx",
+        "packages/frontend/components/ui/MapMarkerPopover.tsx",
+        "packages/frontend/components/ui/PropertyListHeader.tsx",
+        "packages/frontend/context/AskAgentProvider.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Inbox",
+      "ref": "origin/main",
+      "sha": "0bfb1b2ef825a566eb55cf2fe4628e7e7f4636dd",
+      "fetch": "succeeded",
+      "checkoutSha": "a043206a9ca570caf62110d1dbacd9e1d330224d",
+      "checkoutDirtyEntries": 3,
+      "packages": [
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "inbox",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.16.0",
+            "packagePath": "Inbox/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.16.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 169,
+      "ownershipCandidates": [
+        "packages/frontend/app/(drawer)/(tabs)/(inbox)/_layout.tsx",
+        "packages/frontend/app/(drawer)/(tabs)/_layout.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/MailComposer.tsx",
+        "packages/frontend/components/MailScrollProvider.tsx",
+        "packages/frontend/components/MailboxShell.tsx",
+        "packages/frontend/components/SearchHeader.tsx",
+        "packages/frontend/components/SubscriptionsScreen.tsx",
+        "packages/frontend/hooks/useIsDesktopLayout.ts"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Mention",
+      "ref": "origin/main",
+      "sha": "f64e2e9105844c0692649b30b07c20e235c3b398",
+      "fetch": "succeeded",
+      "checkoutSha": "bcf8c4c9a36f5f5c84302e22b623f526f6a6067b",
+      "checkoutDirtyEntries": 95,
+      "packages": [
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@mention/frontend",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.19.3",
+          "installed": {
+            "version": "15.79.0",
+            "packagePath": "Mention/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "catalog:"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "tests/sdk-transport/bun.lock",
+          "versions": [],
+          "status": "no text locator resolved"
+        }
+      ],
+      "importFileCount": 572,
+      "ownershipCandidates": [
+        "packages/frontend/app/(app)/(tabs)/_layout.tsx",
+        "packages/frontend/app/(app)/_layout.tsx",
+        "packages/frontend/app/(app)/explore/_layout.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/AccountInfoScreen.tsx",
+        "packages/frontend/components/AppSplashScreen.tsx",
+        "packages/frontend/components/BoostScreen.tsx",
+        "packages/frontend/components/ChannelScreen.tsx",
+        "packages/frontend/components/Community/CommunityPanel.tsx",
+        "packages/frontend/components/CommunityNotes/CommunityNotesScreen.tsx",
+        "packages/frontend/components/CommunityNotes/NoteSheetHeader.tsx",
+        "packages/frontend/components/Compose/ComposeScreen.tsx",
+        "packages/frontend/components/Feed/FeedHeader.tsx",
+        "packages/frontend/components/Feed/interstitials/InterstitialShell.tsx",
+        "packages/frontend/components/Memberships/MembershipComposer.tsx",
+        "packages/frontend/components/OperatedAccounts/OperatedAccountSettingsScreen.tsx",
+        "packages/frontend/components/OperatedAccounts/OperatedAccountsScreen.tsx",
+        "packages/frontend/components/Post/PostDetailScreen.tsx",
+        "packages/frontend/components/Post/PostHeader.tsx",
+        "packages/frontend/components/Profile/ChannelHeader.tsx",
+        "packages/frontend/components/Profile/ConnectionsHeader.tsx",
+        "packages/frontend/components/Profile/ConnectionsScreen.tsx",
+        "packages/frontend/components/Profile/ProfileHeader.tsx",
+        "packages/frontend/components/Profile/ProfilePageHeader.tsx",
+        "packages/frontend/components/Profile/ProfileShell.tsx",
+        "packages/frontend/components/ProfileScreen.tsx",
+        "packages/frontend/components/deck/DeckAddPanel.tsx",
+        "packages/frontend/components/navigation/MentionHomeHeader.tsx",
+        "packages/frontend/components/payments/CheckoutPlaygroundScreen.tsx",
+        "packages/frontend/components/providers/AccountSwitchReset.tsx",
+        "packages/frontend/components/providers/AppProviders.tsx",
+        "packages/frontend/components/providers/AppShellProviders.tsx",
+        "packages/frontend/components/settings/MentionSettingsProvider.tsx",
+        "packages/frontend/components/videos/InlineReplyComposer.tsx",
+        "packages/frontend/components/welcome/WelcomeScreen.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Mercaria",
+      "ref": "origin/main",
+      "sha": "7aaea15f0eb921f1273d672ce45f2c058fee660e",
+      "fetch": "failed; ref may be stale",
+      "checkoutSha": "e5597f9936becf78f99c3cb3ef1982750be2397f",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "packages/dashboard/package.json",
+          "name": "@mercaria/dashboard",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "7.30.1",
+            "packagePath": "Mercaria/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "7.30.1"
+          }
+        },
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@mercaria/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "7.30.1",
+            "packagePath": "Mercaria/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "7.30.1"
+          }
+        },
+        {
+          "manifest": "packages/pos/package.json",
+          "name": "@mercaria/pos",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "7.30.1",
+            "packagePath": "Mercaria/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "7.30.1"
+          }
+        },
+        {
+          "manifest": "packages/ui/package.json",
+          "name": "@mercaria/ui",
+          "declarations": {
+            "peerDependencies": ">=17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "7.30.1",
+            "packagePath": "Mercaria/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "peerDependencies": ">=7.30.1 <8"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 266,
+      "ownershipCandidates": [
+        "packages/dashboard/app/(app)/_layout.tsx",
+        "packages/dashboard/app/_layout.tsx",
+        "packages/dashboard/components/AppSplashScreen.tsx",
+        "packages/dashboard/components/catalog-authoring/CanonicalSearchPanel.tsx",
+        "packages/dashboard/components/channels/CollectionMapping.tsx",
+        "packages/dashboard/components/shell/BottomTabBar.tsx",
+        "packages/dashboard/components/shell/DetailContent.tsx",
+        "packages/dashboard/components/shell/Screen.tsx",
+        "packages/dashboard/components/shell/useDashboardSidebar.tsx",
+        "packages/frontend/app/(app)/_layout.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/AppSplashScreen.tsx",
+        "packages/frontend/components/materials/MaterialTransportPanel.tsx",
+        "packages/frontend/components/orders/OrdersScreen.tsx",
+        "packages/frontend/components/payment/CartPaymentProvider.tsx",
+        "packages/frontend/components/shell/BottomTabBar.tsx",
+        "packages/frontend/components/shell/HeroSearch.tsx",
+        "packages/frontend/components/shell/ScreenShell.tsx",
+        "packages/frontend/components/shell/ShoppingActionsProvider.tsx",
+        "packages/frontend/components/shell/ShoppingComposer.tsx",
+        "packages/frontend/components/shell/SupervisedStorefrontGate.tsx",
+        "packages/frontend/components/shell/useStorefrontSidebar.tsx",
+        "packages/pos/app/(app)/_layout.tsx",
+        "packages/pos/app/_layout.tsx",
+        "packages/pos/components/AppSplashScreen.tsx",
+        "packages/pos/components/register/CartPanel.tsx",
+        "packages/pos/components/shell/BottomTabBar.tsx",
+        "packages/pos/components/shell/Screen.tsx",
+        "packages/pos/components/shell/usePosSidebar.tsx",
+        "packages/ui/src/components/marketplace/MerchantHeader.tsx",
+        "packages/ui/src/components/marketplace/StoreOfferHeader.tsx",
+        "packages/ui/src/components/shell/ScreenShell.tsx",
+        "packages/ui/src/components/shell/ViewportScrollView.tsx",
+        "packages/ui/src/settings/SettingsDialogProvider.tsx",
+        "packages/ui/src/settings/SettingsDialogShell.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Moovo",
+      "ref": "origin/main",
+      "sha": "8702f33ec9c78c4cbf1eccdc10a8cc458ba51331",
+      "fetch": "succeeded",
+      "checkoutSha": "cb0b17906133f79319f383f907f46a081c4c9ada",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "moovo-monorepo",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "1.0.1",
+            "packagePath": "Moovo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        },
+        {
+          "manifest": "packages/courier-app/package.json",
+          "name": "@moovo/courier-app",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "1.0.1",
+            "packagePath": "Moovo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        },
+        {
+          "manifest": "packages/fleet-dashboard/package.json",
+          "name": "@moovo/fleet-dashboard",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "1.0.1",
+            "packagePath": "Moovo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        },
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@moovo/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "1.0.1",
+            "packagePath": "Moovo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        },
+        {
+          "manifest": "packages/tracker-app/package.json",
+          "name": "@moovo/tracker-app",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "1.0.1",
+            "packagePath": "Moovo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-frontend/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-receiver/inputs/bun.lock",
+          "versions": [
+            "6.3.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 42,
+      "ownershipCandidates": [
+        "packages/courier-app/app/_layout.tsx",
+        "packages/courier-app/components/AppSplashScreen.tsx",
+        "packages/courier-app/components/shell/BottomTabBar.tsx",
+        "packages/fleet-dashboard/app/_layout.tsx",
+        "packages/fleet-dashboard/components/AppSplashScreen.tsx",
+        "packages/fleet-dashboard/components/shell/BottomTabBar.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/AppSplashScreen.tsx",
+        "packages/frontend/components/shell/BottomTabBar.tsx",
+        "packages/tracker-app/app/_layout.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Move",
+      "ref": "origin/main",
+      "sha": "fd7b4967777ae16a2b0589359fce3ddba62e2353",
+      "fetch": "failed; ref may be stale",
+      "checkoutSha": "8299d226b31cd35dabb024cc5d29801fb104c79c",
+      "checkoutDirtyEntries": 1,
+      "packages": [
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@move/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "4.22.2",
+            "packagePath": "Move/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 14,
+      "ownershipCandidates": [
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/PageScreen.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Nilo",
+      "ref": "origin/main",
+      "sha": "e8c0cfd4a89bc3f494827cfce912ebc31f8a4d66",
+      "fetch": "succeeded",
+      "checkoutSha": "f907995748a96d2fca63c6c983a11e444d3d59cf",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "apps/app/package.json",
+          "name": "@nilo/app",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "17.19.3",
+            "packagePath": "Nilo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.19.3"
+          }
+        },
+        {
+          "manifest": "package.json",
+          "name": "nilo-monorepo",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "17.19.3",
+            "packagePath": "Nilo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.19.3"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-frontend/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-receiver/inputs/bun.lock",
+          "versions": [
+            "4.28.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 274,
+      "ownershipCandidates": [
+        "apps/app/app/_layout.tsx",
+        "apps/app/components/comments/comment-composer.tsx",
+        "apps/app/components/comments/comment-panel.tsx",
+        "apps/app/components/database/database-header.tsx",
+        "apps/app/components/database/group-header.tsx",
+        "apps/app/components/database/row-properties-panel.tsx",
+        "apps/app/components/shell/nilo-shell.tsx",
+        "apps/app/components/shell/page-row-actions.tsx",
+        "apps/app/components/shell/page-rows.tsx",
+        "apps/app/components/shell/use-identities.tsx",
+        "apps/app/components/shell/use-onboarding.tsx",
+        "apps/app/components/shell/use-sidebar-tree.tsx",
+        "apps/app/components/workspace/invitation-screen.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Noted",
+      "ref": "origin/main",
+      "sha": "f6d1aaf7958dd22e28d1f22d53e5de65eee0cfe0",
+      "fetch": "succeeded",
+      "checkoutSha": "3e47bdadd61f1a101a18509ae4e395800cc6dc40",
+      "checkoutDirtyEntries": 1,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "noted-monorepo",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Noted/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        },
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@noted/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.10.1",
+            "packagePath": "Noted/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.10.1"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 79,
+      "ownershipCandidates": [
+        "packages/frontend/app/(app)/_layout.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/notes/notes-header.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "oxy",
+      "ref": "origin/main",
+      "sha": "0f0dfb0a7b933aa997661a46d72513d6d96efa14",
+      "fetch": "succeeded",
+      "checkoutSha": "51e1f830b9b55934a0af8e2e89d8c455702fdc2b",
+      "checkoutDirtyEntries": 9,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "@oxy.so/sdk",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "catalog:"
+          }
+        },
+        {
+          "manifest": "packages/accounts/package.json",
+          "name": "accounts",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "catalog:"
+          }
+        },
+        {
+          "manifest": "packages/api/package.json",
+          "name": "@oxy.so/api",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": null
+          }
+        },
+        {
+          "manifest": "packages/app-preset/package.json",
+          "name": "@oxy.so/app-preset",
+          "declarations": {
+            "peerDependencies": "^2.0.0 || ^3.0.0 || ^4.2.0 || ^5.1.0 || >=6.0.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "peerDependencies": "^2.0.0 || ^3.0.0 || ^4.2.0 || ^5.1.0 || >=6.0.0"
+          }
+        },
+        {
+          "manifest": "packages/auth/package.json",
+          "name": "auth",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "catalog:"
+          }
+        },
+        {
+          "manifest": "packages/commons/package.json",
+          "name": "commons",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "catalog:"
+          }
+        },
+        {
+          "manifest": "packages/console/package.json",
+          "name": "oxy-console",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "catalog:"
+          }
+        },
+        {
+          "manifest": "packages/contracts/package.json",
+          "name": "@oxy.so/contracts",
+          "declarations": {
+            "devDependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "devDependencies": "catalog:"
+          }
+        },
+        {
+          "manifest": "packages/services/compat/expo-54/package.json",
+          "name": "@oxy.so/services-compat-expo-54",
+          "declarations": {
+            "dependencies": "17.15.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.43.0"
+          }
+        },
+        {
+          "manifest": "packages/services/package.json",
+          "name": "@oxy.so/services",
+          "declarations": {
+            "devDependencies": "catalog:",
+            "peerDependencies": ">=17.15.0"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "devDependencies": "catalog:",
+            "peerDependencies": ">=11.1.0"
+          }
+        },
+        {
+          "manifest": "packages/test-app-expo/package.json",
+          "name": "test-app",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "catalog:"
+          }
+        },
+        {
+          "manifest": "packages/test-app-vite/package.json",
+          "name": "test-app-vite",
+          "declarations": {
+            "dependencies": "catalog:"
+          },
+          "catalog": "17.15.0",
+          "installed": {
+            "version": "15.18.0",
+            "packagePath": "oxy/node_modules/.bun/@oxy.so+bloom@15.18.0/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "catalog:"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": ".github/scripts/release-runtime/package-lock.json",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.15.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "packages/services/compat/expo-54/bun.lock",
+          "versions": [
+            "17.15.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "scripts/acceptance/product-journeys/bun.lock",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "tooling/expo-code-signing-native/bun.lock",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "workers/cloud/bun.lock",
+          "versions": [],
+          "status": "no text locator resolved"
+        }
+      ],
+      "importFileCount": 497,
+      "ownershipCandidates": [
+        "packages/accounts/app/(tabs)/_layout.tsx",
+        "packages/accounts/app/_layout.tsx",
+        "packages/accounts/components/header.tsx",
+        "packages/accounts/components/home/home-header.tsx",
+        "packages/commons/__mocks__/bloom-page-header.tsx",
+        "packages/commons/app/(tabs)/_layout.tsx",
+        "packages/commons/app/_layout.tsx",
+        "packages/commons/components/reputation/ReputationHeader.tsx",
+        "packages/commons/components/ui/screen.tsx",
+        "packages/commons/components/ui/stack-header.tsx",
+        "packages/commons/hooks/useReputationHeatmap.ts",
+        "packages/console/app/(shell)/(pages)/_layout.tsx",
+        "packages/console/app/(shell)/(pages)/billing/budgets.tsx",
+        "packages/console/app/(shell)/(pages)/billing/index.tsx",
+        "packages/console/app/(shell)/(pages)/billing/plans.tsx",
+        "packages/console/app/(shell)/(pages)/billing/spend.tsx",
+        "packages/console/app/(shell)/(pages)/claims/[claimId].tsx",
+        "packages/console/app/(shell)/(pages)/claims/index.tsx",
+        "packages/console/app/(shell)/(pages)/index.tsx",
+        "packages/console/app/(shell)/(pages)/models.tsx",
+        "packages/console/app/(shell)/(pages)/playground.tsx",
+        "packages/console/app/(shell)/(pages)/usage.tsx",
+        "packages/console/app/(shell)/apps/[appId]/_layout.tsx",
+        "packages/console/app/(shell)/apps/[appId]/inference.tsx",
+        "packages/console/app/(shell)/apps/_layout.tsx",
+        "packages/console/app/(shell)/apps/index.tsx",
+        "packages/console/app/_layout.tsx",
+        "packages/console/components/apps/ApplicationHeader.tsx",
+        "packages/console/components/apps/RolesPanel.tsx",
+        "packages/console/components/apps/UsagePanel.tsx",
+        "packages/console/components/apps/inference/ProviderConnections.tsx",
+        "packages/console/components/apps/store/StoreScreenshots.tsx",
+        "packages/console/components/billing/BillingScreen.tsx",
+        "packages/console/components/clarity/ClarityScreen.tsx",
+        "packages/console/components/shell/CommandMenu.tsx",
+        "packages/console/components/shell/ConsoleBottomBar.tsx",
+        "packages/console/components/shell/ConsoleShell.tsx",
+        "packages/console/components/shell/CreateWorkspaceDialog.tsx",
+        "packages/console/components/shell/command-menu-items.ts",
+        "packages/console/components/shell/useApplicationsTree.tsx",
+        "packages/console/components/shell/useConsoleSidebar.tsx",
+        "packages/create-oxy-app/templates/base/packages/frontend/app/_layout.tsx",
+        "packages/services/src/ui/components/OxyAccountDialogScreen.tsx",
+        "packages/services/src/ui/components/OxyConsentScreen.tsx",
+        "packages/services/src/ui/components/OxyProvider.tsx",
+        "packages/services/src/ui/components/SurfaceHeaderAction.tsx",
+        "packages/services/src/ui/components/SurfaceScreen.tsx",
+        "packages/services/src/ui/components/signIn/OxyAuthScreen.tsx",
+        "packages/services/src/ui/components/signIn/OxyAuthenticatorPanel.tsx",
+        "packages/services/src/ui/components/signIn/OxyDeleteAccountPanel.tsx",
+        "packages/services/src/ui/components/signIn/OxyEmailPanel.tsx",
+        "packages/services/src/ui/components/signIn/OxyLinkCommonsPanel.tsx",
+        "packages/services/src/ui/components/signIn/OxyPasswordPanel.tsx",
+        "packages/services/src/ui/components/signIn/OxySignInPanel.tsx",
+        "packages/services/src/ui/components/signIn/OxySignInSecurityPanel.tsx",
+        "packages/services/src/ui/components/signIn/OxySignUpPanel.tsx",
+        "packages/services/src/ui/hooks/useSurfaceHeader.ts",
+        "packages/services/src/ui/screens/AccountMembersScreen.tsx",
+        "packages/services/src/ui/screens/AccountVerificationScreen.tsx",
+        "packages/services/src/ui/screens/AppInfoScreen.tsx",
+        "packages/services/src/ui/screens/AvatarCropScreen.tsx",
+        "packages/services/src/ui/screens/ChangeAvatarScreen.tsx",
+        "packages/services/src/ui/screens/ConnectedAppsScreen.tsx",
+        "packages/services/src/ui/screens/CreateAccountScreen.tsx",
+        "packages/services/src/ui/screens/DomainsScreen.tsx",
+        "packages/services/src/ui/screens/EditProfileFieldScreen.tsx",
+        "packages/services/src/ui/screens/EditProfileScreen.tsx",
+        "packages/services/src/ui/screens/FileManagementScreen.tsx",
+        "packages/services/src/ui/screens/FileTrashScreen.tsx",
+        "packages/services/src/ui/screens/HelpSupportScreen.tsx",
+        "packages/services/src/ui/screens/HistoryViewScreen.tsx",
+        "packages/services/src/ui/screens/LanguageSelectorScreen.tsx",
+        "packages/services/src/ui/screens/LearnMoreUsernamesScreen.tsx",
+        "packages/services/src/ui/screens/LegalDocumentsScreen.tsx",
+        "packages/services/src/ui/screens/ManageAccountScreen.tsx",
+        "packages/services/src/ui/screens/NotificationsScreen.tsx",
+        "packages/services/src/ui/screens/OxyOneScreen.tsx",
+        "packages/services/src/ui/screens/PaymentGatewayScreen.tsx",
+        "packages/services/src/ui/screens/PreferencesScreen.tsx",
+        "packages/services/src/ui/screens/PrivacySettingsScreen.tsx",
+        "packages/services/src/ui/screens/ProfileLinkForm.tsx",
+        "packages/services/src/ui/screens/ProfileLinksEditor.tsx",
+        "packages/services/src/ui/screens/ProfileScreen.tsx",
+        "packages/services/src/ui/screens/ReportBugScreen.tsx",
+        "packages/services/src/ui/screens/SearchSettingsScreen.tsx",
+        "packages/services/src/ui/screens/SupervisionScreen.tsx",
+        "packages/services/src/ui/screens/UserListScreen.tsx",
+        "packages/services/src/ui/screens/WelcomeNewUserScreen.tsx",
+        "packages/services/src/ui/screens/fileManagement/FileLibraryError.tsx",
+        "packages/services/src/ui/screens/fileManagement/FileListSection.tsx",
+        "packages/services/src/ui/screens/fileManagement/PhotoPickerSection.tsx",
+        "packages/services/src/ui/screens/fileManagement/UploadBar.tsx",
+        "packages/services/src/ui/screens/fileManagement/hooks/useFileUploadState.ts",
+        "packages/services/src/ui/screens/trust/TrustAboutScreen.tsx",
+        "packages/services/src/ui/screens/trust/TrustCenterScreen.tsx",
+        "packages/services/src/ui/screens/trust/TrustFAQScreen.tsx",
+        "packages/services/src/ui/screens/trust/TrustLeaderboardScreen.tsx",
+        "packages/services/src/ui/screens/trust/TrustRewardsScreen.tsx",
+        "packages/services/src/ui/screens/trust/TrustRulesScreen.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "OxyOS",
+      "ref": "origin/main",
+      "sha": "cee1b15efe00602787b895190caceb3502db7d35",
+      "fetch": "succeeded",
+      "checkoutSha": "b631c148e372b828388992453c9a7907fc3e5cf1",
+      "checkoutDirtyEntries": 5,
+      "packages": [
+        {
+          "manifest": "apps/shell/package.json",
+          "name": "@oxyos/shell",
+          "declarations": {
+            "dependencies": ">=17.19.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": {
+            "dependencies": ">=17.19.0"
+          }
+        },
+        {
+          "manifest": "tools/shell-preview/package.json",
+          "name": "@oxyos/shell-preview",
+          "declarations": {
+            "dependencies": "17.19.0"
+          },
+          "catalog": null,
+          "installed": {
+            "status": "not installed"
+          },
+          "localDeclaration": {
+            "dependencies": "17.19.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "tools/rn-host-spike/fidelity/package-lock.json",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "tools/rn-host-spike/sample/package-lock.json",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "tools/shell-preview/pnpm-lock.yaml",
+          "versions": [
+            "17.19.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 82,
+      "ownershipCandidates": [
+        "apps/login/src/LoginScreen.tsx",
+        "apps/shell/src/Shell.tsx",
+        "apps/shell/src/components/AppExpose.tsx",
+        "apps/shell/src/components/AppSwitcher.tsx",
+        "apps/shell/src/components/AutofillWindow.tsx",
+        "apps/shell/src/components/Bezel.tsx",
+        "apps/shell/src/components/BluetoothGlyph.tsx",
+        "apps/shell/src/components/BluetoothPanel.tsx",
+        "apps/shell/src/components/CandidateWindow.tsx",
+        "apps/shell/src/components/ControlCenter.tsx",
+        "apps/shell/src/components/Desktop.tsx",
+        "apps/shell/src/components/Dock.tsx",
+        "apps/shell/src/components/DocumentIcon.tsx",
+        "apps/shell/src/components/Launchpad.tsx",
+        "apps/shell/src/components/LevelSlider.tsx",
+        "apps/shell/src/components/LockClock.tsx",
+        "apps/shell/src/components/LockScreen.tsx",
+        "apps/shell/src/components/NotificationBanner.tsx",
+        "apps/shell/src/components/NotificationCenter.tsx",
+        "apps/shell/src/components/Overview.tsx",
+        "apps/shell/src/components/OxyLogo.tsx",
+        "apps/shell/src/components/PasswordField.tsx",
+        "apps/shell/src/components/Screenshots.tsx",
+        "apps/shell/src/components/SoundPanel.tsx",
+        "apps/shell/src/components/Spotlight.tsx",
+        "apps/shell/src/components/SystemSheet.tsx",
+        "apps/shell/src/components/TopBar.tsx",
+        "apps/shell/src/components/WifiPanel.tsx",
+        "apps/shell/src/components/accent.ts",
+        "apps/shell/src/useShellMessages.ts",
+        "tools/rn-host-spike/sample/PanelProbe.tsx",
+        "tools/rn-host-spike/sample/ShellProbe.tsx",
+        "tools/rn-host-spike/sample/TextLayoutProbe.tsx",
+        "tools/shell-preview/src/main.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Peable",
+      "ref": "origin/main",
+      "sha": "68a8ee975c669b2f2223ee1369bd66769be4f76b",
+      "fetch": "succeeded",
+      "checkoutSha": "55a206a198fd7a843ea96d45d179c06ad1524f2d",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@peable.to/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "17.0.0",
+            "packagePath": "Peable/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.10.0"
+          }
+        },
+        {
+          "manifest": "packages/orbit/package.json",
+          "name": "@peable.to/orbit",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "17.0.0",
+            "packagePath": "Peable/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.10.0"
+          }
+        },
+        {
+          "manifest": "packages/pay/package.json",
+          "name": "@peable.to/pay",
+          "declarations": {
+            "devDependencies": "17.19.3",
+            "peerDependencies": ">=10.4.0 <18.0.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "17.0.0",
+            "packagePath": "Peable/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "devDependencies": "17.10.0",
+            "peerDependencies": ">=10.4.0 <18.0.0"
+          }
+        },
+        {
+          "manifest": "packages/sdk/package.json",
+          "name": "@peable.to/sdk",
+          "declarations": {
+            "peerDependencies": ">=16.10.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "17.0.0",
+            "packagePath": "Peable/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "peerDependencies": ">=16.10.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 172,
+      "ownershipCandidates": [
+        "packages/frontend/app/(tabs)/_layout.tsx",
+        "packages/frontend/app/(tabs)/map.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/app/onboarding/_layout.tsx",
+        "packages/frontend/app/peers/_layout.tsx",
+        "packages/frontend/src/ui/components/LockScreenContent.tsx",
+        "packages/frontend/src/ui/components/NotFoundScreen.tsx",
+        "packages/frontend/src/ui/components/ScreenHeader.tsx",
+        "packages/orbit/app/(orbit)/_layout.tsx",
+        "packages/orbit/app/(orbit)/connect/_layout.tsx",
+        "packages/orbit/app/(orbit)/customers/_layout.tsx",
+        "packages/orbit/app/(orbit)/developers/_layout.tsx",
+        "packages/orbit/app/(orbit)/disputes/_layout.tsx",
+        "packages/orbit/app/(orbit)/identity/_layout.tsx",
+        "packages/orbit/app/(orbit)/invoices/_layout.tsx",
+        "packages/orbit/app/(orbit)/links/_layout.tsx",
+        "packages/orbit/app/(orbit)/payments/_layout.tsx",
+        "packages/orbit/app/(orbit)/payouts/_layout.tsx",
+        "packages/orbit/app/(orbit)/products/_layout.tsx",
+        "packages/orbit/app/(orbit)/quotes/_layout.tsx",
+        "packages/orbit/app/(orbit)/radar/_layout.tsx",
+        "packages/orbit/app/(orbit)/reviews/_layout.tsx",
+        "packages/orbit/app/(orbit)/settings/_layout.tsx",
+        "packages/orbit/app/(orbit)/subscriptions/_layout.tsx",
+        "packages/orbit/app/(orbit)/tax/_layout.tsx",
+        "packages/orbit/app/(orbit)/terminal/_layout.tsx",
+        "packages/orbit/app/_layout.tsx",
+        "packages/orbit/src/shell/CommandPalette.tsx",
+        "packages/orbit/src/shell/OrbitShell.tsx",
+        "packages/orbit/src/shell/SearchDialog.tsx",
+        "packages/orbit/src/shell/TopBar.tsx",
+        "packages/orbit/src/shell/icons.ts",
+        "packages/orbit/src/shell/useShellState.ts",
+        "packages/orbit/src/shell/useSidebarIdentities.ts",
+        "packages/orbit/src/ui/OrbitScreen.tsx",
+        "packages/orbit/src/ui/SignInScreen.tsx",
+        "packages/sdk/src/ui/PeableProviderCardFields.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Schedio",
+      "ref": "origin/main",
+      "sha": "324f8edbc668d5be0b032271202cfda5e2b5bcd0",
+      "fetch": "succeeded",
+      "checkoutSha": "4217ba36f7c74894cf1a58578c94f2f43bdfdd46",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "schedio",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "1.0.0",
+            "packagePath": "Schedio/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.4.0"
+          }
+        },
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@schedio/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "1.0.0",
+            "packagePath": "Schedio/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.4.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 9,
+      "ownershipCandidates": [
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/layout/FloatingActionButton.tsx",
+        "packages/frontend/components/providers/AppProviders.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Syra",
+      "ref": "origin/main",
+      "sha": "9b715e239f6cd00bbd8632e75391891a99cffc8a",
+      "fetch": "succeeded",
+      "checkoutSha": "22c35947354d452c1259c91b83c04c964ad22f27",
+      "checkoutDirtyEntries": 6,
+      "packages": [
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@syra/frontend",
+          "declarations": {
+            "dependencies": "17.9.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "Syra/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.0.0"
+          }
+        },
+        {
+          "manifest": "packages/sdk/package.json",
+          "name": "@syra.fm/sdk",
+          "declarations": {
+            "devDependencies": "17.9.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "Syra/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "devDependencies": null
+          }
+        },
+        {
+          "manifest": "packages/studio/package.json",
+          "name": "@syra/studio",
+          "declarations": {
+            "dependencies": "17.9.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "Syra/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.0.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.9.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-frontend/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-receiver/inputs/bun.lock",
+          "versions": [
+            "6.2.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "tests/sdk-sockets/bun.lock",
+          "versions": [],
+          "status": "no text locator resolved"
+        },
+        {
+          "path": "tests/sdk-transport/bun.lock",
+          "versions": [],
+          "status": "no text locator resolved"
+        }
+      ],
+      "importFileCount": 135,
+      "ownershipCandidates": [
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/AppSplashScreen.tsx",
+        "packages/frontend/components/Panel.tsx",
+        "packages/frontend/components/providers/AppProviders.tsx",
+        "packages/frontend/components/providers/constants.ts",
+        "packages/frontend/components/skeletons/MediaHeaderSkeleton.tsx",
+        "packages/frontend/components/skeletons/ProfileHeaderSkeleton.tsx",
+        "packages/studio/app/_layout.tsx",
+        "packages/studio/components/AppShell.tsx",
+        "packages/studio/components/SplashScreen.tsx",
+        "packages/studio/components/providers/AppProviders.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "tnp",
+      "ref": "origin/main",
+      "sha": "63a9da75e06d8fca2cd8a24fae0bc7c2ba7b5e59",
+      "fetch": "succeeded",
+      "checkoutSha": "3c788b3208a2de71c1f9732b0d545286bb25bd8d",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "apps/web/package.json",
+          "name": "@tnp/web",
+          "declarations": {
+            "dependencies": "17.9.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "tnp/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.0.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.9.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-frontend/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-receiver/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 7,
+      "ownershipCandidates": [],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "website",
+      "ref": "origin/main",
+      "sha": "15983920dec58b6ded2b864487c4a8809739c5a9",
+      "fetch": "succeeded",
+      "checkoutSha": "15983920dec58b6ded2b864487c4a8809739c5a9",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "package.json",
+          "name": "oxy-website",
+          "declarations": {
+            "dependencies": "17.9.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.11.0",
+            "packagePath": "website/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "17.9.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "1.3.0",
+            "17.9.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 443,
+      "ownershipCandidates": [
+        "src/components/academy/AcademyShell.tsx",
+        "src/components/admin/AdminLayout.tsx",
+        "src/components/dashboard/MapContainer.tsx",
+        "src/components/features/RoadmapView.tsx",
+        "src/components/features/shell/PanelBars.tsx",
+        "src/components/layout/Footer.tsx",
+        "src/components/layout/NavBarButton.tsx",
+        "src/components/layout/Navbar.tsx",
+        "src/components/layout/NavbarSearchResults.tsx",
+        "src/components/newsroom/SectionHeaderWithLink.tsx",
+        "src/components/profile/ProfileHeader.tsx",
+        "src/components/social/CommentComposer.tsx",
+        "src/components/store/StoreHeader.tsx",
+        "src/content/bloom-catalog-props/app-shell.ts",
+        "src/content/bloom-catalog-props/provider.ts",
+        "src/content/bloom-catalog-props/queue-panel.ts",
+        "src/content/bloom-examples/ActivityHeatmap.tsx",
+        "src/content/bloom-examples/AppShell.tsx",
+        "src/content/bloom-examples/CartPanel.tsx",
+        "src/content/bloom-examples/ChatComposer.tsx",
+        "src/content/bloom-examples/ChatScreen.tsx",
+        "src/content/bloom-examples/ContentPanel.tsx",
+        "src/content/bloom-examples/CoverHeader.tsx",
+        "src/content/bloom-examples/MapAttribution.tsx",
+        "src/content/bloom-examples/MapControls.tsx",
+        "src/content/bloom-examples/MapMarker.tsx",
+        "src/content/bloom-examples/MediaHeader.tsx",
+        "src/content/bloom-examples/PageHeader.tsx",
+        "src/content/bloom-examples/QueuePanel.tsx",
+        "src/content/bloom-examples/Screen.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "Willo",
+      "ref": "origin/main",
+      "sha": "2c58b89f7ef14bf2a9ea67d6b9e86e03205d9e70",
+      "fetch": "succeeded",
+      "checkoutSha": "4dab666f693da8fc6339e383dcd647e8f7442ed1",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "packages/frame/package.json",
+          "name": "@willo.sh/frame",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "Willo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.70.0"
+          }
+        },
+        {
+          "manifest": "packages/frontend/package.json",
+          "name": "@willo.sh/frontend",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "Willo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.70.0"
+          }
+        },
+        {
+          "manifest": "packages/ui/package.json",
+          "name": "@willo.sh/ui",
+          "declarations": {
+            "dependencies": "17.19.3"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "15.0.0",
+            "packagePath": "Willo/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "15.70.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "bun.lock",
+          "versions": [
+            "17.19.3"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-frontend/inputs/bun.lock",
+          "versions": [
+            "6.2.1"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        },
+        {
+          "path": "docs/audits/2026-10-03-final-sdk-receiver/inputs/bun.lock",
+          "versions": [
+            "6.3.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 32,
+      "ownershipCandidates": [
+        "packages/frame/app/_layout.tsx",
+        "packages/frontend/app/_layout.tsx",
+        "packages/frontend/components/headers.tsx",
+        "packages/frontend/components/screen-surface.tsx",
+        "packages/frontend/layout/page-layout.tsx",
+        "packages/frontend/screens/EntitiesView.tsx",
+        "packages/frontend/screens/activity-screen.tsx",
+        "packages/frontend/screens/assistant-screen.tsx",
+        "packages/frontend/screens/automations-screen.tsx",
+        "packages/frontend/screens/composer-screen.tsx",
+        "packages/frontend/screens/emergency-screen.tsx",
+        "packages/frontend/screens/frames-screen.tsx",
+        "packages/frontend/screens/home-screen.tsx",
+        "packages/frontend/screens/settings-screen.tsx"
+      ],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    },
+    {
+      "repository": "willo-ha",
+      "ref": "origin/main",
+      "sha": "e5f00f124cca4e4e38f850ee02396b0b9ead4984",
+      "fetch": "succeeded",
+      "checkoutSha": "d88bfd66442e81edaad4e9c78c09494fd72f5806",
+      "checkoutDirtyEntries": 0,
+      "packages": [
+        {
+          "manifest": "willo-claim-ui/package.json",
+          "name": "willo-claim-ui",
+          "declarations": {
+            "dependencies": "17.5.0"
+          },
+          "catalog": null,
+          "installed": {
+            "version": "1.3.0",
+            "packagePath": "willo-ha/willo-claim-ui/node_modules/@oxy.so/bloom"
+          },
+          "localDeclaration": {
+            "dependencies": "^4.28.0"
+          }
+        }
+      ],
+      "locks": [
+        {
+          "path": "willo-claim-ui/bun.lock",
+          "versions": [
+            "17.5.0"
+          ],
+          "status": "text locator evidence; per-workspace resolution not inferred"
+        }
+      ],
+      "importFileCount": 4,
+      "ownershipCandidates": [],
+      "adoption": "not verified: source candidates require route ancestry and runtime review",
+      "web": "not run",
+      "ios": "not run",
+      "android": "not run",
+      "distributedBinary": "unknown"
+    }
+  ],
+  "skipped": [
+    {
+      "repository": "Bloom",
+      "reason": "Library under audit, not a consumer"
+    },
+    {
+      "repository": "GWJ",
+      "reason": "Project rules exclude Oxy UI adoption"
+    }
+  ]
+}
