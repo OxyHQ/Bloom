@@ -1,0 +1,1 @@
+class Base {} var Observer = class extends Base { #result; constructor(){super();this.#result=[];} #read(){return this.#result;} read(){return this.#read();} }; globalThis.observed = new Observer().read();
