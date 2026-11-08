@@ -1,0 +1,467 @@
+[
+  {
+    "touch": false,
+    "width": 240,
+    "coarse": false,
+    "probe": 34,
+    "child": 34,
+    "trigger": 34,
+    "budget": 64,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 34
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 34
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 34
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 34
+      }
+    },
+    "visible": [
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "stop"
+      ],
+      "compact": [
+        "stop"
+      ],
+      "overflow": [
+        "find",
+        "share",
+        "pin"
+      ],
+      "requiredWidth": 68
+    }
+  },
+  {
+    "touch": false,
+    "width": 320,
+    "coarse": false,
+    "probe": 34,
+    "child": 34,
+    "trigger": 0,
+    "budget": 144,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 34
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 34
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 34
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 34
+      }
+    },
+    "visible": [
+      "find",
+      "share",
+      "pin",
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "compact": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "overflow": [],
+      "requiredWidth": 136
+    }
+  },
+  {
+    "touch": false,
+    "width": 390,
+    "coarse": false,
+    "probe": 34,
+    "child": 34,
+    "trigger": 0,
+    "budget": 214,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 34
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 34
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 34
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 34
+      }
+    },
+    "visible": [
+      "find",
+      "share",
+      "pin",
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "compact": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "overflow": [],
+      "requiredWidth": 136
+    }
+  },
+  {
+    "touch": false,
+    "width": 640,
+    "coarse": false,
+    "probe": 34,
+    "child": 34,
+    "trigger": 0,
+    "budget": 448,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 34
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 34
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 34
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 34
+      }
+    },
+    "visible": [
+      "find",
+      "share",
+      "pin",
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "compact": [
+        "pin",
+        "stop"
+      ],
+      "overflow": [],
+      "requiredWidth": 389.71875
+    }
+  },
+  {
+    "touch": false,
+    "width": 900,
+    "coarse": false,
+    "probe": 34,
+    "child": 34,
+    "trigger": 0,
+    "budget": 708,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 34
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 34
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 34
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 34
+      }
+    },
+    "visible": [
+      "find",
+      "share",
+      "pin",
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "compact": [
+        "stop"
+      ],
+      "overflow": [],
+      "requiredWidth": 495.84375
+    }
+  },
+  {
+    "touch": true,
+    "width": 240,
+    "coarse": true,
+    "probe": 44,
+    "child": 44,
+    "trigger": 44,
+    "budget": 54,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 44
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 44
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 44
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 44
+      }
+    },
+    "visible": [
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "stop"
+      ],
+      "compact": [
+        "stop"
+      ],
+      "overflow": [
+        "find",
+        "share",
+        "pin"
+      ],
+      "requiredWidth": 88
+    }
+  },
+  {
+    "touch": true,
+    "width": 320,
+    "coarse": true,
+    "probe": 44,
+    "child": 44,
+    "trigger": 44,
+    "budget": 134,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 44
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 44
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 44
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 44
+      }
+    },
+    "visible": [
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "stop"
+      ],
+      "compact": [
+        "stop"
+      ],
+      "overflow": [
+        "find",
+        "share",
+        "pin"
+      ],
+      "requiredWidth": 88
+    }
+  },
+  {
+    "touch": true,
+    "width": 390,
+    "coarse": true,
+    "probe": 44,
+    "child": 44,
+    "trigger": 0,
+    "budget": 204,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 44
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 44
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 44
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 44
+      }
+    },
+    "visible": [
+      "find",
+      "share",
+      "pin",
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "compact": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "overflow": [],
+      "requiredWidth": 176
+    }
+  },
+  {
+    "touch": true,
+    "width": 640,
+    "coarse": true,
+    "probe": 44,
+    "child": 44,
+    "trigger": 0,
+    "budget": 438,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 44
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 44
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 44
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 44
+      }
+    },
+    "visible": [
+      "find",
+      "share",
+      "pin",
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "compact": [
+        "pin",
+        "stop"
+      ],
+      "overflow": [],
+      "requiredWidth": 409.71875
+    }
+  },
+  {
+    "touch": true,
+    "width": 900,
+    "coarse": true,
+    "probe": 44,
+    "child": 44,
+    "trigger": 0,
+    "budget": 698,
+    "measurements": {
+      "find": {
+        "full": 163.734375,
+        "compact": 44
+      },
+      "share": {
+        "full": 157.984375,
+        "compact": 44
+      },
+      "pin": {
+        "full": 140.125,
+        "compact": 44
+      },
+      "stop": {
+        "full": 78.796875,
+        "compact": 44
+      }
+    },
+    "visible": [
+      "find",
+      "share",
+      "pin",
+      "stop"
+    ],
+    "expected": {
+      "inline": [
+        "find",
+        "share",
+        "pin",
+        "stop"
+      ],
+      "compact": [
+        "stop"
+      ],
+      "overflow": [],
+      "requiredWidth": 505.84375
+    }
+  }
+]
