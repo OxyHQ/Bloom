@@ -1,0 +1,16 @@
+[
+  {
+    "preset": "mono",
+    "samples": 48,
+    "canonicalSamples": 32,
+    "canonicalMinimum": 4.674238598716822,
+    "explicit24pxMinimum": 4.053437470818402
+  },
+  {
+    "preset": "graphite",
+    "samples": 48,
+    "canonicalSamples": 32,
+    "canonicalMinimum": 4.647027837316383,
+    "explicit24pxMinimum": 3.988686787302851
+  }
+]
