@@ -242,3 +242,30 @@ button, as VoiceOver and the ARIA grid pattern do. On native it is React
 Native's ARIA `role` (React Native has no `accessibilityRole` of that name and
 takes `role` over it); on web the element's `role`. Pair it with
 `tabIndex={-1}` when the keyboard sorts another way (a View menu's Sort By).
+
+## Coarse-pointer web targets
+
+Every web Button reserves a **44×44 CSS-pixel minimum on its interactive
+host** when the primary pointer is coarse, including ordinary/default density,
+icon-only, `href`, `asChild`, and ButtonGroupItem consumers. This is layout
+space, not a pseudo-element or negative-margin hit region over its neighbours.
+The painted button grows with its host; the size's typography and glyph scale
+stay unchanged. Fine-pointer geometry remains xs/sm/md/lg = 24/32/36/44px.
+
+The minimum applies after Button and `asChild` styles merge. Width/height,
+smaller minima and maximum dimensions cannot shrink the target below 44px;
+larger numeric or CSS-length minima can grow it. Class-based layout still
+lands on the same interactive node. A mounted control keeps its node and focus
+when the input device changes. Long labels can wrap with the existing
+`className="whitespace-normal"` and `style={{ height: 'auto' }}` recipe.
+
+The #414 browser reproduction measured default coarse targets at 24/32/36px,
+icon-only targets at 24/32/36px square, and small overrides at 12px high.
+`verify-button-touch-targets.mjs` now checks 28 controls with 84 real edge taps
+per scenario at 390/1100px in light/dark: inherited size, text/icon actions,
+overrides, links, asChild, grouped consumers, long labels, RTL, no intersecting
+boxes and live fine→coarse→fine transitions. `Button-touch.web.test.tsx` adds
+DOM state/identity assertions. Native Button's geometry and platform hitSlop
+are unchanged; its explicit native/Yoga regression tests do **not** establish
+physical native target acceptance. Parent clipping and overlapping native
+hitSlop remain separate device checks in #663.
