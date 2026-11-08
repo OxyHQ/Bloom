@@ -1,3 +1,6 @@
+import { PresenceDot } from '../chat-indicators/PresenceDot';
+import { UnreadBadge } from '../chat-indicators/UnreadBadge';
+import { EnergyBadge } from '../property-insights/EnergyBadge';
 import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -121,6 +124,26 @@ export const OverContent: Story = {
         The island takes its fill from the surface ladder and its alpha from the chrome role, so it
         reads on a colour Bloom did not choose.
       </Text>
+    </View>
+  ),
+};
+
+/** Status parts share UI scale without replacing their semantic colors. */
+export const IndicatorParts: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ gap: 16 }}>
+      {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+        <BloomScope key={size} size={size}>
+          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <Text>{size}</Text>
+            <PresenceDot testID={`parts-${size}-presence`} status="online" />
+            <UnreadBadge testID={`parts-${size}-unread`} count={128} />
+            <EnergyBadge testID={`parts-${size}-energy`} rating="B" />
+            <UnreadBadge testID={`parts-${size}-override`} size="md" count={3} />
+          </View>
+        </BloomScope>
+      ))}
     </View>
   ),
 };

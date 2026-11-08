@@ -4305,6 +4305,7 @@
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
     "build:avatar-vectors": "node scripts/build-avatar-vector-assets.mjs",
+    "generate:public-parts": "bun scripts/generate-public-parts.ts",
     "generate:task-catalog": "node scripts/generate-task-catalog.mjs",
     "verify:task-catalog": "node --no-opt scripts/verify-task-catalog.mjs"
   },

@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from 'react';
+import { useBloomAppearance } from '../appearance/context';
 import { StyleSheet, View } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 
@@ -51,13 +52,18 @@ function UnreadBadgeComponent({
   max = 99,
   dot = false,
   muted = false,
-  size = 'md',
+  size: sizeProp,
   formatLabel,
   accessibilityLabel,
   style,
   textStyle,
   testID,
 }: UnreadBadgeProps) {
+  const { size: scopedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
+  const size = scopedSize === 'xs' || scopedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   const { messages } = useMessages(CHAT_INDICATORS_MESSAGES);
   const paint = useMemo(() => resolveChatIndicatorPaint(theme), [theme]);
