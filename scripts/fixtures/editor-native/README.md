@@ -1,6 +1,6 @@
 # Physical Android editor acceptance
 
-Prepared, not executed. Coordinate the Pixel 8a window with the Bloom device
+Source candidates executed on the Pixel 8a; published-package acceptance remains pending. Coordinate the Pixel 8a window with the Bloom device
 owner before changing the foreground app. Use a Nilo-compatible native dev client
 that includes `react-native-enriched-html` and the declared editor peers; the
 material-only lab APK cannot prove editor behavior. WSL must use the already
@@ -38,7 +38,7 @@ existing presentation is a sheet/platform popup. Automatically opening that shee
 merely from caret placement is not accepted until the above checks pass. If it
 interrupts native editing, keep contextual actions in the existing EditorToolbar
 and open the appropriate overlay only on deliberate activation; do not add a
-second local popup engine. This file records a pending test, not an Android pass.
+second local popup engine. The complete matrix remains a pending gate; see the measured cases in docs/audits/issue-434/native-focus.
 
 
 `capture.mjs` records one named checkpoint without launching the app or touching
@@ -48,3 +48,19 @@ capture when the fixture does not own the foreground window. Each capture is
 explicitly marked captured-not-evaluated; review text/selection/IME and recording
 against the sequence above. App.tsx typechecks against public package exports;
 that is not evidence that the native binary or interaction has passed.
+
+`verify-handoff.py` drives the synthetic fixture's URL handoffs with UIAutomator
+labels/bounds, taps, text and Back/Escape key injection. Set the same coordinated
+ADB/ADB_PORT/ANDROID_SERIAL/APP_ID plus a fresh OUTPUT path. It requires the
+fixture already running and does not install, launch, reset or alter settings.
+It captures observations; evaluate report.json and events against acceptance
+criteria rather than treating process exit zero as a pass. Injected Escape is
+not physical keyboard validation. The tested Pixel uses density 420/font scale
+1.15; the paragraph tap positions are for that fixture configuration.
+
+Host requirements: one SafeAreaProvider, GestureHandlerRootView, KeyboardProvider
+(react-native-keyboard-controller 1.23.0 in the recorded lab), AppShell scroll=fixed
+and Screen bottomBarKeyboardBehavior=follow. The lab uses Expo 58.0.23, RN 0.88.1,
+React 19.3.0, enriched-html 1.1.1, Reanimated 4.7.1 and app-preset 6.5.1. Source
+candidates are packed/extracted separately; never overwrite Bun's hardlinked
+node_modules packages. Save APK/embedded bundle hashes and source-map markers.

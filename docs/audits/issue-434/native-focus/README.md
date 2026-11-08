@@ -72,3 +72,12 @@ native command directly and never updates that RN registry. The candidate now
 explicitly blurs the owned URL input before the deliberate return to the editor;
 no timer or focus-on-navigation was added. The ordering regression and all 272
 editor tests/build pass; this handoff candidate awaits physical comparison.
+
+Physical handoff candidate 0cba1f02 (`handoff/`): Apply and Cancel now retain IME
+and range 7..13; Back hides IME while preserving draft/range, and deliberate
+Cancel restores editing. The source-map marker proves the blur-before-handoff
+code is installed. Moving from URL to paragraph 2 preserves that paragraph's
+focus and cancels the old draft, but still hides IME: this remains a failure,
+not acceptance. Injected Android Escape also hides IME and leaves the draft; no
+physical keyboard claim is made. Investigating URL onBlur lifetime before
+changing that external transition; no timer or forced refocus workaround.
