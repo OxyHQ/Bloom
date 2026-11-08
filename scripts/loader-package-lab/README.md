@@ -32,9 +32,12 @@ before installing, and record OS/build/font scale/density/thermal state unchange
 Passed: compiled local package on Pixel, API 30/31 registration guards, six
 continuous budget windows, temporary bitmap and software-host fallback, and a
 JS-only update into the previous native binary. API 30 emulator startup and reduced-motion
-suspension/resumption pass; its SVG halo and runtime cost are not accepted. Pending:
-deliberate degraded fallback policy,
-old RN/legacy runtime, packaged lifecycle, consumer composers and published artifact. iPhone testing is explicitly deferred by the user.
+suspension/resumption pass; its SVG halo and runtime cost are not accepted. The
+physical packaged lifecycle and ComposerPill/AgentChatComposer checks are recorded
+in `docs/benchmarks/composer-android-2026-11-08/`; AliaComposer’s offline fixture
+checks are recorded there separately. Pending: fallback visual/performance policy,
+old RN/legacy runtime, production consumer adoption and published-package acceptance.
+iPhone testing is explicitly deferred by the user.
 
 Native capability tests against the installed snapshot:
 

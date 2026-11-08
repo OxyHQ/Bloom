@@ -11,3 +11,4 @@ The current Alia fixture APK was pulled from the installed package and matched S
 - `loader-lifecycle.json`: physical pause/resume, inactive screen, background, width resize, rapid toggle, and initial-inactive timing/pixel checks.
 
 Phase-aligned optical comparison, full product lifecycle/visual/performance acceptance and iPhone validation remain pending.
+- `loader-phase-comparison.json` records same-origin captures of the same packaged loader and state on the Pixel 8a, once with hardware Canvas and once with the manifest-forced software host/SVG fallback. Bloom, native adapter and fixture source hashes match. The cropped PSNR is recorded as a measurement without claiming parity; no acceptance threshold exists yet.
