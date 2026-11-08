@@ -18,6 +18,36 @@ const __dirname = path.dirname(__filename);
 const SVG_SOUND_MODULE = /^.*\/fabric\/NativeSvgSoundModule$/;
 const SVG_SOUND_MODULE_WEB = path.resolve(__dirname, 'web/android-sound-module.ts');
 
+// Vite transforms and the dependency optimizer need the same type erasure.
+function expoTypeDeclarations() {
+  return {
+    name: 'bloom-expo-type-declarations',
+    enforce: 'pre' as const,
+    // `expo-modules-core/src/ts-declarations/` holds types only;
+    // TypeScript compiles `global.ts` to `export {}`. Its ambient
+    // `declare namespace` re-exports four imported classes, which Oxc
+    // (Vite 8's transformer) reads as value uses, so it keeps imports of
+    // names those modules export only as types and Rolldown rejects them
+    // (MISSING_EXPORT). Compile these files with TypeScript's own
+    // isolated-module rules, which is what esbuild matched under Vite 7.
+    transform(code: string, id: string) {
+      if (!/\/expo-modules-core\/src\/ts-declarations\/[^/]+\.ts$/.test(id.split('?')[0]!)) {
+        return null;
+      }
+      const output = ts.transpileModule(code, {
+        fileName: id,
+        compilerOptions: {
+          module: ts.ModuleKind.ESNext,
+          target: ts.ScriptTarget.ES2022,
+          isolatedModules: true,
+          sourceMap: true,
+        },
+      });
+      return { code: output.outputText, map: output.sourceMapText ?? null };
+    },
+  };
+}
+
 const config: StorybookConfig = {
   // `templates/` holds full-screen templates as stories only: composed
   // from Bloom's components, never published (outside `src`, not in `files`).
@@ -79,32 +109,7 @@ const config: StorybookConfig = {
         avatarSurfaceTransport(),
         avatarMotionTransport(),
         tailwindcss(),
-        {
-          name: 'bloom-expo-type-declarations',
-          enforce: 'pre' as const,
-          // `expo-modules-core/src/ts-declarations/` holds types only;
-          // TypeScript compiles `global.ts` to `export {}`. Its ambient
-          // `declare namespace` re-exports four imported classes, which Oxc
-          // (Vite 8's transformer) reads as value uses, so it keeps imports of
-          // names those modules export only as types and Rolldown rejects them
-          // (MISSING_EXPORT). Compile these files with TypeScript's own
-          // isolated-module rules, which is what esbuild matched under Vite 7.
-          transform(code: string, id: string) {
-            if (!/\/expo-modules-core\/src\/ts-declarations\/[^/]+\.ts$/.test(id.split('?')[0]!)) {
-              return null;
-            }
-            const output = ts.transpileModule(code, {
-              fileName: id,
-              compilerOptions: {
-                module: ts.ModuleKind.ESNext,
-                target: ts.ScriptTarget.ES2022,
-                isolatedModules: true,
-                sourceMap: true,
-              },
-            });
-            return { code: output.outputText, map: output.sourceMapText ?? null };
-          },
-        },
+        expoTypeDeclarations(),
         {
           name: 'bloom-expo-web-bootstrap',
           // Expo's web bridge is an empty exported function plus a side-effect
@@ -205,6 +210,7 @@ const config: StorybookConfig = {
       },
       optimizeDeps: {
         include: ['react-native-web'],
+        rolldownOptions: { plugins: [expoTypeDeclarations()] },
         // This optional compatibility probe is absent from the Storybook host.
         // Keep the scanner from resolving it; runtime retains its guarded require.
         exclude: ['react-native', 'react-native-css-interop'],
