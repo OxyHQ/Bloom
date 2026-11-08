@@ -231,3 +231,10 @@ A control that owns its outline can set `rim={false}` to omit the material edge,
 and `sheen={false}` to omit the native inset sheen. Both default to true, so
 ordinary surfaces retain their existing optics. Use shared surface presence
 when fading a surface on web; ancestor opacity prevents its backdrop filtering.
+
+## Reproducible cross-platform comparison
+
+Use the [material comparison fixture](./material-comparison.mdx) for the same
+components and synthetic backgrounds on web and the isolated native test app.
+Captures, runtime metadata and performance conclusions are separate evidence;
+the fixture does not declare native parity by existing.
