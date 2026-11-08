@@ -74,13 +74,25 @@ export type { Check }; export { components };
           noEmit: true,
           strict: true,
           skipLibCheck: true,
+          // TS6 retains node10 resolution behind this explicit legacy-mode opt-in.
+          ignoreDeprecations: '6.0',
           target: 'ES2022',
           types: [],
         },
         files: ['probe.ts'],
       }),
     );
-    const trace = run(process.execPath, [tsc, '-p', 'tsconfig.json', '--traceResolution']);
+    let trace;
+    try {
+      trace = run(process.execPath, [tsc, '-p', 'tsconfig.json', '--traceResolution']);
+    } catch (error) {
+      const diagnostics = String(error.stdout ?? error.message)
+        .split('\n')
+        .filter((line) => /error TS\d+/.test(line));
+      throw new Error(
+        `${label} packaged consumer failed:\n${diagnostics.join('\n') || error.message}`,
+      );
+    }
     for (const name of names) {
       if (!trace.includes(`/chart-cards/${name}.d.ts`)) {
         throw new Error(`${label} did not resolve the packaged ${name} declaration`);
