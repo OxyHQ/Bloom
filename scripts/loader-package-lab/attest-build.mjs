@@ -95,9 +95,11 @@ const mappedClass = mapping.match(/^so\.oxy\.bloom\.ComposerLight -> ([^:]+):$/m
 assert(mappedClass, 'Native implementation missing from R8 mapping');
 let nativeContract = false;
 let nativeImplementation = false;
+let selectionTraceProbe = false;
 const dex = entries.map((name) => {
   const data = execFileSync('unzip', ['-p', apk, name], { maxBuffer: 64 * 1024 * 1024 });
   if (data.includes('BloomComposerLightV1')) nativeContract = true;
+  if (data.includes('BloomSelectionTrace')) selectionTraceProbe = true;
   if (data.includes(`L${mappedClass.replaceAll('.', '/')};`)) nativeImplementation = true;
   return { name, sha256: hash(data) };
 });
@@ -105,6 +107,7 @@ assert(
   nativeContract && nativeImplementation,
   'Versioned native implementation is absent from APK DEX',
 );
+assert(selectionTraceProbe, 'Diagnostic selection probe absent from native binary');
 writeFileSync(
   'attestation.json',
   JSON.stringify(
@@ -116,6 +119,7 @@ writeFileSync(
       embeddedBloomSourceSha256: digest.digest('hex'),
       embeddedBloomFiles: sources.size,
       embeddedFixtureSources,
+      selectionTraceProbe,
       dex,
       r8MappingSha256: hash(mapping),
       mappedNativeClass: mappedClass,
