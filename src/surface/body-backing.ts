@@ -34,12 +34,16 @@ export function surfaceBodyBounds(
   const filtered = filterColorBounds(sampler, looks[mode]);
   // CSS support does not prove a renderer actually applies backdrop-filter.
   // Enclose both outputs without user-agent detection or changing material paint.
-  const lower = filtered.min.map((value, index) =>
-    Math.min(value, sampler.min[index]!),
-  ) as RGB;
-  const upper = filtered.max.map((value, index) =>
-    Math.max(value, sampler.max[index]!),
-  ) as RGB;
+  const lower: RGB = [
+    Math.min(filtered.min[0], sampler.min[0]),
+    Math.min(filtered.min[1], sampler.min[1]),
+    Math.min(filtered.min[2], sampler.min[2]),
+  ];
+  const upper: RGB = [
+    Math.max(filtered.max[0], sampler.max[0]),
+    Math.max(filtered.max[1], sampler.max[1]),
+    Math.max(filtered.max[2], sampler.max[2]),
+  ];
   const channels = [color.r, color.g, color.b];
   const edgeGain = Number.isFinite(interiorInset)
     ? maximumEdgeGain(SURFACE_LOOKS[mode].rim, Math.max(0, interiorInset))
