@@ -127,3 +127,26 @@ it('keeps href, disabled and loading semantics on the enlarged host', () => {
   act(() => anchor.click());
   expect(onPress).toHaveBeenCalledTimes(1);
 });
+
+it.each(['min-content', 'max-content'] as const)(
+  'uses the touch floor for an asChild intrinsic %s minimum and restores it on fine pointers',
+  (minimum) => {
+    render({
+      asChild: true,
+      children: (
+        <a href="#save" style={{ minWidth: minimum, minHeight: minimum }}>
+          Save
+        </a>
+      ),
+    });
+    const anchor = host.querySelector('a')!;
+    expect(anchor.style.minWidth).toBe(minimum);
+    pointer(true);
+    expect(anchor.style.minWidth).toBe('44px');
+    expect(anchor.style.minHeight).toBe('44px');
+    pointer(false);
+    expect(host.querySelector('a')).toBe(anchor);
+    expect(anchor.style.minWidth).toBe(minimum);
+    expect(anchor.style.minHeight).toBe(minimum);
+  },
+);

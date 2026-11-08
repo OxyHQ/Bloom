@@ -254,7 +254,13 @@ stay unchanged. Fine-pointer geometry remains xs/sm/md/lg = 24/32/36/44px.
 
 The minimum applies after Button and `asChild` styles merge. Width/height,
 smaller minima and maximum dimensions cannot shrink the target below 44px;
-larger numeric or CSS-length minima can grow it. Class-based layout still
+larger numeric or CSS-length minima can grow it. Raw DOM `asChild` intrinsic
+minimum keywords (`min-content`, `max-content`) and reset keywords are replaced
+by 44px in coarse mode, then restored in fine mode. CSS `max()` cannot combine
+an intrinsic keyword with a numeric floor; use a numeric/length minimum when
+both a larger minimum and touch enforcement are needed. This limitation applies
+to the DOM child's minimum, not to Button's supported numeric/percentage style
+contract. Class-based layout still
 lands on the same interactive node. A mounted control keeps its node and focus
 when the input device changes. Long labels can wrap with the existing
 `className="whitespace-normal"` and `style={{ height: 'auto' }}` recipe.
