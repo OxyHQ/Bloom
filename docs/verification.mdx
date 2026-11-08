@@ -119,3 +119,11 @@ exact interrupted-transition first frames. Browser screenshots do not establish
 those subframe timing properties or native-device performance.
 
 `scripts/verify-avatar-svg-consumers.mjs` verifies eight production routes through the shared SVG renderer.
+
+### Refresh evidence after adding tests
+
+Run `bun run generate:adoption-matrix` **after the final test edits**, even when
+production exports and scope behavior did not change. The matrix derives suite
+counts from test imports: new subjects change its rows. Regenerating before
+adding those imports caused three avoidable CI failures during #663. Then run
+`adoption-matrix.test.ts` against the final tree before pushing.

@@ -18,6 +18,9 @@ import type { ButtonIconComponent, ButtonLinkTone, ButtonUnderline } from './typ
  * Icon actions are squares; native expands compact touch targets with hitSlop.
  */
 
+/** Coarse web controls reserve this real layout box; native uses platform hitSlop. */
+export const BUTTON_TOUCH_TARGET = 44;
+
 /** Every size is a full pill. */
 export const BUTTON_RADIUS = borderRadius.full;
 
@@ -66,7 +69,7 @@ export function resolveButtonGeometry(
     density === 'compact'
       ? {
           ...base,
-          height: Math.max(MENU_GEOMETRY[size].height, touch ? 44 : 0),
+          height: Math.max(MENU_GEOMETRY[size].height, touch ? BUTTON_TOUCH_TARGET : 0),
           iconSize: size === 'xs' ? 14 : size === 'lg' ? 20 : 16,
           labelPaddingHorizontal: 0,
           ...typeFields(CONTROL_LABEL_TYPE[size]),

@@ -36,6 +36,7 @@ import {
 } from '../styles/interactive-web-css';
 import {
   BUTTON_RADIUS,
+  BUTTON_TOUCH_TARGET,
   BUTTON_SHADOW,
   BUTTON_TRANSITION_MS,
   ICON_BUTTON_ICON_SIZE,
@@ -48,6 +49,33 @@ import {
   resolveButtonUnderline,
 } from './shared';
 import type { ButtonIconComponent, ButtonProps } from './types';
+
+/** Preserve larger caller minima while preventing a touch target from shrinking.
+ * CSS intrinsic/reset keywords have no numeric floor; the control still gets 44.
+ */
+function touchMinimum(value: CSSProperties['minWidth']): CSSProperties['minWidth'] {
+  if (typeof value === 'number') return Math.max(BUTTON_TOUCH_TARGET, value);
+  if (typeof value === 'string' && /^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(value.trim())) {
+    return Math.max(BUTTON_TOUCH_TARGET, Number(value));
+  }
+  if (
+    typeof value === 'string' &&
+    /^(?:-?[\d.]|calc\(|var\(|min\(|max\(|clamp\()/.test(value.trim())
+  ) {
+    return `max(${BUTTON_TOUCH_TARGET}px, ${value})`;
+  }
+  return BUTTON_TOUCH_TARGET;
+}
+
+function touchTargetStyle(style: CSSProperties, touch: boolean): CSSProperties {
+  return touch
+    ? {
+        ...style,
+        minWidth: touchMinimum(style.minWidth),
+        minHeight: touchMinimum(style.minHeight),
+      }
+    : style;
+}
 
 export type {
   ButtonProps,
@@ -620,7 +648,10 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           ref: setRoot,
           'aria-hidden': hidden,
           className: [composedClassName, childProps.className].filter(Boolean).join(' '),
-          style: { ...containerStyle, ...resolvedStyle, ...childProps.style },
+          style: touchTargetStyle(
+            { ...containerStyle, ...resolvedStyle, ...childProps.style },
+            touch,
+          ),
           onPointerDown: (event) => {
             childProps.onPointerDown?.(event);
             longPress.onPointerDown(event);
@@ -688,7 +719,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           target={target}
           rel={rel}
           className={composedClassName}
-          style={{ ...containerStyle, ...resolvedStyle }}
+          style={touchTargetStyle({ ...containerStyle, ...resolvedStyle }, touch)}
           onPointerDown={longPress.onPointerDown}
           onPointerEnter={handlePointerEnter}
           onPointerLeave={handlePointerLeave}
@@ -721,7 +752,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         name={name}
         value={value}
         className={composedClassName}
-        style={{ ...containerStyle, ...resolvedStyle }}
+        style={touchTargetStyle({ ...containerStyle, ...resolvedStyle }, touch)}
         onPointerDown={longPress.onPointerDown}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
