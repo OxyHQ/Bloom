@@ -1,0 +1,134 @@
+{
+  "sourceCommit": "b9cab4f5",
+  "scope": "Hidden microphone equalizer lifecycle; no real recording performed",
+  "browser": {
+    "browser": "Chrome/146.0.7680.31",
+    "cases": [
+      {
+        "reduced": false,
+        "idle": [
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          }
+        ],
+        "recording": [
+          {
+            "animationName": "bloom-composer-mic-bars",
+            "transform": "matrix(1, 0, 0, 0.998403, 0, 0)"
+          },
+          {
+            "animationName": "bloom-composer-mic-bars",
+            "transform": "matrix(1, 0, 0, 0.819061, 0, 0)"
+          },
+          {
+            "animationName": "bloom-composer-mic-bars",
+            "transform": "matrix(1, 0, 0, 0.90928, 0, 0)"
+          },
+          {
+            "animationName": "bloom-composer-mic-bars",
+            "transform": "matrix(1, 0, 0, 0.991878, 0, 0)"
+          }
+        ],
+        "transcribing": [
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          }
+        ]
+      },
+      {
+        "reduced": true,
+        "idle": [
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          }
+        ],
+        "recording": [
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          }
+        ],
+        "transcribing": [
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          },
+          {
+            "animationName": "none",
+            "transform": "matrix(1, 0, 0, 0.7, 0, 0)"
+          }
+        ]
+      }
+    ]
+  },
+  "nativeUnit": {
+    "cases": 2,
+    "result": "passed",
+    "mutation": "removing the active guard fails idle-loop assertion"
+  },
+  "build": "build + declarations + verify:package + freshness passed",
+  "physical": "Pending candidate APK comparison against Alia baseline c1c490ad6a4efca94e5743bfb0475f7a290ff2a6b3b2903a1f1f1e27a3039fe2",
+  "limits": [
+    "Does not establish that this change alone removes the native accessibility event stream until candidate device run.",
+    "No app-background/retained-screen recording lifecycle claim."
+  ]
+}
