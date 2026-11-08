@@ -55,6 +55,20 @@
       "screenshot": "alia-streaming-current-candidate.png",
       "screenshotSha256": "41740cc938f1cab336e046c8622bd7ba1e2645cba58a5f52005e25de84749b79",
       "visibleControl": "Stop icon visible while synthetic stream was active; keyboard remained open"
+    },
+    "currentCandidateStreamVideo": {
+      "status": "verified physical screen recording from the exact installed APK above",
+      "streamTurn": 6,
+      "streamStartedAt": "2026-11-08T20:22:37.252+02:00",
+      "stopMarkerAt": "2026-11-08T20:22:39.690+02:00",
+      "stopLogMarker": "BloomAlia663FixtureStop",
+      "video": "alia-issue-663-workflow.mp4",
+      "videoSha256": "7f6beb5b5c3dcad653f36827b709aaa8e31dd3ded336cd9d9dc1ab311d08b9dc",
+      "durationSeconds": 12.727511,
+      "resolution": [1080, 2400],
+      "logFile": "alia-workflow-current-candidate.log",
+      "logSha256": "2d8a8d0612d1dbe520263a4b2b50fedaf0503d4e7f49dca21d8879c33fdfded5",
+      "visibleSequence": "Idle composer and draft, synthetic stream starts, loader/Stop are visible with keyboard open, Stop is activated, composer returns to idle."
     }
   },
   "evidence": [
@@ -64,7 +78,9 @@
     "alia-stop-accessible.png",
     "alia-stop-accessible.xml",
     "alia-streaming-current-candidate.png",
-    "alia-current-candidate.log"
+    "alia-current-candidate.log",
+    "alia-issue-663-workflow.mp4",
+    "alia-workflow-current-candidate.log"
   ],
-  "limits": "The offline fixture exercises AliaComposer but is not the production Alia app or inference service. The exact current installed candidate has a physical streaming screenshot and stop-callback interaction evidence; the saved accessibility hierarchy is from an earlier APK with matching embedded AliaComposer/adapter source hashes. This does not establish phase-aligned optical parity, complete lifecycle contract, performance acceptance, or iPhone behavior."
+  "limits": "The offline fixture exercises AliaComposer but is not the production Alia app or inference service. The exact current installed candidate has a physical video showing idle, streaming with visible Stop, and Stop activation, plus the callback log; the saved accessibility hierarchy is from an earlier APK with matching embedded AliaComposer/adapter source hashes. This does not establish phase-aligned optical parity, complete lifecycle contract, performance acceptance, or iPhone behavior."
 }

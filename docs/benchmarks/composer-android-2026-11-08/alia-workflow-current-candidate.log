@@ -1,0 +1,5 @@
+11-08 20:15:28.329 15219 15273 I ReactNativeJS: 'BloomAlia663FixtureStreamStarted', '{"id":"a-10","turn":4,"platform":"android","chunks":240,"intervalMs":100}'
+11-08 20:21:08.252 15219 15273 I ReactNativeJS: 'BloomAlia663FixtureStreamStarted', '{"id":"a-10","turn":5,"platform":"android","chunks":240,"intervalMs":100}'
+11-08 20:21:11.379 15219 15273 I ReactNativeJS: BloomAlia663FixtureStop
+11-08 20:22:37.252 15219 15273 I ReactNativeJS: 'BloomAlia663FixtureStreamStarted', '{"id":"a-10","turn":6,"platform":"android","chunks":240,"intervalMs":100}'
+11-08 20:22:39.690 15219 15273 I ReactNativeJS: BloomAlia663FixtureStop

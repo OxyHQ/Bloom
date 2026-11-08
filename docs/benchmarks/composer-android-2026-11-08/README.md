@@ -6,7 +6,7 @@ The current Alia fixture APK was pulled from the installed package and matched S
 
 - `selection-direction.json`: no-transition, resize and busy comparisons. The backward selection stayed `[5,4]`; the next Shift+Left extended it to `[5,3]`.
 - `composers.json`: packaged ComposerPill and AgentChatComposer resize/busy, Stop, draft, focus, identity and subsequent typing results.
-- `alia-streaming-current-candidate.png` shows the current installed APK while synthetic streaming with the keyboard open and Stop visible. `alia-current-candidate.log` preserves the stream-start marker. The current candidate's Stop callback and resumed typing were also physically verified in the interaction recorded by `alia-workflow.json`.
+- `alia-issue-663-workflow.mp4` is a 12.7-second screen recording from the exact current installed APK: idle composer/draft, synthetic stream, visible loader and Stop with keyboard open, Stop activation, and return to idle. Its SHA-256 and turn 6 start/stop markers are in `alia-workflow.json` and `alia-workflow-current-candidate.log`. `alia-streaming-current-candidate.png` is a still from the same candidate. Stop activation and resumed typing were physically verified in separate interactions.
 - `alia-stop-accessible.png` and `alia-stop-accessible.xml` preserve the visible and native accessibility state from an earlier fixture APK. The embedded AliaComposer and Android adapter source hashes match the current candidate, but the hierarchy was not recaptured from the current APK. The earlier callback capture is in `alia-stop-interaction.log`.
 - `loader-lifecycle.json`: physical pause/resume, inactive screen, background, width resize, rapid toggle, and initial-inactive timing/pixel checks.
 
