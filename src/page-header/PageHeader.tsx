@@ -2,7 +2,15 @@ import { resolvePaintMode } from '../theme/paint';
 import { createHeaderActionsHost, HeaderActionsHostContext } from './context';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { StyledView } from '../styles/styled-primitives';
-import { memo, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  memo,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentRef,
+} from 'react';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { dataHook, dataHooks } from '../styles/data-hook';
 import { Platform, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
@@ -192,6 +200,7 @@ function PageHeaderComponent({
 }: PageHeaderProps) {
   const actionHost = useState(createHeaderActionsHost)[0];
   const actionGeometry = useRef({ width: 0, leading: 0 });
+  const startRef = useRef<ComponentRef<typeof View>>(null);
   const common = useCommonMessages();
   const directionProps = useDirectionProps();
   const backLabel = backLabelProp ?? common.back;
@@ -311,6 +320,50 @@ function PageHeaderComponent({
     leading,
     onBack,
     history,
+    compact,
+    navigationPresentation,
+    windowRoom,
+  ]);
+  // Keep web leading controls as direct flex children: a CSS-hidden menu must
+  // remove its gap as well as its width. Measure those children, never a wrapper
+  // that would remain as an empty flex item when a container query hides them.
+  useLayoutEffect(() => {
+    if (!isWeb || typeof ResizeObserver === 'undefined') return;
+    const start = startRef.current as unknown as HTMLElement | null;
+    if (!start) return;
+    const measure = () => {
+      const boxes = [...start.children]
+        .filter((child) => !child.hasAttribute('data-bloom-page-header-title-block'))
+        .map((child) => child.getBoundingClientRect())
+        .filter((box) => box.width > 0 && box.height > 0);
+      actionGeometry.current.leading = boxes.length
+        ? Math.max(...boxes.map((box) => box.right)) - Math.min(...boxes.map((box) => box.left))
+        : 0;
+      updateActionBudget();
+    };
+    const observer = new ResizeObserver(measure);
+    const observe = () => {
+      observer.disconnect();
+      for (const child of start.children) {
+        if (!child.hasAttribute('data-bloom-page-header-title-block')) observer.observe(child);
+      }
+      measure();
+    };
+    const mutations = new MutationObserver(observe);
+    mutations.observe(start, { childList: true });
+    observe();
+    return () => {
+      observer.disconnect();
+      mutations.disconnect();
+    };
+  }, [
+    isWeb,
+    leading,
+    history,
+    onBack,
+    title,
+    subtitle,
+    titleAlign,
     compact,
     navigationPresentation,
     windowRoom,
@@ -586,6 +639,7 @@ function PageHeaderComponent({
   const titleBlock =
     title != null || subtitle != null ? (
       <Animated.View
+        {...dataHook('bloomPageHeaderTitleBlock')}
         aria-hidden={titleHidden}
         accessibilityElementsHidden={titleHidden}
         importantForAccessibility={titleHidden ? 'no-hide-descendants' : 'auto'}
@@ -680,6 +734,23 @@ function PageHeaderComponent({
       />
     )
   ) : null;
+
+  const leadingControls = (
+    <>
+      {backButton}
+      {history ? (
+        <BloomScope>
+          <PageHeaderHistory
+            navigation={history}
+            active={screen?.active !== false && host.active !== false}
+            backLabel={backLabel}
+            testID={testID ? `${testID}-history` : undefined}
+          />
+        </BloomScope>
+      ) : null}
+      {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+    </>
+  );
 
   const containerWeb: WebCssStyle | null =
     isWeb && sticky && !overlay && !positionedByScreen
@@ -833,6 +904,7 @@ function PageHeaderComponent({
               testID={testID ? `${testID}-bar` : undefined}
             >
               <View
+                ref={startRef}
                 {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
                 style={[
                   [
@@ -846,7 +918,9 @@ function PageHeaderComponent({
                 onLayout={centered ? onStartLayout : undefined}
                 testID={testID ? `${testID}-start` : undefined}
               >
-                {backButton || history || leading != null ? (
+                {isWeb ? (
+                  leadingControls
+                ) : backButton || history || leading != null ? (
                   <View
                     onLayout={onLeadingLayout}
                     style={{
@@ -856,18 +930,7 @@ function PageHeaderComponent({
                       flexShrink: 0,
                     }}
                   >
-                    {backButton}
-                    {history ? (
-                      <BloomScope>
-                        <PageHeaderHistory
-                          navigation={history}
-                          active={screen?.active !== false && host.active !== false}
-                          backLabel={backLabel}
-                          testID={testID ? `${testID}-history` : undefined}
-                        />
-                      </BloomScope>
-                    ) : null}
-                    {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+                    {leadingControls}
                   </View>
                 ) : null}
                 {centered ? null : titleBlock}

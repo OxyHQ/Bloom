@@ -8,6 +8,7 @@ import {
   type ComponentRef,
 } from 'react';
 import { Platform, View } from 'react-native';
+import { UNSET } from '../styles/animated-style';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import type * as Group from '../button-group';
 import type * as Menu from '../dropdown-menu';
@@ -69,7 +70,7 @@ export function createHeaderActions({
     }, [host, availableWidth, maxWidth]);
     const bounded = availableWidth !== undefined || host !== null;
     const boundedStyle = useAnimatedStyle(
-      () => (bounded ? { maxWidth: availableWidth ?? maxWidth.value } : {}),
+      () => ({ maxWidth: bounded ? (availableWidth ?? maxWidth.value) : UNSET }),
       [availableWidth, bounded, maxWidth],
     );
     const measurements = useRef(new Map<string, HeaderActionMeasurement>());

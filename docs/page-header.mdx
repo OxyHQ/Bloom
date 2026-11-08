@@ -487,6 +487,15 @@ for an explicitly measured embedded region. The shared width channel publishes
 packing decisions to React, not every resized pixel. Control geometry and labels
 are measured; this is not a window-width or platform-is-phone heuristic.
 
+Web leading controls remain direct flex children. A measurement wrapper around
+a responsive menu button left an empty flex item and a gap when CSS hid the
+button. Observe the actual leading children instead; exclude the title from
+their width. The responsive-navigation browser case preserves the same menu
+node across 900→390→900→390: hidden width0/title inset0, visible width36/title
+inset42 in both themes. The SSR hydration gate also retains the direct parent
+and node identity. Animated maxWidth writes UNSET when a row leaves its bounded
+host, rather than an empty style that retains the prior native bound.
+
 Stateful custom controls belong in `persistentActions`. This is an explicit
 **never-overflow** slot: its measured width is reserved, the tree stays mounted,
 and the caller owns its accessible semantics. Do not recreate a custom input
