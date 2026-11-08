@@ -171,16 +171,18 @@ export function createCanvasPanel(
       [animatedHeight, animatedProgress],
     );
     useClaimBottomEdge(enabled && !lateral ? bottom + geometry[snap] : 0);
+    const sideFootprint =
+      (right
+        ? region.bounds.width - region.viewport.x - region.viewport.width
+        : region.viewport.x) +
+      sideGap +
+      Math.min(side?.width ?? 0, Math.max(0, region.viewport.width - 2 * sideGap));
     useEffect(() => {
       const edge = right ? store.right : store.left;
-      if (enabled && lateral)
-        edge.claim(
-          id,
-          sideGap + Math.min(side!.width, Math.max(0, region.viewport.width - 2 * sideGap)),
-        );
+      if (enabled && lateral) edge.claim(id, sideFootprint);
       else edge.release(id);
       return () => edge.release(id);
-    }, [enabled, lateral, right, store, id, sideGap, side?.width, region.viewport.width]);
+    }, [enabled, lateral, right, store, id, sideFootprint]);
     useEffect(() => {
       if (!dragEnabled || snap === 'peek' || modalActive) return;
       const close = () => {
