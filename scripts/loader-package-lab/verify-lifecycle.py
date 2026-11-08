@@ -77,9 +77,13 @@ assert wall-delta > 2, 'Background time leaked into the active frame clock'
 time.sleep(.4); c=clock(); assert c['seconds']>b['seconds']
 results['background']={'before':a,'after':b,'continued':c,'wallSeconds':wall,'activeSeconds':delta}
 
+before_resize=clock()
 tap('benchmark-width'); time.sleep(.3); a=clock(); assert abs(a['width']-240)<.5
-assert a['seconds']>=c['seconds']; shot('resized')
-results['resize']=a
+resize_wall=(a['wallMs']-before_resize['wallMs'])/1000
+resize_delta=a['seconds']-before_resize['seconds']
+assert resize_delta >= 0 and abs(resize_delta-resize_wall)<.25
+shot('resized')
+results['resize']={'before':before_resize,'after':a,'wallSeconds':resize_wall,'activeSeconds':resize_delta,'toleranceSeconds':.25}
 x,y,r,b=bounds('benchmark-motion'); point=[str((x+r)//2),str((y+b)//2)]
 started=time.monotonic(); adb('shell','input','tap',*point); adb('shell','input','tap',*point); elapsed=(time.monotonic()-started)*1000
 assert elapsed<450, 'Toggle did not interrupt the fade'

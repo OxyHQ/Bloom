@@ -349,22 +349,22 @@
     "results": {
       "pause": {
         "before": {
-          "wallMs": 1452885859,
-          "seconds": 20.964047125816368,
+          "wallMs": 1453273484,
+          "seconds": 8.561512662887587,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
         },
         "after": {
-          "wallMs": 1452889277,
-          "seconds": 20.964047125816368,
+          "wallMs": 1453277042,
+          "seconds": 8.561512662887587,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
         },
         "resumed": {
-          "wallMs": 1452894623,
-          "seconds": 21.92976503300669,
+          "wallMs": 1453282479,
+          "seconds": 9.5777157459259,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
@@ -374,22 +374,22 @@
       },
       "screenInactive": {
         "before": {
-          "wallMs": 1452904562,
-          "seconds": 5.8937278349399564,
+          "wallMs": 1453292739,
+          "seconds": 6.002259001016621,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
         },
         "after": {
-          "wallMs": 1452907981,
-          "seconds": 5.8937278349399564,
+          "wallMs": 1453296261,
+          "seconds": 6.002259001016621,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
         },
         "resumed": {
-          "wallMs": 1452913294,
-          "seconds": 6.851146707057958,
+          "wallMs": 1453301831,
+          "seconds": 7.084828777074824,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
@@ -399,47 +399,59 @@
       },
       "background": {
         "before": {
-          "wallMs": 1452914059,
-          "seconds": 7.5952095429897355,
+          "wallMs": 1453302716,
+          "seconds": 7.954148207187665,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
         },
         "after": {
-          "wallMs": 1452918110,
-          "seconds": 8.864016101121903,
+          "wallMs": 1453306971,
+          "seconds": 9.41720742011073,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
         },
         "continued": {
-          "wallMs": 1452919275,
-          "seconds": 10.009407891035076,
+          "wallMs": 1453308236,
+          "seconds": 10.671134589195276,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
         },
-        "wallSeconds": 4.051,
-        "activeSeconds": 1.2688065581321677
+        "wallSeconds": 4.255,
+        "activeSeconds": 1.4630592129230644
       },
       "resize": {
-        "wallMs": 1452923285,
-        "seconds": 13.972172548770901,
-        "width": 240,
-        "height": 51.809525,
-        "radius": 25.904762
+        "before": {
+          "wallMs": 1453309120,
+          "seconds": 11.54066590404513,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "after": {
+          "wallMs": 1453313299,
+          "seconds": 15.68708031940463,
+          "width": 240,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "wallSeconds": 4.179,
+        "activeSeconds": 4.1464144153595015,
+        "toleranceSeconds": 0.25
       },
-      "rapidToggleMs": 294.1763290000381,
+      "rapidToggleMs": 330.35027000005357,
       "initialInactive": {
         "before": {
-          "wallMs": 1452938124,
+          "wallMs": 1453328662,
           "seconds": 0,
           "width": 379.42856,
           "height": 51.809525,
           "radius": 25.904762
         },
         "after": {
-          "wallMs": 1452940029,
+          "wallMs": 1453330613,
           "seconds": 0,
           "width": 379.42856,
           "height": 51.809525,
