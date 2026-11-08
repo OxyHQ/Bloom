@@ -280,6 +280,10 @@ interrupt; `LiveRegions.test.tsx` and each family's tests assert the rendered ro
 
 ## Adoption and remaining work
 
+The [implementation inventory](/docs/composition-inventory) records the current
+header/control/composer owners and the minimum extensions for issue #663. It
+separates source findings from pending runtime and consumer acceptance.
+
 The [adoption matrix](/docs/adoption-matrix) derives four family-level contracts from source. The previously named Field and controlled-state adaptations now read the shared contracts: selectable domain cards and questionnaire answers inherit Field constraints, and their state uses `useControllableState`. Input OTP still normalizes its value at the component boundary.
 
 The [composition audit](/docs/composition-audit) records the broader review: scroll ownership, panel geometry, platform bindings, reusable primitives and Storybook organization. A family importing a contract is evidence of adoption, not proof that every interaction or every child is correct.
