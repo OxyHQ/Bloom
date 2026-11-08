@@ -2,6 +2,20 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.20.3
+
+### Fixed
+
+- **A settings rail's selection moving draws only the rows it moves between.** Every `RailRow` rendered at each page shown: the rail handed the rows the navigation's `selectPage`, which is made anew at every page, and with the platform's keyboard (a rail beside its page is one Tab stop) each row's roving props were new objects with new handlers and a new `ref` at every render. `RailRow` is memoized, the rail gives it one selection handler for as long as it lives, and `useNativeRovingGroup`'s `itemProps` now gives each option the same props object for as long as it is (or is not) the stop, its handlers and `ref` the same functions for as long as the group lives (so a host view's ref is no longer detached and attached again at each render, for every roving group: segmented controls, radio groups, tabs, category bars). With `groups` kept the same objects, showing another page draws two rows. OxyOS's Settings drew its 17 rows and their icons at every page shown.
+
+### Tests
+
+- `SettingsRailSelectionRenders.test.tsx` (native, with and without the platform's keyboard): moving the selection draws again exactly the two rows it moves between, and keeping it draws none. Red before the fix.
+
+### Consumers
+
+Bump to 17.20.3. Keep `groups` stable across renders (memoised) to have it.
+
 ## 17.20.2
 
 ### Fixed
