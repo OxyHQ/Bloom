@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, Text } from 'react-native';
 import { LinkButton } from '@oxy.so/bloom/button';
-import { useEditorContext } from './context';
+import { type EditorContextValue, useEditorContext } from './context';
 import { BarButton } from './FormatBar';
 import type { InlineTarget } from './inline-target';
 import { KeepFocus } from './KeepFocus';
@@ -12,6 +12,22 @@ import { KeepFocus } from './KeepFocus';
  */
 export function InlinePopover({ target }: { target: InlineTarget }) {
   const { theme, labels, controller, onOpenLink, onOpenMention } = useEditorContext();
+  return <InlineActions {...{ target, theme, labels, controller, onOpenLink, onOpenMention }} />;
+}
+
+/** Shared commands; the owning web popover or native toolbar chooses placement. */
+export function InlineActions({
+  target,
+  theme,
+  labels,
+  controller,
+  onOpenLink,
+  onOpenMention,
+  showDestination = true,
+}: Pick<EditorContextValue, 'theme' | 'labels' | 'controller' | 'onOpenLink' | 'onOpenMention'> & {
+  target: InlineTarget;
+  showDestination?: boolean;
+}) {
   const open = () => {
     if (target.kind === 'link') onOpenLink(target.href);
     else onOpenMention?.(target.mention, target.text);
@@ -19,9 +35,11 @@ export function InlinePopover({ target }: { target: InlineTarget }) {
   const canOpen = target.kind === 'link' || onOpenMention !== undefined;
   return (
     <KeepFocus owner={controller} style={styles.popover}>
-      <Text style={[styles.what, { color: theme.textMuted }]} numberOfLines={1}>
-        {target.kind === 'link' ? target.href : target.text}
-      </Text>
+      {showDestination ? (
+        <Text style={[styles.what, { color: theme.textMuted }]} numberOfLines={1}>
+          {target.kind === 'link' ? target.href : target.text}
+        </Text>
+      ) : null}
       {target.kind === 'link' ? (
         <LinkButton
           href={target.href}

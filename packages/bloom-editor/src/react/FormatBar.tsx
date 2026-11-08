@@ -1,6 +1,6 @@
 import type { ToggleableMark } from '@oxy.so/bloom-text/model';
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { StyleSheet, Text, type TextStyle, View } from 'react-native';
+import { Platform, StyleSheet, Text, type TextStyle, View } from 'react-native';
 import { Button } from '@oxy.so/bloom/button';
 import { TextFieldInput } from '@oxy.so/bloom/text-field';
 import type { EditorController } from './controller';
@@ -184,12 +184,12 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
         </BarButton>
       ))}
       <BarButton
-        label={marks?.link ? labels.removeLink : labels.link}
+        label={Platform.OS === 'web' && marks?.link ? labels.removeLink : labels.link}
         active={marks?.link === true}
         disabled={!marks?.link && !hasRange}
         theme={theme}
         onPress={() => {
-          if (marks?.link) controller.removeLink();
+          if (Platform.OS === 'web' && marks?.link) controller.removeLink();
           else controller.openLinkEditor();
         }}
       >

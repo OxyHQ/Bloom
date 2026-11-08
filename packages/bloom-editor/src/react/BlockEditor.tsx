@@ -270,6 +270,28 @@ export function EditorSurface({
     };
   }, [ui, formatActions]);
 
+  // A toolbar can live outside this provider. Forward through a ref so an
+  // inline application callback does not repeatedly publish UI state.
+  const inlineCallbacks = useRef({ onOpenLink, onOpenMention });
+  useLayoutEffect(() => {
+    inlineCallbacks.current = { onOpenLink, onOpenMention };
+  }, [onOpenLink, onOpenMention]);
+  const hasMentionAction = onOpenMention !== undefined;
+  useLayoutEffect(() => {
+    if (readOnly) return;
+    const actions = {
+      onOpenLink: (href: string) => inlineCallbacks.current.onOpenLink(href),
+      onOpenMention: hasMentionAction
+        ? (...args: Parameters<NonNullable<typeof onOpenMention>>) =>
+            inlineCallbacks.current.onOpenMention?.(...args)
+        : undefined,
+    };
+    ui.set({ inlineActions: actions });
+    return () => {
+      if (ui.get().inlineActions === actions) ui.set({ inlineActions: null });
+    };
+  }, [ui, readOnly, hasMentionAction]);
+
   // Removing whole blocks waits for the app's word; one question at a time.
   const removalAccess = useRef<{ store: EditorStore; readOnly: boolean } | null>(null);
   useLayoutEffect(() => {

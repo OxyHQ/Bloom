@@ -1,6 +1,7 @@
 /** Isolated native acceptance fixture; never imported by a product entrypoint. */
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Keyboard, View } from 'react-native';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BloomProvider } from '@oxy.so/bloom/provider';
@@ -65,7 +66,10 @@ function Fixture() {
     controller.refocus();
   };
   return (
-    <Screen bottomBar={<EditorToolbar controller={controller} />}>
+    <Screen
+      bottomBarKeyboardBehavior="follow"
+      bottomBar={<EditorToolbar controller={controller} />}
+    >
       <ScreenScrollView>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           <Button testID="editor-caret-outside" onPress={() => select(2)}>
@@ -100,11 +104,13 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <BloomProvider fonts={false}>
-          <AppShell>
-            <Fixture />
-          </AppShell>
-        </BloomProvider>
+        <KeyboardProvider>
+          <BloomProvider fonts={false} mode="light">
+            <AppShell>
+              <Fixture />
+            </AppShell>
+          </BloomProvider>
+        </KeyboardProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

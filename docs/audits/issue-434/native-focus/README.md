@@ -36,3 +36,16 @@ PNG/log preserve this failure. It must be addressed through deliberate actions
 in the existing native editor toolbar. Link editing, range dragging, Apply, Back,
 undo and final published acceptance remain pending; the focus fix alone does not
 complete issue 434.
+
+The follow-up candidate moves contextual navigation/removal into EditorToolbar
+and opens URL editing only on a deliberate Link press. Native TextBlock never
+opens the inline sheet on caret movement. Nilo's full page and row peek, and
+Noted's native editor, already mount EditorToolbar. Custom hosts must provide
+explicit controller actions if they omit that toolbar. The surface registers
+current navigation callbacks without callback-identity UI loops and clears them
+on readOnly/unmount. A component regression checks collapsed-link routing,
+callback replacement, selection movement, explicit editing/removal and cleanup.
+22 editor suites / 272 tests and the editor build pass against the source mirror;
+this is still pending physical interaction and published-package acceptance.
+The acceptance fixture now supplies the required single KeyboardProvider and
+Screen bottomBarKeyboardBehavior="follow", with matching light host/editor theme.

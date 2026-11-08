@@ -86,6 +86,15 @@ const controller = useEditorController(store);
 <EditorToolbar controller={controller} theme={theme} labels={labels} mentionIndicator="@" />
 ```
 
+On native, moving the caret through a link or mention keeps the input and IME
+active. The toolbar offers Open and Remove link for the current collapsed caret;
+Link explicitly opens the existing URL for editing. It never opens a modal just
+because the caret moved. Mount `EditorToolbar` with the same controller as the
+editable surface. A custom host without it must provide deliberate actions using
+`controller.openLinkEditor()` / `removeLink()` and its navigation callbacks.
+Toolbar callbacks follow the mounted surface and are cleared for read-only mode
+and unmount; changing the selected block removes stale contextual actions.
+
 Every edit is a transaction on the store (`store.run(command)`,
 `store.dispatch(tx)`); listen with `store.onTransaction` to persist.
 

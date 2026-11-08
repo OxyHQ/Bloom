@@ -664,7 +664,12 @@ export function TextBlock({ block }: { block: Block }) {
     }
   }, [focused, rangeKey, dismissedRange]);
   const showInline = Boolean(
-    inlineTarget && focused && !slashOpen && !readOnly && rangeKey !== dismissedRange,
+    Platform.OS === 'web' &&
+      inlineTarget &&
+      focused &&
+      !slashOpen &&
+      !readOnly &&
+      rangeKey !== dismissedRange,
   );
   const showBubble =
     Platform.OS === 'web' &&
