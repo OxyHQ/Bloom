@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { SharedValue } from 'react-native-reanimated';
+import type { ViewRef } from '../styles/native-refs';
 import type { ScreenProps } from '../screen/types';
 export interface CanvasProps extends Omit<ScreenProps, 'scroll' | 'documentScroll'> {}
 export interface CanvasBackgroundProps {
@@ -43,6 +44,8 @@ export interface CanvasPanelProps {
   visible?: boolean;
   animatedHeight?: SharedValue<number>;
   animatedProgress?: SharedValue<number>;
+  /** Focus destination when adjacent scene controls yield their space to the panel. */
+  handleRef?: Ref<ViewRef>;
   accessibilityLabel: string;
   testID?: string;
 }

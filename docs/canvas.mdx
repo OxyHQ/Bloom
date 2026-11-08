@@ -101,3 +101,15 @@ orientation accompany the adjustable semantics.
 universal map constant. GoWay reserves its actual attribution and scale heights
 plus their gaps, so full does not cover them. Fine-pointer full screenshots are
 not evidence for touch target sizes or native rendering.
+
+`CanvasPanel.handleRef` exposes the adjustable handle as a focus destination.
+When adjacent scene controls no longer fit, their owner can focus this handle
+before hiding the focused control, so keyboard users can collapse the panel
+and recover those controls. Move focus only when that group owns it.
+
+On touch web, the body reserves a panel-owned direction before the browser
+commits to scrolling: upward while collapsed, or downward when the gesture
+starts at scroll offset zero. Other directions retain browser scrolling. The
+scroll offset at gesture start decides ownership; reaching the top during an
+existing scroll requires a new gesture before collapsing the panel. The handle
+and bottom header own dragging; a lateral header restores browser defaults.

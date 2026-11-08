@@ -42,6 +42,10 @@ const SRC = join(__dirname, '..');
  * where the gesture itself needs both axes.
  */
 const DECISIONS: Record<string, readonly string[]> = {
+  // Handle/header own bottom-panel dragging; lateral header restores browser
+  // defaults. Body and native-scroll boundary preserve browser vertical scroll.
+  // Native body arbitration remains gesture-driven (touchAction is web-only).
+  'canvas/CanvasPanelBase.tsx': ['none', 'dynamic', 'pan-y', 'pan-y'],
   // Rows keep pan-y; nested horizontal ScrollArea paths use auto and reserve the
   // pan. The second is the gate the row hands its horizontal scrollers: native
   // scroll ownership must leave browser scrolling available on web.

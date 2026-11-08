@@ -51,3 +51,22 @@ Final checkpoint follow-up: hidden header layout events preserve the last measur
 peek until reactivation (five focused CanvasPanel tests pass). Private `.local/`
 lab packages are excluded from the Jest module map. The final build and package
 freshness gates pass; repository lint has no errors (existing warnings remain).
+
+The original controlled-browser.json proved input identity across room resizing,
+but its390px host only had358px available: it did not cross the360px lateral
+threshold. controlled-browser-current.json corrects that scope, explicitly resizing
+to600px and asserting the handle is hidden in lateral placement. The original
+record remains unchanged. GoWay's1440↔390 and native room-switch records are separate.
+
+Touch web arbitration is now covered by actual Chromium CDP touch input via
+scripts/verify-canvas-touch.mjs. touch-browser.json records half/body-up→full,
+full/body-up native scrolling, downward scrolling before collapse, a fresh
+downward gesture at scrollTop0→half, handle dragging, and lateral native scrolling.
+The body uses pan-y plus a nonpassive touchmove reservation only for the direction
+owned by the panel at gesture start; other directions retain browser scrolling.
+Disabling only that reservation fails half→full (negative event record retained).
+Source hashes are in touch-sources.json. These are Chromium touch-emulation
+contracts, not physical mobile-browser, Safari, TalkBack or GoWay Android claims.
+
+The handleRef focus destination is covered by an RNW rendered-node contract.
+GoWay's focus-transfer integration and native keyboard focus remain separate gates.

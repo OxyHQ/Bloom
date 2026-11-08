@@ -1,0 +1,141 @@
+{
+  "bodyExpanded": "2",
+  "trace": [
+    {
+      "type": "pointerdown",
+      "y": 700,
+      "prevented": false
+    },
+    {
+      "type": "touchstart",
+      "y": 700,
+      "prevented": false
+    },
+    {
+      "type": "pointermove",
+      "y": 676.6666870117188,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 676.6666870117188,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 653.3333129882812,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 653.3333129882812,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 630,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 630,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 606.6666870117188,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 606.6666870117188,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 583.3333129882812,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 583.3333129882812,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 560,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 560,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 536.6666870117188,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 536.6666870117188,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 513.3333129882812,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 513.3333129882812,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 490,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 490,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 466.6666564941406,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 466.6666564941406,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 443.3333435058594,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 443.3333435058594,
+      "prevented": true
+    },
+    {
+      "type": "pointermove",
+      "y": 420,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 420,
+      "prevented": true
+    }
+  ],
+  "halfBody": {
+    "x": 16,
+    "y": 543.3597412109375,
+    "width": 280,
+    "height": 480
+  }
+}

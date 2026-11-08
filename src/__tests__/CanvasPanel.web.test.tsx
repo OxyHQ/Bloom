@@ -34,6 +34,7 @@ it('renders adjustable semantics and keyboard transitions on real RNW nodes', ()
   const store = createCanvasStore();
   store.frame({ x: 0, y: 0, width: 390, height: 844 }, { x: 0, y: 0, width: 390, height: 844 });
   const change = jest.fn();
+  const handleRef = React.createRef<React.ComponentRef<typeof View>>();
   const node = document.createElement('div');
   document.body.append(node);
   const root = createRoot(node);
@@ -41,7 +42,13 @@ it('renders adjustable semantics and keyboard transitions on real RNW nodes', ()
     root.render(
       <BloomThemeProvider>
         <CanvasContext.Provider value={store}>
-          <Panel snap="half" onSnapChange={change} accessibilityLabel="Places" scrollable={false}>
+          <Panel
+            handleRef={handleRef}
+            snap="half"
+            onSnapChange={change}
+            accessibilityLabel="Places"
+            scrollable={false}
+          >
             <View />
           </Panel>
         </CanvasContext.Provider>
@@ -49,6 +56,9 @@ it('renders adjustable semantics and keyboard transitions on real RNW nodes', ()
     ),
   );
   const handle = node.querySelector('[role="slider"]')!;
+  expect(handleRef.current).toBe(handle);
+  handleRef.current?.focus();
+  expect(document.activeElement).toBe(handle);
   expect(handle.getAttribute('aria-label')).toBe('Places');
   expect(handle.getAttribute('aria-valuemin')).toBe('0');
   expect(handle.getAttribute('aria-valuemax')).toBe('2');

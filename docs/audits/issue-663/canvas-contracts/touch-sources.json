@@ -1,0 +1,8 @@
+{
+  "src/canvas/CanvasPanelBase.tsx": "4d8e17f8636668e22fb4b217ef0942299ad5c70761691bbeeed2a3d560806c97",
+  "src/canvas/types.ts": "03be0ad83ff15554592e8540f459239010d5884380db3aec88e6be57737d4452",
+  "src/bottom-sheet/body-touch-arbitration.ts": "8bda4d5578ede551c636bcdd3ade6ad079209bed5c36484d10011c8b3bfa9c9f",
+  "src/bottom-sheet/drag-geometry.ts": "9d5e75caf4b4d1b43ac9b1b08536cc1c5981c8482d0d512fd2429c0f97a51658",
+  "scripts/verify-canvas-touch.mjs": "1863a2824d676272252e4ecaa8ca7a955993623cd30ede06b953d31e48952a3a",
+  "scripts/verify-canvas-browser.mjs": "4c92da12a8c905306809bb8f97abad4127cffe131904dad6dbd922e708ed92cb"
+}
