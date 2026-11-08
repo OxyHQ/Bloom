@@ -980,6 +980,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `Schritt ${n}`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'Eingeklappt',
+  half: 'Halb geöffnet',
+  full: 'Ausgeklappt',
+  expand: 'Ausklappen',
+  collapse: 'Einklappen',
+  hint: 'Ziehen oder Pfeiltasten verwenden, um die Panelgröße zu ändern',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Kartensteuerung',
   locate: 'Meinen Standort anzeigen',
@@ -3121,6 +3130,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

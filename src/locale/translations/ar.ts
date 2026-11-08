@@ -1070,6 +1070,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `الخطوة ${n}`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'مطوي',
+  half: 'نصف مفتوح',
+  full: 'موسّع',
+  expand: 'توسيع',
+  collapse: 'طي',
+  hint: 'اسحب أو استخدم مفاتيح الأسهم لتغيير حجم اللوحة',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'عناصر التحكم في الخريطة',
   locate: 'عرض موقعي',
@@ -3470,6 +3479,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

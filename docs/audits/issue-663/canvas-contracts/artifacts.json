@@ -1,0 +1,20 @@
+{
+  "android-initial-body-scroll.png": "2e7f0b0c4cd62c8b503ae2e2794df846259699151e21a627bcd6d835731c7b09",
+  "android-initial-keyboard-side.png": "c1acbb66d0e0b05eded4789c8d26c5bcf3dbed578b20143bcd3b8ba2a09d1ab3",
+  "android-initial-keyboard-side.xml": "3ea5ae4eda3aa453921ce554be0678314620c4f22bc5abf0b41f3fbe71474ee6",
+  "android-initial.json": "84159e8950bfbfcd5ebb24bb2a878e7377b8a40c725d3c484ea5ab5deceddfa7",
+  "android-initial-full-drag.xml": "d89ef2e9b4c74da944fdea4d1dc6da8fbbee65cdbf6041c942cde3affa1c52ce",
+  "android-initial-peek-back.png": "a8f3dca3165130205c63b0d7624a1c3b498d93bb671f282e2780a271ccd272ad",
+  "android-initial-peek-back.xml": "8e3549beda975cee6ba0153b8260c7c7d14e9f7fd88211b0ababd59962a472b6",
+  "android-initial-keyboard-bottom.xml": "80e960ab8a45a31da96d5e5adb606830d56a71524fcde3c6b9eb6aaf4789555a",
+  "android-initial-inactive.png": "2ede82dd0793d57928ca23968440081b5136eece1e70f6bbb852807b3a87fc91",
+  "android-initial-side-return.png": "2d7c293a45ed332d14c472674c1a866b8ab22a3ad8ae8db250959225937bb8dc",
+  "android-initial-bottom-after-ime.xml": "777a65a0994f5a68372a3a9b96dc5d536ef5384be01506b91a796b9c685d99cb",
+  "android-initial-keyboard-bottom.png": "17797f719d814fbcbb30f0bbac00d8ed829e884676e3d27db9107589ba2de462",
+  "android-initial-bottom-after-ime.png": "e52e2efc85b7cc7d3edf909a7fe0104ea7e580559e90a202b7642e958f6dbfb5",
+  "android-initial-side-return.xml": "46bef0d7ef59d3a6661263822127ef6af3e50675db7407b1741e07c948e5b070",
+  "android-initial-full-drag.png": "ab168eec6241cb9a5be8355d6db3b039f59fcb0d37166b444ec93087e19cf3a4",
+  "android-initial-body-scroll.xml": "89703189cc2c10be5dfe825689c2c4cac45f606277cce165fb5f1304213bc074",
+  "android-initial-inactive.xml": "caeea9d87c866ee5b3182ba32fd94ae681c1c1cb4d27541d0034bc300925991c",
+  "embedded-web-host.json": "9816a9c3eca73176d7fe97f22ce2e382fa6061cdccfb5f5f84054cc9e8bb6c04"
+}

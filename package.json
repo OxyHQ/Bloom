@@ -365,6 +365,25 @@
         "default": "./lib/commonjs/screen/index.js"
       }
     },
+    "./canvas": {
+      "react-native": {
+        "types": "./lib/typescript/module/canvas/index.d.ts",
+        "default": "./src/canvas/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/canvas/index.web.d.ts",
+        "import": "./lib/module/canvas/index.web.js",
+        "require": "./lib/commonjs/canvas/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/canvas/index.d.ts",
+        "default": "./lib/module/canvas/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/canvas/index.d.ts",
+        "default": "./lib/commonjs/canvas/index.js"
+      }
+    },
     "./panel-routing": {
       "react-native": {
         "types": "./lib/typescript/module/panel-routing/index.d.ts",
@@ -4525,6 +4544,9 @@
       ],
       "screen": [
         "./lib/typescript/module/screen/index.d.ts"
+      ],
+      "canvas": [
+        "./lib/typescript/module/canvas/index.d.ts"
       ],
       "panel-routing": [
         "./lib/typescript/module/panel-routing/index.d.ts"

@@ -1,0 +1,96 @@
+# Canvas
+
+`Canvas` composes a persistent interactive scene with `CanvasPanel`. It delegates
+activity, navigation and its host to `Screen`; it does not create another root
+provider or replace the scene's camera, selection or input engine. A map, graph
+or drawing surface remains the same child when the panel changes placement.
+
+```tsx
+import { Canvas, CanvasBackground, CanvasPanel, useCanvasRegion } from '@oxy.so/bloom/canvas';
+
+function Explore() {
+  return <Canvas><ExploreContent /></Canvas>;
+}
+function ExploreContent() {
+  const region = useCanvasRegion();
+  const [snap, setSnap] = useState('half');
+  // GoWay policy, not Bloom defaults. The adapter retains camera-fit clamping.
+  const padding = useMapPadding(); // GoWay combines local region/safe edges and clamps for its engine.
+  return <>
+    <MapCanvas backgroundComponent={CanvasBackground} padding={padding} />
+    <CanvasPanel side={{ from: 880, width: 384 }} snap={snap} onSnapChange={setSnap}
+      topClearance={creditHeight + scaleHeight + 12}
+      header={<ExploreHeader />} accessibilityLabel="Places">
+      <ExploreResults />
+    </CanvasPanel>
+  </>;
+}
+```
+
+The `side` policy uses the actual canvas viewport width. Omit it for a bottom
+panel at every width. `edge` is logical `start` (default) or `end`; the published
+`occupied` insets are physical top/right/bottom/left. The header, body and scroll
+owner keep their tree positions across placement changes. Drag gestures are
+inactive in lateral placement. The panel owns a separate `ScreenScope`, so its
+header and scroll offset do not claim or drive the scene's chrome.
+
+`bounds` is the host rectangle with a local origin of zero. `viewport` is its
+intersection with the visible viewport, in the same local layout pixels. A
+keyboard that already resized the host is not subtracted again. An occluding
+keyboard reduces only the intersection. This is geometry, not a camera command.
+
+Occupancy uses the existing edge-store maximum rule: overlapping claims combine
+by maximum, never sum. Top and bottom use the host's edge claims; lateral claims
+are scoped to this canvas. A bottom panel publishes its actual settled detent,
+including keyboard occlusion below it. `peek` is measured from the handle and
+header plus the safe bottom inset; `full` is bounded by the available room,
+including on very short hosts. `half` stays between them. No published full
+region is silently substituted with half. Adapters decide how much map area a
+camera-fit operation must retain.
+
+`animatedHeight` and `animatedProgress` are optional shared values for chrome
+that follows a drag on the UI thread. They do not publish a React update on each
+gesture frame. The settled region and the live animation are different signals.
+Use `active={false}` or `visible={false}` to retain content while removing panel
+claims, pointer targets and accessibility exposure. Canvas also follows its
+Screen host's active state.
+
+This panel is nonmodal: no backdrop, focus trap or inert background is created.
+The map remains interactive. The handle supports arrow keys, accessibility
+increment/decrement and press cycling. Escape or Android Back collapses an open
+bottom panel; an active modal keeps precedence. Modal sheets continue to use
+`BottomSheet` and its separate dismissal contract. Both share gesture arbitration
+math, not overlay semantics.
+
+The consumer remains responsible for official attribution, map controls, camera
+fit clamping, routing, permissions and location requests. Rendering Canvas never
+requests location. Verify those controls with pointer hit testing at every
+supported detent and placement; bounds alone do not establish reachability.
+
+## Background and chrome
+
+Use one `CanvasBackground` per Canvas. It owns absolute fill; its child is the
+renderer and engine-owned layers. Keep controls, attribution and error UI as
+sibling chrome, outside that background. Pass a stable component type to an
+adapter's background slot (`CanvasBackground` imported at module scope), never
+an inline component factory. GoWay's `MapView.backgroundComponent` wraps only
+its engine and layers; its official credit, scale and error view remain siblings.
+The controller stays under Canvas and can read the local region.
+
+There is no Android blur target or capability in this API. A future target must
+wrap only the background renderer and expose its capability only to foreground
+siblings. It must never expose that capability to its own background subtree,
+wrap arbitrary Canvas children, or cross a window or portal. The current
+separation establishes topology, not a claim of native optical parity.
+
+The handle reserves its actual target: 48 layout pixels on Android, 44 on iOS
+and coarse-pointer web, 24 on fine-pointer web. The decorative pill remains
+36 by 5. No hit slop overlaps the header or scene. Peek includes this measured
+geometry; this intentionally increases its height compared with the former
+22-pixel GoWay handle. The shared keyboard focus recipe and vertical slider
+orientation accompany the adjustable semantics.
+
+`topClearance` is additional measured scene chrome above the panel, not a
+universal map constant. GoWay reserves its actual attribution and scale heights
+plus their gaps, so full does not cover them. Fine-pointer full screenshots are
+not evidence for touch target sizes or native rendering.

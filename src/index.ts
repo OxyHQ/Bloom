@@ -208,6 +208,7 @@ export type {
 } from './surfaces';
 export * from './appearance';
 export * from './screen';
+export * from './canvas';
 export * from './video-playback';
 export * from './preferences';
 export * from './bottom-bar';

@@ -1,0 +1,32 @@
+{
+  "initial": {
+    "host": {
+      "x": 100,
+      "y": 230,
+      "width": 250,
+      "height": 400
+    },
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "width": 250,
+      "height": 140
+    }
+  },
+  "moved": {
+    "host": {
+      "x": 100,
+      "y": 30,
+      "width": 250,
+      "height": 400
+    },
+    "viewport": {
+      "x": 0,
+      "y": 40,
+      "width": 250,
+      "height": 300
+    }
+  },
+  "descendantIgnored": true,
+  "cleanup": true
+}

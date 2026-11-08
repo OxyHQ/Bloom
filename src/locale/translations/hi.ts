@@ -945,6 +945,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `चरण ${n}`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'संकुचित',
+  half: 'आधा खुला',
+  full: 'विस्तृत',
+  expand: 'विस्तृत करें',
+  collapse: 'संकुचित करें',
+  hint: 'पैनल का आकार बदलने के लिए खींचें या तीर कुंजियों का उपयोग करें',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'मानचित्र नियंत्रण',
   locate: 'मेरी लोकेशन दिखाएं',
@@ -3010,6 +3019,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,
