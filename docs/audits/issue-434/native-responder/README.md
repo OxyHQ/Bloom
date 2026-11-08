@@ -37,6 +37,30 @@ do not claim the tap. A boundary regression fails Android/iOS before the change
 and passes after it; all 7 suites/50 tests and the package build pass. The iOS
 case is a platform-prop test, not physical validation.
 
-The exact-source APK is being checked separately for real parent scrolling,
-read-only mode and the editing handoffs. Publication and consumer verification
-remain pending; package version is deliberately unchanged in this source PR.
+The exact-source APK passed the measured Android cases in `final/`. Its bundled
+RichTextInput source SHA matches this branch, with no diagnostic flags/logs in
+RichTextInput, FormatBar or TextBlock. It uses the editor handoff fix 0cba1f02.
+
+- Apply, Cancel and URL-to-paragraph-2 navigation retain IME, intended focus and
+  selection; the old URL session cannot retarget the second paragraph.
+- A vertical drag starting inside the rich input scrolls the parent to end-drag
+  y=104.76190185546875 and a return drag reaches zero, with IME/focus retained.
+- Read-only removes formatting actions; tapping and injecting `blocked` leaves
+  both native text and document unchanged. Re-enabling editing restores IME.
+- Native long press selects 0..6; dragging its right handle selects 0..13.
+  A real Gboard Q replaces that range (`Q after`), and one Undo restores
+  `Before linked after` with IME retained (caret 13).
+- A background tap from the URL field still dismisses IME and does not restore
+  editor focus; deliberate Cancel returns to the original range with IME.
+
+The final fixture uses a top SafeAreaView so setup controls are reachable,
+Screen-owned scrolling in a fixed AppShell, a single KeyboardProvider, and a
+600-point blank scroll probe. The UI state exposes read-only, focus, range and
+IME; logs include full synthetic documents and scroll-end offsets. Original
+and final APK/bundle receipts, source-map markers, screenshots and hierarchy
+snapshots are retained. Packages were packed/extracted independently; no shared
+Bun cache files were modified.
+
+Publication/consumer verification remain pending; version is deliberately
+unchanged in this source PR. These Android cases do not imply physical iPhone,
+hardware keyboard Escape, or arbitrary native host acceptance.

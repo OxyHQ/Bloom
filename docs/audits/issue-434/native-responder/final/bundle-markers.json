@@ -1,0 +1,23 @@
+[
+  {
+    "source": "/editor-handoff/package/src/react/TextBlock.tsx",
+    "sha256": "e16674057ab30316566fec32af38357afae775d89c8038eaa019d9166e4bd0e2",
+    "hasDiagnosticFlag": false,
+    "hasDiagnosticLogs": false,
+    "nativeResponder": false
+  },
+  {
+    "source": "/text-responder-source/package/src/RichTextInput.tsx",
+    "sha256": "2d098ffedbdfebdcbce30b9f5b9228df4297a724bf613d3c386373732d545552",
+    "hasDiagnosticFlag": false,
+    "hasDiagnosticLogs": false,
+    "nativeResponder": true
+  },
+  {
+    "source": "/editor-handoff/package/src/react/FormatBar.tsx",
+    "sha256": "a3067f8f08350a612f80c31a66a08bbc45b9fe1e5861cb1ae26630a34a50d5bf",
+    "hasDiagnosticFlag": false,
+    "hasDiagnosticLogs": false,
+    "nativeResponder": false
+  }
+]
