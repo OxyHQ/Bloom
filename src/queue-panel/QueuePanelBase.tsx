@@ -1,5 +1,5 @@
 import { useControllableState } from '../hooks/use-controllable-state';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
 import React, { memo, useCallback, useMemo, useState } from 'react';

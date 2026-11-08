@@ -1,3 +1,4 @@
+import { HeaderActions } from '../page-header/HeaderActions';
 import {
   useDesktopPresentationSession,
   usePresentationSession,
@@ -501,6 +502,7 @@ function CenteredOrSideDialog({
         headerOverlay={
           header ? (
             <DialogNavHeader
+              Actions={HeaderActions}
               controller={headerController}
               header={header}
               onDismiss={close}
@@ -548,6 +550,7 @@ function CenteredOrSideDialog({
       headerOverlay={
         header ? (
           <DialogNavHeader
+            Actions={HeaderActions}
             controller={headerController}
             header={header}
             onDismiss={close}
@@ -839,6 +842,7 @@ function SideSheet({
             // below the bar.
             <View style={{ flex: 1, minHeight: 0, borderRadius: panelRadius, overflow: 'hidden' }}>
               <DialogNavHeader
+                Actions={HeaderActions}
                 controller={headerController}
                 header={header}
                 onDismiss={onHeaderDismiss}

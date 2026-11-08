@@ -1,4 +1,4 @@
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useCardFill } from '../card/use-card-fill';
 import { type ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react';

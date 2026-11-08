@@ -2,7 +2,7 @@ import { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } 
 import { Platform, type ScrollView, Share } from 'react-native';
 import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
 import Animated from 'react-native-reanimated';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { PageFooter } from '../page-footer';
 import { CHAT_CONTENT_STYLE } from '../styles/chat-layout';
 import { useAppShell } from '../app-shell/hooks';

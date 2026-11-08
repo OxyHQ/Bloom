@@ -15,3 +15,6 @@ export type {
 
 export { PageHeaderTitleInput } from './PageHeaderTitleInput';
 export type { PageHeaderTitleInputProps } from './types';
+
+export { HeaderActions } from './HeaderActions';
+export type { HeaderAction, HeaderActionsProps } from './types';

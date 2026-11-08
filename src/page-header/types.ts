@@ -221,3 +221,16 @@ export interface HeaderAction {
   /** auto may remove a label only when the action also has an icon. */
   labelVisibility?: 'auto' | 'always' | 'hidden';
 }
+
+export interface HeaderActionsProps {
+  /** Stateful custom controls stay mounted and never enter overflow. The row measures and reserves them. */
+  persistentActions?: ReactNode;
+  actions: readonly HeaderAction[];
+  /** Override the local header budget for an intentionally embedded command row. */
+  availableWidth?: number;
+  /** Accessible name of the grouped commands; defaults to the shared actions label. */
+  accessibilityLabel?: string;
+  overflowLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}

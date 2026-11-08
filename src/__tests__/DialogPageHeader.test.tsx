@@ -1,5 +1,6 @@
+import { HeaderActions } from '../page-header/HeaderActions';
 import { StyleSheet } from 'react-native';
-import { act, fireEvent, render, within } from '@testing-library/react-native';
+import { act, fireEvent, render as renderNative, within } from '@testing-library/react-native';
 import {
   DialogLargeTitle,
   DialogNavHeader,
@@ -10,9 +11,31 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { TopEdgeProvider, useTopEdgeInset } from '../layout/top-edge';
 
+function measureActions(screen: ReturnType<typeof renderNative>, width = 500) {
+  for (const header of screen.queryAllByTestId('dialog-nav')) {
+    fireEvent(header, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height: 56 } } });
+  }
+  for (const node of screen.queryAllByTestId(/-measure-/, { includeHiddenElements: true })) {
+    const width = node.props.testID.endsWith('-full') ? 80 : 34;
+    fireEvent(node, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height: 34 } } });
+  }
+}
+function render(...args: Parameters<typeof renderNative>) {
+  const screen = renderNative(...args);
+  measureActions(screen);
+  return screen;
+}
+
 function Harness({ header, onDismiss }: { header: DialogHeaderConfig; onDismiss: () => void }) {
   const controller = useDialogHeaderController();
-  return <DialogNavHeader controller={controller} header={header} onDismiss={onDismiss} />;
+  return (
+    <DialogNavHeader
+      Actions={HeaderActions}
+      controller={controller}
+      header={header}
+      onDismiss={onDismiss}
+    />
+  );
 }
 
 it('renders grouped actions through PageHeader and preserves close and action callbacks', () => {
@@ -166,6 +189,7 @@ it('keeps close visible when icon actions overflow', () => {
       />
     </BloomThemeProvider>,
   );
+  measureActions(screen, 300);
   const group = within(screen.getByTestId('dialog-nav-action-group'));
   expect(group.getByLabelText('Close')).toBeTruthy();
   expect(group.getByLabelText('More')).toBeTruthy();
@@ -196,7 +220,12 @@ it('reveals the opted-in nav title only after the measured heading leaves and hi
     controller = useDialogHeaderController();
     return (
       <>
-        <DialogNavHeader controller={controller} header={header} onDismiss={() => {}} />
+        <DialogNavHeader
+          Actions={HeaderActions}
+          controller={controller}
+          header={header}
+          onDismiss={() => {}}
+        />
         <DialogLargeTitle controller={controller} header={header} />
       </>
     );
@@ -245,4 +274,26 @@ it('reveals the opted-in nav title only after the measured heading leaves and hi
   });
   screen.rerender(draw());
   expect(opacity()).toBe(0);
+});
+
+it('dispatches the latest override callback without publishing callback-only updates', () => {
+  let current: ReturnType<typeof useDialogHeaderController> | undefined;
+  function StoreProbe() {
+    current = useDialogHeaderController();
+    return null;
+  }
+  render(<StoreProbe />);
+  const first = jest.fn();
+  const latest = jest.fn();
+  const listener = jest.fn();
+  const store = current!.store;
+  store.subscribe(listener);
+  act(() => store.setOverride({ actions: [{ id: 'save', label: 'Save', onPress: first }] }));
+  const snapshot = store.getSnapshot();
+  act(() => store.setOverride({ actions: [{ id: 'save', label: 'Save', onPress: latest }] }));
+  expect(store.getSnapshot()).toBe(snapshot);
+  expect(listener).toHaveBeenCalledTimes(1);
+  snapshot!.actions![0]!.onPress();
+  expect(first).not.toHaveBeenCalled();
+  expect(latest).toHaveBeenCalledTimes(1);
 });
