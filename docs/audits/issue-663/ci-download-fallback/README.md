@@ -18,7 +18,8 @@ an isolated validation home. The same pinned setup-gradle action then sees that
 exact version on PATH. It still performs wrapper validation, dependency-cache
 handling and post processing. There is no continue-on-error around that action.
 
-Kotlin fallback downloads the identical JAR plus its intact original Maven POM.
+Kotlin fallback downloads the identical JAR from JetBrains plus its intact original
+Maven POM.
 A job-local Gradle init script makes only
 `org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.0` exclusive to that temporary
 repository. Every other version/module and every transitive dependency uses the
@@ -38,8 +39,9 @@ Consumer Gradle files and node_modules are not patched by this transport change.
   https://services.gradle.org/distributions/gradle-9.4.1-bin.zip.sha256;
   Gradle GitHub release asset 377041523, 137878901 bytes,
   SHA256 2ab2958f2a1e51120c326cad6f385153bb11ee93b3c216c5fccebfdfbb7ec6cb.
-- Kotlin 2.2.0: repo.maven.apache.org primary and repo1.maven.org fallback are
-  official Maven Central endpoints. Actual fallback JAR is 56255947 bytes,
+- Kotlin 2.2.0: repo.maven.apache.org is the primary Maven Central endpoint;
+  the fallback JAR is JetBrains official release asset 598661100.
+  The intact POM still uses official Maven Central endpoints. JAR is 56255947 bytes,
   SHA256 b2f743ea5ba12f69e0f35e5d8d46069d74c8e2861087548a7e0e14a784bc4cf1,
   matching JetBrains' official release asset 598661100 digest. SHA1 also matches
   Maven Central's checksum 8cfa2b049a4006d94474296df4abd9b50f288821.
@@ -56,7 +58,7 @@ CI-wide configuration mechanism; the exact-GAV filter avoids a general mirror.
 
 ## Evidence and remaining acceptance
 
-Fourteen helper tests cover normal transport without fallback/download, failure-only
+Fifteen helper tests cover normal transport without fallback/download, failure-only
 fallback, partial downloads, corrupt primary/fallback rejection, unsupported
 versions, extracted version mismatch, exact Kotlin GAV, recovery/final-job cleanup and
 preflight final-status checks (including curl 63 with HTTP 504).
@@ -64,7 +66,8 @@ preflight final-status checks (including curl 63 with HTTP 504).
 Actual Gradle 8.3 REST bytes matched its published checksum. Gradle 9.4.1 was
 extracted and version-checked from the previously downloaded and verified official
 archive. Kotlin's primary and alternate Maven transports both yielded the pinned
-JAR. The Kotlin REST binary endpoint timed out locally, so it is not used here.
+JAR. The Kotlin REST binary endpoint initially timed out locally; a later full
+download succeeded and matched the identical SHA256 and size.
 
 `included-build.txt` verifies the exact JAR hash in root and included projects,
 with an unreachable remote repository and offline mode. `react-native-included.txt`
@@ -117,3 +120,17 @@ Gradle plugin included and the verified source override. `preBuild`, host compil
 configure and headers tasks remain, including explicitly requested debugger
 counterparts; download/unzip are absent. SKIPPED denotes Gradle --dry-run here,
 not a skipped CI compile gate. The predictive CI command remains unchanged.
+
+Run 42468980336 passed legacy; default and predictive failed during Kotlin fallback
+transport (curl 22), before compilation. The initially selected alternate Maven
+endpoint was healthy locally but failed on both CI workers. The fallback now uses
+JetBrains release asset 598661100 directly through the official REST asset API.
+Its complete 56255947 bytes match the same pinned SHA256, as do fresh downloads
+from both Maven endpoints. `kotlin-rest-fallback.txt` records the actual helper
+transport and integrity check. This changes transport only, not the artifact,
+POM, dependency graph or included-build proof.
+
+Full downloads permit two bounded curl transient-error retries; integrity failures
+remain outside that retry/fallback path. Failure logs include only curl exit and
+final numeric HTTP status, never response bodies or signed URLs. An additional
+regression checks this diagnostic boundary.

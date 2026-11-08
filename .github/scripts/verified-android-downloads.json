@@ -16,7 +16,7 @@
   "kotlin-compiler-embeddable-2.2.0": {
     "filename": "kotlin-compiler-embeddable-2.2.0.jar",
     "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.0/kotlin-compiler-embeddable-2.2.0.jar",
-    "fallback": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.0/kotlin-compiler-embeddable-2.2.0.jar",
+    "fallback": "https://api.github.com/repos/JetBrains/kotlin/releases/assets/598661100",
     "size": 56255947,
     "sha256": "b2f743ea5ba12f69e0f35e5d8d46069d74c8e2861087548a7e0e14a784bc4cf1"
   },

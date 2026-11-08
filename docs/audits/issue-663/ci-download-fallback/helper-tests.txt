@@ -11,9 +11,9 @@ hermes.tar.gz: official-fallback, SHA256 verified
 .hermes.tar.gz: official-fallback, SHA256 verified
 Hermes: verified source commit 9a115f15785851f4ff2747ebb090ddd066fc8ad2; RN compilation tasks retained
 .artifact.jar: primary, SHA256 verified
-..artifact.jar: official-fallback, SHA256 verified
+...artifact.jar: official-fallback, SHA256 verified
 ...
 ----------------------------------------------------------------------
-Ran 14 tests in 0.010s
+Ran 15 tests in 0.009s
 
 OK

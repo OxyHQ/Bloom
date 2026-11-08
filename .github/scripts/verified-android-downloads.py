@@ -23,12 +23,14 @@ def download(url, destination):
     result = subprocess.run([
         'curl', '--fail', '--location', '--silent', '--show-error',
         '--connect-timeout', '15', '--max-time', '90',
+        '--retry', '2', '--retry-delay', '2', '--retry-max-time', '180',
         '--proto', '=https', '--proto-redir', '=https',
         '--header', 'Accept: application/octet-stream',
-        '--output', str(destination), url,
-    ], capture_output=True)
+        '--output', str(destination), '--write-out', '%{http_code}', url,
+    ], capture_output=True, text=True)
     if result.returncode:
-        raise DownloadFailure(f'Official download transport failed (curl {result.returncode})')
+        status = result.stdout if result.stdout.isdigit() and len(result.stdout) == 3 else 'unknown'
+        raise DownloadFailure(f'Official download transport failed (curl {result.returncode}, HTTP {status})')
 
 
 def primary_available(url):

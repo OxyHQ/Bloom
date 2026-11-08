@@ -71,6 +71,16 @@ class VerifiedDownloads(unittest.TestCase):
             module.fetch(artifact(b'official'), self.root, transport)
         self.assertFalse((self.root / 'artifact.jar').exists())
 
+    def test_transport_error_reports_status_without_sensitive_response(self):
+        import subprocess
+        result = subprocess.CompletedProcess([],22,stdout='504',stderr='signed-url-or-token')
+        with patch.object(module.subprocess, 'run', return_value=result) as run:
+            with self.assertRaisesRegex(module.DownloadFailure, r'curl 22, HTTP 504') as failure:
+                module.download('https://official.invalid', self.root / 'artifact')
+            self.assertNotIn('signed-url', str(failure.exception))
+            self.assertIn('--retry', run.call_args.args[0])
+            self.assertNotIn('--retry-all-errors', run.call_args.args[0])
+
     def test_probe_treats_only_success_or_bounded_healthy_body_as_available(self):
         import subprocess
         for code, status, available in [(0,'206',True),(63,'200',True),(22,'504',False),(28,'000',False),(0,'404',False),(63,'302',False),(63,'504',False)]:
