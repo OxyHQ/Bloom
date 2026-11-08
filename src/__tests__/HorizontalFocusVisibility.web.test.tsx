@@ -1,11 +1,12 @@
 /** @jest-environment jsdom */
-import { act, createRef, type ComponentRef } from 'react';
+import { act, createRef, type ComponentRef, type Ref } from 'react';
 import type { ScrollView } from 'react-native';
 import { createRoot } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { ScrollArea as WebScrollArea } from '../layout/ScrollArea.web';
 import { ScrollArea as NeutralScrollArea } from '../layout/ScrollArea';
 import { revealHorizontalFocus } from '../layout/horizontal-focus-visibility';
+import { useHorizontalFocusVisibility } from '../layout/use-horizontal-focus-visibility';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const rect = (left: number, width: number) => ({
@@ -120,4 +121,21 @@ it.each([
     raf.mockRestore();
     cancel.mockRestore();
   }
+});
+
+it('honors React 19 callback cleanup without also sending null', () => {
+  const cleanup = jest.fn();
+  const callback = jest.fn(() => cleanup);
+  function Fixture() {
+    const ref = useHorizontalFocusVisibility(callback, true);
+    return <div ref={ref as unknown as Ref<HTMLDivElement>} />;
+  }
+  const host = document.body.appendChild(document.createElement('div'));
+  const root = createRoot(host);
+  act(() => root.render(<Fixture />));
+  expect(callback).toHaveBeenCalledTimes(1);
+  act(() => root.unmount());
+  expect(cleanup).toHaveBeenCalledTimes(1);
+  expect(callback).toHaveBeenCalledTimes(1);
+  host.remove();
 });
