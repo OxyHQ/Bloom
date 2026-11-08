@@ -14,9 +14,15 @@ try {
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2.625 });
   const report = { browser: await browser.version(), cases: [] };
-  for (const variant of ['plain', 'taper']) {
+  for (const [variant, theme] of [
+    ['plain', 'light'],
+    ['taper', 'light'],
+    ['narrow-taper', 'light'],
+    ['corner-taper', 'light'],
+    ['corner-taper', 'dark'],
+  ]) {
     await page.goto(
-      `${process.env.STORYBOOK_URL || 'http://localhost:6035'}/iframe.html?id=labs-loader-optics--${variant}&viewMode=story&globals=theme:light;material:standard`,
+      `${process.env.STORYBOOK_URL || 'http://localhost:6035'}/iframe.html?id=labs-loader-optics--${variant}&viewMode=story&globals=theme:${theme};material:standard`,
     );
     await page.waitForSelector('[data-testid="optics-loader"] svg rect');
     await new Promise((resolve) => setTimeout(resolve, 800));
@@ -49,9 +55,9 @@ try {
         svg: svg.outerHTML,
       };
     });
-    assert(geometry.animations === (variant === 'taper' ? 42 : 3));
-    await page.screenshot({ path: `${out}/${variant}.png` });
-    report.cases.push({ variant, ...geometry });
+    assert(geometry.animations === (variant === 'plain' ? 3 : 42));
+    await page.screenshot({ path: `${out}/${theme}-${variant}.png` });
+    report.cases.push({ variant, theme, ...geometry });
   }
   writeFileSync(`${out}/report.json`, JSON.stringify(report, null, 2));
 } finally {
