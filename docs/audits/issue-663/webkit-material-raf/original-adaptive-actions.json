@@ -1,0 +1,133 @@
+{
+  "ro": {
+    "count": 11,
+    "last": [
+      [
+        {
+          "id": null,
+          "w": 1248,
+          "h": 139
+        }
+      ],
+      [
+        {
+          "id": "adaptive-actions-measure-find-full",
+          "w": 168.984375,
+          "h": 34
+        },
+        {
+          "id": "adaptive-actions-measure-find-compact",
+          "w": 34,
+          "h": 34
+        },
+        {
+          "id": "adaptive-actions-measure-share-full",
+          "w": 163.5,
+          "h": 34
+        },
+        {
+          "id": "adaptive-actions-measure-share-compact",
+          "w": 34,
+          "h": 34
+        },
+        {
+          "id": "adaptive-actions-measure-pin-full",
+          "w": 143.984375,
+          "h": 34
+        },
+        {
+          "id": "adaptive-actions-measure-pin-compact",
+          "w": 34,
+          "h": 34
+        },
+        {
+          "id": "adaptive-actions-measure-stop-full",
+          "w": 79.828125,
+          "h": 34
+        },
+        {
+          "id": "adaptive-actions-measure-stop-compact",
+          "w": 34,
+          "h": 34
+        },
+        {
+          "id": "adaptive-actions-measure-overflow",
+          "w": 202.984375,
+          "h": 34
+        },
+        {
+          "id": "action-header",
+          "w": 640,
+          "h": 56
+        }
+      ],
+      [
+        {
+          "id": "action-header-back-island",
+          "w": 34,
+          "h": 34
+        }
+      ],
+      [
+        {
+          "id": "adaptive-actions-find",
+          "w": 0,
+          "h": 0
+        }
+      ],
+      [
+        {
+          "id": "adaptive-actions-share",
+          "w": 0,
+          "h": 0
+        }
+      ],
+      [
+        {
+          "id": "adaptive-actions-pin",
+          "w": 0,
+          "h": 0
+        }
+      ],
+      [
+        {
+          "id": "adaptive-actions-stop",
+          "w": 34,
+          "h": 34
+        }
+      ],
+      [
+        {
+          "id": "adaptive-actions-overflow",
+          "w": 34,
+          "h": 34
+        }
+      ],
+      [
+        {
+          "id": null,
+          "w": 0,
+          "h": 38
+        },
+        {
+          "id": null,
+          "w": 0,
+          "h": 10
+        },
+        {
+          "id": null,
+          "w": 72,
+          "h": 38
+        }
+      ],
+      [
+        {
+          "id": null,
+          "w": 1248,
+          "h": 139
+        }
+      ]
+    ]
+  },
+  "raf": "timeout"
+}
