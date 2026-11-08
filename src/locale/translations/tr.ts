@@ -946,6 +946,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `Adım ${n}`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'Daraltılmış',
+  half: 'Yarı açık',
+  full: 'Genişletilmiş',
+  expand: 'Genişlet',
+  collapse: 'Daralt',
+  hint: 'Paneli yeniden boyutlandırmak için sürükleyin veya ok tuşlarını kullanın',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Harita kontrolleri',
   locate: 'Konumumu göster',
@@ -3044,6 +3053,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

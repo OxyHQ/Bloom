@@ -1,0 +1,22 @@
+[
+  {
+    "path": "baseline-1-1440.png",
+    "sha256": "c21c71ffecff3382d58cf702271ba5c6ce30bc8fa9dc8dc11f9dbcff60bd0892"
+  },
+  {
+    "path": "baseline-2-900.png",
+    "sha256": "299aa7c17c2e43f2978408db2cde5822f1d1a098fa5c1299fb3b5cffb45692ae"
+  },
+  {
+    "path": "baseline-3-390.png",
+    "sha256": "6bf6666a43f8783d6bf8a82fa54c29453e5eb8e7e338bf74b375079b45b2fe97"
+  },
+  {
+    "path": "baseline-4-320.png",
+    "sha256": "73bf3fae8657e86b3339c148e0654f10cb815f05ebfc594b3eaa9195d3e7653a"
+  },
+  {
+    "path": "baseline-5-1440.png",
+    "sha256": "2bb014da3e7c45e9257eed99d34812ceb84245dc43fa6a24346c00c28ad7c490"
+  }
+]

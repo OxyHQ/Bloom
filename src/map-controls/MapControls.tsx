@@ -46,6 +46,7 @@ import type { MapControlsProps } from './types';
  * else entirely without this component growing a placement vocabulary.
  */
 function MapControlsComponent({
+  orientation = 'vertical',
   onLocate,
   following,
   heading,
@@ -76,7 +77,9 @@ function MapControlsComponent({
       testID={testID}
       style={[
         {
-          alignItems: align === 'start' ? 'flex-start' : 'flex-end',
+          flexDirection: orientation === 'horizontal' ? 'row' : 'column',
+          alignItems:
+            orientation === 'horizontal' ? 'center' : align === 'start' ? 'flex-start' : 'flex-end',
           gap: MAP_CONTROLS_GEOMETRY.gap,
         },
         style,
@@ -113,7 +116,7 @@ function MapControlsComponent({
         <BlurIsland
           role="group"
           accessibilityLabel={zoomLabel}
-          style={{ flexDirection: 'column' }}
+          style={{ flexDirection: orientation === 'horizontal' ? 'row' : 'column' }}
           testID={id('zoom')}
         >
           <ButtonGroupItem
