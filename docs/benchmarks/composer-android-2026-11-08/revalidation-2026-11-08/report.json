@@ -1,20 +1,24 @@
 {
   "status": "passed on physical device",
-  "capturedAtUtc": "2026-11-08T21:03:54Z",
+  "capturedAtUtc": "2026-11-08T21:23:47Z",
   "device": {
     "model": "Google Pixel 8a",
     "android": "16",
     "api": 36,
     "serial": "43221JEKB12200",
-    "displayPx": [1080, 2400],
+    "displayPx": [
+      1080,
+      2400
+    ],
     "density": 420,
     "fontScale": 1.15
   },
   "installedArtifact": {
     "package": "so.oxy.bloom.loaderpackagelab",
-    "apkSha256": "9c8b51cb0a507bb7c3eca5ac24a0291dbd43166e0030e44047459a099c40379f",
-    "bloomSourceCommit": "81f87246",
-    "networkEnabled": false
+    "apkSha256": "ddf488169ea7b871ef789ca5becda4ca7f42a0e61259558257abf2dc7d2e384d",
+    "bloomSourceCommit": "a0b2aa47882d2d71be1fa2ea2d98081e0a5a1830",
+    "networkEnabled": false,
+    "softwareWindow": false
   },
   "orientationGuard": {
     "lockedTo": "portrait while testing",
@@ -34,7 +38,7 @@
           "state": "busy=false narrow=true stops=0 submits=0 pending=none",
           "before": {
             "testID": "cases-pill-input",
-            "identity": 162601691,
+            "identity": 46444218,
             "id": 68,
             "start": 19,
             "end": 19,
@@ -44,7 +48,7 @@
           },
           "after": {
             "testID": "cases-pill-input",
-            "identity": 162601691,
+            "identity": 46444218,
             "id": 68,
             "start": 19,
             "end": 19,
@@ -58,7 +62,7 @@
           "state": "busy=true narrow=true stops=0 submits=0 pending=none",
           "before": {
             "testID": "cases-pill-input",
-            "identity": 162601691,
+            "identity": 46444218,
             "id": 68,
             "start": 29,
             "end": 29,
@@ -68,7 +72,7 @@
           },
           "after": {
             "testID": "cases-pill-input",
-            "identity": 162601691,
+            "identity": 46444218,
             "id": 68,
             "start": 29,
             "end": 29,
@@ -81,7 +85,7 @@
       "stop": {
         "before": {
           "testID": "cases-pill-input",
-          "identity": 162601691,
+          "identity": 46444218,
           "id": 68,
           "start": 29,
           "end": 29,
@@ -91,7 +95,7 @@
         },
         "after": {
           "testID": "cases-pill-input",
-          "identity": 162601691,
+          "identity": 46444218,
           "id": 68,
           "start": 29,
           "end": 29,
@@ -103,7 +107,7 @@
       },
       "typed": {
         "testID": "cases-pill-input",
-        "identity": 162601691,
+        "identity": 46444218,
         "id": 68,
         "start": 30,
         "end": 30,
@@ -114,7 +118,7 @@
       "rotation": {
         "before": {
           "testID": "cases-pill-input",
-          "identity": 162601691,
+          "identity": 46444218,
           "id": 68,
           "start": 0,
           "end": 30,
@@ -124,7 +128,7 @@
         },
         "rotated": {
           "testID": "cases-pill-input",
-          "identity": 162601691,
+          "identity": 46444218,
           "id": 68,
           "start": 0,
           "end": 30,
@@ -134,7 +138,7 @@
         },
         "returned": {
           "testID": "cases-pill-input",
-          "identity": 162601691,
+          "identity": 46444218,
           "id": 68,
           "start": 0,
           "end": 30,
@@ -156,7 +160,7 @@
           "state": "busy=false narrow=true stops=1 submits=0 pending=none",
           "before": {
             "testID": "cases-agent-pill-input",
-            "identity": 53406274,
+            "identity": 195893917,
             "id": 106,
             "start": 19,
             "end": 19,
@@ -166,7 +170,7 @@
           },
           "after": {
             "testID": "cases-agent-pill-input",
-            "identity": 53406274,
+            "identity": 195893917,
             "id": 106,
             "start": 19,
             "end": 19,
@@ -180,7 +184,7 @@
           "state": "busy=true narrow=true stops=1 submits=0 pending=none",
           "before": {
             "testID": "cases-agent-pill-input",
-            "identity": 53406274,
+            "identity": 195893917,
             "id": 106,
             "start": 33,
             "end": 33,
@@ -190,7 +194,7 @@
           },
           "after": {
             "testID": "cases-agent-pill-input",
-            "identity": 53406274,
+            "identity": 195893917,
             "id": 106,
             "start": 33,
             "end": 33,
@@ -203,7 +207,7 @@
       "stop": {
         "before": {
           "testID": "cases-agent-pill-input",
-          "identity": 53406274,
+          "identity": 195893917,
           "id": 106,
           "start": 33,
           "end": 33,
@@ -213,7 +217,7 @@
         },
         "after": {
           "testID": "cases-agent-pill-input",
-          "identity": 53406274,
+          "identity": 195893917,
           "id": 106,
           "start": 33,
           "end": 33,
@@ -225,7 +229,7 @@
       },
       "typed": {
         "testID": "cases-agent-pill-input",
-        "identity": 53406274,
+        "identity": 195893917,
         "id": 106,
         "start": 34,
         "end": 34,
@@ -236,7 +240,7 @@
       "rotation": {
         "before": {
           "testID": "cases-agent-pill-input",
-          "identity": 53406274,
+          "identity": 195893917,
           "id": 106,
           "start": 0,
           "end": 36,
@@ -246,7 +250,7 @@
         },
         "rotated": {
           "testID": "cases-agent-pill-input",
-          "identity": 53406274,
+          "identity": 195893917,
           "id": 106,
           "start": 0,
           "end": 36,
@@ -256,7 +260,7 @@
         },
         "returned": {
           "testID": "cases-agent-pill-input",
-          "identity": 53406274,
+          "identity": 195893917,
           "id": 106,
           "start": 0,
           "end": 36,
@@ -376,63 +380,63 @@
   "screenshots": [
     {
       "path": "cases-agent-pill-input-cases-busy.png",
-      "sha256": "415cb0d91e6cc698f0b74c29733aa768ee49d54ccdea5102ba924b40af209009",
-      "bytes": 270543
+      "sha256": "e3ead69dcdf0d1858ff750944df30deeaeb19443f6d3a45b40d05638588fb961",
+      "bytes": 275557
     },
     {
       "path": "cases-agent-pill-input-cases-resize.png",
-      "sha256": "6acf2ae1249a4251e916849122833117f53e31f366472d02c97aae0d1d6c1cb4",
-      "bytes": 239762
+      "sha256": "466151a6969941b709cfeb49b0c809a538a9dee54c5f4b21f09b652a528a6ade",
+      "bytes": 246282
     },
     {
       "path": "cases-agent-pill-input-rotation-0.png",
-      "sha256": "2f49f92308690e57160b41684c537ae146538d79b5a6c79050ea3e827e394ae3",
-      "bytes": 234626
+      "sha256": "c120620a40a56e88bc315e6568c7b10a345293c7e70f688daed8283b5f37b98f",
+      "bytes": 241471
     },
     {
       "path": "cases-agent-pill-input-rotation-1.png",
-      "sha256": "39cc7de357540448d52e6bc3fce6cf7050384e4e11434da8323b2bc8dae47988",
-      "bytes": 131987
+      "sha256": "cdb04c6037c2051db673ef42a32fd7d4ef227275731361246ada09470f3b594e",
+      "bytes": 135650
     },
     {
       "path": "cases-agent-pill-input-rotation-before.png",
-      "sha256": "068b4c235576d48b8cfe22e0e94a1c4021b6dc9459092c5ca8e7104a6f12ded1",
-      "bytes": 234678
+      "sha256": "440ce2d7728702842fce75af487ea904596845d9b418dcca67486c196012660e",
+      "bytes": 241469
     },
     {
       "path": "cases-agent-pill-input-stop-and-type.png",
-      "sha256": "2f49f92308690e57160b41684c537ae146538d79b5a6c79050ea3e827e394ae3",
-      "bytes": 234626
+      "sha256": "c120620a40a56e88bc315e6568c7b10a345293c7e70f688daed8283b5f37b98f",
+      "bytes": 241471
     },
     {
       "path": "cases-pill-input-cases-busy.png",
-      "sha256": "7c1ac6bb8fda522efa80d2b88bb17a31144b464618c3af3a105a174fad2d3129",
-      "bytes": 271610
+      "sha256": "8ae3e86388d1849672ed515f69d4409e90c6da6ace742a5bb0c92802e26a70bb",
+      "bytes": 258740
     },
     {
       "path": "cases-pill-input-cases-resize.png",
-      "sha256": "0d5a374b562abe3b6afd4b6e96d3ad75275d548078bfcf3ab70874c699f36eb3",
-      "bytes": 240925
+      "sha256": "1976e3abf9421defcf8a707c1129cb456b32d9805a77b8c0854fe06566c10eea",
+      "bytes": 244864
     },
     {
       "path": "cases-pill-input-rotation-0.png",
-      "sha256": "032fa287a7fdfb98684427f75c68b5fdbee0eb0e036e31cca1360fc69b7e4249",
-      "bytes": 233904
+      "sha256": "e701ff81a7e6042381b4a77b68c145417cb2edb4e53fa93827c2eed1f70653d5",
+      "bytes": 240005
     },
     {
       "path": "cases-pill-input-rotation-1.png",
-      "sha256": "b17ffe18e1b2dd786b3c9dbc92a4e77e8dbf91410fc5d541afae87162f990b20",
-      "bytes": 132113
+      "sha256": "61ccbb38b3db8ce91a4df7bc7cf53aa7472ba9c313da4e4f8dd98c4f085138df",
+      "bytes": 134926
     },
     {
       "path": "cases-pill-input-rotation-before.png",
-      "sha256": "3156f35dbfaaab2d58f2900b658d3e16daf678cdceafb1a4e8373641f3d61658",
-      "bytes": 233945
+      "sha256": "68031056a84a58cf86ce443b3a6980a00b881cc3ea71349d4d49218da9eaa490",
+      "bytes": 240006
     },
     {
       "path": "cases-pill-input-stop-and-type.png",
-      "sha256": "032fa287a7fdfb98684427f75c68b5fdbee0eb0e036e31cca1360fc69b7e4249",
-      "bytes": 233904
+      "sha256": "e701ff81a7e6042381b4a77b68c145417cb2edb4e53fa93827c2eed1f70653d5",
+      "bytes": 240005
     },
     {
       "path": "direction-busy.png",
@@ -448,10 +452,80 @@
       "path": "direction-resize.png",
       "sha256": "c5c1297187b2e918e2f8eb3c5728fa73b7e7f599bbcf483351514649276420fa",
       "bytes": 232291
+    },
+    {
+      "path": "inactive-after.png",
+      "sha256": "cd6398e239d4597f61eceaecceea1727e12ea7a187a3e8835c8f6bdd3f48fa1c",
+      "bytes": 210554
+    },
+    {
+      "path": "inactive-before.png",
+      "sha256": "cd6398e239d4597f61eceaecceea1727e12ea7a187a3e8835c8f6bdd3f48fa1c",
+      "bytes": 210554
+    },
+    {
+      "path": "initial-inactive.png",
+      "sha256": "0ecfeddbd15d5ec56ffeec21b8f91f8e670a7e7202e46c709fdf8d36d8db6a10",
+      "bytes": 179872
+    },
+    {
+      "path": "paused-after.png",
+      "sha256": "54057b9721b4ba3b589c8dc005f20e9d3524cede0fac24326d4e9c9409a31c86",
+      "bytes": 198607
+    },
+    {
+      "path": "paused-before.png",
+      "sha256": "54057b9721b4ba3b589c8dc005f20e9d3524cede0fac24326d4e9c9409a31c86",
+      "bytes": 198607
+    },
+    {
+      "path": "rapid-resume.png",
+      "sha256": "8e993e49d2c575d7f881040e4569f13bfc483861d3b2dbe6ac66c582df804b79",
+      "bytes": 194592
+    },
+    {
+      "path": "reduced-a.png",
+      "sha256": "2a419ef22ab5982137a00b93aeb59438db0a13378d97d98ab211742dfc3cc4ee",
+      "bytes": 202693
+    },
+    {
+      "path": "reduced-active-a.png",
+      "sha256": "2a419ef22ab5982137a00b93aeb59438db0a13378d97d98ab211742dfc3cc4ee",
+      "bytes": 202693
+    },
+    {
+      "path": "reduced-active-b.png",
+      "sha256": "2a419ef22ab5982137a00b93aeb59438db0a13378d97d98ab211742dfc3cc4ee",
+      "bytes": 202693
+    },
+    {
+      "path": "reduced-b.png",
+      "sha256": "2a419ef22ab5982137a00b93aeb59438db0a13378d97d98ab211742dfc3cc4ee",
+      "bytes": 202693
+    },
+    {
+      "path": "reduced-idle.png",
+      "sha256": "5cccc413a8582a99f74afecb249cade52bd2b9c2160e9e59726949b3d84fbab0",
+      "bytes": 180026
+    },
+    {
+      "path": "resized.png",
+      "sha256": "048ad410f8e6c9cc59a4701d0491751982ad42194ff05ffa521051a62b135ccb",
+      "bytes": 205480
+    },
+    {
+      "path": "resumed-a.png",
+      "sha256": "087b7d50d8f26e4c4792dad056d715fcb1cbb121d7954437d640fd589f82b54d",
+      "bytes": 204453
+    },
+    {
+      "path": "resumed-b.png",
+      "sha256": "1312f765c593db7c20154b5c9876d69418b805b1cf12795fbca12824a75a0f29",
+      "bytes": 194783
     }
   ],
   "limitations": [
-    "The installed app is Bloom’s offline synthetic package lab, not production Alia.",
+    "The installed app is Bloom\u2019s offline synthetic package lab, not production Alia.",
     "This repeat does not establish iPhone behavior or cross-platform visual acceptance."
   ]
 }
