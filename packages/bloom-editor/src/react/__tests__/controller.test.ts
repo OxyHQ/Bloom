@@ -217,3 +217,17 @@ it('cancels a link session after remote text replacement even when selection coo
   expect(controller.applyLinkDraft('https://example.test')).toBe(false);
   expect(calls).toEqual([]);
 });
+
+it('cancels a link session when its block disappears remotely', () => {
+  const { store, controller, calls, id } = setup([
+    { type: 'paragraph', text: [{ text: 'hello world' }] },
+  ]);
+  store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+  controller.openLinkEditor();
+  store.reset(
+    documentFromSnapshot([{ type: 'paragraph', text: [{ text: 'replacement' }] }], idFactory('remote')),
+  );
+  expect(controller.applyLinkDraft('https://example.test')).toBe(false);
+  expect(controller.ui.get().linking).toBeNull();
+  expect(calls).toEqual([]);
+});
