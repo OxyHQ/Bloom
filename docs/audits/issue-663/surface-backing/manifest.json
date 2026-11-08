@@ -1,0 +1,17 @@
+{
+  "base": "3529e205c967647ca65a5b3e29357678341fe2c2",
+  "scope": "Prototype only; no foreground/context integration",
+  "files": {
+    "docs/audits/issue-663/surface-backing/filter-light.png": "c38878475a955ebf73a0e799fc072b2218306c64f6301e90245078cde7eff611",
+    "docs/audits/issue-663/surface-backing/numerical.json": "bb6e18a5f5b7cc744342cf0bda4885040938806238e01b9daa6995d66cbe3b27",
+    "docs/audits/issue-663/surface-backing/pixels.ts": "22746491321ba3620473aeb92785f9bd64665784e70763f351dde13a240dcca1",
+    "docs/audits/issue-663/surface-backing/probe.ts": "57168c0a936ec13ca1309690e9bfcd3355a4e9763499cd1e7542c0071084f3cd",
+    "docs/audits/issue-663/surface-backing/README.md": "3d73341578cc26d814c48f6167721e7dcfd3bc3744d817b7fda3271166b093cb",
+    "docs/audits/issue-663/surface-backing/pixels.json": "644c37ff9dada9d600eb9e1d22fa2fdf1c3420b2288ba3ec315181afb9becbea",
+    "docs/audits/issue-663/surface-backing/filter-dark.png": "a037dca2e93986df432e3009ba8674f637b7744788034ff3458aac753a0d223e",
+    "src/surface/filter-color.ts": "d74ad7b77cefb527ff26b5d4d8c3363181cc967149ff7870bc39f78f90f2aee6",
+    "src/surface/baked-material.ts": "863d40ff95ec1d246182bb696859b7f9dc5cbf2eaad110b021c3b005b20c83bb",
+    "src/surface/optics.ts": "38f3f1da64f6a356bc5ed91a4910c9fa921b26dcd37245db683805a7d60aaa1b",
+    "src/__tests__/surface-filter-bounds.test.ts": "76fb58a9de017a5f34624c1dac00265e66d7ea8d97821e1521e50b8d4d329c38"
+  }
+}
