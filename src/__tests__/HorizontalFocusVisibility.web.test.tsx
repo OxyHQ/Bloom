@@ -110,6 +110,7 @@ it.each([
     if (!button) throw new Error('Missing focus target');
     button.getBoundingClientRect = () => rect(100, 40);
     button.focus();
+    expect(owner.scrollLeft).toBe(20);
     flush();
     expect(owner.scrollLeft).toBe(20);
     expect(owner.scrollTo).not.toHaveBeenCalled();

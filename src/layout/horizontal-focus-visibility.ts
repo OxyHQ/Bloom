@@ -36,18 +36,24 @@ export function observeHorizontalFocus(scroller: HTMLElement): () => void {
   const view = scroller.ownerDocument.defaultView;
   if (!view) return () => {};
   let frame: number | null = null;
+  const reveal = () => {
+    const focused = scroller.ownerDocument.activeElement;
+    if (focused) revealHorizontalFocus(scroller, focused);
+  };
   const schedule = () => {
+    reveal();
     if (frame !== null) view.cancelAnimationFrame(frame);
     frame = view.requestAnimationFrame(() => {
       frame = null;
-      const focused = scroller.ownerDocument.activeElement;
-      if (focused) revealHorizontalFocus(scroller, focused);
+      reveal();
     });
   };
   // Run after the browser's own focus scrolling. Browsers may consider a
   // partially visible button sufficient; the whole control must remain usable.
   scroller.addEventListener('focusin', schedule);
-  const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
+  // ResizeObserver runs after layout: reveal now, without an extra frame that
+  // WebKit can defer while processing focus and layout work.
+  const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(reveal);
   resize?.observe(scroller);
   schedule();
   return () => {

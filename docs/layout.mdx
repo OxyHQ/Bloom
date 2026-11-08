@@ -360,7 +360,9 @@ scroll/layout/content-size callbacks. It adds no padding or background. Keep
 existing top/bottom edge clearance in the content container.
 
 On web, horizontal viewports reveal the whole focused control after browser
-focus scrolling and when the viewport narrows. This belongs to `ScrollViewport`,
+focus scrolling and when the viewport narrows. Resize observation corrects
+the offset immediately after layout; it must not add another deferred animation
+frame before revealing the focused control. This belongs to `ScrollViewport`,
 shared by neutral and web `ScrollArea` imports, including `Toolbar`. It adjusts
 only that owner's horizontal offset, works with negative RTL offsets and uses
 instant scrolling under either motion preference. Oversized controls spanning

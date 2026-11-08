@@ -9,3 +9,5 @@ Run `BLOOM_PLAYWRIGHT_MODULE=<playwright package> CHROME_PATH=<chromium> node sc
 The initial prototype failed the Properties focus check: RNW replaces the element scrollTo with its x/y imperative API. DOM left/top options silently reset the offset. Calling the DOM prototype method fixes the actual scroll owner; the regression suite also checks that the shadowed method is not called.
 
 This verifies the shared source implementation. Published Nilo adoption and its RN Animated table owner remain separate consumer checks; editor issue 434 is not covered by this evidence.
+
+WebKit 2370 also passes the same four cases and unchanged 300 ms settled checks (`webkit-report.json`). The first implementation queued another animation frame from ResizeObserver and left the focused tool clipped during resize under deferred WebKit frames. ResizeObserver now corrects directly after layout; focus corrects immediately and once more after browser focus scrolling. No wait budget was increased.
