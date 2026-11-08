@@ -2,6 +2,24 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.23.0
+
+### Added
+
+- **Semantic header actions.** `HeaderActions` and PageHeader action descriptors share command placement, priority and overflow behavior with dialog headers. Applications supply labels, permissions and callbacks; the shared header owns responsive presentation and accessible action state.
+- **Focused chart entries.** Bar lists, line charts, surfaces, headers and stat tiles are available through `@oxy.so/bloom/chart-cards/bar-list`, `/line`, `/surface`, `/header` and `/stat-tiles`, without importing the full chart family barrel.
+
+### Fixed
+
+- Horizontal ScrollArea and Toolbar owners reveal the entire focused control after keyboard entry and viewport narrowing, including RTL. Resize correction runs directly after layout, preserving surrounding panel and document offsets; callback-ref cleanup is retained.
+- Coarse-pointer web buttons reserve a real 44×44 CSS-pixel interactive minimum, including icon actions, links and button groups, while fine-pointer geometry remains unchanged.
+- Hidden composer loaders suspend animation and preserve their measured phase on resumption. Native loader lifecycle follows its activity owner.
+- IconCircle accepts canonical Bloom icon components without consumer casts. Document-panel bottom clearance stays inside its material surface.
+
+### Validation and adoption
+
+Shared-owner regression suites and browser interaction runners cover header overflow, actual touch hit testing, loader lifetime, panel paint and horizontal focus. Horizontal focus includes Chromium and WebKit with LTR/RTL and reduced motion; these browser results are not physical iPhone validation. Consumer adoption remains explicit: use the shared header action descriptors and ScrollArea owner, and consume the focused chart entry needed by the app. Editor selection/link-overlay migration remains separate work.
+
 ## 17.22.0
 
 ### Added
