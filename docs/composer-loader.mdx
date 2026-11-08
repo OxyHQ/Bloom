@@ -120,8 +120,11 @@ remain unverified. This evidence does not establish native blur parity.
 Android 12 / API 31 and newer can use `BloomComposerLightV1`, supplied by Bloom's
 existing Android package. Consumers must rebuild their native binary to install
 it. Missing managers (including older binaries and Expo Go), API 30 and below,
-unsupported colors or dash geometry retain the SVG renderer. A software Canvas
-reports a one-time unsupported event and hands the light back to SVG. The parent
+unsupported colors or dash geometry retain the SVG renderer. A genuinely software host
+reports a one-time unsupported event and hands the light back to SVG. A temporary
+bitmap capture instead paints the current light synchronously with a CPU Gaussian
+blur and leaves the live hardware renderer installed; it never reuses a cached
+frame. That one-shot capture cost is separate from the continuous frame budget. The parent
 owns one clock throughout that handoff; Surface, draft children, measured bounds,
 fade and activity policies remain with ComposerLoader.
 
@@ -135,6 +138,13 @@ web. iOS and web retain their existing renderers.
 The private Pixel 8a harness established the candidate's motion and repeated
 performance budget, not acceptance of this packaged integration. In particular,
 the SVG fallback retains its measured visible-animation cost; compatibility is
-not a claim of uniform quality or performance. Packaged API 30/software Canvas,
-minimum RN/legacy architecture and real composer consumer gates are still pending.
+not a claim of uniform quality or performance. Registration guards pass Robolectric API 30/31 and the installed Kotlin compiles
+against react-android 0.73.0. Those checks do not establish a running old-RN host.
+Physical software-host and temporary bitmap captures pass; the installed package
+meets the previously fixed continuous budget in six repeated scene windows. The
+JS-only update control retains the earlier native payload byte for byte and paints
+SVG successfully when the new manager is absent. Exact artifact hashes and limits
+are in `docs/benchmarks/composer-loader-android-adapter-2026-11-08.json`. API 30
+fallback appearance, legacy runtime, packaged lifecycle and real composer consumer
+gates remain pending.
 See `scripts/loader-package-lab` for the isolated packaged consumer procedure.

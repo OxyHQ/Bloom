@@ -7,6 +7,11 @@ const installed = realpathSync('node_modules/@oxy.so/bloom');
 const native = readFileSync(
   resolve(installed, 'android/src/main/java/so/oxy/bloom/ComposerLight.kt'),
 );
+const nativeDigest = createHash('sha256');
+for (const name of ['BloomPackage.kt', 'ComposerLight.kt', 'ComposerLightSnapshot.kt'])
+  nativeDigest
+    .update(name)
+    .update(readFileSync(resolve(installed, 'android/src/main/java/so/oxy/bloom', name)));
 const adapter = readFileSync(resolve(installed, 'src/composer-loader/AndroidLight.tsx'));
 if (!native.includes('BloomComposerLightV1') || !adapter.includes('BloomComposerLightV1'))
   throw new Error('Missing candidate marker');
@@ -22,6 +27,7 @@ for (const name of [
   'global.css',
   'without-network.js',
   'software-canvas-probe.js',
+  'software-window.js',
   'package.json',
   'bun.lock',
 ])
@@ -41,9 +47,11 @@ writeFileSync(
       installed,
       packageVersion: JSON.parse(readFileSync(resolve(installed, 'package.json'))).version,
       nativeSha256: hash(native),
+      nativeSourcesSha256: nativeDigest.digest('hex'),
       adapterSha256: hash(adapter),
       lockSha256: hash(readFileSync('bun.lock')),
       reactCompiler: false,
+      softwareWindow: process.env.BLOOM_LAB_SOFTWARE_WINDOW === '1',
     },
     null,
     2,

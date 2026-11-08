@@ -29,9 +29,10 @@ Archive the APK, manifest, embedded bundle/source maps and matching receipt befo
 building another candidate. Verify exact serial, package and permission boundary
 before installing, and record OS/build/font scale/density/thermal state unchanged.
 
-Pending gates: compiled package on physical hardware, API 30 registration/fallback,
-software Canvas event fallback, old RN/legacy compatibility, consumer composers,
-and the published artifact. iPhone testing is explicitly deferred by the user.
+Passed: compiled local package on Pixel, API 30/31 registration guards, six
+continuous budget windows, temporary bitmap and software-host fallback, and a
+JS-only update into the previous native binary. Pending: API 30 fallback appearance,
+old RN/legacy runtime, packaged lifecycle, consumer composers and published artifact. iPhone testing is explicitly deferred by the user.
 
 Native capability tests against the installed snapshot:
 
@@ -50,3 +51,32 @@ The private `software-canvas-probe` plugin adds only an explicit activity intent
 hook (`bloomProbe=snapshot|software`) to this synthetic app. It records view count
 before and after drawing the installed light to a bitmap or forcing its software
 layer. No such hook is registered by Bloom itself.
+
+The native tests also exercise transparent-color isolation and detached bitmap
+snapshots before/after phase, palette and geometry changes and display-list discard.
+For the minimum peer API compile only (not an old-RN runtime test):
+
+```sh
+ANDROID_HOME=/path/to/sdk ./android/gradlew -p android -I ../compatibility-rn73.gradle :oxy.so_bloom:compileReleaseKotlin --max-workers=2
+```
+
+`BLOOM_LAB_SOFTWARE_WINDOW=1 node prepare.mjs` and the same variable on prebuild
+select an activity with hardware acceleration disabled for the persistent software
+fallback probe. Restore both metadata and manifest to the default for performance.
+Never compare that diagnostic variant against the hardware animation budget.
+
+Gradle resolves `-I` relative to the project directory selected by `-p android`,
+which is why the init-script path is `../native-tests.gradle` or
+`../compatibility-rn73.gradle` even when the shell starts in this fixture directory.
+
+`install-apk.mjs` requires an attested APK, explicit authorized serial and owned
+Windows staging paths, and rejects a non-synthetic package, network permission or
+ABI mismatch. `probe-canvas.mjs` records normal/transient snapshot view counts,
+PNGs and one-shot duration. `benchmark-matrix.mjs` runs the same six non-recorded
+windows used by the prototype; each report keeps GPU and end-to-end time separate.
+
+`make-js-only-control.py` is diagnostic only: it replaces the JS bundle of an
+archived synthetic APK, signs with the explicit Android test keystore, and asserts
+every other non-signature ZIP payload byte is unchanged. Its receipt records all
+DEX/SO hashes and signing certificate. Do not publish this hybrid or use it to
+claim old-RN runtime or fallback performance acceptance.

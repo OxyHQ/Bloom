@@ -10,6 +10,6 @@ module.exports = {
     updates: { enabled: false },
     android: { package: 'so.oxy.bloom.loaderpackagelab', permissions: [] },
     experiments: { reactCompiler: false },
-    plugins: ['./without-network', './software-canvas-probe'],
+    plugins: ['./without-network', './software-canvas-probe', './software-window'],
   },
 };

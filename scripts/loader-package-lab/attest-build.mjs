@@ -11,6 +11,15 @@ const bundle = execFileSync('unzip', ['-p', apk, 'assets/index.android.bundle'],
 });
 for (const key of ['commit', 'nativeSha256', 'adapterSha256', 'lockSha256'])
   assert(bundle.includes(build[key]), `Stale metadata: ${key}`);
+if (build.nativeSourcesSha256) {
+  const digest = createHash('sha256');
+  for (const name of ['BloomPackage.kt', 'ComposerLight.kt', 'ComposerLightSnapshot.kt'])
+    digest
+      .update(name)
+      .update(readFileSync(resolve(build.installed, 'android/src/main/java/so/oxy/bloom', name)));
+  assert.equal(digest.digest('hex'), build.nativeSourcesSha256);
+  assert(bundle.includes(build.nativeSourcesSha256), 'Stale native source receipt');
+}
 if (build.fixtureSha256) assert(bundle.includes(build.fixtureSha256), 'Stale fixture receipt');
 assert(
   bundle.equals(
