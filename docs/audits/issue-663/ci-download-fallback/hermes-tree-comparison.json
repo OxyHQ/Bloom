@@ -1,0 +1,10 @@
+{
+  "tag": "hermes-v260318099.0.5",
+  "commit": "9a115f15785851f4ff2747ebb090ddd066fc8ad2",
+  "git_tree": "08059b08ded6b8b6ba7e74e6845500eb77d7036d",
+  "regular_files": 12653,
+  "equal_paths_modes_sha256": true,
+  "tree_manifest_sha256": "237f9f733be0ed901c43cf2fefda17d5c1bdd8c0504e306328169d761e22d26b",
+  "archive_sha256": "7545a1ca1d92e6ad8430d2a1e44e91e56e3bcd0d64d7281e4cfbee7b26fd4569",
+  "archive_bytes": 23061798
+}

@@ -1,0 +1,29 @@
+kotlin-compiler-embeddable-2.2.0.jar: official-fallback, SHA256 verified
+kotlin-compiler-embeddable-2.2.0.pom: official-fallback, SHA256 verified
+Enabled exact-GAV Kotlin fallback for root and included builds
+kotlin-compiler-embeddable-2.2.10.jar: official-fallback, SHA256 verified
+kotlin-compiler-embeddable-2.2.10.pom: official-fallback, SHA256 verified
+Enabled exact-GAV Kotlin fallback for root and included builds
+kotlin-compiler-embeddable-2.2.21.jar: official-fallback, SHA256 verified
+kotlin-compiler-embeddable-2.2.21.pom: official-fallback, SHA256 verified
+Enabled exact-GAV Kotlin fallback for root and included builds
+Kotlin 2.2.0: canonical transport available; normal Gradle resolution retained
+.gradle-8.3-bin.zip: primary, SHA256 verified
+....kotlin-compiler-embeddable-2.2.0.jar: official-fallback, SHA256 verified
+kotlin-compiler-embeddable-2.2.0.pom: official-fallback, SHA256 verified
+Enabled exact-GAV Kotlin fallback for root and included builds
+Kotlin 2.2.0: canonical transport available; normal Gradle resolution retained
+.Gradle 9.4.1: canonical transport available; setup-gradle cache/install retained
+.hermes.tar.gz: official-fallback, SHA256 verified
+hermes.tar.gz: official-fallback, SHA256 verified
+hermes.tar.gz: official-fallback, SHA256 verified
+.Hermes: canonical transport available; normal RN download retained
+.hermes.tar.gz: official-fallback, SHA256 verified
+Hermes: verified source commit 9a115f15785851f4ff2747ebb090ddd066fc8ad2; RN compilation tasks retained
+.artifact.jar: primary, SHA256 verified
+...artifact.jar: official-fallback, SHA256 verified
+...
+----------------------------------------------------------------------
+Ran 16 tests in 0.010s
+
+OK
