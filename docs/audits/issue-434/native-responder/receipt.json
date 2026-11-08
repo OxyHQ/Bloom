@@ -1,0 +1,12 @@
+{
+  "apkSha256": "5d82ebbfc9cece7b6a09f36ad1d5f7f5604abc2a0b06f8208a6d0a3b777e5ad1",
+  "bundleSha256": "b1d6283963a4f91f5337e9fcb3401d63d95ba2256abc116f613c92c7fdc7d516",
+  "editorBase": "0cba1f02",
+  "textBase": "published 0.1.6",
+  "sameApkModes": [
+    "handled",
+    "always",
+    "handled+input-responder"
+  ],
+  "diagnosticOnly": true
+}
