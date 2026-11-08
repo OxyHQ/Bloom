@@ -92,6 +92,43 @@ try {
         errors,
       }),
     );
+    await page.goto(
+      `${base}/iframe.html?id=composition-headers-adaptive-actions--responsive-navigation&viewMode=story&globals=theme:${mode}`,
+      { waitUntil: 'networkidle0' },
+    );
+    await page.waitForSelector('[data-testid="navigation-menu"]');
+    await page.evaluate(() => {
+      window.__navigationMenu = document.querySelector('[data-testid="navigation-menu"]');
+    });
+    for (const width of [900, 390, 900, 390]) {
+      await page.click(`[data-testid="navigation-width-${width}"]`);
+      await page.waitForFunction(
+        (width) => {
+          const menu = document.querySelector('[data-testid="navigation-menu"]');
+          const visible = menu.getBoundingClientRect().width > 0;
+          return visible === width < 777;
+        },
+        {},
+        width,
+      );
+      const geometry = await page.evaluate(() => {
+        const menu = document.querySelector('[data-testid="navigation-menu"]');
+        const start = document.querySelector('[data-testid="navigation-header-start"]');
+        const title = document.querySelector('[data-testid="navigation-header-title-block"]');
+        return {
+          identity: menu === window.__navigationMenu,
+          direct: menu.parentElement === start,
+          menuWidth: menu.getBoundingClientRect().width,
+          titleInset: title.getBoundingClientRect().left - start.getBoundingClientRect().left,
+        };
+      });
+      assert.equal(geometry.identity, true);
+      assert.equal(geometry.direct, true);
+      if (width >= 777) assert.equal(geometry.titleInset, 0, 'hidden menu leaves no flex gap');
+      else assert.ok(geometry.titleInset > geometry.menuWidth, 'visible menu retains leading gap');
+      console.log(JSON.stringify({ mode, width, navigation: geometry }));
+    }
+    assert.deepEqual(errors, []);
     await page.close();
   }
 } finally {

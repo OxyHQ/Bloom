@@ -8,6 +8,7 @@ import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { HeaderActions } from './HeaderActions.web';
 import { PageHeader } from './PageHeader';
 import { Text } from '../typography';
+import { AppShell, AppShellMenuButton } from '../app-shell/index.web';
 
 const meta: Meta = { title: 'Composition/Headers/Adaptive Actions' };
 export default meta;
@@ -73,6 +74,50 @@ export const LocalWidth: Story = {
           />
         </View>
         <Text testID="action-result">{result}</Text>
+      </View>
+    );
+  },
+};
+
+/** The drawer trigger disappears without leaving a leading flex gap. */
+export const ResponsiveNavigation: Story = {
+  render: function ResponsiveNavigationStory() {
+    const [width, setWidth] = useState(900);
+    return (
+      <View style={{ gap: 16 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {[390, 900].map((value) => (
+            <Button
+              key={value}
+              testID={`navigation-width-${value}`}
+              onPress={() => setWidth(value)}
+            >
+              {String(value)}
+            </Button>
+          ))}
+        </View>
+        <View testID="navigation-host" style={{ width, height: 420 }}>
+          <AppShell
+            header={null}
+            navFrom={777}
+            contentMaxWidth="none"
+            sidebar={{ items: [] }}
+            panelLayout={{
+              panels: [
+                {
+                  id: 'main',
+                  content: (
+                    <PageHeader
+                      testID="navigation-header"
+                      title="Inbox"
+                      leading={<AppShellMenuButton testID="navigation-menu" />}
+                    />
+                  ),
+                },
+              ],
+            }}
+          />
+        </View>
       </View>
     );
   },
