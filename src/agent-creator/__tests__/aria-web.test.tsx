@@ -7,7 +7,7 @@ import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { AgentCreator } from '../AgentCreator.web';
 import { CustomColorPicker } from '../CustomColorPicker';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
-// This suite measures real DOM controls; the separately tested hosted renderer needs browser APIs.
+// This suite measures real DOM controls; the SVG renderer is covered separately by browser checks.
 jest.mock('../../agent-avatar/CharacterAvatar', () => ({
   CharacterAvatar: () => null,
 }));
@@ -35,7 +35,7 @@ function render(ui: React.ReactNode) {
 
 it('announces selected avatar colors and profile fields through real react-native-web attributes', () => {
   render(
-    <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
+    <CharacterRuntimeFixture value={{}}>
       <AgentCreator
         agent={{
           id: 'design',
@@ -75,7 +75,7 @@ it('offers eye styles without an eye-placement control, including saved spacing'
   };
   const onChange = jest.fn();
   render(
-    <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
+    <CharacterRuntimeFixture value={{}}>
       <AgentCreator agent={agent} onChange={onChange} />
     </CharacterRuntimeFixture>,
   );
@@ -149,7 +149,7 @@ it('announces a custom body color and returns to a named color through the share
   };
   const onChange = jest.fn();
   render(
-    <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
+    <CharacterRuntimeFixture value={{}}>
       <AgentCreator agent={agent} onChange={onChange} />
     </CharacterRuntimeFixture>,
   );
@@ -172,12 +172,12 @@ it('announces a custom body color and returns to a named color through the share
 });
 
 it.each([
-  ['#000000', 'rgb(126, 126, 126)'],
-  ['#ffffff', 'rgb(215, 215, 215)'],
-  ['#080019', 'rgb(127, 126, 128)'],
-  ['#0000ff', 'rgb(108, 108, 255)'],
+  ['#000000', 'rgb(0, 0, 0)'],
+  ['#ffffff', 'rgb(255, 255, 255)'],
+  ['#080019', 'rgb(8, 0, 25)'],
+  ['#0000ff', 'rgb(0, 0, 255)'],
   ['#4778ff', 'rgb(71, 120, 255)'],
-])('uses engine-bounded eye-wheel paint while retaining saved %s', (bodyColor, background) => {
+])('uses exact SVG eye-wheel paint while retaining saved %s', (bodyColor, background) => {
   const agent = {
     id: 'color-preview',
     name: 'Preview',
@@ -187,7 +187,7 @@ it.each([
   };
   const onChange = jest.fn();
   render(
-    <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
+    <CharacterRuntimeFixture value={{}}>
       <AgentCreator agent={agent} onChange={onChange} />
     </CharacterRuntimeFixture>,
   );
@@ -200,4 +200,32 @@ it.each([
       avatar: expect.objectContaining({ bodyColor, eyes: 'clippo' }),
     }),
   );
+});
+
+it('coalesces rapid keyboard color edits into one frame without losing the final value', () => {
+  const original = global.requestAnimationFrame;
+  let flush: FrameRequestCallback | undefined;
+  const schedule = jest.fn((callback: FrameRequestCallback) => {
+    flush = callback;
+    return 123;
+  });
+  global.requestAnimationFrame = schedule;
+  try {
+    const onChange = jest.fn();
+    render(<CustomColorPicker value="#ff0000" onChange={onChange} />);
+    schedule.mockClear();
+    const field = container.querySelector('[aria-label="Saturation and brightness"]')!;
+    act(() => {
+      for (let i = 0; i < 5; i++)
+        field.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(schedule).toHaveBeenCalledTimes(1);
+    act(() => flush!(0));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith('#ff1a1a');
+    expect(field.getAttribute('aria-valuetext')).toBe('saturation 90%, brightness 100%');
+  } finally {
+    global.requestAnimationFrame = original;
+  }
 });

@@ -1,25 +1,65 @@
 ---
 title: Agent Avatar
-description: One shared 3D engine for agents, editors and previews.
+description: One character model and shared SVG rendering on web and native.
 ---
 
 # Agent Avatar
 
-`AgentAvatar`, AgentCreator, MultiAgentChat, avatar selectors and chat previews use the same
-TypeScript/WebGL engine in `runtime/`, and they all describe an avatar the same way: a
-**character**. There is no second model, no second renderer and no fallback.
+`AgentAvatar`, AgentCreator, MultiAgentChat, ConversationSidebar, account avatars and
+chat previews use the same flat **character** and SVG renderer. Local vector assets
+and pure frame projection provide spatial motion without starting a WebGL engine.
+AgentCreator uses the same renderer for its preview and static vector paths for
+its shape and eye controls.
 
 ```tsx
-import { AgentAvatar, AgentAvatarProvider } from '@oxy.so/bloom/agent-avatar';
+import { AgentAvatar } from '@oxy.so/bloom/agent-avatar';
 
-<AgentAvatarProvider runtimeUrl="https://example.com/bloom-character/runtime.mjs">
-  <AgentAvatar character={{ preset: 'blue_beret' }} size={128} interactive label="Peri" />
-  <AgentAvatar character={{ preset: 'blue_beret', accessory: 'crown', color: 'orchid' }} />
-  <AgentAvatar
-    character={{ shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'bow', bodyColor: '#ffd838' }}
-  />
-</AgentAvatarProvider>
+<AgentAvatar character={{ preset: 'blue_beret' }} size={128} interactive label="Peri" />
+<AgentAvatar character={{ preset: 'blue_beret', accessory: 'crown', color: 'orchid' }} />
+<AgentAvatar
+  character={{ shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'bow', bodyColor: '#ffd838' }}
+/>
 ```
+
+## SVG rendering
+
+```tsx
+<AgentAvatar character={{ preset: 'lime_frog' }} size={128} interactive />
+```
+
+SVG rendering does not need a hosted character runtime. The current catalog supports 34
+shapes, 12 current eye styles, five eyewear styles and eight accessories (plus `none`). All edits use
+`AvatarCharacter` and the existing validation and serialization boundary. Exact templates
+retain their extracted geometry and clips. Edited characters fit vector parts to the target
+body; painting preserves the chosen parts. Idle, reaction and work share the same frame
+projection on web and native, including the working hands and screen. The 13 flat forms
+keep their original outlines while the eyes follow pointer direction. Depth is approximated
+with projected vector contours and visibility masks; this is flat artwork with spatial
+motion, not the legacy renderer’s lighting or a promise of identical depth at every angle.
+
+The flat forms start with a centered, front-facing pair of clean capsule eyes. References
+supply shape-specific eye size and separation; an upward glance in a reference is a head
+pose, not a permanent face offset. Each capsule sits in one tangent plane on a virtual
+sphere, so absolute left/right and up/down gaze moves the pair and foreshortens the outer
+eye without distorting the capsule outline. Shape-specific visual centers keep asymmetric
+bodies centered too. The body outline remains flat and stable.
+
+Composition preserves these native eye parts and animation tracks when changing paint or
+accessories. Generated-asset-only checks previously passed while the compositor replaced
+the face with a normalized donor; the gate now checks all 13 forms through the real loader
+and compositor, with and without headwear. It also checks clean symmetric capsules,
+neutral centering, mirrored directional gaze and rendered interruption continuity
+(`vector-frame.test.ts`). Fit parts when the character changes, not during each animation
+frame, to avoid abrupt shifts between competing contact positions. State changes capture
+the currently displayed pose and blend all channels, including hands and screen; an
+interrupted transition starts from that captured pose. Idle breathing, blinking and gaze
+sampling are deterministic, while pointer input controls an absolute look direction.
+
+AgentCreator loads the selected animated asset on demand. Shape and eye thumbnails are
+static SVG paths, so opening the editor does not load every animation. Web verification
+covered the existing Basic story: template, eyes, paint and accessory edits, work returning
+to idle, reaction playback, unchanged profile fields and no canvas. Native uses
+`react-native-svg`; this migration has not been verified on a device.
 
 ## The character
 
@@ -29,17 +69,18 @@ and your saved JSON:
 | Field | Values |
 | --- | --- |
 | `preset` | `AVATAR_PRESETS`: a named template. Any part or paint you leave out comes from it. |
-| `shape` | `AVATAR_SHAPES`: the 21 catalog bodies. |
+| `shape` | `AVATAR_SHAPES`: 21 original bodies and 13 flat forms. |
 | `eyes` | `AVATAR_EYES`, or `'none'` to hide the face. |
 | `eyewear`, `accessory` | `AVATAR_EYEWEAR`, `AVATAR_ACCESSORIES`; `'none'` removes it. |
 | `color` | `AVATAR_COLORS`: named paint. |
-| `bodyColor` | An exact `#rrggbb`. It wins over `color`. |
+| `bodyColor` | Skin `#rrggbb`, normalized to minimum perceptual lightness. It wins over `color`. |
 | `eyeSpacing` | 0.5 to 1.5, a multiplier on the shape's eye separation. |
 
 Without a `preset`, all four parts and a paint are required. Every field is optional with
 one; nothing else is read. The catalogs are exported so a UI can offer exactly what the
-renderer can draw, and `catalog-ids.test.ts` pins them to the runtime's catalog index in both
-directions.
+renderer can draw, and `catalog-ids.test.ts` checks their compatibility with the offline source catalog. The editor offers 12 paired-eye
+styles; the historical `cyclops` ID remains readable in saved characters but is not offered
+in current choices or templates.
 
 - `resolveAvatarCharacter(character)` fills in every part and the paint, validates each id and
   throws on anything the renderer cannot draw. `AgentAvatar` calls it, so an invalid character
@@ -60,73 +101,34 @@ onto the new parts. That is the whole rule, and it is decided in one place,
 `resolveAvatarCharacter(...).authored`, from the data: writing a part out that equals the
 preset's own does not change it, and naming the preset's own paint again does not repaint it.
 
-## Hosting and packaging
+## Assets and packaging
 
-The runtime URL defaults to `BLOOM_CHARACTER_RUNTIME_URL`, the SDK's hosted copy
-(`https://alia.onl/bloom-character/runtime.mjs`, CORS open), on web and native alike, so an app
-that does not self-host the runtime needs no setup. To self-host, serve the package's complete
-`assets/character-runtime/` directory and pass its absolute URL to `BloomProvider
-characterRuntimeUrl` or `AgentAvatarProvider runtimeUrl`. The native WebView route and
-shared still-capture host need the optional `react-native-webview` peer. Android live avatars
-can instead use the separately installed native GPU companion described below. Missing assets or an unavailable bridge produce an explicit translated
-unavailable state. Geometry and motion load lazily; keep the generated chunks
-and assets beside the entry point with their original relative paths.
+Production avatars load packaged vector data through the shared asset loader. They do not
+fetch a hosted character module or require a WebView. Web and native use the same numeric
+composition and projection; native drawing uses `react-native-svg`.
 
-`bun run build` builds the runtime before the library, then verifies all runtime
-files and their hashes against the actual package file list. For runtime-only
-work use `bun run build:avatar-runtime`; it builds both the browser runtime and the native
-companion factory/expected manifest from the same source. `bun run build:avatar-native` can
-regenerate only the companion after a fresh source browser build. `manifest.json` records the generated
-files. Build output replaces the entire runtime directory; old files and selector
-PNGs cannot silently survive an incremental build.
-Production avatars load the selected geometry and idle/reaction motion first. Computer
-geometry, its episode and its repeating loop are optional resources: an idle-only scene or
-portrait does not fetch them. The first `workingKey` prepares that character's work assets
-before starting its first presented action frame. Preparation is shared by matching assets;
-existing idle/reaction samplers and other avatars' clocks remain independent. Once prepared,
-work assets stay available to that live scene for subsequent requests.
+The old geometry engine under `runtime/` is an **offline extraction tool**, not an app
+renderer. `bun run build:avatar-vectors` (`scripts/build-avatar-vector-assets.mjs`) samples its shapes, parts and authored
+motion into vector data. Keep generated assets, import mappings and static portraits in
+sync when rebuilding that source data. Normal library builds and package verification
+must ship all vector imports; no consumer can depend on the extractor's filesystem.
 
-`avatar-motion-transport.mjs` produces separate base/work files for development and builds,
-relocating the original Float64 channel bytes without rounding or resampling. The authored
-source bundles remain frozen fidelity evidence. The public character and action API is
-unchanged; runtime diagnostic tooling can still request a complete eager rig.
+`renderer`, including its historical `'webgl'` value, is a deprecated compatibility
+prop and no longer selects another renderer. `AgentAvatarProvider.runtimeUrl`,
+`AgentAvatarProvider.stillStorage` and `BloomProvider.characterRuntimeUrl` are also
+deprecated and inert. `BLOOM_CHARACTER_RUNTIME_URL` remains exported as an empty
+string for source compatibility; it is not a fetch location. The provider maintains
+only a bounded capability map, not an offscreen rendering queue.
 
-The source lives outside `src/` so Three and browser-only code do not enter ordinary
-Bloom consumers' native import graph. The optional native companion explicitly bundles the
-same engine for Hermes, with shader strings and external asset URLs; it does not evaluate
-remote JavaScript or install global DOM shims. Vite application output preserves `createAvatar`
-and external binary assets; library mode would inline these assets and defeat
-lazy loading.
+## Portraits
 
-## Stills
-
-`Avatar account={bot}` (see [Avatar](/docs/avatar)) draws a character as a cached still below
-profile size. Inside `AgentAvatarProvider` (including `BloomProvider`), native
-`AgentAvatar`/`CharacterAvatar` previews with explicit `portrait` and no `interactive` also
-use this cache: shape and eye selectors share one drawing document instead of retaining a
-WebView for every frozen thumbnail. Temporarily `paused` live avatars retain their renderer;
-web portraits and standalone native avatars without a provider retain their existing path.
-Eye-only previews have separate cache identities, and persistent images are namespaced by
-runtime URL. Images render through `BloomImage`, preserving the outer accessible label and
-layout. `onReady` fires after image loading, and snapshot capture returns the presented PNG;
-failed stills use the existing translated unavailable state. The still pipeline renders a paused `portrait` through this same runtime, one at a
-time, into an invisible fixed-size box (web) or one hidden WebView (native), reads the canvas back
-once and caches the PNG by content. Native retains the same WebView document throughout a
-burst of requests: the runtime module, decoded donors and compatible GL pool survive between
-characters. The preceding paused scene remains attached until the next picture is ready, then
-is disposed; the hidden host is released 1.5 seconds after the queue empties. Each request has
-its own capture identity, so an old completion cannot supply a later character's picture.
-Web uses the same brief scene retention. Both paths wait for the first painted frame and the
-created controller before capture; web runtime loading or creation that outlives the 15-second deadline
-cannot block the queue, and its late controller is disposed. Failed module requests can be
-retried; a failed native document is replaced for subsequent work.
-
-Unmounting the provider or replacing its runtime disposes that cache's queued work. Cancelled
-queued requests settle with `null`; late results cannot repopulate a disposed cache. These are
-resource-lifetime guarantees, not native frame-rate measurements. `AgentAvatar` takes `onReady`,
-called when the renderer has painted its first picture. The alpha-fit measurement pass
-is preparation only: readiness and capture wait for the requested pose. Persistent still
-cache version 3 invalidates images made before this first-presentation correction.
+Visible account and agent avatars animate at every size. Only explicit `motion="never"` or
+reduced motion uses a paused SVG portrait of the same character.
+Static account frames share a cache keyed by the resolved character, independent of
+display size, and request no animation frames. They do not persist PNGs or create a hidden
+WebView. `onReady` fires
+when the first picture has been painted. Shape and eye pickers use their smaller static
+path catalogs rather than loading every character's animation.
 
 ## Editing and proportions
 
@@ -134,35 +136,25 @@ A preset is a default, not the identity of an edited avatar: the first edit with
 `updateAvatarCharacter` writes every effective part and paint, so changing a template later
 cannot change a saved custom avatar. AgentCreator's templates (`CHARACTER_TEMPLATES`) are
 complete characters of their own: Felipe (orange, sleepy eyes), Todd (Clippo eyes, bow, coral),
-Alfred (Cyclops, monocle, bow, cyan) and Iris (Clippo eyes, round sunglasses, no accessory).
-Edited characters compose the selected actual geometry, smooth materials and animation
-channels; color is instance state and does not rebuild meshes. Bodies use the smooth solid
-surface for every device. The runtime neither builds hair strands nor loads their pile/card
-textures; body silhouettes, eyes, attachments and authored motion remain live 3D.
+Alfred (paired oval eyes, monocle, bow, cyan) and Iris (Clippo eyes, round sunglasses, no accessory).
+Edited characters compose the selected vector geometry and animation channels. Paint updates
+preserve the selected parts; changing a choice fits its geometry once, not on every frame.
 
-The catalog has 21 bodies, Todd's among them. Clippo's open wire and asymmetric face remain
-independently selectable. Todd's eyes, Clippo's face, Cyclops and the other catalog eye styles
-can be fitted across bodies. Hidden faces (`eyes: 'none'`) contribute no eye meshes.
+The catalog retains 34 saved body IDs; the editor groups visually equivalent silhouettes
+without rewriting saved IDs. Clippo's open wire and asymmetric face remain selectable.
+Hidden faces (`eyes: 'none'`) contribute no eye paths.
 
-`catalog-layout.ts` assigns each silhouette its own Tuft position, scale and
-rotation, and eye size, separation and height. Attachment depth follows actual
-triangles, not the bounding box. Tuft's root joins a smooth shoulder in the body;
-its exposed tips retain their height. The surface uses the body's pigment, including animated material updates. Normals and
-morphs follow the join and rotation. This work happens once per composed geometry, not per frame.
-Todd keeps paired eyes on its stalks and places Cyclops on its forehead.
-Eyewear follows the composed face and accessories remain attached during motion.
-An explicit `eyeSpacing` is included in geometry identity.
+Headwear seats against the body's actual support surface. Eyewear fits the final eye
+contours, and headphones use body anchors. Reference-form head accessories follow the
+shared head direction as rigid parts; eye deformation does not distort hats or glasses.
+An explicit `eyeSpacing` changes the pair's spacing without rotating its expression.
+Single-ink eyes switch to a readable light ink on dark reference bodies when needed;
+multicolor iris and highlight styles retain their colors.
 
-The shape selector draws only the body in the selected color. The eye selector
-draws only the eye meshes, framed independently, with no body or accessories.
-Both use paused portraits from the same engine; no preauthored selector artwork or
-second rendering engine remains. Native selectors cache captured PNGs of that live geometry. Preview-only choices never change the saved avatar. The color
-palette precedes accessory controls and stays available when changing shapes.
-The editor accepts and saves any RGB color unchanged. The engine bounds body
-pigment in linear sRGB to relative luminance 0.21–0.68, keeping shadows and
-highlights readable. This also applies to presets and saved configurations;
-body-colored hands and Tuft share the adjustment. In-range colors are unchanged. Chat handoff captures the visible avatar once,
-on demand, and moves that image; it does not regenerate the removed SVG artwork.
+The shape selector draws the body in the selected paint; the eye selector draws only the
+paired eye style. Both use static SVG paths. Preview-only choices never change saved data.
+The editor accepts and saves RGB colors unchanged. Chat handoff may capture the visible
+avatar once for its flight presentation; that snapshot is not the avatar renderer.
 
 ## Motion and resource ownership
 
@@ -171,78 +163,35 @@ on demand, and moves that image; it does not regenerate the removed SVG artwork.
 the verified endpoint. `entranceKey` replays a scale/position/rotation entrance
 inside the same scene. New actions start at their first presented frame, so a
 slow preceding frame cannot consume an entire reaction before it is visible.
-Other instances retain their elapsed clocks. `interactive` enables pointer and drag input.
-Every avatar wanders its gaze on its own; pointer input owns gaze while interacting. Retargeted
-characters still lack the per-eye gaze profiles available for authored scenes; body gaze and
-eye animation remain active.
+Changing `idleKey` returns to idle without remounting.
+Manual action changes blend from the currently displayed pose, including an
+interrupted transition. The final Computer episode includes its screen and hands
+exit in its last 280 ms, so work props do not linger after completion. Earlier
+repeats remain working; pausing freezes the transition clock.
 
-A browser document shares live instanced scenes grouped by resolution. Each
-avatar has independent pose, phase, paint and action state. Paused, portrait,
-reduced-motion and offscreen instances stop advancing independently. Fully
-quiescent scenes stop requesting animation frames. Geometry donors are immutable
-and cached within a byte budget; fitted geometry and GPU ownership are released
-with the last live scene. There is no cached animation sprite playback.
+The panel, screen glyphs and hands share the panel's visibility envelope, including
+fractional camera visibility. Independent glyph coverage previously left text floating
+after the panel vanished. The regression checks intermediate rendered paths and opacity
+across all 23 templates, plus interrupted exits; endpoint-only counts missed this failure.
 
-The optional `@oxy.so/bloom-avatar-native` companion now supplies an Android shared GPU
-backend. It is published from this repository with Bloom (`bun add @oxy.so/bloom-avatar-native`,
-the exact version Bloom's peer names); see [its integration and build
-contract](../packages/avatar-native/README.md). Install it and its declared peers, rebuild
-the application's native binary, and keep the normal
-Bloom API. Bloom requires companion ABI 1 and selects it only when the configured runtime's
-complete manifest matches the bundled engine. An absent module or incompatible host retains
-the WebView route. The neutral web facade cannot load the companion's native dependency graph.
+Other instances retain independent clocks. `interactive` enables pointer and drag input;
+otherwise deterministic gaze wandering, breathing and blinking provide idle motion.
+Paused, portrait, reduced-motion, background and offscreen instances stop advancing.
+Composition donors remain immutable and loaded assets are cached. There are no WebGL
+contexts or shared instanced GPU scenes in the production avatar path.
 
-Matching size buckets and runtime URLs share an engine, GPU context, decoded assets and atlas
-across providers. Each live destination remains an independently laid-out native TextureView;
-GPU blits preserve native clipping, transforms and input without streaming pixels through
-JavaScript. Pools contain at most sixteen instances, reduced by driver limits; additional
-instances open another pool. Initial 64/128/320 size buckets avoid promoting every icon to a
-hero's resolution. Resizing an existing group preserves its motion state and may promote that
-group to its largest remaining member. Detail, material equations and 4× MSAA are unchanged.
-
-The native host uses the same slot and latest-intent controllers as the browser. Offscreen,
-background, paused and reduced-motion avatars retain their pose. A recreated surface requests
-one fresh frame even while paused; readiness waits for a successful destination swap. At most
-two presentation batches are outstanding, allowing CPU/GPU overlap without a growing frame
-queue. Pointer cancellation clears ownership and gaze; a release moved six logical pixels or
-more does not trigger a tap reaction. Snapshot observation captures the retained native image
-on request and encodes PNG off the GL thread. Context/surface disposal drains submitted work;
-allocation and EGL presentation failures reach the existing unavailable state. Native context
-loss does not yet have automatic recovery. iOS has no native presenter in this companion.
-
-The fallback live route still creates separate WebView documents and retains its topology
-limit. A physical Pixel 8a test with nine WebViews found one lost WebGL context both before
-and after phase1, despite all nine views being visible; eight remained ready. The shared still
-host and Android native GPU backend address different parts of that topology. This historical
-observation is preserved in the [research appendix](benchmarks/avatar-engine-research.md).
-The [phase2 report](benchmarks/avatar-efficiency-phase2.md) separates unchanged-pixel browser
-checks, physical Android measurements and remaining validation. Software GL, CPU throttling
-and one physical phone do not establish office-PC, ARM-laptop, low-end-phone, iOS or sustained
-thermal performance.
-
-The WebView fallback bridge handles Android `onRenderProcessGone` and WKWebView
-`onContentProcessDidTerminate`, which can report OS memory reclamation as well as crashes.
-It settles pending captures, remounts once using the latest character/action props, and
-ignores messages from the previous document. This restores the character, not its lost
-animation phase: `reactionKey`/`workingKey` are edge-triggered requests, not persistent activity
-state, and already-consumed actions are not artificially replayed. A second process loss
-before 30 seconds of stable readiness uses the translated unavailable state. Thirty stable
-seconds after recovery, or changing the runtime, resets the recovery budget so a later
-independent OS reclamation can recover too. A native
-page load error also reports unavailable. The shared still host fails an interrupted request
-and replaces the document for the next job, without repeatedly retrying the failed job.
-These lifecycle transitions are tested with native event mocks; physical OS process-kill
-recovery remains to be validated. See the [WebView event reference](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#onrenderprocessgone).
+Browser checks do not establish native crowd performance. Native device verification is
+still required; the shared numeric renderer alone does not prove native SVG drawing speed.
 
 `className` and `style` apply to the outer layout node. `label` defaults to the
 translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel`
 overrides the accessible name. Use an agent's name when it identifies them.
 
-## Catalog retarget
+## Historical extraction hazards
 
-A character that is not exactly its preset takes the catalog path: the donor's observed clips
-are retargeted onto the composed parts (`runtime/avatar/catalog-retarget.ts`). A preset plays its
-authored clip instead, so a Storybook default never shows what follows.
+These measured failures belong to the offline geometry and animation source. Retain
+these constraints when regenerating vector assets; they are not production WebGL setup
+instructions. The source retargeter is `runtime/avatar/catalog-retarget.ts`.
 
 - **An eye's pivot offset is carried by the eye's own world turn, never by its parent's.** The
   six-lobed body rolls 180° in plane during the reaction (its outline hides it) while the eyes
@@ -255,31 +204,214 @@ authored clip instead, so a Storybook default never shows what follows.
 - **Measure the painted result:** the gap between the two eye centres across the clip, and the
   body's end translation, for every shape (a sweep of 19 shapes moved only the flower).
   `src/agent-avatar/__tests__/catalog-retarget.test.ts` pins both cases on synthetic clips.
-- `assets/character-runtime/` is tracked: after editing `runtime/`, run
-  `node scripts/build-avatar-runtime.mjs` and commit the output.
+- If changing the offline extractor, regenerate its vector output and run the geometry
+  fidelity checks; production consumers do not execute the extractor.
 
 ## Verification
 
-Storybook's **Shape Proportions** gallery displays all distinct silhouettes with
-four eye styles, glasses, reaction and Computer controls. **Editor** exercises
-the production editor through the shared engine; **Many Avatars** covers a crowd.
+Storybook's **Components / Agents / Agent Avatar / Gallery** and **Playground**
+exercise the current production renderer; **Agent Creator / Basic** uses the real editor.
+Focused tests cover catalog composition, pointer gaze, accessory tracking, interrupted
+playback and panel/content visibility. Browser checks use actual pointer input and inspect
+rendered intermediate frames, not only final poses or mocked props.
 
 ```bash
-node --test scripts/test-avatar-*.mjs
+node --no-opt node_modules/jest/bin/jest.js --runInBand src/agent-avatar/__tests__
+bun run typescript
+bun run build
+bun run verify:package
 node scripts/verify-avatar-cutover.mjs
-node scripts/verify-avatar-runtime-bundle.mjs
-node scripts/verify-avatar-action-presentation.mjs
-node scripts/verify-avatar-shape-proportions.mjs
-node scripts/verify-avatar-editor-engine.mjs
-node scripts/verify-avatar-editor-pool.mjs
-node scripts/verify-avatar-accessory-attachments.mjs
-node scripts/verify-avatar-catalog-pigment.mjs
+node scripts/verify-avatar-svg-consumers.mjs
 ```
 
-Browser checks require `CHROME_PATH` and an installed `puppeteer-core` (or
-`BLOOM_PUPPETEER_MODULE`). Tests under `scripts/fixtures/avatar/` store frozen
-independent geometry expectations. They contain data only: deleting the old
-engine does not replace fidelity oracles with the implementation being tested.
 The chronological measurements, shader hazards and known residuals remain in
 `docs/benchmarks/avatar-engine-research.md`; historical commands in that record
-are not the current build process.
+are not the current production renderer. The old cold raster path measured 31 requests
+and 16.1 MiB for one character, and the hosted source runtime occupied 214 MB. These
+figures describe the removed path, not current vector asset transfer sizes. The old
+shaded engine also bounded body pigment to linear-sRGB luminance 0.21–0.68; that
+lighting policy is historical, not a transformation of current saved SVG paint.
+
+
+Paint-only edits reuse the same fitted geometry and clips through a bounded,
+24-entry cache per asset loader. Failed loads are evicted for retry. The current
+pose, gaze and action clocks survive recoloring; painting never mutates source
+assets, so returning to a light body restores the original dark ink. Eye chips
+and the character use the same normalized skin RGB color (allowed saved RGB stays exact). Applying the retired lighting
+clamp only to chips once made the main character appear more saturated.
+
+Single-ink eyes adapt contrast on every shape. The three dark-base glint styles
+retain their original fill and highlight colors, with a two-unit light outline
+only when needed on a dark body. Other artwork and laptop borders are unchanged.
+Static chip frames share the same policy and cache.
+
+Measured editor drag processing dropped from 10.48 s to 1.17 s for the same
+25-event sequence after geometry reuse, frame-coalesced input, and stable preview
+props. The latter run measured 42.9 ms median event-to-paint and 77.3 ms p95, with
+no blank avatar. These are development-browser observations under external host
+load, not device frame-rate guarantees. A same-process 207-pose paired benchmark
+measured renderer medians of 13.27 ms before and 11.83 ms after; 621 full-frame
+outputs remained exactly equal. Projection preparation and bounded visibility
+scans retain the original visibility resolution and animation cadence.
+
+
+### Coordinated animation and measured limits
+
+Visible characters share one frame scheduler. Their clocks, pointer state, actions and
+interrupted poses remain independent. Only exactly matching geometry, paint and pose inputs
+share projection within one tick; the result cache is cleared at the end of that tick.
+A failed subscriber stops itself and reports its error without freezing the other characters.
+The editor prepares at most two adjacent recipes after a 250 ms quiet interval, sequentially
+in browser idle callbacks (a deferred timer on native). Selection changes cancel queued work;
+already-started module imports cannot be aborted. The existing 24-entry geometry and 12-entry
+asset caches remain bounded, but JavaScript module strings themselves are runtime-cached.
+`onLoadingChange` reports selected animated geometry preparation until its actual frame is
+painted; paint-only edits do not reload it.
+
+Removing unused generated edge arrays reduced the raw asset catalog from 89.44 to 58.72 MB
+and its summed gzip size from 22.74 to 12.41 MB. This is lossless: faces still derive contour
+topology, and 630 before/after rendered frames were identical. The complete catalog is not
+fetched at startup. Example selected asset sets of 1/6/10 distinct benchmark characters total
+1.37/8.52/13.12 MB raw or 0.284/1.71/2.58 MB gzip; these are file encodings, not measured network
+transfer promises (server compression and caches matter).
+
+Run `CHROME_PATH=... node scripts/verify-avatar-crowd.mjs report.json` for 10/30/50 visible
+identical characters. `MIXED=1 COUNTS=1,6,10 THROTTLE=4` selects diverse recipes and a fourfold
+Chromium CPU slowdown. The fixture is an internal module, not another Storybook destination.
+It records frame counts, elapsed time, main-thread task/script durations, pointer response
+and forced-GC JavaScript heap. Heap includes the loaded development Storybook page; it is
+not total process RAM, GPU memory, or a native-device measurement.
+
+On the measured development machine, shared exact-state calculation gave roughly 30 fps
+for 10/30/50 identical characters with 7–30 ms pointer response and 34–37 MB retained JS heap.
+Distinct recipes are materially more expensive. After asset compaction, the desktop mixed
+fixture measured about 27–30 fps for six characters and 17.5 fps for ten, with 41/66 ms pointer
+response and 80.7/104.0 MB retained heap (31.2 MB empty fixture). Transient pre-GC samples in
+the broader profiling run reached 174 MB; retained heap alone is not a peak-memory budget.
+
+The final **fourfold CPU slowdown** measured:
+
+| Visible distinct characters | Approx. observed fps | Retained JS heap | Pointer-to-reaction observation |
+| --- | --- | --- | --- |
+| 1 | 30 | 31.5 MB | 39 ms |
+| 6 | 7.2 | 80.5 MB | 177 ms |
+| 10 | 4.8 | 104.9 MB | Not observed within the test's two-second response window |
+
+The empty fixture used 30.8 MB. Six and ten distinct characters occupied about 99% of the
+measured main-thread window; the one-character case occupied about 78%. The response window
+includes browser input dispatch, so its timeout is not a precise latency value. CPU throttling
+is an approximation, not evidence from an ARM laptop or phone. SVG removes the old WebGL
+renderer but still performs software projection/visibility and browser compositing. These
+results do **not** establish readiness for many complex characters on low-memory or low-end
+devices; actual target-device testing remains necessary. No visible character is silently
+frozen or rendered at reduced quality to meet a benchmark.
+
+A proposed painter-order shortcut was rejected: although conservative geometry bounds
+preserved scene ordering, removing regional masks changed edge antialiasing in 234 simple
+frames (worst mean channel difference 0.108/255 on white). Its approximately 0.31 ms average
+saving did not address complex-character costs. The existing exact visibility renderer remains.
+
+
+Bow fitting must seat depth as well as height. A center-only neck anchor retained the
+circular donor's depth on other silhouettes: the front of the star and cloud intersected
+the upper wings, visibly clipping the bow. The compositor now moves the complete bow
+assembly to the actual front contact surface before ordinary depth visibility and animation.
+It does not force accessories into a foreground layer. Star/cloud face anchors are centered
+and placed 7% of body height above the midpoint; other silhouettes keep their existing anchors.
+The regression uses all four saved/current star and cloud IDs, native and custom eyes, and
+checks immutable source geometry, complete neutral bow contours and directional/work states.
+Browser checks must wait for the requested `data-geometry` identity; an old frame with a
+cleared busy flag does not prove that the newly selected shape has rendered.
+
+
+Expression fitting uses each selected body's paired eye anchors, rather than carrying the
+donor expression's spacing onto a different silhouette. This previously placed oval and
+sleepy eyes between the upper lobes when choosing Todd's shape from another preset.
+The dominant iris/lid layer defines each anchor; brows and glints keep their local offsets.
+Complete assemblies translate together, with uniform scale only where required to keep
+the two eyes from merging. Eye spacing multiplies the canonical separation once, and
+expression transforms retain their fitted per-eye pivot. Presets and their explicit recipes
+use the same resolution contract; authored clips remain intact. The regression covers all
+12 current expressions, preset/explicit equality, and idle/reaction/work.
+
+### Minimum skin lightness
+
+Skin uses a shared HCT/L* floor of 45. Below-floor colors retain hue and chroma where the sRGB gamut permits; allowed RGB values remain exact. The picker displays the permitted colors and normalizes typed input, while resolve, parse and edit boundaries apply the same policy to saved characters and presets. A 0.2-tone rounding margin prevents repeated serialization from changing the normalized color. Named palette colors already clear the floor. This is skin-only: it does not recolor eyewear or accessories. Color conversion is bounded-cache work on edits, never animation-frame work.
+
+### Surface contact and relief
+
+A one-way outward seat left already-floating accessories untouched: measured neutral gaps included about 0.197 world units beneath a monocle. Other apparent gaps were actual authored thickness (some eye layers protruded about 0.23), so translating every assembly inward would cut its base into the body. Composition now seats complete assemblies and modestly compresses excess front relief while preserving their internal depth order, XY geometry and animation tracks. Every overlapping vertex retains at least its previous surface clearance; shallow assemblies remain unchanged. The flat-body facial carrier is reduced by at most 18%, bounded against the supported look envelope, preserving neutral capsule geometry. Reference headwear rotates around a real brim vertex nearest the body contour, rather than around the face center, which previously lifted it during downward work gaze. These fits run once per composition, not per animation frame.
+
+The wire body uses 20% larger eye assemblies around its existing paired anchors. The same shape rule applies to presets and manually selected styles before eyewear fitting, so glasses follow the larger eyes; depth, separation and authored animation tracks are retained.
+
+### Eyewear contour preservation
+
+Fitting each lens independently, blending those transforms across the bridge, and narrowing inner rims distorted the original frames. Eyewear now uses one proportional transform for the whole authored frame; lens contours, bridge and temples remain continuous. Open oval frames and monocles retain the underlying eyes. Opaque sunglasses suppress the underlying eye paint and outlines while worn, rather than stretching shallow lenses to cover arbitrary tall eyes; removing the glasses restores the unchanged eye geometry and paint. The integrity gate (`bun scripts/test-avatar-eyewear-integrity.ts`) checks all 34 shapes × five eyewear styles: 465,494 vertices, exact topology and maximum XY similarity residual below 4.5e-15. Depth seating remains the separate shared surface-contact operation.
+
+A diagnostic SVG serializer once omitted `fillOpacity`, falsely showing eye remnants that the production component correctly hid. Visual checks must forward every painter attribute, and final evidence uses the actual component with both wearing and removal states.
+
+### Measured cleanup: composition, frame work and cache ownership
+
+The scheduler's recipe identity must refer to the immutable fitted geometry, not each instance's recolored wrapper. Using the latter silently defeated sharing even for identical visible characters. The key now includes the raw geometry identity, complete requested geometry recipe and normalized paint; clocks, gaze and interrupted poses remain independent and exact, without phase quantization.
+
+The frame owner no longer projects or rasterizes fully unpainted, non-stroked parts. Explicit strokes, the panel's implicit outline and eyes-only bounds keep their previous behavior. Camera channels are sampled once per part, ignored TRS channels are not sampled for matrix-driven tracks, default channel objects are reused, and per-vertex morph coordinates avoid callback allocation. The asset loader also guards rejected requests by promise identity: an older request evicted from its 12-entry cache must not delete a newer in-flight load of the same importer.
+
+Composition prepares reference projectors once per look, caches immutable part/rest-track bounds weakly, hoists invariant inverses, avoids donor motion calculations for parts that never use them, and shares identical baked carrier channels. An alternating local benchmark of ten fresh recipe compositions with already-loaded donor data measured 1573 → 1204 ms median (23.46% less); this is fitting work, not network cold start. Warm cache hits were already below a millisecond and are not claimed as a meaningful improvement.
+
+A separate unprofiled alternating frame benchmark across the actual crowd presets plus one opaque-eyewear recipe measured a median paired ratio of 0.878 (about 12% less frame work). The opaque recipe skipped 8114 hidden vertices. These are local microbenchmarks with external machine load, not ARM/native or end-to-end FPS guarantees. All 170 shape/eyewear geometries and authored tracks remained exact. The frame comparison checked 1530 painted frames plus 170 eyes-only frames: visible paths, clipping and painter attributes were identical; only fully invisible paths were omitted. The 322-square depth grid and vector contours are unchanged.
+
+Final development-browser measurements (same visible workloads, current shared machine; MB are decimal JS heap, not process RAM or GPU memory):
+
+| Visible avatars | Frames/s per avatar | Pointer response | Retained heap after GC | Sampled transient peak |
+| --- | ---: | ---: | ---: | ---: |
+| 10 identical | 30.0 | 33 ms | 33.4 MB | 89.6 MB |
+| 30 identical | 25.7 | 127 ms | 33.8 MB | 126.7 MB |
+| 6 distinct | about 19 | 73 ms | 80.1 MB | 311.5 MB |
+| 10 distinct | 9.8 | 155 ms | 106.3 MB | 402.5 MB |
+
+Before correcting the shared cache key, the identical workloads measured about 9.3 and 3 frames/s. Distinct workloads remain CPU/allocation-heavy: the ten-distinct result did not improve reliably over the earlier approximately 11 frames/s sample. No low-memory/mobile readiness is inferred from the duplicate-recipe gain. Transient peaks are sampled during animation and interaction; they differ from retained heap after explicit garbage collection. The editor cleanup reduced repeated field listener registration/removal from 144 to 52–54 across its comparison and final check, retained zero color-field DOM mutations during saturation/value dragging, and preserved history and final color values; no absolute picker latency gain is claimed.
+
+### Projection allocation follow-up
+
+Authored mesh projection now reuses one call-local scratch vector for morph, world,
+view and motion transforms. Final projected vertices remain independently owned;
+source points, morph deltas, sampled channels and previously returned frames never
+share the scratch storage. Analytic-face geometry retains its allocating projection
+path: extending scratch reuse there regressed its warmed benchmark by roughly 9–12%.
+This capability-based distinction does not change any recipe, contour or animation.
+
+In the final alternating fixed-pose comparison, the spectacles recipe measured
+17.13→9.55 ms per frame, while the analytic cloud measured 1.99→2.02 ms. These
+local pure-render timings are not browser FPS guarantees. Two visibility-loop
+experiments were rejected: warmed contour-scratch and nearest-distance-ring variants
+measured 82.08 and 105.55 ms versus the unchanged 58.23 ms across ten mixed scenes.
+Fewer allocations alone did not make those loops faster.
+
+The final development-browser sample still showed significant limits: six distinct
+avatars rendered about 12.4 frames/s, retained 79.9 MB of JavaScript heap after GC,
+and reached a sampled 276.3 MB peak; ten rendered about 5.8 frames/s, retained
+105.6 MB, and reached 382.5 MB. The ten-avatar interaction exceeded the two-second
+observer timeout under that load. A fresh earlier sample measured 14.4/4.7 frames/s
+and 284.1/374.8 MB peaks respectively, so there is no reliable browser-wide speed
+or memory reduction claim. These are Storybook observations under variable machine
+load, not total process RAM, GPU usage, or ARM/native validation. Dense mixed scenes
+remain unsuitable as evidence of low-end readiness. No visible avatar was paused,
+no frame-rate target was reduced, and no depth-grid or contour fidelity was changed.
+
+### Retired native renderer observations
+
+The previous native companion and WebView routes are no longer selected or shipped by
+Bloom. Their historical evidence remains in the [research appendix](benchmarks/avatar-engine-research.md)
+and [phase-two report](benchmarks/avatar-efficiency-phase2.md): nine visible WebViews on
+a physical Pixel 8a lost one WebGL context, leaving eight ready. The former native pool
+used at most sixteen instances, 64/128/320 size buckets, 4× MSAA and two outstanding
+presentation batches; taps were cancelled after six logical pixels of movement. Those
+are retired backend limits, not SVG guarantees. Its recovery budget reset after thirty
+seconds, still requests had a fifteen-second deadline, the retained hidden host was
+released after 1.5 seconds, and persistent still cache version 3 corrected first-frame
+capture. Native context loss and physical process-kill recovery were not fully validated.
+The SVG cutover does not convert those historical checks into native-device validation.
+
+`useAvatarRendererCapabilities({ enabled })` remains exported: shared live scheduling is
+available on every SVG platform when enabled, without an adapter or manifest request.
+Installing the former native companion no longer selects another rendering backend.

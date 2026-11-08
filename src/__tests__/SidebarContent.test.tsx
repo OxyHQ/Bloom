@@ -29,7 +29,7 @@ const history = (
     <Text>Conversation</Text>
   </Pressable>
 );
-it('shares one destination viewport and composes pagination with the edge fades', () => {
+it('shares one whole-sidebar viewport and composes pagination with the edge fades', () => {
   const onScroll = jest.fn();
   const tree = render(view({ content: history, onScroll, footer: <Text>Account</Text> }));
   expect(tree.UNSAFE_getAllByType(ScrollView)).toHaveLength(1);
@@ -44,8 +44,10 @@ it('shares one destination viewport and composes pagination with the edge fades'
   expect(onScroll).toHaveBeenCalledTimes(1);
   expect(tree.getByTestId('nav-scroll-fade-top', { includeHiddenElements: true })).toBeTruthy();
   expect(tree.getByTestId('nav-scroll-fade-bottom', { includeHiddenElements: true })).toBeTruthy();
+  let insideScroll = false;
   for (let p = tree.getByText('Account').parent; p; p = p.parent)
-    expect(p.props.testID).not.toBe('nav-scroll');
+    if (p.props.testID === 'nav-scroll') insideScroll = true;
+  expect(insideScroll).toBe(true);
   expect(tree.queryByText('No results')).toBeNull();
 });
 it('retains content identity but removes it from interaction and accessibility when collapsed', () => {

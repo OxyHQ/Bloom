@@ -179,9 +179,9 @@ Wraps the avatar in `Pressable` when `onPress` is set.
 
 When no `source`, `uri`, or `name` resolves, you can fully control the placeholder.
 
-## Bot accounts: the character, a still, or live
+## Bot accounts: static or animated vector characters
 
-AI agents are Oxy accounts (`kind: 'bot'`) that carry a stored 3D `character`
+AI agents are Oxy accounts (`kind: 'bot'`) that carry a stored `character`
 (`AvatarCharacter`, see [Agent Avatar](/docs/agent-avatar)). `Avatar` draws it itself, so no app
 wraps it:
 
@@ -223,13 +223,13 @@ lists should not initialize an avatar renderer merely to choose their motion pol
 The character is drawn unclipped (its silhouette is its own); `shape` applies to the image and
 initials. `ring`, `verified` and the live-stream badge work the same.
 
-### Still or live
+### Static or animated
 
 | `motion` | behaviour |
 | --- | --- |
-| `'auto'` (default) | a **still** until `size >= AVATAR_LIVE_SIZE` (96, a profile or header slot) or `activity="working"` |
+| `'auto'` (default) | animated SVG at every size while visible; pauses offscreen and in the background |
 | `'always'` | live at every size |
-| `'never'` | always a still |
+| `'never'` | always a paused SVG portrait |
 
 The OS reduced-motion setting beats all three: a character never moves under it. (The existing
 boolean `live` prop is the live-stream ring and badge and is unrelated; the character's motion
@@ -240,69 +240,38 @@ its first frame is up (and again each time `activity` re-enters `'working'`); pa
 yourself to own the trigger, and `reactionKey` to replay the authored reaction. Both only act on a
 live character.
 
-A **still** is an ordinary image, so a list of dozens of bots costs no canvas per row:
+A static character is a paused SVG portrait, using the same packaged vector data as
+its animated version. Static frames share a cache keyed by resolved character, rather
+than pixel size, and schedule no animation frames. It does not request a raster still, read a canvas or mount a hidden
+WebView. `AvatarGroupItem` accepts the same `kind` and `character`, so facepiles use the
+same vector path. ConversationSidebar agent stacks also use the shared SVG renderer;
+their animation policy follows the AgentAvatar props supplied by that composition.
 
-- Stills are drawn once by the same runtime, offscreen, and cached by **content**: a hash of the
-  resolved character (so `{ preset }` and the same preset written out are one picture) plus a size
-  bucket (64, 128 or 256 CSS px) and the pixel density. Fifty rows share a handful of images.
-- Renders are queued **one at a time**; a row scrolled away before its turn takes its render with
-  it. Web draws straight into the document; native uses ONE hidden `WebView` that
-  `AgentAvatarProvider` mounts only while a render is queued.
-- The box is reserved from the first render. Until the still is there the avatar shows its
-  initials placeholder at the final size, so nothing jumps; if a still cannot be drawn the
-  placeholder stays.
-- Stills live in memory for the session (256 entries). Pass `storage` to `BloomProvider` (the
-  adapter the theme persists with) or `stillStorage` to `AgentAvatarProvider` and the last 96
-  also persist across launches. `localStorage` quotas are small; a PNG at list sizes is about
-  7 KB.
-- Nothing here opens a socket: only the runtime module (and the renderer's assets) is fetched, and
-  only when a character is first drawn.
-- **A rendered still is not cheap on a cold start.** It loads the same runtime and assets a live
-  avatar does — measured for Alia's character on a cold cache: 31 requests, 16.1 MiB from the
-  runtime origin — and only the canvas goes away afterwards.
-
-### A still made ahead of time
-
-An app whose character never changes (its own assistant, say) ships the picture and passes it as
-`characterStill`. Wherever the character is still that image is drawn from the first render; the
-still cache is not asked, so **nothing of the runtime is fetched**. When the character goes live
-(`activity="working"`, a profile size, `motion="always"`) the same image stays under it until the
-first frame, instead of the initials.
-
-```tsx
-import { ASSISTANT_STILL } from './assistant-still'; // a data: URI, or require('./assistant.png')
-
-<Avatar character={ASSISTANT} characterStill={ASSISTANT_STILL} size={20} activity={activity} />
-```
-
-Make the picture with the runtime itself (a paused `portrait`, `reduced: true`) at the largest size
-it is shown still: below `AVATAR_LIVE_SIZE` (96), at 2× density. Regenerate it when the
-character or the runtime's look changes.
-
-A character avatar is an image named by `alt`, else `name`, else the handle, else "Agent avatar";
+The character keeps its reserved layout size while its asset loads. Photo avatars still
+use the image path; changing the bot renderer does not alter ordinary account images.
+A character avatar is named by `alt`, else `name`, else the handle, else "Agent avatar";
 `alt=""` makes it decorative.
 
-`AvatarGroupItem` takes the same `kind` and `character`, so a facepile of agents shows stills.
+### Provider and migration
 
-### Where the runtime comes from
+`BloomProvider` mounts `AgentAvatarProvider`. No hosted runtime URL or WebView setup is
+needed. Production characters always use the shared SVG renderer; the offline source
+engine is used only to regenerate vector assets. `characterStill` is deprecated and
+ignored for character rendering, so a supplied old raster cannot restore the previous
+avatar appearance. `characterRuntimeUrl`, provider `runtimeUrl` and `stillStorage` are
+deprecated compatibility props with no effect.
 
-`BloomProvider` mounts `AgentAvatarProvider` for you: it renders nothing and loads nothing until a
-character is drawn. The runtime URL defaults to `BLOOM_CHARACTER_RUNTIME_URL`
-(`https://alia.onl/bloom-character/runtime.mjs`, CORS open, which needs `script-src` to allow
-alia.onl under a strict CSP). An app that hosts `assets/character-runtime/` itself passes
-`<BloomProvider characterRuntimeUrl="https://app.example/bloom-character/runtime.mjs">`; a nested
-`AgentAvatarProvider` still wins for its subtree. An avatar with no provider at all gets the same
-default, not a path relative to your host that would answer with HTML.
+Prefer `<Avatar account={bot} />` over branching between `AgentAvatar` and a photo avatar.
+`Avatar` without `account` or `character` retains its image and initials behavior.
 
-### Migrating to 10.7
+### Historical raster-cache measurements
 
-Additive. `Avatar` without `account`/`character` is unchanged.
-
-| Before | After |
-| --- | --- |
-| `bot.character ? <AgentAvatar character={bot.character} /> : <Avatar source={bot.avatar} />` | `<Avatar account={bot} />` |
-| `<AgentAvatarProvider>` mounted per app | `BloomProvider` mounts it; delete yours unless you set a different `runtimeUrl` |
-| default runtime URL `/bloom-character/runtime.mjs` on web, none on native | `BLOOM_CHARACTER_RUNTIME_URL` everywhere. Self-hosters pass `characterRuntimeUrl` / `runtimeUrl` (the old default was never a Bloom promise on native) |
+The removed raster path rendered offscreen one request at a time and cached images by
+resolved character, size bucket (64, 128 or 256 CSS px) and pixel density. It kept 256
+session entries and optionally persisted the last 96; a list-sized PNG was about 7 KB.
+That did not make cold startup cheap: one measured character loaded 31 requests and
+16.1 MiB before its canvas went away. Native used a hidden WebView. Those measurements
+explain the move to direct SVG portraits and are not instructions for current consumers.
 
 ## Props
 
@@ -325,8 +294,8 @@ Additive. `Avatar` without `account`/`character` is unchanged.
 | `name?` | `string` | account name | Used to derive the initial + a stable tint, and the accessible name of a character. |
 | `account?` | `AvatarAccount` | — | `{ kind, avatar, character, username, name }`. A bot with a character draws it; see above. |
 | `character?` | `AvatarCharacter \| null` | — | Explicit character. Wins over the account's; `null` opts out. |
-| `characterStill?` | `Shapes.ImageSource` | — | The character's picture made ahead of time: drawn wherever it is still, so no runtime loads. |
-| `motion?` | `'auto' \| 'always' \| 'never'` | `'auto'` | Still or live. Reduced motion always wins. |
+| `characterStill?` | `Shapes.ImageSource` | — | Deprecated and ignored for characters; static characters use the current SVG portrait. |
+| `motion?` | `'auto' \| 'always' \| 'never'` | `'auto'` | Paused portrait or animated SVG. Reduced motion always wins. |
 | `activity?` | `'idle' \| 'working'` | — | `'working'` makes the character live and plays its Computer episode. |
 | `workingKey?` / `reactionKey?` | `number` | — | Replay the Computer episode / authored reaction when the key changes (live only). |
 | `onPress?` | `() => void` | — | Wraps in `Pressable`. |

@@ -2,7 +2,7 @@
  * Three scene. Captured semantic clips are separate from the fixed reference fixture. */
 import * as THREE from 'three';
 import { readPixelsAsync } from './async-pixels';
-import { boundBodyPigment } from '../../src/agent-avatar/body-pigment';
+import { boundBodyPigment } from './body-pigment';
 import type { AuthoredMotionPose, AuthoredMotionSampler } from './motion';
 import { AvatarPoseSharing } from './pose-sharing';
 import { loadAuthoredMotion, type MotionKind, type MotionSamplers } from './motion-catalog';

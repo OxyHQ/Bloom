@@ -92,3 +92,30 @@ For performance comparisons, use the same compiler scope on both sides, or
 restore the mirror and run the final gate against the published package. Record
 which artifact was measured; never present a source-mirror improvement as a
 published-package result or adjust timing/budget gates to hide the difference.
+
+### Avatar browser regression fixtures
+
+Storybook exposes the definitive avatar Gallery, Playground and existing Agent Creator.
+Browser regressions use these canonical routes; no diagnostic comparator stories or
+extra Storybook flag are required. Run `scripts/verify-avatar-editor-regressions.mjs`
+with `CHROME_PATH` pointing to Chromium and optionally `STORYBOOK_URL` (default
+`http://localhost:6006`). It exercises template/accessory combinations, actual pointer
+input, rapid eyes/color edits and interrupted work, writing screenshots and a report
+to `.local/avatar-editor-regressions`. Screenshots support visual review; path presence
+and finite coordinates alone do not establish correct fit or contrast. The runner asserts
+at least two painted parts, finite SVG coordinates, eye/body contrast of at least 3:1
+for the exercised colors, no canvas or page errors, and a completed return to idle
+within 15 seconds after rapid work/reaction/work input. It also captures the work
+entry, screen glance and later typing pose for visual review. These are correctness
+guards, not ARM performance budgets.
+
+`node --test scripts/test-avatar-vector-compaction.mjs` checks that all generated
+assets omit unused exporter adjacency and that manifest byte counts match. The
+lossless removal was also compared across 630 rendered frames (70 assets, three
+actions, three timestamps): frames and all non-adjacency data were unchanged.
+Procedural motion tests verify the 100 ms shared work-pose hold, monotone catch-up
+before the exit window, the reaction's 160 ms eye/body lead, neutral portraits and
+exact interrupted-transition first frames. Browser screenshots do not establish
+those subframe timing properties or native-device performance.
+
+`scripts/verify-avatar-svg-consumers.mjs` verifies eight production routes through the shared SVG renderer.

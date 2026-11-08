@@ -50,7 +50,6 @@ import { RiSideBarFill } from '../icons/remix/RiSideBarFill';
 import { Kbd } from '../kbd';
 import { borderRadius } from '../styles/tokens';
 import { StyledView } from '../styles/styled-primitives';
-import { Z_INDEX } from '../styles/z-index';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { ThemeToggle } from '../theme-toggle';
 import { Text, TYPE_SCALE } from '../typography';
@@ -320,7 +319,6 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const collapsed = mobile ? false : collapsedState;
 
   const [searchActive, setSearchActive] = useState(false);
-  const [headerOverlap, setHeaderOverlap] = useState(10);
   const [query, setQuery] = useControllableState<string>({
     value: searchQuery,
     defaultValue: '',
@@ -376,16 +374,17 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const collapsedPadding = metrics.collapsedPaddingX;
   const panelStyle = useAnimatedStyle(() => {
     const p = progress.value;
-    const padding = expandedPadding + (collapsedPadding - expandedPadding) * p;
     return {
       width:
         fluid && p === 0
           ? '100%'
           : expandedWidth.value + (collapsedWidth - expandedWidth.value) * p,
-      paddingLeft: padding,
-      paddingRight: padding,
     };
   }, [progress, expandedWidth, fluid, collapsedWidth, expandedPadding, collapsedPadding]);
+  const scrollInsets = useAnimatedStyle(() => {
+    const padding = expandedPadding + (collapsedPadding - expandedPadding) * progress.value;
+    return { paddingLeft: padding, paddingRight: padding };
+  }, [progress, expandedPadding, collapsedPadding]);
   const [contentHeight, setContentHeight] = useState(0);
   // A worklet copies what it reads to the UI runtime, and `tree` carries the
   // app's rows, elements and data — a `Date` among them crashes native on the
@@ -415,8 +414,6 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     const end = metrics.row.padding;
     const padding = start + (end - start) * progress.value;
     return {
-      paddingLeft: padding,
-      paddingRight: padding,
       marginLeft: ((collapsedLane - metrics.row.square) / 2) * progress.value,
       marginRight: ((collapsedLane - metrics.row.square) / 2) * progress.value,
     };
@@ -981,13 +978,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 height: '100%',
                 flexShrink: 0,
                 flexDirection: 'column',
-                justifyContent: 'space-between',
                 overflow: surface === 'plain' ? 'hidden' : 'visible',
-                paddingTop:
-                  windowControlsRoom > 0
-                    ? Math.max(expandedPadding, windowControlsRoom)
-                    : expandedPadding,
-                paddingBottom: expandedPadding,
               },
               chrome,
               panelStyle,
@@ -1016,28 +1007,31 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 }}
               />
             ) : null}
-            <View
-              testID={`${testID ?? 'sidebar'}-main-region`}
+            <SidebarScrollArea
+              ref={scrollRef}
+              onScroll={handleScroll}
+              testID={`${testID ?? 'sidebar'}-scroll`}
+              fadeColor={publishedFill ? publishedPaint : parentRecipe.paint}
               style={{
-                width: '100%',
+                flex: 1,
                 minHeight: 0,
-                flexShrink: 1,
-                ...(contentAlignment === 'center'
-                  ? { flex: 1, justifyContent: 'center' as const }
-                  : {}),
+                borderRadius:
+                  customSurface?.borderRadius ?? (surface === 'card' ? panelShape.radius : 0),
+                overflow: 'hidden',
               }}
-            >
-              <View style={{ width: '100%', minHeight: 0, flexShrink: 1 }}>
-                {/* Fixed chrome shares the panel's morph, never the destination scroll.
-              The viewport reaches half a control behind it, so rows dissolve
-              before reaching the controls while the first row retains its gap. */}
-                <View
+              contentContainerStyle={{ flexGrow: 1 }}
+              stickyHeader={
+                <Animated.View
                   testID={`${testID ?? 'sidebar'}-fixed-header`}
-                  pointerEvents="box-none"
-                  onLayout={(event) =>
-                    setHeaderOverlap(Math.min(20, event.nativeEvent.layout.height / 2))
-                  }
-                  style={{ width: '100%', flexShrink: 0, gap: 12, zIndex: Z_INDEX.floating }}
+                  style={[
+                    {
+                      width: '100%',
+                      gap: 12,
+                      paddingTop: Math.max(expandedPadding, windowControlsRoom),
+                      paddingBottom: 12,
+                    },
+                    scrollInsets,
+                  ]}
                 >
                   {header != null
                     ? typeof header === 'function'
@@ -1047,196 +1041,196 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                   {typeof toolbar === 'function' ? toolbar({ collapsed }) : toolbar}
                   {inlineModes ? null : modeSwitcher}
                   {showSearch && !flatMobile ? searchButton : null}
-                </View>
-                <SidebarScrollArea
-                  fadeColor={publishedFill ? publishedPaint : parentRecipe.paint}
-                  testID={`${testID ?? 'sidebar'}-scroll`}
-                  style={{
-                    marginTop: -headerOverlap,
-                    marginBottom: -8,
-                    marginLeft: -8,
-                    marginRight: -8,
-                    flexGrow: 0,
-                    flexShrink: 1,
-                    minHeight: 0,
-                  }}
-                  contentContainerStyle={{
-                    paddingTop: headerOverlap + 12,
-                    paddingBottom: 8,
-                    paddingLeft: 8,
-                    paddingRight: 8,
-                    gap: hasSections ? 24 : 0,
-                  }}
-                  ref={scrollRef}
-                  onScroll={handleScroll}
+                </Animated.View>
+              }
+              stickyFooter={
+                <Animated.View
+                  testID={`${testID ?? 'sidebar'}-sticky-footer`}
+                  style={[
+                    {
+                      width: '100%',
+                      gap: 12,
+                      paddingTop: hasTree ? 12 : 0,
+                      paddingBottom: expandedPadding,
+                    },
+                    scrollInsets,
+                  ]}
                 >
-                  {shownItems.length > 0 || !hasTree ? (
-                    <Animated.View
-                      collapsable={false}
-                      role="navigation"
-                      style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}
-                    >
-                      {nothingMatches && !hasTree ? (
-                        <Text
-                          variant="body-regular"
-                          style={{
-                            paddingLeft: 8,
-                            paddingRight: 8,
-                            paddingTop: 12,
-                            paddingBottom: 12,
-                            color: palette.textTertiary,
-                          }}
-                        >
-                          {noResultsLabel}
-                        </Text>
-                      ) : (
-                        shownItems.map(renderRow)
-                      )}
-                    </Animated.View>
-                  ) : null}
-                  {onboarding && !collapsed ? (
-                    <SidebarOnboardingCard
-                      {...onboarding}
-                      testID={onboarding.testID ?? `${testID ?? 'sidebar'}-onboarding`}
+                  {primaryAction ? (
+                    <SidebarPrimaryAction
+                      action={primaryAction}
+                      collapsed={collapsed}
+                      testID={testID ? `${testID}-primary-action` : undefined}
                     />
                   ) : null}
-                  {collapsed || shownSections.length === 0 ? null : onTreeItemDrop ? (
-                    <TreeDragProvider
-                      sections={sections}
-                      onDrop={onTreeItemDrop}
-                      movedLabel={messages.moved}
-                      scroll={treeScroll}
-                    >
-                      {treeView}
-                    </TreeDragProvider>
-                  ) : (
-                    treeView
-                  )}
-                  {content != null ? (
+                  {showThemeToggle ? (
                     <Animated.View
-                      testID={`${testID ?? 'sidebar'}-content`}
-                      pointerEvents={collapsed ? 'none' : 'auto'}
-                      aria-hidden={collapsed}
-                      accessibilityElementsHidden={collapsed}
-                      importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
-                      {...(IS_WEB && collapsed ? { inert: true } : {})}
-                      ref={contentFade.ref}
-                      style={[
-                        { overflow: 'hidden', flexShrink: 0 },
-                        contentMorph,
-                        contentFade.style,
-                      ]}
+                      testID="sidebar-theme-morph"
+                      style={[{ position: 'relative', overflow: 'hidden' }, themeGeometry]}
                     >
                       <Animated.View
-                        onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
-                        style={contentWidth}
+                        pointerEvents={collapsed ? 'none' : 'auto'}
+                        aria-hidden={collapsed}
+                        accessibilityElementsHidden={collapsed}
+                        importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
+                        {...(IS_WEB && collapsed ? { inert: true } : {})}
+                        ref={themeExpandedFade.ref}
+                        style={[
+                          { position: 'absolute', insetInlineStart: 0, top: 0 },
+                          themeExpandedStyle,
+                          themeExpandedFade.style,
+                        ]}
                       >
-                        {content}
+                        <ThemeToggle
+                          variant="sidebar-segmented"
+                          style={plain ? { backgroundColor: palette.panel } : undefined}
+                        />
+                      </Animated.View>
+                      <Animated.View
+                        pointerEvents={collapsed ? 'auto' : 'none'}
+                        aria-hidden={!collapsed}
+                        accessibilityElementsHidden={!collapsed}
+                        importantForAccessibility={collapsed ? 'auto' : 'no-hide-descendants'}
+                        {...(IS_WEB && !collapsed ? { inert: true } : {})}
+                        ref={themeCollapsedFade.ref}
+                        style={[
+                          { position: 'absolute', left: 0, right: 0, top: 0 },
+                          themeCollapsedStyle,
+                          themeCollapsedFade.style,
+                        ]}
+                      >
+                        <ThemeToggle collapsed style={{ alignSelf: 'center' }} />
                       </Animated.View>
                     </Animated.View>
                   ) : null}
-                  {nothingMatches && hasTree ? (
-                    <Text
-                      variant="body-regular"
-                      style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
+                  {shownSecondary.length > 0 ? (
+                    <Animated.View
+                      collapsable={false}
+                      role="navigation"
+                      style={[{ width: '100%', gap: 4 }, navInset]}
                     >
-                      {noResultsLabel}
-                    </Text>
+                      {shownSecondary.map(renderRow)}
+                    </Animated.View>
                   ) : null}
-                </SidebarScrollArea>
-                {primaryAction ? (
-                  <SidebarPrimaryAction
-                    action={primaryAction}
-                    collapsed={collapsed}
-                    testID={testID ? `${testID}-primary-action` : undefined}
+                  {plan ? (
+                    <SidebarPlanCard
+                      plan={plan}
+                      collapsed={collapsed}
+                      style={plain ? { backgroundColor: palette.panel } : undefined}
+                      testID="sidebar-plan"
+                    />
+                  ) : team && !teamLeads ? (
+                    <SidebarTeamMenu
+                      team={team}
+                      collapsed={collapsed}
+                      style={plain ? { backgroundColor: palette.panel } : undefined}
+                      testID="sidebar-team"
+                    />
+                  ) : null}
+                  {teamLeads && account ? (
+                    <SidebarUserMenu
+                      account={account}
+                      form="card"
+                      collapsed={collapsed}
+                      style={plain ? { backgroundColor: palette.panel } : undefined}
+                      testID="sidebar-account"
+                    />
+                  ) : null}
+                  {footer != null ? (
+                    <View
+                      testID={testID ? `${testID}-footer` : 'sidebar-footer'}
+                      style={{ width: '100%', flexShrink: 0 }}
+                    >
+                      {typeof footer === 'function' ? footer({ collapsed }) : footer}
+                    </View>
+                  ) : null}
+                </Animated.View>
+              }
+            >
+              <Animated.View
+                testID={`${testID ?? 'sidebar'}-main-region`}
+                style={[
+                  {
+                    width: '100%',
+                    flexGrow: 1,
+                    paddingBottom: 8,
+                    gap: hasSections ? 24 : 0,
+                    justifyContent: contentAlignment === 'center' ? 'center' : undefined,
+                  },
+                  scrollInsets,
+                ]}
+              >
+                {shownItems.length > 0 || !hasTree ? (
+                  <Animated.View
+                    collapsable={false}
+                    role="navigation"
+                    style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}
+                  >
+                    {nothingMatches && !hasTree ? (
+                      <Text
+                        variant="body-regular"
+                        style={{
+                          paddingLeft: 8,
+                          paddingRight: 8,
+                          paddingTop: 12,
+                          paddingBottom: 12,
+                          color: palette.textTertiary,
+                        }}
+                      >
+                        {noResultsLabel}
+                      </Text>
+                    ) : (
+                      shownItems.map(renderRow)
+                    )}
+                  </Animated.View>
+                ) : null}
+                {onboarding && !collapsed ? (
+                  <SidebarOnboardingCard
+                    {...onboarding}
+                    testID={onboarding.testID ?? `${testID ?? 'sidebar'}-onboarding`}
                   />
                 ) : null}
-              </View>
-            </View>
-
-            <View style={{ width: '100%', flexShrink: 0, gap: 12, paddingTop: hasTree ? 12 : 0 }}>
-              {showThemeToggle ? (
-                <Animated.View
-                  testID="sidebar-theme-morph"
-                  style={[{ position: 'relative', overflow: 'hidden' }, themeGeometry]}
-                >
+                {collapsed || shownSections.length === 0 ? null : onTreeItemDrop ? (
+                  <TreeDragProvider
+                    sections={sections}
+                    onDrop={onTreeItemDrop}
+                    movedLabel={messages.moved}
+                    scroll={treeScroll}
+                  >
+                    {treeView}
+                  </TreeDragProvider>
+                ) : (
+                  treeView
+                )}
+                {content != null ? (
                   <Animated.View
+                    testID={`${testID ?? 'sidebar'}-content`}
                     pointerEvents={collapsed ? 'none' : 'auto'}
                     aria-hidden={collapsed}
                     accessibilityElementsHidden={collapsed}
                     importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
                     {...(IS_WEB && collapsed ? { inert: true } : {})}
-                    ref={themeExpandedFade.ref}
-                    style={[
-                      { position: 'absolute', insetInlineStart: 0, top: 0 },
-                      themeExpandedStyle,
-                      themeExpandedFade.style,
-                    ]}
+                    ref={contentFade.ref}
+                    style={[{ overflow: 'hidden', flexShrink: 0 }, contentMorph, contentFade.style]}
                   >
-                    <ThemeToggle
-                      variant="sidebar-segmented"
-                      style={plain ? { backgroundColor: palette.panel } : undefined}
-                    />
+                    <Animated.View
+                      onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
+                      style={contentWidth}
+                    >
+                      {content}
+                    </Animated.View>
                   </Animated.View>
-                  <Animated.View
-                    pointerEvents={collapsed ? 'auto' : 'none'}
-                    aria-hidden={!collapsed}
-                    accessibilityElementsHidden={!collapsed}
-                    importantForAccessibility={collapsed ? 'auto' : 'no-hide-descendants'}
-                    {...(IS_WEB && !collapsed ? { inert: true } : {})}
-                    ref={themeCollapsedFade.ref}
-                    style={[
-                      { position: 'absolute', left: 0, right: 0, top: 0 },
-                      themeCollapsedStyle,
-                      themeCollapsedFade.style,
-                    ]}
+                ) : null}
+                {nothingMatches && hasTree ? (
+                  <Text
+                    variant="body-regular"
+                    style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
                   >
-                    <ThemeToggle collapsed style={{ alignSelf: 'center' }} />
-                  </Animated.View>
-                </Animated.View>
-              ) : null}
-              {shownSecondary.length > 0 ? (
-                <Animated.View
-                  collapsable={false}
-                  role="navigation"
-                  style={[{ width: '100%', gap: 4 }, navInset]}
-                >
-                  {shownSecondary.map(renderRow)}
-                </Animated.View>
-              ) : null}
-              {plan ? (
-                <SidebarPlanCard
-                  plan={plan}
-                  collapsed={collapsed}
-                  style={plain ? { backgroundColor: palette.panel } : undefined}
-                  testID="sidebar-plan"
-                />
-              ) : team && !teamLeads ? (
-                <SidebarTeamMenu
-                  team={team}
-                  collapsed={collapsed}
-                  style={plain ? { backgroundColor: palette.panel } : undefined}
-                  testID="sidebar-team"
-                />
-              ) : null}
-              {teamLeads && account ? (
-                <SidebarUserMenu
-                  account={account}
-                  form="card"
-                  collapsed={collapsed}
-                  style={plain ? { backgroundColor: palette.panel } : undefined}
-                  testID="sidebar-account"
-                />
-              ) : null}
-              {footer != null ? (
-                <View
-                  testID={testID ? `${testID}-footer` : 'sidebar-footer'}
-                  style={{ width: '100%', flexShrink: 0 }}
-                >
-                  {typeof footer === 'function' ? footer({ collapsed }) : footer}
-                </View>
-              ) : null}
-            </View>
+                    {noResultsLabel}
+                  </Text>
+                ) : null}
+              </Animated.View>
+            </SidebarScrollArea>
           </AnimatedStyledView>
         </CollapseProvider>
       </SidebarGeometryProvider>

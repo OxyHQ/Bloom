@@ -6,7 +6,6 @@ import type { Decorator, Preview } from '@storybook/react-vite';
 // for why the harness is useless, not merely incomplete, without it.
 import './tailwind.css';
 import './preview.css';
-import { CHARACTER_RUNTIME_URL } from '../runtime/avatar-runtime';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -69,7 +68,7 @@ const withProviders: Decorator = (Story, context) => {
         increaseContrast={material === 'contrast'}
       >
         <PortalProvider>
-          <AgentAvatarProvider runtimeUrl={CHARACTER_RUNTIME_URL}>
+          <AgentAvatarProvider>
             <SurfaceProvider>
               <div
                 data-bloom-story-layout={context.parameters.layout ?? 'padded'}

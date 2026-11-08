@@ -28,6 +28,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  undoAvatar: "撤销",
+  redoAvatar: "重做",
+  restoreAvatar: "恢复原始外观",
+  preparingAvatar: "正在准备头像…",
+
   reaction: '做出反应',
   working: '工作',
   avatarStyle: '头像风格',

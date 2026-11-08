@@ -1,5 +1,4 @@
 import { createContext } from 'react';
-import type { CharacterStills } from './character-still';
 
 export type AvatarSnapshot = Readonly<{ uri: string }>;
 export type CaptureAvatarSnapshot = () => Promise<AvatarSnapshot | null>;
@@ -7,26 +6,18 @@ export type CaptureAvatarSnapshot = () => Promise<AvatarSnapshot | null>;
 export const AvatarSnapshotObserver = createContext<
   ((capture: CaptureAvatarSnapshot | null) => void) | null
 >(null);
-/**
- * Where an app that does not self-host the runtime loads it from: the SDK's own copy (CORS
- * open). One constant, so no library invents its own; `BloomProvider characterRuntimeUrl` and
- * `AgentAvatarProvider runtimeUrl` replace it for an app that self-hosts.
- */
-export const BLOOM_CHARACTER_RUNTIME_URL = 'https://alia.onl/bloom-character/runtime.mjs';
+/** @deprecated Characters use bundled SVG assets. No hosted runtime is loaded. */
+export const BLOOM_CHARACTER_RUNTIME_URL = '';
 
 export type CharacterCapabilities = {
   key: string;
   available: Record<string, boolean>;
   selected: Record<string, string>;
 };
-/** The renderer's module URL, and the still cache that goes with it (see `character-still.ts`). */
+/** SVG renderer capability reporting, independent of the compatibility URL props. */
 export const CharacterRuntimeContext = createContext<{
-  runtimeUrl?: string;
   reportCapabilities?: (value: CharacterCapabilities) => void;
-  stills?: CharacterStills;
-}>({
-  runtimeUrl: BLOOM_CHARACTER_RUNTIME_URL,
-});
+}>({});
 
 /** Only editors subscribe to catalog updates; renderer input stays stable. */
 export const CharacterCapabilitiesContext = createContext<{

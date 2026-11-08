@@ -1,26 +1,17 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
-import { BloomImage } from '../image';
 
 import { AgentAvatar } from '../agent-avatar/AgentAvatar';
 import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
 import { avatarCharacterOf, type ResolvedAvatarCharacter } from '../agent-avatar/character';
-import { useCharacterStill } from '../agent-avatar/use-character-still';
 import type { ImageSource } from '../shapes';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useMessages } from '../locale/messages';
-import { AVATAR_LIVE_SIZE } from './initials';
 import type { AvatarMotion } from './types';
 
-/**
- * Whether a character moves. Reduced motion and `'never'` always give a still; `'always'` always
- * moves; `'auto'` moves only where one avatar is the subject (profile-sized) or is working, so a
- * feed of dozens of bots is dozens of images.
- */
+/** Visible characters animate at every size; explicit never and reduced motion win. */
 export function characterIsLive({
   motion = 'auto',
-  size,
-  working,
   reduced,
 }: {
   motion?: AvatarMotion;
@@ -29,13 +20,12 @@ export function characterIsLive({
   reduced: boolean;
 }): boolean {
   if (reduced || motion === 'never') return false;
-  return motion === 'always' || size >= AVATAR_LIVE_SIZE || working;
+  return true;
 }
 
 export interface CharacterFaceProps {
   character: ResolvedAvatarCharacter;
-  /** The character's still made ahead of time: drawn instead of rendering one, and under a live
-   * character until its first frame. */
+  /** @deprecated Saved raster portraits are ignored; the character recipe supplies its SVG. */
   still?: ImageSource;
   size: number;
   motion?: AvatarMotion;
@@ -54,14 +44,10 @@ export interface CharacterFaceProps {
   placeholder: ReactNode;
 }
 
-/**
- * A bot's character at avatar size. A still is an ordinary image — the caller's own `still`, else
- * one from the shared cache; a live character is one `AgentAvatar`, with the still (or the
- * placeholder) under it until its first frame.
- */
+/** Visible characters share the live SVG engine; explicit stills reuse cached portraits. */
 export function CharacterFace({
   character,
-  still: provided,
+  still: _provided,
   size,
   motion,
   activity,
@@ -75,7 +61,7 @@ export function CharacterFace({
   // so every other avatar skips the locale lookup (one context read and one
   // hook per avatar, on every feed row that draws one).
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES);
-  const label = alt !== undefined ? alt || undefined : (name ?? messages.label);
+  const label = alt !== undefined ? alt : (name ?? messages.label);
   const reduced = usePrefersReducedMotion();
   const working = activity === 'working';
   const live = characterIsLive({ motion, size, working, reduced });
@@ -89,9 +75,6 @@ export function CharacterFace({
   useEffect(() => {
     if (live && ready && working) setEpisodes((count) => count + 1);
   }, [live, ready, working]);
-  // A still made ahead of time needs no render: the cache is not asked, so the runtime is not loaded.
-  const drawn = useCharacterStill(character, size, !live && !provided);
-  const still = provided ?? (drawn ? { uri: drawn } : undefined);
   const box = { width: size, height: size };
   // `AgentAvatar` resolves what it is handed, and a resolved character keeps its paint under
   // `paint`, where resolving again does not look: handed as is, every live character wore its
@@ -101,17 +84,7 @@ export function CharacterFace({
   if (live) {
     return (
       <View style={box}>
-        {ready ? null : provided ? (
-          <BloomImage
-            source={provided}
-            style={box}
-            contentFit="contain"
-            accessible={false}
-            accessibilityIgnoresInvertColors
-          />
-        ) : (
-          placeholder
-        )}
+        {ready ? null : placeholder}
         <View style={ready ? box : { position: 'absolute', left: 0, top: 0, ...box }}>
           <AgentAvatar
             character={written}
@@ -125,16 +98,20 @@ export function CharacterFace({
       </View>
     );
   }
-  if (!still) return <>{placeholder}</>;
   return (
-    <BloomImage
-      source={still}
-      style={box}
-      contentFit="contain"
-      accessible={label !== undefined}
-      accessibilityRole="image"
-      accessibilityLabel={label}
-      accessibilityIgnoresInvertColors
-    />
+    <View style={box}>
+      {ready ? null : placeholder}
+      <View style={ready ? box : { position: 'absolute', left: 0, top: 0, ...box }}>
+        <AgentAvatar
+          character={written}
+          size={size}
+          portrait
+          paused
+          interactive={false}
+          accessibilityLabel={label}
+          onReady={() => setReady(true)}
+        />
+      </View>
+    </View>
   );
 }

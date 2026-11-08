@@ -49,7 +49,7 @@ export const CHARACTER_PRESET_DEFAULTS: Record<
     shape: 'rounded_diamond',
     eyes: 'oval',
     eyewear: 'classic_sunglasses',
-    accessory: 'orb',
+    accessory: 'none',
     bodyColor: '#ffd838',
   },
   blue_spectacles: {

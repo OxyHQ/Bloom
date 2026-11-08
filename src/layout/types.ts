@@ -15,6 +15,8 @@ import type { ScrollView, ScrollViewProps, StyleProp, View, ViewStyle } from 're
 export type ScrollAreaScrollbar = 'scroll' | 'hover' | 'always' | 'never';
 
 export interface ScrollAreaProps extends ScrollViewProps {
+  /** Viewport decoration above content and below scroll indicators. It must not handle input. */
+  viewportOverlay?: ReactNode;
   /** Reanimated scroll handler, composed on the UI thread with Bloom metrics. onScroll remains a plain JS observer. */
   animatedHandler?: ScrollHandlerProcessed<Record<string, unknown>>;
   /** Utilities for the scrolling viewport, resolved by Bloom's own interop. */
@@ -81,10 +83,16 @@ export interface ResizeHandleProps {
 
 /** A self-contained scroll viewport with shared scroll-edge effects. */
 export interface ScrollSurfaceProps extends ScrollAreaProps {
+  /** Normal-flow chrome retained at the top while it fits alongside the footer. */
+  stickyHeader?: ReactNode;
+  /** Normal-flow chrome retained at the bottom; oversized chrome scrolls normally. */
+  stickyFooter?: ReactNode;
   /** Layout of the outer host. `style` continues to size its inner ScrollArea. */
   hostStyle?: StyleProp<ViewStyle>;
   /** Actual backing fill when the semantic surface is composited by a parent. */
   fadeColor?: string;
+  /** Opt into the nearest actual material paint. An explicit fadeColor is otherwise preserved. */
+  matchSurfacePaint?: boolean;
   /** Depth of each scroll-edge fade, in pixels. Defaults to 24. */
   fadeHeight?: number;
   contentClassName?: string;
