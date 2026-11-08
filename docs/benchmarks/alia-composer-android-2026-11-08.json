@@ -125,5 +125,55 @@
     "repro/report.json": "670a9309e0a67254c7fb5a47d211fadd2e9671f89f4a8e8e1ab9f606b2facdfb",
     "repro/attachment.png": "34c3b4093938eaa26435d5ed32fbb6cdf0d7496c5c70ad41117b8f0202376b71"
   },
-  "localArchive": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/.local/alia-native"
+  "localArchive": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/.local/alia-native",
+  "followupMicCandidateActions": {
+    "apkSha256": "e70f2f7357199dc67b8d65d9e0b219dcc18fdbbec8df25fb274b57b8b3f2717b",
+    "actions": {
+      "attachmentRemoved": true,
+      "submit": {
+        "before": {
+          "identity": 230359882,
+          "id": 68,
+          "start": 34,
+          "end": 34,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "after": {
+          "identity": 230359882,
+          "id": 68,
+          "start": 34,
+          "end": 34,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "state": "busy=true narrow=false stops=0 submits=1 pending=none error=none"
+      },
+      "stop": {
+        "input": {
+          "identity": 230359882,
+          "id": 68,
+          "start": 34,
+          "end": 34,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "state": "busy=false narrow=false stops=1 submits=1 pending=none error=none"
+      },
+      "status": "passed"
+    },
+    "keyboard": "visible after Send and Stop; attachment add/remove performed before focusing input",
+    "sourceAndNativeEquality": {
+      "embeddedAliaSourceSha256": true,
+      "fixtureSha256": true,
+      "nativeSourcesSha256": true,
+      "dex": true,
+      "r8MappingSha256": true,
+      "lockSha256": true,
+      "candidateApkSha256": "e70f2f7357199dc67b8d65d9e0b219dcc18fdbbec8df25fb274b57b8b3f2717b"
+    }
+  }
 }

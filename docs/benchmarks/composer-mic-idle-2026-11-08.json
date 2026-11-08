@@ -126,9 +126,68 @@
     "mutation": "removing the active guard fails idle-loop assertion"
   },
   "build": "build + declarations + verify:package + freshness passed",
-  "physical": "Pending candidate APK comparison against Alia baseline c1c490ad6a4efca94e5743bfb0475f7a290ff2a6b3b2903a1f1f1e27a3039fe2",
+  "physical": {
+    "apkSha256": "e70f2f7357199dc67b8d65d9e0b219dcc18fdbbec8df25fb274b57b8b3f2717b",
+    "comparison": {
+      "embeddedAliaSourceSha256": true,
+      "fixtureSha256": true,
+      "nativeSourcesSha256": true,
+      "dex": true,
+      "r8MappingSha256": true,
+      "lockSha256": true,
+      "candidateApkSha256": "e70f2f7357199dc67b8d65d9e0b219dcc18fdbbec8df25fb274b57b8b3f2717b"
+    },
+    "baselineDictateEvents": 45,
+    "baselineWindow": "approximately5s, local timeout capture",
+    "candidate": {
+      "elapsedSeconds": 5.296035121005843,
+      "returncode": 124,
+      "dictateEvents": 0,
+      "eventLines": 1
+    },
+    "uiautomator": "initial and subsequent dumps now succeed; no residual uiautomator process after remote timeout",
+    "actions": {
+      "attachmentRemoved": true,
+      "submit": {
+        "before": {
+          "identity": 230359882,
+          "id": 68,
+          "start": 34,
+          "end": 34,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "after": {
+          "identity": 230359882,
+          "id": 68,
+          "start": 34,
+          "end": 34,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "state": "busy=true narrow=false stops=0 submits=1 pending=none error=none"
+      },
+      "stop": {
+        "input": {
+          "identity": 230359882,
+          "id": 68,
+          "start": 34,
+          "end": 34,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "state": "busy=false narrow=false stops=1 submits=1 pending=none error=none"
+      },
+      "status": "passed"
+    },
+    "archive": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/.local/alia-mic-idle"
+  },
   "limits": [
-    "Does not establish that this change alone removes the native accessibility event stream until candidate device run.",
-    "No app-background/retained-screen recording lifecycle claim."
+    "No app-background/retained-screen recording lifecycle claim.",
+    "No microphone activation or real dictation performed.",
+    "Alia SDK in offline packaged host, not entire Alia app or published Bloom adoption."
   ]
 }
