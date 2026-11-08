@@ -1,0 +1,450 @@
+{
+  "sourceBuild": {
+    "upstreamTag": "v0.88.1",
+    "upstreamCommit": "c30b7f86850d47422637a64c70508e7411dbd8ea",
+    "sourcePatchSha256": "afc74b056afa9230ac534faef7c45cf7c06202cf2016efee97a77e8ca2177d56",
+    "reactEditTextSha256": "b26f81f391f94b5dd3d09e859ae91fb4c2c0065c5ce2c78068b4e13726428b8e",
+    "releaseAarSha256": "ce54525a1d9e8895d3f5953b5171bcc94c637120fd2bb9f26f924ada94f440a0",
+    "gradle": "9.4.1",
+    "agp": "9.2.1",
+    "kotlin": "2.2.0",
+    "ndk": "27.1.12297006",
+    "abi": "arm64-v8a",
+    "sourceTests": {
+      "original": 27,
+      "negative": {
+        "total": 32,
+        "failed": 2
+      },
+      "patched": {
+        "total": 32,
+        "failed": 0
+      }
+    },
+    "scope": "Source release AAR compiled; consuming APK/device validation pending"
+  },
+  "apkComparison": {
+    "baselineApk": "a588bdc42997548f68d6cfe4a08fae62e2a4a617bac190acb567fd1530b07c3d",
+    "candidateApk": "1979cee99a2c4bd73f1ab8e5a4aa0f78ba9a8a4914daaabc8d594fba910213ca",
+    "equal": {
+      "embeddedBundleSha256": true,
+      "embeddedBloomSourceSha256": true,
+      "embeddedAliaSourceSha256": true,
+      "fixtureSha256": true,
+      "lockSha256": true,
+      "nativeSourcesSha256": true
+    },
+    "libraries": {
+      "lib/arm64-v8a/libanimation-decoder-gif.so": {
+        "same": true,
+        "baseline": "1a36faccdc2df2d03b399bd20113768f04fe5f9c873c32974d89e588f63b6933",
+        "candidate": "1a36faccdc2df2d03b399bd20113768f04fe5f9c873c32974d89e588f63b6933"
+      },
+      "lib/arm64-v8a/libappmodules.so": {
+        "same": false,
+        "baseline": "17bb56b0bb9cf829e0e5f89987dff5ac6e561ffc569fde8a0fe6f989d940127a",
+        "candidate": "c0e5899558b90e15d6b840f8c842283ef2a51cb22b405a366b645d1e8f95757e"
+      },
+      "lib/arm64-v8a/libavcodec.so": {
+        "same": true,
+        "baseline": "48b3fe4b972ed6450af719f72a0d6bdb8170224edca9b9133b169dc9e2daced2",
+        "candidate": "48b3fe4b972ed6450af719f72a0d6bdb8170224edca9b9133b169dc9e2daced2"
+      },
+      "lib/arm64-v8a/libavformat.so": {
+        "same": true,
+        "baseline": "6cd3651aaac60777ba8ff128116a96d6e6d2e696b1f4a0727fe7e559bc5d2c17",
+        "candidate": "6cd3651aaac60777ba8ff128116a96d6e6d2e696b1f4a0727fe7e559bc5d2c17"
+      },
+      "lib/arm64-v8a/libavif_android.so": {
+        "same": true,
+        "baseline": "278211a4aa0fe5034aef8ef9717736242b3b6868708dcd1e1b6d941c5f05150c",
+        "candidate": "278211a4aa0fe5034aef8ef9717736242b3b6868708dcd1e1b6d941c5f05150c"
+      },
+      "lib/arm64-v8a/libavutil.so": {
+        "same": true,
+        "baseline": "9ce1ff069b56a17af164495fd951a13a034ca0f137447470471de86ffb7bb5ed",
+        "candidate": "9ce1ff069b56a17af164495fd951a13a034ca0f137447470471de86ffb7bb5ed"
+      },
+      "lib/arm64-v8a/libc++_shared.so": {
+        "same": true,
+        "baseline": "3e852764502d06e0cf1080d532ae7c608b7649d946a3a9d7e84e3d4b7d683214",
+        "candidate": "3e852764502d06e0cf1080d532ae7c608b7649d946a3a9d7e84e3d4b7d683214"
+      },
+      "lib/arm64-v8a/libexpo-modules-core.so": {
+        "same": true,
+        "baseline": "ac2da3ce1daaf1d65f40c078609637089bb4f399c09707b34513eb1bee4a13bc",
+        "candidate": "ac2da3ce1daaf1d65f40c078609637089bb4f399c09707b34513eb1bee4a13bc"
+      },
+      "lib/arm64-v8a/libexpo-modules-jsi.so": {
+        "same": true,
+        "baseline": "62c2c9d7b3e7f40788b70f254ae8208297f7df5b04a725e325ae8eb2145ae2e5",
+        "candidate": "62c2c9d7b3e7f40788b70f254ae8208297f7df5b04a725e325ae8eb2145ae2e5"
+      },
+      "lib/arm64-v8a/libexpo-modules-v2.so": {
+        "same": false,
+        "baseline": "1e08f385498bbe5ff0ab3b68aa7857630cf3132a3954a4e213821233aaaa3ec1",
+        "candidate": "509a609af9d795faa93bce5b31587cac654bcfbd586ec3be01221b57f6c55d89"
+      },
+      "lib/arm64-v8a/libexpo-modules-worklets.so": {
+        "same": false,
+        "baseline": "c255bc6554dfc9e1bc1f1f6150843961aafda465f3efe47ba0ac3f6239e23bfc",
+        "candidate": "4435e8e25d0d434d204eae65529a263eac489e75324b328a2d6979faf2ec4f4b"
+      },
+      "lib/arm64-v8a/libfbjni.so": {
+        "same": true,
+        "baseline": "a9e35ba55d3f956920281f519385f8a72475ee24819799cb08375fdd4cce2b22",
+        "candidate": "a9e35ba55d3f956920281f519385f8a72475ee24819799cb08375fdd4cce2b22"
+      },
+      "lib/arm64-v8a/libgesturehandler.so": {
+        "same": false,
+        "baseline": "e7b320ae30ee67dcb364bf85893036e09ba2bb2ae3a7d766d69d9f6f55999a7c",
+        "candidate": "6ea40b3ddc810bfb9d7d221b283467394083217d39b4cc458cafb241fc9055ad"
+      },
+      "lib/arm64-v8a/libgifimage.so": {
+        "same": true,
+        "baseline": "cfbb51d1fe58ba985ad1f06d4ac0afa70e5323d25517642881f4833d7020e44f",
+        "candidate": "cfbb51d1fe58ba985ad1f06d4ac0afa70e5323d25517642881f4833d7020e44f"
+      },
+      "lib/arm64-v8a/libhermestooling.so": {
+        "same": false,
+        "baseline": "c27e3bf0e14e3e36c5a06a40e63428fc7e5f2f59f0cc54d2796d09d35d7f8cb5",
+        "candidate": "c839f595bb7566726d901b4c803be5332ae0316112178051d01fce727b21aeeb"
+      },
+      "lib/arm64-v8a/libhermesvm.so": {
+        "same": true,
+        "baseline": "692e6644a32faead01e1a06b8b95d49b1c77c0b7e687e8cf09c26f46ff8bf55d",
+        "candidate": "692e6644a32faead01e1a06b8b95d49b1c77c0b7e687e8cf09c26f46ff8bf55d"
+      },
+      "lib/arm64-v8a/libimagepipeline.so": {
+        "same": true,
+        "baseline": "1b377992e4256fa9398ec057722f84a359c7d588e570c8a41f51d930c19ece7d",
+        "candidate": "1b377992e4256fa9398ec057722f84a359c7d588e570c8a41f51d930c19ece7d"
+      },
+      "lib/arm64-v8a/libjsi.so": {
+        "same": false,
+        "baseline": "3dbec7cab217091260fff92c2bfd712f71265e7ba9cb2359c939fdaf999dc325",
+        "candidate": "57c1bfadcba3010402afc1bab7bc5f44f8e5ff9de809e10f273eb6044de39d60"
+      },
+      "lib/arm64-v8a/libnative-filters.so": {
+        "same": true,
+        "baseline": "bb82aec5ab2a8ac4e1968f41c6477824f1f3fff90c0eeb2c90cdeb1923d69833",
+        "candidate": "bb82aec5ab2a8ac4e1968f41c6477824f1f3fff90c0eeb2c90cdeb1923d69833"
+      },
+      "lib/arm64-v8a/libnative-imagetranscoder.so": {
+        "same": true,
+        "baseline": "2aed28298a25afd52ac670cf9682398c6c7ba42a57195c01efd565e7ddfe17ca",
+        "candidate": "2aed28298a25afd52ac670cf9682398c6c7ba42a57195c01efd565e7ddfe17ca"
+      },
+      "lib/arm64-v8a/liboboe.so": {
+        "same": true,
+        "baseline": "979d14353e7e95de1047fbe7321da6c07bc47e30ee2b2cb8b57a1a58ef026587",
+        "candidate": "979d14353e7e95de1047fbe7321da6c07bc47e30ee2b2cb8b57a1a58ef026587"
+      },
+      "lib/arm64-v8a/libreact-native-audio-api.so": {
+        "same": false,
+        "baseline": "d8195fa7876fb262acf8ee6bc15d06783fb5730f4ebe7fb468df6c3edb0e2ec1",
+        "candidate": "d474f834ecc83ca62b3c51b3abf71abf45cbb68c690fe66c1ecd8753bf2c1baf"
+      },
+      "lib/arm64-v8a/libreact_codegen_RNKC.so": {
+        "same": false,
+        "baseline": "923935e0df135c2ec487a89c6f6ec53432851656f8554c606132094175a79bf9",
+        "candidate": "c2cf59f9a2c7518d3c7a7e0fbbebdcae413c10c634ead3fabbc52db1d86884a9"
+      },
+      "lib/arm64-v8a/libreact_codegen_rngesturehandler_codegen.so": {
+        "same": false,
+        "baseline": "90c3a45fbda0521beb9df0b3b848d5bb1b0b7f6b82e2aa8e1d95de1b3461ce93",
+        "candidate": "82727d69161c96864697c53bf9315d88ad71c96e37a18c636084c612b50844c9"
+      },
+      "lib/arm64-v8a/libreact_codegen_rnscreens.so": {
+        "same": false,
+        "baseline": "77833cf4647fedd89d18e17027020f4df6752357c14c68b2d413e56ecd1c7803",
+        "candidate": "2c83c16512d499fd7e6522994a73f382631fe00648bea8d238c4ab443258c86b"
+      },
+      "lib/arm64-v8a/libreact_codegen_rnsvg.so": {
+        "same": false,
+        "baseline": "9086db61c77203b18f061daf369ba8d2b291797407c84d713e03b4a7c231b9bd",
+        "candidate": "4cc03f95f3d5f1ea1a6fe0238e185231143021a44762011b6e497945e01b12ab"
+      },
+      "lib/arm64-v8a/libreact_codegen_safeareacontext.so": {
+        "same": false,
+        "baseline": "ebaeca6b617c3a3e439180626a5023c8ac652cde7abb535d3323b06af5b79ef6",
+        "candidate": "c9d83bdb8e491ab088ac565b9fc4ccd75ecd676c7867e5d0bb1a7972168e6cb4"
+      },
+      "lib/arm64-v8a/libreactnative.so": {
+        "same": false,
+        "baseline": "d6b9623df5f01b4fc851b81fa44596d1f6874e8198d65131a29206ce3e28e97a",
+        "candidate": "1e9b15a85bdb3c9624919716e7342c40f03dd80e45599ad5d6f02293c185c9be"
+      },
+      "lib/arm64-v8a/libreanimated.so": {
+        "same": false,
+        "baseline": "0a11e92aa271c3709804a82515ba935c796d777e7dc4191bc200cebc8830f8cc",
+        "candidate": "c9bd5e60b45077431d058307f2080e9c5d6d4dace2df56eab9282840a6983a85"
+      },
+      "lib/arm64-v8a/librnscreens.so": {
+        "same": false,
+        "baseline": "642cdcd780043431fcfa1df1a04b27fc6b1b1a774d531d137c89fb190fb9f5f5",
+        "candidate": "73b9c4ff3779d503504c2a49391a0c22fa2bd2eff2268440ecc32f0d52d63407"
+      },
+      "lib/arm64-v8a/libstatic-webp.so": {
+        "same": true,
+        "baseline": "bfce3139342fad716d25623b559d9901fc795d6b7622ebe21a417b4c84e3a92a",
+        "candidate": "bfce3139342fad716d25623b559d9901fc795d6b7622ebe21a417b4c84e3a92a"
+      },
+      "lib/arm64-v8a/libswresample.so": {
+        "same": true,
+        "baseline": "75b1138aa52b5efefce8a1d7655d9ef4b614ea4c088120b63432fde8b7644601",
+        "candidate": "75b1138aa52b5efefce8a1d7655d9ef4b614ea4c088120b63432fde8b7644601"
+      },
+      "lib/arm64-v8a/libworklets.so": {
+        "same": false,
+        "baseline": "831135544063fdfaecf342b8c28a8f2a2ef23f70cd24220da8744497c5393e2f",
+        "candidate": "2fd817ad969751db8749dd74119419b766b0c9fcc0d224341759b720dfd88b94"
+      },
+      "lib/arm64-v8a/libzstd-kmp.so": {
+        "same": true,
+        "baseline": "10ec47f13bee884450b0911066019ba7aa6b4164a4c1f8c33c9d30dd3fd8868a",
+        "candidate": "10ec47f13bee884450b0911066019ba7aa6b4164a4c1f8c33c9d30dd3fd8868a"
+      }
+    }
+  },
+  "dexInspection": {
+    "baseline": {
+      "receipt": {
+        "apkSha256": "a588bdc42997548f68d6cfe4a08fae62e2a4a617bac190acb567fd1530b07c3d",
+        "mappingSha256": "c6e15e794af3706607e2785243f5b2cbe4735fbe51a265ce5943838a46f96eb2",
+        "dexEntry": "classes.dex",
+        "descriptor": "Lv54;",
+        "disassemblySha256": "7f3d4a9048f038ff749faf355c0006b416d87f39a148435fc818dab2011ed234",
+        "scope": "Actual APK class disassembly; inspect control flow and compare baseline/candidate, presence alone does not prove the fix"
+      },
+      "method": "g",
+      "markerOffsets": {
+        "saveStart": -1,
+        "saveEnd": -1,
+        "replace": 27624,
+        "restore": -1
+      }
+    },
+    "candidate": {
+      "receipt": {
+        "apkSha256": "1979cee99a2c4bd73f1ab8e5a4aa0f78ba9a8a4914daaabc8d594fba910213ca",
+        "mappingSha256": "427cd05e389e40bc8a39baa10f1ddf15be7112d741563bdcc1d4dc5b6b40cf05",
+        "dexEntry": "classes.dex",
+        "descriptor": "Lv54;",
+        "disassemblySha256": "8513926a5c2b7d464e3f310436395a846854d70cd0340244f1d3215c36e229ea",
+        "scope": "Actual APK class disassembly; inspect control flow and compare baseline/candidate, presence alone does not prove the fix"
+      },
+      "method": "g",
+      "markerOffsets": {
+        "saveStart": 2479,
+        "saveEnd": 2686,
+        "replace": 29712,
+        "restore": 29951
+      }
+    }
+  },
+  "baselineRawFixed": {
+    "none": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 5,
+        "end": 4,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "settled": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 5,
+        "end": 4,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "extended": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 5,
+        "end": 3,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "state": "busy=false narrow=false pending=none autosize=false"
+    },
+    "resize": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 5,
+        "end": 4,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "settled": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 4,
+        "end": 5,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "extended": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 4,
+        "end": 4,
+        "composingStart": 0,
+        "composingEnd": 5,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "state": "busy=false narrow=true pending=none autosize=false"
+    },
+    "busy": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 249207534,
+        "id": 58,
+        "start": 5,
+        "end": 4,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "settled": {
+        "testID": "cases-pill-input",
+        "identity": 249207534,
+        "id": 58,
+        "start": 5,
+        "end": 4,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "extended": {
+        "testID": "cases-pill-input",
+        "identity": 249207534,
+        "id": 58,
+        "start": 5,
+        "end": 3,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "state": "busy=true narrow=false pending=none autosize=false"
+    }
+  },
+  "baselineExplicitSelection": {
+    "forward": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 18,
+        "end": 18,
+        "composingStart": 15,
+        "composingEnd": 22,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "after": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 4,
+        "end": 10,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "expected": [4, 10]
+    },
+    "backward": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 249207534,
+        "id": 58,
+        "start": 18,
+        "end": 18,
+        "composingStart": 15,
+        "composingEnd": 22,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "after": {
+        "testID": "cases-pill-input",
+        "identity": 249207534,
+        "id": 58,
+        "start": 10,
+        "end": 4,
+        "composingStart": -1,
+        "composingEnd": -1,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "expected": [10, 4]
+    },
+    "collapsed": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 249207534,
+        "id": 58,
+        "start": 18,
+        "end": 18,
+        "composingStart": 15,
+        "composingEnd": 22,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "after": {
+        "testID": "cases-pill-input",
+        "identity": 249207534,
+        "id": 58,
+        "start": 7,
+        "end": 7,
+        "composingStart": 6,
+        "composingEnd": 14,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "expected": [7, 7]
+    }
+  },
+  "candidatePhysical": "pending",
+  "archive": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/.local/rn-selection-pair"
+}

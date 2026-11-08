@@ -90,3 +90,22 @@ ANDROID_HOME=/home/nate/Android/Sdk ./gradlew \
 Raw original/negative/patched logs and XML are archived in the integration
 worktree's `.local/rn-selection-evidence/`. No installed React Native package
 was patched.
+
+The consumer's diagnostic `source-rn.gradle` maps **both** the current
+`com.facebook.react:react-android` coordinate and legacy `react-native` to the
+source project. Mapping only the former left a second published AAR through
+legacy dependencies and failed manifest namespace validation. The init also
+reuses the official monorepo's stable-Hermes substitution for ReactAndroid's
+`compileOnly` project dependency. It keeps Hermes 260318099.0.5, matching the
+pinned host. Neither installed RN nor the source build files are rewritten.
+See [Gradle's composite substitution rules](https://docs.gradle.org/current/userguide/composite_builds.html).
+
+The successful candidate uses the exact baseline JS bytecode, Bloom/Alia sources,
+fixture, lock and `libhermesvm.so`. Linking consumers against source RN rebuilds
+other JNI libraries; their individual hashes and all differences are recorded,
+not described as identical native payload. The APK's R8 mapping and `dexdump`
+verify saved selection getters before `Editable.replace` and the conditional
+restore after it; the published baseline method lacks those operations.
+`extract-react-edit-text.py` accepts `APK`, `MAPPING`, `OUT`, `DEXDUMP` and
+`EXPECT_SELECTION_RESTORE=0|1` to reproduce that check. Physical candidate
+acceptance remains pending at this checkpoint.

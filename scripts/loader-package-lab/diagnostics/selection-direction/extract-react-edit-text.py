@@ -52,3 +52,18 @@ name, code = blocks[0]
     'scope': 'Actual APK class disassembly; inspect control flow and compare baseline/candidate, presence alone does not prove the fix',
 }, indent=2) + '\n')
 print(name, descriptor, len(code))
+
+# Verify the actual method, not merely a class name or string marker in DEX.
+source_mapping = mapping.read_text().split('com.facebook.react.views.textinput.ReactEditText -> ', 1)[1].split('\ncom.', 1)[0]
+method = set(re.findall(r'maybeSetText\(com\.facebook\.react\.views\.text\.ReactTextUpdate\).* -> (\w+)', source_mapping))
+restore = set(re.findall(r'maybeSetSelection\(int,int\).* -> (\w+)', source_mapping))
+assert len(method) == len(restore) == 1
+method_code = code.split("name          : '" + next(iter(method)) + "'", 1)[1].split('\n    #', 1)[0]
+markers = {'saveStart': '.getSelectionStart:', 'saveEnd': '.getSelectionEnd:',
+           'replace': '.replace:', 'restore': descriptor + '.' + next(iter(restore)) + ':(II)V'}
+offsets = {key: method_code.find(value) for key, value in markers.items()}
+if os.environ.get('EXPECT_SELECTION_RESTORE') == '1':
+    assert 0 <= offsets['saveStart'] < offsets['saveEnd'] < offsets['replace'] < offsets['restore'], offsets
+elif os.environ.get('EXPECT_SELECTION_RESTORE') == '0':
+    assert offsets['saveStart'] == offsets['saveEnd'] == offsets['restore'] == -1, offsets
+(out / 'method-inspection.json').write_text(json.dumps({'method': next(iter(method)), 'markerOffsets': offsets}, indent=2) + '\n')

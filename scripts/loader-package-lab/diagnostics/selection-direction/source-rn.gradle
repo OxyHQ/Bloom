@@ -7,6 +7,32 @@ gradle.settingsEvaluated { settings ->
       dependencySubstitution {
         substitute(module('com.facebook.react:react-android'))
           .using(project(':packages:react-native:ReactAndroid'))
+        substitute(module('com.facebook.react:react-native'))
+          .using(project(':packages:react-native:ReactAndroid'))
+      }
+    }
+  }
+}
+
+// Match the official monorepo's stable-Hermes rule. ReactAndroid has a compileOnly
+// project dependency on hermes-engine; the package-level composite otherwise
+// builds that engine from source even though the app uses the published runtime.
+def hermesProperties = new Properties()
+new File(sourceRoot, 'packages/react-native/sdks/hermes-engine/version.properties').withInputStream {
+  hermesProperties.load(it)
+}
+def hermesVersion = hermesProperties.getProperty('HERMES_VERSION_NAME')
+if (hermesVersion != '260318099.0.5') throw new GradleException('Unexpected Hermes version for this pinned diagnostic')
+gradle.beforeProject { project ->
+  if (project.rootProject.projectDir.canonicalFile == new File(sourceRoot, 'packages/react-native').canonicalFile) {
+    if (project.path == ':packages:react-native:ReactAndroid:hermes-engine') {
+      project.tasks.configureEach { enabled = false }
+    }
+    project.configurations.configureEach { configuration ->
+      configuration.resolutionStrategy.dependencySubstitution { substitutions ->
+        substitutions.substitute(substitutions.project(':packages:react-native:ReactAndroid:hermes-engine'))
+          .using(substitutions.module("com.facebook.hermes:hermes-android:${hermesVersion}"))
+          .because('Keep the exact published Hermes used by the baseline APK')
       }
     }
   }
