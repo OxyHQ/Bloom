@@ -53,3 +53,14 @@ Raw reports, full stacks, screenshots, R8 mapping and APK live under this worktr
 `.local/combined-native/raw-direction` and `.local/combined-native`. No claim of
 complete selection preservation or issue acceptance follows from the other passing
 composer interactions.
+
+Required patch validation matrix (all pending):
+
+- Backward, forward and collapsed selections across identical-text style/layout updates.
+- Identical text with an explicit NEW controlled selection: the manager's later command must win.
+- Changed characters, empty text and clearing composing text retain existing semantics.
+- Secure-text early return and stale event counters must still bypass updates correctly.
+- Active IME/composing spans and style spans survive; no spurious composition commits.
+- Event ordering and repeated resize must not emit a lasting intermediate selection.
+
+A successful resize case alone is insufficient to accept the proposed RN patch.
