@@ -1,5 +1,5 @@
 /** Editor boundary doubles: real Bloom placement/material is browser-verified separately. */
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode, type Ref } from 'react';
 import { createPortal } from 'react-dom';
 import type { ButtonProps, LinkButtonProps } from '@oxy.so/bloom/button';
 import type { TextFieldInputProps } from '@oxy.so/bloom/text-field';
@@ -33,9 +33,11 @@ export function TextFieldInput({
   invalid,
   onKeyPress,
   onSubmitEditing,
+  inputRef,
 }: TextFieldInputProps) {
   return (
     <input
+      ref={inputRef as unknown as Ref<HTMLInputElement>}
       aria-label={label}
       value={value}
       autoFocus={autoFocus}

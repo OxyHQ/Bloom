@@ -59,3 +59,16 @@ Screen was content-height and keyboard following moved its footer out of view.
 The fixture now uses `scroll="fixed"`, matching Nilo's shell and the documented
 Screen-owned scrolling contract. This is a harness correction, not a product
 layout workaround. Apply/drag/undo remain pending the corrected fixture build.
+
+The fixed host's physical run (`actions-fixed/`) shows toolbar above IME,
+existing URL editing with range 7..13 retained, Apply changing only that href,
+and one Undo restoring the old URL. A real selection-handle drag changes the
+range from 7..13 to 0..13. Horizontal toolbar scrolling exposes Undo/Redo.
+Apply still has a negative keyboard result: native editor focus at 13:03:02.289,
+URL host detach at .301, keyboardDidHide at .377, with editor focus/range retained.
+RN 0.88.1 TextInput cleanup (TextInput.js 298–309) blurs an unmounting input if
+TextInputState still owns it. EnrichedTextInput 1.1.1's imperative focus calls its
+native command directly and never updates that RN registry. The candidate now
+explicitly blurs the owned URL input before the deliberate return to the editor;
+no timer or focus-on-navigation was added. The ordering regression and all 272
+editor tests/build pass; this handoff candidate awaits physical comparison.

@@ -78,7 +78,16 @@ it('keeps native caret navigation nonmodal and owns explicit link actions throug
     expect(controller.ui.get().linking).toBe('b1');
     expect(controller.textSelection).toEqual({ kind: 'text', blockId: 'b1', start: 7, end: 13 });
     expect(controller.linkAtSelection()).toBe('https://example.test/one');
-    act(() => controller.cancelLinkEditor());
+    const urlField = host.querySelector<HTMLInputElement>('input[aria-label="Link"]');
+    if (!urlField) throw new Error('Missing URL input');
+    const blurUrl = jest.spyOn(urlField, 'blur');
+    const returnFocus = jest.spyOn(controller, 'refocus');
+    act(() => button('Cancel').click());
+    expect(blurUrl).toHaveBeenCalledTimes(1);
+    expect(returnFocus).toHaveBeenCalledTimes(1);
+    expect(blurUrl.mock.invocationCallOrder[0]).toBeLessThan(
+      returnFocus.mock.invocationCallOrder[0] ?? 0,
+    );
     act(() => store.setSelection({ kind: 'text', blockId: 'b1', start: 10, end: 10 }));
     const input = controller.inputs.get('b1');
     if (!input) throw new Error('Missing input adapter');

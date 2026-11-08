@@ -1,6 +1,6 @@
 import type { ToggleableMark } from '@oxy.so/bloom-text/model';
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { Platform, StyleSheet, Text, type TextStyle, View } from 'react-native';
+import { type ComponentRef, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Platform, StyleSheet, Text, type TextInput, type TextStyle, View } from 'react-native';
 import { Button } from '@oxy.so/bloom/button';
 import { TextFieldInput } from '@oxy.so/bloom/text-field';
 import type { EditorController } from './controller';
@@ -36,6 +36,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
   );
   const linking = useUi(ui, (s) => s.linking);
   const formatActions = useUi(ui, (s) => s.formatActions);
+  const urlInput = useRef<ComponentRef<typeof TextInput>>(null);
   const [url, setUrl] = useState('');
   const [invalid, setInvalid] = useState(false);
   const [palette, setPalette] = useState(false);
@@ -59,6 +60,10 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
   }, [hasRange]);
 
   const closeLink = (refocus: boolean) => {
+    // EnrichedTextInput focuses its native host directly, outside RN's
+    // TextInputState. Release our URL field first so its unmount cleanup cannot
+    // blur/hide the keyboard after the deliberate handoff back to the editor.
+    if (refocus && Platform.OS !== 'web') urlInput.current?.blur();
     controller.cancelLinkEditor();
     setUrl('');
     setInvalid(false);
@@ -73,6 +78,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
     return (
       <KeepFocus owner={controller} style={[styles.row, styles.wrap]}>
         <TextFieldInput
+          inputRef={urlInput}
           autoFocus
           label={labels.link}
           invalid={invalid}
