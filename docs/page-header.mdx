@@ -493,7 +493,11 @@ button. Observe the actual leading children instead; exclude the title from
 their width. The responsive-navigation browser case preserves the same menu
 node across 900→390→900→390: hidden width0/title inset0, visible width36/title
 inset42 in both themes. The SSR hydration gate also retains the direct parent
-and node identity. Animated maxWidth writes UNSET when a row leaves its bounded
+and node identity. Native measures the still-mounted leading region and changes
+the outer gap only when its width crosses zero; hiding a null-rendering menu
+therefore releases the gap without hiding the measurement region and preventing
+its recovery. Explicit Android/iOS platform contract tests cover hidden→shown→hidden
+and title identity; these are not physical-device evidence. Animated maxWidth writes UNSET when a row leaves its bounded
 host, rather than an empty style that retains the prior native bound.
 
 Stateful custom controls belong in `persistentActions`. This is an explicit
