@@ -27,6 +27,10 @@ height/legibility at large settings, or arbitrary glyph coverage of the rim.
 Material painting is untouched. WebKit/Firefox backdrop optical parity remains
 failed-runtime/not verified, even though this fixture's text contrast improves.
 The field fixture contains placeholders, not a complete neighbor-text census.
-The actual GoWay 84-text comparison must be repeated with this new source before
-consumer acceptance; its earlier 80 unchanged neighbors belong to the prior
-filtered-only checkpoint. Native map/TalkBack and published adoption remain open.
+The [GoWay repeat](https://github.com/OxyHQ/GoWay/blob/8ab10db/docs/audits/issue-663/canvas-contrast-union/README.md)
+now records 84 passing samples with this union, minimum 4.623069 and exact
+painted foreground matches. All 80 neighbor foregrounds, sampled backing colors
+and ratios remain identical; only two light placeholders improve. This does not
+claim identical screenshot coordinates or general RGB coverage. Native
+map/TalkBack, mono/graphite worst painted cases, accessible font scaling and
+published adoption remain open.

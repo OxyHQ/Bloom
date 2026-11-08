@@ -3,7 +3,7 @@
   "scope": "Field candidate; no global AA or published acceptance",
   "files": {
     "docs/audits/issue-663/surface-backing/README.md": "3d73341578cc26d814c48f6167721e7dcfd3bc3744d817b7fda3271166b093cb",
-    "docs/audits/issue-663/surface-backing/degraded-effect.md": "be24b237a693bd44e6df37deea50363ab169eeb72c52a12c7db961393488c577",
+    "docs/audits/issue-663/surface-backing/degraded-effect.md": "f297365dad5dd200fc689cb803fc44d4cb2e364f6e935e74f0bb728411e2810a",
     "docs/audits/issue-663/surface-backing/degraded-effect/chromium-delta.json": "9ac9b663272e01b9e6187783d5aead324794bf3b4cdd80d4bc65de4fb64fce6b",
     "docs/audits/issue-663/surface-backing/degraded-effect/chromium/dark-ltr-black-backing.png": "73c351fe4a3f56e4da0392a2e322db30a58a3ed529f86229040ab5fd3fd86978",
     "docs/audits/issue-663/surface-backing/degraded-effect/chromium/dark-ltr-black.png": "45745d741c1f02c468c47d8d123786e2e4ab7e8e2f70f1f47e839bfe4b7e489c",
