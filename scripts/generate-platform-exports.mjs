@@ -424,6 +424,7 @@ const SUBPATHS = /** @type {const} */ ([
  * if you remove a fork delete the entry here and re-run the script.
  */
 const WEB_FORKED_SUBPATHS = new Set([
+  './page-header',
   './breadcrumb',
   './wizard',
   './settings-modal',

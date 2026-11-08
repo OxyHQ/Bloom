@@ -1,4 +1,4 @@
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { ScreenScope } from '../layout/screen-scope';
 import { ScrollMetricsProvider } from '../layout/scroll-metrics';
 import { SurfacePaint } from '../surface/SurfacePaint';

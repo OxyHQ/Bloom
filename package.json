@@ -1080,6 +1080,11 @@
         "types": "./lib/typescript/module/page-header/index.d.ts",
         "default": "./src/page-header/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/page-header/index.web.d.ts",
+        "import": "./lib/module/page-header/index.web.js",
+        "require": "./lib/commonjs/page-header/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/page-header/index.d.ts",
         "default": "./lib/module/page-header/index.js"

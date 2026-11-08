@@ -7,7 +7,7 @@ import { Pressable, type ScrollView, View } from 'react-native';
 import { AgentThinking } from '../agent-thinking';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useMessages } from '../locale/messages';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { AgentChatActionsBase } from './AgentChatActionsBase';
