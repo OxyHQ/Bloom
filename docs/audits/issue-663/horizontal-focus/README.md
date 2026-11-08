@@ -11,3 +11,5 @@ The initial prototype failed the Properties focus check: RNW replaces the elemen
 This verifies the shared source implementation. Published Nilo adoption and its RN Animated table owner remain separate consumer checks; editor issue 434 is not covered by this evidence.
 
 WebKit 2370 also passes the same four cases and unchanged 300 ms settled checks (`webkit-report.json`). The first implementation queued another animation frame from ResizeObserver and left the focused tool clipped during resize under deferred WebKit frames. ResizeObserver now corrects directly after layout; focus corrects immediately and once more after browser focus scrolling. No wait budget was increased.
+
+Independent review also passed all four unchanged cases on WebKit 2370 and Firefox 1555. `firefox-report.json` records the Firefox measurements. These are desktop browser engines, not physical iPhone evidence.
