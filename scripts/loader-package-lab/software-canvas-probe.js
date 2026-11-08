@@ -35,13 +35,14 @@ module.exports = (config) =>
           val watcher = object : android.text.SpanWatcher {
             fun record(text: android.text.Spannable, what: Any) {
               if (what === android.text.Selection.SELECTION_START || what === android.text.Selection.SELECTION_END) {
-                android.util.Log.i("BloomSelectionTrace", android.util.Log.getStackTraceString(Throwable("id=" + view.id + " start=" + android.text.Selection.getSelectionStart(text) + " end=" + android.text.Selection.getSelectionEnd(text))))
+                android.util.Log.i("BloomSelectionTrace", android.util.Log.getStackTraceString(Throwable("span=" + (if (what === android.text.Selection.SELECTION_START) "START" else "END") + " id=" + view.id + " start=" + android.text.Selection.getSelectionStart(text) + " end=" + android.text.Selection.getSelectionEnd(text))))
               }
             }
             override fun onSpanAdded(text: android.text.Spannable, what: Any, start: Int, end: Int) { record(text, what) }
             override fun onSpanRemoved(text: android.text.Spannable, what: Any, start: Int, end: Int) { record(text, what) }
             override fun onSpanChanged(text: android.text.Spannable, what: Any, oldStart: Int, oldEnd: Int, newStart: Int, newEnd: Int) { record(text, what) }
           }
+          android.util.Log.i("BloomSelectionTrace", "attached id=" + view.id + " uptime=" + android.os.SystemClock.elapsedRealtime() + " start=" + view.selectionStart + " end=" + view.selectionEnd)
           view.text?.setSpan(watcher, 0, view.text?.length ?: 0, android.text.Spanned.SPAN_INCLUSIVE_INCLUSIVE)
         }
         if (view is android.view.ViewGroup) for (i in 0 until view.childCount) watch(view.getChildAt(i))
