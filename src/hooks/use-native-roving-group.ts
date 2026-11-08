@@ -195,22 +195,39 @@ export function useNativeRovingGroup<Value extends string>(
     if (focused === undefined) pending.current = undefined;
   }, [focused]);
 
+  // Each option's props are the same object for as long as what they say is the same (whether it
+  // is the stop), and its handlers the same functions for as long as the group lives: an option
+  // memoized by its owner (a settings rail's row) draws again only when it gains or loses the
+  // stop, and its host view's ref is never detached and attached again at a render.
+  const handlers = useRef(new Map<string, Omit<NativeRovingItemProps, 'focusable'>>());
+  const given = useRef(new Map<string, NativeRovingItemProps>());
   const itemProps = useCallback(
     (item: Value, itemDisabled = false): NativeRovingItemProps => {
       if (!active) return NONE;
-      return {
-        focusable: !itemDisabled && item === stop,
-        onFocus: () => setFocused(item),
-        onBlur: () => {
-          setFocused((current) => (current === item ? undefined : current));
-          // Leaving the group from the option moved to: the chosen one is the stop again.
-          setMoved((current) => (current === item ? undefined : current));
-        },
-        ref: (node: unknown) => {
-          if (node == null) nodes.current.delete(item);
-          else nodes.current.set(item, node);
-        },
-      };
+      let own = handlers.current.get(item);
+      if (own === undefined) {
+        own = {
+          onFocus: () => setFocused(item),
+          onBlur: () => {
+            setFocused((current) => (current === item ? undefined : current));
+            // Leaving the group from the option moved to: the chosen one is the stop again.
+            setMoved((current) => (current === item ? undefined : current));
+          },
+          ref: (node: unknown) => {
+            if (node == null) nodes.current.delete(item);
+            else nodes.current.set(item, node);
+          },
+        };
+        handlers.current.set(item, own);
+      }
+      const focusable = !itemDisabled && item === stop;
+      const key = `${focusable ? 1 : 0}${item}`;
+      let props = given.current.get(key);
+      if (props === undefined) {
+        props = { focusable, ...own };
+        given.current.set(key, props);
+      }
+      return props;
     },
     [active, stop],
   );

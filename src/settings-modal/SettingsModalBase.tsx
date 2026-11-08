@@ -4,6 +4,7 @@ import type { ScrollAreaProps } from '../layout/types';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, {
   type ComponentRef,
+  memo,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -1055,6 +1056,11 @@ export function createSettings(
     testID?: string;
   }) {
     const compact = layout === 'compact';
+    // The rows are given one selection handler for as long as the rail lives: the navigation's
+    // own changes with every page it moves to, which would draw every row again at each move.
+    const latestSelect = useRef(onSelect);
+    latestSelect.current = onSelect;
+    const select = useCallback((next: string) => latestSelect.current(next), []);
     const railLook = {
       backgroundColor: palette.secondary,
       ...surfaceFillVars(palette.secondary),
@@ -1112,7 +1118,7 @@ export function createSettings(
                   // A list, not a selection, when the rows ARE the navigation.
                   selected={!compact && item.page !== undefined && item.page === page}
                   showChevron={compact && item.page !== undefined}
-                  onSelect={onSelect}
+                  onSelect={select}
                   palette={palette}
                   listItem={selection}
                   roving={
@@ -1186,7 +1192,9 @@ export function createSettings(
     );
   }
 
-  function RailRow({
+  // Memoized: a page selected draws the two rows it moves between, not every row (with the
+  // groups the application keeps the same while they say the same).
+  const RailRow = memo(function RailRow({
     item,
     selected,
     showChevron = false,
@@ -1255,7 +1263,7 @@ export function createSettings(
         ) : null}
       </Pressable>
     );
-  }
+  });
 
   // ---------------------------------------------------------------------------
   //  Close button, scroller, toast
