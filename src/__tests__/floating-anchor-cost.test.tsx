@@ -188,6 +188,27 @@ describe('useAnchorRect', () => {
     expect(anchors[anchors.length - 1]).toBeNull();
   });
 
+  it('replaces an open virtual callback immediately and never republishes its queued old geometry', () => {
+    const previous = jest.fn(() => ({ top: 40, bottom: 60, left: 80, right: 160 }));
+    const nextBox = { top: 100, bottom: 120, left: 180, right: 260 };
+    const next = jest.fn(() => nextBox);
+    mount(<Probe measureVirtual={previous} />);
+    const previousCalls = previous.mock.calls.length;
+    scroll();
+    mount(<Probe measureVirtual={next} />);
+    expect(anchors[anchors.length - 1]).toEqual(nextBox);
+    frame();
+    expect(previous).toHaveBeenCalledTimes(previousCalls);
+    expect(anchors[anchors.length - 1]).toEqual(nextBox);
+
+    scroll();
+    const detached = jest.fn(() => null);
+    mount(<Probe measureVirtual={detached} />);
+    expect(anchors[anchors.length - 1]).toBeNull();
+    frame();
+    expect(anchors[anchors.length - 1]).toBeNull();
+  });
+
   it('measures the trigger once per frame, however many scroll events arrive', () => {
     mount(<Probe />);
     // Opening measures synchronously, in a layout effect, so the surface's first
