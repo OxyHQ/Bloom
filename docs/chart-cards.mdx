@@ -8,6 +8,21 @@ order: 40
 
 `RevenueChartCard`, `OrdersChartCard`, `AreaChartCard`, and the shared chrome every card is built from, draw on recharts' geometry; Bloom rebuilds every layer in `react-native-svg` on the geometry recharts computes, so they render on native as well as web and land on the same pixels.
 
+Focused entries are available when an app needs only a bar list, line chart or
+their shared building blocks. They export the same components and prop types as
+the complete `chart-cards` entry; they do not import the complete family barrel.
+
+```tsx
+import { BarListCard, type BarListCardProps } from '@oxy.so/bloom/chart-cards/bar-list';
+import { LineChartCard, type LineChartCardProps } from '@oxy.so/bloom/chart-cards/line';
+import { ChartCardSurface } from '@oxy.so/bloom/chart-cards/surface';
+import { ChartHeader, ChartHeadline } from '@oxy.so/bloom/chart-cards/header';
+import { ChartStatTiles } from '@oxy.so/bloom/chart-cards/stat-tiles';
+```
+
+The full `@oxy.so/bloom/chart-cards` entry remains available. A consumer's
+actual bundle saving depends on its other imports and bundler.
+
 ```tsx
 import { OrdersChartCard, RevenueChartCard } from '@oxy.so/bloom/chart-cards';
 
