@@ -59,8 +59,60 @@ export function useHaptics(): (strength?: HapticStrength) => void {
         else if (strength === 'heavy') style = ImpactFeedbackStyle.Heavy;
       }
 
-      void haptics.impactAsync(style);
+      void haptics.impactAsync(style).catch(() => {});
     },
     [enabled],
   );
+}
+
+/** Feedback described by the user action rather than motor strength. */
+export interface HapticFeedback {
+  tap(): void;
+  confirm(): void;
+  selection(): void;
+  toggle(on: boolean): void;
+  success(): void;
+  error(): void;
+}
+
+/**
+ * Semantic haptics honoring the same provider and optional-peer behavior as
+ * `useHaptics`. Selection and notifications fall back to a light impact when
+ * the installed peer does not expose those methods.
+ */
+export function useHapticFeedback(): HapticFeedback {
+  const { enabled } = useContext(BloomHapticsContext);
+  const impact = useHaptics();
+
+  return useMemo(() => {
+    function play(kind: 'selection' | 'success' | 'error') {
+      if (!enabled || Platform.OS === 'web') return;
+      const haptics = loadHaptics();
+      if (!haptics) {
+        warnHapticsUnavailable();
+        return;
+      }
+      const result =
+        kind === 'selection'
+          ? haptics.selectionAsync?.()
+          : haptics.NotificationFeedbackType && haptics.notificationAsync
+            ? haptics.notificationAsync(
+                kind === 'success'
+                  ? haptics.NotificationFeedbackType.Success
+                  : haptics.NotificationFeedbackType.Error,
+              )
+            : undefined;
+      if (result) void result.catch(() => {});
+      else impact('light');
+    }
+
+    return {
+      tap: () => impact('light'),
+      confirm: () => impact('medium'),
+      selection: () => play('selection'),
+      toggle: (_on: boolean) => play('selection'),
+      success: () => play('success'),
+      error: () => play('error'),
+    };
+  }, [enabled, impact]);
 }

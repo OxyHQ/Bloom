@@ -1,0 +1,203 @@
+---
+title: Composition rollout
+description: Evidence and remaining work for the Bloom composition and consumer audit.
+---
+
+# Composition rollout
+
+This is an implementation ledger, not a claim that the fleet is standardized.
+The approved appearance of Mention, Inbox and other existing applications is
+an acceptance constraint. Storybook examples should teach the actual public
+composition API, and each consumer should keep its business data and actions.
+
+## Current status — 2026-10-31
+
+The sections below preserve historical evidence; their earlier candidate,
+preview-port and remaining-work descriptions are not the current release plan.
+Bloom main is `1bfbbb2e` (15.87.0). The earlier 15.81.0 proposal in draft #563
+is obsolete and has not been approved for publication. Registry still lacks
+`@oxy.so/color@1.1.0`; release workflow authorization for that package remains
+unresolved. No publication is authorized by these notes.
+
+The current composition integration starts at `7fda36e2` over main, preserving
+the native flex and threshold owners from #569 and stable contexts from #573.
+Its OxyOS offscreen Hermes/Fabric/Yoga probe passed 26/26, including both 400
+and 900 widths, 187 px panel recovery and 100 px resize recovery. Later
+`57e8dc15` fixes an independently reproduced stateful window-header remount;
+its Storybook sidebar matrix passed 20/20. Port 6012 currently serves that
+integration and passed 20/20 before switching. It now serves the experimental
+`.worktrees/workspace-current-main` (HEAD `55ffa55a` plus uncommitted scroll-owner
+and fixture changes), not the old 671 candidate. Port 6006 remains owned by
+another session.
+
+Workspace header, bounded scrolling, TabBar and frame-span follow-ups are being
+integrated and validated separately; the earlier Willo d84/ee7e and Accounts
+experiments are not proof for the new main. Accounts' d84 control matched its
+published package in eight browser cases; its inset prototype left a 64 px strip
+after the header hid and changed rounded paint. New bounded behavior must pass
+the same real consumer and visual checks. Native hardware coverage is still
+separate from the offscreen probe.
+
+Helper draft #576 (`304792cd`) preserves Bun workspace and hoisted links, has
+seven focused tests and a green full CI run 41239670496. A real consumer restored
+ten original links literally and returned Accounts, Services and Alia to the
+published package; published typecheck passed. This does not publish a package.
+Consumer PRs and their original adoption evidence remain separate from root-only
+provider changes; no fleet-wide adoption is inferred from their existence.
+
+## Verified changes
+
+| Area | Change | Evidence | Remaining validation |
+| --- | --- | --- | --- |
+| Storybook root | Uses BloomProvider with explicit safe-area and surface/portal hosts | Preview parity and CSS wiring tests; Storybook TypeScript | Broader story catalogue runtime coverage |
+| Color modes and presets | Local scopes, official recipe labels, inherited toolbar mode | verify-storybook-theme.mjs in Chromium | Full Foundations redesign |
+| Component theme matrices | 33 story files use local BloomColorScope instead of competing root theme providers; provider negative demo has an explicit theme-only harness | Preview gate (7 tests); Chromium matrix/theme/provider-boundary verification | Broader per-story visual coverage |
+| Color Explorer | Theme-derived paint, Bloom typography and filter buttons; grouped under Color with stable IDs | Chromium dark-mode render and filter interaction; verify-storybook-theme.mjs; media/language tests | Wider viewport and contrast combinations |
+| Color Roles | AppShell and Screen own navigation and scrolling; Meter owns progress | Desktop/phone browser render, no horizontal document overflow | Additional theme and interaction combinations |
+| Meter in material | Relative web positioning keeps track/fill above preceding material paint | verify-meter-material.mjs samples actual pixels at 390/1280 in both modes; Meter and ARIA tests | Device behavior unchanged; no native renderer edit |
+| Descriptor panel backing | Compact descriptor layouts publish the same surface fill as JSX panels instead of the framed material fill | Allo local harness: same painted background at 390/1440, resize round trip, conversation open, separator keyboard resize and Group Info; eight SSR context cases plus mutation | Final integration gates, package release and consumer adoption |
+| Adaptive shell | Explicit null header remains absent despite title | AppShellWindow regression | Remaining window layout combinations |
+| Sidebar/window composition | Shared interpolated navigation width reserves residual controls room in the adjacent header; playground covers panel/rail, sizes, surfaces and hosts | 110 focused shared tests; verify-sidebar-window-room.mjs passes 2 adaptive LTR/RTL transitions with frame samples, 2 panel collapse/expand transitions, 12 surface/variant/direction cases, and 3 host/fullscreen cases in Chromium; Storybook types; OxyOS offscreen probe passed 22 steps | Native panel width investigation and wider device/docking coverage |
+| Inbox | ScrollBar observes existing mailbox/search list refs; native indicators restored | Frontend types; startup and search tests | Real account browser and device screenshots, scroll restoration |
+| Mention | Removed indicator suppression from 11 ordinary ScreenScrollViews | Frontend types and PR 1667 CI passed | Device verification pending |
+
+Verification scripts take the running Storybook URL as their first argument.
+Check that the server serves this checkout before trusting a result. Port 6006
+was serving another worktree during this audit; its earlier browser results do
+not prove these changes. The initial task instance was started on 6011. Integration on current main
+uses `.worktrees/composition-sidebar-rollout` and port 6012; distinguish the two
+when reporting evidence.
+
+## Remaining shared work
+
+- Verify panel/rail, all three surfaces, collapse, sizes, RTL, fullscreen and
+  host-owned controls; verify OxyOS runtime as well as simulated StoryWindow.
+- Finish the visual and functional redesign of the Storybook catalogue. Preserve
+  existing IDs and useful regression scenarios while consolidating stale examples.
+- Audit each active consumer's actual provider and composition tree, including
+  domain components that compose AppShell internally. An import count is not an
+  adoption decision, and legacy AppShellPanels already uses a shared engine.
+- Validate consumer appearance, navigation, scroll restoration, responsive
+  transitions and native behavior. Package and release validation remains pending.
+- Resolve the public image API before asking apps to adopt `BloomImage`: the
+  renderer exists inside Bloom but has no public root or subpath export in the
+  checked releases (15.66 and 15.78.3). Atlas has a prepared migration at
+  `/tmp/atlas-composition/image-migration.patch`; verify the intended export
+  contract and package before applying it.
+
+## Initial repository census
+
+The initial static discovery found 31 repositories and 92 candidate packages.
+Candidates include tooling, libraries, previews and possible legacy applications.
+Activity is **unverified**, and a repository name or modification date does not
+establish that it is active. The scan covered tracked source under immediate
+repositories in the local Oxy workspace; nested/untracked projects need separate
+inspection. Import evidence is a lead, not a conclusion about runtime ancestry.
+
+| Repository | Candidate packages | Review state |
+| --- | ---: | --- |
+| Alia | 6 | Domain shell ancestry identified; full review pending |
+| Allo | 2 | Shared backing corrected and migration verified with local Bloom (15.71.0); migration patch retained pending corrected package release. Earlier published install resolved 15.50.1 while its manifest/lock pinned 15.50.6; current-main comparison uses 15.53 separately and is not the earlier result |
+| Astro | 11 | Current-main source uses Bloom window shell; macOS runtime review pending |
+| Astro-legacy | 1 | Same origin and product as Astro, not a second app |
+| Astro-sync | 10 | No longer present; original candidate is stale |
+| Atlas | 1 | Earlier root checkout was stale; current main `47066f0` already contains the migration from PR 50. Current-main browser audit passed with the approved appearance; PR 54 lint passed. Retain the separate custom rail/frame review. |
+| Authenticator | 1 | Static discovery only; activity and composition unverified |
+| Bloom | 3 | Shared fixes and stories in progress |
+| BloomAiIcons | 1 | Companion package excluded: its peer rules prohibit a Bloom dependency |
+| Clarity | 1 | Current-main worktree commit `4b5c79c`: tests passed against published Bloom 15.10.1; PR 198 CI passed. Runtime validation remains separate. |
+| CrowdSource | 3 | Current main `5177a846`: reviewer/console local Screens recreate header/inset and scroll composition; reviewer owns auto-hide and console sticky toolbar. Trace restoration before migration |
+| GWJ | 1 | Current main `c875a33`: excluded by its AGENTS rules, which prohibit Oxy UI, packages and agents |
+| GoWay | 2 | Current main `7bbba4d`: map has custom sheet and side-panel scrollers; SavedScreen/SavedList use RN ScrollView. Trace owners before restoration changes |
+| Homiio | 1 | Root BloomProvider/AppShell and route panel ownership reviewed; route-level and runtime audit pending |
+| Inbox | 1 | Current-main worktree commit `0a6d76a`: tests passed against published Bloom 15.16.0; PR 148 CI passed. Four browser cases passed with exit code 0 in `/tmp/consumer-adoption/inbox-browser-verified-20261031-01.log`; real-account and device validation remain separate. The earlier overwritten log is not evidence. |
+| Mention | 1 | Root/panel source reviewed; PR 1667 CI passed; full audit pending |
+| Mercaria | 4 | Current-main source uses shared Bloom composition across frontend, dashboard and POS; runtime pending |
+| Moovo | 4 | PR 180 Build App and Biome passed; broader activity and composition unverified |
+| Move | 1 | Current main `8299d226`: PageScreen already uses Bloom Screen, PageHeader and ScreenScrollView. Root lacks adapter and duplicates gesture/safe-area/portal providers; verify ownership first |
+| Nilo | 2 | Current-main source uses AppShell, Screen and panel descriptors; runtime pending |
+| Noted | 1 | Current-main source uses AppShell, panels and Screen; runtime pending |
+| OxyOS | 1 | Native owner fix passed 17 probe steps including a physical collapse-button hit; offscreen suite passed 22 steps. Panel width gap remains under separate investigation |
+| Peable | 3 | Static discovery only; activity and composition unverified |
+| Schedio | 1 | PR 75 provider prelaunch; three TypeScript errors match its unchanged base |
+| Syra | 3 | PR 268 commit `bb0d672`: Quality passed; broader composition review pending |
+| Willo | 3 | Current-main source: frontend custom layout and navigation; local package probe for workspace header/TabBar passed web and OxyOS. Mirror restored to published 15.70.0; adoption patch `/tmp/willo-composition/willo-adoption-dependent.patch` waits for released APIs. Photo frame is a separate app |
+| examples | 3 | Current main `114a9b8c`: Expo/Vite/Next starters use BloomThemeProvider with Bloom 15.11.0 and Services 13.0.0; Vite has no router, Next has App Router, Expo has Stack. Preserve their self-contained flows |
+| oxy | 13 | Current main `49352ad37` added to source census; generator review pending |
+| tnp | 5 | Static discovery only; activity and composition unverified |
+| website | 1 | Current-main source: Vite marketing site with theme provider and custom page shell; preserve its presentation |
+| willo-ha | 1 | Current main `09c7649`: willo-local single QR pairing screen already uses BloomProvider; no router or sidebar implied |
+
+## Integration branch
+
+The implementation is being integrated on current main (15.78.3), separate from
+the shared 15.71.0 checkout. The initial integration passes the package build,
+packed export verification and build freshness; 196 tests across ten focused
+suites (including the full scroll-mode switch suite); Storybook TypeScript and
+consumer types (2,907 source files). The ten suites took 240 seconds; a prior
+100-second timeout of ScrollSwitch alone was not a test result.
+
+Review found further interactions with main's window-edge semantics, now covered
+by tests: flush sidebar residual room, joined-panel corner ownership, and the
+adaptive shell's measured navigation width. The 74 window tests and the full 19-case browser matrix pass after those changes.
+The stable adaptive header also passes 199 tests across AppShell, window and RTL
+suites; final build, package verification and freshness passed on `e7700788`.
+Draft PR [#556](https://github.com/OxyHQ/Bloom/pull/556) subsequently gained the
+compact inbox example and the document-deck overflow correction. It was rebased
+onto main `0ee4cdf0` and pushed at `dcbc5985`. Allo migration remains a prepared patch until a
+corrected package is available; no local mirror remains installed in Allo.
+
+The PR was rebased on main `2ce49458` after 15.79.1 and 15.79.2 were prepared
+elsewhere; head `2db516ff` prepares 15.79.3 and all CI checks passed. Publication
+awaits approval. The OxyOS owner
+fix passes 17 native probe steps, but those results do not establish residual
+clearance for the panel header: its unexpected width is under separate native
+investigation. The document-restoration boundary for Alia is being developed
+in draft PR 559, separate from this release. Alia's real router reproduced a
+new static page inheriting a prior page's 420 px offset with the router adapter;
+the boundary restored 0 and the page/chat scenarios passed with a local mirror.
+The mirror was removed and the published API remains pending. The separate
+native-width follow-up recovered 187 pt on sidebar collapse and 100 pt on window
+resize in both 900 and 400 pt OxyOS windows; its current revision and gates are
+still being finalized.
+
+The read-only source census at `/tmp/bloom-lead-census-20261031.json` records
+17 current-main audits. These are source evidence, not runtime adoption proof;
+Willo, Move, GoWay, CrowdSource and website/examples retain the owner reviews
+noted there. GWJ is explicitly excluded; willo-ha is a single-purpose pairing
+screen. The original candidate totals above remain historical discovery.
+
+Main subsequently advanced to `d640b7e3` (15.80.1). Draft PR 563 consolidates
+the composition, native width, document restoration and Foundations changes as
+candidate 15.81.0; independent PRs were closed as superseded and their branches
+remain available for review.
+The combined package build, export/freshness and TypeScript checks passed;
+sidebar/window (20 cases), theme, meter and modular-panel browser verifiers also
+passed. CI passed on head `67114f24`; publication needs a new approval for
+this exact candidate. The preview on 6012 serves candidate head `67114f24`;
+the last commit updates window-panel test assertions for the verified native
+width contract without changing product code.
+
+Release planner also selects `@oxy.so/color@1.1.0`, absent from npm although its
+manifest was already on main; the other public workspace versions exist. Recent
+main releases published Bloom but the color PUT failed with npm 404/permission
+ambiguity. The public registry does not reveal the trusted-publisher settings;
+the owner must verify the package's npm Access configuration before release.
+
+Willo follow-ups are separate drafts: workspace header/scroll ownership in PR
+566 and floating TabBar shell-slot participation in PR 567. The combined local
+package passed 168 focused tests, package/freshness and types; Willo browser at
+five widths matched baseline document height and retained navigation offsets.
+An OxyOS probe with real wheel input passed 5/5 on exact code `d84afdc6`:
+header 0/88, panel 0/600, content 88→8→88 and bar 526/74. These are local
+artifact results, not published-package validation; the draft CIs remain open.
+Willo's Rail remained 80 px and centered without host overflow at 1440/1024/640,
+hidden below 640; no Rail implementation change was made. Its existing lateral
+safe-area edges remain independently owned. The published-package typecheck
+cannot pass the adoption patch until the new boundary and header API are released.
+
+The older shared checkout was reconciled without touching other agents' work:
+55 tracked changes matching our saved patch were reversed, four untracked files
+were backed up at `/tmp/bloom-root-owned-untracked-backup.tar.gz`, and 59
+Dialog/haptics/TabPager tests passed before and after. Two theme stories contain
+mixed changes and remain untouched; this ledger remains local.

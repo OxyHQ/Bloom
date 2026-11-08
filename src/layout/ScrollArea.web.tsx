@@ -13,6 +13,7 @@ import type { ScrollAreaProps } from './types';
  * and `testID` are the area's (give it the size), the rest belongs to the scroller.
  */
 export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
+  viewportOverlay,
   onScroll,
   onLayout,
   onContentSizeChange,
@@ -55,6 +56,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
         showsHorizontalScrollIndicator={false}
         style={{ flexGrow: 1, flexShrink: 1, minHeight: 0 }}
       />
+      {viewportOverlay}
       {scrollbar === 'never' ? null : (
         <ScrollBar
           target={scroller}

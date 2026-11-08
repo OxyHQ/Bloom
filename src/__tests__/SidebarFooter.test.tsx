@@ -19,7 +19,7 @@ it.each([
   { variant: 'rail' as const, collapsed: false, expected: true },
   { variant: 'panel' as const, collapsed: true, mobile: true, expected: false },
 ])(
-  'passes the actual rendered compact state and keeps footer actions outside scrolling: %j',
+  'passes the actual rendered compact state and keeps sticky footer actions inside scrolling: %j',
   ({ expected, ...props }) => {
     const onPress = jest.fn();
     const footer = jest.fn(({ collapsed }: { collapsed: boolean }) => (
@@ -33,8 +33,10 @@ it.each([
     const control = tree.getByLabelText('Open account');
     pressHost(control);
     expect(onPress).toHaveBeenCalledTimes(1);
+    let insideScroll = false;
     for (let parent = control.parent; parent; parent = parent.parent)
-      expect(parent.props.testID).not.toBe('nav-scroll');
+      if (parent.props.testID === 'nav-scroll') insideScroll = true;
+    expect(insideScroll).toBe(true);
   },
 );
 it('retains footer content identity while updating collapsed state', () => {

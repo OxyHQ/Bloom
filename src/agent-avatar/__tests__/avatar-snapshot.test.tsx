@@ -1,57 +1,36 @@
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
-import { AgentAvatar } from '../AgentAvatar';
-import { AgentAvatarProvider } from '../AgentAvatarProvider';
+import { VectorStaticPortrait } from '../VectorStaticPortrait';
 import { AvatarSnapshotObserver, type CaptureAvatarSnapshot } from '../context';
-const mockInject = jest.fn();
-jest.mock('../character-webview', () => {
+jest.mock('react-native-svg', () => {
   const React = require('react');
-  const View = require('react-native').View;
-  const WebView = React.forwardRef((props: unknown, ref: unknown) => {
-    React.useImperativeHandle(ref, () => ({ injectJavaScript: mockInject }));
-    return React.createElement(View, props);
-  });
-  return { characterWebView: () => WebView };
+  return {
+    __esModule: true,
+    default: React.forwardRef((props: unknown, ref: unknown) => {
+      React.useImperativeHandle(ref, () => ({
+        toDataURL: (done: (value: string) => void) => done('svg-pixels'),
+      }));
+      return React.createElement(require('react-native').View, props);
+    }),
+    ClipPath: 'ClipPath',
+    Defs: 'Defs',
+    Path: 'Path',
+  };
 });
-
-it('captures the displayed WebView frame on demand and clears pending requests on unmount', async () => {
+it('captures native SVG on demand and unregisters on unmount without a WebView', async () => {
   let capture: CaptureAvatarSnapshot | null = null;
-  let view: ReactTestRenderer;
   const observe = jest.fn((next: CaptureAvatarSnapshot | null) => {
     capture = next;
   });
+  let view!: ReactTestRenderer;
   act(() => {
     view = create(
-      <AgentAvatarProvider runtimeUrl="https://example.test/runtime.mjs">
-        <AvatarSnapshotObserver.Provider value={observe}>
-          <AgentAvatar character={{ preset: 'blue_beret' }} size={80} paused />
-        </AvatarSnapshotObserver.Provider>
-      </AgentAvatarProvider>,
+      <AvatarSnapshotObserver.Provider value={observe}>
+        <VectorStaticPortrait frame={{ viewBox: '0 0 320 320', paths: [] }} />
+      </AvatarSnapshotObserver.Provider>,
     );
   });
   expect(capture).not.toBeNull();
-  expect(mockInject.mock.calls.filter(([code]) => code.includes('captureAvatar'))).toHaveLength(0);
-  let result!: ReturnType<CaptureAvatarSnapshot>;
-  act(() => {
-    result = capture!();
-  });
-  const code = mockInject.mock.calls.find(([code]) => code.includes('captureAvatar'))![0];
-  const id = Number(code.match(/\((\d+)\)/)![1]);
-  const host = view!.root.findAll((node) => !!node.props.onMessage)[0]!;
-  act(() =>
-    host.props.onMessage({
-      nativeEvent: {
-        data: `snapshot:${JSON.stringify({ id, uri: 'data:image/png;base64,captured' })}`,
-      },
-    }),
-  );
-  await expect(result).resolves.toEqual({
-    uri: 'data:image/png;base64,captured',
-  });
-  let unfinished!: ReturnType<CaptureAvatarSnapshot>;
-  act(() => {
-    unfinished = capture!();
-  });
-  act(() => view!.unmount());
-  await expect(unfinished).resolves.toBeNull();
+  await expect(capture!()).resolves.toEqual({ uri: 'data:image/png;base64,svg-pixels' });
+  act(() => view.unmount());
   expect(observe).toHaveBeenLastCalledWith(null);
 });

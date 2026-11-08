@@ -60,10 +60,35 @@ Unmeasured content, content that fits, and subpixel overflow produce no cue.
 The shared metrics update both edges when content or viewport measurements change;
 the decorative layers ignore input and accessibility.
 
-Sidebar's panel and rail use this same surface with 40px edges. They preserve one
-scrolling destination region, the actual ScrollView ref for tree drag auto-scroll,
-and fixed header/footer controls. Web uses the shared overlay scrollbar; native
-keeps the system indicator.
+`stickyHeader` and `stickyFooter` retain normal-flow chrome at the viewport edges.
+Header, growing body and footer are children of the same ScrollView. Web uses CSS
+sticky positioning at local top/bottom zero. Native uses the ScrollView's sticky
+header support and translates the direct footer cell using UI-thread scroll metrics;
+it does not rerender React on scroll or introduce another scroll owner. Clipped
+subview removal is disabled for these translated cells. When the two chrome regions
+would leave less than 48px of content space, both scroll normally so tall controls
+remain reachable in a short viewport. Existing callers without slots retain their
+content layout and callbacks.
+
+`ScrollArea.viewportOverlay` composes inert viewport decoration above content and below
+scroll indicators. Web places it beside the viewport before the interactive scrollbar
+inside the same stacking owner. Native places it in scroll content, pinned with UI-thread
+metrics, so the system indicator remains above it. Decoration adds no content height,
+receives no input and does not change sticky child indices.
+
+The edge overlays alone are clipped to the host radius. `matchSurfacePaint` opts sticky chrome and edge cues into
+reading the nearest material owner's baked body when available, including its filtered
+backdrop; live material falls back to the published backing fill. Without this opt-in, an
+explicit `fadeColor` remains authoritative. Opaque ordinary panels stop the material
+lookup. On short sticky viewports each fade is capped at a quarter of the remaining
+body height, leaving a readable middle. They never mask or
+fade an ancestor containing material.
+
+Sidebar's panel and rail use this same surface with 40px edges for the whole panel,
+including header and footer. They preserve the actual ScrollView ref for tree drag
+auto-scroll. Web uses the shared overlay scrollbar; native keeps the system indicator.
+Native sticky hit testing still requires device verification; Jest only exercises the
+ownership, measurements and translation policy.
 
 The legacy `chatId` prop has no effect and is deprecated. Persistent scroll
 position belongs to the Screen/restoration contract.
