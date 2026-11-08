@@ -47,3 +47,13 @@ All 20 editor suites / 266 tests and editor TypeScript pass.
 Remaining scope is dialog stacking, additional keyboard activation, final published
 API/editor dependency gates, and physical Android. Long labels, inherited lg and
 real container scroll are now covered by this source candidate.
+
+
+Dialog follow-up: the same interaction sequence passes with BlockEditor hosted
+inside shared Dialog. Escape dismisses the formatting overlay and restores the
+selection while the parent dialog remains open. Use `dialog/fixture.patch` and
+EDITOR_DIALOG=1; this fixture is restored after capture. The final fine-pointer
+run also checks Shift+Tab and toggles Bold twice each through Space and Enter,
+asserting aria-pressed and retained text selection. No browser errors or unexpected
+requests were observed. Remaining acceptance gates: published dependency and
+consumer validation, plus physical Android (iPhone deferred).

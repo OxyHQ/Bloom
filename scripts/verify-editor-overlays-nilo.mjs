@@ -454,6 +454,7 @@ try {
     { user, token, expiresAt, workspaceId: workspace.id, pageId: pageData.id, update },
   );
   await page.goto(`${origin}/p/${pageData.id}`);
+  if (process.env.EDITOR_DIALOG === '1') await page.getByRole('button',{name:'Open editor fixture',exact:true}).click();
   await page.getByText('Project overview', { exact: true }).first().waitFor({ timeout: 120000 });
   await page.setViewportSize({ width: 390, height: 844 });
   const paragraph = page.locator('[contenteditable=true]').filter({ hasText: 'Section 1: Define' }).first();
@@ -481,6 +482,23 @@ try {
   report.checks.afterKeyboardEntry = await page.evaluate(() => ({active: document.activeElement?.outerHTML, selection:window.getSelection()?.toString()}));
   report.checks.linkButtonsAfterEntry = await page.getByRole('button',{name:'Link',exact:true}).count();
   await capture('keyboard-entry-390');
+  await page.keyboard.press('Shift+Tab');
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'Bold');
+  const bold = page.getByRole('button',{name:'Bold',exact:true});
+  report.checks.keyboardActivation=[];
+  for (const key of ['Space','Enter']) {
+    await bold.focus();
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+    assert.equal(await bold.getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.evaluate(()=>window.getSelection()?.toString()), 'Section');
+    await bold.focus();
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+    assert.equal(await bold.getAttribute('aria-pressed'), 'false');
+    report.checks.keyboardActivation.push(key);
+  }
+
   await select(0,7);
   await page.getByRole('button',{name:'Link',exact:true}).click();
   const url = page.getByRole('textbox',{name:'Link',exact:true});
@@ -589,6 +607,11 @@ try {
   await page.waitForTimeout(300);
   report.checks.outerEscape = {panels:await page.getByRole('dialog',{name:'Formatting',exact:true}).count(),selection:await page.evaluate(()=>window.getSelection()?.toString())};
   assert.equal(report.checks.outerEscape.panels,0);
+  if (process.env.EDITOR_DIALOG === '1') {
+    assert.equal(await page.getByRole('dialog',{name:'Editor test dialog',exact:true}).count(),1);
+    report.checks.parentDialogRetained = true;
+    await capture('editor-dialog-after-inner-escape');
+  } else {
   await select(11,17);
   await paragraph.press('Control+k');
   await url.fill('https://example.test/unrelated');
@@ -615,6 +638,7 @@ try {
     await page.getByRole('button',{name:'Color: Red',exact:true}).click();
   }
 
+  }
   report.status =
     report.errors.length || report.unexpected.length ? 'captured with exceptions' : 'captured';
 } catch (error) {
