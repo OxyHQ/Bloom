@@ -58,7 +58,19 @@ for (const entry of readdirSync(root, { withFileTypes: true }).sort((a, b) =>
     });
     continue;
   }
-  const defaultRef = git(directory, 'symbolic-ref', '--quiet', 'refs/remotes/origin/HEAD');
+  const remote = git(directory, 'config', '--get', 'remote.origin.url') ?? '';
+  if (
+    /github\.com[:/](expo\/expo|facebook\/react-native|software-mansion\/react-native-screens)(?:\.git)?$/.test(
+      remote,
+    )
+  ) {
+    skipped.push({
+      repository: entry.name,
+      reason: 'External platform dependency checkout, not an Oxy consumer repository',
+    });
+    continue;
+  }
+  let defaultRef = git(directory, 'symbolic-ref', '--quiet', 'refs/remotes/origin/HEAD');
   if (!defaultRef) {
     skipped.push({
       repository: entry.name,
@@ -66,16 +78,37 @@ for (const entry of readdirSync(root, { withFileTypes: true }).sort((a, b) =>
     });
     continue;
   }
-  let sha = git(directory, 'rev-parse', defaultRef);
-  let paths = git(directory, 'ls-tree', '-r', '--name-only', sha)?.split('\n') ?? [];
+  // Refresh before discovery: the remote can have adopted Bloom after this checkout.
+  const branch = defaultRef.replace('refs/remotes/origin/', '');
+  const fetched = fetch
+    ? git(
+        directory,
+        'fetch',
+        '--quiet',
+        '--no-tags',
+        'origin',
+        `refs/heads/${branch}:${defaultRef}`,
+      ) !== null
+    : false;
+  const fetchStatus = fetched
+    ? 'succeeded'
+    : fetch
+      ? 'failed; ref may be stale'
+      : 'not requested; ref may be stale';
+  defaultRef = git(directory, 'symbolic-ref', '--quiet', 'refs/remotes/origin/HEAD') ?? defaultRef;
+  const sha = git(directory, 'rev-parse', defaultRef);
+  const paths = git(directory, 'ls-tree', '-r', '--name-only', sha)?.split('\n') ?? [];
   let manifests = paths.filter(
     (path) =>
       /(^|\/)package\.json$/.test(path) && !/(^|\/)(node_modules|vendor|\.worktrees)\//.test(path),
   );
+  const packages = [];
+  const historicalManifests = manifests.filter((path) => /(^|\/)docs\/audits\//.test(path));
+  manifests = manifests.filter((path) => !historicalManifests.includes(path));
   const hasBloom = manifests.some((path) =>
     /"@oxy\.so\/bloom"\s*:/.test(git(directory, 'show', `${sha}:${path}`) ?? ''),
   );
-  const imports =
+  const sourceImports = (
     git(
       directory,
       'grep',
@@ -88,18 +121,22 @@ for (const entry of readdirSync(root, { withFileTypes: true }).sort((a, b) =>
       '*.tsx',
       '*.js',
       '*.jsx',
-    ) ?? '';
-  if (!hasBloom && !imports) continue;
-  const fetched = fetch ? git(directory, 'fetch', '--quiet', 'origin') !== null : false;
-  sha = git(directory, 'rev-parse', defaultRef);
-  paths = git(directory, 'ls-tree', '-r', '--name-only', sha)?.split('\n') ?? [];
-  manifests = paths.filter(
-    (path) =>
-      /(^|\/)package\.json$/.test(path) && !/(^|\/)(node_modules|vendor|\.worktrees)\//.test(path),
-  );
-  const packages = [];
-  const historicalManifests = manifests.filter((path) => /(^|\/)docs\/audits\//.test(path));
-  manifests = manifests.filter((path) => !historicalManifests.includes(path));
+    ) ?? ''
+  )
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => line.slice(sha.length + 1))
+    .filter((path) => !/(^|\/)docs\/audits\//.test(path));
+  if (!hasBloom && !sourceImports.length) {
+    skipped.push({
+      repository: entry.name,
+      sha,
+      fetch: fetchStatus,
+      reason: 'No direct Bloom dependency or source mention at inspected ref',
+      historicalManifests,
+    });
+    continue;
+  }
   const rootManifest = JSON.parse(git(directory, 'show', `${sha}:package.json`) ?? '{}');
   const catalogs = rootManifest.workspaces?.catalog ?? rootManifest.catalog ?? {};
   for (const path of manifests) {
@@ -158,24 +195,6 @@ for (const entry of readdirSync(root, { withFileTypes: true }).sort((a, b) =>
         : 'no text locator resolved',
     });
   }
-  const sourceImports = (
-    git(
-      directory,
-      'grep',
-      '-l',
-      '-F',
-      '@oxy.so/bloom',
-      sha,
-      '--',
-      '*.ts',
-      '*.tsx',
-      '*.js',
-      '*.jsx',
-    ) ?? ''
-  )
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => line.slice(sha.length + 1));
   const ownershipCandidates = sourceImports.filter(
     (path) =>
       /(shell|screen|layout|composer|header|map|panel|provider)/i.test(path) &&
@@ -185,16 +204,13 @@ for (const entry of readdirSync(root, { withFileTypes: true }).sort((a, b) =>
     repository: entry.name,
     ref: defaultRef.replace('refs/remotes/', ''),
     sha,
-    fetch: fetched
-      ? 'succeeded'
-      : fetch
-        ? 'failed; ref may be stale'
-        : 'not requested; ref may be stale',
+    fetch: fetchStatus,
     checkoutSha: git(directory, 'rev-parse', 'HEAD'),
     checkoutDirtyEntries: (git(directory, 'status', '--porcelain') ?? '')
       .split('\n')
       .filter(Boolean).length,
     packages,
+    historicalManifests,
     locks,
     importFileCount: sourceImports.length,
     ownershipCandidates,

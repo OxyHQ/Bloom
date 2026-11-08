@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-11-08T06:39:45.403Z",
+  "observedAt": "2026-11-08T06:44:54.473Z",
   "scope": "Immediate git checkouts under supplied workspace root; default remote refs for source and local filesystem for installed packages. Nested repositories, remote-only repositories and non-literal imports need separate review. Activity is not inferred from dependency presence.",
   "repositories": [
     {
@@ -101,6 +101,12 @@
             "dependencies": "17.9.0"
           }
         }
+      ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-preflight/composed-i05/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-preflight/composed-i05/inputs/packages/api/package.json",
+        "docs/audits/2026-10-03-i05-retirement-outcomes/ci-pending-registry/committed-inputs/package.json",
+        "docs/audits/2026-10-03-i05-retirement-outcomes/ci-pending-registry/committed-inputs/packages/api/package.json"
       ],
       "locks": [
         {
@@ -204,6 +210,20 @@
             "dependencies": "15.50.6"
           }
         }
+      ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/backend/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/core/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/frontend/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/react/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/shared-types/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/current-main/candidate-install/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/current-main/candidate-install/packages/backend/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/current-main/candidate-install/packages/core/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/current-main/candidate-install/packages/frontend/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/current-main/candidate-install/packages/react/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/current-main/candidate-install/packages/shared-types/package.json"
       ],
       "locks": [
         {
@@ -309,6 +329,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "apps/dashboard/pnpm-lock.yaml",
@@ -395,6 +416,7 @@
           "localDeclaration": null
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "apps/dashboard/pnpm-lock.yaml",
@@ -460,6 +482,10 @@
           }
         }
       ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-candidate/candidate-inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-candidate/candidate-inputs/packages/frontend/package.json"
+      ],
       "locks": [
         {
           "path": "bun.lock",
@@ -512,6 +538,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -541,6 +568,7 @@
       "checkoutSha": "cb876befed0a7d1418261c0e6993ed0d2fe1efdb",
       "checkoutDirtyEntries": 0,
       "packages": [],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -579,6 +607,11 @@
             "dependencies": "^15.10.1"
           }
         }
+      ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/backend/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/frontend/package.json"
       ],
       "locks": [
         {
@@ -648,6 +681,13 @@
             "dependencies": "15.10.1"
           }
         }
+      ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/console/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/reviewer/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/packages/backend/package.json"
       ],
       "locks": [
         {
@@ -725,6 +765,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -753,7 +794,7 @@
       "repository": "examples",
       "ref": "origin/main",
       "sha": "ec05b5b0d45debd01eadf2fce9c2423d0a31a3c1",
-      "fetch": "failed; ref may be stale",
+      "fetch": "succeeded",
       "checkoutSha": "1762b1432080a83a6165c5640a73fe53a893e339",
       "checkoutDirtyEntries": 0,
       "packages": [
@@ -799,6 +840,9 @@
             "dependencies": "6.2.1"
           }
         }
+      ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-expo-candidate-adoption/candidate-install/package.json"
       ],
       "locks": [
         {
@@ -865,6 +909,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -931,6 +976,11 @@
             "peerDependencies": ">=10.16.0"
           }
         }
+      ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/frontend/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/package.json"
       ],
       "locks": [
         {
@@ -1040,6 +1090,13 @@
           }
         }
       ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/backend/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/frontend/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/candidate-install/packages/shared-types/package.json",
+        "docs/audits/2026-10-03-final-sdk-source-compat/raw-transport/inputs/package.json"
+      ],
       "locks": [
         {
           "path": "bun.lock",
@@ -1068,7 +1125,7 @@
           "status": "no text locator resolved"
         }
       ],
-      "importFileCount": 277,
+      "importFileCount": 276,
       "ownershipCandidates": [
         "packages/frontend/app/(pages)/_layout.tsx",
         "packages/frontend/app/_layout.tsx",
@@ -1111,6 +1168,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -1162,6 +1220,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -1224,7 +1283,7 @@
       "repository": "Mercaria",
       "ref": "origin/main",
       "sha": "7aaea15f0eb921f1273d672ce45f2c058fee660e",
-      "fetch": "failed; ref may be stale",
+      "fetch": "succeeded",
       "checkoutSha": "e5597f9936becf78f99c3cb3ef1982750be2397f",
       "checkoutDirtyEntries": 0,
       "packages": [
@@ -1289,6 +1348,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -1426,6 +1486,14 @@
           }
         }
       ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/courier-app/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/fleet-dashboard/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/frontend/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/tracker-app/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/package.json"
+      ],
       "locks": [
         {
           "path": "bun.lock",
@@ -1472,7 +1540,7 @@
       "repository": "Move",
       "ref": "origin/main",
       "sha": "fd7b4967777ae16a2b0589359fce3ddba62e2353",
-      "fetch": "failed; ref may be stale",
+      "fetch": "succeeded",
       "checkoutSha": "8299d226b31cd35dabb024cc5d29801fb104c79c",
       "checkoutDirtyEntries": 1,
       "packages": [
@@ -1492,6 +1560,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -1550,6 +1619,11 @@
             "dependencies": "17.19.3"
           }
         }
+      ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/apps/app/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/package.json"
       ],
       "locks": [
         {
@@ -1635,6 +1709,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -1660,7 +1735,7 @@
       "repository": "oxy",
       "ref": "origin/main",
       "sha": "0f0dfb0a7b933aa997661a46d72513d6d96efa14",
-      "fetch": "succeeded",
+      "fetch": "failed; ref may be stale",
       "checkoutSha": "51e1f830b9b55934a0af8e2e89d8c455702fdc2b",
       "checkoutDirtyEntries": 9,
       "packages": [
@@ -1847,6 +1922,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": ".github/scripts/release-runtime/package-lock.json",
@@ -2028,6 +2104,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "tools/rn-host-spike/fidelity/package-lock.json",
@@ -2161,6 +2238,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -2255,6 +2333,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -2329,6 +2408,13 @@
             "dependencies": "15.0.0"
           }
         }
+      ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/frontend/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/studio/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/packages/backend/package.json"
       ],
       "locks": [
         {
@@ -2407,6 +2493,12 @@
           }
         }
       ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/apps/web/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/apps/api/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/package.json"
+      ],
       "locks": [
         {
           "path": "bun.lock",
@@ -2462,6 +2554,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "bun.lock",
@@ -2565,6 +2658,12 @@
           }
         }
       ],
+      "historicalManifests": [
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/frontend/package.json",
+        "docs/audits/2026-10-03-final-sdk-frontend/inputs/packages/ui/package.json",
+        "docs/audits/2026-10-03-final-sdk-receiver/inputs/package.json"
+      ],
       "locks": [
         {
           "path": "bun.lock",
@@ -2635,6 +2734,7 @@
           }
         }
       ],
+      "historicalManifests": [],
       "locks": [
         {
           "path": "willo-claim-ui/bun.lock",
@@ -2655,12 +2755,59 @@
   ],
   "skipped": [
     {
+      "repository": "ActivityWallpaper",
+      "sha": "8565524785ab73cb6693552e986c604cda4db0c3",
+      "fetch": "succeeded",
+      "reason": "No direct Bloom dependency or source mention at inspected ref",
+      "historicalManifests": []
+    },
+    {
       "repository": "Bloom",
       "reason": "Library under audit, not a consumer"
     },
     {
+      "repository": "Eufesio",
+      "sha": "f89f7935df14d33700273f93e2e9dd60b1628754",
+      "fetch": "succeeded",
+      "reason": "No direct Bloom dependency or source mention at inspected ref",
+      "historicalManifests": []
+    },
+    {
+      "repository": "expo",
+      "reason": "External platform dependency checkout, not an Oxy consumer repository"
+    },
+    {
       "repository": "GWJ",
       "reason": "Project rules exclude Oxy UI adoption"
+    },
+    {
+      "repository": "Kaana",
+      "sha": "07d86b475a563be7aa1824781727c3ec4dcb460f",
+      "fetch": "succeeded",
+      "reason": "No direct Bloom dependency or source mention at inspected ref",
+      "historicalManifests": []
+    },
+    {
+      "repository": "mercaria-woocommerce",
+      "sha": "a730cb92087fd1fe3ea15f8fe8ecb8adf8ec3372",
+      "fetch": "succeeded",
+      "reason": "No direct Bloom dependency or source mention at inspected ref",
+      "historicalManifests": []
+    },
+    {
+      "repository": "oxy-infra",
+      "sha": "0136448ca930a5970b4444b118d2bf0234a82294",
+      "fetch": "succeeded",
+      "reason": "No direct Bloom dependency or source mention at inspected ref",
+      "historicalManifests": []
+    },
+    {
+      "repository": "react-native",
+      "reason": "External platform dependency checkout, not an Oxy consumer repository"
+    },
+    {
+      "repository": "react-native-screens",
+      "reason": "External platform dependency checkout, not an Oxy consumer repository"
     }
   ]
 }

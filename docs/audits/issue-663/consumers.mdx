@@ -18,7 +18,7 @@ node scripts/audit-bloom-consumers.mjs /path/to/Oxy --fetch --output=docs/audits
 ```
 
 The [snapshot](./consumer-census.json) records the exact default-branch SHA,
-fetch result, checkout SHA/dirty count, every discovered direct dependency
+fetch result (before dependency discovery), checkout SHA/dirty count, every discovered direct dependency
 manifest, text-lock locators and independently resolved installed package for
 that workspace. Source comes from git objects, not dirty files. Installed
 versions come from the local filesystem and may therefore differ from that
@@ -38,8 +38,10 @@ and skipped repositories rather than silently declaring them current.
 
 The 2026-11-08 snapshot contains 30 repository candidates and 74 direct
 dependency manifests after excluding historical audit manifests. Fetch succeeded
-for 27 candidates; `examples`, `Mercaria` and `Move` timed out and retain explicit
-stale-ref warnings. `Astro` and `Astro-legacy` point at the same source SHA and
+for 29 candidates; `oxy` timed out and retains an explicit stale-ref warning.
+Non-consumers also retain their inspected SHA and fetch status. The upstream
+Expo, React Native and react-native-screens dependency checkouts are explicitly
+excluded by their canonical remote, rather than treated as product apps. `Astro` and `Astro-legacy` point at the same source SHA and
 must not be counted as two active products without further classification.
 BloomAiIcons has source mentions but no direct Bloom dependency; its project
 exclusion still needs to be applied during adoption classification.

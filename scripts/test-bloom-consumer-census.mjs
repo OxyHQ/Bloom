@@ -78,3 +78,68 @@ test('keeps remote source, dirty manifests and per-workspace installed artifacts
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('refreshes a stale remote ref before discovering a new consumer', () => {
+  const root = mkdtempSync(join(tmpdir(), 'bloom-consumers-remote-'));
+  const remote = join(root, 'remote.git');
+  const writer = join(root, '.writer');
+  const consumer = join(root, 'Consumer');
+  const run = (...args) =>
+    execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  try {
+    run('init', '--bare', '--initial-branch=main', remote);
+    run('clone', remote, writer);
+    mkdirSync(join(writer, 'docs/audits/old'), { recursive: true });
+    writeFileSync(join(writer, 'package.json'), '{"name":"consumer"}');
+    writeFileSync(
+      join(writer, 'docs/audits/old/package.json'),
+      '{"dependencies":{"@oxy.so/bloom":"0.1.0"}}',
+    );
+    run('-C', writer, 'add', '.');
+    run(
+      '-C',
+      writer,
+      '-c',
+      'user.name=Fixture',
+      '-c',
+      'user.email=fixture@example.invalid',
+      'commit',
+      '-m',
+      'before adoption',
+    );
+    run('-C', writer, 'push', 'origin', 'main');
+    run('clone', remote, consumer);
+    const stale = JSON.parse(execFileSync(process.execPath, [script, root], { encoding: 'utf8' }));
+    assert.equal(stale.repositories.length, 0, 'historical manifests alone are not consumers');
+    assert.equal(stale.skipped[0].fetch, 'not requested; ref may be stale');
+    writeFileSync(
+      join(writer, 'package.json'),
+      '{"name":"consumer","dependencies":{"@oxy.so/bloom":"17.22.0"}}',
+    );
+    writeFileSync(join(writer, 'Screen.tsx'), 'import { Screen } from "@oxy.so/bloom/screen";');
+    run('-C', writer, 'add', '.');
+    run(
+      '-C',
+      writer,
+      '-c',
+      'user.name=Fixture',
+      '-c',
+      'user.email=fixture@example.invalid',
+      'commit',
+      '-m',
+      'adopt Bloom',
+    );
+    run('-C', writer, 'push', 'origin', 'main');
+    const expected = run('-C', writer, 'rev-parse', 'HEAD');
+    const fresh = JSON.parse(
+      execFileSync(process.execPath, [script, root, '--fetch'], { encoding: 'utf8' }),
+    );
+    assert.equal(fresh.repositories.length, 1);
+    assert.equal(fresh.repositories[0].sha, expected);
+    assert.equal(fresh.repositories[0].fetch, 'succeeded');
+    assert.notEqual(fresh.repositories[0].checkoutSha, expected);
+    assert.deepEqual(fresh.repositories[0].ownershipCandidates, ['Screen.tsx']);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
