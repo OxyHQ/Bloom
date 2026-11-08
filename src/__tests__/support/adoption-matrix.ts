@@ -545,7 +545,9 @@ export function renderAdoptionMatrix(): string {
   out.push('');
   out.push('| verdict | means |');
   out.push('| --- | --- |');
-  out.push('| `reads` | a matching contract source signal exists in the family; not proof for every exported part |');
+  out.push(
+    '| `reads` | a matching contract source signal exists in the family; not proof for every exported part |',
+  );
   out.push('| `delegated` | it hands the decision to a child that reads it |');
   out.push(
     '| `n/a¹` | the derivation matched something that is not the contract\u2019s subject — the reason is below |',
