@@ -2,7 +2,7 @@
   "name": "@oxy.so/bloom",
   "version": "15.71.0",
   "packageManager": "bun@1.4.3",
-  "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
+  "description": "Bloom UI \u2014 Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "types": "lib/typescript/commonjs/index.d.ts",
@@ -3913,8 +3913,7 @@
     "!**/__mocks__/**",
     "!**/*.stories.*",
     "!**/*.test.*",
-    "!**/*.spec.*",
-    "assets/character-runtime"
+    "!**/*.spec.*"
   ],
   "workspaces": [
     "packages/*"
@@ -4001,7 +4000,7 @@
     "generate:preset-accent-hues": "bun scripts/generate-preset-accent-hues.ts",
     "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
     "generate:adoption-matrix": "bun scripts/generate-adoption-matrix.ts",
-    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts && bun run build:avatar-runtime",
+    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts",
     "build": "bob build",
     "postbuild": "node scripts/verify-package.mjs && node scripts/verify-build-freshness.mjs --worktree",
     "verify:package": "node scripts/verify-package.mjs",
@@ -4015,7 +4014,7 @@
     "clean": "rm -rf lib",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
-    "build:avatar-runtime": "node scripts/build-avatar-runtime.mjs"
+    "build:avatar-vectors": "node scripts/build-avatar-vector-assets.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
@@ -4084,8 +4083,7 @@
     "react-native-reanimated": ">=3.13.0",
     "react-native-safe-area-context": ">=5.0.0",
     "react-native-screens": ">=3.16.0",
-    "react-native-svg": ">=13.0.0",
-    "react-native-webview": ">=13.0.0"
+    "react-native-svg": ">=13.0.0"
   },
   "peerDependenciesMeta": {
     "@lottiefiles/dotlottie-react": {
@@ -4125,9 +4123,6 @@
       "optional": true
     },
     "react-native-pager-view": {
-      "optional": true
-    },
-    "react-native-webview": {
       "optional": true
     }
   },

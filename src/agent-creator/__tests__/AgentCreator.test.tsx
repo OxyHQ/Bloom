@@ -1,5 +1,7 @@
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
+import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
+import { AVATAR_EYES } from '../../agent-avatar/catalog-ids';
 import { CharacterRuntimeFixture } from './support/character-runtime-fixture';
 import { Select } from '../../select';
 import { CHARACTER_OPTIONS, CHARACTER_TEMPLATES } from '../constants';
@@ -10,6 +12,10 @@ import { EmotionPicker } from '../EmotionPicker';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { AgentCreator } from '../AgentCreator';
 import type { AgentCreatorAgent } from '../types';
+
+jest.mock('../../agent-avatar/CharacterAvatar', () => ({
+  CharacterAvatar: jest.fn(() => null),
+}));
 
 const agent: AgentCreatorAgent = {
   id: 'design',
@@ -123,8 +129,8 @@ describe('the character editor', () => {
     global.cancelAnimationFrame = jest.fn();
   });
 
-  it('offers no character controls without a runtime to draw them', () => {
-    // An app that opts out of the hosted default (BLOOM_CHARACTER_RUNTIME_URL) has no runtime.
+  it('keeps every SVG character control available without a WebGL runtime', () => {
+    // The SVG preview and thumbnails are independent of the hosted WebGL module.
     const view = render(
       <CharacterRuntimeFixture value={{ runtimeUrl: undefined }}>
         <BloomThemeProvider mode="light" colorPreset="teal">
@@ -132,29 +138,45 @@ describe('the character editor', () => {
         </BloomThemeProvider>
       </CharacterRuntimeFixture>,
     );
-    expect(view.queryByTestId('agent-creator-character-controls')).toBeNull();
-    expect(view.queryByLabelText('Blue avatar')).toBeNull();
-    expect(view.UNSAFE_queryByType(ShapeArc)).toBeNull();
-    expect(view.UNSAFE_queryByType(EmotionPicker)).toBeNull();
+    expect(view.getByTestId('agent-creator-character-controls')).toBeTruthy();
+    expect(view.getByLabelText('Blue avatar')).toBeTruthy();
+    expect(view.UNSAFE_getByType(ShapeArc)).toBeTruthy();
+    expect(view.UNSAFE_getByType(EmotionPicker)).toBeTruthy();
+    for (const avatar of view.UNSAFE_getAllByType(CharacterAvatar)) {
+      expect(avatar.props.renderer).toBe('svg');
+    }
   });
 
-  it('offers every body and every eye style, as characters', () => {
+  it('offers distinct editor silhouettes and every eye style, as characters', () => {
     const { view } = controlled();
     const shapes = view.UNSAFE_getByType(ShapeArc).props.choices;
-    expect(shapes.map((choice: { id: string }) => choice.id)).toHaveLength(21);
-    expect(new Set(shapes.map((choice: { id: string }) => choice.id)).size).toBe(21);
+    expect(shapes.map((choice: { id: string }) => choice.id)).toEqual(
+      CHARACTER_OPTIONS.shape.map(([id]) => id),
+    );
+    expect(new Set(shapes.map((choice: { id: string }) => choice.id)).size).toBe(
+      CHARACTER_OPTIONS.shape.length,
+    );
     expect(shapes[0].character).toMatchObject({ preset: 'blue_beret', shape: shapes[0].id });
-    expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(12);
+    expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(AVATAR_EYES.length);
     expect(view.UNSAFE_getByType(ShapeArc).props.value).toBe('six_lobed_flower');
     expect(view.UNSAFE_getByType(EmotionPicker).props.value).toBe('oval');
   });
 
+  it('selects the shared silhouette for a saved legacy shape without rewriting it', () => {
+    const saved = { ...agent, avatar: { preset: 'purple_heart' as const } };
+    const { view } = controlled(saved);
+    const arc = view.UNSAFE_getByType(ShapeArc).props;
+    expect(arc.value).toBe('bot_heart');
+    expect(arc.choices.some((choice: { id: string }) => choice.id === 'heart')).toBe(false);
+    expect(saved.avatar).toEqual({ preset: 'purple_heart' });
+  });
+
   it('writes the whole character when a body is chosen, keeping the face, the hat and the paint', () => {
     const { view, last } = controlled();
-    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('heart'));
+    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('bot_heart'));
     expect(last()).toEqual({
       preset: 'blue_beret',
-      shape: 'heart',
+      shape: 'bot_heart',
       eyes: 'oval',
       eyewear: 'none',
       accessory: 'felipe_beret',
@@ -241,13 +263,15 @@ describe('the character editor', () => {
     const { view, last } = controlled({ ...agent, avatar: CHARACTER_TEMPLATES.blue_beret! });
     const controls = () => view.UNSAFE_getAllByType(Select);
     expect(controls()[0]!.props.value).toBe('blue_beret');
-    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('heart'));
+    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('bot_heart'));
     expect(controls()[0]!.props.value).toBe('custom');
     act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('six_lobed_flower'));
     expect(controls()[0]!.props.value).toBe('blue_beret');
     fireEvent(controls()[0]!, 'valueChange', 'alfred');
     expect(last()).toEqual(CHARACTER_TEMPLATES.alfred);
-    expect(CHARACTER_OPTIONS.eyes.length).toBe(12);
+    expect(CHARACTER_OPTIONS.eyes.map((option) => option[0]).sort()).toEqual(
+      [...AVATAR_EYES].sort(),
+    );
   });
 
   it('replays working on the preview without editing the saved character', () => {

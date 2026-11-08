@@ -1,0 +1,83 @@
+{
+  "source": "https://github.com/raphaelsalaja/raphaelsalaja/tree/48341c600c1ac7271833d9df81c5b390fe899427/components/bots",
+  "commit": "48341c600c1ac7271833d9df81c5b390fe899427",
+  "purpose": "Provenance of the user-requested vector reference geometry. Generation uses the stored outlines; publication rights require separate review.",
+  "fetchedAt": "2026-11-07",
+  "license": {
+    "detected": null,
+    "evidence": "GitHub repository metadata reports license:null; no LICENSE or COPYING file is present at the repository root. Original attribution comments retained. Distribution permission is not established by this snapshot."
+  },
+  "components": [
+    {
+      "path": "components/bots/card.tsx",
+      "gitBlobSha": "67cf44be64550ca6e30f09be2132ed626aaf0c07",
+      "bytes": 2458
+    },
+    {
+      "path": "components/bots/face.ts",
+      "gitBlobSha": "98dbef03c546a3ecb6dd3a76232793be2b2d04d5",
+      "bytes": 11264
+    },
+    {
+      "path": "components/bots/geometry.ts",
+      "gitBlobSha": "ea7fba5a86150de50fc83a2aae6474ca9a605efc",
+      "bytes": 38276
+    },
+    {
+      "path": "components/bots/index.tsx",
+      "gitBlobSha": "4b10b87fab20a5bb509f0a5eb235cb331fa3cc64",
+      "bytes": 1382
+    },
+    {
+      "path": "components/bots/mark.tsx",
+      "gitBlobSha": "4f689b7bde38b57ae04ef6d16e3d9189f3f91941",
+      "bytes": 5405
+    },
+    {
+      "path": "components/bots/pile.tsx",
+      "gitBlobSha": "28cf06f5cd490bda34640e434bf74ae605247032",
+      "bytes": 18332
+    },
+    {
+      "path": "components/bots/styles.module.css",
+      "gitBlobSha": "daa36c36ffeb79f6042e67ffeae27378eb823c60",
+      "bytes": 6530
+    }
+  ],
+  "supportFiles": [
+    "data/bots.ts",
+    "lib/sounds.ts",
+    "components/video/index.tsx",
+    "components/section/index.tsx",
+    "components/section/styles.module.css",
+    "styles/mdx.css",
+    "package.json"
+  ],
+  "architecture": {
+    "renderer": "React SVG paths and groups; imperative requestAnimationFrame writes to transforms and eye opacity. No WebGL, Three.js, model downloads or sprite sheets in the bot renderer. Browser rendering/compositing may still use GPU.",
+    "animation": "Procedural expressions, blinking, gaze, squash/stretch, hopping, breathing and idle motion in face.ts; mark.tsx consumes body transform, eye squash and opacity. SVG geometry is fixed; it does not reconstruct a rotating 3D mesh.",
+    "physics": "pile.tsx uses matter-js for optional 2D collisions/dragging and procedural Web Audio bumps.",
+    "dependencies": "Core: React, DOM/SVG and styles.module.css, with BotShape/BotColor types from data/bots.ts. Gallery/pile also require Next.js Link, matter-js, Section, Video, sounds and host theme CSS variables. Full upstream package.json retained for dependency provenance; dependencies not installed.",
+    "migration": "Existing Bloom AvatarCharacter and authored 3D clips are not consumed by this implementation. Preserving current silhouettes, accessories and motion requires a separate adaptation/projection or baking design. Native needs a native renderer adaptation; the current implementation directly depends on DOM APIs.",
+    "validation": "Original seven component files must match recorded Git blob hashes. This is source reference, not a runnable standalone app or a benchmark."
+  },
+  "sourceFileCount": 14,
+  "sourceBytes": 105208,
+  "componentBytes": 83647,
+  "sha256": {
+    "package.json": "184e9b692af595f113482a3a5453be28ff375a8fe5a7411a70ca499126e7d601",
+    "data/bots.ts": "2e64658b4159519525d4681c6642726e8cf46f6e1a9ab4632bbe08c2109ec746",
+    "styles/mdx.css": "46ac314c5443747360e029f94bfe766b3525b782f97ab57a0e7a231c33dea310",
+    "lib/sounds.ts": "8da9897828b5c7e0a00774a0cbd782e692782ed0e70a645517be5b67cb4afd5c",
+    "components/bots/mark.tsx": "13ef4e75b71e10008017eb9c02011f7b713258ca3724341908b4448b80e42f4d",
+    "components/bots/card.tsx": "3c972fd5d6200181ef4a59acaf617ab06d7a2410a83c3155d0e5ead8896ba672",
+    "components/bots/face.ts": "d295584fce48fc4230f06e908ddbe3986f0c8ec9c55374900c53127a131998b4",
+    "components/bots/styles.module.css": "0780bc6085ae088c5679b52892d681b8df35b1f80753cfa2f98f3808e39a8aab",
+    "components/bots/index.tsx": "ec410d4c6746d72e5b9eb8b2f7f3b199be9a47c8ec2a302e274a3210f4fde995",
+    "components/bots/geometry.ts": "a1b9418545ac0d08264a836ec4364e693ad88ec59d97831443f06ca8d565728e",
+    "components/bots/pile.tsx": "a94bd7b346c3ecf51da2feccfa9d1c654f7154f11c72d634f43eebfa96092477",
+    "components/section/styles.module.css": "d26bb57f891e261f538296252d8dc84319d25a663e3ce5bdcf3e948b9fc1bd5a",
+    "components/section/index.tsx": "461f1654ba6b220de947b4d19f6576b84495f119ec7700763bc836354ca668cb",
+    "components/video/index.tsx": "65e4c307cd2ae239057d42da96560ac17ff76ff7cc37428bd3a58461f7ebc28a"
+  }
+}

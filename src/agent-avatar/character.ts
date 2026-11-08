@@ -13,6 +13,7 @@ import {
   type AvatarShapeId,
 } from './catalog-ids';
 import { CHARACTER_COLORS } from './character-colors';
+import { normalizeAvatarSkinColor } from './skin-color';
 import { CHARACTER_PRESET_DEFAULTS } from './character-preset-defaults';
 
 /**
@@ -37,7 +38,7 @@ export type AvatarCharacter = {
   accessory?: AvatarAccessoryId;
   /** Named paint. */
   color?: AvatarColorId;
-  /** Exact paint as `#rrggbb`. It wins over `color`. */
+  /** Skin paint as `#rrggbb`, normalized to the minimum lightness. Wins over `color`. */
   bodyColor?: string;
   /** Multiplier (0.5 to 1.5) on the shape's eye separation. The eyes keep their size. */
   eyeSpacing?: number;
@@ -86,12 +87,14 @@ export function resolveAvatarCharacter(character: AvatarCharacter): ResolvedAvat
   const shape = part('shape', AVATAR_SHAPES);
   const eyes = part('eyes', [...AVATAR_EYES, 'none'] as const);
   const eyewear = part('eyewear', AVATAR_EYEWEAR);
-  const accessory = part('accessory', AVATAR_ACCESSORIES);
+  // Retired accessory IDs remain readable in saved characters, but never render.
+  const requestedAccessory = part('accessory', AVATAR_ACCESSORIES);
+  const accessory = requestedAccessory === 'orb' ? 'none' : requestedAccessory;
 
   const hex = (value: unknown) => {
     if (typeof value !== 'string' || !/^#[0-9a-f]{6}$/i.test(value))
       throw new Error('Invalid avatar body color.');
-    return value.toLowerCase();
+    return normalizeAvatarSkinColor(value);
   };
   let paint: ResolvedAvatarCharacter['paint'];
   if (character.bodyColor !== undefined) paint = { bodyColor: hex(character.bodyColor) };
@@ -157,7 +160,10 @@ export function parseAvatarCharacter(value: unknown): AvatarCharacter {
   const candidate = value as AvatarCharacter;
   resolveAvatarCharacter(candidate);
   const { bodyColor, ...rest } = candidate;
-  return { ...rest, ...(bodyColor === undefined ? {} : { bodyColor: bodyColor.toLowerCase() }) };
+  return {
+    ...rest,
+    ...(bodyColor === undefined ? {} : { bodyColor: normalizeAvatarSkinColor(bodyColor) }),
+  };
 }
 
 /** The character a resolved one writes down: complete, so it survives a change of preset. */
@@ -192,7 +198,7 @@ export function updateAvatarCharacter(
   if (color !== undefined || bodyColor !== undefined) {
     delete next.color;
     delete next.bodyColor;
-    if (bodyColor !== undefined) next.bodyColor = bodyColor;
+    if (bodyColor !== undefined) next.bodyColor = normalizeAvatarSkinColor(bodyColor);
     else next.color = color;
   }
   return next;

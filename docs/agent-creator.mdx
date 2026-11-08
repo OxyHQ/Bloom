@@ -1,6 +1,6 @@
 ---
 title: AgentCreator
-description: Controlled agent profile editor with a live 3D avatar, eye orbit, shape arc, custom color, and speech preferences.
+description: Controlled agent profile editor with a live SVG avatar, eye orbit, shape arc, custom color, and speech preferences.
 order: 105
 ---
 
@@ -29,23 +29,27 @@ parts and a paint. Every control writes one edit through `updateAvatarCharacter`
 saved character is always written out in full: choosing a body keeps the face, the hat and
 the paint, and a `color` and a `bodyColor` are never held together.
 
-The preview is 162px. The character controls need `AgentAvatarProvider`'s runtime to draw
-their thumbnails; without one the editor shows the profile fields and preferences only.
+The preview is 162px. The editor, eye chips and shape silhouettes explicitly use the SVG
+renderer. They remain available without a hosted WebGL runtime; the editor does not request
+Three, create a canvas or load the 3D character engine. The controlled `AvatarCharacter`
+contract and the profile/preferences layout are unchanged.
 
-- **Shape arc:** all 21 bodies in one 210px circular track (an unbounded index, spring, drag and wheel). Press a silhouette; arrows, Home and End select on web. Crossing between bodies retains the mounted avatar. RTL reverses horizontal movement.
-- **Eye orbit:** the 12 catalog eye styles, including Todd, Clippo and Single eye (`cyclops`). Each body defines its own eye positions and size, so every style follows the layout of the shape it sits on.
-- **Colors:** the named palette (`AVATAR_COLORS`) and a custom `#rrggbb` picker. The engine bounds the displayed pigment's luminance; the saved value is untouched.
+- **Shape arc:** 26 distinct silhouettes, including the 13 flat forms, in one 210px circular track (an unbounded index, spring, drag and wheel). Press a silhouette; arrows, Home and End select on web. Crossing between bodies retains the mounted avatar. RTL reverses horizontal movement.
+- **Eye orbit:** the 13 catalog eye styles, including Todd, Clippo and Single eye (`cyclops`). Each body defines its own eye positions and size, so every style follows the layout of the shape it sits on.
+- **Colors:** the named palette (`AVATAR_COLORS`) and a custom `#rrggbb` picker. The saved color remains the character paint; editing it retains the selected shape and parts.
 - **Template, eyewear and accessory:** Bloom Select rows. Templates (`CHARACTER_TEMPLATES`) are creation choices, complete characters that start Felipe orange with sleepy eyes where the saved `blue_beret` preset is blue with oval ones; a character that is exactly one shows its name, and any edit shows Custom.
 
 Upright eye chips orbit at a 116px radius; dragging or a mouse wheel rotates the orbit. Hover, focus, backgrounding and reduced motion pause automatic movement. The shape selector uses a 210px circular track, an unbounded index, spring, drag and wheel geometry. Choose a silhouette by pressing it; keyboard arrows, Home and End select shapes on web. BloomProvider’s direction reverses horizontal movement in RTL.
 
 Nine glossy color presets and the shared custom picker edit both original and migrated bodies. The picker contains a saturation/brightness field, hue rail and hex entry. HSV state preserves the selected hue when the field reaches black or gray; invalid hex input resets to the last emitted color. Choosing a named engine swatch clears its custom RGB override. Speech and appearance edits preserve the agent’s identity and unrelated fields.
 
-The preview accepts pointer and touch reactions. **React** and **Work** buttons also support keyboard activation and preview the original engine’s animations on either body source. Working returns to the interactive preview after its episode. Eye chips and original shape chips use catalog PNG thumbnails. Migrated shape chips use cached static SVG silhouettes from their actual contours, matching the catalog’s flat pink artwork. The shape wheel renders no avatars or 3D canvases.
+Equivalent legacy shape IDs share one editor choice. Opening a saved avatar only aliases its selected chip; it never rewrites its shape or template. Selecting a different silhouette writes the chosen canonical ID. Catalog comparison stories retain all saved IDs for compatibility inspection.
+
+The preview accepts pointer and touch reactions. **React** and **Work** buttons also support keyboard activation and play the SVG character's motion, including the hands and screen during work. Working returns to the interactive preview after its episode. Eye chips and body-only shape chips are static SVG portraits with the current paint; they do not use PNGs or 3D canvases.
 
 The `clippo` preset is a grey open wire body with large ring eyes and asymmetric eyebrows. Its body and eyes are independent catalog choices: the Clippo eyes stay selected when another body is chosen (`{ shape: 'heart', eyes: 'clippo', … }`).
 
-Eyewear and accessories use Bloom Select; `'none'` removes either. Headwear, Bulb, bow and Tuft attach to each body's anchors, eyewear fits the final eye geometry and headphones use body anchors. A character that is exactly its preset plays the preset's authored reaction; once edited, the reaction is retargeted onto the new parts (see [Agent Avatar](/docs/agent-avatar)). Work keeps the chosen body and fitted parts. Catalog titles keep their English names by default; hosts translate them through `labels.characterOption(category, id, title)`, and control labels follow the editor locale.
+Eyewear and accessories use Bloom Select; `'none'` removes either. Headwear, Bulb, bow and Tuft attach to each body's anchors, eyewear fits the final eye geometry and headphones use body anchors. The SVG renderer fits the chosen parts to the character and preserves its motion. Felipe uses the same reaction as Peri, keeping his orange paint and sleepy eyes; the beret follows its own motion instead of spinning with the body. Work keeps the chosen body and fitted parts. Catalog titles keep their English names by default; hosts translate them through `labels.characterOption(category, id, title)`, and control labels follow the editor locale.
 
 ## Preferences and speech
 
@@ -67,4 +71,4 @@ The original rainbow artwork and glossy color artwork are retained. Web applies 
 
 ## Validation boundary
 
-Tests verify profile and avatar edits preserve unrelated data, preference updates, host speech preview, color round trips and shape geometry. Jest does not execute gesture arbitration or the Reanimated frame loop; motion, wheel hit testing, custom picker dragging, and native speech providers require browser/device verification.
+Tests verify profile and avatar edits preserve unrelated data, preference updates, host speech preview, color round trips, canonical shape choices, SVG rendering selection for every preview, and availability without a WebGL runtime. Jest does not execute gesture arbitration or the Reanimated frame loop; motion, wheel hit testing, custom picker dragging, and native speech providers require browser/device verification.

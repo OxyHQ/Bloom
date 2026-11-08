@@ -3,7 +3,8 @@ import {
   avatarCharacterOf,
   resolveAvatarCharacter,
 } from '../agent-avatar/character';
-import { NATIVE_CHARACTER_SHAPES } from '../agent-avatar/character-shapes';
+import { EDITOR_SHAPE_CHOICES } from './shape-choices';
+import { SVG_CHARACTER_SHAPES } from '../agent-avatar/svg-catalog';
 import type { AgentLanguage, AgentPreferences } from './types';
 export const AGENT_LANGUAGES = [
   { id: 'auto', label: 'Auto-detect' },
@@ -62,9 +63,11 @@ export const CHARACTER_PRESETS = [
   { id: 'gus', title: 'Thelma' },
   { id: 'blue_spectacles', title: 'Josh' },
   { id: 'lime_headphones', title: 'Iggy' },
+  { id: 'peri', title: 'Peri' },
+  ...SVG_CHARACTER_SHAPES.map(([id, title]) => ({ id, title })),
 ] as const;
 export const CHARACTER_OPTIONS = {
-  shape: NATIVE_CHARACTER_SHAPES,
+  shape: EDITOR_SHAPE_CHOICES,
   color: [
     ['pink', 'Pink'],
     ['orchid', 'Orchid'],
@@ -77,6 +80,7 @@ export const CHARACTER_OPTIONS = {
     ['coral', 'Coral'],
   ],
   eyes: [
+    ['bot', 'Bot'],
     ['cyclops', 'Single eye'],
     ['clippo', 'Clippo'],
     ['todd', 'Todd'],
@@ -119,7 +123,31 @@ export { CHARACTER_COLORS } from '../agent-avatar/character-colors';
  * preset is blue with oval ones), so the character that results carries no hidden template id.
  */
 export const CHARACTER_TEMPLATES: Record<string, AvatarCharacter> = {
+  ...Object.fromEntries(
+    SVG_CHARACTER_SHAPES.map(([shape], index) => [
+      shape,
+      {
+        shape,
+        eyes: 'bot',
+        eyewear: 'none',
+        accessory: 'none',
+        bodyColor:
+          [
+            '#171717',
+            '#777777',
+            '#1084fe',
+            '#00bca6',
+            '#00c972',
+            '#ff9800',
+            '#ff6700',
+            '#ff309b',
+            '#9159fe',
+          ][index % 9] ?? '#171717',
+      } satisfies AvatarCharacter,
+    ]),
+  ),
   clippo: { preset: 'clippo' },
+  peri: { preset: 'blue_beret' },
   blue_beret: {
     shape: 'six_lobed_flower',
     eyes: 'sleepy_lids',

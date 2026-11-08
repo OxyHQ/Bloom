@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
 import type { PluginBuild } from 'esbuild';
 import tailwindcss from '@tailwindcss/vite';
-import { mergeConfig, type ViteDevServer } from 'vite';
+import { mergeConfig } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,13 +19,14 @@ const config: StorybookConfig = {
   // `templates/` holds full-screen templates as stories only: composed
   // from Bloom's components, never published (outside `src`, not in `files`).
   stories: [
-    './AvatarEngineNext.stories.tsx',
+    ...(process.env.BLOOM_AVATAR_DIAGNOSTICS === '1'
+      ? ['../scripts/avatar-fixtures/**/*.stories.@(ts|tsx)']
+      : []),
     '../src/**/*.stories.@(ts|tsx|mdx)',
     '../templates/**/*.stories.@(ts|tsx)',
     '../packages/*/src/**/*.stories.@(ts|tsx)',
   ],
   addons: ['@storybook/addon-docs'],
-  staticDirs: [{ from: '../assets/character-runtime', to: '/bloom-character' }],
   framework: {
     name: '@storybook/react-vite',
     options: {},
@@ -76,22 +77,6 @@ const config: StorybookConfig = {
     return mergeConfig(viteConfig, {
       plugins: [
         tailwindcss(),
-        {
-          name: 'bloom-character-runtime-reload',
-          // Generated ESM assets do not participate in React Fast Refresh.
-          // Reload the document so an edited adapter cannot mix with cached
-          // engine modules or capability keys from the previous revision.
-          configureServer(server: ViteDevServer) {
-            const directory = path.resolve(__dirname, '../assets/character-runtime');
-            server.watcher.add(directory);
-            const reload = (file: string) => {
-              if (file.startsWith(directory + path.sep))
-                server.ws.send({ type: 'full-reload', path: '*' });
-            };
-            server.watcher.on('change', reload);
-            server.httpServer?.once('close', () => server.watcher.off('change', reload));
-          },
-        },
         {
           name: 'bloom-expo-web-bootstrap',
           // Expo's web bridge is an empty exported function plus a side-effect

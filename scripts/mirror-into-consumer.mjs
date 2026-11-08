@@ -175,14 +175,8 @@ function mirrorAll() {
   rmSync(SCAN, { recursive: true, force: true });
   for (const rel of readdirSync(join(BLOOM, 'src'), { recursive: true }))
     if (keep(join(BLOOM, 'src', rel)) && statSync(join(BLOOM, 'src', rel)).isFile()) scanCopy(rel);
-  if (existsSync(join(BLOOM, 'assets', 'character-runtime')))
-    cpSync(
-      join(BLOOM, 'assets', 'character-runtime'),
-      join(MIRROR, 'assets', 'character-runtime'),
-      {
-        recursive: true,
-      },
-    );
+  // Remove generated WebGL assets left by an older local mirror.
+  rmSync(join(MIRROR, 'assets', 'character-runtime'), { recursive: true, force: true });
   writeFileSync(join(MIRROR, 'package.json'), `${JSON.stringify(mirroredPackage(), null, 2)}\n`);
 }
 
