@@ -2,7 +2,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Keyboard, View } from 'react-native';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BloomProvider } from '@oxy.so/bloom/provider';
 import { AppShell } from '@oxy.so/bloom/app-shell';
@@ -18,6 +18,7 @@ import {
 } from '@oxy.so/bloom-editor';
 
 function Fixture() {
+  const [readOnly, setReadOnly] = useState(false);
   const [store] = useState(() => {
     let id = 0;
     const newId = () => `fixture-${++id}`;
@@ -53,6 +54,7 @@ function Fixture() {
   }, []);
   const state = JSON.stringify({
     ime,
+    readOnly,
     focused: ui.focused,
     linking: ui.linking,
     selection: snapshot.selection,
@@ -70,8 +72,15 @@ function Fixture() {
       bottomBarKeyboardBehavior="follow"
       bottomBar={<EditorToolbar controller={controller} />}
     >
-      <ScreenScrollView>
+      <ScreenScrollView
+        onScrollEndDrag={(event) =>
+          console.info('EDITOR434_SCROLL_END', event.nativeEvent.contentOffset)
+        }
+      >
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          <Button testID="editor-read-only" onPress={() => setReadOnly(!readOnly)}>
+            {readOnly ? 'Enable editing' : 'Make read only'}
+          </Button>
           <Button testID="editor-caret-outside" onPress={() => select(2)}>
             Caret outside
           </Button>
@@ -83,6 +92,7 @@ function Fixture() {
           </Button>
         </View>
         <BlockEditor
+          readOnly={readOnly}
           store={store}
           controller={controller}
           slashItems={[]}
@@ -91,11 +101,13 @@ function Fixture() {
         <Text testID="editor-native-state">
           {JSON.stringify({
             ime,
+            readOnly,
             focused: ui.focused,
             linking: ui.linking,
             selection: snapshot.selection,
           })}
         </Text>
+        <View testID="editor-scroll-spacer" style={{ height: 600 }} />
       </ScreenScrollView>
     </Screen>
   );
@@ -106,9 +118,11 @@ export default function App() {
       <SafeAreaProvider>
         <KeyboardProvider>
           <BloomProvider fonts={false} mode="light">
-            <AppShell scroll="fixed">
-              <Fixture />
-            </AppShell>
+            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+              <AppShell scroll="fixed">
+                <Fixture />
+              </AppShell>
+            </SafeAreaView>
           </BloomProvider>
         </KeyboardProvider>
       </SafeAreaProvider>

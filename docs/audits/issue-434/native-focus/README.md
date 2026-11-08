@@ -81,3 +81,26 @@ focus and cancels the old draft, but still hides IME: this remains a failure,
 not acceptance. Injected Android Escape also hides IME and leaves the draft; no
 physical keyboard claim is made. Investigating URL onBlur lifetime before
 changing that external transition; no timer or forced refocus workaround.
+
+The external-transition investigation is resolved at the text adapter, not by
+retaining the URL field: the instrumented sequence was ScrollView responder
+release with URL still registered, then URL onBlur clearing RN state, then
+paragraph 2 focus. A same-APK comparison reproduced failure with handled taps,
+passed with always, and passed with handled plus native input responder ownership.
+No FormatBar lifetime workaround or global Screen default change was added.
+
+PR 686 (`fix/native-rich-text-responder`, final evidence at 64e65c4a) contains the
+shared text owner correction. Its exact-source Pixel run with editor 0cba1f02
+passes Apply, Cancel, paragraph-to-paragraph handoff with IME, parent scrolling,
+read-only, longpress/selection-handle drag, real Gboard replacement and one Undo.
+A background tap from URL still dismisses IME without stealing focus; explicit
+Cancel returns to editing. See that PR's docs/audits/issue-434/native-responder/final
+for reports, receipt, markers and PNGs. This remains source-candidate evidence:
+release Bloom APIs 678/680 and bloom-text 0.1.7, declare the actual minimums and
+repeat published acceptance before releasing/accepting editor 679. No iPhone or
+physical hardware Escape validation is claimed.
+
+The reusable fixture now supplies top safe-area layout (the Pixel status bar
+occupied 121 physical pixels and covered the original setup controls), a read-only
+toggle and a 600-point scroll probe. These are host/test corrections; product
+routes and ScreenScrollView's keyboardShouldPersistTaps default were unchanged.

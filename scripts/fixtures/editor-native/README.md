@@ -64,3 +64,10 @@ and Screen bottomBarKeyboardBehavior=follow. The lab uses Expo 58.0.23, RN 0.88.
 React 19.3.0, enriched-html 1.1.1, Reanimated 4.7.1 and app-preset 6.5.1. Source
 candidates are packed/extracted separately; never overwrite Bun's hardlinked
 node_modules packages. Save APK/embedded bundle hashes and source-map markers.
+
+The canonical fixture also supplies top SafeAreaView layout so Android's status
+bar cannot cover setup controls. The read-only toggle and 600-point blank scroll
+probe exercise input participation without changing product routes. The final
+source run is archived in PR 686 at
+`docs/audits/issue-434/native-responder/final`; published acceptance still requires
+the released Bloom API dependencies and the text adapter patch.
