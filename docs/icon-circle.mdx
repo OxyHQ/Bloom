@@ -28,7 +28,13 @@ import { RiShieldLine as ShieldIcon } from '@oxy.so/bloom/icons';
 | `iconStyle` | the glyph                                      |
 
 `icon` takes the component itself (`icon={ShieldIcon}`), not an element
-(`icon={<ShieldIcon />}`), so the circle can size and colour it.
+(`icon={<ShieldIcon />}`), so the circle can size and colour it. The slot accepts the shared
+`BloomIconComponent` contract and passes numeric `width`/`height` (24px for
+`lg`, 28px for the default `xl`) and `fill`. Other existing size keys retain
+their icon-token dimensions and the 64px disc. `iconStyle` remains a passthrough
+for glyphs that support styling; a string `iconStyle.color` also sets the
+canonical fill. Native color objects remain in the style for richer Bloom
+glyphs to resolve.
 
 ## The tinting rule this component is the reference for
 

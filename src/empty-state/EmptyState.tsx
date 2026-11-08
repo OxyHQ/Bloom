@@ -1,11 +1,10 @@
 import { resolvePaintMode } from '../theme/paint';
-import React, { memo, useMemo, type ComponentType, type ReactNode } from 'react';
+import React, { memo, useMemo, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
 import { Chip } from '../chip';
 import { IconCircle } from '../icon-circle';
-import type { Props as IconProps } from '../icons/shared';
 import { useMessages } from '../locale/messages';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { useThemeRecipe } from '../theme/use-theme-paint';
@@ -78,11 +77,8 @@ function EmptyStateComponent({
       illustration
     ) : Icon ? (
       media === 'circle' ? (
-        // `IconCircle` asks for an icon's FULL props (it sets `size`), which is
-        // narrower than `BloomIconComponent`'s three optional ones. Every Bloom
-        // glyph satisfies both; this is the boundary between the two spellings,
-        // and the only place in the family that needs to know there are two.
-        <IconCircle icon={Icon as ComponentType<IconProps>} size={g.circle} />
+        // Both presentations consume the same canonical icon contract.
+        <IconCircle icon={Icon} size={g.circle} />
       ) : (
         // Hidden from assistive technology: the glyph repeats what the title
         // says, and an unnamed image between a heading and its paragraph is a
