@@ -6,10 +6,7 @@
     "android": "16",
     "api": 36,
     "serial": "43221JEKB12200",
-    "displayPx": [
-      1080,
-      2400
-    ],
+    "displayPx": [1080, 2400],
     "density": 420,
     "fontScale": 1.15
   },
