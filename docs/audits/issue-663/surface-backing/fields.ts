@@ -17,12 +17,13 @@ const page = await browser.newPage({
 const output = process.env.FIELD_OUTPUT ?? '.local/issue-663/field-body';
 mkdirSync(output, { recursive: true });
 const records = [];
-for (const mode of ['light', 'dark'])
+const preset = process.env.COLOR_PRESET ?? 'blue';
+for (const mode of (process.env.MODES ?? 'light,dark').split(','))
   for (const dir of ['ltr', 'rtl'])
     for (const backing of ['black', 'white']) {
       const name = `${mode}-${dir}-${backing}`;
       await page.goto(
-        `http://127.0.0.1:6042/iframe.html?id=base-input--material-body-contrast&globals=theme:${mode};colorPreset:blue`,
+        `http://127.0.0.1:6042/iframe.html?id=base-input--material-body-contrast&globals=theme:${mode};colorPreset:${preset}`,
       );
       await page.locator('[data-testid="body-xs"]').waitFor({ timeout: 120000 });
       await page.evaluate(
@@ -135,6 +136,6 @@ for (const mode of ['light', 'dark'])
     }
 writeFileSync(
   `${output}/fields.json`,
-  JSON.stringify({ engine, browser: browser.version(), records }, null, 2) + '\n',
+  JSON.stringify({ engine, preset, browser: browser.version(), records }, null, 2) + '\n',
 );
 await browser.close();
