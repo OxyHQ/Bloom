@@ -170,3 +170,21 @@ export function edgeGlowMask(rim: SurfaceRim): string {
     .join(', ');
   return `linear-gradient(to bottom, ${top}, ${bottom})`;
 }
+
+/** Maximum edge gain at or beyond an inset, across every authored angle/depth. */
+export function maximumEdgeGain(rim: SurfaceRim, inset: number): number {
+  const depths = [inset, ...rim.depths, ...rim.glow.map(([depth]) => depth)].filter(
+    (depth) => depth >= inset,
+  );
+  const angles = [...rim.angles, ...rim.glowByAngle.map(([angle]) => angle)];
+  return Math.max(
+    0,
+    ...depths.flatMap((depth) =>
+      angles.map(
+        (angle) =>
+          rimGain(rim, depth, angle) +
+          interpolate(rim.glow, depth) * interpolate(rim.glowByAngle, angle),
+      ),
+    ),
+  );
+}
