@@ -14,7 +14,7 @@ const MARKS: readonly { mark: ToggleableMark; glyph: string; style: TextStyle }[
   { mark: 'italic', glyph: 'I', style: { fontStyle: 'italic' } },
   { mark: 'underline', glyph: 'U', style: { textDecorationLine: 'underline' } },
   { mark: 'strike', glyph: 'S', style: { textDecorationLine: 'line-through' } },
-  { mark: 'code', glyph: '</>', style: { fontSize: 12 } },
+  { mark: 'code', glyph: '</>', style: {} },
 ];
 
 export interface FormatBarProps {
@@ -50,7 +50,8 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
 
   // The link field opens on the link already there (⌘K on a link edits it).
   useEffect(() => {
-    if (editingLink) setUrl(controller.linkAtSelection() ?? '');
+    setUrl(editingLink ? (controller.linkAtSelection() ?? '') : '');
+    setInvalid(false);
   }, [editingLink, controller]);
   // A collapsed selection has nothing to colour.
   useEffect(() => {
@@ -99,10 +100,10 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
         />
         <KeepFocus owner={controller} style={styles.row}>
           <BarButton label={labels.apply} theme={theme} onPress={apply}>
-            <Text style={[styles.word, { color: theme.accent }]}>{labels.apply}</Text>
+            {labels.apply}
           </BarButton>
           <BarButton label={labels.cancel} theme={theme} onPress={() => closeLink(true)}>
-            <Text style={[styles.word, { color: theme.textMuted }]}>{labels.cancel}</Text>
+            {labels.cancel}
           </BarButton>
         </KeepFocus>
       </KeepFocus>
@@ -171,9 +172,10 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
           label={labels[mark]}
           active={marks?.[mark] === true}
           theme={theme}
+          textStyle={style}
           onPress={() => controller.toggleMark(mark)}
         >
-          <Text style={[styles.glyph, style, { color: theme.text }]}>{glyph}</Text>
+          {glyph}
         </BarButton>
       ))}
       <BarButton
@@ -186,7 +188,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
           else controller.openLinkEditor();
         }}
       >
-        <Text style={[styles.word, { color: theme.text }]}>{labels.link}</Text>
+        {labels.link}
       </BarButton>
       <BarButton
         label={labels.textColor}
@@ -232,11 +234,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
                 });
               }}
             >
-              {action.icon ? (
-                action.icon({ color: theme.text, size: ICON_SIZE })
-              ) : (
-                <Text style={[styles.word, { color: theme.text }]}>{action.label}</Text>
-              )}
+              {action.icon ? action.icon({ color: theme.text, size: ICON_SIZE }) : action.label}
             </BarButton>
           ))}
         </>
@@ -250,9 +248,10 @@ const ICON_SIZE = 16;
 
 export function BarButton({
   label,
-  active = false,
+  active,
   disabled = false,
   theme: _theme,
+  textStyle,
   onPress,
   children,
 }: {
@@ -260,6 +259,7 @@ export function BarButton({
   active?: boolean;
   disabled?: boolean;
   theme: EditorTheme;
+  textStyle?: TextStyle;
   onPress: () => void;
   children: React.ReactNode;
 }) {
@@ -270,6 +270,7 @@ export function BarButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       pressed={active}
+      textStyle={textStyle}
       disabled={disabled}
       onPress={onPress}
     >

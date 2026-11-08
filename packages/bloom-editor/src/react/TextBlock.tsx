@@ -160,26 +160,6 @@ export function TextBlock({ block }: { block: Block }) {
     [],
   );
 
-  const formatAnchor = useMemo(
-    () => ({
-      getBoundingClientRect: () => {
-        const host = inputHostRef.current as unknown as HTMLElement | null;
-        const box = host?.getBoundingClientRect?.();
-        if (!box) return null;
-        const rect = inputRef.current?.measureRanges([selectionRef.current])?.[0]?.[0];
-        return rect
-          ? {
-              left: box.left + rect.x,
-              right: box.left + rect.x + rect.width,
-              top: box.top + rect.y,
-              bottom: box.top + rect.y + rect.height,
-            }
-          : box;
-      },
-    }),
-    [],
-  );
-
   // Register this block's input for focus moves and formatting commands.
   useEffect(() => {
     const handle = inputRef.current;
@@ -639,6 +619,25 @@ export function TextBlock({ block }: { block: Block }) {
   // Web: the marks and link of a selection, over the block (touch devices
   // get `EditorToolbar` above the keyboard instead).
   const linking = useUi(ui, (s) => s.linking === id);
+  const formatAnchor = useMemo(
+    () => ({
+      getBoundingClientRect: () => {
+        const host = inputHostRef.current as unknown as HTMLElement | null;
+        const box = host?.getBoundingClientRect?.();
+        if (!box) return null;
+        const rect = inputRef.current?.measureRanges([selectionRef.current])?.[0]?.[0];
+        return rect
+          ? {
+              left: box.left + rect.x,
+              right: box.left + rect.x + rect.width,
+              top: box.top + rect.y,
+              bottom: box.top + rect.y + rect.height,
+            }
+          : box;
+      },
+    }),
+    [target?.start, target?.end],
+  );
   const rangeKey = target ? `${target.start}:${target.end}` : null;
   const showInline = Boolean(
     inlineTarget && focused && !slashOpen && !readOnly && rangeKey !== dismissedRange,

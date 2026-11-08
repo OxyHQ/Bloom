@@ -1,9 +1,9 @@
 /** Editor boundary doubles: real Bloom placement/material is browser-verified separately. */
 import { createContext, useContext, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import type { ButtonProps, LinkButtonProps } from '../../../../../../src/button/types';
-import type { TextFieldInputProps } from '../../../../../../src/text-field/types';
-import type { PopoverProps, PopoverContentProps } from '../../../../../../src/popover/types';
+import type { ButtonProps, LinkButtonProps } from '@oxy.so/bloom/button';
+import type { TextFieldInputProps } from '@oxy.so/bloom/text-field';
+import type { PopoverProps, PopoverContentProps } from '@oxy.so/bloom/popover';
 
 export function Button({ children, onPress, disabled, pressed, accessibilityLabel }: ButtonProps) {
   return (

@@ -203,3 +203,17 @@ describe('link draft ownership', () => {
     expect(calls).toEqual([]);
   });
 });
+
+it('cancels a link session after remote text replacement even when selection coordinates survive', () => {
+  const { store, controller, calls, id } = setup([
+    { type: 'paragraph', text: [{ text: 'hello world' }] },
+  ]);
+  store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+  controller.openLinkEditor();
+  store.reset(
+    documentFromSnapshot([{ type: 'paragraph', text: [{ text: 'other world' }] }], idFactory('b')),
+  );
+  store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+  expect(controller.applyLinkDraft('https://example.test')).toBe(false);
+  expect(calls).toEqual([]);
+});
