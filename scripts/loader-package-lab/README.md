@@ -87,3 +87,11 @@ claim old-RN runtime or fallback performance acceptance.
 transition animation scale in a finally block. `verify-lifecycle.py` requires an
 explicit authorized physical serial and the synthetic app in the foreground; its
 clock and input probes are fixture-only, with no additional public loader API.
+
+`verify-composers.py` uses real pointer hits and keyboard chords to check packaged
+Pill/AgentChatComposer drafts, selected content, Stop and subsequent typing.
+`verify-selection-direction.py` separately compares no transition, resize and busy
+with the same backward selection and next Shift+Arrow. Its current resize failure
+is preserved as a functional negative, not waived by sorting selection endpoints.
+Set `SCENE=raw-input` only on the integration fixture with the direct RN control;
+`TRACE_SELECTION=1` enables its diagnostic native selection-span stack trace.
