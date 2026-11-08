@@ -38,4 +38,51 @@ describe.each(['light', 'dark'] as const)('%s shared Button material', (mode) =>
       </BloomThemeProvider>,
     );
   });
+  it('preserves explicit plain interaction pairs without changing transparent/default delegation', () => {
+    function Probe() {
+      const theme = useTheme();
+      const pair = { background: 'rgba(143, 31, 92, 0.18)', foreground: 'rgb(72, 13, 47)' };
+      for (const material of ['surface', 'flat', 'shared'] as const) {
+        const explicit = resolveCanonicalButtonPalette(
+          'plain',
+          theme,
+          'accent',
+          pair,
+          undefined,
+          material,
+        );
+        expect(explicit.rest.background).toBe('transparent');
+        for (const state of ['rest', 'hover', 'active'] as const) {
+          expect(explicit[state].foreground).toBe(pair.foreground);
+          expect(explicit[state].surface).toBe(false);
+        }
+        expect(explicit.hover.background).toBe(pair.background);
+        expect(explicit.active.background).toBe(pair.background);
+        const delegated = resolveCanonicalButtonPalette(
+          'plain',
+          theme,
+          'neutral',
+          undefined,
+          undefined,
+          material,
+        );
+        const transparent = resolveCanonicalButtonPalette(
+          'plain',
+          theme,
+          'neutral',
+          { background: 'transparent', foreground: pair.foreground },
+          undefined,
+          material,
+        );
+        expect(transparent.hover.background).toBe(delegated.hover.background);
+        expect(transparent.active.background).toBe(delegated.active.background);
+      }
+      return null;
+    }
+    render(
+      <BloomThemeProvider mode={mode} colorPreset="teal" fonts={false}>
+        <Probe />
+      </BloomThemeProvider>,
+    );
+  });
 });
