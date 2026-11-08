@@ -56,6 +56,8 @@ module.exports = (config) =>
           put("testID", view.getTag(com.facebook.react.R.id.react_test_id))
           put("identity", System.identityHashCode(view)); put("id", view.id)
           put("start", view.selectionStart); put("end", view.selectionEnd)
+          put("composingStart", android.view.inputmethod.BaseInputConnection.getComposingSpanStart(view.text))
+          put("composingEnd", android.view.inputmethod.BaseInputConnection.getComposingSpanEnd(view.text))
           put("focused", view.hasFocus()); put("attached", view.isAttachedToWindow)
           put("text", view.text.toString())
         }.toString())

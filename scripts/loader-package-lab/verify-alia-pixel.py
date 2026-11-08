@@ -69,6 +69,12 @@ try:
         time.sleep(4.5);after=inputs();retained(before,after);shot(control)
         results['transitions'].append({'control':control,'before':before,'after':after,
           'directionPreserved':(before['start'],before['end'])==(after['start'],after['end'])})
+        if os.environ.get('EXPECT_DIRECTION')=='1':
+            assert (before['start'],before['end'])==(after['start'],after['end'])
+            adb('shell','input','keycombination','KEYCODE_SHIFT_LEFT','KEYCODE_DPAD_LEFT')
+            extended=inputs()
+            assert (extended['start'],extended['end'])==(before['start'],before['end']-1)
+            results['transitions'][-1]['extended']=extended
     before=inputs();tap(('688','761'));time.sleep(.6)
     after=inputs();retained(before,after);shot('stopped')
     adb('shell','input','text','q');time.sleep(.4);typed=inputs()

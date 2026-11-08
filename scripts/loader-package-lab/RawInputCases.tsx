@@ -10,6 +10,7 @@ export function RawInputCases({ autosize = true }: { autosize?: boolean }) {
   const [narrow, setNarrow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState('none');
+  const [selection, setSelection] = useState<{ start: number; end: number }>();
   const later = (kind: string, change: () => void) => {
     setPending(kind);
     setTimeout(() => {
@@ -42,6 +43,26 @@ export function RawInputCases({ autosize = true }: { autosize?: boolean }) {
               <Text>Busy in 4s</Text>
             </Pressable>
           </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {[
+              ['forward', 4, 10],
+              ['backward', 10, 4],
+              ['collapsed', 7, 7],
+            ].map(([name, start, end]) => (
+              <Pressable
+                key={name}
+                testID={`cases-selection-${name}`}
+                onPress={() =>
+                  later(`selection-${name}`, () =>
+                    setSelection({ start: Number(start), end: Number(end) }),
+                  )
+                }
+                style={{ padding: 8 }}
+              >
+                <Text>{`Select ${name} in 4s`}</Text>
+              </Pressable>
+            ))}
+          </View>
           <Text testID="cases-state">{`busy=${busy} narrow=${narrow} pending=${pending} autosize=${autosize}`}</Text>
           <View
             style={{
@@ -59,6 +80,7 @@ export function RawInputCases({ autosize = true }: { autosize?: boolean }) {
                 testID="cases-pill-input"
                 accessibilityLabel="Direct RN draft"
                 value={text}
+                selection={selection}
                 onChangeText={setText}
                 multiline
                 onContentSizeChange={
