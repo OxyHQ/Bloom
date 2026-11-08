@@ -1,12 +1,7 @@
-import { parseRgba } from "../theme/color-utils";
-import { quietTextOver, relativeLuminance } from "../styles/color-contrast";
-import {
-  filterColorBounds,
-  parseLook,
-  type ColorBounds,
-  type RGB,
-} from "./filter-color";
-import { materialFilter, maximumEdgeGain, SURFACE_LOOKS } from "./optics";
+import { parseRgba } from '../theme/color-utils';
+import { quietTextOver, relativeLuminance } from '../styles/color-contrast';
+import { filterColorBounds, parseLook, type ColorBounds, type RGB } from './filter-color';
+import { materialFilter, maximumEdgeGain, SURFACE_LOOKS } from './optics';
 
 /** Unknown sampler input includes every sRGB pixel, including outside a parent/rim. */
 export const UNKNOWN_BACKING: ColorBounds = { min: [0, 0, 0], max: [1, 1, 1] };
@@ -25,7 +20,7 @@ export function solidBacking(fill: string): ColorBounds | undefined {
 /** Body bounds include functioning and omitted backdrop effects; inset adds regional edge gain. */
 export function surfaceBodyBounds(
   tint: string,
-  mode: "light" | "dark",
+  mode: 'light' | 'dark',
   sampler: ColorBounds = UNKNOWN_BACKING,
   interiorInset = Infinity,
 ): ColorBounds | undefined {
@@ -54,8 +49,7 @@ export function surfaceBodyBounds(
         0,
         Math.min(
           1,
-          ((channels[index]! / 255) * color.a + back[index]! * (1 - color.a)) *
-            (1 + gain) +
+          ((channels[index]! / 255) * color.a + back[index]! * (1 - color.a)) * (1 + gain) +
             slack / 255,
         ),
       );
@@ -70,14 +64,10 @@ export function surfaceBodyBounds(
 }
 
 const cssColor = (rgb: RGB, upper: boolean): string =>
-  `rgb(${rgb.map((v) => (upper ? Math.ceil(v * 255) : Math.floor(v * 255))).join(", ")})`;
+  `rgb(${rgb.map((v) => (upper ? Math.ceil(v * 255) : Math.floor(v * 255))).join(', ')})`;
 
 /** Semantic quiet text with an explicit failure result, including interval interiors. */
-export function quietTextOnBody(
-  bounds: ColorBounds,
-  text: string,
-  floor: number,
-) {
+export function quietTextOnBody(bounds: ColorBounds, text: string, floor: number) {
   const lower = cssColor(bounds.min, false);
   const upper = cssColor(bounds.max, true);
   const color = quietTextOver([lower, upper], text, floor);
