@@ -37,7 +37,12 @@ const config: Config = {
   // the permissive direction: the run is greener and far larger than the tree
   // under test, and nothing about the output says so.
   // `packages/` holds separately published packages with their own jest run.
-  modulePathIgnorePatterns: ['<rootDir>/.claude/', '<rootDir>/.worktrees/', '<rootDir>/packages/'],
+  modulePathIgnorePatterns: [
+    '<rootDir>/.claude/',
+    '<rootDir>/.worktrees/',
+    '<rootDir>/.local/',
+    '<rootDir>/packages/',
+  ],
   moduleNameMapper: {
     // react-native-css is a transitive (host-only) dep; `theme/native-root-vars.ts`
     // statically imports its `native-internal` subpath. Map it so suites that pull

@@ -968,6 +968,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `Pas ${n}`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'Contret',
+  half: 'Mig obert',
+  full: 'Expandit',
+  expand: 'Expandir',
+  collapse: 'Contreure',
+  hint: 'Arrossega o utilitza les fletxes per canviar la mida del panell',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Controls del mapa',
   locate: 'Mostra la meva ubicació',
@@ -3087,6 +3096,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

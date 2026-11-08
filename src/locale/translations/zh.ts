@@ -926,6 +926,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `第 ${n} 步`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: '已收起',
+  half: '半展开',
+  full: '已展开',
+  expand: '展开',
+  collapse: '收起',
+  hint: '拖动或使用方向键调整面板大小',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: '地图控件',
   locate: '显示我的位置',
@@ -2950,6 +2959,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

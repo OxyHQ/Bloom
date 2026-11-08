@@ -952,6 +952,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `Langkah ${n}`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'Diciutkan',
+  half: 'Setengah terbuka',
+  full: 'Diperluas',
+  expand: 'Perluas',
+  collapse: 'Ciutkan',
+  hint: 'Seret atau gunakan tombol panah untuk mengubah ukuran panel',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Kontrol peta',
   locate: 'Tampilkan lokasi saya',
@@ -3073,6 +3082,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,
