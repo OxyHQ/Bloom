@@ -118,3 +118,19 @@ verify-overlay-stacking.mjs. Their existence is not a passing result: run the
 relevant fixture on the exact candidate, inspect actual painted output and
 record the platform separately. Add explicit native subjects where resolution
 would otherwise select web-safe files; follow [Verification](/docs/verification).
+
+## Historical baseline revalidation (§16.1 / #415)
+
+Revalidated against `e3996b93` before the #664 integration: `b5c715c7`
+(#417) is an ancestor of main; the scoped-menu-density history is preserved at
+`6378e7d963`. The current generated census has 244 families, 241 published
+families and 61 web forks, so the historical count of 226 is not the current
+acceptance denominator. The historical size/density regex covers only its named
+patterns and cannot establish adoption for every exported part.
+
+Registry queries returned E404 for `@oxy.so/bloom@15.7.0` and a published
+`17.22.0`; do not describe 15.7.0 as a verified published baseline. Source
+inspection still finds inherited scope hooks in VoiceControls, Tooltip,
+ContactRow, OfferingBadge and ReleaseStatusBadge. This revalidation establishes
+history, availability and retained source contracts; it does not claim a fresh
+runtime regression pass or complete adaptation of those families.
