@@ -441,7 +441,9 @@ export function resolveCanonicalButtonPalette(
   const paint = (state: 0 | 1 | 2): ButtonStatePaint => ({
     background: !surface
       ? state
-        ? resolveBloomColors(c, tone, 'subtle').background
+        ? colors && tint !== 'transparent' && semanticAlpha > 0
+          ? pair.background
+          : resolveBloomColors(c, tone, 'subtle').background
         : 'transparent'
       : resolveSurfaceTint(
           neutral
