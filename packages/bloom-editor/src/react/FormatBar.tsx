@@ -269,6 +269,8 @@ export function BarButton({
       material="flat"
       accessibilityRole="button"
       accessibilityLabel={label}
+      numberOfLines={1}
+      style={styles.control}
       pressed={active}
       textStyle={textStyle}
       disabled={disabled}
@@ -280,7 +282,8 @@ export function BarButton({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', minWidth: 0 },
+  control: { maxWidth: '100%' },
+  row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', minWidth: 0, maxWidth: '100%' },
   wrap: { flexWrap: 'wrap', gap: 4, minWidth: 0 },
   glyph: { fontSize: 15 },
   colorGlyph: { fontWeight: '600', borderBottomWidth: 2, lineHeight: 18 },

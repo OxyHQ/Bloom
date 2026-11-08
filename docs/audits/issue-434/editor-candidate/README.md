@@ -30,3 +30,20 @@ navigation, so fake external domains are unsuitable destinations for that check.
 Still pending: long translated labels/inherited sizes, nested editor scrolling
 and dialog placement, additional keyboard activation and Remove checks, published
 API/editor dependency gates, and physical Android. iPhone is deferred by request.
+
+
+Follow-up: long translated labels at inherited `lg` initially measured 444.7 and
+441.6 px, overflowing the 320 px viewport to x917.3. FormatBar now constrains
+its rows/controls to the available width and uses the shared single-line label
+contract (ellipsis, complete accessible name). It keeps 44 px height and 16 px
+text at lg. `long-labels/fixture.patch` is an isolated Nilo test fixture, restored
+after capture; use EDITOR_LONG_LABELS=1 with that fixture. The complete interaction
+runner passes in this configuration, including Remove without navigation, undo,
+and preserving the same draft input/value through real container scroll and
+390→320→390 resize. Packed follow-up SHA256:
+8105afbf247de30fae57375a47b2b8fb32d6477af65db496883d8fa3464b6ae3.
+All 20 editor suites / 266 tests and editor TypeScript pass.
+
+Remaining scope is dialog stacking, additional keyboard activation, final published
+API/editor dependency gates, and physical Android. Long labels, inherited lg and
+real container scroll are now covered by this source candidate.

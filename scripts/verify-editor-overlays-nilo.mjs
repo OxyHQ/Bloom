@@ -10,6 +10,7 @@ const browserRequire = createRequire(join(resolve(process.env.MENTION_ROOT), 'pa
 const { chromium } = browserRequire('@playwright/test');
 const Y = require('yjs');
 const { writeDocument } = require('@oxy.so/bloom-editor/yjs');
+const applyLabel = process.env.EDITOR_LONG_LABELS === '1' ? 'Änderungen am ausgewählten Hyperlink übernehmen' : 'Apply';
 const origin = process.env.NILO_ORIGIN ?? 'http://localhost:8128';
 const output = resolve(process.env.BASELINE_OUTPUT ?? 'docs/audits/issue-663/baseline/nilo');
 mkdirSync(output, { recursive: true });
@@ -483,6 +484,18 @@ try {
   await select(0,7);
   await page.getByRole('button',{name:'Link',exact:true}).click();
   const url = page.getByRole('textbox',{name:'Link',exact:true});
+  if (process.env.EDITOR_LONG_LABELS === '1') {
+    await page.setViewportSize({width:320,height:844});
+    await page.waitForTimeout(300);
+    report.checks.longLabels = await page.getByRole('dialog',{name:'Formatting',exact:true}).evaluate(n=>({rect:n.getBoundingClientRect().toJSON(),buttons:[...n.querySelectorAll('button')].map(b=>({label:b.getAttribute('aria-label'),rect:b.getBoundingClientRect().toJSON(),font:getComputedStyle(b).fontSize}))}));
+    for (const button of report.checks.longLabels.buttons) {
+      assert.ok(button.rect.left >= 0 && button.rect.right <= 320);
+      assert.equal(button.rect.height, 44);
+      assert.equal(button.font, '16px');
+    }
+    await capture('long-labels-lg-320');
+    await page.setViewportSize({width:390,height:844});
+  }
   await url.fill(`${origin}/__editor-link/original`);
   await select(11,17);
   report.checks.linkDraftCancelled = await url.count() === 0;
@@ -490,7 +503,7 @@ try {
   await select(0,7);
   await page.getByRole('button',{name:'Link',exact:true}).click();
   await url.fill(`${origin}/__editor-link/original`);
-  await page.getByRole('button',{name:'Apply',exact:true}).click();
+  await page.getByRole('button',{name:applyLabel,exact:true}).click();
   await page.waitForTimeout(300);
   report.checks.afterApply = await paragraph.evaluate(n=>n.innerHTML);
   await capture('apply-new-selection-390');
@@ -520,16 +533,43 @@ try {
     assert.equal(calls.length,1,'only ordinary activation uses app routing');
   }
 
+  const pageCountBeforeRemove = context.pages().length;
+  await page.getByRole('button', { name: 'Remove link', exact: true }).click();
+  assert.equal(await paragraph.locator('a').count(), 0);
+  assert.equal(context.pages().length, pageCountBeforeRemove);
+  await paragraph.press('Control+z');
+  await select(3, 3);
+  assert.equal(await paragraph.locator('a').getAttribute('href'), `${origin}/__editor-link/original`);
+  report.checks.removeWithoutNavigation = true;
   await paragraph.press('Control+k');
   await page.waitForTimeout(300);
   report.checks.existingDraft = await url.inputValue();
   assert.equal(report.checks.existingDraft,`${origin}/__editor-link/original`);
+  await url.evaluate(n => n.dataset.editorIdentity = 'retained');
+  // Use the actual scroll owner that contains the paragraph when present.
+  const scrollTarget = await paragraph.evaluateHandle(n => {
+    for (let p=n.parentElement;p;p=p.parentElement) if(p.scrollHeight>p.clientHeight && /auto|scroll/.test(getComputedStyle(p).overflowY)) return p;
+    return null;
+  });
+  assert.ok(await scrollTarget.evaluate(n => !!n));
+  await scrollTarget.evaluate(n => n.scrollTop += 35);
+  await page.waitForTimeout(300);
+  assert.equal(await url.getAttribute('data-editor-identity'), 'retained');
+  assert.equal(await url.inputValue(), `${origin}/__editor-link/original`);
+  await page.setViewportSize({width:320,height:844});
+  await page.waitForTimeout(300);
+  assert.equal(await url.getAttribute('data-editor-identity'), 'retained');
+  assert.equal(await url.inputValue(), `${origin}/__editor-link/original`);
+  await page.setViewportSize({width:390,height:844});
+  await scrollTarget.evaluate(n => n.scrollTop = 0);
+  report.checks.scrollResizeRetainsDraft = true;
+
   await url.fill('not a link');
-  await page.getByRole('button',{name:'Apply',exact:true}).click();
+  await page.getByRole('button',{name:applyLabel,exact:true}).click();
   report.checks.invalidDraft = {value:await url.inputValue(),invalid:await url.getAttribute('aria-invalid')};
   assert.equal(report.checks.invalidDraft.invalid,'true');
   await url.fill(`${origin}/__editor-link/edited`);
-  await page.getByRole('button',{name:'Apply',exact:true}).click();
+  await page.getByRole('button',{name:applyLabel,exact:true}).click();
   await page.waitForTimeout(300);
   assert.equal(await paragraph.locator('a').getAttribute('href'),`${origin}/__editor-link/edited`);
   await paragraph.press('Control+z');
