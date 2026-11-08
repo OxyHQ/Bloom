@@ -1,0 +1,55 @@
+---
+title: Material fixture evidence
+description: Recorded baseline environment and limits for issue 663.
+---
+
+# Material fixture baseline — 2026-11-08
+
+The shared scene ran in Chrome 146.0.7680.31, a new isolated Android emulator,
+and a physical Pixel 8a. These are source-fixture observations, not published
+package acceptance or cross-platform parity. iPhone testing is user-deferred.
+
+| Environment | Recorded configuration |
+| --- | --- |
+| Web | 390×844 CSS px, DPR 1; 34 captures plus moving-backdrop videos |
+| Emulator | API 36.1 image, x86_64, 1170×2532 px, density 480 (390×844 dp), font scale 1.0, SwiftShader |
+| Pixel 8a | Android 16 / API 36, arm64-v8a, 1080×2400 px, density 420 (411.43×914.29 dp), font scale 1.15, active display mode 120 Hz |
+| Pixel build | `google/akita/akita:16/BP4A.260205.001/14624666:user/release-keys` |
+| Bloom source | `e3996b93573d143ba5d426413eaa9233e61c248b` |
+| Bloom source tree SHA-256 | `05d026cac4d16a226cfb49c33da69e60615e707e6d7f1397a95eeb7019efc787` |
+| Fixture lock SHA-256 | `f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4` |
+| Pixel release APK SHA-256 | `8ad7eb77b4036454a70688a1c5f17953711368e6fd9e7f9f86e9f113160640d6` |
+| Emulator release APK SHA-256 | `0d76138fef78f4baf459092530fbd8ecfecd7d9f32ab37896fe60210b88a5cd6` |
+
+The fixture pins React 19.3.0, RN 0.88.1, Expo 58.0.23, react-native-svg 15.16.0,
+expo-blur 58.0.5, Reanimated 4.7.1 and Worklets 0.13.0. React Compiler is disabled.
+The native Bloom module is the published 17.22.0 dependency; JavaScript imports
+the checkout source. The lock and build manifest record the rest of the graph.
+
+Both successful Android starts passed the final-APK no-INTERNET-permission gate
+and recorded two real OS DNS permission denials before mounting the scene.
+The first unbridged probe terminated OkHttp's worker with SecurityException;
+that failed APK and crash log were retained separately. The fixture-only DNS
+exception bridge is described in `scripts/material-lab/README.md`.
+
+The physical baseline video lasts 16.13 seconds, more than three default
+4.5-second loader revolutions. Frames at 2 and 4 seconds show the segment moving
+around the perimeter. Initial screenshots at an arbitrary phase cannot show
+that a glow is permanently concentrated at the bottom. Native blur width,
+clipping and tint still need a phase-aligned comparison with web. The user's
+font scale remains unchanged; 390px/default-font web is not an exact geometric
+match for this Pixel configuration. System bars/safe areas also differ.
+
+Artifacts are written under `.local/material-comparison` (web) and
+`.local/issue-663-material/baseline-offline-{x86_64,arm64}` (native): APK,
+build/environment JSON, startup log, initial screenshot/UI XML, per-state
+captures, and `composer-16s.mp4` on the Pixel. Large binaries/videos are not
+committed. The web report records each role's bounds and external-request
+checks. Native capture automation records bounds and scrolls to expose the
+composer beyond the floating tab bar. Captures are diagnostic evidence;
+contrast, parity and frame-budget acceptance require separate evaluation.
+
+Validation: native fixture TypeScript check passes; isolated-device/APK guard
+has 3 passing tests; source/icon references have 11 passing tests; web capture
+has 34 passing states with no page errors or external HTTP requests. Android
+release builds and guarded launches passed on the two recorded targets.

@@ -1,0 +1,52 @@
+---
+title: Material comparison fixture
+description: Reproducible web and native scenes for material and composer diagnosis.
+---
+
+# Material comparison fixture
+
+`templates/material/MaterialScene.tsx` is one synthetic source tree for the
+Storybook **Labs / Material Comparison** story and the private offline Android
+app in `scripts/material-lab`. It exercises Surface, nested Card, Button,
+BlurIsland, PageHeader, TabBar, menu, Dialog, BottomSheet, ComposerLoader and
+AgentChatComposer. Theme, reduced transparency and solid/striped/photo/moving
+backgrounds change without replacing the composition. The photograph is an
+existing bundled template asset; nothing fetches product services or images.
+
+The fixture preserves the existing components and their geometry. Stripes are
+an optical stimulus, not a design token. The PageHeader deliberately has no
+scrim so that its floating material can be inspected against the background;
+its unprotected title and the composer's status labels can lose contrast on
+photo/stripe backgrounds. Capturing those cases does not establish accessible
+foreground contrast. The backdrop's movement is on a sibling of the material,
+never a transformed/opacity-reduced material ancestor.
+
+## Web evidence
+
+Start Storybook and run `scripts/verify-material-comparison.mjs` with
+`STORYBOOK_URL`, `CHROME_PATH` and optionally `PUPPETEER_PATH`. It resolves the
+story from `index.json`, blocks external requests, captures the full viewport
+before any cropping, and uses real pointer/keyboard input to open and dismiss
+menus, dialogs and sheets. `RECORD_VIDEO=1` records 8.5 seconds per theme of the
+moving backdrop. `OUT` selects the artifact directory.
+
+The report contains browser, commit/working-tree state, viewport and measured
+role bounds. There are 34 states at 390×844: four backgrounds in two themes,
+each at rest and with menu/dialog/sheet, plus reduced-transparency captures in
+both themes. This is an inspectable baseline, not a claim that geometry,
+contrast, filters, native fidelity or performance have passed. Compare the
+actual pixels and videos; computed backgrounds alone do not describe the paint.
+
+## Native evidence
+
+See `scripts/material-lab/README.md` for the locked Expo build, per-artifact
+source fingerprints, no-network APK gate, named emulator and exact-device
+physical opt-in. Release builds carry the bundle and assets; no runtime network
+or Metro exception is needed. The same fixture can be rebuilt from baseline
+and candidate Bloom source with the same lock and compiler scope.
+
+Keep the distinction between source-fixture evidence, published-package
+consumer evidence, emulator evidence and physical-device evidence. Native SVG
+filter output, clipping and GPU cost require the real renderer. Mocks and web
+screenshots do not establish them. iPhone checks are deferred by the user and
+remain unverified; this does not turn an Android result into an iOS result.

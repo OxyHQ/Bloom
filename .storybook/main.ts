@@ -139,7 +139,16 @@ const config: StorybookConfig = {
       // Anchor the exclusion below this project: a blanket **/.worktrees/**
       // also ignores every source file when Storybook itself runs in a worktree.
       server: {
-        watch: { ignored: [path.resolve(__dirname, '../.worktrees/**')] },
+        watch: {
+          ignored: [
+            path.resolve(__dirname, '../.worktrees/**'),
+            // Isolated native fixture builds write HTML reports; Vite otherwise
+            // reloads an unrelated browser measurement in the middle of a capture.
+            path.resolve(__dirname, '../scripts/material-lab/android/**'),
+            path.resolve(__dirname, '../scripts/material-lab/node_modules/**'),
+            path.resolve(__dirname, '../.local/**'),
+          ],
+        },
       },
       resolve: {
         alias: [
