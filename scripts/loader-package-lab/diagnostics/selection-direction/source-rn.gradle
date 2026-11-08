@@ -1,0 +1,13 @@
+// Diagnostic only: substitute the official RN source checkout without changing node_modules.
+def sourceRoot = System.getenv('BLOOM_RN_SOURCE')
+if (!sourceRoot) throw new GradleException('BLOOM_RN_SOURCE must name the isolated v0.88.1 checkout')
+gradle.settingsEvaluated { settings ->
+  if (settings.rootProject.name == 'Bloom Loader Package Lab') {
+    settings.includeBuild(new File(sourceRoot, 'packages/react-native')) {
+      dependencySubstitution {
+        substitute(module('com.facebook.react:react-android'))
+          .using(project(':packages:react-native:ReactAndroid'))
+      }
+    }
+  }
+}

@@ -1,0 +1,98 @@
+diff --git a/packages/react-native/ReactAndroid/src/test/java/com/facebook/react/views/textinput/ReactTextInputPropertyTest.kt b/packages/react-native/ReactAndroid/src/test/java/com/facebook/react/views/textinput/ReactTextInputPropertyTest.kt
+index 4a6f6cc..38544a3 100644
+--- a/packages/react-native/ReactAndroid/src/test/java/com/facebook/react/views/textinput/ReactTextInputPropertyTest.kt
++++ b/packages/react-native/ReactAndroid/src/test/java/com/facebook/react/views/textinput/ReactTextInputPropertyTest.kt
+@@ -632,6 +632,93 @@ class ReactTextInputPropertyTest {
+     assertThat(checkNotNull(view.text).getSpans(0, view.length(), MarkerSpan::class.java)).isEmpty()
+   }
+ 
++  // Models the selection sorting observed in Android 16 Editor.resetDragAcceleratorState.
++  // This seam test is not a substitute for the physical Android regression.
++  private fun installSelectionSortingWatcher() {
++    view.addTextChangedListener(object : android.text.TextWatcher {
++      override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
++      override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
++      override fun afterTextChanged(s: android.text.Editable?) {
++        val start = view.selectionStart
++        val end = view.selectionEnd
++        if (start >= 0 && end >= 0) view.setSelection(minOf(start, end), maxOf(start, end))
++      }
++    })
++  }
++
++  private fun selectionUpdate(value: String, event: Int = 0) = ReactTextUpdate(
++      SpannableString(value), event, view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK,
++      Layout.BREAK_STRATEGY_HIGH_QUALITY, 0,
++  )
++
++  @Test
++  fun testIdenticalTextRetainsDirectionalSelectionThroughEditorSorting() {
++    view.setText("abcdef")
++    installSelectionSortingWatcher()
++    for ((start, end) in listOf(5 to 2, 2 to 5, 3 to 3)) {
++      view.setSelection(start, end)
++      view.maybeSetTextFromState(selectionUpdate("abcdef"))
++      assertThat(view.selectionStart).isEqualTo(start)
++      assertThat(view.selectionEnd).isEqualTo(end)
++    }
++  }
++
++  @Test
++  fun testExplicitSelectionCommandWinsAfterIdenticalTextUpdate() {
++    view.setText("abcdef")
++    view.setSelection(5, 2)
++    installSelectionSortingWatcher()
++    manager.receiveCommand(view, "setTextAndSelection",
++        com.facebook.react.bridge.JavaOnlyArray.of(0, "abcdef", 1, 4))
++    assertThat(view.selectionStart).isEqualTo(1)
++    assertThat(view.selectionEnd).isEqualTo(4)
++  }
++
++  @Test
++  fun testStaleUpdateDoesNotChangeTextOrBackwardSelection() {
++    view.setText("abcdef")
++    view.setSelection(5, 2)
++    installSelectionSortingWatcher()
++    view.incrementAndGetEventCounter()
++    view.maybeSetTextFromState(selectionUpdate("stale"))
++    assertThat(view.text.toString()).isEqualTo("abcdef")
++    assertThat(view.selectionStart).isEqualTo(5)
++    assertThat(view.selectionEnd).isEqualTo(2)
++  }
++
++  @Test
++  fun testIdenticalTextRetainsCompositionAndStyleSpans() {
++    view.setText("abcdef")
++    val composing = Any()
++    val style = android.text.style.StyleSpan(android.graphics.Typeface.BOLD)
++    checkNotNull(view.text).setSpan(composing, 1, 4,
++        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE or Spanned.SPAN_COMPOSING)
++    checkNotNull(view.text).setSpan(style, 0, 3, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
++    view.setSelection(5, 2)
++    installSelectionSortingWatcher()
++    view.maybeSetTextFromState(selectionUpdate("abcdef"))
++    assertThat(view.selectionStart).isEqualTo(5)
++    assertThat(view.selectionEnd).isEqualTo(2)
++    assertThat(checkNotNull(view.text).getSpanStart(composing)).isEqualTo(1)
++    assertThat(checkNotNull(view.text).getSpanEnd(composing)).isEqualTo(4)
++    assertThat(checkNotNull(view.text).getSpanStart(style)).isEqualTo(0)
++    assertThat(checkNotNull(view.text).getSpanEnd(style)).isEqualTo(3)
++    view.maybeSetTextFromState(selectionUpdate(""))
++    assertThat(view.text.toString()).isEmpty()
++    assertThat(checkNotNull(view.text).getSpanStart(composing)).isEqualTo(-1)
++  }
++
++  @Test
++  fun testChangedTextDoesNotRestoreOldDirectionalSelection() {
++    view.setText("abcdef")
++    view.setSelection(5, 2)
++    installSelectionSortingWatcher()
++    view.maybeSetTextFromState(selectionUpdate("xyz"))
++    assertThat(view.text.toString()).isEqualTo("xyz")
++    assertThat(view.selectionStart).isLessThanOrEqualTo(view.selectionEnd)
++    assertThat(view.selectionEnd).isLessThanOrEqualTo(3)
++  }
++
+   private fun buildStyles(vararg keysAndValues: Any?): ReactStylesDiffMap {
+     return ReactStylesDiffMap(JavaOnlyMap.of(*keysAndValues))
+   }

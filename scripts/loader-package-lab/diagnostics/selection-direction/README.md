@@ -64,3 +64,29 @@ Required patch validation matrix (all pending):
 - Event ordering and repeated resize must not emit a lasting intermediate selection.
 
 A successful resize case alone is insufficient to accept the proposed RN patch.
+
+### Source test checkpoint (2026-11-08)
+
+The original v0.88.1 source checkout compiled and passed all 27 existing
+`ReactTextInputPropertyTest` cases. The accompanying selection-tests patch adds
+five contract cases. Its TextWatcher **models** the sorting observed in Android
+16 Editor; it does not reproduce the platform Editor implementation in
+Robolectric. Without the source fix, 2 of 32 cases fail (backward direction,
+including composing/style spans). With the proposed source fix, all 32 pass.
+The matrix also covers forward/collapsed selection, explicit manager selection
+commands after identical text, stale event counts, changed text, clearing
+composition, and the existing secure-text bypass test. Real IME behavior and
+physical resize still require an APK built against this patched RN source.
+
+Command from the source clone (Yarn is a local wrapper for `corepack yarn`):
+
+```sh
+ANDROID_HOME=/home/nate/Android/Sdk ./gradlew \
+  :packages:react-native:ReactAndroid:testDebugUnitTest \
+  --tests com.facebook.react.views.textinput.ReactTextInputPropertyTest \
+  --max-workers=2 -PreactNativeArchitectures=arm64-v8a
+```
+
+Raw original/negative/patched logs and XML are archived in the integration
+worktree's `.local/rn-selection-evidence/`. No installed React Native package
+was patched.
