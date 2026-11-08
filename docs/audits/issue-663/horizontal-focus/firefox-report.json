@@ -1,0 +1,413 @@
+{
+  "cases": [
+    {
+      "direction": "ltr",
+      "reducedMotion": "no-preference",
+      "checks": [
+        {
+          "label": "Views",
+          "x": 24,
+          "right": 88.58332824707031,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Add view",
+          "x": 96.58332824707031,
+          "right": 182.60000610351562,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Search",
+          "x": 190.60000610351562,
+          "right": 261.6166687011719,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Filter",
+          "x": 115.61666870117188,
+          "right": 173.39999389648438,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Sort",
+          "x": 181.39999389648438,
+          "right": 233.31666564941406,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Properties",
+          "x": 172.31666564941406,
+          "right": 265.46665954589844,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Last tool",
+          "x": 185.46665954589844,
+          "right": 266.43333435058594,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Persistent action",
+          "x": 273.83331298828125,
+          "right": 327.99998474121094,
+          "leftClip": 16,
+          "rightClip": 356,
+          "visible": true
+        }
+      ],
+      "resized": {
+        "x": 105.46665954589844,
+        "right": 186.43333435058594,
+        "leftClip": 24,
+        "rightClip": 185.8333282470703,
+        "visible": true
+      },
+      "table": {
+        "x": 76,
+        "right": 256,
+        "leftClip": 16,
+        "rightClip": 256,
+        "visible": true
+      },
+      "wheel": {
+        "before": {
+          "x": 24,
+          "y": 44,
+          "width": 64.58333587646484,
+          "height": 36
+        },
+        "after": {
+          "x": -56,
+          "y": 44,
+          "width": 64.58333587646484,
+          "height": 36
+        }
+      },
+      "outer": {
+        "outer": 160,
+        "document": 0
+      }
+    },
+    {
+      "direction": "ltr",
+      "reducedMotion": "reduce",
+      "checks": [
+        {
+          "label": "Views",
+          "x": 24,
+          "right": 88.58332824707031,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Add view",
+          "x": 96.58332824707031,
+          "right": 182.60000610351562,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Search",
+          "x": 190.60000610351562,
+          "right": 261.6166687011719,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Filter",
+          "x": 115.61666870117188,
+          "right": 173.39999389648438,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Sort",
+          "x": 181.39999389648438,
+          "right": 233.31666564941406,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Properties",
+          "x": 172.31666564941406,
+          "right": 265.46665954589844,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Last tool",
+          "x": 185.46665954589844,
+          "right": 266.43333435058594,
+          "leftClip": 24,
+          "rightClip": 265.8333282470703,
+          "visible": true
+        },
+        {
+          "label": "Persistent action",
+          "x": 273.83331298828125,
+          "right": 327.99998474121094,
+          "leftClip": 16,
+          "rightClip": 356,
+          "visible": true
+        }
+      ],
+      "resized": {
+        "x": 105.46665954589844,
+        "right": 186.43333435058594,
+        "leftClip": 24,
+        "rightClip": 185.8333282470703,
+        "visible": true
+      },
+      "table": {
+        "x": 76,
+        "right": 256,
+        "leftClip": 16,
+        "rightClip": 256,
+        "visible": true
+      },
+      "wheel": {
+        "before": {
+          "x": 24,
+          "y": 44,
+          "width": 64.58333587646484,
+          "height": 36
+        },
+        "after": {
+          "x": -56,
+          "y": 44,
+          "width": 64.58333587646484,
+          "height": 36
+        }
+      },
+      "outer": {
+        "outer": 160,
+        "document": 0
+      }
+    },
+    {
+      "direction": "rtl",
+      "reducedMotion": "no-preference",
+      "checks": [
+        {
+          "label": "Views",
+          "x": 611.4166870117188,
+          "right": 676.0000152587891,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Add view",
+          "x": 517.4000244140625,
+          "right": 603.4167022705078,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Search",
+          "x": 438.3833312988281,
+          "right": 509.3999938964844,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Filter",
+          "x": 526.5999755859375,
+          "right": 584.38330078125,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Sort",
+          "x": 466.683349609375,
+          "right": 518.6000213623047,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Properties",
+          "x": 434.5333251953125,
+          "right": 527.6833190917969,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Last tool",
+          "x": 434.566650390625,
+          "right": 515.5333251953125,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Persistent action",
+          "x": 372,
+          "right": 426.1666717529297,
+          "leftClip": 344,
+          "rightClip": 684,
+          "visible": true
+        }
+      ],
+      "resized": {
+        "x": 514.566650390625,
+        "right": 595.5333251953125,
+        "leftClip": 514.1666870117188,
+        "rightClip": 676.0000152587891,
+        "visible": true
+      },
+      "table": {
+        "x": 444,
+        "right": 624,
+        "leftClip": 444,
+        "rightClip": 684,
+        "visible": true
+      },
+      "wheel": {
+        "before": {
+          "x": 611.4166870117188,
+          "y": 44,
+          "width": 64.58331298828125,
+          "height": 36
+        },
+        "after": {
+          "x": 691.4166870117188,
+          "y": 44,
+          "width": 64.58331298828125,
+          "height": 36
+        }
+      },
+      "outer": {
+        "outer": 160,
+        "document": 0
+      }
+    },
+    {
+      "direction": "rtl",
+      "reducedMotion": "reduce",
+      "checks": [
+        {
+          "label": "Views",
+          "x": 611.4166870117188,
+          "right": 676.0000152587891,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Add view",
+          "x": 517.4000244140625,
+          "right": 603.4167022705078,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Search",
+          "x": 438.3833312988281,
+          "right": 509.3999938964844,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Filter",
+          "x": 526.5999755859375,
+          "right": 584.38330078125,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Sort",
+          "x": 466.683349609375,
+          "right": 518.6000213623047,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Properties",
+          "x": 434.5333251953125,
+          "right": 527.6833190917969,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Last tool",
+          "x": 434.566650390625,
+          "right": 515.5333251953125,
+          "leftClip": 434.16668701171875,
+          "rightClip": 676.0000152587891,
+          "visible": true
+        },
+        {
+          "label": "Persistent action",
+          "x": 372,
+          "right": 426.1666717529297,
+          "leftClip": 344,
+          "rightClip": 684,
+          "visible": true
+        }
+      ],
+      "resized": {
+        "x": 514.566650390625,
+        "right": 595.5333251953125,
+        "leftClip": 514.1666870117188,
+        "rightClip": 676.0000152587891,
+        "visible": true
+      },
+      "table": {
+        "x": 444,
+        "right": 624,
+        "leftClip": 444,
+        "rightClip": 684,
+        "visible": true
+      },
+      "wheel": {
+        "before": {
+          "x": 611.4166870117188,
+          "y": 44,
+          "width": 64.58331298828125,
+          "height": 36
+        },
+        "after": {
+          "x": 691.4166870117188,
+          "y": 44,
+          "width": 64.58331298828125,
+          "height": 36
+        }
+      },
+      "outer": {
+        "outer": 160,
+        "document": 0
+      }
+    }
+  ],
+  "errors": []
+}

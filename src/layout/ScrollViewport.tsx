@@ -5,6 +5,7 @@ import { ScrollMetricsContext, useScrollMetricsValue } from './scroll-metrics';
 import Animated from 'react-native-reanimated';
 import { StyledScrollView } from '../styles/styled-primitives';
 import type { ScrollAreaProps } from './types';
+import { useHorizontalFocusVisibility } from './use-horizontal-focus-visibility';
 import { useScrollAreaEvents } from './use-scroll-area-events';
 import { useAnimatedScrollMetricsBinding } from './use-animated-scroll-metrics-binding';
 
@@ -25,15 +26,24 @@ const PERSIST_TAPS = 'handled' as const;
 /** One native scroll owner; animated handlers stay on the UI thread. */
 export function ScrollViewport(props: ScrollAreaProps) {
   const metrics = useScrollMetricsValue();
+  const ref = useHorizontalFocusVisibility(props.ref, Boolean(props.horizontal));
   const swipe = useContext(SwipeRowScrollContext);
   const owner = props.horizontal ? swipe : null;
   useEffect(() => owner?.register(), [owner]);
   const ScrollGate = owner?.ScrollGate;
   const viewport =
     props.animatedHandler === undefined ? (
-      <PlainViewport {...props} {...(owner ? webDataSet({ bloomSwipeScroll: '' }) : {})} />
+      <PlainViewport
+        {...props}
+        ref={ref}
+        {...(owner ? webDataSet({ bloomSwipeScroll: '' }) : {})}
+      />
     ) : (
-      <AnimatedScrollViewport {...props} {...(owner ? webDataSet({ bloomSwipeScroll: '' }) : {})} />
+      <AnimatedScrollViewport
+        {...props}
+        ref={ref}
+        {...(owner ? webDataSet({ bloomSwipeScroll: '' }) : {})}
+      />
     );
   // Horizontal strips never own the vertical page chrome, even when nested
   // under its provider. Isolate layout, content-size and animated events alike.
