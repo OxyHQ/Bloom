@@ -1,0 +1,25 @@
+--- a/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt
++++ b/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/textinput/ReactEditText.kt
+@@ -760,6 +760,12 @@
+     // current text need to be adapted to the new text. Since TextView#setText() will remove or
+     // reset some of these spans even if they are set directly, SpannableStringBuilder#replace() is
+     // used instead (this is also used by the keyboard implementation underneath the covers).
++    // A style/layout state update can replace identical text. Android's Editor resets
++    // its drag accelerator during replace(), which sorts a backward selection.
++    // Preserve its direction only when the characters themselves do not change.
++    val preserveSelection = TextUtils.equals(text, reactTextUpdate.text)
++    val previousSelectionStart = selectionStart
++    val previousSelectionEnd = selectionEnd
+     val spannableStringBuilder = SpannableStringBuilder(reactTextUpdate.text)
+ 
+     manageSpans(spannableStringBuilder)
+@@ -779,6 +785,9 @@
+       // try to update state if the wrapper is available. Temporarily disable
+       // to prevent an infinite loop.
+       checkNotNull(text).replace(0, length(), spannableStringBuilder)
++    }
++    if (preserveSelection) {
++      maybeSetSelection(previousSelectionStart, previousSelectionEnd)
+     }
+     disableTextDiffing = false
+ 
