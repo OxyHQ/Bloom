@@ -5,8 +5,13 @@ description: Source ownership and minimum extensions for the responsive composit
 
 # Composition implementation inventory
 
-Source baseline: Bloom `e3996b93573d143ba5d426413eaa9233e61c248b`, version
-17.22.0, inspected 2026-11-08 for [#663](https://github.com/OxyHQ/Bloom/issues/663).
+Historical source baseline: Bloom `e3996b93573d143ba5d426413eaa9233e61c248b`,
+version 17.22.0, inspected 2026-11-08 for
+[#663](https://github.com/OxyHQ/Bloom/issues/663). A targeted revalidation of
+the PageHeader/Dialog action owner was completed against current main
+`f38892bc` (Bloom 17.23.0) on 2026-11-08 after #664 and #670 merged. The rows
+explicitly updated below use current main; all other source rows remain pinned
+to the historical baseline until rechecked.
 This is a source inventory and design note, not visual acceptance or a claim
 that every public part or consumer has been audited. Runtime, physical-device,
 performance and published-consumer checks in this document are **not run**.
@@ -14,10 +19,14 @@ The existing [composition contracts](/docs/composition),
 [layout guide](/docs/bloom/main/compose-layouts) and
 [UI architecture](/docs/ui-architecture) remain authoritative.
 
-Open PRs revalidated on that date: #577 (native avatars), #585 (focused chart
-exports) and #586 (diagnostic packaging). None is integrated by this inventory.
-The chart entry-point proposal must be checked again before publishing an
-import for a new chart subpath.
+At the historical review, #577 (native avatars), #585 (focused chart exports)
+and #586 (diagnostic packaging) were open. They are now closed; closure alone
+does not establish which changes were integrated. Current main includes the
+composition ownership note from #664 and the shared measured header actions
+from #670. At this targeted revalidation, #679 (editor overlays) and #683
+(Android composer light) are open and remain separate work; neither is accepted
+as complete product behavior by this inventory. Recheck current PRs before each
+implementation because this repository is active.
 
 ## Header inventory
 
@@ -29,12 +38,12 @@ platform factory is explicitly noted. That is source coverage, not device proof.
 
 | Entry and source | Classification and owner | Shared base and semantic difference | Adaptation, state and remaining gap |
 | --- | --- | --- | --- |
-| `PageHeader`, `page-header/PageHeader.tsx`, `types.ts` | Canonical route chrome; Screen owns placement/clearance | Button, BlurIsland, BloomScope; floating/bar/navigation are presentation choices, independent of inline/overlay/overlap placement | Host width drives compact/spacious action render props. Explicit scroll, HeaderDock, ScrollMetrics, Screen, ScrollOffset then web window resolve the scroll owner. Actions remain nodes; no semantic priority/overflow contract. |
+| `PageHeader`, `page-header/PageHeader.tsx`, `types.ts` (targeted revalidation at `f38892bc`) | Canonical route chrome; Screen owns placement/clearance | Button, BlurIsland, BloomScope; floating/bar/navigation are presentation choices, independent of inline/overlay/overlap placement. PageHeader and Dialog share `HeaderActions` from #670. | Host width drives compact/spacious action render props. Explicit scroll, HeaderDock, ScrollMetrics, Screen, ScrollOffset then web window resolve the scroll owner. `HeaderAction` now has stable `id`, label/icon/group, priority, essential and overflow policies, visibility/state and label visibility. The shared row measures local width, collapses labels before overflowing optional actions, and preserves mounted custom controls, action identity and open-menu focus through resize. Browser acceptance is limited to the recorded #670 matrix; consumers and native devices remain pending. |
 | `PageHeaderTitleInput`, `PageHeaderHistory`, same family | Justified parts of canonical chrome | Editable title and navigation history, rather than another screen wrapper | Preserve input identity and panel history. Do not copy their behavior into routes. |
 | `ChatHeader`, `chat-screen/ChatHeader.tsx` | Justified conversation identity/selection variant; geometry adaptation pending | HeaderIconButton delegates to Button. Avatar/presence and connecting > typing > status precedence; selection replaces identity and call actions | Uses window width and assumes every native host is compact. Needs local host measurement while preserving explicit compact/showBack. No automatic action overflow; identity Pressable is separate from action controls. |
 | `CoverHeader`, `cover-header/CoverHeader.tsx`, `types.ts` | Justified content/cover editor, not navigation chrome | CoverImage/BloomImage; crop geometry and Save/Cancel transaction | Owns crop draft, commit rejection and stable source key; caller owns persistence. Height/overlap are content dimensions. Do not convert these into control size or PageHeader scroll ownership. |
 | `AppShellHeader`, `app-shell/AppShellHeader.tsx` | Canonical starter shell heading, distinct from Screen navigation | Button + typography; breadcrumb and wrapping action row | Shell supplies showMenu from its measured host; standalone fallback uses window lg. Reuse shell decision, never independently hide its sole navigation action. |
-| `DialogNavHeader`, `DialogLargeTitle`, `dialog/DialogHeader.tsx` (internal); public `useDialogHeader` | Justified modal adapter of PageHeader | Already renders PageHeader, HeaderDockProvider, ButtonGroupItem, Popover and Item; dialog owns scroll/controller and close | Large-title measurements feed shared values. Existing overflow is fixed-count, keyed by accessibilityLabel; lacks stable IDs/priorities. Preserve separate primary action and close, runtime header override and focus return. |
+| `DialogNavHeader`, `DialogLargeTitle`, `dialog/DialogHeader.tsx` (internal); public `useDialogHeader` (targeted revalidation at `f38892bc`) | Justified modal adapter of PageHeader | Renders PageHeader, HeaderDockProvider and the shared `HeaderActions`; dialog owns scroll/controller and close | Large-title measurements feed shared values. #670 replaces the fixed three-action cutoff with shared semantic descriptors while preserving legacy action inputs, primary action, close, runtime header override and focus return. The broader modal lifecycle and consumer acceptance remain pending. |
 | `AiChatHeader`, `AiChatMobileHeader`, `ai-chat/AiChatShell.tsx`; `AiChatContainer`; AgentChat and MultiAgentChat headers | Canonical adapters already using PageHeader | AI shell supplies measured chrome; AgentChat identity is a custom title; MultiAgentChat carries its own conversation state | Preserve slots and platform-injected dependencies. Sharing PageHeader does not prove transcript, action or keyboard equivalence. |
 | `PanelHeader`, `ai-chat/AiChatCodePanel.tsx` (internal), reused by gallery | Justified PageHeader adapter | Code/gallery tools and close actions use PageHeader slots | Keep code/gallery selection and tool state; adapt common actions without merging domain models. |
 | `CalendarViewHeader`, `calendar/CalendarViewHeader.tsx` | Duplicate shell-row structure to consolidate; calendar controls are justified | Repeats breadcrumb/title/menu/action geometry of AppShellHeader; adds month switcher, inbox and New event | Family breakpoint determines action row. Consolidate structure only after preserving month menu, locale, keyboard navigation and local-width behavior. |
