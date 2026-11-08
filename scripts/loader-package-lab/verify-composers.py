@@ -37,18 +37,89 @@ def retained(a,b):
     for k in ['identity','id','text','focused','attached']: assert a[k]==b[k], (k,a,b)
     assert sorted([a['start'],a['end']])==sorted([b['start'],b['end']]), ('selected range',a,b)
     assert b['focused'] and b['attached']
+def retained_across_rotation(a,b):
+    for k in ['text','focused','attached']: assert a[k]==b[k], (k,a,b)
+    assert [a['start'],a['end']]==[b['start'],b['end']], ('selection direction',a,b)
+    assert b['focused'] and b['attached']
+def orientation():
+    return int(ui().get('rotation','-1'))
+def wait_orientation(expected):
+    for _ in range(60):
+        if orientation()==expected: return
+        time.sleep(.2)
+    raise AssertionError(f'Expected display rotation {expected}, got {orientation()}')
+def ime_visible():
+    state=adb('shell','dumpsys','input_method')
+    # Pixel 8a API 36 reports isShowing=false while Gboard is visibly drawn.
+    return bool(re.search(r'\bisShowing:\s*true\b|\bmInputShown\s*=\s*true\b',state,re.I) and re.search(r'\bmImeWindowVis=3\b',state))
+def dismiss_ime():
+    for _ in range(3):
+        if not ime_visible(): return
+        adb('shell','input','keyevent','KEYCODE_BACK');time.sleep(.3)
+    assert not ime_visible(), 'Keyboard/selection toolbar did not dismiss'
+def select_all(owner):
+    adb('shell','input','keycombination','KEYCODE_CTRL_LEFT','KEYCODE_A')
+    selected=inputs()[owner]
+    assert selected['focused'] and selected['start']!=selected['end'], selected
+    return selected
+def rotate_and_check(owner):
+    old_accel=adb('shell','settings','get','system','accelerometer_rotation')
+    old_user=adb('shell','settings','get','system','user_rotation')
+    old_orientation=orientation()
+    assert old_orientation in (0,1), old_orientation
+    before=select_all(owner)
+    assert ime_visible(), 'Keyboard must be visible before rotation'
+    shot(owner+'-rotation-before')
+    target=0 if old_orientation==1 else 1
+    try:
+        adb('shell','settings','put','system','accelerometer_rotation','0')
+        adb('shell','settings','put','system','user_rotation',str(target))
+        wait_orientation(target)
+        time.sleep(.8)
+        after=inputs()[owner]
+        shot(owner+'-rotation-'+str(target))
+        retained_across_rotation(before,after)
+        assert ime_visible(), 'Keyboard closed during rotation'
+        returned=0 if target==1 else 1
+        adb('shell','settings','put','system','user_rotation',str(returned))
+        wait_orientation(returned)
+        time.sleep(.8)
+        restored=inputs()[owner]
+        shot(owner+'-rotation-'+str(returned))
+        retained_across_rotation(before,restored)
+        assert ime_visible(), 'Keyboard closed after returning from rotation'
+        return {'before':before,'rotated':after,'returned':restored,'nativeViewStable':before['identity']==after['identity']==restored['identity'],'startOrientation':old_orientation,'targetOrientation':target,'keyboardVisibleThroughout':True,'selectionMethod':'Ctrl+A on focused native EditText'}
+    finally:
+        if old_user in ('0','1','2','3'):
+            adb('shell','settings','put','system','user_rotation',old_user)
+        if old_accel in ('0','1'):
+            adb('shell','settings','put','system','accelerometer_rotation',old_accel)
+        wait_orientation(old_orientation)
 adb('shell','am','force-stop',pkg)
 adb('shell','am','start','-n',pkg+'/.MainActivity','--es','scene','composers');time.sleep(3)
 results={}
 for owner in ['cases-pill-input','cases-agent-pill-input']:
     cases=[]
     for control in ['cases-resize','cases-busy']:
-        tree=ui(); control_point=point(tree,control); input_point=point(tree,owner)
+        # The previous transition leaves Gboard open. Its overlay covers the
+        # center of the EditText bounds, so dismiss it before taking new points.
+        dismiss_ime()
+        tree=ui(); control_point=point(tree,control)
         # Timer gives time to focus via a real touch before the state change.
-        tap(control_point); tap(input_point)
-        adb('shell','input','keycombination','KEYCODE_SHIFT_LEFT','KEYCODE_DPAD_LEFT')
-        before=inputs()[owner]; assert before['focused']
-        assert before['start'] != before['end'], 'Real key chord did not select text'
+        pending_name='resize' if control=='cases-resize' else 'busy'
+        tap(control_point); time.sleep(.3)
+        tree=ui()
+        state=next(n for n in tree.iter('node') if n.get('resource-id')=='cases-state').get('text')
+        if 'pending='+pending_name not in state:
+            # Android may consume the first tap while the IME window is
+            # settling. Retry only after the UI confirms no timer was started.
+            time.sleep(.4); tree=ui(); control_point=point(tree,control)
+            tap(control_point); time.sleep(.3); tree=ui()
+            state=next(n for n in tree.iter('node') if n.get('resource-id')=='cases-state').get('text')
+        assert 'pending='+pending_name in state, (owner,control,control_point,state)
+        tap(point(tree,owner))
+        before=inputs()[owner]
+        assert before['focused'] and before['start']==before['end'], before
         time.sleep(4.2)
         after=inputs()[owner]; retained(before,after)
         changed=ui()
@@ -71,8 +142,9 @@ for owner in ['cases-pill-input','cases-agent-pill-input']:
     assert typed['identity']==after_stop['identity'] and typed['focused']
     start,end=sorted([after_stop['start'],after_stop['end']])
     assert typed['text']==after_stop['text'][:start]+'q'+after_stop['text'][end:]
+    rotation=rotate_and_check(owner)
     shot(owner+'-stop-and-type')
-    results[owner]={'transitions':cases,'stop':{'before':before_stop,'after':after_stop,'state':state},'typed':typed}
+    results[owner]={'transitions':cases,'stop':{'before':before_stop,'after':after_stop,'state':state},'typed':typed,'rotation':rotation}
     # Restore idle/full width between owners without touching another application.
     adb('shell','input','keyevent','KEYCODE_BACK')
     tree=ui(); state=next(n for n in tree.iter('node') if n.get('resource-id')=='cases-state').get('text')

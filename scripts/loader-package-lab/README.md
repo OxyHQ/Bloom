@@ -92,7 +92,11 @@ explicit authorized physical serial and the synthetic app in the foreground; its
 clock and input probes are fixture-only, with no additional public loader API.
 
 `verify-composers.py` uses real pointer hits and keyboard chords to check packaged
-Pill/AgentChatComposer drafts, selected content, Stop and subsequent typing.
+Pill/AgentChatComposer resize and busy transitions, drafts, focus/caret, Stop,
+subsequent typing, and selection retention through physical display rotation with
+the keyboard visible. It first confirms each delayed control press registered;
+it dismisses the IME before measuring a new target because its overlay can cover
+the center of an accessibility node's bounds.
 `verify-selection-direction.py` compares no transition, resize and busy with the
 same backward selection and next Shift+Arrow. Its Pixel 8a run verifies that the
 selection endpoints and active direction survive a resize. The direct RN controls
