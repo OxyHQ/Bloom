@@ -184,7 +184,34 @@
       "status": "passed"
     },
     "archive": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/.local/alia-mic-idle",
-    "reviewScreenshot": "docs/benchmarks/alia-composer-submit-stop-android-2026-11-08.png"
+    "reviewScreenshot": "docs/benchmarks/alia-composer-submit-stop-android-2026-11-08.png",
+    "baselineApkSha256": "c1c490ad6a4efca94e5743bfb0475f7a290ff2a6b3b2903a1f1f1e27a3039fe2",
+    "environment": {
+      "device": "Google Pixel 8a",
+      "os": "Android 16",
+      "api": 36,
+      "abi": "arm64-v8a",
+      "fingerprint": "google/akita/akita:16/BP4A.260205.001/14624666:user/release-keys",
+      "physicalPixels": [1080, 2400],
+      "densityDpi": 420,
+      "fontScale": 1.15,
+      "settingsChanged": false,
+      "aliaSdk": "22.10.1",
+      "reactNative": "0.88.1",
+      "expoSdk": 58,
+      "compiler": false
+    },
+    "comparisonReceipt": {
+      "path": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/.local/alia-mic-idle/comparison.json",
+      "sha256": "627dc8ab78d92aa5632613843eec8607bd301cc09a6d52da7af43b10381fdce9",
+      "baselineAttestationSha256": "8a1d75d3d590aff6b16800a05b8e6c2532392c13734d163126e66e6c5677c51b",
+      "candidateAttestationSha256": "7d780debb7a42cd50d7df3aa8e1852c33056e33cda4d1c4f9434fae8c94597b4",
+      "baselineEmbeddedBundleSha256": "062fcc580c329d8f3270607b9d946951b857570972df0cf9319d7fe7b94994c4",
+      "candidateEmbeddedBundleSha256": "7fb35857736326f50e93f2a9d3ca52d444f3eb281831da6c727776665f8b614b",
+      "fixtureSha256": "d04a7ffe906598bc325c2890b98e37db2315a3516699392008e83edf6f071d96",
+      "lockSha256": "f3b08499a6de081d3e6d31b2f41dcdf575e792d0bb04fd9928e6d6c27ce7a343",
+      "aliaSourceSha256": "b846f9f708890513c5c3199afefc2ebd201246688b4daffe813c3322f2204134"
+    }
   },
   "limits": [
     "No app-background/retained-screen recording lifecycle claim.",
