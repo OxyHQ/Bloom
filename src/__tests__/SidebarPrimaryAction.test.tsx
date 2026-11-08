@@ -26,7 +26,7 @@ it.each([
   { variant: 'panel' as const, collapsed: false },
   { variant: 'panel' as const, collapsed: true },
   { variant: 'rail' as const },
-])('keeps one named, operable action outside the scrolling destinations: %j', (mode) => {
+])('keeps one named, operable action in the sticky footer of the whole-sidebar scroll: %j', (mode) => {
   const onPress = jest.fn();
   const tree = mount({
     ...mode,
@@ -41,9 +41,11 @@ it.each([
   expect(button.props.accessibilityRole).toBe('button');
   pressHost(button);
   expect(onPress).toHaveBeenCalledTimes(1);
+  let insideScroll = false;
   for (let ancestor = button.parent; ancestor; ancestor = ancestor.parent) {
-    expect(ancestor.props.testID).not.toBe('nav-scroll');
+    if (ancestor.props.testID === 'nav-scroll') insideScroll = true;
   }
+  expect(insideScroll).toBe(true);
 });
 
 it.each(['panel', 'rail'] as const)(

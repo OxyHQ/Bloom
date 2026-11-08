@@ -86,7 +86,9 @@ export function resolveAvatarCharacter(character: AvatarCharacter): ResolvedAvat
   const shape = part('shape', AVATAR_SHAPES);
   const eyes = part('eyes', [...AVATAR_EYES, 'none'] as const);
   const eyewear = part('eyewear', AVATAR_EYEWEAR);
-  const accessory = part('accessory', AVATAR_ACCESSORIES);
+  // Retired accessory IDs remain readable in saved characters, but never render.
+  const requestedAccessory = part('accessory', AVATAR_ACCESSORIES);
+  const accessory = requestedAccessory === 'orb' ? 'none' : requestedAccessory;
 
   const hex = (value: unknown) => {
     if (typeof value !== 'string' || !/^#[0-9a-f]{6}$/i.test(value))

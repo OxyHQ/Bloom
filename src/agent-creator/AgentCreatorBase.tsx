@@ -1,12 +1,14 @@
-import { useMemo, useState } from 'react';
-import { Platform } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
+import { Platform, type View } from 'react-native';
+import { useCharacterHistory } from './use-character-history';
+import { useVectorGeometryPreparation } from '../agent-avatar/use-vector-geometry-preparation';
 import {
   AgentAvatar,
   avatarBodyHex,
   resolveAvatarCharacter,
   updateAvatarCharacter,
 } from '../agent-avatar';
-import { CHARACTER_SHAPES } from '../agent-avatar/character-shapes';
+import { editorShapeId } from './shape-choices';
 import { Button } from '../button/Button';
 import { CloseButton } from '../button/CloseButton';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -43,34 +45,108 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   const backing = useSurfaceBacking(colors.background, style);
   const { Screen, ScreenScrollView, Popover, PopoverTrigger, PopoverContent } =
     useAgentCreatorBindings();
+  const latest = useRef({ agent, onChange });
+  latest.current = { agent, onChange };
+  const copy = useMemo(
+    () => ({ locale: props.locale, labels: props.labels }),
+    [props.locale, props.labels],
+  );
+  const changePreferences = useCallback((next: AgentCreatorProps['agent']) => {
+    latest.current.onChange({ ...latest.current.agent, preferences: next.preferences });
+  }, []);
+  const preferencesPanel = useMemo(
+    () =>
+      props.showPreferences === false ? null : (
+        <AgentPreferencesPanel {...props} onChange={changePreferences} />
+      ),
+    [
+      agent.preferences,
+      props.showPreferences,
+      props.voices,
+      props.onPreviewVoice,
+      props.locale,
+      props.labels,
+      changePreferences,
+    ],
+  );
+  const history = useCharacterHistory(agent, onChange);
+  const avatar = history.character;
+  const editor = useRef<ComponentRef<typeof View> | null>(null);
+  const [preparing, setPreparing] = useState(false);
+  const keyboard = useRef(history);
+  keyboard.current = history;
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const node = editor.current as unknown as HTMLElement | null;
+    const keydown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (
+        event.defaultPrevented ||
+        event.isComposing ||
+        target.isContentEditable ||
+        target.closest('input, textarea, [contenteditable="true"], [role="textbox"]')
+      )
+        return;
+      if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
+      const key = event.key.toLowerCase();
+      if (key === 'z' && !event.shiftKey && keyboard.current.canUndo) {
+        event.preventDefault();
+        keyboard.current.undo();
+      } else if ((key === 'y' || (key === 'z' && event.shiftKey)) && keyboard.current.canRedo) {
+        event.preventDefault();
+        keyboard.current.redo();
+      }
+    };
+    node?.addEventListener('keydown', keydown);
+    return () => node?.removeEventListener('keydown', keydown);
+  }, []);
   const [reactionKey, setReactionKey] = useState(0);
   const [workingKey, setWorkingKey] = useState(0);
   // Every control reads the resolved character and writes one edit to the saved one.
-  const character = useMemo(() => resolveAvatarCharacter(agent.avatar), [agent.avatar]);
+  const character = useMemo(() => resolveAvatarCharacter(avatar), [avatar]);
   const edit = (patch: Parameters<typeof updateAvatarCharacter>[1]) =>
-    onChange({ ...agent, avatar: updateAvatarCharacter(agent.avatar, patch) });
+    history.change(updateAvatarCharacter(avatar, patch));
   const paintColor = 'color' in character.paint ? character.paint.color : undefined;
   const customHex = 'bodyColor' in character.paint ? character.paint.bodyColor : undefined;
   const bodyHex = avatarBodyHex(character);
-  const shapeChoices = CHARACTER_SHAPES.map(([id, title]) => ({
-    id,
-    label:
-      id in messages.shapes
-        ? messages.shapes[id as keyof typeof messages.shapes]
-        : messages.characterOption('shape', id, title),
-    character: updateAvatarCharacter(agent.avatar, { shape: id }),
-  }));
-  const eyeChoices = CHARACTER_OPTIONS.eyes.map(([id, title]) => ({
-    id,
-    label: messages.characterOption('eyes', id, title),
-    character: updateAvatarCharacter(agent.avatar, { eyes: id }),
-    disabled: false,
-  }));
+  const shapeChoices = useMemo(
+    () =>
+      CHARACTER_OPTIONS.shape.map(([id, title]) => ({
+        id,
+        label:
+          id in messages.shapes
+            ? messages.shapes[id as keyof typeof messages.shapes]
+            : messages.characterOption('shape', id, title),
+        character: updateAvatarCharacter(avatar, { shape: id }),
+      })),
+    [avatar, messages],
+  );
+  const nearby = useMemo(() => {
+    const index = CHARACTER_OPTIONS.shape.findIndex(
+      ([id]) => id === editorShapeId(character.shape),
+    );
+    return [index - 1, index + 1].flatMap((i) => {
+      const next = CHARACTER_OPTIONS.shape[i];
+      return next ? [updateAvatarCharacter(avatar, { shape: next[0] })] : [];
+    });
+  }, [avatar, character.shape]);
+  useVectorGeometryPreparation(nearby);
+  const eyeChoices = useMemo(
+    () =>
+      CHARACTER_OPTIONS.eyes.map(([id, title]) => ({
+        id,
+        label: messages.characterOption('eyes', id, title),
+        character: updateAvatarCharacter(avatar, { eyes: id }),
+        disabled: false,
+      })),
+    [avatar, messages],
+  );
   return (
-    <AgentCreatorCopyContext.Provider value={{ locale: props.locale, labels: props.labels }}>
+    <AgentCreatorCopyContext.Provider value={copy}>
       <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
         <StyledView
           {...directionProps}
+          ref={editor}
           accessibilityLabel={messages.editor}
           className={className ?? 'flex h-full min-h-0 flex-col bg-background-full'}
           style={[
@@ -143,12 +219,13 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   }}
                 >
                   <AgentAvatar
-                    character={agent.avatar}
+                    character={avatar}
                     size={162}
                     interactive
                     renderer="svg"
                     reactionKey={reactionKey}
                     workingKey={workingKey}
+                    onLoadingChange={setPreparing}
                     label={messages.livePreview(agent.name || messages.newAgent)}
                   />
                 </StyledView>
@@ -161,11 +238,20 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                     <ShapeArc
                       key={agent.id}
                       choices={shapeChoices}
-                      value={character.shape}
+                      value={editorShapeId(character.shape)}
                       onSelect={(id) => edit({ shape: id as typeof character.shape })}
                     />
                   )}
                 </StyledView>
+              </StyledView>
+              <StyledView
+                style={{ minHeight: 20, alignItems: 'center' }}
+                aria-busy={preparing}
+                testID="agent-avatar-preparation"
+              >
+                <Text accessibilityLiveRegion="polite" role="status" variant="caption-1-regular">
+                  {preparing ? messages.preparingAvatar : ''}
+                </Text>
               </StyledView>
               <StyledView className="mt-2 flex-row justify-center gap-2">
                 <Button size="xs" onPress={() => setReactionKey((key) => key + 1)}>
@@ -236,7 +322,10 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                       className="w-[248px] rounded-3xl p-2.5"
                     >
                       <CustomColorPicker
+                        key={agent.id}
                         value={bodyHex}
+                        onInteractionStart={history.begin}
+                        onInteractionEnd={history.end}
                         onChange={(hex) => {
                           if (/^#[0-9a-f]{6}$/i.test(hex)) edit({ bodyColor: hex.toLowerCase() });
                         }}
@@ -245,10 +334,18 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   </Popover>
                 </StyledView>
               </StyledView>
-              <CharacterControls
-                character={agent.avatar}
-                onChange={(avatar) => onChange({ ...agent, avatar })}
-              />
+              <CharacterControls character={avatar} onChange={history.change} />
+              <StyledView className="mt-3 flex-row flex-wrap justify-center gap-2">
+                <Button appearance="plain" onPress={history.undo} disabled={!history.canUndo}>
+                  {messages.undoAvatar}
+                </Button>
+                <Button appearance="plain" onPress={history.redo} disabled={!history.canRedo}>
+                  {messages.redoAvatar}
+                </Button>
+                <Button appearance="plain" onPress={history.restore} disabled={!history.canRestore}>
+                  {messages.restoreAvatar}
+                </Button>
+              </StyledView>
               <StyledView
                 className="mt-[15px] overflow-hidden rounded-2xl bg-background-secondary-default ps-3"
                 style={{ backgroundColor: colors.backgroundSecondary }}
@@ -333,7 +430,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   </StyledView>
                 </StyledView>
               </StyledView>
-              {props.showPreferences === false ? null : <AgentPreferencesPanel {...props} />}
+              {preferencesPanel}
             </ScreenScrollView>
           </Screen>
         </StyledView>

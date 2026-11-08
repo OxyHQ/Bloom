@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { useMessages } from '../locale/messages';
 import type * as PopoverParts from '../popover/Popover';
 import type * as SelectParts from '../select';
@@ -33,5 +33,5 @@ export function useAgentCreatorMessages(overrides?: {
   const inherited = useContext(AgentCreatorCopyContext);
   const configured = overrides ?? inherited;
   const { messages } = useMessages(AGENT_CREATOR_MESSAGES, configured?.locale);
-  return { ...messages, ...configured?.labels };
+  return useMemo(() => ({ ...messages, ...configured?.labels }), [messages, configured?.labels]);
 }

@@ -1,4 +1,4 @@
-import { resolveVectorEyeInk } from './vector-eye-ink';
+import { resolveVectorEyeInk, vectorEyeBaseOutline } from './vector-eye-ink';
 import { projectReferenceFacePoint, referenceFaceDepth } from './vector-face';
 import type { ResolvedAvatarCharacter } from './character';
 import { CHARACTER_COLORS } from './character-colors';
@@ -345,36 +345,84 @@ function rimDistance(mesh: FitMesh[], center: number[], dx: number, dy: number):
   return near;
 }
 
-function paint(data: VectorData, character: ResolvedAvatarCharacter): VectorData {
+export function paintVectorCharacter(
+  data: VectorData,
+  character: ResolvedAvatarCharacter,
+): VectorData {
   const color =
     'bodyColor' in character.paint
       ? character.paint.bodyColor
       : CHARACTER_COLORS[character.paint.color];
-  const readableEyeInk = data.referenceFace
-    ? resolveVectorEyeInk(
-        data.parts.filter((p) => p.role === 'eye').map((p) => p.color),
-        color,
-      )
-    : undefined;
+  const readableEyeInk = resolveVectorEyeInk(
+    data.parts.filter((p) => p.role === 'eye').map((p) => p.color),
+    color,
+  );
   return {
     ...data,
-    parts: data.parts.map((p) =>
-      p.role === 'body' || p.role === 'hand' || p.bodyPaint
-        ? { ...p, color }
-        : p.role === 'eye' && readableEyeInk
-          ? { ...p, color: readableEyeInk }
-          : p,
-    ),
+    parts: data.parts.map((p) => {
+      if (p.role === 'body' || p.role === 'hand' || p.bodyPaint) return { ...p, color };
+      if (p.role !== 'eye') return p;
+      const stroke = vectorEyeBaseOutline(character.eyes, p.color, color);
+      return readableEyeInk || stroke
+        ? {
+            ...p,
+            ...(readableEyeInk ? { color: readableEyeInk } : {}),
+            ...(stroke ? { stroke, strokeWidth: 2 } : {}),
+          }
+        : p;
+    }),
+  };
+}
+/** Keep the face in the upper central region of these broad, concave silhouettes. */
+function centeredShapeFace(base: VectorData, shape: string): VectorData {
+  if (!['star', 'cloud', 'bot_star', 'bot_cloud'].includes(shape)) return base;
+  const eyeIds = indices(base, 'eye');
+  if (!eyeIds.length) return base;
+  const body = bounds(base, indices(base, 'body')),
+    eyes = bounds(base, eyeIds);
+  const offset = [
+    body.center[0]! - eyes.center[0]!,
+    body.center[1]! + body.size[1]! * 0.07 - eyes.center[1]!,
+    0,
+  ];
+  const localOffset = vector(
+    inverse(world(base.clips.idle.parts[eyeIds[0]!] ?? restTrack, 0)),
+    offset,
+  );
+  const reference = base.referenceFace;
+  return {
+    ...base,
+    ...(reference
+      ? {
+          referenceFace: {
+            ...reference,
+            center: [
+              reference.center[0] + localOffset[0]!,
+              reference.center[1] + localOffset[1]!,
+            ] as [number, number],
+            eyePlanes: reference.eyePlanes?.map((plane) => ({
+              ...plane,
+              center: plane.center.map((v, i) => v + localOffset[i]!),
+            })),
+          },
+        }
+      : {}),
+    parts: base.parts.map((part, i) => {
+      if (!eyeIds.includes(i)) return part;
+      const rest = world(base.clips.idle.parts[i] ?? restTrack, 0);
+      const delta = vector(inverse(rest), offset);
+      return { ...part, points: part.points.map((p) => p.map((v, k) => v + delta[k]!)) };
+    }),
   };
 }
 /** Compose cached, immutable vector donors using the canonical character contract. */
-export async function composeVectorCharacter(
+async function composeVectorGeometry(
   character: ResolvedAvatarCharacter,
   loader: VectorAssetLoader,
 ): Promise<VectorData> {
   const template = await loader.template(character);
-  if (template) return paint(template, character);
-  const base = await loader.shape(character.shape);
+  if (template) return template;
+  const base = centeredShapeFace(await loader.shape(character.shape), character.shape);
   const preserveEyes = !!base.referenceFace && character.eyes === 'bot';
   const kept = base.parts.flatMap((p, i) =>
     ['eyewear', 'accessory'].includes(p.role ?? '') || (p.role === 'eye' && !preserveEyes)
@@ -531,6 +579,17 @@ export async function composeVectorCharacter(
         faceBlend: [] as number[],
       };
     });
+    if (role === 'eye' && id !== 'cyclops' && sourcePair[0] !== sourcePair[1]) {
+      // An expression owns its local shape, not the distance between the selected body's eyes.
+      // Translate each complete eye/eyelid/brow assembly onto that body's paired anchors.
+      for (const v of baked) {
+        const side = bounds(donor, [v.i]).center[0]! < donorFace.center[0]! ? 0 : 1;
+        const sourceCenter = point(fit, sourcePair[side].center);
+        const delta = [targetPair[side].center[0]! - sourceCenter[0]!, targetPair[side].center[1]! - sourceCenter[1]!, 0];
+        v.points = v.points.map(p => p.map((n,k) => n + delta[k]!));
+        v.matrix = multiply(shift(delta), v.matrix);
+      }
+    }
     if (role === 'eyewear') {
       const sourceCenters = sourcePair.map((p) => p.center),
         targetCenters = targetPair.map((p) => p.center);
@@ -667,10 +726,15 @@ export async function composeVectorCharacter(
               targetAngle = targetAngles[k]!;
             const major =
               (dx * Math.cos(sourceAngle) + dy * Math.sin(sourceAngle)) * lensScales[k]!;
-            const minor =
+            let minor =
               (-dx * Math.sin(sourceAngle) + dy * Math.cos(sourceAngle)) *
               lensScales[k]! *
               lensWidths[k]!;
+            if (id === 'classic_sunglasses' && (k === 0 ? dx > 0 : dx < 0)) {
+              const originalGap = Math.abs(sourceCenters[1]![0]! - sourceCenters[0]![0]!);
+              const fittedGap = Math.abs(targetCenters[1]![0]! - targetCenters[0]![0]!);
+              minor *= Math.min(1, fittedGap / Math.max(0.001, originalGap * lensScales[k]!));
+            }
             return [
               targetCenters[k]![0]! + major * Math.cos(targetAngle) - minor * Math.sin(targetAngle),
               targetCenters[k]![1]! + major * Math.sin(targetAngle) + minor * Math.cos(targetAngle),
@@ -688,8 +752,9 @@ export async function composeVectorCharacter(
     if (role === 'eye' && id !== 'cyclops' && character.eyeSpacing !== undefined) {
       for (const value of baked) {
         const center = bounds(donor, [value.i]).center[0]!,
-          direction = center < group.center[0]! ? -1 : 1;
-        const dx = direction * group.size[0]! * 0.25 * scale * (character.eyeSpacing - 1);
+          side = center < group.center[0]! ? 0 : 1,
+          middle = (targetPair[0].center[0]! + targetPair[1].center[0]!) / 2;
+        const dx = (targetPair[side].center[0]! - middle) * (character.eyeSpacing - 1);
         value.points = value.points.map((p) => [p[0]! + dx, p[1]!, p[2]!]);
       }
     }
@@ -727,6 +792,20 @@ export async function composeVectorCharacter(
         const dy = targetSurface - targetEdge - (sourceSurface - sourceEdge) * scale;
         for (const v of baked) v.points = v.points.map((p) => [p[0]!, p[1]! + dy, p[2]!]);
       }
+    }
+    if (role === 'accessory' && id === 'bow') {
+      // A neck anchor fixes height, but cannot seat a bow against a non-spherical chest.
+      // Keep its complete mesh in front of the actual contact surface, then let normal
+      // depth visibility handle turns and other props as it does for every accessory.
+      const front = frontSurface(base, bodyIndices);
+      let lift = 0;
+      for (const v of baked)
+        for (const p of v.points) {
+          const surface = front(p[0]!, p[1]!);
+          if (Number.isFinite(surface)) lift = Math.max(lift, surface - p[2]! + 0.012);
+        }
+      if (lift > 0)
+        for (const v of baked) v.points = v.points.map((p) => [p[0]!, p[1]!, p[2]! + lift]);
     }
     if (facial && reference) {
       const all = baked.flatMap((v) => v.points);
@@ -817,6 +896,7 @@ export async function composeVectorCharacter(
         id: `${role}:${id}:${part.id}`,
         points,
         face: facial && !!reference,
+        head: role === 'accessory' && !!reference,
         delta0: part.delta0?.map((p) => vector(matrix, p)),
         delta1: part.delta1?.map((p) => vector(matrix, p)),
       });
@@ -837,9 +917,10 @@ export async function composeVectorCharacter(
             multiply(head(donor, 'idle', 0), inverse(head(donor, action, sourceFrame))),
             multiply(world(track, sourceFrame), inverse(rest)),
           );
+          const partFit = multiply(matrix, inverse(rest));
           const motion =
             role === 'eye' && !reference
-              ? multiply(multiply(fit, relative), inverse(fit))
+              ? multiply(multiply(partFit, relative), inverse(partFit))
               : identity();
           matrices.push(...multiply(carrier, motion));
           parameters.push(...values(track.parameters, 4, sourceFrame, [0, 0, 0, 0]));
@@ -855,5 +936,50 @@ export async function composeVectorCharacter(
       }
     }
   }
-  return paint(result, character);
+  return result;
+}
+
+/** Paint cannot change attachment fitting, donor transforms or animation clips. */
+export function vectorGeometryKey(character: ResolvedAvatarCharacter): string {
+  return JSON.stringify([
+    character.shape,
+    character.eyes,
+    character.eyewear,
+    character.accessory,
+    character.eyeSpacing ?? null,
+    character.authored,
+  ]);
+}
+const geometryCaches = new WeakMap<VectorAssetLoader, Map<string, Promise<VectorData>>>();
+/** Bounded per-loader cache also coalesces concurrent palette edits while donors load. */
+export function loadVectorGeometry(
+  character: ResolvedAvatarCharacter,
+  loader: VectorAssetLoader,
+): Promise<VectorData> {
+  let cache = geometryCaches.get(loader);
+  if (!cache) {
+    cache = new Map();
+    geometryCaches.set(loader, cache);
+  }
+  const key = vectorGeometryKey(character);
+  const known = cache.get(key);
+  if (known) {
+    cache.delete(key);
+    cache.set(key, known);
+    return known;
+  }
+  const pending = composeVectorGeometry(character, loader);
+  cache.set(key, pending);
+  if (cache.size > 24) cache.delete(cache.keys().next().value!);
+  void pending.catch(() => {
+    if (cache.get(key) === pending) cache.delete(key);
+  });
+  return pending;
+}
+/** Compose once per geometry; recolor without copying vertices or motion channels. */
+export async function composeVectorCharacter(
+  character: ResolvedAvatarCharacter,
+  loader: VectorAssetLoader,
+): Promise<VectorData> {
+  return paintVectorCharacter(await loadVectorGeometry(character, loader), character);
 }

@@ -222,3 +222,11 @@ describe('characterFromLegacy', () => {
     expect(() => characterFromLegacy(undefined)).toThrow('Invalid saved avatar');
   });
 });
+
+it('accepts retired bulb saves but resolves them without the accessory', () => {
+  expect(resolveAvatarCharacter({ preset: 'gus' }).accessory).toBe('none');
+  expect(resolveAvatarCharacter({ preset: 'blue_beret', accessory: 'orb' }).accessory).toBe('none');
+  expect(
+    avatarCharacterOf(resolveAvatarCharacter({ preset: 'gus', accessory: 'orb' })).accessory,
+  ).toBe('none');
+});

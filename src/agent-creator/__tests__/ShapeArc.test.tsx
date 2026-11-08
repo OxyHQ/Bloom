@@ -1,3 +1,4 @@
+import { normalizeAvatarSkinColor } from '../../agent-avatar/skin-color';
 import { fireEvent, render } from '@testing-library/react-native';
 import { VectorStaticPortrait } from '../../agent-avatar/VectorStaticPortrait';
 import { vectorShapePortraits } from '../../agent-avatar/vector-static';
@@ -36,7 +37,7 @@ it('uses frozen previews from the one renderer for every body, without PNGs, and
   ).map((shape) => ({ id: shape, label: shape, character: { ...base, shape } }));
   const onSelect = jest.fn();
   const view = render(
-    <CharacterRuntimeContext.Provider value={{ runtimeUrl: '/runtime.mjs' }}>
+    <CharacterRuntimeContext.Provider value={{}}>
       <BloomThemeProvider>
         <ShapeArc choices={choices} value="slender" onSelect={onSelect} />
       </BloomThemeProvider>
@@ -68,6 +69,8 @@ it('recolors the body preview without changing the input character', () => {
   expect(view.UNSAFE_getByType(VectorStaticPortrait).props.frame).toBe(vectorShapePortraits.heart);
   expect(view.UNSAFE_getByType(VectorStaticPortrait).props.bodyColor).toBe('#cc5533');
   view.rerender(<ShapeSilhouette character={{ ...input, bodyColor: '#2255dd' }} />);
-  expect(view.UNSAFE_getByType(VectorStaticPortrait).props.bodyColor).toBe('#2255dd');
+  expect(view.UNSAFE_getByType(VectorStaticPortrait).props.bodyColor).toBe(
+    normalizeAvatarSkinColor('#2255dd'),
+  );
   expect(JSON.stringify(input)).toBe(snapshot);
 });

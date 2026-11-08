@@ -1,3 +1,5 @@
+import { VectorCharacterAvatar } from './VectorCharacterAvatar';
+import { isSvgEyes, isSvgShape } from './svg-catalog';
 import { useContext, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { AccessibilityInfo, AppState, Platform, type View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -20,6 +22,7 @@ export type RenderProps = Pick<
   AgentAvatarProps,
   | 'paused'
   | 'portrait'
+  | 'idleKey'
   | 'workingKey'
   | 'workingCycles'
   | 'interactive'
@@ -228,7 +231,7 @@ function NativeCharacter({
 }
 
 /** Single character renderer. Web defaults to the hosted module; native uses its configured URL. */
-export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes' }) {
+function LegacyCharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes' }) {
   const { runtimeUrl } = useContext(CharacterRuntimeContext);
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
   const initialReduced = useReducedMotion();
@@ -310,5 +313,14 @@ export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes'
         </StyledText>
       )}
     </StyledView>
+  );
+}
+
+export function CharacterAvatar(props: AgentAvatarProps & { previewPart?: 'eyes' }) {
+  const character = resolveAvatarCharacter(props.character);
+  return props.renderer === 'svg' || isSvgShape(character.shape) || isSvgEyes(character.eyes) ? (
+    <VectorCharacterAvatar {...props} />
+  ) : (
+    <LegacyCharacterAvatar {...props} />
   );
 }

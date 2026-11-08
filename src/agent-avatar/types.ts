@@ -4,6 +4,8 @@ import type { BloomThemeStorage } from '../theme/persistence';
 import type { AvatarCharacter } from './character';
 
 export type AgentAvatarProps = {
+  /** SVG uses local vector assets; legacy shapes otherwise retain their existing runtime. New SVG shapes always use SVG. */
+  renderer?: 'svg' | 'webgl';
   /** What the avatar is. `{ preset: 'blue_beret' }` is a complete one; see `AvatarCharacter`. */
   character: AvatarCharacter;
   size?: number;
@@ -16,6 +18,8 @@ export type AgentAvatarProps = {
   portrait?: boolean;
   /** Replays the supported 3D reaction (signature or migrated silhouette wave) when the key changes. */
   reactionKey?: number;
+  /** Smoothly returns the SVG renderer to idle from its currently displayed pose. */
+  idleKey?: number;
   entranceKey?: number;
   workingKey?: number;
   workingCycles?: number;

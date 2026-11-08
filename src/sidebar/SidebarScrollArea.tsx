@@ -1,9 +1,10 @@
 import { type ComponentRef, forwardRef } from 'react';
-import type { ScrollView, ScrollViewProps } from 'react-native';
+import type { ScrollView } from 'react-native';
+import type { ScrollSurfaceProps } from '../layout/types';
 import { ScrollSurface } from '../layout/ScrollSurface';
 import type { RefComponent } from '../styles/native-refs';
 
-interface SidebarScrollAreaProps extends ScrollViewProps {
+interface SidebarScrollAreaProps extends Omit<ScrollSurfaceProps, 'scrollRef'> {
   /** Actual surface behind this scroll region. */
   fadeColor: string;
   fadeHeight?: number;
@@ -21,6 +22,7 @@ export const SidebarScrollArea: RefComponent<
     <ScrollSurface
       {...props}
       testID={testID}
+      matchSurfacePaint
       scrollRef={ref}
       hostStyle={[{ minHeight: 0, position: 'relative' }, style]}
       style={{ flexGrow: 1, flexShrink: 1, minHeight: 0 }}
