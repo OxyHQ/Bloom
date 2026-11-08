@@ -1,3 +1,4 @@
+import { requireArchivedBuild } from './archived-build.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -74,10 +75,22 @@ async function main() {
   const permissions = execFileSync(aapt, ['dump', 'permissions', apk], { encoding: 'utf8' });
   const badging = execFileSync(aapt, ['dump', 'badging', apk], { encoding: 'utf8' });
   requireOfflineApk(permissions, badging);
-  execFileSync(process.execPath, [resolve(here, 'attest-build.mjs')], {
-    env: { ...process.env, APK: apk },
-    stdio: 'inherit',
-  });
+  let attestation;
+  if (process.env.ARCHIVED_ATTESTATION) {
+    attestation = requireArchivedBuild(
+      readFileSync(apk),
+      execFileSync('unzip', ['-p', apk, 'assets/index.android.bundle'], {
+        maxBuffer: 64 * 1024 * 1024,
+      }),
+      JSON.parse(readFileSync(resolve(here, process.env.ARCHIVED_ATTESTATION), 'utf8')),
+    );
+  } else {
+    execFileSync(process.execPath, [resolve(here, 'attest-build.mjs')], {
+      env: { ...process.env, APK: apk },
+      stdio: 'inherit',
+    });
+    attestation = JSON.parse(readFileSync(resolve(here, 'attestation.json'), 'utf8'));
+  }
   if (process.env.INSTALL_APK) {
     assert(process.env.INSTALL_APK_LOCAL, 'Set the local path to the staged install APK');
     assert(
@@ -92,7 +105,10 @@ async function main() {
     avd: /^emulator-/.test(serial) ? 'bloom_material_663' : null,
     apk,
     apkSha256: createHash('sha256').update(readFileSync(apk)).digest('hex'),
-    build: JSON.parse(readFileSync(resolve(here, 'attestation.json'), 'utf8')),
+    build: attestation,
+    attestationMode: process.env.ARCHIVED_ATTESTATION
+      ? 'archived immutable APK; not current checkout'
+      : 'current checkout and emitted bundle',
     permissions,
     os: adb('shell', 'getprop', 'ro.build.version.release'),
     api: adb('shell', 'getprop', 'ro.build.version.sdk'),
