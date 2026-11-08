@@ -66,7 +66,7 @@ try {
   assert.equal(horizontal.host.x, 40);
   assert.equal(horizontal.viewport.x, 40);
   assert.equal(horizontal.viewport.width, 300);
-  assert.equal(horizontal.host.width-horizontal.viewport.x-horizontal.viewport.width,160);
+  assert.equal(horizontal.host.width - horizontal.viewport.x - horizontal.viewport.width, 160);
   const before = await page.evaluate(() => window.framesSeen.length);
   await page.evaluate(() => (document.getElementById('child').scrollTop = 40));
   await page.waitForTimeout(100);

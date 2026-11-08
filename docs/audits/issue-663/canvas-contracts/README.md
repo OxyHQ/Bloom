@@ -46,3 +46,8 @@ light/dark painted-contrast measurements.
 Focused Bloom contracts:655 tests across10 suites passed. Build/package/freshness
 passed with1558 literal export targets. GoWay maps155 tests passed; adapter gesture
 and lift tests15 passed. These are scoped checks, not a full repository CI claim.
+
+Final checkpoint follow-up: hidden header layout events preserve the last measured
+peek until reactivation (five focused CanvasPanel tests pass). Private `.local/`
+lab packages are excluded from the Jest module map. The final build and package
+freshness gates pass; repository lint has no errors (existing warnings remain).
