@@ -1,22 +1,28 @@
-import React, { memo } from 'react';
-import { View, type ViewStyle } from 'react-native';
+import { memo } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
-import { type Props as IconProps } from '../icons/shared';
+import { sizes } from '../icons/shared';
+import type { IconCircleProps } from './types';
 
 const IconCircleComponent = function IconCircle({
   icon: Icon,
   size = 'xl',
   style,
   iconStyle,
-}: {
-  icon: React.ComponentType<IconProps>;
-  size?: IconProps['size'];
-  style?: ViewStyle | ViewStyle[];
-  iconStyle?: IconProps['style'];
-}) {
+}: IconCircleProps) {
   const { colors } = useTheme();
+  const color = StyleSheet.flatten(iconStyle)?.color ?? colors.primary;
+  // Canonical slots receive numeric geometry and a string fill. Keep the
+  // existing style passthrough for richer glyphs (including native ColorValue
+  // objects, which those glyphs resolve from style rather than a string fill).
+  const iconProps = {
+    width: sizes[size],
+    height: sizes[size],
+    fill: typeof color === 'string' ? color : undefined,
+    style: [{ color: colors.primary }, iconStyle],
+  };
 
   return (
     <View
@@ -32,7 +38,7 @@ const IconCircleComponent = function IconCircle({
         style,
       ]}
     >
-      <Icon size={size} style={[{ color: colors.primary }, iconStyle]} />
+      <Icon {...iconProps} />
     </View>
   );
 };

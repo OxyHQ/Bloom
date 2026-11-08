@@ -14,6 +14,7 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { IconCircle } from '../icon-circle';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { RadioIndicator } from '../radio-indicator';
 import { useTheme } from '../theme/use-theme';
 import { RiNotification3Line as BellIcon } from '../icons/remix/RiNotification3Line';
@@ -61,6 +62,41 @@ describe('IconCircle', () => {
     const rendered = styles(<IconCircle icon={BellIcon} />);
     expect(rendered.filter((s) => s.backgroundColor === colors.primarySubtle)).toHaveLength(1);
     expect(rendered.filter((s) => s.color === colors.primary).length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    ['lg', 24],
+    ['xl', 28],
+  ] as const)('passes canonical geometry and paint at %s', (size, pixels) => {
+    const seen: Array<React.ComponentProps<BloomIconComponent>> = [];
+    const Icon: BloomIconComponent = (props) => {
+      seen.push(props);
+      return null;
+    };
+    renderWithTheme(<IconCircle icon={Icon} size={size} iconStyle={{ color: '#123456' }} />);
+    expect(seen.at(-1)).toMatchObject({ width: pixels, height: pixels, fill: '#123456' });
+  });
+
+  it('retains real glyph geometry, path paint and caller transforms', () => {
+    const { toJSON } = renderWithTheme(
+      <View testID="subject">
+        <IconCircle
+          icon={BellIcon}
+          size="lg"
+          iconStyle={{ color: '#123456', transform: [{ rotate: '12deg' }] }}
+        />
+      </View>,
+    );
+    const nodes = hostNodes(findHost(toJSON(), 'subject')!.children);
+    expect(nodes.some((node) => node.props.width === 24 && node.props.height === 24)).toBe(true);
+    expect(nodes.some((node) => node.props.fill === '#123456')).toBe(true);
+    expect(
+      nodes.some(
+        (node) =>
+          JSON.stringify(resolvedStyle(node.props.style).transform) ===
+          JSON.stringify([{ rotate: '12deg' }]),
+      ),
+    ).toBe(true);
   });
 
   it('is a circle at both sizes, and lg is smaller than xl', () => {
