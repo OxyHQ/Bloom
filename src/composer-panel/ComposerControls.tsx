@@ -35,12 +35,20 @@ const MIC_BARS = [
 ] as const;
 
 /** One equalizer bar: CSS keyframes on web, a reanimated loop on native. */
-function MicBar({ bar, color }: { bar: (typeof MIC_BARS)[number]; color: string }) {
+function MicBar({
+  bar,
+  color,
+  active,
+}: {
+  bar: (typeof MIC_BARS)[number];
+  color: string;
+  active: boolean;
+}) {
   const reducedMotion = usePrefersReducedMotion();
   const scale = useSharedValue(0.7);
   useEffect(() => {
     if (IS_WEB) return;
-    if (reducedMotion) {
+    if (!active || reducedMotion) {
       scale.value = 0.7;
       return;
     }
@@ -54,18 +62,19 @@ function MicBar({ bar, color }: { bar: (typeof MIC_BARS)[number]; color: string 
       -1,
     );
     return () => cancelAnimation(scale);
-  }, [bar.duration, reducedMotion, scale]);
+  }, [active, bar.duration, reducedMotion, scale]);
   const nativeStyle = useAnimatedStyle(() => ({ transform: [{ scaleY: scale.value }] }), [scale]);
 
   const base = { width: 2.5, height: bar.height, borderRadius: 9999, backgroundColor: color };
   if (IS_WEB) {
     // The keyframes live in the family sheet; each bar runs its own clock.
-    const web: WebCssStyle = reducedMotion
-      ? { ...base, transform: [{ scaleY: 0.7 }] }
-      : {
-          ...base,
-          animation: `bloom-composer-mic-bars ${bar.duration}ms ease-in-out ${bar.delay}ms infinite`,
-        };
+    const web: WebCssStyle =
+      !active || reducedMotion
+        ? { ...base, transform: [{ scaleY: 0.7 }] }
+        : {
+            ...base,
+            animation: `bloom-composer-mic-bars ${bar.duration}ms ease-in-out ${bar.delay}ms infinite`,
+          };
     return <View style={web} />;
   }
   return <Animated.View style={[base, nativeStyle]} />;
@@ -177,7 +186,7 @@ export function MicButton({
         <SwapLayer shown={recording}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2.5 }}>
             {MIC_BARS.map((bar, index) => (
-              <MicBar key={index} bar={bar} color={palette.accent500} />
+              <MicBar key={index} bar={bar} color={palette.accent500} active={recording} />
             ))}
           </View>
         </SwapLayer>

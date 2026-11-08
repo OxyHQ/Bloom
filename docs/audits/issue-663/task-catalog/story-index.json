@@ -1,0 +1,96 @@
+{
+  "source": "http://localhost:6135/index.json",
+  "date": "2026-11-08",
+  "entries": [
+    {
+      "type": "story",
+      "subtype": "story",
+      "id": "blocks-app-shell--continuous-workspace",
+      "name": "Continuous Workspace",
+      "title": "Composition/Layout/App Shell",
+      "importPath": "./src/app-shell/AppShell.stories.tsx",
+      "componentPath": "./src/app-shell/index.ts",
+      "tags": [
+        "dev",
+        "test",
+        "manifest"
+      ],
+      "exportName": "ContinuousWorkspace"
+    },
+    {
+      "type": "story",
+      "subtype": "story",
+      "id": "blocks-app-shell--modular-map",
+      "name": "Modular Map",
+      "title": "Composition/Layout/App Shell",
+      "importPath": "./src/app-shell/AppShell.stories.tsx",
+      "componentPath": "./src/app-shell/index.ts",
+      "tags": [
+        "dev",
+        "test",
+        "manifest"
+      ],
+      "exportName": "ModularMap"
+    },
+    {
+      "type": "story",
+      "subtype": "story",
+      "id": "agents-agent-chat--streaming",
+      "name": "Streaming",
+      "title": "Patterns/Agents/Agent Chat",
+      "importPath": "./src/agent-chat/AgentChat.stories.tsx",
+      "componentPath": "./src/agent-chat/index.ts",
+      "tags": [
+        "dev",
+        "test",
+        "manifest"
+      ],
+      "exportName": "Streaming"
+    },
+    {
+      "type": "story",
+      "subtype": "story",
+      "id": "blocks-app-shell--modular-inbox",
+      "name": "Modular Inbox",
+      "title": "Composition/Layout/App Shell",
+      "importPath": "./src/app-shell/AppShell.stories.tsx",
+      "componentPath": "./src/app-shell/index.ts",
+      "tags": [
+        "dev",
+        "test",
+        "manifest"
+      ],
+      "exportName": "ModularInbox"
+    },
+    {
+      "type": "story",
+      "subtype": "story",
+      "id": "blocks-app-shell--modular-expanding-feed",
+      "name": "Modular Expanding Feed",
+      "title": "Composition/Layout/App Shell",
+      "importPath": "./src/app-shell/AppShell.stories.tsx",
+      "componentPath": "./src/app-shell/index.ts",
+      "tags": [
+        "dev",
+        "test",
+        "manifest"
+      ],
+      "exportName": "ModularExpandingFeed"
+    },
+    {
+      "type": "story",
+      "subtype": "story",
+      "id": "templates-home-dashboard--default",
+      "name": "Default",
+      "title": "Templates/Home Dashboard",
+      "importPath": "./templates/home-dashboard/HomeDashboard.stories.tsx",
+      "componentPath": "./templates/home-dashboard/HomeDashboardTemplate.tsx",
+      "tags": [
+        "dev",
+        "test",
+        "manifest"
+      ],
+      "exportName": "Default"
+    }
+  ]
+}

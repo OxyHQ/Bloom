@@ -1,3 +1,4 @@
+import { InputGroup } from '../input-group';
 import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
@@ -316,4 +317,66 @@ export const Playground: StoryObj<typeof TextFieldInput> = {
       </View>
     );
   },
+};
+
+/** Pixel fixture for the canonical interior and explicit large-type overrides. */
+export const MaterialBodyContrast: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <View style={{ padding: 32, gap: 20, backgroundColor: '#ffffff' }}>
+      {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+        <View
+          testID={`body-panel-${size}`}
+          key={size}
+          style={{ gap: 12, padding: 16, backgroundColor: '#000000' }}
+        >
+          <TextField size={size}>
+            <TextFieldInput
+              testID={`body-${size}`}
+              label={`${size} canonical`}
+              accessibilityLabel={`${size} canonical`}
+              placeholder="Agjp Search places 123"
+            />
+          </TextField>
+          <InputGroup size={size}>
+            <TextFieldInput
+              testID={`group-${size}`}
+              label={`${size} grouped canonical`}
+              placeholder="Agjp Search places 123"
+            />
+          </InputGroup>
+          <TextField size={size}>
+            <TextFieldInput
+              testID={`large-${size}`}
+              label={`${size} explicit large type`}
+              accessibilityLabel={`${size} explicit large type`}
+              placeholder="Agjp Search places 123"
+              style={{ fontSize: 24, lineHeight: 32 }}
+            />
+          </TextField>
+        </View>
+      ))}
+    </View>
+  ),
+};
+
+/** One cold material host for separating formula errors from compositor pressure. */
+export const SingleMaterialBodyContrast: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <View
+      testID="single-backing"
+      style={{ minHeight: 1000, padding: 80, backgroundColor: '#000000' }}
+    >
+      <View style={{ width: 320 }}>
+        <TextField size="md">
+          <TextFieldInput
+            testID="single-field"
+            label="Material probe"
+            placeholder="Agjp Search places 123"
+          />
+        </TextField>
+      </View>
+    </View>
+  ),
 };
