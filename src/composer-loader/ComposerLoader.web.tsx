@@ -1,3 +1,4 @@
+import { ComposerLoaderPaintContext } from './context';
 /**
  * `ComposerLoader` — WEB: the light band laps on CSS keyframes over a DOM
  * `<svg>`, where the native fork drives a react-native-svg frame clock.
@@ -207,7 +208,9 @@ function ComposerLoaderComponent({
         ) : null}
       </View>
 
-      <View style={styles.content}>{children}</View>
+      <ComposerLoaderPaintContext.Provider value={active}>
+        <View style={styles.content}>{children}</View>
+      </ComposerLoaderPaintContext.Provider>
     </View>
   );
 }
