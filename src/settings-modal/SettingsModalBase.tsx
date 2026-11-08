@@ -32,7 +32,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { Backdrop, OverlayRoot } from '../overlay';

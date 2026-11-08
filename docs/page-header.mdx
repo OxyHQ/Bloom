@@ -443,3 +443,69 @@ the app. `editable={false}` or `disabled` makes it read-only. If it is placed in
 ```tsx
 <PageHeader title={<PageHeaderTitleInput label="Page title" value={title} onChangeText={setTitle} onBlur={saveTitle} />} />
 ```
+
+## Actions that fit their own header
+
+`HeaderActions` shares command identity and adaptive overflow with Dialog's
+header actions. It is composed in the existing `actions` slot:
+
+```tsx
+import { HeaderActions, PageHeader } from '@oxy.so/bloom/page-header';
+
+<PageHeader
+  title={document.title}
+  actions={
+    <HeaderActions
+      actions={[
+        { id: 'share', label: labels.share, icon: ShareIcon, onPress: share, priority: 10 },
+        { id: 'pin', label: labels.pin, icon: PinIcon, onPress: togglePin, selected: pinned },
+        { id: 'stop', label: labels.stop, icon: StopIcon, onPress: stop, essential: true },
+      ]}
+    />
+  }
+/>
+```
+
+IDs are stable data identities; never derive them from translated labels or
+array indices. Higher `priority` keeps an optional action inline longer; source
+order remains unchanged. `group` separates related overflow commands.
+`visible=false` removes a command from both presentations. `disabled`, `busy`
+and `selected` retain their interaction and announced meanings.
+
+The row first removes optional labels from actions that have icons, then moves
+optional commands into the menu. `labelVisibility="always"` keeps the label;
+`"hidden"` requests an icon-only control while retaining its accessible name.
+Text-only commands always keep their labels. `overflow="always"` reserves a menu
+command; `"never"` and `essential` keep the command inline. Mark the only Stop,
+Submit or exit as essential. Back stays with PageHeader and Dialog's close is
+always essential. In a physically insufficient width the row scrolls horizontally
+rather than discarding essential controls or reducing their dimensions.
+
+A PageHeader supplies its own measured budget, including its leading controls,
+insets and minimum title clearance. Standalone rows may pass `availableWidth`
+for an explicitly measured embedded region. The shared width channel publishes
+packing decisions to React, not every resized pixel. Control geometry and labels
+are measured; this is not a window-width or platform-is-phone heuristic.
+
+Stateful custom controls belong in `persistentActions`. This is an explicit
+**never-overflow** slot: its measured width is reserved, the tree stays mounted,
+and the caller owns its accessible semantics. Do not recreate a custom input
+inside a menu to make it fit. Dialog uses this slot for its existing primary
+button, preserving its presentation and busy behavior.
+
+Inline command nodes remain mounted as labels collapse or commands enter the
+menu. Keyboard focus transfers to the overflow trigger when its focused command
+leaves the row. An open menu retains its commands until closed when more room
+becomes available; resizing does not destroy a focused menu item. Newly displaced
+commands can join that same menu. Reordering or relabeling commands retains their
+IDs and handlers.
+
+The `Composition/Headers/Adaptive Actions` story exercises a narrow local host
+inside a larger window. Contract tests cover packing, persistent custom input,
+DOM identity, focus transfer, open-menu resize and busy/toggle state.
+`node scripts/verify-header-actions.mjs` runs real browser keyboard interaction
+and layout at local widths 240/320/390/640/900 inside a 1100px viewport in light
+and dark: essential node identity, focus transfer and open-menu continuity pass.
+Native device focus and the full issue #663 responsive matrix remain separate
+acceptance checks; these APIs are part of the current candidate,
+not a claim about older published packages.

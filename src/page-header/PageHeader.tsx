@@ -1,7 +1,8 @@
 import { resolvePaintMode } from '../theme/paint';
+import { createHeaderActionsHost, HeaderActionsHostContext } from './context';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { StyledView } from '../styles/styled-primitives';
-import { memo, useContext, useEffect, useRef, useState } from 'react';
+import { memo, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { dataHook, dataHooks } from '../styles/data-hook';
 import { Platform, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
@@ -189,6 +190,8 @@ function PageHeaderComponent({
   style,
   testID,
 }: PageHeaderProps) {
+  const actionHost = useState(createHeaderActionsHost)[0];
+  const actionGeometry = useRef({ width: 0, leading: 0 });
   const common = useCommonMessages();
   const directionProps = useDirectionProps();
   const backLabel = backLabelProp ?? common.back;
@@ -280,8 +283,42 @@ function PageHeaderComponent({
     compact || navigationPresentation ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
   const barStart = Math.max(sideInset, windowRoom);
 
+  const updateActionBudget = () => {
+    const localWidth = actionGeometry.current.width;
+    if (!onBack && !history && leading == null) actionGeometry.current.leading = 0;
+    const hasTitle = title != null || subtitle != null;
+    const inset =
+      compact || navigationPresentation || localWidth < BREAKPOINTS.sm ? 12 : INSET_WIDE;
+    const budget =
+      titleAlign === 'center' && hasTitle
+        ? (localWidth - MIN_CENTERED_TITLE_WIDTH) / 2 - inset - ROW_GAP
+        : localWidth -
+          Math.max(inset, windowRoom) -
+          inset -
+          actionGeometry.current.leading -
+          (hasTitle ? MIN_CENTERED_TITLE_WIDTH + START_GAP : 0) -
+          ROW_GAP;
+    actionHost.setWidth(budget);
+  };
+  useLayoutEffect(updateActionBudget, [
+    titleAlign,
+    title,
+    subtitle,
+    leading,
+    onBack,
+    history,
+    compact,
+    navigationPresentation,
+    windowRoom,
+  ]);
+  const onLeadingLayout = (e: LayoutChangeEvent) => {
+    actionGeometry.current.leading = e.nativeEvent.layout.width;
+    updateActionBudget();
+  };
   const onContainerLayout = (e: LayoutChangeEvent) => {
     const nextWidth = e.nativeEvent.layout.width;
+    actionGeometry.current.width = nextWidth;
+    updateActionBudget();
     if (!isWeb) measured.onLayout(e);
     const nextCompact = nextWidth < BREAKPOINTS.sm;
     if (lastActionsCompact.current !== nextCompact) {
@@ -706,7 +743,9 @@ function PageHeaderComponent({
       onLayout={centered ? onEndLayout : undefined}
       testID={testID ? `${testID}-actions` : undefined}
     >
-      {floating ? <BloomScope>{actions}</BloomScope> : actions}
+      <HeaderActionsHostContext.Provider value={actionHost}>
+        {floating ? <BloomScope>{actions}</BloomScope> : actions}
+      </HeaderActionsHostContext.Provider>
     </View>
   ) : null;
 
@@ -803,18 +842,30 @@ function PageHeaderComponent({
                 onLayout={centered ? onStartLayout : undefined}
                 testID={testID ? `${testID}-start` : undefined}
               >
-                {backButton}
-                {history ? (
-                  <BloomScope>
-                    <PageHeaderHistory
-                      navigation={history}
-                      active={screen?.active !== false && host.active !== false}
-                      backLabel={backLabel}
-                      testID={testID ? `${testID}-history` : undefined}
-                    />
-                  </BloomScope>
+                {backButton || history || leading != null ? (
+                  <View
+                    onLayout={onLeadingLayout}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: START_GAP,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {backButton}
+                    {history ? (
+                      <BloomScope>
+                        <PageHeaderHistory
+                          navigation={history}
+                          active={screen?.active !== false && host.active !== false}
+                          backLabel={backLabel}
+                          testID={testID ? `${testID}-history` : undefined}
+                        />
+                      </BloomScope>
+                    ) : null}
+                    {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+                  </View>
                 ) : null}
-                {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
                 {centered ? null : titleBlock}
               </View>
               {centered && titleBlock ? centerSpacer('before') : null}

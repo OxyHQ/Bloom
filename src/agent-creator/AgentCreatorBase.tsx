@@ -22,7 +22,7 @@ import { CharacterControls } from './CharacterControls';
 import { CustomColorPicker } from './CustomColorPicker';
 import { EmotionPicker } from './EmotionPicker';
 import { GlossArt } from './GlossArt';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { useDialogContext } from '../dialog/context';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
