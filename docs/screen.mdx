@@ -29,7 +29,11 @@ region; the same screen can render as a document page or inside a Deck column.
 
 `scroll="auto"` is the default. On web, it uses the document in a document-flow host and one local
 viewport in a bounded host. `ScreenScrollView` reuses that owner; it never adds
-another scroller. Switching between `auto`, `content` and `none` on web also
+another scroller. A non-panel AppShell also publishes its resolved fixed/document
+host; a route Screen does not need a documentScroll override to compensate for
+missing host metadata. Fixed web shells retain their documented 100dvh height;
+this host inference does not redefine them as shorter embedded frames.
+Switching between `auto`, `content` and `none` on web also
 keeps descendants mounted: non-owning wrappers create no layout boxes and
 inherit the parent's viewport. A routed navigator can therefore survive a
 change in scroll ownership. Changing host flow preserves the screen's content tree and

@@ -18,7 +18,8 @@
  * Rendered through react-native-web into a real document: the failure exists
  * only in the inline `style` React DOM leaves on the node.
  */
-import { act, useState } from 'react';
+import { act, useContext, useState } from 'react';
+import { ScreenHostContext, type ScreenHostValue } from '../screen/context';
 import { createRoot, type Root } from 'react-dom/client';
 
 let viewportWidth = 1440;
@@ -439,5 +440,98 @@ it('bounds every retained reveal ancestor with long navigation, and releases doc
         expect(computed.overflow).not.toBe('hidden');
       }
     }
+  }
+});
+
+/** A non-panel shell must state its viewport without publishing panel paint/insets. */
+it('publishes fixed/document host inference without remounting ordinary routes', () => {
+  function Route() {
+    const host = useContext(ScreenHostContext);
+    const [draft] = useState('retained draft');
+    return <input data-testid="host-route" data-owner={host.kind} defaultValue={draft} />;
+  }
+  const shape = { header: null, children: <Route /> };
+  render(shape, 'fixed');
+  const route = container.querySelector('[data-testid="host-route"]') as HTMLInputElement;
+  route.value = 'edited draft';
+  expect(route.dataset.owner).toBe('element');
+  for (const mode of ['document', 'fixed', 'page', 'fixed'] as const) {
+    render(shape, mode);
+    expect(container.querySelector('[data-testid="host-route"]')).toBe(route);
+    expect(route.dataset.owner).toBe(mode === 'fixed' ? 'element' : 'document');
+    expect(route.value).toBe('edited draft');
+  }
+});
+
+it('isolates an embedded fixed viewport from ancestor metrics and keeps host policy', () => {
+  const scrollRef = { current: {} };
+  const metrics = {
+    scrollY: { value: 200 },
+    contentHeight: { value: 1000 },
+    viewportHeight: { value: 500 },
+  };
+  const back = jest.fn();
+  let observed: ScreenHostValue | undefined;
+  function Route() {
+    observed = useContext(ScreenHostContext);
+    return null;
+  }
+  act(() =>
+    root.render(
+      <BloomThemeProvider mode="light">
+        <ScreenHostContext.Provider
+          value={{
+            active: false,
+            kind: 'document',
+            scrollRef,
+            metrics: metrics as ScreenHostValue['metrics'],
+            restoreScroll: false,
+            restoresDocument: true,
+            sizing: 'content',
+            back,
+          }}
+        >
+          <AppShell header={null} scroll="fixed">
+            <Route />
+          </AppShell>
+        </ScreenHostContext.Provider>
+      </BloomThemeProvider>,
+    ),
+  );
+  expect(observed).toMatchObject({
+    active: false,
+    kind: 'element',
+    restoreScroll: false,
+    restoresDocument: true,
+    sizing: 'content',
+    back,
+  });
+  expect(observed?.scrollRef).toBeUndefined();
+  expect(observed?.metrics).toBeUndefined();
+});
+
+it('preserves inherited host ownership in panel and container shells', () => {
+  const inherited: ScreenHostValue = { active: true, kind: 'document', scrollRef: { current: {} } };
+  let observed: ScreenHostValue | undefined;
+  function Route() {
+    observed = useContext(ScreenHostContext);
+    return null;
+  }
+  for (const props of [
+    { scroll: 'container' as const },
+    { scroll: 'fixed' as const, panels: true },
+  ]) {
+    act(() =>
+      root.render(
+        <BloomThemeProvider mode="light">
+          <ScreenHostContext.Provider value={inherited}>
+            <AppShell header={null} {...props}>
+              <Route />
+            </AppShell>
+          </ScreenHostContext.Provider>
+        </BloomThemeProvider>,
+      ),
+    );
+    expect(observed).toBe(inherited);
   }
 });

@@ -62,7 +62,12 @@ import {
 import { useEdgeDock } from './use-edge-dock';
 import { resolveSidebarGeometry } from '../sidebar/geometry';
 import { SIDEBAR_RAIL_WIDTH } from '../sidebar/SidebarRail';
-import { ScreenNavigationContext, type ScreenNavigationState } from '../screen/context';
+import {
+  ScreenHostContext,
+  ScreenNavigationContext,
+  type ScreenNavigationState,
+  type ScreenHostValue,
+} from '../screen/context';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
 import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-shell-region';
 import {
@@ -709,13 +714,28 @@ export function createAppShellEngine() {
           : undefined,
       [sharedNavigation, pageNavigation],
     );
+    const inheritedHost = useContext(ScreenHostContext);
+    const pageHost = useMemo<ScreenHostValue>(
+      () =>
+        !IS_WEB || panelHost || mode === 'container'
+          ? inheritedHost
+          : {
+              ...inheritedHost,
+              kind: doc ? 'document' : 'element',
+              // This shell supplies geometry, not an ancestor's scroll element.
+              // The route Screen creates its own viewport and metrics.
+              scrollRef: undefined,
+              metrics: undefined,
+            },
+      [inheritedHost, panelHost, mode, doc],
+    );
     // Always the same element, whatever the mode: switching `scroll` on a mounted
     // shell must not remount the routes under it.
     const pageChildren = (
       <ScreenNavigationContext.Provider
         value={sharedNavigation ? pageNavigation : inheritedNavigation}
       >
-        {children}
+        <ScreenHostContext.Provider value={pageHost}>{children}</ScreenHostContext.Provider>
       </ScreenNavigationContext.Provider>
     );
 
