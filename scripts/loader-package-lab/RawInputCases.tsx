@@ -4,7 +4,7 @@ import { AppShell } from '@oxy.so/bloom/app-shell';
 import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 
 /** RN control: same draft, width, field typography and autosize; no pill or loader. */
-export function RawInputCases() {
+export function RawInputCases({ autosize = true }: { autosize?: boolean }) {
   const [text, setText] = useState('Draft retained through resize');
   const [height, setHeight] = useState(20);
   const [narrow, setNarrow] = useState(false);
@@ -17,7 +17,7 @@ export function RawInputCases() {
       setPending('none');
     }, 4000);
   };
-  const fieldHeight = Math.min(8, Math.max(1, Math.ceil(height / 20))) * 20;
+  const fieldHeight = autosize ? Math.min(8, Math.max(1, Math.ceil(height / 20))) * 20 : 80;
   return (
     <AppShell scroll="page" header={null}>
       <Screen>
@@ -42,7 +42,7 @@ export function RawInputCases() {
               <Text>Busy in 4s</Text>
             </Pressable>
           </View>
-          <Text testID="cases-state">{`busy=${busy} narrow=${narrow} pending=${pending}`}</Text>
+          <Text testID="cases-state">{`busy=${busy} narrow=${narrow} pending=${pending} autosize=${autosize}`}</Text>
           <View
             style={{
               width: narrow ? 260 : '100%',
@@ -61,7 +61,9 @@ export function RawInputCases() {
                 value={text}
                 onChangeText={setText}
                 multiline
-                onContentSizeChange={(event) => setHeight(event.nativeEvent.contentSize.height)}
+                onContentSizeChange={
+                  autosize ? (event) => setHeight(event.nativeEvent.contentSize.height) : undefined
+                }
                 style={{
                   width: '100%',
                   height: fieldHeight,

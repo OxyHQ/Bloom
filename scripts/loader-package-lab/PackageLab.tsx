@@ -8,6 +8,7 @@ import { SurfaceProvider } from '@oxy.so/bloom/surfaces';
 import { LoaderBenchmark } from './LoaderBenchmark';
 import { ComposerCases } from './ComposerCases';
 import { RawInputCases } from './RawInputCases';
+import { AliaCases } from './AliaCases';
 import build from './build.json';
 
 /** Negative probes run before the scene. Timeout never proves isolation.
@@ -63,8 +64,10 @@ export function PackageLab({
         <BloomProvider mode={mode} colorPreset="oxy" haptics={false}>
           <PortalProvider>
             <SurfaceProvider>
-              {scene === 'raw-input' ? (
-                <RawInputCases />
+              {scene === 'alia' ? (
+                <AliaCases />
+              ) : scene === 'raw-input' || scene === 'raw-fixed' ? (
+                <RawInputCases autosize={scene !== 'raw-fixed'} />
               ) : (scene ?? build.scene) === 'composers' ? (
                 <ComposerCases
                   onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}

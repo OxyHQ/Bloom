@@ -35,6 +35,7 @@ const map = JSON.parse(
 );
 const sources = new Map();
 const fixtureSources = new Map();
+const aliaSources = new Map();
 function collect(map) {
   if (map.sections) {
     for (const section of map.sections) collect(section.map);
@@ -42,12 +43,17 @@ function collect(map) {
   }
   for (let i = 0; i < map.sources.length; i++) {
     const prefix = '/bloom-local/node_modules/@oxy.so/bloom/';
+    const aliaPrefix = '/node_modules/@alia.onl/sdk/';
+    const aliaAt = map.sources[i].indexOf(aliaPrefix);
+    if (aliaAt >= 0 && /\.(?:[cm]?[jt]sx?|json)$/.test(map.sources[i]))
+      aliaSources.set(map.sources[i].slice(aliaAt + aliaPrefix.length), map.sourcesContent[i]);
     if (
       [
         '/PackageLab.tsx',
         '/LoaderBenchmark.tsx',
         '/ComposerCases.tsx',
         '/RawInputCases.tsx',
+        '/AliaCases.tsx',
       ].includes(map.sources[i])
     )
       fixtureSources.set(map.sources[i].slice(1), map.sourcesContent[i]);
@@ -62,6 +68,7 @@ for (const name of [
   'LoaderBenchmark.tsx',
   'ComposerCases.tsx',
   'RawInputCases.tsx',
+  'AliaCases.tsx',
 ])
   assert.equal(
     fixtureSources.get(name),
@@ -72,6 +79,17 @@ const embeddedFixtureSources = Object.fromEntries(
   [...fixtureSources].map(([name, content]) => [name, hash(content)]),
 );
 assert(sources.has('src/composer-loader/AndroidLight.tsx'), 'Adapter not in installed bundle');
+assert(aliaSources.has('src/components/AliaComposer.tsx'), 'Real AliaComposer missing from bundle');
+const aliaDigest = createHash('sha256');
+for (const [name, content] of [...aliaSources].sort(([a], [b]) => a.localeCompare(b))) {
+  assert.equal(
+    content,
+    readFileSync(resolve(build.alia.installed, name), 'utf8'),
+    `Stale Alia source: ${name}`,
+  );
+  aliaDigest.update(name).update(content);
+}
+assert.equal(hash(aliaSources.get('src/components/AliaComposer.tsx')), build.alia.composerSha256);
 const digest = createHash('sha256');
 for (const [name, content] of [...sources].sort(([a], [b]) => a.localeCompare(b))) {
   assert.equal(
@@ -118,6 +136,8 @@ writeFileSync(
       embeddedBundleSha256: hash(bundle),
       embeddedBloomSourceSha256: digest.digest('hex'),
       embeddedBloomFiles: sources.size,
+      embeddedAliaSourceSha256: aliaDigest.digest('hex'),
+      embeddedAliaFiles: aliaSources.size,
       embeddedFixtureSources,
       selectionTraceProbe,
       dex,

@@ -28,6 +28,7 @@ module.exports = (config) => {
     manifest.$['xmlns:tools'] = 'http://schemas.android.com/tools';
     const blocked = [
       'android.permission.INTERNET',
+      'android.permission.RECORD_AUDIO',
       'android.permission.ACCESS_NETWORK_STATE',
       'android.permission.ACCESS_WIFI_STATE',
     ];

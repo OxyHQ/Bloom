@@ -22,6 +22,7 @@ for (const name of [
   'LoaderBenchmark.tsx',
   'ComposerCases.tsx',
   'RawInputCases.tsx',
+  'AliaCases.tsx',
   'app.config.js',
   'index.js',
   'metro.config.js',
@@ -48,6 +49,14 @@ writeFileSync(
       kind: 'local packed snapshot; not published acceptance',
       installed,
       packageVersion: JSON.parse(readFileSync(resolve(installed, 'package.json'))).version,
+      alia: {
+        installed: realpathSync('node_modules/@alia.onl/sdk'),
+        version: JSON.parse(readFileSync('node_modules/@alia.onl/sdk/package.json')).version,
+        composerSha256: hash(
+          readFileSync('node_modules/@alia.onl/sdk/src/components/AliaComposer.tsx'),
+        ),
+        sourceMatchesAliaCommit: 'cc76a858ff4359254cf51e3f649ea021bfc75ce7',
+      },
       nativeSha256: hash(native),
       nativeSourcesSha256: nativeDigest.digest('hex'),
       adapterSha256: hash(adapter),

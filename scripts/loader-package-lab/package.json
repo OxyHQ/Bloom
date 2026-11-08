@@ -7,12 +7,17 @@
     "prebuild": "EXPO_NO_TELEMETRY=1 expo prebuild --platform android --no-install"
   },
   "dependencies": {
+    "@alia.onl/sdk": "22.10.1",
     "@oxy.so/bloom": "17.22.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "58.0.23",
     "expo-asset": "58.0.20",
+    "expo-audio": "58.0.11",
     "expo-blur": "58.0.5",
+    "expo-clipboard": "58.0.4",
     "expo-font": "58.0.11",
     "expo-image": "58.0.18",
+    "expo-image-manipulator": "58.0.16",
     "nativewind": "5.0.0-rc.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
