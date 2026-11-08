@@ -631,5 +631,27 @@
       }
     },
     "status": "Confirmed functional defect: resize reverses selection direction; next Shift+Left collapses instead of extending. Direct RN control and cause isolation pending."
+  },
+  "hardwareReducedMotion": {
+    "apkSha256": "0711116003a901de18318bf00ed93493797ef1fdff6693283f1f1a87770ec716",
+    "embeddedBundleSha256": "b50388d3bb924ac4f4f2edd0bcc3f6a6d67dfc06c6a5fa8bcc2bb24a84f95cdb",
+    "embeddedBloomSourceSha256": "b93551ae7917238c925fefa073d2001f91fb6f2360c1e803e96c5ceca30fcec0",
+    "fixtureSha256": "0715ba9888842ee936e51a4b27b569e37b6df497f1d522602b9f08317f58e2b2",
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "results": {
+      "api": 36,
+      "managerViewCount": 1,
+      "hardwareAdapterVisible": true,
+      "reducedMotionIdenticalPixels": true,
+      "motionResumes": true,
+      "bounds": [48, 466, 1122, 622],
+      "originalTransitionAnimationScale": "1.0",
+      "restoredExactly": true,
+      "limitation": "Emulated hardware Canvas lifecycle only, no physical frame budget or optical parity claim"
+    },
+    "avd": "bloom_material_663",
+    "abi": "x86_64",
+    "gpu": "SwiftShader",
+    "negativeAttempts": "Initial asynchronous snapshot was not finished; launcher ANR obscured subsequent attempts. The synthetic foreground guard rejected them; original animation setting restored. Valid run followed recovery of this owned AVD launcher only."
   }
 }

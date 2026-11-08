@@ -47,11 +47,12 @@ assert(
 );
 assert.equal(adb('get-state'), 'device');
 if (emulator) {
-  assert.equal(
-    adb('emu', 'avd', 'name').split(/\r?\n/)[0],
-    'bloom_loader_api30_663',
-    'Only the dedicated API 30 AVD',
-  );
+  const ownedAvd = {
+    'emulator-5580': 'bloom_material_663',
+    'emulator-5582': 'bloom_loader_api30_663',
+  }[serial];
+  assert(ownedAvd, 'Only this task’s dedicated AVD serials');
+  assert.equal(adb('emu', 'avd', 'name').split(/\r?\n/)[0], ownedAvd);
   assert.equal(adb('shell', 'getprop', 'ro.kernel.qemu'), '1');
 }
 const abi = adb('shell', 'getprop', 'ro.product.cpu.abi');
