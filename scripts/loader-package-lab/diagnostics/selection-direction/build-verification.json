@@ -445,6 +445,488 @@
       "expected": [7, 7]
     }
   },
-  "candidatePhysical": "pending",
+  "candidatePhysical": {
+    "raw-fixed": {
+      "none": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 72069764,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 72069764,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 72069764,
+          "id": 58,
+          "start": 5,
+          "end": 3,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=false narrow=false pending=none autosize=false"
+      },
+      "resize": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 5,
+          "end": 3,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=false narrow=true pending=none autosize=false"
+      },
+      "busy": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 5,
+          "end": 3,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=true narrow=false pending=none autosize=false"
+      }
+    },
+    "raw-input": {
+      "none": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 3,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=false narrow=false pending=none autosize=true"
+      },
+      "resize": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 3,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=false narrow=true pending=none autosize=true"
+      },
+      "busy": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 23468480,
+          "id": 58,
+          "start": 5,
+          "end": 3,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=true narrow=false pending=none autosize=true"
+      }
+    },
+    "explicit": {
+      "forward": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 18,
+          "end": 18,
+          "composingStart": 15,
+          "composingEnd": 22,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 4,
+          "end": 10,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "expected": [4, 10]
+      },
+      "backward": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 18,
+          "end": 18,
+          "composingStart": 15,
+          "composingEnd": 22,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 10,
+          "end": 4,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "expected": [10, 4]
+      },
+      "collapsed": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 18,
+          "end": 18,
+          "composingStart": 15,
+          "composingEnd": 22,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-pill-input",
+          "identity": 35016499,
+          "id": 58,
+          "start": 7,
+          "end": 7,
+          "composingStart": 6,
+          "composingEnd": 14,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "expected": [7, 7]
+      }
+    },
+    "alia": {
+      "scope": "Actual published Alia SDK composer in offline host, not full app",
+      "geometry": "1080x2400, density420, font1.15",
+      "uiDumpLimit": "Dictate accessibility events prevent UIAutomator idle; screenshot-verified coordinates used",
+      "transitions": [
+        {
+          "control": "resize",
+          "before": {
+            "identity": 204607656,
+            "id": 68,
+            "start": 14,
+            "end": 13,
+            "composingStart": -1,
+            "composingEnd": -1,
+            "focused": true,
+            "attached": true,
+            "text": "Alia draft retained through resize"
+          },
+          "after": {
+            "identity": 204607656,
+            "id": 68,
+            "start": 14,
+            "end": 13,
+            "composingStart": -1,
+            "composingEnd": -1,
+            "focused": true,
+            "attached": true,
+            "text": "Alia draft retained through resize"
+          },
+          "directionPreserved": true,
+          "extended": {
+            "identity": 204607656,
+            "id": 68,
+            "start": 14,
+            "end": 12,
+            "composingStart": -1,
+            "composingEnd": -1,
+            "focused": true,
+            "attached": true,
+            "text": "Alia draft retained through resize"
+          }
+        },
+        {
+          "control": "busy",
+          "before": {
+            "identity": 204607656,
+            "id": 68,
+            "start": 14,
+            "end": 12,
+            "composingStart": -1,
+            "composingEnd": -1,
+            "focused": true,
+            "attached": true,
+            "text": "Alia draft retained through resize"
+          },
+          "after": {
+            "identity": 204607656,
+            "id": 68,
+            "start": 14,
+            "end": 12,
+            "composingStart": -1,
+            "composingEnd": -1,
+            "focused": true,
+            "attached": true,
+            "text": "Alia draft retained through resize"
+          },
+          "directionPreserved": true,
+          "extended": {
+            "identity": 204607656,
+            "id": 68,
+            "start": 14,
+            "end": 11,
+            "composingStart": -1,
+            "composingEnd": -1,
+            "focused": true,
+            "attached": true,
+            "text": "Alia draft retained through resize"
+          }
+        }
+      ],
+      "stop": {
+        "before": {
+          "identity": 204607656,
+          "id": 68,
+          "start": 14,
+          "end": 11,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "after": {
+          "identity": 204607656,
+          "id": 68,
+          "start": 14,
+          "end": 11,
+          "composingStart": -1,
+          "composingEnd": -1,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "typed": {
+          "identity": 204607656,
+          "id": 68,
+          "start": 12,
+          "end": 12,
+          "composingStart": 11,
+          "composingEnd": 17,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft qained through resize"
+        }
+      },
+      "status": "input identity/focus/text/range and replacement passed; visual state review required"
+    },
+    "composing": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 18,
+        "end": 18,
+        "composingStart": 15,
+        "composingEnd": 22,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "after": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 18,
+        "end": 18,
+        "composingStart": 15,
+        "composingEnd": 22,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "typed": {
+        "testID": "cases-pill-input",
+        "identity": 35016499,
+        "id": 58,
+        "start": 19,
+        "end": 19,
+        "composingStart": 15,
+        "composingEnd": 23,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained thrqough resize"
+      },
+      "inputMethod": "Gboard active composition; q injected through adb input text"
+    },
+    "visualReview": {
+      "aliaTyped": "busy=false, stops=1, same keyboard visible; qained under active Gboard composition",
+      "uiDumpLimitNote": "The Alia coordinate script report preserves an older baseline-workaround label. Mic candidate already restored UIAutomator idle; its successful actions test is recorded separately."
+    }
+  },
   "archive": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/.local/rn-selection-pair"
 }

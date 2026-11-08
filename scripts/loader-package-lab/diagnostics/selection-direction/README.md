@@ -107,5 +107,9 @@ not described as identical native payload. The APK's R8 mapping and `dexdump`
 verify saved selection getters before `Editable.replace` and the conditional
 restore after it; the published baseline method lacks those operations.
 `extract-react-edit-text.py` accepts `APK`, `MAPPING`, `OUT`, `DEXDUMP` and
-`EXPECT_SELECTION_RESTORE=0|1` to reproduce that check. Physical candidate
-acceptance remains pending at this checkpoint.
+`EXPECT_SELECTION_RESTORE=0|1` to reproduce that check. Physical candidate checks now pass raw fixed-height and autosize direction,
+explicit forward/backward/collapsed selection, Alia resize/busy/Stop/continued
+typing, and active Gboard composing spans across resize. The pair retains
+composing15..22 and caret18, then inserts q at18 with composing15..23.
+This is a source-built diagnostic APK, not a published RN correction or
+completed consumer adoption.
