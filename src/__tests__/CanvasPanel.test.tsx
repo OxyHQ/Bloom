@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { I18nManager, Text, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { CanvasPanel } from '../canvas/CanvasPanel';
 import { CanvasContext, createCanvasStore } from '../canvas/context';
@@ -99,4 +99,37 @@ it('publishes measured peek and full rather than a guessed or capped half footpr
   expect(view.getByTestId('bottom').props.children).toBe(144);
   view.rerender(<Subject snap="full" />);
   expect(view.getByTestId('bottom').props.children).toBe(828);
+});
+
+it.each([false, true])('reports side claims from bounds, including both clips (RTL=%s)', (rtl) => {
+  const previous = I18nManager.isRTL;
+  I18nManager.isRTL = rtl;
+  try {
+    const store = createCanvasStore();
+    store.frame({ x: 0, y: 0, width: 1000, height: 800 }, { x: 80, y: 0, width: 800, height: 800 });
+    const view = render(
+      <BloomThemeProvider>
+        <CanvasContext.Provider value={store}>
+          <CanvasPanel
+            side={{ from: 600, width: 384 }}
+            snap="half"
+            onSnapChange={() => {}}
+            accessibilityLabel="Places"
+          >
+            <Text>Body</Text>
+          </CanvasPanel>
+        </CanvasContext.Provider>
+      </BloomThemeProvider>,
+    );
+    expect(store.read().occupied).toMatchObject(
+      rtl ? { left: 0, right: 520 } : { left: 480, right: 0 },
+    );
+    // The adapter combines clip, claim and safe area by MAX, never a second addition.
+    expect(Math.max(store.read().occupied[rtl ? 'right' : 'left'], rtl ? 120 : 80, 0)).toBe(
+      rtl ? 520 : 480,
+    );
+    view.unmount();
+  } finally {
+    I18nManager.isRTL = previous;
+  }
 });

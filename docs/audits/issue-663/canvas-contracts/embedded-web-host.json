@@ -27,6 +27,20 @@
       "height": 300
     }
   },
+  "horizontal": {
+    "host": {
+      "x": 40,
+      "y": 30,
+      "width": 500,
+      "height": 400
+    },
+    "viewport": {
+      "x": 40,
+      "y": 40,
+      "width": 300,
+      "height": 300
+    }
+  },
   "descendantIgnored": true,
   "cleanup": true
 }

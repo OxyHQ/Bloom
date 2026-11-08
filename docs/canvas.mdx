@@ -29,7 +29,10 @@ function ExploreContent() {
 
 The `side` policy uses the actual canvas viewport width. Omit it for a bottom
 panel at every width. `edge` is logical `start` (default) or `end`; the published
-`occupied` insets are physical top/right/bottom/left. The header, body and scroll
+`occupied` insets are physical top/right/bottom/left, measured from `bounds`.
+A side claim includes any clipped strip before the panel: left viewport offset
+plus gap plus width, or the corresponding right offset. Combine that claim with
+viewport clipping and local safe area by maximum, not addition. The header, body and scroll
 owner keep their tree positions across placement changes. Drag gestures are
 inactive in lateral placement. The panel owns a separate `ScreenScope`, so its
 header and scroll offset do not claim or drive the scene's chrome.

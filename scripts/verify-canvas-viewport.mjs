@@ -56,6 +56,17 @@ try {
   assert.equal(moved.host.y, 30);
   assert.equal(moved.viewport.y, 40);
   assert.equal(moved.viewport.height, 300);
+  await page.evaluate(() => {
+    document.getElementById('host').style.width = '500px';
+    document.getElementById('room').style.width = '900px';
+    document.getElementById('outer').scrollLeft = 60;
+  });
+  await page.waitForTimeout(100);
+  const horizontal = await page.evaluate(() => window.framesSeen.at(-1));
+  assert.equal(horizontal.host.x, 40);
+  assert.equal(horizontal.viewport.x, 40);
+  assert.equal(horizontal.viewport.width, 300);
+  assert.equal(horizontal.host.width-horizontal.viewport.x-horizontal.viewport.width,160);
   const before = await page.evaluate(() => window.framesSeen.length);
   await page.evaluate(() => (document.getElementById('child').scrollTop = 40));
   await page.waitForTimeout(100);
@@ -74,7 +85,7 @@ try {
   );
   writeFileSync(
     `${output}/result.json`,
-    JSON.stringify({ initial, moved, descendantIgnored: true, cleanup: true }, null, 2),
+    JSON.stringify({ initial, moved, horizontal, descendantIgnored: true, cleanup: true }, null, 2),
   );
   await page.screenshot({ path: `${output}/nested-host.png` });
   console.log(
