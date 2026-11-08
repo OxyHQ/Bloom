@@ -58,7 +58,9 @@ try {
       window.savedCanvasInput = document.querySelector('input');
     });
     await page.getByRole('button', { name: 'Change room', exact: true }).click();
-    await page.waitForTimeout(100);
+    await page.setViewportSize({ width: 600, height: 844 });
+    await page.waitForTimeout(300);
+    assert.equal(await handle.isVisible(), false, '600px must enter lateral placement');
     assert(await page.evaluate(() => window.savedCanvasInput === document.querySelector('input')));
     await page.getByRole('button', { name: 'Toggle active', exact: true }).click();
     assert.equal(await page.getByRole('button', { name: 'Select object', exact: true }).count(), 0);
@@ -75,6 +77,7 @@ try {
       rejected,
       accepted,
       inputRetained: true,
+      lateralHandleHidden: true,
       inactiveFocusExcluded: true,
       errors,
     });

@@ -1,3 +1,13 @@
+/** Direction ownership before a touch browser commits to native panning. */
+export function sheetOwnsBodyDirection(
+  delta: number,
+  scrollOffset: number,
+  expansionOffset: number,
+) {
+  'worklet';
+  return (delta > 0 && scrollOffset <= 0) || (delta < 0 && expansionOffset > 0);
+}
+
 /** Gesture arbitration shared by modal dismissal and persistent detents. */
 export function sheetPanIntent(
   delta: number,
@@ -9,7 +19,8 @@ export function sheetPanIntent(
   const atTop = scrollOffset <= (mode === 'dismiss' ? 4 : 0);
   if (atTop && delta > 8) return 'activate';
   if (mode === 'dismiss') return delta < -4 || !atTop ? 'fail' : 'wait';
-  if (delta < -8 && expansionOffset > 0) return 'activate';
+  if (Math.abs(delta) > 8 && sheetOwnsBodyDirection(delta, scrollOffset, expansionOffset))
+    return 'activate';
   return Math.abs(delta) > 8 ? 'fail' : 'wait';
 }
 

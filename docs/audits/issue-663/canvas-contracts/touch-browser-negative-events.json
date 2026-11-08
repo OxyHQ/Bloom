@@ -1,0 +1,76 @@
+{
+  "bodyExpanded": "1",
+  "trace": [
+    {
+      "type": "pointerdown",
+      "y": 700,
+      "prevented": false
+    },
+    {
+      "type": "touchstart",
+      "y": 700,
+      "prevented": false
+    },
+    {
+      "type": "pointermove",
+      "y": 676.6666870117188,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 676.6666870117188,
+      "prevented": false
+    },
+    {
+      "type": "pointercancel",
+      "y": 0,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 653.3333129882812,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 606.6666870117188,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 560,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 536.6666870117188,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 490,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 466.6666564941406,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 443.3333435058594,
+      "prevented": false
+    },
+    {
+      "type": "touchmove",
+      "y": 420,
+      "prevented": false
+    }
+  ],
+  "halfBody": {
+    "x": 16,
+    "y": 543.3638916015625,
+    "width": 280,
+    "height": 480
+  }
+}

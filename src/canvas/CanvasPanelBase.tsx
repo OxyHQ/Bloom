@@ -6,8 +6,10 @@ import {
   useRef,
   useState,
   type ComponentType,
+  type ComponentRef,
 } from 'react';
 import { BackHandler, Platform, View, type AccessibilityActionEvent } from 'react-native';
+import { attachSheetBodyTouchArbitration } from '../bottom-sheet/body-touch-arbitration';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   clamp,
@@ -67,6 +69,7 @@ export function createCanvasPanel(
     animatedHeight,
     animatedProgress,
     accessibilityLabel,
+    handleRef,
     testID,
   }: CanvasPanelProps) {
     const region = useCanvasRegion(),
@@ -163,7 +166,7 @@ export function createCanvasPanel(
           animatedProgress.value =
             dragEnabled && maxOffset > 0 ? clamp(1 - value / maxOffset, 0, 1) : 0;
       },
-      [dragEnabled, full, maxOffset, animatedHeight, animatedProgress],
+      [translate, dragEnabled, full, maxOffset, animatedHeight, animatedProgress],
     );
     useEffect(
       () => () => {
@@ -238,7 +241,10 @@ export function createCanvasPanel(
     const headerPan = useMemo(() => makePan(), [makePan]);
     const bodyPan = useMemo(() => {
       const pan = makePan().manualActivation(true);
-      if (scrollable) pan.blocksExternalGesture(nativeScroll);
+      if (scrollable) {
+        if (Platform.OS === 'web') pan.simultaneousWithExternalGesture(nativeScroll);
+        else pan.blocksExternalGesture(nativeScroll);
+      }
       return pan
         .onTouchesDown((event) => {
           'worklet';
@@ -258,11 +264,23 @@ export function createCanvasPanel(
           else if (intent === 'fail') state.fail();
         });
     }, [makePan, scrollable, nativeScroll, touchY, scrollY, translate]);
-    const onScroll = useAnimatedScrollHandler({
-      onScroll: (event) => {
-        scrollY.value = event.contentOffset.y;
+    const bodyRef = useRef<ComponentRef<typeof View>>(null);
+    useEffect(() => {
+      if (Platform.OS !== 'web' || !bodyRef.current) return;
+      return attachSheetBodyTouchArbitration(bodyRef.current as unknown as HTMLElement, () => ({
+        enabled: dragEnabled,
+        scrollOffset: scrollY.value,
+        expansionOffset: translate.value,
+      }));
+    }, [dragEnabled, scrollY, translate]);
+    const onScroll = useAnimatedScrollHandler(
+      {
+        onScroll: (event) => {
+          scrollY.value = event.contentOffset.y;
+        },
       },
-    });
+      [scrollY],
+    );
     const motion = useAnimatedStyle(
       () => ({ transform: [{ translateY: lateral ? 0 : translate.value }] }),
       [lateral, translate],
@@ -323,9 +341,10 @@ export function createCanvasPanel(
         >
           <ScreenScope sizing="fill">
             <ScrollOffsetProvider value={scrollY}>
-              <GestureDetector gesture={handlePan}>
+              <GestureDetector gesture={handlePan} touchAction="none">
                 <View style={{ display: lateral ? 'none' : 'flex' }}>
                   <StyledPressable
+                    ref={handleRef}
                     {...keyProps}
                     onPress={() => moveTo(SNAPS[(SNAPS.indexOf(snap) + 1) % 3]!)}
                     accessibilityRole="adjustable"
@@ -368,7 +387,7 @@ export function createCanvasPanel(
                   </StyledPressable>
                 </View>
               </GestureDetector>
-              <GestureDetector gesture={headerPan}>
+              <GestureDetector gesture={headerPan} touchAction={lateral ? 'auto' : 'none'}>
                 <View
                   onLayout={(event) => {
                     if (enabled) setHeaderHeight(event.nativeEvent.layout.height);
@@ -377,10 +396,10 @@ export function createCanvasPanel(
                   {header}
                 </View>
               </GestureDetector>
-              <GestureDetector gesture={bodyPan}>
-                <View style={{ flex: 1, minHeight: 0 }}>
+              <GestureDetector gesture={bodyPan} touchAction="pan-y">
+                <View ref={bodyRef} style={{ flex: 1, minHeight: 0 }}>
                   {scrollable ? (
-                    <GestureDetector gesture={nativeScroll}>
+                    <GestureDetector gesture={nativeScroll} touchAction="pan-y">
                       <ScrollArea
                         animatedHandler={onScroll}
                         scrollEventThrottle={16}
