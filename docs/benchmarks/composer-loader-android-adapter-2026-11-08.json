@@ -339,5 +339,114 @@
       "limitation": "SwiftShader compatibility only, no physical frame budget or optical parity claim"
     },
     "limits": "Visible SVG retains abrupt/clipped lower halo; neither optical acceptance nor performance budget. Static fallback policy remains an explicit pending decision."
+  },
+  "packagedLifecycle": {
+    "apkSha256": "017f407a86b29f6950f774f0ed030e8264e9354747379f943b92e83bfa2acc79",
+    "embeddedBundleSha256": "b50388d3bb924ac4f4f2edd0bcc3f6a6d67dfc06c6a5fa8bcc2bb24a84f95cdb",
+    "embeddedBloomSourceSha256": "b93551ae7917238c925fefa073d2001f91fb6f2360c1e803e96c5ceca30fcec0",
+    "fixtureSha256": "0715ba9888842ee936e51a4b27b569e37b6df497f1d522602b9f08317f58e2b2",
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "results": {
+      "pause": {
+        "before": {
+          "wallMs": 1452885859,
+          "seconds": 20.964047125816368,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "after": {
+          "wallMs": 1452889277,
+          "seconds": 20.964047125816368,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "resumed": {
+          "wallMs": 1452894623,
+          "seconds": 21.92976503300669,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "identicalPixels": true,
+        "bounds": [42, 413, 1038, 549]
+      },
+      "screenInactive": {
+        "before": {
+          "wallMs": 1452904562,
+          "seconds": 5.8937278349399564,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "after": {
+          "wallMs": 1452907981,
+          "seconds": 5.8937278349399564,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "resumed": {
+          "wallMs": 1452913294,
+          "seconds": 6.851146707057958,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "identicalPixels": true,
+        "bounds": [42, 413, 1038, 549]
+      },
+      "background": {
+        "before": {
+          "wallMs": 1452914059,
+          "seconds": 7.5952095429897355,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "after": {
+          "wallMs": 1452918110,
+          "seconds": 8.864016101121903,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "continued": {
+          "wallMs": 1452919275,
+          "seconds": 10.009407891035076,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "wallSeconds": 4.051,
+        "activeSeconds": 1.2688065581321677
+      },
+      "resize": {
+        "wallMs": 1452923285,
+        "seconds": 13.972172548770901,
+        "width": 240,
+        "height": 51.809525,
+        "radius": 25.904762
+      },
+      "rapidToggleMs": 294.1763290000381,
+      "initialInactive": {
+        "before": {
+          "wallMs": 1452938124,
+          "seconds": 0,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        },
+        "after": {
+          "wallMs": 1452940029,
+          "seconds": 0,
+          "width": 379.42856,
+          "height": 51.809525,
+          "radius": 25.904762
+        }
+      }
+    },
+    "limits": "Pixel 8a same OS/density/font; isolated actual packaged loader, not real composer or Alia acceptance."
   }
 }

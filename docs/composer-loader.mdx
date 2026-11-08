@@ -149,6 +149,8 @@ without the manager, suspends its pixels under reduced motion, and resumes after
 the original OS setting is restored. Its abrupt lower halo remains visible; this
 is compatibility evidence, not optical or performance acceptance. A deliberate
 static fallback policy for hosts unable to sustain the SVG animation remains an
-open decision. Legacy runtime, packaged lifecycle and real composer consumer
-gates remain pending.
+open decision. The packaged Pixel lifecycle case preserves pixels/clock while paused
+and screen-inactive, excludes background time, survives resize and rapid toggles,
+and starts inactive at clock zero. Legacy runtime, real composer consumers and
+phase-aligned packaged optics remain pending.
 See `scripts/loader-package-lab` for the isolated packaged consumer procedure.
