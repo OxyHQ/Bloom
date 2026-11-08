@@ -1,0 +1,209 @@
+[
+  {
+    "id": "workspace",
+    "title": "Compose a document workspace",
+    "synonyms": ["document", "database", "inspector", "continuous workspace"],
+    "status": "recommended",
+    "docs": [
+      "docs/compose-layouts.mdx",
+      "docs/app-shell.mdx",
+      "docs/screen.mdx",
+      "docs/page-header.mdx"
+    ],
+    "example": "docs/examples/workspace.tsx",
+    "story": {
+      "id": "blocks-app-shell--continuous-workspace",
+      "export": "ContinuousWorkspace",
+      "source": "src/app-shell/AppShell.stories.tsx",
+      "observedIndex": "Storybook /index.json, 2026-11-08"
+    },
+    "choose": "Choose joined panels for one continuous workspace; choose separated panels when each region needs its own frame.",
+    "avoid": "Do not wrap each descriptor in another panel or AppShell. Keep md controls; domain density is separate.",
+    "ownership": {
+      "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+      "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+      "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+      "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+      "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+      "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+    },
+    "consumers": "Nilo: apps/app/components/shell/nilo-shell.tsx; published pilot acceptance pending.",
+    "evidence": {
+      "web": "not run",
+      "android": "not run",
+      "ios": "not run",
+      "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+    }
+  },
+  {
+    "id": "canvas",
+    "title": "Host a map or interactive canvas",
+    "synonyms": ["map", "board", "canvas", "persistent panel"],
+    "status": "variant",
+    "docs": ["docs/compose-layouts.mdx", "docs/screen.mdx", "docs/map-controls.mdx"],
+    "example": "docs/examples/canvas.tsx",
+    "story": {
+      "id": "blocks-app-shell--modular-map",
+      "export": "ModularMap",
+      "source": "src/app-shell/AppShell.stories.tsx",
+      "observedIndex": "Storybook /index.json, 2026-11-08"
+    },
+    "choose": "Screen scroll=none reserves header/footer around a canvas with its own gestures. MapControls provides shared map controls; the application owns the engine.",
+    "avoid": "This minimal example does not implement occupied map regions or a persistent non-modal sheet. Do not substitute a modal Dialog for that missing contract.",
+    "ownership": {
+      "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+      "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+      "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+      "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+      "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+      "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+    },
+    "consumers": "GoWay persistent-panel adoption remains pending; no completed consumer acceptance claimed.",
+    "evidence": {
+      "web": "not run",
+      "android": "not run",
+      "ios": "not run",
+      "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+    }
+  },
+  {
+    "id": "conversation",
+    "title": "Compose an agent conversation with a loader",
+    "synonyms": ["chat", "agent", "transcript", "composer", "loader"],
+    "status": "recommended",
+    "docs": [
+      "docs/agent-chat.mdx",
+      "docs/ai-overview.mdx",
+      "docs/composer-loader.mdx",
+      "docs/chat-composer.mdx"
+    ],
+    "example": "docs/examples/conversation.tsx",
+    "story": {
+      "id": "agents-agent-chat--streaming",
+      "export": "Streaming",
+      "source": "src/agent-chat/AgentChat.stories.tsx",
+      "observedIndex": "Storybook /index.json, 2026-11-08"
+    },
+    "choose": "AgentChat composes transcript, history and the shared loader/composer. Choose ChatComposer for person-to-person messaging, or AiChat when its broader shell is needed.",
+    "avoid": "AgentChat already owns its shell/screens. Do not add an outer scrolling transcript, duplicate shell or opaque layer covering the loader.",
+    "ownership": {
+      "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+      "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+      "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+      "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+      "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+      "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+    },
+    "consumers": "Alia/Allo integration and device evidence are tracked independently; examples do not prove device parity.",
+    "evidence": {
+      "web": "not run",
+      "android": "not run",
+      "ios": "not run",
+      "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+    }
+  },
+  {
+    "id": "master-detail",
+    "title": "Compose a list and selected detail",
+    "synonyms": ["inbox", "list", "detail", "selection"],
+    "status": "recommended",
+    "docs": ["docs/compose-layouts.mdx", "docs/app-shell.mdx", "docs/screen.mdx"],
+    "example": "docs/examples/master-detail.tsx",
+    "story": {
+      "id": "blocks-app-shell--modular-inbox",
+      "export": "ModularInbox",
+      "source": "src/app-shell/AppShell.stories.tsx",
+      "observedIndex": "Storybook /index.json, 2026-11-08"
+    },
+    "choose": "Use stable list/detail panel descriptors and the activePanel contract; the router/store owns selected identity and Back navigation.",
+    "avoid": "Do not recreate keyed content on resize. The example accepts selection; it does not implement a router or promise automatic navigation history.",
+    "ownership": {
+      "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+      "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+      "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+      "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+      "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+      "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+    },
+    "consumers": "Existing modular inbox story; product route acceptance remains separate.",
+    "evidence": {
+      "web": "not run",
+      "android": "not run",
+      "ios": "not run",
+      "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+    }
+  },
+  {
+    "id": "discovery",
+    "title": "Compose a filtered catalog",
+    "synonyms": ["search", "catalog", "filters", "results", "discovery"],
+    "status": "recommended",
+    "docs": [
+      "docs/compose-layouts.mdx",
+      "docs/screen.mdx",
+      "docs/list.mdx",
+      "docs/page-header.mdx"
+    ],
+    "example": "docs/examples/discovery.tsx",
+    "story": {
+      "id": "blocks-app-shell--modular-expanding-feed",
+      "export": "ModularExpandingFeed",
+      "source": "src/app-shell/AppShell.stories.tsx",
+      "observedIndex": "Storybook /index.json, 2026-11-08"
+    },
+    "choose": "A Screen with its header and content owner hosts domain filters/results. Use VirtualList with the external scroll contract for large collections.",
+    "avoid": "Do not put a virtualized list inside ScreenScrollView. This minimal nonvirtualized example leaves domain filter state and pagination to the application.",
+    "ownership": {
+      "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+      "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+      "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+      "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+      "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+      "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+    },
+    "consumers": "Homiio/Atlas route adoption and visual acceptance remain separate.",
+    "evidence": {
+      "web": "not run",
+      "android": "not run",
+      "ios": "not run",
+      "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+    }
+  },
+  {
+    "id": "dashboard",
+    "title": "Compose a dashboard or tools screen",
+    "synonyms": ["dashboard", "charts", "metrics", "tools", "console"],
+    "status": "recommended",
+    "docs": [
+      "docs/compose-layouts.mdx",
+      "docs/grid.mdx",
+      "docs/chart-cards.mdx",
+      "docs/page-header.mdx"
+    ],
+    "example": "docs/examples/dashboard.tsx",
+    "story": {
+      "id": "templates-home-dashboard--default",
+      "export": "Default",
+      "source": "templates/home-dashboard/HomeDashboard.stories.tsx",
+      "observedIndex": "Storybook /index.json, 2026-11-08",
+      "title": "Templates/Home Dashboard"
+    },
+    "choose": "ResponsiveGrid chooses columns from its local host and preserves children while resizing. Use chart cards for data encoding and shared HeaderActions for semantic action overflow.",
+    "avoid": "Do not switch keyed chart trees at window breakpoints or measure every card height in React. A data table keeps its own horizontal scroll region; do not shrink global control size to fit it.",
+    "ownership": {
+      "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+      "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+      "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+      "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+      "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+      "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+    },
+    "consumers": "HomeDashboard template demonstrates the existing composition. Willo/Mercaria product-route acceptance remains separate.",
+    "evidence": {
+      "web": "not run",
+      "android": "not run",
+      "ios": "not run",
+      "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+    }
+  }
+]

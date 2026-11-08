@@ -1,0 +1,209 @@
+---
+title: Choose an API by task
+description: Versioned task entrypoints, public imports, examples and ownership constraints.
+order: 1
+---
+
+{/* GENERATED: node scripts/generate-task-catalog.mjs. Curated semantics: scripts/task-catalog/tasks.json. */}
+
+# Choose an API by task
+
+This guide belongs to **@oxy.so/bloom 17.22.0**. Read it from the installed package alongside [the structured index](./task-catalog.json). A source build version is not a registry-publication receipt. Use the containing package’s manifest for exact peer ranges.
+
+Start under the application’s BloomProvider and follow [getting started](./getting-started.mdx) for CSS, fonts and platform setup. These examples accept domain content/actions and require a bounded host. They do not add a provider per route. For document scrolling, follow [the host contract](./compose-layouts.mdx); Expo’s bounded reset must not silently prevent document overflow.
+
+The six Storybook sections and existing IDs are unchanged. Story IDs below were read from the running index and are checked against their source exports. Catalog status recommends a composition; it does not establish device acceptance.
+
+| Task | Selection | Example |
+| --- | --- | --- |
+| [Compose a document workspace](#workspace) | recommended | [workspace.tsx](./examples/workspace.tsx) |
+| [Host a map or interactive canvas](#canvas) | variant | [canvas.tsx](./examples/canvas.tsx) |
+| [Compose an agent conversation with a loader](#conversation) | recommended | [conversation.tsx](./examples/conversation.tsx) |
+| [Compose a list and selected detail](#master-detail) | recommended | [master-detail.tsx](./examples/master-detail.tsx) |
+| [Compose a filtered catalog](#discovery) | recommended | [discovery.tsx](./examples/discovery.tsx) |
+| [Compose a dashboard or tools screen](#dashboard) | recommended | [dashboard.tsx](./examples/dashboard.tsx) |
+
+<a id="workspace" />
+
+## Compose a document workspace
+
+Search: document, database, inspector, continuous workspace. Status: **recommended**.
+
+Choose joined panels for one continuous workspace; choose separated panels when each region needs its own frame.
+
+```tsx
+import { AppShell } from '@oxy.so/bloom/app-shell';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+```
+
+Runnable component: [workspace.tsx](./examples/workspace.tsx). Story: `blocks-app-shell--continuous-workspace` (`ContinuousWorkspace`).
+
+Canonical guides: [compose-layouts](./compose-layouts.mdx), [app-shell](./app-shell.mdx), [screen](./screen.mdx), [page-header](./page-header.mdx).
+
+- **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
+- **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
+- **surface:** The shell/panel and shared controls own their material. Do not add a second panel surface.
+- **focus:** Use shared controls and overlay owners; do not move focus as a layout side effect.
+- **motion:** Shared owners animate; applications supply discrete state rather than per-frame React updates.
+- **keyboard:** Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route.
+
+Avoid: Do not wrap each descriptor in another panel or AppShell. Keep md controls; domain density is separate.
+
+Consumer context: Nilo: apps/app/components/shell/nilo-shell.tsx; published pilot acceptance pending.
+
+Runtime evidence for this example: web **not run**, Android **not run**, iOS **not run**. Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim.
+
+<a id="canvas" />
+
+## Host a map or interactive canvas
+
+Search: map, board, canvas, persistent panel. Status: **variant**.
+
+Screen scroll=none reserves header/footer around a canvas with its own gestures. MapControls provides shared map controls; the application owns the engine.
+
+```tsx
+import { AppShell } from '@oxy.so/bloom/app-shell';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { Screen } from '@oxy.so/bloom/screen';
+```
+
+Runnable component: [canvas.tsx](./examples/canvas.tsx). Story: `blocks-app-shell--modular-map` (`ModularMap`).
+
+Canonical guides: [compose-layouts](./compose-layouts.mdx), [screen](./screen.mdx), [map-controls](./map-controls.mdx).
+
+- **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
+- **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
+- **surface:** The shell/panel and shared controls own their material. Do not add a second panel surface.
+- **focus:** Use shared controls and overlay owners; do not move focus as a layout side effect.
+- **motion:** Shared owners animate; applications supply discrete state rather than per-frame React updates.
+- **keyboard:** Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route.
+
+Avoid: This minimal example does not implement occupied map regions or a persistent non-modal sheet. Do not substitute a modal Dialog for that missing contract.
+
+Consumer context: GoWay persistent-panel adoption remains pending; no completed consumer acceptance claimed.
+
+Runtime evidence for this example: web **not run**, Android **not run**, iOS **not run**. Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim.
+
+<a id="conversation" />
+
+## Compose an agent conversation with a loader
+
+Search: chat, agent, transcript, composer, loader. Status: **recommended**.
+
+AgentChat composes transcript, history and the shared loader/composer. Choose ChatComposer for person-to-person messaging, or AiChat when its broader shell is needed.
+
+```tsx
+import { AgentChat } from '@oxy.so/bloom/agent-chat';
+```
+
+Runnable component: [conversation.tsx](./examples/conversation.tsx). Story: `agents-agent-chat--streaming` (`Streaming`).
+
+Canonical guides: [agent-chat](./agent-chat.mdx), [ai-overview](./ai-overview.mdx), [composer-loader](./composer-loader.mdx), [chat-composer](./chat-composer.mdx).
+
+- **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
+- **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
+- **surface:** The shell/panel and shared controls own their material. Do not add a second panel surface.
+- **focus:** Use shared controls and overlay owners; do not move focus as a layout side effect.
+- **motion:** Shared owners animate; applications supply discrete state rather than per-frame React updates.
+- **keyboard:** Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route.
+
+Avoid: AgentChat already owns its shell/screens. Do not add an outer scrolling transcript, duplicate shell or opaque layer covering the loader.
+
+Consumer context: Alia/Allo integration and device evidence are tracked independently; examples do not prove device parity.
+
+Runtime evidence for this example: web **not run**, Android **not run**, iOS **not run**. Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim.
+
+<a id="master-detail" />
+
+## Compose a list and selected detail
+
+Search: inbox, list, detail, selection. Status: **recommended**.
+
+Use stable list/detail panel descriptors and the activePanel contract; the router/store owns selected identity and Back navigation.
+
+```tsx
+import { AppShell } from '@oxy.so/bloom/app-shell';
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+```
+
+Runnable component: [master-detail.tsx](./examples/master-detail.tsx). Story: `blocks-app-shell--modular-inbox` (`ModularInbox`).
+
+Canonical guides: [compose-layouts](./compose-layouts.mdx), [app-shell](./app-shell.mdx), [screen](./screen.mdx).
+
+- **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
+- **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
+- **surface:** The shell/panel and shared controls own their material. Do not add a second panel surface.
+- **focus:** Use shared controls and overlay owners; do not move focus as a layout side effect.
+- **motion:** Shared owners animate; applications supply discrete state rather than per-frame React updates.
+- **keyboard:** Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route.
+
+Avoid: Do not recreate keyed content on resize. The example accepts selection; it does not implement a router or promise automatic navigation history.
+
+Consumer context: Existing modular inbox story; product route acceptance remains separate.
+
+Runtime evidence for this example: web **not run**, Android **not run**, iOS **not run**. Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim.
+
+<a id="discovery" />
+
+## Compose a filtered catalog
+
+Search: search, catalog, filters, results, discovery. Status: **recommended**.
+
+A Screen with its header and content owner hosts domain filters/results. Use VirtualList with the external scroll contract for large collections.
+
+```tsx
+import { AppShell } from '@oxy.so/bloom/app-shell';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+```
+
+Runnable component: [discovery.tsx](./examples/discovery.tsx). Story: `blocks-app-shell--modular-expanding-feed` (`ModularExpandingFeed`).
+
+Canonical guides: [compose-layouts](./compose-layouts.mdx), [screen](./screen.mdx), [list](./list.mdx), [page-header](./page-header.mdx).
+
+- **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
+- **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
+- **surface:** The shell/panel and shared controls own their material. Do not add a second panel surface.
+- **focus:** Use shared controls and overlay owners; do not move focus as a layout side effect.
+- **motion:** Shared owners animate; applications supply discrete state rather than per-frame React updates.
+- **keyboard:** Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route.
+
+Avoid: Do not put a virtualized list inside ScreenScrollView. This minimal nonvirtualized example leaves domain filter state and pagination to the application.
+
+Consumer context: Homiio/Atlas route adoption and visual acceptance remain separate.
+
+Runtime evidence for this example: web **not run**, Android **not run**, iOS **not run**. Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim.
+
+<a id="dashboard" />
+
+## Compose a dashboard or tools screen
+
+Search: dashboard, charts, metrics, tools, console. Status: **recommended**.
+
+ResponsiveGrid chooses columns from its local host and preserves children while resizing. Use chart cards for data encoding and shared HeaderActions for semantic action overflow.
+
+```tsx
+import { AppShell } from '@oxy.so/bloom/app-shell';
+import { ResponsiveGrid } from '@oxy.so/bloom/grid';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+```
+
+Runnable component: [dashboard.tsx](./examples/dashboard.tsx). Story: `templates-home-dashboard--default` (`Default`).
+
+Canonical guides: [compose-layouts](./compose-layouts.mdx), [grid](./grid.mdx), [chart-cards](./chart-cards.mdx), [page-header](./page-header.mdx).
+
+- **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
+- **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
+- **surface:** The shell/panel and shared controls own their material. Do not add a second panel surface.
+- **focus:** Use shared controls and overlay owners; do not move focus as a layout side effect.
+- **motion:** Shared owners animate; applications supply discrete state rather than per-frame React updates.
+- **keyboard:** Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route.
+
+Avoid: Do not switch keyed chart trees at window breakpoints or measure every card height in React. A data table keeps its own horizontal scroll region; do not shrink global control size to fit it.
+
+Consumer context: HomeDashboard template demonstrates the existing composition. Willo/Mercaria product-route acceptance remains separate.
+
+Runtime evidence for this example: web **not run**, Android **not run**, iOS **not run**. Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim.
+
