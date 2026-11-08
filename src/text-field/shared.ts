@@ -1,3 +1,8 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { quietTextOnBody } from '../surface/body-backing';
+import { AA_TEXT_CONTRAST } from '../styles/color-contrast';
+import { useReducedTransparency } from '../theme/reduced-transparency';
+import { useIncreasedContrast } from '../theme/increased-contrast';
 import { useMemo } from 'react';
 import type { BloomSize } from '../appearance';
 import { Platform, type ViewStyle } from 'react-native';
@@ -153,18 +158,29 @@ const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 export function resolveTextFieldPalette(
   theme: Theme,
   surface: string = theme.colors.background,
+  reducedTransparency = false,
+  interiorInset = 4,
 ): TextFieldPalette {
   const c = theme.colors;
+  const background = surfaceFillOn(theme, surface);
+  const body = resolveSurfaceMaterial({
+    fill: background,
+    parentFill: surface,
+    webOptics: { mode: theme.isDark ? 'dark' : 'light', reducedTransparency, interiorInset },
+  }).bodyBounds;
+  const quiet = body
+    ? quietTextOnBody(body, c.text, AA_TEXT_CONTRAST).color
+    : surfaceTextOn(theme, background).textTertiary;
   return {
     restBorder: resolveFieldRestBorder(theme),
-    background: surfaceFillOn(theme, surface),
-    backgroundDisabled: surfaceFillOn(theme, surface),
+    background,
+    backgroundDisabled: background,
     backgroundInvalid: c.errorSubtle,
     ringHover: c.border,
     ringFocus: c.primary,
     text: c.text,
     textDisabled: c.textTertiary,
-    placeholder: surfaceTextOn(theme, surfaceFillOn(theme, surface)).textTertiary,
+    placeholder: quiet,
     placeholderInvalid: c.errorSubtleForeground,
     icon: c.textSecondary,
     iconDisabled: c.textTertiary,
@@ -172,7 +188,7 @@ export function resolveTextFieldPalette(
     hint: surfaceTextOn(theme, surface).textTertiary,
     error: c.errorSubtleForeground,
     infoIcon: c.textSecondary,
-    count: surfaceTextOn(theme, surfaceFillOn(theme, surface)).textTertiary,
+    count: surfaceTextOn(theme, background).textTertiary,
   };
 }
 
@@ -184,10 +200,15 @@ export function resolveTextFieldPalette(
  * field inside a `SurfaceLevelProvider` steps off that container instead of off
  * the page.
  */
-export function useTextFieldPalette(): TextFieldPalette {
+export function useTextFieldPalette(interiorInset = 4): TextFieldPalette {
   const theme = useTheme();
   const surface = useSurfaceFill();
-  return useMemo(() => resolveTextFieldPalette(theme, surface), [theme, surface]);
+  const reduced = useReducedTransparency();
+  const increased = useIncreasedContrast();
+  return useMemo(
+    () => resolveTextFieldPalette(theme, surface, reduced || increased, interiorInset),
+    [theme, surface, reduced, increased, interiorInset],
+  );
 }
 
 export interface TextFieldState {
