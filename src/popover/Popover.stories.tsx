@@ -1,5 +1,5 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -521,3 +521,45 @@ export const NestedFocusReturn: Story = {
     );
   },
 };
+
+function VirtualSelectionExample() {
+  const [open, setOpen] = useState(false);
+  const selected = useRef<HTMLSpanElement>(null);
+  const anchor = useMemo(
+    () => ({
+      getBoundingClientRect: () => {
+        if (!selected.current?.isConnected) return null;
+        const range = document.createRange();
+        range.selectNodeContents(selected.current);
+        return range.getBoundingClientRect();
+      },
+    }),
+    [],
+  );
+  return (
+    <div
+      data-testid="selection-scroller"
+      style={{ height: 300, width: '100%', maxWidth: 420, overflow: 'auto' }}
+    >
+      <div style={{ height: 180 }} />
+      <span ref={selected} data-testid="selection-anchor">
+        Selected words
+      </span>
+      <Button onPress={() => setOpen(true)}>Format selection</Button>
+      <Popover open={open} onOpenChange={setOpen} modal={false}>
+        <PopoverContent
+          virtualAnchor={anchor}
+          side="top"
+          align="start"
+          label="Selection formatting"
+          testID="selection-panel"
+        >
+          <Button>Bold</Button>
+          <TextFieldInput label="Link" />
+        </PopoverContent>
+      </Popover>
+      <div style={{ height: 800 }} />
+    </div>
+  );
+}
+export const VirtualSelection: Story = { render: () => <VirtualSelectionExample /> };

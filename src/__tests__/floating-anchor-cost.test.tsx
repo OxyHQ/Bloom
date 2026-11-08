@@ -29,7 +29,8 @@
  * `top` tracks the trigger as the page scrolls, which is the behaviour the
  * cheapness must not buy.
  */
-import React, { Profiler, useRef } from 'react';
+import type React from 'react';
+import { Profiler, useRef } from 'react';
 import { act, type ComponentRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -135,11 +136,18 @@ describe('useAnchorRect', () => {
   let anchors: Array<FloatingAnchor | null> = [];
   let node: HTMLDivElement | null = null;
 
-  function Probe({ open = true }: { open?: boolean }) {
+  function Probe({
+    open = true,
+    measureVirtual,
+  }: {
+    open?: boolean;
+    measureVirtual?: () => FloatingAnchor | null;
+  }) {
     const ref = useRef<HTMLDivElement | null>(null);
     const anchor = useAnchorRect(
       ref as unknown as React.RefObject<ComponentRef<typeof View> | null>,
       open,
+      measureVirtual,
     );
     anchors.push(anchor);
     return (
@@ -155,6 +163,29 @@ describe('useAnchorRect', () => {
   beforeEach(() => {
     anchors = [];
     node = null;
+  });
+
+  it('measures a virtual selection without a trigger, follows it and clears detached targets', () => {
+    let box: FloatingAnchor | null = { top: 40, bottom: 60, left: 80, right: 160 };
+    const measure = jest.fn(() => box);
+    mount(<Probe measureVirtual={measure} />);
+    expect(anchors[anchors.length - 1]).toEqual(box);
+    expect(measurements(node)).toBe(0);
+    const openingCalls = measure.mock.calls.length;
+    box = { top: 20, bottom: 40, left: 80, right: 160 };
+    scroll(6);
+    expect(measure).toHaveBeenCalledTimes(openingCalls);
+    frame();
+    expect(measure).toHaveBeenCalledTimes(openingCalls + 1);
+    expect(anchors[anchors.length - 1]).toEqual(box);
+    box = null;
+    act(() => window.dispatchEvent(new Event('resize')));
+    frame();
+    expect(anchors[anchors.length - 1]).toBeNull();
+    scroll();
+    mount(<Probe open={false} measureVirtual={measure} />);
+    frame();
+    expect(anchors[anchors.length - 1]).toBeNull();
   });
 
   it('measures the trigger once per frame, however many scroll events arrive', () => {

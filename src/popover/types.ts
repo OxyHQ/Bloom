@@ -28,6 +28,16 @@ export type PopoverTriggerProps = OverlayTriggerProps;
 export type PopoverContentProps = OverlaySurfaceProps & {
   /** Standard optical surface or plain fill. Default surface. */
   material?: 'surface' | 'flat';
+  /** Web selection/caret anchor. Re-measured by the shared owner on scroll and resize.
+   * Native presentation remains a sheet. Return null when the target is gone. */
+  virtualAnchor?: {
+    getBoundingClientRect: () => {
+      top: number;
+      bottom: number;
+      left: number;
+      right: number;
+    } | null;
+  };
 };
 
 /** Shared by the panel's layout parts. */

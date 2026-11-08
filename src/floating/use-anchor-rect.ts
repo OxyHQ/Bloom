@@ -94,6 +94,7 @@ export function sameAnchor(a: FloatingAnchor | null, b: FloatingAnchor | null): 
 export function useAnchorRect(
   ref: React.RefObject<ComponentRef<typeof View> | null>,
   open: boolean,
+  measureVirtual?: () => FloatingAnchor | null,
 ): FloatingAnchor | null {
   const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);
   // What was last published, mirrored so an unchanged measurement never reaches
@@ -110,8 +111,8 @@ export function useAnchorRect(
   }, []);
 
   const measure = useCallback(() => {
-    store(triggerRectOf(ref.current));
-  }, [ref, store]);
+    store(measureVirtual ? measureVirtual() : triggerRectOf(ref.current));
+  }, [ref, store, measureVirtual]);
 
   const [schedule, cancel] = useFrameThrottle(measure);
 
