@@ -12,6 +12,7 @@ import tarfile
 import zipfile
 
 MANIFEST = json.loads(Path(__file__).with_suffix('.json').read_text())
+KOTLIN_VERSIONS = ('2.2.0', '2.2.10', '2.2.21')
 
 
 class DownloadFailure(RuntimeError):
@@ -104,8 +105,8 @@ def install_gradle(version, directory, transport=download):
 
 
 def prepare_kotlin(directory, gradle_user_home, transport=download, probe=primary_available, version='2.2.0'):
-    if version not in ('2.2.0', '2.2.10'):
-        raise ValueError('Only the existing Kotlin compiler 2.2.0 and 2.2.10 artifacts are supported')
+    if version not in KOTLIN_VERSIONS:
+        raise ValueError('Only the existing Kotlin compiler 2.2.0, 2.2.10 and 2.2.21 artifacts are supported')
     init = gradle_user_home / 'init.d' / f'bloom-verified-kotlin-{version}.init.gradle'
     if probe(MANIFEST[f'kotlin-compiler-embeddable-{version}']['primary']):
         init.unlink(missing_ok=True)
@@ -193,7 +194,7 @@ def main():
     if args.kind == 'cleanup':
         home = os.environ.get('GRADLE_USER_HOME')
         if home:
-            for filename in ('bloom-verified-kotlin.init.gradle', 'bloom-verified-kotlin-2.2.0.init.gradle', 'bloom-verified-kotlin-2.2.10.init.gradle'):
+            for filename in ['bloom-verified-kotlin.init.gradle'] + [f'bloom-verified-kotlin-{version}.init.gradle' for version in KOTLIN_VERSIONS]:
                 (Path(home) / 'init.d' / filename).unlink(missing_ok=True)
         return
     if args.kind == 'gradle':
@@ -206,8 +207,8 @@ def main():
         with open(os.environ['GITHUB_PATH'], 'a') as output:
             output.write(str(binary) + '\n')
     else:
-        if args.version not in ('2.2.0', '2.2.10'):
-            raise ValueError('Only the existing Kotlin compiler 2.2.0 and 2.2.10 artifacts are supported')
+        if args.version not in KOTLIN_VERSIONS:
+            raise ValueError('Only the existing Kotlin compiler 2.2.0, 2.2.10 and 2.2.21 artifacts are supported')
         prepare_kotlin(args.directory, Path(os.environ['GRADLE_USER_HOME']), version=args.version)
 
 

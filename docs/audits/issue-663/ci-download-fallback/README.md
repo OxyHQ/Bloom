@@ -21,7 +21,7 @@ handling and post processing. There is no continue-on-error around that action.
 Kotlin fallback downloads the identical JAR from JetBrains plus its intact original
 Maven POM.
 A separate job-local Gradle init script per observed version makes only
-`org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.0` and, for predictive,
+`org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.0` and `2.2.21` plus, for predictive,
 `org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.10` exclusive to temporary
 repositories. Every other version/module and every transitive dependency uses the
 existing repositories. Each init file applies to included builds and is deleted
@@ -159,3 +159,33 @@ hashes independently in root and included builds, offline against an unreachable
 remote repository (four successful Gradle tasks). The new unit regression also
 checks coexistence, independent recovery and final cleanup. Full predictive CI
 must pass on this updated head; the included-build proof is not its replacement.
+
+## Complete compiler inventory
+
+After default in run 42470097488 failed resolving root Kotlin 2.2.21, all configured
+build owners were inventoried together. The committed `kotlin-inventory/*.txt`
+are actual Gradle dependency reports from the installed RN/plugin 0.88.1, using
+the normal root/native builds (offline cached metadata; no source modifications):
+
+| Owner | Effective compiler | Variants | Configuration/source |
+| --- | --- | --- | --- |
+| Legacy Bloom | 1.8.0 | legacy | legacy/build.gradle explicit pin; kotlinCompilerClasspath |
+| RN Gradle plugin shared | 2.2.0 | default, predictive | plugin catalog pin; kotlinCompilerClasspath |
+| Root Bloom | 2.2.21 | default, predictive | build.gradle explicit pin; kotlinBuildToolsApiClasspath |
+| ReactAndroid source | 2.2.10 | predictive | resolved kotlinBuildToolsApiClasspath |
+
+The RN source catalog itself says 2.2.0; the effective Android build-tools compiler
+is 2.2.10, so the resolved report, not a catalog-only inference, owns this row.
+Legacy's normal transport continues to pass and is unchanged. The three observed
+2.2.x JARs have separate exact-GAV fallbacks, never a broad Kotlin/group mirror.
+
+Kotlin 2.2.21 uses official JetBrains asset 587847942, 56908512 bytes, SHA256
+`9588fa696ac5507af764fd5660df6894185e12704ec1bc3f5cb772af4987f295`.
+The full downloaded JAR matches that official digest and Maven SHA1
+`b13aed5cf8412f9ee9d1e4db21bdcfebcc24f606`. Its unchanged POM is 2451 bytes,
+SHA256 `0b33c64f2622ba3bc8283378bdb7505f2be330a2275807038ad54359b33ddf9b`.
+`all-kotlin-included-build.txt` resolves all three pinned JARs with all three init
+files coexisting: root and included projects each verify every SHA256, offline
+against an unreachable remote repository (six successful tasks). The unit test
+covers the same three-version coexistence and cleanup set. CI must still run the
+unchanged complete compilation gates on the final head.
