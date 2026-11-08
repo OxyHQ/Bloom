@@ -460,5 +460,176 @@
       }
     },
     "limits": "Pixel 8a same OS/density/font; isolated actual packaged loader, not real composer or Alia acceptance."
+  },
+  "packagedComposers": {
+    "results": {
+      "cases-pill-input": {
+        "transitions": [
+          {
+            "control": "cases-resize",
+            "state": "busy=false narrow=true stops=0 submits=0 pending=none",
+            "before": {
+              "testID": "cases-pill-input",
+              "start": 19,
+              "end": 18,
+              "focused": true,
+              "attached": true,
+              "text": "Draft retained through resize"
+            },
+            "after": {
+              "testID": "cases-pill-input",
+              "start": 18,
+              "end": 19,
+              "focused": true,
+              "attached": true,
+              "text": "Draft retained through resize"
+            }
+          },
+          {
+            "control": "cases-busy",
+            "state": "busy=true narrow=true stops=0 submits=0 pending=none",
+            "before": {
+              "testID": "cases-pill-input",
+              "start": 29,
+              "end": 28,
+              "focused": true,
+              "attached": true,
+              "text": "Draft retained through resize"
+            },
+            "after": {
+              "testID": "cases-pill-input",
+              "start": 29,
+              "end": 28,
+              "focused": true,
+              "attached": true,
+              "text": "Draft retained through resize"
+            }
+          }
+        ],
+        "stop": {
+          "before": {
+            "testID": "cases-pill-input",
+            "start": 29,
+            "end": 28,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "after": {
+            "testID": "cases-pill-input",
+            "start": 29,
+            "end": 28,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "state": "busy=false narrow=true stops=1 submits=0 pending=none"
+        },
+        "typed": {
+          "testID": "cases-pill-input",
+          "start": 29,
+          "end": 29,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resizq"
+        }
+      },
+      "cases-agent-pill-input": {
+        "transitions": [
+          {
+            "control": "cases-resize",
+            "state": "busy=false narrow=true stops=1 submits=0 pending=none",
+            "before": {
+              "testID": "cases-agent-pill-input",
+              "start": 19,
+              "end": 18,
+              "focused": true,
+              "attached": true,
+              "text": "Agent draft retained through resize"
+            },
+            "after": {
+              "testID": "cases-agent-pill-input",
+              "start": 18,
+              "end": 19,
+              "focused": true,
+              "attached": true,
+              "text": "Agent draft retained through resize"
+            }
+          },
+          {
+            "control": "cases-busy",
+            "state": "busy=true narrow=true stops=1 submits=0 pending=none",
+            "before": {
+              "testID": "cases-agent-pill-input",
+              "start": 33,
+              "end": 32,
+              "focused": true,
+              "attached": true,
+              "text": "Agent draft retained through resize"
+            },
+            "after": {
+              "testID": "cases-agent-pill-input",
+              "start": 33,
+              "end": 32,
+              "focused": true,
+              "attached": true,
+              "text": "Agent draft retained through resize"
+            }
+          }
+        ],
+        "stop": {
+          "before": {
+            "testID": "cases-agent-pill-input",
+            "start": 33,
+            "end": 32,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "after": {
+            "testID": "cases-agent-pill-input",
+            "start": 33,
+            "end": 32,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "state": "busy=false narrow=true stops=2 submits=0 pending=none"
+        },
+        "typed": {
+          "testID": "cases-agent-pill-input",
+          "start": 33,
+          "end": 33,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resqze"
+        }
+      }
+    },
+    "identityVerifiedInLocalRawReport": true,
+    "limitation": "Selection range only; resize direction defect below remains open. No Alia, phase-aligned optics or video acceptance."
+  },
+  "selectionDirectionNegative": {
+    "cases": {
+      "none": {
+        "state": "busy=false narrow=false stops=0 submits=0 pending=none",
+        "before": [5, 4],
+        "settled": [5, 4],
+        "extended": [5, 3]
+      },
+      "resize": {
+        "state": "busy=false narrow=true stops=0 submits=0 pending=none",
+        "before": [5, 4],
+        "settled": [4, 5],
+        "extended": [4, 4]
+      },
+      "busy": {
+        "state": "busy=true narrow=false stops=0 submits=0 pending=none",
+        "before": [5, 4],
+        "settled": [5, 4],
+        "extended": [5, 3]
+      }
+    },
+    "status": "Confirmed functional defect: resize reverses selection direction; next Shift+Left collapses instead of extending. Direct RN control and cause isolation pending."
   }
 }
