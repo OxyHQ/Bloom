@@ -201,6 +201,7 @@ function PageHeaderComponent({
   const actionHost = useState(createHeaderActionsHost)[0];
   const actionGeometry = useRef({ width: 0, leading: 0 });
   const startRef = useRef<ComponentRef<typeof View>>(null);
+  const [nativeLeadingPresent, setNativeLeadingPresent] = useState(false);
   const common = useCommonMessages();
   const directionProps = useDirectionProps();
   const backLabel = backLabelProp ?? common.back;
@@ -370,6 +371,7 @@ function PageHeaderComponent({
   ]);
   const onLeadingLayout = (e: LayoutChangeEvent) => {
     actionGeometry.current.leading = e.nativeEvent.layout.width;
+    setNativeLeadingPresent(e.nativeEvent.layout.width > 0);
     updateActionBudget();
   };
   const onContainerLayout = (e: LayoutChangeEvent) => {
@@ -909,6 +911,7 @@ function PageHeaderComponent({
                 style={[
                   [
                     styles.start,
+                    !isWeb && { gap: nativeLeadingPresent ? START_GAP : 0 },
                     centered
                       ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: barStart } : {}) }
                       : styles.startFill,
@@ -923,6 +926,7 @@ function PageHeaderComponent({
                 ) : backButton || history || leading != null ? (
                   <View
                     onLayout={onLeadingLayout}
+                    testID={testID ? `${testID}-leading-measure` : undefined}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
