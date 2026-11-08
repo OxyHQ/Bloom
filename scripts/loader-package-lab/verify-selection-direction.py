@@ -38,29 +38,32 @@ def retained(a,b):
     assert sorted([a['start'],a['end']])==sorted([b['start'],b['end']]), ('selected range',a,b)
     assert b['focused'] and b['attached']
 results={}
-for transition in ['none','resize','busy']:
+direct=os.environ.get('SCENE','').startswith('raw-')
+owner='raw-input' if direct else 'cases-pill-input'
+resize_control='raw-resize' if direct else 'cases-resize'
+state_id='raw-state' if direct else 'cases-state'
+for transition in (['none','resize'] if direct else ['none','resize','busy']):
     adb('shell','am','force-stop',pkg)
     adb('shell','am','start','-n',pkg+'/.MainActivity','--es','scene',os.environ.get('SCENE','composers'));time.sleep(3)
-    tree=ui(); target=point(tree,'cases-pill-input')
-    if os.environ.get('TRACE_SELECTION')=='1': adb('shell','am','start','-n',pkg+'/.MainActivity','--es','bloomProbe','traceSelection')
-    if transition!='none': tap(point(tree,'cases-'+transition))
+    tree=ui(); target=point(tree,owner)
+    if transition!='none': tap(point(tree,resize_control if direct else 'cases-'+transition))
     tap(target)
     adb('shell','input','keycombination','KEYCODE_CTRL_LEFT','KEYCODE_MOVE_HOME')
     adb('shell','input','keyevent','KEYCODE_DPAD_RIGHT','KEYCODE_DPAD_RIGHT','KEYCODE_DPAD_RIGHT','KEYCODE_DPAD_RIGHT','KEYCODE_DPAD_RIGHT')
     adb('shell','input','keycombination','KEYCODE_SHIFT_LEFT','KEYCODE_DPAD_LEFT')
-    before=inputs()['cases-pill-input']
+    before=inputs()[owner]
     assert sorted([before['start'],before['end']])==[4,5], before
     time.sleep(4.2)
-    settled=inputs()['cases-pill-input']
+    settled=inputs()[owner]
     adb('shell','input','keycombination','KEYCODE_SHIFT_LEFT','KEYCODE_DPAD_LEFT')
-    extended=inputs()['cases-pill-input']
-    state=next(n for n in ui().iter('node') if n.get('resource-id')=='cases-state').get('text')
-    if transition!='none': assert ('narrow=true' if transition=='resize' else 'busy=true') in state
+    extended=inputs()[owner]
+    state=next(n for n in ui().iter('node') if n.get('resource-id')==state_id).get('text')
+    if transition!='none': assert ('narrow=true' if direct or transition=='resize' else 'busy=true') in state
     shot('direction-'+transition)
     results[transition]={'before':before,'settled':settled,'extended':extended,'state':state}
     (out/'report.json').write_text(json.dumps(results,indent=2))
 baseline=results['none']['extended']
-for name in ['resize','busy']:
+for name in (['resize'] if direct else ['resize','busy']):
     actual=results[name]['extended']
     assert [actual['start'],actual['end']]==[baseline['start'],baseline['end']], (name,baseline,actual)
 adb('shell','am','force-stop',pkg)

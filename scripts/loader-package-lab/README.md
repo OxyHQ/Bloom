@@ -90,8 +90,8 @@ clock and input probes are fixture-only, with no additional public loader API.
 
 `verify-composers.py` uses real pointer hits and keyboard chords to check packaged
 Pill/AgentChatComposer drafts, selected content, Stop and subsequent typing.
-`verify-selection-direction.py` separately compares no transition, resize and busy
-with the same backward selection and next Shift+Arrow. Its current resize failure
-is preserved as a functional negative, not waived by sorting selection endpoints.
-Set `SCENE=raw-input` only on the integration fixture with the direct RN control;
-`TRACE_SELECTION=1` enables its diagnostic native selection-span stack trace.
+`verify-selection-direction.py` compares no transition, resize and busy with the
+same backward selection and next Shift+Arrow. Its Pixel 8a run verifies that the
+selection endpoints and active direction survive a resize. The direct RN controls
+are `SCENE=raw-input` and `SCENE=raw-autosize`; the latter isolates a multiline
+input that changes height as it wraps.

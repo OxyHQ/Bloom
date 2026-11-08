@@ -21,6 +21,7 @@ for (const name of [
   'PackageLab.tsx',
   'LoaderBenchmark.tsx',
   'ComposerCases.tsx',
+  'RawInputControl.tsx',
   'app.config.js',
   'index.js',
   'metro.config.js',

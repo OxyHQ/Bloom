@@ -7,6 +7,7 @@ import { PortalProvider, PortalOutlet } from '@oxy.so/bloom/portal';
 import { SurfaceProvider } from '@oxy.so/bloom/surfaces';
 import { LoaderBenchmark } from './LoaderBenchmark';
 import { ComposerCases } from './ComposerCases';
+import { RawInputControl } from './RawInputControl';
 import build from './build.json';
 
 /** Negative probes run before the scene. Timeout never proves isolation.
@@ -62,7 +63,10 @@ export function PackageLab({
         <BloomProvider mode={mode} colorPreset="oxy" haptics={false}>
           <PortalProvider>
             <SurfaceProvider>
-              {(scene ?? build.scene) === 'composers' ? (
+              {(scene ?? build.scene) === 'raw-input' ||
+              (scene ?? build.scene) === 'raw-autosize' ? (
+                <RawInputControl autoSize={(scene ?? build.scene) === 'raw-autosize'} />
+              ) : (scene ?? build.scene) === 'composers' ? (
                 <ComposerCases
                   onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
                 />

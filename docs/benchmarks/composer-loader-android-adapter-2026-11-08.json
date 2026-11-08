@@ -630,7 +630,7 @@
         "extended": [5, 3]
       }
     },
-    "status": "Confirmed functional defect: resize reverses selection direction; next Shift+Left collapses instead of extending. Direct RN control and cause isolation pending."
+    "status": "Historical pre-fix negative retained: resize reversed selection direction and the next Shift+Left collapsed. The same verified Pixel 8a sequence now passes in selectionDirectionVerified."
   },
   "hardwareReducedMotion": {
     "apkSha256": "0711116003a901de18318bf00ed93493797ef1fdff6693283f1f1a87770ec716",
@@ -653,5 +653,133 @@
     "abi": "x86_64",
     "gpu": "SwiftShader",
     "negativeAttempts": "Initial asynchronous snapshot was not finished; launcher ANR obscured subsequent attempts. The synthetic foreground guard rejected them; original animation setting restored. Valid run followed recovery of this owned AVD launcher only."
+  },
+  "selectionDirectionVerified": {
+    "status": "verified",
+    "date": "2026-11-08",
+    "device": {
+      "model": "Google Pixel 8a",
+      "android": "16",
+      "api": 36,
+      "buildFingerprint": "google/akita/akita:16/BP4A.260205.001/14624666:user/release-keys",
+      "displayPx": [1080, 2400],
+      "density": 420,
+      "fontScale": 1.15
+    },
+    "artifact": {
+      "kind": "release APK, exact local packed Bloom snapshot; not published-package acceptance",
+      "packageVersion": "17.23.0",
+      "branchHead": "a0b2aa47882d2d71be1fa2ea2d98081e0a5a1830",
+      "apkSha256": "ddf488169ea7b871ef789ca5becda4ca7f42a0e61259558257abf2dc7d2e384d",
+      "embeddedBundleSha256": "b92feb55ff86592c490156013e1d215dcc3b47ae26a0b27fdc0aafcc432a8b1a",
+      "embeddedBloomSourceSha256": "bb9cbafcda1d23246b30e03a4d9f433f0aeaeac61d11a96752967da8ec4dd535",
+      "embeddedBloomFiles": 844,
+      "sourceSha256": "c8c407ebc90476ae08b43e5a7aebd5464e2782a19d46216cec94259412010f07",
+      "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f"
+    },
+    "procedure": "Physical touch on resize/busy controls; focus actual packaged input; Ctrl+Home, five Right, Shift+Left; verify native selectionStart/selectionEnd and focus; wait for transition; Shift+Left again.",
+    "cases": {
+      "none": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 17918755,
+          "id": 68,
+          "start": 5,
+          "end": 4,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 17918755,
+          "id": 68,
+          "start": 5,
+          "end": 4,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 17918755,
+          "id": 68,
+          "start": 5,
+          "end": 3,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=false narrow=false stops=0 submits=0 pending=none"
+      },
+      "resize": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 259199468,
+          "id": 68,
+          "start": 5,
+          "end": 4,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 259199468,
+          "id": 68,
+          "start": 5,
+          "end": 4,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 259199468,
+          "id": 68,
+          "start": 5,
+          "end": 3,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=false narrow=true stops=0 submits=0 pending=none"
+      },
+      "busy": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 17918755,
+          "id": 68,
+          "start": 5,
+          "end": 4,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "settled": {
+          "testID": "cases-pill-input",
+          "identity": 17918755,
+          "id": 68,
+          "start": 5,
+          "end": 4,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "extended": {
+          "testID": "cases-pill-input",
+          "identity": 17918755,
+          "id": 68,
+          "start": 5,
+          "end": 3,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=true narrow=false stops=0 submits=0 pending=none"
+      }
+    },
+    "acceptance": "The no-transition, resize and busy cases all retain backward selection [5,4] and extend to [5,3]; input identity, focus, attachment and draft remain unchanged.",
+    "limits": "Synthetic packaged ComposerPill and AgentChatComposer acceptance only. Real Alia workflow, phase-aligned optical comparison, full performance acceptance and iPhone validation remain pending."
   }
 }
