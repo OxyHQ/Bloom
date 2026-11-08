@@ -30,10 +30,6 @@
       "uiautomatorEnabled": false
     }
   },
-  "evidence": [
-    "alia-draft.png",
-    "alia-streaming-probe.png",
-    "alia-stopped-probe.png"
-  ],
+  "evidence": ["alia-draft.png", "alia-streaming-probe.png", "alia-stopped-probe.png"],
   "limits": "The offline fixture exercises AliaComposer but is not the production Alia app or inference service. The stale/disabled accessibility node during Stop must be fixed and rechecked. It does not establish phase-aligned optical parity, the complete lifecycle contract, performance acceptance, or iPhone behavior."
 }
