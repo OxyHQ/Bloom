@@ -11,33 +11,33 @@ function Probe() {
   return null;
 }
 
-describe('the character runtime is reachable from BloomProvider alone', () => {
-  it('names the SDK-hosted runtime by default, and never the host app’s own origin', () => {
-    expect(BLOOM_CHARACTER_RUNTIME_URL).toBe('https://alia.onl/bloom-character/runtime.mjs');
+describe('local SVG capabilities through BloomProvider', () => {
+  it('needs no hosted runtime or raster backend', () => {
+    expect(BLOOM_CHARACTER_RUNTIME_URL).toBe('');
     render(
       <BloomProvider>
         <Probe />
       </BloomProvider>,
     );
-    expect(seen.runtimeUrl).toBe(BLOOM_CHARACTER_RUNTIME_URL);
-    expect(seen.stills).toBeDefined();
+    expect(seen).not.toHaveProperty('runtimeUrl');
+    expect(seen).not.toHaveProperty('stills');
   });
 
-  it('an avatar with no provider at all gets the same default instead of a relative URL', () => {
+  it('an avatar with no provider needs no runtime URL', () => {
     render(<Probe />);
-    expect(seen.runtimeUrl).toBe(BLOOM_CHARACTER_RUNTIME_URL);
+    expect(seen).not.toHaveProperty('runtimeUrl');
   });
 
-  it('characterRuntimeUrl replaces it for an app that self-hosts', () => {
+  it('ignores the deprecated provider URL', () => {
     render(
       <BloomProvider characterRuntimeUrl="https://app.test/bloom-character/runtime.mjs">
         <Probe />
       </BloomProvider>,
     );
-    expect(seen.runtimeUrl).toBe('https://app.test/bloom-character/runtime.mjs');
+    expect(seen).not.toHaveProperty('runtimeUrl');
   });
 
-  it('an AgentAvatarProvider inside still wins for its own subtree', () => {
+  it('a nested provider retains the same local SVG contract', () => {
     render(
       <BloomProvider>
         <AgentAvatarProvider runtimeUrl="https://inner.test/runtime.mjs">
@@ -45,7 +45,7 @@ describe('the character runtime is reachable from BloomProvider alone', () => {
         </AgentAvatarProvider>
       </BloomProvider>,
     );
-    expect(seen.runtimeUrl).toBe('https://inner.test/runtime.mjs');
+    expect(seen).not.toHaveProperty('runtimeUrl');
   });
 
   it('renders no WebView and fetches nothing until a character is asked for', () => {

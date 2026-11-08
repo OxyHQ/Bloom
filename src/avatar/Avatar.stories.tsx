@@ -357,26 +357,6 @@ export const BotCharacter: Story = {
   ),
 };
 
-/** Fifty bots: zero live renderers; each distinct character is drawn once, one at a time. */
-export const FiftyBots: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, maxWidth: 480 }}>
-      {Array.from({ length: 50 }, (_, i) => (
-        <Avatar
-          key={i}
-          size={36}
-          account={{
-            kind: 'bot',
-            name: `Bot ${i}`,
-            character: { preset: 'blue_beret', eyeSpacing: 0.5 + (i % 10) / 10 },
-          }}
-        />
-      ))}
-    </View>
-  ),
-};
-
 /** Resolution order: character, then the account's image, then initials. */
 export const CharacterOrImageOrInitials: Story = {
   parameters: { controls: { disable: true } },

@@ -1,9 +1,10 @@
 import { CHARACTER_COLORS } from './character-colors';
+import { SVG_EYES, SVG_SHAPES } from './svg-catalog';
 
 /**
  * The ids a character is made of: one list per part, in the order the editors show them.
- * `catalog-ids.test.ts` pins every list to the runtime's catalog index, so an id cannot be
- * offered here that the renderer cannot draw, nor drawn there without being offered.
+ * `catalog-ids.test.ts` pins the lists to the 3D asset catalog and the explicit vector registry,
+ * so vector-only parts never masquerade as assets the 3D runtime can load.
  */
 export const AVATAR_SHAPES = [
   'clippo',
@@ -27,6 +28,7 @@ export const AVATAR_SHAPES = [
   'shield',
   'pebble',
   'squircle',
+  ...SVG_SHAPES,
 ] as const;
 
 export const AVATAR_EYES = [
@@ -42,6 +44,7 @@ export const AVATAR_EYES = [
   'todd',
   'clippo',
   'cyclops',
+  ...SVG_EYES,
 ] as const;
 
 export const AVATAR_EYEWEAR = [

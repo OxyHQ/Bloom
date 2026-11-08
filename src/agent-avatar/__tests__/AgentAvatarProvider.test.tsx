@@ -49,23 +49,12 @@ describe('runtime-scoped avatar capabilities', () => {
     expect(context.capabilitiesByKey).toBe(previousMap);
   });
 
-  it('clears capabilities immediately on runtime replacement and rejects late reports from the old module', () => {
-    const reportFromOldModule = context.reportCapabilities!;
-    act(() => reportFromOldModule(capabilities(false)));
-    observations = [];
-    act(() => renderer.update(render('/runtime.mjs?v=two')));
-    expect(observations.every((value) => value.capabilitiesByKey!.size === 0)).toBe(true);
-    act(() => reportFromOldModule(capabilities(false)));
-    expect(context.capabilitiesByKey!.size).toBe(0);
-    act(() => context.reportCapabilities!(capabilities(true, 'dots')));
-    expect(context.capabilitiesByKey!.get('same-saved-recipe')).toEqual(capabilities(true, 'dots'));
-  });
-
-  it('discards the previous catalog when disabling and re-enabling the runtime', () => {
-    act(() => context.reportCapabilities!(capabilities(false)));
-    act(() => renderer.update(render('')));
-    expect(context.capabilitiesByKey!.size).toBe(0);
-    act(() => renderer.update(render('/runtime.mjs?v=one')));
-    expect(context.capabilitiesByKey!.size).toBe(0);
+  it('ignores legacy hosting changes without discarding SVG capabilities', () => {
+    act(() => context.reportCapabilities!(capabilities(true)));
+    const known = context.capabilitiesByKey;
+    act(() => renderer.update(render('https://invalid.example/retired-runtime.mjs')));
+    expect(context.capabilitiesByKey).toBe(known);
+    expect(context).not.toHaveProperty('runtimeUrl');
+    expect(context).not.toHaveProperty('stills');
   });
 });

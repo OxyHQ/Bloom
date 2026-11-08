@@ -75,19 +75,28 @@ export function CustomColorPicker({
       }
     }
   }
+  const pendingHsv = useRef<Hsv | undefined>(undefined);
+  const latest = useRef({ onChange, disabled: membership.disabled });
+  latest.current = { onChange, disabled: membership.disabled };
+  const flush = useCallback(() => {
+    if (frame.current) cancelAnimationFrame(frame.current);
+    frame.current = 0;
+    const next = pendingHsv.current;
+    pendingHsv.current = undefined;
+    if (!next || latest.current.disabled) return;
+    const hex = hsvToHex(next);
+    setHsv(next);
+    setLastEmitted(hex);
+    setHexDraft(hex);
+    latest.current.onChange(hex);
+  }, []);
   const emit = useCallback(
     (next: Hsv) => {
-      if (membership.disabled) return;
-      setHsv(next);
-      cancelAnimationFrame(frame.current);
-      frame.current = requestAnimationFrame(() => {
-        const hex = hsvToHex(next);
-        setLastEmitted(hex);
-        setHexDraft(hex);
-        onChange(hex);
-      });
+      if (latest.current.disabled) return;
+      pendingHsv.current = next;
+      if (!frame.current) frame.current = requestAnimationFrame(flush);
     },
-    [onChange, membership.disabled],
+    [flush],
   );
   useEffect(
     () => () => {
@@ -99,17 +108,18 @@ export function CustomColorPicker({
     .enabled(!membership.disabled)
     .minDistance(0)
     .runOnJS(true)
+    .onFinalize(flush)
     .onBegin((event) => {
       fieldRef.current?.focus();
       emit({
-        ...hsv,
+        ...(pendingHsv.current ?? hsv),
         s: clamp01(event.x / width),
         v: 1 - clamp01(event.y / ((width * 2) / 3)),
       });
     })
     .onUpdate((event) =>
       emit({
-        ...hsv,
+        ...(pendingHsv.current ?? hsv),
         s: clamp01(event.x / width),
         v: 1 - clamp01(event.y / ((width * 2) / 3)),
       }),
@@ -118,22 +128,25 @@ export function CustomColorPicker({
     .enabled(!membership.disabled)
     .minDistance(0)
     .runOnJS(true)
+    .onFinalize(flush)
     .onBegin((event) => {
       railRef.current?.focus();
-      emit({ ...hsv, h: Math.min(clamp01(event.x / width) * 360, 359.9) });
+      emit({ ...(pendingHsv.current ?? hsv), h: Math.min(clamp01(event.x / width) * 360, 359.9) });
     })
-    .onUpdate((event) => emit({ ...hsv, h: Math.min(clamp01(event.x / width) * 360, 359.9) }));
+    .onUpdate((event) =>
+      emit({ ...(pendingHsv.current ?? hsv), h: Math.min(clamp01(event.x / width) * 360, 359.9) }),
+    );
   useTrackEvents(fieldRef, undefined, (key, shift) => {
     const step = shift ? 0.1 : 0.02;
     const moves: Record<string, Partial<Hsv>> = {
-      ArrowLeft: { s: clamp01(hsv.s - step) },
-      ArrowRight: { s: clamp01(hsv.s + step) },
-      ArrowUp: { v: clamp01(hsv.v + step) },
-      ArrowDown: { v: clamp01(hsv.v - step) },
+      ArrowLeft: { s: clamp01((pendingHsv.current ?? hsv).s - step) },
+      ArrowRight: { s: clamp01((pendingHsv.current ?? hsv).s + step) },
+      ArrowUp: { v: clamp01((pendingHsv.current ?? hsv).v + step) },
+      ArrowDown: { v: clamp01((pendingHsv.current ?? hsv).v - step) },
     };
     const move = moves[key];
     if (!move) return false;
-    emit({ ...hsv, ...move });
+    emit({ ...(pendingHsv.current ?? hsv), ...move });
     return true;
   });
   useTrackEvents(railRef, undefined, (key, shift) => {
@@ -145,11 +158,17 @@ export function CustomColorPicker({
           ? step
           : null;
     if (delta === null) return false;
-    emit({ ...hsv, h: Math.min(Math.max(hsv.h + delta, 0), 359.9) });
+    emit({
+      ...(pendingHsv.current ?? hsv),
+      h: Math.min(Math.max((pendingHsv.current ?? hsv).h + delta, 0), 359.9),
+    });
     return true;
   });
   const commitHexDraft = () => {
     if (membership.disabled) return;
+    if (frame.current) cancelAnimationFrame(frame.current);
+    frame.current = 0;
+    pendingHsv.current = undefined;
     const parsed = hexToHsv(hexDraft);
     if (!parsed) {
       setHexDraft(lastEmitted);
@@ -200,8 +219,11 @@ export function CustomColorPicker({
           ]}
           onAccessibilityAction={(event) =>
             emit({
-              ...hsv,
-              v: clamp01(hsv.v + (event.nativeEvent.actionName === 'increment' ? 0.02 : -0.02)),
+              ...(pendingHsv.current ?? hsv),
+              v: clamp01(
+                (pendingHsv.current ?? hsv).v +
+                  (event.nativeEvent.actionName === 'increment' ? 0.02 : -0.02),
+              ),
             })
           }
         >
@@ -264,9 +286,13 @@ export function CustomColorPicker({
           ]}
           onAccessibilityAction={(event) =>
             emit({
-              ...hsv,
+              ...(pendingHsv.current ?? hsv),
               h: Math.min(
-                Math.max(hsv.h + (event.nativeEvent.actionName === 'increment' ? 3 : -3), 0),
+                Math.max(
+                  (pendingHsv.current ?? hsv).h +
+                    (event.nativeEvent.actionName === 'increment' ? 3 : -3),
+                  0,
+                ),
                 359.9,
               ),
             })

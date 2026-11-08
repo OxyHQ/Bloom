@@ -19,7 +19,9 @@ const config: StorybookConfig = {
   // `templates/` holds full-screen templates as stories only: composed
   // from Bloom's components, never published (outside `src`, not in `files`).
   stories: [
-    './AvatarEngineNext.stories.tsx',
+    ...(process.env.BLOOM_AVATAR_DIAGNOSTICS === '1'
+      ? ['../scripts/avatar-fixtures/**/*.stories.@(ts|tsx)']
+      : []),
     '../src/**/*.stories.@(ts|tsx|mdx)',
     '../templates/**/*.stories.@(ts|tsx)',
     '../packages/*/src/**/*.stories.@(ts|tsx)',

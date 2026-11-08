@@ -1,0 +1,34 @@
+src/agent-avatar/vector-contour.ts(47,30): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-contour.ts(47,47): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-contour.ts(47,66): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-contour.ts(47,83): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-contour.ts(48,21): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-contour.ts(48,38): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-contour.ts(48,57): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-contour.ts(48,74): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-visibility.ts(81,22): error TS18048: 'y' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(81,26): error TS18048: 'y1' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(81,30): error TS18048: 'y' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(82,26): error TS18048: 'x' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(82,30): error TS18048: 'x1' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(82,34): error TS18048: 'x' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(83,23): error TS18048: 'y' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(83,34): error TS18048: 'x' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(95,21): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/agent-avatar/vector-visibility.ts(95,24): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/agent-avatar/vector-visibility.ts(95,29): error TS18048: 'x' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(95,36): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/agent-avatar/vector-visibility.ts(95,41): error TS18048: 'x' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(95,48): error TS18048: 'y' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(95,57): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/agent-avatar/vector-visibility.ts(95,60): error TS18048: 'y' is possibly 'undefined'.
+src/agent-avatar/vector-visibility.ts(108,32): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/agent-avatar/vector-visibility.ts(108,48): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/agent-avatar/vector-visibility.ts(108,66): error TS2538: Type 'undefined' cannot be used as an index type.
+src/agent-avatar/vector-visibility.ts(108,85): error TS2538: Type 'undefined' cannot be used as an index type.

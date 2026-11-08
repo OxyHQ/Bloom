@@ -9,10 +9,6 @@ import * as characters from '../character';
 const BERET: characters.AvatarCharacter = { preset: 'blue_beret' };
 
 // These tests measure React commits and geometry generation, not native engine performance.
-jest.mock('../character-webview', () => ({
-  characterWebView: () => require('react-native').View,
-}));
-
 describe('avatar React rendering isolation', () => {
   let renderer: ReactTestRenderer;
   afterEach(() => {

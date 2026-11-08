@@ -15,7 +15,7 @@ export interface AvatarAccount {
   kind?: string;
   /** The account's image: a URL or a resolver-handled file id, exactly as `source` takes it. */
   avatar?: string | null;
-  /** The stored 3D character of a bot account. Remote and federated bots carry none. */
+  /** The stored character of a bot account. Remote and federated bots carry none. */
   character?: AvatarCharacter | null;
   username?: string | null;
   /** A display name, or Oxy's `{ first, last, full }`. */
@@ -23,8 +23,8 @@ export interface AvatarAccount {
 }
 
 /**
- * How much of the character moves. `'auto'` (the default) is a still picture until the avatar is
- * `AVATAR_LIVE_SIZE` or larger (a profile or header) or its `activity` is `'working'`.
+ * Visible characters animate at every size by default. `'never'` requests a static portrait;
+ * reduced motion always wins. Offscreen and background characters pause automatically.
  */
 export type AvatarMotion = 'auto' | 'always' | 'never';
 
@@ -120,12 +120,7 @@ export interface AvatarProps {
    * the image path even for a bot.
    */
   character?: AvatarCharacter | null;
-  /**
-   * A picture of the character made ahead of time — for an app's own, fixed character (a bundled
-   * asset or a `data:` URI). Wherever the character is still this is drawn instead of a still
-   * rendered through the runtime, so a still avatar then loads no runtime at all; a live
-   * character shows it until its first frame. Ignored when no character is drawn.
-   */
+  /** @deprecated Raster character portraits are ignored; SVG renders the saved recipe. */
   characterStill?: ImageSource;
   /**
    * Whether a character moves (see {@link AvatarMotion}). Stills are one cached image per

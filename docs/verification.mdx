@@ -63,3 +63,12 @@ For performance comparisons, use the same compiler scope on both sides, or
 restore the mirror and run the final gate against the published package. Record
 which artifact was measured; never present a source-mirror improvement as a
 published-package result or adjust timing/budget gates to hide the difference.
+
+### Avatar browser regression fixtures
+
+Storybook normally exposes the definitive avatar Gallery, Playground and existing
+Agent Creator. For browser scripts that target internal fidelity, motion-review,
+shape-proportion or editor regression fixtures, start Storybook with
+`BLOOM_AVATAR_DIAGNOSTICS=1 bun run storybook`. These fixtures live in
+`scripts/avatar-fixtures` and retain their test URLs; they are absent from the
+normal sidebar. Restart without that flag when returning to product review.

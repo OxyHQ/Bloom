@@ -13,9 +13,9 @@ export function CharacterRuntimeFixture({
     ContextType<typeof CharacterCapabilitiesContext>;
   children: ReactNode;
 }) {
-  const { runtimeUrl, reportCapabilities, ...catalog } = value;
+  const { reportCapabilities, ...catalog } = value;
   return (
-    <CharacterRuntimeContext.Provider value={{ runtimeUrl, reportCapabilities }}>
+    <CharacterRuntimeContext.Provider value={{ reportCapabilities }}>
       <CharacterCapabilitiesContext.Provider value={catalog}>
         {children}
       </CharacterCapabilitiesContext.Provider>

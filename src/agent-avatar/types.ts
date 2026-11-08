@@ -4,6 +4,8 @@ import type { BloomThemeStorage } from '../theme/persistence';
 import type { AvatarCharacter } from './character';
 
 export type AgentAvatarProps = {
+  /** @deprecated All characters use SVG. The legacy selector is accepted but has no effect. */
+  renderer?: 'svg' | 'webgl';
   /** What the avatar is. `{ preset: 'blue_beret' }` is a complete one; see `AvatarCharacter`. */
   character: AvatarCharacter;
   size?: number;
@@ -14,13 +16,17 @@ export type AgentAvatarProps = {
   interactive?: boolean;
   /** Uses a cached still portrait for optional character previews, avoiding a live renderer per thumbnail. */
   portrait?: boolean;
-  /** Replays the supported 3D reaction (signature or migrated silhouette wave) when the key changes. */
+  /** Replays the supported reaction (signature or migrated silhouette wave) when the key changes. */
   reactionKey?: number;
+  /** Smoothly returns the SVG renderer to idle from its currently displayed pose. */
+  idleKey?: number;
   entranceKey?: number;
   workingKey?: number;
   workingCycles?: number;
   /** The first picture of the character has been painted. Fires once per mounted renderer. */
   onReady?: () => void;
+  /** Reports selected geometry preparation; paint-only changes do not reload. */
+  onLoadingChange?: (loading: boolean) => void;
   className?: string;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
@@ -29,15 +35,9 @@ export type AgentAvatarProps = {
 export type AvatarProps = AgentAvatarProps;
 
 export type AgentAvatarProviderProps = {
-  /**
-   * The runtime module's absolute URL. Defaults to `BLOOM_CHARACTER_RUNTIME_URL` (the SDK's own
-   * hosted copy); an app that self-hosts `assets/character-runtime/` passes its own.
-   */
+  /** @deprecated No hosted runtime is loaded; accepted for source compatibility. */
   runtimeUrl?: string;
-  /**
-   * Where drawn stills persist across launches: any `getItem`/`setItem` adapter (the one
-   * `BloomThemeProvider` takes). Without it stills live in memory for the session.
-   */
+  /** @deprecated SVG portrait frames are cached in memory; raster storage is no longer used. */
   stillStorage?: BloomThemeStorage;
   children: ReactNode;
 };
