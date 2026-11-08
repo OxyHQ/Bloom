@@ -119,3 +119,101 @@ it('resolves subset aliases for the named audit subjects without treating vocabu
     expect(part?.props['web:size']?.literals).toEqual(expected);
   }
 });
+
+it('follows runtime static parts and object aliases with cycles and external provenance', () => {
+  mkdirSync(join(REPO_ROOT, '.local'), { recursive: true });
+  const root = mkdtempSync(join(REPO_ROOT, '.local/public-parts-statics-'));
+  mkdirSync(join(root, 'src'));
+  mkdirSync(join(root, 'node_modules/external-parts'), { recursive: true });
+  const write = (path: string, text: string) => writeFileSync(join(root, path), text);
+  try {
+    write(
+      'package.json',
+      JSON.stringify({
+        exports: {
+          '.': {
+            'react-native': { default: './src/index.tsx' },
+            browser: { default: './src/index.tsx' },
+          },
+        },
+      }),
+    );
+    write(
+      'node_modules/external-parts/index.d.ts',
+      `import type {ReactElement} from 'react';
+      export declare function ExternalMenu(props: {size?:'md'}): ReactElement | null;
+      export declare const Link: ((props: {href:string}) => ReactElement | null) & {
+        Menu: typeof ExternalMenu; resolveHref: (href:string) => string;
+      };`,
+    );
+    write(
+      'src/index.tsx',
+      `import {memo} from 'react';
+      export {Link} from 'external-parts';
+      export const Leaf = memo((_props:{size?:'sm'|'lg'}) => null);
+      export const Compound = Object.assign((_props:{size?:'md'}) => null, {
+        Item: Leaf, Group: {Nested: Leaf}, resolveHref: () => '/route',
+      });
+      export const First = Object.assign(() => null, {Item: (_props:{size?:'sm'}) => null});
+      export const Second = Object.assign(() => null, {Item: (_props:{size?:'lg'}) => null});
+      type Recursive = {Part: typeof Leaf; Self: Recursive};
+      export const Parts = {Part: Leaf} as Recursive; Parts.Self = Parts;
+      export function Merged(_props:{size?:'sm'}) { return null; }
+      export namespace Merged { export const Trigger = Leaf; }
+    `,
+    );
+    const census = derivePublicParts(root);
+    expect(census.unresolved).toEqual([]);
+    const leaf = census.parts.find((part) => part.id.endsWith('#Leaf'))!;
+    expect(leaf.routes).toEqual(
+      expect.arrayContaining([
+        'native:.#Compound.Item',
+        'native:.#Compound.Group.Nested',
+        'native:.#Parts.Part',
+        'web:.#Compound.Item',
+        'web:.#Compound.Group.Nested',
+        'web:.#Parts.Part',
+      ]),
+    );
+    expect(
+      census.parts.find((part) => part.id.endsWith('#Compound'))?.props['native:size']?.literals,
+    ).toEqual(['md']);
+    expect(census.parts.find((part) => part.id.endsWith('#Merged'))?.routes).toContain(
+      'native:.#Merged',
+    );
+    expect(census.parts.some((part) => part.routes.includes('native:.#Merged.Trigger'))).toBe(true);
+    const first = census.parts.find((part) => part.routes.includes('native:.#First.Item'))!;
+    const second = census.parts.find((part) => part.routes.includes('native:.#Second.Item'))!;
+    expect(first.id).not.toBe(second.id);
+    expect(first.props['native:size']?.literals).toEqual(['sm']);
+    expect(second.props['native:size']?.literals).toEqual(['lg']);
+    const menu = census.parts.find((part) => part.routes.includes('native:.#Link.Menu'))!;
+    expect(menu.id).toBe('node_modules/external-parts/index.d.ts#ExternalMenu');
+    expect(menu.declarations).toEqual(['node_modules/external-parts/index.d.ts']);
+    expect(menu.props['native:size']?.literals).toEqual(['md']);
+    const routes = census.parts.flatMap((part) => part.routes);
+    expect(routes.some((route) => route.endsWith('.resolveHref'))).toBe(false);
+    expect(
+      routes.some((route) => /\.(?:type|render|prototype|\$\$typeof)(?:\.|$)/.test(route)),
+    ).toBe(false);
+    expect(routes.some((route) => route.includes('Self.Self'))).toBe(false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}, 120_000);
+
+it('includes the six public Expo Link static parts without claiming their implementation', () => {
+  for (const name of ['Menu', 'Trigger', 'Preview', 'MenuAction', 'AppleZoom', 'AppleZoomTarget']) {
+    for (const platform of ['native', 'web']) {
+      const route = `${platform}:./panel-routing/expo-router#Link.${name}`;
+      const part = census.parts.find((part) => part.routes.includes(route));
+      expect(part).toBeDefined();
+      expect(part?.declarations.every((path) => path.startsWith('node_modules/'))).toBe(true);
+    }
+  }
+  expect(
+    census.parts
+      .flatMap((part) => part.routes)
+      .some((route) => route.endsWith('#Link.resolveHref')),
+  ).toBe(false);
+});
