@@ -937,6 +937,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `ステップ ${n}`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: '折りたたみ',
+  half: '半分開く',
+  full: '展開済み',
+  expand: '展開',
+  collapse: '折りたたむ',
+  hint: 'ドラッグするか矢印キーでパネルのサイズを変更します',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: '地図の操作',
   locate: '現在地を表示',
@@ -3024,6 +3033,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

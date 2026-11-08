@@ -213,6 +213,7 @@ export type {
 } from './surfaces/index.web';
 export * from './appearance';
 export * from './screen/index.web';
+export * from './canvas/index.web';
 export * from './video-playback';
 export * from './preferences';
 export * from './bottom-bar/index.web';

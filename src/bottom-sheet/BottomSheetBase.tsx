@@ -1,3 +1,4 @@
+import { sheetPanIntent } from './drag-geometry';
 import { sheetFooterOffset } from './footer-position';
 import { pointerEventsStyles } from '../styles/pointer-events';
 import { useSurfaceTransition } from '../motion/use-surface-transition';
@@ -408,15 +409,9 @@ export const BottomSheetBase = forwardRef(
             const t = e.changedTouches[0];
             if (!t) return;
             const dy = t.absoluteY - touchStartY.value;
-            const atTop = scrollOffsetY.value <= 4;
-            // Activate only when (at scroll top) AND (finger has moved
-            // downward by > 8dp). Any other motion: fail so the
-            // ScrollView claims the gesture.
-            if (atTop && dy > 8) {
-              state.activate();
-            } else if (dy < -4 || !atTop) {
-              state.fail();
-            }
+            const intent = sheetPanIntent(dy, scrollOffsetY.value, 0, 'dismiss');
+            if (intent === 'activate') state.activate();
+            else if (intent === 'fail') state.fail();
           })
           .onUpdate((event) => {
             'worklet';

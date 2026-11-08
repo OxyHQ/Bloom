@@ -940,6 +940,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   step: (n) => `ধাপ ${n}`,
 };
 
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'সংকুচিত',
+  half: 'অর্ধেক খোলা',
+  full: 'প্রসারিত',
+  expand: 'প্রসারিত করুন',
+  collapse: 'সংকুচিত করুন',
+  hint: 'প্যানেলের আকার পরিবর্তন করতে টানুন বা তীর কী ব্যবহার করুন',
+};
+
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'মানচিত্রের নিয়ন্ত্রণ',
   locate: 'আমার অবস্থান দেখান',
@@ -2991,6 +3000,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,
