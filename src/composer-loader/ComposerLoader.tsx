@@ -120,7 +120,7 @@ function ComposerLoaderComponent({
   const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
   const [box, setBox] = useState({ w: 0, h: 0 });
   const measured = box.w > 0 && box.h > 0;
-  const { moving, reducedMotion } = useLoaderMotion(active, measured && !paused);
+  const { moving, animate } = useLoaderMotion(active, measured && !paused);
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -160,12 +160,12 @@ function ComposerLoaderComponent({
 
   const fade = useSharedValue(active ? 1 : 0);
   useEffect(() => {
-    fade.value = reducedMotion
+    fade.value = !animate
       ? active
         ? 1
         : 0
       : withTiming(active ? 1 : 0, { duration: COMPOSER_LOADER_FADE_MS, easing: EASE });
-  }, [active, reducedMotion, fade]);
+  }, [active, animate, fade]);
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }), [fade]);
 
   const [c0, c1, c2, c3] = colors ?? resolveComposerLoaderColors(theme);

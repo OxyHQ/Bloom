@@ -3,6 +3,7 @@ import { Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 let mockDashProps: () => { strokeDashoffset: number };
+const mockTiming = jest.fn((value: number) => value);
 const mockClock = { setActive: jest.fn(), isActive: false, callbackId: 0 };
 let mockFrame: (frame: {
   timeSincePreviousFrame: number | null;
@@ -11,6 +12,7 @@ let mockFrame: (frame: {
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('../../__mocks__/react-native-reanimated'),
   __esModule: true,
+  withTiming: (...args: Parameters<typeof mockTiming>) => mockTiming(...args),
   useAnimatedProps: (mapper: () => Record<string, unknown>) => {
     const props = mapper();
     if ('strokeDashoffset' in props) mockDashProps = mapper as typeof mockDashProps;
@@ -44,6 +46,7 @@ import { ComposerLoader as WebLoader } from '../composer-loader/ComposerLoader.w
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useScreenVisible } from '../screen/use-screen-visible';
 import { COMPOSER_LOADER_FADE_MS } from '../composer-loader/shared';
+import { resolvedStyle } from './support/rendered-style';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 const HIDDEN = { includeHiddenElements: true } as const;
@@ -54,6 +57,7 @@ const wrap = (element: React.ReactElement) => (
 beforeEach(() => {
   jest.useFakeTimers();
   mockClock.setActive.mockClear();
+  mockTiming.mockClear();
   jest.mocked(usePrefersReducedMotion).mockReturnValue(false);
   jest.mocked(useScreenVisible).mockReturnValue(true);
 });
@@ -118,6 +122,29 @@ for (const [platform, Loader, rectName] of [
       t.rerender(t.ui(false));
       act(() => jest.advanceTimersByTime(COMPOSER_LOADER_FADE_MS));
       expect(t.moving()).toBe(false);
+    });
+
+    it('cancels the opacity transition when its screen hides during fade-out', () => {
+      const t = setup();
+      t.measure();
+      t.rerender(t.ui(false));
+      expect(t.moving()).toBe(true);
+      act(() => jest.advanceTimersByTime(100));
+      mockTiming.mockClear();
+      jest.mocked(useScreenVisible).mockReturnValue(false);
+      t.rerender(t.ui(false));
+      expect(t.moving()).toBe(false);
+      if (platform === 'native') {
+        expect(mockTiming).not.toHaveBeenCalled();
+      } else {
+        expect(resolvedStyle(t.getByTestId('loader-light', HIDDEN).props.style)).toMatchObject({
+          transitionDuration: '0ms',
+          transitionProperty: 'none',
+        });
+      }
+      t.unmount();
+      act(() => jest.advanceTimersByTime(COMPOSER_LOADER_FADE_MS));
+      if (platform === 'native') expect(mockClock.setActive).toHaveBeenLastCalledWith(false);
     });
 
     it('suspends immediately when paused, the screen is hidden, or motion is reduced', () => {

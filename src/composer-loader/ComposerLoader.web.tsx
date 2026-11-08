@@ -78,7 +78,7 @@ function ComposerLoaderComponent({
   const [box, setBox] = useState({ w: 0, h: 0 });
   const measured = box.w > 0 && box.h > 0;
   const { inView, targetProps } = useInView();
-  const { moving, reducedMotion } = useLoaderMotion(active, measured && inView && !paused);
+  const { moving, animate } = useLoaderMotion(active, measured && inView && !paused);
 
   useEffect(() => {
     adoptStyleSheet(STYLE_ID, COMPOSER_LOADER_WEB_CSS);
@@ -121,8 +121,8 @@ function ComposerLoaderComponent({
     overflow: 'hidden',
     borderRadius: cornerRadius,
     opacity: active ? 1 : 0,
-    transitionProperty: 'opacity',
-    transitionDuration: `${reducedMotion ? 0 : COMPOSER_LOADER_FADE_MS}ms`,
+    transitionProperty: animate ? 'opacity' : 'none',
+    transitionDuration: `${animate ? COMPOSER_LOADER_FADE_MS : 0}ms`,
     transitionTimingFunction: 'ease',
     mixBlendMode: blend,
   };

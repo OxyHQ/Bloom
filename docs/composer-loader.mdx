@@ -37,7 +37,8 @@ Three dash strokes on the rounded-rect outline, normalised to a path length of 1
 
 Under reduced motion the band rests at its current phase (web: paused CSS animation;
 native: stopped frame clock) and visibility changes are immediate. Otherwise the
-450 ms fade completes before an inactive loader stops. A rapid reactivation
+450 ms fade completes before an inactive loader stops. Hiding/pausing its owner
+cancels the opacity transition immediately, including a fade already in progress. A rapid reactivation
 cancels the pending stop.
 
 Both renderers suspend when their owning `Screen` becomes inactive or the app

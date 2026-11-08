@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 const require = createRequire(import.meta.url);
 const puppeteer = require(process.env.PUPPETEER_PATH || 'puppeteer-core');
 const url = process.env.STORYBOOK_URL || 'http://localhost:6006';
@@ -27,6 +28,20 @@ const browser = await puppeteer.launch({
 });
 const report = {
   commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  workingTree: execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
+  diffSha256: createHash('sha256')
+    .update(execFileSync('git', ['diff', 'HEAD']))
+    .digest('hex'),
+  packages: Object.fromEntries(
+    [
+      'react',
+      'react-native',
+      'react-native-web',
+      'react-native-svg',
+      'react-native-reanimated',
+      'expo-blur',
+    ].map((name) => [name, require(`${name}/package.json`).version]),
+  ),
   story: story.id,
   browser: await browser.version(),
   cases: [],
@@ -109,6 +124,22 @@ try {
   await click('loader-retain');
   await waitState('running');
   report.cases.push({ name: 'retained Screen', paused: retained, resumed: await sample() });
+  await click('loader-toggle');
+  await delay(100);
+  await click('loader-retain');
+  await waitState('paused');
+  const interruptedFade = await page.$eval('[data-testid="lifecycle-isolated-light"]', (node) => ({
+    duration: getComputedStyle(node).transitionDuration,
+    opacity: getComputedStyle(node).opacity,
+    animations: node.getAnimations().length,
+  }));
+  assert.equal(interruptedFade.duration, '0s');
+  assert.equal(interruptedFade.opacity, '0');
+  assert.equal(interruptedFade.animations, 0);
+  report.cases.push({ name: 'hide during fade cancels opacity work', interruptedFade });
+  await click('loader-retain');
+  await click('loader-toggle');
+  await waitState('running');
   await page.click('[data-testid="lifecycle-agent"] [aria-label="Stop generating"]');
   await waitState('paused');
   report.cases.push({ name: 'AgentChat Stop uses real handler', stopped: await sample() });

@@ -18,5 +18,5 @@ export function useLoaderMotion(active: boolean, visible: boolean) {
     const stop = setTimeout(() => setFinishing(false), COMPOSER_LOADER_FADE_MS);
     return () => clearTimeout(stop);
   }, [active, enabled, finishing]);
-  return { moving: enabled && (active || finishing), reducedMotion };
+  return { moving: enabled && (active || finishing), animate: enabled };
 }
