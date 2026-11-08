@@ -1,0 +1,4 @@
+@import "@oxy.so/app-preset/css/base.css" source(none);
+@source "../../src/**/*.{ts,tsx}";
+@source "../../templates/material/**/*.{ts,tsx}";
+@source "./node_modules/@oxy.so/bloom/src/**/*.{ts,tsx}";
