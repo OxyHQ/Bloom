@@ -1,0 +1,129 @@
+{
+  "scope": "Published Alia SDK composer mounted in an offline packaged Android consumer, not the complete Alia application",
+  "apkSha256": "c1c490ad6a4efca94e5743bfb0475f7a290ff2a6b3b2903a1f1f1e27a3039fe2",
+  "buildCommit": "ab6769a90c1678f5173c4f93778555b1ccabbeeb",
+  "alia": {
+    "installed": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/scripts/loader-package-lab/node_modules/@alia.onl/sdk",
+    "version": "22.10.1",
+    "composerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+    "sourceMatchesAliaCommit": "cc76a858ff4359254cf51e3f649ea021bfc75ce7"
+  },
+  "lockSha256": "f3b08499a6de081d3e6d31b2f41dcdf575e792d0bb04fd9928e6d6c27ce7a343",
+  "embeddedBloomFiles": 1273,
+  "embeddedBloomSourceSha256": "4878a01cee9667a265a43221ed9377b20b63942eed17c14555d2dc5d067ec9b4",
+  "embeddedAliaFiles": 188,
+  "embeddedAliaSourceSha256": "b846f9f708890513c5c3199afefc2ebd201246688b4daffe813c3322f2204134",
+  "device": {
+    "model": "Pixel 8a",
+    "os": "Android 16 API 36",
+    "size": "1080x2400",
+    "density": 420,
+    "fontScale": 1.15,
+    "settingsChanged": false
+  },
+  "report": {
+    "scope": "Actual published Alia SDK composer in offline host, not full app",
+    "geometry": "1080x2400, density420, font1.15",
+    "uiDumpLimit": "Dictate accessibility events prevent UIAutomator idle; screenshot-verified coordinates used",
+    "transitions": [
+      {
+        "control": "resize",
+        "before": {
+          "identity": 85740736,
+          "id": 68,
+          "start": 14,
+          "end": 13,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "after": {
+          "identity": 85740736,
+          "id": 68,
+          "start": 13,
+          "end": 14,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "directionPreserved": false
+      },
+      {
+        "control": "busy",
+        "before": {
+          "identity": 85740736,
+          "id": 68,
+          "start": 13,
+          "end": 14,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "after": {
+          "identity": 85740736,
+          "id": 68,
+          "start": 13,
+          "end": 14,
+          "focused": true,
+          "attached": true,
+          "text": "Alia draft retained through resize"
+        },
+        "directionPreserved": true
+      }
+    ],
+    "stop": {
+      "before": {
+        "identity": 85740736,
+        "id": 68,
+        "start": 13,
+        "end": 14,
+        "focused": true,
+        "attached": true,
+        "text": "Alia draft retained through resize"
+      },
+      "after": {
+        "identity": 85740736,
+        "id": 68,
+        "start": 13,
+        "end": 14,
+        "focused": true,
+        "attached": true,
+        "text": "Alia draft retained through resize"
+      },
+      "typed": {
+        "identity": 85740736,
+        "id": 68,
+        "start": 14,
+        "end": 14,
+        "focused": true,
+        "attached": true,
+        "text": "Alia draft reqained through resize"
+      }
+    },
+    "status": "input identity/focus/text/range and replacement passed; visual state review required"
+  },
+  "visualReview": {
+    "stopped": "busy=false stops=1; keyboard remains visible",
+    "attachment": "Offline note document tile appears; no picker or external service invoked"
+  },
+  "accessibilityDump": {
+    "result": "could not get idle state",
+    "observation": "TYPE_WINDOW_CONTENT_CHANGED for Dictate about every100ms",
+    "candidate": "MicBar runs withRepeat while its SwapLayer is hidden; not yet verified by modified binary"
+  },
+  "limits": [
+    "Resize reverses backward selection, also reproduced in direct RN control. Sorted range retention does not pass directional selection.",
+    "No full Alia app, remote turn, dictation, published Bloom adoption or iPhone acceptance.",
+    "No tall composer performance or phase-aligned optical acceptance inferred from this interaction."
+  ],
+  "artifacts": {
+    "repro/resize.png": "ae3d37b8c9e61138f1a449c6870d1e84367739f608f0b650e0fb5650e9f900ad",
+    "repro/stopped.png": "99e51adf42a800c894ab9d5e4b4c9a792590c304ab07a1989c324df5fcfd7064",
+    "repro/typed.png": "3097273fe73cb59be88b560f805a97749ced92e67cd90f176dafbb76e0be9e28",
+    "repro/busy.png": "d43245ea6b468ffaa608f36322643c5ff4ad45775c11af51585e0d4d5fcc5b5a",
+    "repro/initial.png": "e197f60827c81827eb37b3f09961baf727113cb241f43bce575f165f70f0f6ea",
+    "repro/report.json": "670a9309e0a67254c7fb5a47d211fadd2e9671f89f4a8e8e1ab9f606b2facdfb",
+    "repro/attachment.png": "34c3b4093938eaa26435d5ed32fbb6cdf0d7496c5c70ad41117b8f0202376b71"
+  },
+  "localArchive": "/home/nate/Oxy/Bloom/.worktrees/issue-663-composer-integration/.local/alia-native"
+}

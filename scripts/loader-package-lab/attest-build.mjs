@@ -7,7 +7,7 @@ const hash = (value) => createHash('sha256').update(value).digest('hex');
 const apk = resolve(process.env.APK || 'android/app/build/outputs/apk/release/app-release.apk');
 const build = JSON.parse(readFileSync('build.json', 'utf8'));
 const bundle = execFileSync('unzip', ['-p', apk, 'assets/index.android.bundle'], {
-  maxBuffer: 64 * 1024 * 1024,
+  maxBuffer: 256 * 1024 * 1024,
 });
 for (const key of ['commit', 'nativeSha256', 'adapterSha256', 'lockSha256'])
   assert(bundle.includes(build[key]), `Stale metadata: ${key}`);
