@@ -9,7 +9,7 @@ order: 3
 
 # Adoption matrix
 
-The contracts in [Composition](/docs/composition) are worth something only where they are read. This page is that measurement, and it is derived from the source on every change rather than written down once — a matrix maintained by hand is wrong the first time a family changes without its row being updated, and a stale row reads exactly like a fresh one.
+This family-level matrix records source signals for the contracts in [Composition](/docs/composition). It is derived on every change. A family import is not evidence that every exported part consumes a contract; the [public React part census](/docs/public-parts) resolves size vocabularies and classifies each exported identity separately, with runtime coverage and pending work explicit.
 
 ## What is measured
 
@@ -22,7 +22,7 @@ A contract that a family does not read is not automatically a failure, and this 
 
 | verdict | means |
 | --- | --- |
-| `reads` | the family imports the contract and applies it itself |
+| `reads` | a matching contract source signal exists in the family; not proof for every exported part |
 | `delegated` | it hands the decision to a child that reads it |
 | `n/a¹` | the derivation matched something that is not the contract’s subject — the reason is below |
 | `**adaptation**` | a real remaining gap, named rather than hidden |
@@ -38,7 +38,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
 | Field membership | 53 | 31 | 0 | 22 | 0 |
-| Control presentation | 56 | 54 | 2 | 0 | 0 |
+| Control presentation | 58 | 56 | 2 | 0 | 0 |
 | Trigger composition | 11 | 8 | 0 | 3 | 0 |
 | Controlled / uncontrolled state | 61 | 58 | 2 | 1 | 0 |
 
@@ -140,7 +140,7 @@ None.
 | `category-bar` | `@oxy.so/bloom/category-bar` + barrel | universal | `category-bar.mdx` | yes | 4 |  |  |  |  |
 | `chart-cards` | `@oxy.so/bloom/chart-cards` + barrel | universal | `chart-cards.mdx` | yes | 38 |  |  |  | reads |
 | `chat-composer` | `@oxy.so/bloom/chat-composer` + barrel | web fork | `chat-composer.mdx` | yes | 10 | n/a¹ | reads |  | reads |
-| `chat-indicators` | `@oxy.so/bloom/chat-indicators` + barrel | universal | `chat-indicators.mdx` | yes | 3 |  |  |  |  |
+| `chat-indicators` | `@oxy.so/bloom/chat-indicators` + barrel | universal | `chat-indicators.mdx` | yes | 3 |  | reads |  |  |
 | `chat-list` | `@oxy.so/bloom/chat-list` + barrel | universal | `chat-list.mdx` | yes | 5 | n/a¹ |  |  | reads |
 | `chat-people` | `@oxy.so/bloom/chat-people` + barrel | universal | `chat-people.mdx` | yes | 4 | n/a¹ | reads |  |  |
 | `chat-screen` | `@oxy.so/bloom/chat-screen` + barrel | web fork | `chat-screen.mdx` | yes | 4 |  | reads |  | reads |
@@ -264,14 +264,14 @@ None.
 | `place-reviews` | `@oxy.so/bloom/place-reviews` + barrel | universal | `place-reviews.mdx` | yes | 2 |  |  |  | reads |
 | `platform-surface` | `@oxy.so/bloom/platform-surface` + barrel | universal | `platform-surface.mdx` | yes | 37 |  |  |  |  |
 | `popover` | `@oxy.so/bloom/popover` + barrel | web fork | `popover.mdx` | yes | 17 |  |  | reads | reads |
-| `portal` | `@oxy.so/bloom/portal` + barrel | web fork | `portal.mdx` | yes | 51 |  |  |  |  |
+| `portal` | `@oxy.so/bloom/portal` + barrel | web fork | `portal.mdx` | yes | 53 |  |  |  |  |
 | `preferences` | `@oxy.so/bloom/preferences` + barrel | universal | `preferences.mdx` | yes | 2 |  |  |  |  |
 | `pressable-scale` | `@oxy.so/bloom/pressable-scale` + barrel | universal | `pressable-scale.mdx` | yes | 1 |  |  |  |  |
 | `price-breakdown` | `@oxy.so/bloom/price-breakdown` + barrel | universal | `price-breakdown.mdx` | yes | 3 |  |  |  | reads |
 | `progressive-blur` | `@oxy.so/bloom/progressive-blur` + barrel | web fork | `progressive-blur.mdx` | yes | 2 |  |  |  |  |
 | `project-board` | `@oxy.so/bloom/project-board` + barrel | web fork | `project-board.mdx` | yes | 8 | n/a¹ |  |  |  |
 | `proof-of-delivery` | `@oxy.so/bloom/proof-of-delivery` + barrel | universal | `proof-of-delivery.mdx` | yes | 1 |  |  |  | reads |
-| `property-insights` | `@oxy.so/bloom/property-insights` + barrel | universal | `property-insights.mdx` | yes | 5 |  |  |  | reads |
+| `property-insights` | `@oxy.so/bloom/property-insights` + barrel | universal | `property-insights.mdx` | yes | 5 |  | reads |  | reads |
 | `provider` | `@oxy.so/bloom/provider` | universal | `provider.mdx` | yes | 21 |  |  |  |  |
 | `questionnaire` | `@oxy.so/bloom/questionnaire` + barrel | universal | `questionnaire.mdx` | yes | 3 | reads |  |  | reads |
 | `queue-panel` | `@oxy.so/bloom/queue-panel` + barrel | web fork | `queue-panel.mdx` | yes | 4 |  |  |  | reads |

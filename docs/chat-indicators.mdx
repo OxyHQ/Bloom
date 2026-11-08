@@ -178,3 +178,15 @@ ring.
 - **No press animation.** Nothing here scales under a finger.
 - **No layout.** Rows, bubbles and headers own their own geometry; these are
   marks that sit inside one.
+
+
+## Inherited UI proportions
+
+PresenceDot and UnreadBadge resolve explicit `size`, then the nearest BloomScope,
+then `md`. PresenceDot maps inherited `xs` to `sm` (8px dot); its md/lg dots stay
+10/12px. UnreadBadge keeps its existing two rungs: inherited xs/sm use the 16px
+pill, md/lg use 20px. The ring and semantic presence/unread colors retain their
+existing recipes. AvatarPresence deliberately passes a dot rung derived from
+its avatar dimensions, so an enclosing control scope cannot detach that fit.
+The per-part precedence, wrappers and native/web portals are exercised in
+PublicPartScope tests; these rendered assertions do not replace device checks.

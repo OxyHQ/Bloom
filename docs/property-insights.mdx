@@ -192,3 +192,11 @@ success (`deltaTone` overrides). An empty list draws "No history for this home y
 (the page and the card), rather than taken from `theme.colors.textTertiary` —
 which is the page's rung and was 4.04:1 in light before it was fixed. See
 [Styles → Quiet text](/docs/bloom/main/styles).
+
+
+EnergyBadge is an inline UI badge: its explicit `size` wins over BloomScope,
+then it defaults to `md`. Its two-rung recipe is preserved: inherited xs/sm map
+to sm (20px pill/16px disc), md/lg to md (24px/20px). Rating colors and readable
+foregrounds remain semantic; inheriting size does not replace them with scope
+tone. PublicPartScope tests cover precedence and portal context on both module
+routes, with physical-device checks recorded separately.

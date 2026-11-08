@@ -4281,7 +4281,8 @@
     "clean": "rm -rf lib",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
-    "build:avatar-vectors": "node scripts/build-avatar-vector-assets.mjs"
+    "build:avatar-vectors": "node scripts/build-avatar-vector-assets.mjs",
+    "generate:public-parts": "bun scripts/generate-public-parts.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.3",

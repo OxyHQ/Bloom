@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from 'react';
+import { useBloomAppearance } from '../appearance/context';
 import { View } from 'react-native';
 
 import { useMessages } from '../locale/messages';
@@ -38,13 +39,18 @@ function fillFor(status: PresenceStatus, paint: ReturnType<typeof resolveChatInd
 
 function PresenceDotComponent({
   status,
-  size = 'md',
+  size: sizeProp,
   ringColor,
   ringWidth = 2,
   accessibilityLabel,
   style,
   testID,
 }: PresenceDotProps) {
+  const { size: scopedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
+  const size = scopedSize === 'xs' ? 'sm' : scopedSize;
   const theme = useTheme();
   const { messages } = useMessages(CHAT_INDICATORS_MESSAGES);
   const paint = useMemo(() => resolveChatIndicatorPaint(theme), [theme]);

@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from 'react';
+import { useBloomAppearance } from '../appearance/context';
 import { View } from 'react-native';
 
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
@@ -34,7 +35,7 @@ function EnergyBadgeComponent({
   pending: pendingProp = false,
   label: labelProp,
   pendingLabel: pendingLabelProp,
-  size = 'md',
+  size: sizeProp,
   accessibilityLabel,
   style,
   testID,
@@ -42,6 +43,11 @@ function EnergyBadgeComponent({
   const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
   const label = labelProp ?? messages.energy;
   const pendingLabel = pendingLabelProp ?? messages.pending;
+  const { size: scopedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
+  const size = scopedSize === 'xs' || scopedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
   const tones = useMemo(() => resolveEnergyTones(theme), [theme]);
