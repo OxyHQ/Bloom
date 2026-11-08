@@ -102,7 +102,7 @@ class VerifiedDownloads(unittest.TestCase):
 
     def test_cleanup_removes_only_own_init_and_handles_unset_home(self):
         home = self.root / 'home'
-        init = home / 'init.d/bloom-verified-kotlin.init.gradle'
+        init = home / 'init.d/bloom-verified-kotlin-2.2.0.init.gradle'
         init.parent.mkdir(parents=True)
         init.write_text('owned')
         other = init.with_name('other.init.gradle')
@@ -182,6 +182,29 @@ class VerifiedDownloads(unittest.TestCase):
                 self.assertFalse((self.root / 'output/source').exists())
 
 
+    def test_both_kotlin_versions_are_exclusive_and_cleanup_independent(self):
+        home = self.root / 'home'
+        pins = {}
+        for version in ('2.2.0', '2.2.10'):
+            for suffix, key in [('jar', 'kotlin-compiler-embeddable'), ('pom', 'kotlin-pom')]:
+                pins[f'{key}-{version}'] = artifact(f'{version}-{suffix}'.encode(), f'kotlin-compiler-embeddable-{version}.{suffix}')
+        def transport(url, output):
+            if 'primary' in url:
+                raise module.DownloadFailure('HTTP 504')
+            version = '2.2.10' if '2.2.10' in output.name else '2.2.0'
+            output.write_bytes(f'{version}-{output.suffix[1:]}'.encode())
+        with patch.dict(module.MANIFEST, pins):
+            for version in ('2.2.0', '2.2.10'):
+                module.prepare_kotlin(self.root / 'repo', home, transport, probe=lambda _: False, version=version)
+                init = home / f'init.d/bloom-verified-kotlin-{version}.init.gradle'
+                self.assertIn(f"includeVersion('org.jetbrains.kotlin', 'kotlin-compiler-embeddable', '{version}')", init.read_text())
+            module.prepare_kotlin(self.root / 'repo', home, transport, probe=lambda _: True, version='2.2.0')
+            self.assertFalse((home / 'init.d/bloom-verified-kotlin-2.2.0.init.gradle').exists())
+            self.assertTrue((home / 'init.d/bloom-verified-kotlin-2.2.10.init.gradle').exists())
+        with patch.object(sys,'argv',['helper','cleanup','--directory',str(self.root)]), patch.dict(module.os.environ,{'GRADLE_USER_HOME':str(home)}):
+            module.main()
+        self.assertFalse((home / 'init.d/bloom-verified-kotlin-2.2.10.init.gradle').exists())
+
     def test_exact_kotlin_repository_only_after_fallback_and_cleared_on_recovery(self):
         jar, pom = b'jar', b'original-pom-with-dependencies'
         pins = {'kotlin-compiler-embeddable-2.2.0': artifact(jar, 'kotlin-compiler-embeddable-2.2.0.jar'),
@@ -193,7 +216,7 @@ class VerifiedDownloads(unittest.TestCase):
             output.write_bytes(pom if output.suffix == '.pom' else jar)
         with patch.dict(module.MANIFEST, pins):
             module.prepare_kotlin(self.root / 'artifacts', home, fallback, probe=lambda _: False)
-            init = home / 'init.d/bloom-verified-kotlin.init.gradle'
+            init = home / 'init.d/bloom-verified-kotlin-2.2.0.init.gradle'
             text = init.read_text()
             self.assertIn("includeVersion('org.jetbrains.kotlin', 'kotlin-compiler-embeddable', '2.2.0')", text)
             self.assertNotIn('includeGroup', text)

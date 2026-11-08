@@ -20,10 +20,11 @@ handling and post processing. There is no continue-on-error around that action.
 
 Kotlin fallback downloads the identical JAR from JetBrains plus its intact original
 Maven POM.
-A job-local Gradle init script makes only
-`org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.0` exclusive to that temporary
-repository. Every other version/module and every transitive dependency uses the
-existing repositories. The init file applies to included builds and is deleted
+A separate job-local Gradle init script per observed version makes only
+`org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.0` and, for predictive,
+`org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.10` exclusive to temporary
+repositories. Every other version/module and every transitive dependency uses the
+existing repositories. Each init file applies to included builds and is deleted
 by an always-running final job step before setup-gradle's post/cache processing.
 Consumer Gradle files and node_modules are not patched by this transport change.
 
@@ -58,7 +59,7 @@ CI-wide configuration mechanism; the exact-GAV filter avoids a general mirror.
 
 ## Evidence and remaining acceptance
 
-Fifteen helper tests cover normal transport without fallback/download, failure-only
+Sixteen helper tests cover normal transport without fallback/download, failure-only
 fallback, partial downloads, corrupt primary/fallback rejection, unsupported
 versions, extracted version mismatch, exact Kotlin GAV, recovery/final-job cleanup and
 preflight final-status checks (including curl 63 with HTTP 504).
@@ -134,3 +135,27 @@ Full downloads permit two bounded curl transient-error retries; integrity failur
 remain outside that retry/fallback path. Failure logs include only curl exit and
 final numeric HTTP status, never response bodies or signed URLs. An additional
 regression checks this diagnostic boundary.
+
+## ReactAndroid Kotlin 2.2.10
+
+Run 42469329336 passed build, all five test shards, legacy and default. Predictive
+passed Hermes preparation, then `ReactAndroid:compileDebugKotlin` failed resolving
+`kotlinBuildToolsApiClasspath`: Kotlin compiler 2.2.10 redirected to GitHub and
+returned HTTP 504. This is distinct from the plugin's 2.2.0 compiler; neither
+version is changed by the fallback.
+
+The second exact GAV uses JetBrains asset 598652892, 56259401 bytes, SHA256
+`79628fd5d64b4692a62f98962baab00e9076a37e2cffd6ace33cd0b7be7d1cdf`.
+The full downloaded JAR matches the official release digest and Maven SHA1
+`6882d39ef03b18879c1a5d2a83c2212361bed5fe`. Its unchanged official POM is 2472 bytes,
+SHA256 `b8ac50cc8dcb3b7c63a405b3cf19e83ca5fd1955fb040596c8d961a1734cb48b`.
+Source: https://api.github.com/repos/JetBrains/kotlin/releases/assets/598652892
+and the Maven Central GAV paths in the manifest.
+
+Separate exact-version init files coexist. Recovery of one normal route removes
+only that version's override; final cleanup removes both plus the previous
+single-version filename. `two-kotlin-included-build.txt` verifies both full JAR
+hashes independently in root and included builds, offline against an unreachable
+remote repository (four successful Gradle tasks). The new unit regression also
+checks coexistence, independent recovery and final cleanup. Full predictive CI
+must pass on this updated head; the included-build proof is not its replacement.

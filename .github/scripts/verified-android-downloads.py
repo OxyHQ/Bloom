@@ -103,16 +103,18 @@ def install_gradle(version, directory, transport=download):
     return executable.parent, route
 
 
-def prepare_kotlin(directory, gradle_user_home, transport=download, probe=primary_available):
-    init = gradle_user_home / 'init.d' / 'bloom-verified-kotlin.init.gradle'
-    if probe(MANIFEST['kotlin-compiler-embeddable-2.2.0']['primary']):
+def prepare_kotlin(directory, gradle_user_home, transport=download, probe=primary_available, version='2.2.0'):
+    if version not in ('2.2.0', '2.2.10'):
+        raise ValueError('Only the existing Kotlin compiler 2.2.0 and 2.2.10 artifacts are supported')
+    init = gradle_user_home / 'init.d' / f'bloom-verified-kotlin-{version}.init.gradle'
+    if probe(MANIFEST[f'kotlin-compiler-embeddable-{version}']['primary']):
         init.unlink(missing_ok=True)
-        print('Kotlin 2.2.0: canonical transport available; normal Gradle resolution retained', flush=True)
+        print(f'Kotlin {version}: canonical transport available; normal Gradle resolution retained', flush=True)
         return 'primary-available'
-    jar, route = fetch(MANIFEST['kotlin-compiler-embeddable-2.2.0'], directory / 'downloads', after_failed_probe(transport))
-    pom, _ = fetch(MANIFEST['kotlin-pom-2.2.0'], directory / 'downloads', transport)
+    jar, route = fetch(MANIFEST[f'kotlin-compiler-embeddable-{version}'], directory / 'downloads', after_failed_probe(transport))
+    pom, _ = fetch(MANIFEST[f'kotlin-pom-{version}'], directory / 'downloads', transport)
     repository = directory / 'maven'
-    module = repository / 'org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.0'
+    module = repository / f'org/jetbrains/kotlin/kotlin-compiler-embeddable/{version}'
     module.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(jar, module / jar.name)
     shutil.copyfile(pom, module / pom.name)
@@ -127,12 +129,12 @@ allprojects {{ project ->
     project.repositories.exclusiveContent {{
         forRepository {{
             project.repositories.maven {{
-                name = 'BloomVerifiedKotlin220'
+                name = 'BloomVerifiedKotlin{version.replace('.', '')}'
                 url = uri('{uri}')
                 metadataSources {{ mavenPom(); artifact() }}
             }}
         }}
-        filter {{ includeVersion('org.jetbrains.kotlin', 'kotlin-compiler-embeddable', '2.2.0') }}
+        filter {{ includeVersion('org.jetbrains.kotlin', 'kotlin-compiler-embeddable', '{version}') }}
     }}
 }}
 ''')
@@ -191,7 +193,8 @@ def main():
     if args.kind == 'cleanup':
         home = os.environ.get('GRADLE_USER_HOME')
         if home:
-            (Path(home) / 'init.d/bloom-verified-kotlin.init.gradle').unlink(missing_ok=True)
+            for filename in ('bloom-verified-kotlin.init.gradle', 'bloom-verified-kotlin-2.2.0.init.gradle', 'bloom-verified-kotlin-2.2.10.init.gradle'):
+                (Path(home) / 'init.d' / filename).unlink(missing_ok=True)
         return
     if args.kind == 'gradle':
         if args.version not in ('8.3', '9.4.1'):
@@ -203,9 +206,9 @@ def main():
         with open(os.environ['GITHUB_PATH'], 'a') as output:
             output.write(str(binary) + '\n')
     else:
-        if args.version != '2.2.0':
-            raise ValueError('Only the existing Kotlin compiler 2.2.0 artifact is supported')
-        prepare_kotlin(args.directory, Path(os.environ['GRADLE_USER_HOME']))
+        if args.version not in ('2.2.0', '2.2.10'):
+            raise ValueError('Only the existing Kotlin compiler 2.2.0 and 2.2.10 artifacts are supported')
+        prepare_kotlin(args.directory, Path(os.environ['GRADLE_USER_HOME']), version=args.version)
 
 
 if __name__ == '__main__':

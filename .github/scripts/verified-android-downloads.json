@@ -35,5 +35,19 @@
     "archive_root": "meta-hermes-9a115f1",
     "size": 23061798,
     "sha256": "7545a1ca1d92e6ad8430d2a1e44e91e56e3bcd0d64d7281e4cfbee7b26fd4569"
+  },
+  "kotlin-compiler-embeddable-2.2.10": {
+    "filename": "kotlin-compiler-embeddable-2.2.10.jar",
+    "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.10/kotlin-compiler-embeddable-2.2.10.jar",
+    "fallback": "https://api.github.com/repos/JetBrains/kotlin/releases/assets/598652892",
+    "size": 56259401,
+    "sha256": "79628fd5d64b4692a62f98962baab00e9076a37e2cffd6ace33cd0b7be7d1cdf"
+  },
+  "kotlin-pom-2.2.10": {
+    "filename": "kotlin-compiler-embeddable-2.2.10.pom",
+    "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.10/kotlin-compiler-embeddable-2.2.10.pom",
+    "fallback": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.10/kotlin-compiler-embeddable-2.2.10.pom",
+    "size": 2472,
+    "sha256": "b8ac50cc8dcb3b7c63a405b3cf19e83ca5fd1955fb040596c8d961a1734cb48b"
   }
 }

@@ -195,6 +195,10 @@ jobs:
         if: matrix.variant != 'legacy'
         run: python3 .github/scripts/verified-android-downloads.py kotlin --version 2.2.0 --directory "$RUNNER_TEMP/bloom-verified-kotlin"
 
+      - name: Prepare verified ReactAndroid Kotlin transport when required
+        if: matrix.variant == 'predictive'
+        run: python3 .github/scripts/verified-android-downloads.py kotlin --version 2.2.10 --directory "$RUNNER_TEMP/bloom-verified-kotlin"
+
       - run: bun install --frozen-lockfile --ignore-scripts
       - name: Current Android SDK
         if: matrix.variant != 'legacy'
