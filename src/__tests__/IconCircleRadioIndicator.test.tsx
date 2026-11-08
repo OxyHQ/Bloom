@@ -74,7 +74,7 @@ describe('IconCircle', () => {
       return null;
     };
     renderWithTheme(<IconCircle icon={Icon} size={size} iconStyle={{ color: '#123456' }} />);
-    expect(seen.at(-1)).toMatchObject({ width: pixels, height: pixels, fill: '#123456' });
+    expect(seen[seen.length - 1]).toMatchObject({ width: pixels, height: pixels, fill: '#123456' });
   });
 
   it('retains real glyph geometry, path paint and caller transforms', () => {

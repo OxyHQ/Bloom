@@ -9,8 +9,8 @@ const props: ComponentProps<typeof IconCircle> = {
   iconStyle: { color: '#123456' },
 };
 void props;
-// @ts-expect-error A glyph requiring unrelated data cannot satisfy a canonical slot.
 const invalid: ComponentProps<typeof IconCircle> = {
+  // @ts-expect-error A glyph requiring unrelated data cannot satisfy a canonical slot.
   icon: (_props: { requiredData: string }) => null,
 };
 void invalid;

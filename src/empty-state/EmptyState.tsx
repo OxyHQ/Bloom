@@ -77,10 +77,7 @@ function EmptyStateComponent({
       illustration
     ) : Icon ? (
       media === 'circle' ? (
-        // `IconCircle` asks for an icon's FULL props (it sets `size`), which is
-        // narrower than `BloomIconComponent`'s three optional ones. Every Bloom
-        // glyph satisfies both; this is the boundary between the two spellings,
-        // and the only place in the family that needs to know there are two.
+        // Both presentations consume the same canonical icon contract.
         <IconCircle icon={Icon} size={g.circle} />
       ) : (
         // Hidden from assistive technology: the glyph repeats what the title
