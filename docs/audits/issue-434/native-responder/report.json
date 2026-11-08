@@ -1,0 +1,41 @@
+{
+  "handled": {
+    "ime": false,
+    "persistTaps": "handled",
+    "claimInput": false,
+    "focused": "fixture-2",
+    "linking": null,
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-2",
+      "start": 7,
+      "end": 7
+    }
+  },
+  "always": {
+    "ime": true,
+    "persistTaps": "always",
+    "claimInput": false,
+    "focused": "fixture-2",
+    "linking": null,
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-2",
+      "start": 7,
+      "end": 7
+    }
+  },
+  "claim": {
+    "ime": true,
+    "persistTaps": "handled",
+    "claimInput": true,
+    "focused": "fixture-2",
+    "linking": null,
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-2",
+      "start": 7,
+      "end": 7
+    }
+  }
+}

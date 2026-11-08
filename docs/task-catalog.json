@@ -1,0 +1,702 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "@oxy.so/bloom",
+    "version": "17.23.0",
+    "peers": {
+      "@lottiefiles/dotlottie-react": ">=0.13.0",
+      "@react-native-community/netinfo": ">=11.1.0",
+      "@shopify/flash-list": ">=2.0.0",
+      "expo": "*",
+      "expo-blur": "*",
+      "expo-clipboard": "*",
+      "expo-font": "*",
+      "expo-haptics": "*",
+      "expo-image": "*",
+      "expo-router": ">=3.0.0",
+      "expo-video": "*",
+      "expo-web-browser": "*",
+      "lottie-react-native": ">=7.0.0",
+      "nativewind": ">=5.0.0 || 5.0.0-rc.0",
+      "react": ">=18.0.0",
+      "react-dom": ">=18.0.0",
+      "react-native": ">=0.73.0",
+      "react-native-gesture-handler": ">=2.16.1",
+      "react-native-keyboard-controller": ">=1.11.4",
+      "react-native-pager-view": ">=6.0.0",
+      "react-native-reanimated": ">=3.13.0",
+      "react-native-safe-area-context": ">=5.0.0",
+      "react-native-screens": ">=3.16.0",
+      "react-native-svg": ">=13.0.0"
+    },
+    "optionalPeers": {
+      "@lottiefiles/dotlottie-react": {
+        "optional": true
+      },
+      "@react-native-community/netinfo": {
+        "optional": true
+      },
+      "@shopify/flash-list": {
+        "optional": true
+      },
+      "expo": {
+        "optional": true
+      },
+      "expo-clipboard": {
+        "optional": true
+      },
+      "expo-font": {
+        "optional": true
+      },
+      "expo-haptics": {
+        "optional": true
+      },
+      "expo-router": {
+        "optional": true
+      },
+      "expo-video": {
+        "optional": true
+      },
+      "expo-web-browser": {
+        "optional": true
+      },
+      "lottie-react-native": {
+        "optional": true
+      },
+      "nativewind": {
+        "optional": true
+      },
+      "react-dom": {
+        "optional": true
+      },
+      "react-native-keyboard-controller": {
+        "optional": true
+      },
+      "react-native-pager-view": {
+        "optional": true
+      }
+    }
+  },
+  "scope": "Generated from this package. Version denotes the containing artifact, not proof of registry publication or device acceptance.",
+  "sections": ["Foundations", "Composition", "Components", "Patterns", "Templates", "Labs"],
+  "tasks": [
+    {
+      "id": "workspace",
+      "title": "Compose a document workspace",
+      "synonyms": ["document", "database", "inspector", "continuous workspace"],
+      "status": "recommended",
+      "docs": [
+        "docs/compose-layouts.mdx",
+        "docs/app-shell.mdx",
+        "docs/screen.mdx",
+        "docs/page-header.mdx"
+      ],
+      "example": "docs/examples/workspace.tsx",
+      "story": {
+        "id": "blocks-app-shell--continuous-workspace",
+        "export": "ContinuousWorkspace",
+        "source": "src/app-shell/AppShell.stories.tsx",
+        "observedIndex": "Storybook /index.json, 2026-11-08"
+      },
+      "choose": "Choose joined panels for one continuous workspace; choose separated panels when each region needs its own frame.",
+      "avoid": "Do not wrap each descriptor in another panel or AppShell. Keep md controls; domain density is separate.",
+      "ownership": {
+        "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+        "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+        "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+        "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+        "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+        "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+      },
+      "consumers": "Nilo: apps/app/components/shell/nilo-shell.tsx; published pilot acceptance pending.",
+      "evidence": {
+        "web": "not run",
+        "android": "not run",
+        "ios": "not run",
+        "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+      },
+      "imports": [
+        {
+          "from": "@oxy.so/bloom/app-shell",
+          "symbols": ["AppShell"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./src/app-shell/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/app-shell/index.web.d.ts",
+              "import": "./lib/module/app-shell/index.web.js",
+              "require": "./lib/commonjs/app-shell/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./lib/module/app-shell/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/app-shell/index.d.ts",
+              "default": "./lib/commonjs/app-shell/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/page-header",
+          "symbols": ["PageHeader"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/page-header/index.d.ts",
+              "default": "./src/page-header/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/page-header/index.web.d.ts",
+              "import": "./lib/module/page-header/index.web.js",
+              "require": "./lib/commonjs/page-header/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/page-header/index.d.ts",
+              "default": "./lib/module/page-header/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/page-header/index.d.ts",
+              "default": "./lib/commonjs/page-header/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/screen",
+          "symbols": ["Screen", "ScreenScrollView"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./src/screen/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/screen/index.web.d.ts",
+              "import": "./lib/module/screen/index.web.js",
+              "require": "./lib/commonjs/screen/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./lib/module/screen/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/screen/index.d.ts",
+              "default": "./lib/commonjs/screen/index.js"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "canvas",
+      "title": "Host a map or interactive canvas",
+      "synonyms": ["map", "board", "canvas", "persistent panel"],
+      "status": "variant",
+      "docs": ["docs/compose-layouts.mdx", "docs/screen.mdx", "docs/map-controls.mdx"],
+      "example": "docs/examples/canvas.tsx",
+      "story": {
+        "id": "blocks-app-shell--modular-map",
+        "export": "ModularMap",
+        "source": "src/app-shell/AppShell.stories.tsx",
+        "observedIndex": "Storybook /index.json, 2026-11-08"
+      },
+      "choose": "Screen scroll=none reserves header/footer around a canvas with its own gestures. MapControls provides shared map controls; the application owns the engine.",
+      "avoid": "This minimal example does not implement occupied map regions or a persistent non-modal sheet. Do not substitute a modal Dialog for that missing contract.",
+      "ownership": {
+        "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+        "scroll": "Screen scroll=none reserves the viewport; the domain canvas owns its gestures. MapControls supplies callback-driven controls, not a scroller or map engine.",
+        "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+        "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+        "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+        "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+      },
+      "consumers": "GoWay persistent-panel adoption remains pending; no completed consumer acceptance claimed.",
+      "evidence": {
+        "web": "not run",
+        "android": "not run",
+        "ios": "not run",
+        "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+      },
+      "imports": [
+        {
+          "from": "@oxy.so/bloom/map-controls",
+          "symbols": ["MapControls", "MapLayerPicker"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/map-controls/index.d.ts",
+              "default": "./src/map-controls/index.ts"
+            },
+            "import": {
+              "types": "./lib/typescript/module/map-controls/index.d.ts",
+              "default": "./lib/module/map-controls/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/map-controls/index.d.ts",
+              "default": "./lib/commonjs/map-controls/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/typography",
+          "symbols": ["Text"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/typography/index.d.ts",
+              "default": "./src/typography/index.ts"
+            },
+            "import": {
+              "types": "./lib/typescript/module/typography/index.d.ts",
+              "default": "./lib/module/typography/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/typography/index.d.ts",
+              "default": "./lib/commonjs/typography/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/app-shell",
+          "symbols": ["AppShell"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./src/app-shell/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/app-shell/index.web.d.ts",
+              "import": "./lib/module/app-shell/index.web.js",
+              "require": "./lib/commonjs/app-shell/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./lib/module/app-shell/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/app-shell/index.d.ts",
+              "default": "./lib/commonjs/app-shell/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/page-header",
+          "symbols": ["PageHeader"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/page-header/index.d.ts",
+              "default": "./src/page-header/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/page-header/index.web.d.ts",
+              "import": "./lib/module/page-header/index.web.js",
+              "require": "./lib/commonjs/page-header/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/page-header/index.d.ts",
+              "default": "./lib/module/page-header/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/page-header/index.d.ts",
+              "default": "./lib/commonjs/page-header/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/screen",
+          "symbols": ["Screen"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./src/screen/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/screen/index.web.d.ts",
+              "import": "./lib/module/screen/index.web.js",
+              "require": "./lib/commonjs/screen/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./lib/module/screen/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/screen/index.d.ts",
+              "default": "./lib/commonjs/screen/index.js"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "conversation",
+      "title": "Compose an agent conversation with a loader",
+      "synonyms": ["chat", "agent", "transcript", "composer", "loader"],
+      "status": "recommended",
+      "docs": [
+        "docs/agent-chat.mdx",
+        "docs/ai-overview.mdx",
+        "docs/composer-loader.mdx",
+        "docs/chat-composer.mdx"
+      ],
+      "example": "docs/examples/conversation.tsx",
+      "story": {
+        "id": "agents-agent-chat--streaming",
+        "export": "Streaming",
+        "source": "src/agent-chat/AgentChat.stories.tsx",
+        "observedIndex": "Storybook /index.json, 2026-11-08"
+      },
+      "choose": "AgentChat composes transcript, history and the shared loader/composer. Choose ChatComposer for person-to-person messaging, or AiChat when its broader shell is needed.",
+      "avoid": "AgentChat already owns its shell/screens. Do not add an outer scrolling transcript, duplicate shell or opaque layer covering the loader.",
+      "ownership": {
+        "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+        "scroll": "AgentChat already owns its shell, screens and transcript scroller. Mount it directly in the bounded host; do not add another AppShell or ScrollView.",
+        "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+        "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+        "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+        "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+      },
+      "consumers": "Alia/Allo integration and device evidence are tracked independently; examples do not prove device parity.",
+      "evidence": {
+        "web": "not run",
+        "android": "not run",
+        "ios": "not run",
+        "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+      },
+      "imports": [
+        {
+          "from": "@oxy.so/bloom/agent-chat",
+          "symbols": ["AgentChat"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/agent-chat/index.d.ts",
+              "default": "./src/agent-chat/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/agent-chat/index.web.d.ts",
+              "import": "./lib/module/agent-chat/index.web.js",
+              "require": "./lib/commonjs/agent-chat/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/agent-chat/index.d.ts",
+              "default": "./lib/module/agent-chat/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/agent-chat/index.d.ts",
+              "default": "./lib/commonjs/agent-chat/index.js"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "master-detail",
+      "title": "Compose a list and selected detail",
+      "synonyms": ["inbox", "list", "detail", "selection"],
+      "status": "recommended",
+      "docs": ["docs/compose-layouts.mdx", "docs/app-shell.mdx", "docs/screen.mdx"],
+      "example": "docs/examples/master-detail.tsx",
+      "story": {
+        "id": "blocks-app-shell--modular-inbox",
+        "export": "ModularInbox",
+        "source": "src/app-shell/AppShell.stories.tsx",
+        "observedIndex": "Storybook /index.json, 2026-11-08"
+      },
+      "choose": "Use stable list/detail panel descriptors and the activePanel contract; the router/store owns selected identity and Back navigation.",
+      "avoid": "Do not recreate keyed content on resize. The example accepts selection; it does not implement a router or promise automatic navigation history.",
+      "ownership": {
+        "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+        "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+        "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+        "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+        "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+        "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+      },
+      "consumers": "Existing modular inbox story; product route acceptance remains separate.",
+      "evidence": {
+        "web": "not run",
+        "android": "not run",
+        "ios": "not run",
+        "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+      },
+      "imports": [
+        {
+          "from": "@oxy.so/bloom/app-shell",
+          "symbols": ["AppShell"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./src/app-shell/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/app-shell/index.web.d.ts",
+              "import": "./lib/module/app-shell/index.web.js",
+              "require": "./lib/commonjs/app-shell/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./lib/module/app-shell/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/app-shell/index.d.ts",
+              "default": "./lib/commonjs/app-shell/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/screen",
+          "symbols": ["Screen", "ScreenScrollView"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./src/screen/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/screen/index.web.d.ts",
+              "import": "./lib/module/screen/index.web.js",
+              "require": "./lib/commonjs/screen/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./lib/module/screen/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/screen/index.d.ts",
+              "default": "./lib/commonjs/screen/index.js"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "discovery",
+      "title": "Compose a filtered catalog",
+      "synonyms": ["search", "catalog", "filters", "results", "discovery"],
+      "status": "recommended",
+      "docs": [
+        "docs/compose-layouts.mdx",
+        "docs/screen.mdx",
+        "docs/list.mdx",
+        "docs/page-header.mdx"
+      ],
+      "example": "docs/examples/discovery.tsx",
+      "story": {
+        "id": "blocks-app-shell--modular-expanding-feed",
+        "export": "ModularExpandingFeed",
+        "source": "src/app-shell/AppShell.stories.tsx",
+        "observedIndex": "Storybook /index.json, 2026-11-08"
+      },
+      "choose": "A Screen with its header and content owner hosts domain filters/results. Use VirtualList with the external scroll contract for large collections.",
+      "avoid": "Do not put a virtualized list inside ScreenScrollView. This minimal nonvirtualized example leaves domain filter state and pagination to the application.",
+      "ownership": {
+        "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+        "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+        "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+        "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+        "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+        "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+      },
+      "consumers": "Homiio/Atlas route adoption and visual acceptance remain separate.",
+      "evidence": {
+        "web": "not run",
+        "android": "not run",
+        "ios": "not run",
+        "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+      },
+      "imports": [
+        {
+          "from": "@oxy.so/bloom/app-shell",
+          "symbols": ["AppShell"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./src/app-shell/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/app-shell/index.web.d.ts",
+              "import": "./lib/module/app-shell/index.web.js",
+              "require": "./lib/commonjs/app-shell/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./lib/module/app-shell/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/app-shell/index.d.ts",
+              "default": "./lib/commonjs/app-shell/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/page-header",
+          "symbols": ["PageHeader"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/page-header/index.d.ts",
+              "default": "./src/page-header/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/page-header/index.web.d.ts",
+              "import": "./lib/module/page-header/index.web.js",
+              "require": "./lib/commonjs/page-header/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/page-header/index.d.ts",
+              "default": "./lib/module/page-header/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/page-header/index.d.ts",
+              "default": "./lib/commonjs/page-header/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/screen",
+          "symbols": ["Screen", "ScreenScrollView"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./src/screen/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/screen/index.web.d.ts",
+              "import": "./lib/module/screen/index.web.js",
+              "require": "./lib/commonjs/screen/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./lib/module/screen/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/screen/index.d.ts",
+              "default": "./lib/commonjs/screen/index.js"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "dashboard",
+      "title": "Compose a dashboard or tools screen",
+      "synonyms": ["dashboard", "charts", "metrics", "tools", "console"],
+      "status": "recommended",
+      "docs": [
+        "docs/compose-layouts.mdx",
+        "docs/grid.mdx",
+        "docs/chart-cards.mdx",
+        "docs/page-header.mdx"
+      ],
+      "example": "docs/examples/dashboard.tsx",
+      "story": {
+        "id": "templates-home-dashboard--default",
+        "export": "Default",
+        "source": "templates/home-dashboard/HomeDashboard.stories.tsx",
+        "observedIndex": "Storybook /index.json, 2026-11-08",
+        "title": "Templates/Home Dashboard"
+      },
+      "choose": "ResponsiveGrid chooses columns from its local host and preserves children while resizing. Use chart cards for data encoding and shared HeaderActions for semantic action overflow.",
+      "avoid": "Do not switch keyed chart trees at window breakpoints or measure every card height in React. A data table keeps its own horizontal scroll region; do not shrink global control size to fit it.",
+      "ownership": {
+        "state": "Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.",
+        "scroll": "AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.",
+        "surface": "The shell/panel and shared controls own their material. Do not add a second panel surface.",
+        "focus": "Use shared controls and overlay owners; do not move focus as a layout side effect.",
+        "motion": "Shared owners animate; applications supply discrete state rather than per-frame React updates.",
+        "keyboard": "Screen and its footer coordinate the visible viewport; the shared input/composer owns editing and IME. Do not add keyboard-height compensation in the route."
+      },
+      "consumers": "HomeDashboard template demonstrates the existing composition. Willo/Mercaria product-route acceptance remains separate.",
+      "evidence": {
+        "web": "not run",
+        "android": "not run",
+        "ios": "not run",
+        "scope": "Catalog example runtime acceptance is separate from source/type/export validation. No physical iPhone claim."
+      },
+      "imports": [
+        {
+          "from": "@oxy.so/bloom/app-shell",
+          "symbols": ["AppShell"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./src/app-shell/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/app-shell/index.web.d.ts",
+              "import": "./lib/module/app-shell/index.web.js",
+              "require": "./lib/commonjs/app-shell/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/app-shell/index.d.ts",
+              "default": "./lib/module/app-shell/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/app-shell/index.d.ts",
+              "default": "./lib/commonjs/app-shell/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/grid",
+          "symbols": ["ResponsiveGrid"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/grid/index.d.ts",
+              "default": "./src/grid/index.ts"
+            },
+            "import": {
+              "types": "./lib/typescript/module/grid/index.d.ts",
+              "default": "./lib/module/grid/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/grid/index.d.ts",
+              "default": "./lib/commonjs/grid/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/page-header",
+          "symbols": ["PageHeader"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/page-header/index.d.ts",
+              "default": "./src/page-header/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/page-header/index.web.d.ts",
+              "import": "./lib/module/page-header/index.web.js",
+              "require": "./lib/commonjs/page-header/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/page-header/index.d.ts",
+              "default": "./lib/module/page-header/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/page-header/index.d.ts",
+              "default": "./lib/commonjs/page-header/index.js"
+            }
+          }
+        },
+        {
+          "from": "@oxy.so/bloom/screen",
+          "symbols": ["Screen", "ScreenScrollView"],
+          "conditions": {
+            "react-native": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./src/screen/index.ts"
+            },
+            "browser": {
+              "types": "./lib/typescript/module/screen/index.web.d.ts",
+              "import": "./lib/module/screen/index.web.js",
+              "require": "./lib/commonjs/screen/index.web.js"
+            },
+            "import": {
+              "types": "./lib/typescript/module/screen/index.d.ts",
+              "default": "./lib/module/screen/index.js"
+            },
+            "require": {
+              "types": "./lib/typescript/commonjs/screen/index.d.ts",
+              "default": "./lib/commonjs/screen/index.js"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

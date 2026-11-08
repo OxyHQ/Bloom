@@ -259,14 +259,10 @@ reported those through `onClose`.
 
 ## Web setup
 
-Inject the CSS animations into your global styles once:
-
-```tsx
-import { BLOOM_DIALOG_CSS } from '@oxy.so/bloom/dialog';
-
-// In your HTML head or global CSS file:
-<style>{BLOOM_DIALOG_CSS}</style>
-```
+Dialog adopts its web animation styles automatically through Bloom's shared
+stylesheet owner. Do not inject `BLOOM_DIALOG_CSS` into an inline `<style>` tag.
+For host utility CSS and SSR's explicit nonce/style contract, follow
+[Getting started](./getting-started.mdx) and [Provider](./provider.mdx).
 
 ## Examples
 

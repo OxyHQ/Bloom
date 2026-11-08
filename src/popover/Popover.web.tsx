@@ -90,6 +90,7 @@ export function PopoverTrigger({
 
 export function PopoverContent({
   material,
+  virtualAnchor,
   children,
   size,
   maxHeight,
@@ -108,7 +109,11 @@ export function PopoverContent({
   const { messages } = useMessages(POPOVER_MESSAGES);
   const label = labelProp ?? messages.popover;
   const popover = usePopover();
-  const anchor = useAnchorRect(popover.anchorRef, popover.open);
+  const anchor = useAnchorRect(
+    popover.anchorRef,
+    popover.open,
+    virtualAnchor?.getBoundingClientRect,
+  );
   const attachPanel = useCallback(
     (node: React.ComponentRef<typeof View> | null) => {
       if (popover.panelRef) popover.panelRef.current = node;

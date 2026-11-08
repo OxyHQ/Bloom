@@ -62,6 +62,18 @@ class VerifiedDownloads(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertFalse((self.root / 'artifact.jar').exists())
 
+    def test_wrong_size_with_matching_digest_never_retries_or_falls_back(self):
+        calls = []
+        pin = artifact(b'official')
+        pin['size'] += 1
+        def transport(url, output):
+            calls.append(url)
+            output.write_bytes(b'official')
+        with self.assertRaisesRegex(ValueError, 'Integrity'):
+            module.fetch(pin, self.root, transport)
+        self.assertEqual(calls, [pin['primary']])
+        self.assertFalse((self.root / 'artifact.jar').exists())
+
     def test_corrupt_fallback_is_rejected(self):
         def transport(url, output):
             if 'primary' in url:
@@ -79,7 +91,12 @@ class VerifiedDownloads(unittest.TestCase):
                 module.download('https://official.invalid', self.root / 'artifact')
             self.assertNotIn('signed-url', str(failure.exception))
             self.assertIn('--retry', run.call_args.args[0])
-            self.assertNotIn('--retry-all-errors', run.call_args.args[0])
+            self.assertIn('--retry-all-errors', run.call_args.args[0])
+            args = run.call_args.args[0]
+            for flag, expected in [('--retry', '2'), ('--retry-max-time', '180'), ('--max-time', '90')]:
+                self.assertEqual(args[args.index(flag) + 1], expected)
+            self.assertNotIn('--insecure', args)
+            self.assertNotIn('-k', args)
 
     def test_probe_treats_only_success_or_bounded_healthy_body_as_available(self):
         import subprocess
@@ -225,6 +242,99 @@ class VerifiedDownloads(unittest.TestCase):
             self.assertEqual((copied / pins['kotlin-pom-2.2.0']['filename']).read_bytes(), pom)
             module.prepare_kotlin(self.root / 'artifacts', home, lambda *_: self.fail('healthy transport downloaded'), probe=lambda _: True)
             self.assertFalse(init.exists())
+
+
+class RealCurlTransport(unittest.TestCase):
+    """Exercise curl itself against a local HTTPS server, not a mocked retry loop."""
+    def setUp(self):
+        import http.server
+        import socket
+        import ssl
+        import struct
+        import subprocess
+        import threading
+        import time
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.cert = self.root / 'cert.pem'
+        key = self.root / 'key.pem'
+        subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+                        '-days', '1', '-subj', '/CN=localhost', '-addext',
+                        'subjectAltName=DNS:localhost', '-keyout', str(key), '-out', str(self.cert)],
+                       check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.requests = 0
+        self.mode = 'recover'
+        self.payload = b'verified complete artifact'
+        test = self
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *_args):
+                pass
+            def do_GET(self):
+                test.requests += 1
+                if test.mode == 'missing':
+                    self.send_error(404)
+                    return
+                if test.mode == 'reset' or (test.mode == 'recover' and test.requests == 1):
+                    self.send_response(200)
+                    self.send_header('Content-Length', '10000')
+                    self.end_headers()
+                    self.wfile.write(b'partial-body-' * 20)
+                    self.wfile.flush()
+                    time.sleep(0.05)  # Deliver a partial body before the deliberate TCP reset.
+                    self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
+                    self.connection.close()
+                    return
+                self.send_response(200)
+                self.send_header('Content-Length', str(len(test.payload)))
+                self.end_headers()
+                self.wfile.write(test.payload)
+        server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(self.cert, key)
+        server.socket = context.wrap_socket(server.socket, server_side=True)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        self.url = f'https://localhost:{server.server_port}/artifact'
+        self.trust = patch.dict(module.os.environ, {'CURL_CA_BUNDLE': str(self.cert), 'NO_PROXY': 'localhost'})
+        self.trust.start()
+        self.addCleanup(self.trust.stop)
+
+    def test_receive_reset_recovers_and_truncates_partial_output(self):
+        import subprocess
+        output = self.root / 'artifact'
+        # The pre-change curl policy demonstrably stops with curl 56.
+        failed = subprocess.run(['curl', '--fail', '--silent', '--output', str(output), self.url], capture_output=True)
+        self.assertEqual(failed.returncode, 56)
+        self.assertEqual(self.requests, 1)
+        self.assertGreater(output.stat().st_size, 0)
+        self.requests = 0
+        module.download(self.url, output)
+        self.assertEqual(self.requests, 2)
+        self.assertEqual(output.read_bytes(), self.payload)
+        module.verify(output, artifact(self.payload))
+
+    def test_receive_reset_exhausts_exactly_three_attempts(self):
+        import time
+        self.mode = 'reset'
+        start = time.monotonic()
+        with self.assertRaisesRegex(module.DownloadFailure, 'curl 56'):
+            module.download(self.url, self.root / 'artifact')
+        self.assertEqual(self.requests, 3)
+        self.assertLess(time.monotonic() - start, 30)
+
+    def test_404_still_fails_after_bounded_retries(self):
+        self.mode = 'missing'
+        with self.assertRaisesRegex(module.DownloadFailure, 'curl 22, HTTP 404'):
+            module.download(self.url, self.root / 'artifact')
+        self.assertEqual(self.requests, 3)
+
+    def test_untrusted_tls_still_fails_without_an_http_request(self):
+        with patch.dict(module.os.environ, {'CURL_CA_BUNDLE': '/etc/ssl/certs/ca-certificates.crt'}):
+            with self.assertRaisesRegex(module.DownloadFailure, 'curl 60'):
+                module.download(self.url, self.root / 'artifact')
+        self.assertEqual(self.requests, 0)
 
 
 if __name__ == '__main__':

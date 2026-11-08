@@ -67,7 +67,7 @@ import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
 import { ComposerPill, ComposerStatusBar } from '@oxy.so/bloom/composer-panel';
 
 <ComposerLoader active={working}>
-  <ComposerPill surface={false} frosted={working} models={['Composer 2.5', 'Fable 5']} onSubmit={send} />
+  <ComposerPill models={['Composer 2.5', 'Fable 5']} onSubmit={send} />
 </ComposerLoader>
 <ComposerStatusBar branch="Main" folders={folders} mode="Agent" context={57} />
 ```
@@ -77,7 +77,7 @@ import { ComposerPill, ComposerStatusBar } from '@oxy.so/bloom/composer-panel';
 - **Model identity** — `models` takes `{ id, name }` entries, the same contract as `ModelPicker`: the menu keys, matches and reports the **id** and only ever draws the `name`. A bare string is shorthand for `{ id: name, name }`, which is why the old `models={['Fable 5']}` form still behaves exactly as it did — but a routing identifier that is matched by display name is a bug waiting for two models to share a label, so pass ids where you have them.
 - **No effort axis** — `effortLevels={[]}` drops the divider and the whole effort half of the panel. A model with no stops gets the model rows alone, not an empty chip over a slider that cannot commit.
 - **Mic and send** — the panel's own controls, 8 apart after a 6px lead.
-- **`surface={false}`** inside a `ComposerLoader`, which paints the pill surface behind its light.
+- **Paint inheritance:** inside `ComposerLoader`, the pill defaults to `surface={false}` and the loader’s active state for `frosted`. Explicit props win; outside a loader, defaults remain `surface={true}` and `frosted={false}`.
 - **`frosted`** — the add, model and mic controls drop their fill, border and shadow over 480ms onto frosted chips (web: 6px saturated backdrop blur, a 12% / dark 6% white tint, a 155° sheen, a 0.3px conic rim; native: the tint). Pair it with an active loader.
 - **Status bar** — 26 tall; branch (mirrored merge glyph), the project folder (a caret that turns over while its 266px "Local Folders" panel is open: rows of a 20px folder glyph, the path prefix in text-secondary and the name in text-primary), the agent mode (∞ + caret) and the context meter on a radius-40 background-tertiary pill. Labels body-2-medium text-secondary, glyphs 16px icon-secondary.
 

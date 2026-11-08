@@ -52,6 +52,15 @@ const [value, setValue] = useState<Segment[]>([{ text: 'Hello ' }, { text: 'worl
   clipboard's HTML and plain text before the input pastes, and may claim it
   (a block editor turning HTML into blocks).
 
+## Native touch and scrolling
+
+Editable native inputs claim their tap so a parent ScrollView using
+`keyboardShouldPersistTaps="handled"` does not dismiss the keyboard when moving
+from a standard TextInput into this custom native host. The input still yields
+the responder to a parent scrolling gesture; the native text engine owns focus,
+long press and selection handles. Read-only inputs do not claim editing taps.
+Web keeps the browser's event and focus behavior.
+
 ## Suggestion accessibility
 
 `aria-controls`, `aria-activedescendant`, `aria-expanded` and

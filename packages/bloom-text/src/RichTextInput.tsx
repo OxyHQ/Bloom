@@ -159,6 +159,13 @@ function RichTextInputImpl(props: RichTextInputProps, ref: ForwardedRef<RichText
     <View ref={wrapperRef}>
       <EnrichedTextInput
         ref={inputRef}
+        // A custom native text host must claim its tap like RN TextInput does.
+        // Otherwise an ancestor ScrollView with keyboardShouldPersistTaps="handled"
+        // treats it as a background tap and blurs the previous field after this
+        // input receives native focus. The native engine still owns focus and
+        // selection; parent scrolling may terminate the responder.
+        onStartShouldSetResponder={Platform.OS !== 'web' ? () => editable : undefined}
+        onResponderTerminationRequest={Platform.OS !== 'web' ? () => true : undefined}
         defaultValue={defaultHtml}
         editable={editable}
         autoFocus={autoFocus}

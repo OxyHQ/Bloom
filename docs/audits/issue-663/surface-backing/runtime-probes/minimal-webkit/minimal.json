@@ -1,0 +1,2278 @@
+[
+  {
+    "name": "light-black-backdrop",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "none",
+        "backdrop": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "prefixed": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "background": "rgba(211, 224, 241, 0.72)"
+      },
+      "probe": {
+        "raf": 68,
+        "timer": 61
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": [
+      179,
+      189,
+      201
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "light-black-filter",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "backdrop": "none",
+        "prefixed": "none",
+        "background": "rgb(0, 0, 0)"
+      },
+      "probe": {
+        "raf": 57,
+        "timer": 51
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": [
+      98,
+      98,
+      98
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "light-white-backdrop",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "none",
+        "backdrop": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "prefixed": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "background": "rgba(211, 224, 241, 0.72)"
+      },
+      "probe": {
+        "raf": 68,
+        "timer": 61
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": [
+      223,
+      232,
+      245
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "light-white-filter",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "backdrop": "none",
+        "prefixed": "none",
+        "background": "rgb(255, 255, 255)"
+      },
+      "probe": {
+        "raf": 66,
+        "timer": 56
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": [
+      254,
+      254,
+      254
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "light-stripes-backdrop",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "none",
+        "backdrop": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "prefixed": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "background": "rgba(211, 224, 241, 0.72)"
+      },
+      "probe": {
+        "raf": 66,
+        "timer": 61
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": null,
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "light-stripes-filter",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "backdrop": "none",
+        "prefixed": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "probe": {
+        "raf": 60,
+        "timer": 55
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": null,
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          174,
+          174,
+          174
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          178,
+          178,
+          178
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          182,
+          182,
+          182
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          184,
+          184,
+          184
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          182,
+          182,
+          182
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          178,
+          178,
+          178
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          172,
+          172,
+          172
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          171,
+          171,
+          171
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          172,
+          172,
+          172
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          177,
+          177,
+          177
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          179,
+          179,
+          179
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          181,
+          181,
+          181
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          178,
+          178,
+          178
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          174,
+          174,
+          174
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          170,
+          170,
+          170
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          168,
+          168,
+          168
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "dark-black-backdrop",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "none",
+        "backdrop": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "prefixed": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "background": "rgba(24, 38, 53, 0.72)"
+      },
+      "probe": {
+        "raf": 64,
+        "timer": 61
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": [
+      26,
+      36,
+      47
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "dark-black-filter",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "backdrop": "none",
+        "prefixed": "none",
+        "background": "rgb(0, 0, 0)"
+      },
+      "probe": {
+        "raf": 67,
+        "timer": 56
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": [
+      32,
+      32,
+      32
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          33,
+          33,
+          33
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "dark-white-backdrop",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "none",
+        "backdrop": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "prefixed": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "background": "rgba(24, 38, 53, 0.72)"
+      },
+      "probe": {
+        "raf": 69,
+        "timer": 61
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": [
+      88,
+      98,
+      109
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "dark-white-filter",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "backdrop": "none",
+        "prefixed": "none",
+        "background": "rgb(255, 255, 255)"
+      },
+      "probe": {
+        "raf": 61,
+        "timer": 53
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": [
+      254,
+      254,
+      254
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          254,
+          254,
+          254
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "dark-stripes-backdrop",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "none",
+        "backdrop": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "prefixed": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "background": "rgba(24, 38, 53, 0.72)"
+      },
+      "probe": {
+        "raf": 68,
+        "timer": 61
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": null,
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          17,
+          27,
+          38
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          88,
+          98,
+          109
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  },
+  {
+    "name": "dark-stripes-filter",
+    "engine": "webkit",
+    "browser": "27.2",
+    "executable": "/home/nate/.cache/ms-playwright/webkit-2370/pw_run.sh",
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": true
+      },
+      "computed": {
+        "filter": "blur(24px) saturate(1.2652) contrast(0.77319) brightness(1.12315)",
+        "backdrop": "none",
+        "prefixed": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "probe": {
+        "raf": 65,
+        "timer": 56
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15"
+    },
+    "expected": null,
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          139,
+          139,
+          139
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          146,
+          146,
+          146
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          153,
+          153,
+          153
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          154,
+          154,
+          154
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          152,
+          152,
+          152
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          145,
+          145,
+          145
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          138,
+          138,
+          138
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          136,
+          136,
+          136
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          138,
+          138,
+          138
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          144,
+          144,
+          144
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          148,
+          148,
+          148
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          150,
+          150,
+          150
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          147,
+          147,
+          147
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          140,
+          140,
+          140
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          134,
+          134,
+          134
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          132,
+          132,
+          132
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "WebKit WebGL",
+      "vendor": "WebKit",
+      "unmasked": "Apple GPU"
+    },
+    "errors": []
+  }
+]

@@ -20,11 +20,14 @@ class DownloadFailure(RuntimeError):
 
 
 def download(url, destination):
+    # Retry receive resets (curl 56), too. GET writes to --output, so curl
+    # truncates partial data before retrying. Even permanent HTTP/TLS errors
+    # cost at most the existing retry budget; integrity is checked afterwards.
     # No credentials, signed redirect URLs or response bodies enter the logs.
     result = subprocess.run([
         'curl', '--fail', '--location', '--silent', '--show-error',
         '--connect-timeout', '15', '--max-time', '90',
-        '--retry', '2', '--retry-delay', '2', '--retry-max-time', '180',
+        '--retry', '2', '--retry-all-errors', '--retry-delay', '2', '--retry-max-time', '180',
         '--proto', '=https', '--proto-redir', '=https',
         '--header', 'Accept: application/octet-stream',
         '--output', str(destination), '--write-out', '%{http_code}', url,

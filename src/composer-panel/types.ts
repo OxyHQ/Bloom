@@ -502,14 +502,17 @@ export interface ComposerPillProps extends ComposerPermissionProps, ComposerDock
   error?: string | boolean;
 
   /**
-   * Paint the pill's own surface and `shadow-xs`. Default `true`; turn it off
-   * inside a `ComposerLoader`, which paints the surface behind its light.
+   * Paint the pill's own surface and `shadow-xs`. Defaults to `true` outside a
+   * `ComposerLoader`, and `false` inside it because the loader owns the surface.
+   * An explicit value overrides that inherited default.
    */
   surface?: boolean;
   /**
    * Put the add, model and mic controls on frosted chips — the
    * agent-working treatment, paired with an active `ComposerLoader`. Each control
    * drops its own paint (480ms) so the light passing behind shows through.
+   * Defaults to the nearest loader's active state, otherwise `false`; an explicit
+   * value overrides the inherited default.
    */
   frosted?: boolean;
 
