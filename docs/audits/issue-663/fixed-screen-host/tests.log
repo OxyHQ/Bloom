@@ -65,3 +65,8 @@ Test Suites: 1 passed, 1 total
 Tests:       46 skipped, 3 passed, 49 total
 Snapshots:   0 total
 Time:        7.329 s, estimated 124 s
+
+Test Suites: 1 passed, 1 total
+Tests:       48 skipped, 1 passed, 49 total
+Snapshots:   0 total
+Time:        1.004 s, estimated 7 s

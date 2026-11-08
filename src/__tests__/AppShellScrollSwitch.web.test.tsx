@@ -486,6 +486,8 @@ it('isolates an embedded fixed viewport from ancestor metrics and keeps host pol
             scrollRef,
             metrics: metrics as ScreenHostValue['metrics'],
             restoreScroll: false,
+            restoresDocument: true,
+            sizing: 'content',
             back,
           }}
         >
@@ -496,7 +498,14 @@ it('isolates an embedded fixed viewport from ancestor metrics and keeps host pol
       </BloomThemeProvider>,
     ),
   );
-  expect(observed).toMatchObject({ active: false, kind: 'element', restoreScroll: false, back });
+  expect(observed).toMatchObject({
+    active: false,
+    kind: 'element',
+    restoreScroll: false,
+    restoresDocument: true,
+    sizing: 'content',
+    back,
+  });
   expect(observed?.scrollRef).toBeUndefined();
   expect(observed?.metrics).toBeUndefined();
 });
