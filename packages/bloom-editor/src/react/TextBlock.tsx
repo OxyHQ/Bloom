@@ -1,3 +1,4 @@
+import { EditorPopover } from './EditorPopover';
 import type { ActiveMarks } from '@oxy.so/bloom-text/model';
 import { suggestionOptionId, type SuggestionAnchor } from '@oxy.so/bloom/chat-composer';
 import {
@@ -100,6 +101,19 @@ export function TextBlock({ block }: { block: Block }) {
   const focusedRef = useRef(false);
   const shiftEnterRef = useRef(false);
   const [focused, setFocused] = useState(false);
+  const [dismissedRange, setDismissedRange] = useState<string | null>(null);
+  useEffect(() => {
+    if (!focused || Platform.OS !== 'web') return;
+    const outside = (event: FocusEvent) => {
+      const host = hostRef.current as unknown as HTMLElement | null;
+      if (host?.contains(event.target as Node) || controller.ownsControlFocus(event.target)) return;
+      setFocused(false);
+      if (ui.get().focused === id) ui.set({ focused: null });
+      controller.cancelLinkEditor();
+    };
+    document.addEventListener('focusin', outside);
+    return () => document.removeEventListener('focusin', outside);
+  }, [focused, controller, ui, id]);
   const suggestionId = `bloom-editor-suggestions-${useId().replace(/:/g, '')}`;
   const access = useRef<{ store: typeof store; readOnly: boolean } | null>(null);
   const mentionSearch = useRef(0);
@@ -133,6 +147,26 @@ export function TextBlock({ block }: { block: Block }) {
         if (!box) return null;
         const offset = selectionRef.current.start;
         const rect = inputRef.current?.measureRanges([{ start: offset, end: offset }])?.[0]?.[0];
+        return rect
+          ? {
+              left: box.left + rect.x,
+              right: box.left + rect.x + rect.width,
+              top: box.top + rect.y,
+              bottom: box.top + rect.y + rect.height,
+            }
+          : box;
+      },
+    }),
+    [],
+  );
+
+  const formatAnchor = useMemo(
+    () => ({
+      getBoundingClientRect: () => {
+        const host = inputHostRef.current as unknown as HTMLElement | null;
+        const box = host?.getBoundingClientRect?.();
+        if (!box) return null;
+        const rect = inputRef.current?.measureRanges([selectionRef.current])?.[0]?.[0];
         return rect
           ? {
               left: box.left + rect.x,
@@ -605,10 +639,15 @@ export function TextBlock({ block }: { block: Block }) {
   // Web: the marks and link of a selection, over the block (touch devices
   // get `EditorToolbar` above the keyboard instead).
   const linking = useUi(ui, (s) => s.linking === id);
+  const rangeKey = target ? `${target.start}:${target.end}` : null;
+  const showInline = Boolean(
+    inlineTarget && focused && !slashOpen && !readOnly && rangeKey !== dismissedRange,
+  );
   const showBubble =
     Platform.OS === 'web' &&
     !readOnly &&
-    (linking || (focused && target !== null && target.start !== target.end));
+    (linking ||
+      (focused && target !== null && target.start !== target.end && rangeKey !== dismissedRange));
 
   const placeholder = useMemo(() => {
     if (block.type.startsWith('heading_')) return labels.emptyHeading;
@@ -708,8 +747,14 @@ export function TextBlock({ block }: { block: Block }) {
           }}
           onBlur={() => {
             focusedRef.current = false;
-            setFocused(false);
-            if (ui.get().focused === id) ui.set({ focused: null });
+            const release = () => {
+              if (Platform.OS === 'web' && controller.ownsControlFocus(document.activeElement))
+                return;
+              setFocused(false);
+              if (ui.get().focused === id) ui.set({ focused: null });
+            };
+            if (Platform.OS === 'web') queueMicrotask(release);
+            else release();
             // Native suggestion rows keep the keyboard through the shared
             // scroll owner's keyboardShouldPersistTaps. A real blur leaves
             // this input; web's portal distinguishes inside/outside focus.
@@ -766,18 +811,19 @@ export function TextBlock({ block }: { block: Block }) {
           {placeholder}
         </Text>
       ) : null}
-      {showBubble ? (
-        <View
-          style={[styles.bubble, { backgroundColor: theme.background, borderColor: theme.border }]}
-          accessibilityRole="toolbar"
-          accessibilityLabel={labels.formatting}
-        >
+      <EditorPopover
+        open={showBubble || showInline}
+        anchor={formatAnchor}
+        controller={controller}
+        label={labels.formatting}
+        onDismiss={() => setDismissedRange(rangeKey)}
+      >
+        {showBubble ? (
           <FormatBar controller={controller} theme={theme} labels={labels} />
-        </View>
-      ) : null}
-      {inlineTarget && focused && !slashOpen && !readOnly ? (
-        <InlinePopover target={inlineTarget} />
-      ) : null}
+        ) : inlineTarget ? (
+          <InlinePopover target={inlineTarget} />
+        ) : null}
+      </EditorPopover>
       <SlashMenu
         blockId={id}
         onChoose={runSlashItem}
@@ -816,19 +862,4 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   languageText: { fontSize: 12 },
-  bubble: {
-    position: 'absolute',
-    bottom: '100%',
-    left: 0,
-    zIndex: 60,
-    marginBottom: 6,
-    padding: 2,
-    borderWidth: 1,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 8,
-  },
 });

@@ -251,6 +251,14 @@ export function EditorSurface({
   const own = useEditorController(store);
   const controller = given ?? own;
   const { ui, inputs } = controller;
+  useLayoutEffect(() => {
+    controller.setEditable(!readOnly);
+    const unsubscribe = store.subscribe(() => controller.validateLinkSession());
+    return () => {
+      unsubscribe();
+      controller.setEditable(false);
+    };
+  }, [controller, store, readOnly]);
   const mergedLabels = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
 
   // The format bar is drawn inside the editor and in `EditorToolbar` outside

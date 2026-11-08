@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
-import { ScrollView, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { ScrollArea } from '@oxy.so/bloom/layout';
 import { indent, outdent } from '../model/commands';
 import type { EditorController } from './controller';
 import { BarButton, FormatBar } from './FormatBar';
@@ -54,15 +55,14 @@ export function EditorToolbar({
         style,
       ]}
     >
-      <ScrollView
+      <ScrollArea
         horizontal
         keyboardShouldPersistTaps="always"
-        showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
         <FormatBar controller={controller} theme={theme} labels={merged} />
         {linking ? null : (
-          <KeepFocus style={styles.row}>
+          <KeepFocus owner={controller} style={styles.row}>
             <View style={[styles.separator, { backgroundColor: theme.border }]} />
             {/* The block's own menu (turn into, colour, duplicate, move,
                 delete): on touch there is no gutter handle to open it. */}
@@ -114,7 +114,7 @@ export function EditorToolbar({
             </BarButton>
           </KeepFocus>
         )}
-      </ScrollView>
+      </ScrollArea>
     </View>
   );
 }

@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useCallback, useRef, type ReactNode } from 'react';
+import type { EditorController } from './controller';
 import { type StyleProp, View, type ViewStyle } from 'react-native';
 
 /**
@@ -8,9 +9,24 @@ import { type StyleProp, View, type ViewStyle } from 'react-native';
 export function KeepFocus({
   children,
   style,
+  owner,
 }: {
   children: ReactNode;
+  owner?: EditorController;
   style?: StyleProp<ViewStyle>;
 }) {
-  return <View style={style}>{children}</View>;
+  const previous = useRef<unknown>(null);
+  const attach = useCallback(
+    (node: unknown) => {
+      if (previous.current) owner?.controlHosts.delete(previous.current);
+      previous.current = node;
+      if (node) owner?.controlHosts.add(node);
+    },
+    [owner],
+  );
+  return (
+    <View ref={attach} style={style}>
+      {children}
+    </View>
+  );
 }

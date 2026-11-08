@@ -1,6 +1,8 @@
 import type { ToggleableMark } from '@oxy.so/bloom-text/model';
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { Pressable, StyleSheet, Text, type TextStyle, TextInput, View } from 'react-native';
+import { StyleSheet, Text, type TextStyle, View } from 'react-native';
+import { Button } from '@oxy.so/bloom/button';
+import { TextFieldInput } from '@oxy.so/bloom/text-field';
 import type { EditorController } from './controller';
 import { KeepFocus } from './KeepFocus';
 import type { EditorLabels } from './labels';
@@ -56,7 +58,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
   }, [hasRange]);
 
   const closeLink = (refocus: boolean) => {
-    ui.set({ linking: null });
+    controller.cancelLinkEditor();
     setUrl('');
     setInvalid(false);
     if (refocus) controller.refocus();
@@ -64,13 +66,15 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
 
   if (editingLink) {
     const apply = () => {
-      if (controller.setLink(url)) closeLink(true);
+      if (controller.applyLinkDraft(url)) closeLink(true);
       else setInvalid(true);
     };
     return (
-      <View style={styles.row}>
-        <TextInput
+      <KeepFocus owner={controller} style={[styles.row, styles.wrap]}>
+        <TextFieldInput
           autoFocus
+          label={labels.link}
+          invalid={invalid}
           value={url}
           onChangeText={(next) => {
             setUrl(next);
@@ -93,7 +97,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
             { color: theme.text, borderColor: invalid ? theme.colors.red?.text : theme.border },
           ]}
         />
-        <KeepFocus style={styles.row}>
+        <KeepFocus owner={controller} style={styles.row}>
           <BarButton label={labels.apply} theme={theme} onPress={apply}>
             <Text style={[styles.word, { color: theme.accent }]}>{labels.apply}</Text>
           </BarButton>
@@ -101,7 +105,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
             <Text style={[styles.word, { color: theme.textMuted }]}>{labels.cancel}</Text>
           </BarButton>
         </KeepFocus>
-      </View>
+      </KeepFocus>
     );
   }
 
@@ -111,8 +115,8 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
       setPalette(false);
     };
     return (
-      <KeepFocus style={styles.palette}>
-        <View style={styles.row}>
+      <KeepFocus owner={controller} style={styles.palette}>
+        <View style={[styles.row, styles.wrap]}>
           <Text style={[styles.paletteLabel, { color: theme.textMuted }]}>{labels.color}</Text>
           {BLOCK_COLOR_NAMES.map((name) => (
             <BarButton
@@ -133,7 +137,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
             </BarButton>
           ))}
         </View>
-        <View style={styles.row}>
+        <View style={[styles.row, styles.wrap]}>
           <Text style={[styles.paletteLabel, { color: theme.textMuted }]}>{labels.background}</Text>
           {BLOCK_COLOR_NAMES.map((name) => (
             <BarButton
@@ -160,7 +164,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
   }
 
   return (
-    <KeepFocus style={styles.row}>
+    <KeepFocus owner={controller} style={styles.row}>
       {MARKS.map(({ mark, glyph, style }) => (
         <BarButton
           key={mark}
@@ -179,7 +183,7 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
         theme={theme}
         onPress={() => {
           if (marks?.link) controller.removeLink();
-          else if (selection) ui.set({ linking: selection.blockId });
+          else controller.openLinkEditor();
         }}
       >
         <Text style={[styles.word, { color: theme.text }]}>{labels.link}</Text>
@@ -248,7 +252,7 @@ export function BarButton({
   label,
   active = false,
   disabled = false,
-  theme,
+  theme: _theme,
   onPress,
   children,
 }: {
@@ -260,50 +264,30 @@ export function BarButton({
   children: React.ReactNode;
 }) {
   return (
-    <Pressable
+    <Button
+      appearance="plain"
+      material="flat"
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected: active, disabled }}
-      aria-pressed={active}
+      pressed={active}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        (active || pressed) && { backgroundColor: theme.selection },
-        disabled && styles.disabled,
-      ]}
     >
       {children}
-    </Pressable>
+    </Button>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center' },
-  button: {
-    minWidth: 32,
-    height: 32,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabled: { opacity: 0.4 },
+  row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', minWidth: 0 },
+  wrap: { flexWrap: 'wrap', gap: 4, minWidth: 0 },
   glyph: { fontSize: 15 },
   colorGlyph: { fontWeight: '600', borderBottomWidth: 2, lineHeight: 18 },
   palette: { gap: 2 },
-  paletteLabel: { fontSize: 11, fontWeight: '600', width: 72, paddingLeft: 6 },
+  paletteLabel: { fontWeight: '600', width: '100%' },
   swatchGlyph: { fontSize: 15, fontWeight: '600' },
   swatch: { width: 18, height: 18, borderRadius: 4, borderWidth: 1 },
   word: { fontSize: 14 },
   separator: { width: StyleSheet.hairlineWidth, height: 20, marginHorizontal: 4 },
-  field: {
-    minWidth: 200,
-    height: 32,
-    paddingHorizontal: 8,
-    borderWidth: 1,
-    borderRadius: 6,
-    fontSize: 14,
-    marginRight: 4,
-  },
+  field: { flexGrow: 1, flexBasis: 160, minWidth: 0 },
 });

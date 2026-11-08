@@ -1,4 +1,5 @@
-import { StyleSheet, Text } from 'react-native';
+import { Platform, StyleSheet, Text } from 'react-native';
+import { LinkButton } from '@oxy.so/bloom/button';
 import { useEditorContext } from './context';
 import { BarButton } from './FormatBar';
 import type { InlineTarget } from './inline-target';
@@ -17,13 +18,33 @@ export function InlinePopover({ target }: { target: InlineTarget }) {
   };
   const canOpen = target.kind === 'link' || onOpenMention !== undefined;
   return (
-    <KeepFocus
-      style={[styles.popover, { backgroundColor: theme.background, borderColor: theme.border }]}
-    >
+    <KeepFocus owner={controller} style={styles.popover}>
       <Text style={[styles.what, { color: theme.textMuted }]} numberOfLines={1}>
         {target.kind === 'link' ? target.href : target.text}
       </Text>
-      {canOpen ? (
+      {target.kind === 'link' ? (
+        <LinkButton
+          href={target.href}
+          accessibilityLabel={labels.open}
+          onPress={(event) => {
+            if (Platform.OS === 'web') {
+              const click = event as unknown as MouseEvent;
+              if (
+                click.metaKey ||
+                click.ctrlKey ||
+                click.shiftKey ||
+                click.altKey ||
+                click.button !== 0
+              )
+                return;
+              click.preventDefault();
+            }
+            open();
+          }}
+        >
+          {labels.open}
+        </LinkButton>
+      ) : canOpen ? (
         <BarButton label={labels.open} theme={theme} onPress={open}>
           <Text style={[styles.word, { color: theme.accent }]}>{labels.open}</Text>
         </BarButton>
@@ -38,27 +59,7 @@ export function InlinePopover({ target }: { target: InlineTarget }) {
 }
 
 const styles = StyleSheet.create({
-  popover: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    zIndex: 55,
-    marginTop: 4,
-    maxWidth: 360,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingLeft: 10,
-    paddingRight: 2,
-    paddingVertical: 2,
-    borderWidth: 1,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 6,
-  },
+  popover: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
   what: { flexShrink: 1, fontSize: 13, marginRight: 4 },
   word: { fontSize: 13 },
 });
