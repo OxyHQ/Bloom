@@ -1,3 +1,4 @@
+import { requireMotionArtifact } from './benchmark-contract.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -19,6 +20,7 @@ requireLabEmulator(
 const artifact = resolve(process.env.ARTIFACT);
 const environment = JSON.parse(readFileSync(resolve(artifact, 'environment.json'), 'utf8'));
 assert.equal(environment.serial, serial);
+requireMotionArtifact(environment.build);
 const out = resolve(artifact, process.env.CASE || 'performance');
 mkdirSync(out, { recursive: true });
 const record = (name, content) => {

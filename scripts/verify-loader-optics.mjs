@@ -15,11 +15,12 @@ try {
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2.625 });
   const report = { browser: await browser.version(), cases: [] };
   for (const [variant, theme] of [
-    ['plain', 'light'],
     ['taper', 'light'],
     ['narrow-taper', 'light'],
     ['corner-taper', 'light'],
     ['corner-taper', 'dark'],
+    ['narrow-taper', 'dark'],
+    ['taper', 'dark'],
   ]) {
     await page.goto(
       `${process.env.STORYBOOK_URL || 'http://localhost:6035'}/iframe.html?id=labs-loader-optics--${variant}&viewMode=story&globals=theme:${theme};material:standard`,
@@ -56,7 +57,17 @@ try {
       };
     });
     assert(geometry.animations === (variant === 'plain' ? 3 : 42));
-    await page.screenshot({ path: `${out}/${theme}-${variant}.png` });
+    for (const layer of ['all', 'bloom', 'glow', 'line', 'none']) {
+      await page.evaluate((layer) => {
+        const roots = [...document.querySelectorAll('[data-testid="optics-loader"] svg rect')];
+        const index = ['bloom', 'glow', 'line'].indexOf(layer);
+        roots.forEach((rect, i) => {
+          rect.style.visibility =
+            layer === 'all' || Math.floor(i / 14) === index ? 'visible' : 'hidden';
+        });
+      }, layer);
+      await page.screenshot({ path: `${out}/${theme}-${variant}-${layer}.png` });
+    }
     report.cases.push({ variant, theme, ...geometry });
   }
   writeFileSync(`${out}/report.json`, JSON.stringify(report, null, 2));

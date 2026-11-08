@@ -33,6 +33,7 @@ class BloomLightProbePackage : ReactPackage {
 class BloomLightProbeManager : SimpleViewManager<BloomLightProbe>() {
   override fun getName() = "BloomLightProbe"
   override fun createViewInstance(context: ThemedReactContext) = BloomLightProbe(context)
+  @ReactProp(name = "diagnostics") fun diagnostics(view: BloomLightProbe, value: Boolean) { view.diagnostics = value }
   @ReactProp(name = "seconds") fun seconds(view: BloomLightProbe, value: Double) { view.seconds = value }
   @ReactProp(name = "speed") fun speed(view: BloomLightProbe, value: Double) { view.speed = value; view.invalidate() }
   @ReactProp(name = "reverse") fun reverse(view: BloomLightProbe, value: Boolean) { view.reverse = value; view.invalidate() }
@@ -59,8 +60,22 @@ data class ProbeStroke(val width: Float, val blur: Float, val opacity: Float, va
 @TargetApi(31)
 class BloomLightProbe(context: Context) : View(context) {
   private val density = resources.displayMetrics.density
+  var diagnostics = false
+  private var lastClockUpdate = 0L
   var seconds = 0.0
-    set(value) { if (field != value) { field = value; invalidate() } }
+    set(value) {
+      if (field != value) {
+        if (diagnostics) {
+          val now = android.os.SystemClock.elapsedRealtime()
+          if (lastClockUpdate != 0L && now - lastClockUpdate > 100L) {
+            android.util.Log.i("BloomLightClock", "resume wallMs=" + (now - lastClockUpdate) + " deltaSeconds=" + (value - field) + " seconds=" + value)
+          }
+          lastClockUpdate = now
+        }
+        field = value
+        invalidate()
+      }
+    }
   var speed = 4.5
   var reverse = false
   var boxWidth = 0f
@@ -89,15 +104,15 @@ class BloomLightProbe(context: Context) : View(context) {
     measure.setPath(outline, true)
     paint.shader = LinearGradient(0f, 0f, maxOf(1f, w), 0f, palette, floatArrayOf(0f, .3f, .5f, .7f, 1f), Shader.TileMode.CLAMP)
     layers.forEach { it.node.discardDisplayList() }
-    layers = strokes.map { stroke ->
-      val blur = stroke.blur
-      val group = listOf(stroke)
+    layers = strokes.groupBy { it.blur }.map { (blur, group) ->
       val scale = if (blur >= 6f) 4f else 1f
       val padding = kotlin.math.ceil((group.maxOf { it.width } * density / 2f + 1f) / scale).toInt()
       val node = RenderNode("BloomLightProbe:$blur")
-      node.alpha = stroke.opacity
+      // Single moderate taper calibration, independent of hue or position.
+      node.alpha = if (group.size > 1 && blur == 14f) .8f else 1f
       // Match the public RN/CSS sigma-to-Android-radius conversion, in physical pixels.
-      val sigma = blur * density / scale
+      val taperCalibration = if (group.size > 1 && blur >= 6f) .7f else 1f
+      val sigma = blur * density * taperCalibration / scale
       val effectRadius = if (sigma > .5f) (sigma - .5f) / .57735f else 0f
       if (effectRadius > 0f) node.setRenderEffect(RenderEffect.createBlurEffect(effectRadius, effectRadius, Shader.TileMode.DECAL))
       Layer(node, group, padding, scale)
@@ -108,7 +123,7 @@ class BloomLightProbe(context: Context) : View(context) {
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
     if (Build.VERSION.SDK_INT < 31 || width <= 0 || height <= 0 || boxWidth <= 0 || boxHeight <= 0) return
-    if (!loggedHardware) { android.util.Log.i("BloomLightProbe", "hardwareCanvas=" + canvas.isHardwareAccelerated + " box=" + boxWidth + "x" + boxHeight + " radius=" + radius + " pixels=" + width + "x" + height); loggedHardware = true }
+    if (!loggedHardware) { android.util.Log.i("BloomLightProbe", "source=__BLOOM_LIGHT_SOURCE_SHA__ hardwareCanvas=" + canvas.isHardwareAccelerated + " box=" + boxWidth + "x" + boxHeight + " radius=" + radius + " pixels=" + width + "x" + height); loggedHardware = true }
     check(canvas.isHardwareAccelerated) { "The hardware probe must not silently use a software Canvas" }
     val unit = perimeter * density / 100f
     for (layer in layers) {
@@ -126,7 +141,7 @@ class BloomLightProbe(context: Context) : View(context) {
           if (reverse) -100.0 * (1.0 - fraction) else -100.0 * fraction
         }
         paint.strokeWidth = stroke.width * density
-        paint.alpha = 255 // Composite the stroke opacity after its blur, as SVG does.
+        paint.alpha = (stroke.opacity * 255f).toInt().coerceIn(0, 255)
         paint.pathEffect = null
         val period = 100f * unit
         val dashLength = stroke.dash * unit

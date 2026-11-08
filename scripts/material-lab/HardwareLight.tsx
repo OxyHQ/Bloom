@@ -1,9 +1,12 @@
+import { useContext } from 'react';
+import { LightDiagnosticLayerContext, LightClockDiagnosticsContext } from './hardware-diagnostics';
 import { processColor, requireNativeComponent, StyleSheet, type ViewProps } from 'react-native';
 import Animated, { useAnimatedProps, type SharedValue } from 'react-native-reanimated';
 import type { ComposerLoaderGeometry } from '../../src/composer-loader/shared';
 
 type ProbeProps = ViewProps & {
   seconds?: number;
+  diagnostics: boolean;
   speed: number;
   reverse: boolean;
   boxWidth: number;
@@ -35,6 +38,12 @@ export function HardwareLight({
   width: number;
   height: number;
 }) {
+  const diagnostics = useContext(LightClockDiagnosticsContext);
+  const layer = useContext(LightDiagnosticLayerContext);
+  const strokes =
+    layer === 'all'
+      ? geometry.strokes
+      : geometry.strokes.filter((stroke) => stroke.key.startsWith(`${layer}-`));
   const props = useAnimatedProps(() => ({ seconds: time.value }), [time]);
   const palette = colors.map((color) => {
     const result = processColor(color);
@@ -45,6 +54,7 @@ export function HardwareLight({
   return (
     <AnimatedLight
       animatedProps={props}
+      diagnostics={diagnostics}
       speed={speed}
       reverse={reverse}
       boxWidth={width}
@@ -52,7 +62,7 @@ export function HardwareLight({
       radius={geometry.rx}
       perimeter={geometry.perimeter}
       palette={palette}
-      strokes={geometry.strokes}
+      strokes={strokes}
       style={[StyleSheet.absoluteFill, { opacity: intensity }]}
       pointerEvents="none"
       accessible={false}

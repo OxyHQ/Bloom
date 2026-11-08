@@ -1,0 +1,140 @@
+{
+  "physical": {
+    "apkSha256": "eb91acee2a5eaf60d3d71e182a84d0bd975f8149d90fb5dbf22d3c75b99e9377",
+    "results": [
+      {
+        "name": "explicit-pause",
+        "box": [
+          42,
+          413,
+          1038,
+          549
+        ],
+        "changedChannels": 0
+      },
+      {
+        "name": "explicit-resume",
+        "events": [
+          {
+            "wallMs": 9985,
+            "deltaSeconds": 0.008333333015442257,
+            "seconds": 7.0026242210865
+          }
+        ]
+      },
+      {
+        "name": "screen-inactive",
+        "box": [
+          42,
+          413,
+          1038,
+          549
+        ],
+        "changedChannels": 0
+      },
+      {
+        "name": "screen-resume",
+        "events": [
+          {
+            "wallMs": 9952,
+            "deltaSeconds": 0.008333333015441813,
+            "seconds": 3.626648534059526
+          }
+        ]
+      },
+      {
+        "name": "background-resume",
+        "events": [
+          {
+            "wallMs": 2417,
+            "deltaSeconds": 0.008333333015442257,
+            "seconds": 4.800472973108292
+          }
+        ]
+      },
+      {
+        "name": "resize",
+        "box": [
+          42,
+          413,
+          672,
+          549
+        ]
+      },
+      {
+        "name": "initial-inactive",
+        "box": [
+          42,
+          413,
+          672,
+          549
+        ],
+        "changedChannels": 0
+      },
+      {
+        "name": "initial-inactive-performance",
+        "frames": 0,
+        "cpuPercentOfOneCore": [
+          6.8,
+          3.8,
+          5.6
+        ]
+      },
+      {
+        "name": "rapid-toggle-visible",
+        "id": "benchmark-loader-one",
+        "changedChannels": 109097
+      },
+      {
+        "name": "rapid-toggle-visible",
+        "id": "benchmark-loader-two",
+        "changedChannels": 109020
+      }
+    ],
+    "note": "Real Pixel/native clock and pixels; videos are excluded from performance windows. Physical OS settings unchanged."
+  },
+  "isolatedEmulator": {
+    "apkSha256": "2e9e784d955a7e1ab4ecda8707a07970f6859d177c1d0019ba6339f858cb61fa",
+    "results": [
+      {
+        "name": "live-os-reduced-motion",
+        "box": [
+          48,
+          466,
+          1122,
+          622
+        ],
+        "changedChannels": 0
+      },
+      {
+        "name": "os-motion-restored",
+        "events": [
+          {
+            "wallMs": 111,
+            "deltaSeconds": 0.11666666200011377
+          },
+          {
+            "wallMs": 5621,
+            "deltaSeconds": 0.016666666001086128
+          }
+        ]
+      },
+      {
+        "name": "initial-os-reduced-motion",
+        "box": [
+          48,
+          466,
+          1122,
+          622
+        ],
+        "changedChannels": 0
+      }
+    ],
+    "note": "Functional API36.1 emulator evidence, not physical GPU performance. No physical settings changed."
+  },
+  "notes": [
+    "Screen fixture initially collapsed because height120 was combined with inherited flexBasis0; corrected to explicit flexBasis120 and all Screen cases rerun. Prior failure artifacts retained locally.",
+    "Native physical settings unchanged; only the isolated AVD transition_animation_scale was temporarily changed and restored to1.0.",
+    "Offscreen native suspension uses caller paused policy; these results do not establish an automatic native intersection observer."
+  ]
+}

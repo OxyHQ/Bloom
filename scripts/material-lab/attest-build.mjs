@@ -17,6 +17,27 @@ const packed = execFileSync('unzip', ['-p', apk, 'assets/index.android.bundle'],
 for (const key of ['commit', 'fixtureSha256', 'sourceSha256', 'lockSha256']) {
   assert(packed.includes(Buffer.from(build[key])), `APK contains stale ${key}; rebuild the bundle`);
 }
+if (build.nativeProbeSourceSha256) {
+  const dexFiles = execFileSync('unzip', ['-Z1', apk], { encoding: 'utf8' })
+    .split(/\r?\n/)
+    .filter((name) => /^classes\d*\.dex$/.test(name));
+  assert(
+    dexFiles.some((name) =>
+      execFileSync('unzip', ['-p', apk, name], { maxBuffer: 64 * 1024 * 1024 }).includes(
+        Buffer.from(build.nativeProbeSourceSha256),
+      ),
+    ),
+    'APK contains a stale native probe; rebuild Java/Kotlin as well as Metro',
+  );
+  const generated = readFileSync(
+    resolve(here, 'android/app/src/main/java/so/oxy/bloom/materiallab/BloomLightProbe.kt'),
+  );
+  assert.equal(
+    createHash('sha256').update(generated).digest('hex'),
+    build.nativeProbeOutputSha256,
+    'Generated native probe differs from prepared source',
+  );
+}
 const emitted = readFileSync(
   resolve(here, 'android/app/build/generated/assets/react/release/index.android.bundle'),
 );

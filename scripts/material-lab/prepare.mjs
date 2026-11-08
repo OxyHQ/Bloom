@@ -1,19 +1,28 @@
 import './generate-hardware-loader.mjs';
+import nativeSource from './native-source.js';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, relative } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
+const nativeProbe = nativeSource();
+const nativeOutput = resolve(
+  here,
+  'android/app/src/main/java/so/oxy/bloom/materiallab/BloomLightProbe.kt',
+);
+if (existsSync(dirname(nativeOutput))) writeFileSync(nativeOutput, nativeProbe.source);
 const files = [
   'templates/material/MaterialScene.tsx',
   'scripts/material-lab/MaterialLab.tsx',
   'scripts/material-lab/LoaderBenchmark.tsx',
   'scripts/material-lab/HardwareLight.tsx',
+  'scripts/material-lab/hardware-diagnostics.ts',
   'scripts/material-lab/HardwareLoader.generated.tsx',
   'scripts/material-lab/generate-hardware-loader.mjs',
   'scripts/material-lab/with-hardware-light.js',
+  'scripts/material-lab/native-source.js',
   'scripts/material-lab/native/BloomLightProbe.kt',
   'scripts/material-lab/bun.lock',
   'scripts/material-lab/package.json',
@@ -56,6 +65,8 @@ writeFileSync(
       fixtureSha256: hash.digest('hex'),
       sourceSha256: sourceHash.digest('hex'),
       sourceFiles,
+      nativeProbeSourceSha256: nativeProbe.sourceSha256,
+      nativeProbeOutputSha256: nativeProbe.outputSha256,
       lockSha256: createHash('sha256')
         .update(readFileSync(resolve(here, 'bun.lock')))
         .digest('hex'),
