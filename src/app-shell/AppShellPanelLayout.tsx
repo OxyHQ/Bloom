@@ -133,6 +133,13 @@ export interface PanelLayoutViewProps {
   testID?: string;
 }
 
+/** Clearance extends the panel's existing material, like its transparent Screen. */
+function DocumentPanelReserve({ height }: { height: number }) {
+  return height > 0 ? (
+    <View testID="app-shell-panel-reserve" style={{ height, flexShrink: 0 }} />
+  ) : null;
+}
+
 /** Shared implementation for native and web; only material and scrollbar implementations differ. */
 export function createPanelLayoutView(
   ContentPanel: ComponentType<ContentPanelProps>,
@@ -708,19 +715,22 @@ export function createPanelLayoutView(
       // above the group viewport's own clearance.
       const underBar = !document && !vertical && !!region?.underBottomBar;
       const body = (
-        <ScreenScope inheritBottomEdge={document || underBar} inheritNavigation={underBar}>
-          <ScreenHostContext.Provider value={navigation ? { ...host, navigation } : host}>
-            <ScrollMetricsContext.Provider value={metrics}>
-              <ScrollOffsetProvider value={scrollY}>
-                {windowed ? (
-                  <WindowChromeProvider value={windowChrome}>{content}</WindowChromeProvider>
-                ) : (
-                  content
-                )}
-              </ScrollOffsetProvider>
-            </ScrollMetricsContext.Provider>
-          </ScreenHostContext.Provider>
-        </ScreenScope>
+        <>
+          <ScreenScope inheritBottomEdge={document || underBar} inheritNavigation={underBar}>
+            <ScreenHostContext.Provider value={navigation ? { ...host, navigation } : host}>
+              <ScrollMetricsContext.Provider value={metrics}>
+                <ScrollOffsetProvider value={scrollY}>
+                  {windowed ? (
+                    <WindowChromeProvider value={windowChrome}>{content}</WindowChromeProvider>
+                  ) : (
+                    content
+                  )}
+                </ScrollOffsetProvider>
+              </ScrollMetricsContext.Provider>
+            </ScreenHostContext.Provider>
+          </ScreenScope>
+          <DocumentPanelReserve height={document && !vertical ? (region?.bottomReserve ?? 0) : 0} />
+        </>
       );
       const framed = region?.framed ?? true;
       const surface = joined ? (
@@ -751,7 +761,7 @@ export function createPanelLayoutView(
             document && !vertical && !sticky && region
               ? {
                   minHeight: webViewportHeightMinus(
-                    region.viewportInset.top + region.viewportInset.bottom + region.bottomReserve,
+                    region.viewportInset.top + region.viewportInset.bottom,
                   ),
                 }
               : undefined,
@@ -1389,11 +1399,14 @@ export function createPanelLayoutView(
               {
                 minWidth: 0,
                 alignSelf: 'stretch',
+                // Horizontal document panels reserve inside their own surface.
                 // A bounded group reserves the bottom bar, or — when the app keeps
                 // the bar over its content — fills under it and what scrolls clears
                 // it (`useBottomEdgeInset`, the panel scroller, the vertical deck).
                 paddingBottom: document
-                  ? (region?.bottomReserve ?? 0)
+                  ? vertical
+                    ? (region?.bottomReserve ?? 0)
+                    : 0
                   : region?.underBottomBar
                     ? 0
                     : bottomEdge,

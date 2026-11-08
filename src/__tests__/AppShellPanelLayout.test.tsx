@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import * as Native from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { AppShell, useAppShellPanel, usePanelNavigation } from '../app-shell';
@@ -140,6 +141,50 @@ describe('root modular panels', () => {
     fireEvent(grip, 'nudge', 500);
     expect(onHeightsChange).toHaveBeenCalledWith({ a: 450, b: 250 });
     expect(mounts).toHaveBeenCalledTimes(1);
+  });
+  it.each([true, false])('keeps document bottom clearance inside panel paint (%s)', (reserve) => {
+    const previous = Native.Platform.OS;
+    Native.Platform.OS = 'web';
+    mockWindowSize({ width: 390, height: 844, scale: 1, fontScale: 1 });
+    try {
+      const screen = render(
+        <AppShell
+          testID="shell"
+          contentMaxWidth="none"
+          reserveBottomBarSpace={reserve}
+          bottomBar={<Native.Text>Navigation</Native.Text>}
+          panelLayout={{
+            flow: 'document',
+            panels: [
+              {
+                id: 'main',
+                content: (
+                  <Screen>
+                    <Native.Text>Body</Native.Text>
+                  </Screen>
+                ),
+              },
+            ],
+          }}
+        />,
+        { wrapper },
+      );
+      fireEvent(screen.getByTestId('shell-bottom-bar'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 770, width: 390, height: 74 } },
+      });
+      expect(resolvedStyle(screen.getByTestId('shell-panels').props.style).paddingBottom).toBe(0);
+      const spacer = screen.queryByTestId('app-shell-panel-reserve');
+      if (reserve) {
+        expect(resolvedStyle(spacer?.props.style)).toMatchObject({ height: 74, flexShrink: 0 });
+        expect(resolvedStyle(spacer?.props.style).backgroundColor).toBeUndefined();
+        let ancestor = spacer?.parent;
+        while (ancestor && ancestor.props.testID !== 'content-panel-content')
+          ancestor = ancestor.parent;
+        expect(ancestor).toBeTruthy();
+      } else expect(spacer).toBeNull();
+    } finally {
+      Native.Platform.OS = previous;
+    }
   });
   it('sticks short document panels at the top and lets tall ones reach their bottom', () => {
     const previous = Native.Platform.OS;

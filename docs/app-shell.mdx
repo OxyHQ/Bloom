@@ -351,6 +351,12 @@ background continues underneath. Measured in Chrome at 390,
 scrolled to the page end: last item bottom `768`, action top `784`, bar top `844`.
 
 With a content panel, the reserved clearance stays inside its painted surface.
+For horizontal document panel groups this is a transparent, nonshrinking child
+inside each panel, not padding outside the surfaces. The surface reaches the
+viewport foot on short pages; long pages retain the same clearance after their
+content. Do not paint this spacer with the JS published fill: responsive CSS can
+switch a compact panel to its opaque fill, while a Screen is transparent over
+the panel's existing material. An opaque spacer reintroduces a visible band.
 In the compact full-width layout, bottom chrome also inherits that panel fill,
 so its fading backdrop does not introduce a strip of the outer page color.
 
