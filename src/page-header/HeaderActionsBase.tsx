@@ -223,6 +223,9 @@ export function createHeaderActions({
               </View>
             ))}
           <View
+            // A column child otherwise stretches to the widest full+compact probe.
+            // Packing must reserve this icon button's width, not that column.
+            style={{ alignSelf: 'flex-start' }}
             testID={testID ? `${testID}-measure-overflow` : undefined}
             onLayout={(event) => setTriggerWidth(event.nativeEvent.layout.width)}
           >

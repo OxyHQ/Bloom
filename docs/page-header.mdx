@@ -522,3 +522,9 @@ and dark: essential node identity, focus transfer and open-menu continuity pass.
 Native device focus and the full issue #663 responsive matrix remain separate
 acceptance checks; these APIs are part of the current candidate,
 not a claim about older published packages.
+
+The overflow measurement wrapper must hug its own button (`alignSelf: 'flex-start'`).
+Stretching it as a child of the absolute probe column measured 197.734/207.734px
+instead of the actual 34/44px fine/coarse control and reserved too much overflow
+space. `verify-header-action-measurement.mjs` compares the probe with its button
+and checks packing against measured geometry in both pointer modes.
