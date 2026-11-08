@@ -56,7 +56,7 @@ CI-wide configuration mechanism; the exact-GAV filter avoids a general mirror.
 
 ## Evidence and remaining acceptance
 
-Eleven helper tests cover normal transport without fallback/download, failure-only
+Fourteen helper tests cover normal transport without fallback/download, failure-only
 fallback, partial downloads, corrupt primary/fallback rejection, unsupported
 versions, extracted version mismatch, exact Kotlin GAV, recovery/final-job cleanup and
 preflight final-status checks (including curl 63 with HTTP 504).
@@ -73,3 +73,47 @@ records the actual unmodified React Native included build's
 Gradle home and read-only dependency cache were used. This does not replace the
 required complete legacy/default/predictive Android CI gates; acceptance remains
 pending those builds.
+
+## Hermes source transport
+
+The predictive build also failed at RN's `downloadHermes` task with HTTP 504
+(runs 42467553205 and 42468508074). The installed RN source requests `hermes-v260318099.0.5`.
+The official tag resolves to commit `9a115f15785851f4ff2747ebb090ddd066fc8ad2`,
+Git tree `08059b08ded6b8b6ba7e74e6845500eb77d7036d`:
+https://api.github.com/repos/meta/hermes/git/ref/tags/hermes-v260318099.0.5.
+The repository's former facebook/hermes URL redirects to meta/hermes.
+
+Three full official downloads (API tag, API commit, and codeload commit) produced
+identical 23061798-byte archives with SHA256
+`7545a1ca1d92e6ad8430d2a1e44e91e56e3bcd0d64d7281e4cfbee7b26fd4569`.
+Comparison of all 12653 regular-file paths, modes and individual SHA256 values
+also passed (`hermes-tree-comparison.json`). These are independently retrieved
+archives, not an upstream-published checksum. The canonical github.com tarball
+request independently reproduced HTTP 504 locally. Codeload is the fallback;
+the API tarball endpoint rejects the helper's octet-stream Accept header.
+
+A failed bounded GET enables this pinned source only. A different installed tag
+fails explicitly. Verified extraction rejects unexpected roots, traversal and
+links. Source lives under RUNNER_TEMP and is supplied through RN's existing
+`REACT_NATIVE_OVERRIDE_HERMES_DIR`; no node_modules files change.
+`REACT_NATIVE_DOWNLOADS_DIR` alone is insufficient because RN's download task
+uses overwrite/onlyIfModified and still contacts the failed endpoint.
+
+RN's existing override omits only download/unzip dependencies. configure/build,
+headers/prefab and debugger paths still use the same source and remain part of
+the build. An always-running step removes this job's extracted source. Tests
+cover healthy transport without override, wrong tag, verified extraction,
+unsafe archive members and cleanup ownership. Full predictive compilation
+remains the acceptance gate; a task graph alone does not prove compilation.
+
+Run 42468508074 passed the full legacy and default Android gates. Predictive
+reached Hermes and reproduced the same HTTP 504, motivating this addition. Its
+build job separately found one excess blank line in validate.yml; formatting
+is corrected. All three gates must pass again on the updated commit.
+
+`hermes-helper.txt` records a real canonical-failure/codeload-success invocation.
+`hermes-taskgraph.txt` is RN's unmodified standalone Gradle build with the existing
+Gradle plugin included and the verified source override. `preBuild`, host compiler,
+configure and headers tasks remain, including explicitly requested debugger
+counterparts; download/unzip are absent. SKIPPED denotes Gradle --dry-run here,
+not a skipped CI compile gate. The predictive CI command remains unchanged.

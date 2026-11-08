@@ -8,6 +8,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import tarfile
 import zipfile
 
 MANIFEST = json.loads(Path(__file__).with_suffix('.json').read_text())
@@ -43,9 +44,9 @@ def primary_available(url):
     return result.returncode in (0, 63) and result.stdout in ('200', '206')
 
 
-def after_failed_probe(transport):
+def after_failed_probe(transport, failed_url=None):
     def fallback_only(url, destination):
-        if url.startswith(('https://services.gradle.org/', 'https://repo.maven.apache.org/')) and destination.suffix != '.pom':
+        if url == failed_url or (url.startswith(('https://services.gradle.org/', 'https://repo.maven.apache.org/')) and destination.suffix != '.pom'):
             raise DownloadFailure('Canonical transport failed its bounded preflight')
         transport(url, destination)
     return fallback_only
@@ -137,12 +138,54 @@ allprojects {{ project ->
     return route
 
 
+def prepare_hermes(directory, react_native, transport=download, probe=primary_available):
+    version = (react_native / 'sdks/.hermesv1version').read_text().strip()
+    if version != 'hermes-v260318099.0.5':
+        raise ValueError('Only the installed Hermes hermes-v260318099.0.5 source is verified')
+    pin = MANIFEST[version]
+    if probe(pin['primary']):
+        print('Hermes: canonical transport available; normal RN download retained', flush=True)
+        return None
+    archive, _ = fetch(pin, directory / 'downloads', after_failed_probe(transport, pin['primary']))
+    source = directory / 'source'
+    if source.exists():
+        raise ValueError('Refusing to reuse an unverified extracted Hermes source')
+    # No symlinks/devices exist in this pinned source archive. Refuse any new
+    # ones and verify every root/path before writing into the job-local folder.
+    with tarfile.open(archive, 'r:gz') as tar:
+        for member in tar.getmembers():
+            parts = Path(member.name).parts
+            if (not parts or parts[0] != pin['archive_root'] or '..' in parts
+                    or Path(member.name).is_absolute() or not (member.isfile() or member.isdir())):
+                raise ValueError('Unexpected Hermes archive member')
+        tar.extractall(source, filter='data')
+    tree = source / pin['archive_root']
+    if not (tree / 'CMakeLists.txt').is_file():
+        raise ValueError('Verified Hermes source is missing its build entry')
+    print(f'Hermes: verified source commit {pin["commit"]}; RN compilation tasks retained', flush=True)
+    return tree
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('kind', choices=['gradle', 'kotlin', 'cleanup'])
+    parser.add_argument('kind', choices=['gradle', 'kotlin', 'hermes', 'cleanup', 'cleanup-hermes'])
     parser.add_argument('--version')
+    parser.add_argument('--react-native', type=Path)
     parser.add_argument('--directory', type=Path, required=True)
     args = parser.parse_args()
+    if args.kind == 'cleanup-hermes':
+        source = args.directory / 'source'
+        if source.exists():
+            shutil.rmtree(source)
+        return
+    if args.kind == 'hermes':
+        if args.react_native is None:
+            parser.error('--react-native is required for Hermes')
+        source = prepare_hermes(args.directory, args.react_native)
+        if source is not None:
+            with open(os.environ['GITHUB_ENV'], 'a') as output:
+                output.write(f'REACT_NATIVE_OVERRIDE_HERMES_DIR={source.resolve()}\n')
+        return
     if args.kind == 'cleanup':
         home = os.environ.get('GRADLE_USER_HOME')
         if home:

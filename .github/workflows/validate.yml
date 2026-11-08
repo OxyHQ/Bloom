@@ -219,6 +219,9 @@ jobs:
       - name: Declared minimum React Native toolchain SDK
         if: matrix.variant == 'legacy'
         run: sdkmanager 'platforms;android-34' 'build-tools;33.0.1' 'build-tools;34.0.0'
+      - name: Prepare verified Hermes source transport when required
+        if: matrix.variant == 'predictive'
+        run: python3 .github/scripts/verified-android-downloads.py hermes --react-native node_modules/react-native --directory "$RUNNER_TEMP/bloom-verified-hermes"
       - name: Hermes source prerequisites
         if: matrix.variant == 'predictive'
         run: |
@@ -256,10 +259,12 @@ jobs:
       - name: Prove unresolved-target host regression coverage
         if: matrix.variant == 'predictive'
         run: python3 scripts/native-check/verify-host-regression.py
+      - name: Remove temporary Hermes source
+        if: always() && matrix.variant == 'predictive'
+        run: python3 .github/scripts/verified-android-downloads.py cleanup-hermes --directory "$RUNNER_TEMP/bloom-verified-hermes"
       - name: Remove temporary artifact repository before Gradle cache cleanup
         if: always()
         run: python3 .github/scripts/verified-android-downloads.py cleanup --directory "$RUNNER_TEMP/bloom-verified-kotlin"
-
 
   # Keeps the predictive gate's NDK and CMake in main's Actions cache, the one
   # scope every pull request and merge-queue run can restore from. The android

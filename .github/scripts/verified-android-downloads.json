@@ -26,5 +26,14 @@
     "fallback": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.0/kotlin-compiler-embeddable-2.2.0.pom",
     "size": 2468,
     "sha256": "16a15dd197cf2413494f788cb96144d9a146267c3d6f7f1c15b7a3c1e052346a"
+  },
+  "hermes-v260318099.0.5": {
+    "filename": "hermes.tar.gz",
+    "primary": "https://github.com/facebook/hermes/tarball/hermes-v260318099.0.5",
+    "fallback": "https://codeload.github.com/meta/hermes/legacy.tar.gz/9a115f15785851f4ff2747ebb090ddd066fc8ad2",
+    "commit": "9a115f15785851f4ff2747ebb090ddd066fc8ad2",
+    "archive_root": "meta-hermes-9a115f1",
+    "size": 23061798,
+    "sha256": "7545a1ca1d92e6ad8430d2a1e44e91e56e3bcd0d64d7281e4cfbee7b26fd4569"
   }
 }

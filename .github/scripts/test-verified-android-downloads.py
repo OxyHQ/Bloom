@@ -4,6 +4,7 @@ import importlib.util
 import io
 from pathlib import Path
 import tempfile
+import tarfile
 import sys
 sys.dont_write_bytecode = True
 import unittest
@@ -116,6 +117,60 @@ class VerifiedDownloads(unittest.TestCase):
         with patch.dict(module.MANIFEST, {'gradle-8.3': artifact(data, 'gradle-8.3-bin.zip')}):
             with self.assertRaisesRegex(ValueError, 'version does not match'):
                 module.install_gradle('8.3', self.root, lambda _, output: output.write_bytes(data))
+
+    def test_hermes_normal_route_and_unrecognized_version_do_not_override(self):
+        rn = self.root / 'rn'
+        (rn / 'sdks').mkdir(parents=True)
+        version = rn / 'sdks/.hermesv1version'
+        version.write_text('hermes-v260318099.0.5')
+        self.assertIsNone(module.prepare_hermes(self.root / 'output', rn, lambda *_: self.fail('downloaded'), probe=lambda _: True))
+        version.write_text('different-tag')
+        with self.assertRaisesRegex(ValueError, 'Only the installed Hermes'):
+            module.prepare_hermes(self.root / 'output', rn, lambda *_: self.fail('downloaded'), probe=lambda _: False)
+
+    def test_hermes_verified_tree_and_cleanup_leave_other_files(self):
+        rn = self.root / 'rn'
+        (rn / 'sdks').mkdir(parents=True)
+        (rn / 'sdks/.hermesv1version').write_text('hermes-v260318099.0.5')
+        archive = io.BytesIO()
+        with tarfile.open(fileobj=archive, mode='w:gz') as tar:
+            member = tarfile.TarInfo('meta-hermes-9a115f1/CMakeLists.txt')
+            member.size = 5
+            tar.addfile(member, io.BytesIO(b'build'))
+        data = archive.getvalue()
+        pin = {**module.MANIFEST['hermes-v260318099.0.5'], **artifact(data, 'hermes.tar.gz')}
+        def fallback(url, output):
+            self.assertNotIn('primary', url)
+            output.write_bytes(data)
+        directory = self.root / 'output'
+        with patch.dict(module.MANIFEST, {'hermes-v260318099.0.5': pin}):
+            tree = module.prepare_hermes(directory, rn, fallback, probe=lambda _: False)
+        self.assertEqual((tree / 'CMakeLists.txt').read_text(), 'build')
+        (directory / 'unrelated').write_text('keep')
+        with patch.object(sys, 'argv', ['helper', 'cleanup-hermes', '--directory', str(directory)]):
+            module.main()
+        self.assertFalse(tree.exists())
+        self.assertEqual((directory / 'unrelated').read_text(), 'keep')
+
+    def test_hermes_archive_escape_rejected_before_extraction(self):
+        rn = self.root / 'rn'
+        (rn / 'sdks').mkdir(parents=True)
+        (rn / 'sdks/.hermesv1version').write_text('hermes-v260318099.0.5')
+        for name, kind in [('meta-hermes-9a115f1/../../escape', tarfile.REGTYPE), ('meta-hermes-9a115f1/link', tarfile.SYMTYPE), ('different-root/CMakeLists.txt', tarfile.REGTYPE)]:
+            with self.subTest(name=name):
+                archive = io.BytesIO()
+                with tarfile.open(fileobj=archive, mode='w:gz') as tar:
+                    member = tarfile.TarInfo(name)
+                    member.type = kind
+                    member.linkname = '/outside'
+                    tar.addfile(member)
+                data = archive.getvalue()
+                pin = {**module.MANIFEST['hermes-v260318099.0.5'], **artifact(data, 'hermes.tar.gz')}
+                with patch.dict(module.MANIFEST, {'hermes-v260318099.0.5': pin}):
+                    with self.assertRaisesRegex(ValueError, 'Unexpected Hermes archive'):
+                        module.prepare_hermes(self.root / 'output', rn, lambda _, out: out.write_bytes(data), probe=lambda _: False)
+                self.assertFalse((self.root / 'output/source').exists())
+
 
     def test_exact_kotlin_repository_only_after_fallback_and_cleared_on_recovery(self):
         jar, pom = b'jar', b'original-pom-with-dependencies'
