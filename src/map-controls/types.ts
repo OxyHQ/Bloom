@@ -99,6 +99,8 @@ export interface MapLayerPickerProps {
 }
 
 export interface MapControlsProps {
+  /** Arrange the same control groups in a row or column. Default vertical. */
+  orientation?: 'horizontal' | 'vertical';
   /** Draws the locate button. */
   onLocate?: () => void;
   /**
