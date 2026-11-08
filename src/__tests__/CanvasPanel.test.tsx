@@ -133,3 +133,35 @@ it.each([false, true])('reports side claims from bounds, including both clips (R
     I18nManager.isRTL = previous;
   }
 });
+
+it('reconciles a rejected proposal to the controlled snap and accepts a later prop', () => {
+  const animation = jest.spyOn(require('react-native-reanimated'), 'withSpring');
+  const store = createCanvasStore();
+  store.frame({ x: 0, y: 0, width: 390, height: 844 }, { x: 0, y: 0, width: 390, height: 844 });
+  const change = jest.fn();
+  function Subject({ snap }: { snap: 'peek' | 'half' }) {
+    return (
+      <BloomThemeProvider>
+        <CanvasContext.Provider value={store}>
+          <CanvasPanel
+            snap={snap}
+            onSnapChange={change}
+            accessibilityLabel="Places"
+            testID="controlled"
+          >
+            <Text>Body</Text>
+          </CanvasPanel>
+        </CanvasContext.Provider>
+      </BloomThemeProvider>
+    );
+  }
+  const view = render(<Subject snap="peek" />);
+  animation.mockClear();
+  fireEvent.press(view.getByTestId('controlled-handle'));
+  expect(change).toHaveBeenLastCalledWith('half');
+  expect(animation).toHaveBeenLastCalledWith(784, expect.any(Object));
+  // Later acceptance is a prop update, not an internal optimistic state.
+  view.rerender(<Subject snap="half" />);
+  expect(animation).toHaveBeenLastCalledWith(448.2, expect.any(Object));
+  animation.mockRestore();
+});

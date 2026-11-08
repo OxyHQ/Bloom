@@ -45,6 +45,11 @@ export function CanvasFixture() {
   const [narrow, setNarrow] = useState(false),
     [active, setActive] = useState(true);
   const [snap, setSnap] = useState<CanvasPanelSnap>('half');
+  const [acceptance, setAcceptance] = useState<'accept' | 'reject' | 'delay'>('accept');
+  const propose = (next: CanvasPanelSnap) => {
+    if (acceptance === 'accept') setSnap(next);
+    else if (acceptance === 'delay') setTimeout(() => setSnap(next), 500);
+  };
   return (
     <View style={{ flex: 1, minHeight: 0 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 8 }}>
@@ -52,6 +57,13 @@ export function CanvasFixture() {
         <Button onPress={() => setActive((v) => !v)}>Toggle active</Button>
         <Button onPress={() => setSnap('peek')}>Peek</Button>
         <Button onPress={() => setSnap('full')}>Full</Button>
+        <Button
+          onPress={() =>
+            setAcceptance((v) => (v === 'accept' ? 'reject' : v === 'reject' ? 'delay' : 'accept'))
+          }
+        >
+          Acceptance: {acceptance}
+        </Button>
       </View>
       <View style={{ flex: 1, minHeight: 0, width: narrow ? 280 : '100%' }}>
         <Canvas active={active} testID="fixture-canvas">
@@ -61,7 +73,7 @@ export function CanvasFixture() {
           <CanvasPanel
             side={{ from: 360, width: 180 }}
             snap={snap}
-            onSnapChange={setSnap}
+            onSnapChange={propose}
             accessibilityLabel="Synthetic panel"
             header={<Text style={{ padding: 16 }}>Persistent panel</Text>}
             testID="fixture-panel"
