@@ -1,0 +1,120 @@
+---
+title: Composition implementation inventory
+description: Source ownership and minimum extensions for the responsive composition work in issue 663.
+---
+
+# Composition implementation inventory
+
+Source baseline: Bloom `e3996b93573d143ba5d426413eaa9233e61c248b`, version
+17.22.0, inspected 2026-11-08 for [#663](https://github.com/OxyHQ/Bloom/issues/663).
+This is a source inventory and design note, not visual acceptance or a claim
+that every public part or consumer has been audited. Runtime, physical-device,
+performance and published-consumer checks in this document are **not run**.
+The existing [composition contracts](/docs/composition),
+[layout guide](/docs/bloom/main/compose-layouts) and
+[UI architecture](/docs/ui-architecture) remain authoritative.
+
+Open PRs revalidated on that date: #577 (native avatars), #585 (focused chart
+exports) and #586 (diagnostic packaging). None is integrated by this inventory.
+The chart entry-point proposal must be checked again before publishing an
+import for a new chart subpath.
+
+## Header inventory
+
+Classification describes behavior, not whether an implementation is defect-free.
+Paths below are relative to `src/`; each row identifies the implementation to
+review rather than treating an import as evidence of runtime behavior.
+All listed implementations contain a shared React Native/web path unless a
+platform factory is explicitly noted. That is source coverage, not device proof.
+
+| Entry and source | Classification and owner | Shared base and semantic difference | Adaptation, state and remaining gap |
+| --- | --- | --- | --- |
+| `PageHeader`, `page-header/PageHeader.tsx`, `types.ts` | Canonical route chrome; Screen owns placement/clearance | Button, BlurIsland, BloomScope; floating/bar/navigation are presentation choices, independent of inline/overlay/overlap placement | Host width drives compact/spacious action render props. Explicit scroll, HeaderDock, ScrollMetrics, Screen, ScrollOffset then web window resolve the scroll owner. Actions remain nodes; no semantic priority/overflow contract. |
+| `PageHeaderTitleInput`, `PageHeaderHistory`, same family | Justified parts of canonical chrome | Editable title and navigation history, rather than another screen wrapper | Preserve input identity and panel history. Do not copy their behavior into routes. |
+| `ChatHeader`, `chat-screen/ChatHeader.tsx` | Justified conversation identity/selection variant; geometry adaptation pending | HeaderIconButton delegates to Button. Avatar/presence and connecting > typing > status precedence; selection replaces identity and call actions | Uses window width and assumes every native host is compact. Needs local host measurement while preserving explicit compact/showBack. No automatic action overflow; identity Pressable is separate from action controls. |
+| `CoverHeader`, `cover-header/CoverHeader.tsx`, `types.ts` | Justified content/cover editor, not navigation chrome | CoverImage/BloomImage; crop geometry and Save/Cancel transaction | Owns crop draft, commit rejection and stable source key; caller owns persistence. Height/overlap are content dimensions. Do not convert these into control size or PageHeader scroll ownership. |
+| `AppShellHeader`, `app-shell/AppShellHeader.tsx` | Canonical starter shell heading, distinct from Screen navigation | Button + typography; breadcrumb and wrapping action row | Shell supplies showMenu from its measured host; standalone fallback uses window lg. Reuse shell decision, never independently hide its sole navigation action. |
+| `DialogNavHeader`, `DialogLargeTitle`, `dialog/DialogHeader.tsx` (internal); public `useDialogHeader` | Justified modal adapter of PageHeader | Already renders PageHeader, HeaderDockProvider, ButtonGroupItem, Popover and Item; dialog owns scroll/controller and close | Large-title measurements feed shared values. Existing overflow is fixed-count, keyed by accessibilityLabel; lacks stable IDs/priorities. Preserve separate primary action and close, runtime header override and focus return. |
+| `AiChatHeader`, `AiChatMobileHeader`, `ai-chat/AiChatShell.tsx`; `AiChatContainer`; AgentChat and MultiAgentChat headers | Canonical adapters already using PageHeader | AI shell supplies measured chrome; AgentChat identity is a custom title; MultiAgentChat carries its own conversation state | Preserve slots and platform-injected dependencies. Sharing PageHeader does not prove transcript, action or keyboard equivalence. |
+| `PanelHeader`, `ai-chat/AiChatCodePanel.tsx` (internal), reused by gallery | Justified PageHeader adapter | Code/gallery tools and close actions use PageHeader slots | Keep code/gallery selection and tool state; adapt common actions without merging domain models. |
+| `CalendarViewHeader`, `calendar/CalendarViewHeader.tsx` | Duplicate shell-row structure to consolidate; calendar controls are justified | Repeats breadcrumb/title/menu/action geometry of AppShellHeader; adds month switcher, inbox and New event | Family breakpoint determines action row. Consolidate structure only after preserving month menu, locale, keyboard navigation and local-width behavior. |
+| `ListingHeader`, `ListingHeaderAction`, `listing-details/ListingHeader.tsx` | Justified listing content heading | Button/LinkButton, Rating and typography; location/reviews stay real links when actionable | Measures its container; moves actions between title and metadata at its width threshold. Verify action identity across that move; source alone does not establish retained focus. |
+| `NoteEditorHeader`, `note-editor/NoteEditorHeader.tsx` | Justified document content heading; input base review pending | Borderless TextInput, typography and surface-aware save-status paint | No scrolling/stickiness owner. Preserve title editing and polite announcements only for offline/error. Compare PageHeaderTitleInput capabilities before consolidating input logic. |
+| `MailComposeHeader`, `mail-compose/MailComposeHeader.tsx` | Justified addressing form | MailRecipientField, shared gutter and LinkButton | Cc/Bcc visibility cannot hide existing recipients. Subject/query/recipients are domain inputs, not navigation titles. |
+| `ArtistHero`, `CollectionHeader`, `ProfileHeader`, `PodcastShowHeader`, `EpisodeHeader`, `AudiobookHeader`, `media-header/` | Justified media content variants | All reuse MediaHeaderFrame/HeaderTitle/paint in `parts.tsx`; retain artwork, author, playback and metadata semantics | Content geometry and title scale are separate from controls. No evidence that merging these into PageHeader would preserve their content roles. |
+| `StickyMediaTopBar`, `media-header/StickyMediaTopBar.tsx` | Justified playback chrome with coordination pending | PlayButton and media paint; caller positions it and supplies visibility/progress | Its own progress is a number, with reduced-motion handling and hidden hit/a11y state. Audit transfer to Screen scroll/edge ownership before introducing another app-side sticky wrapper. |
+| `ChartHeader`/`ChartHeadline`, `PeriodChartHeader`, `chart-cards/primitives/` | Justified data summaries | Shared headline, range select/pill or SegmentedControl; no route back/scroll ownership | PeriodChartHeader uses window width rather than local card width. Preserve numeric formatting, range state, delta and hover semantics. |
+| `TrackListHeader`, `track-list/TrackListHeader.tsx` | Justified table column header | Shares row geometry and column widths, role=row/columnheader | Web sticky offset belongs to enclosing list composition; native list pins it. Never replace with a navigation header. |
+| `ChatDateHeader`, `chat-screen/ChatDateHeader.tsx` | Justified transcript annotation | Preformatted date label, no interactive controls | Retained hidden pill avoids collapsing scroll geometry; caller supplies date and offset. Not an action header. |
+| `CardHeader`, `PopoverHeader`, `TableHeader` in their family barrels | Justified structural parts | Card content grouping, popover title region and table head respectively | Not alternate route chrome; preserve their container/overlay/table semantics. Full per-part size adoption remains the separate §16 census. |
+
+The common navigation base is PageHeader plus the existing Button/ButtonGroup
+interaction and material owners. A content hero, addressing form or column
+header is not a missing PageHeader adoption. The common **action** contract
+can be shared without replacing those semantic structures.
+
+## Controls, composer and attachments
+
+This is the initial consolidation slice requested by §6, not the complete
+public-export inventory in R1. Every row still needs per-part size/scope,
+focus, localization and platform verification before declaring adoption.
+
+| Implementation | Classification; actual base | Ownership and consolidation boundary |
+| --- | --- | --- |
+| `button/`, `button-group/` | Canonical controls and grouped controls | Own interaction, disabled/busy/selected, accessible state, material and geometry. Trigger composition already supports asChild; reproduce any actual gap before creating another Pressable control. |
+| `chat-composer/create-composer-icon-button.tsx` | Justified geometry adapter; delegates to injected Button | Forwards ref, layout, press/long-press and trigger ARIA. Numeric dimensions override normal geometry; audit real touch regions, not just inherited size. |
+| `composer-panel/ComposerControls.tsx` | Canonical composer control adapters; Mic/Send/Stop delegate to context-injected Button | Preserve voice state and glyph transitions; do not reimplement controls because their names differ from ChatComposer's. |
+| `agent-chat/AgentChatControls.tsx` | Duplicate interaction/paint to consolidate | IconAction and PrimaryDisc own Pressable hover/pressed/disabled paint and gradients. Historical comments about nested triggers are not proof that current asChild cannot work. Validate controlled active paint, focus, target and trigger props before replacing. |
+| `ai-chat/AiChatControls.tsx` | Duplicate action interaction with justified feedback/tooltip states | GlyphAction and SurfaceAction own Pressable state; SwapGlyph/tooltip confirmations are presentation capabilities to preserve. Share interaction while retaining copy confirmation, selected state and tooltip focus behavior. |
+| `map-controls/MapControls.tsx` | Justified composition already sharing controls/material | ButtonGroupItem + BlurIsland; callbacks own camera commands, no map engine or permission request. Occupancy/placement belongs above it, not another control renderer. |
+| `chat-composer/create-chat-composer.tsx` | Justified messaging composer | Controlled draft, input sizing, IME/key handling, attachments, suggestions, reply/edit, voice and send modes. Application owns transport and persistence. Consolidate input/controller behavior only after Allo workflows pass. |
+| `composer-panel/ComposerPanelBase.tsx`, `ComposerPillBase.tsx` | Justified expanded/pill presentations; shared input behavior audit pending | Model/permission/effort and voice controls, input and attachment queue remain distinct from messaging. Pill has surface/frosted switches; keep one paint authority. |
+| `agent-chat/AgentChatComposerBase.tsx` | Canonical adapter already sharing ComposerLoader + ComposerPill | Guards submit with busy/disabled/attachments; forwards draft and Stop. Currently explicitly sets surface=false and frosted=busy. Shared coordination should remove that repeated caller knowledge without changing draft identity. |
+| `composer-panel/AttachmentStrip.tsx`, exposed through ComposerAttachments | Justified wrapping upload presentation; tile logic consolidation candidate | Stable IDs, progress, error/retry/remove and leaving-tile animation; private tile/strip are not public imports. Caller owns files and upload lifecycle. |
+| `chat-composer/create-composer-attachment-strip.tsx` | Justified horizontal attachment presentation; tile logic consolidation candidate | ImageResolver, open action, removal, progress ring and ScrollArea. Preserve separate open/remove targets and captions. Does not provide the same retry/error contract as panel attachments. |
+| `AgentChat`, `AiChatThread`, `MultiAgentChat`, `chat-screen` | Justified domain patterns; viewport/follow behavior pending determination | Shared controls do not justify merging human delivery/read/selection with reasoning/tool/run state. Audit follow-end policies and scroll restoration independently. |
+
+Localization remains in family messages/common messages with caller overrides.
+Application-supplied names, model labels, dates and file names remain data.
+No row above authorizes dropping error/retry, dictation, recording, IME,
+Shift+Enter, selection, focus, drafts or Stop to simplify the shared base.
+
+## Minimum extension design
+
+The extensions below are requirements for subsequent implementation, **not
+published props or imports**. Choose final API names only with executable
+examples and export/package checks. Keep stateful children mounted across
+presentation changes; no key changes to force resize.
+
+| Need | Existing API/owner | Minimum extension to validate | Consumer/fixture proving it |
+| --- | --- | --- | --- |
+| Stable responsive workspace regions | AppShell.panelLayout, AppShellPanels, panel IDs/navigation/retention; Screen | Express any missing region priority/compact policy in existing descriptors; preserve joined/separated/plain and bounded/document distinctions | Mention normal/Deck and Nilo document/table, mounted resize round trips |
+| Navigation/toolbar actions fit local width | PageHeader actions render prop, Toolbar, ButtonGroup, dialog overflow | Shared action descriptors: stable ID, accessible label, icon, group, priority, disabled/busy/selected, visibility and explicit overflow policy; custom nodes declare adaptation. Reserve essential back/close/Stop/Submit before optional actions | Nilo view tools + Dialog actions; open menu and focused action during resize, duplicate/localized labels |
+| One measured header and scroll owner | Screen header/accessory, PageHeader, HeaderDock, edge claims | Coordinate existing measured rows; avoid separate full headers for breadcrumb, view tabs and filters. Connect remaining pattern adapters to local owners | Nilo document/database, Mention panels, long title and restored/programmatic scroll |
+| Compact controls without shrinking entire app | BloomScope and family geometry; PageHeader density | Domain density independent of md control scale; fix part-level adoption and actual target regions | Allo/Alia controls and Nilo filters at coarse pointer/large text |
+| Persistent interactive canvas | Screen scroll=none, panel compositor, MapControls, BottomSheet geometry | Non-modal panel presentation over persistent canvas; share compatible gesture/measurement internals, retain separate modal focus/backdrop contract | GoWay browse/search/place/directions; Homiio results/map reuse |
+| Occupied canvas area | Screen viewport, top/bottom claims, shared values | Scoped deterministic occupied regions with rest geometry plus animated progress; explicit units/origin and reserve/avoid/modal semantics. Map adapter clamps padding; camera updates avoid fighting drag | GoWay real map pan/pinch, panel detents, rotation and keyboard; attribution stays reachable |
+| Single composer body and decorative light | ComposerLoader, ComposerPill, AgentChatComposer | Shared paint/geometry coordination and lifecycle policy; measured initial bounds, stable phase on resize, inactive/background/reduced-motion handling | Isolated loader, loader+pill, real Alia and AgentChatComposer |
+| Shared upload presentation | Both existing attachment strips, BloomImage, Button | Shared tile state/interaction where semantics match; retain wrap versus horizontal layout and explicit retry/open differences | Allo attachments and Alia upload/error/retry; keyboard and touch |
+| Shared interaction without losing feedback | Button, ButtonGroupItem, asChild, Tooltip | Migrate proven duplicate controls through existing capabilities; add narrowly demonstrated capability at owner if necessary | AgentChat menu + AiChat feedback/code/gallery; disabled trigger, actual focus/hit testing |
+| Material identity across platforms | Surface, SurfaceLevelProvider, blur owner | Capability decisions stay with shared paint/topology; no per-app blur switch or invented compatibility floor | Same-state material scene + Alia composer on web/iOS/Android physical devices |
+| Discoverable version-correct composition | Existing docs, six-section Storybook catalog, export generator | Curated task metadata backed by generated imports/types/platform links; compile packaged examples | Clean workspace/canvas/chat tasks using only shipped guide |
+
+## Verification handoff
+
+Source inventory above is **verified** against the named commit. It proves
+ownership and concrete gaps, not that a gap has already been repaired.
+Browser/native acceptance, real consumer versions, baseline screenshots,
+frame budgets, all-public-part census and full consumer adoption are **not run**
+by this change and remain required by #663.
+
+Existing focused starting points include PageHeaderActions.web,
+PageHeaderFloating, DialogPageHeader, CoverHeaderEditing,
+CoverHeaderKeyboard.web, ChatComposer, ComposerPillController,
+ComposerControls.web, composer-button-composition and MapControls tests.
+Browser starting points are verify-header-islands.mjs,
+verify-modular-panels.mjs, verify-social-breakpoints.mjs and
+verify-overlay-stacking.mjs. Their existence is not a passing result: run the
+relevant fixture on the exact candidate, inspect actual painted output and
+record the platform separately. Add explicit native subjects where resolution
+would otherwise select web-safe files; follow [Verification](/docs/verification).
