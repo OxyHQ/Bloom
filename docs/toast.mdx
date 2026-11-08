@@ -19,15 +19,16 @@ v0.26.4 (MIT), itself a React Native port of [sonner](https://github.com/emilkow
 
 ## Setup
 
-Mount the outlet once near the app root, inside `BloomThemeProvider`:
+Mount the outlet once near the app root, inside `BloomProvider`:
 
 ```tsx
+import { BloomProvider } from '@oxy.so/bloom/provider';
 import { ToastOutlet } from '@oxy.so/bloom/toast';
 
-<BloomThemeProvider>
+<BloomProvider>
   <App />
   <ToastOutlet />
-</BloomThemeProvider>
+</BloomProvider>
 ```
 
 Apps that mount `OxyProvider` from `@oxy.so/services` already get an outlet and

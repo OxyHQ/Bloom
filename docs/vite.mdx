@@ -1,0 +1,73 @@
+---
+title: Vite web host
+description: A complete client-side host with utility CSS, fonts and worklet transforms.
+---
+
+# Vite web host
+
+Copy the packaged `docs/examples/vite/` directory into a new project. It contains
+`package.json`, `bun.lock`, `vite.config.mjs`, `tsconfig.json`, `index.html`, `style.css` and
+`src/main.tsx`. Run `bun install --frozen-lockfile`, `bun run typecheck`, then `bun run dev`.
+For deployment run `bun run build` and serve `dist` (`bun run preview` locally).
+
+This is a pinned **web-only** host recipe, not a native Expo dependency matrix.
+It uses Reanimated 3.19.1's Babel plugin; a Reanimated 4 host needs its compatible
+Worklets release and plugin instead. Do not mix those plugin generations or infer
+support for every version admitted by Bloom's peer ranges. Select native peers
+through the matching SDK's installer and validation.
+
+## What the host configures
+
+- React Native resolves to React Native Web. `.web` variants have priority in
+  both ordinary resolution and Vite's dependency optimizer.
+- Dependency `.js` can contain JSX. The optimizer accepts it, and the host
+  transforms worklets in Bloom and Reanimated's installed modules before they
+  execute. The build transform applies the same plugin to production modules.
+  Without it, a scrolling Screen can throw “Passed a function that is not a
+  worklet” after a successful typecheck.
+- Expo module-core uses its source entry. Its bridge initialization survives
+  production tree shaking; mixed ESM/CommonJS conversion preserves RNW imports.
+- `global` maps to `globalThis`; development flags follow Vite's command. The
+  recipe does not force production into development mode.
+- The stylesheet imports Tailwind and Bloom's token theme and explicitly scans
+  the application source and Bloom's **module** tree. If using Services, scan
+  its installed module tree too. Paths are relative to the stylesheet. Scanning
+  every CommonJS/type/source copy is unnecessary; the original discovery fixture
+  became unresponsive scanning the whole 255 MB package tree.
+- Utilities are intentionally unlayered so React Native Web's unlayered reset
+  cannot override them. A layered Tailwind import left the measured Text at
+  14 px with 0 padding despite its `text-2xl p-4` classes; the recipe yields
+  24 px and 16 px. This is a CSS cascade requirement, not a theme-color issue.
+- RN-SVG's Buffer import uses the explicit browser `buffer` package. The host
+  defines the inspected Jest and Expo platform flags without replacing all
+  `process.env` values or exposing environment secrets.
+- The root is a bounded flex viewport. `ScreenScrollView` connects to Screen's
+  scroll owner. **17.23.0 limitation:** without panel descriptors, AppShell
+  `scroll="fixed"` does not publish its bounded host to Screen's automatic
+  inference. This pinned example explicitly uses `documentScroll={false}`;
+  remove that override when adopting the shared owner correction. This is not
+  the intended permanent composition contract. A document-scrolling host needs a separate explicit contract;
+  removing root sizing to fix a nested scroller changes that contract.
+
+The example's visible row uses `flex-row`, `gap-4` and `p-4`: verify actual computed
+layout, not only colors. Scroll the screen and press Continue; runtime errors
+and lost input interaction are failures even if the page looks correct.
+
+## Fonts and component styles
+
+`BloomProvider` loads the packaged fonts. The configuration emits `.woff2`
+files as separate assets (`assetsInlineLimit: 0`); no manual font loader is
+needed. Confirm font requests and loaded FontFace entries rather than inferring
+font fidelity from a screenshot. [Fonts](./fonts.mdx) retains the platform and
+asset-resolution hazards.
+
+Components adopt required CSS themselves. Do not copy inline dialog CSS into
+`index.html`. SSR is outside this client-only recipe: use the explicit
+[Provider SSR contract](./provider.mdx) and document font preloads for that host.
+Optional ESM dependencies still follow the separate
+[optional-peer adapter contract](./web-optional-peers.mdx).
+
+The [task catalog](./task-catalog.mdx) examples replace the domain content under
+this root. AgentChat already owns its shell; do not wrap it in the sample's
+AppShell/Screen again. The map example provides controls and synthetic state;
+it does not implement persistent non-modal panels or occupied map regions.

@@ -1,0 +1,4 @@
+Task catalog: 6 tasks for @oxy.so/bloom@17.23.0
+Task catalog: 6 packed examples compile with browser; missing-export control fails
+Task catalog: native source-export mutation rejected
+Task catalog: 6 packed examples compile with react-native; missing-export control fails

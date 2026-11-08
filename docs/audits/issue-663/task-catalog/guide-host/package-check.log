@@ -1,0 +1,2 @@
+$ node scripts/verify-package.mjs
+[verify-package] ok — 27828 files packed, all 1553 literal exports targets present plus 5 pattern target(s) expanded (12098 in lib/typescript/), 295 guides in docs/, 7 subpath(s) require()-able under Node v24.21.0 (4 of them also import()-able as ESM, 3 known-unresolvable)

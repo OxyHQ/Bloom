@@ -6,8 +6,8 @@ order: 58
 
 # Fonts
 
-Bloom ships its own typefaces and loads them for you. `BloomThemeProvider`
-mounts `FontLoader`, which injects `@font-face` rules on web and loads the
+Bloom ships its own typefaces and loads them for you. The application root
+`BloomProvider` composes `BloomThemeProvider`, which mounts `FontLoader`, which injects `@font-face` rules on web and loads the
 assets on native.
 
 With `BloomProvider ssrStyles`, the same font rules are included before the
@@ -30,8 +30,8 @@ of the display face; the default is `['sans', 'display']`. Native and unbundled
 Node exports are inert because they have no web asset pipeline.
 
 ```tsx
-// Nothing to do: BloomThemeProvider already does this.
-<BloomThemeProvider>…</BloomThemeProvider>
+// The application provider loads the packaged fonts by default.
+<BloomProvider>…</BloomProvider>
 ```
 
 ## What the subpath exports
