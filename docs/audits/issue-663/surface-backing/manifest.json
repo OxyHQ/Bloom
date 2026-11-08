@@ -218,7 +218,7 @@
     "src/__tests__/surface-body-backing.test.ts": "bb76d459249ac83faf0962464999151d0c6e7b8e24e2e4ef9e62f2deefd5f65d",
     "src/__tests__/surface-filter-bounds.test.ts": "76fb58a9de017a5f34624c1dac00265e66d7ea8d97821e1521e50b8d4d329c38",
     "src/surface/baked-material.ts": "863d40ff95ec1d246182bb696859b7f9dc5cbf2eaad110b021c3b005b20c83bb",
-    "src/surface/body-backing.ts": "60be1c87922aad1ba6cbe64d3f55a2356fc0c35e6fe9a34a0c00f46a636b09d7",
+    "src/surface/body-backing.ts": "40574be53a941a77b87eed67d46560fb6a3bf1be078fb016112bacccbecd1750",
     "src/surface/filter-color.ts": "d74ad7b77cefb527ff26b5d4d8c3363181cc967149ff7870bc39f78f90f2aee6",
     "src/surface/optics.ts": "3387a3e08d82397d8f62d44d4764b1dfec0eb23339ade2dbacb49b8ddbc5973b",
     "src/surface/resolve-surface-material.ts": "9d99b4d4c1a07ce9fe1e37c490e18444534066a3faf0c23a67bddfec10a3b465",
