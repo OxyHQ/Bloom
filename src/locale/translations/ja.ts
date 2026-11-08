@@ -28,10 +28,10 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  undoAvatar: "元に戻す",
-  redoAvatar: "やり直す",
-  restoreAvatar: "元の状態に戻す",
-  preparingAvatar: "アバターを準備中…",
+  undoAvatar: '元に戻す',
+  redoAvatar: 'やり直す',
+  restoreAvatar: '元の状態に戻す',
+  preparingAvatar: 'アバターを準備中…',
 
   reaction: 'リアクション',
   working: '作業する',

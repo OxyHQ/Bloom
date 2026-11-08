@@ -166,6 +166,11 @@ it.each(['stack', 'row', 'cluster'] as const)(
     const view = draw(element('never'));
     expect(mockAgentAvatar.mock.calls).toHaveLength(3);
     expect(mockAgentAvatar.mock.calls.every(([props]) => props.portrait)).toBe(true);
+    // The generic account placeholder is visible until the mocked SVG reports its first frame.
+    act(() => {
+      for (const [props] of [...mockAgentAvatar.mock.calls]) props.onReady?.();
+    });
+    expect(view.UNSAFE_queryAllByType(Image)).toHaveLength(0);
     mockAgentAvatar.mockClear();
     view.rerender(wrap(element('always')));
     expect(mockAgentAvatar.mock.calls).toHaveLength(3);
@@ -176,6 +181,9 @@ it.each(['stack', 'row', 'cluster'] as const)(
     view.rerender(wrap(element('always')));
     expect(mockAgentAvatar.mock.calls).toHaveLength(3);
     expect(mockAgentAvatar.mock.calls.every(([props]) => props.portrait)).toBe(true);
+    act(() => {
+      for (const [props] of [...mockAgentAvatar.mock.calls]) props.onReady?.();
+    });
     expect(view.UNSAFE_queryAllByType(Image)).toHaveLength(0);
   },
 );

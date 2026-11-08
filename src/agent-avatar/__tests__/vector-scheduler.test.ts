@@ -127,3 +127,22 @@ it('shares geometry-plus-paint identity independently of per-instance paint wrap
     first,
   );
 });
+
+it('does not retain or start a display subscription in a headless renderer', () => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'requestAnimationFrame');
+  Object.defineProperty(globalThis, 'requestAnimationFrame', {
+    configurable: true,
+    value: undefined,
+  });
+  let calls = 0;
+  try {
+    const stop = subscribeVectorFrame(() => {
+      calls++;
+    });
+    expect(calls).toBe(0);
+    expect(() => stop()).not.toThrow();
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'requestAnimationFrame', descriptor);
+    else Reflect.deleteProperty(globalThis, 'requestAnimationFrame');
+  }
+});

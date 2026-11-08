@@ -2,9 +2,9 @@
 export function compactVectorAsset(data, kind) {
   // Runtime contour topology is derived from faces; exporter adjacency is unused.
   for (const part of data.parts) part.edges = [];
-  if (["eyes", "eyewear", "accessory"].includes(kind)) {
+  if (['eyes', 'eyewear', 'accessory'].includes(kind)) {
     const retained = data.parts.flatMap((part, index) =>
-      ["hand", "panel", "screen"].includes(part.role) ? [] : [index],
+      ['hand', 'panel', 'screen'].includes(part.role) ? [] : [index],
     );
     data.parts = retained.map((index) => data.parts[index]);
     for (const clip of Object.values(data.clips)) {
@@ -25,10 +25,7 @@ export function compactVectorAsset(data, kind) {
       if (!track) continue;
       for (const [key, width] of Object.entries(widths)) {
         const samples = track[key]?.samples;
-        if (
-          samples?.length &&
-          samples.every((value, index) => value === samples[index % width])
-        ) {
+        if (samples?.length && samples.every((value, index) => value === samples[index % width])) {
           track[key] = { value: samples.slice(0, width) };
         }
       }

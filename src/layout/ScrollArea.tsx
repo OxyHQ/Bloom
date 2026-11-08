@@ -52,10 +52,12 @@ function NativeScrollArea({
       scrollEventThrottle={scrollEventThrottle}
       ref={ref}
     >
-      {children}
-      {viewportOverlay != null ? (
-        <NativeViewportOverlay>{viewportOverlay}</NativeViewportOverlay>
-      ) : null}
+      {viewportOverlay != null
+        ? [
+            children,
+            <NativeViewportOverlay key="viewport-overlay">{viewportOverlay}</NativeViewportOverlay>,
+          ]
+        : children}
     </ScrollViewport>
   );
 }
@@ -68,7 +70,7 @@ function NativeViewportOverlay({ children }: { children: ReactNode }) {
       height: metrics?.viewportHeight.value ?? 0,
       transform: [{ translateY: metrics?.scrollY.value ?? 0 }],
     }),
-    [metrics],
+    [metrics?.viewportHeight, metrics?.scrollY],
   );
   return (
     <Animated.View

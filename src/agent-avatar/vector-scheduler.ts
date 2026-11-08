@@ -25,6 +25,8 @@ export function vectorFrameRecipeKey(
 }
 /** One animation-frame request; every subscriber retains its own clock and interaction state. */
 export function subscribeVectorFrame(listener: Listener): () => void {
+  // Headless renderers can present a static frame but have no display clock.
+  if (typeof requestAnimationFrame !== 'function') return () => {};
   listeners.add(listener);
   const tick = (now: number) => {
     request = undefined;

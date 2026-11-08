@@ -1,6 +1,8 @@
+import { svgA11yProps } from '../styles/svg-a11y';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import { Platform, type View } from 'react-native';
 import { AvatarSnapshotObserver } from './context';
-import { memo, useContext, useEffect, useId, useRef, type ComponentRef } from 'react';
+import { memo, useContext, useEffect, useRef, type ComponentRef } from 'react';
 import Svg, { ClipPath, Defs, Path } from 'react-native-svg';
 import { StyledView } from '../styles/styled-primitives';
 import type { AgentAvatarProps } from './types';
@@ -35,7 +37,7 @@ function StaticPortrait({ frame, size = 64, bodyColor, onReady, ...props }: Prop
     });
     return () => observe?.(null);
   }, [observe]);
-  const prefix = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  const prefix = useSvgIdPrefix('bloom-vector');
   const ready = useRef(false);
   useEffect(() => {
     if (frame && !ready.current) {
@@ -55,7 +57,7 @@ function StaticPortrait({ frame, size = 64, bodyColor, onReady, ...props }: Prop
       accessibilityLabel={(props.accessibilityLabel ?? props.label) || undefined}
     >
       {frame ? (
-        <Svg ref={svg} width="100%" height="100%" viewBox={frame.viewBox} accessible={false}>
+        <Svg ref={svg} width="100%" height="100%" viewBox={frame.viewBox} {...svgA11yProps()}>
           <Defs>
             {frame.paths
               .filter((path) => path.clip !== undefined)

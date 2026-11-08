@@ -1,19 +1,14 @@
-import assert from "node:assert/strict";
-import fs from "node:fs";
-import test from "node:test";
-import { referenceBodyCanonicalizer } from "./avatar-vector/canonical-reference-body.mjs";
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import test from 'node:test';
+import { referenceBodyCanonicalizer } from './avatar-vector/canonical-reference-body.mjs';
 const marks = JSON.parse(
-  fs.readFileSync(
-    new URL("./avatar-vector/reference-outlines.json", import.meta.url),
-  ),
+  fs.readFileSync(new URL('./avatar-vector/reference-outlines.json', import.meta.url)),
 );
 const outlines = Object.fromEntries(
   marks.map((mark) => {
     const numbers = mark.body.match(/-?\d+(?:\.\d+)?/g).map(Number);
-    return [
-      mark.id,
-      numbers.flatMap((n, i) => (i % 2 ? [] : [[n, -numbers[i + 1]]])),
-    ];
+    return [mark.id, numbers.flatMap((n, i) => (i % 2 ? [] : [[n, -numbers[i + 1]]]))];
   }),
 );
 const canonicalize = referenceBodyCanonicalizer(outlines.square);
@@ -24,8 +19,8 @@ const area = (points) =>
       return sum + a[0] * b[1] - b[0] * a[1];
     }, 0),
   );
-test("retains circular geometry exactly and every organic contour vertex and area", () => {
-  assert.deepEqual(canonicalize("blob", outlines.blob), outlines.blob);
+test('retains circular geometry exactly and every organic contour vertex and area', () => {
+  assert.deepEqual(canonicalize('blob', outlines.blob), outlines.blob);
   for (const [id, points] of Object.entries(outlines)) {
     const neutral = canonicalize(id, points);
     assert.equal(neutral.length, points.length);
@@ -33,8 +28,8 @@ test("retains circular geometry exactly and every organic contour vertex and are
     assert.ok(Math.abs(area(neutral) / area(points) - 1) < 1e-10, id);
   }
 });
-test("neutral square edges are level and perpendicular rather than the baked 100-degree basis", () => {
-  const points = canonicalize("square", outlines.square);
+test('neutral square edges are level and perpendicular rather than the baked 100-degree basis', () => {
+  const points = canonicalize('square', outlines.square);
   let aligned = 0,
     total = 0;
   for (let i = 0; i < points.length; i++) {
@@ -44,11 +39,7 @@ test("neutral square edges are level and perpendicular rather than the baked 100
       dy = b[1] - a[1],
       length = Math.hypot(dx, dy);
     total += length;
-    if (Math.min(Math.abs(dx), Math.abs(dy)) / length < 0.025)
-      aligned += length;
+    if (Math.min(Math.abs(dx), Math.abs(dy)) / length < 0.025) aligned += length;
   }
-  assert.ok(
-    aligned / total > 0.7,
-    `Only ${aligned / total} of perimeter aligned`,
-  );
+  assert.ok(aligned / total > 0.7, `Only ${aligned / total} of perimeter aligned`);
 });

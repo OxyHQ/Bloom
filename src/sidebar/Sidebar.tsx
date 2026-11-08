@@ -414,6 +414,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     const end = metrics.row.padding;
     const padding = start + (end - start) * progress.value;
     return {
+      paddingLeft: padding,
+      paddingRight: padding,
       marginLeft: ((collapsedLane - metrics.row.square) / 2) * progress.value,
       marginRight: ((collapsedLane - metrics.row.square) / 2) * progress.value,
     };

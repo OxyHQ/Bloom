@@ -1,4 +1,4 @@
-import type { VectorAction } from "./vector-types";
+import type { VectorAction } from './vector-types';
 
 export type VectorMotionPose = {
   /** Absolute gaze in radians; positive pitch looks down. */
@@ -23,8 +23,7 @@ export type VectorMotionOptions = {
   /** Capture the currently displayed pose when a transition is interrupted. */
   transition?: { from: VectorMotionPose; startedAt: number; duration?: number };
 };
-const finite = (value: number, fallback = 0) =>
-  Number.isFinite(value) ? value : fallback;
+const finite = (value: number, fallback = 0) => (Number.isFinite(value) ? value : fallback);
 const unit = (value: number) => Math.max(0, Math.min(1, finite(value)));
 const ease = (value: number) => {
   const t = unit(value);
@@ -38,68 +37,51 @@ function openness(time: number): number {
   for (const start of [1.7, 5.1, 5.39, 9.8, 13.2, 17.6, 21.1]) {
     const elapsed = phase - start;
     if (elapsed < 0 || elapsed >= 0.2) continue;
-    return elapsed < 0.075
-      ? 1 - ease(elapsed / 0.075)
-      : ease((elapsed - 0.075) / 0.125);
+    return elapsed < 0.075 ? 1 - ease(elapsed / 0.075) : ease((elapsed - 0.075) / 0.125);
   }
   return 1;
 }
 
 /** Pure sampling: repeated timestamps and pause/resume produce identical poses. */
-export function sampleVectorMotion(
-  options: VectorMotionOptions,
-): VectorMotionPose {
+export function sampleVectorMotion(options: VectorMotionOptions): VectorMotionPose {
   const time = Math.max(0, finite(options.time));
   // Identity changes rhythm, never geometry or authored clip timing.
   let hash = 0;
-  for (const char of options.personalityKey ?? "")
-    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  for (const char of options.personalityKey ?? '') hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
   const personalized = !!options.personalityKey;
   const tempo = personalized ? 0.88 + (hash % 25) / 100 : 1;
   const phase = personalized ? ((hash >>> 5) % 31) / 10 : 0;
-  const phasedTime = (t: number) =>
-    t * tempo + phase * (1 - Math.exp(-t * 0.5));
+  const phasedTime = (t: number) => t * tempo + phase * (1 - Math.exp(-t * 0.5));
   const eyeTime = phasedTime(time);
   const bodyTime = phasedTime(Math.max(0, time - (personalized ? 0.16 : 0)));
   const local = Math.max(0, finite(options.stateTime ?? time));
   const look = options.look;
-  const validLook =
-    look && Number.isFinite(look.yaw) && Number.isFinite(look.pitch);
+  const validLook = look && Number.isFinite(look.yaw) && Number.isFinite(look.pitch);
   const aim = validLook ? unit(look.mix) : 0;
   const wander = validLook ? unit(look.wander ?? 1 - aim) : 1;
-  const reaction =
-    options.state === "reaction"
-      ? Math.sin(Math.PI * unit(local / 0.9)) ** 2
-      : 0;
+  const reaction = options.state === 'reaction' ? Math.sin(Math.PI * unit(local / 0.9)) ** 2 : 0;
   const bodyReaction =
-    personalized && options.state === "reaction"
+    personalized && options.state === 'reaction'
       ? Math.sin(Math.PI * unit((local - 0.16) / 0.9)) ** 2
       : reaction;
-  const working = options.state === "work";
+  const working = options.state === 'work';
   // The work clip remains the timing authority. A smooth brief screen glance
   // interrupts the keyboard focus once per episode, without stopping the hands.
   const screenGlance =
-    personalized && working
-      ? Math.sin(Math.PI * unit((local - 0.9) / 0.8)) ** 2
-      : 0;
+    personalized && working ? Math.sin(Math.PI * unit((local - 0.9) / 0.8)) ** 2 : 0;
   const automaticYaw = working
     ? finite(options.workLook?.yaw ?? 0.35) * (1 - screenGlance * 0.12)
     : reaction * -0.12;
   const automaticPitch = working
-    ? Math.max(
-        0.12,
-        finite(options.workLook?.pitch ?? 0.35) - screenGlance * 0.07,
-      )
+    ? Math.max(0.12, finite(options.workLook?.pitch ?? 0.35) - screenGlance * 0.07)
     : reaction * -0.1;
   const pose: VectorMotionPose = {
     yaw:
       mix(automaticYaw, validLook ? look.yaw : 0, aim) +
-      (Math.sin(eyeTime * 0.61) * 0.055 + Math.sin(eyeTime * 1.43) * 0.018) *
-        wander,
+      (Math.sin(eyeTime * 0.61) * 0.055 + Math.sin(eyeTime * 1.43) * 0.018) * wander,
     pitch:
       mix(automaticPitch, validLook ? look.pitch : 0, aim) +
-      (Math.sin(eyeTime * 0.47) * 0.035 + Math.sin(eyeTime * 1.17) * 0.012) *
-        wander,
+      (Math.sin(eyeTime * 0.47) * 0.035 + Math.sin(eyeTime * 1.17) * 0.012) * wander,
     roll: Math.sin(bodyTime * 0.53) * 0.012 + bodyReaction * 0.045,
     bob: Math.sin(bodyTime * 1.09) * 0.006 + bodyReaction * 0.025,
     scale: 1 + Math.sin(bodyTime * 1.71) * 0.003 + bodyReaction * 0.012,

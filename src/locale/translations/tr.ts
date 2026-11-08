@@ -31,10 +31,10 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  undoAvatar: "Geri al",
-  redoAvatar: "Yinele",
-  restoreAvatar: "Aslına döndür",
-  preparingAvatar: "Avatar hazırlanıyor…",
+  undoAvatar: 'Geri al',
+  redoAvatar: 'Yinele',
+  restoreAvatar: 'Aslına döndür',
+  preparingAvatar: 'Avatar hazırlanıyor…',
 
   reaction: 'Tepki ver',
   working: 'Çalış',

@@ -38,10 +38,10 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  undoAvatar: "تراجع",
-  redoAvatar: "إعادة",
-  restoreAvatar: "استعادة الشكل الأصلي",
-  preparingAvatar: "جارٍ تجهيز الصورة الرمزية…",
+  undoAvatar: 'تراجع',
+  redoAvatar: 'إعادة',
+  restoreAvatar: 'استعادة الشكل الأصلي',
+  preparingAvatar: 'جارٍ تجهيز الصورة الرمزية…',
 
   reaction: 'تفاعل',
   working: 'اعمل',

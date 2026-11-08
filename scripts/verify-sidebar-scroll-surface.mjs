@@ -159,8 +159,15 @@ try {
         })),
       };
     });
-    assert(Math.abs(geometry.owner.height-geometry.side.height)<=2,story+' resized owner must match sidebar height');
-    assert(geometry.owner.top>=geometry.side.top-1 && geometry.owner.bottom<=geometry.side.bottom+1,story+' resized owner escapes sidebar');
+    assert(
+      Math.abs(geometry.owner.height - geometry.side.height) <= 2,
+      story + ' resized owner must match sidebar height',
+    );
+    assert(
+      geometry.owner.top >= geometry.side.top - 1 &&
+        geometry.owner.bottom <= geometry.side.bottom + 1,
+      story + ' resized owner escapes sidebar',
+    );
     for (const edge of geometry.edges)
       assert(
         edge.rect.left >= geometry.side.left - 1 && edge.rect.right <= geometry.side.right + 1,

@@ -197,7 +197,7 @@ function ScrollChrome({
         },
       ],
     }),
-    [edge, enabled, metrics],
+    [edge, enabled, metrics?.scrollY, metrics?.viewportHeight, metrics?.contentHeight],
   );
   const baseStyle = {
     flexShrink: 0,

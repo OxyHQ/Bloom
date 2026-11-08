@@ -25,13 +25,25 @@ it('keeps multicolor iris/highlight frames exactly as authored', () => {
   expect(paintVectorEyeFrame(frame, '#171717')).toBe(frame);
 });
 
- it.each(['sparkle_capsules', 'highlight_capsules', 'double_highlights'])(
-  'outlines only the dark base of %s on dark bodies, preserving glints and other roles', (style) => {
-    const frame: VectorFrame = { viewBox: '0 0 320 320', paths: [
-      { id: 'base', role: 'eye', d: 'M0 0Z', fill: '#171717', opacity: .5, fillOpacity: .7 },
-      { id: 'glint', role: 'eye', d: 'M1 1Z', fill: '#ffffff', opacity: 1, fillOpacity: 1 },
-      { id: 'panel', role: 'panel', d: 'M2 2Z', fill: '#171717', stroke: '#171717', opacity: 1, fillOpacity: 1 },
-    ] };
+it.each(['sparkle_capsules', 'highlight_capsules', 'double_highlights'])(
+  'outlines only the dark base of %s on dark bodies, preserving glints and other roles',
+  (style) => {
+    const frame: VectorFrame = {
+      viewBox: '0 0 320 320',
+      paths: [
+        { id: 'base', role: 'eye', d: 'M0 0Z', fill: '#171717', opacity: 0.5, fillOpacity: 0.7 },
+        { id: 'glint', role: 'eye', d: 'M1 1Z', fill: '#ffffff', opacity: 1, fillOpacity: 1 },
+        {
+          id: 'panel',
+          role: 'panel',
+          d: 'M2 2Z',
+          fill: '#171717',
+          stroke: '#171717',
+          opacity: 1,
+          fillOpacity: 1,
+        },
+      ],
+    };
     const dark = paintVectorEyeFrame(frame, '#171717', style);
     expect(dark.paths[0]).toEqual({ ...frame.paths[0], stroke: '#f6f7f2', strokeWidth: 2 });
     expect(dark.paths[1]).toEqual(frame.paths[1]);

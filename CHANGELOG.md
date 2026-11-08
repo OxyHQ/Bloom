@@ -2,6 +2,27 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.22.0
+
+### Added
+
+- **One SVG character renderer on web and native.** Saved character recipes, presets, live avatars and explicit portraits share packaged vector geometry, gaze and authored idle/reaction/work motion. Thirteen additional body shapes and the definitive Gallery/Playground use the same catalog and editor. Visible agent avatars animate at every size; reduced motion, background and offscreen suspension remain respected.
+- **Immediate avatar editing with history.** Undo, redo and reset preserve unrelated agent fields, drag changes form one history entry, and nearby shape preparation is bounded. Skin colors share a perceptual tone floor of 45 across saved recipes, palette, typed values and the visible picker.
+
+### Fixed
+
+- Eye placement follows the selected shape for presets and edited recipes. Eyewear keeps its original contours, attachments seat against the body, and interrupted work/reaction/idle changes preserve the displayed pose. Work text and hands leave with their panel. The retired bulb is no longer offered or restored from saved data.
+- Shared frame scheduling and geometry caches avoid repeated work without merging independent interactions. Heavy projection reuses temporary coordinates while retaining immutable frames. Dense mixed-avatar performance remains limited; the measured development-browser and memory limits are documented without claiming mobile readiness.
+- Sidebar edge fades follow the actual painted surface and viewport, retain rounded clipping, and stay behind the shared scrollbar. Short and narrow panes retain reachable footer content.
+
+### Tests
+
+- Canonical shape, eye and eyewear fitting, source immutability, transitions, cache lifetime, color policy and editor history have focused regression coverage. Browser runners cover actual pointer selection, consumer routing, crowds and sidebar scrolling. The final projection was compared across 1,530 frames, 170 eye-only views and 36 animated transitions without changing output.
+
+### Consumers
+
+Bump to 17.22.0. Character and provider APIs remain source compatible, including `useAvatarRendererCapabilities`. Hosted runtime URLs, persistent raster still storage and the historical renderer choice are deprecated and inert: no WebGL/WebView or optional native GPU companion is selected. The offline authored geometry source remains a development extraction input. Native SVG drawing still requires device validation; browser results are not ARM or GPU-consumption guarantees.
+
 ## 17.21.0
 
 ### Added

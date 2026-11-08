@@ -34,10 +34,10 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   plural('de', n, { one: '{n} Element', other: '{n} Elemente' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  undoAvatar: "Rückgängig",
-  redoAvatar: "Wiederholen",
-  restoreAvatar: "Original wiederherstellen",
-  preparingAvatar: "Avatar wird vorbereitet…",
+  undoAvatar: 'Rückgängig',
+  redoAvatar: 'Wiederholen',
+  restoreAvatar: 'Original wiederherstellen',
+  preparingAvatar: 'Avatar wird vorbereitet…',
 
   reaction: 'Reagieren',
   working: 'Arbeiten',

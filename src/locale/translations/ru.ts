@@ -39,10 +39,10 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  undoAvatar: "Отменить",
-  redoAvatar: "Повторить",
-  restoreAvatar: "Восстановить оригинал",
-  preparingAvatar: "Подготовка аватара…",
+  undoAvatar: 'Отменить',
+  redoAvatar: 'Повторить',
+  restoreAvatar: 'Восстановить оригинал',
+  preparingAvatar: 'Подготовка аватара…',
 
   reaction: 'Реакция',
   working: 'Работать',

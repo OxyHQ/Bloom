@@ -38,7 +38,10 @@ try {
     await p.evaluate(() => {
       window.avatarPeakHeap = performance.memory?.usedJSHeapSize ?? 0;
       window.avatarHeapTimer = setInterval(() => {
-        window.avatarPeakHeap = Math.max(window.avatarPeakHeap, performance.memory?.usedJSHeapSize ?? 0);
+        window.avatarPeakHeap = Math.max(
+          window.avatarPeakHeap,
+          performance.memory?.usedJSHeapSize ?? 0,
+        );
       }, 50);
     });
     const cpuBefore = await p.metrics();

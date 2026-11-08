@@ -1,42 +1,24 @@
-import fs from "node:fs/promises";
-import { referenceBodyCanonicalizer } from "./canonical-reference-body.mjs";
-import {
-  ShapeUtils,
-  Vector2,
-  Vector3,
-  Quaternion,
-  Euler,
-  Matrix4,
-} from "three";
-import path from "node:path";
-import { gzipSync } from "node:zlib";
+import fs from 'node:fs/promises';
+import { referenceBodyCanonicalizer } from './canonical-reference-body.mjs';
+import { ShapeUtils, Vector2, Vector3, Quaternion, Euler, Matrix4 } from 'three';
+import path from 'node:path';
+import { gzipSync } from 'node:zlib';
 export async function buildReferenceAssets(root, browser) {
-  const output = path.join(root, "src/agent-avatar/vector-assets");
-  const encoded = JSON.parse(
-    await fs.readFile(path.join(output, "template-peri.json"), "utf8"),
-  );
-  const original =
-    encoded.encoding === "json" ? JSON.parse(encoded.data) : encoded;
+  const output = path.join(root, 'src/agent-avatar/vector-assets');
+  const encoded = JSON.parse(await fs.readFile(path.join(output, 'template-peri.json'), 'utf8'));
+  const original = encoded.encoding === 'json' ? JSON.parse(encoded.data) : encoded;
   const round = (x) => +x.toFixed(6);
   let outlines;
   const page = await browser.newPage();
   try {
     const sourceMarks = JSON.parse(
-      await fs.readFile(
-        path.join(root, "scripts/avatar-vector/reference-outlines.json"),
-        "utf8",
-      ),
+      await fs.readFile(path.join(root, 'scripts/avatar-vector/reference-outlines.json'), 'utf8'),
     ).map((mark) => ({ name: mark.id, path: mark.body, eyes: mark.eyes }));
-    await page.setContent(
-      "<!doctype html><title>Vector geometry extraction</title>",
-    );
+    await page.setContent('<!doctype html><title>Vector geometry extraction</title>');
     outlines = await page.evaluate((sourceMarks) => {
       const sample = (d, maxStep) => {
-        const node = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path",
-        );
-        node.setAttribute("d", d);
+        const node = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        node.setAttribute('d', d);
         const total = node.getTotalLength(),
           count = Math.max(32, Math.ceil(total / maxStep));
         return Array.from({ length: count }, (_, i) => {
@@ -46,12 +28,10 @@ export async function buildReferenceAssets(root, browser) {
       };
       return sourceMarks.map((mark) => ({
         name: mark.name,
-        body: (mark.path.match(/-?\d+(?:\.\d+)?/g) || [])
-          .map(Number)
-          .reduce((a, v, i, all) => {
-            if (i % 2 === 0) a.push([v, all[i + 1]]);
-            return a;
-          }, []),
+        body: (mark.path.match(/-?\d+(?:\.\d+)?/g) || []).map(Number).reduce((a, v, i, all) => {
+          if (i % 2 === 0) a.push([v, all[i + 1]]);
+          return a;
+        }, []),
         eyes: mark.eyes.map((d) => sample(d, 1.1)),
         original: { body: mark.path, eyes: mark.eyes },
       }));
@@ -61,10 +41,7 @@ export async function buildReferenceAssets(root, browser) {
   }
   const CX = 0,
     CY = 0.12;
-  const world = ([x, y]) => [
-    (x - 114.2705) / 114.2705,
-    (114.2705 - y) / 114.2705 + CY,
-  ];
+  const world = ([x, y]) => [(x - 114.2705) / 114.2705, (114.2705 - y) / 114.2705 + CY];
   function partOf(points, faces, id, label, role, color, extra = {}) {
     const edges = new Map();
     faces.forEach((f, i) => {
@@ -79,7 +56,7 @@ export async function buildReferenceAssets(root, browser) {
       id,
       label,
       role,
-      bodyPaint: role === "body" || role === "hand",
+      bodyPaint: role === 'body' || role === 'hand',
       color,
       opacity: 1,
       points: points.map((p) => p.map(round)),
@@ -89,7 +66,7 @@ export async function buildReferenceAssets(root, browser) {
     };
   }
   const canonicalize = referenceBodyCanonicalizer(
-    outlines.find((shape) => shape.name === "square").body.map(world),
+    outlines.find((shape) => shape.name === 'square').body.map(world),
   );
   function bodyMesh(contour, name) {
     const outline = canonicalize(name, contour.map(world)),
@@ -99,12 +76,8 @@ export async function buildReferenceAssets(root, browser) {
       [],
     );
     const center = [
-      (Math.min(...outline.map((p) => p[0])) +
-        Math.max(...outline.map((p) => p[0]))) /
-        2,
-      (Math.min(...outline.map((p) => p[1])) +
-        Math.max(...outline.map((p) => p[1]))) /
-        2,
+      (Math.min(...outline.map((p) => p[0])) + Math.max(...outline.map((p) => p[0]))) / 2,
+      (Math.min(...outline.map((p) => p[1])) + Math.max(...outline.map((p) => p[1]))) / 2,
     ];
     let inradius = Infinity;
     for (let i = 0; i < outline.length; i++) {
@@ -116,8 +89,7 @@ export async function buildReferenceAssets(root, browser) {
           0,
           Math.min(
             1,
-            ((center[0] - a[0]) * dx + (center[1] - a[1]) * dy) /
-              (dx * dx + dy * dy || 1),
+            ((center[0] - a[0]) * dx + (center[1] - a[1]) * dy) / (dx * dx + dy * dy || 1),
           ),
         );
       inradius = Math.min(
@@ -126,7 +98,7 @@ export async function buildReferenceAssets(root, browser) {
       );
     }
     return {
-      part: partOf(points, faces, 0, "body", "body", "#4088ef"),
+      part: partOf(points, faces, 0, 'body', 'body', '#4088ef'),
       outline,
       radius: inradius * 0.9,
       center,
@@ -147,17 +119,12 @@ export async function buildReferenceAssets(root, browser) {
         },
         [0, 0, 0],
       );
-      const angle =
-        0.5 * Math.atan2(2 * covariance[1], covariance[0] - covariance[2]);
+      const angle = 0.5 * Math.atan2(2 * covariance[1], covariance[0] - covariance[2]);
       const along = pts.map(
-        (p) =>
-          (p[0] - center[0]) * Math.cos(angle) +
-          (p[1] - center[1]) * Math.sin(angle),
+        (p) => (p[0] - center[0]) * Math.cos(angle) + (p[1] - center[1]) * Math.sin(angle),
       );
       const across = pts.map(
-        (p) =>
-          -(p[0] - center[0]) * Math.sin(angle) +
-          (p[1] - center[1]) * Math.cos(angle),
+        (p) => -(p[0] - center[0]) * Math.sin(angle) + (p[1] - center[1]) * Math.cos(angle),
       );
       return {
         center,
@@ -166,10 +133,7 @@ export async function buildReferenceAssets(root, browser) {
       };
     });
     const height = (measured[0].height + measured[1].height) / 2;
-    const width = Math.min(
-      height * 0.55,
-      ((measured[0].width + measured[1].width) / 2) * 1.15,
-    );
+    const width = Math.min(height * 0.55, ((measured[0].width + measured[1].width) / 2) * 1.15);
     const separation = Math.hypot(
       measured[1].center[0] - measured[0].center[0],
       measured[1].center[1] - measured[0].center[1],
@@ -182,11 +146,7 @@ export async function buildReferenceAssets(root, browser) {
     body.eyePlanes = [];
     const result = [-1, 1].map((side, index) => {
       const normal = [Math.sin(split * side), 0, Math.cos(split)];
-      const center = [
-        body.center[0] + normal[0] * radius,
-        body.center[1],
-        normal[2] * radius,
-      ];
+      const center = [body.center[0] + normal[0] * radius, body.center[1], normal[2] * radius];
       const right = [normal[2], 0, -normal[0]];
       body.eyePlanes.push({
         center: center.map(round),
@@ -212,27 +172,21 @@ export async function buildReferenceAssets(root, browser) {
       const points = local.map((p) => point(p, 1)),
         middle = local.map((p) => point(p, 0.5)),
         closed = local.map((p) => point(p, 0));
-      const faces = contour.map((_, i) => [
-        0,
-        1 + i,
-        1 + ((i + 1) % contour.length),
-      ]);
+      const faces = contour.map((_, i) => [0, 1 + i, 1 + ((i + 1) % contour.length)]);
       return partOf(
         points,
         faces,
         index + 1,
-        index === 0 ? "left-eye" : "right-eye",
-        "eye",
-        "#ffffff",
+        index === 0 ? 'left-eye' : 'right-eye',
+        'eye',
+        '#ffffff',
         {
           face: true,
           delta0: points.map((p, i) =>
             p.map((v, k) => round(4 * (middle[i][k] - v) - (closed[i][k] - v))),
           ),
           delta1: points.map((p, i) =>
-            p.map((v, k) =>
-              round(2 * (closed[i][k] - v) - 4 * (middle[i][k] - v)),
-            ),
+            p.map((v, k) => round(2 * (closed[i][k] - v) - 4 * (middle[i][k] - v))),
           ),
         },
       );
@@ -246,9 +200,7 @@ export async function buildReferenceAssets(root, browser) {
   }
   function compact(samples, n) {
     const first = samples.slice(0, n);
-    return samples.every((v, i) => v === first[i % n])
-      ? { value: first }
-      : { samples };
+    return samples.every((v, i) => v === first[i % n]) ? { value: first } : { samples };
   }
   const manifest = [];
   for (const shape of outlines) {
@@ -259,46 +211,28 @@ export async function buildReferenceAssets(root, browser) {
       .filter((p) => p.id >= 8)
       .map((p) => ({
         ...p,
-        role:
-          p.id === 8 ? "panel" : p.id === 9 || p.id === 10 ? "hand" : "screen",
-        color:
-          p.id === 8
-            ? "#e56da6"
-            : p.id === 9 || p.id === 10
-              ? "#4088ef"
-              : "#ffffff",
+        role: p.id === 8 ? 'panel' : p.id === 9 || p.id === 10 ? 'hand' : 'screen',
+        color: p.id === 8 ? '#e56da6' : p.id === 9 || p.id === 10 ? '#4088ef' : '#ffffff',
         opacity: p.id === 8 ? 0.22 : 1,
       }));
     const parts = [body, ...eyes, ...props],
       clips = {};
-    for (const kind of ["idle", "reaction", "work"]) {
+    for (const kind of ['idle', 'reaction', 'work']) {
       const source = original.clips[kind],
         duration =
-          kind === "work"
-            ? Math.min(source.duration, 3.2666666666666666)
-            : source.duration,
+          kind === 'work' ? Math.min(source.duration, 3.2666666666666666) : source.duration,
         count = Math.ceil(duration * source.fps) + 1;
       const tracks = parts.map((p, index) => {
-        const sourceIndex =
-            index < 3
-              ? index
-              : original.parts.findIndex((op) => op.id === p.id),
+        const sourceIndex = index < 3 ? index : original.parts.findIndex((op) => op.id === p.id),
           track = source.parts[sourceIndex];
         if (!track) return null;
         if (index >= 3)
           return Object.fromEntries(
             Object.entries(track).map(([key, c]) => {
-              const n =
-                key === "matrix"
-                  ? 16
-                  : ["translation", "scale"].includes(key)
-                    ? 3
-                    : 4;
+              const n = key === 'matrix' ? 16 : ['translation', 'scale'].includes(key) ? 3 : 4;
               return [
                 key,
-                c.value
-                  ? structuredClone(c)
-                  : { samples: c.samples.slice(0, count * n) },
+                c.value ? structuredClone(c) : { samples: c.samples.slice(0, count * n) },
               ];
             }),
           );
@@ -307,11 +241,7 @@ export async function buildReferenceAssets(root, browser) {
           translations = [],
           rotations = [],
           scales = [];
-        const baseEyeY = sampled(
-          original.clips.idle.parts[sourceIndex].scale,
-          3,
-          0,
-        )[1];
+        const baseEyeY = sampled(original.clips.idle.parts[sourceIndex].scale, 3, 0)[1];
         for (let f = 0; f < count; f++) {
           const referenceBody = original.clips.idle.parts[0],
             referenceEye = original.clips.idle.parts[1],
@@ -319,29 +249,20 @@ export async function buildReferenceAssets(root, browser) {
           const position = sampled(bodyTrack.translation, 3, f).map(
             (v, k) => v - sampled(referenceBody.translation, 3, 0)[k],
           );
-          const faceRotation = new Quaternion(
-            ...sampled(gazeTrack.rotation, 4, f),
-          )
+          const faceRotation = new Quaternion(...sampled(gazeTrack.rotation, 4, f))
             .normalize()
-            .multiply(
-              new Quaternion(...sampled(referenceEye.rotation, 4, 0))
-                .normalize()
-                .invert(),
-            );
+            .multiply(new Quaternion(...sampled(referenceEye.rotation, 4, 0)).normalize().invert());
           const sc = sampled(bodyTrack.scale, 3, f),
             baseSc = sampled(referenceBody.scale, 3, 0),
             uniform = Math.cbrt(
-              Math.abs(
-                (sc[0] * sc[1] * sc[2]) / (baseSc[0] * baseSc[1] * baseSc[2]),
-              ),
+              Math.abs((sc[0] * sc[1] * sc[2]) / (baseSc[0] * baseSc[1] * baseSc[2])),
             );
-          const roll = new Euler().setFromQuaternion(faceRotation, "XYZ").z;
+          const roll = new Euler().setFromQuaternion(faceRotation, 'XYZ').z;
           faceRotation.setFromAxisAngle(new Vector3(0, 0, 1), roll);
           translations.push(...position.map(round));
           rotations.push(...faceRotation.toArray().map(round));
           scales.push(round(uniform), round(uniform), round(uniform));
-          const blink =
-            index > 0 ? sampled(track.scale, 3, f)[1] / baseEyeY : 1;
+          const blink = index > 0 ? sampled(track.scale, 3, f)[1] / baseEyeY : 1;
           parameters.push(0, 0, round(1 - blink), round((1 - blink) ** 2));
         }
         return {
@@ -370,12 +291,12 @@ export async function buildReferenceAssets(root, browser) {
         name: shape.name,
         recipe: {
           shape: `bot_${shape.name}`,
-          eyes: "bot",
-          eyewear: "none",
-          accessory: "none",
+          eyes: 'bot',
+          eyewear: 'none',
+          accessory: 'none',
         },
-        kind: "reference-svg-billboard-face",
-        motion: "Peri adapted to flat source contours",
+        kind: 'reference-svg-billboard-face',
+        motion: 'Peri adapted to flat source contours',
       },
       parts,
       clips,

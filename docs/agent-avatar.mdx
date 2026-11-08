@@ -148,12 +148,13 @@ Headwear seats against the body's actual support surface. Eyewear fits the final
 contours, and headphones use body anchors. Reference-form head accessories follow the
 shared head direction as rigid parts; eye deformation does not distort hats or glasses.
 An explicit `eyeSpacing` changes the pair's spacing without rotating its expression.
-Single-ink eyes switch to a readable light ink on dark reference bodies when needed;
+Single-ink eyes switch to a readable light ink on dark bodies when needed;
 multicolor iris and highlight styles retain their colors.
 
 The shape selector draws the body in the selected paint; the eye selector draws only the
 paired eye style. Both use static SVG paths. Preview-only choices never change saved data.
-The editor accepts and saves RGB colors unchanged. Chat handoff may capture the visible
+The editor preserves permitted RGB colors exactly and visibly normalizes colors below
+the shared perceptual skin-tone floor of 45. Chat handoff may capture the visible
 avatar once for its flight presentation; that snapshot is not the avatar renderer.
 
 ## Motion and resource ownership

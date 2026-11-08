@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { AgentAvatar } from '../../src/agent-avatar/AgentAvatar';
-import { VectorStaticPortrait } from '../../src/agent-avatar/VectorStaticPortrait';
-import type { VectorFrame } from '../../src/agent-avatar/vector-types';
-import { CHARACTER_PRESETS, CHARACTER_TEMPLATES } from '../../src/agent-creator/constants';
-import { Button } from '../../src/button/Button';
-import { Text } from '../../src/typography';
-import portraits from './avatar-portraits.json';
+import { AgentAvatar } from './AgentAvatar';
+import { VectorStaticPortrait } from './VectorStaticPortrait';
+import type { VectorFrame } from './vector-types';
+import { CHARACTER_PRESETS, CHARACTER_TEMPLATES } from '../agent-creator/constants';
+import { Button } from '../button/Button';
+import { Text } from '../typography';
+import portraits from '../../templates/agents/avatar-portraits.json';
 
 type CharacterId = (typeof CHARACTER_PRESETS)[number]['id'];
 const frames = portraits as Record<CharacterId, VectorFrame>;

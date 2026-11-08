@@ -1,3 +1,5 @@
+import { svgA11yProps } from '../styles/svg-a11y';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import {
   subscribeVectorFrame,
   shareVectorFrame,
@@ -18,7 +20,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useState,
@@ -130,7 +131,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     });
     return () => observeSnapshot?.(null);
   }, [observeSnapshot]);
-  const prefix = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  const prefix = useSvgIdPrefix('bloom-vector');
   const ready = useRef(false),
     onReady = useRef(props.onReady);
   onReady.current = props.onReady;
@@ -454,7 +455,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
           height="100%"
           viewBox={display.drawing.viewBox}
           testID="bloom-vector-drawing"
-          accessible={false}
+          {...svgA11yProps()}
         >
           <Defs>
             {display.drawing.paths
