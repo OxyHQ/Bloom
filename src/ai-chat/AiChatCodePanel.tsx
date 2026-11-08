@@ -17,7 +17,7 @@ import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
 import type { AiChatCodePanelProps, AiChatPanelAction, AiChatPanelTab } from './types';
 import { useAiChatPlatform } from './context';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 
 /** Shared PageHeader slots for the code and gallery screens. */

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useAiChatPlatform } from './context';
 import { useScreenContext } from '../screen/context';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { PageFooter } from '../page-footer';
 import { AgentThinking } from '../agent-thinking';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';

@@ -24,10 +24,8 @@ import { useDerivedValue, useSharedValue, type SharedValue } from 'react-native-
 // `./icons/Ri*` was added to remove. An app cannot opt out of what Bloom's own
 // components import, so the barrel has no place inside a shipped one.
 
-import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { HeaderDockProvider } from '../layout/header-dock';
 import { Button } from '../button';
 import { Search } from '../search';
@@ -36,12 +34,11 @@ import {
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../segmented-control';
-import { Popover, PopoverContent, PopoverTrigger } from '../popover';
-import { Item } from '../item';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { H1, Subtitle, TYPE_SCALE } from '../typography';
 import type { DialogHeaderConfig } from './types';
+import type { HeaderAction, HeaderActionsProps } from '../page-header/types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { DIALOG_MESSAGES } from './messages';
@@ -82,13 +79,6 @@ export const DIALOG_HEADER_CONTENT_TOP = DIALOG_HEADER_OVERLAY_HEIGHT;
 /** Horizontal gutter — matches the `screen-margin` (20px) SDK screens use. */
 const HEADER_H_PADDING = 20;
 
-/**
- * Trailing icon `actions` shown inline before they collapse into a "more"
- * overflow menu (Material overflow pattern). Kept small so the nav row never
- * crowds the title.
- */
-export const DIALOG_HEADER_MAX_INLINE_ACTIONS = 3;
-
 /** Light content color for `tone: 'onImage'` (legible over any media). */
 const ON_IMAGE_TEXT = '#FFFFFF';
 const ON_IMAGE_SUBTEXT = 'rgba(255,255,255,0.82)';
@@ -110,7 +100,7 @@ interface HeaderStore {
 }
 
 type PrimaryAction = NonNullable<DialogHeaderConfig['primaryAction']>;
-type HeaderAction = NonNullable<DialogHeaderConfig['actions']>[number];
+type DialogAction = NonNullable<DialogHeaderConfig['actions']>[number];
 type HeaderSearch = NonNullable<DialogHeaderConfig['search']>;
 type HeaderSegments = NonNullable<DialogHeaderConfig['segments']>;
 type HeaderProgress = NonNullable<DialogHeaderConfig['progress']>;
@@ -123,7 +113,7 @@ function primaryActionEqual(a: PrimaryAction | undefined, b: PrimaryAction | und
   return a.label === b.label && !!a.disabled === !!b.disabled && !!a.loading === !!b.loading;
 }
 
-function actionsEqual(a: HeaderAction[] | undefined, b: HeaderAction[] | undefined): boolean {
+function actionsEqual(a: DialogAction[] | undefined, b: DialogAction[] | undefined): boolean {
   if (a === b) return true;
   if (!a || !b || a.length !== b.length) return false;
   for (let i = 0; i < a.length; i += 1) {
@@ -132,7 +122,17 @@ function actionsEqual(a: HeaderAction[] | undefined, b: HeaderAction[] | undefin
     if (!x || !y) return false;
     // `icon` is a memoized node (compared by identity); `onPress` is ignored.
     if (
-      x.accessibilityLabel !== y.accessibilityLabel ||
+      ('label' in x ? x.label : x.accessibilityLabel) !==
+        ('label' in y ? y.label : y.accessibilityLabel) ||
+      x.id !== y.id ||
+      x.busy !== y.busy ||
+      x.selected !== y.selected ||
+      x.priority !== y.priority ||
+      x.essential !== y.essential ||
+      x.overflow !== y.overflow ||
+      x.visible !== y.visible ||
+      x.group !== y.group ||
+      x.labelVisibility !== y.labelVisibility ||
       !!x.disabled !== !!y.disabled ||
       x.icon !== y.icon
     ) {
@@ -198,12 +198,48 @@ function configsEqual(a: DialogHeaderConfig | null, b: DialogHeaderConfig | null
 
 function createHeaderStore(): HeaderStore {
   let override: DialogHeaderConfig | null = null;
+  let latest: DialogHeaderConfig | null = null;
   const listeners = new Set<() => void>();
   return {
     getSnapshot: () => override,
     setOverride: (next) => {
+      latest = next;
       if (configsEqual(override, next)) return;
-      override = next;
+      // Keep handlers current without publishing a new render snapshot for an
+      // inline closure. Stable IDs also preserve dispatch across action reorder.
+      override = next
+        ? {
+            ...next,
+            onBack: next.onBack ? () => latest?.onBack?.() : undefined,
+            primaryAction: next.primaryAction
+              ? {
+                  ...next.primaryAction,
+                  onPress: () => latest?.primaryAction?.onPress(),
+                }
+              : undefined,
+            actions: next.actions?.map((action, index) => ({
+              ...action,
+              onPress: () => {
+                const current = action.id
+                  ? latest?.actions?.find((candidate) => candidate.id === action.id)
+                  : latest?.actions?.[index];
+                current?.onPress();
+              },
+            })),
+            search: next.search
+              ? {
+                  ...next.search,
+                  onValueChange: (value) => latest?.search?.onValueChange(value),
+                }
+              : undefined,
+            segments: next.segments
+              ? {
+                  ...next.segments,
+                  onChange: (value) => latest?.segments?.onChange(value),
+                }
+              : undefined,
+          }
+        : null;
       for (const l of listeners) l();
     },
     subscribe: (listener) => {
@@ -273,7 +309,6 @@ export function useDialogHeader(config: DialogHeaderConfig | null | undefined): 
   useLayoutEffect(() => {
     if (!store) return;
     store.setOverride(config ?? null);
-    return () => store.setOverride(null);
     // Slot nodes are compared by identity; callers memoize them.
   }, [
     store,
@@ -296,6 +331,9 @@ export function useDialogHeader(config: DialogHeaderConfig | null | undefined): 
     config?.tone,
     config?.progress,
   ]);
+  // Clear only on contributor unmount/store change. Clearing during every
+  // callback-only update would defeat render equality and notify twice.
+  useLayoutEffect(() => () => store?.setOverride(null), [store]);
 }
 
 /** Read the merged (base + runtime-override) header config, reactively. */
@@ -305,80 +343,6 @@ function useMergedHeaderConfig(base: DialogHeaderConfig, store: HeaderStore): Di
 }
 
 // --- Rich header sub-parts --------------------------------------------------
-
-/**
- * The "more" overflow: a Bloom `Popover` that DROPS from the ⋯ trigger — anchored
- * under the button on web (measured trigger + `bottom-end` placement) and a bottom
- * sheet on native, matching how top libraries present a toolbar overflow (Radix
- * DropdownMenu / Material Menu on desktop, an action sheet on mobile). Items are
- * Bloom `Item` rows; pressing one closes the popover before firing.
- */
-function HeaderOverflowMenu({
-  items,
-}: {
-  items: NonNullable<DialogHeaderConfig['actions']>;
-}): React.ReactElement {
-  // Own the open state so an item press can close the popover before acting.
-  const [open, setOpen] = useState(false);
-  const common = useCommonMessages();
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild label={common.more}>
-        <ButtonGroupItem iconOnly leadingIcon={RiMoreFill} accessibilityLabel={common.more} />
-      </PopoverTrigger>
-      <PopoverContent label={common.moreActions} align="end">
-        {items.map((action) => (
-          <Item
-            key={action.accessibilityLabel}
-            title={action.accessibilityLabel}
-            leading={<action.icon />}
-            density="compact"
-            disabled={action.disabled}
-            onPress={() => {
-              setOpen(false);
-              action.onPress();
-            }}
-          />
-        ))}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-/**
- * Trailing icon `actions`: the first {@link DIALOG_HEADER_MAX_INLINE_ACTIONS}
- * render inline in one shared action island; any surplus collapses into a "more" overflow
- * that drops from the ⋯ ({@link HeaderOverflowMenu}) — never hand-rolled.
- */
-function HeaderTrailingActions({
-  actions,
-  closeButton,
-}: {
-  actions: NonNullable<DialogHeaderConfig['actions']>;
-  closeButton?: React.ReactNode;
-}): React.ReactElement | null {
-  if (actions.length === 0 && !closeButton) return null;
-  const overflows = actions.length > DIALOG_HEADER_MAX_INLINE_ACTIONS;
-  // Keep room for the "more" trigger when collapsing.
-  const inline = overflows ? actions.slice(0, DIALOG_HEADER_MAX_INLINE_ACTIONS - 1) : actions;
-  const overflow = overflows ? actions.slice(DIALOG_HEADER_MAX_INLINE_ACTIONS - 1) : [];
-  return (
-    <ButtonGroup testID={actions.length ? 'dialog-nav-action-group' : 'dialog-nav-close-group'}>
-      {inline.map((action) => (
-        <ButtonGroupItem
-          key={action.accessibilityLabel}
-          iconOnly
-          leadingIcon={action.icon}
-          onPress={action.onPress}
-          disabled={action.disabled}
-          accessibilityLabel={action.accessibilityLabel}
-        />
-      ))}
-      {overflow.length > 0 ? <HeaderOverflowMenu items={overflow} /> : null}
-      {closeButton}
-    </ButtonGroup>
-  );
-}
 
 /**
  * A thin wizard step/progress indicator for the large-title zone. `step` is
@@ -426,12 +390,14 @@ function HeaderProgressBar({
 export const DialogNavHeader = memo(function DialogNavHeader({
   controller,
   header,
+  Actions,
   onDismiss,
   collapse = true,
   style,
 }: {
   controller: DialogHeaderController;
   header: DialogHeaderConfig;
+  Actions: React.ComponentType<HeaderActionsProps>;
   onDismiss: () => void;
   /**
    * Whether the small title cross-fades in on scroll (paired with an in-content
@@ -471,35 +437,41 @@ export const DialogNavHeader = memo(function DialogNavHeader({
     [largeTitleHeight, afterTitle],
   );
   const onImage = config.tone === 'onImage';
-  const closeButton =
-    config.showClose !== false ? (
-      <ButtonGroupItem
-        iconOnly
-        leadingIcon={RiCloseLine}
-        onPress={onDismiss}
-        accessibilityLabel={common.close}
-      />
-    ) : null;
-
-  // A custom right slot owns its controls. Otherwise the close affordance
-  // stays with the icon actions, even when back or a primary action is present.
+  const actions: HeaderAction[] = (config.actions ?? []).map((action, index) => ({
+    ...action,
+    id: action.id ?? `legacy-dialog-action-${index}`,
+    label: 'label' in action ? action.label : action.accessibilityLabel,
+    labelVisibility: action.labelVisibility ?? 'hidden',
+  }));
+  if (config.showClose !== false)
+    actions.push({
+      id: 'bloom-dialog-close',
+      label: common.close,
+      icon: RiCloseLine,
+      onPress: onDismiss,
+      essential: true,
+      labelVisibility: 'hidden',
+    });
   const right = config.right ?? (
-    <View style={styles.trailing}>
-      {config.primaryAction ? (
-        <Button
-          size="sm"
-          onPress={config.primaryAction.onPress}
-          disabled={config.primaryAction.disabled || config.primaryAction.loading}
-          loading={config.primaryAction.loading}
-          accessibilityLabel={config.primaryAction.label}
-          appearance="solid"
-          tone="accent"
-        >
-          {config.primaryAction.label}
-        </Button>
-      ) : null}
-      <HeaderTrailingActions actions={config.actions ?? []} closeButton={closeButton} />
-    </View>
+    <Actions
+      actions={actions}
+      testID={config.actions?.length ? 'dialog-nav-action' : 'dialog-nav-close'}
+      persistentActions={
+        config.primaryAction ? (
+          <Button
+            size="sm"
+            onPress={config.primaryAction.onPress}
+            disabled={config.primaryAction.disabled || config.primaryAction.loading}
+            loading={config.primaryAction.loading}
+            accessibilityLabel={config.primaryAction.label}
+            appearance="solid"
+            tone="accent"
+          >
+            {config.primaryAction.label}
+          </Button>
+        ) : undefined
+      }
+    />
   );
 
   return (

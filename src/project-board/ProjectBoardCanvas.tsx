@@ -1,6 +1,6 @@
 import { BloomScope } from '../appearance';
 import Animated from 'react-native-reanimated';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';

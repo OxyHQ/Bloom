@@ -148,7 +148,16 @@ describe('PageHeader', () => {
     });
     expect(screen.getByTestId('avatar')).toBeTruthy();
     expect(resolvedStyle(screen.getByTestId('h-actions').props.style)).toMatchObject({ gap: 10 });
+    const leadingMeasure = screen.getByTestId('h-leading-measure');
+    expect(resolvedStyle(screen.getByTestId('h-start').props.style)).toMatchObject({ gap: 0 });
+    fireEvent(leadingMeasure, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 80, height: 36 } },
+    });
     expect(resolvedStyle(screen.getByTestId('h-start').props.style)).toMatchObject({ gap: 6 });
+    fireEvent(leadingMeasure, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 0, height: 0 } },
+    });
+    expect(resolvedStyle(screen.getByTestId('h-start').props.style)).toMatchObject({ gap: 0 });
   });
 
   it('centred title is inset by the wider side', () => {

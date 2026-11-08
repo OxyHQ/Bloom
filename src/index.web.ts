@@ -301,7 +301,7 @@ export * from './patient-info-card';
 export * from './sidebar';
 export * from './window';
 export * from './app-shell/index.web';
-export * from './page-header';
+export * from './page-header/index.web';
 export * from './page-footer';
 export * from './bottom-promo';
 export * from './notification-center';

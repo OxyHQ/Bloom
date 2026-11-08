@@ -51,6 +51,8 @@ export interface ButtonGroupItemProps {
   selected?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
+  /** Busy presentation delegates to the shared Button. */
+  loading?: boolean;
   /** Square item showing only `leadingIcon` — name it with `accessibilityLabel`. */
   iconOnly?: boolean;
   /** Icon component before the label, sized and coloured by the item. */
