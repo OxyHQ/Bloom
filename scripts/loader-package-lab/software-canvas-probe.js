@@ -20,6 +20,29 @@ module.exports = (config) =>
   override fun onNewIntent(intent: android.content.Intent) {
     super.onNewIntent(intent)
     val probe = intent.getStringExtra("bloomProbe") ?: return
+    if (probe == "clock") {
+      window.decorView.post {
+        for (light in lightViews(window.decorView)) android.util.Log.i("BloomPackageClock", org.json.JSONObject().apply {
+          put("wallMs", android.os.SystemClock.elapsedRealtime()); put("seconds", light.seconds)
+          put("width", light.boxWidth); put("height", light.boxHeight); put("radius", light.radius)
+        }.toString())
+      }
+      return
+    }
+    if (probe == "inputs") {
+      fun inspect(view: android.view.View) {
+        if (view is android.widget.EditText) android.util.Log.i("BloomInputProbe", org.json.JSONObject().apply {
+          put("testID", view.getTag(com.facebook.react.R.id.react_test_id))
+          put("identity", System.identityHashCode(view)); put("id", view.id)
+          put("start", view.selectionStart); put("end", view.selectionEnd)
+          put("focused", view.hasFocus()); put("attached", view.isAttachedToWindow)
+          put("text", view.text.toString())
+        }.toString())
+        if (view is android.view.ViewGroup) for (i in 0 until view.childCount) inspect(view.getChildAt(i))
+      }
+      window.decorView.post { inspect(window.decorView) }
+      return
+    }
     if (probe != "snapshot" && probe != "software" && probe != "transient") return
     window.decorView.postDelayed({
       val lights = lightViews(window.decorView)

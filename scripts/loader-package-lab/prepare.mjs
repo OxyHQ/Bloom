@@ -20,6 +20,7 @@ const fixtureDigest = createHash('sha256');
 for (const name of [
   'PackageLab.tsx',
   'LoaderBenchmark.tsx',
+  'ComposerCases.tsx',
   'app.config.js',
   'index.js',
   'metro.config.js',
@@ -51,6 +52,7 @@ writeFileSync(
       adapterSha256: hash(adapter),
       lockSha256: hash(readFileSync('bun.lock')),
       reactCompiler: false,
+      scene: process.env.BLOOM_LAB_SCENE || 'benchmark',
       softwareWindow: process.env.BLOOM_LAB_SOFTWARE_WINDOW === '1',
     },
     null,
