@@ -1,0 +1,74 @@
+{
+  "browser": "156.0.8078.4",
+  "errors": [],
+  "checks": [
+    {
+      "name": "workspace state 1400",
+      "pass": true
+    },
+    {
+      "name": "workspace identity 1400",
+      "pass": true
+    },
+    {
+      "name": "workspace state 700",
+      "pass": true
+    },
+    {
+      "name": "workspace identity 700",
+      "pass": true
+    },
+    {
+      "name": "workspace state 390",
+      "pass": true
+    },
+    {
+      "name": "workspace identity 390",
+      "pass": true
+    },
+    {
+      "name": "workspace state 1400",
+      "pass": true
+    },
+    {
+      "name": "workspace identity 1400",
+      "pass": true
+    },
+    {
+      "name": "map callbacks",
+      "pass": true
+    },
+    {
+      "name": "layer picker",
+      "pass": true
+    },
+    {
+      "name": "compact map control",
+      "pass": true
+    },
+    {
+      "name": "shared loader moving",
+      "pass": true,
+      "details": {
+        "before": [
+          "-16.9844px",
+          "-18.1551px",
+          "-17.7782px"
+        ],
+        "after": [
+          "-21.7978px",
+          "-22.9685px",
+          "-22.5915px"
+        ]
+      }
+    },
+    {
+      "name": "conversation stop",
+      "pass": true
+    },
+    {
+      "name": "conversation state after resize",
+      "pass": true
+    }
+  ]
+}

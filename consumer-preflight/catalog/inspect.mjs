@@ -1,0 +1,2 @@
+import {chromium} from 'playwright';
+const browser=await chromium.launch({executablePath:process.env.HOME+'/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome',headless:true,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:1400,height:900}});page.on('pageerror',e=>console.log('PAGEERROR',e.stack));await page.goto('http://127.0.0.1:5179');await page.waitForTimeout(10000);console.log((await page.locator('body').innerText()).slice(0,5000));await page.screenshot({path:'initial.png'});await browser.close();

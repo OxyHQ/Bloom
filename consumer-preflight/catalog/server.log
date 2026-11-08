@@ -1,0 +1,6 @@
+$ vite --host 127.0.0.1 --port 5179 --force
+3:18:11 PM [vite] (client) Forced re-optimization of dependencies
+
+  VITE v6.3.5  ready in 1292 ms
+
+  ➜  Local:   http://127.0.0.1:5179/

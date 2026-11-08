@@ -1,0 +1,7 @@
+{
+  "tarballSha256": "5b54fdebcd33a6e3d542a3915c6393f72aac3053661341207458d102bcb51d89",
+  "resolvedPackage": "/home/nate/Oxy/Bloom/.worktrees/issue-663-catalog-discovery/consumer-preflight/catalog/node_modules/@oxy.so/bloom",
+  "version": "17.23.0",
+  "filesCompared": 27819,
+  "mismatches": []
+}

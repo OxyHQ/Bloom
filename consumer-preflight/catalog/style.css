@@ -1,0 +1,4 @@
+@import 'tailwindcss' source(none);
+@import '@oxy.so/bloom/design-tokens/theme.css';
+@source './node_modules/@oxy.so/bloom/lib/module/**/*.js';
+html,body,#root {height:100%;margin:0;} #root {display:flex;flex-direction:column;}

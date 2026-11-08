@@ -1,0 +1,10 @@
+bun add v1.4.3 (c6da4a4d3)
+Resolving dependencies
+Resolved, downloaded and extracted [2]
+Saved lockfile
+
++ @oxy.so/bloom@/home/nate/Oxy/Bloom/.local/issue-663-integration/catalog-discovery/oxy.so-bloom-17.23.0.tgz
+
+installed react-native-web@0.21.4
+
+4 packages installed [583.00ms]

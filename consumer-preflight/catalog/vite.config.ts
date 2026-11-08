@@ -1,0 +1,6 @@
+import {readFileSync} from 'node:fs';
+import {transformSync} from '@babel/core';
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+export default defineConfig({plugins:[react(),tailwindcss()],resolve:{dedupe:['react','react-dom','react-native-web','expo','expo-modules-core'],alias:[{find:/^react-native-worklets$/,replacement:new URL('./node_modules/react-native-worklets/src/index.ts',import.meta.url).pathname},{find:/^expo-modules-core$/,replacement:new URL('./node_modules/expo-modules-core/src/index.ts',import.meta.url).pathname},{find:/^react-native$/,replacement:'react-native-web'}],extensions:['.web.tsx','.web.ts','.web.js','.tsx','.ts','.js']},define:{global:'globalThis',__DEV__:true,'process.env.NODE_ENV':JSON.stringify('development')},optimizeDeps:{esbuildOptions:{plugins:[{name:'bloom-worklets',setup(build:any){build.onLoad({filter:/(bloom|react-native-reanimated)\/lib\/module\/.*\.js$/},(args:any)=>({contents:transformSync(readFileSync(args.path,'utf8'),{filename:args.path,plugins:['react-native-reanimated/plugin'],parserOpts:{plugins:['jsx']},configFile:false,babelrc:false})!.code!,loader:'jsx'}))}}],loader:{'.js':'jsx'},resolveExtensions:['.web.tsx','.web.ts','.web.js','.tsx','.ts','.js']}}});

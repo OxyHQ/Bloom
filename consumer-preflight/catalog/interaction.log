@@ -1,0 +1,38 @@
+CANVAS BUTTONS [ '', '', '', '', '', '' ] [
+  'Stop following my location',
+  'Facing 30 degrees. Reset to north',
+  'Zoom in',
+  'Zoom out',
+  'Flatten the map',
+  'Map layers'
+]
+CHAT INPUTS [ { tag: 'TEXTAREA', label: 'Message', placeholder: 'Ask me' } ]
+CHAT BUTTONS [
+  { label: 'Share chat', text: '' },
+  { label: 'More actions for this chat', text: '' },
+  {
+    label: 'Explain what this starter does',
+    text: 'Explain what this starter does'
+  },
+  {
+    label: 'Write a product update in three sentences',
+    text: 'Write a product update in three sentences'
+  },
+  {
+    label: 'Give me five names for a scheduling app',
+    text: 'Give me five names for a scheduling app'
+  },
+  { label: 'Send message', text: '' }
+]
+BUSY BUTTONS [
+  { label: 'Share chat', text: '' },
+  { label: 'More actions for this chat', text: '' },
+  { label: 'Stop generating', text: '' }
+]
+ANIMATIONS [
+  { animation: 'none', state: 'running' },
+  { animation: 'none', state: 'running' },
+  { animation: 'bloom-composer-loader-dash', state: 'running' },
+  { animation: 'bloom-composer-loader-dash', state: 'running' },
+  { animation: 'bloom-composer-loader-dash', state: 'running' }
+]

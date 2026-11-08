@@ -1,0 +1,86 @@
+PRE-RELEASE CATALOG DISCOVERY PREFLIGHT — 2026-11-08
+
+Scope: local packed candidate @oxy.so/bloom 17.23.0, SHA256
+5b54fdebcd33a6e3d542a3915c6393f72aac3053661341207458d102bcb51d89.
+Not a registry/publication receipt or final clean published-guide evaluation.
+No production Bloom source used to discover APIs. No Bloom source modified.
+Only packaged docs/AGENTS.md, task-catalog.mdx/json, examples and canonical guides
+informed API selection; normal host/bundler knowledge was needed beyond them.
+Installed tarball in fresh fixture, not source mirror. All 27,819 installed files
+compared byte-for-byte with extracted candidate: zero mismatches (JSON attached).
+
+Selections
+1. workspace task → workspace.tsx (copied unchanged), AppShell.panelLayout split,
+   bounded, joined, responsive axis, stable document/inspector ids. Screen,
+   ScreenScrollView, PageHeader selected from imports in that example.
+   Domain components use documented TextFieldInput local state. No breakpoint
+   remount code or duplicate panel surface. Both inputs retain values and the
+   same DOM nodes across 1400→700→390→1400 width. Screenshots show compact
+   vertical document/details and desktop horizontal split. These are UI state
+   and identity checks, not proof of durable storage or native behavior.
+2. canvas task → canvas.tsx (copied unchanged), Screen scroll=none.
+   map-controls.mdx reveals MapControls and MapLayerPicker, omitted from task's
+   import block and minimal example. Added callback-only locate, north, zoom,
+   tilt and layer selection around a synthetic local interactive map area.
+   Real mouse clicks verify zoom, locate, tilt, layer menu Satellite selection,
+   and compact zoom control after resize. No tiles/network/provider involved.
+   Missing persistent capability is EXPLICIT in catalog: occupied map regions
+   and a persistent non-modal sheet are not implemented by this example.
+   Did not substitute Dialog or claim finished GoWay panel adoption.
+3. conversation task → conversation.tsx, AgentChat from agent-chat subpath.
+   Adapted domain messages and busy/onStop from agent-chat.mdx; no second shell,
+   transcript scroller or hand-built loader. Enter sends local message, busy
+   shows Stop generating, shared loader's three animated rects advance their
+   stroke dash offsets, Stop appends local acknowledgement, and transcript
+   remains visible after compact→desktop resize. Loader visible in screenshot.
+
+Discovery findings
+A. Major setup contradiction: docs/AGENTS and catalog require BloomProvider and
+   refer to getting-started for CSS/fonts. getting-started instead prescribes
+   BloomThemeProvider + SurfaceProvider and manual inline BLOOM_DIALOG_CSS.
+   Packaged provider.mdx supplies BloomProvider import and root contract;
+   design-tokens.mdx supplies theme.css import. Getting-started has no @source
+   recipe or font setup. Successful setup used Tailwind source scanning knowledge
+   unavailable in packaged guide. Fonts were not separately installed/verified;
+   screenshot typography is not a font fidelity acceptance.
+B. New Vite consumer is not runnable from catalog/getting-started alone. Fixture
+   required RN→RNW alias, .web TS/JS extension ordering in BOTH resolver and
+   optimizeDeps, JSX loader for dependency .js, global→globalThis, explicit peer
+   versions, Expo module-core source entry alias, Babel Reanimated worklet
+   transform for installed Bloom and Reanimated JS. None edits package caches.
+   Before worklet transform, real browser threw 'Passed a function that is not
+   a worklet' from Screen scrolling; typecheck had already passed.
+C. Peer manifest accepts expo-blur 15.x via '*', but that installed version lacks
+   BlurTargetView needed by candidate bundle. SDK58 peers resolve that. Initial
+   Reanimated4.1.1/Worklets0.5.1 host failed browser init; final fixture uses
+   supported Reanimated3.19.1. This is fixture compatibility evidence, not a
+   claim all Vite/Expo setups fail. Lockfile captures successful dependencies.
+D. Scanning the whole 255MB lib tree made this host unresponsive/high CPU;
+   explicit lib/module/**/*.js with source(none) and bounded worker counts
+   resolved it. Do not infer a measured general performance regression.
+E. Conversation ownership row repeats AppShell/Screen advice generically, but
+   explicit avoid paragraph correctly prevents wrapping AgentChat twice.
+F. Canvas task advertises shared controls in prose but its import list/example
+   omits them; canonical guide discovery was necessary. MapLayerPicker example
+   uses undefined LAYERS and an ellipsis; simple id/label entries compiled and
+   worked. A complete runnable controls example would remove that guess.
+
+Almost-reimplementations avoided
+- Responsive document/inspector conditional rendering avoided via workspace.
+- Map zoom/layer buttons avoided by following map-controls canonical guide.
+- Busy composer spinner/light and stop behavior avoided through AgentChat.
+- Persistent non-modal panel deliberately left as named capability gap.
+
+Evidence
+bun run typecheck: PASS (all three examples plus composed fixture).
+verify.mjs: real headless Chromium156, mouse/keyboard and viewport resizing;
+runtime-results.json records checks, browser version and page errors.
+Screenshots were opened for visual review (workspace compact and busy chat).
+No Android/device/iPhone test. No persistence/backend/account writes.
+No final published-guide clean-room acceptance claimed.
+
+Reproduce: bun install (tarball dependency path in package.json), then
+RAYON_NUM_THREADS=4 GOMAXPROCS=4 bun run dev --force
+In another process: bun run typecheck && node verify.mjs
+Use same packed candidate hash. Host setup assumptions above remain part of
+this preflight's limitations, even though runtime interactions now succeed.
