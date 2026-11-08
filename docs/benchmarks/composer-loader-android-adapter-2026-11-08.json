@@ -294,11 +294,11 @@
     "Snapshot cost 47.1/136.1 ms is a separate one-shot UI-thread cost, not the continuous frame budget.",
     "Software/old-binary SVG fallback retains the measured quality/performance degradation.",
     "API 30 device/emulator appearance and RN 0.73/legacy runtime not yet exercised.",
-    "Packaged lifecycle, phase-aligned captures and actual ComposerPill/AgentChatComposer/Alia acceptance pending.",
+    "Phase-aligned captures and complete production Alia lifecycle acceptance remain pending. Packaged ComposerPill/AgentChatComposer evidence is recorded below; the offline AliaComposer fixture evidence and artifact provenance are in docs/benchmarks/composer-android-2026-11-08/alia-workflow.json.",
     "iPhone tests explicitly deferred by user."
   ],
   "evidenceRoot": ".local/loader-adapter",
-  "negativeControl": "canvas-probe/snapshot.log records native view count 1\u21920 before the fix; original APK retained.",
+  "negativeControl": "canvas-probe/snapshot.log records native view count 1→0 before the fix; original APK retained.",
   "hardwareSoftwareControl": {
     "changedZipEntries": [
       {
@@ -837,7 +837,7 @@
       "cases-agent-pill-input-cases-busy.png",
       "cases-agent-pill-input-stop-and-type.png"
     ],
-    "limits": "Synthetic packaged composers only. The real Alia product workflow, full lifecycle and phase-aligned optical comparison, performance acceptance and iPhone validation remain pending."
+    "limits": "Synthetic packaged ComposerPill and AgentChatComposer only. Production Alia workflow, phase-aligned optical comparison, full lifecycle/performance acceptance and iPhone validation remain pending; the offline AliaComposer fixture evidence is recorded in docs/benchmarks/composer-android-2026-11-08/alia-workflow.json."
   },
   "physicalLoaderLifecycle": {
     "status": "verified",
