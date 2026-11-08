@@ -1,7 +1,7 @@
 import { ComposerLoaderPaintContext } from './context';
 import { Surface } from '../surface';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import { Platform, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Defs, FeGaussianBlur, Filter, LinearGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, FeGaussianBlur, Filter, G, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { BUTTON_SHADOW } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
@@ -94,7 +94,11 @@ const LoaderStroke = memo(function LoaderStroke({
       strokeLinecap="round"
       strokeDasharray={[stroke.dash * unit, (100 - stroke.dash) * unit]}
       opacity={stroke.opacity}
-      filter={stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined}
+      filter={
+        Platform.OS !== 'android' && stroke.blur > 0
+          ? `url(#${blurFilterId(gradientId, stroke.blur)})`
+          : undefined
+      }
     />
   );
 });
@@ -150,6 +154,17 @@ function ComposerLoaderComponent({
       }),
     [box.w, box.h, arc, line, bloom, bloomStrength, bloomOnly, taper, reverse, offset, radius],
   );
+  const androidStrokeGroups = useMemo(() => {
+    if (Platform.OS !== 'android') return null;
+    const groups = new Map<string, ComposerLoaderStroke[]>();
+    for (const stroke of geometry.strokes) {
+      const layer = stroke.key.slice(0, stroke.key.indexOf('-'));
+      const group = groups.get(layer) ?? [];
+      group.push(stroke);
+      groups.set(layer, group);
+    }
+    return [...groups].map(([layer, strokes]) => ({ layer, strokes }));
+  }, [geometry.strokes]);
 
   // Accumulate only active frame deltas. Reanimated resets timeSinceFirstFrame
   // on reactivation; using it would rewind the band after every pause.
@@ -247,20 +262,46 @@ function ComposerLoaderComponent({
                   </Filter>
                 ))}
               </Defs>
-              {geometry.strokes.map((stroke) => (
-                <LoaderStroke
-                  key={stroke.key}
-                  stroke={stroke}
-                  time={time}
-                  speed={speed}
-                  reverse={reverse}
-                  perimeter={geometry.perimeter}
-                  width={box.w}
-                  height={box.h}
-                  rx={geometry.rx}
-                  gradientId={gradientId}
-                />
-              ))}
+              {androidStrokeGroups
+                ? androidStrokeGroups.map(({ layer, strokes }) => {
+                    const blur = strokes[0]?.blur ?? 0;
+                    return (
+                      <G
+                        key={layer}
+                        filter={blur > 0 ? `url(#${blurFilterId(gradientId, blur)})` : undefined}
+                        opacity={layer === 'bloom' && strokes.length > 1 ? 0.8 : 1}
+                      >
+                        {strokes.map((stroke) => (
+                          <LoaderStroke
+                            key={stroke.key}
+                            stroke={stroke}
+                            time={time}
+                            speed={speed}
+                            reverse={reverse}
+                            perimeter={geometry.perimeter}
+                            width={box.w}
+                            height={box.h}
+                            rx={geometry.rx}
+                            gradientId={gradientId}
+                          />
+                        ))}
+                      </G>
+                    );
+                  })
+                : geometry.strokes.map((stroke) => (
+                    <LoaderStroke
+                      key={stroke.key}
+                      stroke={stroke}
+                      time={time}
+                      speed={speed}
+                      reverse={reverse}
+                      perimeter={geometry.perimeter}
+                      width={box.w}
+                      height={box.h}
+                      rx={geometry.rx}
+                      gradientId={gradientId}
+                    />
+                  ))}
             </Svg>
           </AndroidLight>
         ) : null}

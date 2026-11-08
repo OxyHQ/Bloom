@@ -1,0 +1,63 @@
+{
+  "status": "single phase-origin optical comparison; no acceptance threshold defined",
+  "device": {
+    "model": "Google Pixel 8a",
+    "android": 16,
+    "api": 36,
+    "capturePx": [2400, 1080],
+    "density": 420,
+    "fontScale": 1.15,
+    "orientation": "landscape"
+  },
+  "scene": {
+    "app": "so.oxy.bloom.loaderpackagelab",
+    "packageVersion": "17.23.0",
+    "offlineVerified": true,
+    "count": 2,
+    "taper": 0.5,
+    "active": true,
+    "speed": 0,
+    "narrow": false,
+    "radius": 9999,
+    "paused": false,
+    "reverse": false,
+    "screen": "off",
+    "phase": "origin; both fixtures were frozen with the public benchmark control after the same scene mounted"
+  },
+  "artifacts": {
+    "hardware": {
+      "apkSha256": "2f3d4586f47279157f9b8faaf138e6d942216925243b3cea0abfc83ec91ab7e1",
+      "embeddedBundleSha256": "e81362bac78e3730c5dc5f848aa65b55e83213fe8e282a6208edc7e4c1a58993",
+      "embeddedBloomSourceSha256": "66916565a6d4dc4e4adb1666b4e79dd002824baaee908c0ffbd6d7730f5a2e26",
+      "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+      "adapterSha256": "844afeb2194fbe59bc6de0175cf2e8ace8ddbb6f8a45d38dbc8b4f7de96fdba5",
+      "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+      "softwareWindow": false,
+      "screenshot": "loader-hardware-two-taper05-phase0-grouped.png",
+      "screenshotSha256": "c7a3645a07509759558711feb837fba5abcc75bf0ed188cb8872d5dedf4da92c"
+    },
+    "softwareFallback": {
+      "apkSha256": "36871c58dec789f33e80559f44bcbfd586484771b412275d9ff769519fe32014",
+      "embeddedBundleSha256": "ed5de7320659d159b038cbbda432dc6608aa8f5f8a8b9643b1d2402881b9995a",
+      "embeddedBloomSourceSha256": "66916565a6d4dc4e4adb1666b4e79dd002824baaee908c0ffbd6d7730f5a2e26",
+      "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+      "adapterSha256": "844afeb2194fbe59bc6de0175cf2e8ace8ddbb6f8a45d38dbc8b4f7de96fdba5",
+      "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+      "softwareWindow": true,
+      "screenshot": "loader-software-two-taper05-phase0-grouped.png",
+      "screenshotSha256": "1d19687b964e1f3ae1eb44903033d83becec3726aa03afb73ce512ff4f69bfb0"
+    }
+  },
+  "comparison": {
+    "matchingBloomSources": true,
+    "matchingNativeSources": true,
+    "matchingAdapterSource": true,
+    "matchingFixtureSource": true,
+    "differentBuildMode": "hardware renderer versus manifest-forced software host using the grouped SVG fallback",
+    "cropPx": [100, 280, 2100, 180],
+    "ungroupedPsnrDb": 38.022437,
+    "groupedPsnrDb": 40.280698,
+    "interpretation": "For these captures and this crop, grouping the SVG fallback strokes by layer reduced the still-image pixel difference from the hardware rendering. This is not a claim of parity or acceptance; no threshold has been defined."
+  },
+  "limits": "One device, one scene geometry, one phase-origin still and one crop. This does not establish moving-phase similarity, full-screen perceptual acceptance, performance, composer integration, iOS/web behavior, or production app behavior."
+}

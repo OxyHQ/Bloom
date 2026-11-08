@@ -133,6 +133,14 @@ frame. That one-shot capture cost is separate from the continuous frame budget. 
 owns one clock throughout that handoff; Surface, draft children, measured bounds,
 fade and activity policies remain with ComposerLoader.
 
+The Android SVG fallback groups strokes by semantic layer before applying each
+layer blur, avoiding a separate blur operation for every tapered stroke. On one
+Pixel 8a phase-origin still comparison with two tapered loaders, this raised the
+hardware/software crop PSNR from 38.022437 dB to 40.280698 dB. That single
+measurement is not a visual acceptance threshold, a motion comparison, or a
+performance result; the fallback still requires product visual and performance
+acceptance.
+
 The adapter groups the same strokes by semantic layer and draws their measured
 rounded-path segments into three RenderNodes. Soft layers rasterize at quarter
 resolution; the crisp layer retains full resolution. For taper, soft sigma uses

@@ -12,3 +12,4 @@ The current Alia fixture APK was pulled from the installed package and matched S
 
 Phase-aligned optical comparison, full product lifecycle/visual/performance acceptance and iPhone validation remain pending.
 - `loader-phase-comparison.json` records same-origin captures of the same packaged loader and state on the Pixel 8a, once with hardware Canvas and once with the manifest-forced software host/SVG fallback. Bloom, native adapter and fixture source hashes match. The cropped PSNR is recorded as a measurement without claiming parity; no acceptance threshold exists yet.
+- `loader-grouped-fallback-comparison.json` records a tapered, two-loader same-origin comparison before and after grouping fallback SVG strokes by blur layer. Grouping raised hardware/software crop PSNR from 38.022437 dB to 40.280698 dB on the same Pixel 8a capture region. This is a single still-image measurement; no visual acceptance threshold or performance claim is established.
