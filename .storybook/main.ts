@@ -205,7 +205,9 @@ const config: StorybookConfig = {
       },
       optimizeDeps: {
         include: ['react-native-web'],
-        exclude: ['react-native'],
+        // This optional compatibility probe is absent from the Storybook host.
+        // Keep the scanner from resolving it; runtime retains its guarded require.
+        exclude: ['react-native', 'react-native-css-interop'],
         esbuildOptions: {
           plugins: [
             {
