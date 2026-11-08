@@ -7,3 +7,5 @@ build.json
 attestation.json
 
 .compat-rn73/
+
+__pycache__/

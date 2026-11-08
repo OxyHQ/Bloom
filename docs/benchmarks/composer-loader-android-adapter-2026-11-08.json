@@ -38,11 +38,7 @@
       "recentFrameP95Ms": 9.268788,
       "recentFrameIntervalMs": 8.359138,
       "elapsedMs": 10607.348124,
-      "cpuPercentOfOneCore": [
-        92.5,
-        86.6,
-        88
-      ],
+      "cpuPercentOfOneCore": [92.5, 86.6, 88],
       "pssKb": 228691,
       "rssKb": 413384,
       "thermalStatusBefore": 0,
@@ -56,11 +52,7 @@
       "recentFrameP95Ms": 11.734586,
       "recentFrameIntervalMs": 8.360276,
       "elapsedMs": 10849.796346,
-      "cpuPercentOfOneCore": [
-        89.2,
-        95.2,
-        89.8
-      ],
+      "cpuPercentOfOneCore": [89.2, 95.2, 89.8],
       "pssKb": 286033,
       "rssKb": 471472,
       "thermalStatusBefore": 0,
@@ -74,11 +66,7 @@
       "recentFrameP95Ms": 12.396488,
       "recentFrameIntervalMs": 8.358034,
       "elapsedMs": 10796.267340999999,
-      "cpuPercentOfOneCore": [
-        96.4,
-        89.8,
-        89.2
-      ],
+      "cpuPercentOfOneCore": [96.4, 89.8, 89.2],
       "pssKb": 349444,
       "rssKb": 535004,
       "thermalStatusBefore": 0,
@@ -92,11 +80,7 @@
       "recentFrameP95Ms": 12.927811,
       "recentFrameIntervalMs": 8.358404,
       "elapsedMs": 10840.887181,
-      "cpuPercentOfOneCore": [
-        123,
-        91.4,
-        99.8
-      ],
+      "cpuPercentOfOneCore": [123, 91.4, 99.8],
       "pssKb": 381132,
       "rssKb": 566700,
       "thermalStatusBefore": 0,
@@ -110,11 +94,7 @@
       "recentFrameP95Ms": 13.457102,
       "recentFrameIntervalMs": 8.357621,
       "elapsedMs": 10760.336671,
-      "cpuPercentOfOneCore": [
-        125,
-        99.8,
-        96.4
-      ],
+      "cpuPercentOfOneCore": [125, 99.8, 96.4],
       "pssKb": 368919,
       "rssKb": 554544,
       "thermalStatusBefore": 0,
@@ -128,11 +108,7 @@
       "recentFrameP95Ms": 13.986338,
       "recentFrameIntervalMs": 8.358261,
       "elapsedMs": 10652.685078999999,
-      "cpuPercentOfOneCore": [
-        100,
-        96,
-        98.6
-      ],
+      "cpuPercentOfOneCore": [100, 96, 98.6],
       "pssKb": 363931,
       "rssKb": 549572,
       "thermalStatusBefore": 0,
@@ -308,10 +284,7 @@
   "validation": {
     "jsFocusedTests": 42,
     "nativeTests": 17,
-    "nativeApiGuards": [
-      30,
-      31
-    ],
+    "nativeApiGuards": [30, 31],
     "minimumPeerCompile": "react-android 0.73.0 forced; no runtime/legacy claim",
     "snapshotNativeGraphics": "detached phase/palette/geometry changes and display-list discard paint current state",
     "buildAndPackage": true
@@ -343,5 +316,28 @@
     "fixtureSha256Identical": true,
     "embeddedBloomSourceSha256Identical": true,
     "bundleDifference": "Only receipt softwareWindow and workingTree values differ; runtime fixture and Bloom source hashes identical."
+  },
+  "api30Compatibility": {
+    "apkSha256": "0711116003a901de18318bf00ed93493797ef1fdff6693283f1f1a87770ec716",
+    "embeddedBundleSha256": "b50388d3bb924ac4f4f2edd0bcc3f6a6d67dfc06c6a5fa8bcc2bb24a84f95cdb",
+    "embeddedBloomSourceSha256": "b93551ae7917238c925fefa073d2001f91fb6f2360c1e803e96c5ceca30fcec0",
+    "fixtureSha256": "0715ba9888842ee936e51a4b27b569e37b6df497f1d522602b9f08317f58e2b2",
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "android": 11,
+    "api": 30,
+    "abi": "x86_64",
+    "renderer": "SwiftShader",
+    "results": {
+      "api": 30,
+      "managerViewCount": 0,
+      "svgVisible": true,
+      "reducedMotionIdenticalPixels": true,
+      "motionResumes": true,
+      "bounds": [42, 353, 1038, 489],
+      "originalTransitionAnimationScale": "1.0",
+      "restoredExactly": true,
+      "limitation": "SwiftShader compatibility only, no physical frame budget or optical parity claim"
+    },
+    "limits": "Visible SVG retains abrupt/clipped lower halo; neither optical acceptance nor performance budget. Static fallback policy remains an explicit pending decision."
   }
 }
