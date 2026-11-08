@@ -59,7 +59,11 @@ claims, pointer targets and accessibility exposure. Canvas also follows its
 Screen host's active state.
 
 This panel is nonmodal: no backdrop, focus trap or inert background is created.
-The map remains interactive. The handle supports arrow keys, accessibility
+The map remains interactive. Snap is controlled: a completed gesture proposes a detent once. If the owner
+keeps the previous prop, the panel returns to that detent; a later prop update
+then animates to the accepted value. Synchronous acceptance preserves the running
+settle animation. Reconciliation happens once per proposal, never per drag frame.
+The handle supports arrow keys, accessibility
 increment/decrement and press cycling. Escape or Android Back collapses an open
 bottom panel; an active modal keeps precedence. Modal sheets continue to use
 `BottomSheet` and its separate dismissal contract. Both share gesture arbitration

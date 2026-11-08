@@ -4,6 +4,10 @@ This is an implementation checkpoint, not GoWay adoption acceptance. Baseline
 935b8fb3 remains immutable. The GoWay candidate still needs the published additive
 Bloom release, final web targets/material contrast, and a real Android map build.
 
+The second Android run uses the explicit noncollapsable boundary and CanvasBackground.
+It precedes the later controlled-snap proposal reconciliation; that behavior is
+covered separately in the real browser, not claimed as device-tested.
+
 Current API: Canvas delegates Screen; CanvasBackground owns one absolute renderer
 part; CanvasPanel owns its own scope and a stable header/body/scroller. GoWay's
 MapView background slot separates its renderer/layers from official attribution,
@@ -18,7 +22,10 @@ scale and error chrome. No Android blur capability is enabled.
 | Android IME, side and bottom | keyboard-side / keyboard-bottom | Local viewport796→454dp, input above keyboard; no second keyboard subtraction |
 | Android handle | bottom-after-ime XML | 126 physical px at density420 =48dp, SeekBar semantics |
 | Android Back and gestures | peek-back / full-drag / body-scroll | Back collapses half→peek after IME dismissal; handle drag expands; body scroll stays full |
-| Android inactive | inactive XML | FAILED: panel removed, but flattened Canvas body still exposed scene accessibility nodes. Source now uses noncollapsable boundary and explicit hiding; repeat device run pending |
+| Android inactive initial | initial uncompressed XML | INCONCLUSIVE: uncompressed UIAutomator includes nonimportant nodes; this did not establish TalkBack exposure or a regression |
+| Android inactive current | current compressed XML + physical tap | Scene and Select object absent from compressed hierarchy; tap at old target leaves selection1; reactivation retains scene1 and draft42 |
+| Controlled snap | controlled-browser.json; scripts/verify-canvas-browser.mjs | Reject returns to prop; delayed acceptance waits for prop. Fine/coarse handles24/44px; retained input and web inert focus exclusion pass |
+| TalkBack | Not run | Compressed hierarchy and taps do not prove screen-reader reading/focus |
 | Real Android GoWay map | Not run | Pan/pinch, official attribution, camera and selection require actual renderer build |
 | iPhone | Not run | Deferred by user |
 

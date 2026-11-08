@@ -1,0 +1,50 @@
+{
+  "serial": "43221JEKB12200",
+  "apkSha256": "33128b6853ba2468c43e44db4c7bb4ff4b31e4534fc8f133ecc7cb47deb2ba95",
+  "build": {
+    "commit": "76155ee692e18d6f58c2acfb35b96801b4a8803d",
+    "workingTree": "M docs/canvas.mdx\n M scripts/verify-canvas-viewport.mjs\n M src/__tests__/CanvasPanel.test.tsx\n M src/canvas/CanvasPanelBase.tsx",
+    "fixtureSha256": "0e849e9c13eb22168cf5929f803757164dfcb3f07aa17d18e6e012e06beec7ed",
+    "sourceSha256": "ea55d9e4911e796351d05bd84fee618ded267138a23451c28315e71b7ef8618b",
+    "sourceFiles": 4336,
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "artifactKind": "source fixture; native Bloom module from published 17.22.0",
+    "reactCompiler": false,
+    "dependencies": {
+      "@oxy.so/bloom": "17.22.0",
+      "expo": "58.0.23",
+      "expo-asset": "58.0.20",
+      "expo-blur": "58.0.5",
+      "expo-font": "58.0.11",
+      "expo-image": "58.0.18",
+      "nativewind": "5.0.0-rc.0",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "react-native": "0.88.1",
+      "react-native-css": "3.1.0-rc.0",
+      "react-native-gesture-handler": "3.3.0",
+      "react-native-reanimated": "4.7.1",
+      "react-native-safe-area-context": "5.11.1",
+      "react-native-screens": "4.30.1",
+      "react-native-svg": "15.16.0",
+      "react-native-web": "0.21.4",
+      "react-native-worklets": "0.13.0"
+    },
+    "apkSha256": "33128b6853ba2468c43e44db4c7bb4ff4b31e4534fc8f133ecc7cb47deb2ba95",
+    "embeddedBundleSha256": "7b6bdc3c1409d56b3e1164059cbc9e52d3574a86d40ada47152efe4f89606258",
+    "embeddedBloomSourceSha256": "2a826804764433922f89bb12b2af17d139cfddbbc949771a785b254c759812b5",
+    "embeddedBloomFiles": 404
+  },
+  "permissions": "package: so.oxy.bloom.canvaslab\nuses-permission: name='android.permission.READ_EXTERNAL_STORAGE' maxSdkVersion='32'\nuses-permission: name='android.permission.SYSTEM_ALERT_WINDOW'\nuses-permission: name='android.permission.VIBRATE'\nuses-permission: name='android.permission.WRITE_EXTERNAL_STORAGE' maxSdkVersion='32'\npermission: so.oxy.bloom.canvaslab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION\nuses-permission: name='so.oxy.bloom.canvaslab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'\n",
+  "os": "16\r\n",
+  "api": "36\r\n",
+  "abi": "arm64-v8a\r\n",
+  "hardware": "akita\r\n",
+  "size": "Physical size: 1080x2400\r\n",
+  "density": "Physical density: 420\r\n",
+  "fontScale": "1.15\r\n",
+  "gpu": [
+    "GLES: ARM, Mali-G715, OpenGL ES 3.2 v1.r54p1-11eac0.bf6659b634cc4428261e868dd766545b"
+  ],
+  "fingerprint": "google/akita/akita:16/BP4A.260205.001/14624666:user/release-keys\r\n"
+}

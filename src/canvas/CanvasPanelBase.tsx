@@ -87,6 +87,7 @@ export function createCanvasPanel(
     const reduced = usePrefersReducedMotion();
     const modalActive = useModalOverlayActive();
     const [headerHeight, setHeaderHeight] = useState(0);
+    const [proposalRevision, setProposalRevision] = useState(0);
     const visibleBottom = region.viewport.y + region.viewport.height;
     const top = Math.min(
       visibleBottom,
@@ -128,6 +129,7 @@ export function createCanvasPanel(
     const commit = useCallback(
       (next: CanvasPanelSnap) => {
         settled.current = next;
+        setProposalRevision((revision) => revision + 1);
         onSnapChange(next);
       },
       [onSnapChange],
@@ -152,7 +154,7 @@ export function createCanvasPanel(
       translate.value = reduced
         ? withTiming(offsets[snap], { duration: 0 })
         : withSpring(offsets[snap], SPRING);
-    }, [snap, offsets, translate, reduced]);
+    }, [snap, offsets, translate, reduced, proposalRevision]);
     useAnimatedReaction(
       () => translate.value,
       (value) => {
