@@ -16,9 +16,9 @@ import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
 </ComposerLoader>
 ```
 
-**The loader paints the pill surface itself** (the card colour — neutral-800 in dark — with `shadow-xs`) and layers the light above it, beneath the children. A wrapped composer must not paint its own opaque background while `active`, or it covers the light entirely — swap it to `bg-transparent shadow-none` while busy.
+**The loader paints the pill surface itself** (the shared Surface material with `shadow-xs`) and layers the light above it, beneath the children. A wrapped composer must not paint its own opaque background while `active`, or it covers the light entirely — swap it to `bg-transparent shadow-none` while busy.
 
-The loader takes its width from its container and its height from its children; the default radius is a full pill.
+The loader takes its width from its container and its height from its children; the default radius is a full pill. It waits for a positive measured size before mounting the decorative SVG. The composer and its surface are present from the first render; the loader never paints a provisional 640 × 52 outline. Resizing updates the shared perimeter without replacing the composer.
 
 ## How the light is drawn
 
@@ -33,9 +33,31 @@ Three dash strokes on the rounded-rect outline, normalised to a path length of 1
 `band = arc / 360 × 100`. The crisp line leads and every soft layer trails it. The gradient runs left → right across the pill through the four `colors`, with the centre stop a blend of the middle two so the band never washes out to white. `taper` stacks each layer as 14 shorter, centred copies at a fraction of its opacity; the blur melts the steps into a fade.
 
 - **Web** draws a DOM `<svg>`, `pathLength={100}` rects, a self-injected `@keyframes` on `stroke-dashoffset` (0 → -100) with each layer's phase as an `animation-delay`. Blur is an SVG `feGaussianBlur`, not a CSS `filter` — WebKit ignores CSS filters on individual SVG elements, which rendered the light razor-sharp on every iPhone browser.
-- **Native** draws the same layers in react-native-svg. react-native-svg ignores `pathLength`, so the dashes are scaled to the measured perimeter in px, and the lap runs on a `useFrameCallback` clock that reproduces the CSS delays exactly (a positive delay holds the dash at 0 before it starts). The clock only runs while `active` (and through the fade-out). Blur uses react-native-svg 15's `Filter` / `FeGaussianBlur`, implemented on iOS and Android — not yet verified on a device.
+- **Native** draws the same layers in react-native-svg. react-native-svg ignores `pathLength`, so the dashes are scaled to the measured perimeter in px, and the lap runs on a `useFrameCallback` clock that reproduces the CSS delays exactly (a positive delay holds the dash at 0 before it starts). The clock only runs while `active` (and through the visible fade-out), with a measured size and a visible Screen/foreground app. It accumulates active frame deltas, preserving phase across suspension. Blur uses react-native-svg 15's `Filter` / `FeGaussianBlur`, implemented on iOS and Android — not yet verified on a device.
 
-Under reduced motion the band stops (web: `animation: none`; native: no clock), resting in place.
+Under reduced motion the band rests at its current phase (web: paused CSS animation;
+native: stopped frame clock) and visibility changes are immediate. Otherwise the
+450 ms fade completes before an inactive loader stops. Hiding/pausing its owner
+cancels the opacity transition immediately, including a fade already in progress. A rapid reactivation
+cancels the pending stop.
+
+Both renderers suspend when their owning `Screen` becomes inactive or the app
+leaves the foreground. Web additionally observes the loader with Bloom's
+`useInView` and pauses outside the viewport, including a zero-sized hidden host.
+`paused` freezes the decoration without changing `active`, the surface, or the
+input. Native consumers placing a loader in a scrolled/virtualized region should
+pass `paused={!inView}` from their existing viewport/viewability owner. Native
+screen activity is automatic; per-item native visibility is not inferred from
+mounting or from a window-size guess. Resuming preserves the lap phase.
+
+```tsx
+<ComposerLoader active={busy} paused={!inView}>
+  <ComposerPill surface={false} frosted={busy} {...composerProps} />
+</ComposerLoader>
+```
+
+`paused` does not hide or disable the input and does not represent a business
+state such as stopped/error/completed. Those remain controlled by the app.
 
 ## Props
 
@@ -43,6 +65,7 @@ Under reduced motion the band stops (web: `animation: none`; native: no clock), 
 |------|------|---------|-------------|
 | `children` | `ReactNode` | — | The composer. |
 | `active?` | `boolean` | `true` | Show the light; fades in/out over 450ms. |
+| `paused?` | `boolean` | `false` | Freeze the light at its current phase; input and surface remain mounted. |
 | `colors?` | `[string, string, string, string]` | Theme primary / support / action foreground roles | Gradient left → right. Any colour string. |
 | `speed?` | `number` | `4.5` | Seconds per lap. |
 | `intensity?` | `number` | `0.7` | Overall light opacity. |
@@ -66,3 +89,28 @@ The default colours follow the current preset and mode: `primarySubtleForeground
 
 The surface and the light are decorative (`aria-hidden`, `pointerEvents="none"`); only the children are exposed. Announce the busy state from the composer itself (for example on its send / stop button).
 
+
+## Reproducible lifecycle checks
+
+The existing Composer Loader catalogue now includes `Lifecycle`: isolated and
+tapered light, `ComposerPill`, and `AgentChatComposer`, with the same mounted
+inputs across working/idle, explicit pause, retained `Screen`, height changes
+and viewport resize. It is a synthetic Bloom fixture, not the real Alia route.
+
+Run `scripts/verify-composer-loader-lifecycle.mjs` against this checkout's
+Storybook. It resolves the story from `index.json` and uses real mouse clicks,
+CSS animation clocks and DOM focus/selection. Set `STORYBOOK_URL`, `CHROME_PATH`
+and, when not installed locally, `PUPPETEER_PATH` to `puppeteer-core`.
+`RECORD_VIDEO=1` records 9.5 seconds (two default laps); `OUT` chooses the artifact
+directory. The JSON report identifies the commit/browser, viewport, geometry,
+clock and input observations. Screenshots support visual review; clock results
+are not GPU/performance budgets.
+
+On 2026-11-08, Chromium 146 reproduced three running CSS animations with
+`active=false` on baseline `e3996b93`; their timelines advanced 500 ms while
+invisible. The lifecycle correction passes suspension/resumption (including a real
+background-tab transition), AgentChat Stop hit testing, and same-input resize at 320, 390, 768, 1024 and 1440 CSS px. Native tests import the native
+renderer explicitly and exercise measurement and the frame callback; they mock
+SVG/filter rendering. iOS/Android optical quality, physical-device performance,
+background behavior on devices, keyboard/IME, and the real Alia integration
+remain unverified. This evidence does not establish native blur parity.

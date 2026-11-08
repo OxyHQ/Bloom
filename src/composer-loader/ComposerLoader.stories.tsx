@@ -7,6 +7,9 @@ import { RiArrowUpLine } from '../icons/remix';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 import { ComposerLoader } from './index';
+import { ComposerPill } from '../composer-panel';
+import { AgentChatComposer } from '../agent-chat';
+import { Screen } from '../screen';
 
 const meta: Meta<typeof ComposerLoader> = {
   argTypes: {
@@ -213,6 +216,76 @@ export const WithComposer: Story = {
             />
           </View>
         </ComposerLoader>
+      </View>
+    );
+  },
+};
+
+/** Same mounted inputs across resize, working/idle, retention and suspension. */
+export const Lifecycle: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [busy, setBusy] = useState(true);
+    const [paused, setPaused] = useState(false);
+    const [retained, setRetained] = useState(false);
+    const [tall, setTall] = useState(false);
+    const [draft, setDraft] = useState('A draft preserved across every transition');
+    return (
+      <View testID="loader-lifecycle" style={{ width: '100%', maxWidth: 640, gap: 16 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <Button testID="loader-toggle" onPress={() => setBusy((value) => !value)}>
+            Toggle working
+          </Button>
+          <Button testID="loader-pause" onPress={() => setPaused((value) => !value)}>
+            Pause decoration
+          </Button>
+          <Button testID="loader-retain" onPress={() => setRetained((value) => !value)}>
+            Retain screen
+          </Button>
+          <Button testID="loader-height" onPress={() => setTall((value) => !value)}>
+            Change height
+          </Button>
+        </View>
+        <Screen active={!retained} scroll="none">
+          <View style={{ gap: 24 }}>
+            <ComposerLoader active={busy} paused={paused} testID="lifecycle-isolated">
+              <Pill height={tall ? 160 : 52} />
+            </ComposerLoader>
+            <ComposerLoader
+              active={busy}
+              paused={paused}
+              taper={0.6}
+              radius={16}
+              testID="lifecycle-taper"
+            >
+              <Pill height={tall ? 160 : 80} />
+            </ComposerLoader>
+            <ComposerLoader active={busy} paused={paused} testID="lifecycle-pill">
+              <ComposerPill
+                value={draft}
+                onValueChange={setDraft}
+                busy={busy}
+                onSubmit={() => setBusy(true)}
+                onStop={() => setBusy(false)}
+                surface={false}
+                frosted={busy}
+                addMenu={[]}
+                models={[]}
+                effortLevels={[]}
+                showVoice={false}
+                testID="lifecycle-pill-input"
+              />
+            </ComposerLoader>
+            <AgentChatComposer
+              value={draft}
+              onValueChange={setDraft}
+              busy={busy}
+              onSubmit={() => setBusy(true)}
+              onStop={() => setBusy(false)}
+              testID="lifecycle-agent"
+            />
+          </View>
+        </Screen>
       </View>
     );
   },
