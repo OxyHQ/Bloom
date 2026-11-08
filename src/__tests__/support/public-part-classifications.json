@@ -1572,5 +1572,21 @@
       "node_modules/expo-router/build/link/zoom/link-apple-zoom-target.d.ts#LinkAppleZoomTarget",
       "node_modules/expo-router/build/link/zoom/link-apple-zoom.d.ts#LinkAppleZoom"
     ]
+  },
+  "canvas-layout-parts": {
+    "status": "pending",
+    "reason": "Canvas, CanvasBackground and CanvasPanel entered the public surface after this census ledger was authored. Their layout and scope behavior has not yet been audited per part; this row records the new identities without implying size adoption or a defect.",
+    "evidence": [
+      "src/canvas/Canvas.tsx",
+      "src/canvas/CanvasBackground.tsx",
+      "src/canvas/CanvasPanel.tsx",
+      "src/__tests__/public-parts.test.ts"
+    ],
+    "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
+    "parts": [
+      "src/canvas/Canvas.tsx#Canvas",
+      "src/canvas/CanvasBackground.tsx#CanvasBackground",
+      "src/canvas/CanvasPanel.tsx#CanvasPanel"
+    ]
   }
 }
