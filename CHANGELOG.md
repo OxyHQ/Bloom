@@ -2,6 +2,16 @@
 
 Releases before 15.50.0 are described in their pull requests and in git history.
 
+## 17.24.0
+
+### Added
+
+- **Live virtual anchors for Popover.** `PopoverContent` accepts a measured selection/caret anchor on web and tracks it through scroll and resize. Native presentation remains a sheet.
+
+### Consumers
+
+- Use `PopoverContent virtualAnchor` for selection-owned popovers. `@oxy.so/bloom-editor` 0.8.0 requires Bloom 17.24.0 or newer.
+
 ## 17.23.0
 
 ### Added

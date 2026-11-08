@@ -16,7 +16,7 @@ Two halves:
 
 ## UI dependency and suggestions
 
-The React adapter requires `@oxy.so/bloom >=15.11.0 <16` and a `BloomProvider`
+The React adapter requires `@oxy.so/bloom >=17.24.0 <18` and a `BloomProvider`
 at the application root. Slash and mention menus use the actual
 `SuggestionList` from `@oxy.so/bloom/chat-composer`; the editor supplies data,
 the caret anchor and command callbacks. The `/model` and `/yjs` entrypoints

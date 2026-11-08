@@ -63,7 +63,21 @@ it('keeps native caret navigation nonmodal and owns explicit link actions throug
     render();
     act(() => {
       store.setSelection({ kind: 'text', blockId: 'b1', start: 10, end: 10 });
-      controller.ui.set({ focused: 'b1', marks: { blockId: 'b1', marks: { link: true } } });
+      controller.ui.set({
+        focused: 'b1',
+        marks: {
+          blockId: 'b1',
+          marks: {
+            bold: false,
+            italic: false,
+            underline: false,
+            strike: false,
+            code: false,
+            link: true,
+            mention: false,
+          },
+        },
+      });
     });
     expect(host.querySelector('[role="dialog"]')).toBeNull();
     expect(controller.ui.get().linking).toBeNull();
