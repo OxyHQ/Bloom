@@ -1,0 +1,57 @@
+{
+  "baseSha": "0e876f064b3d778560d5467873d01aaa34feeca5",
+  "consumerSha": "fc3b821",
+  "candidateVersion": "17.22.0",
+  "artifact": "local packed snapshot under bloom-local/node_modules; not published-package validation",
+  "sourceSha256": "3698620df67dfc6015ec18c897f218f2a9e4e621c20e44568ff727cef5bbe8dd",
+  "files": [
+    {
+      "path": "long/dark-1440.png",
+      "sha256": "72cc675fc301dab581dbb05ba300691ac32bb55bc3fbcd17958f7d51e7e90cfe"
+    },
+    {
+      "path": "long/dark-390-backing.png",
+      "sha256": "590d702909659a3a2acf208459b6a55109d22b93d86ac2f278561b37ccfbf42e"
+    },
+    {
+      "path": "long/dark-390.png",
+      "sha256": "cdd9fbee06105d35e04fb1c0e9b2935de732af0f1567f98a2ce76a616e5a4fdf"
+    },
+    {
+      "path": "long/light-1440.png",
+      "sha256": "3b5d2851a921eb16d84c0d84ec65e813da32d663523e6b1c179f17cec2b1e3f6"
+    },
+    {
+      "path": "long/light-390-backing.png",
+      "sha256": "c1f86bc0b79cea2303cabae76a43833ef14c6b4c16d53974bea0de5e8e108512"
+    },
+    {
+      "path": "long/light-390.png",
+      "sha256": "f942ebfe11cf1d297222927eebc1c37c5d5f9d3aa7ebd62d643c5f1e9b91e794"
+    },
+    {
+      "path": "short/dark-1440.png",
+      "sha256": "bf6237974ebf7f05091dc19a42e7d44318997f95f7c3c4645812eae5ff77f360"
+    },
+    {
+      "path": "short/dark-390-backing.png",
+      "sha256": "60fa912ddb9b4cf33e623d545f2c1de78622437b4d6cb97ab806fe594e59a263"
+    },
+    {
+      "path": "short/dark-390.png",
+      "sha256": "c40634f0871e9d468d9dfc5ad41dab64bd90e13f6e8cfce4be15ea6d2d2b7f58"
+    },
+    {
+      "path": "short/light-1440.png",
+      "sha256": "831fff5578b0db3f405d1d533f3e0189be639d20b004d4d1d28258a8bc3d0e3d"
+    },
+    {
+      "path": "short/light-390-backing.png",
+      "sha256": "ae4423f9e467d355a801544e8f24fb95cde439486defebe388ac9e701ce421c6"
+    },
+    {
+      "path": "short/light-390.png",
+      "sha256": "2980f0b17bc208aa2522d42d65a546fb7870f6bb5c3b7cc2844cb480c3b3db91"
+    }
+  ]
+}
