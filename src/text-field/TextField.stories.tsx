@@ -1,3 +1,4 @@
+import { InputGroup } from '../input-group';
 import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
@@ -337,6 +338,13 @@ export const MaterialBodyContrast: Story = {
               placeholder="Agjp Search places 123"
             />
           </TextField>
+          <InputGroup size={size}>
+            <TextFieldInput
+              testID={`group-${size}`}
+              label={`${size} grouped canonical`}
+              placeholder="Agjp Search places 123"
+            />
+          </InputGroup>
           <TextField size={size}>
             <TextFieldInput
               testID={`large-${size}`}
@@ -348,6 +356,27 @@ export const MaterialBodyContrast: Story = {
           </TextField>
         </View>
       ))}
+    </View>
+  ),
+};
+
+/** One cold material host for separating formula errors from compositor pressure. */
+export const SingleMaterialBodyContrast: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <View
+      testID="single-backing"
+      style={{ minHeight: 1000, padding: 80, backgroundColor: '#000000' }}
+    >
+      <View style={{ width: 320 }}>
+        <TextField size="md">
+          <TextFieldInput
+            testID="single-field"
+            label="Material probe"
+            placeholder="Agjp Search places 123"
+          />
+        </TextField>
+      </View>
     </View>
   ),
 };

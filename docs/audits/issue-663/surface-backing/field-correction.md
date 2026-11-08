@@ -30,8 +30,9 @@ the shell contributes 4px horizontally for xs and 8px for sm/md/lg.
 
 The pure bound uses the line box rather than assuming these particular glyph
 metrics. Bare InputGroup members subtract the group's 4px ring share from the
-available height, so their corresponding line-box inset is 2px smaller. Their
-specific pixel layout remains to be checked; this is not a measurement claim.
+available height, so their corresponding line-box inset is 2px smaller. The added InputGroup pixel fixture now verifies that layout in Chromium: dark-white
+xs/sm/md/lg minima are 5.193/4.925/4.732/4.600, identical in RTL. The source
+inset remains deliberately conservative relative to the outer painted box.
 
 `fields/body-only-*` retains the diagnostic negative: xs dark on white was
 4.475, despite the body-only mathematical bound passing. The glyph descender
@@ -66,5 +67,6 @@ with the existing primary foreground in mono/dark (4.432) or graphite/dark
 or a real known backing would be needed for that guarantee; this patch does not
 raise global primary tokens or change approved paint. There is no global AA claim.
 
-Real GoWay land/sea repeat, its other 20 neighboring text samples, WebKit and
-native map/accessibility verification are still pending at this checkpoint.
+GoWay commit 2e9a65e records the real land/sea repeat: all 84 samples pass and all
+80 neighbor measurements stay identical. WebKit/Firefox runtime negatives are
+recorded separately in runtime-probes.md; native map/accessibility remains pending.
