@@ -6,6 +6,7 @@ import { BloomProvider } from '@oxy.so/bloom/provider';
 import { PortalProvider, PortalOutlet } from '@oxy.so/bloom/portal';
 import { SurfaceProvider } from '@oxy.so/bloom/surfaces';
 import { LoaderBenchmark } from './LoaderBenchmark';
+import { ComposerCases } from './ComposerCases';
 import build from './build.json';
 
 /** Negative probes run before the scene. Timeout never proves isolation.
@@ -55,10 +56,16 @@ export function PackageLab() {
         <BloomProvider mode={mode} colorPreset="oxy" haptics={false}>
           <PortalProvider>
             <SurfaceProvider>
-              <LoaderBenchmark
-                onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
-                label={`${build.commit.slice(0, 12)} · ${Platform.OS} ${Platform.Version} · offline-verified`}
-              />
+              {build.scene === 'composers' ? (
+                <ComposerCases
+                  onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
+                />
+              ) : (
+                <LoaderBenchmark
+                  onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
+                  label={`${build.commit.slice(0, 12)} · ${Platform.OS} ${Platform.Version} · offline-verified`}
+                />
+              )}
               <PortalOutlet />
             </SurfaceProvider>
           </PortalProvider>

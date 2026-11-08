@@ -4,10 +4,14 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 const serial = process.env.ANDROID_SERIAL;
-assert(
-  serial && serial === process.env.AUTHORIZED_PHYSICAL_SERIAL,
-  'Explicit physical serial authorization required',
-);
+assert(serial, 'Explicit device serial required');
+const emulator = /^emulator-\d+$/.test(serial);
+if (!emulator)
+  assert.equal(
+    serial,
+    process.env.AUTHORIZED_PHYSICAL_SERIAL,
+    'Explicit physical serial authorization required',
+  );
 const binary = process.env.ADB;
 assert(
   binary &&
@@ -42,6 +46,14 @@ assert(
   'Synthetic release must remain offline',
 );
 assert.equal(adb('get-state'), 'device');
+if (emulator) {
+  assert.equal(
+    adb('emu', 'avd', 'name').split(/\r?\n/)[0],
+    'bloom_loader_api30_663',
+    'Only the dedicated API 30 AVD',
+  );
+  assert.equal(adb('shell', 'getprop', 'ro.kernel.qemu'), '1');
+}
 const abi = adb('shell', 'getprop', 'ro.product.cpu.abi');
 assert(
   badging
@@ -50,12 +62,16 @@ assert(
     ?.includes(`'${abi}'`),
   'Device ABI mismatch',
 );
-assert(
-  process.env.INSTALL_APK_LOCAL && process.env.INSTALL_APK,
-  'Explicit owned Windows staging paths required',
-);
-copyFileSync(apk, process.env.INSTALL_APK_LOCAL);
-assert.equal(hash(readFileSync(process.env.INSTALL_APK_LOCAL)), receipt.apkSha256);
+let installPath = apk;
+if (binary.endsWith('.exe')) {
+  assert(
+    process.env.INSTALL_APK_LOCAL && process.env.INSTALL_APK,
+    'Explicit owned Windows staging paths required',
+  );
+  copyFileSync(apk, process.env.INSTALL_APK_LOCAL);
+  assert.equal(hash(readFileSync(process.env.INSTALL_APK_LOCAL)), receipt.apkSha256);
+  installPath = process.env.INSTALL_APK;
+}
 const out = resolve(process.env.OUT);
 mkdirSync(out, { recursive: true });
 writeFileSync(resolve(out, 'badging.txt'), badging);
@@ -74,5 +90,5 @@ const environment = {
   thermal: adb('shell', 'dumpsys', 'thermalservice'),
 };
 writeFileSync(resolve(out, 'environment.json'), JSON.stringify(environment, null, 2));
-console.log(adb('install', '-r', process.env.INSTALL_APK));
+console.log(adb('install', '-r', installPath));
 console.log(adb('shell', 'am', 'start', '-n', `${pkg}/.MainActivity`));
