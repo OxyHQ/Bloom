@@ -317,3 +317,37 @@ export const Playground: StoryObj<typeof TextFieldInput> = {
     );
   },
 };
+
+/** Pixel fixture for the canonical interior and explicit large-type overrides. */
+export const MaterialBodyContrast: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <View style={{ padding: 32, gap: 20, backgroundColor: '#ffffff' }}>
+      {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+        <View
+          testID={`body-panel-${size}`}
+          key={size}
+          style={{ gap: 12, padding: 16, backgroundColor: '#000000' }}
+        >
+          <TextField size={size}>
+            <TextFieldInput
+              testID={`body-${size}`}
+              label={`${size} canonical`}
+              accessibilityLabel={`${size} canonical`}
+              placeholder="Agjp Search places 123"
+            />
+          </TextField>
+          <TextField size={size}>
+            <TextFieldInput
+              testID={`large-${size}`}
+              label={`${size} explicit large type`}
+              accessibilityLabel={`${size} explicit large type`}
+              placeholder="Agjp Search places 123"
+              style={{ fontSize: 24, lineHeight: 32 }}
+            />
+          </TextField>
+        </View>
+      ))}
+    </View>
+  ),
+};

@@ -208,7 +208,15 @@ export function TextField({
   const [addonFocused, setAddonFocused] = useState(false);
   const hasAddon = leadingAddon !== undefined && leadingAddon !== null;
 
-  const palette = useTextFieldPalette();
+  const palette = useTextFieldPalette(
+    Math.max(
+      0,
+      (TEXT_FIELD_GEOMETRY[size].height -
+        TEXT_FIELD_TEXT.lineHeight -
+        (bare ? 2 * TEXT_FIELD_RING_WIDTH : 0)) /
+        2,
+    ),
+  );
   const resolvedDisabled = disabled || inputDisabled;
 
   const context = useMemo(
