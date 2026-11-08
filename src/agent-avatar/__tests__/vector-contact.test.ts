@@ -83,3 +83,51 @@ it('keeps the actual headwear contact pivot fixed for both yaw and pitch directi
       expect(Math.hypot(...above.map((v, i) => v - pivot[i]!))).toBeCloseTo(0.5, 12);
     }
 });
+
+it.each(['bot_star', 'bot_sparkle', 'bot_clover', 'bot_teardrop'] as const)(
+  '%s seats its beret on a visible front contact that survives head turns',
+  async (shape) => {
+    const { vectorAssetLoader } = await import('../vector-assets');
+    const data = await composeVectorCharacter(
+      resolveAvatarCharacter({
+        shape,
+        eyes: 'bot',
+        accessory: 'beret',
+        eyewear: 'none',
+        color: 'blue',
+      }),
+      vectorAssetLoader,
+    );
+    const body = data.parts.find((part) => part.role === 'body')!;
+    const hats = data.parts.filter((part) => part.role === 'accessory');
+    const pivot = hats[0]!.headPivot!;
+    expect(pivot[2]).toBeGreaterThanOrEqual(0.012);
+    expect(hats.every((part) => JSON.stringify(part.headPivot) === JSON.stringify(pivot))).toBe(
+      true,
+    );
+    expect(hats.some((part) => part.points.some((p) => p.every((v, i) => v === pivot[i])))).toBe(
+      true,
+    );
+    let top = -Infinity;
+    for (const face of body.faces)
+      for (let i = 0; i < 3; i++) {
+        const a = body.points[face[i]!]!,
+          b = body.points[face[(i + 1) % 3]!]!;
+        const dx = b[0]! - a[0]!;
+        if (Math.abs(dx) < 1e-9) continue;
+        const t = (pivot[0]! - a[0]!) / dx;
+        if (t >= 0 && t <= 1) top = Math.max(top, a[1]! + t * (b[1]! - a[1]!));
+      }
+    expect(top - pivot[1]!).toBeGreaterThan(0);
+    expect(top - pivot[1]!).toBeLessThan(0.02);
+    for (const yaw of [-0.6, 0, 0.6])
+      for (const pitch of [-0.45, 0, 0.45]) {
+        const projected = prepareReferenceHeadProjection(
+          data.referenceFace!,
+          { yaw, pitch, mix: 1 },
+          pivot,
+        )(pivot);
+        expect(projected).toEqual(pivot);
+      }
+  },
+);

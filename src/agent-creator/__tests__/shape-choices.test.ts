@@ -7,8 +7,8 @@ describe('editor silhouette choices', () => {
   it('shares one list without reinserting equivalent legacy selections', () => {
     expect(CHARACTER_OPTIONS.shape).toBe(EDITOR_SHAPE_CHOICES);
     const visible = EDITOR_SHAPE_CHOICES.map(([id]) => id);
-    expect(visible).toHaveLength(26);
-    expect(new Set(visible).size).toBe(26);
+    expect(visible).toHaveLength(28);
+    expect(new Set(visible).size).toBe(28);
     for (const id of AVATAR_SHAPES) expect(visible).toContain(editorShapeId(id));
     for (const id of Object.keys(EDITOR_SHAPE_ALIASES)) expect(visible).not.toContain(id);
   });
@@ -37,6 +37,13 @@ describe('editor silhouette choices', () => {
       'bot_flower',
     ] as const)
       expect(editorShapeId(id)).toBe(id);
+  });
+  it('keeps rounded cubes and triangles separate from the procedural hexagon and wedge', () => {
+    const visible = EDITOR_SHAPE_CHOICES.map(([id]) => id);
+    for (const id of ['rounded_cube', 'bot_hex', 'rounded_triangle', 'bot_wedge'] as const) {
+      expect(editorShapeId(id)).toBe(id);
+      expect(visible).toContain(id);
+    }
   });
   it('maps template selection without changing saved authored character identities', () => {
     for (const id of [

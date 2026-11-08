@@ -5,10 +5,8 @@ import { CHARACTER_SHAPES } from '../agent-avatar/character-shapes';
 export const EDITOR_SHAPE_ALIASES = {
   todd: 'rounded_head_two_ears',
   circle: 'bot_blob',
-  rounded_cube: 'bot_hex',
   heart: 'bot_heart',
   capsule: 'bot_tablet',
-  rounded_triangle: 'bot_wedge',
   squircle: 'bot_square',
   petal: 'bot_teardrop',
 } as const satisfies Partial<Record<AvatarShapeId, AvatarShapeId>>;

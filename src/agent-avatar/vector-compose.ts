@@ -989,15 +989,25 @@ async function composeVectorGeometry(
     ) {
       const headPoints = baked.flatMap((v) => v.points);
       const targetMesh = meshes(base, bodyIndices);
-      let nearest = Infinity;
+      // A flat body can hide the rear half of a brim. Seat a front-side vertex,
+      // then rotate around that same visible contact, rather than a hidden rear
+      // vertex whose projection separates from the body as the head turns.
+      let contact = -Infinity;
       for (const p of headPoints) {
+        if (p[2]! < 0.012) continue;
         const top = vertical(targetMesh, p[0]!, 0, true, true);
         if (!Number.isFinite(top)) continue;
-        const distance = Math.abs(p[1]! - top) + Math.abs(p[0]! - body.center[0]!) * 0.002;
-        if (distance < nearest) {
-          nearest = distance;
+        const distance = top - p[1]!;
+        if (distance > contact) {
+          contact = distance;
           headPivot = p.slice();
         }
+      }
+      if (headPivot) {
+        const dy = contact - body.size[1]! * 0.004;
+        for (const value of baked)
+          value.points = value.points.map((p) => [p[0]!, p[1]! + dy, p[2]!]);
+        headPivot[1] = headPivot[1]! + dy;
       }
     }
     const retargetEye = role === 'eye' && !reference;

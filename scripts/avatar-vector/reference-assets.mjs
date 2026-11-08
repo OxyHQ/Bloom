@@ -1,47 +1,14 @@
 import fs from 'node:fs/promises';
-import { referenceBodyCanonicalizer } from './canonical-reference-body.mjs';
+import { proceduralShapes } from './procedural-shapes.mjs';
 import { ShapeUtils, Vector2, Vector3, Quaternion, Euler, Matrix4 } from 'three';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
-export async function buildReferenceAssets(root, browser) {
+export async function buildReferenceAssets(root) {
   const output = path.join(root, 'src/agent-avatar/vector-assets');
   const encoded = JSON.parse(await fs.readFile(path.join(output, 'template-peri.json'), 'utf8'));
   const original = encoded.encoding === 'json' ? JSON.parse(encoded.data) : encoded;
   const round = (x) => +x.toFixed(6);
-  let outlines;
-  const page = await browser.newPage();
-  try {
-    const sourceMarks = JSON.parse(
-      await fs.readFile(path.join(root, 'scripts/avatar-vector/reference-outlines.json'), 'utf8'),
-    ).map((mark) => ({ name: mark.id, path: mark.body, eyes: mark.eyes }));
-    await page.setContent('<!doctype html><title>Vector geometry extraction</title>');
-    outlines = await page.evaluate((sourceMarks) => {
-      const sample = (d, maxStep) => {
-        const node = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        node.setAttribute('d', d);
-        const total = node.getTotalLength(),
-          count = Math.max(32, Math.ceil(total / maxStep));
-        return Array.from({ length: count }, (_, i) => {
-          const p = node.getPointAtLength((total * i) / count);
-          return [p.x, p.y];
-        });
-      };
-      return sourceMarks.map((mark) => ({
-        name: mark.name,
-        body: (mark.path.match(/-?\d+(?:\.\d+)?/g) || []).map(Number).reduce((a, v, i, all) => {
-          if (i % 2 === 0) a.push([v, all[i + 1]]);
-          return a;
-        }, []),
-        eyes: mark.eyes.map((d) => sample(d, 1.1)),
-        original: { body: mark.path, eyes: mark.eyes },
-      }));
-    }, sourceMarks);
-  } finally {
-    await page.close();
-  }
-  const CX = 0,
-    CY = 0.12;
-  const world = ([x, y]) => [(x - 114.2705) / 114.2705, (114.2705 - y) / 114.2705 + CY];
+  const outlines = proceduralShapes();
   function partOf(points, faces, id, label, role, color, extra = {}) {
     const edges = new Map();
     faces.forEach((f, i) => {
@@ -65,11 +32,8 @@ export async function buildReferenceAssets(root, browser) {
       ...extra,
     };
   }
-  const canonicalize = referenceBodyCanonicalizer(
-    outlines.find((shape) => shape.name === 'square').body.map(world),
-  );
   function bodyMesh(contour, name) {
-    const outline = canonicalize(name, contour.map(world)),
+    const outline = contour,
       points = outline.map(([x, y]) => [x, y, 0]);
     const faces = ShapeUtils.triangulateShape(
       outline.map((p) => new Vector2(...p)),
@@ -79,6 +43,21 @@ export async function buildReferenceAssets(root, browser) {
       (Math.min(...outline.map((p) => p[0])) + Math.max(...outline.map((p) => p[0]))) / 2,
       (Math.min(...outline.map((p) => p[1])) + Math.max(...outline.map((p) => p[1]))) / 2,
     ];
+    if (name === 'wedge') {
+      let twiceArea = 0,
+        mx = 0,
+        my = 0;
+      for (let i = 0; i < outline.length; i++) {
+        const a = outline[i],
+          b = outline[(i + 1) % outline.length];
+        const cross = a[0] * b[1] - b[0] * a[1];
+        twiceArea += cross;
+        mx += (a[0] + b[0]) * cross;
+        my += (a[1] + b[1]) * cross;
+      }
+      center[0] = mx / (3 * twiceArea);
+      center[1] = my / (3 * twiceArea);
+    }
     let inradius = Infinity;
     for (let i = 0; i < outline.length; i++) {
       const a = outline[i],
@@ -104,41 +83,16 @@ export async function buildReferenceAssets(root, browser) {
       center,
     };
   }
-  function eyesMesh(contours, body) {
-    const measured = contours.map((contour) => {
-      const pts = contour.map(world);
-      const center = pts.reduce(
-        (sum, p) => [sum[0] + p[0] / pts.length, sum[1] + p[1] / pts.length],
-        [0, 0],
-      );
-      const covariance = pts.reduce(
-        (sum, p) => {
-          const x = p[0] - center[0],
-            y = p[1] - center[1];
-          return [sum[0] + x * x, sum[1] + x * y, sum[2] + y * y];
-        },
-        [0, 0, 0],
-      );
-      const angle = 0.5 * Math.atan2(2 * covariance[1], covariance[0] - covariance[2]);
-      const along = pts.map(
-        (p) => (p[0] - center[0]) * Math.cos(angle) + (p[1] - center[1]) * Math.sin(angle),
-      );
-      const across = pts.map(
-        (p) => -(p[0] - center[0]) * Math.sin(angle) + (p[1] - center[1]) * Math.cos(angle),
-      );
-      return {
-        center,
-        width: Math.max(...across) - Math.min(...across),
-        height: Math.max(...along) - Math.min(...along),
-      };
-    });
-    const height = (measured[0].height + measured[1].height) / 2;
-    const width = Math.min(height * 0.55, ((measured[0].width + measured[1].width) / 2) * 1.15);
-    const separation = Math.hypot(
-      measured[1].center[0] - measured[0].center[0],
-      measured[1].center[1] - measured[0].center[1],
+  function eyesMesh({ width, height, separation }, body) {
+    // Fit the complete capsule pair within the generated body's inscribed circle.
+    const fit = Math.min(
+      1,
+      (body.radius * 0.84) / Math.hypot((separation + width) / 2, height / 2),
     );
-    const radius = Math.max(body.radius * 0.94, separation * 0.8);
+    width *= fit;
+    height *= fit;
+    separation *= fit;
+    const radius = body.radius * 0.94;
     const split = Math.asin(Math.min(0.65, separation / 2 / radius));
     body.restBasis = [1, 0, 0, 0, 1, 0, 0, 0, 1];
     body.restQuaternion = [0, 0, 0, 1];
@@ -295,8 +249,8 @@ export async function buildReferenceAssets(root, browser) {
           eyewear: 'none',
           accessory: 'none',
         },
-        kind: 'reference-svg-billboard-face',
-        motion: 'Peri adapted to flat source contours',
+        kind: 'procedural-svg-billboard-face',
+        motion: 'Peri adapted to independently authored semantic silhouettes',
       },
       parts,
       clips,
@@ -312,7 +266,7 @@ export async function buildReferenceAssets(root, browser) {
       points: parts.reduce((s, p) => s + p.points.length, 0),
       parts: parts.length,
       bodySamples: shape.body.length,
-      eyeSamples: shape.eyes.map((p) => p.length),
+      eyeSamples: [64, 64],
     });
     console.log(shape.name, manifest.at(-1));
   }
