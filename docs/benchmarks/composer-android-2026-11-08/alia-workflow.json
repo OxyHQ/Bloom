@@ -1,5 +1,5 @@
 {
-  "status": "partial; accessibility acceptance failed",
+  "status": "partial; Alia Stop name, state, activation, and resumed typing verified",
   "fixture": "Alia's actual AliaComposer and chat thread with local synthetic streaming; no network inference",
   "device": {
     "model": "Google Pixel 8a",
@@ -23,13 +23,36 @@
     "realComposerDisplaysStopDuringSyntheticStream": "verified by physical screenshot",
     "sendStartsSyntheticStream": "verified by BloomAlia663FixtureStreamStarted log",
     "stopCallback": "verified by BloomAlia663FixtureStop log during prior instrumented physical run",
-    "androidAccessibilityDuringStop": {
-      "status": "failed",
+    "androidAccessibilityDuringStreaming": {
+      "status": "verified",
       "visualControl": "Stop icon visible",
-      "uiautomatorContentDescription": "Send message",
-      "uiautomatorEnabled": false
+      "uiautomatorContentDescription": "Stop generating",
+      "uiautomatorEnabled": true,
+      "uiautomatorBounds": [922, 1366, 1016, 1460],
+      "streamTurn": 4,
+      "streamStartedAt": "2026-11-08T19:53:24+02:00",
+      "capturedAt": "2026-11-08T19:53:40+02:00",
+      "screenshot": "alia-stop-accessible.png",
+      "hierarchyXml": "alia-stop-accessible.xml",
+      "screenshotSha256": "96d354e198d099ecd7a490629c1746b4c26b05cf6eb1044eb0e94822870638d5",
+      "hierarchyXmlSha256": "44a6103c12f703eb5bafe71581d8e0354db6275c5935495ef673399c0e691415"
+    },
+    "stopCallback": {
+      "status": "verified",
+      "streamTurn": 5,
+      "streamStartedAt": "2026-11-08T19:55:00+02:00",
+      "stopMarkerAt": "2026-11-08T19:55:03+02:00",
+      "logMarker": "BloomAlia663FixtureStop",
+      "logFile": "alia-stop-interaction.log",
+      "result": "Synthetic stream cancelled; composer returned to idle and accepted subsequent focused text input (afterStop)."
     }
   },
-  "evidence": ["alia-draft.png", "alia-streaming-probe.png", "alia-stopped-probe.png"],
-  "limits": "The offline fixture exercises AliaComposer but is not the production Alia app or inference service. The stale/disabled accessibility node during Stop must be fixed and rechecked. It does not establish phase-aligned optical parity, the complete lifecycle contract, performance acceptance, or iPhone behavior."
+  "evidence": [
+    "alia-draft.png",
+    "alia-streaming-probe.png",
+    "alia-stopped-probe.png",
+    "alia-stop-accessible.png",
+    "alia-stop-accessible.xml"
+  ],
+  "limits": "The offline fixture exercises AliaComposer but is not the production Alia app or inference service. It does not establish phase-aligned optical parity, the complete lifecycle contract, performance acceptance, or iPhone behavior."
 }

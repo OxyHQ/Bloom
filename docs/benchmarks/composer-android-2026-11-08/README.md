@@ -13,9 +13,11 @@ JSON. The APK embeds the local Bloom 17.23.0 snapshot, not a published package.
   Stop, draft, focus, identity and subsequent typing results.
 - The `alia-*` PNGs show the real AliaComposer in the offline synthetic app.
   They are interaction evidence, not a phase-aligned optical comparison.
-- `alia-workflow.json` records the real AliaComposer result and its accessibility
-  failure: while the Stop icon is visible, Android exposes the disabled “Send
-  message” name. Do not count this as accessible Stop acceptance.
+- `alia-workflow.json` records the real AliaComposer result. During streaming,
+  Android exposes an enabled “Stop generating” control; pressing it cancels the
+  fixture stream and subsequent typing works. `alia-stop-accessible.png` and
+  `alia-stop-accessible.xml` preserve the visible and native accessibility state;
+  `alia-stop-interaction.log` records the submit/Stop callbacks.
 
 Real Alia workflow, broader lifecycle/visual/performance acceptance and iPhone
 validation remain pending.
