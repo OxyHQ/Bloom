@@ -277,7 +277,7 @@ try {
   await capture('failure');
   process.exitCode = 1;
 } finally {
-  writeFileSync(join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+  writeFileSync(join(output, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
   console.log(
     JSON.stringify({
       status: report.status,

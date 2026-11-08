@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 const consumer = resolve(process.env.NILO_ROOT);
 const require = createRequire(join(consumer, 'package.json'));
 const browserRequire = createRequire(join(resolve(process.env.MENTION_ROOT), 'package.json'));
-const { chromium, expect } = browserRequire('@playwright/test');
+const { chromium } = browserRequire('@playwright/test');
 const Y = require('yjs');
 const { writeDocument } = require('@oxy.so/bloom-editor/yjs');
 const origin = process.env.NILO_ORIGIN ?? 'http://localhost:8128';
@@ -305,6 +305,7 @@ async function capture(name) {
     ...(await page.evaluate(() => ({
       viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },
       documentWidth: document.documentElement.scrollWidth,
+      // biome-ignore lint/performance/useDomNodeTextContent: record visible error text, excluding hidden app content.
       body: document.body.innerText.slice(0, 3500),
       regions: [
         ...document.querySelectorAll(
@@ -409,7 +410,7 @@ try {
   await capture('failure');
   process.exitCode = 1;
 } finally {
-  writeFileSync(join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+  writeFileSync(join(output, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
   console.log(
     JSON.stringify({
       status: report.status,

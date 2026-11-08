@@ -62,11 +62,11 @@ const packages = Object.fromEntries(
   ]),
 );
 mkdirSync(output, { recursive: true });
-writeFileSync(join(output, 'input.js'), source + '\n');
+writeFileSync(join(output, 'input.js'), `${source}\n`);
 writeFileSync(join(output, 'output.js'), attempt.result.code);
 writeFileSync(
   join(output, 'report.json'),
-  JSON.stringify(
+  `${JSON.stringify(
     {
       observedAt: new Date().toISOString(),
       packages,
@@ -79,6 +79,6 @@ writeFileSync(
     },
     null,
     2,
-  ) + '\n',
+  )}\n`,
 );
 console.log(JSON.stringify({ original: 'pass', transformed: error ?? 'pass', packages }, null, 2));
