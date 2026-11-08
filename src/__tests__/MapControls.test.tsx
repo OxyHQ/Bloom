@@ -213,3 +213,19 @@ describe('the layer picker is a trigger, not a second menu', () => {
     expect(root$().contains(byLabel('Map layers'))).toBe(true);
   });
 });
+
+it('keeps focused controls and callbacks while arranging groups into a row', () => {
+  const zoom = jest.fn();
+  const render = (orientation: 'vertical' | 'horizontal') =>
+    mount(<MapControls orientation={orientation} onZoomIn={zoom} onZoomOut={noop} testID="m" />);
+  render('vertical');
+  const button = byTestId('m-zoom-in');
+  React.act(() => button.focus());
+  render('horizontal');
+  expect(byTestId('m-zoom-in')).toBe(button);
+  expect(document.activeElement).toBe(button);
+  expect(byTestId('m').style.flexDirection).toBe('row');
+  expect(byTestId('m-zoom').style.flexDirection).toBe('row');
+  click(button);
+  expect(zoom).toHaveBeenCalledTimes(1);
+});
