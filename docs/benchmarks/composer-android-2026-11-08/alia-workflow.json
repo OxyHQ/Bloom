@@ -22,7 +22,6 @@
   "observations": {
     "realComposerDisplaysStopDuringSyntheticStream": "verified by physical screenshot",
     "sendStartsSyntheticStream": "verified by BloomAlia663FixtureStreamStarted log",
-    "stopCallback": "verified by BloomAlia663FixtureStop log during prior instrumented physical run",
     "androidAccessibilityDuringStreaming": {
       "status": "verified",
       "visualControl": "Stop icon visible",
