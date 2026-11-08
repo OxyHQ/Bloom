@@ -14,6 +14,9 @@ const meta: Meta = { title: 'Composition/Headers/Adaptive Actions' };
 export default meta;
 type Story = StoryObj;
 
+// Width selectors are fixture controls, not the HeaderActions under test.
+// Native HTML buttons isolate this behavior from the separately reproducible
+// WebKit material RAF stall in WidthControlsOnly below.
 export const LocalWidth: Story = {
   render: function LocalWidthStory() {
     const [width, setWidth] = useState(640);
@@ -23,9 +26,14 @@ export const LocalWidth: Story = {
       <View style={{ gap: 16, width: '100%' }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {[240, 320, 390, 640, 900].map((value) => (
-            <Button key={value} onPress={() => setWidth(value)} testID={`actions-width-${value}`}>
+            <button
+              type="button"
+              key={value}
+              onClick={() => setWidth(value)}
+              data-testid={`actions-width-${value}`}
+            >
               {String(value)}
-            </Button>
+            </button>
           ))}
         </View>
         <View style={{ width, maxWidth: '100%' }} testID="action-host">
@@ -87,13 +95,14 @@ export const ResponsiveNavigation: Story = {
       <View style={{ gap: 16 }}>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {[390, 900].map((value) => (
-            <Button
+            <button
+              type="button"
               key={value}
-              testID={`navigation-width-${value}`}
-              onPress={() => setWidth(value)}
+              data-testid={`navigation-width-${value}`}
+              onClick={() => setWidth(value)}
             >
               {String(value)}
-            </Button>
+            </button>
           ))}
         </View>
         <View testID="navigation-host" style={{ width, height: 420 }}>
@@ -121,4 +130,17 @@ export const ResponsiveNavigation: Story = {
       </View>
     );
   },
+};
+
+/** Existing material alone: five buttons can stall native WebKit RAF delivery. */
+export const WidthControlsOnly: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      {[240, 320, 390, 640, 900].map((value) => (
+        <Button key={value} testID={`actions-width-${value}`}>
+          {String(value)}
+        </Button>
+      ))}
+    </View>
+  ),
 };
