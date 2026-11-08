@@ -1,6 +1,8 @@
 /** Isolated native acceptance fixture; never imported by a product entrypoint. */
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Keyboard, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BloomProvider } from '@oxy.so/bloom/provider';
 import { AppShell } from '@oxy.so/bloom/app-shell';
 import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
@@ -96,10 +98,14 @@ function Fixture() {
 }
 export default function App() {
   return (
-    <BloomProvider fonts={false}>
-      <AppShell>
-        <Fixture />
-      </AppShell>
-    </BloomProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <BloomProvider fonts={false}>
+          <AppShell>
+            <Fixture />
+          </AppShell>
+        </BloomProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
