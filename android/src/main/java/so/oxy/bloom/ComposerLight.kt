@@ -2,6 +2,7 @@ package so.oxy.bloom
 
 import android.annotation.TargetApi
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -71,7 +72,7 @@ class ComposerLight(context: Context) : View(context) {
   private val measure = PathMeasure()
   private val segment = Path()
   private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
-  private data class Layer(val node: RenderNode, val strokes: List<LightStroke>, val padding: Int, val scale: Float)
+  private data class Layer(val node: RenderNode, val strokes: List<LightStroke>, val padding: Int, val scale: Float, val sigma: Float, val alpha: Float)
   private var layers: List<Layer> = emptyList()
   private var unsupported = false
 
@@ -99,7 +100,7 @@ class ComposerLight(context: Context) : View(context) {
       val sigma = blur * density * taperCalibration / scale
       val effectRadius = if (sigma > .5f) (sigma - .5f) / .57735f else 0f
       if (effectRadius > 0f) node.setRenderEffect(RenderEffect.createBlurEffect(effectRadius, effectRadius, Shader.TileMode.DECAL))
-      Layer(node, group, padding, scale)
+      Layer(node, group, padding, scale, if (effectRadius > 0f) sigma else 0f, node.alpha)
     }
     invalidate()
   }
@@ -109,18 +110,24 @@ class ComposerLight(context: Context) : View(context) {
     if (Build.VERSION.SDK_INT < 31 || width <= 0 || height <= 0 || boxWidth <= 0 || boxHeight <= 0) return
     if (unsupported) return
     if (!canvas.isHardwareAccelerated) {
-      unsupported = true
-      // Do not draw RenderNodes onto a software canvas. Let the existing SVG
-      // renderer take over without resetting the parent clock or content tree.
-      post {
-        val context = context as ThemedReactContext
-        UIManagerHelper.getEventDispatcherForReactTag(context, id)?.dispatchEvent(
-          LightUnsupportedEvent(UIManagerHelper.getSurfaceId(this), id)
-        )
+      // A bitmap snapshot is not a loss of the live window's GPU capability.
+      // Draw current props synchronously; never reuse a stale previous frame.
+      drawSoftwareSnapshot(canvas)
+      if (isSoftwareHost()) {
+        unsupported = true
+        post {
+          // Snapshot libraries may temporarily change a layer type and restore
+          // it before returning. Only a still-software host should lose the GPU.
+          if (!isSoftwareHost()) { unsupported = false; invalidate(); return@post }
+          val context = context as ThemedReactContext
+          val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id)
+          if (dispatcher != null) dispatcher.dispatchEvent(
+            LightUnsupportedEvent(UIManagerHelper.getSurfaceId(this), id)
+          ) else { unsupported = false; invalidate() }
+        }
       }
       return
     }
-    val unit = perimeter * density / 100f
     for (layer in layers) {
       val pad = layer.padding
       val layerWidth = kotlin.math.ceil(width / layer.scale).toInt()
@@ -129,39 +136,82 @@ class ComposerLight(context: Context) : View(context) {
       val recording = layer.node.beginRecording(layerWidth + pad * 2, layerHeight + pad * 2)
       recording.translate(pad.toFloat(), pad.toFloat())
       recording.scale(1f / layer.scale, 1f / layer.scale)
-      for (stroke in layer.strokes) {
-        val elapsed = seconds - stroke.phase * speed / 100.0
-        val offset = if (elapsed < 0 || speed <= 0) 0.0 else {
-          val fraction = (elapsed / speed) % 1.0
-          if (reverse) -100.0 * (1.0 - fraction) else -100.0 * fraction
-        }
-        paint.strokeWidth = stroke.width * density
-        paint.alpha = (stroke.opacity * 255f).toInt().coerceIn(0, 255)
-        paint.pathEffect = null
-        val period = 100f * unit
-        val dashLength = stroke.dash * unit
-        val phase = offset.toFloat() * unit
-        val start = ((-phase % period) + period) % period
-        segment.reset()
-        // One dash per analytic perimeter; preserve any measured-path mismatch,
-        // including the short residual interval at the closed seam.
-        val length = measure.length
-        val previousEnd = start - period + dashLength
-        if (start < length && start + dashLength > length && previousEnd > 0f) {
-          measure.getSegment(start, length, segment, true)
-          measure.getSegment(0f, minOf(previousEnd, length), segment, false)
-        } else {
-          if (previousEnd > 0f) measure.getSegment(0f, minOf(previousEnd, length), segment, true)
-          if (start < length) measure.getSegment(start, minOf(start + dashLength, length), segment, true)
-        }
-        if (start + period < length) measure.getSegment(start + period, minOf(start + period + dashLength, length), segment, true)
-        recording.drawPath(segment, paint)
-      }
+      drawStrokes(recording, layer)
       layer.node.endRecording()
       canvas.save()
       canvas.scale(layer.scale, layer.scale)
       canvas.drawRenderNode(layer.node)
       canvas.restore()
+    }
+  }
+
+  private fun isSoftwareHost() = isAttachedToWindow && (!isHardwareAccelerated || hasSoftwareLayer())
+
+  private fun hasSoftwareLayer(): Boolean {
+    var ancestor: View? = this
+    while (ancestor != null) {
+      if (ancestor.layerType == LAYER_TYPE_SOFTWARE) return true
+      ancestor = ancestor.parent as? View
+    }
+    return false
+  }
+
+  private fun drawStrokes(recording: Canvas, layer: Layer) {
+    val unit = perimeter * density / 100f
+    for (stroke in layer.strokes) {
+      val elapsed = seconds - stroke.phase * speed / 100.0
+      val offset = if (elapsed < 0 || speed <= 0) 0.0 else {
+        val fraction = (elapsed / speed) % 1.0
+        if (reverse) -100.0 * (1.0 - fraction) else -100.0 * fraction
+      }
+      paint.strokeWidth = stroke.width * density
+      paint.alpha = (stroke.opacity * 255f).toInt().coerceIn(0, 255)
+      paint.pathEffect = null
+      val period = 100f * unit
+      val dashLength = stroke.dash * unit
+      val phase = offset.toFloat() * unit
+      val start = ((-phase % period) + period) % period
+      segment.reset()
+      // One dash per analytic perimeter; preserve any measured-path mismatch,
+      // including the short residual interval at the closed seam.
+      val length = measure.length
+      val previousEnd = start - period + dashLength
+      if (start < length && start + dashLength > length && previousEnd > 0f) {
+        measure.getSegment(start, length, segment, true)
+        measure.getSegment(0f, minOf(previousEnd, length), segment, false)
+      } else {
+        if (previousEnd > 0f) measure.getSegment(0f, minOf(previousEnd, length), segment, true)
+        if (start < length) measure.getSegment(start, minOf(start + dashLength, length), segment, true)
+      }
+      if (start + period < length) measure.getSegment(start + period, minOf(start + period + dashLength, length), segment, true)
+      recording.drawPath(segment, paint)
+    }
+  }
+
+  private fun drawSoftwareSnapshot(canvas: Canvas) {
+    val outputPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+    for (layer in layers) {
+      // Unlike RenderEffect, a bitmap's output cannot extend past its allocation.
+      val pad = layer.padding + kotlin.math.ceil(3f * layer.sigma).toInt()
+      val w = kotlin.math.ceil(width / layer.scale).toInt() + 2 * pad
+      val h = kotlin.math.ceil(height / layer.scale).toInt() + 2 * pad
+      val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+      try {
+        val recording = Canvas(bitmap)
+        recording.translate(pad.toFloat(), pad.toFloat())
+        recording.scale(1f / layer.scale, 1f / layer.scale)
+        drawStrokes(recording, layer)
+        if (layer.sigma > 0f) {
+          val pixels = IntArray(w * h)
+          bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
+          bitmap.setPixels(blurSnapshotPixels(pixels, w, h, layer.sigma), 0, w, 0, 0, w, h)
+        }
+        outputPaint.alpha = (layer.alpha * 255f).toInt()
+        canvas.save()
+        canvas.scale(layer.scale, layer.scale)
+        canvas.drawBitmap(bitmap, -pad.toFloat(), -pad.toFloat(), outputPaint)
+        canvas.restore()
+      } finally { bitmap.recycle() }
     }
   }
 

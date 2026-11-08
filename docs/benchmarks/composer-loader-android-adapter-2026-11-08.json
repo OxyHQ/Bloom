@@ -1,0 +1,347 @@
+{
+  "status": "integration candidate; not published or full issue acceptance",
+  "artifact": {
+    "apkSha256": "5baced8ee0816c49c96ff1b4a4be664a94c0d68182a966d5c1739e4371330143",
+    "embeddedBundleSha256": "9ae91a04f30bb881f5fbd279e0662ca99c1a29d553d341c44dccb4b120f2ce07",
+    "embeddedBloomSourceSha256": "fb9cb6efa36c99f0a8b855f54d09c556ea837617d740ab2b7927e1ebaf888c8a",
+    "embeddedBloomFiles": 408,
+    "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+    "adapterSha256": "844afeb2194fbe59bc6de0175cf2e8ace8ddbb6f8a45d38dbc8b4f7de96fdba5",
+    "fixtureSha256": "584a11746792b41193ea21fe15b6c967d34c8bc534616f854ca4f5e54df635e5",
+    "packedTarballSha256": "2d1cb58e705a6df2ec892a31c186c3e729d00f5cc0a232ec4aee74b746a41379",
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "reactCompiler": false
+  },
+  "host": {
+    "model": "Pixel 8a",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "density": 420,
+    "fontScale": 1.15,
+    "RN": "0.88.1",
+    "Expo": "58.0.23",
+    "SVG": "15.16.0",
+    "blur": "58.0.5"
+  },
+  "budget": {
+    "deadlineMissRatioLessThan": 0.01,
+    "gpuP95MsAtMost": 8.333333,
+    "fixedBeforeRendererSelection": true,
+    "continuousWindowsExcludeVideoAndSnapshotProbes": true
+  },
+  "performance": [
+    {
+      "case": "one-taper0",
+      "frames": 1278,
+      "jankyFrames": 0,
+      "gpuP95Ms": 4,
+      "recentFrameP95Ms": 9.268788,
+      "recentFrameIntervalMs": 8.359138,
+      "elapsedMs": 10607.348124,
+      "cpuPercentOfOneCore": [
+        92.5,
+        86.6,
+        88
+      ],
+      "pssKb": 228691,
+      "rssKb": 413384,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1296,
+      "jankyFrames": 0,
+      "gpuP95Ms": 5,
+      "recentFrameP95Ms": 11.734586,
+      "recentFrameIntervalMs": 8.360276,
+      "elapsedMs": 10849.796346,
+      "cpuPercentOfOneCore": [
+        89.2,
+        95.2,
+        89.8
+      ],
+      "pssKb": 286033,
+      "rssKb": 471472,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0
+    },
+    {
+      "case": "one-taper05",
+      "frames": 1273,
+      "jankyFrames": 0,
+      "gpuP95Ms": 6,
+      "recentFrameP95Ms": 12.396488,
+      "recentFrameIntervalMs": 8.358034,
+      "elapsedMs": 10796.267340999999,
+      "cpuPercentOfOneCore": [
+        96.4,
+        89.8,
+        89.2
+      ],
+      "pssKb": 349444,
+      "rssKb": 535004,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0
+    },
+    {
+      "case": "two-taper05",
+      "frames": 1296,
+      "jankyFrames": 0,
+      "gpuP95Ms": 7,
+      "recentFrameP95Ms": 12.927811,
+      "recentFrameIntervalMs": 8.358404,
+      "elapsedMs": 10840.887181,
+      "cpuPercentOfOneCore": [
+        123,
+        91.4,
+        99.8
+      ],
+      "pssKb": 381132,
+      "rssKb": 566700,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0
+    },
+    {
+      "case": "two-taper05-repeat2",
+      "frames": 1280,
+      "jankyFrames": 0,
+      "gpuP95Ms": 7,
+      "recentFrameP95Ms": 13.457102,
+      "recentFrameIntervalMs": 8.357621,
+      "elapsedMs": 10760.336671,
+      "cpuPercentOfOneCore": [
+        125,
+        99.8,
+        96.4
+      ],
+      "pssKb": 368919,
+      "rssKb": 554544,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0
+    },
+    {
+      "case": "two-taper05-repeat3",
+      "frames": 1272,
+      "jankyFrames": 0,
+      "gpuP95Ms": 7,
+      "recentFrameP95Ms": 13.986338,
+      "recentFrameIntervalMs": 8.358261,
+      "elapsedMs": 10652.685078999999,
+      "cpuPercentOfOneCore": [
+        100,
+        96,
+        98.6
+      ],
+      "pssKb": 363931,
+      "rssKb": 549572,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0
+    }
+  ],
+  "snapshots": {
+    "snapshot": {
+      "mode": "snapshot",
+      "beforeNativeCount": 1,
+      "afterNativeCount": 1,
+      "captures": [
+        {
+          "filename": "snapshot-0.png",
+          "width": 996,
+          "height": 136,
+          "elapsedMs": 47.127889,
+          "seconds": 37.648983945846545
+        }
+      ],
+      "fontScale": "1.15",
+      "density": "Physical density: 420"
+    },
+    "transient": {
+      "mode": "transient",
+      "beforeNativeCount": 1,
+      "afterNativeCount": 1,
+      "captures": [
+        {
+          "filename": "snapshot-0.png",
+          "width": 996,
+          "height": 136,
+          "elapsedMs": 136.141439,
+          "seconds": 17.179196007728564
+        }
+      ],
+      "fontScale": "1.15",
+      "density": "Physical density: 420"
+    }
+  },
+  "softwareHost": {
+    "mode": "software-host",
+    "beforeNativeCount": 0,
+    "afterNativeCount": 0,
+    "captures": [],
+    "fontScale": "1.15",
+    "density": "Physical density: 420"
+  },
+  "jsOnlyControl": {
+    "kind": "diagnostic JS-only update into prior native binary, not a release candidate",
+    "apkSha256": "07c100459002c13c59bfe623f8104637d510c92e7f0a7c4c87d66a9fb77b08e7",
+    "baseApkSha256": "8ad7eb77b4036454a70688a1c5f17953711368e6fd9e7f9f86e9f113160640d6",
+    "candidateApkSha256": "5baced8ee0816c49c96ff1b4a4be664a94c0d68182a966d5c1739e4371330143",
+    "embeddedBundleSha256": "9ae91a04f30bb881f5fbd279e0662ca99c1a29d553d341c44dccb4b120f2ce07",
+    "unchangedPayloadEntries": 1152,
+    "unchangedNativePayload": [
+      {
+        "name": "classes.dex",
+        "sha256": "a63b4336b38d7c1b9db62f595eb36c54117b3099a36721b198fd62ded10e1ef8"
+      },
+      {
+        "name": "lib/arm64-v8a/libanimation-decoder-gif.so",
+        "sha256": "1a36faccdc2df2d03b399bd20113768f04fe5f9c873c32974d89e588f63b6933"
+      },
+      {
+        "name": "lib/arm64-v8a/libappmodules.so",
+        "sha256": "9ec23f45e1e31410710e79d3326a51f935cf17df13e91afc1ebccd5e37b566cf"
+      },
+      {
+        "name": "lib/arm64-v8a/libavif_android.so",
+        "sha256": "278211a4aa0fe5034aef8ef9717736242b3b6868708dcd1e1b6d941c5f05150c"
+      },
+      {
+        "name": "lib/arm64-v8a/libc++_shared.so",
+        "sha256": "3e852764502d06e0cf1080d532ae7c608b7649d946a3a9d7e84e3d4b7d683214"
+      },
+      {
+        "name": "lib/arm64-v8a/libexpo-modules-core.so",
+        "sha256": "ac2da3ce1daaf1d65f40c078609637089bb4f399c09707b34513eb1bee4a13bc"
+      },
+      {
+        "name": "lib/arm64-v8a/libexpo-modules-jsi.so",
+        "sha256": "62c2c9d7b3e7f40788b70f254ae8208297f7df5b04a725e325ae8eb2145ae2e5"
+      },
+      {
+        "name": "lib/arm64-v8a/libexpo-modules-v2.so",
+        "sha256": "0df61704952d8be3c0ff80c5e295a9df15b8e3b7114ef2f210ee10d3cf64ea7b"
+      },
+      {
+        "name": "lib/arm64-v8a/libexpo-modules-worklets.so",
+        "sha256": "1ac9eebb57c60aad05b5e3f2156feb022193353cad1146f550c4a16f8ac66812"
+      },
+      {
+        "name": "lib/arm64-v8a/libfbjni.so",
+        "sha256": "a9e35ba55d3f956920281f519385f8a72475ee24819799cb08375fdd4cce2b22"
+      },
+      {
+        "name": "lib/arm64-v8a/libgesturehandler.so",
+        "sha256": "46cadab232b42b9f2abab537ebaa41c8b45e4ee765bad75603a138b630f5fa7d"
+      },
+      {
+        "name": "lib/arm64-v8a/libgifimage.so",
+        "sha256": "cfbb51d1fe58ba985ad1f06d4ac0afa70e5323d25517642881f4833d7020e44f"
+      },
+      {
+        "name": "lib/arm64-v8a/libhermestooling.so",
+        "sha256": "c27e3bf0e14e3e36c5a06a40e63428fc7e5f2f59f0cc54d2796d09d35d7f8cb5"
+      },
+      {
+        "name": "lib/arm64-v8a/libhermesvm.so",
+        "sha256": "692e6644a32faead01e1a06b8b95d49b1c77c0b7e687e8cf09c26f46ff8bf55d"
+      },
+      {
+        "name": "lib/arm64-v8a/libimagepipeline.so",
+        "sha256": "1b377992e4256fa9398ec057722f84a359c7d588e570c8a41f51d930c19ece7d"
+      },
+      {
+        "name": "lib/arm64-v8a/libjsi.so",
+        "sha256": "3dbec7cab217091260fff92c2bfd712f71265e7ba9cb2359c939fdaf999dc325"
+      },
+      {
+        "name": "lib/arm64-v8a/libnative-filters.so",
+        "sha256": "bb82aec5ab2a8ac4e1968f41c6477824f1f3fff90c0eeb2c90cdeb1923d69833"
+      },
+      {
+        "name": "lib/arm64-v8a/libnative-imagetranscoder.so",
+        "sha256": "2aed28298a25afd52ac670cf9682398c6c7ba42a57195c01efd565e7ddfe17ca"
+      },
+      {
+        "name": "lib/arm64-v8a/libreact_codegen_rngesturehandler_codegen.so",
+        "sha256": "bc7dad2944ff681b0df7c133272d8cdfbcbb1da81612c4e344d8a1ba1cdf800c"
+      },
+      {
+        "name": "lib/arm64-v8a/libreact_codegen_rnscreens.so",
+        "sha256": "8b952e7b9afef3d3c9a8236145cd049d269ebb4f55539ca16ab1ec9e73a72b7a"
+      },
+      {
+        "name": "lib/arm64-v8a/libreact_codegen_rnsvg.so",
+        "sha256": "f3863bc86f29f02eb1a1a66ad8657662298d82d391583e9277254308b7bb3eaf"
+      },
+      {
+        "name": "lib/arm64-v8a/libreact_codegen_safeareacontext.so",
+        "sha256": "050c71dc3a59fb732d82a28fb8549a515d261c01182af4426b942d43e78ec449"
+      },
+      {
+        "name": "lib/arm64-v8a/libreactnative.so",
+        "sha256": "d6b9623df5f01b4fc851b81fa44596d1f6874e8198d65131a29206ce3e28e97a"
+      },
+      {
+        "name": "lib/arm64-v8a/libreanimated.so",
+        "sha256": "d35c611812205f201a5080da3bf8caf27c58f5c126540ba0c3975a7b54cc8048"
+      },
+      {
+        "name": "lib/arm64-v8a/librnscreens.so",
+        "sha256": "ad1b183694559d45eaadc64abe1b870ebb5a63ed1cf3f8a54a1d6edb46b8e6be"
+      },
+      {
+        "name": "lib/arm64-v8a/libstatic-webp.so",
+        "sha256": "bfce3139342fad716d25623b559d9901fc795d6b7622ebe21a417b4c84e3a92a"
+      },
+      {
+        "name": "lib/arm64-v8a/libworklets.so",
+        "sha256": "0ce1c56919e7c40eb757a1078c4969cbb4d0d9fa7bc523b13e9a6f457d4e262f"
+      },
+      {
+        "name": "lib/arm64-v8a/libzstd-kmp.so",
+        "sha256": "10ec47f13bee884450b0911066019ba7aa6b4164a4c1f8c33c9d30dd3fd8868a"
+      }
+    ],
+    "testSignature": "Signer #1 certificate DN: CN=Android Debug, OU=Android, O=Unknown, L=Unknown, ST=Unknown, C=US\nSigner #1 certificate SHA-256 digest: fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c\nSigner #1 certificate SHA-1 digest: 5e8f16062ea3cd2c4a0d547876baa6f38cabf625\nSigner #1 certificate MD5 digest: 20f46148b72d8e5e5ca23d37a4f41490\n",
+    "limits": "Current RN host only; no old RN/legacy runtime or fallback performance claim. All original resources are retained."
+  },
+  "validation": {
+    "jsFocusedTests": 42,
+    "nativeTests": 17,
+    "nativeApiGuards": [
+      30,
+      31
+    ],
+    "minimumPeerCompile": "react-android 0.73.0 forced; no runtime/legacy claim",
+    "snapshotNativeGraphics": "detached phase/palette/geometry changes and display-list discard paint current state",
+    "buildAndPackage": true
+  },
+  "limitations": [
+    "No pixel equality claim between GPU, CPU snapshot, SVG or web.",
+    "Snapshot cost 47.1/136.1 ms is a separate one-shot UI-thread cost, not the continuous frame budget.",
+    "Software/old-binary SVG fallback retains the measured quality/performance degradation.",
+    "API 30 device/emulator appearance and RN 0.73/legacy runtime not yet exercised.",
+    "Packaged lifecycle, phase-aligned captures and actual ComposerPill/AgentChatComposer/Alia acceptance pending.",
+    "iPhone tests explicitly deferred by user."
+  ],
+  "evidenceRoot": ".local/loader-adapter",
+  "negativeControl": "canvas-probe/snapshot.log records native view count 1\u21920 before the fix; original APK retained.",
+  "hardwareSoftwareControl": {
+    "changedZipEntries": [
+      {
+        "name": "AndroidManifest.xml",
+        "hardwareSha256": "e7e4e9303571439891af4d681dd0f473e7fe8cc9cf6001d0637f0509bbb51c7b",
+        "softwareSha256": "df07e4c8ebcb95772a84b832e60facbc2899e15522bc2fd83a2f1864e7134f8c"
+      },
+      {
+        "name": "assets/index.android.bundle",
+        "hardwareSha256": "9ae91a04f30bb881f5fbd279e0662ca99c1a29d553d341c44dccb4b120f2ce07",
+        "softwareSha256": "596a02ab2cb4d11c637941640725a1f72ea0d514ad46ab84a309451c831d6793"
+      }
+    ],
+    "identicalNativePayloadEntries": 30,
+    "fixtureSha256Identical": true,
+    "embeddedBloomSourceSha256Identical": true,
+    "bundleDifference": "Only receipt softwareWindow and workingTree values differ; runtime fixture and Bloom source hashes identical."
+  }
+}

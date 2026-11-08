@@ -3,6 +3,10 @@ const { withMainActivity } = require('expo/config-plugins');
 module.exports = (config) =>
   withMainActivity(config, (mod) => {
     const marker = '// Bloom packaged Canvas capability probe.';
+    mod.modResults.contents = mod.modResults.contents.replace(
+      / {2}\/\/ Bloom packaged Canvas capability probe\.[\s\S]*?(?= {2}override fun onCreate)/,
+      '',
+    );
     if (!mod.modResults.contents.includes(marker))
       mod.modResults.contents = mod.modResults.contents.replace(
         'class MainActivity : ReactActivity() {',
@@ -16,7 +20,7 @@ module.exports = (config) =>
   override fun onNewIntent(intent: android.content.Intent) {
     super.onNewIntent(intent)
     val probe = intent.getStringExtra("bloomProbe") ?: return
-    if (probe != "snapshot" && probe != "software") return
+    if (probe != "snapshot" && probe != "software" && probe != "transient") return
     window.decorView.postDelayed({
       val lights = lightViews(window.decorView)
       android.util.Log.i("BloomCanvasProbe", "before count=" + lights.size + " mode=" + probe)
@@ -25,7 +29,15 @@ module.exports = (config) =>
         if (probe == "software") light.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
         else {
           val bitmap = android.graphics.Bitmap.createBitmap(light.width, light.height, android.graphics.Bitmap.Config.ARGB_8888)
-          light.draw(android.graphics.Canvas(bitmap))
+          val previousLayer = light.layerType
+          if (probe == "transient") light.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+          val started = android.os.SystemClock.elapsedRealtimeNanos()
+          try { light.draw(android.graphics.Canvas(bitmap)) }
+          finally { if (probe == "transient") light.setLayerType(previousLayer, null) }
+          val elapsed = (android.os.SystemClock.elapsedRealtimeNanos() - started) / 1000000.0
+          val output = java.io.File(getExternalFilesDir(null), "snapshot-" + System.currentTimeMillis() + ".png")
+          java.io.FileOutputStream(output).use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+          android.util.Log.i("BloomCanvasProbe", "snapshotMs=" + elapsed + " seconds=" + light.seconds + " path=" + output.absolutePath)
           bitmap.recycle()
         }
       }

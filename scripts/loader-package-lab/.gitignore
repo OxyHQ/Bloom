@@ -5,3 +5,5 @@ build.json
 .expo/
 
 attestation.json
+
+.compat-rn73/
