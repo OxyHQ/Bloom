@@ -1,5 +1,5 @@
 import { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
-import type { View } from 'react-native';
+import { Platform, type View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
@@ -10,9 +10,9 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import type { AvatarCharacter } from '../agent-avatar';
-import { bodyPigmentHex } from '../agent-avatar/body-pigment';
 import { CharacterAvatar } from '../agent-avatar/CharacterAvatar';
 import { updateAvatarCharacter } from '../agent-avatar/character';
+import { pointerEventsStyles } from '../styles/pointer-events';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
@@ -56,6 +56,7 @@ function Emotion({
       }),
     [choice.character],
   );
+  const eyeStyle = useMemo(() => ({ opacity: choice.disabled ? 0.35 : 1 }), [choice.disabled]);
   const angle = (index * 360) / count;
   const counterRotation = useAnimatedStyle(
     () => ({ transform: [{ rotate: `${-rotation.value - angle}deg` }] }),
@@ -94,13 +95,14 @@ function Emotion({
           }}
         >
           <CharacterAvatar
+            renderer="svg"
             previewPart="eyes"
             character={eyeCharacter}
             portrait
             paused
             interactive={false}
             size={34}
-            style={{ opacity: choice.disabled ? 0.35 : 1 }}
+            style={eyeStyle}
           />
         </StyledPressable>
       </AnimatedView>
@@ -122,7 +124,6 @@ export function EmotionPicker({
   onSelect: (id: string) => void;
 }) {
   const messages = useAgentCreatorMessages();
-  const previewBackground = bodyPigmentHex(backgroundColor);
   const emit = onSelect;
   const ref = useRef<ComponentRef<typeof View>>(null);
   const visible = useSharedValue(true);
@@ -187,21 +188,26 @@ export function EmotionPicker({
         ref={ref}
         role="group"
         accessibilityLabel={messages.emotion}
-        pointerEvents="auto"
-        className="pointer-events-auto relative size-[268px] touch-none rounded-full"
+        style={pointerEventsStyles['box-none']}
+        className="relative size-[268px] touch-none rounded-full"
         onPointerEnter={onHoverIn}
         onPointerLeave={onHoverOut}
       >
         <AnimatedView
-          pointerEvents="box-none"
-          className="pointer-events-none absolute inset-0"
-          style={[{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }, orbit]}
+          className="absolute inset-0"
+          style={[
+            // Reanimated flattens styles: CSS cannot express box-none on this animated node.
+            // Web chips opt back into auto; native retains box-none child hit testing.
+            Platform.OS === 'web' ? pointerEventsStyles.none : pointerEventsStyles['box-none'],
+            { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
+            orbit,
+          ]}
         >
           {choices.map((choice, index) => (
             <Emotion
               key={choice.id}
               choice={choice}
-              backgroundColor={previewBackground}
+              backgroundColor={backgroundColor}
               active={value === choice.id}
               count={choices.length}
               index={index}

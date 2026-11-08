@@ -105,13 +105,25 @@ describe('Sidebar', () => {
       flexShrink: 0,
       borderRadius: 28,
       borderWidth: 1,
-      paddingTop: 12,
-      paddingLeft: 12,
-      paddingRight: 12,
       backgroundColor: 'transparent',
       borderColor: colors.borderLight,
     });
     expect(panel.paddingHorizontal).toBeUndefined();
+    // Chrome fills the viewport; its content owns the inset instead of clipping fades.
+    expect(resolvedStyle(screen.getByTestId('sb-fixed-header').props.style)).toMatchObject({
+      paddingTop: 12,
+      paddingLeft: 12,
+      paddingRight: 12,
+    });
+    expect(resolvedStyle(screen.getByTestId('sb-main-region').props.style)).toMatchObject({
+      paddingLeft: 12,
+      paddingRight: 12,
+    });
+    expect(resolvedStyle(screen.getByTestId('sb-sticky-footer').props.style)).toMatchObject({
+      paddingBottom: 12,
+      paddingLeft: 12,
+      paddingRight: 12,
+    });
   });
 
   it('surface="plain" drops the panel chrome', () => {
@@ -864,8 +876,7 @@ it.each(['panel', 'rail'] as const)(
     const region = tree.getByTestId('aligned-main-region');
     const footer = tree.getByTestId('aligned-footer');
     expect(resolvedStyle(region.props.style)).toMatchObject({
-      flex: 1,
-      minHeight: 0,
+      flexGrow: 1,
       justifyContent: 'center',
     });
     expect(resolvedStyle(footer.props.style).flexShrink).toBe(0);

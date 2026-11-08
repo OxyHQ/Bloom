@@ -7,7 +7,7 @@ import ts from 'typescript';
 const temp = await mkdtemp('.local/body-pigment-test-');
 await writeFile(
   `${temp}/pigment.mjs`,
-  ts.transpileModule(await readFile('src/agent-avatar/body-pigment.ts', 'utf8'), {
+  ts.transpileModule(await readFile('runtime/avatar/body-pigment.ts', 'utf8'), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
   }).outputText,
 );

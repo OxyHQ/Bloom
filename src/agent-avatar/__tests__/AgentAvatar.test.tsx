@@ -1,3 +1,5 @@
+import { VectorCharacterAvatar } from '../VectorCharacterAvatar';
+import { VectorCharacterPortrait } from '../VectorCharacterPortrait';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { AgentAvatar } from '../AgentAvatar';
 import { CharacterAvatar } from '../CharacterAvatar';
@@ -58,3 +60,22 @@ it('preserves localized names and explicit overrides', () => {
     'Peri',
   );
 });
+
+it.each([undefined, 'svg', 'webgl'] as const)(
+  'always uses SVG for legacy recipes even with renderer=%s',
+  (choice) => {
+    act(() => {
+      renderer = create(
+        <AgentAvatar renderer={choice} character={{ preset: 'blue_beret' }} paused />,
+      );
+    });
+    expect(renderer.root.findAllByType(VectorCharacterAvatar)).toHaveLength(1);
+    act(() =>
+      renderer.update(
+        <AgentAvatar renderer={choice} character={{ preset: 'blue_beret' }} portrait />,
+      ),
+    );
+    expect(renderer.root.findAllByType(VectorCharacterPortrait)).toHaveLength(1);
+    expect(renderer.root.findAllByType(VectorCharacterAvatar)).toHaveLength(0);
+  },
+);

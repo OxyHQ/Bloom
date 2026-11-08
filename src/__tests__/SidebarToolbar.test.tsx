@@ -61,7 +61,7 @@ it('expands controlled search, filters app content, clears it on close and remov
   expect(screen.getByLabelText('New conversation')).toBeTruthy();
 });
 
-it('keeps a custom header outside the destination scroll and preserves it across collapse', () => {
+it('keeps a sticky custom header inside the whole-sidebar scroll and preserves it across collapse', () => {
   const screen = render(
     scope(
       <Sidebar
@@ -73,8 +73,10 @@ it('keeps a custom header outside the destination scroll and preserves it across
       />,
     ),
   );
+  let insideScroll = false;
   for (let node = screen.getByText('Expanded header').parent; node; node = node.parent)
-    expect(node.props.testID).not.toBe('nav-scroll');
+    if (node.props.testID === 'nav-scroll') insideScroll = true;
+  expect(insideScroll).toBe(true);
   expect(screen.queryByLabelText('Collapse sidebar')).toBeNull();
   screen.rerender(
     scope(

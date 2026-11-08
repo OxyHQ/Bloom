@@ -1,7 +1,7 @@
 import { resolveCompleteEditorRecipe } from '../../../runtime/avatar/recipe';
 import { type AvatarCharacter, resolveAvatarCharacter } from '../character';
 
-/** What the renderer is asked to load for a character: one asset identity per combination. */
+/** Offline extraction resolves the canonical character before choosing authored source assets. */
 const recipe = (character: AvatarCharacter, previewPart?: 'eyes') =>
   resolveCompleteEditorRecipe({
     character: resolveAvatarCharacter(character),
@@ -9,7 +9,7 @@ const recipe = (character: AvatarCharacter, previewPart?: 'eyes') =>
     ...(previewPart ? { previewPart } : {}),
   });
 
-describe('the renderer recipe', () => {
+describe('the offline extraction recipe', () => {
   it('loads the authored preset for a character that is exactly the preset', () => {
     const r = recipe({ preset: 'blue_beret' });
     expect(r.preset).toBe('blue_beret');
@@ -19,7 +19,7 @@ describe('the renderer recipe', () => {
   it("leaves the preset's own paint out, and paints only what differs", () => {
     expect(recipe({ preset: 'blue_beret', color: 'blue' }).color).toBeUndefined();
     expect(recipe({ preset: 'blue_beret', color: 'orchid' }).color).toBe('#dd6adc');
-    expect(recipe({ preset: 'blue_beret', bodyColor: '#123456' }).color).toBe('#123456');
+    expect(recipe({ preset: 'blue_beret', bodyColor: '#123456' }).color).toBe('#4f6d92');
     expect(recipe({ preset: 'gus' }).color).toBeUndefined();
   });
 

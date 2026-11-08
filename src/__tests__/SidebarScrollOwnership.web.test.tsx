@@ -30,7 +30,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 it.each(['panel', 'rail'] as const)(
-  '%s sidebar uses one shared scrollbar and keeps fixed chrome outside the viewport',
+  '%s sidebar uses one shared scrollbar and keeps sticky chrome inside the whole-sidebar viewport',
   (variant) => {
     const host = document.createElement('div');
     document.body.append(host);
@@ -54,11 +54,11 @@ it.each(['panel', 'rail'] as const)(
       expect(host.querySelectorAll('[data-bloom-scroll-area]')).toHaveLength(1);
       expect(host.querySelectorAll('[data-bloom-scrollbar-thumb]')).toHaveLength(1);
       const owner = host.querySelector('[data-bloom-scroll-area]')!;
-      expect(owner.querySelector('[data-testid="fixed-footer"]')).toBeNull();
+      expect(owner.querySelector('[data-testid="fixed-footer"]')).not.toBeNull();
       expect(host.querySelector('[data-testid="fixed-footer"]')).not.toBeNull();
       if (variant === 'panel') {
         expect(host.querySelector('[data-testid="fixed-header"]')).not.toBeNull();
-        expect(owner.querySelector('[data-testid="fixed-header"]')).toBeNull();
+        expect(owner.querySelector('[data-testid="fixed-header"]')).not.toBeNull();
       }
       expect(host.querySelector('[data-bloom-sidebar-scroll]')).toBeNull();
     } finally {

@@ -371,7 +371,7 @@ export interface SidebarProps {
    */
   header?: ReactNode | ((state: { collapsed: boolean }) => ReactNode);
   /**
-   * A fixed row UNDER the header, above the modes and quick search: the header (logo, account,
+   * A sticky row UNDER the header, above the modes and quick search: the header (logo, account,
    * collapse control) stays. A conversations sidebar puts its search and tools here.
    */
   toolbar?: ReactNode | ((state: { collapsed: boolean }) => ReactNode);
@@ -386,11 +386,11 @@ export interface SidebarProps {
    * built-in items/tree; disable it when your content owns search.
    */
   content?: ReactNode;
-  /** Observes the destination viewport after Bloom updates its edge fades.
+  /** Observes the whole-sidebar viewport after Bloom updates its edge fades.
    * Useful for loading another page of history. No separate scroll owner.
    */
   onScroll?: ScrollViewProps['onScroll'];
-  /** Additional persistent bottom content, outside destination scrolling.
+  /** Additional sticky bottom content inside the shared sidebar scroll viewport.
    * Receives the rendered state: true in a rail, false in a mobile panel.
    * Existing account/theme/team controls remain; omit account when supplying your own account footer.
    */

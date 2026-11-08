@@ -1,3 +1,4 @@
+import { normalizeAvatarSkinColor } from '../skin-color';
 import {
   type AvatarCharacter,
   avatarCharacterOf,
@@ -133,7 +134,7 @@ describe('updateAvatarCharacter', () => {
     const named = updateAvatarCharacter({ preset: 'blue_beret' }, { color: 'coral' });
     expect(named).toMatchObject({ color: 'coral' });
     const exact = updateAvatarCharacter(named, { bodyColor: '#010203' });
-    expect(exact).toMatchObject({ bodyColor: '#010203' });
+    expect(exact).toMatchObject({ bodyColor: normalizeAvatarSkinColor('#010203') });
     expect(exact).not.toHaveProperty('color');
     const back = updateAvatarCharacter(exact, { color: 'lime' });
     expect(back).toMatchObject({ color: 'lime' });
@@ -214,11 +215,19 @@ describe('characterFromLegacy', () => {
       eyes: 'oval',
       eyewear: 'none',
       accessory: 'bow',
-      bodyColor: '#112233',
+      bodyColor: normalizeAvatarSkinColor('#112233'),
     });
   });
 
   it('refuses what is not an avatar', () => {
     expect(() => characterFromLegacy(undefined)).toThrow('Invalid saved avatar');
   });
+});
+
+it('accepts retired bulb saves but resolves them without the accessory', () => {
+  expect(resolveAvatarCharacter({ preset: 'gus' }).accessory).toBe('none');
+  expect(resolveAvatarCharacter({ preset: 'blue_beret', accessory: 'orb' }).accessory).toBe('none');
+  expect(
+    avatarCharacterOf(resolveAvatarCharacter({ preset: 'gus', accessory: 'orb' })).accessory,
+  ).toBe('none');
 });

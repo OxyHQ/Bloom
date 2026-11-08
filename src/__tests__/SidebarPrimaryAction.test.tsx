@@ -26,25 +26,30 @@ it.each([
   { variant: 'panel' as const, collapsed: false },
   { variant: 'panel' as const, collapsed: true },
   { variant: 'rail' as const },
-])('keeps one named, operable action outside the scrolling destinations: %j', (mode) => {
-  const onPress = jest.fn();
-  const tree = mount({
-    ...mode,
-    testID: 'nav',
-    items,
-    primaryAction: { label: 'New post', icon: RiAddLine, onPress },
-  });
-  const fab = tree.UNSAFE_root.findByType((Fab as unknown as { type: React.ComponentType }).type);
-  expect(fab.props.label).toBe('New post');
-  const button = tree.getByLabelText('New post');
-  expect(tree.getAllByLabelText('New post')).toHaveLength(1);
-  expect(button.props.accessibilityRole).toBe('button');
-  pressHost(button);
-  expect(onPress).toHaveBeenCalledTimes(1);
-  for (let ancestor = button.parent; ancestor; ancestor = ancestor.parent) {
-    expect(ancestor.props.testID).not.toBe('nav-scroll');
-  }
-});
+])(
+  'keeps one named, operable action in the sticky footer of the whole-sidebar scroll: %j',
+  (mode) => {
+    const onPress = jest.fn();
+    const tree = mount({
+      ...mode,
+      testID: 'nav',
+      items,
+      primaryAction: { label: 'New post', icon: RiAddLine, onPress },
+    });
+    const fab = tree.UNSAFE_root.findByType((Fab as unknown as { type: React.ComponentType }).type);
+    expect(fab.props.label).toBe('New post');
+    const button = tree.getByLabelText('New post');
+    expect(tree.getAllByLabelText('New post')).toHaveLength(1);
+    expect(button.props.accessibilityRole).toBe('button');
+    pressHost(button);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    let insideScroll = false;
+    for (let ancestor = button.parent; ancestor; ancestor = ancestor.parent) {
+      if (ancestor.props.testID === 'nav-scroll') insideScroll = true;
+    }
+    expect(insideScroll).toBe(true);
+  },
+);
 
 it.each(['panel', 'rail'] as const)(
   'prevents disabled primary action callbacks in %s',
