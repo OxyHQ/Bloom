@@ -78,24 +78,12 @@
     }
   },
   "scope": "Generated from this package. Version denotes the containing artifact, not proof of registry publication or device acceptance.",
-  "sections": [
-    "Foundations",
-    "Composition",
-    "Components",
-    "Patterns",
-    "Templates",
-    "Labs"
-  ],
+  "sections": ["Foundations", "Composition", "Components", "Patterns", "Templates", "Labs"],
   "tasks": [
     {
       "id": "workspace",
       "title": "Compose a document workspace",
-      "synonyms": [
-        "document",
-        "database",
-        "inspector",
-        "continuous workspace"
-      ],
+      "synonyms": ["document", "database", "inspector", "continuous workspace"],
       "status": "recommended",
       "docs": [
         "docs/compose-layouts.mdx",
@@ -130,9 +118,7 @@
       "imports": [
         {
           "from": "@oxy.so/bloom/app-shell",
-          "symbols": [
-            "AppShell"
-          ],
+          "symbols": ["AppShell"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/app-shell/index.d.ts",
@@ -155,9 +141,7 @@
         },
         {
           "from": "@oxy.so/bloom/page-header",
-          "symbols": [
-            "PageHeader"
-          ],
+          "symbols": ["PageHeader"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/page-header/index.d.ts",
@@ -180,10 +164,7 @@
         },
         {
           "from": "@oxy.so/bloom/screen",
-          "symbols": [
-            "Screen",
-            "ScreenScrollView"
-          ],
+          "symbols": ["Screen", "ScreenScrollView"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/screen/index.d.ts",
@@ -209,18 +190,9 @@
     {
       "id": "canvas",
       "title": "Host a map or interactive canvas",
-      "synonyms": [
-        "map",
-        "board",
-        "canvas",
-        "persistent panel"
-      ],
+      "synonyms": ["map", "board", "canvas", "persistent panel"],
       "status": "variant",
-      "docs": [
-        "docs/compose-layouts.mdx",
-        "docs/screen.mdx",
-        "docs/map-controls.mdx"
-      ],
+      "docs": ["docs/compose-layouts.mdx", "docs/screen.mdx", "docs/map-controls.mdx"],
       "example": "docs/examples/canvas.tsx",
       "story": {
         "id": "blocks-app-shell--modular-map",
@@ -248,9 +220,7 @@
       "imports": [
         {
           "from": "@oxy.so/bloom/app-shell",
-          "symbols": [
-            "AppShell"
-          ],
+          "symbols": ["AppShell"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/app-shell/index.d.ts",
@@ -273,9 +243,7 @@
         },
         {
           "from": "@oxy.so/bloom/page-header",
-          "symbols": [
-            "PageHeader"
-          ],
+          "symbols": ["PageHeader"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/page-header/index.d.ts",
@@ -298,9 +266,7 @@
         },
         {
           "from": "@oxy.so/bloom/screen",
-          "symbols": [
-            "Screen"
-          ],
+          "symbols": ["Screen"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/screen/index.d.ts",
@@ -326,13 +292,7 @@
     {
       "id": "conversation",
       "title": "Compose an agent conversation with a loader",
-      "synonyms": [
-        "chat",
-        "agent",
-        "transcript",
-        "composer",
-        "loader"
-      ],
+      "synonyms": ["chat", "agent", "transcript", "composer", "loader"],
       "status": "recommended",
       "docs": [
         "docs/agent-chat.mdx",
@@ -367,9 +327,7 @@
       "imports": [
         {
           "from": "@oxy.so/bloom/agent-chat",
-          "symbols": [
-            "AgentChat"
-          ],
+          "symbols": ["AgentChat"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/agent-chat/index.d.ts",
@@ -395,18 +353,9 @@
     {
       "id": "master-detail",
       "title": "Compose a list and selected detail",
-      "synonyms": [
-        "inbox",
-        "list",
-        "detail",
-        "selection"
-      ],
+      "synonyms": ["inbox", "list", "detail", "selection"],
       "status": "recommended",
-      "docs": [
-        "docs/compose-layouts.mdx",
-        "docs/app-shell.mdx",
-        "docs/screen.mdx"
-      ],
+      "docs": ["docs/compose-layouts.mdx", "docs/app-shell.mdx", "docs/screen.mdx"],
       "example": "docs/examples/master-detail.tsx",
       "story": {
         "id": "blocks-app-shell--modular-inbox",
@@ -434,9 +383,7 @@
       "imports": [
         {
           "from": "@oxy.so/bloom/app-shell",
-          "symbols": [
-            "AppShell"
-          ],
+          "symbols": ["AppShell"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/app-shell/index.d.ts",
@@ -459,10 +406,7 @@
         },
         {
           "from": "@oxy.so/bloom/screen",
-          "symbols": [
-            "Screen",
-            "ScreenScrollView"
-          ],
+          "symbols": ["Screen", "ScreenScrollView"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/screen/index.d.ts",
@@ -488,13 +432,7 @@
     {
       "id": "discovery",
       "title": "Compose a filtered catalog",
-      "synonyms": [
-        "search",
-        "catalog",
-        "filters",
-        "results",
-        "discovery"
-      ],
+      "synonyms": ["search", "catalog", "filters", "results", "discovery"],
       "status": "recommended",
       "docs": [
         "docs/compose-layouts.mdx",
@@ -529,9 +467,7 @@
       "imports": [
         {
           "from": "@oxy.so/bloom/app-shell",
-          "symbols": [
-            "AppShell"
-          ],
+          "symbols": ["AppShell"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/app-shell/index.d.ts",
@@ -554,9 +490,7 @@
         },
         {
           "from": "@oxy.so/bloom/page-header",
-          "symbols": [
-            "PageHeader"
-          ],
+          "symbols": ["PageHeader"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/page-header/index.d.ts",
@@ -579,10 +513,7 @@
         },
         {
           "from": "@oxy.so/bloom/screen",
-          "symbols": [
-            "Screen",
-            "ScreenScrollView"
-          ],
+          "symbols": ["Screen", "ScreenScrollView"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/screen/index.d.ts",
@@ -608,13 +539,7 @@
     {
       "id": "dashboard",
       "title": "Compose a dashboard or tools screen",
-      "synonyms": [
-        "dashboard",
-        "charts",
-        "metrics",
-        "tools",
-        "console"
-      ],
+      "synonyms": ["dashboard", "charts", "metrics", "tools", "console"],
       "status": "recommended",
       "docs": [
         "docs/compose-layouts.mdx",
@@ -650,9 +575,7 @@
       "imports": [
         {
           "from": "@oxy.so/bloom/app-shell",
-          "symbols": [
-            "AppShell"
-          ],
+          "symbols": ["AppShell"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/app-shell/index.d.ts",
@@ -675,9 +598,7 @@
         },
         {
           "from": "@oxy.so/bloom/grid",
-          "symbols": [
-            "ResponsiveGrid"
-          ],
+          "symbols": ["ResponsiveGrid"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/grid/index.d.ts",
@@ -695,9 +616,7 @@
         },
         {
           "from": "@oxy.so/bloom/page-header",
-          "symbols": [
-            "PageHeader"
-          ],
+          "symbols": ["PageHeader"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/page-header/index.d.ts",
@@ -720,10 +639,7 @@
         },
         {
           "from": "@oxy.so/bloom/screen",
-          "symbols": [
-            "Screen",
-            "ScreenScrollView"
-          ],
+          "symbols": ["Screen", "ScreenScrollView"],
           "conditions": {
             "react-native": {
               "types": "./lib/typescript/module/screen/index.d.ts",

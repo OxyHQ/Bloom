@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';
@@ -122,6 +123,15 @@ function output(file, text) {
     if (read(file) !== text) throw Error(`Stale ${file}; regenerate the task catalog`);
   } else writeFileSync(resolve(root, file), text);
 }
-output('docs/task-catalog.json', `${JSON.stringify(catalog, null, 2)}\n`);
+const catalogJson = execFileSync(
+  process.execPath,
+  [
+    resolve(root, 'node_modules/@biomejs/biome/bin/biome'),
+    'format',
+    '--stdin-file-path=docs/task-catalog.json',
+  ],
+  { cwd: root, input: `${JSON.stringify(catalog, null, 2)}\n`, encoding: 'utf8' },
+);
+output('docs/task-catalog.json', catalogJson);
 output('docs/task-catalog.mdx', `${lines.join('\n')}\n`);
 console.log(`Task catalog: ${tasks.length} tasks for ${pkg.name}@${pkg.version}`);
