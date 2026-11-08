@@ -51,14 +51,21 @@ export function TextFieldInput({
 export function ScrollArea({ children }: { children?: ReactNode }) {
   return <div>{children}</div>;
 }
-const Open = createContext(false);
-export function Popover({ open, children }: PopoverProps) {
-  return <Open.Provider value={Boolean(open)}>{children}</Open.Provider>;
+const Open = createContext<Pick<PopoverProps, 'open' | 'onOpenChange'>>({ open: false });
+export function Popover({ open, onOpenChange, children }: PopoverProps) {
+  return <Open.Provider value={{ open, onOpenChange }}>{children}</Open.Provider>;
 }
 export function PopoverContent({ children, label }: PopoverContentProps) {
-  return useContext(Open)
+  const state = useContext(Open);
+  return state.open
     ? createPortal(
-        <div role="dialog" aria-label={label}>
+        <div
+          role="dialog"
+          aria-label={label}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') state.onOpenChange?.(false);
+          }}
+        >
           {children}
         </div>,
         document.body,

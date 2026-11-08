@@ -99,7 +99,12 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
           ]}
         />
         <KeepFocus owner={controller} style={styles.row}>
-          <BarButton label={labels.apply} theme={theme} onPress={apply}>
+          <BarButton
+            label={labels.apply}
+            theme={theme}
+            textStyle={{ color: theme.accent }}
+            onPress={apply}
+          >
             {labels.apply}
           </BarButton>
           <BarButton label={labels.cancel} theme={theme} onPress={() => closeLink(true)}>
@@ -250,7 +255,7 @@ export function BarButton({
   label,
   active,
   disabled = false,
-  theme: _theme,
+  theme,
   textStyle,
   onPress,
   children,
@@ -267,6 +272,7 @@ export function BarButton({
     <Button
       appearance="plain"
       material="flat"
+      colors={{ background: theme.selection, foreground: theme.text }}
       accessibilityRole="button"
       accessibilityLabel={label}
       numberOfLines={1}
@@ -283,7 +289,13 @@ export function BarButton({
 
 const styles = StyleSheet.create({
   control: { maxWidth: '100%' },
-  row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', minWidth: 0, maxWidth: '100%' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    minWidth: 0,
+    maxWidth: '100%',
+  },
   wrap: { flexWrap: 'wrap', gap: 4, minWidth: 0 },
   glyph: { fontSize: 15 },
   colorGlyph: { fontWeight: '600', borderBottomWidth: 2, lineHeight: 18 },
@@ -291,7 +303,6 @@ const styles = StyleSheet.create({
   paletteLabel: { fontWeight: '600', width: '100%' },
   swatchGlyph: { fontSize: 15, fontWeight: '600' },
   swatch: { width: 18, height: 18, borderRadius: 4, borderWidth: 1 },
-  word: { fontSize: 14 },
   separator: { width: StyleSheet.hairlineWidth, height: 20, marginHorizontal: 4 },
   field: { flexGrow: 1, flexBasis: 160, minWidth: 0 },
 });

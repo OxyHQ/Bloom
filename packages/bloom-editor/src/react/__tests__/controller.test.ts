@@ -225,7 +225,10 @@ it('cancels a link session when its block disappears remotely', () => {
   store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
   controller.openLinkEditor();
   store.reset(
-    documentFromSnapshot([{ type: 'paragraph', text: [{ text: 'replacement' }] }], idFactory('remote')),
+    documentFromSnapshot(
+      [{ type: 'paragraph', text: [{ text: 'replacement' }] }],
+      idFactory('remote'),
+    ),
   );
   expect(controller.applyLinkDraft('https://example.test')).toBe(false);
   expect(controller.ui.get().linking).toBeNull();

@@ -1,0 +1,13 @@
+diff --git a/apps/app/components/page-editor/page-editor.tsx b/apps/app/components/page-editor/page-editor.tsx
+index 3d775e4..774093e 100644
+--- a/apps/app/components/page-editor/page-editor.tsx
++++ b/apps/app/components/page-editor/page-editor.tsx
+@@ -407,7 +407,7 @@ export function PageEditor({
+     onPasteText,
+     confirmRemove,
+     domIdPrefix: PAGE_DOM_PREFIX,
+-    theme,
++    theme: { ...theme, text: 'rgb(72, 13, 47)', accent: 'rgb(143, 31, 92)', selection: 'rgba(143, 31, 92, 0.22)' },
+     labels,
+     readOnly,
+   };

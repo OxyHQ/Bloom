@@ -961,3 +961,38 @@ describe('owned formatting focus', () => {
     expect(store.selection).toEqual({ kind: 'text', blockId: 'b1', start: 0, end: 6 });
   });
 });
+
+it('ends formatting dismissal when the caret moves, while Escape restoration stays dismissed', async () => {
+  const store = makeStore(PARAGRAPHS);
+  const controller = new EditorController(store);
+  const container = mount(<BlockEditor store={store} controller={controller} slashItems={[]} />);
+  const input = container.querySelector('[contenteditable]') as HTMLElement;
+  await act(async () => {
+    input.focus();
+    store.setSelection({ kind: 'text', blockId: 'b1', start: 0, end: 5 });
+  });
+  const bold = document.querySelector('[aria-label="Bold"]') as HTMLElement;
+  await act(async () => bold.focus());
+  act(() => bold.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+  await act(async () => {});
+  expect(document.querySelector('[aria-label="Formatting"]')).toBeNull();
+  await act(async () => store.setSelection({ kind: 'text', blockId: 'b1', start: 8, end: 8 }));
+  await act(async () => store.setSelection({ kind: 'text', blockId: 'b1', start: 0, end: 5 }));
+  expect(document.querySelector('[aria-label="Formatting"]')).not.toBeNull();
+});
+
+it('does not release the new block after a blurred block unmounts with a pending microtask', async () => {
+  const store = makeStore(PARAGRAPHS);
+  const controller = new EditorController(store);
+  const container = mount(<BlockEditor store={store} controller={controller} slashItems={[]} />);
+  const inputs = container.querySelectorAll<HTMLElement>('[contenteditable]');
+  act(() => inputs[0]?.focus());
+  await act(async () => {
+    inputs[1]?.focus();
+    store.reset(
+      documentFromSnapshot([{ type: 'paragraph', text: [{ text: 'Second' }] }], () => 'b2'),
+    );
+  });
+  expect(controller.ui.get().focused).toBe('b2');
+  expect(document.activeElement).toBe(inputs[1]);
+});

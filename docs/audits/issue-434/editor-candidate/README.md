@@ -1,59 +1,66 @@
 # Editor overlay candidate
 
-This is a source-candidate checkpoint, not a published-package acceptance pass.
-Nilo source is cec942f; Bloom/editor source is 3d83278b. The consumer uses
-an isolated packed Bloom mirror (virtual-anchor API) and a packed editor tarball
-(SHA256 0fba69170149c09afc5e109de2ad0312d5b2ebfe972277fb0fc839a1ef0a1114).
-The reported package versions remain 17.22.0/0.7.2 because this is pre-release
-source. No published package or Bun cache files were overwritten.
+These are source-candidate checks, not published-package acceptance. Nilo source
+is cec942f. The consumer uses an isolated packed Bloom mirror with the public
+virtual-anchor API (#678) and explicit Button interaction pairs (#680), plus a
+packed editor tarball. Reported package versions remain 17.22.0/0.7.2 until the
+coordinated release. No published package or Bun cache files were overwritten.
 
-Chromium 1248, Nilo Metro 8130, synthetic offline document and intercepted
-account/API requests. The published-package pilot on Metro 8128 is separate.
+Chromium 1248, Nilo Metro 8130, synthetic offline document and intercepted account/
+API requests. Published-package pilot Metro 8128 remains separate. Metro8130 was
+restarted after an atomic package swap left a negative resolution cache; the
+exported file existed on disk. The final run uses the refreshed packed mirror.
 
-Validated: keyboard entry and Tab retain selection/overlay; changing selection
-cancels an Apply draft; fresh Apply targets the selected text; an existing link
-is recognized at a collapsed caret; Ctrl+K preloads its URL; invalid URLs remain
-correctable; editing a link undoes in one step; Escape restores selection;
-focusing an unrelated field cancels the draft without stealing focus. The
-palette fits at 320/390 px; coarse pointer targets are at least 44 by 44 px.
-Ordinary Open calls application routing exactly once. Ctrl-click and middle-click
-open the real href through browser behavior without calling application routing.
-The navigation destination is local, with no external navigation required.
+## Results
 
-Runner: `scripts/verify-editor-overlays-nilo.mjs`. Set NILO_ROOT, MENTION_ROOT
-(the installed Playwright runner), NILO_ORIGIN, CHROME_PATH and BASELINE_OUTPUT;
-set EDITOR_POINTER=coarse for touch geometry. Context page events observe native
-background tabs: these do not emit the opener's popup event in this Chromium
-build. A bare HTML anchor also bypasses context.route on its first Ctrl/middle
-navigation, so fake external domains are unsuitable destinations for that check.
+- `fine/`: keyboard entry, Tab/Shift+Tab, Space/Enter toggle state and retained
+  selection; stable Apply/cancellation on a changed range; existing-link editing
+  at a collapsed caret; invalid URL correction; single-step undo; Escape and
+  unrelated focus; Remove without navigation; draft identity/value through real
+  container scroll and 390→320→390 resize.
+- `coarse/`: the same interactions plus 20 palette targets at least 44×44 px,
+  fully inside the panel/viewport at 320 and390 px.
+- `long-labels/`: inherited lg and German labels. Before: controls444.7/441.6 px
+  wide extend to x917.3 in viewport320. After: shared single-line label contract
+  fits available width with ellipsis and complete accessible names;44 px height,
+  16 px text retained. Full interaction runner passes.
+- `dialog/`: shared Dialog owns the editor. The inner formatting overlay can
+  close with Escape and restore selection while the parent dialog stays open.
+- `custom-theme/`: editor foreground rgb(72,13,47), accent rgb(143,31,92), and
+  selection rgba(143,31,92,0.22) differ from the provider. Actual computed hover/
+  pressed foreground and background, Apply and Open accents match those values.
+  This final full run also reproduces/fixes selecting the same range after Escape:
+  dismissal lasts only for the current selection session, not those coordinates
+  forever. `reselect-before.json` records the original failure.
 
-Still pending: long translated labels/inherited sizes, nested editor scrolling
-and dialog placement, additional keyboard activation and Remove checks, published
-API/editor dependency gates, and physical Android. iPhone is deferred by request.
+Ordinary Open invokes application routing exactly once. Ctrl-click and middle-click
+open the real href through browser behavior without invoking application routing.
+Destinations are local; no external navigation is required. Context page events
+observe native background tabs, which do not emit the opener's popup event here.
+A minimal HTML anchor also bypasses context.route on its first Ctrl/middle navigation
+in this Chromium build; fake external domains are unsuitable for that assertion.
+No browser errors or unexpected API requests occurred in completed runs.
 
+## Reproduction and provenance
 
-Follow-up: long translated labels at inherited `lg` initially measured 444.7 and
-441.6 px, overflowing the 320 px viewport to x917.3. FormatBar now constrains
-its rows/controls to the available width and uses the shared single-line label
-contract (ellipsis, complete accessible name). It keeps 44 px height and 16 px
-text at lg. `long-labels/fixture.patch` is an isolated Nilo test fixture, restored
-after capture; use EDITOR_LONG_LABELS=1 with that fixture. The complete interaction
-runner passes in this configuration, including Remove without navigation, undo,
-and preserving the same draft input/value through real container scroll and
-390→320→390 resize. Packed follow-up SHA256:
-8105afbf247de30fae57375a47b2b8fb32d6477af65db496883d8fa3464b6ae3.
-All 20 editor suites / 266 tests and editor TypeScript pass.
+Run `scripts/verify-editor-overlays-nilo.mjs` with NILO_ROOT, MENTION_ROOT (installed
+Playwright runner), NILO_ORIGIN, CHROME_PATH and BASELINE_OUTPUT. EDITOR_POINTER=coarse
+checks touch geometry. The isolated fixture patches in long-labels/, dialog/ and
+custom-theme/ enable EDITOR_LONG_LABELS=1, EDITOR_DIALOG=1 or EDITOR_CUSTOM_THEME=1
+respectively; each fixture was restored after capture. They are not product changes.
 
-Remaining scope is dialog stacking, additional keyboard activation, final published
-API/editor dependency gates, and physical Android. Long labels, inherited lg and
-real container scroll are now covered by this source candidate.
+Packed editor SHA256 by capture:
+- fine/coarse initial:0fba69170149c09afc5e109de2ad0312d5b2ebfe972277fb0fc839a1ef0a1114
+- long-labels/dialog:8105afbf247de30fae57375a47b2b8fb32d6477af65db496883d8fa3464b6ae3
+- custom-theme/final session fix:f06b0e5d9250050f19b5b9dd2d7a375efd5d5ba686280084d530481041981f54
 
+20 editor suites/268 tests, editor TypeScript and build pass. Regressions cover
+remote replacement/deletion, read-only invalidation, control autofocus, session
+re-entry and a pending blur microtask when its block unmounts. Shared Button pair
+checks cover light/dark and all3 material modes; transparent/default delegation
+is unchanged. Root build/package/freshness pass for the packaged source candidate.
 
-Dialog follow-up: the same interaction sequence passes with BlockEditor hosted
-inside shared Dialog. Escape dismisses the formatting overlay and restores the
-selection while the parent dialog remains open. Use `dialog/fixture.patch` and
-EDITOR_DIALOG=1; this fixture is restored after capture. The final fine-pointer
-run also checks Shift+Tab and toggles Bold twice each through Space and Enter,
-asserting aria-pressed and retained text selection. No browser errors or unexpected
-requests were observed. Remaining acceptance gates: published dependency and
-consumer validation, plus physical Android (iPhone deferred).
+Remaining acceptance: integrate/publish shared APIs, deduplicate their temporary
+source copies, declare the editor's actual minimum published Bloom version, restore
+the local mirror before final published-package consumer checks, and validate on
+physical Android. iPhone is deferred by user request. This does not close #434.

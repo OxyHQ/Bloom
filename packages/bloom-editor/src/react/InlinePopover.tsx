@@ -25,6 +25,7 @@ export function InlinePopover({ target }: { target: InlineTarget }) {
       {target.kind === 'link' ? (
         <LinkButton
           href={target.href}
+          textStyle={{ color: theme.accent }}
           accessibilityLabel={labels.open}
           onPress={(event) => {
             if (Platform.OS === 'web') {

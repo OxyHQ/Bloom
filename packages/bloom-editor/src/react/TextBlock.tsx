@@ -115,7 +115,7 @@ export function TextBlock({ block }: { block: Block }) {
         if (host?.contains(target) || controller.ownsControlFocus(target)) return;
         setFocused(false);
         if (ui.get().focused === id) ui.set({ focused: null });
-        controller.cancelLinkEditor();
+        if (ui.get().linking === id) controller.cancelLinkEditor();
       });
     };
     document.addEventListener('focusin', outside);
@@ -656,6 +656,13 @@ export function TextBlock({ block }: { block: Block }) {
     [target?.start, target?.end],
   );
   const rangeKey = target ? `${target.start}:${target.end}` : null;
+  useEffect(() => {
+    // Escape suppresses only this selection session. Its own focus restoration
+    // keeps the same range; moving the caret or leaving the editor ends it.
+    if (!focused || (dismissedRange !== null && dismissedRange !== rangeKey)) {
+      setDismissedRange(null);
+    }
+  }, [focused, rangeKey, dismissedRange]);
   const showInline = Boolean(
     inlineTarget && focused && !slashOpen && !readOnly && rangeKey !== dismissedRange,
   );
@@ -764,6 +771,7 @@ export function TextBlock({ block }: { block: Block }) {
           onBlur={() => {
             focusedRef.current = false;
             const release = () => {
+              if (!access.current || focusedRef.current) return;
               if (Platform.OS === 'web' && controller.ownsControlFocus(document.activeElement))
                 return;
               setFocused(false);
