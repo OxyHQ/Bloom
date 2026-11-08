@@ -1,0 +1,26 @@
+[
+  {
+    "engine": "chromium",
+    "count": 96,
+    "canonicalMinimum": 4.643456876476998,
+    "largeMinimum": 4.089362018835718,
+    "worsened": 0,
+    "changedForeground": 92
+  },
+  {
+    "engine": "webkit",
+    "count": 96,
+    "canonicalMinimum": 4.618117327016002,
+    "largeMinimum": 4.618117327016002,
+    "worsened": 0,
+    "changedForeground": 92
+  },
+  {
+    "engine": "firefox",
+    "count": 96,
+    "canonicalMinimum": 4.618117327016002,
+    "largeMinimum": 4.618117327016002,
+    "worsened": 0,
+    "changedForeground": 92
+  }
+]

@@ -1,7 +1,12 @@
-import { parseRgba } from '../theme/color-utils';
-import { quietTextOver, relativeLuminance } from '../styles/color-contrast';
-import { filterColorBounds, parseLook, type ColorBounds, type RGB } from './filter-color';
-import { materialFilter, maximumEdgeGain, SURFACE_LOOKS } from './optics';
+import { parseRgba } from "../theme/color-utils";
+import { quietTextOver, relativeLuminance } from "../styles/color-contrast";
+import {
+  filterColorBounds,
+  parseLook,
+  type ColorBounds,
+  type RGB,
+} from "./filter-color";
+import { materialFilter, maximumEdgeGain, SURFACE_LOOKS } from "./optics";
 
 /** Unknown sampler input includes every sRGB pixel, including outside a parent/rim. */
 export const UNKNOWN_BACKING: ColorBounds = { min: [0, 0, 0], max: [1, 1, 1] };
@@ -17,16 +22,24 @@ export function solidBacking(fill: string): ColorBounds | undefined {
   return { min: rgb, max: rgb };
 }
 
-/** Filtered body; an explicit interior inset includes the maximum edge gain in that region. */
+/** Body bounds include functioning and omitted backdrop effects; inset adds regional edge gain. */
 export function surfaceBodyBounds(
   tint: string,
-  mode: 'light' | 'dark',
+  mode: "light" | "dark",
   sampler: ColorBounds = UNKNOWN_BACKING,
   interiorInset = Infinity,
 ): ColorBounds | undefined {
   const color = parseRgba(tint);
   if (!color || color.a <= 0) return undefined;
   const filtered = filterColorBounds(sampler, looks[mode]);
+  // CSS support does not prove a renderer actually applies backdrop-filter.
+  // Enclose both outputs without user-agent detection or changing material paint.
+  const lower = filtered.min.map((value, index) =>
+    Math.min(value, sampler.min[index]!),
+  ) as RGB;
+  const upper = filtered.max.map((value, index) =>
+    Math.max(value, sampler.max[index]!),
+  ) as RGB;
   const channels = [color.r, color.g, color.b];
   const edgeGain = Number.isFinite(interiorInset)
     ? maximumEdgeGain(SURFACE_LOOKS[mode].rim, Math.max(0, interiorInset))
@@ -37,7 +50,8 @@ export function surfaceBodyBounds(
         0,
         Math.min(
           1,
-          ((channels[index]! / 255) * color.a + back[index]! * (1 - color.a)) * (1 + gain) +
+          ((channels[index]! / 255) * color.a + back[index]! * (1 - color.a)) *
+            (1 + gain) +
             slack / 255,
         ),
       );
@@ -46,16 +60,20 @@ export function surfaceBodyBounds(
   // One output-channel unit covers the measured Chromium body quantization.
   // Other engines and complete edge paint still require their own pixel checks.
   return {
-    min: composite(filtered.min, -1),
-    max: composite(filtered.max, edgeGain > 0 ? 2 : 1, edgeGain),
+    min: composite(lower, -1),
+    max: composite(upper, edgeGain > 0 ? 2 : 1, edgeGain),
   };
 }
 
 const cssColor = (rgb: RGB, upper: boolean): string =>
-  `rgb(${rgb.map((v) => (upper ? Math.ceil(v * 255) : Math.floor(v * 255))).join(', ')})`;
+  `rgb(${rgb.map((v) => (upper ? Math.ceil(v * 255) : Math.floor(v * 255))).join(", ")})`;
 
 /** Semantic quiet text with an explicit failure result, including interval interiors. */
-export function quietTextOnBody(bounds: ColorBounds, text: string, floor: number) {
+export function quietTextOnBody(
+  bounds: ColorBounds,
+  text: string,
+  floor: number,
+) {
   const lower = cssColor(bounds.min, false);
   const upper = cssColor(bounds.max, true);
   const color = quietTextOver([lower, upper], text, floor);
