@@ -1,0 +1,18 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" source(none);
+@import "@oxy.so/bloom/design-tokens/theme.css";
+@source "./src/**/*.{ts,tsx}";
+@source "./node_modules/@oxy.so/bloom/lib/module/**/*.js";
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}

@@ -63,6 +63,8 @@ Search: map, board, canvas, persistent panel. Status: **variant**.
 Screen scroll=none reserves header/footer around a canvas with its own gestures. MapControls provides shared map controls; the application owns the engine.
 
 ```tsx
+import { MapControls, MapLayerPicker } from '@oxy.so/bloom/map-controls';
+import { Text } from '@oxy.so/bloom/typography';
 import { AppShell } from '@oxy.so/bloom/app-shell';
 import { PageHeader } from '@oxy.so/bloom/page-header';
 import { Screen } from '@oxy.so/bloom/screen';
@@ -73,7 +75,7 @@ Runnable component: [canvas.tsx](./examples/canvas.tsx). Story: `blocks-app-shel
 Canonical guides: [compose-layouts](./compose-layouts.mdx), [screen](./screen.mdx), [map-controls](./map-controls.mdx).
 
 - **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
-- **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
+- **scroll:** Screen scroll=none reserves the viewport; the domain canvas owns its gestures. MapControls supplies callback-driven controls, not a scroller or map engine.
 - **surface:** The shell/panel and shared controls own their material. Do not add a second panel surface.
 - **focus:** Use shared controls and overlay owners; do not move focus as a layout side effect.
 - **motion:** Shared owners animate; applications supply discrete state rather than per-frame React updates.
@@ -102,7 +104,7 @@ Runnable component: [conversation.tsx](./examples/conversation.tsx). Story: `age
 Canonical guides: [agent-chat](./agent-chat.mdx), [ai-overview](./ai-overview.mdx), [composer-loader](./composer-loader.mdx), [chat-composer](./chat-composer.mdx).
 
 - **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
-- **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
+- **scroll:** AgentChat already owns its shell, screens and transcript scroller. Mount it directly in the bounded host; do not add another AppShell or ScrollView.
 - **surface:** The shell/panel and shared controls own their material. Do not add a second panel surface.
 - **focus:** Use shared controls and overlay owners; do not move focus as a layout side effect.
 - **motion:** Shared owners animate; applications supply discrete state rather than per-frame React updates.

@@ -4183,7 +4183,8 @@
     "!android/src/predictiveTest",
     "docs/AGENTS.md",
     "docs/task-catalog.json",
-    "docs/examples/*.tsx"
+    "docs/examples/*.tsx",
+    "docs/examples/vite"
   ],
   "workspaces": [
     "packages/*"

@@ -1,146 +1,109 @@
 ---
 title: Getting started
-description: Install Bloom and wrap your app with the theme and dialog providers.
+description: Install Bloom, configure the host and mount BloomProvider.
 order: 1
 ---
 
 # Getting started
 
-## 1. Install
+## Install for your host
 
 ```sh
 bun add @oxy.so/bloom
 ```
 
-Install the peer dependencies. The same set covers native and web — Bloom's
-overlays and its toast engine run on react-native-web:
+Select peer versions compatible with your host's React Native and Expo SDK; the
+package's `peerDependencies` and `peerDependenciesMeta` distinguish required and
+optional packages. A permissive peer range is not proof that every combination
+has been tested. Do not install arbitrary latest native peers into an older SDK.
 
-```sh
-bun add react-native-gesture-handler react-native-reanimated react-native-safe-area-context react-native-svg
-```
+- **Expo / Metro:** use the SDK-compatible dependencies and the app-preset setup below.
+- **Vite web:** use the complete [Vite host recipe](./vite.mdx), including dependency
+  transforms. Typechecking alone cannot validate worklets or CSS.
 
-## 2. Wrap your app root
+## Mount the root provider
 
 ```tsx
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BloomThemeProvider, SurfaceProvider } from '@oxy.so/bloom';
+import { BloomProvider } from '@oxy.so/bloom/provider';
+import { Button } from '@oxy.so/bloom/button';
 
 export default function Root() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <BloomThemeProvider mode="system" colorPreset="teal">
-        <SurfaceProvider>
-          <App />
-        </SurfaceProvider>
-      </BloomThemeProvider>
-    </GestureHandlerRootView>
+    <BloomProvider mode="system" colorPreset="teal" locale="en">
+      <Button onPress={() => console.info('Pressed')}>Continue</Button>
+    </BloomProvider>
   );
 }
 ```
 
-- `BloomThemeProvider` is required — every Bloom component reads from it.
-- `SurfaceProvider` (or a bare `<SurfaceHost />`) is required only if you use the imperative surfaces — `alert()`, `confirm()`, `prompt()`, `surfaces.present()`. Without it, `<Dialog>` still works on its own.
-- `GestureHandlerRootView` is required on native for any sheet-based component.
+`BloomProvider` owns theme, locale, preferences and screen/scroll contexts. Mount
+it once above routes; pass the router adapter explicitly when using restoration.
+`BloomThemeProvider` is a lower-level theme primitive, not the application root.
+The [provider contract](./provider.mdx) describes ownership and initialization
+order, including early loading screens.
 
-<Callout variant="warning" title="Web setup">
-Inject the CSS animations into your global styles once:
+Visual and platform hosts are separate from that context provider:
 
-```tsx
-import { BLOOM_DIALOG_CSS } from '@oxy.so/bloom/dialog';
+- Native apps supply `GestureHandlerRootView`, safe-area and keyboard hosts as
+  required by their SDK. Follow [Provider](./provider.mdx) and [Portal](./portal.mdx)
+  for native `PortalProvider`/outlet placement and inert app content.
+- For imperative `alert`, `confirm`, `prompt` or `surfaces.present`, mount
+  `SurfaceProvider` **inside** `BloomProvider`; it provides the default surface
+  host. A standalone declarative `Dialog` does not require it.
+- For toasts, mount one `ToastOutlet` inside `BloomProvider`. Follow
+  [Toast](./toast.mdx) and [Surfaces](./surfaces.mdx) for the complete examples.
+- `OxyProvider` from Services already supplies its documented hosts/outlets.
+  Do not duplicate them around each route.
 
-// In your HTML head or global CSS file:
-<style>{BLOOM_DIALOG_CSS}</style>
-```
-</Callout>
+## Expo / Metro CSS
 
-## 3. Use a component
-
-```tsx
-import { Button } from '@oxy.so/bloom/button';
-import { toast } from '@oxy.so/bloom';
-
-export function Hello() {
-  return <Button onPress={() => toast.success('Hello, Bloom!')}>Greet</Button>;
-}
-```
-
-## If you build with Vite (or any ESM web bundler)
-
-Bloom reaches its **optional** peers through a `require()` that Metro marks
-optional. Off Metro that load does not deliver the package **even when it is
-installed** — and the reason depends on your bundler, which is why this defect
-keeps being diagnosed wrongly:
-
-| bundler | what the guard sees | what happens |
-| --- | --- | --- |
-| Rollup / Vite (classic) | no `require` | the guard degrades |
-| esbuild | a shim that THROWS | the guard passes, the call fails inside the `try` |
-| Vite 8 / Rolldown | `__require`, a Proxy-backed **function** | the guard passes, the call throws `Calling 'require' for "…" in an environment that doesn't expose the 'require' function` |
-
-**Do not test this with `typeof require` in your console.** Measured in a real
-Rolldown app: the console answers `"undefined"` while the COMPILED guard is
-consulting an imported `__require` that is a function — so the one-line check
-reports the first row while the bundle is in the third. It does not distinguish
-the cases, it confuses them. Read the dev warning's `Reason:` instead; it is the
-bundler's own message.
-
-Metro is unaffected.
-
-**On web you lose one thing: `expo-video`.** `MediaSurface` loads it on every
-platform, so a web app that flies video without handing it over gets the poster.
-That is what `provideExpoVideo` below is for.
-
-**The connection toasts are NOT affected**, though this guide said they were
-until it was checked: `./connection-status` ships a web implementation
-(`ConnectionStatusToasts.web.tsx`) built on `navigator.onLine` and the
-`online`/`offline` events, so `loadNetInfo` is never called in a browser and
-netinfo need not be installed at all.
-
-**The other optional peers are NOT affected on web**, because their callers
-return before the `require` is ever reached:
-
-| peer | why web never reaches it |
-| --- | --- |
-| `@react-native-community/netinfo` | the family has a WEB FORK that uses `navigator.onLine` (`connection-status/index.web.ts` → `ConnectionStatusToasts.web.tsx`) |
-| `expo-router` (adaptive colours) | `getAdaptiveColors` returns `null` unless `Platform.OS` is `android`/`ios` (`theme/adaptive-colors.ts:143-145`) |
-| `nativewind` (scoped presets) | both callers `return` on web (`theme/color-scope/style-builder.ts:159, :192`) |
-| `expo-haptics` | `useHaptics` returns on web (`hooks/use-haptics.tsx:47`) |
-| `expo-clipboard` | `writeClipboardText` writes `navigator.clipboard` first (`hooks/clipboard.ts`) |
-| `expo-web-browser` | `openExternal` opens a tab and returns on web (`hooks/link-activation.ts`) |
-
-Note the two different reasons: a platform guard inside the file, and a whole
-`.web` fork of the family.
-
-> **Before claiming what a consumer loses, check which platform variant their
-> bundler resolves.** This guide named the connection toasts as a casualty
-> because the `.tsx` was read and the `.web.tsx` beside it was not — and the
-> `.web` one had solved the problem months earlier. Reading the source file is
-> not reading the file that runs; the two differ on exactly the axis this
-> section is about. Confirm it from the loaded page
-> (`SomeComponent.toString()`) or from the chunks, not from the repository.
-
-If scoped NativeWind presets are wrong in your web app, this is not the cause —
-look at the CSS-variable pipeline instead.
-
-The one that matters on web is handed over in a line, and it works on any
-bundler:
-
-```ts
-import * as ExpoVideo from 'expo-video';
-import { provideExpoVideo } from '@oxy.so/bloom/media-flight';
-
-provideExpoVideo(ExpoVideo);   // otherwise video silently shows only its poster
-```
-
-`provideNetInfo` exists in `@oxy.so/bloom/connection-status` for the same
-purpose, but a browser does not need it — see above.
-
-## Recommended layout
-
-If your app supports both light and dark themes:
+Import this stylesheet first in `app/_layout.tsx`, before component imports:
 
 ```tsx
-<BloomThemeProvider mode="system" colorPreset="teal">
+import '../global.css';
 ```
 
-`mode="system"` follows the OS preference. `colorPreset` picks one of the 10 named palettes — see [Theme](/docs/bloom/main/theme) for the full list.
+```css
+/* global.css */
+@import '@oxy.so/app-preset/css/base.css';
+@source './app/**/*.{ts,tsx}';
+@source './components/**/*.{ts,tsx}';
+@source './node_modules/@oxy.so/bloom/lib/module/**/*.js';
+/* If the application installs Services: */
+@source './node_modules/@oxy.so/services/lib/module/**/*.js';
+```
+
+Paths are relative to the stylesheet; adjust for a monorepo's actual installed
+package locations. Add the app-root PostCSS configuration (and install `@tailwindcss/postcss`):
+
+```js
+// postcss.config.mjs
+export default { plugins: { '@tailwindcss/postcss': {} } };
+```
+
+Use app-preset's matching Metro configuration. `create-oxy-app` supplies the host wiring. React Native Web resets can
+otherwise leave colors working while flex direction, gaps and sizes are wrong.
+For a standalone Vite host, use its [own CSS recipe](./vite.mdx), not the Expo
+preset's bundler configuration.
+
+Web components adopt their required animation/layout styles automatically. **Do
+not inject `BLOOM_DIALOG_CSS` or duplicate inline component style tags.** For SSR,
+opt in to `BloomProvider ssrStyles` and follow the host nonce/CSP contract in
+[Provider](./provider.mdx); this is distinct from client-side adoption.
+
+## Fonts and the viewport
+
+`BloomProvider` loads the packaged fonts by default; no separate font package or
+manual `FontLoader` is needed. Preserve `.woff2` asset URLs in web builds. SSR
+hosts can preload them with `BloomFontHead` in the document head; see
+[Fonts](./fonts.mdx) for the measured asset and platform-resolution hazards.
+
+Choose a bounded application viewport or a document-scrolling host deliberately.
+A bounded web root needs an actual height and `min-height: 0` through its flex
+chain. `AppShell`/`Screen` then own the scroll region; adding another route
+`ScrollView` changes that ownership. See [Compose layouts](./compose-layouts.mdx)
+and the runnable [Vite example](./vite.mdx).
+
+Use the [task catalog](./task-catalog.mdx) to select layouts and controls. For
+optional peers loaded off Metro, retain the explicit adapters described in
+[Optional peers in web bundlers](./web-optional-peers.mdx).
