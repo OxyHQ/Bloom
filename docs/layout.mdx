@@ -359,6 +359,21 @@ interop, without requiring a consumer JSX transform. It forwards the caller's
 scroll/layout/content-size callbacks. It adds no padding or background. Keep
 existing top/bottom edge clearance in the content container.
 
+On web, horizontal viewports reveal the whole focused control after browser
+focus scrolling and when the viewport narrows. This belongs to `ScrollViewport`,
+shared by neutral and web `ScrollArea` imports, including `Toolbar`. It adjusts
+only that owner's horizontal offset, works with negative RTL offsets and uses
+instant scrolling under either motion preference. Oversized controls spanning
+both edges retain their current caret view. Native focus behavior is unchanged.
+
+The DOM node returned by RNW has a shadowed `scrollTo({ x, y })`; calling it
+with DOM `{ left, top }` resets the offset to zero. The focus owner calls the
+DOM prototype method instead. Do not substitute `scrollIntoView`, which can
+move outer panels or the document. `scripts/verify-horizontal-focus.mjs` checks
+settled keyboard focus, real wheel input, resize, RTL, reduced motion and nested
+scroll owners in the `KeyboardReveal` story.
+
+
 ```tsx
 <ScrollMetricsProvider>
   <PageHeader title="Conversation" placement="overlay" scrim="auto" />
