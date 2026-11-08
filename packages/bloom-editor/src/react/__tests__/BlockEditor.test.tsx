@@ -918,3 +918,46 @@ describe('surface keyboard ownership after deletion', () => {
     expect(undoB).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('owned formatting focus', () => {
+  it('keeps a formatting control mounted across blur, then releases an unrelated field', async () => {
+    const store = makeStore(PARAGRAPHS);
+    const controller = new EditorController(store);
+    const container = mount(<BlockEditor store={store} controller={controller} slashItems={[]} />);
+    const input = container.querySelector('[contenteditable]') as HTMLElement;
+    await act(async () => {
+      input.focus();
+      store.setSelection({ kind: 'text', blockId: 'b1', start: 0, end: 5 });
+    });
+    const bold = document.querySelector('[aria-label="Bold"]') as HTMLButtonElement;
+    expect(bold).not.toBeNull();
+    await act(async () => bold.focus());
+    expect(bold.isConnected).toBe(true);
+    expect(document.activeElement).toBe(bold);
+    const outside = document.body.appendChild(document.createElement('input'));
+    await act(async () => outside.focus());
+    expect(document.activeElement).toBe(outside);
+    expect(document.querySelector('[aria-label="Formatting"]')).toBeNull();
+  });
+
+  it('retains an existing collapsed-caret link form when its field autofocuses during commit', async () => {
+    const store = makeStore([
+      { type: 'paragraph', text: [{ text: 'linked', link: 'https://example.test' }] },
+    ]);
+    const controller = new EditorController(store);
+    const container = mount(<BlockEditor store={store} controller={controller} slashItems={[]} />);
+    const input = container.querySelector('[contenteditable]') as HTMLElement;
+    await act(async () => {
+      input.focus();
+      store.setSelection({ kind: 'text', blockId: 'b1', start: 2, end: 2 });
+    });
+    await act(async () => {
+      expect(controller.openLinkEditor()).toBe(true);
+    });
+    const field = document.querySelector('input[aria-label="Link"]') as HTMLInputElement;
+    expect(field).not.toBeNull();
+    expect(field.value).toBe('https://example.test');
+    expect(document.activeElement).toBe(field);
+    expect(store.selection).toEqual({ kind: 'text', blockId: 'b1', start: 0, end: 6 });
+  });
+});

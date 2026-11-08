@@ -104,15 +104,25 @@ export function TextBlock({ block }: { block: Block }) {
   const [dismissedRange, setDismissedRange] = useState<string | null>(null);
   useEffect(() => {
     if (!focused || Platform.OS !== 'web') return;
-    const outside = (event: FocusEvent) => {
-      const host = hostRef.current as unknown as HTMLElement | null;
-      if (host?.contains(event.target as Node) || controller.ownsControlFocus(event.target)) return;
-      setFocused(false);
-      if (ui.get().focused === id) ui.set({ focused: null });
-      controller.cancelLinkEditor();
+    let active = true;
+    const outside = () => {
+      // A newly mounted URL field may autofocus before its parent ref is
+      // attached. Resolve ownership after the commit, against current focus.
+      queueMicrotask(() => {
+        if (!active) return;
+        const target = document.activeElement;
+        const host = hostRef.current as unknown as HTMLElement | null;
+        if (host?.contains(target) || controller.ownsControlFocus(target)) return;
+        setFocused(false);
+        if (ui.get().focused === id) ui.set({ focused: null });
+        controller.cancelLinkEditor();
+      });
     };
     document.addEventListener('focusin', outside);
-    return () => document.removeEventListener('focusin', outside);
+    return () => {
+      active = false;
+      document.removeEventListener('focusin', outside);
+    };
   }, [focused, controller, ui, id]);
   const suggestionId = `bloom-editor-suggestions-${useId().replace(/:/g, '')}`;
   const access = useRef<{ store: typeof store; readOnly: boolean } | null>(null);
@@ -189,6 +199,13 @@ export function TextBlock({ block }: { block: Block }) {
     if (hasFocus() && local.start === target.start && local.end === target.end) return;
     const wanted = { start: target.start, end: target.end };
     selectionRef.current = wanted;
+    // A command expanding an existing link may commit in the same render as
+    // its URL field. Retain the target without taking focus back from controls.
+    if (
+      ui.get().linking === id ||
+      (Platform.OS === 'web' && controller.ownsControlFocus(document.activeElement))
+    )
+      return;
     let frame = 0;
     let cancelled = false;
     // A block created by this same edit may not have its editing surface
@@ -210,7 +227,7 @@ export function TextBlock({ block }: { block: Block }) {
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [target, readOnly, hasFocus]);
+  }, [target, readOnly, hasFocus, controller, ui, id]);
 
   const run = useCallback(
     (command: (ctx: CommandContext) => Transaction | null) => store.run(command),
