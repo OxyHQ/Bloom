@@ -127,6 +127,7 @@ function ComposerLoaderComponent({
   const theme = useTheme();
   const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
   const [box, setBox] = useState({ w: 0, h: 0 });
+  const [androidSoftwareFallback, setAndroidSoftwareFallback] = useState(false);
   const measured = box.w > 0 && box.h > 0;
   const { moving, animate } = useLoaderMotion(active, measured && !paused);
 
@@ -173,9 +174,11 @@ function ComposerLoaderComponent({
     time.value += (frame.timeSincePreviousFrame ?? 0) / 1000;
   }, false);
   useEffect(() => {
-    clock.setActive(moving);
+    // A software-only Android host cannot sustain the animated SVG blur. Keep
+    // the current light visible, but freeze its owner clock after adapter handoff.
+    clock.setActive(moving && !androidSoftwareFallback);
     return () => clock.setActive(false);
-  }, [moving, clock]);
+  }, [moving, clock, androidSoftwareFallback]);
 
   const fade = useSharedValue(active ? 1 : 0);
   useEffect(() => {
@@ -233,6 +236,7 @@ function ComposerLoaderComponent({
             intensity={intensity}
             width={box.w}
             height={box.h}
+            onUnsupported={() => setAndroidSoftwareFallback(true)}
           >
             <Svg
               width="100%"

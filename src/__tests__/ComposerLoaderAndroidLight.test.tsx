@@ -44,6 +44,7 @@ const props = {
   intensity: 0.7,
   width: 320,
   height: 52,
+  onUnsupported: jest.fn(),
 };
 beforeEach(() => {
   mockPlatform.OS = 'android';
@@ -84,6 +85,7 @@ it('hands off to SVG after software Canvas without mutating the owner clock', ()
   act(() => native.props.onUnsupported());
   expect(tree.toJSON()).toBe('svg fallback');
   expect(time.value).toBe(3.25);
+  expect(props.onUnsupported).toHaveBeenCalledTimes(1);
   tree.rerender(
     <Light {...props} width={240}>
       <>{'svg fallback'}</>

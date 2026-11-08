@@ -49,6 +49,7 @@ export function AndroidLight({
   width,
   height,
   children,
+  onUnsupported,
 }: {
   geometry: ComposerLoaderGeometry;
   time: SharedValue<number>;
@@ -59,6 +60,7 @@ export function AndroidLight({
   width: number;
   height: number;
   children: ReactNode;
+  onUnsupported: () => void;
 }) {
   const [unsupported, setUnsupported] = useState(false);
   const animatedProps = useAnimatedProps(() => ({ seconds: time.value }), [time]);
@@ -97,7 +99,10 @@ export function AndroidLight({
       perimeter={geometry.perimeter}
       palette={palette}
       strokes={geometry.strokes}
-      onUnsupported={() => setUnsupported(true)}
+      onUnsupported={() => {
+        setUnsupported(true);
+        onUnsupported();
+      }}
       style={[StyleSheet.absoluteFill, { opacity: intensity }]}
       pointerEvents="none"
       accessible={false}
