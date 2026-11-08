@@ -9,6 +9,7 @@ module.exports = {
     newArchEnabled: true,
     updates: { enabled: false },
     android: { package: 'so.oxy.bloom.materiallab', permissions: [] },
-    plugins: ['./without-network'],
+    experiments: { reactCompiler: false },
+    plugins: ['./without-network', './source-inputs'],
   },
 };

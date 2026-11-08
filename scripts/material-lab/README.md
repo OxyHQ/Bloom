@@ -103,3 +103,21 @@ rethrows `UnknownHostException` so HTTP/WebSocket reject asynchronously. This
 does not grant networking or manufacture a rejection; the OS boundary still
 denies it. The wrapper is confined to this test application and never ships
 in Bloom. Both actual JS probes must finish before the scene mounts.
+
+`android:release` attests the final APK. Gradle explicitly tracks Bloom source
+and the scene outside the fixture root: without those inputs, a second build
+reused the previous bundle after a source checkout changed. The negative gate
+caught the old embedded commit. `attest-build.mjs` checks embedded build hashes,
+exact APK/emitted Hermes bundle equality and every bundled Bloom code file
+against Metro's source map. `attestation.json` records the embedded code hash
+and count separately from the hash of the entire source tree. Run the same
+attestation after the manual ARM64 command; installation invokes it again.
+
+`node android-capture.mjs` uses explicit device variables and the successful
+APK gate's output directory. It records top/composer/overlay states with actual
+taps and swipes. UIAutomator can fail to become idle during continuous native
+animation; the runner aborts instead of reading a stale hierarchy. A partial
+run is not a 42-state pass. Inspect recorded screenshots and use a dedicated
+recording for animated scenes; do not disable user motion preferences to make
+the tool pass. `tsconfig.check.json` isolates type-only paths from Metro's
+runtime resolver: `bunx tsc --noEmit -p scripts/material-lab/tsconfig.check.json`.

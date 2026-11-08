@@ -24,7 +24,12 @@ requireLabEmulator(
 const pause = (ms) => new Promise((done) => setTimeout(done, ms));
 const xml = () => {
   assert(adb('shell', 'pidof', 'so.oxy.bloom.materiallab').trim());
-  adb('shell', 'uiautomator', 'dump', '/sdcard/bloom-material-663.xml');
+  adb('shell', 'rm', '-f', '/sdcard/bloom-material-663.xml');
+  const dumped = adb('shell', 'uiautomator', 'dump', '/sdcard/bloom-material-663.xml');
+  assert(
+    dumped.includes('dumped to'),
+    'UIAutomator could not observe idle state; refusing stale coordinates',
+  );
   return adb('shell', 'cat', '/sdcard/bloom-material-663.xml');
 };
 function node(hierarchy, id) {

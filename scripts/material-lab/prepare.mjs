@@ -16,6 +16,7 @@ const files = [
   'scripts/material-lab/global.css',
   'scripts/material-lab/postcss.config.js',
   'scripts/material-lab/without-network.js',
+  'scripts/material-lab/source-inputs.js',
   'templates/ai-chat/assets/gallery/beach-kid.webp',
 ];
 const sourceHash = createHash('sha256');

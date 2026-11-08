@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prebuild": "node prepare.mjs && EXPO_NO_TELEMETRY=1 expo prebuild --platform android --no-install",
-    "android:release": "node prepare.mjs && cd android && ./gradlew :app:assembleRelease -PreactNativeArchitectures=x86_64 --max-workers=2"
+    "android:release": "node prepare.mjs && cd android && ./gradlew :app:assembleRelease -PreactNativeArchitectures=x86_64 --max-workers=2 && cd .. && node attest-build.mjs"
   },
   "dependencies": {
     "@oxy.so/bloom": "17.22.0",

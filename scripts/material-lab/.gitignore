@@ -3,3 +3,4 @@ ios/
 .expo/
 node_modules/
 build.json
+attestation.json

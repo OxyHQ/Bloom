@@ -74,6 +74,10 @@ async function main() {
   const permissions = execFileSync(aapt, ['dump', 'permissions', apk], { encoding: 'utf8' });
   const badging = execFileSync(aapt, ['dump', 'badging', apk], { encoding: 'utf8' });
   requireOfflineApk(permissions, badging);
+  execFileSync(process.execPath, [resolve(here, 'attest-build.mjs')], {
+    env: { ...process.env, APK: apk },
+    stdio: 'inherit',
+  });
   if (process.env.INSTALL_APK) {
     assert(process.env.INSTALL_APK_LOCAL, 'Set the local path to the staged install APK');
     assert(
@@ -88,7 +92,7 @@ async function main() {
     avd: /^emulator-/.test(serial) ? 'bloom_material_663' : null,
     apk,
     apkSha256: createHash('sha256').update(readFileSync(apk)).digest('hex'),
-    build: JSON.parse(readFileSync(resolve(here, 'build.json'), 'utf8')),
+    build: JSON.parse(readFileSync(resolve(here, 'attestation.json'), 'utf8')),
     permissions,
     os: adb('shell', 'getprop', 'ro.build.version.release'),
     api: adb('shell', 'getprop', 'ro.build.version.sdk'),
