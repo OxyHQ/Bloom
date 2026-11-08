@@ -60,7 +60,9 @@ const click = (id) => {
 };
 // Start from the newly launched default fixture: active, full width, pill radius, normal clock.
 assert(
-  controls.includes('count=1 taper=0 active=true speed=4.5'),
+  controls.includes(
+    'count=1 taper=0 active=true speed=4.5 narrow=false radius=9999 paused=false layer=all reverse=false screen=off clockLog=false',
+  ),
   'Launch a fresh default benchmark before the matrix',
 );
 for (const [name, count, taper] of [
@@ -75,7 +77,9 @@ for (const [name, count, taper] of [
   click(taper === 0 ? 'taper-off' : 'taper-on');
   await new Promise((resolve) => setTimeout(resolve, 2000));
   assert(
-    hierarchy().includes(`count=${count} taper=${taper} active=true speed=4.5`),
+    hierarchy().includes(
+      `count=${count} taper=${taper} active=true speed=4.5 narrow=false radius=9999 paused=false layer=all reverse=false screen=off clockLog=false`,
+    ),
     `Wrong scene ${name}`,
   );
   const report = JSON.parse(
