@@ -69,6 +69,21 @@
       "logFile": "alia-workflow-current-candidate.log",
       "logSha256": "2d8a8d0612d1dbe520263a4b2b50fedaf0503d4e7f49dca21d8879c33fdfded5",
       "visibleSequence": "Idle composer and draft, synthetic stream starts, loader/Stop are visible with keyboard open, Stop is activated, composer returns to idle."
+    },
+    "twoLapMotionVideo": {
+      "status": "verified physical screen recording from exact installed APK; stream stayed active beyond two default 4.5-second laps",
+      "streamTurn": 8,
+      "streamStartedAt": "2026-11-08T20:25:46.527+02:00",
+      "stopMarkerAt": "2026-11-08T20:25:57.398+02:00",
+      "streamActiveMs": 10871,
+      "defaultLapMs": 4500,
+      "activeTimeAfter450msFadeMs": 10421,
+      "video": "alia-two-laps.mp4",
+      "videoSha256": "262cc4a5c9327745bb79073698b0c271e83824d7b1a92c847b4afe18671d4d84",
+      "videoDurationSeconds": 15.993611,
+      "midStreamScreenshot": "alia-two-laps-mid.png",
+      "midStreamScreenshotSha256": "b7f6a68b98e86d0e4d4dd6241f963e2a7ec819c59ab423444b5cbd7b4217c23f",
+      "logFile": "alia-workflow-current-candidate.log"
     }
   },
   "evidence": [
@@ -80,7 +95,9 @@
     "alia-streaming-current-candidate.png",
     "alia-current-candidate.log",
     "alia-issue-663-workflow.mp4",
-    "alia-workflow-current-candidate.log"
+    "alia-workflow-current-candidate.log",
+    "alia-two-laps.mp4",
+    "alia-two-laps-mid.png"
   ],
   "limits": "The offline fixture exercises AliaComposer but is not the production Alia app or inference service. The exact current installed candidate has a physical video showing idle, streaming with visible Stop, and Stop activation, plus the callback log; the saved accessibility hierarchy is from an earlier APK with matching embedded AliaComposer/adapter source hashes. This does not establish phase-aligned optical parity, complete lifecycle contract, performance acceptance, or iPhone behavior."
 }
