@@ -41,6 +41,14 @@ try {
         return stop === window.__headerStop && box.width > 0 && box.right <= host.right + 1;
       });
     }
+    await page.$eval('[data-testid="action-host"]', (host) => {
+      host.style.width = '0px';
+    });
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-testid="adaptive-actions"]').getBoundingClientRect().width ===
+        0,
+    );
     await page.click('[data-testid="actions-width-320"]');
     await page.waitForSelector('[data-testid="adaptive-actions-find"]', { visible: true });
     await page.focus('[data-testid="adaptive-actions-find"]');
@@ -77,6 +85,7 @@ try {
       JSON.stringify({
         mode,
         localWidths: [240, 320, 390, 640, 900],
+        zeroWidthCap: true,
         essentialIdentity: true,
         focusTransfer: true,
         openMenuContinuity: true,

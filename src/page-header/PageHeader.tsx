@@ -288,7 +288,11 @@ function PageHeaderComponent({
     if (!onBack && !history && leading == null) actionGeometry.current.leading = 0;
     const hasTitle = title != null || subtitle != null;
     const inset =
-      compact || navigationPresentation || localWidth < BREAKPOINTS.sm ? 12 : INSET_WIDE;
+      compact || navigationPresentation
+        ? 12
+        : localWidth < BREAKPOINTS.sm
+          ? INSET_COMPACT
+          : INSET_WIDE;
     const budget =
       titleAlign === 'center' && hasTitle
         ? (localWidth - MIN_CENTERED_TITLE_WIDTH) / 2 - inset - ROW_GAP
