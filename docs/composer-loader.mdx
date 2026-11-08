@@ -10,10 +10,15 @@ The loading state that wraps a chat composer while an agent works: an iridescent
 
 ```tsx
 import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
+import { ComposerPill } from '@oxy.so/bloom/composer-panel';
 
-<ComposerLoader active={isWaitingForReply}>
-  <ComposerPill {...composerProps} />
-</ComposerLoader>
+export function WorkingComposer({ busy }: { busy: boolean }) {
+  return (
+    <ComposerLoader active={busy}>
+      <ComposerPill busy={busy} defaultValue="" />
+    </ComposerLoader>
+  );
+}
 ```
 
 **The loader owns the pill surface** (the shared Surface material with `shadow-xs`) and layers the light beneath its children. `ComposerPill` automatically inherits that paint ownership and the nearest loader’s active state for frosted controls. Explicit `surface` and `frosted` values override inheritance. Outside a loader, the pill keeps its own surface and unfrosted controls. Custom children still own their paint contract; an opaque child can cover the decorative light.
