@@ -176,3 +176,19 @@ Bloom scrollbar, caps the panel to the window and accepts an optional numeric
 `maxHeight`. Consumers render their content directly and must not add a nested
 ScrollView just to bound the popup. Native content retains the sheet's scroll
 owner. The panel keeps Surface material and its existing rounded shape.
+
+## Virtual selection anchors
+
+`PopoverContent virtualAnchor={{ getBoundingClientRect }}` can anchor a controlled
+web popover to a text selection or caret without rendering an artificial trigger.
+The callback returns viewport-relative `{ top, bottom, left, right }`, or `null`
+when its target no longer exists. Keep the callback stable and read live geometry
+inside it. The shared owner measures on open, coalesces ancestor scroll/resize
+updates and uses the existing collision, portal, material and dismissal stack.
+Native retains its existing presentation (sheet or platform popup); `virtualAnchor`
+affects web placement only.
+
+The editor owns the selection lifetime and command target. Opening a virtual
+anchor does not invent a focus-return element: restore the intended editor input
+only when dismissal came from its owned controls, never when focus moved to an
+unrelated field. Return `null` for detached selections instead of stale coordinates.
