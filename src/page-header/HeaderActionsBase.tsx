@@ -67,9 +67,10 @@ export function createHeaderActions({
       update();
       return host?.subscribe(update);
     }, [host, availableWidth, maxWidth]);
+    const bounded = availableWidth !== undefined || host !== null;
     const boundedStyle = useAnimatedStyle(
-      () => (maxWidth.value > 0 ? { maxWidth: maxWidth.value } : {}),
-      [maxWidth],
+      () => (bounded ? { maxWidth: availableWidth ?? maxWidth.value } : {}),
+      [availableWidth, bounded, maxWidth],
     );
     const measurements = useRef(new Map<string, HeaderActionMeasurement>());
     const [measurementRevision, revise] = useState(0);

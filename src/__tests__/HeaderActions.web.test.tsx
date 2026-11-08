@@ -1,6 +1,7 @@
 /** @jest-environment jsdom */
 import type React from 'react';
-import { act } from 'react';
+import { act, useContext, useSyncExternalStore } from 'react';
+import { HeaderActionsHostContext } from '../page-header/context';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => ({ ...jest.requireActual('react-native-web') }));
 import { HeaderActions } from '../page-header/HeaderActions.web';
@@ -140,3 +141,34 @@ it('announces busy/toggle state and prevents busy activation', () => {
   act(() => button.click());
   expect(press).not.toHaveBeenCalled();
 });
+
+it('honors an explicit zero-width budget and recovers when its host grows', () => {
+  const actions = [action('stop', { essential: true })];
+  mount(<HeaderActions testID="actions" availableWidth={0} actions={actions} />);
+  measure(actions);
+  expect(node('actions').style.maxWidth).toBe('0px');
+  const stop = node('actions-stop');
+  mount(<HeaderActions testID="actions" availableWidth={90} actions={actions} />);
+  expect(node('actions').style.maxWidth).toBe('90px');
+  expect(node('actions-stop')).toBe(stop);
+});
+
+it.each([
+  [320, false, 280],
+  [640, false, 584],
+  [320, true, 288],
+] as const)(
+  'reserves the actual header insets at width %s, compact %s',
+  (width, compact, expected) => {
+    function Budget() {
+      const host = useContext(HeaderActionsHostContext)!;
+      const value = useSyncExternalStore(host.subscribe, host.getWidth, host.getWidth);
+      return <span data-testid="budget">{value}</span>;
+    }
+    mount(
+      <PageHeader testID="header" density={compact ? 'compact' : 'default'} actions={<Budget />} />,
+    );
+    layout('header', width);
+    expect(node('budget').textContent).toBe(String(expected));
+  },
+);
