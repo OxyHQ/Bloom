@@ -1,0 +1,457 @@
+{
+  "status": "passed on physical device",
+  "capturedAtUtc": "2026-11-08T21:03:54Z",
+  "device": {
+    "model": "Google Pixel 8a",
+    "android": "16",
+    "api": 36,
+    "serial": "43221JEKB12200",
+    "displayPx": [1080, 2400],
+    "density": 420,
+    "fontScale": 1.15
+  },
+  "installedArtifact": {
+    "package": "so.oxy.bloom.loaderpackagelab",
+    "apkSha256": "9c8b51cb0a507bb7c3eca5ac24a0291dbd43166e0030e44047459a099c40379f",
+    "bloomSourceCommit": "81f87246",
+    "networkEnabled": false
+  },
+  "orientationGuard": {
+    "lockedTo": "portrait while testing",
+    "restoredAfterTest": true,
+    "accelerometer_rotationAfter": "1",
+    "user_rotationAfter": "0"
+  },
+  "procedures": [
+    "scripts/loader-package-lab/verify-composers.py",
+    "scripts/loader-package-lab/verify-selection-direction.py"
+  ],
+  "composerResults": {
+    "cases-pill-input": {
+      "transitions": [
+        {
+          "control": "cases-resize",
+          "state": "busy=false narrow=true stops=0 submits=0 pending=none",
+          "before": {
+            "testID": "cases-pill-input",
+            "identity": 162601691,
+            "id": 68,
+            "start": 19,
+            "end": 19,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "after": {
+            "testID": "cases-pill-input",
+            "identity": 162601691,
+            "id": 68,
+            "start": 19,
+            "end": 19,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          }
+        },
+        {
+          "control": "cases-busy",
+          "state": "busy=true narrow=true stops=0 submits=0 pending=none",
+          "before": {
+            "testID": "cases-pill-input",
+            "identity": 162601691,
+            "id": 68,
+            "start": 29,
+            "end": 29,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "after": {
+            "testID": "cases-pill-input",
+            "identity": 162601691,
+            "id": 68,
+            "start": 29,
+            "end": 29,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          }
+        }
+      ],
+      "stop": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 162601691,
+          "id": 68,
+          "start": 29,
+          "end": 29,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-pill-input",
+          "identity": 162601691,
+          "id": 68,
+          "start": 29,
+          "end": 29,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "state": "busy=false narrow=true stops=1 submits=0 pending=none"
+      },
+      "typed": {
+        "testID": "cases-pill-input",
+        "identity": 162601691,
+        "id": 68,
+        "start": 30,
+        "end": 30,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resizeq"
+      },
+      "rotation": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 162601691,
+          "id": 68,
+          "start": 0,
+          "end": 30,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resizeq"
+        },
+        "rotated": {
+          "testID": "cases-pill-input",
+          "identity": 162601691,
+          "id": 68,
+          "start": 0,
+          "end": 30,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resizeq"
+        },
+        "returned": {
+          "testID": "cases-pill-input",
+          "identity": 162601691,
+          "id": 68,
+          "start": 0,
+          "end": 30,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resizeq"
+        },
+        "nativeViewStable": true,
+        "startOrientation": 0,
+        "targetOrientation": 1,
+        "keyboardVisibleThroughout": true,
+        "selectionMethod": "Ctrl+A on focused native EditText"
+      }
+    },
+    "cases-agent-pill-input": {
+      "transitions": [
+        {
+          "control": "cases-resize",
+          "state": "busy=false narrow=true stops=1 submits=0 pending=none",
+          "before": {
+            "testID": "cases-agent-pill-input",
+            "identity": 53406274,
+            "id": 106,
+            "start": 19,
+            "end": 19,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "after": {
+            "testID": "cases-agent-pill-input",
+            "identity": 53406274,
+            "id": 106,
+            "start": 19,
+            "end": 19,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          }
+        },
+        {
+          "control": "cases-busy",
+          "state": "busy=true narrow=true stops=1 submits=0 pending=none",
+          "before": {
+            "testID": "cases-agent-pill-input",
+            "identity": 53406274,
+            "id": 106,
+            "start": 33,
+            "end": 33,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "after": {
+            "testID": "cases-agent-pill-input",
+            "identity": 53406274,
+            "id": 106,
+            "start": 33,
+            "end": 33,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          }
+        }
+      ],
+      "stop": {
+        "before": {
+          "testID": "cases-agent-pill-input",
+          "identity": 53406274,
+          "id": 106,
+          "start": 33,
+          "end": 33,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-agent-pill-input",
+          "identity": 53406274,
+          "id": 106,
+          "start": 33,
+          "end": 33,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resize"
+        },
+        "state": "busy=false narrow=true stops=2 submits=0 pending=none"
+      },
+      "typed": {
+        "testID": "cases-agent-pill-input",
+        "identity": 53406274,
+        "id": 106,
+        "start": 34,
+        "end": 34,
+        "focused": true,
+        "attached": true,
+        "text": "Agent draft retained through resiqze"
+      },
+      "rotation": {
+        "before": {
+          "testID": "cases-agent-pill-input",
+          "identity": 53406274,
+          "id": 106,
+          "start": 0,
+          "end": 36,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resiqze"
+        },
+        "rotated": {
+          "testID": "cases-agent-pill-input",
+          "identity": 53406274,
+          "id": 106,
+          "start": 0,
+          "end": 36,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resiqze"
+        },
+        "returned": {
+          "testID": "cases-agent-pill-input",
+          "identity": 53406274,
+          "id": 106,
+          "start": 0,
+          "end": 36,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resiqze"
+        },
+        "nativeViewStable": true,
+        "startOrientation": 0,
+        "targetOrientation": 1,
+        "keyboardVisibleThroughout": true,
+        "selectionMethod": "Ctrl+A on focused native EditText"
+      }
+    }
+  },
+  "backwardSelectionResults": {
+    "none": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 150086079,
+        "id": 68,
+        "start": 5,
+        "end": 4,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "settled": {
+        "testID": "cases-pill-input",
+        "identity": 150086079,
+        "id": 68,
+        "start": 5,
+        "end": 4,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "extended": {
+        "testID": "cases-pill-input",
+        "identity": 150086079,
+        "id": 68,
+        "start": 5,
+        "end": 3,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "state": "busy=false narrow=false stops=0 submits=0 pending=none"
+    },
+    "resize": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 190808182,
+        "id": 68,
+        "start": 5,
+        "end": 4,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "settled": {
+        "testID": "cases-pill-input",
+        "identity": 190808182,
+        "id": 68,
+        "start": 5,
+        "end": 4,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "extended": {
+        "testID": "cases-pill-input",
+        "identity": 190808182,
+        "id": 68,
+        "start": 5,
+        "end": 3,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "state": "busy=false narrow=true stops=0 submits=0 pending=none"
+    },
+    "busy": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 126908965,
+        "id": 68,
+        "start": 5,
+        "end": 4,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "settled": {
+        "testID": "cases-pill-input",
+        "identity": 126908965,
+        "id": 68,
+        "start": 5,
+        "end": 4,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "extended": {
+        "testID": "cases-pill-input",
+        "identity": 126908965,
+        "id": 68,
+        "start": 5,
+        "end": 3,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "state": "busy=true narrow=false stops=0 submits=0 pending=none"
+    }
+  },
+  "screenshots": [
+    {
+      "path": "cases-agent-pill-input-cases-busy.png",
+      "sha256": "415cb0d91e6cc698f0b74c29733aa768ee49d54ccdea5102ba924b40af209009",
+      "bytes": 270543
+    },
+    {
+      "path": "cases-agent-pill-input-cases-resize.png",
+      "sha256": "6acf2ae1249a4251e916849122833117f53e31f366472d02c97aae0d1d6c1cb4",
+      "bytes": 239762
+    },
+    {
+      "path": "cases-agent-pill-input-rotation-0.png",
+      "sha256": "2f49f92308690e57160b41684c537ae146538d79b5a6c79050ea3e827e394ae3",
+      "bytes": 234626
+    },
+    {
+      "path": "cases-agent-pill-input-rotation-1.png",
+      "sha256": "39cc7de357540448d52e6bc3fce6cf7050384e4e11434da8323b2bc8dae47988",
+      "bytes": 131987
+    },
+    {
+      "path": "cases-agent-pill-input-rotation-before.png",
+      "sha256": "068b4c235576d48b8cfe22e0e94a1c4021b6dc9459092c5ca8e7104a6f12ded1",
+      "bytes": 234678
+    },
+    {
+      "path": "cases-agent-pill-input-stop-and-type.png",
+      "sha256": "2f49f92308690e57160b41684c537ae146538d79b5a6c79050ea3e827e394ae3",
+      "bytes": 234626
+    },
+    {
+      "path": "cases-pill-input-cases-busy.png",
+      "sha256": "7c1ac6bb8fda522efa80d2b88bb17a31144b464618c3af3a105a174fad2d3129",
+      "bytes": 271610
+    },
+    {
+      "path": "cases-pill-input-cases-resize.png",
+      "sha256": "0d5a374b562abe3b6afd4b6e96d3ad75275d548078bfcf3ab70874c699f36eb3",
+      "bytes": 240925
+    },
+    {
+      "path": "cases-pill-input-rotation-0.png",
+      "sha256": "032fa287a7fdfb98684427f75c68b5fdbee0eb0e036e31cca1360fc69b7e4249",
+      "bytes": 233904
+    },
+    {
+      "path": "cases-pill-input-rotation-1.png",
+      "sha256": "b17ffe18e1b2dd786b3c9dbc92a4e77e8dbf91410fc5d541afae87162f990b20",
+      "bytes": 132113
+    },
+    {
+      "path": "cases-pill-input-rotation-before.png",
+      "sha256": "3156f35dbfaaab2d58f2900b658d3e16daf678cdceafb1a4e8373641f3d61658",
+      "bytes": 233945
+    },
+    {
+      "path": "cases-pill-input-stop-and-type.png",
+      "sha256": "032fa287a7fdfb98684427f75c68b5fdbee0eb0e036e31cca1360fc69b7e4249",
+      "bytes": 233904
+    },
+    {
+      "path": "direction-busy.png",
+      "sha256": "81de619a0b1fa4b0407af85572e28b6ecee7fef4345c888bb47c71ebd01aaf6e",
+      "bytes": 259349
+    },
+    {
+      "path": "direction-none.png",
+      "sha256": "06a20eb0e004634515d38449ca48b3e845ded2a5ee538c3e233c300768ada0ad",
+      "bytes": 227986
+    },
+    {
+      "path": "direction-resize.png",
+      "sha256": "c5c1297187b2e918e2f8eb3c5728fa73b7e7f599bbcf483351514649276420fa",
+      "bytes": 232291
+    }
+  ],
+  "limitations": [
+    "The installed app is Bloom’s offline synthetic package lab, not production Alia.",
+    "This repeat does not establish iPhone behavior or cross-platform visual acceptance."
+  ]
+}
