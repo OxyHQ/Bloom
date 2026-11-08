@@ -35,7 +35,13 @@ async function assertNetworkDenied(): Promise<void> {
   });
   if (!websocket) throw new Error('ISOLATION FAILED: WebSocket not denied');
 }
-export function PackageLab() {
+export function PackageLab({
+  initialActive = true,
+  scene,
+}: {
+  initialActive?: boolean;
+  scene?: string;
+} = {}) {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
   const [isolation, setIsolation] = useState('Checking offline boundary');
   useEffect(() => {
@@ -56,12 +62,13 @@ export function PackageLab() {
         <BloomProvider mode={mode} colorPreset="oxy" haptics={false}>
           <PortalProvider>
             <SurfaceProvider>
-              {build.scene === 'composers' ? (
+              {(scene ?? build.scene) === 'composers' ? (
                 <ComposerCases
                   onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
                 />
               ) : (
                 <LoaderBenchmark
+                  initialActive={initialActive}
                   onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
                   label={`${build.commit.slice(0, 12)} · ${Platform.OS} ${Platform.Version} · offline-verified`}
                 />

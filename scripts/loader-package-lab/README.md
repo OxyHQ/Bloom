@@ -31,7 +31,9 @@ before installing, and record OS/build/font scale/density/thermal state unchange
 
 Passed: compiled local package on Pixel, API 30/31 registration guards, six
 continuous budget windows, temporary bitmap and software-host fallback, and a
-JS-only update into the previous native binary. Pending: API 30 fallback appearance,
+JS-only update into the previous native binary. API 30 emulator startup and reduced-motion
+suspension/resumption pass; its SVG halo and runtime cost are not accepted. Pending:
+deliberate degraded fallback policy,
 old RN/legacy runtime, packaged lifecycle, consumer composers and published artifact. iPhone testing is explicitly deferred by the user.
 
 Native capability tests against the installed snapshot:
@@ -80,3 +82,8 @@ archived synthetic APK, signs with the explicit Android test keystore, and asser
 every other non-signature ZIP payload byte is unchanged. Its receipt records all
 DEX/SO hashes and signing certificate. Do not publish this hybrid or use it to
 claim old-RN runtime or fallback performance acceptance.
+
+`verify-api30.py` targets only the dedicated API 30 AVD and restores its original
+transition animation scale in a finally block. `verify-lifecycle.py` requires an
+explicit authorized physical serial and the synthetic app in the foreground; its
+clock and input probes are fixture-only, with no additional public loader API.

@@ -10,15 +10,17 @@ import { useTheme } from '@oxy.so/bloom/theme';
 /** Packaged renderer; synthetic content and the existing public geometry/clock. */
 export function LoaderBenchmark({
   label,
+  initialActive = true,
   onToggleMode,
 }: {
   label: string;
+  initialActive?: boolean;
   onToggleMode?: () => void;
 }) {
   const Renderer = ComposerLoader;
   const [count, setCount] = useState(1);
   const [taper, setTaper] = useState(0);
-  const [active, setActive] = useState(true);
+  const [active, setActive] = useState(initialActive);
   const [speed, setSpeed] = useState(4.5);
   const [narrow, setNarrow] = useState(false);
   const [square, setSquare] = useState(false);

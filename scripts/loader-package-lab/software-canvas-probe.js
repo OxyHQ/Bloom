@@ -71,5 +71,22 @@ module.exports = (config) =>
   }
 `,
       );
+    const launchMarker = '// Bloom synthetic launch properties.';
+    if (!mod.modResults.contents.includes(launchMarker)) {
+      const before = mod.modResults.contents;
+      mod.modResults.contents = before.replace(
+        /fabricEnabled\s*\)\{\}/,
+        `fabricEnabled
+          ) {
+            ${launchMarker}
+            override fun getLaunchOptions(): android.os.Bundle = android.os.Bundle().apply {
+              putString("scene", intent.getStringExtra("scene"))
+              putBoolean("initialActive", intent.getBooleanExtra("initialActive", true))
+            }
+          }`,
+      );
+      if (mod.modResults.contents === before)
+        throw new Error('Cannot inject synthetic launch properties');
+    }
     return mod;
   });
