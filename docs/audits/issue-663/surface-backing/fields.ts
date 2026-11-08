@@ -2,10 +2,13 @@ import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { contrastRatio } from '../../../../src/styles/color-contrast';
 const require = createRequire(process.env.PLAYWRIGHT_PACKAGE_JSON!);
-const { chromium } = require('playwright');
-const browser = await chromium.launch({
-  executablePath: process.env.CHROME_PATH,
-  args: ['--no-sandbox'],
+const playwright = require('playwright');
+const engine = ['webkit', 'firefox'].includes(process.env.BROWSER ?? '')
+  ? process.env.BROWSER!
+  : 'chromium';
+const browser = await playwright[engine].launch({
+  executablePath: process.env.BROWSER_PATH ?? process.env.CHROME_PATH,
+  args: engine === 'chromium' ? ['--no-sandbox'] : [],
 });
 const page = await browser.newPage({
   viewport: { width: 800, height: 1000 },
@@ -116,6 +119,8 @@ for (const mode of ['light', 'dark'])
           targets,
         },
       );
+      if (samples.some((sample: { ink: number }) => sample.ink === 0))
+        throw new Error('No exact painted foreground in one or more fields');
       records.push({
         name,
         samples: samples.map((sample: any) => ({
@@ -130,6 +135,6 @@ for (const mode of ['light', 'dark'])
     }
 writeFileSync(
   `${output}/fields.json`,
-  JSON.stringify({ browser: browser.version(), records }, null, 2) + '\n',
+  JSON.stringify({ engine, browser: browser.version(), records }, null, 2) + '\n',
 );
 await browser.close();
