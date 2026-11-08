@@ -34,6 +34,7 @@ const map = JSON.parse(
   ),
 );
 const sources = new Map();
+const fixtureSources = new Map();
 function collect(map) {
   if (map.sections) {
     for (const section of map.sections) collect(section.map);
@@ -41,12 +42,35 @@ function collect(map) {
   }
   for (let i = 0; i < map.sources.length; i++) {
     const prefix = '/bloom-local/node_modules/@oxy.so/bloom/';
+    if (
+      [
+        '/PackageLab.tsx',
+        '/LoaderBenchmark.tsx',
+        '/ComposerCases.tsx',
+        '/RawInputCases.tsx',
+      ].includes(map.sources[i])
+    )
+      fixtureSources.set(map.sources[i].slice(1), map.sourcesContent[i]);
     if (map.sources[i].startsWith(prefix) && /\.(?:[cm]?[jt]sx?|json)$/.test(map.sources[i]))
       sources.set(map.sources[i].slice(prefix.length), map.sourcesContent[i]);
     assert(!map.sources[i].startsWith('/../../src/'), 'Checkout source bypasses installed package');
   }
 }
 collect(map);
+for (const name of [
+  'PackageLab.tsx',
+  'LoaderBenchmark.tsx',
+  'ComposerCases.tsx',
+  'RawInputCases.tsx',
+])
+  assert.equal(
+    fixtureSources.get(name),
+    readFileSync(name, 'utf8'),
+    `Stale fixture source: ${name}`,
+  );
+const embeddedFixtureSources = Object.fromEntries(
+  [...fixtureSources].map(([name, content]) => [name, hash(content)]),
+);
 assert(sources.has('src/composer-loader/AndroidLight.tsx'), 'Adapter not in installed bundle');
 const digest = createHash('sha256');
 for (const [name, content] of [...sources].sort(([a], [b]) => a.localeCompare(b))) {
@@ -91,6 +115,7 @@ writeFileSync(
       embeddedBundleSha256: hash(bundle),
       embeddedBloomSourceSha256: digest.digest('hex'),
       embeddedBloomFiles: sources.size,
+      embeddedFixtureSources,
       dex,
       r8MappingSha256: hash(mapping),
       mappedNativeClass: mappedClass,
