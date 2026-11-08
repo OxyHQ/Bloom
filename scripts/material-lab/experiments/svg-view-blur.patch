@@ -1,0 +1,103 @@
+diff --git a/src/composer-loader/ComposerLoader.tsx b/src/composer-loader/ComposerLoader.tsx
+index b5334ccb..02a9bb0f 100644
+--- a/src/composer-loader/ComposerLoader.tsx
++++ b/src/composer-loader/ComposerLoader.tsx
+@@ -1,6 +1,6 @@
+ import { Surface } from '../surface';
+ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+-import { StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
++import { StyleSheet, View, Platform, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+ import Animated, {
+   Easing,
+   useAnimatedProps,
+@@ -58,6 +58,7 @@ const LoaderStroke = memo(function LoaderStroke({
+   height,
+   rx,
+   gradientId,
++  svgFilter = true,
+ }: {
+   stroke: ComposerLoaderStroke;
+   time: SharedValue<number>;
+@@ -68,6 +69,7 @@ const LoaderStroke = memo(function LoaderStroke({
+   height: number;
+   rx: number;
+   gradientId: string;
++  svgFilter?: boolean;
+ }) {
+   const unit = perimeter / 100;
+   const { phase } = stroke;
+@@ -90,7 +92,9 @@ const LoaderStroke = memo(function LoaderStroke({
+       strokeLinecap="round"
+       strokeDasharray={[stroke.dash * unit, (100 - stroke.dash) * unit]}
+       opacity={stroke.opacity}
+-      filter={stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined}
++      filter={
++        svgFilter && stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined
++      }
+     />
+   );
+ });
+@@ -204,7 +208,62 @@ function ComposerLoaderComponent({
+           fadeStyle,
+         ]}
+       >
+-        {measured ? (
++        {measured && Platform.OS === 'android' && Number(Platform.Version) >= 31 ? (
++          <View style={[StyleSheet.absoluteFill, { opacity: intensity }]}>
++            {geometry.blurs.map((blur, index) => {
++              const strokes = geometry.strokes.filter((stroke) => stroke.blur === blur);
++              if (!strokes.length) return null;
++              const padding = Math.ceil(
++                blur * 3 + Math.max(...strokes.map((stroke) => stroke.strokeWidth)) / 2,
++              );
++              const layerGradientId = `${gradientId}-gpu-${index}`;
++              return (
++                <View
++                  key={blur}
++                  style={{
++                    position: 'absolute',
++                    left: -padding,
++                    top: -padding,
++                    width: box.w + padding * 2,
++                    height: box.h + padding * 2,
++                    filter: [{ blur: Math.max(0.51, blur) }],
++                  }}
++                >
++                  <Svg
++                    width="100%"
++                    height="100%"
++                    viewBox={`${-padding} ${-padding} ${box.w + padding * 2} ${box.h + padding * 2}`}
++                  >
++                    <Defs>
++                      <LinearGradient id={layerGradientId} x1="0" y1="0" x2="1" y2="0">
++                        <Stop offset="0%" stopColor={c0} />
++                        <Stop offset="30%" stopColor={c1} />
++                        <Stop offset="50%" stopColor={gradientMidColor(c1, c2)} />
++                        <Stop offset="70%" stopColor={c2} />
++                        <Stop offset="100%" stopColor={c3} />
++                      </LinearGradient>
++                    </Defs>
++                    {strokes.map((stroke) => (
++                      <LoaderStroke
++                        key={stroke.key}
++                        stroke={stroke}
++                        time={time}
++                        speed={speed}
++                        reverse={reverse}
++                        perimeter={geometry.perimeter}
++                        width={box.w}
++                        height={box.h}
++                        rx={geometry.rx}
++                        gradientId={layerGradientId}
++                        svgFilter={false}
++                      />
++                    ))}
++                  </Svg>
++                </View>
++              );
++            })}
++          </View>
++        ) : measured ? (
+           <Svg
+             width="100%"
+             height="100%"

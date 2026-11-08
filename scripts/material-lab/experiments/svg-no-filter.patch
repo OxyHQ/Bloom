@@ -1,0 +1,13 @@
+diff --git a/src/composer-loader/ComposerLoader.tsx b/src/composer-loader/ComposerLoader.tsx
+index b5334ccb..e9d98dd2 100644
+--- a/src/composer-loader/ComposerLoader.tsx
++++ b/src/composer-loader/ComposerLoader.tsx
+@@ -90,7 +90,7 @@ const LoaderStroke = memo(function LoaderStroke({
+       strokeLinecap="round"
+       strokeDasharray={[stroke.dash * unit, (100 - stroke.dash) * unit]}
+       opacity={stroke.opacity}
+-      filter={stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined}
++      filter={undefined}
+     />
+   );
+ });

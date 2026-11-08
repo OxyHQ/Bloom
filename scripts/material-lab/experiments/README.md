@@ -1,0 +1,27 @@
+# Composer foreground-light experiments (issue 663)
+
+These are private renderer diagnostics, not a shipping adapter or a visual-parity claim. Production `src/composer-loader/ComposerLoader.tsx` remains the merged lifecycle implementation. The synthetic APK has no Internet permission and keeps the same locked dependencies and disabled React Compiler as its baseline. iPhone testing is explicitly deferred.
+
+`performance-results.json` records controlled physical Pixel 8a windows and the budget pinned before GPU experiments. Raw frames, CPU samples, memory, read-only thermal status, full viewport screenshots, exact build/lock/source attestations and APKs are retained under `.local/issue-663-material/`. GPU histogram 4950ms is Android's overflow bucket above 25ms, not an observed 4.95-second frame. FrameCompleted latency is reported separately from the display interval. The user’s density420 and font_scale1.15 were preserved.
+
+The initial production SVG baseline misses virtually every deadline. Removing filters isolates the largest CPU cost, but intentionally removes the glow and is not a solution. `react-native-svg` 15.16.0 draws its view into a software Bitmap; its Android Gaussian filter creates RenderScript allocations for each filtered stroke. Moving blur to three foreground-only RN View RenderEffects eliminates that filter cost, but the remaining software rasterization of 42/84 taper strokes still fails the budget. Sharing three animated group offsets and static phased paths reduces native prop updates without solving drawing cost. These unsuccessful experiments are preserved as patches and a text source snapshot, excluded from compilation.
+
+The current `BloomLightProbe.kt` is registered only by the test application's config plugin. A generated clone of the real ComposerLoader changes only its measured light node, retaining its geometry, clock, layout, fade and suspension. It draws the same stroke descriptors and gradient through an accelerated Canvas into three RenderNodes with RenderEffect. A hardware assertion prevents silent software fallback. This is Android API31+ experimentation, with no claim for old Android, legacy RN, iOS, native package integration, or autolinking consumers.
+
+Grouping blur changes the order of alpha compositing at overlapping taper strokes. Pixel comparison must explicitly assess this before any adoption. The probe uses exact .5dp sigma, whereas the rejected RN View filter experiment used .51dp to cross RN's early blur threshold. The existing SVG and fixed-phase captures are the visual reference; equal timestamps alone are not web/native phase equivalence because their rounded-rect path origins differ. Android `PathMeasure.getPosTan(0)` measured the left-bottom arc join for positive radii; the browser geometry gate independently verifies cyclic paths against an authored SVG path.
+
+Run from this fixture directory:
+
+```sh
+BLOOM_LAB_SCENE=loader-benchmark BLOOM_LAB_VARIANT=hardware-segments-probe node prepare.mjs
+ANDROID_HOME=/path/to/sdk ./android/gradlew -p android :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --max-workers=2
+node attest-build.mjs
+```
+
+Use `android-gate.mjs` with the explicit authorized serial and archived APK. `measure-android.mjs` requires the matching artifact environment and foreground synthetic app, captures a full viewport before the non-recorded window, and writes raw evidence plus a report. Change One/Two and No taper/Taper using real native controls before measuring. Never replace a failed budget with a more permissive threshold. Hardware drawing alone is not a performance or fidelity pass.
+
+The grouped Canvas probe with quarter-resolution soft layers measured zero missed deadlines and GPU p95 7ms in three repeated two-taper-loader windows at thermal status0. This is **not accepted**: phase-aligned production web captures show that grouping changes the taper's appearance. The following per-stroke experiment restores blur-before-opacity ordering. Its outcome must be recorded before selection. The full-resolution/quarter-resolution comparison alone does not prove web fidelity.
+
+Android RenderEffect's JNI converts radius to sigma (`Blur::convertRadiusToSigma`): [AOSP implementation](https://android.googlesource.com/platform/frameworks/base/+/7d59d89f035a/libs/hwui/jni/RenderEffect.cpp). The first grouped quarter probe divided the converted radius, introducing an extra1.5physical-pixel sigma after upscaling. The per-stroke experiment instead divides sigma before conversion; preserve this distinction when comparing its pixels.
+
+The physical native view logs width379.42856dp, height51.809525dp, radius25.904762dp, actual996×136pixels. Its nominal child height52dp is rounded by Yoga at density2.625. RNW instead rounds its layout callback to SVG viewBox379×52 while its DOM layout remains fractional. The web reference records both dimensions and corrects the rounded-path origin; the residual subpixel geometry difference is explicit, not an exact pixel-equivalence assertion. Browser screenshot viewport412×915 at DPR2.625 is slightly wider than the phone because Chrome requires integer CSS viewport dimensions; the loader frame is matched separately.

@@ -1,0 +1,131 @@
+package so.oxy.bloom.materiallab
+
+import android.annotation.TargetApi
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.DashPathEffect
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
+import android.graphics.RenderEffect
+import android.graphics.RenderNode
+import android.graphics.Shader
+import android.os.Build
+import android.view.View
+import com.facebook.react.ReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.uimanager.SimpleViewManager
+import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.ViewManager
+import com.facebook.react.uimanager.annotations.ReactProp
+
+/** Experimental, private test-app view. Never registered by Bloom itself. */
+class BloomLightProbePackage : ReactPackage {
+  override fun createNativeModules(context: ReactApplicationContext): List<NativeModule> = emptyList()
+  override fun createViewManagers(context: ReactApplicationContext): List<ViewManager<*, *>> = listOf(BloomLightProbeManager())
+}
+
+class BloomLightProbeManager : SimpleViewManager<BloomLightProbe>() {
+  override fun getName() = "BloomLightProbe"
+  override fun createViewInstance(context: ThemedReactContext) = BloomLightProbe(context)
+  @ReactProp(name = "seconds") fun seconds(view: BloomLightProbe, value: Double) { view.seconds = value }
+  @ReactProp(name = "speed") fun speed(view: BloomLightProbe, value: Double) { view.speed = value; view.invalidate() }
+  @ReactProp(name = "reverse") fun reverse(view: BloomLightProbe, value: Boolean) { view.reverse = value; view.invalidate() }
+  @ReactProp(name = "boxWidth") fun boxWidth(view: BloomLightProbe, value: Float) { view.boxWidth = value; view.rebuild() }
+  @ReactProp(name = "boxHeight") fun boxHeight(view: BloomLightProbe, value: Float) { view.boxHeight = value; view.rebuild() }
+  @ReactProp(name = "radius") fun radius(view: BloomLightProbe, value: Float) { view.radius = value; view.rebuild() }
+  @ReactProp(name = "perimeter") fun perimeter(view: BloomLightProbe, value: Float) { view.perimeter = value; view.invalidate() }
+  @ReactProp(name = "palette") fun palette(view: BloomLightProbe, values: ReadableArray?) {
+    if (values != null) view.palette = IntArray(values.size()) { values.getDouble(it).toLong().toInt() }
+    view.rebuild()
+  }
+  @ReactProp(name = "strokes") fun strokes(view: BloomLightProbe, values: ReadableArray?) {
+    view.strokes = if (values == null) emptyList() else (0 until values.size()).map { index ->
+      val row = values.getMap(index)!!
+      ProbeStroke(row.getDouble("strokeWidth").toFloat(), row.getDouble("blur").toFloat(),
+        row.getDouble("opacity").toFloat(), row.getDouble("dash").toFloat(), row.getDouble("phase"))
+    }
+    view.rebuild()
+  }
+}
+
+data class ProbeStroke(val width: Float, val blur: Float, val opacity: Float, val dash: Float, val phase: Double)
+
+@TargetApi(31)
+class BloomLightProbe(context: Context) : View(context) {
+  private val density = resources.displayMetrics.density
+  var seconds = 0.0
+    set(value) { if (field != value) { field = value; invalidate() } }
+  var speed = 4.5
+  var reverse = false
+  var boxWidth = 0f
+  var boxHeight = 0f
+  var radius = 0f
+  var perimeter = 1f
+  var palette = intArrayOf(Color.MAGENTA, Color.MAGENTA, Color.MAGENTA, Color.MAGENTA, Color.MAGENTA)
+  var strokes: List<ProbeStroke> = emptyList()
+  private val outline = Path()
+  private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
+  private data class Layer(val node: RenderNode, val strokes: List<ProbeStroke>, val padding: Int)
+  private var layers: List<Layer> = emptyList()
+  private var loggedHardware = false
+
+  init { importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO; isClickable = false; isFocusable = false }
+
+  fun rebuild() {
+    if (Build.VERSION.SDK_INT < 31) return // This experiment has no pre-31 acceptance claim.
+    val w = boxWidth * density
+    val h = boxHeight * density
+    val r = radius.coerceIn(0f, minOf(boxWidth, boxHeight) / 2f) * density
+    outline.reset()
+    if (w > 0 && h > 0) outline.addRoundRect(RectF(0f, 0f, w, h), r, r, Path.Direction.CW)
+    paint.shader = LinearGradient(0f, 0f, maxOf(1f, w), 0f, palette, floatArrayOf(0f, .3f, .5f, .7f, 1f), Shader.TileMode.CLAMP)
+    layers.forEach { it.node.discardDisplayList() }
+    layers = strokes.groupBy { it.blur }.map { (blur, group) ->
+      val padding = kotlin.math.ceil(group.maxOf { it.width } * density / 2f + 1f).toInt()
+      val node = RenderNode("BloomLightProbe:$blur")
+      // Match the public RN/CSS sigma-to-Android-radius conversion, in physical pixels.
+      val sigma = blur * density
+      val effectRadius = if (sigma > .5f) (sigma - .5f) / .57735f else 0f
+      if (effectRadius > 0f) node.setRenderEffect(RenderEffect.createBlurEffect(effectRadius, effectRadius, Shader.TileMode.DECAL))
+      Layer(node, group, padding)
+    }
+    invalidate()
+  }
+
+  override fun onDraw(canvas: Canvas) {
+    super.onDraw(canvas)
+    if (Build.VERSION.SDK_INT < 31 || width <= 0 || height <= 0 || boxWidth <= 0 || boxHeight <= 0) return
+    if (!loggedHardware) { android.util.Log.i("BloomLightProbe", "hardwareCanvas=" + canvas.isHardwareAccelerated); loggedHardware = true }
+    check(canvas.isHardwareAccelerated) { "The hardware probe must not silently use a software Canvas" }
+    val unit = perimeter * density / 100f
+    for (layer in layers) {
+      val pad = layer.padding
+      layer.node.setPosition(-pad, -pad, width + pad, height + pad)
+      val recording = layer.node.beginRecording(width + pad * 2, height + pad * 2)
+      recording.translate(pad.toFloat(), pad.toFloat())
+      for (stroke in layer.strokes) {
+        val elapsed = seconds - stroke.phase * speed / 100.0
+        val offset = if (elapsed < 0 || speed <= 0) 0.0 else {
+          val fraction = (elapsed / speed) % 1.0
+          if (reverse) -100.0 * (1.0 - fraction) else -100.0 * fraction
+        }
+        paint.strokeWidth = stroke.width * density
+        paint.alpha = (stroke.opacity * 255f).toInt().coerceIn(0, 255)
+        paint.pathEffect = DashPathEffect(floatArrayOf(stroke.dash * unit, (100f - stroke.dash) * unit), offset.toFloat() * unit)
+        recording.drawPath(outline, paint)
+      }
+      layer.node.endRecording()
+      canvas.drawRenderNode(layer.node)
+    }
+  }
+
+  override fun onDetachedFromWindow() {
+    if (Build.VERSION.SDK_INT >= 31) layers.forEach { it.node.discardDisplayList() }
+    super.onDetachedFromWindow()
+  }
+}

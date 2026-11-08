@@ -1,0 +1,697 @@
+{
+  "device": "Pixel 8a, Android16/API36, density420, fontScale1.15; 120Hz",
+  "budget": {
+    "pinnedBeforeGpuResults": true,
+    "device": "Pixel 8a API36 arm64-v8a",
+    "fontScale": 1.15,
+    "displayIntervalMs": 8.333333,
+    "deadlineMissFractionLessThan": 0.01,
+    "gpuP95MsAtMost": 8.333333,
+    "repetition": "Repeat controlled foreground 10-second windows at comparable recorded thermal state; no screen recording in the measurement window.",
+    "separateMetrics": "End-to-end IntendedVsync to FrameCompleted latency, CPU percent per core, PSS/RSS; do not compare end-to-end latency directly with one display interval.",
+    "scope": "One and two loaders, 379.43dp x 52dp, taper0 and0.5, identical fixture/compiler/lock; this is a comparative device budget, not a universal platform claim."
+  },
+  "note": "GPU histogram4950 is its overflow bucket (>25ms), not a measured4.95sec frame. Source fixtures, not published package acceptance. Windows contain no screen recording. Full raw evidence retained locally. Grouped-quarter passes this performance budget but fails to preserve taper optics; not accepted.",
+  "rows": [
+    {
+      "case": "one-taper0",
+      "frames": 347,
+      "jankyFrames": 346,
+      "gpuP95Ms": 3,
+      "recentFrameP95Ms": 72.737383,
+      "cpuPercentOfOneCore": [
+        235,
+        218,
+        215
+      ],
+      "pssKb": 396229,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "c5382844e86e6af9fdcfd434948177698b949fec251f5fb833f707bd403fa7f6",
+      "variant": "benchmark-svg-arm64"
+    },
+    {
+      "case": "one-taper05",
+      "frames": 20,
+      "jankyFrames": 20,
+      "gpuP95Ms": 12,
+      "recentFrameP95Ms": 1222.95001,
+      "cpuPercentOfOneCore": [
+        232,
+        190,
+        192
+      ],
+      "pssKb": 405843,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "c5382844e86e6af9fdcfd434948177698b949fec251f5fb833f707bd403fa7f6",
+      "variant": "benchmark-svg-arm64"
+    },
+    {
+      "case": "two-taper0",
+      "frames": 180,
+      "jankyFrames": 180,
+      "gpuP95Ms": 3,
+      "recentFrameP95Ms": 128.537797,
+      "cpuPercentOfOneCore": [
+        233,
+        199,
+        208
+      ],
+      "pssKb": 390963,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "c5382844e86e6af9fdcfd434948177698b949fec251f5fb833f707bd403fa7f6",
+      "variant": "benchmark-svg-arm64"
+    },
+    {
+      "case": "two-taper05",
+      "frames": 12,
+      "jankyFrames": 12,
+      "gpuP95Ms": 12,
+      "recentFrameP95Ms": 2104.994436,
+      "cpuPercentOfOneCore": [
+        211,
+        172,
+        179
+      ],
+      "pssKb": 366712,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "c5382844e86e6af9fdcfd434948177698b949fec251f5fb833f707bd403fa7f6",
+      "variant": "benchmark-svg-arm64"
+    },
+    {
+      "case": "one-taper0",
+      "frames": 1268,
+      "jankyFrames": 0,
+      "gpuP95Ms": 7,
+      "recentFrameP95Ms": 12.240753,
+      "cpuPercentOfOneCore": [
+        139,
+        106,
+        108
+      ],
+      "pssKb": 566633,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "9295930b9b5d98fa654511fd2c6cb321d89ab33e40940e167b5da821c43b6762",
+      "variant": "benchmark-nofilter-arm64"
+    },
+    {
+      "case": "one-taper05",
+      "frames": 1244,
+      "jankyFrames": 6,
+      "gpuP95Ms": 2,
+      "recentFrameP95Ms": 17.565794,
+      "cpuPercentOfOneCore": [
+        100,
+        116,
+        111
+      ],
+      "pssKb": 541719,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "9295930b9b5d98fa654511fd2c6cb321d89ab33e40940e167b5da821c43b6762",
+      "variant": "benchmark-nofilter-arm64"
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1259,
+      "jankyFrames": 1,
+      "gpuP95Ms": 3,
+      "recentFrameP95Ms": 11.171772,
+      "cpuPercentOfOneCore": [
+        115,
+        104,
+        108
+      ],
+      "pssKb": 509639,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "9295930b9b5d98fa654511fd2c6cb321d89ab33e40940e167b5da821c43b6762",
+      "variant": "benchmark-nofilter-arm64"
+    },
+    {
+      "case": "two-taper05",
+      "frames": 737,
+      "jankyFrames": 259,
+      "gpuP95Ms": 4,
+      "recentFrameP95Ms": 47.811114,
+      "cpuPercentOfOneCore": [
+        151,
+        121,
+        125
+      ],
+      "pssKb": 568239,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "9295930b9b5d98fa654511fd2c6cb321d89ab33e40940e167b5da821c43b6762",
+      "variant": "benchmark-nofilter-arm64"
+    },
+    {
+      "case": "one-taper0",
+      "frames": 1271,
+      "jankyFrames": 0,
+      "gpuP95Ms": 3,
+      "recentFrameP95Ms": 11.997915,
+      "cpuPercentOfOneCore": [
+        111,
+        118,
+        127
+      ],
+      "pssKb": 412310,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "2ad9ade2248073e68be0721342b99f175ba23aceb090f1cd11fc299743f88fa3",
+      "variant": "benchmark-gpu-arm64"
+    },
+    {
+      "case": "one-taper05",
+      "frames": 710,
+      "jankyFrames": 274,
+      "gpuP95Ms": 6,
+      "recentFrameP95Ms": 37.065673,
+      "cpuPercentOfOneCore": [
+        160,
+        125,
+        126
+      ],
+      "pssKb": 444628,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "2ad9ade2248073e68be0721342b99f175ba23aceb090f1cd11fc299743f88fa3",
+      "variant": "benchmark-gpu-arm64"
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1250,
+      "jankyFrames": 15,
+      "gpuP95Ms": 4,
+      "recentFrameP95Ms": 19.376521,
+      "cpuPercentOfOneCore": [
+        192,
+        149,
+        148
+      ],
+      "pssKb": 447856,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "2ad9ade2248073e68be0721342b99f175ba23aceb090f1cd11fc299743f88fa3",
+      "variant": "benchmark-gpu-arm64"
+    },
+    {
+      "case": "two-taper05",
+      "frames": 351,
+      "jankyFrames": 341,
+      "gpuP95Ms": 11,
+      "recentFrameP95Ms": 77.83459,
+      "cpuPercentOfOneCore": [
+        177,
+        120,
+        123
+      ],
+      "pssKb": 417856,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "2ad9ade2248073e68be0721342b99f175ba23aceb090f1cd11fc299743f88fa3",
+      "variant": "benchmark-gpu-arm64"
+    },
+    {
+      "case": "one-taper0",
+      "frames": 1265,
+      "jankyFrames": 1,
+      "gpuP95Ms": 2,
+      "recentFrameP95Ms": 11.306502,
+      "cpuPercentOfOneCore": [
+        110,
+        113,
+        119
+      ],
+      "pssKb": 492013,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "c744233b76a10e8aa726c7d6c0ff8cedda118ccbe6b246206d973ba634cb3c5c",
+      "variant": "benchmark-gpu-tight-arm64"
+    },
+    {
+      "case": "one-taper05",
+      "frames": 536,
+      "jankyFrames": 333,
+      "gpuP95Ms": 5,
+      "recentFrameP95Ms": 32.873753,
+      "cpuPercentOfOneCore": [
+        117,
+        125,
+        124
+      ],
+      "pssKb": 478454,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "c744233b76a10e8aa726c7d6c0ff8cedda118ccbe6b246206d973ba634cb3c5c",
+      "variant": "benchmark-gpu-tight-arm64"
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1252,
+      "jankyFrames": 7,
+      "gpuP95Ms": 3,
+      "recentFrameP95Ms": 12.603202,
+      "cpuPercentOfOneCore": [
+        177,
+        133,
+        138
+      ],
+      "pssKb": 508318,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "c744233b76a10e8aa726c7d6c0ff8cedda118ccbe6b246206d973ba634cb3c5c",
+      "variant": "benchmark-gpu-tight-arm64"
+    },
+    {
+      "case": "two-taper05",
+      "frames": 371,
+      "jankyFrames": 355,
+      "gpuP95Ms": 8,
+      "recentFrameP95Ms": 71.938141,
+      "cpuPercentOfOneCore": [
+        132,
+        122,
+        120
+      ],
+      "pssKb": 485994,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1,
+      "apkSha256": "c744233b76a10e8aa726c7d6c0ff8cedda118ccbe6b246206d973ba634cb3c5c",
+      "variant": "benchmark-gpu-tight-arm64"
+    },
+    {
+      "case": "one-taper0",
+      "frames": 1268,
+      "jankyFrames": 0,
+      "gpuP95Ms": 2,
+      "recentFrameP95Ms": 11.150353,
+      "cpuPercentOfOneCore": [
+        155,
+        114,
+        108
+      ],
+      "pssKb": 439705,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "011563bc311a6fa223edd922de1305254fc1756e2ca38e72ce0334a0e2b300a0",
+      "variant": "benchmark-batch-anchored-arm64"
+    },
+    {
+      "case": "one-taper05",
+      "frames": 785,
+      "jankyFrames": 236,
+      "gpuP95Ms": 4,
+      "recentFrameP95Ms": 36.109684,
+      "cpuPercentOfOneCore": [
+        137,
+        126,
+        127
+      ],
+      "pssKb": 513582,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "011563bc311a6fa223edd922de1305254fc1756e2ca38e72ce0334a0e2b300a0",
+      "variant": "benchmark-batch-anchored-arm64"
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1268,
+      "jankyFrames": 1,
+      "gpuP95Ms": 3,
+      "recentFrameP95Ms": 14.326034,
+      "cpuPercentOfOneCore": [
+        151,
+        132,
+        137
+      ],
+      "pssKb": 536326,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "011563bc311a6fa223edd922de1305254fc1756e2ca38e72ce0334a0e2b300a0",
+      "variant": "benchmark-batch-anchored-arm64"
+    },
+    {
+      "case": "two-taper05",
+      "frames": 403,
+      "jankyFrames": 360,
+      "gpuP95Ms": 8,
+      "recentFrameP95Ms": 69.779678,
+      "cpuPercentOfOneCore": [
+        169,
+        123,
+        121
+      ],
+      "pssKb": 470022,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "011563bc311a6fa223edd922de1305254fc1756e2ca38e72ce0334a0e2b300a0",
+      "variant": "benchmark-batch-anchored-arm64"
+    },
+    {
+      "case": "two-taper05-repeat2",
+      "frames": 394,
+      "jankyFrames": 344,
+      "gpuP95Ms": 8,
+      "recentFrameP95Ms": 73.184232,
+      "cpuPercentOfOneCore": [
+        140,
+        124,
+        120
+      ],
+      "pssKb": 474454,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "011563bc311a6fa223edd922de1305254fc1756e2ca38e72ce0334a0e2b300a0",
+      "variant": "benchmark-batch-anchored-arm64"
+    },
+    {
+      "case": "two-taper05-repeat3",
+      "frames": 357,
+      "jankyFrames": 336,
+      "gpuP95Ms": 8,
+      "recentFrameP95Ms": 73.562578,
+      "cpuPercentOfOneCore": [
+        142,
+        120,
+        118
+      ],
+      "pssKb": 411070,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "011563bc311a6fa223edd922de1305254fc1756e2ca38e72ce0334a0e2b300a0",
+      "variant": "benchmark-batch-anchored-arm64"
+    },
+    {
+      "case": "one-taper0",
+      "frames": 1270,
+      "jankyFrames": 0,
+      "gpuP95Ms": 3,
+      "recentFrameP95Ms": 8.052893,
+      "cpuPercentOfOneCore": [
+        122,
+        93.4,
+        92.8
+      ],
+      "pssKb": 380377,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "e49c7c5448de8042a88c128e0cc5c1228b06ec41e2f716c35f1574b336f041a0",
+      "variant": "benchmark-hardware-arm64"
+    },
+    {
+      "case": "one-taper05",
+      "frames": 1276,
+      "jankyFrames": 0,
+      "gpuP95Ms": 9,
+      "recentFrameP95Ms": 15.545612,
+      "cpuPercentOfOneCore": [
+        144,
+        96.8,
+        94.8
+      ],
+      "pssKb": 455182,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "e49c7c5448de8042a88c128e0cc5c1228b06ec41e2f716c35f1574b336f041a0",
+      "variant": "benchmark-hardware-arm64"
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1273,
+      "jankyFrames": 1,
+      "gpuP95Ms": 4,
+      "recentFrameP95Ms": 10.997776,
+      "cpuPercentOfOneCore": [
+        128,
+        97.4,
+        103
+      ],
+      "pssKb": 395878,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "e49c7c5448de8042a88c128e0cc5c1228b06ec41e2f716c35f1574b336f041a0",
+      "variant": "benchmark-hardware-arm64"
+    },
+    {
+      "case": "two-taper05",
+      "frames": 1271,
+      "jankyFrames": 1,
+      "gpuP95Ms": 4950,
+      "recentFrameP95Ms": 36.925987,
+      "cpuPercentOfOneCore": [
+        166,
+        123,
+        125
+      ],
+      "pssKb": 478218,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "e49c7c5448de8042a88c128e0cc5c1228b06ec41e2f716c35f1574b336f041a0",
+      "variant": "benchmark-hardware-arm64"
+    },
+    {
+      "case": "two-taper05-repeat2",
+      "frames": 1276,
+      "jankyFrames": 1,
+      "gpuP95Ms": 4950,
+      "recentFrameP95Ms": 28.254141,
+      "cpuPercentOfOneCore": [
+        142,
+        117,
+        112
+      ],
+      "pssKb": 480718,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "e49c7c5448de8042a88c128e0cc5c1228b06ec41e2f716c35f1574b336f041a0",
+      "variant": "benchmark-hardware-arm64"
+    },
+    {
+      "case": "two-taper05-repeat3",
+      "frames": 1268,
+      "jankyFrames": 1,
+      "gpuP95Ms": 25,
+      "recentFrameP95Ms": 24.402031,
+      "cpuPercentOfOneCore": [
+        107,
+        117,
+        129
+      ],
+      "pssKb": 479350,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "e49c7c5448de8042a88c128e0cc5c1228b06ec41e2f716c35f1574b336f041a0",
+      "variant": "benchmark-hardware-arm64"
+    },
+    {
+      "case": "one-taper0",
+      "frames": 1271,
+      "jankyFrames": 0,
+      "gpuP95Ms": 2,
+      "recentFrameP95Ms": 10.030591,
+      "cpuPercentOfOneCore": [
+        100,
+        96.2,
+        92.2
+      ],
+      "pssKb": 338686,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "b7e2c313ab257ca39055809090ae1599241a2655d007622ebca3c77269e364f1",
+      "variant": "benchmark-hardware-segments-arm64"
+    },
+    {
+      "case": "one-taper05",
+      "frames": 1258,
+      "jankyFrames": 0,
+      "gpuP95Ms": 7,
+      "recentFrameP95Ms": 12.571967,
+      "cpuPercentOfOneCore": [
+        107,
+        102,
+        91.2
+      ],
+      "pssKb": 418603,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "b7e2c313ab257ca39055809090ae1599241a2655d007622ebca3c77269e364f1",
+      "variant": "benchmark-hardware-segments-arm64"
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1272,
+      "jankyFrames": 1,
+      "gpuP95Ms": 4,
+      "recentFrameP95Ms": 10.009372,
+      "cpuPercentOfOneCore": [
+        123,
+        96.8,
+        90.2
+      ],
+      "pssKb": 372895,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "b7e2c313ab257ca39055809090ae1599241a2655d007622ebca3c77269e364f1",
+      "variant": "benchmark-hardware-segments-arm64"
+    },
+    {
+      "case": "two-taper05",
+      "frames": 1262,
+      "jankyFrames": 0,
+      "gpuP95Ms": 19,
+      "recentFrameP95Ms": 19.961706,
+      "cpuPercentOfOneCore": [
+        107,
+        102,
+        108
+      ],
+      "pssKb": 416423,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "b7e2c313ab257ca39055809090ae1599241a2655d007622ebca3c77269e364f1",
+      "variant": "benchmark-hardware-segments-arm64"
+    },
+    {
+      "case": "two-taper05-repeat2",
+      "frames": 1264,
+      "jankyFrames": 0,
+      "gpuP95Ms": 14,
+      "recentFrameP95Ms": 14.779721,
+      "cpuPercentOfOneCore": [
+        92.5,
+        105,
+        108
+      ],
+      "pssKb": 445051,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "b7e2c313ab257ca39055809090ae1599241a2655d007622ebca3c77269e364f1",
+      "variant": "benchmark-hardware-segments-arm64"
+    },
+    {
+      "case": "two-taper05-repeat3",
+      "frames": 1267,
+      "jankyFrames": 0,
+      "gpuP95Ms": 18,
+      "recentFrameP95Ms": 27.895566,
+      "cpuPercentOfOneCore": [
+        121,
+        106,
+        105
+      ],
+      "pssKb": 431254,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "b7e2c313ab257ca39055809090ae1599241a2655d007622ebca3c77269e364f1",
+      "variant": "benchmark-hardware-segments-arm64"
+    },
+    {
+      "case": "one-taper0",
+      "frames": 1265,
+      "jankyFrames": 0,
+      "gpuP95Ms": 4,
+      "recentFrameP95Ms": 8.348804,
+      "cpuPercentOfOneCore": [
+        88.8,
+        87.6,
+        92.2
+      ],
+      "pssKb": 237892,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "3625b137ed0f1c05c69078e797cbb588dbfbec14248c408a5c223d42aac01182",
+      "variant": "benchmark-hardware-downsample-arm64"
+    },
+    {
+      "case": "one-taper05",
+      "frames": 1264,
+      "jankyFrames": 0,
+      "gpuP95Ms": 6,
+      "recentFrameP95Ms": 11.51848,
+      "cpuPercentOfOneCore": [
+        114,
+        88.6,
+        90.2
+      ],
+      "pssKb": 342765,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "3625b137ed0f1c05c69078e797cbb588dbfbec14248c408a5c223d42aac01182",
+      "variant": "benchmark-hardware-downsample-arm64"
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1261,
+      "jankyFrames": 0,
+      "gpuP95Ms": 5,
+      "recentFrameP95Ms": 10.735964,
+      "cpuPercentOfOneCore": [
+        111,
+        97.8,
+        92.8
+      ],
+      "pssKb": 270205,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "3625b137ed0f1c05c69078e797cbb588dbfbec14248c408a5c223d42aac01182",
+      "variant": "benchmark-hardware-downsample-arm64"
+    },
+    {
+      "case": "two-taper05",
+      "frames": 1274,
+      "jankyFrames": 0,
+      "gpuP95Ms": 7,
+      "recentFrameP95Ms": 11.531284,
+      "cpuPercentOfOneCore": [
+        134,
+        98.2,
+        87.2
+      ],
+      "pssKb": 373361,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "3625b137ed0f1c05c69078e797cbb588dbfbec14248c408a5c223d42aac01182",
+      "variant": "benchmark-hardware-downsample-arm64"
+    },
+    {
+      "case": "two-taper05-repeat2",
+      "frames": 1264,
+      "jankyFrames": 0,
+      "gpuP95Ms": 7,
+      "recentFrameP95Ms": 13.634822,
+      "cpuPercentOfOneCore": [
+        88.8,
+        102,
+        93.4
+      ],
+      "pssKb": 351669,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "3625b137ed0f1c05c69078e797cbb588dbfbec14248c408a5c223d42aac01182",
+      "variant": "benchmark-hardware-downsample-arm64"
+    },
+    {
+      "case": "two-taper05-repeat3",
+      "frames": 1266,
+      "jankyFrames": 0,
+      "gpuP95Ms": 7,
+      "recentFrameP95Ms": 14.286572,
+      "cpuPercentOfOneCore": [
+        137,
+        97.4,
+        94.4
+      ],
+      "pssKb": 352053,
+      "thermalStatusBefore": 0,
+      "thermalStatusAfter": 0,
+      "apkSha256": "3625b137ed0f1c05c69078e797cbb588dbfbec14248c408a5c223d42aac01182",
+      "variant": "benchmark-hardware-downsample-arm64"
+    }
+  ]
+}

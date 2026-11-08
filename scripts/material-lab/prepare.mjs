@@ -1,3 +1,4 @@
+import './generate-hardware-loader.mjs';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
@@ -8,6 +9,12 @@ const root = resolve(here, '../..');
 const files = [
   'templates/material/MaterialScene.tsx',
   'scripts/material-lab/MaterialLab.tsx',
+  'scripts/material-lab/LoaderBenchmark.tsx',
+  'scripts/material-lab/HardwareLight.tsx',
+  'scripts/material-lab/HardwareLoader.generated.tsx',
+  'scripts/material-lab/generate-hardware-loader.mjs',
+  'scripts/material-lab/with-hardware-light.js',
+  'scripts/material-lab/native/BloomLightProbe.kt',
   'scripts/material-lab/bun.lock',
   'scripts/material-lab/package.json',
   'scripts/material-lab/app.config.js',
@@ -17,6 +24,7 @@ const files = [
   'scripts/material-lab/postcss.config.js',
   'scripts/material-lab/without-network.js',
   'scripts/material-lab/source-inputs.js',
+  'scripts/material-lab/path-probe.js',
   'templates/ai-chat/assets/gallery/beach-kid.webp',
 ];
 const sourceHash = createHash('sha256');
@@ -51,6 +59,12 @@ writeFileSync(
       lockSha256: createHash('sha256')
         .update(readFileSync(resolve(here, 'bun.lock')))
         .digest('hex'),
+      scene: process.env.BLOOM_LAB_SCENE || 'material',
+      variant: process.env.BLOOM_LAB_VARIANT || 'production-svg',
+      fixedOpticsTime:
+        process.env.BLOOM_LAB_FIXED_TIME === undefined
+          ? null
+          : Number(process.env.BLOOM_LAB_FIXED_TIME),
       artifactKind: 'source fixture; native Bloom module from published 17.22.0',
       reactCompiler: false,
       dependencies: JSON.parse(readFileSync(resolve(here, 'package.json'), 'utf8')).dependencies,

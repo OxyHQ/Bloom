@@ -7,6 +7,7 @@ import { PortalProvider, PortalOutlet } from '../../src/portal';
 import { SurfaceProvider } from '../../src/surfaces';
 import { MaterialScene } from '../../templates/material/MaterialScene';
 import build from './build.json';
+import { LoaderBenchmark } from './LoaderBenchmark';
 
 /** Negative probes run before the scene. Timeout never proves isolation.
  * The merged APK must independently pass the no-INTERNET-permission gate. */
@@ -56,11 +57,19 @@ export function MaterialLab() {
         <BloomProvider mode={mode} colorPreset="oxy" reduceTransparency={reduced} haptics={false}>
           <PortalProvider>
             <SurfaceProvider>
-              <MaterialScene
-                onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
-                onToggleTransparency={() => setReduced((value) => !value)}
-                buildLabel={`${build.commit.slice(0, 12)} · ${Platform.OS} ${Platform.Version} · offline-verified`}
-              />
+              {build.scene === 'loader-benchmark' ? (
+                <LoaderBenchmark
+                  onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
+                  hardware={build.variant.startsWith('hardware-')}
+                  label={`${build.commit.slice(0, 12)} · ${build.variant} · offline-verified`}
+                />
+              ) : (
+                <MaterialScene
+                  onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
+                  onToggleTransparency={() => setReduced((value) => !value)}
+                  buildLabel={`${build.commit.slice(0, 12)} · ${Platform.OS} ${Platform.Version} · offline-verified`}
+                />
+              )}
               <PortalOutlet />
             </SurfaceProvider>
           </PortalProvider>

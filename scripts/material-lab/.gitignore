@@ -4,3 +4,4 @@ ios/
 node_modules/
 build.json
 attestation.json
+HardwareLoader.generated*.tsx
