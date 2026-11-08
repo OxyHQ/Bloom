@@ -1,0 +1,50 @@
+test_404_still_fails_after_bounded_retries (__main__.RealCurlTransport.test_404_still_fails_after_bounded_retries) ... ok
+test_receive_reset_exhausts_exactly_three_attempts (__main__.RealCurlTransport.test_receive_reset_exhausts_exactly_three_attempts) ... ok
+test_receive_reset_recovers_and_truncates_partial_output (__main__.RealCurlTransport.test_receive_reset_recovers_and_truncates_partial_output) ... ok
+test_untrusted_tls_still_fails_without_an_http_request (__main__.RealCurlTransport.test_untrusted_tls_still_fails_without_an_http_request) ... ok
+test_all_observed_kotlin_versions_are_exclusive_and_cleanup_independent (__main__.VerifiedDownloads.test_all_observed_kotlin_versions_are_exclusive_and_cleanup_independent) ... kotlin-compiler-embeddable-2.2.0.jar: official-fallback, SHA256 verified
+kotlin-compiler-embeddable-2.2.0.pom: official-fallback, SHA256 verified
+Enabled exact-GAV Kotlin fallback for root and included builds
+kotlin-compiler-embeddable-2.2.10.jar: official-fallback, SHA256 verified
+kotlin-compiler-embeddable-2.2.10.pom: official-fallback, SHA256 verified
+Enabled exact-GAV Kotlin fallback for root and included builds
+kotlin-compiler-embeddable-2.2.21.jar: official-fallback, SHA256 verified
+kotlin-compiler-embeddable-2.2.21.pom: official-fallback, SHA256 verified
+Enabled exact-GAV Kotlin fallback for root and included builds
+Kotlin 2.2.0: canonical transport available; normal Gradle resolution retained
+ok
+test_archive_version_must_match (__main__.VerifiedDownloads.test_archive_version_must_match) ... gradle-8.3-bin.zip: primary, SHA256 verified
+ok
+test_cleanup_removes_only_own_init_and_handles_unset_home (__main__.VerifiedDownloads.test_cleanup_removes_only_own_init_and_handles_unset_home) ... ok
+test_corrupt_fallback_is_rejected (__main__.VerifiedDownloads.test_corrupt_fallback_is_rejected) ... ok
+test_corrupt_primary_does_not_fall_back_or_publish (__main__.VerifiedDownloads.test_corrupt_primary_does_not_fall_back_or_publish) ... ok
+test_exact_kotlin_repository_only_after_fallback_and_cleared_on_recovery (__main__.VerifiedDownloads.test_exact_kotlin_repository_only_after_fallback_and_cleared_on_recovery) ... kotlin-compiler-embeddable-2.2.0.jar: official-fallback, SHA256 verified
+kotlin-compiler-embeddable-2.2.0.pom: official-fallback, SHA256 verified
+Enabled exact-GAV Kotlin fallback for root and included builds
+Kotlin 2.2.0: canonical transport available; normal Gradle resolution retained
+ok
+test_healthy_gradle_keeps_action_cache_and_does_not_download (__main__.VerifiedDownloads.test_healthy_gradle_keeps_action_cache_and_does_not_download) ... Gradle 9.4.1: canonical transport available; setup-gradle cache/install retained
+ok
+test_hermes_archive_escape_rejected_before_extraction (__main__.VerifiedDownloads.test_hermes_archive_escape_rejected_before_extraction) ... hermes.tar.gz: official-fallback, SHA256 verified
+hermes.tar.gz: official-fallback, SHA256 verified
+hermes.tar.gz: official-fallback, SHA256 verified
+ok
+test_hermes_normal_route_and_unrecognized_version_do_not_override (__main__.VerifiedDownloads.test_hermes_normal_route_and_unrecognized_version_do_not_override) ... Hermes: canonical transport available; normal RN download retained
+ok
+test_hermes_verified_tree_and_cleanup_leave_other_files (__main__.VerifiedDownloads.test_hermes_verified_tree_and_cleanup_leave_other_files) ... hermes.tar.gz: official-fallback, SHA256 verified
+Hermes: verified source commit 9a115f15785851f4ff2747ebb090ddd066fc8ad2; RN compilation tasks retained
+ok
+test_primary_success_never_calls_fallback (__main__.VerifiedDownloads.test_primary_success_never_calls_fallback) ... artifact.jar: primary, SHA256 verified
+ok
+test_probe_treats_only_success_or_bounded_healthy_body_as_available (__main__.VerifiedDownloads.test_probe_treats_only_success_or_bounded_healthy_body_as_available) ... ok
+test_transport_error_reports_status_without_sensitive_response (__main__.VerifiedDownloads.test_transport_error_reports_status_without_sensitive_response) ... ok
+test_transport_failure_uses_only_verified_fallback (__main__.VerifiedDownloads.test_transport_failure_uses_only_verified_fallback) ... artifact.jar: official-fallback, SHA256 verified
+ok
+test_unknown_gradle_version_cannot_download (__main__.VerifiedDownloads.test_unknown_gradle_version_cannot_download) ... ok
+test_wrong_kotlin_version_is_rejected_before_download (__main__.VerifiedDownloads.test_wrong_kotlin_version_is_rejected_before_download) ... ok
+test_wrong_size_with_matching_digest_never_retries_or_falls_back (__main__.VerifiedDownloads.test_wrong_size_with_matching_digest_never_retries_or_falls_back) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 16.926s
+
+OK
