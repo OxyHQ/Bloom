@@ -1,3 +1,5 @@
+import { SVG_CHARACTER_SHAPES } from './svg-catalog';
+
 /** Every body in the catalog and the English name the editors show for it. */
 export const NATIVE_CHARACTER_SHAPES = [
   ['clippo', 'Clippo'],
@@ -24,4 +26,8 @@ export const MIGRATED_CHARACTER_SHAPES = [
   ['pebble', 'Pebble'],
   ['squircle', 'Squircle'],
 ] as const;
-export const CHARACTER_SHAPES = [...NATIVE_CHARACTER_SHAPES, ...MIGRATED_CHARACTER_SHAPES] as const;
+export const CHARACTER_SHAPES = [
+  ...NATIVE_CHARACTER_SHAPES,
+  ...MIGRATED_CHARACTER_SHAPES,
+  ...SVG_CHARACTER_SHAPES,
+] as const;

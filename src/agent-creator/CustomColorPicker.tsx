@@ -2,8 +2,10 @@ import {
   type ComponentRef,
   type ComponentType,
   type ReactNode,
+  memo,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -17,7 +19,8 @@ import {
 } from 'react-native';
 import { styled } from 'react-native-css';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { ClipPath, Defs, G, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { normalizeAvatarSkinColor } from '../agent-avatar/skin-color';
 import { useFieldMembership } from '../field/membership';
 import { StyledView } from '../styles/styled-primitives';
 import { useSvgIdPrefix } from '../styles/svg-id';
@@ -40,14 +43,65 @@ const THUMB =
   'pointer-events-none absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white bg-white/0 ' +
   'shadow-[0_2px_4px_rgb(0_0_0/0.18),inset_0_0_0_1px_rgb(0_0_0/0.06)]';
 
+const SkinColorField = memo(function SkinColorField({ hue, id }: { hue: number; id: string }) {
+  // Hue changes rebuild this small vector field. Saturation/value dragging only
+  // moves the thumb; every displayed stop uses the same policy as saved skin.
+  const fieldColors = useMemo(
+    () =>
+      Array.from({ length: 32 }, (_, x) =>
+        Array.from({ length: 13 }, (_, y) =>
+          normalizeAvatarSkinColor(hsvToHex({ h: hue, s: (x + 0.5) / 32, v: 1 - y / 12 })),
+        ),
+      ),
+    [hue],
+  );
+  return (
+    <Svg
+      testID="avatar-skin-color-field"
+      width="100%"
+      height="100%"
+      {...svgA11yProps()}
+      style={{ position: 'absolute', left: 0, top: 0, borderRadius: 16, overflow: 'hidden' }}
+    >
+      <Defs>
+        <ClipPath id={`${id}-field-clip`}>
+          <Rect rx={16} width="100%" height="100%" />
+        </ClipPath>
+        {fieldColors.map((stops, column) => (
+          <LinearGradient key={column} id={`${id}-field-${column}`} x1="0" x2="0" y1="0" y2="1">
+            {stops.map((color, row) => (
+              <Stop key={row} offset={row / 12} stopColor={color} />
+            ))}
+          </LinearGradient>
+        ))}
+      </Defs>
+      <G clipPath={`url(#${id}-field-clip)`}>
+        {fieldColors.map((_, column) => (
+          <Rect
+            key={column}
+            x={`${(column * 100) / 32}%`}
+            width={`${100 / 32 + 0.5}%`}
+            height="100%"
+            fill={`url(#${id}-field-${column})`}
+          />
+        ))}
+      </G>
+    </Svg>
+  );
+});
+
 /** Source HSV picker: own two-dimensional field and 12px hue rail, rAF-throttled. */
 export function CustomColorPicker({
   value,
   onChange,
+  onInteractionStart,
+  onInteractionEnd,
   className,
 }: {
   value: string;
   onChange: (hex: string) => void;
+  onInteractionStart?: () => void;
+  onInteractionEnd?: () => void;
   className?: string;
 }) {
   const messages = useAgentCreatorMessages();
@@ -56,14 +110,16 @@ export function CustomColorPicker({
   const id = useSvgIdPrefix('bloom-color-picker');
   const fieldRef = useRef<ComponentRef<typeof View>>(null);
   const railRef = useRef<ComponentRef<typeof View>>(null);
-  const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(value) ?? { h: 259, s: 0.83, v: 1 });
-  const [hexDraft, setHexDraft] = useState(() => value.toLowerCase());
-  const [seenValue, setSeenValue] = useState(() => value.toLowerCase());
-  const [lastEmitted, setLastEmitted] = useState(() => value.toLowerCase());
+  const [hsv, setHsv] = useState<Hsv>(
+    () => hexToHsv(normalizeAvatarSkinColor(value)) ?? { h: 259, s: 0.83, v: 1 },
+  );
+  const [hexDraft, setHexDraft] = useState(() => normalizeAvatarSkinColor(value));
+  const [seenValue, setSeenValue] = useState(() => normalizeAvatarSkinColor(value));
+  const [lastEmitted, setLastEmitted] = useState(() => normalizeAvatarSkinColor(value));
   const [width, setWidth] = useState(228);
   const [hexFocused, setHexFocused] = useState(false);
   const frame = useRef(0);
-  const nextValue = value.toLowerCase();
+  const nextValue = normalizeAvatarSkinColor(value);
   if (nextValue !== seenValue) {
     setSeenValue(nextValue);
     if (nextValue !== lastEmitted) {
@@ -75,23 +131,34 @@ export function CustomColorPicker({
       }
     }
   }
+  const pendingHsv = useRef<Hsv | undefined>(undefined);
+  const interacting = useRef(false);
+  const latest = useRef({ onChange, onInteractionEnd, disabled: membership.disabled });
+  latest.current = { onChange, onInteractionEnd, disabled: membership.disabled };
+  const flush = useCallback(() => {
+    if (frame.current) cancelAnimationFrame(frame.current);
+    frame.current = 0;
+    const next = pendingHsv.current;
+    pendingHsv.current = undefined;
+    if (!next || latest.current.disabled) return;
+    const hex = normalizeAvatarSkinColor(hsvToHex(next));
+    setHsv(next);
+    setLastEmitted(hex);
+    setHexDraft(hex);
+    latest.current.onChange(hex);
+  }, []);
   const emit = useCallback(
     (next: Hsv) => {
-      if (membership.disabled) return;
-      setHsv(next);
-      cancelAnimationFrame(frame.current);
-      frame.current = requestAnimationFrame(() => {
-        const hex = hsvToHex(next);
-        setLastEmitted(hex);
-        setHexDraft(hex);
-        onChange(hex);
-      });
+      if (latest.current.disabled) return;
+      pendingHsv.current = next;
+      if (!frame.current) frame.current = requestAnimationFrame(flush);
     },
-    [onChange, membership.disabled],
+    [flush],
   );
   useEffect(
     () => () => {
       if (frame.current) cancelAnimationFrame(frame.current);
+      if (interacting.current) latest.current.onInteractionEnd?.();
     },
     [],
   );
@@ -99,17 +166,24 @@ export function CustomColorPicker({
     .enabled(!membership.disabled)
     .minDistance(0)
     .runOnJS(true)
+    .onFinalize(() => {
+      flush();
+      interacting.current = false;
+      latest.current.onInteractionEnd?.();
+    })
     .onBegin((event) => {
+      interacting.current = true;
+      onInteractionStart?.();
       fieldRef.current?.focus();
       emit({
-        ...hsv,
+        ...(pendingHsv.current ?? hsv),
         s: clamp01(event.x / width),
         v: 1 - clamp01(event.y / ((width * 2) / 3)),
       });
     })
     .onUpdate((event) =>
       emit({
-        ...hsv,
+        ...(pendingHsv.current ?? hsv),
         s: clamp01(event.x / width),
         v: 1 - clamp01(event.y / ((width * 2) / 3)),
       }),
@@ -118,22 +192,37 @@ export function CustomColorPicker({
     .enabled(!membership.disabled)
     .minDistance(0)
     .runOnJS(true)
-    .onBegin((event) => {
-      railRef.current?.focus();
-      emit({ ...hsv, h: Math.min(clamp01(event.x / width) * 360, 359.9) });
+    .onFinalize(() => {
+      flush();
+      interacting.current = false;
+      latest.current.onInteractionEnd?.();
     })
-    .onUpdate((event) => emit({ ...hsv, h: Math.min(clamp01(event.x / width) * 360, 359.9) }));
+    .onBegin((event) => {
+      interacting.current = true;
+      onInteractionStart?.();
+      railRef.current?.focus();
+      emit({
+        ...(pendingHsv.current ?? hsv),
+        h: Math.min(clamp01(event.x / width) * 360, 359.9),
+      });
+    })
+    .onUpdate((event) =>
+      emit({
+        ...(pendingHsv.current ?? hsv),
+        h: Math.min(clamp01(event.x / width) * 360, 359.9),
+      }),
+    );
   useTrackEvents(fieldRef, undefined, (key, shift) => {
     const step = shift ? 0.1 : 0.02;
     const moves: Record<string, Partial<Hsv>> = {
-      ArrowLeft: { s: clamp01(hsv.s - step) },
-      ArrowRight: { s: clamp01(hsv.s + step) },
-      ArrowUp: { v: clamp01(hsv.v + step) },
-      ArrowDown: { v: clamp01(hsv.v - step) },
+      ArrowLeft: { s: clamp01((pendingHsv.current ?? hsv).s - step) },
+      ArrowRight: { s: clamp01((pendingHsv.current ?? hsv).s + step) },
+      ArrowUp: { v: clamp01((pendingHsv.current ?? hsv).v + step) },
+      ArrowDown: { v: clamp01((pendingHsv.current ?? hsv).v - step) },
     };
     const move = moves[key];
     if (!move) return false;
-    emit({ ...hsv, ...move });
+    emit({ ...(pendingHsv.current ?? hsv), ...move });
     return true;
   });
   useTrackEvents(railRef, undefined, (key, shift) => {
@@ -145,24 +234,30 @@ export function CustomColorPicker({
           ? step
           : null;
     if (delta === null) return false;
-    emit({ ...hsv, h: Math.min(Math.max(hsv.h + delta, 0), 359.9) });
+    emit({
+      ...(pendingHsv.current ?? hsv),
+      h: Math.min(Math.max((pendingHsv.current ?? hsv).h + delta, 0), 359.9),
+    });
     return true;
   });
   const commitHexDraft = () => {
     if (membership.disabled) return;
+    if (frame.current) cancelAnimationFrame(frame.current);
+    frame.current = 0;
+    pendingHsv.current = undefined;
     const parsed = hexToHsv(hexDraft);
     if (!parsed) {
       setHexDraft(lastEmitted);
       return;
     }
-    const hex = hsvToHex(parsed);
+    const hex = normalizeAvatarSkinColor(hsvToHex(parsed));
     setLastEmitted(hex);
-    setHsv(parsed);
+    setHsv(hexToHsv(hex)!);
     setHexDraft(hex);
     onChange(hex);
   };
   const hueColor = hsvToHex({ h: hsv.h, s: 1, v: 1 });
-  const current = hsvToHex(hsv);
+  const current = normalizeAvatarSkinColor(hsvToHex(hsv));
   const thumb = {
     width: 16,
     height: 16,
@@ -201,30 +296,15 @@ export function CustomColorPicker({
           ]}
           onAccessibilityAction={(event) =>
             emit({
-              ...hsv,
-              v: clamp01(hsv.v + (event.nativeEvent.actionName === 'increment' ? 0.02 : -0.02)),
+              ...(pendingHsv.current ?? hsv),
+              v: clamp01(
+                (pendingHsv.current ?? hsv).v +
+                  (event.nativeEvent.actionName === 'increment' ? 0.02 : -0.02),
+              ),
             })
           }
         >
-          <Svg
-            width="100%"
-            height="100%"
-            {...svgA11yProps()}
-            style={{ position: 'absolute', left: 0, top: 0 }}
-          >
-            <Defs>
-              <LinearGradient id={`${id}sat`} x1="0" x2="1" y1="0" y2="0">
-                <Stop offset="0" stopColor="#ffffff" />
-                <Stop offset="1" stopColor={hueColor} />
-              </LinearGradient>
-              <LinearGradient id={`${id}value`} x1="0" x2="0" y1="0" y2="1">
-                <Stop offset="0" stopColor="#000000" stopOpacity={0} />
-                <Stop offset="1" stopColor="#000000" />
-              </LinearGradient>
-            </Defs>
-            <Rect rx={16} width="100%" height="100%" fill={`url(#${id}sat)`} />
-            <Rect rx={16} width="100%" height="100%" fill={`url(#${id}value)`} />
-          </Svg>
+          <SkinColorField hue={hsv.h} id={id} />
           <StyledView
             pointerEvents="none"
             aria-hidden
@@ -266,9 +346,13 @@ export function CustomColorPicker({
           ]}
           onAccessibilityAction={(event) =>
             emit({
-              ...hsv,
+              ...(pendingHsv.current ?? hsv),
               h: Math.min(
-                Math.max(hsv.h + (event.nativeEvent.actionName === 'increment' ? 3 : -3), 0),
+                Math.max(
+                  (pendingHsv.current ?? hsv).h +
+                    (event.nativeEvent.actionName === 'increment' ? 3 : -3),
+                  0,
+                ),
                 359.9,
               ),
             })

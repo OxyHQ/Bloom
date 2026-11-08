@@ -102,6 +102,8 @@ describe('Svg accessibility props', () => {
         ),
       ].sort(),
     ).toEqual([
+      'agent-avatar/VectorCharacterAvatar.tsx',
+      'agent-avatar/VectorStaticPortrait.tsx',
       'agent-creator/CustomColorPicker.tsx',
       'agent-creator/GlossArt.tsx',
       'agent-creator/ShapeArc.tsx',

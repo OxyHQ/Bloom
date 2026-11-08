@@ -27,16 +27,3 @@ function ControlledCreator() {
   );
 }
 export const Basic: Story = { render: () => <ControlledCreator /> };
-
-import { INITIAL_WORKSPACE } from '../multi-agent-chat/data';
-function SourceComparisonCreator() {
-  const [agent, setAgent] = useState<AgentCreatorAgent>(INITIAL_WORKSPACE.agents[0]!);
-  return (
-    <View style={{ width: 360, height: 900, padding: 12 }}>
-      <AgentCreator agent={agent} onChange={setAgent} onClose={() => {}} />
-    </View>
-  );
-}
-export const SourceComparison: Story = {
-  render: () => <SourceComparisonCreator />,
-};

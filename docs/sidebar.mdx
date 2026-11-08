@@ -30,8 +30,8 @@ Give it a height (it fills `100%`); its width is its own.
 
 Use `primaryAction` for the sidebar's main command. Bloom reuses `Fab` with its action tone and controlled `collapsed` state,
 50px tall and full-width when expanded, a 50px circle with a 26px glyph when collapsed or in
-`variant="rail"`. It stays outside the scrolling destinations so long navigation
-lists do not push it out of reach. The expanded label follows the sidebar's existing
+`variant="rail"`. It occupies the sticky footer inside the shared whole-sidebar scroll viewport, so long
+navigation lists do not push it out of reach while the footer fits. The expanded label follows the sidebar's existing
 collapse animation and reduced-motion setting; the button keeps one focus target.
 
 ```tsx
@@ -192,7 +192,7 @@ the top (avatar, name, up/down chevron) and the account the card at the foot
 />
 ```
 
-- `toolbar` is a fixed row under the header (logo, account, collapse control) and above the modes: the header stays. `header` replaces the header row instead; `header={false}` draws none. A conversations sidebar puts its search and tools in `toolbar` ([`ConversationSidebar`](./conversation-sidebar.mdx)).
+- `toolbar` is a sticky row under the header (logo, account, collapse control) and above the modes: the header stays. `header` replaces the header row instead; `header={false}` draws none. A conversations sidebar puts its search and tools in `toolbar` ([`ConversationSidebar`](./conversation-sidebar.mdx)).
 - The default segmented switch between sidebar modes renders under the header and above quick search. Standalone it is `SidebarModeSwitcher` (`modes`, `value`, `onValueChange`).
 - Track p4, radius 20, background-tertiary (neutral-200 / neutral-800). Rows are 32 tall and 4 apart: an 18px icon in a 32 box, 4 gap, `body-2-medium`. The selected row's 32px pill — card / neutral-700 with shadow-xs, the sidebar theme toggle's thumb — slides 200ms ease between rows, instantly under reduced motion.
 - Rest is text-secondary, selected text-primary. On web a `shortcut` hint (`caption-2`, text-tertiary) appears at the row's end on hover.
@@ -235,7 +235,7 @@ radios. See [Compose application layouts](/docs/bloom/main/compose-layouts).
 />
 ```
 
-- The header, collapse control, mode switcher and quick search stay fixed; only destination rows scroll (the shared overlay scrollbar on web, system indicator on native). With a `tree`: the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
+- One viewport scrolls the entire sidebar. Header controls and footer actions are sticky sections inside it (the shared overlay scrollbar on web, system indicator on native). With a `tree`: the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
 - A folder row is p 8 with a 20px folder glyph (open while expanded) and the label; its rows are py 5 / pr 8 / pl 36 with the label and a `meta` chip (radius 4, background-tertiary, px 4 / py 1, caption-1-medium), background-secondary-hover while selected or hovered. A curved 1px icon-quaternary connector drops from the folder glyph into each row. The rows' height and opacity ease open and shut together over 300ms; collapsed rows leave the tab order.
 - Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts every section.
 - The tree hides while collapsed.
@@ -528,13 +528,13 @@ height.
 
 ### Scroll overflow cues
 
-Panel and rail destinations use the shared `ScrollSurface` and its isolated metrics.
-Each region paints a 40px fade in its own surface color at an
+Panel and rail use one full-size `ScrollSurface` and its isolated metrics. Header, navigation, primary action and footer all belong to that same scroll content.
+Each region paints a fade up to 40px deep in its own painted surface color at an
 edge only when more content exists beyond it. The initial content and viewport
 measurements reveal the bottom cue before the first scroll. At the top there is
 no top fade; at the bottom there is no bottom fade. Content that fits has neither.
 Resizing or filtering updates these cues without changing content padding.
-The decorative overlays ignore pointer input and are excluded from accessibility.
+The decorative overlays ignore pointer input and are excluded from accessibility. With sticky chrome, each fade is capped at one quarter of the remaining body height, leaving at least half clear. The decorative layer clips to the panel corners, while the outer material keeps its shadow.
 
 ### Collapse motion
 
@@ -545,12 +545,14 @@ motion applies the target layout immediately. Mode selection has its own
 indicator timing; its position is calculated from the current animated row
 height so selection and collapse can happen together.
 
-The panel scroll viewport extends behind the bottom half of the last fixed header control (up to 20px). The top fade begins there, while compensating content padding preserves the initial row spacing. Fixed controls remain above the fade and available throughout scrolling.
+Header and footer sections stick inside the shared viewport; padding belongs to the content, not an expanded inner scroller. When their combined height leaves less than 48px for navigation, they return to normal flow so every control remains reachable.
+
+Historical layout: the destination-only viewport used a header overlap of up to 20px and lateral margins of −8px. Its rectangular fades reached outside rounded corners, and separate chrome could consume the viewport on short screens. The current full-sidebar owner removes that overlap and compensating padding.
 
 
 ### Custom persistent footer
 
-`footer` adds content below the existing bottom controls, outside destination scrolling. Pass a node or `({ collapsed }) => ReactNode`. A rail reports `collapsed: true`; a mobile panel reports `false`, even when its controlled `collapsed` prop is true. Desktop panels report their current rendered state.
+`footer` adds content below the existing bottom controls, in its sticky footer. Pass a node or `({ collapsed }) => ReactNode`. A rail reports `collapsed: true`; a mobile panel reports `false`, even when its controlled `collapsed` prop is true. Desktop panels report their current rendered state.
 
 ```tsx
 <Sidebar
@@ -570,7 +572,7 @@ Navigation items accept `onLongPress` for secondary touch actions, in both panel
 Use `content` for conversation history or other application-owned rows. It follows
 items/tree inside Sidebar's existing scroll viewport; `onScroll` observes that
 viewport after its edge fades update. Compose `SidebarItem`/`SidebarFolder` here,
-not another scroller. Header, primary action and footer stay fixed. Content remains
+not another scroller. Header, primary action and footer use the shared sticky sections. Content remains
 mounted while collapsed, but is hidden from focus, pointers and accessibility and
 contracts with the panel's animation. `variant="rail"` omits this expanded content.
 Quick search only filters built-in rows/tree; use `showSearch={false}` when the
@@ -596,7 +598,7 @@ which also moves its footer. The default `start` preserves existing placement.
 
 Card and docked sidebar surfaces paint the shared Surface material ([Surface](./surface.mdx)) beneath their contents; plain surfaces and the navigation rail retain their existing fill. The current logo, modes, scoped sizes, tree, custom content, RTL layout, safe edges and scroll behavior are unchanged. Storybook: **Blocks / Sidebar / Glass Panel**.
 
-`header` replaces the account/logo header while keeping it outside the existing destination scroll. A render function receives `{ collapsed }`. `contentPadding` changes the expanded inset and the measured width of app-owned content together; omit it to preserve the size's default inset. `className` reaches the panel's animated layout node. Navigation rows also accept `style` and `className`; collapsed rows retain the sidebar's square geometry.
+`header` replaces the account/logo header inside the shared viewport’s sticky header. A render function receives `{ collapsed }`. `contentPadding` changes the expanded inset and the measured width of app-owned content together; omit it to preserve the size's default inset. `className` reaches the panel's animated layout node. Navigation rows also accept `style` and `className`; collapsed rows retain the sidebar's square geometry.
 
 `SidebarToolbar` composes action slots beside controlled `search` (`value`, `onValueChange`, `open`, `onOpenChange`, optional names and placeholder). Opening search expands it across those slots, focuses its input and removes hidden actions from interaction, accessibility and web tab order. Close and Escape clear the query and restore the search trigger. Leaving the field (blur) closes an empty search too; with text in it, it stays open so the filter is never hidden. The 300ms width and 200ms action fade/transform respect reduced motion. Buttons and fields reuse Bloom's existing bases.
 

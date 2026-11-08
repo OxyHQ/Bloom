@@ -487,6 +487,7 @@ describe('the census can see', () => {
     // violations". The exact set is asserted: these are the wrappers whose
     // props reach a react-native primitive untouched.
     expect([...ANIMATED_HOSTS].sort()).toEqual([
+      'AnimatedChrome',
       'AnimatedLayoutView',
       'AnimatedPanel',
       'AnimatedPressable',

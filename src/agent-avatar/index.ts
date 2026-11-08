@@ -31,3 +31,5 @@ export type {
   AvatarPresetId,
   AvatarShapeId,
 } from './catalog-ids';
+export { isSvgEyes, isSvgShape, SVG_EYES, SVG_SHAPES } from './svg-catalog';
+export type { SvgAvatarEyesId, SvgAvatarShapeId } from './svg-catalog';
