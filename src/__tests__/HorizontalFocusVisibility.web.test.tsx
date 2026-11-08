@@ -108,7 +108,7 @@ it.each([
     viewport(owner);
     const button = host.querySelector('button');
     if (!button) throw new Error('Missing focus target');
-    button.getBoundingClientRect = () => rect(100, 40);
+    button.getBoundingClientRect = () => rect(100 - owner.scrollLeft, 40);
     button.focus();
     expect(owner.scrollLeft).toBe(20);
     flush();
