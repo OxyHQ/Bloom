@@ -182,9 +182,19 @@ jobs:
           # The legacy SDK "tools" package was removed from the repository.
           packages: platform-tools
           cmdline-tools-version: '15859902' # 22.0; understands API 37.0 package versions
+      - name: Verify official Android download fallback
+        run: python3 .github/scripts/test-verified-android-downloads.py
+      - name: Prepare the exact verified Gradle distribution
+        env:
+          GRADLE_VERSION: ${{ matrix.variant == 'legacy' && '8.3' || '9.4.1' }}
+        run: python3 .github/scripts/verified-android-downloads.py gradle --version "$GRADLE_VERSION" --directory "$RUNNER_TEMP/bloom-verified-gradle"
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
         with:
           gradle-version: ${{ matrix.variant == 'legacy' && '8.3' || '9.4.1' }}
+      - name: Prepare verified Kotlin transport fallback when required
+        if: matrix.variant != 'legacy'
+        run: python3 .github/scripts/verified-android-downloads.py kotlin --version 2.2.0 --directory "$RUNNER_TEMP/bloom-verified-kotlin"
+
       - run: bun install --frozen-lockfile --ignore-scripts
       - name: Current Android SDK
         if: matrix.variant != 'legacy'
@@ -246,6 +256,10 @@ jobs:
       - name: Prove unresolved-target host regression coverage
         if: matrix.variant == 'predictive'
         run: python3 scripts/native-check/verify-host-regression.py
+      - name: Remove temporary artifact repository before Gradle cache cleanup
+        if: always()
+        run: python3 .github/scripts/verified-android-downloads.py cleanup --directory "$RUNNER_TEMP/bloom-verified-kotlin"
+
 
   # Keeps the predictive gate's NDK and CMake in main's Actions cache, the one
   # scope every pull request and merge-queue run can restore from. The android
