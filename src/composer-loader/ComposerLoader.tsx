@@ -27,13 +27,16 @@ import {
 } from './shared';
 import type { ComposerLoaderProps } from './types';
 import { useLoaderMotion } from './use-loader-motion';
+import { AndroidLight } from './AndroidLight';
 
 /**
  * A composer loader: an iridescent light band orbiting a composer pill's
  * rim, with a soft bloom bleeding inward, while the agent works.
  *
  * Native fork. The band is the same three dash-stroke layers the web fork
- * draws (see `shared.ts`), in react-native-svg. react-native-svg ignores
+ * draws (see `shared.ts`). Android 12+ uses a hardware Canvas light adapter
+ * when its native manager is installed; other hosts retain react-native-svg.
+ * react-native-svg ignores
  * `pathLength`, so the path-unit dashes are scaled to the measured perimeter in
  * px; the lap runs on a frame clock (`useFrameCallback`) that reproduces the
  * CSS animation's per-layer delay exactly. Blur is `feGaussianBlur`, which
@@ -205,49 +208,60 @@ function ComposerLoaderComponent({
         ]}
       >
         {measured ? (
-          <Svg
-            width="100%"
-            height="100%"
-            viewBox={`0 0 ${box.w} ${box.h}`}
-            preserveAspectRatio="none"
-            opacity={intensity}
+          <AndroidLight
+            geometry={geometry}
+            time={time}
+            speed={speed}
+            reverse={reverse}
+            colors={[c0, c1, gradientMidColor(c1, c2), c2, c3]}
+            intensity={intensity}
+            width={box.w}
+            height={box.h}
           >
-            <Defs>
-              <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-                <Stop offset="0%" stopColor={c0} />
-                <Stop offset="30%" stopColor={c1} />
-                <Stop offset="50%" stopColor={gradientMidColor(c1, c2)} />
-                <Stop offset="70%" stopColor={c2} />
-                <Stop offset="100%" stopColor={c3} />
-              </LinearGradient>
-              {geometry.blurs.map((blur) => (
-                <Filter
-                  key={blur}
-                  id={blurFilterId(gradientId, blur)}
-                  x="-50%"
-                  y="-50%"
-                  width="200%"
-                  height="200%"
-                >
-                  <FeGaussianBlur stdDeviation={blur} />
-                </Filter>
+            <Svg
+              width="100%"
+              height="100%"
+              viewBox={`0 0 ${box.w} ${box.h}`}
+              preserveAspectRatio="none"
+              opacity={intensity}
+            >
+              <Defs>
+                <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+                  <Stop offset="0%" stopColor={c0} />
+                  <Stop offset="30%" stopColor={c1} />
+                  <Stop offset="50%" stopColor={gradientMidColor(c1, c2)} />
+                  <Stop offset="70%" stopColor={c2} />
+                  <Stop offset="100%" stopColor={c3} />
+                </LinearGradient>
+                {geometry.blurs.map((blur) => (
+                  <Filter
+                    key={blur}
+                    id={blurFilterId(gradientId, blur)}
+                    x="-50%"
+                    y="-50%"
+                    width="200%"
+                    height="200%"
+                  >
+                    <FeGaussianBlur stdDeviation={blur} />
+                  </Filter>
+                ))}
+              </Defs>
+              {geometry.strokes.map((stroke) => (
+                <LoaderStroke
+                  key={stroke.key}
+                  stroke={stroke}
+                  time={time}
+                  speed={speed}
+                  reverse={reverse}
+                  perimeter={geometry.perimeter}
+                  width={box.w}
+                  height={box.h}
+                  rx={geometry.rx}
+                  gradientId={gradientId}
+                />
               ))}
-            </Defs>
-            {geometry.strokes.map((stroke) => (
-              <LoaderStroke
-                key={stroke.key}
-                stroke={stroke}
-                time={time}
-                speed={speed}
-                reverse={reverse}
-                perimeter={geometry.perimeter}
-                width={box.w}
-                height={box.h}
-                rx={geometry.rx}
-                gradientId={gradientId}
-              />
-            ))}
-          </Svg>
+            </Svg>
+          </AndroidLight>
         ) : null}
       </Animated.View>
 
