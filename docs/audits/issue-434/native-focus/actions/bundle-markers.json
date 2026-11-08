@@ -1,0 +1,20 @@
+[
+  {
+    "source": "/editor-actions/package/src/react/BlockRow.tsx",
+    "toolbarInlineActions": false,
+    "webInlineGuard": true,
+    "rowWebGuard": true
+  },
+  {
+    "source": "/editor-actions/package/src/react/TextBlock.tsx",
+    "toolbarInlineActions": false,
+    "webInlineGuard": true,
+    "rowWebGuard": false
+  },
+  {
+    "source": "/editor-actions/package/src/react/EditorToolbar.tsx",
+    "toolbarInlineActions": true,
+    "webInlineGuard": false,
+    "rowWebGuard": false
+  }
+]

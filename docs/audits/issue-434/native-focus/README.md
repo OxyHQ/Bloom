@@ -49,3 +49,13 @@ callback replacement, selection movement, explicit editing/removal and cleanup.
 this is still pending physical interaction and published-package acceptance.
 The acceptance fixture now supplies the required single KeyboardProvider and
 Screen bottomBarKeyboardBehavior="follow", with matching light host/editor theme.
+
+Physical follow-up `actions/`: tapping inside the link reaches caret 10 with
+IME visible and no sheet; pressing the real Gboard q key produces
+`Before linqked after`, caret 11, with IME/focus retained. Source-map markers
+confirm both native changes are in the installed bundle. Toolbar acceptance is
+not inferred: this first host used AppShell's default container scrolling, so
+Screen was content-height and keyboard following moved its footer out of view.
+The fixture now uses `scroll="fixed"`, matching Nilo's shell and the documented
+Screen-owned scrolling contract. This is a harness correction, not a product
+layout workaround. Apply/drag/undo remain pending the corrected fixture build.

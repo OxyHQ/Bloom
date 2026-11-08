@@ -106,7 +106,7 @@ export default function App() {
       <SafeAreaProvider>
         <KeyboardProvider>
           <BloomProvider fonts={false} mode="light">
-            <AppShell>
+            <AppShell scroll="fixed">
               <Fixture />
             </AppShell>
           </BloomProvider>
