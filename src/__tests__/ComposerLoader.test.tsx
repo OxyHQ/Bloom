@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 // The shared mocks do not stub these two; the loader needs both.
 jest.mock('react-native-svg', () => {
@@ -214,11 +214,14 @@ describe('ComposerLoader (native)', () => {
   });
 
   it('draws one dash stroke per layer copy, dashes scaled to the perimeter in px', () => {
-    const { UNSAFE_root } = renderLoader(
-      <ComposerLoader taper={0.4}>
+    const { UNSAFE_root, getByTestId } = renderLoader(
+      <ComposerLoader testID="cl" taper={0.4}>
         <Text>x</Text>
       </ComposerLoader>,
     );
+    fireEvent(getByTestId('cl-light', HIDDEN), 'layout', {
+      nativeEvent: { layout: { width: 640, height: 52 } },
+    });
     const rects = UNSAFE_root.findAll(
       (n) => (n.type as unknown) === 'Rect' && n.props.stroke !== undefined,
     );
@@ -236,7 +239,7 @@ describe('ComposerLoader (web CSS)', () => {
     expect(COMPOSER_LOADER_WEB_CSS).toMatch(/from \{ stroke-dashoffset: 0; \}/);
     expect(COMPOSER_LOADER_WEB_CSS).toMatch(/to \{ stroke-dashoffset: -100; \}/);
     expect(COMPOSER_LOADER_WEB_CSS).toMatch(
-      /prefers-reduced-motion: reduce\)[^}]*\.bloom-composer-loader-rect \{ animation: none !important; \}/,
+      /prefers-reduced-motion: reduce\)[^}]*\.bloom-composer-loader-rect \{ animation-play-state: paused !important; \}/,
     );
   });
 });

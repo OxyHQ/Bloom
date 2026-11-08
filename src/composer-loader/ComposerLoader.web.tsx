@@ -24,6 +24,8 @@ import {
   gradientMidColor,
 } from './shared';
 import type { ComposerLoaderProps } from './types';
+import { useLoaderMotion } from './use-loader-motion';
+import { useInView } from '../viewport/use-in-view.web';
 
 /**
  * Web fork of `./ComposerLoader`. Draws the markup directly: a DOM `<svg>`
@@ -46,13 +48,14 @@ export const COMPOSER_LOADER_WEB_CSS = `
   to { stroke-dashoffset: -100; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .${RECT_CLASS} { animation: none !important; }
+  .${RECT_CLASS} { animation-play-state: paused !important; }
 }
 `;
 
 function ComposerLoaderComponent({
   children,
   active = true,
+  paused = false,
   colors,
   speed = 4.5,
   intensity = 0.7,
@@ -72,7 +75,10 @@ function ComposerLoaderComponent({
 }: ComposerLoaderProps) {
   const theme = useTheme();
   const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
-  const [box, setBox] = useState({ w: 640, h: 52 });
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  const measured = box.w > 0 && box.h > 0;
+  const { inView, targetProps } = useInView();
+  const { moving, reducedMotion } = useLoaderMotion(active, measured && inView && !paused);
 
   useEffect(() => {
     adoptStyleSheet(STYLE_ID, COMPOSER_LOADER_WEB_CSS);
@@ -80,14 +86,16 @@ function ComposerLoaderComponent({
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setBox({ w: Math.max(1, width), h: Math.max(1, height) });
+    const w = Number.isFinite(width) ? Math.max(0, width) : 0;
+    const h = Number.isFinite(height) ? Math.max(0, height) : 0;
+    setBox((previous) => (previous.w === w && previous.h === h ? previous : { w, h }));
   }, []);
 
   const geometry = useMemo(
     () =>
       composerLoaderGeometry({
-        width: box.w,
-        height: box.h,
+        width: Math.max(1, box.w),
+        height: Math.max(1, box.h),
         arc,
         line,
         bloom,
@@ -114,13 +122,13 @@ function ComposerLoaderComponent({
     borderRadius: cornerRadius,
     opacity: active ? 1 : 0,
     transitionProperty: 'opacity',
-    transitionDuration: `${COMPOSER_LOADER_FADE_MS}ms`,
+    transitionDuration: `${reducedMotion ? 0 : COMPOSER_LOADER_FADE_MS}ms`,
     transitionTimingFunction: 'ease',
     mixBlendMode: blend,
   };
 
   return (
-    <View style={[styles.root, style]} testID={testID}>
+    <View ref={targetProps.ref} style={[styles.root, style]} testID={testID}>
       {surface ? (
         <View
           aria-hidden
@@ -141,59 +149,62 @@ function ComposerLoaderComponent({
         style={[StyleSheet.absoluteFill, clipStyle]}
         testID={testID ? `${testID}-light` : undefined}
       >
-        <svg
-          width="100%"
-          height="100%"
-          viewBox={`0 0 ${box.w} ${box.h}`}
-          preserveAspectRatio="none"
-          style={{ display: 'block', opacity: intensity }}
-        >
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor={c0} />
-              <stop offset="30%" stopColor={c1} />
-              <stop offset="50%" stopColor={gradientMidColor(c1, c2)} />
-              <stop offset="70%" stopColor={c2} />
-              <stop offset="100%" stopColor={c3} />
-            </linearGradient>
-            {geometry.blurs.map((blur) => (
-              <filter
-                key={blur}
-                id={blurFilterId(gradientId, blur)}
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
-              >
-                <feGaussianBlur stdDeviation={blur} />
-              </filter>
+        {measured ? (
+          <svg
+            width="100%"
+            height="100%"
+            viewBox={`0 0 ${box.w} ${box.h}`}
+            preserveAspectRatio="none"
+            style={{ display: 'block', opacity: intensity }}
+          >
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={c0} />
+                <stop offset="30%" stopColor={c1} />
+                <stop offset="50%" stopColor={gradientMidColor(c1, c2)} />
+                <stop offset="70%" stopColor={c2} />
+                <stop offset="100%" stopColor={c3} />
+              </linearGradient>
+              {geometry.blurs.map((blur) => (
+                <filter
+                  key={blur}
+                  id={blurFilterId(gradientId, blur)}
+                  x="-50%"
+                  y="-50%"
+                  width="200%"
+                  height="200%"
+                >
+                  <feGaussianBlur stdDeviation={blur} />
+                </filter>
+              ))}
+            </defs>
+            {geometry.strokes.map((stroke) => (
+              <rect
+                key={stroke.key}
+                x={0}
+                y={0}
+                width={box.w}
+                height={box.h}
+                rx={geometry.rx}
+                pathLength={100}
+                fill="none"
+                stroke={`url(#${gradientId})`}
+                strokeWidth={stroke.strokeWidth}
+                strokeLinecap="round"
+                strokeDasharray={`${stroke.dash} ${100 - stroke.dash}`}
+                className={RECT_CLASS}
+                filter={
+                  stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined
+                }
+                style={{
+                  opacity: stroke.opacity,
+                  animation: `${KEYFRAMES} ${speed}s linear ${(stroke.phase * speed) / 100}s infinite ${direction}`,
+                  animationPlayState: moving ? 'running' : 'paused',
+                }}
+              />
             ))}
-          </defs>
-          {geometry.strokes.map((stroke) => (
-            <rect
-              key={stroke.key}
-              x={0}
-              y={0}
-              width={box.w}
-              height={box.h}
-              rx={geometry.rx}
-              pathLength={100}
-              fill="none"
-              stroke={`url(#${gradientId})`}
-              strokeWidth={stroke.strokeWidth}
-              strokeLinecap="round"
-              strokeDasharray={`${stroke.dash} ${100 - stroke.dash}`}
-              className={RECT_CLASS}
-              filter={
-                stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined
-              }
-              style={{
-                opacity: stroke.opacity,
-                animation: `${KEYFRAMES} ${speed}s linear ${(stroke.phase * speed) / 100}s infinite ${direction}`,
-              }}
-            />
-          ))}
-        </svg>
+          </svg>
+        ) : null}
       </View>
 
       <View style={styles.content}>{children}</View>

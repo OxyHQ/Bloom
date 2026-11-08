@@ -26,7 +26,7 @@ import {
   type ComposerLoaderStroke,
 } from './shared';
 import type { ComposerLoaderProps } from './types';
-import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useLoaderMotion } from './use-loader-motion';
 
 /**
  * A composer loader: an iridescent light band orbiting a composer pill's
@@ -98,6 +98,7 @@ const LoaderStroke = memo(function LoaderStroke({
 function ComposerLoaderComponent({
   children,
   active = true,
+  paused = false,
   colors,
   speed = 4.5,
   intensity = 0.7,
@@ -116,20 +117,23 @@ function ComposerLoaderComponent({
   testID,
 }: ComposerLoaderProps) {
   const theme = useTheme();
-  const reducedMotion = usePrefersReducedMotion();
   const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
-  const [box, setBox] = useState({ w: 640, h: 52 });
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  const measured = box.w > 0 && box.h > 0;
+  const { moving, reducedMotion } = useLoaderMotion(active, measured && !paused);
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setBox({ w: Math.max(1, width), h: Math.max(1, height) });
+    const w = Number.isFinite(width) ? Math.max(0, width) : 0;
+    const h = Number.isFinite(height) ? Math.max(0, height) : 0;
+    setBox((previous) => (previous.w === w && previous.h === h ? previous : { w, h }));
   }, []);
 
   const geometry = useMemo(
     () =>
       composerLoaderGeometry({
-        width: box.w,
-        height: box.h,
+        width: Math.max(1, box.w),
+        height: Math.max(1, box.h),
         arc,
         line,
         bloom,
@@ -143,26 +147,16 @@ function ComposerLoaderComponent({
     [box.w, box.h, arc, line, bloom, bloomStrength, bloomOnly, taper, reverse, offset, radius],
   );
 
-  // Frame clock: seconds since the light started. Runs while active (and
-  // through the fade-out), never under reduced motion — the dashes then rest
-  // at offset 0, as with `animation: none`.
+  // Accumulate only active frame deltas. Reanimated resets timeSinceFirstFrame
+  // on reactivation; using it would rewind the band after every pause.
   const time = useSharedValue(0);
   const clock = useFrameCallback((frame) => {
-    time.value = frame.timeSinceFirstFrame / 1000;
+    time.value += (frame.timeSincePreviousFrame ?? 0) / 1000;
   }, false);
   useEffect(() => {
-    if (reducedMotion) {
-      clock.setActive(false);
-      time.value = 0;
-      return;
-    }
-    if (active) {
-      clock.setActive(true);
-      return;
-    }
-    const stop = setTimeout(() => clock.setActive(false), COMPOSER_LOADER_FADE_MS);
-    return () => clearTimeout(stop);
-  }, [active, reducedMotion, clock, time]);
+    clock.setActive(moving);
+    return () => clock.setActive(false);
+  }, [moving, clock]);
 
   const fade = useSharedValue(active ? 1 : 0);
   useEffect(() => {
@@ -210,49 +204,51 @@ function ComposerLoaderComponent({
           fadeStyle,
         ]}
       >
-        <Svg
-          width="100%"
-          height="100%"
-          viewBox={`0 0 ${box.w} ${box.h}`}
-          preserveAspectRatio="none"
-          opacity={intensity}
-        >
-          <Defs>
-            <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-              <Stop offset="0%" stopColor={c0} />
-              <Stop offset="30%" stopColor={c1} />
-              <Stop offset="50%" stopColor={gradientMidColor(c1, c2)} />
-              <Stop offset="70%" stopColor={c2} />
-              <Stop offset="100%" stopColor={c3} />
-            </LinearGradient>
-            {geometry.blurs.map((blur) => (
-              <Filter
-                key={blur}
-                id={blurFilterId(gradientId, blur)}
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
-              >
-                <FeGaussianBlur stdDeviation={blur} />
-              </Filter>
+        {measured ? (
+          <Svg
+            width="100%"
+            height="100%"
+            viewBox={`0 0 ${box.w} ${box.h}`}
+            preserveAspectRatio="none"
+            opacity={intensity}
+          >
+            <Defs>
+              <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+                <Stop offset="0%" stopColor={c0} />
+                <Stop offset="30%" stopColor={c1} />
+                <Stop offset="50%" stopColor={gradientMidColor(c1, c2)} />
+                <Stop offset="70%" stopColor={c2} />
+                <Stop offset="100%" stopColor={c3} />
+              </LinearGradient>
+              {geometry.blurs.map((blur) => (
+                <Filter
+                  key={blur}
+                  id={blurFilterId(gradientId, blur)}
+                  x="-50%"
+                  y="-50%"
+                  width="200%"
+                  height="200%"
+                >
+                  <FeGaussianBlur stdDeviation={blur} />
+                </Filter>
+              ))}
+            </Defs>
+            {geometry.strokes.map((stroke) => (
+              <LoaderStroke
+                key={stroke.key}
+                stroke={stroke}
+                time={time}
+                speed={speed}
+                reverse={reverse}
+                perimeter={geometry.perimeter}
+                width={box.w}
+                height={box.h}
+                rx={geometry.rx}
+                gradientId={gradientId}
+              />
             ))}
-          </Defs>
-          {geometry.strokes.map((stroke) => (
-            <LoaderStroke
-              key={stroke.key}
-              stroke={stroke}
-              time={time}
-              speed={speed}
-              reverse={reverse}
-              perimeter={geometry.perimeter}
-              width={box.w}
-              height={box.h}
-              rx={geometry.rx}
-              gradientId={gradientId}
-            />
-          ))}
-        </Svg>
+          </Svg>
+        ) : null}
       </Animated.View>
 
       <View style={styles.content}>{children}</View>

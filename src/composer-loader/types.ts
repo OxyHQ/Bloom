@@ -8,6 +8,8 @@ export interface ComposerLoaderProps {
   children: ReactNode;
   /** Show the light. Fades in/out (450ms) — flip it while awaiting a response. Default `true`. */
   active?: boolean;
+  /** Freeze the decorative light without changing active or the composer. Use native viewability for offscreen content. */
+  paused?: boolean;
   /** Four gradient colours, spread across the pill left → right. Default an iridescent set. */
   colors?: ComposerLoaderColors;
   /** Seconds per full lap. Default `4.5`. */
