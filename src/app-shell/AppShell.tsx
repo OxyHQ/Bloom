@@ -8,7 +8,7 @@ import { SidebarSlot } from './SidebarSlot';
 import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { APP_SHELL_DEFAULTS } from './constants';
 import { useTheme } from '../theme/use-theme';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import type { BottomBarProps } from '../bottom-bar/types';
 import type { FabProps } from '../fab/types';
 import { ResponsiveNavigation } from './ResponsiveNavigation';

@@ -275,3 +275,10 @@ DOM state/identity assertions. Native Button's geometry and platform hitSlop
 are unchanged; its explicit native/Yoga regression tests do **not** establish
 physical native target acceptance. Parent clipping and overlapping native
 hitSlop remain separate device checks in #663.
+
+
+For `appearance="plain"`, an explicit nontransparent `colors.background` supplies
+hover/press (including pressed-toggle) feedback; rest remains transparent and
+`colors.foreground` stays paired with that feedback. A transparent background
+keeps the historical provider-derived interaction tint, as used by composer icon
+controls. Omitting `colors` leaves every semantic default unchanged.

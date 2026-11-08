@@ -1,3 +1,6 @@
+import { filterColor, parseLook, type RGB } from './filter-color';
+export { filterColor, parseLook } from './filter-color';
+export type { Look } from './filter-color';
 import type { RefObject } from 'react';
 import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 import { Platform } from 'react-native';
@@ -46,8 +49,6 @@ import {
  * a baked panel bakes on the panel's body. The pass reruns for a host whose props
  * changed and for every host when the document's theme changes.
  */
-
-type RGB = readonly [number, number, number];
 
 const hosts = new Set<HTMLElement>();
 const dirty = new Set<HTMLElement>();
@@ -257,45 +258,4 @@ function overlapped(
       return true;
   }
   return false;
-}
-
-export type Look = readonly (readonly [name: string, amount: number])[];
-
-/** The colour functions of a material filter, in order; blur is dropped (flat in, flat out). */
-export function parseLook(filter: string): Look | null {
-  const steps: [string, number][] = [];
-  for (const match of filter.matchAll(/([a-z-]+)\(([^)]*)\)/g)) {
-    const name = match[1] ?? '';
-    if (name === 'blur') continue;
-    const amount = Number.parseFloat(match[2] ?? '');
-    if (!['saturate', 'contrast', 'brightness'].includes(name) || !Number.isFinite(amount))
-      return null;
-    steps.push([name, amount]);
-  }
-  return steps.length ? steps : null;
-}
-
-const clamp = (v: number) => Math.min(1, Math.max(0, v));
-
-/**
- * A flat colour through the material's filter, as the CSS Filter Effects
- * functions define them (sRGB, each step clamped).
- */
-export function filterColor(color: RGB, look: Look): RGB {
-  let [r, g, b] = color;
-  for (const [name, s] of look) {
-    if (name === 'saturate') {
-      [r, g, b] = [
-        clamp((0.213 + 0.787 * s) * r + (0.715 - 0.715 * s) * g + (0.072 - 0.072 * s) * b),
-        clamp((0.213 - 0.213 * s) * r + (0.715 + 0.285 * s) * g + (0.072 - 0.072 * s) * b),
-        clamp((0.213 - 0.213 * s) * r + (0.715 - 0.715 * s) * g + (0.072 + 0.928 * s) * b),
-      ];
-    } else if (name === 'contrast') {
-      const k = (v: number) => clamp((v - 0.5) * s + 0.5);
-      [r, g, b] = [k(r), k(g), k(b)];
-    } else {
-      [r, g, b] = [clamp(r * s), clamp(g * s), clamp(b * s)];
-    }
-  }
-  return [r, g, b];
 }

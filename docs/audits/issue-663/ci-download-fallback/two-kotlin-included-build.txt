@@ -1,0 +1,28 @@
+
+Welcome to Gradle 9.4.1!
+
+Here are the highlights of this release:
+ - Java 26 support
+ - Non-class-based JVM tests
+ - Enhanced console progress bar
+
+For more details see https://docs.gradle.org/9.4.1/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Task :verifycompiler220
+VERIFIED_KOTLIN fallback-root 2.2.0 b2f743ea5ba12f69e0f35e5d8d46069d74c8e2861087548a7e0e14a784bc4cf1
+
+> Task :included:verifycompiler220
+VERIFIED_KOTLIN fallback-included 2.2.0 b2f743ea5ba12f69e0f35e5d8d46069d74c8e2861087548a7e0e14a784bc4cf1
+
+> Task :included:verifycompiler2210
+VERIFIED_KOTLIN fallback-included 2.2.10 79628fd5d64b4692a62f98962baab00e9076a37e2cffd6ace33cd0b7be7d1cdf
+
+> Task :verifycompiler2210
+VERIFIED_KOTLIN fallback-root 2.2.10 79628fd5d64b4692a62f98962baab00e9076a37e2cffd6ace33cd0b7be7d1cdf
+
+BUILD SUCCESSFUL in 4s
+4 actionable tasks: 4 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.4.1/userguide/configuration_cache_enabling.html

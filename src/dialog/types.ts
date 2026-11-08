@@ -1,3 +1,4 @@
+import type { HeaderAction } from '../page-header/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import type { TypographyMode } from '../typography/TypographyScope';
 import type { AppColorName } from '../theme/color-presets';
@@ -95,17 +96,19 @@ export interface DialogHeaderConfig {
 
   /**
    * Trailing icon buttons (share / more / sort), rendered as frosted circles
-   * BEFORE `primaryAction`. Past {@link DIALOG_HEADER_MAX_INLINE_ACTIONS} the
-   * surplus collapses into a "more" overflow menu (Material pattern) built on
-   * Bloom's `Menu` — never hand-rolled. Each item's `accessibilityLabel` is also
-   * its overflow-menu row text.
+   * New commands use HeaderAction IDs/labels and adapt to the measured header.
+   * Essential actions and the primary/close controls never enter overflow.
+   * Legacy accessibilityLabel entries remain supported for static lists; migrate
+   * reordered or translated commands to stable IDs and label.
    */
-  actions?: Array<{
-    icon: ButtonIconComponent;
-    accessibilityLabel: string;
-    onPress: () => void;
-    disabled?: boolean;
-  }>;
+  actions?: Array<
+    | HeaderAction
+    | (Omit<HeaderAction, 'id' | 'label'> & {
+        /** Existing static lists may omit ID; new actions should supply HeaderAction. */
+        id?: string;
+        accessibilityLabel: string;
+      })
+  >;
 
   /**
    * A search field in the collapsing large-title zone (iOS `.searchable` style:

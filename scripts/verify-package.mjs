@@ -88,6 +88,11 @@ const REQUIRED_ROOT_DOCS = [
   'scripts/migrate-icons-to-remix.mjs',
   `${DOCS_DIR}/index.mdx`,
   `${DOCS_DIR}/getting-started.mdx`,
+  `${DOCS_DIR}/AGENTS.md`,
+  `${DOCS_DIR}/task-catalog.json`,
+  ...['workspace', 'canvas', 'conversation', 'master-detail', 'discovery', 'dashboard'].map(
+    (task) => `${DOCS_DIR}/examples/${task}.tsx`,
+  ),
   `${DOCS_DIR}/migrating-to-1.0.mdx`,
   `${DOCS_DIR}/migrating-to-2.0.mdx`,
 ];

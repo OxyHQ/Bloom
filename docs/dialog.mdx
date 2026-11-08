@@ -259,14 +259,10 @@ reported those through `onClose`.
 
 ## Web setup
 
-Inject the CSS animations into your global styles once:
-
-```tsx
-import { BLOOM_DIALOG_CSS } from '@oxy.so/bloom/dialog';
-
-// In your HTML head or global CSS file:
-<style>{BLOOM_DIALOG_CSS}</style>
-```
+Dialog adopts its web animation styles automatically through Bloom's shared
+stylesheet owner. Do not inject `BLOOM_DIALOG_CSS` into an inline `<style>` tag.
+For host utility CSS and SSR's explicit nonce/style contract, follow
+[Getting started](./getting-started.mdx) and [Provider](./provider.mdx).
 
 ## Examples
 
@@ -578,3 +574,20 @@ compact navigation title only after the measured heading bottom leaves the
 scroll viewport. The default collapsing behavior is unchanged. This policy
 uses the shared scroll owner and the actual heading layout, including wrapping;
 subtitle, search and other large-title extras do not change the heading threshold.
+
+### Stable adaptive header commands
+
+Header `actions` accepts the shared `HeaderAction` descriptor from
+`@oxy.so/bloom/page-header`: supply `id`, `label`, `icon` and `onPress`, with
+optional priority/group, essential/overflow policy and disabled/busy/selected
+state. The dialog reuses HeaderActions and its own PageHeader's measured budget.
+Close remains essential; the primary action retains its existing Button and
+never moves into the overflow menu. Native and web bind their respective menu
+and scrolling owners to the same implementation.
+
+Existing `{ accessibilityLabel, icon, onPress, disabled }` entries remain usable
+for static lists. Migrate them to `{ id, label, icon, onPress, disabled }` before
+reordering or translating dynamic command sets; an index fallback cannot provide
+the identity of a command moved to a different index. Dialog actions stay
+icon-only by default to preserve existing header presentation; explicitly choose
+`labelVisibility` when the label should participate in adaptation.

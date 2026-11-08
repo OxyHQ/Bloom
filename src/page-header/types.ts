@@ -196,3 +196,41 @@ export interface PageHeaderTitleInputProps extends TextInputProps {
   'aria-describedby'?: string;
   disabled?: boolean;
 }
+
+/** A stable command shared by navigation headers and dialog headers. */
+export interface HeaderAction {
+  /** Identity must survive translation, resizing and state changes. */
+  id: string;
+  /** Visible menu label and the control's accessible name. */
+  label: string;
+  icon?: import('../button/types').ButtonIconComponent;
+  onPress: () => void;
+  /** Related actions retain their source order and group in overflow. */
+  group?: string;
+  /** Higher priorities keep their inline place first. Defaults to zero. */
+  priority?: number;
+  /** Essential commands never move into overflow, regardless of priority. */
+  essential?: boolean;
+  /** auto moves to overflow when needed; never/always are explicit policies. */
+  overflow?: 'auto' | 'never' | 'always';
+  visible?: boolean;
+  disabled?: boolean;
+  busy?: boolean;
+  /** Undefined is a command; boolean values announce a toggle's state. */
+  selected?: boolean;
+  /** auto may remove a label only when the action also has an icon. */
+  labelVisibility?: 'auto' | 'always' | 'hidden';
+}
+
+export interface HeaderActionsProps {
+  /** Stateful custom controls stay mounted and never enter overflow. The row measures and reserves them. */
+  persistentActions?: ReactNode;
+  actions: readonly HeaderAction[];
+  /** Override the local header budget for an intentionally embedded command row. */
+  availableWidth?: number;
+  /** Accessible name of the grouped commands; defaults to the shared actions label. */
+  accessibilityLabel?: string;
+  overflowLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}

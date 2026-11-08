@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { View } from 'react-native';
+import { Button } from '../button';
+import { Toolbar } from './Toolbar';
 import { Text } from '../typography';
 import { ScrollArea } from './ScrollArea';
 import type { ScrollAreaScrollbar } from './types';
@@ -94,5 +96,39 @@ export const Sizes: Story = {
         </ScrollArea>
       ))}
     </View>
+  ),
+};
+
+/** Focus must reveal the entire tool inside its own strip, not move its page. */
+export const KeyboardReveal: Story = {
+  render: () => (
+    <ScrollArea testID="focus-outer" style={{ height: 340, width: 340 }}>
+      <View style={{ height: 180 }} />
+      <View style={{ width: 320 }} testID="focus-toolbar-host">
+        <Toolbar
+          testID="focus-toolbar"
+          actions={<Button accessibilityLabel="Persistent action">New</Button>}
+        >
+          {['Views', 'Add view', 'Search', 'Filter', 'Sort', 'Properties', 'Last tool'].map(
+            (label) => (
+              <Button key={label} accessibilityLabel={label} appearance="plain">
+                {label}
+              </Button>
+            ),
+          )}
+        </Toolbar>
+      </View>
+      <ScrollArea horizontal testID="focus-table" style={{ width: 240, height: 100 }}>
+        <View style={{ flexDirection: 'row' }}>
+          <Button accessibilityLabel="First cell" style={{ width: 180 }}>
+            First cell
+          </Button>
+          <Button accessibilityLabel="Last cell" style={{ width: 180 }}>
+            Last cell
+          </Button>
+        </View>
+      </ScrollArea>
+      <View style={{ height: 600 }} />
+    </ScrollArea>
   ),
 };

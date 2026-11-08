@@ -1,3 +1,4 @@
+import { useComposerLoaderPaint } from '../composer-loader/context';
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import { Surface } from '../surface';
@@ -473,8 +474,8 @@ export function ComposerPillBase({
   onRemoveAttachment,
   onAttachmentRetry,
   error,
-  surface = true,
-  frosted = false,
+  surface: surfaceProp,
+  frosted: frostedProp,
   inputRef,
   labels: labelOverrides,
   style,
@@ -483,6 +484,9 @@ export function ComposerPillBase({
   onKeyPress: onKeyPressProp,
   testID,
 }: ComposerPillProps) {
+  const loaderActive = useComposerLoaderPaint();
+  const surface = surfaceProp ?? loaderActive === undefined;
+  const frosted = frostedProp ?? loaderActive ?? false;
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);

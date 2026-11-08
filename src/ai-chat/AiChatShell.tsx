@@ -3,7 +3,7 @@ import { Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useAppShell, useAppShellPanel } from '../app-shell/hooks';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
-import { PageHeader } from '../page-header';
+import { PageHeader } from '../page-header/PageHeader';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
 import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { useControllableState } from '../hooks/use-controllable-state';

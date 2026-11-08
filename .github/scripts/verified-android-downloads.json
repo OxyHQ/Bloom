@@ -1,0 +1,67 @@
+{
+  "gradle-8.3": {
+    "filename": "gradle-8.3-bin.zip",
+    "primary": "https://services.gradle.org/distributions/gradle-8.3-bin.zip",
+    "fallback": "https://api.github.com/repos/gradle/gradle-distributions/releases/assets/127725633",
+    "size": 130639305,
+    "sha256": "591855b517fc635b9e04de1d05d5e76ada3f89f5fc76f87978d1b245b4f69225"
+  },
+  "gradle-9.4.1": {
+    "filename": "gradle-9.4.1-bin.zip",
+    "primary": "https://services.gradle.org/distributions/gradle-9.4.1-bin.zip",
+    "fallback": "https://api.github.com/repos/gradle/gradle-distributions/releases/assets/377041523",
+    "size": 137878901,
+    "sha256": "2ab2958f2a1e51120c326cad6f385153bb11ee93b3c216c5fccebfdfbb7ec6cb"
+  },
+  "kotlin-compiler-embeddable-2.2.0": {
+    "filename": "kotlin-compiler-embeddable-2.2.0.jar",
+    "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.0/kotlin-compiler-embeddable-2.2.0.jar",
+    "fallback": "https://api.github.com/repos/JetBrains/kotlin/releases/assets/598661100",
+    "size": 56255947,
+    "sha256": "b2f743ea5ba12f69e0f35e5d8d46069d74c8e2861087548a7e0e14a784bc4cf1"
+  },
+  "kotlin-pom-2.2.0": {
+    "filename": "kotlin-compiler-embeddable-2.2.0.pom",
+    "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.0/kotlin-compiler-embeddable-2.2.0.pom",
+    "fallback": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.0/kotlin-compiler-embeddable-2.2.0.pom",
+    "size": 2468,
+    "sha256": "16a15dd197cf2413494f788cb96144d9a146267c3d6f7f1c15b7a3c1e052346a"
+  },
+  "hermes-v260318099.0.5": {
+    "filename": "hermes.tar.gz",
+    "primary": "https://github.com/facebook/hermes/tarball/hermes-v260318099.0.5",
+    "fallback": "https://codeload.github.com/meta/hermes/legacy.tar.gz/9a115f15785851f4ff2747ebb090ddd066fc8ad2",
+    "commit": "9a115f15785851f4ff2747ebb090ddd066fc8ad2",
+    "archive_root": "meta-hermes-9a115f1",
+    "size": 23061798,
+    "sha256": "7545a1ca1d92e6ad8430d2a1e44e91e56e3bcd0d64d7281e4cfbee7b26fd4569"
+  },
+  "kotlin-compiler-embeddable-2.2.10": {
+    "filename": "kotlin-compiler-embeddable-2.2.10.jar",
+    "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.10/kotlin-compiler-embeddable-2.2.10.jar",
+    "fallback": "https://api.github.com/repos/JetBrains/kotlin/releases/assets/598652892",
+    "size": 56259401,
+    "sha256": "79628fd5d64b4692a62f98962baab00e9076a37e2cffd6ace33cd0b7be7d1cdf"
+  },
+  "kotlin-pom-2.2.10": {
+    "filename": "kotlin-compiler-embeddable-2.2.10.pom",
+    "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.10/kotlin-compiler-embeddable-2.2.10.pom",
+    "fallback": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.10/kotlin-compiler-embeddable-2.2.10.pom",
+    "size": 2472,
+    "sha256": "b8ac50cc8dcb3b7c63a405b3cf19e83ca5fd1955fb040596c8d961a1734cb48b"
+  },
+  "kotlin-compiler-embeddable-2.2.21": {
+    "filename": "kotlin-compiler-embeddable-2.2.21.jar",
+    "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.21/kotlin-compiler-embeddable-2.2.21.jar",
+    "fallback": "https://api.github.com/repos/JetBrains/kotlin/releases/assets/587847942",
+    "size": 56908512,
+    "sha256": "9588fa696ac5507af764fd5660df6894185e12704ec1bc3f5cb772af4987f295"
+  },
+  "kotlin-pom-2.2.21": {
+    "filename": "kotlin-compiler-embeddable-2.2.21.pom",
+    "primary": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.21/kotlin-compiler-embeddable-2.2.21.pom",
+    "fallback": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.21/kotlin-compiler-embeddable-2.2.21.pom",
+    "size": 2451,
+    "sha256": "0b33c64f2622ba3bc8283378bdb7505f2be330a2275807038ad54359b33ddf9b"
+  }
+}

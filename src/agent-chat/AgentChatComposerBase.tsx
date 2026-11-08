@@ -87,8 +87,6 @@ export function AgentChatComposerBase({
           onStop={onStop}
           busy={busy}
           disabled={blocked}
-          surface={false}
-          frosted={busy}
           labels={{
             message: l.field,
             add: l.attach,

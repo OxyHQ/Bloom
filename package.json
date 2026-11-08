@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "17.22.0",
+  "version": "17.23.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1079,6 +1079,11 @@
       "react-native": {
         "types": "./lib/typescript/module/page-header/index.d.ts",
         "default": "./src/page-header/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/page-header/index.web.d.ts",
+        "import": "./lib/module/page-header/index.web.js",
+        "require": "./lib/commonjs/page-header/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/page-header/index.d.ts",
@@ -4175,7 +4180,11 @@
     "!android/build",
     "!android/.gradle",
     "!android/src/test",
-    "!android/src/predictiveTest"
+    "!android/src/predictiveTest",
+    "docs/AGENTS.md",
+    "docs/task-catalog.json",
+    "docs/examples/*.tsx",
+    "docs/examples/vite"
   ],
   "workspaces": [
     "packages/*"
@@ -4262,9 +4271,9 @@
     "generate:preset-accent-hues": "bun scripts/generate-preset-accent-hues.ts",
     "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
     "generate:adoption-matrix": "bun scripts/generate-adoption-matrix.ts",
-    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts",
+    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts && node scripts/generate-task-catalog.mjs",
     "build": "bob build",
-    "postbuild": "node scripts/verify-package.mjs && node scripts/verify-build-freshness.mjs --worktree",
+    "postbuild": "node scripts/verify-package.mjs && node scripts/verify-build-freshness.mjs --worktree && bun run verify:task-catalog",
     "verify:package": "node scripts/verify-package.mjs",
     "verify:build-freshness": "node scripts/verify-build-freshness.mjs --worktree",
     "verify:consumer-types": "node scripts/verify-consumer-typecheck.mjs",
@@ -4276,7 +4285,9 @@
     "clean": "rm -rf lib",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
-    "build:avatar-vectors": "node scripts/build-avatar-vector-assets.mjs"
+    "build:avatar-vectors": "node scripts/build-avatar-vector-assets.mjs",
+    "generate:task-catalog": "node scripts/generate-task-catalog.mjs",
+    "verify:task-catalog": "node --no-opt scripts/verify-task-catalog.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.3",

@@ -1,0 +1,28 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Shared read-only dependency cache is an incubating feature.
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:jar UP-TO-DATE
+:packages:react-native:ReactAndroid:hermes-engine:installCMake SKIPPED
+:packages:react-native:ReactAndroid:hermes-engine:configureBuildForHermes SKIPPED
+:packages:react-native:ReactAndroid:hermes-engine:buildHermesC SKIPPED
+:packages:react-native:ReactAndroid:hermes-engine:prepareHeadersForPrefab SKIPPED
+:packages:react-native:ReactAndroid:hermes-engine:preBuild SKIPPED
+:packages:react-native:ReactAndroid:hermes-engine:configureBuildForHermesWithDebugger SKIPPED
+:packages:react-native:ReactAndroid:hermes-engine:buildHermesCWithDebugger SKIPPED
+:packages:react-native:ReactAndroid:hermes-engine:prepareHeadersForPrefabWithDebugger SKIPPED
+
+BUILD SUCCESSFUL in 21s
+6 actionable tasks: 6 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.4.1/userguide/configuration_cache_enabling.html

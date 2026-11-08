@@ -267,8 +267,6 @@ export const Lifecycle: Story = {
                 busy={busy}
                 onSubmit={() => setBusy(true)}
                 onStop={() => setBusy(false)}
-                surface={false}
-                frosted={busy}
                 addMenu={[]}
                 models={[]}
                 effortLevels={[]}

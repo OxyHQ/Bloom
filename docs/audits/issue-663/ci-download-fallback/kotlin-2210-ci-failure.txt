@@ -1,0 +1,11 @@
+2026-11-08T10:04:38.0136230Z * What went wrong:
+2026-11-08T10:04:38.0137177Z Execution failed for task ':react-native:packages:react-native:ReactAndroid:compileDebugKotlin'.
+2026-11-08T10:04:38.0137919Z 
+2026-11-08T10:04:38.0166207Z You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+2026-11-08T10:04:38.0167684Z > Could not isolate parameters org.jetbrains.kotlin.gradle.internal.transforms.BuildToolsApiClasspathEntrySnapshotTransform$Parameters_Decorated@4c90c623 of artifact transform BuildToolsApiClasspathEntrySnapshotTransform
+2026-11-08T10:04:38.0169745Z    > Could not isolate value org.jetbrains.kotlin.gradle.internal.transforms.BuildToolsApiClasspathEntrySnapshotTransform$Parameters_Decorated@4c90c623 of type BuildToolsApiClasspathEntrySnapshotTransform.Parameters
+2026-11-08T10:04:38.0170611Z       > Could not resolve all files for configuration ':react-native:packages:react-native:ReactAndroid:kotlinBuildToolsApiClasspath'.
+2026-11-08T10:04:38.0171221Z          > Could not download kotlin-compiler-embeddable-2.2.10.jar (org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.10)
+2026-11-08T10:04:38.0171919Z             > Could not get resource 'https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.2.10/kotlin-compiler-embeddable-2.2.10.jar'.
+2026-11-08T10:04:38.0172746Z                > Could not GET 'https://github.com/JetBrains/kotlin/releases/download/v2.2.10/kotlin-compiler-embeddable-2.2.10.jar'. Received status code 504 from server: Gateway Time-out
+2026-11-08T10:04:38.0173110Z 

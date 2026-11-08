@@ -1,0 +1,106 @@
+{
+  "browser": "156.0.8078.4",
+  "states": [
+    {
+      "label": "root fixed",
+      "kind": "element",
+      "y": 0,
+      "windowY": 0,
+      "height": 748,
+      "hostHeight": 800,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "wheel fixed",
+      "kind": "element",
+      "y": 650,
+      "windowY": 0,
+      "height": 748,
+      "hostHeight": 800,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "document handoff",
+      "kind": "document",
+      "y": 0,
+      "windowY": 650,
+      "height": 2460,
+      "hostHeight": 2512,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "wheel document",
+      "kind": "document",
+      "y": 0,
+      "windowY": 850,
+      "height": 2460,
+      "hostHeight": 2512,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "fixed handoff",
+      "kind": "element",
+      "y": 850,
+      "windowY": 0,
+      "height": 748,
+      "hostHeight": 800,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "embedded fixed",
+      "kind": "element",
+      "y": 850,
+      "windowY": 0,
+      "height": 748,
+      "hostHeight": 800,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "wheel fixed",
+      "kind": "element",
+      "y": 650,
+      "windowY": 0,
+      "height": 748,
+      "hostHeight": 800,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "document handoff",
+      "kind": "document",
+      "y": 0,
+      "windowY": 650,
+      "height": 2460,
+      "hostHeight": 2512,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "wheel document",
+      "kind": "document",
+      "y": 0,
+      "windowY": 850,
+      "height": 2460,
+      "hostHeight": 2512,
+      "sameInput": true,
+      "draft": "retained draft"
+    },
+    {
+      "label": "fixed handoff",
+      "kind": "element",
+      "y": 850,
+      "windowY": 0,
+      "height": 748,
+      "hostHeight": 800,
+      "sameInput": true,
+      "draft": "retained draft"
+    }
+  ],
+  "errors": []
+}

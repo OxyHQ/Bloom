@@ -1,3 +1,4 @@
+import { HeaderActions } from '../page-header/HeaderActions.web';
 import {
   usePresentationSession,
   type DialogPresentationLifecycle,
@@ -713,6 +714,7 @@ function DialogPanel({
           // the shared scroll offset that drives the small-title cross-fade.
           <>
             <DialogNavHeader
+              Actions={HeaderActions}
               controller={headerController}
               header={header}
               onDismiss={close}
@@ -1015,6 +1017,7 @@ function SheetSurface({
             // the content, which is inset below the bar.
             <View style={{ flex: 1, minHeight: 0 }}>
               <DialogNavHeader
+                Actions={HeaderActions}
                 controller={headerController}
                 header={header}
                 onDismiss={onDismiss}

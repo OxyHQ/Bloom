@@ -1,0 +1,762 @@
+[
+  {
+    "name": "light-black-backdrop",
+    "engine": "firefox",
+    "browser": "157.0",
+    "executable": "/home/nate/.cache/ms-playwright/firefox-1555/firefox/firefox",
+    "headless": true,
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": false
+      },
+      "computed": {
+        "filter": "none",
+        "backdrop": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "prefixed": "",
+        "background": "rgba(211, 224, 241, 0.72)"
+      },
+      "probe": {
+        "raf": 70,
+        "timer": 75
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0"
+    },
+    "expected": [
+      179,
+      189,
+      201
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "llvmpipe, or similar",
+      "vendor": "Mozilla",
+      "unmasked": "llvmpipe, or similar"
+    },
+    "errors": []
+  },
+  {
+    "name": "light-black-filter",
+    "engine": "firefox",
+    "browser": "157.0",
+    "executable": "/home/nate/.cache/ms-playwright/firefox-1555/firefox/firefox",
+    "headless": true,
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": false
+      },
+      "computed": {
+        "filter": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "backdrop": "none",
+        "prefixed": "",
+        "background": "rgb(0, 0, 0)"
+      },
+      "probe": {
+        "raf": 64,
+        "timer": 75
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0"
+    },
+    "expected": [
+      98,
+      98,
+      98
+    ],
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          98,
+          98,
+          98
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "llvmpipe, or similar",
+      "vendor": "Mozilla",
+      "unmasked": "llvmpipe, or similar"
+    },
+    "errors": []
+  },
+  {
+    "name": "light-stripes-backdrop",
+    "engine": "firefox",
+    "browser": "157.0",
+    "executable": "/home/nate/.cache/ms-playwright/firefox-1555/firefox/firefox",
+    "headless": true,
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": false
+      },
+      "computed": {
+        "filter": "none",
+        "backdrop": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "prefixed": "",
+        "background": "rgba(211, 224, 241, 0.72)"
+      },
+      "probe": {
+        "raf": 72,
+        "timer": 74
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0"
+    },
+    "expected": null,
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          152,
+          162,
+          174
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          223,
+          233,
+          245
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "llvmpipe, or similar",
+      "vendor": "Mozilla",
+      "unmasked": "llvmpipe, or similar"
+    },
+    "errors": []
+  },
+  {
+    "name": "light-stripes-filter",
+    "engine": "firefox",
+    "browser": "157.0",
+    "executable": "/home/nate/.cache/ms-playwright/firefox-1555/firefox/firefox",
+    "headless": true,
+    "args": [],
+    "env": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": null,
+      "WEBKIT_FORCE_COMPOSITING_MODE": null,
+      "WEBKIT_DISABLE_DMABUF_RENDERER": null,
+      "LIBGL_ALWAYS_SOFTWARE": null,
+      "GDK_BACKEND": null,
+      "DISPLAY": ":0",
+      "WAYLAND_DISPLAY": "wayland-0"
+    },
+    "chain": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000)",
+    "state": {
+      "supports": {
+        "backdrop": true,
+        "prefixed": false
+      },
+      "computed": {
+        "filter": "blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38)",
+        "backdrop": "none",
+        "prefixed": "",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "probe": {
+        "raf": 68,
+        "timer": 75
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0"
+    },
+    "expected": null,
+    "samples": [
+      {
+        "x": 256,
+        "y": 200,
+        "rgb": [
+          173,
+          173,
+          173
+        ]
+      },
+      {
+        "x": 264,
+        "y": 200,
+        "rgb": [
+          177,
+          177,
+          175
+        ]
+      },
+      {
+        "x": 272,
+        "y": 200,
+        "rgb": [
+          179,
+          179,
+          178
+        ]
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "rgb": [
+          181,
+          181,
+          179
+        ]
+      },
+      {
+        "x": 288,
+        "y": 200,
+        "rgb": [
+          179,
+          179,
+          178
+        ]
+      },
+      {
+        "x": 296,
+        "y": 200,
+        "rgb": [
+          175,
+          175,
+          175
+        ]
+      },
+      {
+        "x": 304,
+        "y": 200,
+        "rgb": [
+          173,
+          173,
+          173
+        ]
+      },
+      {
+        "x": 312,
+        "y": 200,
+        "rgb": [
+          171,
+          171,
+          171
+        ]
+      },
+      {
+        "x": 320,
+        "y": 200,
+        "rgb": [
+          173,
+          173,
+          173
+        ]
+      },
+      {
+        "x": 328,
+        "y": 200,
+        "rgb": [
+          177,
+          177,
+          175
+        ]
+      },
+      {
+        "x": 336,
+        "y": 200,
+        "rgb": [
+          179,
+          179,
+          178
+        ]
+      },
+      {
+        "x": 344,
+        "y": 200,
+        "rgb": [
+          181,
+          181,
+          179
+        ]
+      },
+      {
+        "x": 352,
+        "y": 200,
+        "rgb": [
+          179,
+          179,
+          178
+        ]
+      },
+      {
+        "x": 360,
+        "y": 200,
+        "rgb": [
+          175,
+          175,
+          175
+        ]
+      },
+      {
+        "x": 368,
+        "y": 200,
+        "rgb": [
+          173,
+          173,
+          173
+        ]
+      },
+      {
+        "x": 376,
+        "y": 200,
+        "rgb": [
+          171,
+          171,
+          171
+        ]
+      }
+    ],
+    "gpu": {
+      "renderer": "llvmpipe, or similar",
+      "vendor": "Mozilla",
+      "unmasked": "llvmpipe, or similar"
+    },
+    "errors": []
+  }
+]

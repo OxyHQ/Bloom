@@ -1,0 +1,42 @@
+$ jest --runInBand native-responder
+FAIL src/__tests__/native-responder.test.ts
+  ● claims editable native taps without taking focus and yields to parent scrolling (android)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: undefined
+
+      43 |         expect(mockProps.onResponderTerminationRequest).toBeUndefined();
+      44 |       } else {
+    > 45 |         expect(mockProps.onStartShouldSetResponder?.(event)).toBe(true);
+         |                                                              ^
+      46 |         expect(mockProps.onResponderTerminationRequest?.(event)).toBe(true);
+      47 |         expect(mockFocus).not.toHaveBeenCalled();
+      48 |         expect(onFocus).not.toHaveBeenCalled();
+
+      at src/__tests__/native-responder.test.ts:45:62
+
+  ● claims editable native taps without taking focus and yields to parent scrolling (ios)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: undefined
+
+      43 |         expect(mockProps.onResponderTerminationRequest).toBeUndefined();
+      44 |       } else {
+    > 45 |         expect(mockProps.onStartShouldSetResponder?.(event)).toBe(true);
+         |                                                              ^
+      46 |         expect(mockProps.onResponderTerminationRequest?.(event)).toBe(true);
+      47 |         expect(mockFocus).not.toHaveBeenCalled();
+      48 |         expect(onFocus).not.toHaveBeenCalled();
+
+      at src/__tests__/native-responder.test.ts:45:62
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 1 passed, 3 total
+Snapshots:   0 total
+Time:        1.432 s
+Ran all test suites matching native-responder.
+error: script "test" exited with code 1

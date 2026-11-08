@@ -1,0 +1,269 @@
+{
+  "scope": "physical Android source candidate",
+  "states": {
+    "caret": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 10,
+        "end": 10
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "editing": {
+      "ime": true,
+      "readOnly": false,
+      "focused": null,
+      "linking": "fixture-1",
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 7,
+        "end": 13
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "apply": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 7,
+        "end": 13
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "cancel": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 7,
+        "end": 13
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "external": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-2",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-2",
+        "start": 7,
+        "end": 7
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "parent-scroll": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-2",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-2",
+        "start": 7,
+        "end": 7
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "scroll-return": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-2",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-2",
+        "start": 7,
+        "end": 7
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "read-only": {
+      "ime": false,
+      "readOnly": true,
+      "focused": null,
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-2",
+        "start": 7,
+        "end": 7
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "read-only-input": {
+      "ime": false,
+      "readOnly": true,
+      "focused": null,
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-2",
+        "start": 7,
+        "end": 7
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "editing-restored": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 10,
+        "end": 10
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "longpress": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 0,
+        "end": 6
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "drag": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 0,
+        "end": 13
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "ime-replacement": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 1,
+        "end": 1
+      },
+      "text": {
+        "block-input-fixture-1": "Q after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "undo-once": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 13,
+        "end": 13
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "outside-tap": {
+      "ime": false,
+      "readOnly": false,
+      "focused": null,
+      "linking": "fixture-1",
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 7,
+        "end": 13
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    },
+    "outside-cancel": {
+      "ime": true,
+      "readOnly": false,
+      "focused": "fixture-1",
+      "linking": null,
+      "selection": {
+        "kind": "text",
+        "blockId": "fixture-1",
+        "start": 7,
+        "end": 13
+      },
+      "text": {
+        "block-input-fixture-1": "Before linked after",
+        "block-input-fixture-2": "Second editable paragraph"
+      }
+    }
+  },
+  "scrollEndDragY": [
+    104.76190185546875,
+    0
+  ],
+  "limitations": [
+    "Published package acceptance pending",
+    "No physical iPhone or hardware keyboard Escape validation"
+  ]
+}

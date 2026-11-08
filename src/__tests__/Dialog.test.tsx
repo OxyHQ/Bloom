@@ -172,8 +172,20 @@ describe('Dialog nav header (rich fields)', () => {
     return utils;
   }
 
+  function measureActions(utils: ReturnType<typeof openHeader>, width: number) {
+    const layout = (node: ReturnType<typeof utils.getByTestId>, measured: number) =>
+      fireEvent(node, 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: measured, height: 36 } },
+      });
+    for (const node of utils.getAllByTestId(/^dialog-nav-action-measure-/, {
+      includeHiddenElements: true,
+    }))
+      layout(node, 36);
+    layout(utils.getByTestId('dialog-nav'), width);
+  }
+
   it('renders primaryAction, actions, search and segments', () => {
-    const { getByText, getByLabelText, getByPlaceholderText } = openHeader({
+    const utils = openHeader({
       title: 'Rich title',
       primaryAction: { label: 'Save', onPress: jest.fn() },
       actions: [
@@ -191,6 +203,8 @@ describe('Dialog nav header (rich fields)', () => {
       },
       progress: { step: 2, total: 5 },
     });
+    measureActions(utils, 900);
+    const { getByText, getByLabelText, getByPlaceholderText } = utils;
     expect(getByText('Save')).toBeTruthy();
     expect(getByLabelText('Share')).toBeTruthy();
     expect(getByLabelText('Star')).toBeTruthy();
@@ -211,8 +225,8 @@ describe('Dialog nav header (rich fields)', () => {
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
-  it('collapses surplus actions into a "More" overflow trigger', () => {
-    const { getByLabelText } = openHeader({
+  it('moves optional actions into More at a measured narrow width and restores them when widened', () => {
+    const utils = openHeader({
       title: 'T',
       actions: [
         { icon: () => <Text>a</Text>, accessibilityLabel: 'A1', onPress: jest.fn() },
@@ -221,10 +235,13 @@ describe('Dialog nav header (rich fields)', () => {
         { icon: () => <Text>d</Text>, accessibilityLabel: 'A4', onPress: jest.fn() },
       ],
     });
-    // 4 actions > the inline max (3): the first two stay inline + a "More" trigger.
-    expect(getByLabelText('A1')).toBeTruthy();
-    expect(getByLabelText('A2')).toBeTruthy();
-    expect(getByLabelText('More')).toBeTruthy();
+    measureActions(utils, 300);
+    expect(utils.getByLabelText('More')).toBeTruthy();
+    expect(utils.getByLabelText('Close')).toBeTruthy();
+    expect(utils.queryByLabelText('A4')).toBeNull();
+    measureActions(utils, 900);
+    for (const label of ['A1', 'A2', 'A3', 'A4']) expect(utils.getByLabelText(label)).toBeTruthy();
+    expect(utils.queryByLabelText('More')).toBeNull();
   });
 
   it('backward-compat: a title-only header still renders the default close', () => {

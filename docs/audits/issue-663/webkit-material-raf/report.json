@@ -1,0 +1,66 @@
+[
+  {
+    "name": "five-material-buttons",
+    "story": "composition-headers-adaptive-actions--width-controls-only",
+    "disableBackdrop": false,
+    "before": {
+      "frames": 35,
+      "ticks": 18
+    },
+    "after": {
+      "frames": 35,
+      "ticks": 29,
+      "visibility": "visible"
+    },
+    "frameDelta": 0,
+    "errors": []
+  },
+  {
+    "name": "same-buttons-backdrop-disabled-before-paint",
+    "story": "composition-headers-adaptive-actions--width-controls-only",
+    "disableBackdrop": true,
+    "before": {
+      "frames": 107,
+      "ticks": 21
+    },
+    "after": {
+      "frames": 182,
+      "ticks": 33,
+      "visibility": "visible"
+    },
+    "frameDelta": 75,
+    "errors": []
+  },
+  {
+    "name": "existing-single-button",
+    "story": "base-button--basic",
+    "disableBackdrop": false,
+    "before": {
+      "frames": 120,
+      "ticks": 21
+    },
+    "after": {
+      "frames": 195,
+      "ticks": 33,
+      "visibility": "visible"
+    },
+    "frameDelta": 75,
+    "errors": []
+  },
+  {
+    "name": "existing-button-group",
+    "story": "base-button-group--basic",
+    "disableBackdrop": false,
+    "before": {
+      "frames": 84,
+      "ticks": 16
+    },
+    "after": {
+      "frames": 158,
+      "ticks": 27,
+      "visibility": "visible"
+    },
+    "frameDelta": 74,
+    "errors": []
+  }
+]

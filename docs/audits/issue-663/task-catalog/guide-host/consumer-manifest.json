@@ -1,0 +1,39 @@
+{
+  "name": "bloom-vite-host",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@oxy.so/bloom": "17.23.0 (candidate tarball; SHA256 in sha256.txt)",
+    "expo": "58.0.23",
+    "expo-blur": "58.0.5",
+    "expo-image": "58.0.18",
+    "expo-modules-core": "58.0.30",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "2.28.0",
+    "react-native-reanimated": "3.19.1",
+    "react-native-safe-area-context": "5.6.2",
+    "react-native-screens": "4.16.0",
+    "react-native-svg": "15.12.1",
+    "react-native-web": "0.21.4",
+    "buffer": "6.0.3"
+  },
+  "devDependencies": {
+    "vite": "6.3.5",
+    "@vitejs/plugin-react": "4.5.2",
+    "typescript": "5.9.3",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.0",
+    "@tailwindcss/vite": "4.1.13",
+    "tailwindcss": "4.1.13",
+    "@babel/core": "7.28.5",
+    "@babel/plugin-transform-react-jsx": "7.29.7"
+  }
+}

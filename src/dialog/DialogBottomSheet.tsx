@@ -1,3 +1,4 @@
+import { HeaderActions } from '../page-header/HeaderActions';
 import { useDialogFooter } from './DialogFooter';
 import type { DialogPresentationLifecycle } from './use-presentation-session';
 import { useDialogFrameScrollReset } from './DialogFrameContent';
@@ -319,6 +320,7 @@ export function DialogBottomSheet({
       headerOverlay={
         header ? (
           <DialogNavHeader
+            Actions={HeaderActions}
             controller={headerController}
             header={header}
             onDismiss={close}

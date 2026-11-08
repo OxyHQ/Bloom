@@ -1,0 +1,2 @@
+hermes.tar.gz: official-fallback, SHA256 verified
+Hermes: verified source commit 9a115f15785851f4ff2747ebb090ddd066fc8ad2; RN compilation tasks retained

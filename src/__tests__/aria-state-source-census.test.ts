@@ -491,6 +491,8 @@ describe('the census can see', () => {
       'AnimatedLayoutView',
       'AnimatedPanel',
       'AnimatedPressable',
+      // HeaderActions preserves the real View host while its width changes.
+      'AnimatedRoot',
       'AnimatedStyledView',
       // ReplyRow and SelectedAgentPreview wrap the same StyledView host.
       'AnimatedView',
