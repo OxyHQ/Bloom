@@ -369,7 +369,11 @@ export function createCanvasPanel(
                 </View>
               </GestureDetector>
               <GestureDetector gesture={headerPan}>
-                <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}>
+                <View
+                  onLayout={(event) => {
+                    if (enabled) setHeaderHeight(event.nativeEvent.layout.height);
+                  }}
+                >
                   {header}
                 </View>
               </GestureDetector>

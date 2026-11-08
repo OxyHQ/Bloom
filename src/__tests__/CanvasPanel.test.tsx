@@ -73,7 +73,7 @@ it('publishes measured peek and full rather than a guessed or capped half footpr
   function Reader() {
     return <Text testID="bottom">{useBottomEdgeInset()}</Text>;
   }
-  function Subject({ snap }: { snap: 'peek' | 'full' }) {
+  function Subject({ snap, active = true }: { snap: 'peek' | 'full'; active?: boolean }) {
     return (
       <BloomThemeProvider>
         <BottomEdgeProvider>
@@ -81,6 +81,7 @@ it('publishes measured peek and full rather than a guessed or capped half footpr
             <Reader />
             <CanvasPanel
               snap={snap}
+              active={active}
               onSnapChange={() => {}}
               header={<Text>Header</Text>}
               accessibilityLabel="Places"
@@ -97,6 +98,14 @@ it('publishes measured peek and full rather than a guessed or capped half footpr
     nativeEvent: { layout: { width: 390, height: 100, x: 0, y: 0 } },
   });
   expect(view.getByTestId('bottom').props.children).toBe(144);
+  const measuredHeader = view.getByText('Header').parent!;
+  view.rerender(<Subject snap="peek" active={false} />);
+  fireEvent(measuredHeader, 'layout', {
+    nativeEvent: { layout: { width: 0, height: 0, x: 0, y: 0 } },
+  });
+  view.rerender(<Subject snap="peek" />);
+  expect(view.getByTestId('bottom').props.children).toBe(144);
+
   view.rerender(<Subject snap="full" />);
   expect(view.getByTestId('bottom').props.children).toBe(828);
 });

@@ -330,7 +330,8 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
   field: {
     canvas: {
       verdict: 'does-not-apply',
-      reason: 'The adjustable handle changes panel detents, not a form value; its name comes from the panel accessibilityLabel.',
+      reason:
+        'The adjustable handle changes panel detents, not a form value; its name comes from the panel accessibilityLabel.',
     },
     'agent-chat': { verdict: 'does-not-apply', reason: BARE_INPUT },
     'chat-composer': { verdict: 'does-not-apply', reason: BARE_INPUT },
