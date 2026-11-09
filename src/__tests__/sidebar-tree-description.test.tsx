@@ -1,5 +1,4 @@
 import { render } from '@testing-library/react-native';
-import React from 'react';
 import { Sidebar, type SidebarSize, type SidebarTree } from '../sidebar';
 import { SIDEBAR_METRICS } from '../sidebar/metrics';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

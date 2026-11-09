@@ -598,9 +598,7 @@ const TreeRow = memo(function TreeRow({
             }
           : {})}
         role={item.href ? 'link' : 'button'}
-        accessibilityLabel={[item.label, item.description, item.meta]
-          .filter(Boolean)
-          .join(', ')}
+        accessibilityLabel={[item.label, item.description, item.meta].filter(Boolean).join(', ')}
         accessibilityState={{ selected }}
         accessibilityActions={accessibilityActions}
         onAccessibilityAction={
