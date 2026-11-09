@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.30.1
+
+### Fixed
+
+- **`ChatHeader` uses its measured width** to choose compact gutters and default back-button visibility. `showBack` remains available when navigation context differs from available width.
+
 ## 17.30.0
 
 ### Added

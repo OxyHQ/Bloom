@@ -1,11 +1,12 @@
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useMemo } from 'react';
-import { Pressable, useWindowDimensions, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { Button } from '../button';
 import { AvatarPresence } from '../chat-indicators/AvatarPresence';
 import { PresenceDot } from '../chat-indicators/PresenceDot';
 import { TypingDots } from '../chat-indicators/TypingDots';
+import { useMeasuredSizeClass } from '../hooks/use-width-class';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
@@ -24,7 +25,6 @@ import {
   CHAT_COMPACT_BREAKPOINT,
   CHAT_HEADER_HEIGHT,
   formatSelectedCount,
-  IS_NATIVE,
   useChatScreenPaint,
   type ChatScreenPaint,
 } from './shared';
@@ -32,6 +32,8 @@ import type { ChatHeaderMarker, ChatHeaderProps, ChatIconComponent } from './typ
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { CHAT_SCREEN_MESSAGES } from './messages';
+
+const CHAT_HEADER_WIDTH_THRESHOLDS = [CHAT_COMPACT_BREAKPOINT] as const;
 
 const MARKER_ICON: Record<ChatHeaderMarker, ChatIconComponent> = {
   verified: RiVerifiedBadgeFill,
@@ -105,13 +107,13 @@ function HeaderIconButton({
  * selection. Keeping a call button beside "3 selected" is how a selection gets
  * lost to a mis-tap.
  *
- * Compact (a back button, 12px gutters) is derived from the window against
- * `CHAT_COMPACT_BREAKPOINT`, and is always on for native — where there is no
- * list pane beside the conversation, so "back" is the only way out.
+ * Compact (a back button by default, 12px gutters) follows this header's
+ * measured width against `CHAT_COMPACT_BREAKPOINT`. `showBack` remains the
+ * caller's explicit choice when navigation context differs from geometry.
  */
 function ChatHeaderComponent(props: ChatHeaderProps) {
   const paint = useChatScreenPaint();
-  const { width } = useWindowDimensions();
+  const { width, onLayout } = useMeasuredSizeClass(CHAT_HEADER_WIDTH_THRESHOLDS);
   const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
   const common = useCommonMessages();
   const {
@@ -163,7 +165,7 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
     testID,
   } = props;
 
-  const compact = compactProp ?? (IS_NATIVE || width < CHAT_COMPACT_BREAKPOINT);
+  const compact = compactProp ?? width < CHAT_COMPACT_BREAKPOINT;
   const gutter = compact ? 12 : 16;
 
   const row = useMemo(
@@ -186,7 +188,7 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
   // ---- Selection mode ----------------------------------------------------
   if (selectionCount > 0) {
     return (
-      <View testID={testID} style={[row, style]}>
+      <View testID={testID} onLayout={onLayout} style={[row, style]}>
         {onClearSelection ? (
           <HeaderIconButton
             icon={RiCloseLine}
@@ -325,7 +327,7 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
   const backVisible = showBack ?? (Boolean(onPressBack) && compact);
 
   return (
-    <View testID={testID} style={[row, style]}>
+    <View testID={testID} onLayout={onLayout} style={[row, style]}>
       {backVisible && onPressBack ? (
         <HeaderIconButton
           icon={RiArrowLeftLine}
