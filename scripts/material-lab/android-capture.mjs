@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { requireLabEmulator } from './android-gate.mjs';
+import { requireLabEmulator, requireLabForeground } from './android-gate.mjs';
 
 // Run only after android-gate: preserve the inspected APK/device identity.
 const out = resolve(process.env.OUT || '../../.local/material-android');
@@ -14,6 +14,15 @@ const server = process.env.ADB_PORT ? ['-P', process.env.ADB_PORT] : [];
 const target = [...server, '-s', serial];
 const adb = (...args) =>
   execFileSync(binary, [...target, ...args], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+const focusedWindow = () =>
+  adb('shell', 'dumpsys', 'window')
+    .split(/\r?\n/)
+    .find((line) => line.includes('mCurrentFocus=')) ?? '';
+const assertForeground = () => {
+  const focus = focusedWindow();
+  requireLabForeground(focus);
+  return focus.trim();
+};
 requireLabEmulator(
   serial,
   execFileSync(binary, [...server, 'devices'], { encoding: 'utf8' }),
@@ -56,9 +65,11 @@ function tapBounds(b) {
 async function tap(id, hierarchy = xml()) {
   tapBounds(node(hierarchy, id));
   await pause(700);
+  assertForeground();
 }
 const captures = [];
 function capture(name, hierarchySnapshot = null) {
+  const focus = assertForeground();
   const hierarchy = hierarchySnapshot ?? xml();
   assert(hierarchy.includes('so.oxy.bloom.materiallab'), 'Fixture must own captured window');
   writeFileSync(resolve(out, `${name}${hierarchySnapshot ? '.base' : ''}.xml`), hierarchy);
@@ -76,6 +87,7 @@ function capture(name, hierarchySnapshot = null) {
   }
   captures.push({
     name,
+    focus,
     geometry,
     hierarchyFresh: hierarchySnapshot === null,
     loaderActive:

@@ -41,6 +41,13 @@ export function requireOfflineApk(permissions, badging) {
   assert(badging.includes("package: name='so.oxy.bloom.materiallab'"), 'Unexpected application ID');
 }
 
+export function requireLabForeground(focusedWindow) {
+  assert(
+    focusedWindow.includes('so.oxy.bloom.materiallab/'),
+    'Fixture lost foreground ownership; refusing stale coordinates or screenshot',
+  );
+}
+
 const here = dirname(fileURLToPath(import.meta.url));
 async function main() {
   const serial = process.env.ANDROID_SERIAL;
