@@ -29,6 +29,17 @@ import { MultiAgentChat } from '@oxy.so/bloom/multi-agent-chat';
 />
 ```
 
+A host that draws its own group chat reuses the composition with `SelectedAgentPreview`:
+the chosen agents as one large avatar, a trio, or a ring from four up. Each avatar is named
+`${anchor}:${agent.id}` for [`AvatarFlights`](./avatar-flight.mdx), so the picker's preview can
+fly into the empty chat and from there into the header's profile.
+
+```tsx
+import { SelectedAgentPreview } from '@oxy.so/bloom/multi-agent-chat';
+
+<SelectedAgentPreview agents={agents} flights={flights} anchor="empty" />
+```
+
 Without `onRespond`, the workspace returns sample responses. Each participant
 responds in conversation order. Stop cancels the request and reveal timers;
 partial replies remain visible. Chat switching keeps each draft and generation

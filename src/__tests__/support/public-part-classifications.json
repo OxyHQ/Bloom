@@ -1588,5 +1588,16 @@
       "src/canvas/CanvasBackground.tsx#CanvasBackground",
       "src/canvas/CanvasPanel.tsx#CanvasPanel"
     ]
+  },
+  "multi-agent-preview-parts": {
+    "status": "pending",
+    "reason": "SelectedAgentPreview is a new public composition of agent avatars for selection. Its fixed preview footprint and count-based avatar geometry have not yet been audited as a BloomScope or responsive contract; this row records the part without implying a defect or adoption.",
+    "evidence": [
+      "src/multi-agent-chat/SelectedAgentPreview.tsx",
+      "src/__tests__/SelectedAgentPreviewExport.test.ts",
+      "src/__tests__/public-parts.test.ts"
+    ],
+    "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
+    "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   }
 }

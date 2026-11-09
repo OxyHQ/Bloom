@@ -1,5 +1,12 @@
 # Changelog
 
+## 17.28.0
+
+### Added
+
+- **`AgentCreator` username**: `agent.handle` (optional) draws a Username row after the name, in the editor's own rows, with its strings in the fourteen locales. Omitted, nothing changes.
+- **`SelectedAgentPreview`** (and `previewAvatarGeometry`) from `@oxy.so/bloom/multi-agent-chat`: the avatars of the chosen agents composed as one large avatar, a trio, or a ring from four up, each one named for `AvatarFlights` as `${anchor}:${agent.id}`. It is the picker's preview and the empty group chat's mark in `MultiAgentChat`; a host that draws its own group chat uses the same composition and the same flights (picker to empty chat to header).
+
 ## 17.27.1
 
 ### Added

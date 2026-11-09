@@ -58,6 +58,8 @@ Eyewear and accessories use Bloom Select; `'none'` removes either. The retired b
 
 `AgentPreferences` carries `voice`, `speed`, `language` and `notifications`. Defaults are voice `alice`, speed `1`, language `auto`, notifications `true`. Supported speeds are `0.75`, `1`, `1.25`, `1.5`; languages are auto-detect, English, Turkish, Spanish, French, German, Japanese and Portuguese. `normalizeAgentPreferences()` restores supported values and limits voice identifiers to 200 characters.
 
+`agent.handle` (optional) adds a **Username** row after the name; omitted, there is no row. A host whose agents have a unique username (Alia's) passes it and saves it with the rest.
+
 `showPreferences={false}` draws the profile and the look alone: no voice, speed, language or notifications, and `agent.preferences` is left as it was. A host whose agents have no voice (Alia's) uses it.
 
 Web previews use the browser's local device voice catalog and cancel playback when the editor unmounts. iOS and Android hosts provide `voices` (`{ id, name, language }[]`) and `onPreviewVoice(text, preferences)` to integrate their own speech provider; no speech dependency is added to Bloom. Without a provider, native speech selection and preview are disabled while saved preferences remain intact. Changing notification preferences updates data; delivering a notification belongs to the consumer.

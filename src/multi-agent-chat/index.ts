@@ -5,4 +5,5 @@ export type {
   Workspace as MultiAgentChatWorkspace,
 } from './data';
 export { MultiAgentChat } from './MultiAgentChat';
+export { previewAvatarGeometry, SelectedAgentPreview } from './SelectedAgentPreview';
 export type { MultiAgentChatProps, MultiAgentChatRequest } from './types';

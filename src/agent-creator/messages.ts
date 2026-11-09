@@ -23,9 +23,11 @@ export interface AgentCreatorMessages {
   customColor: string;
   name: string;
   label: string;
+  handle: string;
   description: string;
   nameInput: string;
   labelInput: string;
+  handleInput: string;
   descriptionInput: string;
   labelPlaceholder: string;
   descriptionPlaceholder: string;
@@ -113,9 +115,11 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
     customColor: 'Custom avatar color',
     name: 'Name',
     label: 'Label',
+    handle: 'Username',
     description: 'Description',
     nameInput: 'Agent name',
     labelInput: 'Agent label',
+    handleInput: 'Agent username',
     descriptionInput: 'Agent description',
     labelPlaceholder: 'Manager, marketing, painter',
     descriptionPlaceholder: 'Details for the agent',
